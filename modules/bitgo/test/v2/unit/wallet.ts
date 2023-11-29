@@ -54,11 +54,13 @@ describe('V2 Wallet:', function () {
     keys: ['5b3424f91bf349930e34017500000000', '5b3424f91bf349930e34017600000000', '5b3424f91bf349930e34017700000000'],
     coinSpecific: {},
     multisigType: 'onchain',
+    type: 'hot',
   };
   const wallet = new Wallet(bitgo, basecoin, walletData);
   const bgUrl = common.Environments[bitgo.getEnv()].uri;
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+  const tbtcHotWalletDefaultParams = { txFormat: 'psbt', addressType: 'p2trMusig2' };
 
   describe('Wallet transfers', function () {
     it('should search in wallet for a transfer', async function () {
@@ -1704,7 +1706,7 @@ describe('V2 Wallet:', function () {
     it('should pass offlineVerification=true query param if passed truthy value', async function () {
       const params = { offlineVerification: true };
       const scope = nock(bgUrl)
-        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, tbtcHotWalletDefaultParams)
         .query(params)
         .reply(200, {});
       const blockHeight = 100;
@@ -1715,7 +1717,7 @@ describe('V2 Wallet:', function () {
       postProcessStub.should.have.been.calledOnceWith({
         blockHeight: 100,
         wallet: wallet,
-        buildParams: {},
+        buildParams: tbtcHotWalletDefaultParams,
       });
       scope.done();
       blockHeightStub.restore();
@@ -1724,7 +1726,10 @@ describe('V2 Wallet:', function () {
 
     it('should not pass the offlineVerification query param if passed a falsey value', async function () {
       const params = { offlineVerification: false };
-      nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).query({}).reply(200, {});
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, tbtcHotWalletDefaultParams)
+        .query({})
+        .reply(200, {});
       const blockHeight = 100;
       const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
       const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
@@ -1733,7 +1738,7 @@ describe('V2 Wallet:', function () {
       postProcessStub.should.have.been.calledOnceWith({
         blockHeight: 100,
         wallet: wallet,
-        buildParams: {},
+        buildParams: tbtcHotWalletDefaultParams,
       });
       blockHeightStub.restore();
       postProcessStub.restore();
@@ -1741,7 +1746,10 @@ describe('V2 Wallet:', function () {
 
     it('prebuild should call build and getLatestBlockHeight for utxo coins', async function () {
       const params = {};
-      nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`).query(params).reply(200, {});
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, tbtcHotWalletDefaultParams)
+        .query(params)
+        .reply(200, {});
       const blockHeight = 100;
       const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
       const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
@@ -1750,7 +1758,7 @@ describe('V2 Wallet:', function () {
       postProcessStub.should.have.been.calledOnceWith({
         blockHeight: 100,
         wallet: wallet,
-        buildParams: {},
+        buildParams: tbtcHotWalletDefaultParams,
       });
       blockHeightStub.restore();
       postProcessStub.restore();
