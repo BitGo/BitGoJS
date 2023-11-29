@@ -10,6 +10,7 @@ export * from './dash';
 export * from './parseInput';
 export * from './signature';
 export * from './transaction';
+export * from './transactionAmounts';
 export * from './types';
 export * from './Unspent';
 export * from './UtxoPsbt';
