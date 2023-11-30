@@ -1,0 +1,11 @@
+xpub: xpub6BQWUhRNV9BJZkzgvk9SMkUvXQCqo87nqQSwkpJLzxXWjmC61SujvtjpzsWiJFMdsYh51WHqGAg75Ck6qyeFD7U4zDURim11Xn8PWrbTfGD
+├── lowR: false
+├── chainCode: d9271cc20cab75075ac78ccf5ddf9cef1782818766687ff8aabd19ad37489a81 (32 bytes)
+├── depth: 2
+├── index: 0
+├── parentFingerprint: 3733780091
+├── identifier: dd065ccd3af95f7afe3d9779d3ab6b9c8bfc4af5 (20 bytes)
+├── fingerprint: dd065ccd (4 bytes)
+├── compressed: true
+├── publicKey: 034067f34da6d758623bc65937765470d67ba042d08891a2d0d9b4972565ff4d41 (33 bytes)
+└── privateKey: undefined
