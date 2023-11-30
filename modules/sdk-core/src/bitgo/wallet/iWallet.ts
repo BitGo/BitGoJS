@@ -51,7 +51,7 @@ export interface Memo {
   type: string;
 }
 
-export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions {
+export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
   consolidateAddresses?: string[];
 }
 

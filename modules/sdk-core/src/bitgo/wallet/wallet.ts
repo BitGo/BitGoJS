@@ -1582,21 +1582,11 @@ export class Wallet implements IWallet {
       throw new Error('getUserKeyAndSignTssTransaction is only supported for TSS wallets');
     }
     const reqId = new RequestTracer();
-    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId });
-
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
+    const keychains = await this.getKeychainsAndValidatePassphrase({ reqId, walletPassphrase });
     const userKeychain = keychains[0];
     if (!userKeychain || !userKeychain.encryptedPrv) {
       throw new Error('the user keychain does not have property encryptedPrv');
-    }
-    try {
-      this.bitgo.decrypt({ input: userKeychain.encryptedPrv, password: walletPassphrase });
-    } catch (e) {
-      const error: any = new Error(
-        `unable to decrypt keychain with the given wallet passphrase. Error: ${JSON.stringify(e)}`
-      );
-      error.code = 'wallet_passphrase_incorrect';
-      throw error;
     }
 
     return this.signTransaction({ txPrebuild: { txRequestId }, walletPassphrase, reqId, keychain: userKeychain });
@@ -1850,22 +1840,12 @@ export class Wallet implements IWallet {
       );
     }
 
-    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
-
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
-    // we ignore this check with if customSigningFunction is provided
-    //  which means that the user is handling the signing in external signing mode
-    try {
-      if (keychains[0].encryptedPrv && !params.customSigningFunction && params.walletPassphrase) {
-        this.bitgo.decrypt({ input: keychains[0].encryptedPrv as string, password: params.walletPassphrase });
-      }
-    } catch (e) {
-      const error: any = new Error(
-        `unable to decrypt keychain with the given wallet passphrase. Error: ${JSON.stringify(e)}`
-      );
-      error.code = 'wallet_passphrase_incorrect';
-      throw error;
-    }
+    const keychains = await this.getKeychainsAndValidatePassphrase({
+      reqId: params.reqId,
+      walletPassphrase: params.walletPassphrase,
+      customSigningFunction: params.customSigningFunction,
+    });
 
     let txPrebuildQuery: Promise<PrebuildTransactionResult | string>;
     if (isPrebuildTransactionResult(params.prebuildTx) && params.prebuildTx.buildParams?.preview) {
@@ -2445,6 +2425,10 @@ export class Wallet implements IWallet {
       .send(whitelistedParams)
       .result()) as any;
 
+    if (buildResponse.length === 0) {
+      throw new Error('No receive addresses with balance found to consolidate.');
+    }
+
     // we need to step over each prebuild now - should be in an array in the body
     const consolidations: PrebuildTransactionResult[] = [];
     for (const consolidateAccountBuild of buildResponse) {
@@ -2517,8 +2501,15 @@ export class Wallet implements IWallet {
       throw new Error(`${this.baseCoin.getFullName()} does not allow account consolidations.`);
     }
 
+    // Doing a sanity check for password here to avoid doing further work if we know it's wrong
+    await this.getKeychainsAndValidatePassphrase({
+      reqId: params.reqId,
+      walletPassphrase: params.walletPassphrase,
+      customSigningFunction: params.customSigningFunction,
+    });
+
     // this gives us a set of account consolidation transactions
-    const unsignedBuilds = (await this.buildAccountConsolidations(params)) as any;
+    const unsignedBuilds = await this.buildAccountConsolidations(params);
     if (unsignedBuilds && unsignedBuilds.length > 0) {
       const successfulTxs: any[] = [];
       const failedTxs = new Array<Error>();
@@ -3203,5 +3194,37 @@ export class Wallet implements IWallet {
       TxSendBody,
       whitelistedParams
     ).result();
+  }
+
+  /**
+   * Get wallet keychains and validate passphrase if necessary
+   * @param {PrebuildTransactionOptions} params - prebuild transaction options
+   * @param {string} params.walletPassphrase - wallet passphrase
+   * @param {string} params.reqId - request id for tracing purposes
+   * @param {Function} params.customSigningFunction - custom signing function for external signing
+   * @returns {Promise<Keychain[]>}
+   */
+  private async getKeychainsAndValidatePassphrase({
+    customSigningFunction,
+    walletPassphrase,
+    reqId,
+  }: PrebuildTransactionOptions & WalletSignTransactionOptions): Promise<Keychain[]> {
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId });
+
+    // Doing a sanity check for password here to avoid doing further work if we know it's wrong
+    // we ignore this check with if customSigningFunction is provided
+    //  which means that the user is handling the signing in external signing mode
+    try {
+      if (keychains[0].encryptedPrv && !customSigningFunction && walletPassphrase) {
+        this.bitgo.decrypt({ input: keychains[0].encryptedPrv as string, password: walletPassphrase });
+      }
+    } catch (e) {
+      const error: any = new Error(
+        `unable to decrypt keychain with the given wallet passphrase. Error: ${JSON.stringify(e)}`
+      );
+      error.code = 'wallet_passphrase_incorrect';
+      throw error;
+    }
+    return keychains;
   }
 }

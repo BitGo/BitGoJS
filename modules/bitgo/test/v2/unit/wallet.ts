@@ -666,12 +666,11 @@ describe('V2 Wallet:', function () {
             '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
           coinSpecific: {},
         });
-      try {
-        await ethWallet.sendMany({ ...sendManyParamsCorrectPassPhrase, walletPassphrase: 'wrongPassphrase' });
-      } catch (e) {
-        e.code.should.equal('wallet_passphrase_incorrect');
-        e.message.should.equal(errorMessage);
-      }
+
+      await ethWallet
+        .sendMany({ ...sendManyParamsCorrectPassPhrase, walletPassphrase: 'wrongPassphrase' })
+        .should.be.rejectedWith(errorMessage);
+
       try {
         const customSigningFunction = () => {
           return 'mock';
