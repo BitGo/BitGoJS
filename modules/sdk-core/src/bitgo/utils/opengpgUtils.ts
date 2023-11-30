@@ -31,9 +31,16 @@ export type KeyValidityDict = {
  * @return {Key} public gpg key
  */
 export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<Key> {
-  const constants = await bitgo.fetchConstants();
-  if (!constants.mpc || !constants.mpc.bitgoPublicKey) {
-    throw new Error('Unable to create MPC keys - bitgoPublicKey is missing from constants');
+  let constants;
+  try {
+    constants = await bitgo.fetchConstants();
+  } catch (e) {
+    throw new Error('Unable to create MPC keys - constants are missing, got: ' + e.message);
+  }
+  if (!constants?.mpc || !constants?.mpc.bitgoPublicKey) {
+    throw new Error(
+      'Unable to create MPC keys - bitgoPublicKey is missing from constants, got: ' + JSON.stringify(constants)
+    );
   }
 
   const bitgoPublicKeyStr = constants.mpc.bitgoPublicKey as string;
