@@ -26,8 +26,8 @@ export type KeyValidityDict = {
 }[];
 
 /**
- * Fetches BitGo's pubic gpg key used in MPC flows
- * @param {BitGo} bitgo BitGo object
+ * Fetches BitGo's public gpg key used in MPC flows
+ * @param {BitGoBase} bitgo BitGo object
  * @return {Key} public gpg key
  */
 export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<Key> {
