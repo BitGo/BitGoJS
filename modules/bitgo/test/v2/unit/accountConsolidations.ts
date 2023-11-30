@@ -63,6 +63,19 @@ describe('Account Consolidations:', function () {
 
           scope.isDone().should.be.True();
         });
+
+        it('should throw if the result is an empty array', async function () {
+          const scope = nock(bgUrl)
+            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`)
+            .query({})
+            .reply(200, []);
+
+          await wallet
+            .buildAccountConsolidations()
+            .should.be.rejectedWith('No receive addresses with balance found to consolidate.');
+
+          scope.isDone().should.be.True();
+        });
       });
 
       describe('Sending', function () {
@@ -154,6 +167,8 @@ describe('Account Consolidations:', function () {
             .onCall(1)
             .resolves(fixtures.signedAccountConsolidationBuilds[1]);
 
+          sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([]);
+
           const scopeFirstSigned = nock(bgUrl)
             .post(
               `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
@@ -190,6 +205,8 @@ describe('Account Consolidations:', function () {
             .resolves(fixtures.signedAccountConsolidationBuilds[0])
             .onCall(1)
             .resolves(fixtures.signedAccountConsolidationBuilds[1]);
+
+          sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([]);
 
           const scopeWithSuccess = nock(bgUrl)
             .post(
