@@ -584,7 +584,19 @@ export class TestBitGo {
 
     BitGoAPI.prototype.fetchConstants = function () {
       // @ts-expect-error - no implicit this
-      nock(this._baseUrl).get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
+      nock(this._baseUrl)
+        .get('/api/v1/client/constants')
+        .reply(200, {
+          ttl: 3600,
+          constants: {
+            mpc: {
+              bitgoPublicKey:
+                '-----BEGIN PGP PUBLIC KEY BLOCK-----\r\n\r\nxk8EYqEU5hMFK4EEAAoCAwQDdbAIZrsblEXIavyg2go6p9oG0SqWTgFsdHTc\r\nBhqdIS/WjQ8pj75q+vLqFtV9hlImYGInsIWh97fsigzB2owyzRhoc20gPGhz\r\nbUB0ZXN0LmJpdGdvLmNvbT7ChAQTEwgAFQUCYqEU5wILCQIVCAIWAAIbAwIe\r\nAQAhCRCJNRsIDGunexYhBHRL5D/8nRM3opQnXok1GwgMa6d7tg8A/24A9awq\r\nSCJx7RddiUzFHcKhVvvo3R5N7bHaOGP3TP79AP0TavF2WzhUXmZSjt3IK23O\r\n7/aknbijVeq52ghbWb1SwsJ1BBATCAAGBQJioRTnACEJEAWuA35KJgtgFiEE\r\nZttLPR0KcYvjgvJCBa4DfkomC2BsrwD/Z+43zOw+WpfPHxe+ypyVog5fnOKl\r\nXwleH6zDvqUWmWkA/iaHC6ullYkSG4Mv68k6qbtgR/pms/X7rkfa0QQFJy5p\r\nzlMEYqEU5hIFK4EEAAoCAwSsLqmfonjMF3o0nZ5JHvLpmfTA1RIVDsAEoRON\r\ntZA6rAA23pGl6s3Iyt4/fX9Adzoh3EElOjMsgi8Aj3dFpuqiAwEIB8J4BBgT\r\nCAAJBQJioRTnAhsMACEJEIk1GwgMa6d7FiEEdEvkP/ydEzeilCdeiTUbCAxr\r\np3vM7AD9GPp6HhYNEh2VVCDtFSt14Bni5FVM5icpVDo6w9ibvWAA/2Ti3Jv4\r\nIhIxl81/wqAgqigIblrz6vjtagr9/ykXQCW3\r\n=skCo\r\n-----END PGP PUBLIC KEY BLOCK-----\r\n',
+              bitgoNitroPublicKey:
+                '-----BEGIN PGP PUBLIC KEY BLOCK-----\r\n\r\nxk8EYqEU5hMFK4EEAAoCAwQDdbAIZrsblEXIavyg2go6p9oG0SqWTgFsdHTc\r\nBhqdIS/WjQ8pj75q+vLqFtV9hlImYGInsIWh97fsigzB2owyzRhoc20gPGhz\r\nbUB0ZXN0LmJpdGdvLmNvbT7ChAQTEwgAFQUCYqEU5wILCQIVCAIWAAIbAwIe\r\nAQAhCRCJNRsIDGunexYhBHRL5D/8nRM3opQnXok1GwgMa6d7tg8A/24A9awq\r\nSCJx7RddiUzFHcKhVvvo3R5N7bHaOGP3TP79AP0TavF2WzhUXmZSjt3IK23O\r\n7/aknbijVeq52ghbWb1SwsJ1BBATCAAGBQJioRTnACEJEAWuA35KJgtgFiEE\r\nZttLPR0KcYvjgvJCBa4DfkomC2BsrwD/Z+43zOw+WpfPHxe+ypyVog5fnOKl\r\nXwleH6zDvqUWmWkA/iaHC6ullYkSG4Mv68k6qbtgR/pms/X7rkfa0QQFJy5p\r\nzlMEYqEU5hIFK4EEAAoCAwSsLqmfonjMF3o0nZ5JHvLpmfTA1RIVDsAEoRON\r\ntZA6rAA23pGl6s3Iyt4/fX9Adzoh3EElOjMsgi8Aj3dFpuqiAwEIB8J4BBgT\r\nCAAJBQJioRTnAhsMACEJEIk1GwgMa6d7FiEEdEvkP/ydEzeilCdeiTUbCAxr\r\np3vM7AD9GPp6HhYNEh2VVCDtFSt14Bni5FVM5icpVDo6w9ibvWAA/2Ti3Jv4\r\nIhIxl81/wqAgqigIblrz6vjtagr9/ykXQCW3\r\n=skCo\r\n-----END PGP PUBLIC KEY BLOCK-----\r\n',
+            },
+          },
+        });
 
       // force client constants reload
       BitGoAPI['_constants'] = undefined;
