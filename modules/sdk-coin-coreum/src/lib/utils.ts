@@ -24,9 +24,9 @@ export class CoreumUtils extends CosmosUtils {
   /** @inheritdoc */
   isValidValidatorAddress(address: string): boolean {
     if (this.networkType === NetworkType.TESTNET) {
-      return constants.testnetValidatorAddressRegex.test(address);
+      return this.isValidBech32AddressMatchingRegex(address, constants.testnetValidatorAddressRegex);
     }
-    return constants.mainnetValidatorAddressRegex.test(address);
+    return this.isValidBech32AddressMatchingRegex(address, constants.mainnetValidatorAddressRegex);
   }
 
   /** @inheritdoc */

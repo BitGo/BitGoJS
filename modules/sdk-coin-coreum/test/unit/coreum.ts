@@ -116,7 +116,7 @@ describe('Coreum', function () {
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.address1), true);
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.address2), true);
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.address3), false);
-      should.equal(mainnetUtils.isValidAddress(mainnetAddress.address4), true);
+      should.equal(mainnetUtils.isValidAddress(mainnetAddress.address4), false);
       should.equal(mainnetUtils.isValidAddress('dfjk35y'), false);
       should.equal(mainnetUtils.isValidAddress(undefined as unknown as string), false);
       should.equal(mainnetUtils.isValidAddress(''), false);
@@ -127,7 +127,7 @@ describe('Coreum', function () {
       should.equal(testnetUtils.isValidAddress(testnetAddress.address1), true);
       should.equal(testnetUtils.isValidAddress(testnetAddress.address2), true);
       should.equal(testnetUtils.isValidAddress(testnetAddress.address3), false);
-      should.equal(testnetUtils.isValidAddress(testnetAddress.address4), true);
+      should.equal(testnetUtils.isValidAddress(testnetAddress.address4), false);
       should.equal(testnetUtils.isValidAddress('dfjk35y'), false);
       should.equal(testnetUtils.isValidAddress(undefined as unknown as string), false);
       should.equal(testnetUtils.isValidAddress(''), false);
