@@ -1350,7 +1350,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       throw new Error(
         `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
           `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
-          ` Gwei to perform recoveries. Try sending some MATIC to this address then retry.`
+          ` Gwei to perform recoveries. Try sending some funds to this address then retry.`
       );
     }
 
