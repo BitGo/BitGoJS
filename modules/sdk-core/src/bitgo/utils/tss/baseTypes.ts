@@ -388,6 +388,7 @@ export interface MPCTx {
     maxDuration?: number;
     commonKeychain?: string;
     lastScanIndex?: number;
+    isTokenTransaction?: boolean;
   };
 }
 

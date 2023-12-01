@@ -748,6 +748,7 @@ export class Sol extends BaseCoin {
 
     // check for possible token recovery, token assets must be recovered first
     const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey);
+    let isTokenTransaction = false;
     if (tokenAccounts.length !== 0) {
       // there exists token accounts on the given address, but need to check certain conditions:
       // 1. if there is a recoverable balance
@@ -766,6 +767,7 @@ export class Sol extends BaseCoin {
 
       if (recovereableTokenAccounts.length !== 0) {
         // there are recoverable token accounts, need to check if there is sufficient native solana to recover tokens
+        isTokenTransaction = true;
         const totalTokenFees = new BigNumber(totalFee).multipliedBy(new BigNumber(recovereableTokenAccounts.length));
         if (new BigNumber(balance).lt(totalTokenFees)) {
           throw Error('Did not find address with funds to recover');
@@ -915,10 +917,11 @@ export class Sol extends BaseCoin {
         coinName: output.coin ? output.coin : walletCoin,
       });
     }
-    const spendAmount = completedTransaction.inputs.length === 1 ? completedTransaction.inputs[0].value : 0;
+    // if it is a token(s) recovery txn, set spendAmount to fees paid by native asset
+    const spendAmount = isTokenTransaction ? totalFee : completedTransaction.inputs[0].value;
     const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
     const feeInfo = { fee: totalFee, feeString: new BigNumber(totalFee).toString() };
-    const coinSpecific = { commonKeychain: bitgoKey };
+    const coinSpecific = { commonKeychain: bitgoKey, isTokenTransaction };
     if (isUnsignedSweep) {
       const transaction: MPCTx = {
         serializedTx: serializedTx,

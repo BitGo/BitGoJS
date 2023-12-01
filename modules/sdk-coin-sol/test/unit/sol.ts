@@ -1689,6 +1689,7 @@ describe('SOL:', function () {
       unsignedSweepTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
       unsignedSweepTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('scanIndex');
       should.equal(unsignedSweepTxn.txRequests[0].transactions[0].unsignedTx.scanIndex, 0);
+      should.equal(unsignedSweepTxn.txRequests[0].transactions[0].unsignedTx.coinSpecific?.isTokenTransaction, false);
 
       const unsignedSweepTxnDeserialize = new Transaction(coin);
       unsignedSweepTxnDeserialize.fromRawTransaction(
@@ -1913,6 +1914,7 @@ describe('SOL:', function () {
       tokenTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
       tokenTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('scanIndex');
       should.equal(tokenTxn.txRequests[0].transactions[0].unsignedTx.scanIndex, 0);
+      should.equal(tokenTxn.txRequests[0].transactions[0].unsignedTx.coinSpecific?.isTokenTransaction, true);
 
       const tokenTxnDeserialize = new Transaction(coin);
       tokenTxnDeserialize.fromRawTransaction(tokenTxn.txRequests[0].transactions[0].unsignedTx.serializedTx);
