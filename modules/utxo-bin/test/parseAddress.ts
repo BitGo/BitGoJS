@@ -1,26 +1,14 @@
 import * as assert from 'assert';
-import * as crypto from 'crypto';
 import * as yargs from 'yargs';
-import { BIP32Interface } from 'bip32';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { cmdParseAddress, getAddressParser } from '../src/commands';
 import { formatTreeNoColor, getFixtureString } from './fixtures';
-
-type Triple<T> = [T, T, T];
-
-type KeyTriple = Triple<BIP32Interface>;
+import { getKeyTriple, KeyTriple } from './bip32.util';
 
 const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, ...scriptTypesSingleSig] as const;
 type ScriptType = (typeof scriptTypes)[number];
-
-function getKey(seed: string): BIP32Interface {
-  return utxolib.bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());
-}
-export function getKeyTriple(seed: string): KeyTriple {
-  return [getKey(seed + '.0'), getKey(seed + '.1'), getKey(seed + '.2')];
-}
 
 export function isSupportedDepositType(network: utxolib.Network, scriptType: ScriptType): boolean {
   if (scriptType === 'p2pkh') {

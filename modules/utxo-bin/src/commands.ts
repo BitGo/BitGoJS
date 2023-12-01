@@ -32,6 +32,7 @@ import {
   getRange,
   parseIndexRange,
 } from './generateAddress';
+import { parseXpub } from './bip32';
 
 type OutputFormat = 'tree' | 'json';
 
@@ -103,13 +104,12 @@ function getNetwork(argv: yargs.Arguments<{ network: string }>): utxolib.Network
   return getNetworkForName(argv.network);
 }
 
-function formatString(
-  parsed: ParserNode,
-  argv: yargs.Arguments<{
-    format: OutputFormat;
-    all: boolean;
-  }>
-): string {
+type FormatStringArgs = {
+  format: OutputFormat;
+  all: boolean;
+};
+
+function formatString(parsed: ParserNode, argv: yargs.Arguments<FormatStringArgs>): string {
   switch (argv.format) {
     case 'json':
       return JSON.stringify(parsed, null, 2);
@@ -373,5 +373,20 @@ export const cmdGenerateAddress = {
         console.log(formatAddressWithFormatString(address, argv.format));
       }
     }
+  },
+};
+
+export const cmdParseXpub = {
+  command: 'parseXpub [xpub]',
+  describe: 'show xpub info',
+  builder(b: yargs.Argv<unknown>): yargs.Argv<{ xpub: string; derive?: string } & FormatStringArgs> {
+    return b
+      .positional('xpub', { type: 'string', demandOption: true })
+      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
+      .option('all', { type: 'boolean', default: false })
+      .option('derive', { type: 'string', description: 'show xpub derived with path' });
+  },
+  handler(argv: yargs.Arguments<{ xpub: string; derive?: string } & FormatStringArgs>): void {
+    console.log(formatString(parseXpub(argv.xpub, { derive: argv.derive }), argv));
   },
 };
