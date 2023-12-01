@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface, bitgo, isTestnet } from '@bitgo/utxo-lib';
 import * as assert from 'assert';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
@@ -1442,12 +1442,34 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     };
   }
 
-  async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<any> {
-    if (buildParams.wallet.subType() === 'distributedCustody') {
-      return { txFormat: 'psbt' };
+  async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
+    txFormat?: 'legacy' | 'psbt';
+    addressType?: ScriptType2Of3;
+  }> {
+    let txFormat, addressType;
+
+    // if the txFormat is not specified, we need to default to psbt for distributed custody wallets or testnet hot wallets
+    if (
+      buildParams.txFormat === undefined &&
+      (buildParams.wallet.subType() === 'distributedCustody' ||
+        (isTestnet(this.network) && buildParams.wallet.type() === 'hot'))
+    ) {
+      txFormat = 'psbt';
     }
 
-    return {};
+    // if the addressType is not specified, we need to default to p2trMusig2 for testnet hot wallets for staged rollout of p2trMusig2
+    if (
+      buildParams.addressType === undefined &&
+      buildParams.wallet.type() === 'hot' &&
+      this.network === utxolib.networks.testnet
+    ) {
+      addressType = 'p2trMusig2';
+    }
+
+    return {
+      txFormat,
+      addressType,
+    };
   }
 
   preCreateBitGo(params: PrecreateBitGoOptions): void {
