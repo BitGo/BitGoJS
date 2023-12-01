@@ -1999,6 +1999,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BLUR
   ),
   erc20(
+    '76207650-917a-455e-b2f8-c9654a4d8d90',
+    'blz',
+    'Bluzelle',
+    18,
+    '0x5732046a883704404f284ce41ffadd5b007fd668',
+    UnderlyingAsset.BLZ
+  ),
+  erc20(
     '462e1878-68eb-4c2b-9346-cee992195cdc',
     'bnb',
     'BNB Token',
@@ -7891,6 +7899,14 @@ export const coins = CoinMap.fromCoins([
     'EURC'
   ),
   tronToken(
+    '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
+    'trx:btt',
+    'BitTorrent',
+    18,
+    'TAFjULxiVgT4qWk6UZwjqwZXTSaGaqnVp4',
+    UnderlyingAsset.BTT
+  ),
+  tronToken(
     '85d99eb6-84a1-4525-a9df-db82bcc21568',
     'trx:wbtc',
     'Tron Wrapped Bitcoin',
@@ -8674,6 +8690,22 @@ export const coins = CoinMap.fromCoins([
     '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe',
     UnderlyingAsset.RIF
   ),
+  terc20(
+    '23c7cdff-0a0d-4414-9cda-fb841344f712',
+    'tusdc',
+    'Goerli USDC',
+    6,
+    '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+    UnderlyingAsset.TUSDC
+  ),
+  terc20(
+    '891e4428-82b1-4970-8bad-a2cece698066',
+    'tusdt',
+    'Goerli USDT',
+    6,
+    '0xc2c527c0cacf457746bd31b2a698fe89de2b6d49',
+    UnderlyingAsset.TUSDT
+  ),
   tceloToken(
     'a7fb510c-de32-4cd5-9215-4e55c81d5489',
     'tcusd',
@@ -9088,6 +9120,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x48f88a3fe843ccb0b5003e70b4192c1d7448bef0',
     UnderlyingAsset['avaxc:cai']
+  ),
+  avaxErc20(
+    '55d38f23-ed66-43b8-838c-e9df316c0140',
+    'avaxc:tryb',
+    'BiLira',
+    6,
+    '0x564a341df6c126f90cf3ecb92120fd7190acb401',
+    UnderlyingAsset['avaxc:tryb']
   ),
   avaxErc20(
     '9db702af-2414-4926-a185-c9738e6a6d4b',
