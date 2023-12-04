@@ -103,7 +103,12 @@ export class Transaction extends BaseTransaction {
       }
     }
 
-    const orderHeader = TonWeb.Contract.createInternalMessageHeader(new TonWeb.Address(address), new BN(amount));
+    const orderHeader = TonWeb.Contract.createInternalMessageHeader(
+      new TonWeb.Address(address),
+      new BN(amount),
+      true,
+      false
+    );
     return TonWeb.Contract.createCommonMsgInfo(orderHeader, undefined, payloadCell);
   }
 

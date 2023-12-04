@@ -35,11 +35,11 @@ export const recipients: Recipient[] = [
 ];
 
 export const signedTransaction = {
-  tx: 'te6cckEBAgEAqQAB4YgBJAxo7vqHF++LJ4bC/kJ8A1uVRskrKlrKJZ8rIB0tF+gCadlSX+hPo2mmhZyi0p3zTVUYVRkcmrCm97cSUFSa2vzvCArM3APg+ww92r3IcklNjnzfKOgysJVQXiCvj9SAaU1NGLsotvRwAAAAMAAcAQBmYgAaRefBOjTi/hwqDjv+7I6nGj9WEAe3ls/rFuBEQvggr5zEtAAAAAAAAAAAAAAAAAAAYubM0w==',
-  txId: 'y+iVzzGrbY4kOjb2vMn2OF8ohOhm9oqdy3jVNKllaYQ=',
-  signable: 'nusaNm3wawi4hJ6K6H7copXZqpyB8SRTWr70EuBg/Xk=',
+  tx: 'te6cckEBAgEAsQAB4YgAQmy8N765HIcsCkExBYpKsfl7LUuXYW7MvV53d6EqWoADFgjyqp/3qccthFjfvskQ1XUeecHe8JVQ9DFGSmpwRovdPiRamZZ3PR2isMd1i5k+MdQCc9TCP/E5+rfkvMbYQU1NGLsruXHwAAAAgAAcAQB2QgB9Jzc15Nkj1GPyoSR0hIg9lzcoUjVC0MYRF1GRn2tVHpzEtAAAAAAAAAAAAAAAAAAAAAAAAHRlc3SUlVNc',
+  txId: '',
+  signable: 'q28coBQ7sbBBAR/hG4eUdDayLDsPC9FKQtA/lSYYaSQ=',
   recipient: {
-    address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+    address: 'EQD6Tm5rybJHqMflQkjpCRB7Lm5QpGqFoYwiLqMjPtaqPSdZ',
     amount: '10000000',
   },
 };

@@ -81,7 +81,7 @@ describe('TON:', function () {
       })) as TransactionExplanation;
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee'],
-        id: 'ZcCx+hBKx/AVqiaLkzXasR8jtH5F262IfJU6FuRY8F0=',
+        id: '9gEyvIsHrA79g8pmEP1EBtO8GlpZ98QnUveSYmEx6fc=',
         outputs: [
           {
             address: testData.signedTransaction.recipient.address,
@@ -117,14 +117,14 @@ describe('TON:', function () {
 
     const transferInputsResponse = [
       {
-        address: 'EQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Jpl',
+        address: 'EQAhNl4b31yOQ5YFIJiCxSVY_L2Wpcuwt2Zerzu70JUtQCRu',
         amount: '10000000',
       },
     ];
 
     const transferOutputsResponse = [
       {
-        address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+        address: 'EQD6Tm5rybJHqMflQkjpCRB7Lm5QpGqFoYwiLqMjPtaqPSdZ',
         amount: '10000000',
       },
     ];
