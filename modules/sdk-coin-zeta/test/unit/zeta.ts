@@ -89,7 +89,7 @@ describe('Zeta', function () {
       should.equal(utils.isValidAddress(address.address1), true);
       should.equal(utils.isValidAddress(address.address2), true);
       should.equal(utils.isValidAddress(address.address3), false);
-      should.equal(utils.isValidAddress(address.address4), true);
+      should.equal(utils.isValidAddress(address.address4), false);
       should.equal(utils.isValidAddress('dfjk35y'), false);
       should.equal(utils.isValidAddress(undefined as unknown as string), false);
       should.equal(utils.isValidAddress(''), false);

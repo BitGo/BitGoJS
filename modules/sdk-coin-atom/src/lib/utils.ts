@@ -6,7 +6,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { encodeSecp256k1Pubkey, encodeSecp256k1Signature } from '@cosmjs/amino';
-import { fromBase64, fromHex, toHex } from '@cosmjs/encoding';
+import { fromBase64, fromBech32, fromHex, toHex } from '@cosmjs/encoding';
 import {
   DecodedTxRaw,
   decodePubkey,
@@ -89,17 +89,32 @@ export class Utils implements BaseUtils {
    * @param {RegExp} regExp Regular expression to validate the root address against after trimming the memoId
    * @returns {boolean} true if address is valid
    */
-  isValidCosmosLikeAddressWithMemoId(address: string, regExp: RegExp): boolean {
+  protected isValidCosmosLikeAddressWithMemoId(address: string, regExp: RegExp): boolean {
     if (typeof address !== 'string') return false;
     const addressArray = address.split('?memoId=');
     if (
       ![1, 2].includes(addressArray.length) || // should have at most one occurrence of 'memoId='
-      !regExp.test(addressArray[0]) ||
+      !this.isValidBech32AddressMatchingRegex(addressArray[0], regExp) ||
       (addressArray[1] && !this.isValidMemoId(addressArray[1]))
     ) {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Checks if address is valid Bech32 and matches given regular expression
+   * @param {string} address
+   * @param {RegExp} regExp Regular expression to validate the address against
+   * @returns {boolean} true if address is valid
+   */
+  protected isValidBech32AddressMatchingRegex(address: string, regExp: RegExp): boolean {
+    try {
+      fromBech32(address);
+    } catch (e) {
+      return false;
+    }
+    return regExp.test(address);
   }
 
   /**
@@ -135,7 +150,7 @@ export class Utils implements BaseUtils {
    * @returns {boolean} - the validation result
    */
   isValidValidatorAddress(address: string): boolean {
-    return constants.validatorAddressRegex.test(address);
+    return this.isValidBech32AddressMatchingRegex(address, constants.validatorAddressRegex);
   }
 
   /**

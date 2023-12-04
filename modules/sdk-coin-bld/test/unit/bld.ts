@@ -72,9 +72,9 @@ describe('BLD', function () {
 
     it('should validate wallet receive address', async function () {
       const receiveAddress = {
-        address: 'agoric1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n?memoId=7',
+        address: 'agoric1tkfnp4khzd0f7mgtznwrvr0lv2at3p8c8sz89p?memoId=7',
         coinSpecific: {
-          rootAddress: 'agoric1yn3t8qujmtxjsnx7angjua3jhvkjxy5n5xgs0n',
+          rootAddress: 'agoric1tkfnp4khzd0f7mgtznwrvr0lv2at3p8c8sz89p',
           memoID: '7',
         },
       };
@@ -86,7 +86,7 @@ describe('BLD', function () {
       should.equal(utils.isValidAddress(address.address1), true);
       should.equal(utils.isValidAddress(address.address2), true);
       should.equal(utils.isValidAddress(address.address3), false);
-      should.equal(utils.isValidAddress(address.address4), true);
+      should.equal(utils.isValidAddress(address.address4), false);
       should.equal(utils.isValidAddress('dfjk35y'), false);
       should.equal(utils.isValidAddress(undefined as unknown as string), false);
       should.equal(utils.isValidAddress(''), false);

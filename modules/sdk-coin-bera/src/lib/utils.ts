@@ -13,7 +13,7 @@ export class BeraUtils extends CosmosUtils {
 
   /** @inheritdoc */
   isValidValidatorAddress(address: string): boolean {
-    return constants.validatorAddressRegex.test(address);
+    return this.isValidBech32AddressMatchingRegex(address, constants.validatorAddressRegex);
   }
 
   /** @inheritdoc */
