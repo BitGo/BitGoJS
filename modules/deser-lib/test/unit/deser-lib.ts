@@ -4,7 +4,7 @@ import * as fixtures from '../fixtures.json';
 describe('deser-lib', function () {
   describe('transform', function () {
     it('orders object properties canonically', function () {
-      const res = transform({ b: 'second', a: 'first' });
+      const res = transform({ b: 'second', a: 'first' }) as any;
       const properties = Object.getOwnPropertyNames(res);
       properties[0].should.equal('a');
       properties[1].should.equal('b');
@@ -14,40 +14,81 @@ describe('deser-lib', function () {
 
     describe('canonical ordering', function () {
       it('orders by weight', function () {
-        const res = transform([{ weight: 2 }, { weight: 1 }]);
+        const res = transform([
+          { weight: 2, value: null },
+          { weight: 1, value: null },
+        ]) as any;
         res[0].weight.should.equal(1);
         res[1].weight.should.equal(2);
+      });
+
+      it('groups equal elements', function () {
+        const res = transform([
+          {
+            weight: 2,
+            value: 'b',
+          },
+          {
+            weight: 1,
+            value: 'a',
+          },
+          {
+            weight: 3,
+            value: 'c',
+          },
+          {
+            weight: 2,
+            value: 'b',
+          },
+        ]) as any;
+        res[0].weight.should.equal(1);
+        res[1].weight.should.equal(2);
+        res[2].weight.should.equal(2);
+        res[3].weight.should.equal(3);
       });
 
       it('orders number values', function () {
         const res = transform([
           { weight: 1, value: 2 },
           { weight: 1, value: 1 },
-        ]);
+        ]) as any;
         res[0].value.should.equal(1);
         res[1].value.should.equal(2);
       });
 
       it('orders string values', function () {
         const res = transform([
-          { weight: 1, value: 'b' },
-          { weight: 1, value: 'a' },
-        ]);
-        res[0].value.should.equal('a');
-        res[1].value.should.equal('b');
+          { weight: 1, value: 'ab' },
+          { weight: 1, value: 'aa' },
+        ]) as any;
+        res[0].value.should.equal('aa');
+        res[1].value.should.equal('ab');
       });
 
       it('orders byte values', function () {
         const res = transform([
           { weight: 1, value: '0x0b' },
           { weight: 1, value: '0x0a' },
-        ]);
+        ]) as any;
         res[0].value.equals(Buffer.from([0x0a])).should.equal(true);
         res[1].value.equals(Buffer.from([0x0b])).should.equal(true);
       });
 
+      it('orders string values of different lengths', function () {
+        const res = transform([
+          { weight: 1, value: 'ab' },
+          { weight: 1, value: 'a' },
+        ]) as any;
+        res[0].value.should.equal('a');
+        res[1].value.should.equal('ab');
+      });
+
       it('throws for elements without weight', function () {
         (() => transform([{}, {}])).should.throw();
+      });
+
+      it('throws for elements without value', function () {
+        (() => transform([{ weight: 1 }, { weight: 1 }])).should.throw();
       });
 
       it('throws for values that cannot be compared', function () {
@@ -55,6 +96,11 @@ describe('deser-lib', function () {
           transform([
             { weight: 1, value: {} },
             { weight: 1, value: 1 },
+          ])).should.throw();
+        (() =>
+          transform([
+            { weight: 1, value: undefined },
+            { weight: 1, value: null },
           ])).should.throw();
       });
 
@@ -67,21 +113,26 @@ describe('deser-lib', function () {
       });
     });
 
+    it('preserves null values', function () {
+      const res = transform({ value: null }) as any;
+      res.should.have.property('value').which.is.null();
+    });
+
     it('replaces prefixed hex strings with Buffers', function () {
       const hex = '00010203';
-      const res = transform({ value: '0x' + hex });
+      const res = transform({ value: '0x' + hex }) as any;
       Buffer.isBuffer(res.value).should.equal(true);
       res.value.equals(Buffer.from(hex, 'hex')).should.equal(true);
     });
 
     it('preserves non-prefixed hex strings', function () {
       const string = '00010203';
-      const res = transform({ value: string });
+      const res = transform({ value: string }) as any;
       res.value.should.equal(string);
     });
 
     it('transforms object recursively', function () {
-      const res = transform({ value: { b: 'second', a: 'first' } });
+      const res = transform({ value: { b: 'second', a: 'first' } }) as any;
       const properties = Object.getOwnPropertyNames(res.value);
       properties[0].should.equal('a');
       properties[1].should.equal('b');
@@ -90,18 +141,22 @@ describe('deser-lib', function () {
     });
 
     it('transforms array recursively', function () {
-      const res = transform([{ weight: 0, value: { b: 'second', a: 'first' } }]);
+      const res = transform([{ weight: 0, value: { b: 'second', a: 'first' } }]) as any;
       const properties = Object.getOwnPropertyNames(res[0].value);
       properties[0].should.equal('a');
       properties[1].should.equal('b');
       res[0].value.a.should.equal('first');
       res[0].value.b.should.equal('second');
     });
+
+    it('throws for invalid hex strings', function () {
+      (() => transform('0x0g')).should.throw();
+    });
   });
 
   describe('untransform', function () {
     it('untransforms object', function () {
-      const res = untransform({ a: 'first', b: 'second' });
+      const res = untransform({ a: 'first', b: 'second' }) as any;
       const properties = Object.getOwnPropertyNames(res);
       properties[0].should.equal('a');
       properties[1].should.equal('b');
@@ -119,25 +174,25 @@ describe('deser-lib', function () {
 
     it('replaces Buffers with prefixed hex strings', function () {
       const hex = '00010203';
-      const res = untransform({ value: Buffer.from(hex, 'hex') });
+      const res = untransform({ value: Buffer.from(hex, 'hex') }) as any;
       res.value.should.equal('0x' + hex);
     });
 
     it('preserves non-prefixed hex strings', function () {
       const string = '00010203';
-      const res = untransform({ value: string });
+      const res = untransform({ value: string }) as any;
       res.value.should.equal(string);
     });
 
     it('untransforms object recursively', function () {
       const hex = '00010203';
-      const res = untransform({ value: { value: Buffer.from(hex, 'hex') } });
+      const res = untransform({ value: { value: Buffer.from(hex, 'hex') } }) as any;
       res.value.value.should.equal('0x' + hex);
     });
 
     it('untransforms array recursively', function () {
       const hex = '00010203';
-      const res = untransform([{ value: Buffer.from(hex, 'hex'), weight: 0 }]);
+      const res = untransform([{ value: Buffer.from(hex, 'hex'), weight: 0 }]) as any;
       res[0].value.should.equal('0x' + hex);
     });
   });
