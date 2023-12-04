@@ -1719,6 +1719,10 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
       } catch (e) {
         throw new Error('Unable to decrypt user keychain');
       }
+
+      if (keychain.xpub && bip32.fromBase58(keychain.xprv).neutered().toBase58() !== keychain.xpub) {
+        throw new Error('derived xpub does not match stored xpub');
+      }
       return keychain;
     });
   }
