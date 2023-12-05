@@ -237,7 +237,6 @@ export class BitGoAPI implements BitGoBase {
     const supportedApiTokens = [
       'etherscanApiToken',
       'polygonscanApiToken',
-      'snowtraceApiToken',
       'arbiscanApiToken',
       'optimisticEtherscanApiToken',
     ];

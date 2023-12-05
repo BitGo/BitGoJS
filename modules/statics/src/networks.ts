@@ -166,8 +166,8 @@ class AvalancheC extends Mainnet implements AccountNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
   name = 'AvalancheC';
   family = CoinFamily.AVAXC;
-  explorerUrl = 'https://snowtrace.io/tx/';
-  accountExplorerUrl = 'https://snowtrace.io/address/';
+  explorerUrl = 'https://subnets.avax.network/c-chain/tx/';
+  accountExplorerUrl = 'https://subnets.avax.network/c-chain/address/';
   chainId = 43114;
 }
 
@@ -175,8 +175,8 @@ class AvalancheCTestnet extends Testnet implements AccountNetwork {
   // https://docs.avax.network/build/tutorials/smart-contracts/deploy-a-smart-contract-on-avalanche-using-remix-and-metamask#avalanche-mainnet-settings
   name = 'AvalancheCTestnet';
   family = CoinFamily.AVAXC;
-  explorerUrl = 'https://testnet.snowtrace.io/tx/';
-  accountExplorerUrl = 'https://testnet.snowtrace.io/address/';
+  explorerUrl = 'https://subnets-test.avax.network/c-chain/tx/';
+  accountExplorerUrl = 'https://subnets-test.avax.network/c-chain/address/';
   chainId = 43113;
 }
 
