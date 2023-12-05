@@ -141,76 +141,13 @@ export const recoveryUsers = {
   coldWalletRecoveryUser,
 };
 
-const addressNonceResponse1 = {
-  status: '0',
-  message: 'No transactions found',
-  result: [],
-};
+const addressNonceResponse1 = { jsonrpc: '2.0', id: 1, result: '0x0' };
 
-const addressNonceResponse2 = {
-  status: '1',
-  message: 'OK',
-  result: [
-    {
-      blockNumber: '27139350',
-      timeStamp: '1698339817',
-      hash: '0x7dff6ba726df2d88022f7e26b6bb88253b19b50c9096e479742dcf01ea30a1a4',
-      nonce: '0',
-      blockHash: '0x97cf3e28e86e2909996c0e5bccc57aa46bb15dbe06d2dd880dcb8c6a650005b7',
-      transactionIndex: '0',
-      from: '0xee433c84a778e74b6af4c627c8c739b71b11b8d9',
-      to: '0xfe0340c352dd6807f61fa57ba2b4c3fa21b01ec0',
-      value: '0',
-      gas: '500000',
-      gasPrice: '30000000000',
-      isError: '0',
-      txreceipt_status: '1',
-      input:
-        '0x0dcd7a6c000000000000000000000000e93f3fb23419b3b2e9b3edcfa79c94ad1d84b3810000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000b9d5d9136855f6fec3c0993fee6e9ce8a297846000000000000000000000000000000000000000000000000000000006543d600000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004132a881d1ad3ba1be799c75d45a1ce9503f607f0eba738e221810af7acc86b810116eebe2dcd0ed83ec25722d239b2104435f27901e6681c396d30e65f5bc36de1b00000000000000000000000000000000000000000000000000000000000000',
-      contractAddress: '',
-      cumulativeGasUsed: '100924',
-      gasUsed: '100924',
-      confirmations: '500',
-      methodId: '0x0dcd7a6c',
-      functionName: '',
-    },
-    {
-      blockNumber: '27139407',
-      timeStamp: '1698339962',
-      hash: '0xaf843a012e814e13cefa451d876851019ad91bca199a9eee2208c6d4fd0f4496',
-      nonce: '1',
-      blockHash: '0xc4ef44536185511c13e5d59bd083f347f5c06811dc9a0bbee94e1d015d219b8e',
-      transactionIndex: '0',
-      from: '0xee433c84a778e74b6af4c627c8c739b71b11b8d9',
-      to: '0xfe0340c352dd6807f61fa57ba2b4c3fa21b01ec0',
-      value: '0',
-      gas: '500000',
-      gasPrice: '30000000000',
-      isError: '0',
-      txreceipt_status: '1',
-      input:
-        '0x39125215000000000000000000000000e93f3fb23419b3b2e9b3edcfa79c94ad1d84b3810000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000006543d6ae000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041ee83c22815fd8e015321b3fbd463799aa092c942ca2cbf6f8fefb936dde0a6f670381934f9d3f7506aead0438fcd53ef686905cc963d42de49e0261bd15a105e1b00000000000000000000000000000000000000000000000000000000000000',
-      contractAddress: '',
-      cumulativeGasUsed: '99542',
-      gasUsed: '99542',
-      confirmations: '443',
-      methodId: '0x39125215',
-      functionName: '',
-    },
-  ],
-};
+const addressNonceResponse2 = { jsonrpc: '2.0', id: 1, result: '0x2' };
 
-const backupAddressBalanceResponse = {
-  status: '1',
-  message: 'OK',
-  result: '43986020000000000',
-};
+const backupAddressBalanceResponse = { jsonrpc: '2.0', id: 1, result: '0x9c450d592ee800' };
 
-const addressTokenBalanceResponse = {
-  status: '1',
-  message: 'OK',
-  result: '1500000000000000000',
-};
+const addressTokenBalanceResponse = { jsonrpc: '2.0', id: 1, result: '0x14d1120d7b160000' };
 
 const sequenceIdResponse1 = {
   jsonrpc: '2.0',

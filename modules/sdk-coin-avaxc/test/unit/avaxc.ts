@@ -6,13 +6,14 @@ import * as secp256k1 from 'secp256k1';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as nock from 'nock';
 import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
-import { Eth } from '@bitgo/sdk-coin-eth';
+import { Eth, optionalDeps } from '@bitgo/sdk-coin-eth';
 import { AvaxSignTransactionOptions } from '../../src/iface';
 import * as should from 'should';
 import { EXPORT_C, IMPORT_C, endpointResponses, recoveryUsers } from '../resources/avaxc';
 import { TavaxP } from '@bitgo/sdk-coin-avaxp';
 import { decodeTransaction, parseTransaction, walletSimpleABI } from './helpers';
 import * as sinon from 'sinon';
+import { BN } from 'ethereumjs-util';
 
 nock.enableNetConnect();
 
@@ -64,7 +65,6 @@ describe('Avalanche C-Chain', function () {
     bitgo.safeRegister('teth', Eth.createInstance);
     bitgo.safeRegister('tavaxp', TavaxP.createInstance);
     common.Environments[bitgo.getEnv()].hsmXpub = bitgoXpub;
-    common.Environments[bitgo.getEnv()].snowtraceApiToken = 'A3NFH1QQEW85R3KK1SJ9KN39RI7T5CB7AX';
     bitgo.initializeTestVars();
   });
 
@@ -817,9 +817,152 @@ describe('Avalanche C-Chain', function () {
 
   // TODO(BG-56136): move to modules/bitgo/test/v2/integration/coins/avaxc.ts
   describe('Recovery', function () {
+    // contract address for 'tavaxc:link'
+    const tokenContractAddress = '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846';
+    const sequenceIdData = '0xa0b7967b';
+    const sandBox = sinon.createSandbox();
+    beforeEach(function () {
+      const callBack = sandBox.stub(AvaxC.prototype, 'recoveryBlockchainExplorerQuery' as keyof AvaxC);
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getTransactionCount',
+          params: ['0xdfd95d01fc9c2cb744e2852256385bbe6d87b72b', 'latest'],
+          id: 1,
+        })
+        .resolves({ jsonrpc: '2.0', id: 1, result: '0x0' });
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getTransactionCount',
+          params: ['0x29d97ce344599825220a54a4bdf7b8aa7ca14fd1', 'latest'],
+          id: 1,
+        })
+        .resolves({ jsonrpc: '2.0', id: 1, result: '0x7' });
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getBalance',
+          params: ['0xdfd95d01fc9c2cb744e2852256385bbe6d87b72b', 'latest'],
+          id: 1,
+        })
+        .resolves({ jsonrpc: '2.0', id: 1, result: '0x0' });
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getBalance',
+          params: ['0x29d97ce344599825220a54a4bdf7b8aa7ca14fd1', 'latest'],
+          id: 1,
+        })
+        .resolves({ jsonrpc: '2.0', id: 1, result: '0x315f8cb9bc2ec00' });
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getBalance',
+          params: ['0xe0b1fe098050f2745b450de419b5cafc7e826699', 'latest'],
+          id: 1,
+        })
+        .resolves({ jsonrpc: '2.0', id: 1, result: '0x0' });
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_call',
+          params: [{ to: '0xe0b1fe098050f2745b450de419b5cafc7e826699', data: '0xa0b7967b' }, 'latest'],
+          id: 1,
+        })
+        .resolves({
+          jsonrpc: '2.0',
+          id: 1,
+          result: '0x000000000000000000000000000000000000000000000000000000000000000f',
+        });
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getTransactionCount',
+          params: [recoveryUsers.hotWalletRecoveryUser.backupKeyAddress, 'latest'],
+          id: 1,
+        })
+        .resolves(endpointResponses.addressNonceResponse1);
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getTransactionCount',
+          params: [recoveryUsers.coldWalletRecoveryUser.backupKeyAddress, 'latest'],
+          id: 1,
+        })
+        .resolves(endpointResponses.addressNonceResponse2);
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getBalance',
+          params: [recoveryUsers.hotWalletRecoveryUser.backupKeyAddress, 'latest'],
+          id: 1,
+        })
+        .resolves(endpointResponses.backupAddressBalanceResponse);
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_getBalance',
+          params: [recoveryUsers.coldWalletRecoveryUser.backupKeyAddress, 'latest'],
+          id: 1,
+        })
+        .resolves(endpointResponses.backupAddressBalanceResponse);
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_call',
+          params: [
+            {
+              to: tokenContractAddress,
+              data: optionalDeps.ethAbi
+                .simpleEncode('balanceOf(address)', recoveryUsers.hotWalletRecoveryUser.walletContractAddress)
+                .toString('hex'),
+            },
+            'latest',
+          ],
+          id: 1,
+        })
+        .resolves(endpointResponses.addressTokenBalanceResponse);
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_call',
+          params: [
+            {
+              to: tokenContractAddress,
+              data: optionalDeps.ethAbi
+                .simpleEncode('balanceOf(address)', recoveryUsers.coldWalletRecoveryUser.walletContractAddress)
+                .toString('hex'),
+            },
+            'latest',
+          ],
+          id: 1,
+        })
+        .resolves(endpointResponses.addressTokenBalanceResponse);
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_call',
+          params: [{ to: recoveryUsers.hotWalletRecoveryUser.walletContractAddress, data: sequenceIdData }, 'latest'],
+          id: 1,
+        })
+        .resolves(endpointResponses.sequenceIdResponse1);
+      callBack
+        .withArgs({
+          jsonrpc: '2.0',
+          method: 'eth_call',
+          params: [{ to: recoveryUsers.coldWalletRecoveryUser.walletContractAddress, data: sequenceIdData }, 'latest'],
+          id: 1,
+        })
+        .resolves(endpointResponses.sequenceIdResponse2);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
     describe('Non-BitGo', async function () {
-      // TODO(EA-2329): Fix this test
-      xit('should error when the backup key is unfunded (cannot pay gas)', async function () {
+      it('should error when the backup key is unfunded (cannot pay gas)', async function () {
         await tavaxCoin
           .recover({
             userKey:
@@ -842,8 +985,7 @@ describe('Avalanche C-Chain', function () {
           );
       });
 
-      // TODO(EA-2329): Fix this test
-      xit('should build recovery tx', async function () {
+      it('should build recovery tx', async function () {
         const recovery = await tavaxCoin.recover({
           userKey:
             '{"iv":"o27pBl7IP+ibe39xYg/cXg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
@@ -885,8 +1027,7 @@ describe('Avalanche C-Chain', function () {
       const recoveryDestination = '0x94b51ebb8c3b90404ad262f42c1588bd94242ecb';
       const gasPrice = '25000000000';
 
-      // TODO(EA-2329): fix this test
-      xit('should build unsigned sweep tx', async function () {
+      it('should build unsigned sweep tx', async function () {
         const recovery = await tavaxCoin.recover({
           userKey: userXpub,
           backupKey: backupXpub,
@@ -909,8 +1050,7 @@ describe('Avalanche C-Chain', function () {
         recovery.walletContractAddress.should.equal(walletContractAddress);
       });
 
-      // TODO(EA-2329): Fix this test
-      xit('should add a second signature', async function () {
+      it('should add a second signature', async function () {
         const recovery = await tavaxCoin.recover({
           userKey: userXpub,
           backupKey: backupXpub,
@@ -969,78 +1109,6 @@ describe('Avalanche C-Chain', function () {
       // contract address for 'tavaxc:link'
       const tokenContractAddress = '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846';
       const tokenName = 'tavaxc:link';
-      const sequenceIdData = 'a0b7967b';
-      const sandBox = sinon.createSandbox();
-
-      beforeEach(function () {
-        const callBack = sandBox.stub(AvaxC.prototype, 'recoveryBlockchainExplorerQuery' as keyof AvaxC);
-        callBack
-          .withArgs({
-            module: 'account',
-            action: 'txlist',
-            address: recoveryUsers.hotWalletRecoveryUser.backupKeyAddress,
-          })
-          .resolves(endpointResponses.addressNonceResponse1);
-        callBack
-          .withArgs({
-            module: 'account',
-            action: 'txlist',
-            address: recoveryUsers.coldWalletRecoveryUser.backupKeyAddress,
-          })
-          .resolves(endpointResponses.addressNonceResponse2);
-        callBack
-          .withArgs({
-            module: 'account',
-            action: 'balance',
-            address: recoveryUsers.hotWalletRecoveryUser.backupKeyAddress,
-          })
-          .resolves(endpointResponses.backupAddressBalanceResponse);
-        callBack
-          .withArgs({
-            module: 'account',
-            action: 'balance',
-            address: recoveryUsers.coldWalletRecoveryUser.backupKeyAddress,
-          })
-          .resolves(endpointResponses.backupAddressBalanceResponse);
-        callBack
-          .withArgs({
-            module: 'account',
-            action: 'tokenbalance',
-            address: recoveryUsers.hotWalletRecoveryUser.walletContractAddress,
-            contractaddress: tokenContractAddress,
-          })
-          .resolves(endpointResponses.addressTokenBalanceResponse);
-        callBack
-          .withArgs({
-            module: 'account',
-            action: 'tokenbalance',
-            address: recoveryUsers.coldWalletRecoveryUser.walletContractAddress,
-            contractaddress: tokenContractAddress,
-          })
-          .resolves(endpointResponses.addressTokenBalanceResponse);
-        callBack
-          .withArgs({
-            module: 'proxy',
-            action: 'eth_call',
-            to: recoveryUsers.hotWalletRecoveryUser.walletContractAddress,
-            data: sequenceIdData,
-            tag: 'latest',
-          })
-          .resolves(endpointResponses.sequenceIdResponse1);
-        callBack
-          .withArgs({
-            module: 'proxy',
-            action: 'eth_call',
-            to: recoveryUsers.coldWalletRecoveryUser.walletContractAddress,
-            data: sequenceIdData,
-            tag: 'latest',
-          })
-          .resolves(endpointResponses.sequenceIdResponse2);
-      });
-
-      afterEach(function () {
-        sandBox.restore();
-      });
 
       it('should build token recovery tx', async function () {
         const params = {
@@ -1064,11 +1132,15 @@ describe('Avalanche C-Chain', function () {
         tx.toBroadcastFormat().should.not.be.empty();
         tx.inputs.should.not.be.empty();
         tx.inputs[0].address.should.equal(recoveryUsers.hotWalletRecoveryUser.walletContractAddress);
-        tx.inputs[0].value.should.equal(endpointResponses.addressTokenBalanceResponse.result);
+        tx.inputs[0].value.should.equal(
+          new BN(endpointResponses.addressTokenBalanceResponse.result.slice(2), 16).toString(10)
+        );
         tx.inputs[0].coin?.should.equal(tokenName);
         tx.outputs.should.not.be.empty();
         tx.outputs[0].address.should.equal(destAddr);
-        tx.outputs[0].value.should.equal(endpointResponses.addressTokenBalanceResponse.result);
+        tx.outputs[0].value.should.equal(
+          new BN(endpointResponses.addressTokenBalanceResponse.result.slice(2), 16).toString(10)
+        );
         tx.outputs[0].coin?.should.equal(tokenName);
       });
 
@@ -1089,7 +1161,7 @@ describe('Avalanche C-Chain', function () {
         const txBuilder = tavaxCoin.getTransactionBuilder() as TransactionBuilder;
         txBuilder.from(recoveryTxn.txHex);
         const tx = await txBuilder.build();
-        const recoveryAmount = endpointResponses.addressTokenBalanceResponse.result;
+        const recoveryAmount = new BN(endpointResponses.addressTokenBalanceResponse.result.slice(2), 16).toString(10);
         tx.toBroadcastFormat().should.not.be.empty();
         tx.inputs.should.not.be.empty();
         tx.inputs[0].address.should.equal(recoveryUsers.coldWalletRecoveryUser.walletContractAddress);
@@ -1098,7 +1170,9 @@ describe('Avalanche C-Chain', function () {
         tx.inputs[0].coin?.should.equal(tokenName);
         tx.outputs.should.not.be.empty();
         tx.outputs[0].address.should.equal(destAddr);
-        tx.outputs[0].value.should.equal(endpointResponses.addressTokenBalanceResponse.result);
+        tx.outputs[0].value.should.equal(
+          new BN(endpointResponses.addressTokenBalanceResponse.result.slice(2), 16).toString(10)
+        );
         tx.outputs[0].should.have.property('coin');
         tx.outputs[0].coin?.should.equal(tokenName);
 

@@ -12,8 +12,7 @@ interface EnvironmentTemplate {
   btcExplorerBaseUrl: string;
   etherscanBaseUrl: string;
   etherscanApiToken?: string;
-  snowtraceBaseUrl: string;
-  snowtraceApiToken?: string;
+  avaxcNetworkBaseUrl: string;
   eth2ExplorerBaseUrl: string;
   ethwFullNodeRPCBaseUrl: string;
   polygonscanBaseUrl?: string;
@@ -100,8 +99,7 @@ const mainnetBase: EnvironmentTemplate = {
   btcExplorerBaseUrl: 'https://blockstream.info/api',
   etherscanBaseUrl: 'https://api.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
-  snowtraceBaseUrl: 'https://api.snowtrace.io',
-  snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
+  avaxcNetworkBaseUrl: 'https://api.avax.network',
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwFullNodeRPCBaseUrl: 'https://mainnet.ethereumpow.org',
   polygonscanBaseUrl: 'https://api.polygonscan.com',
@@ -141,8 +139,7 @@ const testnetBase: EnvironmentTemplate = {
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   etherscanBaseUrl: 'https://api-goerli.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
-  snowtraceBaseUrl: 'https://api-testnet.snowtrace.io',
-  snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
+  avaxcNetworkBaseUrl: 'https://api.avax-test.network',
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwFullNodeRPCBaseUrl: 'https://mainnet.ethereumpow.org',
   polygonscanBaseUrl: 'https://api-testnet.polygonscan.com',
@@ -217,8 +214,7 @@ export const Environments: Environments = {
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
     etherscanBaseUrl: 'https://api-goerli.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
-    snowtraceApiToken: process.env.SNOWTRACE_API_TOKEN,
-    snowtraceBaseUrl: 'https://api-testnet.snowtrace.fakeurl',
+    avaxcNetworkBaseUrl: 'https://api.avax-test.network.fakeurl',
     eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   }),
   adminProd: Object.assign({}, mainnetBase, {

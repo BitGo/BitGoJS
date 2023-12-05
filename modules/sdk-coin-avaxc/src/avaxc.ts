@@ -37,7 +37,7 @@ import {
 import { isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 import request from 'superagent';
-import { pubToAddress } from 'ethereumjs-util';
+import { BN, pubToAddress } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
 import {
   AvaxSignTransactionOptions,
@@ -299,23 +299,21 @@ export class AvaxC extends BaseCoin {
   }
 
   /**
-   * Make a query to Snowtrace for information such as balance, token balance, solidity calls
+   * Make a query to avax.network for information such as balance, token balance, solidity calls
    * @param {Object} query — key-value pairs of parameters to append after /api
-   * @returns {Promise<Object>} response from Snowtrace
+   * @returns {Promise<Object>} response from avax.network
    */
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<any> {
-    const token = common.Environments[this.bitgo.getEnv()].snowtraceApiToken;
-    if (token) {
-      query.apikey = token;
-    }
-    const response = await request.get(common.Environments[this.bitgo.getEnv()].snowtraceBaseUrl + '/api').query(query);
+  async recoveryBlockchainExplorerQuery(query: Record<string, any>): Promise<any> {
+    const response = await request
+      .post(common.Environments[this.bitgo.getEnv()].avaxcNetworkBaseUrl + '/ext/bc/C/rpc')
+      .send(query);
 
     if (!response.ok) {
-      throw new Error('could not reach Snowtrace');
+      throw new Error('could not reach avax.network');
     }
 
     if (response.body.status === '0' && response.body.message === 'NOTOK') {
-      throw new Error('Snowtrace rate limit reached');
+      throw new Error('avax.network rate limit reached');
     }
     return response.body;
   }
@@ -328,64 +326,67 @@ export class AvaxC extends BaseCoin {
    */
   async getAddressNonce(address: string): Promise<number> {
     // Get nonce for backup key (should be 0)
-    let nonce = 0;
-
     const result = await this.recoveryBlockchainExplorerQuery({
-      module: 'account',
-      action: 'txlist',
-      address,
+      jsonrpc: '2.0',
+      method: 'eth_getTransactionCount',
+      params: [address, 'latest'],
+      id: 1,
     });
-    if (!result || !Array.isArray(result.result)) {
-      throw new Error('Unable to find next nonce from Snowtrace, got: ' + JSON.stringify(result));
+    if (!result || isNaN(result.result)) {
+      throw new Error('Unable to find next nonce from avax.network, got: ' + JSON.stringify(result));
     }
-    const backupKeyTxList = result.result;
-    if (backupKeyTxList.length > 0) {
-      // Calculate last nonce used
-      const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
-      nonce = outgoingTxs.length;
-    }
-    return nonce;
+    const nonceHex = result.result;
+    return new optionalDeps.ethUtil.BN(nonceHex.slice(2), 16).toNumber();
   }
 
   /**
-   * Queries Snowtrace for the balance of an address
+   * Queries avax.network for the balance of an address
    * @param {string} address - the AVAXC address
    * @returns {Promise<BigNumber>} address balance
    */
-  async queryAddressBalance(address: string): Promise<any> {
+  async queryAddressBalance(address: string): Promise<BN> {
     const result = await this.recoveryBlockchainExplorerQuery({
-      module: 'account',
-      action: 'balance',
-      address: address,
+      jsonrpc: '2.0',
+      method: 'eth_getBalance',
+      params: [address, 'latest'],
+      id: 1,
     });
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
-      throw new Error(`Could not obtain address balance for ${address} from Snowtrace, got: ${result.result}`);
+      throw new Error(`Could not obtain address balance for ${address} from avax.network, got: ${result.result}`);
     }
-    return new optionalDeps.ethUtil.BN(result.result, 10);
+    const nativeBalanceHex = result.result;
+    return new optionalDeps.ethUtil.BN(nativeBalanceHex.slice(2), 16);
   }
 
   /**
-   * Queries Snowtrace for the token balance of an address
+   * Queries avax.network for the token balance of an address
    * @param {string} address - the AVAXC address
    * @returns {Promise<BigNumber>} address balance
    */
-  async queryAddressTokenBalance(address: string, contractAddress: string): Promise<any> {
+  async queryAddressTokenBalance(address: string, contractAddress: string): Promise<BN> {
     const result = await this.recoveryBlockchainExplorerQuery({
-      module: 'account',
-      action: 'tokenbalance',
-      address: address,
-      contractaddress: contractAddress,
+      jsonrpc: '2.0',
+      method: 'eth_call',
+      params: [
+        {
+          to: contractAddress,
+          data: optionalDeps.ethAbi.simpleEncode('balanceOf(address)', address).toString('hex'),
+        },
+        'latest',
+      ],
+      id: 1,
     });
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
-      throw new Error(`Could not obtain address token balance for ${address} from Snowtrace, got: ${result.result}`);
+      throw new Error(`Could not obtain address token balance for ${address} from avax.network, got: ${result.result}`);
     }
-    return new optionalDeps.ethUtil.BN(result.result, 10);
+    const tokenBalanceHex = result.result;
+    return new optionalDeps.ethUtil.BN(tokenBalanceHex.slice(2), 16);
   }
 
   /**
-   * Queries the contract (via Snowtrace) for the next sequence ID
+   * Queries the contract (via avax.network) for the next sequence ID
    * @param {string} address - address of the contract
    * @returns {Promise<number>} sequence ID
    */
@@ -394,15 +395,15 @@ export class AvaxC extends BaseCoin {
     const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
     const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
     const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
+    const sequenceIdDataHex = optionalDeps.ethUtil.addHexPrefix(sequenceIdData);
     const result = await this.recoveryBlockchainExplorerQuery({
-      module: 'proxy',
-      action: 'eth_call',
-      to: address,
-      data: sequenceIdData,
-      tag: 'latest',
+      jsonrpc: '2.0',
+      method: 'eth_call',
+      params: [{ to: address, data: sequenceIdDataHex }, 'latest'],
+      id: 1,
     });
     if (!result || !result.result) {
-      throw new Error('Could not obtain sequence ID from Snowtrace, got: ' + result.result);
+      throw new Error('Could not obtain sequence ID from avax.network, got: ' + result.result);
     }
     const sequenceIdHex = result.result;
     return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
@@ -642,7 +643,9 @@ export class AvaxC extends BaseCoin {
     const weiToGwei = 10 ** 9;
     if (backupKeyBalance.lt(totalGasNeeded)) {
       throw new Error(
-        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+        `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance
+          .div(new BN(weiToGwei))
+          .toString()} Gwei.` +
           `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
           ` Gwei to perform recoveries. Try sending some AVAX to this address then retry.`
       );
@@ -666,7 +669,7 @@ export class AvaxC extends BaseCoin {
     ];
 
     // Get sequence ID using contract call
-    // we need to wait between making two snowtrace calls to avoid getting banned
+    // we need to wait between making two avax.network calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const sequenceId = await this.querySequenceId(params.walletContractAddress);
 
