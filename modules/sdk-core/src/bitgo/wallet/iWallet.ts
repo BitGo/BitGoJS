@@ -59,6 +59,24 @@ export interface BuildTokenEnablementOptions extends PrebuildTransactionOptions 
   enableTokens: TokenEnablement[];
 }
 
+type BaseBalance = {
+  balanceString: string;
+  confirmedBalanceString: string;
+  spendableBalanceString: string;
+};
+
+export type NftBalance = BaseBalance & {
+  type: string;
+  metadata: {
+    name: string;
+    tokenContractAddress: string;
+  };
+  collections: {
+    // map tokenId to balance of token
+    [tokenId: string]: number;
+  };
+};
+
 export type ApiVersion = 'lite' | 'full';
 
 export interface PrebuildTransactionOptions {
@@ -563,6 +581,8 @@ export interface WalletData {
   type?: WalletType;
   subType?: SubWalletType;
   tokens?: Record<string, any>[];
+  nfts?: { [contractAddressOrToken: string]: NftBalance };
+  unsupportedNfts?: { [contractAddress: string]: NftBalance };
 }
 
 export interface RecoverTokenOptions {
@@ -635,6 +655,8 @@ export interface IWallet {
   balanceString(): string;
   confirmedBalanceString(): string;
   spendableBalanceString(): string;
+  nftBalances(): NftBalance[] | undefined;
+  unsupportedNftBalances(): NftBalance[] | undefined;
   coin(): string;
   type(): WalletType | undefined;
   multisigType(): 'onchain' | 'tss';
@@ -708,4 +730,5 @@ export interface IWallet {
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
   getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;
+  getNftBalances(): Promise<NftBalance[]>;
 }

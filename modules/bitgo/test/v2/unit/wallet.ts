@@ -39,6 +39,8 @@ import { getDefaultWalletKeys, toKeychainObjects } from './coins/utxo/util';
 import { Tsol } from '@bitgo/sdk-coin-sol';
 import { Teth } from '@bitgo/sdk-coin-eth';
 
+import { nftResponse } from '../fixtures/nfts/nftResponses';
+
 require('should-sinon');
 
 nock.disableNetConnect();
@@ -3741,6 +3743,52 @@ describe('V2 Wallet:', function () {
       }).should.be.true();
 
       response.isDone().should.be.true();
+    });
+  });
+  describe('NFT Tests', function () {
+    let ethWallet: Wallet;
+
+    before(async function () {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'gteth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+        multisigType: 'onchain',
+      };
+      ethWallet = new Wallet(bitgo, bitgo.coin('gteth'), walletData);
+    });
+
+    afterEach(async function () {
+      nock.cleanAll();
+    });
+
+    it('Should return all nfts in the wallet', async function () {
+      const getTokenBalanceNock = nock(bgUrl)
+        .get(`/api/v2/gteth/wallet/${ethWallet.id()}?allTokens=true`)
+        .reply(200, {
+          ...walletData,
+          ...nftResponse,
+        });
+      const nfts = await ethWallet.getNftBalances();
+      getTokenBalanceNock.isDone().should.be.true();
+
+      nfts.should.length(5);
+      nfts.should.containEql({
+        type: 'ERC721',
+        metadata: {
+          name: 'terc721:bitgoerc721',
+          tokenContractAddress: '0x8397b091514c1f7bebb9dea6ac267ea23b570605',
+        },
+        collections: {},
+        balanceString: '0',
+        confirmedBalanceString: '0',
+        spendableBalanceString: '0',
+        transferCount: 0,
+      });
     });
   });
 });
