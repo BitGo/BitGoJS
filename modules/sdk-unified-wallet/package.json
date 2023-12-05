@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-unified-wallet",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Bitgo SDK library for EVM Wallets",
   "main": "./dist/src/index.js",
   "type": "./dist/src/index.d.ts",
@@ -16,15 +16,15 @@
     "unit-test": "mocha"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^14.0.0",
-    "@bitgo/statics": "^35.0.0"
+    "@bitgo/sdk-core": "^15.0.0",
+    "@bitgo/statics": "^36.0.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.30.0",
-    "@bitgo/sdk-coin-eth": "^10.0.0",
-    "@bitgo/sdk-coin-polygon": "^7.0.0",
-    "@bitgo/sdk-coin-sol": "^2.26.0",
-    "@bitgo/sdk-test": "^1.2.49"
+    "@bitgo/sdk-api": "^1.31.0",
+    "@bitgo/sdk-coin-eth": "^11.0.0",
+    "@bitgo/sdk-coin-polygon": "^8.0.0",
+    "@bitgo/sdk-coin-sol": "^2.27.0",
+    "@bitgo/sdk-test": "^1.2.50"
   },
   "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
   "license": "MIT",

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.50](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@1.2.30...@bitgo/sdk-test@1.2.50) (2023-12-05)
+
+### Bug Fixes
+
+- **sdk-core:** fix issue related to bignumber version ([519fe47](https://github.com/BitGo/BitGoJS/commit/519fe479ef51a72ddc1e94f87c10e031c0fd2c3f))
+
 ## [1.2.49](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@1.2.30...@bitgo/sdk-test@1.2.49) (2023-11-28)
 
 ### Bug Fixes
