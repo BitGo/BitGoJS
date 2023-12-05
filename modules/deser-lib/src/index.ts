@@ -1,1 +1,1 @@
-export * as cbor from './cbor';
+export * as Cbor from './cbor';

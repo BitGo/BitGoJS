@@ -124,6 +124,8 @@ export function transform<T>(value: T): T | Buffer {
         throw new Error('0x prefixed string contains non-hex characters.');
       }
       return Buffer.from(value.slice(2), 'hex');
+    } else if (value.startsWith('\\0x')) {
+      return value.slice(1) as unknown as T;
     }
   } else if (value instanceof Array) {
     // Enforce array elements are same type.
@@ -150,8 +152,11 @@ export function transform<T>(value: T): T | Buffer {
 export function untransform<T>(value: T): T | string {
   if (Buffer.isBuffer(value)) {
     return '0x' + value.toString('hex');
-  }
-  if (value instanceof Array && value.length > 1) {
+  } else if (typeof value === 'string') {
+    if (value.startsWith('0x')) {
+      return '\\' + value;
+    }
+  } else if (value instanceof Array && value.length > 1) {
     for (let i = 1; i < value.length; i++) {
       if (value[i - 1].weight > value[i].weight) {
         throw new Error('Array elements are not in canonical order');
