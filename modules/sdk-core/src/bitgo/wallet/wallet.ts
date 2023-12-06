@@ -60,6 +60,7 @@ import {
   MaximumSpendable,
   MaximumSpendableOptions,
   ModifyWebhookOptions,
+  NftBalance,
   PaginationOptions,
   PrebuildAndSignTransactionOptions,
   PrebuildTransactionOptions,
@@ -352,6 +353,48 @@ export class Wallet implements IWallet {
       .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx'))
       .query(query)
       .result();
+  }
+
+  /**
+   * Return a list of nft tokens for this wallet. Will always return undefined if the wallet
+   * was not initialized with the allTokens flag.
+   *
+   * @returns {NftBalance[] | undefined}
+   */
+  nftBalances(): NftBalance[] | undefined {
+    if (this._wallet.nfts) {
+      return Object.values(this._wallet.nfts).map((nftData) => nftData);
+    }
+    return undefined;
+  }
+
+  /**
+   * Return a list of unsupported nft tokens for this wallet. Will always return undefined if the wallet
+   * was not initialized with the allTokens flag.
+   *
+   * @returns {NftBalance[] | undefined}
+   */
+  unsupportedNftBalances(): NftBalance[] | undefined {
+    if (this._wallet.unsupportedNfts) {
+      return Object.values(this._wallet.unsupportedNfts).map((nftData) => nftData);
+    }
+    return undefined;
+  }
+
+  /**
+   * Returns a list of the wallets nft & unsupported nfts.
+   *
+   * @returns {NftBalance[]}
+   */
+  async getNftBalances(): Promise<NftBalance[]> {
+    const walletData: Partial<WalletData> = await this.bitgo.get(this.url()).query({ allTokens: true }).result();
+
+    const supportedNfts = walletData?.nfts ? Object.values(walletData.nfts).map((balance) => balance) : [];
+
+    const unsupportedNfts = walletData?.unsupportedNfts
+      ? Object.values(walletData.unsupportedNfts).map((balance) => balance)
+      : [];
+    return [...supportedNfts, ...unsupportedNfts];
   }
 
   /**
