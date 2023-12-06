@@ -365,13 +365,16 @@ export class AvaxC extends BaseCoin {
    * @returns {Promise<BigNumber>} address balance
    */
   async queryAddressTokenBalance(address: string, contractAddress: string): Promise<BN> {
+    // get token balance using contract call
+    const tokenBalanceData = optionalDeps.ethAbi.simpleEncode('balanceOf(address)', address).toString('hex');
+    const tokenBalanceDataHex = optionalDeps.ethUtil.addHexPrefix(tokenBalanceData);
     const result = await this.recoveryBlockchainExplorerQuery({
       jsonrpc: '2.0',
       method: 'eth_call',
       params: [
         {
           to: contractAddress,
-          data: optionalDeps.ethAbi.simpleEncode('balanceOf(address)', address).toString('hex'),
+          data: tokenBalanceDataHex,
         },
         'latest',
       ],
