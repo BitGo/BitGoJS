@@ -76,8 +76,11 @@ function isSortable(value: unknown): value is Sortable {
  * @returs Buffer representation of the number.
  */
 function numberToBufferBE(value: number): Buffer {
+  // Normalize value so that negative numbers aren't compared higher
+  // than positive numbers when accounting for two's complement.
+  value += Math.pow(2, 52);
   const byteCount = Math.floor((value.toString(2).length + 7) / 8);
-  const buffer = Buffer.alloc(8);
+  const buffer = Buffer.alloc(9);
   const offset = 8 - byteCount;
   let i = 0;
   while (value) {
