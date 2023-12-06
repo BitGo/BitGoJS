@@ -1158,6 +1158,8 @@ describe('Avalanche C-Chain', function () {
 
         recoveryTxn.should.not.be.undefined();
         recoveryTxn.should.have.property('txHex');
+        recoveryTxn.should.have.property('token');
+        recoveryTxn.token.should.equal('tavaxc:link');
         const txBuilder = tavaxCoin.getTransactionBuilder() as TransactionBuilder;
         txBuilder.from(recoveryTxn.txHex);
         const tx = await txBuilder.build();

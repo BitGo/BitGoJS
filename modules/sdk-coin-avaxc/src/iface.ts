@@ -69,6 +69,7 @@ export interface OfflineVaultTxInfo {
   amount: string;
   backupKeyNonce: number;
   eip1559?: EIP1559;
+  token?: string;
 }
 // endregion
 
