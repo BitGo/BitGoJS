@@ -71,6 +71,22 @@ function isSortable(value: unknown): value is Sortable {
 }
 
 /**
+ * Convert number to base 256 and return as a big-endian Buffer.
+ * @param value - Value to convert.
+ * @returs Buffer representation of the number.
+ */
+function numberToBufferBE(value: number): Buffer {
+  const byteCount = Math.floor((value.toString(2).length + 7) / 8);
+  const buffer = Buffer.alloc(byteCount);
+  let i = 0;
+  while (value) {
+    buffer[i++] = value % 256;
+    value = Math.floor(value / 256);
+  }
+  return buffer.reverse();
+}
+
+/**
  * Compare two array elements for sorting.
  * @param a - left element to compare to right element.
  * @param b - right element to compare to left element.
@@ -92,12 +108,12 @@ function elementCompare(a: unknown, b: unknown): number {
       }
       let aBuf, bBuf;
       if (typeof aVal === 'number') {
-        aBuf = Buffer.from([aVal]);
+        aBuf = numberToBufferBE(aVal);
       } else {
         aBuf = Buffer.from(aVal);
       }
       if (typeof bVal === 'number') {
-        bBuf = Buffer.from([bVal]);
+        bBuf = numberToBufferBE(bVal);
       } else {
         bBuf = Buffer.from(bVal);
       }
