@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "BitGo serialization and deseralization library",
   "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "scripts": {
     "test": "yarn unit-test",
     "unit-test": "nyc -- mocha --recursive test",

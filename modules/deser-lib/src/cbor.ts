@@ -56,10 +56,10 @@ function bufferCompare(a: Buffer, b: Buffer): number {
 }
 
 /** A sortable array element. */
-interface Sortable {
+type Sortable = {
   weight: number;
   value?: unknown;
-}
+};
 
 /**
  * Type check for sortable array element.
@@ -101,29 +101,29 @@ function elementCompare(a: unknown, b: unknown): number {
     throw new Error('Array elements must be sortable');
   }
   if (a.weight === b.weight) {
-    if ('value' in a && 'value' in b) {
-      const aVal = transform(a.value);
-      const bVal = transform(b.value);
-      if (
-        (!Buffer.isBuffer(aVal) && typeof aVal !== 'string' && typeof aVal !== 'number') ||
-        (!Buffer.isBuffer(bVal) && typeof bVal !== 'string' && typeof bVal !== 'number')
-      ) {
-        throw new Error('Array element value cannot be compared');
-      }
-      let aBuf, bBuf;
-      if (typeof aVal === 'number') {
-        aBuf = numberToBufferBE(aVal);
-      } else {
-        aBuf = Buffer.from(aVal);
-      }
-      if (typeof bVal === 'number') {
-        bBuf = numberToBufferBE(bVal);
-      } else {
-        bBuf = Buffer.from(bVal);
-      }
-      return bufferCompare(aBuf, bBuf);
+    if (a.value === undefined && b.value === undefined) {
+      throw new Error('Array elements must be sortable');
     }
-    throw new Error('Array elements must be sortable');
+    const aVal = transform(a.value);
+    const bVal = transform(b.value);
+    if (
+      (!Buffer.isBuffer(aVal) && typeof aVal !== 'string' && typeof aVal !== 'number') ||
+      (!Buffer.isBuffer(bVal) && typeof bVal !== 'string' && typeof bVal !== 'number')
+    ) {
+      throw new Error('Array element value cannot be compared');
+    }
+    let aBuf, bBuf;
+    if (typeof aVal === 'number') {
+      aBuf = numberToBufferBE(aVal);
+    } else {
+      aBuf = Buffer.from(aVal);
+    }
+    if (typeof bVal === 'number') {
+      bBuf = numberToBufferBE(bVal);
+    } else {
+      bBuf = Buffer.from(bVal);
+    }
+    return bufferCompare(aBuf, bBuf);
   }
   return a.weight - b.weight;
 }
