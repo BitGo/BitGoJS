@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.2.0...@bitgo/sdk-coin-dot@3.22.0) (2023-12-05)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** add logging to troublshoot DOT staking ([902558a](https://github.com/BitGo/BitGoJS/commit/902558a24c93ca8e7977bdbb370a24098aea775b))
+- **sdk-coin-dot:** add logs to debug dot staking txn build failure ([eb929e3](https://github.com/BitGo/BitGoJS/commit/eb929e351a2330e820360c54541943ad67ba15eb))
+- **sdk-coin-dot:** add more logs to debug Dot staking issue ([ccb9914](https://github.com/BitGo/BitGoJS/commit/ccb99143b7b1b875c7d81ebf3a90b966ab1cef8e))
+- **sdk-coin-dot:** fix dot createBroadcastableSweepTransaction method for arrays of txns ([def85f8](https://github.com/BitGo/BitGoJS/commit/def85f840c93770c10d3f935eedc9df6833d93a7))
+- **sdk-coin-dot:** fix dot txns to account for existential deposit and fee ([cfff91c](https://github.com/BitGo/BitGoJS/commit/cfff91c5c689ebf272d94abe7100833ec43a018f))
+- **sdk-coin-dot:** fix dot unsigned sweep consolidation recovery txn ([7c4a782](https://github.com/BitGo/BitGoJS/commit/7c4a782d2804343872390f66ebb829c41b6146fb))
+- **sdk-coin-dot:** fix getFee method for DOT ([a9b2481](https://github.com/BitGo/BitGoJS/commit/a9b24819beb3aaed0ed4814bc6fe208e8d4f1b29))
+- **sdk-coin-dot:** make controller optional for bond call ([a6f6a0d](https://github.com/BitGo/BitGoJS/commit/a6f6a0d96afdb663a7a096c4eb2caf9ca1649d63))
+- **sdk-coin-dot:** update DOT sdk to latest ([9385f80](https://github.com/BitGo/BitGoJS/commit/9385f803366b615d09bda31b8efda6f93e26e8e7))
+
+### Features
+
+- **sdk-coin-dot:** add consolidation method for dot recovery ([a88633e](https://github.com/BitGo/BitGoJS/commit/a88633e27bd7ae33ab475ccea3e9385bea80b306))
+- **sdk-coin-dot:** add lastScanIndex for consolidation support ([3a4ce9f](https://github.com/BitGo/BitGoJS/commit/3a4ce9f0c6505032491ea453b5b34e182cf41da1))
+- **sdk-coin-dot:** add logs to debug DOT staking issue ([33c1a9c](https://github.com/BitGo/BitGoJS/commit/33c1a9c2d7051481f1afb993376a18d421170aa0))
+- **sdk-coin-dot:** add unit test for dot unsigned sweep consolidation recovery ([7ea5107](https://github.com/BitGo/BitGoJS/commit/7ea51076a7226b4b29ff6a07fbd8259214776239))
+- **sdk-coin-dot:** create function to produce broadcastable dot sweep ([ad9c9c4](https://github.com/BitGo/BitGoJS/commit/ad9c9c4cc79639a5745e82f62566afa6db2b8c6d))
+- **sdk-coin-dot:** fix dot sweep recovery format for ovc signing ([d73271b](https://github.com/BitGo/BitGoJS/commit/d73271bfcb806d980cd09db3828805b1ece8689d))
+- **sdk-coin-dot:** remove DOT console debug logging ([d4aad05](https://github.com/BitGo/BitGoJS/commit/d4aad0509a14bc0a89e8af7435353621044a1100))
+- **sdk-coin-dot:** return ovc compatible format for dot sweep txns ([748f40c](https://github.com/BitGo/BitGoJS/commit/748f40c044fb047639b9e8a0ecab30c4692523b0))
+- **sdk-coin-sol:** create method to produce broadcastable sol sweep txn ([d69ca4e](https://github.com/BitGo/BitGoJS/commit/d69ca4ea0688c4cf7c738ca826a9231438bb49c5))
+
 # [3.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.2.0...@bitgo/sdk-coin-dot@3.21.0) (2023-11-28)
 
 ### Bug Fixes
