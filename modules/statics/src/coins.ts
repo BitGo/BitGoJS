@@ -7502,6 +7502,70 @@ export const coins = CoinMap.fromCoins([
     '0xc770eefad204b5180df6a14ee197d99d808ee52d',
     UnderlyingAsset.FOX
   ),
+  erc20(
+    '523d92b8-5fc8-4d13-8359-b69f3ac64382',
+    'cube',
+    'CUBE',
+    18,
+    '0x622dffcc4e83c64ba959530a5a5580687a57581b',
+    UnderlyingAsset.CUBE
+  ),
+  erc20(
+    'ae798fd0-30cc-47de-af7d-cae0e3db15ad',
+    'xx',
+    'XX',
+    8,
+    '0x47f33feb70ec153fc22755908a4061777d22c2da',
+    UnderlyingAsset.XX
+  ),
+  erc20(
+    'd340bbfc-1215-418d-8e57-64ffc954e2d7',
+    'litv2',
+    'LIT',
+    18,
+    '0xc5b3d3231001a776123194cf1290068e8b0c783b',
+    UnderlyingAsset.LITv2
+  ),
+  erc20(
+    'fdaf03ca-1177-4284-81f3-b931721e0208',
+    'mediav2',
+    'Media Network Token',
+    6,
+    '0xdb726152680ece3c9291f1016f1d36f3995f6941',
+    UnderlyingAsset.MEDIAv2
+  ),
+  erc20(
+    '2b2800aa-42f3-4bf4-9f15-35f76aace2a8',
+    'blur0xb93',
+    'BLUR',
+    6,
+    '0xb9340fb0f8f93f4857eb3012b4f85db2d632e154',
+    UnderlyingAsset.BLUR0xb93
+  ),
+  erc20(
+    'c49d33f3-8f3b-4c97-9601-61363635615f',
+    'ft',
+    'FriendTech',
+    8,
+    '0x5079aca02ed583b8a7235442a6455d3f3289997b',
+    UnderlyingAsset.FT
+  ),
+  erc20(
+    '17e2c6a0-72e5-412d-bb11-80ea14ad922c',
+    'gf',
+    'GuildFi Token',
+    18,
+    '0xaaef88cea01475125522e117bfe45cf32044e238',
+    UnderlyingAsset.GF
+  ),
+  erc20(
+    'f34ecc46-631d-44e8-930d-96ef48a8522c',
+    'lqty',
+    'LQTY',
+    18,
+    '0x6dea81c8171d0ba574754ef6f8b412f2ed88c54d',
+    UnderlyingAsset.LQTY
+  ),
 
   celoToken(
     '1a9935a6-54d2-4988-97ff-d871338e29b5',
