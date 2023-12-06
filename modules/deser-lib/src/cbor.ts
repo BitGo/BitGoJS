@@ -77,10 +77,11 @@ function isSortable(value: unknown): value is Sortable {
  */
 function numberToBufferBE(value: number): Buffer {
   const byteCount = Math.floor((value.toString(2).length + 7) / 8);
-  const buffer = Buffer.alloc(byteCount);
+  const buffer = Buffer.alloc(8);
+  const offset = 8 - byteCount;
   let i = 0;
   while (value) {
-    buffer[i++] = value % 256;
+    buffer[offset + i++] = value % 256;
     value = Math.floor(value / 256);
   }
   return buffer.reverse();
