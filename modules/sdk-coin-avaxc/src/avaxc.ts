@@ -741,6 +741,7 @@ export class AvaxC extends BaseCoin {
         userKey,
         backupKey,
         coin: this.getChain(),
+        token: tokenName,
         gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
         gasLimit,
         recipients: [txInfo.recipient],
