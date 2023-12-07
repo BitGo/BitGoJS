@@ -914,9 +914,11 @@ describe('Avalanche C-Chain', function () {
           params: [
             {
               to: tokenContractAddress,
-              data: optionalDeps.ethAbi
-                .simpleEncode('balanceOf(address)', recoveryUsers.hotWalletRecoveryUser.walletContractAddress)
-                .toString('hex'),
+              data: optionalDeps.ethUtil.addHexPrefix(
+                optionalDeps.ethAbi
+                  .simpleEncode('balanceOf(address)', recoveryUsers.hotWalletRecoveryUser.walletContractAddress)
+                  .toString('hex')
+              ),
             },
             'latest',
           ],
@@ -930,9 +932,11 @@ describe('Avalanche C-Chain', function () {
           params: [
             {
               to: tokenContractAddress,
-              data: optionalDeps.ethAbi
-                .simpleEncode('balanceOf(address)', recoveryUsers.coldWalletRecoveryUser.walletContractAddress)
-                .toString('hex'),
+              data: optionalDeps.ethUtil.addHexPrefix(
+                optionalDeps.ethAbi
+                  .simpleEncode('balanceOf(address)', recoveryUsers.coldWalletRecoveryUser.walletContractAddress)
+                  .toString('hex')
+              ),
             },
             'latest',
           ],
