@@ -63,7 +63,10 @@ export class TransactionSigningError<TNumber extends number | bigint = number> e
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
   signerKeychain: utxolib.BIP32Interface,
-  { isLastSignature }: { isLastSignature: boolean }
+  {
+    isLastSignature,
+    allowNonSegwitSigningWithoutPrevTx,
+  }: { isLastSignature: boolean; allowNonSegwitSigningWithoutPrevTx?: boolean }
 ): utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint> {
   const txInputs = psbt.txInputs;
   const outputIds: string[] = [];
@@ -83,7 +86,11 @@ export function signAndVerifyPsbt(
       }
 
       try {
-        psbt.signInputHD(inputIndex, signerKeychain);
+        utxolib.bitgo.withUnsafeNonSegwit(
+          psbt,
+          () => psbt.signInputHD(inputIndex, signerKeychain),
+          !!allowNonSegwitSigningWithoutPrevTx
+        );
         debug('Successfully signed input %d of %d', inputIndex + 1, psbt.data.inputs.length);
       } catch (e) {
         return new InputSigningError<bigint>(inputIndex, { id: outputId }, e);
@@ -105,7 +112,13 @@ export function signAndVerifyPsbt(
 
       const outputId = outputIds[inputIndex];
       try {
-        if (!psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain)) {
+        if (
+          !utxolib.bitgo.withUnsafeNonSegwit(
+            psbt,
+            () => psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain),
+            !!allowNonSegwitSigningWithoutPrevTx
+          )
+        ) {
           return new InputSigningError(inputIndex, { id: outputId }, new Error(`invalid signature`));
         }
       } catch (e) {
