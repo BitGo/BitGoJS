@@ -31,14 +31,25 @@ export interface DelegationRequest {
  * @property {string} [validator] - chosen validator
  * @property {string} [duration] - delegation duration: a numeric string, in days or cycles
  * @property {string} [subType] - coin sepcific staking subtype
+ * @property {string} [btcRewardAddress] - btc reward address
  * @property {DelegationRequest[]} [delegationRequests] - The delegation requests
  */
 export interface StakeOptions {
   amount?: string;
   clientId?: string;
   validator?: string;
+  /**
+   * delegation duration: a numeric string, in days or cycles
+   */
   duration?: string;
+  /**
+   * coin sepcific staking subtype
+   */
   subType?: string;
+  /**
+   * btc reward address
+   */
+  btcRewardAddress?: string;
   delegationRequests?: DelegationRequest[];
 }
 
