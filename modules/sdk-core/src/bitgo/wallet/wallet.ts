@@ -98,6 +98,7 @@ import { ofcTokens } from '@bitgo/statics';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
 import { TxSendBody } from '@bitgo/public-types';
+import { AddressBook, IAddressBook } from '../address-book';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -2333,6 +2334,16 @@ export class Wallet implements IWallet {
       throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
     }
     return new TradingAccount(this._wallet.enterprise, this, this.bitgo);
+  }
+
+  /**
+   * Get the address book for this wallet
+   */
+  toAddressBook(): IAddressBook {
+    if (this.baseCoin.getFamily() !== 'ofc') {
+      throw new Error('Can only use an Offchain (OFC) wallet for the address book');
+    }
+    return new AddressBook(this._wallet.enterprise, this.bitgo, this);
   }
 
   /**

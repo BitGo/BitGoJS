@@ -26,6 +26,7 @@ import {
 } from '../utils';
 import { ILightning } from '../lightning';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { IAddressBook } from '../address-book';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -718,6 +719,7 @@ export interface IWallet {
   toJSON(): WalletData;
   toTradingAccount(): ITradingAccount;
   toStakingWallet(): IStakingWallet;
+  toAddressBook(): IAddressBook;
   downloadKeycard(params?: DownloadKeycardOptions): void;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
