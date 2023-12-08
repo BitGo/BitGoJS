@@ -80,11 +80,10 @@ function numberToBufferBE(value: number): Buffer {
   // than positive numbers when accounting for two's complement.
   value += Math.pow(2, 52);
   const byteCount = Math.floor((value.toString(2).length + 7) / 8);
-  const buffer = Buffer.alloc(9);
-  const offset = 8 - byteCount;
+  const buffer = Buffer.alloc(byteCount);
   let i = 0;
   while (value) {
-    buffer[offset + i++] = value % 256;
+    buffer[i++] = value % 256;
     value = Math.floor(value / 256);
   }
   return buffer.reverse();
