@@ -688,6 +688,9 @@ export class Wallet implements IWallet {
         assert(k.pub);
         return k.pub;
       }),
+      // Building PSBTs with the bulk flag does not include the previous transaction for non-segwit inputs.
+      // Manually override the signing and validating to not fail.
+      allowNonSegwitSigningWithoutPrevTx: !!params.bulk,
     };
 
     const txPrebuilds = Array.isArray(buildResponse) ? buildResponse : [buildResponse];
