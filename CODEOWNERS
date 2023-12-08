@@ -59,7 +59,9 @@
 /modules/sdk-coin-xrp/ @BitGo/ethalt-team
 /modules/sdk-coin-xtz/ @BitGo/ethalt-team
 
-
+# Trade
+/modules/sdk-core/src/bitgo/address-book/ @BitGo/prime
+/modules/sdk-core/src/bitgo/trading/ @BitGo/prime
 
 # Core Modules
 /modules/bitgo/ @BitGo/custody-experience @BitGo/wallet-platform
