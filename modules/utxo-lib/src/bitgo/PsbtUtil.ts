@@ -111,9 +111,11 @@ export function isPsbt(data: Buffer | string): boolean {
  */
 export function withUnsafeNonSegwit<T>(psbt: Psbt, fn: () => T, unsafe = true): T {
   (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = unsafe;
+  (psbt as any).__CACHE.__WARN_UNSAFE_SIGN_NONSEGWIT = !unsafe;
   try {
     return fn();
   } finally {
     (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
+    (psbt as any).__CACHE.__WARN_UNSAFE_SIGN_NONSEGWIT = true;
   }
 }
