@@ -196,6 +196,7 @@ export class Wallet implements IWallet {
       'validToBlock',
       'preview',
       'keepAlive',
+      'apiVersion',
     ];
   }
 

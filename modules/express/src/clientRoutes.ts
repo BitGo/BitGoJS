@@ -826,7 +826,7 @@ function createSendParams(req: express.Request) {
 }
 
 function createTSSSendParams(req: express.Request) {
-  if (req.config.externalSignerUrl !== undefined) {
+  if (req.config?.externalSignerUrl !== undefined) {
     const coin = req.bitgo.coin(req.params.coin);
     if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
       return {
