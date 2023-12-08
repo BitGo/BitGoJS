@@ -10,6 +10,7 @@ export const testnetCommon = EthereumCommon.custom(
   {
     baseChain: 'sepolia',
     hardfork: 'london',
+    eips: [1559],
   }
 );
 
@@ -22,5 +23,6 @@ export const mainnetCommon = EthereumCommon.custom(
   {
     baseChain: 'mainnet',
     hardfork: 'london',
+    eips: [1559],
   }
 );
