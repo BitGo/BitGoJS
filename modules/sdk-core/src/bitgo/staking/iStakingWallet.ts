@@ -23,11 +23,22 @@ export interface DelegationRequest {
   validator: string;
 }
 
+/**
+ * Represents the options for staking.
+ * @typedef {Object} StakeOptions
+ * @property {string} [amount] - amount to stake
+ * @property {string} [clientId] - clientId
+ * @property {string} [validator] - chosen validator
+ * @property {string} [duration] - delegation duration: a numeric string, in days or cycles
+ * @property {string} [subType] - coin sepcific staking subtype
+ * @property {DelegationRequest[]} [delegationRequests] - The delegation requests
+ */
 export interface StakeOptions {
   amount?: string;
   clientId?: string;
   validator?: string;
-  durationSeconds?: string;
+  duration?: string;
+  subType?: string;
   delegationRequests?: DelegationRequest[];
 }
 
