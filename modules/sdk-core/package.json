@@ -68,7 +68,8 @@
     "secp256k1": "5.0.0",
     "strip-hex-prefix": "^1.0.0",
     "superagent": "^3.8.3",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@openpgp/web-stream-tools": "0.0.14",

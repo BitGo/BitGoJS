@@ -4,6 +4,7 @@
 import { BitGoBase } from '../bitgoBase';
 import { ITradingAccount, SignPayloadParameters } from '../trading';
 import { IWallet } from '../wallet';
+import { TradingNetwork } from './network';
 
 export class TradingAccount implements ITradingAccount {
   private readonly bitgo: BitGoBase;
@@ -36,5 +37,14 @@ export class TradingAccount implements ITradingAccount {
     });
     const payload = typeof params.payload === 'string' ? params.payload : JSON.stringify(params.payload);
     return ((await this.wallet.baseCoin.signMessage({ prv }, payload)) as any).toString('hex');
+  }
+
+  /**
+   * Get Trade Network
+   * To enable Off Exchange Allocation & Settlement, contact support@bitgo.com.
+   * BitGo provides a UI experience for clients at: https://app.bitgo.com/web/enterprises/<enterpriseId>/allocate
+   */
+  toNetwork(): TradingNetwork {
+    return new TradingNetwork(this.enterpriseId, this.wallet, this.bitgo);
   }
 }
