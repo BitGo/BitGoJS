@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@4.2.0...@bitgo/sdk-coin-sui@4.13.0) (2023-12-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-sui:** fix sui tx deserialization type inference bug ([b9e3f5e](https://github.com/BitGo/BitGoJS/commit/b9e3f5e19fa9cfa6f905d9c2af59aa2158af2d49))
+- **sdk-coin-sui:** parse recipients for custom tx ([0781d50](https://github.com/BitGo/BitGoJS/commit/0781d5090ce4c25a4f7fa9e47bcf858b35990140))
+
+### Features
+
+- **sdk-coin-sui:** add custom tx type ([8136220](https://github.com/BitGo/BitGoJS/commit/81362200468f8a2d25b97186f56de5d5729fa0cf))
+- **sdk-coin-sui:** add more validations for custom tx ([6746f27](https://github.com/BitGo/BitGoJS/commit/6746f27cbc87a58c034c0a1b4b5fc67d34a3b394))
+- **sdk-coin-sui:** add new moveCall function ([c832651](https://github.com/BitGo/BitGoJS/commit/c8326510e8a1a039786408c832311e0faa8ddb0c))
+- **sdk-coin-sui:** export the new custom tx type ([0bd4130](https://github.com/BitGo/BitGoJS/commit/0bd4130afea919174cc29ac0575806096642e0cf))
+
 # [4.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@4.2.0...@bitgo/sdk-coin-sui@4.12.0) (2023-12-05)
 
 ### Bug Fixes
