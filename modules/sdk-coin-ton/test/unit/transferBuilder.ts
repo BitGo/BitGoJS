@@ -44,7 +44,7 @@ describe('Ton Transfer Builder', () => {
     const jsonTx = builtTx.toJson();
     should.equal(builtTx.type, TransactionType.Send);
     should.equal(builtTx.signablePayload.toString('base64'), testData.signedTransaction.signable);
-    //    should.equal(builtTx.id, testData.signedTransaction.txId);
+    should.equal(builtTx.id, testData.signedTransaction.txId);
     const builder2 = factory.from(builtTx.toBroadcastFormat());
     const builtTx2 = await builder2.build();
     should.equal(builtTx2.type, TransactionType.Send);
@@ -119,5 +119,37 @@ describe('Ton Transfer Builder', () => {
     const signature2 = keyPair.signMessageinUint8Array(tx2.signablePayload);
     should.equal(Buffer.from(signature).toString('hex'), Buffer.from(signature2).toString('hex'));
     should.equal(tx.toBroadcastFormat(), tx2.toBroadcastFormat());
+  });
+
+  it('should build transfer tx for non-bouncable address', async function () {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.sender.address);
+    txBuilder.sequenceNumber(0);
+    txBuilder.publicKey(testData.sender.publicKey);
+    txBuilder.expireTime(1234567890);
+    const address = 'UQAWzEKcdnykvXfUNouqdS62tvrp32bCxuKS6eQrS6ISgZ8t';
+    const amount = '10000000';
+    txBuilder.send({ address, amount });
+    txBuilder.setMessage('test');
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.Send);
+    tx.inputs.length.should.equal(1);
+    tx.inputs[0].should.deepEqual({
+      address: testData.sender.address,
+      value: amount,
+      coin: 'tton',
+    });
+    tx.outputs.length.should.equal(1);
+    tx.outputs[0].should.deepEqual({
+      address,
+      value: amount,
+      coin: 'tton',
+    });
+    const txJson = tx.toJson();
+    txJson.destination.should.equal(address);
+    const builder2 = factory.from(tx.toBroadcastFormat());
+    const tx2 = await builder2.build();
+    const txJson2 = tx2.toJson();
+    txJson2.destinationAlias.should.equal(address);
   });
 });

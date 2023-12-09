@@ -7,6 +7,7 @@ import * as testData from '../resources/ton';
 import { TransactionExplanation } from '@bitgo/sdk-core';
 import should from 'should';
 import utils from '../../src/lib/utils';
+import Tonweb from 'tonweb';
 
 describe('TON:', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
@@ -60,6 +61,33 @@ describe('TON:', function () {
           verification,
         } as any)
         .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify transaction when recipients amount are numbers', async function () {
+      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+      txParamsWithNumberAmounts.recipients[0].amount = '20000000';
+      const verification = {};
+      await basecoin
+        .verifyTransaction({
+          txParams: txParamsWithNumberAmounts,
+          txPrebuild,
+          verification,
+        } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify transaction when recipient address are non bouncable', async function () {
+      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+      txParamsWithNumberAmounts.recipients[0].address = new Tonweb.Address(
+        txParamsWithNumberAmounts.recipients[0].address
+      ).toString(true, true, false);
+      const verification = {};
+      const isVerified = await basecoin.verifyTransaction({
+        txParams: txParamsWithNumberAmounts,
+        txPrebuild,
+        verification,
+      } as any);
+      isVerified.should.equal(true);
     });
 
     it('should fail to verify transaction with invalid param', async function () {
