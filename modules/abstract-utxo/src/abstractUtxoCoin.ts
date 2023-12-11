@@ -247,6 +247,11 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    * When false, creates half-signed transaction with placeholder signatures.
    */
   isLastSignature?: boolean;
+  /**
+   * If true, allows signing a non-segwit input with a witnessUtxo instead requiring a previous
+   * transaction (nonWitnessUtxo)
+   */
+  allowNonSegwitSigningWithoutPrevTx?: boolean;
 };
 
 export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
@@ -1164,13 +1169,21 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       return signerKeychain;
     };
 
+    const setSignerMusigNonceWithOverride = (
+      psbt: utxolib.bitgo.UtxoPsbt,
+      signerKeychain: utxolib.BIP32Interface,
+      nonSegwitOverride: boolean
+    ) => {
+      utxolib.bitgo.withUnsafeNonSegwit(psbt, () => psbt.setAllInputsMusig2NonceHD(signerKeychain), nonSegwitOverride);
+    };
+
     let signerKeychain: utxolib.BIP32Interface | undefined;
 
     if (tx instanceof bitgo.UtxoPsbt && isTxWithKeyPathSpendInput) {
       switch (params.signingStep) {
         case 'signerNonce':
           signerKeychain = getSignerKeychain();
-          tx.setAllInputsMusig2NonceHD(signerKeychain);
+          setSignerMusigNonceWithOverride(tx, signerKeychain, !!params.allowNonSegwitSigningWithoutPrevTx);
           AbstractUtxoCoin.PSBT_CACHE.set(tx.getUnsignedTx().getId(), tx);
           return { txHex: tx.toHex() };
         case 'cosignerNonce':
@@ -1191,7 +1204,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           // this instance is not an external signer
           assert(txPrebuild.walletId, 'walletId is required for MuSig2 bitgo nonce');
           signerKeychain = getSignerKeychain();
-          tx.setAllInputsMusig2NonceHD(signerKeychain);
+          setSignerMusigNonceWithOverride(tx, signerKeychain, !!params.allowNonSegwitSigningWithoutPrevTx);
           const response = await this.signPsbt(tx.toHex(), txPrebuild.walletId);
           tx.combine(bitgo.createPsbtFromHex(response.psbt, this.network));
           break;
@@ -1214,7 +1227,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     let signedTransaction: bitgo.UtxoTransaction<bigint> | bitgo.UtxoPsbt;
     if (tx instanceof bitgo.UtxoPsbt) {
-      signedTransaction = signAndVerifyPsbt(tx, signerKeychain, { isLastSignature });
+      signedTransaction = signAndVerifyPsbt(tx, signerKeychain, {
+        isLastSignature,
+        allowNonSegwitSigningWithoutPrevTx: params.allowNonSegwitSigningWithoutPrevTx,
+      });
     } else {
       if (tx.ins.length !== txPrebuild.txInfo?.unspents?.length) {
         throw new Error('length of unspents array should equal to the number of transaction inputs');
