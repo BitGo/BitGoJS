@@ -437,6 +437,11 @@ export interface CreateShareOptions {
   reshare?: boolean;
   message?: string;
   disableEmail?: boolean;
+  /**
+   * If true, allows sharing without a keychain.
+   * A falsy value is expected to throw an API error if an empty or undefined `keychain` is provided.
+   */
+  skipKeychain?: boolean;
 }
 
 export interface ShareWalletOptions {
@@ -445,6 +450,9 @@ export interface ShareWalletOptions {
   walletPassphrase?: string;
   message?: string;
   reshare?: boolean;
+  /**
+   * If true, skips sharing the wallet keychain with the recipient.
+   */
   skipKeychain?: boolean;
   disableEmail?: boolean;
 }
