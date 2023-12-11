@@ -1500,20 +1500,15 @@ export class Wallet implements IWallet {
         }
       }
     }
-
     const options: CreateShareOptions = {
       user: sharing.userId,
       permissions: params.permissions,
       reshare: params.reshare,
       message: params.message,
       disableEmail: params.disableEmail,
+      skipKeychain: Object.keys(sharedKeychain ?? {}).length === 0,
+      keychain: Object.keys(sharedKeychain ?? {}).length === 0 ? undefined : sharedKeychain,
     };
-
-    if (sharedKeychain) {
-      options.keychain = sharedKeychain;
-    } else if (params.skipKeychain) {
-      options.keychain = {};
-    }
 
     return await this.createShare(options);
   }

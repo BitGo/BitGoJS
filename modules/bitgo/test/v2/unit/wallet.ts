@@ -58,11 +58,25 @@ describe('V2 Wallet:', function () {
     multisigType: 'onchain',
     type: 'hot',
   };
+  const coldWalletData = {
+    id: '65774419fb4d9690847fbe4b00000000',
+    coin: 'tbtc',
+    keys: ['65774412e54b7516393c9df800000000', '6577442428664ffe791af7ea00000000', '6577442b7317a945756c2fd900000000'],
+    coinSpecific: {},
+    multisigType: 'onchain',
+    type: 'cold',
+  };
   const wallet = new Wallet(bitgo, basecoin, walletData);
+  const coldWallet = new Wallet(bitgo, basecoin, coldWalletData);
   const bgUrl = common.Environments[bitgo.getEnv()].uri;
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
   const tbtcHotWalletDefaultParams = { txFormat: 'psbt', addressType: 'p2trMusig2' };
+
+  afterEach(function () {
+    sinon.restore();
+    sinon.reset();
+  });
 
   describe('Wallet transfers', function () {
     it('should search in wallet for a transfer', async function () {
@@ -1955,18 +1969,22 @@ describe('V2 Wallet:', function () {
       const getSharingKeyNock = nock(bgUrl).post('/api/v1/user/sharingkey', { email }).reply(200, { userId });
 
       const getKeyNock = nock(bgUrl)
-        .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
+        .get(`/api/v2/tbtc/key/${coldWallet.keyIds()[0]}`)
         .reply(200, {})
-        .get(`/api/v2/tbtc/key/${wallet.keyIds()[1]}`)
+        .get(`/api/v2/tbtc/key/${coldWallet.keyIds()[1]}`)
         .reply(200, {})
-        .get(`/api/v2/tbtc/key/${wallet.keyIds()[2]}`)
+        .get(`/api/v2/tbtc/key/${coldWallet.keyIds()[2]}`)
         .reply(200, {});
 
       const createShareNock = nock(bgUrl)
-        .post(`/api/v2/tbtc/wallet/${wallet.id()}/share`, { user: userId, permissions, keychain: {} })
+        .post(`/api/v2/tbtc/wallet/${coldWallet.id()}/share`, {
+          user: userId,
+          permissions,
+          skipKeychain: true,
+        })
         .reply(200, {});
 
-      await wallet.shareWallet({ email, permissions });
+      await coldWallet.shareWallet({ email, permissions });
 
       getSharingKeyNock.isDone().should.be.True();
       getKeyNock.isDone().should.be.True();
@@ -2009,6 +2027,31 @@ describe('V2 Wallet:', function () {
       stub.calledOnce.should.be.true();
       getSharingKeyNock.isDone().should.be.True();
       getKeyNock.isDone().should.be.True();
+    });
+
+    it('should provide skipKeychain to wallet share api for hot wallet', async function () {
+      const userId = '123';
+      const email = 'shareto@sdktest.com';
+      const permissions = 'view,spend';
+      const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+      const path = 'm/999999/1/1';
+      const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+      const getSharingKeyNock = nock(bgUrl)
+        .post('/api/v1/user/sharingkey', { email })
+        .reply(200, { userId, pubkey, path });
+      const createShareNock = nock(bgUrl)
+        .post(`/api/v2/tbtc/wallet/${wallet.id()}/share`, {
+          user: userId,
+          permissions,
+          skipKeychain: true,
+        })
+        .reply(200, {});
+
+      await wallet.shareWallet({ email, permissions, skipKeychain: true });
+
+      createShareNock.isDone().should.be.True();
+      getSharingKeyNock.isDone().should.be.True();
     });
   });
 
