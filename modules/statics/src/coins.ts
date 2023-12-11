@@ -10430,20 +10430,20 @@ export const coins = CoinMap.fromCoins([
   ),
   solToken(
     '081bd159-8157-4c7e-8836-9147784b7418',
-    'sol:AURY',
+    'sol:aury',
     'Aurory',
     9,
     'AURYydfxJib1ZkTir1Jn1J9ECYUtjb6rKQVmtYaixWPP',
-    UnderlyingAsset['AURY'],
+    UnderlyingAsset['aury'],
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
     '86600f43-533c-4109-9bba-c66ac837d94c',
-    'sol:DIO',
+    'sol:dio',
     'Decimated',
     9,
     'BiDB55p4G3n1fGhwKFpxsokBMqgctL4qnZpDH1bVQxMD',
-    UnderlyingAsset['DIO'],
+    UnderlyingAsset['dio'],
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
