@@ -7569,7 +7569,7 @@ export const coins = CoinMap.fromCoins([
   // Begin FTX missing ERC20 tokens
   erc20(
     '7b77a4b6-4eef-4b5f-b0d5-e804432cec4a',
-    '$Evmosia.com',
+    '$evmosia.com',
     '$Evmosia.com',
     0,
     '0x525fc44cbe181c1108c209091b5eec5a5028190d',
@@ -7585,7 +7585,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '0f2175c0-b059-4799-96d8-0a3b621aab87',
-    '3Crv',
+    '3crv',
     'Curve.fi DAI/USDC/USDT',
     18,
     '0x6c3f90f043a72fa612cbac8115ee7e52bde6e490',
@@ -7593,7 +7593,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '19f03fd2-22d6-4a82-9c7d-7e02a05019e7',
-    'ACEv2',
+    'acev2',
     'ACE',
     0,
     '0x06147110022b768ba8f99a8f385df11a151a9cc8',
@@ -7601,7 +7601,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '17c7eb1b-c1e5-4223-b3ff-f77446ada7c9',
-    'agEUR',
+    'ageur',
     'agEUR',
     18,
     '0x1a7e4e63778b4f12a199c062f3efdd288afcbce8',
@@ -7609,7 +7609,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f0d670d3-a735-4004-9b23-fac5a97c0b0c',
-    'ALD',
+    'ald',
     'ALD',
     18,
     '0xb26c4b3ca601136daf98593feaeff9e0ca702a8d',
@@ -7617,7 +7617,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a8f13113-9f9d-413b-975a-61692f309bbc',
-    'ALGODOOM',
+    'algodoom',
     '10X Short Algo token',
     18,
     '0x9281c548c6d107aea807b87a776da045f71fa193',
@@ -7625,7 +7625,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '305da3a1-c893-4251-a7da-792bba95a3b3',
-    'ALGOMOON',
+    'algomoon',
     '10X Long Algo Token',
     18,
     '0xa386e04f0fb641869accd582c1b76eaa7d7087fe',
@@ -7633,7 +7633,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '1356617f-7afa-42f7-8c8b-b27ef28b3698',
-    'ALTDOOM',
+    'altdoom',
     '10X Short Altcoin index token',
     18,
     '0xc1915a97fd75818d3e10570b7613eda8636720bb',
@@ -7641,7 +7641,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '414856fb-a4c8-40ed-a540-7f20cfacee8b',
-    'ALTMOON',
+    'altmoon',
     '10X Long Altcoin index token',
     18,
     '0x7574c09a26e781df694755cec8ac04af9d1e1cc0',
@@ -7649,7 +7649,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'dc0c4a58-4e54-4a9f-8e1b-875fc259ac80',
-    'ANGLE',
+    'angle',
     'ANGLE',
     18,
     '0x31429d1856ad1377a8a0079410b297e1a9e214c2',
@@ -7657,7 +7657,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c89510bb-d022-4043-969a-da7e1d2ad2d3',
-    'ANML',
+    'anml',
     'Animal Concerts Token',
     18,
     '0x38b0e3a59183814957d83df2a97492aed1f003e2',
@@ -7665,7 +7665,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '336067e2-f06f-4dfd-ade5-1ea1f2940c05',
-    'ARMOR',
+    'armor',
     'Armor',
     18,
     '0x1337def16f9b486faed0293eb623dc8395dfe46a',
@@ -7673,7 +7673,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2f121a90-9e17-49f3-ad4c-c23141ef0d5b',
-    'ATA',
+    'ata',
     'Automata',
     18,
     '0xa2120b9e674d3fc3875f415a7df52e382f141225',
@@ -7681,7 +7681,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '9a2fc9a8-e198-4d9e-92d7-b6b899bb3507',
-    'ATF',
+    'atf',
     'AntFarm Finance',
     9,
     '0x61e74556a9f4eee6db88081136bff2246675c7c9',
@@ -7689,7 +7689,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '46756498-7522-4f13-9444-bcd15fa284ac',
-    'ATL',
+    'atl',
     'ATLANT',
     18,
     '0x78b7fada55a64dd895d8c8c35779dd8b67fa8a05',
@@ -7697,7 +7697,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'e26974ca-1494-4c13-8b8d-ce155d246253',
-    'aUSDT',
+    'ausdt',
     'Aave Interest bearing USDT',
     6,
     '0x71fc860f7d3a592a4a98740e39db31d25db65ae8',
@@ -7705,7 +7705,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8d9c0c6b-0ab7-4d98-8b9a-83ae3b77914c',
-    'AVT',
+    'avt',
     'AVT',
     18,
     '0x0d88ed6e74bbfd96b831231638b66c05571e824f',
@@ -7713,7 +7713,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4e8b9925-bea8-4eaa-a226-67137e6a6889',
-    'aWBTC',
+    'awbtc',
     'Aave interest bearing WBTC',
     8,
     '0x9ff58f4ffb29fa2266ab25e75e2a8b3503311656',
@@ -7721,7 +7721,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'fbd1d2af-b3c9-4272-aa92-30c1594fc626',
-    'aYFI',
+    'ayfi',
     'Aave interest bearing YFI',
     18,
     '0x5165d24277cd063f5ac44efd447b27025e888f37',
@@ -7729,7 +7729,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '0ff6ec5b-ebff-47b8-aa60-0b02e4ce4de8',
-    'AZUKI',
+    'azuki',
     'AzukiDAO.org',
     18,
     '0xeae943f5f51e9ea36ee8bf4e955cf00bdde3da12',
@@ -7737,7 +7737,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'daed5784-855c-4b7b-8761-600d7f6dc71d',
-    'AZUKI2',
+    'azuki2',
     'AZUKI 2.0',
     18,
     '0x88804ac32e36bba3fa9efb951f96bc9bc694fef0',
@@ -7745,7 +7745,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c38c7cf0-5d33-438b-a0d2-d9b5099522a0',
-    'AZUKIPEPE',
+    'azukipepe',
     'AZUKI PEPE',
     18,
     '0xcdf6d021dc97f4eb26d69013725447082ac9568f',
@@ -7753,7 +7753,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5b74d3f6-7dc0-4134-a227-b6b3d516c70c',
-    'BAI',
+    'bai',
     'BodyAi',
     9,
     '0xdb30a3949483c5469fb1207acf2fdec7af5c1215',
@@ -7761,7 +7761,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '19584e3b-bad9-4411-a687-0420e4688f0d',
-    'BANK',
+    'bank',
     'First Crypto Bank',
     9,
     '0x30a8dd4729747032a0cb2554b343da2f0af8fc76',
@@ -7769,7 +7769,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5521fc84-4ff8-41ef-a9f9-29741c7bf852',
-    'BBANK',
+    'bbank',
     'BlockBank',
     18,
     '0xf4b5470523ccd314c6b9da041076e7d79e0df267',
@@ -7777,7 +7777,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'dd848021-3d22-47ff-8774-d9e59b445676',
-    'BCHDOOM',
+    'bchdoom',
     '10X Short BCH Token',
     18,
     '0x2e185ef6684d2d0fe9d311782e0ef738d63861e0',
@@ -7785,7 +7785,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2ff29294-8469-42ae-9c5a-174fa54cccaa',
-    'BCHMOON',
+    'bchmoon',
     '10X Long BCH Token',
     18,
     '0x9003ce9e92e1105f235ca59e2bf65abd36dfdc01',
@@ -7793,7 +7793,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a4adea1a-6b0e-4de4-8c65-096dcf6b0fe4',
-    'BEARSHIT',
+    'bearshit',
     '3X Short Shitcoin Index Token',
     18,
     '0x48dee19c81b89a9ab473361bae7a19210f2deaa4',
@@ -7801,7 +7801,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '24bdc967-29f9-4e37-81a9-29f3b8ac6a80',
-    'BEND',
+    'bend',
     'Bend Token',
     18,
     '0x0d02755a5700414b26ff040e1de35d337df56218',
@@ -7809,7 +7809,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3cda6380-e5f6-4c4e-8885-5fc47608b2f1',
-    'BGBG',
+    'bgbg',
     'BigMouthFrog',
     18,
     '0x53fffb19bacd44b82e204d036d579e86097e5d09',
@@ -7817,7 +7817,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c7b298fb-0f38-4295-a312-375d4ceab8d5',
-    'BKX',
+    'bkx',
     'BANKEX',
     18,
     '0x45245bc59219eeaaf6cd3f382e078a461ff9de7b',
@@ -7825,7 +7825,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8cfd6db6-2fd5-4f06-91ee-2d6223940d61',
-    'BLCT',
+    'blct',
     'Bloomzed Loyalty Club Ticket',
     18,
     '0x6d2c508fc4a588a41713ff59212f85489291d244',
@@ -7833,7 +7833,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2d876f7c-851f-40c1-9150-02588dff53b7',
-    'BLUR-0x083',
+    'blur-0x083',
     'Blur',
     18,
     '0x08364b301177f8d05670a8034a0e644abc40230c',
@@ -7841,7 +7841,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2d997d99-62f2-4f0a-807f-be1a2b9db930',
-    'BNBDOOM',
+    'bnbdoom',
     '10X Short BNB Token',
     18,
     '0xc8e69913c0ea5d45bf67e52412eb8bcab5b9875e',
@@ -7849,7 +7849,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd709046e-d8d6-4ebf-bd1a-8e9db04ac439',
-    'BNBMOON',
+    'bnbmoon',
     '10X Long BNB Token',
     18,
     '0x7a5ce2b56dc00cb7b369ad2e1b3309abdc145bef',
@@ -7857,7 +7857,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'bc33de31-c4e6-49b1-8765-9cea0686e583',
-    'BONE',
+    'bone',
     'BONE SHIBASWAP',
     18,
     '0x9813037ee2218799597d83d4a5b6f3b6778218d9',
@@ -7865,7 +7865,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '69b7eddd-2308-4bb7-87d1-53b30cc2b8cd',
-    'BRIBE',
+    'bribe',
     'Bribe Token',
     18,
     '0xd4e12b224c316664ebb647f69abc1fb8bb2697c7',
@@ -7873,7 +7873,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f3c2bcf5-f6ec-4dad-8d51-144ddc48b934',
-    'BSVDOOM',
+    'bsvdoom',
     '10X Short Bitcoin SV Token',
     18,
     '0x91371b9bc6e90f6db3c4f4d630cf5f7700ab917c',
@@ -7881,7 +7881,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6cc03884-1d7d-45f5-b95e-616e5a08ebc9',
-    'BSVMOON',
+    'bsvmoon',
     '10X Long Bitcoin SV Token',
     18,
     '0x875ef445e0873b6c2d5e58f68113e0937ba8a441',
@@ -7889,7 +7889,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '0e20185f-69c0-4d9c-807b-753bc0c50f71',
-    'BTC2x-FLI',
+    'btc2x-fli',
     'BTC 2x Flexible Leverage Index',
     18,
     '0x0b498ff89709d3838a063f1dfa463091f9801c2b',
@@ -7897,7 +7897,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8cb4ef5c-fa8e-4f24-815e-1b65fc9ad7e1',
-    'BTMXBULL',
+    'btmxbull',
     '3X Long BTMX Token',
     18,
     '0x9885ca101dfd8f23d364874f799554c52bfee820',
@@ -7905,7 +7905,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6647929a-6b30-44e2-a420-3e3c3dbc16f6',
-    'BTSG',
+    'btsg',
     'BitSong',
     18,
     '0x05079687d35b93538cbd59fe5596380cae9054a9',
@@ -7913,7 +7913,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f3c333d4-f894-479e-8b7c-8de59e73736a',
-    'BULLSHIT',
+    'bullshit',
     '3X Long Shitcoin Index Token',
     18,
     '0xd06b25f67a17f12b41f615b34d87ecd716ff55a0',
@@ -7921,7 +7921,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5040c3d4-f0f1-4431-8a0f-edd66e747352',
-    'C3',
+    'c3',
     'C3 Finance',
     9,
     '0x7d0807e767c82f419a5a01df8eb948f674cb4114',
@@ -7929,7 +7929,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '04d8c382-941f-4e5f-bd0d-8291c6728464',
-    'C6P',
+    'c6p',
     'C6Protocol',
     9,
     '0xb682ce4a2dfe2eb83bcf2cc5d468e5580cf1fa8d',
@@ -7937,7 +7937,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '1d2a9f8d-d8f8-4011-806f-539a021b6892',
-    'CANTO',
+    'canto',
     'CANTO',
     18,
     '0xc4a8bee93ba7f2979cfdf59754993c248bc056cc',
@@ -7945,7 +7945,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '43ae6925-0be2-4a2b-a3b6-028b0f636cf4',
-    'CAPS',
+    'caps',
     'Capsule Coin',
     18,
     '0x03be5c903c727ee2c8c4e9bc0acc860cca4715e2',
@@ -7953,7 +7953,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '758dd66e-dfe4-4eb2-ab83-c7784f4c9392',
-    'cbETH',
+    'cbeth',
     'Coinbase Wrapped ETH',
     18,
     '0xbe9895146f7af43049ca1c1ae358b0541ea49704',
@@ -7961,7 +7961,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f0ff60a3-c5d0-47ac-bde3-f69cee288b6f',
-    'cDAIv2',
+    'cdaiv2',
     'Compound Dai',
     8,
     '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
@@ -7969,7 +7969,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '7a01ceff-fe46-4e24-b501-99ca9a6c1ee5',
-    'Cells',
+    'cells',
     'Dead Cells',
     18,
     '0xa29005798187a4793534f2d4d1b82fdc504c7c20',
@@ -7977,7 +7977,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '34e58b09-e439-4fa9-a943-edefd24e1cda',
-    'CHAINLINK',
+    'chainlink',
     'ChainLink Token',
     18,
     '0x126c9f453f67e3b3ab51a9f606e540f495e6238d',
@@ -7985,7 +7985,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '59ee087c-5bff-4ea9-acbd-747c9c6fca28',
-    'CHART',
+    'chart',
     'ChartEx',
     18,
     '0x1d37986f252d0e349522ea6c3b98cb935495e63e',
@@ -7993,7 +7993,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '33a27b5a-dc72-470b-b652-edd07ec1bdf2',
-    'CNFI',
+    'cnfi',
     'Connect Finance',
     18,
     '0xeabb8996ea1662cad2f7fb715127852cd3262ae9',
@@ -8001,7 +8001,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'aa6c623f-538c-4ce6-b86e-8d9b6af048b8',
-    'COLLAR',
+    'collar',
     'DOG COLLAR',
     18,
     '0x9783b81438c24848f85848f8df31845097341771',
@@ -8009,7 +8009,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'e015ea18-e731-4148-adc1-ab9443459c82',
-    'CORE',
+    'core',
     'cVault.finance',
     18,
     '0x62359ed7505efc61ff1d56fef82158ccaffa23d7',
@@ -8017,7 +8017,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6645f7fc-34a3-4ea2-8931-de96f69b5e01',
-    'Coval',
+    'coval',
     'CircuitsOfValue',
     8,
     '0x3d658390460295fb963f54dc0899cfb1c30776df',
@@ -8025,7 +8025,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ccbe1263-bcbb-438f-b620-7c6c205a1aee',
-    'COVER-PROTOCOL',
+    'cover-protocol',
     'Cover Protocol Governance Token',
     18,
     '0x4688a8b1f292fdab17e9a90c8bc379dc1dbd8713',
@@ -8033,7 +8033,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c66d7977-f9e2-43de-9cc7-88926eb1eeec',
-    'CRI',
+    'cri',
     'Crypto International',
     18,
     '0x12e951934246186f50146235d541d3bd1d463e4d',
@@ -8041,7 +8041,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8011000f-01b2-4cd8-89f1-706b95d75b89',
-    'cvxFXS',
+    'cvxfxs',
     'Convex FXS',
     18,
     '0xfeef77d3f69374f66429c91d732a244f074bdf74',
@@ -8049,7 +8049,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '53d5e303-90ec-467f-9622-439fcc448db1',
-    'DADI',
+    'dadi',
     'DADI',
     18,
     '0xfb2f26f266fb2805a387230f2aa0a331b4d96fba',
@@ -8057,7 +8057,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '186c81d5-fd6d-4201-bd07-4a9079a15502',
-    'DAOLANG',
+    'daolang',
     'Daolang Coin',
     8,
     '0x7176b713d8ff26a0b754dc3c79b6b393038be246',
@@ -8065,7 +8065,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '697a74c7-5aaa-484a-b046-ddf501dba213',
-    'DEPAY',
+    'depay',
     'DePay',
     18,
     '0xa0bed124a09ac2bd941b10349d8d224fe3c955eb',
@@ -8073,7 +8073,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3ed31ef4-6f65-4630-af4c-274e163fbe6b',
-    'DHT',
+    'dht',
     'dHedge DAO Token',
     18,
     '0xca1207647ff814039530d7d35df0e1dd2e91fa84',
@@ -8081,7 +8081,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2aced575-47d2-4632-ba04-dcbac4e12100',
-    'DNA',
+    'dna',
     'DNA',
     18,
     '0x82b0e50478eeafde392d45d1259ed1071b6fda81',
@@ -8089,7 +8089,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f33ce135-6539-41fb-9a3a-4d2eafffcf38',
-    'DNT',
+    'dnt',
     'district0x',
     18,
     '0x0abdace70d3790235af448c88547603b945604ea',
@@ -8097,7 +8097,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '39925ab0-cd3e-4770-a8cb-650e9074564e',
-    'DOG',
+    'dog',
     'The Doge NFT',
     18,
     '0xbaac2b4491727d78d2b78815144570b9f2fe8899',
@@ -8105,7 +8105,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5b1ded8d-b3b6-40ea-b693-79c4517ccd27',
-    'DOGEBEAR2021',
+    'dogebear2021',
     '3X Short Doge Coin',
     18,
     '0x5f0559b8de5b111560fe7faa31fe8135d9885169',
@@ -8113,7 +8113,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a5383490-708c-4dcb-b142-0d38fcbe8c90',
-    'DOOM',
+    'doom',
     '10X Short Bitcoin',
     18,
     '0xe1403e2972145d86f66299380ade23169580beca',
@@ -8121,7 +8121,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '60db11f3-b6c2-4ef0-8db0-b320e41bda74',
-    'DOOMSHIT',
+    'doomshit',
     '10X Short Shitcoin Index Token',
     18,
     '0x7350383f6367de8b2e042209ad1ae7e66c863a2c',
@@ -8129,7 +8129,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '940fa6b2-0653-45fb-ad49-b0f0ffd829b6',
-    'DOSE',
+    'dose',
     'DOSE',
     18,
     '0xb31ef9e52d94d4120eb44fe1ddfde5b4654a6515',
@@ -8137,7 +8137,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '259f4ed8-4efb-473e-be61-aec8f2e8cf56',
-    'DOTK',
+    'dotk',
     'DOTK',
     10,
     '0xbd456a9a8e364b205171341243ce29ddadfefef9',
@@ -8145,7 +8145,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f1472f12-b48c-4b81-9842-734769c7c00e',
-    'DPAY',
+    'dpay',
     'Devour',
     18,
     '0xe5a733681bbe6cd8c764bb8078ef8e13a576dd78',
@@ -8153,7 +8153,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5d38a031-0d6f-41fb-bfc0-fabd941a794b',
-    'DPY',
+    'dpy',
     'Delphy Token',
     18,
     '0x6c2adc2073994fb2ccc5032cc2906fa221e9b391',
@@ -8161,7 +8161,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b11785f7-926a-4776-9e84-d794aa73eed2',
-    'DUCK',
+    'duck',
     'Unit Protocol',
     18,
     '0x92e187a03b6cd19cb6af293ba17f2745fd2357d5',
@@ -8169,7 +8169,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '1c4a8c66-7237-469b-a588-06128c094ea9',
-    'DUSD',
+    'dusd',
     'DefiDollar',
     18,
     '0x5bc25f649fc4e26069ddf4cf4010f9f706c23831',
@@ -8177,7 +8177,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd657ed48-ccc5-4cc8-ad36-4a3b331a139b',
-    'EDO',
+    'edo',
     'Eidoo',
     18,
     '0xced4e93198734ddaff8492d525bd258d49eb388e',
@@ -8185,7 +8185,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'fe5cafad-304b-4619-9729-f9f263039876',
-    'ELON',
+    'elon',
     'Dogelon',
     18,
     '0x761d38e5ddf6ccf6cf7c55759d5210750b5d60f3',
@@ -8193,7 +8193,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3957c960-e422-43d8-9262-12f368d698c2',
-    'EON',
+    'eon',
     'EOS Network',
     18,
     '0x3032b9e916a575db2d5a0c865f413a82891bd260',
@@ -8201,7 +8201,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '818912d9-f769-48d1-8501-3f35501e3a4f',
-    'EOP',
+    'eop',
     'EOSpace',
     18,
     '0xb562ec0261a9cb550a5fbcb46030088f1d6a53cf',
@@ -8209,7 +8209,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '66aa4409-057d-4132-9b01-63557ecfb14f',
-    'EOSDOOM',
+    'eosdoom',
     '10X Short EOS Token',
     18,
     '0x50f044bf65cc7cf0d4814cfda69748539f6c4fa3',
@@ -8217,7 +8217,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '27c3c7bc-0111-46cb-a41a-0d55b948765f',
-    'EOSMOON',
+    'eosmoon',
     '10X Long EOS Token',
     18,
     '0x4aaff81cfe81523b1c4f6b6c075ebf9bbdb094c9',
@@ -8225,7 +8225,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '26fad4f0-1f51-486b-80b2-0ffe07afc74b',
-    'ETCDOOM',
+    'etcdoom',
     '10X Short ETC Token',
     18,
     '0x7d1234e0b45acb7dadc321325ba113a6f7caa7ee',
@@ -8233,7 +8233,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f84db1de-5ef1-4fd1-bac5-cbe2b73aac4d',
-    'ETCHEDOOM',
+    'etchedoom',
     '1X Short Ethereum Classic Token',
     18,
     '0x57e2b08e74b2b2c041e8b7bbb48bf1cdc6b8afb6',
@@ -8241,7 +8241,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8452498e-1c70-4293-b9b2-9239ef4808fa',
-    'ETCMOON',
+    'etcmoon',
     '10X Long ETC token',
     18,
     '0x827e75a2c5f3cc0b2fef9273f6ae4518551ecafb',
@@ -8249,7 +8249,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '9a858558-496a-4898-bb67-b7763aabd460',
-    'ETHDOOM',
+    'ethdoom',
     '10X Short ETH',
     18,
     '0x03fdf7faddabebd21abf7185d205320d78622b56',
@@ -8257,7 +8257,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '01123699-1a1c-4d62-8089-af171d4d63b7',
-    'ETHMOON',
+    'ethmoon',
     '10X Long ETH',
     18,
     '0x5dcfa62f81b43ce7a3632454d327dee1f1d93b28',
@@ -8265,7 +8265,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a010b57a-4ba9-4fc5-a311-7aacf487a335',
-    'ETHOPT',
+    'ethopt',
     'ethopt.io',
     18,
     '0x7d25d9f10cd224ecce0bc824a2ec800db81c01d7',
@@ -8273,7 +8273,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '008145a9-f2d1-44d1-9eec-758d64b6b353',
-    'ETX',
+    'etx',
     'Ethereum Dex',
     18,
     '0x2a69219523a3c3372b26de059352302a30efe982',
@@ -8281,7 +8281,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'bd850e5e-a524-4ed0-a3ee-ec3d5b183b8a',
-    'EXCHBEAR',
+    'exchbear',
     '3X Short Exchange Token Index Token',
     18,
     '0x6baa91cd8aa07431760ef2eedfedcef662a6b8b3',
@@ -8289,7 +8289,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '0bc8e068-a0a3-4f61-accc-47d6eabee6b6',
-    'EXCHBULL',
+    'exchbull',
     '3X Long Exchange Token Index Token',
     18,
     '0x592ef68c18f05a22c5890263dea5d952dd140d2a',
@@ -8297,7 +8297,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '475bcb2b-bdc7-4935-acb2-a275c1ea1928',
-    'EXCHDOOM',
+    'exchdoom',
     '10X Short Exchange Token Index Token',
     18,
     '0xc3f206e06b33c3f5df9b95b8294a5e71f09480ab',
@@ -8305,7 +8305,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ba4cb219-2c73-41c8-9b28-59c37203f821',
-    'EXCHHEDGE',
+    'exchhedge',
     '1X Short Exchange Token Index Token',
     18,
     '0xf8cc67e304f8e1a351ed83b4dbbe6b4076d51376',
@@ -8313,7 +8313,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ddb30411-5996-4f84-82b8-c4fc765848eb',
-    'EXCHMOON',
+    'exchmoon',
     '10X Long EXCH token',
     18,
     '0x456bd836910b3853dc22529dbc2cbe072d967141',
@@ -8321,7 +8321,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'dd5f8544-3127-47ce-bfdf-356ef5371236',
-    'FF6000',
+    'ff6000',
     'FF6000',
     18,
     '0x71f0e3a967be5fd797c543464b1d652dd4f9b480',
@@ -8329,7 +8329,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a48a7080-55a7-45d3-8f55-a9dd5cda9daa',
-    'FIDU',
+    'fidu',
     'Fidu',
     18,
     '0x6a445e9f40e0b97c92d0b8a3366cef1d67f700bf',
@@ -8337,7 +8337,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'bd719efc-d0d9-4300-8387-1f2e541097d4',
-    'FIN',
+    'fin',
     'DeFiner Protocol',
     9,
     '0x8604099ddda943fe46087daf52175970c980a352',
@@ -8345,7 +8345,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '187b1dcf-2ba0-46d8-9e48-6ffbf47d1fab',
-    'FIRSTBLOOD',
+    'firstblood',
     'FirstBlood',
     18,
     '0xaf30d2a7e90d7dc361c8c4585e9bb7d2f6f15bc7',
@@ -8353,7 +8353,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '951f8e8f-b0c6-46b5-8268-56e89d01786a',
-    'FOREX',
+    'forex',
     'handleFOREX',
     18,
     '0xdb298285fe4c5410b05390ca80e8fbe9de1f259b',
@@ -8361,7 +8361,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'fafa98f4-914e-4f95-b23d-f3cb101ea2fb',
-    'FPIS',
+    'fpis',
     'Frax Price Index Share',
     18,
     '0xc2544a32872a91f4a553b404c6950e89de901fdb',
@@ -8369,7 +8369,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3f5eab61-886c-407e-9441-a6e2efe82c1e',
-    'FTT2.0',
+    'ftt2.0',
     'FTX Token v2.0',
     18,
     '0x30b008432f90ce1c0f5333e0599b7644b5c12307',
@@ -8377,7 +8377,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6a9e697f-60c7-4c36-9448-937777c36bbf',
-    'FTX2',
+    'ftx2',
     'FTX 2.0',
     18,
     '0x0a835974ca6e9e6364393f1832777efa55abb682',
@@ -8385,7 +8385,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'e3b62915-c63c-4520-9a3b-58d7f118bde6',
-    'FuckFTX',
+    'fuckftx',
     'FTX 2.0',
     9,
     '0x5df16ba228b6cc7bc7933f1e419635ad2b998f17',
@@ -8393,7 +8393,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ebca8d18-9620-4251-9a85-5ebcbf472857',
-    'FX',
+    'fx',
     'Function X',
     18,
     '0x8c15ef5b4b21951d50e53e4fbda8298ffad25057',
@@ -8401,7 +8401,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd21a8de0-b00e-4433-b79c-303c7e3bb02d',
-    'GAME.COM',
+    'game.com',
     'Game.com Token',
     18,
     '0xb70835d7822ebb9426b56543e391846c107bd32c',
@@ -8409,7 +8409,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6188efd6-30da-4365-8304-dafab92d0ddb',
-    'GEAR',
+    'gear',
     'Gearbox',
     18,
     '0xba3335588d9403515223f109edc4eb7269a9ab5d',
@@ -8417,7 +8417,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5a2d0e56-364e-4597-89c7-3eaa7848ac03',
-    'GIV',
+    'giv',
     'GIVToken',
     8,
     '0xf6537fe0df7f0cc0985cf00792cc98249e73efa0',
@@ -8425,7 +8425,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'aea7e782-d738-46b9-8210-74fac383bd09',
-    'GOM',
+    'gom',
     'Gomics',
     18,
     '0xb8c6ad2586bb71d518c2aaf510efe91f82022f58',
@@ -8433,7 +8433,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'cf6b9c8e-2036-44bf-8fb8-fd753e81a5da',
-    'GOMINING',
+    'gomining',
     'GoMining Token',
     18,
     '0x7ddc52c4de30e94be3a6a0a2b259b2850f421989',
@@ -8441,7 +8441,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b0f523d5-ee4f-4c61-b9a7-a09fbd826b7b',
-    'GRID',
+    'grid',
     'GRID',
     12,
     '0x12b19d3e2ccc14da04fae33e63652ce469b3f2fd',
@@ -8449,7 +8449,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f3f48ca8-ee68-4e84-9f20-48327d33340c',
-    'GXT',
+    'gxt',
     'Gem Exchange',
     18,
     '0x4674672bcddda2ea5300f5207e1158185c944bc0',
@@ -8457,7 +8457,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '18e24c56-99cc-41ca-bfd9-2fcb7b5fc4c8',
-    'HBTC',
+    'hbtc',
     'Huobi BTC',
     18,
     '0x0316eb71485b0ab14103307bf65a021042c6d380',
@@ -8465,7 +8465,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '79f20b87-2c7e-4bc8-8c0c-79af273372c8',
-    'HEDGESHIT',
+    'hedgeshit',
     '1X Short Shitcoin Index Token',
     18,
     '0x1d9cd2180fd4e9771fca28681034d02390b14e4c',
@@ -8473,7 +8473,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a4334b0a-f28c-4e7d-9f36-2c2f239ad7ac',
-    'HIT',
+    'hit',
     'HitchainCoin',
     6,
     '0x7995ab36bb307afa6a683c24a25d90dc1ea83566',
@@ -8481,7 +8481,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2cf4fcb3-bbc2-4808-aef8-c1da770f2fcf',
-    'HOP',
+    'hop',
     'Hop',
     18,
     '0xc5102fe9359fd9a28f877a67e36b0f050d81a3cc',
@@ -8489,7 +8489,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'abe06a07-48f0-4af1-a474-43b8300a00c5',
-    'HPO',
+    'hpo',
     'Hippocrat',
     18,
     '0xfe39c384d702914127a005523f9915addb9bd59b',
@@ -8497,7 +8497,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '189e3443-3bde-4644-ac66-c7b068463c4f',
-    'HQG',
+    'hqg',
     'HQG',
     6,
     '0x57b9d10157f66d8c00a815b5e289a152dedbe7ed',
@@ -8505,7 +8505,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a4fb8090-20de-4eeb-9213-0408fc5cb618',
-    'HTBEAR',
+    'htbear',
     '3X Short HT token',
     18,
     '0x86eb791495be777db763142a2c547d1112554fb8',
@@ -8513,7 +8513,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '974cadb8-897a-41f9-8ec4-e2edcd3e05c8',
-    'HTDOOM',
+    'htdoom',
     '10X Short HT token',
     18,
     '0xeef85c9d7486748aae4a26aa55eeb82a62e631c3',
@@ -8521,7 +8521,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '627cc067-393d-4d4f-9c4f-b748f6007e07',
-    'HTHEDGE',
+    'hthedge',
     '1X Short HT token',
     18,
     '0x3008186fe6e3bca6d1362105a48ec618672ce5b3',
@@ -8529,7 +8529,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'bc7351c5-2a37-43de-88ad-ef2b9d9e745b',
-    'HTMOON',
+    'htmoon',
     '10X Long HT token',
     18,
     '0xb621bb8064a1b2b2d6c2fd4330293f3e7acbc15f',
@@ -8537,7 +8537,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'cd3e2201-4d04-45af-a57d-31683ebdef3f',
-    'HUMv2',
+    'humv2',
     'Humanscape',
     18,
     '0x07327a00ba28d413f745c931bbe6be053b0ad2a6',
@@ -8545,7 +8545,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '41fdb26b-701f-4b0b-a156-083b58292829',
-    'HYDROPROTOCOL',
+    'hydroprotocol',
     'Hydro Protocol',
     18,
     '0x9af839687f6c94542ac5ece2e317daae355493a1',
@@ -8553,7 +8553,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6b31316f-9b23-487b-88a8-0bc7c341c3a7',
-    'ibEUR',
+    'ibeur',
     'Iron Bank EUR',
     18,
     '0x96e61422b6a9ba0e068b6c5add4ffabc6a4aae27',
@@ -8561,7 +8561,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4260dbbf-0bc3-44d4-8f73-ec2a1e89c75d',
-    'IBOX',
+    'ibox',
     'IBOX TOKEN',
     18,
     '0xc04323308419b10a5929ffcfd577f88629222222',
@@ -8569,7 +8569,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c676e5f1-302e-4acf-a765-0ab130a25154',
-    'ILV',
+    'ilv',
     'Illuvium',
     18,
     '0x767fe9edc9e0df98e07454847909b5e959d7ca0e',
@@ -8577,7 +8577,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ff2c12c2-56ac-4c9e-b647-28aaac333fc5',
-    'INSUR',
+    'insur',
     'InsurChain2',
     18,
     '0x51fb3da8a67861361281ac56fe2ad8c3b4539ffa',
@@ -8585,7 +8585,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd87cc72a-8375-4b8e-adfc-86e0d9789cbd',
-    'IOTX',
+    'iotx',
     'IoTeX Network',
     18,
     '0x6fb3e0a217407efff7ca062d46c26e5d60a14d69',
@@ -8593,7 +8593,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'cdb93766-f5e8-4a87-9275-f4a408638c43',
-    'KARMA',
+    'karma',
     'Karma',
     4,
     '0xdfe691f37b6264a90ff507eb359c45d55037951c',
@@ -8601,7 +8601,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'bf153900-e902-41c2-a774-3609172928a9',
-    'KCASH',
+    'kcash',
     'Kcash',
     18,
     '0x32d74896f05204d1b6ae7b0a3cebd7fc0cd8f9c7',
@@ -8609,7 +8609,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f82b2f31-3437-46a1-bca8-35a991551a1c',
-    'KILL0',
+    'kill0',
     'Killerof0',
     18,
     '0x770c6eee2da5d23ecb27cc09dbb0243e3dc40418',
@@ -8617,7 +8617,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '470a8b14-32a0-43e7-b2b1-a1b821e8dcc4',
-    'Kishui',
+    'kishui',
     'Kishui.org',
     0,
     '0xe9e00b759378fe58c16e7fb49ff3de6cf1ec1adb',
@@ -8625,7 +8625,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '468d158e-dc8c-4cda-b687-c509711bb2d2',
-    'KOL',
+    'kol',
     'Kollect',
     18,
     '0x1cc30e2eac975416060ec6fe682041408420d414',
@@ -8633,7 +8633,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '704e5fc2-e25d-4772-918b-42b70c5a71c5',
-    'LA',
+    'la',
     'LAtoken',
     18,
     '0xe50365f5d679cb98a1dd62d6f6e58e59321bcddf',
@@ -8641,7 +8641,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2071f805-1e50-4d6a-a5e8-4022341cdb12',
-    'LAYERZERO',
+    'layerzero',
     'LAYER ZERO',
     18,
     '0x4656f822010a29543d1b5f67f9fe577f51a67260',
@@ -8649,7 +8649,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2ab324f6-2b9d-4bd5-8fe4-5aed1d52a047',
-    'LEOBEAR',
+    'leobear',
     '3X Short LEO token',
     18,
     '0x3c955e35b6da1ff623d38d750c85b3aed89a10c1',
@@ -8657,7 +8657,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5830d5f1-4a70-4872-9dde-60e01b99c224',
-    'LEOBULL',
+    'leobull',
     '3X Long LEO Token',
     18,
     '0xc2685307ef2b8842fbf3def432408c46bd0420fd',
@@ -8665,7 +8665,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'bdb470a3-93c9-4a2f-908a-01c0af737dbf',
-    'LEODOOM',
+    'leodoom',
     '10X Short LEO Token',
     18,
     '0x22f39b18d17665177f1ac88d6da4861b13be07df',
@@ -8673,7 +8673,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '80c066f2-8298-4c29-9e9a-c14dc680ec76',
-    'LEOHEDGE',
+    'leohedge',
     '1X Short LEO Token',
     18,
     '0xd83c5c357969628272def87dcdb5b66352dfd794',
@@ -8681,7 +8681,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2d97c3c3-9ff6-4706-b2bd-3096ecd4d32a',
-    'LEOMOON',
+    'leomoon',
     '10X Long LEO Token',
     18,
     '0xcfeb236743bd4b3789d28bbea9dc4ef0792c87f9',
@@ -8689,7 +8689,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd3b7776c-764c-4741-b956-67cd7ca86b35',
-    'LEV',
+    'lev',
     'Leverj',
     9,
     '0x0f4ca92660efad97a9a70cb0fe969c755439772c',
@@ -8697,7 +8697,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2963170f-2c71-489a-b772-7e571b2683cb',
-    'LIEN',
+    'lien',
     'lien',
     8,
     '0xab37e1358b639fd877f015027bb62d3ddaa7557e',
@@ -8705,7 +8705,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '618813cf-6c14-431b-aa37-3018d8ca1ca0',
-    'LITH',
+    'lith',
     'Lithium',
     18,
     '0x188e817b02e635d482ae4d81e25dda98a97c4a42',
@@ -8713,7 +8713,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6efdcefd-fe21-4e85-962d-aa869e6eec6c',
-    'LKR',
+    'lkr',
     'Polkalokr',
     18,
     '0x80ce3027a70e0a928d9268994e9b85d03bd4cdcf',
@@ -8721,7 +8721,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ce92918a-54ab-4d78-9b2d-dbc1b6a58b02',
-    'LOVE',
+    'love',
     'UkraineDAO Flag',
     18,
     '0x5380442d3c4ec4f5777f551f5edd2fa0f691a27c',
@@ -8729,7 +8729,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '24929a4b-d237-4224-8580-b425bcf0cfaa',
-    'LPT',
+    'lpt',
     'Livepeer Token',
     18,
     '0x58b6a8a3302369daec383334672404ee733ab239',
@@ -8737,7 +8737,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '1a28e2bc-3b45-45fd-a116-7bc6ed625835',
-    'LTCDOOM',
+    'ltcdoom',
     '10X Short Litecoin',
     18,
     '0x31e15a071a5340f0393ea98dde3a095d64206a02',
@@ -8745,7 +8745,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5aa02f95-1fd6-4a59-9971-028cc7db646c',
-    'LTCHEDGE',
+    'ltchedge',
     '1X Short Litecoin',
     18,
     '0xd0c64d6c0e9aa53fffd8b80313e035f7b83083f3',
@@ -8753,7 +8753,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c2c7ef39-49d7-425f-badc-fcf21dca9dda',
-    'LTCMOON',
+    'ltcmoon',
     '10X Long Litecoin token',
     18,
     '0x08da69ca2bfe378f384cb76c84d6ded701ec65c7',
@@ -8761,7 +8761,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '7189b0aa-b4be-4fe9-8ad6-c02a948a21c3',
-    'LUNA-wormhole',
+    'luna-wormhole',
     'LUNA (Wormhole)',
     6,
     '0xbd31ea8212119f94a611fa969881cba3ea06fa3d',
@@ -8769,7 +8769,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '1997e4ed-06ce-40f0-bddf-5352676a5b04',
-    'LYXe',
+    'lyxe',
     'LUKSO',
     18,
     '0xa8b919680258d369114910511cc87595aec0be6d',
@@ -8777,7 +8777,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd9371bee-e3f9-4a3b-8c59-209b39e92587',
-    'MANTRADAO',
+    'mantradao',
     'MANTRA DAO',
     18,
     '0x3593d125a4f7849a1b059e64f4517a86dd60c95d',
@@ -8785,7 +8785,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '528e1b1a-d94d-46a3-8854-ba243c89cc81',
-    'MATICBEAR2021',
+    'maticbear2021',
     '3X Short Matic Token',
     18,
     '0xc96bfa5517dad3c9c9575411b51f93fde98607bc',
@@ -8793,7 +8793,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2c8a98da-1928-481f-8cb7-9ee6164e6758',
-    'MIDBEAR',
+    'midbear',
     '3X Short Midcap Index Token',
     18,
     '0xc82abb524257c8ee4790bfdefb452b2d6a395e21',
@@ -8801,7 +8801,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6fffdca9-d9b0-4935-84e0-583cd71da346',
-    'MIDDOOM',
+    'middoom',
     '10X Short Midcap Index Token',
     18,
     '0xfbccadbe483adfac499c82ac31d17965043f6174',
@@ -8809,7 +8809,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'cec977c0-1756-4dbe-aa22-3f83e5cc2677',
-    'MIDHEDGE',
+    'midhedge',
     '1X Short Midcap Index Token',
     18,
     '0xbed04d5ba351fb2a93470bee04babb32d7f6817c',
@@ -8817,7 +8817,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ccf29ebe-e5fc-4ff0-9aed-d10df2fae39d',
-    'MIDMOON',
+    'midmoon',
     '10X Long Midcap Index Token',
     18,
     '0x24982f160803daca0233661d1860de77046519a4',
@@ -8825,7 +8825,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '59eaadcd-9bf9-4986-8eb7-9c2a8b1c85d5',
-    'MOCHI',
+    'mochi',
     'Mochi Inu',
     18,
     '0x60ef10edff6d600cd91caeca04caed2a2e605fe5',
@@ -8833,7 +8833,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3bc25fbf-bad2-48cf-aa68-2775c04dfed8',
-    'MOH',
+    'moh',
     'Medal of Honour',
     18,
     '0xa59e341e8047498700ed244814b01b34547fb21b',
@@ -8841,7 +8841,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd10fca6c-314b-4d7a-9ea2-fd85455c7c8a',
-    'MOON',
+    'moon',
     '10X Long Bitcoin Token',
     18,
     '0xba7cdd0953e8f950317dda347a716f162713b226',
@@ -8849,7 +8849,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4900872b-62dc-49b9-932c-9e4004f6ebfe',
-    'MOONSHIT',
+    'moonshit',
     '10X Long Shitcoin Index Token',
     18,
     '0xf5312da58ab6c1706d651ed9fcd3ca000c3a25b7',
@@ -8857,7 +8857,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '280e08c8-616e-4b57-8ebc-d012142be0ae',
-    'MRTWEET',
+    'mrtweet',
     'Mr. Tweet',
     18,
     '0x9822dcbbc139947dd7bb684033855365078c32fc',
@@ -8865,7 +8865,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '54e22bcd-9cc4-41b8-b737-e87e916f92a4',
-    'MTH',
+    'mth',
     'Monetha',
     5,
     '0xaf4dce16da2877f8c9e00544c93b62ac40631f16',
@@ -8873,7 +8873,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3984e08f-46e3-4fd9-9ca2-36773506ae39',
-    'MTV',
+    'mtv',
     'MultiVAC',
     18,
     '0x6226e00bcac68b0fe55583b90a1d727c14fab77f',
@@ -8881,7 +8881,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '15bf51c0-4755-4e2c-a79c-77c4fb22710d',
-    'NAAI',
+    'naai',
     'NeoAudit AI',
     9,
     '0xf4a7b9aa94a637573dd01a8ba0be08418cefe7a1',
@@ -8889,7 +8889,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '74b4c98d-9a8f-4023-92a6-84e590a23b91',
-    'NEAR-erc20',
+    'near-erc20',
     'NEAR (ERC20 token)',
     24,
     '0x85f17cf997934a597031b2e18a9ab6ebd4b9f6a4',
@@ -8897,7 +8897,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '112cdedc-bef9-4671-a94b-8d822d85fed8',
-    'NEWO',
+    'newo',
     'New Order',
     18,
     '0x1b890fd37cd50bea59346fc2f8ddb7cd9f5fabd5',
@@ -8905,7 +8905,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a79873a3-c5bb-4736-a73c-190e98c51626',
-    'NFCWIN-SB-2021',
+    'nfcwin-sb-2021',
     'National Football Conference Wins Superbowl 2021',
     18,
     '0xc00eac79f7e9afa63906b2cff42caf97a9bc7bd8',
@@ -8913,7 +8913,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b209e34c-b6e4-4fe2-91ba-44c176c69595',
-    'NKN',
+    'nkn',
     'NKN',
     18,
     '0x5cf04716ba20127f1e2297addcf4b5035000c9eb',
@@ -8921,7 +8921,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '9d5c57ac-1f0d-4934-875d-a91c60110122',
-    'NOTE',
+    'note',
     'Notional',
     18,
     '0xcfeaead4947f0705a14ec42ac3d44129e1ef3ed5',
@@ -8929,7 +8929,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b46508f0-6b95-47f6-93d3-afc6d7fb25bf',
-    'NUTS',
+    'nuts',
     'NutsDAO',
     18,
     '0x981dc247745800bd2ca28a4bf147f0385eaa0bc0',
@@ -8937,7 +8937,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f54c530a-be45-4e47-a210-5196d961e4ad',
-    'OAX',
+    'oax',
     'OpenANX',
     18,
     '0x701c244b988a513c945973defa05de933b23fe1d',
@@ -8945,7 +8945,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5976d607-e3cf-47f2-b214-a77c0a0e53f2',
-    'OCTAV',
+    'octav',
     'Octav',
     9,
     '0x8bc8eddd7eddd80ec96320a3500cb84310c3c1f5',
@@ -8953,7 +8953,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '16b0558b-e0ec-4447-9f92-6c421c77d70b',
-    'OGV',
+    'ogv',
     'Origin Dollar',
     18,
     '0x9c354503c38481a7a7a51629142963f98ecc12d0',
@@ -8961,7 +8961,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '0f56f27d-2e1c-4411-95ae-543c5af3499b',
-    'OKBBEAR',
+    'okbbear',
     '3X Short OKB token',
     18,
     '0x053e5ba7cb9669dcc2feb2d0e1d3d4a0ad6aae39',
@@ -8969,7 +8969,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3edc602e-3dd8-459e-93de-e840448769a7',
-    'OKBDOOM',
+    'okbdoom',
     '10X Short OKB token',
     18,
     '0x2474ca2e5a1ce0ca904ca512530c2555048603be',
@@ -8977,7 +8977,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a47f48a2-bd1b-4a39-9e4c-a3ed2a910e25',
-    'OKBHEDGE',
+    'okbhedge',
     '1X Short OKB token',
     18,
     '0x889bc62e94bb6902d022bb82b38f7fcd637df28c',
@@ -8985,7 +8985,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b18846e8-1780-4568-bd94-25fc26559888',
-    'OKBMOON',
+    'okbmoon',
     '10X Long OKB Token',
     18,
     '0xa160d857fced9436a57c6a405b2f379aceb83186',
@@ -8993,7 +8993,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8c90ecef-9a98-4bbf-95df-92994488a363',
-    'OPIUM',
+    'opium',
     'Opium Governance Token',
     18,
     '0x888888888889c00c67689029d7856aac1065ec11',
@@ -9001,7 +9001,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4287bdbf-8771-48a9-ace5-b3657abb312a',
-    'ORC',
+    'orc',
     'Orbit Chain',
     18,
     '0x662b67d00a13faf93254714dd601f5ed49ef2f51',
@@ -9009,7 +9009,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd9aab455-040e-4032-b9bb-1d2b0d0aa1e2',
-    'OS',
+    'os',
     'OpenSea',
     18,
     '0x9e90dbfbf397aabbbdb99cfdd793ea62bcbddb2c',
@@ -9017,7 +9017,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '41484126-a598-4ebb-a175-145bf5c09f47',
-    'OUSD',
+    'ousd',
     'OpenSea',
     18,
     '0x2a8e1e676ec238d8a992307b495b45b3feaa5e86',
@@ -9025,7 +9025,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '980dfde9-6849-43aa-8e49-d4fd527e622c',
-    'PAXGBEAR',
+    'paxgbear',
     '3X Short PAX Gold Token',
     18,
     '0x3c4a46f0c075a7f191a7459bb51eb1f81ac36f8a',
@@ -9033,7 +9033,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '1e0ae184-26d8-4aa4-9ef0-a173d229f493',
-    'PAXGBULL',
+    'paxgbull',
     '3X Long PAX Gold Token',
     18,
     '0x81f09ed4b98b1c8e99b1fa838b72acb842afe94c',
@@ -9041,7 +9041,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '96a766b4-6164-4a71-a368-cdf641cbcc2a',
-    'PEBBLE',
+    'pebble',
     'Etherrock #72',
     18,
     '0xdc98c5543f3004debfaad8966ec403093d0aa4a8',
@@ -9049,7 +9049,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8eda6522-c57a-40ea-a059-95f8ebaa4c91',
-    'PENDLE',
+    'pendle',
     'Pendle',
     18,
     '0x808507121b80c02388fad14726482e061b8da827',
@@ -9057,7 +9057,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ea142e4d-82c9-49a0-afc0-68b47e18091f',
-    'PHA',
+    'pha',
     'Phala',
     18,
     '0x6c5ba91642f10282b576d91922ae6448c9d52f4e',
@@ -9065,7 +9065,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '096f173b-d9f8-4cfd-84b1-b57866c6ea54',
-    'PICK',
+    'pick',
     'PICK',
     18,
     '0x1250c8f5099902ddfb574474612436b0b5db0a15',
@@ -9073,7 +9073,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f77ed2df-bad2-4300-b1d2-a1f6871081ac',
-    'PICKLE',
+    'pickle',
     'PickleToken',
     18,
     '0x429881672b9ae42b8eba0e26cd9c73711b891ca5',
@@ -9081,7 +9081,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5662dc67-faa9-4359-bca7-57d6d40585f1',
-    'PINE',
+    'pine',
     'Pine Token',
     18,
     '0x569424c5ee13884a193773fdc5d1c5f79c443a51',
@@ -9089,7 +9089,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '94e47b5b-c0ac-4634-bcdb-b321f12d6953',
-    'POLS',
+    'pols',
     'Polkastarter',
     18,
     '0x83e6f1e41cdd28eaceb20cb649155049fac3d5aa',
@@ -9097,7 +9097,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '7735bd50-ad70-4413-ad6a-d69ea3d66d10',
-    'PONYS',
+    'ponys',
     'My Little Pony',
     9,
     '0x350463c9ff85f33fe85ee13342b16012161103ff',
@@ -9105,7 +9105,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd0f912da-e629-4bad-8481-0f74719ef21e',
-    'PROS',
+    'pros',
     'Prosper',
     18,
     '0x8642a849d0dcb7a15a974794668adcfbe4794b56',
@@ -9113,7 +9113,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4706c998-8d2a-43ae-b1ac-84a7944f4b36',
-    'PSP',
+    'psp',
     'ParaSwap',
     18,
     '0xcafe001067cdef266afb7eb5a286dcfd277f3de5',
@@ -9121,7 +9121,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'bbf37c93-425b-4c92-963b-370819e61455',
-    'QOM',
+    'qom',
     'Shiba Predator',
     18,
     '0xa71d0588eaf47f12b13cf8ec750430d21df04974',
@@ -9129,7 +9129,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '54c88c22-a645-4153-8e3f-ad69ae1504e5',
-    'RALPH',
+    'ralph',
     'Rekt Ralph',
     18,
     '0x60f99e81d7e9634d1de93af5301e3321c960a575',
@@ -9137,7 +9137,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '788e5fa3-b67b-49e8-9f4f-0e34fd54a25d',
-    'RAZOR',
+    'razor',
     'RAZOR',
     18,
     '0x50de6856358cc35f3a9a57eaaa34bd4cb707d2cd',
@@ -9145,7 +9145,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '80349ac1-7290-473a-bb2c-241bd058a042',
-    'RBANK',
+    'rbank',
     'Rural Bank',
     9,
     '0x3ebfab65b8e233ae6f53d8baf9104af5a49c060d',
@@ -9153,7 +9153,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd90f15af-3ca4-4ca3-9e74-8ad860779a69',
-    'RBN',
+    'rbn',
     'Ribbon',
     18,
     '0x6123b0049f904d730db3c36a31167d9d4121fa6b',
@@ -9161,7 +9161,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '47d812d2-3641-475a-9839-6507b20f8441',
-    'RCT',
+    'rct',
     'realchain',
     18,
     '0x13f25cd52b21650caa8225c9942337d914c9b030',
@@ -9169,7 +9169,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c77cccc8-fbfb-4892-bb42-c0decda21acf',
-    'REF',
+    'ref',
     'RefToken',
     8,
     '0x89303500a7abfb178b274fd89f2469c264951e1f',
@@ -9177,7 +9177,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '066ebf64-043a-4cc8-9b72-1f8b11a8bc32',
-    'REKT',
+    'rekt',
     '$REKT',
     18,
     '0x4f8b986ecffe7bed5dbeb2b49310fb00ca85a539',
@@ -9185,7 +9185,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3c5ebcde-83d7-4211-9bf2-44dfb3ff6c23',
-    'REKTGAME',
+    'rektgame',
     'RektGAME',
     18,
     '0xe627b9cda8398859f5f8d3f7e1cb48ec262aa4a6',
@@ -9193,7 +9193,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4741e5c2-30c7-4c31-813a-8102b87b49cd',
-    'renBTC',
+    'renbtc',
     'renBTC',
     8,
     '0xeb4c2781e4eba804ce9a9803c67d0893436bb27d',
@@ -9201,7 +9201,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'df2d7e93-5c21-4074-8785-c42e018c14b6',
-    'rETH-rocket',
+    'reth-rocket',
     'Rocket Pool ETH',
     18,
     '0xae78736cd615f374d3085123a210448e74fc6393',
@@ -9209,7 +9209,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '588c7eb4-02fa-4a80-9a0d-158e53d10320',
-    'rETH-stafi',
+    'reth-stafi',
     'StaFi (rETH)',
     18,
     '0x9559aaa82d9649c7a7b220e7c461d2e74c9a3593',
@@ -9217,7 +9217,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b2e16c4e-9e9d-4af2-a6a0-0227297be2ec',
-    'REVV',
+    'revv',
     'REVV',
     18,
     '0x557b933a7c2c45672b610f8954a3deb39a51a8ca',
@@ -9225,7 +9225,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '9f0bb336-b6a9-4a58-9841-333b836ef186',
-    'RND',
+    'rnd',
     'random',
     18,
     '0x1c7e83f8c581a967940dbfa7984744646ae46b29',
@@ -9233,7 +9233,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5e2c5e7d-ee76-4a1f-8d2f-2825c65df156',
-    'RYOSHI',
+    'ryoshi',
     'Ryoshis Vision',
     18,
     '0x777e2ae845272a2f540ebf6a3d03734a5a8f618e',
@@ -9241,7 +9241,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '76db084a-0a7d-4cf3-a717-80d7f0294c19',
-    'SAITABIT',
+    'saitabit',
     'SAITABIT',
     18,
     '0x927402ab67c0cda3c187e9dfe34554ac581441f2',
@@ -9249,7 +9249,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd8eb63ae-e952-46d7-9813-dc5151048a89',
-    'SBF',
+    'sbf',
     'SAM BANKMAN FRAUD',
     18,
     '0x74d4f4cb4fdaf47ae4d713470690440133b26086',
@@ -9257,7 +9257,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd93761b5-616c-486a-b02b-22f5ff9683ba',
-    'SDL',
+    'sdl',
     'Saddle DAO',
     18,
     '0xf1dc500fde233a4055e25e5bbf516372bc4f6871',
@@ -9265,7 +9265,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2247fe1f-85f4-4db9-b2a8-102f342c5d0c',
-    'SETH',
+    'seth',
     'Shethereum Coin',
     9,
     '0xf9062eddfc82aa2c72bb1ec219763a846a6ef828',
@@ -9281,7 +9281,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '0debe83f-4be4-4c3f-82b7-6ab4c75c5251',
-    'SHEESH',
+    'sheesh',
     'Sheesha Finance',
     18,
     '0x232fb065d9d24c34708eedbf03724f2e95abe768',
@@ -9289,7 +9289,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a9311a0c-a5c8-454e-a7f9-3eaf1e437127',
-    'SHIDO',
+    'shido',
     'Shido',
     18,
     '0x72c60bfffef18dca51db32b52b819a951b6ddbed',
@@ -9297,7 +9297,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd734e190-f350-4474-9688-e68c47183605',
-    'Show',
+    'show',
     'ShowCoin2.0',
     18,
     '0xf41861f194e7ba8de95144a89e0c6ed16ee0b3a0',
@@ -9305,7 +9305,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '910e9128-ff83-43d4-9290-82b93659f439',
-    'SNM',
+    'snm',
     'SONM',
     18,
     '0x983f6d60db79ea8ca4eb9968c6aff8cfa04b3c63',
@@ -9321,7 +9321,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'dc0b24fc-2522-4a86-999b-0e9d366a428c',
-    'SPA',
+    'spa',
     'Sperax',
     18,
     '0xb4a3b0faf0ab53df58001804dda5bfc6a3d59008',
@@ -9329,7 +9329,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd2c05076-087e-45dc-8c3c-3f0093739b4b',
-    'SPF',
+    'spf',
     'SPF',
     18,
     '0x85089389c14bd9c77fc2b8f0c3d1dc3363bf06ef',
@@ -9337,7 +9337,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c9f821cf-ad0d-44fe-b584-2e9b29bfef59',
-    'SQUID2.0',
+    'squid2.0',
     'Squid Game 2.0',
     18,
     '0x2c056f9402a0627bc0e580365bb12979fc011e2c',
@@ -9345,7 +9345,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f4263d4d-e19f-4658-9491-d91aabc53ab1',
-    'STATE',
+    'state',
     'ParaState Governance Token',
     18,
     '0xdc6104b7993e997ca5f08acab7d3ae86e13d20a6',
@@ -9353,7 +9353,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'eb08e7e2-aab1-44ae-94cf-0c803d138404',
-    'STRIKE',
+    'strike',
     'Strike Token',
     18,
     '0x74232704659ef37c08995e386a2e26cc27a8d7b1',
@@ -9361,7 +9361,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '0b920a54-5a6e-4b18-8f29-1f9ef18ba6b9',
-    'SUI-erc20',
+    'sui-erc20',
     'Sui (ERC20 token)',
     18,
     '0xa6bbcca6cc125ec53c495db672892b2e2a42bb87',
@@ -9369,7 +9369,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4a0d9346-11e7-49b5-b264-ffc1f950c697',
-    'SUPER PERIO',
+    'super perio',
     'SUPER PERIO',
     9,
     '0x06be9ff320bc83e9d4c85fe2b3b98d028d3dbf03',
@@ -9377,7 +9377,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6a3a4276-9050-4798-8eb3-ab731e3eca11',
-    'SWEAT',
+    'sweat',
     'SWEAT',
     18,
     '0xb4b9dc1c77bdbb135ea907fd5a08094d98883a35',
@@ -9385,7 +9385,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '868974cb-029a-4166-8d43-5cab2dadef13',
-    'SWITCH',
+    'switch',
     'Switch',
     8,
     '0xb10cc888cb2cce7036f4c7ecad8a57da16161338',
@@ -9393,7 +9393,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b59d1baf-ca98-43a3-9895-6378496e0447',
-    'SWRV',
+    'swrv',
     'Swerve DAO',
     18,
     '0xb8baa0e4287890a5f79863ab62b7f175cecbd433',
@@ -9401,7 +9401,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8cf6fcd8-7873-4a93-b091-346853ef7575',
-    'SYNCH',
+    'synch',
     'Synapse Chain',
     18,
     '0xea12642633b5cf03d9111efb13512d46502a7597',
@@ -9409,7 +9409,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '31e842ac-eaa8-438d-a779-138183ae502e',
-    'TELEGRAMDAO',
+    'telegramdao',
     'Telegram Dao',
     18,
     '0x07e5580ab895022e004b039941b9e775ea631d95',
@@ -9417,7 +9417,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2e9e9cf0-b33b-4929-8016-172329bb4a99',
-    'TIO',
+    'tio',
     'Trade',
     18,
     '0x80bc5512561c7f85a3a9508c7df7901b370fa1df',
@@ -9425,7 +9425,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '1577a911-4428-44ea-9509-ba31ab7d75e1',
-    'TOKAMAK',
+    'tokamak',
     'Tokamak Network Token',
     18,
     '0x2be5e8c109e2197d077d13a82daead6a9b3433c5',
@@ -9433,7 +9433,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '946d2073-ca47-470f-af4e-dd640a24c57b',
-    'TOKE',
+    'toke',
     'Tokemak',
     18,
     '0x2e9d63788249371f1dfc918a52f8d799f4a38c94',
@@ -9441,7 +9441,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2a831eb5-a7b1-44ab-9cdb-626d21ab6d03',
-    'TOMI',
+    'tomi',
     'tomi Token',
     18,
     '0x4385328cc4d643ca98dfea734360c0f596c83449',
@@ -9449,7 +9449,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b8c1d4ce-eac5-4a31-b092-8769f72dddae',
-    'TOMOBEAR2',
+    'tomobear2',
     '3X Short TomoChain Token',
     18,
     '0x345208c513fff0b1b0768cd12b6123033995e19e',
@@ -9457,7 +9457,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '097682c2-bae8-4952-8391-70eb5b9b8ce0',
-    'TRUMPLOSE',
+    'trumplose',
     'Trump Loses Token',
     18,
     '0x70878b693a57a733a79560e33cf6a828e685d19a',
@@ -9465,7 +9465,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '609aa3fd-c1b4-4ab2-8769-98075e21407c',
-    'TRUMPWIN',
+    'trumpwin',
     'Trump Wins Token',
     18,
     '0x073af3f70516380654ba7c5812c4ab0255f081bc',
@@ -9473,7 +9473,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'e399738e-6443-448c-9df7-3d136fd573d3',
-    'TRXDOOM',
+    'trxdoom',
     '10X Short TRX Token',
     18,
     '0xc58432a1969a2cb15f14dae6dcca736cfa60285a',
@@ -9481,7 +9481,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '7caf62e7-48b3-4e57-9c7b-f23c4f388638',
-    'TRXMOON',
+    'trxmoon',
     '10X Long TRX Token',
     18,
     '0x681f1a3761384109e5bc52f7d479ef27540a5641',
@@ -9489,7 +9489,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8fcf6afb-0f7a-40b1-a4dc-d5696de5aa65',
-    'TRYBBEAR',
+    'trybbear',
     '3X Short BiLira Token',
     18,
     '0xa5ddfca8b837ccd0cf80fe6c24e2a9018fb50dba',
@@ -9497,7 +9497,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '24ca3fda-75ea-42f1-8d6e-568ec15533a7',
-    'TRYBBULL',
+    'trybbull',
     '3X Long BiLira Token',
     18,
     '0xc7038ccf60e48c5b7119e55566a6ad9f2d66c7c2',
@@ -9505,7 +9505,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '0ef99a81-db3d-401f-b906-80cde4087a07',
-    'TSUKA',
+    'tsuka',
     'Dejitaru Tsuka',
     9,
     '0xc5fb36dd2fb59d3b98deff88425a3f425ee469ed',
@@ -9513,7 +9513,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '11c19bba-3a20-41f8-bc91-4f5d8a68c33b',
-    'USDC-pos-wormhole',
+    'usdc-pos-wormhole',
     'USD Coin (PoS) (Wormhole) (USDC)',
     6,
     '0x566957ef80f9fd5526cd2bef8be67035c0b81130',
@@ -9521,7 +9521,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b775f7f9-268f-457a-8476-bc64d832425a',
-    'USDK',
+    'usdk',
     'USDK',
     18,
     '0x1c48f86ae57291f7686349f12601910bd8d470bb',
@@ -9529,7 +9529,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '29a77428-7ddf-4dce-8845-2296cb1fc305',
-    'USDTBEAR',
+    'usdtbear',
     '3X Short Tether Token',
     18,
     '0x0cd6c8161f1638485a1a2f5bf1a0127e45913c2f',
@@ -9537,7 +9537,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2645fe2b-e0c9-42e5-864c-13bfc80d0737',
-    'USDTBULL',
+    'usdtbull',
     '3X Long Tether token',
     18,
     '0x8cce19943a01e78b7c277794fb081816f6151bab',
@@ -9545,7 +9545,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'a06496d1-af4e-4532-9a92-2ae1e28243a1',
-    'USDTDOOM',
+    'usdtdoom',
     '10X Short Tether Token',
     18,
     '0xc2d3d1cbab16f0e77acd96b08edd3c4dd4129763',
@@ -9553,7 +9553,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'e2a99e6a-2b82-4db8-933b-7c877a46e9ed',
-    'USDTHEDGE',
+    'usdthedge',
     '1X Short Tether Token',
     18,
     '0xf3b8d4b2607a39114dacb902bacd4ddde7182560',
@@ -9561,7 +9561,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '16987603-d552-4e13-8a67-dd560b39bcf1',
-    'USDTMOON',
+    'usdtmoon',
     '10X Long Tether Token',
     18,
     '0x1deabd4df1df41f68dba1811c2eb5f4fff033ba9',
@@ -9569,7 +9569,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '9450e353-266b-480d-912e-b96525fd0f91',
-    'UST-wormhole',
+    'ust-wormhole',
     'UST (Wormhole)',
     6,
     '0xa693b19d2931d498c5b318df961919bb4aee87a5',
@@ -9577,7 +9577,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '21bee20f-e2da-43f8-a9f9-315d1b0851f2',
-    'vBNT',
+    'vbnt',
     'Bancor Governance Token',
     18,
     '0x48fb253446873234f2febbf9bdeaa72d9d387f94',
@@ -9585,7 +9585,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2171f08d-5c93-4544-865d-447443a0a6c6',
-    'VEE',
+    'vee',
     'BLOCKv',
     18,
     '0x340d2bde5eb28c1eed91b2f790723e3b160613b7',
@@ -9593,7 +9593,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'ba71e7f2-180a-4c01-b76e-cc90a0006536',
-    'VIU',
+    'viu',
     'VIU',
     18,
     '0x519475b31653e46d20cd09f9fdcf3b12bdacb4f5',
@@ -9601,7 +9601,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '30a19a96-87c5-494c-bda6-ff98b065f35b',
-    'VRA',
+    'vra',
     'VERA',
     18,
     '0xf411903cbc70a74d22900a5de66a2dda66507255',
@@ -9609,7 +9609,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '2ac24a6b-3525-4981-a6a3-cae48b5d072a',
-    'VXV',
+    'vxv',
     'VectorspaceAI',
     18,
     '0x7d29a64504629172a429e64183d6673b9dacbfce',
@@ -9617,7 +9617,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '68355bfb-c8c4-49bd-ba3b-bb58195e55a0',
-    'WAGMI',
+    'wagmi',
     'WAGMI GAMES',
     18,
     '0x3b604747ad1720c01ded0455728b62c0d2f100f0',
@@ -9625,7 +9625,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c365bfe3-4b97-4f89-b616-fd05570b705e',
-    'WAVAX',
+    'wavax',
     'Wrapped AVAX (Wormhole)',
     18,
     '0x85f138bfee4ef8e540890cfb48f620571d67eda3',
@@ -9633,7 +9633,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'b2d89322-7696-4ee8-92bd-ede82c3cac43',
-    'WAXP',
+    'waxp',
     'WAXP Token',
     8,
     '0x2a79324c19ef2b89ea98b23bc669b7e7c9f8a517',
@@ -9641,7 +9641,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '8b4f0b71-4c47-4c14-bb91-38a5b89ffd1d',
-    'WFEE',
+    'wfee',
     'WFee',
     18,
     '0xa37adde3ba20a396338364e2ddb5e0897d11a91d',
@@ -9649,7 +9649,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'db5c2f96-249d-418e-a35c-5f09d9400e04',
-    'WHAT',
+    'what',
     'What',
     18,
     '0x8df566cb30994babc1bf4702b811a7afae47e043',
@@ -9657,7 +9657,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '7c208f9b-225d-4d2f-aeda-188ba92bf536',
-    'XDoge',
+    'xdoge',
     'XDoge',
     18,
     '0xe99d37ac2b9ca7cef35db75d0a094f260578ffda',
@@ -9665,7 +9665,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f4c4c2c5-78d9-48a5-9ba5-a8df9a7ab7c0',
-    'XRPDOOM',
+    'xrpdoom',
     '10X Short XRP Token',
     18,
     '0x526664ca8ff5e5b924270bd6bd89bf5d58fc79cd',
@@ -9673,7 +9673,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '1de1c1a4-cc9a-4843-bc6c-91fe59beb9ff',
-    'XRPMOON',
+    'xrpmoon',
     '10X Long XRP Token',
     18,
     '0x574a37b7244dabb08ce1618193f818f1c85180e6',
@@ -9681,7 +9681,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c178bb57-4b6c-4374-aee3-258516d2be78',
-    'YAMv2',
+    'yamv2',
     'YAMv2',
     24,
     '0xaba8cac6866b83ae4eec97dd07ed254282f6ad8a',
@@ -9689,7 +9689,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '7661f84d-f69b-4327-b51a-278e8210c21a',
-    'ZIP',
+    'zip',
     'Zipper',
     18,
     '0xa9d2927d3a04309e008b6af6e2e282ae2952e7fd',
@@ -9697,7 +9697,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '6891998d-d9ae-4387-9965-3fba8564f4a1',
-    'ZKS',
+    'zks',
     'Zks',
     18,
     '0xe4815ae53b124e7263f08dcdbbb757d41ed658c6',
@@ -9705,7 +9705,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'faf84fca-7709-48e2-94c3-9d1a2b8a9893',
-    'ZRO-0x320',
+    'zro-0x320',
     'LayerZero',
     18,
     '0x32002658029da06fffcfbad58706aa325b3e236e',
@@ -9713,7 +9713,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '17aed51c-c4fb-4b9c-9010-f612e0384041',
-    'ZRO-0xFCF',
+    'zro-0xfcf',
     'LayerZero',
     18,
     '0xfcf5aab1508b526130ffd3d202481f4d3529ea2e',
@@ -9721,7 +9721,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '9599b1b4-822a-4abd-908e-672a22569eaa',
-    'ZRO-0xE5C',
+    'zro-0xe5c',
     'LayerZero',
     18,
     '0xe5c5ae39b98efd9d3c9e0f2a5457d98ffa4b0b46',
