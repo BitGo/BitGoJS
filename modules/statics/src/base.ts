@@ -1339,6 +1339,8 @@ export enum UnderlyingAsset {
   'polygon:wftm' = 'polygon:wftm',
   'polygon:yfi' = 'polygon:yfi',
   'polygon:treta' = 'polygon:treta',
+  'polygon:orb' = 'polygon:orb',
+  'polygon:route' = 'polygon:route',
 
   // Polygon NFTs
   // generic NFTs
