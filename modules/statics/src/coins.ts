@@ -13010,20 +13010,20 @@ export const coins = CoinMap.fromCoins([
   ),
   solToken(
     '081bd159-8157-4c7e-8836-9147784b7418',
-    'sol:AURY',
+    'sol:aury',
     'Aurory',
     9,
     'AURYydfxJib1ZkTir1Jn1J9ECYUtjb6rKQVmtYaixWPP',
-    UnderlyingAsset['AURY'],
+    UnderlyingAsset['aury'],
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
     '86600f43-533c-4109-9bba-c66ac837d94c',
-    'sol:DIO',
+    'sol:dio',
     'Decimated',
     9,
     'BiDB55p4G3n1fGhwKFpxsokBMqgctL4qnZpDH1bVQxMD',
-    UnderlyingAsset['DIO'],
+    UnderlyingAsset['dio'],
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
@@ -13871,6 +13871,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x8a16d4bf8a0a716017e8d2262c4ac32927797a2f',
     UnderlyingAsset['polygon:vcnt']
+  ),
+  polygonErc20(
+    '717b0d81-bdd8-4a42-8634-d9fe5a1f3577',
+    'polygon:orb',
+    'OrbCity (ORB)',
+    18,
+    '0x20c750c57c3bc5145af4b7a33d4fb66a8e79fe05',
+    UnderlyingAsset['polygon:orb']
+  ),
+  polygonErc20(
+    '9d6bc29a-c2b9-4bd5-be25-2dce6de261c6',
+    'polygon:route',
+    'Route (ROUTE)',
+    18,
+    '0x16eccfdbb4ee1a85a33f3a9b21175cd7ae753db4',
+    UnderlyingAsset['polygon:route']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',

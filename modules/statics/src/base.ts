@@ -1662,6 +1662,8 @@ export enum UnderlyingAsset {
   'polygon:wftm' = 'polygon:wftm',
   'polygon:yfi' = 'polygon:yfi',
   'polygon:treta' = 'polygon:treta',
+  'polygon:orb' = 'polygon:orb',
+  'polygon:route' = 'polygon:route',
 
   // Polygon NFTs
   // generic NFTs
@@ -1738,8 +1740,8 @@ export enum UnderlyingAsset {
   'wtust-usdt' = 'wtust-usdt',
   'xcope-usdc' = 'xcope-usdc',
   'xrp-sollet' = 'xrp-sollet',
-  'AURY' = 'AURY',
-  'DIO' = 'DIO',
+  'aury' = 'aury',
+  'dio' = 'dio',
   'sol-perp' = 'sol-perp',
   'sol-woo' = 'sol-woo',
   'sol-weth' = 'sol-weth',
