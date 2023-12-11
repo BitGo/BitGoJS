@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.7.0...@bitgo/sdk-coin-sol@2.28.0) (2023-12-09)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** fix sol createBroadcastableSweepTransaction method for arrays of txns ([3e2d40b](https://github.com/BitGo/BitGoJS/commit/3e2d40b05b6fe50b64566cbc60640c00c1dcb32c))
+- **sdk-coin-sol:** fix wrong file name ([1b8ca5b](https://github.com/BitGo/BitGoJS/commit/1b8ca5b4311bf8549499d72e8a0bbea7c3d94003))
+- **sdk-coin-sol:** fix wrong signable data ([0d76087](https://github.com/BitGo/BitGoJS/commit/0d76087afc756a525e122a706636ed30b59b85f1))
+
+### Features
+
+- **sdk-coin-sol:** add consolidation method for sol recovery ([58fcc61](https://github.com/BitGo/BitGoJS/commit/58fcc61268fbe6975802499d7b1b9040ed074b52))
+- **sdk-coin-sol:** add sol token recovery support ([8a46e48](https://github.com/BitGo/BitGoJS/commit/8a46e482205fb33439e123dc288720225926b443))
+- **sdk-coin-sol:** add tests for new sol builders ([561f916](https://github.com/BitGo/BitGoJS/commit/561f9160a8528419f653d818d847c29c5e56abc3))
+- **sdk-coin-sol:** add transaction message authorize builder ([649b7df](https://github.com/BitGo/BitGoJS/commit/649b7df0f65c2eee08e7c1e009ebb3c03cf4d011))
+- **sdk-coin-sol:** add tx builder for delegate and deactivate ([a7cdaaa](https://github.com/BitGo/BitGoJS/commit/a7cdaaa5a7b3bab83bccc82a7c001a9f23e94207))
+- **sdk-coin-sol:** add unit test for sol unsigned sweep consolidation recovery ([0c756ed](https://github.com/BitGo/BitGoJS/commit/0c756ed9f96eeda216c5e17d0f71feabc5d53b6e))
+- **sdk-coin-sol:** create method to produce broadcastable sol sweep txn ([d69ca4e](https://github.com/BitGo/BitGoJS/commit/d69ca4ea0688c4cf7c738ca826a9231438bb49c5))
+- **sdk-coin-sol:** fix sol sweep recovery format for ovc signing ([0ef6f67](https://github.com/BitGo/BitGoJS/commit/0ef6f6757f54ac9164927cfa764fcded2214421b))
+- **sdk-coin-sol:** return ovc compatible format for sol sweep txns ([aa536ff](https://github.com/BitGo/BitGoJS/commit/aa536ffc24a7e7dd3d4069d2d1bae0704a85d686))
+
 # [2.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.7.0...@bitgo/sdk-coin-sol@2.27.0) (2023-12-05)
 
 ### Bug Fixes
