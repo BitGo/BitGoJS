@@ -36,7 +36,7 @@ export const recipients: Recipient[] = [
 
 export const signedTransaction = {
   tx: 'te6cckEBAgEAsQAB4YgAQmy8N765HIcsCkExBYpKsfl7LUuXYW7MvV53d6EqWoADFgjyqp/3qccthFjfvskQ1XUeecHe8JVQ9DFGSmpwRovdPiRamZZ3PR2isMd1i5k+MdQCc9TCP/E5+rfkvMbYQU1NGLsruXHwAAAAgAAcAQB2QgB9Jzc15Nkj1GPyoSR0hIg9lzcoUjVC0MYRF1GRn2tVHpzEtAAAAAAAAAAAAAAAAAAAAAAAAHRlc3SUlVNc',
-  txId: '',
+  txId: '9gEyvIsHrA79g8pmEP1EBtO8GlpZ98QnUveSYmEx6fc=',
   signable: 'q28coBQ7sbBBAR/hG4eUdDayLDsPC9FKQtA/lSYYaSQ=',
   recipient: {
     address: 'EQD6Tm5rybJHqMflQkjpCRB7Lm5QpGqFoYwiLqMjPtaqPSdZ',

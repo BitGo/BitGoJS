@@ -18,6 +18,7 @@ import { KeyPair as TonKeyPair } from './lib/keyPair';
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import { Transaction, TransactionBuilderFactory, Utils } from './lib';
+import TonWeb from 'tonweb';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
@@ -83,7 +84,12 @@ export class Ton extends BaseCoin {
     transaction.fromRawTransaction(Buffer.from(rawTx, 'hex').toString('base64'));
     const explainedTx = transaction.explainTransaction();
     if (txParams.recipients !== undefined) {
-      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
+      const filteredRecipients = txParams.recipients?.map((recipient) => {
+        return {
+          address: new TonWeb.Address(recipient.address).toString(true, true, true),
+          amount: recipient.amount,
+        };
+      });
       const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
 
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {

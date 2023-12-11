@@ -38,10 +38,12 @@ export class Transaction extends BaseTransaction {
   }
 
   toJson(): TxData {
+    const non_bouncable = new TonWeb.Address(this.recipient.address).toString(true, true, false);
     return {
       id: this._id as string,
       sender: this.sender,
       destination: this.recipient.address,
+      destinationAlias: non_bouncable,
       amount: this.recipient.amount,
       seqno: this.seqno,
       expirationTime: this.expireTime,

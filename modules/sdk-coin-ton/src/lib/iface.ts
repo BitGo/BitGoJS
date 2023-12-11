@@ -5,6 +5,7 @@ export interface TxData {
   id: string;
   sender: string;
   destination: string;
+  destinationAlias: string;
   amount: string;
   seqno: number;
   expirationTime: number;
