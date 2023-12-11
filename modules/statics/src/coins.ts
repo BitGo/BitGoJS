@@ -8772,6 +8772,18 @@ export const coins = CoinMap.fromCoins([
     '0xc2c527c0cacf457746bd31b2a698fe89de2b6d49',
     UnderlyingAsset.TUSDT
   ),
+  terc20(
+    '031e6052-ed7a-42cf-a6e6-2107d8e448ed',
+    'bgerch',
+    'Test ERC Token on Holesky',
+    18,
+    '0xebe8b46a42f05072b723b00013ff822b2af1b5cb',
+    UnderlyingAsset.BGERCH,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
   tceloToken(
     'a7fb510c-de32-4cd5-9215-4e55c81d5489',
     'tcusd',

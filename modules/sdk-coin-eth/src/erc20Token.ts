@@ -25,7 +25,7 @@ export class Erc20Token extends Eth {
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
   static coinNames: CoinNames = {
     Mainnet: 'eth',
-    Testnet: 'gteth',
+    Testnet: 'hteth',
   };
 
   constructor(bitgo: BitGoBase, tokenConfig: Erc20TokenConfig) {
