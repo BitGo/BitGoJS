@@ -61,6 +61,11 @@ export class UtxoTransaction<TNumber extends number | bigint = number> extends b
   }
 
   addForkId(hashType: number): number {
+    /*
+      ``The sighash type is altered to include a 24-bit fork id in its most significant bits.''
+      We also use unsigned right shift operator `>>>` to cast to UInt32
+      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unsigned_right_shift
+     */
     if (hashType & UtxoTransaction.SIGHASH_FORKID) {
       const forkId = isBitcoinGold(this.network) ? 79 : 0;
       return (hashType | (forkId << 8)) >>> 0;
@@ -100,11 +105,6 @@ export class UtxoTransaction<TNumber extends number | bigint = number> extends b
         const addForkId = (hashType & UtxoTransaction.SIGHASH_FORKID) > 0;
 
         if (addForkId) {
-          /*
-            ``The sighash type is altered to include a 24-bit fork id in its most significant bits.''
-            We also use unsigned right shift operator `>>>` to cast to UInt32
-            https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unsigned_right_shift
-           */
           if (value === undefined) {
             throw new Error(`must provide value`);
           }
