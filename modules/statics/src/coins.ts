@@ -7571,8 +7571,8 @@ export const coins = CoinMap.fromCoins([
   // Begin FTX missing ERC20 tokens
   erc20(
     '7b77a4b6-4eef-4b5f-b0d5-e804432cec4a',
-    '$evmosia.com',
-    '$Evmosia.com',
+    'evmosia',
+    'Evmosia.com',
     0,
     '0x525fc44cbe181c1108c209091b5eec5a5028190d',
     UnderlyingAsset['$Evmosia.com']
@@ -8371,7 +8371,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '3f5eab61-886c-407e-9441-a6e2efe82c1e',
-    'ftt2.0',
+    'fttv2',
     'FTX Token v2.0',
     18,
     '0x30b008432f90ce1c0f5333e0599b7644b5c12307',
@@ -8388,7 +8388,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     'e3b62915-c63c-4520-9a3b-58d7f118bde6',
     'fuckftx',
-    'FTX 2.0',
+    'Fuck FTX',
     9,
     '0x5df16ba228b6cc7bc7933f1e419635ad2b998f17',
     UnderlyingAsset.FUCKFTX
@@ -8403,7 +8403,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd21a8de0-b00e-4433-b79c-303c7e3bb02d',
-    'game.com',
+    'gamecom',
     'Game.com Token',
     18,
     '0xb70835d7822ebb9426b56543e391846c107bd32c',
@@ -9339,7 +9339,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'c9f821cf-ad0d-44fe-b584-2e9b29bfef59',
-    'squid2.0',
+    'squidv2',
     'Squid Game 2.0',
     18,
     '0x2c056f9402a0627bc0e580365bb12979fc011e2c',
@@ -11678,7 +11678,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     '9a74b51e-62fd-4001-a132-0e0b9f782042',
-    'avaxc:uni.e',
+    'avaxc:unie',
     'Uniswap',
     18,
     '0x8ebaf22b6f053dffeaf46f4dd9efa95d89ba8580',
@@ -11758,7 +11758,7 @@ export const coins = CoinMap.fromCoins([
   ),
   avaxErc20(
     '3661bed5-b7b2-4744-8b56-5d2d45ccdcaf',
-    'avaxc:sushi.e',
+    'avaxc:sushie',
     'Sushi Token',
     18,
     '0x37b608519f91f70f2eeb0e5ed9af4061722e4f76',
