@@ -17,6 +17,7 @@ import { decodeProprietaryKey, encodeProprietaryKey } from 'bip174/src/lib/propr
 import {
   taproot,
   HDSigner,
+  Signer,
   Psbt,
   PsbtTransaction,
   Transaction,
@@ -72,8 +73,11 @@ type SignatureParams = {
   sighashTypes: number[];
 };
 
-function defaultSighashTypes(network: Network): number[] {
-  const sighashTypes = [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL];
+function defaultSighashTypes(): number[] {
+  return [Transaction.SIGHASH_DEFAULT, Transaction.SIGHASH_ALL];
+}
+
+function addForkIdToSighashesIfNeeded(network: Network, sighashTypes: number[]): number[] {
   switch (getMainnet(network)) {
     case networks.bitcoincash:
     case networks.bitcoinsv:
@@ -87,7 +91,10 @@ function defaultSighashTypes(network: Network): number[] {
 
 function toSignatureParams(network: Network, v?: Partial<SignatureParams> | number[]): SignatureParams {
   if (Array.isArray(v)) return toSignatureParams(network, { sighashTypes: v });
-  return { deterministic: false, sighashTypes: defaultSighashTypes(network), ...v };
+  const defaultSignatureParams = { deterministic: false, sighashTypes: defaultSighashTypes() };
+  const ret = { ...defaultSignatureParams, ...v };
+  ret.sighashTypes = addForkIdToSighashesIfNeeded(network, ret.sighashTypes);
+  return ret;
 }
 
 /**
@@ -819,6 +826,11 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       signers.forEach((signer) => this.signTaprootMusig2Input(inputIndex, signer, { sighashTypes, deterministic }));
     }
     return this;
+  }
+
+  signInput(inputIndex: number, keyPair: Signer, sighashTypes?: number[]): this {
+    const { sighashTypes: sighashForNetwork } = toSignatureParams(this.network, sighashTypes);
+    return super.signInput(inputIndex, keyPair, sighashForNetwork);
   }
 
   signInputHD(
