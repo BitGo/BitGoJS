@@ -3,6 +3,82 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@38.0.0) (2023-12-12)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** update DOT sdk to latest ([9385f80](https://github.com/BitGo/BitGoJS/commit/9385f803366b615d09bda31b8efda6f93e26e8e7))
+- **sdk-coin-polygon:** fix issues ([85e9396](https://github.com/BitGo/BitGoJS/commit/85e93967abd056f5054198f385a1b109246a281f))
+- **sdk-coin-zeta:** zeta explorer url fix ([386c867](https://github.com/BitGo/BitGoJS/commit/386c867c65f794b46240e9b5fc2d88792d318b6e))
+- **statics:** correct casing of erc20 tokens ([4b92205](https://github.com/BitGo/BitGoJS/commit/4b922058b7a62103c0caf38f224c4786ec42670c))
+- **statics:** fix alk token name ([2a9b174](https://github.com/BitGo/BitGoJS/commit/2a9b1744b639b86a12f81d692167925163fd6989))
+- **statics:** fix avaxc bridged asset names ([fec8bb7](https://github.com/BitGo/BitGoJS/commit/fec8bb7e689fda23edd3ebc38328d29beeea3f6a))
+- **statics:** fix bera decimals ([8cc5eb7](https://github.com/BitGo/BitGoJS/commit/8cc5eb78f630db9cff5a9113900eedb4614596bc))
+- **statics:** fix sol:vi decimal ([4713ce6](https://github.com/BitGo/BitGoJS/commit/4713ce61b13131c6f68b0862d11146c84548cd07))
+- **statics:** make corrections for arbeth and opeth ([5dfc405](https://github.com/BitGo/BitGoJS/commit/5dfc405a36fc97b2c902fec44562b169d8013a18))
+
+### chore
+
+- **statics:** onboard new ERC20s tokens ([c43cc31](https://github.com/BitGo/BitGoJS/commit/c43cc313bd56dafc9cbeca3dfb124747faf458c4))
+
+### Code Refactoring
+
+- **abstract-eth:** move methods to abstract-eth ([af8bd10](https://github.com/BitGo/BitGoJS/commit/af8bd10e24c8d58fc227494de6a614098265580a))
+- rename coin 'core' to 'coreum' ([baecc01](https://github.com/BitGo/BitGoJS/commit/baecc013ff7243ce78ebd767bffdb0763b8b4cdb))
+
+### Features
+
+- **account-lib:** add holesky testnet coin ([0aaefc0](https://github.com/BitGo/BitGoJS/commit/0aaefc0e53a5a48b2c701ca3c6d5e1c6ec7c19d2))
+- add DISTRIBUTED_CUSTODY coin feature ([7f349fe](https://github.com/BitGo/BitGoJS/commit/7f349fe499693a1e8a62054be63ffd4243008c03))
+- add new coin feature for bulk staking transaction ([ec08d91](https://github.com/BitGo/BitGoJS/commit/ec08d918401c9e6fd928acaa4f53fc0e518c4d1d))
+- add TON to statics ([fa15414](https://github.com/BitGo/BitGoJS/commit/fa15414babdba76d74d8acd5ed73b1d10519e755))
+- **sdk-coin-arbeth:** add arbeth token support ([b55961b](https://github.com/BitGo/BitGoJS/commit/b55961bf474fe09d017c21d3d0169020fff1820f))
+- **sdk-coin-avaxp:** replace export fee for import fee on output validation ([a0ae101](https://github.com/BitGo/BitGoJS/commit/a0ae101487cf88eecb078ed793b640160703c086))
+- **sdk-coin-opeth:** add opeth tokens ([1e50329](https://github.com/BitGo/BitGoJS/commit/1e503292d26cb46ca3e2336a8514018ab09f6759))
+- **statics:** add arbeth coin config ([2d84aa4](https://github.com/BitGo/BitGoJS/commit/2d84aa4cee970aab91bb27a391390e7d257d6349))
+- **statics:** add Berachain & Haqq ([988cfd4](https://github.com/BitGo/BitGoJS/commit/988cfd4cd40d0f3fc72b6c080ec19a0acf1b55b4))
+- **statics:** add coinfeature for higher txRequest rebuild limit ([a2bef34](https://github.com/BitGo/BitGoJS/commit/a2bef344ad4eba0486df315dd15f7300709c0ae1))
+- **statics:** add ERC20 tokens for FTX ([2549988](https://github.com/BitGo/BitGoJS/commit/2549988be6d74f98ba6554550f7b7af5de379d61))
+- **statics:** add holesky config ([4c64297](https://github.com/BitGo/BitGoJS/commit/4c642970512c8d606795bd0e3e102ed7b92fec6c))
+- **statics:** add Litentry (LIT) and Ampleforth (AMPL) as tokens ([6acf3f7](https://github.com/BitGo/BitGoJS/commit/6acf3f7ae6883db71bb63fb447ff18b960bb5e5d))
+- **statics:** add matic tokens for ftx ([a625ad1](https://github.com/BitGo/BitGoJS/commit/a625ad13b5677d1cf48fa27527d8ee9b77794a0a))
+- **statics:** add new batch of tokens ([f690f4f](https://github.com/BitGo/BitGoJS/commit/f690f4fbf5e98a412948925bbb00f06763709b34))
+- **statics:** add new coin feature for cosmos chains ([94341a1](https://github.com/BitGo/BitGoJS/commit/94341a12a08d99aa24988fe25e4cef712e3e73aa))
+- **statics:** add new coin feature to enable txn rebuild in TAT ([b93b7f8](https://github.com/BitGo/BitGoJS/commit/b93b7f8b33f7b624a051f4626906394a9d70cb4b))
+- **statics:** add new coin features for trust ([d5839e0](https://github.com/BitGo/BitGoJS/commit/d5839e0787dfb83638c7eb6b49417760f0993418))
+- **statics:** add new coinfeature for bulk transaction ([f48e8b7](https://github.com/BitGo/BitGoJS/commit/f48e8b70442dc75de1f339a23eeddc436d6b5af8))
+- **statics:** add new cosmoslikecoins feature for cosmos ([ff971bc](https://github.com/BitGo/BitGoJS/commit/ff971bcdad8fc3d533b271e3c70d7815d3b15c57))
+- **statics:** add opeth coin config ([c242760](https://github.com/BitGo/BitGoJS/commit/c2427602b3e8a49b5f1fb98bcd4489ed83d7c278))
+- **statics:** add SOL tokens for FTX ([5c5139a](https://github.com/BitGo/BitGoJS/commit/5c5139a112867701dcda6b3ae5226548be934733))
+- **statics:** add test token on holesky ([82389aa](https://github.com/BitGo/BitGoJS/commit/82389aa566b9d1b40674343ecf02636646d90d86))
+- **statics:** added coin staking feature for stx and cspr to see staking tab on bg23 ([4aa74d0](https://github.com/BitGo/BitGoJS/commit/4aa74d081f2dbbc1db951a638eeb459e5c30506d))
+- **statics:** adds ofc cosmos derivatives in coins.ts ([bb865a8](https://github.com/BitGo/BitGoJS/commit/bb865a85d0d7a467a1a0f861aaa0918e956689ed))
+- **statics:** adds ofcatom, ofctatom, ofcsui and ofctsui in coins.ts ([f15a1a3](https://github.com/BitGo/BitGoJS/commit/f15a1a3d103284779a596ff224ba5770239772a1))
+- **statics:** adds ofcwsteth in coins.ts ([c16f6ff](https://github.com/BitGo/BitGoJS/commit/c16f6ffbc712865a4b81af7f4e6f001881479d96))
+- **statics:** enable bsc staking ([8f54dc7](https://github.com/BitGo/BitGoJS/commit/8f54dc71de636d1ced22bc6323de72110df95042))
+- **statics:** enable coinfeature for atom ([64dc546](https://github.com/BitGo/BitGoJS/commit/64dc546fd4a91ba0c2f94f9fc2831b6c9f32d7b7))
+- **statics:** onboard DUST, PYTH, HOOK, BORG, WECAN, osETH, CROWN ([8aa0161](https://github.com/BitGo/BitGoJS/commit/8aa016141fc66afde54458e9be78035b47e931fa))
+- **statics:** onboard new avaxc tokens ([0d54ebe](https://github.com/BitGo/BitGoJS/commit/0d54ebebc18ce5ee89cb193ca3c363f55f6fc91d))
+- **statics:** onboard new batch of tokens ([f50a075](https://github.com/BitGo/BitGoJS/commit/f50a075ec1262f7d8a8022e41492729d0591b55a))
+- **statics:** onboard new erc20 tokens ([486c17a](https://github.com/BitGo/BitGoJS/commit/486c17a3bbb9554859dec08f95a70eb432b39af7))
+- **statics:** onboard ofcbsc ([cab1665](https://github.com/BitGo/BitGoJS/commit/cab16651a0eea62bfe0d8200804340d27b411bc1))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** Type of nextContractSequenceId field in TransactionPrebuild
+  interface is changed from string to number in AbstractEthLikeCoin and AbstractEthLikeNewCoins classes.
+  getCustomChainName method is removed from Polygon class because a common
+  method getCustomChainCommon has been added to AbstractEthLikeNewCoins
+  class for all EthLike coins. replayProtectionOptions is not optional in buildTransaction method in AbstractEthLikeNewCoins
+  and needs to be passed to derive the Eth common object from the chainId.
+  signFinalPolygon method name from Polygon class is updated to signFinalEthLike so that
+  it can be used for other EthLike coins. getBaseFactor method in Eth
+  and Polygon class returns number instead of string just to align with
+  AbstractEthLikeCoin
+  Ticket: WIN-1012
+- rename coin module, coin name, named exports for coreum
+- **statics:** FIX REEF to use UnderlyingAsset.REEF
+
 # [37.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@37.0.0) (2023-12-09)
 
 ### Bug Fixes
