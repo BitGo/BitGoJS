@@ -11617,7 +11617,7 @@ export const coins = CoinMap.fromCoins([
     'avaxc:aavausdt',
     'Aave Avalanche USDT',
     18,
-    '0x82e64f49ed5ec1bc6e43dad4fc8af9bb3a2312ee',
+    '0x6ab707aca953edaefbc4fd23ba73294241490620',
     UnderlyingAsset['avaxc:aavausdt']
   ),
   avaxErc20(
