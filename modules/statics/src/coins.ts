@@ -9371,7 +9371,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4a0d9346-11e7-49b5-b264-ffc1f950c697',
-    'super perio',
+    'superperio',
     'SUPER PERIO',
     9,
     '0x06be9ff320bc83e9d4c85fe2b3b98d028d3dbf03',
