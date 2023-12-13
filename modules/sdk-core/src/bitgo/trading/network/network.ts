@@ -60,14 +60,11 @@ export class TradingNetwork implements ITradingNetwork {
     return this.bitgo.get(url).send(params).result();
   }
 
-  getConnectionById({
-    connectionId,
-    ...params
-  }: GetNetworkConnectionByIdParams): Promise<GetNetworkConnectionByIdResponse> {
+  getConnectionById({ connectionId }: GetNetworkConnectionByIdParams): Promise<GetNetworkConnectionByIdResponse> {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/connections/${connectionId}`
     );
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).send().result();
   }
 
   createConnection(params: CreateNetworkConnectionParams): Promise<CreateNetworkConnectionResponse> {
@@ -90,14 +87,11 @@ export class TradingNetwork implements ITradingNetwork {
     return this.bitgo.get(url).send(params).result();
   }
 
-  getAllocationById({
-    allocationId,
-    ...params
-  }: GetNetworkAllocationByIdParams): Promise<GetNetworkAllocationByIdResponse> {
+  getAllocationById({ allocationId }: GetNetworkAllocationByIdParams): Promise<GetNetworkAllocationByIdResponse> {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/allocations/${allocationId}`
     );
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).send().result();
   }
 
   /**

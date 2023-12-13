@@ -1,3 +1,5 @@
+import { paths } from '@bitgo/sdk-types';
+
 export interface ITradingNetwork {
   getBalances: (params?: GetNetworkBalancesParams) => Promise<GetNetworkBalancesResponse>;
   getSupportedCurrencies: (
@@ -20,96 +22,64 @@ export interface ITradingNetwork {
 
 // METHOD TYPES
 
-export type GetNetworkBalancesParams = NetworkPaginationParams & {
-  connectionIds?: string[];
-  partnerIds?: string[];
-};
+export type GetNetworkBalancesParams =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/balances']['get']['parameters']['query'];
 
-export type GetNetworkBalancesResponse = {
-  clientId: string;
-  // ofc coin
-  balances: Record<string, NetworkAccountBalanceRecord>;
-  // connectionId
-  networkBalances: Record<string, NetworkBalance>;
-};
+export type GetNetworkBalancesResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/balances']['get']['responses'][200]['content']['application/json'];
 
-export type GetNetworkSupportedCurrenciesParams = {
-  partnerIds: string[];
-};
+export type GetNetworkSupportedCurrenciesParams =
+  paths['/api/network/v1/enterprises/{enterpriseId}/supportedCurrencies']['get']['parameters']['query'];
 
-export type GetNetworkSupportedCurrenciesResponse = {
-  supportedCurrencies: Record<string, V1SupportedCurrency[]>;
-  domain: string;
-};
+export type GetNetworkSupportedCurrenciesResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/supportedCurrencies']['get']['responses'][200]['content']['application/json'];
 
 /** Connections */
 
-export type GetNetworkConnectionsParams = NetworkPaginationParams & {
-  active?: string;
-  connectionIds?: string;
-  partnerIds?: string;
-  names?: string;
-};
+export type GetNetworkConnectionsParams =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections']['get']['parameters']['query'];
 
-export type GetNetworkConnectionsResponse = {
-  connections: NetworkConnection[];
-};
+export type GetNetworkConnectionsResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections']['get']['responses'][200]['content']['application/json'];
 
-export type GetNetworkConnectionByIdParams = {
-  connectionId: string;
-};
+export type GetNetworkConnectionByIdParams = Omit<
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}']['get']['parameters']['path'],
+  'enterpriseId'
+>;
 
-export type GetNetworkConnectionByIdResponse = {
-  connection: NetworkConnection;
-};
+export type GetNetworkConnectionByIdResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}']['get']['responses'][200]['content']['application/json'];
 
-export type CreateNetworkConnectionParams = {
-  payload: string;
-  signature: string;
-  partnerId: string;
-  name: string;
-  connectionKey: NetworkConnectionKey;
-  nonce: string;
-};
+export type CreateNetworkConnectionParams =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections']['post']['requestBody']['content']['application/json'];
 
-export type CreateNetworkConnectionResponse = {
-  connection: NetworkConnection;
-};
+export type CreateNetworkConnectionResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections']['post']['responses'][200]['content']['application/json'];
 
-export type UpdateNetworkConnectionParams = {
-  connectionId: string;
-  name?: string;
-  active?: boolean;
-};
+export type UpdateNetworkConnectionParams = Omit<
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}']['put']['parameters']['path'],
+  'enterpriseId'
+> &
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}']['put']['requestBody']['content']['application/json'];
 
-export type UpdateNetworkConnectionResponse = {
-  connection: NetworkConnection;
-};
+export type UpdateNetworkConnectionResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}']['put']['responses'][200]['content']['application/json'];
 
 /** Allocations */
 
-export type GetNetworkAllocationsParams = NetworkPaginationParams & {
-  sortField?: 'id' | 'updatedAt' | 'quantity' | 'currency';
-  sortDirection?: NetworkSortDirection;
-  allocationIds?: string[];
-  types?: NetworkAllocationType[];
-  statuses?: NetworkAllocationStatus[];
-  currencies?: string[];
-  connectionIds?: string[];
-  partnerIds?: string[];
-};
+export type GetNetworkAllocationsParams =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/allocations']['get']['parameters']['query'];
 
-export type GetNetworkAllocationsResponse = {
-  allocations: NetworkAllocation[];
-};
+export type GetNetworkAllocationsResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/allocations']['get']['responses'][200]['content']['application/json'];
 
-export type GetNetworkAllocationByIdParams = {
-  allocationId: string;
-};
+export type GetNetworkAllocationByIdParams = Omit<
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/allocations/{allocationId}']['get']['parameters']['path'],
+  'enterpriseId'
+>;
 
-export type GetNetworkAllocationByIdResponse = {
-  allocation: NetworkAllocation;
-};
+export type GetNetworkAllocationByIdResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/allocations/{allocationId}']['get']['responses'][200]['content']['application/json'];
 
 export type PrepareNetworkAllocationParams = Omit<CreateNetworkAllocationParams, 'payload' | 'signature'> & {
   walletPassphrase: string;
@@ -117,182 +87,43 @@ export type PrepareNetworkAllocationParams = Omit<CreateNetworkAllocationParams,
   nonce?: string;
 };
 
-export type CreateNetworkAllocationParams = {
-  connectionId: string;
-  payload: string;
-  signature: string;
-  amount: NetworkAllocationAmount;
-  clientExternalId: string;
-  nonce: string;
-  notes?: string;
-};
+export type CreateNetworkAllocationParams = Omit<
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}/allocations']['post']['parameters']['path'],
+  'enterpriseId'
+> &
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}/allocations']['post']['requestBody']['content']['application/json'];
 
-export type CreateNetworkAllocationResponse = {
-  allocation: NetworkAllocation;
-};
+export type CreateNetworkAllocationResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}/allocations']['post']['responses'][200]['content']['application/json'];
 
 /** Deallocations */
 
-export type CreateNetworkDeallocationParams = {
-  connectionId: string;
-  payload: string;
-  signature: string;
-  amount: NetworkAllocationAmount;
-  clientExternalId: string;
-  nonce: string;
-  notes?: string;
-};
+export type CreateNetworkDeallocationParams = Omit<
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}/deallocations']['post']['parameters']['path'],
+  'enterpriseId'
+> &
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}/deallocations']['post']['requestBody']['content']['application/json'];
 
-export type CreateNetworkDeallocationResponse = {
-  allocation: NetworkAllocation;
-};
+export type CreateNetworkDeallocationResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/connections/{connectionId}/deallocations']['post']['responses'][200]['content']['application/json'];
 
-export type GetNetworkSettlementsParams = NetworkPaginationParams & {
-  settlementIds?: string[];
-  partnerIds?: string[];
-  partyConnectionIds?: string[];
-  counterpartyConnectionIds?: string[];
-};
+export type GetNetworkSettlementsParams =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/settlements']['get']['parameters']['query'];
 
-export type GetNetworkSettlementsResponse = {
-  settlements: NetworkSettlement[];
-};
+export type GetNetworkSettlementsResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/settlements']['get']['responses'][200]['content']['application/json'];
 
-export type GetNetworkSettlementByIdParams = NetworkPaginationParams & {
-  settlementId: string;
-  currencies?: string[];
-};
+export type GetNetworkSettlementByIdParams = Omit<
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/settlements/{settlementId}']['get']['parameters']['path'],
+  'enterpriseId'
+> &
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/settlements/{settlementId}']['get']['parameters']['query'];
 
-export type GetNetworkSettlementByIdResponse = {
-  settlement: NetworkSettlement;
-  settlementTransfers: NetworkSettlementTransfer[];
-};
+export type GetNetworkSettlementByIdResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/settlements/{settlementId}']['get']['responses'][200]['content']['application/json'];
 
-export type GetNetworkSettlementTransfersParams = NetworkPaginationParams & {
-  currencies?: string[];
-  initiatedBy?: string[];
-  partnerIds?: string[];
-  settlementIds?: string[];
-  settlementStatuses?: NetworkSettlementStatus[];
-  settlementUpdatedBefore?: string;
-  settlementUpdatedOnOrAfter?: string;
-};
+export type GetNetworkSettlementTransfersParams =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/settlementTransfers']['get']['parameters']['query'];
 
-export type GetNetworkSettlementTransfersResponse = {
-  settlementTransfers: NetworkSettlementTransfer[];
-};
-
-// METHOD ARTIFACTS
-
-type NetworkPaginationParams = {
-  pageNumber?: string | number;
-  pageSize?: string | number;
-};
-
-type NetworkSortDirection = 'ASC' | 'DESC';
-
-export type NetworkAccountBalanceRecord = {
-  available: string;
-  held: string;
-};
-
-export type NetworkBalance = {
-  balances: Record<string, NetworkAccountBalanceRecord>;
-  name: string;
-  partnerId: string;
-  partnerInstitutionIdentifier: string;
-  partnersConnectionId: string;
-};
-
-export type V1SupportedCurrency = {
-  ofcCurrency: string;
-  backingCurrency: string;
-  partnerNames: string[];
-};
-
-export type NetworkConnection = {
-  active: boolean;
-  clientId: string;
-  initialized: boolean;
-  name: string;
-  partnersConnectionId: string;
-  partnersClientId: string;
-  partnerId: string;
-  networkAccountId: string;
-  proof: string;
-  nonce: string;
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type NetworkConnectionKey =
-  | {
-      schema: 'token';
-      connectionToken: string;
-    }
-  | {
-      schema: 'tokenAndSignature';
-      connectionToken: string;
-      signature: string;
-    };
-
-export type NetworkAllocationType = 'allocation' | 'deallocation';
-export type NetworkAllocationStatus = 'cleared' | 'released' | 'reserved';
-
-export type NetworkAllocation = {
-  reason: string;
-  status: NetworkAllocationStatus;
-  type: NetworkAllocationType;
-  id: string;
-  amount: NetworkAllocationAmount;
-  connectionId: string;
-  clientExternalId: string;
-  partnerExternalId?: string;
-  initiatedBy: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type NetworkAllocationAmount = {
-  currency: string;
-  quantity?: string;
-};
-
-export type NetworkDeallocation = NetworkAllocation;
-
-export type NetworkSettlement = {
-  status: NetworkSettlementStatus;
-  reason?: string;
-  id: string;
-  partnerId: string;
-  externalId: string;
-  reconciled: boolean;
-  initiatedBy: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type NetworkSettlementTransfer = {
-  id: string;
-  currency: string;
-  settlementId: string;
-  quantity: string;
-  txIds: string[];
-  settlementStatus: NetworkSettlementStatus;
-  settlementNotes?: string;
-  sourceTradingAccountId?: string;
-  sourceClientName?: string;
-  destinationTradingAccountId?: string;
-  destinationClientName?: string;
-  sourceNetworkAccountId?: string;
-  sourceConnectionName?: string;
-  destinationNetworkAccountId?: string;
-  destinationConnectionName?: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type NetworkSettlementStatus = 'failed' | 'completed' | 'pending';
+export type GetNetworkSettlementTransfersResponse =
+  paths['/api/network/v1/enterprises/{enterpriseId}/clients/settlementTransfers']['get']['responses'][200]['content']['application/json'];
