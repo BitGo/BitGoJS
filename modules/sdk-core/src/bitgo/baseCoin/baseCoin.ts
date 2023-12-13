@@ -38,6 +38,7 @@ import {
   TransactionPrebuild,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  BuildNftTransferDataOptions,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
@@ -492,5 +493,9 @@ export abstract class BaseCoin implements IBaseCoin {
    */
   getHashFunction(): Hash {
     throw new NotImplementedError('getHashFunction is not supported for this coin');
+  }
+
+  buildNftTransferData(params: BuildNftTransferDataOptions): string {
+    throw new NotImplementedError('buildNftTransferData is not supported for this coin');
   }
 }

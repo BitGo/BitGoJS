@@ -59,3 +59,32 @@ export const nftResponse = {
     },
   },
 };
+
+export const unsupportedNftResponse = {
+  unsupportedNfts: {
+    '0xd000f000aa1f8accbd5815056ea32a54777b2fc4': {
+      type: 'ERC721',
+      collections: { 4054: '1' },
+      metadata: {
+        name: 'TestToadz',
+        tokenContractAddress: '0xd000f000aa1f8accbd5815056ea32a54777b2fc4',
+      },
+    },
+    '0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b': {
+      type: 'ERC721',
+      collections: {
+        1186703: '1',
+        1186705: '1',
+        1294856: '1',
+        1294857: '1',
+        1294858: '1',
+        1294859: '1',
+        1294860: '1',
+      },
+      metadata: {
+        name: 'MultiFaucet NFT',
+        tokenContractAddress: '0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b',
+      },
+    },
+  },
+};

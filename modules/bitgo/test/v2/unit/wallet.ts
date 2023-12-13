@@ -39,7 +39,7 @@ import { getDefaultWalletKeys, toKeychainObjects } from './coins/utxo/util';
 import { Tsol } from '@bitgo/sdk-coin-sol';
 import { Teth } from '@bitgo/sdk-coin-eth';
 
-import { nftResponse } from '../fixtures/nfts/nftResponses';
+import { nftResponse, unsupportedNftResponse } from '../fixtures/nfts/nftResponses';
 
 require('should-sinon');
 
@@ -3758,6 +3758,9 @@ describe('V2 Wallet:', function () {
           '5935d59cf660764331bafcade1855fd7',
         ],
         multisigType: 'onchain',
+        coinSpecific: {
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+        },
       };
       ethWallet = new Wallet(bitgo, bitgo.coin('gteth'), walletData);
     });
@@ -3789,6 +3792,112 @@ describe('V2 Wallet:', function () {
         spendableBalanceString: '0',
         transferCount: 0,
       });
+    });
+
+    it('Should throw when attempting to transfer a nft collection not in the wallet', async function () {
+      const getTokenBalanceNock = nock(bgUrl)
+        .get(`/api/v2/gteth/wallet/${ethWallet.id()}?allTokens=true`)
+        .reply(200, {
+          ...walletData,
+          ...nftResponse,
+        });
+
+      await ethWallet
+        .sendNft(
+          {
+            walletPassphrase: '123abc',
+            otp: '000000',
+          },
+          {
+            tokenId: '123',
+            type: 'ERC721',
+            tokenContractAddress: '0x123badaddress',
+            recipientAddress: '0xc15acc27ee41f266877c8f0c61df5bcbc7997df6',
+          }
+        )
+        .should.be.rejectedWith('Collection not found for token contract 0x123badaddress');
+      getTokenBalanceNock.isDone().should.be.true();
+    });
+
+    it('Should throw when attempting to transfer a ERC-721 nft not owned by the wallet', async function () {
+      const getTokenBalanceNock = nock(bgUrl)
+        .get(`/api/v2/gteth/wallet/${ethWallet.id()}?allTokens=true`)
+        .reply(200, {
+          ...walletData,
+          ...nftResponse,
+          ...unsupportedNftResponse,
+        });
+
+      await ethWallet
+        .sendNft(
+          {
+            walletPassphrase: '123abc',
+            otp: '000000',
+          },
+          {
+            tokenId: '123',
+            type: 'ERC721',
+            tokenContractAddress: '0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b',
+            recipientAddress: '0xc15acc27ee41f266877c8f0c61df5bcbc7997df6',
+          }
+        )
+        .should.be.rejectedWith(
+          'Token 123 not found in collection 0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b or does not have a spendable balance'
+        );
+      getTokenBalanceNock.isDone().should.be.true();
+    });
+
+    it('Should throw when attempting to transfer ERC-1155 tokens when the amount transferred is more than the spendable balance', async function () {
+      const getTokenBalanceNock = nock(bgUrl)
+        .get(`/api/v2/gteth/wallet/${ethWallet.id()}?allTokens=true`)
+        .reply(200, {
+          ...walletData,
+          ...{
+            unsupportedNfts: {
+              '0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b': {
+                type: 'ERC1155',
+                collections: {
+                  1186703: '9',
+                  1186705: '1',
+                  1294856: '1',
+                  1294857: '1',
+                  1294858: '1',
+                  1294859: '1',
+                  1294860: '1',
+                },
+                metadata: {
+                  name: 'MultiFaucet NFT',
+                  tokenContractAddress: '0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b',
+                },
+              },
+            },
+          },
+        });
+
+      await ethWallet
+        .sendNft(
+          {
+            walletPassphrase: '123abc',
+            otp: '000000',
+          },
+          {
+            entries: [
+              {
+                amount: 10,
+                tokenId: '1186703',
+              },
+              {
+                amount: 1,
+                tokenId: '1186705',
+              },
+            ],
+            type: 'ERC1155',
+            tokenContractAddress: '0xf5de760f2e916647fd766b4ad9e85ff943ce3a2b',
+            recipientAddress: '0xc15acc27ee41f266877c8f0c61df5bcbc7997df6',
+          }
+        )
+        .should.be.rejectedWith('Amount 10 exceeds spendable balance of 9 for token 1186703');
+      getTokenBalanceNock.isDone().should.be.true();
     });
   });
 });

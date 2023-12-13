@@ -41,6 +41,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
+  BuildNftTransferDataOptions,
 } from '@bitgo/sdk-core';
 import {
   BaseCoin as StaticsBaseCoin,
@@ -58,6 +59,8 @@ import { SignTypedDataVersion, TypedDataUtils, TypedMessage } from '@metamask/et
 
 import {
   calculateForwarderV1Address,
+  ERC1155TransferBuilder,
+  ERC721TransferBuilder,
   getCommon,
   getProxyInitcode,
   getToken,
@@ -2473,5 +2476,39 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       );
     }
     return Buffer.concat(parts);
+  }
+
+  /**
+   * Build the data to transfer an ERC-721 or ERC-1155 token to another address
+   * @param params
+   */
+  buildNftTransferData(params: BuildNftTransferDataOptions): string {
+    const { tokenContractAddress, recipientAddress, fromAddress } = params;
+    switch (params.type) {
+      case 'ERC721': {
+        const tokenId = params.tokenId;
+        const contractData = new ERC721TransferBuilder()
+          .tokenContractAddress(tokenContractAddress)
+          .to(recipientAddress)
+          .from(fromAddress)
+          .tokenId(tokenId)
+          .build();
+        return contractData;
+      }
+
+      case 'ERC1155': {
+        const entries = params.entries;
+        const transferBuilder = new ERC1155TransferBuilder()
+          .tokenContractAddress(tokenContractAddress)
+          .to(recipientAddress)
+          .from(fromAddress);
+
+        for (const entry of entries) {
+          transferBuilder.entry(parseInt(entry.tokenId, 10), entry.amount);
+        }
+
+        return transferBuilder.build();
+      }
+    }
   }
 }
