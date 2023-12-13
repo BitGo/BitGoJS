@@ -3832,7 +3832,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     'fa128781-36cf-416f-bbf0-0ae247e66d51',
     'injv2',
-    'Injective Token',
+    'Injective (ERC20)',
     18,
     '0xe28b3b32b6c345a34ff64674606124dd5aceca30',
     UnderlyingAsset.INJV2
