@@ -49,15 +49,7 @@ export class ERC1155TransferBuilder extends BaseNFTTransferBuilder {
   signAndBuild(): string {
     const hasMandatoryFields = this.hasMandatoryFields();
     if (hasMandatoryFields) {
-      if (this._tokenIds.length === 1) {
-        const values = [this._fromAddress, this._toAddress, this._tokenIds[0], this._values[0], this._bytes];
-        const contractCall = new ContractCall(ERC1155SafeTransferTypeMethodId, ERC1155SafeTransferTypes, values);
-        this._data = contractCall.serialize();
-      } else {
-        const values = [this._fromAddress, this._toAddress, this._tokenIds, this._values, this._bytes];
-        const contractCall = new ContractCall(ERC1155BatchTransferTypeMethodId, ERC1155BatchTransferTypes, values);
-        this._data = contractCall.serialize();
-      }
+      this._data = this.build();
 
       return sendMultiSigData(
         this._tokenContractAddress,
@@ -98,6 +90,18 @@ export class ERC1155TransferBuilder extends BaseNFTTransferBuilder {
     this._values = transferData.values;
     if (transferData.data) {
       this._data = transferData.data;
+    }
+  }
+
+  build(): string {
+    if (this._tokenIds.length === 1) {
+      const values = [this._fromAddress, this._toAddress, this._tokenIds[0], this._values[0], this._bytes];
+      const contractCall = new ContractCall(ERC1155SafeTransferTypeMethodId, ERC1155SafeTransferTypes, values);
+      return contractCall.serialize();
+    } else {
+      const values = [this._fromAddress, this._toAddress, this._tokenIds, this._values, this._bytes];
+      const contractCall = new ContractCall(ERC1155BatchTransferTypeMethodId, ERC1155BatchTransferTypes, values);
+      return contractCall.serialize();
     }
   }
 }

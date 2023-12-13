@@ -4,7 +4,7 @@ import { hexlify, hexZeroPad } from 'ethers/lib/utils';
 import { ContractCall } from '../contractCall';
 import { decodeERC721TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
 import { BaseNFTTransferBuilder } from './baseNFTTransferBuilder';
-import { ERC721SafeTransferTypeMethodId } from '../walletUtil';
+import { ERC721SafeTransferTypeMethodId, ERC721SafeTransferTypes } from '../walletUtil';
 
 export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
   private _tokenId: string;
@@ -36,12 +36,16 @@ export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
     return this;
   }
 
+  build(): string {
+    const types = ERC721SafeTransferTypes;
+    const values = [this._fromAddress, this._toAddress, this._tokenId, this._bytes];
+    const contractCall = new ContractCall(ERC721SafeTransferTypeMethodId, types, values);
+    return contractCall.serialize();
+  }
+
   signAndBuild(): string {
     if (this.hasMandatoryFields()) {
-      const types = ['address', 'address', 'uint256', 'bytes'];
-      const values = [this._fromAddress, this._toAddress, this._tokenId, this._bytes];
-      const contractCall = new ContractCall(ERC721SafeTransferTypeMethodId, types, values);
-      this._data = contractCall.serialize();
+      this._data = this.build();
 
       return sendMultiSigData(
         this._tokenContractAddress, // to

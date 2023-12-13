@@ -7,6 +7,7 @@ import {
   TransactionPrebuild,
   VerificationOptions,
   TypedData,
+  NFTTransferOptions,
 } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain } from '../keychain';
@@ -650,6 +651,15 @@ export interface WalletEcdsaChallenges {
   createdBy: string;
 }
 
+export type SendNFTOptions = Omit<
+  SendManyOptions,
+  'recipients' | 'enableTokens' | 'tokenName' | 'txFormat' | 'receiveAddress'
+>;
+
+export type SendNFTResult = {
+  pendingApproval: PendingApprovalData;
+};
+
 export interface IWallet {
   bitgo: BitGoBase;
   baseCoin: IBaseCoin;
@@ -715,6 +725,7 @@ export interface IWallet {
   submitTransaction(params?: SubmitTransactionOptions): Promise<any>;
   send(params?: SendOptions): Promise<any>;
   sendMany(params?: SendManyOptions): Promise<any>;
+  sendNft(sendOptions: SendNFTOptions, sendNftOptions: Omit<NFTTransferOptions, 'fromAddress'>): Promise<SendNFTResult>;
   recoverToken(params?: RecoverTokenOptions): Promise<any>;
   getFirstPendingTransaction(params?: Record<string, never>): Promise<any>;
   changeFee(params?: ChangeFeeOptions): Promise<any>;

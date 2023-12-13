@@ -419,6 +419,24 @@ export interface MessagePrep {
 
 export type MPCAlgorithm = 'ecdsa' | 'eddsa';
 
+export type NFTTransferOptions = {
+  tokenContractAddress: string;
+  recipientAddress: string;
+} & (
+  | {
+      type: 'ERC721';
+      tokenId: string;
+    }
+  | {
+      type: 'ERC1155';
+      entries: { tokenId: string; amount: number }[];
+    }
+);
+
+export type BuildNftTransferDataOptions = NFTTransferOptions & {
+  fromAddress: string;
+};
+
 export interface IBaseCoin {
   type: string;
   tokenConfig?: BaseTokenConfig;
@@ -486,5 +504,12 @@ export interface IBaseCoin {
   // TODO - this only belongs in eth coins
   recoverToken(params: RecoverWalletTokenOptions): Promise<RecoverTokenTransaction>;
   getInscriptionBuilder(wallet: Wallet): IInscriptionBuilder;
+
+  /**
+   * Build the call data for transferring a NFT(s).
+   * @param params Options specifying the token contract, token recipient & the token(s) to be transferred
+   * @return the hex string for the contract call.
+   */
+  buildNftTransferData(params: BuildNftTransferDataOptions): string;
   getHashFunction(): Hash;
 }

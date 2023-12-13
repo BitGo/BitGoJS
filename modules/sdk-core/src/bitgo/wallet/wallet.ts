@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import {
   IBaseCoin,
+  NFTTransferOptions,
   SignedMessage,
   SignedTransaction,
   SignedTransactionRequest,
@@ -69,6 +70,8 @@ import {
   RemovePolicyRuleOptions,
   RemoveUserOptions,
   SendManyOptions,
+  SendNFTOptions,
+  SendNFTResult,
   SendOptions,
   ShareWalletOptions,
   SimulateWebhookOptions,
@@ -2092,6 +2095,91 @@ export class Wallet implements IWallet {
     }
     const sendManyOptions: SendManyOptions = Object.assign({}, params, { recipients });
     return this.sendMany(sendManyOptions);
+  }
+
+  /**
+   * Send an ERC-721 NFT or ERC-1155 NFT(s).
+   *
+   * This function constructs the appropriate call data for an ERC-721/1155 token transfer,
+   * and calls the token contract with the data, and amount 0. This transaction will always produce
+   * a pending approval.
+   *
+   * @param sendOptions Options to specify how the transaction should be sent.
+   * @param sendNftOptions Options to specify the NFT(s) to be sent.
+   *
+   * @return A pending approval for the transaction.
+   */
+  async sendNft(sendOptions: SendNFTOptions, sendNftOptions: NFTTransferOptions): Promise<SendNFTResult> {
+    const nftCollections = await this.getNftBalances();
+    const { tokenContractAddress, recipientAddress, type } = sendNftOptions;
+
+    const nftBalance = nftCollections.find((c) => c.metadata.tokenContractAddress === tokenContractAddress);
+    if (!nftBalance) {
+      throw new Error(`Collection not found for token contract ${tokenContractAddress}`);
+    }
+
+    if (!this.baseCoin.isValidAddress(recipientAddress)) {
+      throw new Error(`Invalid recipient address ${recipientAddress}`);
+    }
+    const baseAddress = this.coinSpecific()?.baseAddress;
+    if (!baseAddress) {
+      throw new Error('Missing base address for wallet');
+    }
+
+    if (nftBalance.type !== type) {
+      throw new Error(`Specified NFT type ${type} does not match collection type ${nftBalance.type}`);
+    }
+
+    switch (sendNftOptions.type) {
+      case 'ERC721': {
+        if (!nftBalance.collections[sendNftOptions.tokenId]) {
+          throw new Error(
+            `Token ${sendNftOptions.tokenId} not found in collection ${tokenContractAddress} or does not have a spendable balance`
+          );
+        }
+
+        const data = this.baseCoin.buildNftTransferData({ ...sendNftOptions, fromAddress: baseAddress });
+        return this.sendMany({
+          ...sendOptions,
+          recipients: [
+            {
+              address: sendNftOptions.tokenContractAddress,
+              amount: '0',
+              data: data,
+            },
+          ],
+        });
+      }
+      case 'ERC1155': {
+        const entries = sendNftOptions.entries;
+        for (const entry of entries) {
+          if (!nftBalance.collections[entry.tokenId]) {
+            throw new Error(
+              `Token ${entry.tokenId} not found in collection ${sendNftOptions.tokenContractAddress} or does not have a spendable balance`
+            );
+          }
+          if (nftBalance.collections[entry.tokenId] < entry.amount) {
+            throw new Error(
+              `Amount ${entry.amount} exceeds spendable balance of ${nftBalance.collections[entry.tokenId]} for token ${
+                entry.tokenId
+              }`
+            );
+          }
+        }
+
+        const data = this.baseCoin.buildNftTransferData({ ...sendNftOptions, fromAddress: baseAddress });
+        return this.sendMany({
+          ...sendOptions,
+          recipients: [
+            {
+              address: sendNftOptions.tokenContractAddress,
+              amount: '0',
+              data: data,
+            },
+          ],
+        });
+      }
+    }
   }
 
   /**

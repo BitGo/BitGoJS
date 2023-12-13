@@ -14,6 +14,8 @@ export abstract class BaseNFTTransferBuilder {
   protected _data: string;
   protected _tokenContractAddress: string;
 
+  public abstract build(): string;
+
   protected constructor(serializedData?: string) {
     if (serializedData === undefined) {
       // initialize with default values for non mandatory fields
