@@ -1523,6 +1523,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.AERGO1
   ),
   erc20(
+    'edd072d2-8472-489e-b8aa-808be352658a',
+    'agi',
+    'AGI Token',
+    18,
+    '0x7da2641000cbb407c329310c461b2cb9c70c3046',
+    UnderlyingAsset.AGI
+  ),
+  erc20(
     '82bf85dd-4e4d-4734-be42-a536ed35f811',
     'agld',
     'Adventure Gold',
@@ -1929,6 +1937,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xcdc412f306e0c51e3249b88c65423cd16b322673',
     UnderlyingAsset.BCIO
+  ),
+  erc20(
+    '4130136a-edd2-4e1c-a546-3f467793c232',
+    'bcut',
+    'bitsCrunch Token',
+    18,
+    '0xbef26bd568e421d6708cca55ad6e35f8bfa0c406',
+    UnderlyingAsset.BCUT
   ),
   erc20(
     '075d5970-9167-4d0a-9ce5-38abddc85b41',
@@ -5854,6 +5870,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x00006100f7090010005f1bd7ae6122c3c2cf0090',
     UnderlyingAsset.TAUD
+  ),
+  erc20(
+    '18baf0af-ce4c-476f-85a7-009d07a4cf91',
+    'tbill',
+    'OpenEden T-Bills',
+    6,
+    '0xdd50c053c096cb04a3e3362e2b622529ec5f2e8a',
+    UnderlyingAsset.TBILL
   ),
   erc20(
     '56af670b-76df-4e8e-9765-18a90e0f8b4d',
@@ -13487,6 +13511,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['xcope-usdc'],
     AccountCoin.DEFAULT_FEATURES
   ),
+  solToken(
+    'fce0c388-2167-447f-8d43-d76a1a33833d',
+    'sol:wec',
+    'Whole Earth Coin',
+    9,
+    '6y8W5YwAuzostqrS4YDJufBvksosfSi47Pd8U4A5vrBC',
+    UnderlyingAsset.WEC,
+    AccountCoin.DEFAULT_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -13936,6 +13969,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xe71b2e809598d8398222b890d7203808fa1d631f',
     UnderlyingAsset['tpolygon:opm']
+  ),
+  tpolygonErc20(
+    'bc3dc605-8ab5-4512-abc7-8f5c215f87ae',
+    'tpolygon:pme',
+    'Token de PME Teste',
+    0,
+    '0x4659bc13c40a5012663b66102415262712303739',
+    UnderlyingAsset['tpolygon:pme']
   ),
   terc721(
     '54d98031-6ebc-428a-b47c-b6ec7d6ad28a',

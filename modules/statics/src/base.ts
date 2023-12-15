@@ -338,6 +338,7 @@ export enum UnderlyingAsset {
   AERGO = 'aergo',
   AERGO1 = 'aergo1',
   AGEUR = 'ageur',
+  AGI = 'agi',
   AGLD = 'agld',
   AGWD = 'agwd',
   AION = 'aion',
@@ -426,6 +427,7 @@ export enum UnderlyingAsset {
   BCHHEDGE = 'bchhedge',
   BCHMOON = 'bchmoon',
   BCIO = 'bcio',
+  BCUT = 'bcut',
   BCT = 'bct',
   BEAR = 'bear',
   BEARSHIT = 'bearshit',
@@ -1259,6 +1261,7 @@ export enum UnderlyingAsset {
   THRESHOLD = 'threshold',
   THEU = 'theu',
   TAUD = 'taud',
+  TBILL = 'tbill',
   TBTC1 = 'tbtc1',
   TBTC2 = 'tbtc2',
   TCAD = 'tcad',
@@ -1690,6 +1693,8 @@ export enum UnderlyingAsset {
   'tpolygon:link' = 'tpolygon:link',
   'tpolygon:name' = 'tpolygon:name',
   'tpolygon:opm' = 'tpolygon:opm',
+  'tpolygon:pme' = 'tpolygon:pme',
+
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
   'terc1155:polygontoken' = 'terc1155:polygontoken',
