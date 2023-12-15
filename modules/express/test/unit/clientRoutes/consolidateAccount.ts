@@ -104,6 +104,25 @@ describe('Consolidate account', () => {
     consolidationStub.should.be.calledOnceWith(body);
   });
 
+  it('should pass the apiVersion param to bitgo api consolidate/build', async () => {
+    const result = { success: [], failure: [] };
+    const body = { apiVersion: 'full' };
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true, true);
+    const mockRequest = {
+      bitgo: bitgoStub,
+      params: {
+        coin: 'tsol',
+        id: '23423423423423',
+      },
+      body,
+    };
+
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.resolvedWith(
+      result
+    );
+    consolidationStub.should.be.calledOnceWith(body);
+  });
+
   it('should return 202 when some transactions fail', async () => {
     const result = { success: [0], failure: [0] };
     const body = 'testbody';
