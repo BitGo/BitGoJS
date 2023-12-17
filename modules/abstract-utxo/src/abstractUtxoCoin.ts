@@ -1476,6 +1476,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     // if the addressType is not specified, we need to default to p2trMusig2 for testnet hot wallets for staged rollout of p2trMusig2
     if (
       buildParams.addressType === undefined &&
+      buildParams.changeAddressType === undefined &&
       buildParams.wallet.type() === 'hot' &&
       this.network === utxolib.networks.testnet
     ) {
