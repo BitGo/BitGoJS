@@ -46,10 +46,12 @@ export const expectedColdFeatures = {
     'txrp',
     'txtz',
     'tzec',
+    'tzketh',
     'xlm',
     'xrp',
     'xtz',
     'zec',
+    'zketh',
   ],
   justTSS: [
     'ada',

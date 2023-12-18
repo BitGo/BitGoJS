@@ -71,6 +71,7 @@ export enum CoinFamily {
   XTZ = 'xtz',
   ZEC = 'zec',
   ZETA = 'zeta',
+  ZKETH = 'zketh',
 }
 
 /**
@@ -319,6 +320,7 @@ export enum UnderlyingAsset {
   XTZ = 'xtz',
   ZEC = 'zec',
   ZETA = 'zeta',
+  ZKETH = 'zketh',
 
   // ERC 20 tokens
   '$Evmosia.com' = '$evmosia.com',

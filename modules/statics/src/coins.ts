@@ -252,6 +252,7 @@ const GENERIC_TOKEN_FEATURES = [
 const TON_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 const ARBETH_FEATURES = [...ETH_FEATURES, CoinFeature.MULTISIG_COLD, CoinFeature.EVM_WALLET];
 const OPETH_FEATURES = [...ETH_FEATURES, CoinFeature.MULTISIG_COLD, CoinFeature.EVM_WALLET];
+const ZKETH_FEATURES = [...ETH_FEATURES, CoinFeature.MULTISIG_COLD, CoinFeature.EVM_WALLET];
 
 export const coins = CoinMap.fromCoins([
   utxo(
@@ -1186,6 +1187,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.OPETH,
     BaseUnit.ETH,
     OPETH_FEATURES
+  ),
+  account(
+    '53b1e350-f907-45ec-abf7-11d132547055',
+    'zketh',
+    'zkSync Ethereum',
+    Networks.main.zkSync,
+    18,
+    UnderlyingAsset.ZKETH,
+    BaseUnit.ETH,
+    ZKETH_FEATURES
+  ),
+  account(
+    'e34d835d-5730-4b66-96f1-cace79e2bc88',
+    'tzketh',
+    'Testnet zkSync Ethereum',
+    Networks.test.zkSync,
+    18,
+    UnderlyingAsset.ZKETH,
+    BaseUnit.ETH,
+    ZKETH_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
