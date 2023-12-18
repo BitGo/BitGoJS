@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@3.2.0...@bitgo/sdk-unified-wallet@3.7.0) (2023-12-18)
+
+### Features
+
+- **sdk-core:** add custodial and smc tss wallet to generateWallet method ([ea80f4f](https://github.com/BitGo/BitGoJS/commit/ea80f4fa208ca6874fdd7d99d597c347e4628ecc))
+
 # [3.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@3.2.0...@bitgo/sdk-unified-wallet@3.6.0) (2023-12-12)
 
 ### Features

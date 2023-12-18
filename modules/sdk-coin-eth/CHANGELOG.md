@@ -3,6 +3,61 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.7.0...@bitgo/sdk-coin-eth@14.0.0) (2023-12-18)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-eth:** fix issue related to ethtxbuilder ([286ccfd](https://github.com/BitGo/BitGoJS/commit/286ccfd4bc89075fd2d8c59d3770dc3b8cd78c79))
+
+### Code Refactoring
+
+- **abstract-eth:** add common method to abstract-eth ([df6eea5](https://github.com/BitGo/BitGoJS/commit/df6eea5d299c415b30263d1713335c14e5abef4a))
+- **abstract-eth:** move methods to abstract-eth ([af8bd10](https://github.com/BitGo/BitGoJS/commit/af8bd10e24c8d58fc227494de6a614098265580a))
+- **abstract-eth:** move txbuilder to abstract-eth ([a093f16](https://github.com/BitGo/BitGoJS/commit/a093f16465b691d82b2709245cc806fc0eb66212))
+
+### Features
+
+- **account-lib:** add holesky testnet coin ([0aaefc0](https://github.com/BitGo/BitGoJS/commit/0aaefc0e53a5a48b2c701ca3c6d5e1c6ec7c19d2))
+- **statics:** add test token on holesky ([82389aa](https://github.com/BitGo/BitGoJS/commit/82389aa566b9d1b40674343ecf02636646d90d86))
+- update secp256k1 to 5.0.0 and keccak to 3.0.3 ([e2c37e6](https://github.com/BitGo/BitGoJS/commit/e2c37e6b0139c9f6948a22d8921bc3e1f88bed4c))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** Type of nextContractSequenceId field in TransactionPrebuild
+  interface is changed from string to number in AbstractEthLikeCoin and AbstractEthLikeNewCoins classes.
+  getCustomChainName method is removed from Polygon class because a common
+  method getCustomChainCommon has been added to AbstractEthLikeNewCoins
+  class for all EthLike coins. replayProtectionOptions is not optional in buildTransaction method in AbstractEthLikeNewCoins
+  and needs to be passed to derive the Eth common object from the chainId.
+  signFinalPolygon method name from Polygon class is updated to signFinalEthLike so that
+  it can be used for other EthLike coins. getBaseFactor method in Eth
+  and Polygon class returns number instead of string just to align with
+  AbstractEthLikeCoin
+  Ticket: WIN-1012
+- **abstract-eth:** Type of nextContractSequenceId field in TransactionPrebuild
+  interface is changed from string to number in AbstractEthLikeCoin and AbstractEthLikeNewCoins classes.
+  getCustomChainName method is removed from Polygon class because a common
+  method getCustomChainCommon has been added to AbstractEthLikeNewCoins
+  class for all EthLike coins. replayProtectionOptions is not optional in buildTransaction method in AbstractEthLikeNewCoins
+  and needs to be passed to derive the Eth common object from the chainId.
+  signFinalPolygon method name from Polygon class is updated to signFinalEthLike so that
+  it can be used for other EthLike coins. getBaseFactor method in Eth
+  and Polygon class returns number instead of string just to align with
+  AbstractEthLikeCoin
+  Ticket: WIN-1012
+- **abstract-eth:** getTransactionBuilder method is removed from EthLikeToken
+  class in abstract-eth module because TransactionBuilder in the
+  abstract-eth module is abstract class and hence cannot be instantiated. Hence the implementation of TransactionBuilder can
+  be added to the class that will inherit EthLikeToken class
+
+TransactionPrebuild from new class AbstractEthLikeNewCoins is being
+exported now instead of TransactionPrebuild from AbstractEthLikeCoin
+class as the TransactionPrebuild from AbstractEthLikeNewCoins also has
+support for hop transactions, batch transactions, etc
+
+TICKET: WIN-1021
+
 # [13.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@4.7.0...@bitgo/sdk-coin-eth@13.0.0) (2023-12-12)
 
 ### Bug Fixes

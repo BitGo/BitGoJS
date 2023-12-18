@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.5.0...@bitgo/sdk-coin-hbar@1.5.23) (2023-12-18)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-hbar:** allow explain txn to take both feeParam as well as parsed json ([fcc8bc5](https://github.com/BitGo/BitGoJS/commit/fcc8bc571efb5c7ec218ef1d30b8eac4640a5d7e))
+
 ## [1.5.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.5.0...@bitgo/sdk-coin-hbar@1.5.22) (2023-12-12)
 
 ### Bug Fixes
