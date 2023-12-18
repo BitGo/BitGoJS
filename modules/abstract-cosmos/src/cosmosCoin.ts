@@ -300,6 +300,7 @@ export class CosmosCoin extends BaseCoin {
     return [userKeyDerivedCombined, backupKeyCombined];
   }
 
+  // TODO(BG-78714): Reduce code duplication between this and eth.ts
   private async signRecoveryTSS(
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,

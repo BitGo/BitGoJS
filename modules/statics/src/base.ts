@@ -1778,7 +1778,7 @@ export enum KeyCurve {
  * This enum contains the base units for the coins that BitGo supports
  */
 export enum BaseUnit {
-  ATOM = 'uATOM',
+  ATOM = 'uatom',
   ETH = 'wei',
   BTC = 'satoshi',
   BSC = 'jager',

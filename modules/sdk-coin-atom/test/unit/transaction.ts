@@ -1,10 +1,15 @@
+import {
+  CosmosTransaction,
+  DelegateOrUndelegeteMessage,
+  SendMessage,
+  WithdrawDelegatorRewardsMessage,
+} from '@bitgo/abstract-cosmos';
 import { toHex, TransactionType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
-
 import { Transaction } from '../../src';
-import { DelegateOrUndelegeteMessage, SendMessage, WithdrawDelegatorRewardsMessage } from '../../src/lib/iface';
+import utils from '../../src/lib/utils';
 import * as testData from '../resources/atom';
 
 describe('Atom Transaction', () => {
@@ -12,7 +17,7 @@ describe('Atom Transaction', () => {
   const config = coins.get('tatom');
 
   beforeEach(() => {
-    tx = new Transaction(config);
+    tx = new CosmosTransaction(config, utils);
   });
 
   describe('Empty transaction', () => {
