@@ -924,6 +924,26 @@ class OptimismTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = 'OPETH-ERC20';
 }
 
+class ZkSync extends Mainnet implements EthereumNetwork {
+  name = 'ZkSync';
+  family = CoinFamily.ZKETH;
+  explorerUrl = 'https://explorer.zksync.io/tx/';
+  accountExplorerUrl = 'https://explorer.zksync.io/address/';
+  chainId = 324;
+  nativeCoinOperationHashPrefix = 'ZKETH';
+  tokenOperationHashPrefix = 'ZKETH-ERC20';
+}
+
+class ZkSyncTestnet extends Testnet implements EthereumNetwork {
+  name = 'ZkSyncTestnet';
+  family = CoinFamily.ZKETH;
+  explorerUrl = 'https://sepolia.explorer.zksync.io/tx/';
+  accountExplorerUrl = 'https://sepolia.explorer.zksync.io/address/';
+  chainId = 300;
+  nativeCoinOperationHashPrefix = 'ZKETH';
+  tokenOperationHashPrefix = 'ZKETH-ERC20';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -977,6 +997,7 @@ export const Networks = {
     xtz: Object.freeze(new Xtz()),
     zCash: Object.freeze(new ZCash()),
     zeta: Object.freeze(new Zeta()),
+    zkSync: Object.freeze(new ZkSync()),
   },
   test: {
     ada: Object.freeze(new AdaTestnet()),
@@ -1031,5 +1052,6 @@ export const Networks = {
     xtz: Object.freeze(new XtzTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
     zeta: Object.freeze(new ZetaTestnet()),
+    zkSync: Object.freeze(new ZkSyncTestnet()),
   },
 };
