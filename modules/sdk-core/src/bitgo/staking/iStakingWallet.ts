@@ -57,6 +57,10 @@ export interface UnstakeOptions {
   amount: string;
   clientId?: string;
   delegationId?: string;
+  /**
+   * coin sepcific staking subtype
+   */
+  subType?: string;
 }
 
 export interface EthUnstakeOptions {
