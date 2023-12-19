@@ -35,6 +35,7 @@ import {
   withUnsafeNonSegwit,
   getTransactionAmountsFromPsbt,
   WalletUnspent,
+  getDefaultSigHash,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -432,8 +433,8 @@ describe('isTransactionWithKeyPathSpendInput', function () {
 describe('Parse PSBT', function () {
   it('p2shP2pk parsing', function () {
     const signer = rootWalletKeys['user'];
-    const psbt = createPsbtForNetwork({ network });
-    const unspent = mockReplayProtectionUnspent(network, BigInt(1e8), { key: signer });
+    const psbt = createPsbtForNetwork({ network: networks.bitcoincash });
+    const unspent = mockReplayProtectionUnspent(networks.bitcoincash, BigInt(1e8), { key: signer });
     const { redeemScript } = createOutputScriptP2shP2pk(signer.publicKey);
     assert(redeemScript);
     addReplayProtectionUnspentToPsbt(psbt, unspent, redeemScript);
@@ -454,10 +455,12 @@ describe('Parse PSBT', function () {
 
     assert.strictEqual(parsed.scriptType, 'p2shP2pk');
     assert.strictEqual(parsed.signatures?.length, 1);
-    assert.strictEqual(parsed.signatures[0].length, 72);
     assert.strictEqual(parsed.publicKeys.length, 1);
     assert.ok(parsed.publicKeys[0].length === 33);
     assert.ok(parsed.pubScript.equals(redeemScript));
+
+    const sighash: number = parsed.signatures[0][parsed.signatures[0].length - 1];
+    assert.strictEqual(sighash, getDefaultSigHash(psbt.network));
   });
 
   it('fail to parse finalized psbt', function () {

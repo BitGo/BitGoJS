@@ -193,6 +193,11 @@ export function updateReplayProtectionUnspentToPsbt(
   } else if (!isZcash && !input.nonWitnessUtxo) {
     psbt.updateInput(inputIndex, { nonWitnessUtxo: (u as UnspentWithPrevTx<bigint>).prevTx });
   }
+
+  const sighashType = getDefaultSigHash(psbt.network);
+  if (psbt.data.inputs[inputIndex].sighashType === undefined) {
+    psbt.updateInput(inputIndex, { sighashType });
+  }
 }
 
 function addUnspentToPsbt(
