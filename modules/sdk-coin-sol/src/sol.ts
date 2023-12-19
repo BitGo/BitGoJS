@@ -54,6 +54,7 @@ import * as request from 'superagent';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
+export const MAX_SUPPORTED_TOKENS_PER_TX = 6; // max number of tokens that can be recovered per tx
 
 export interface TransactionFee {
   fee: string;
@@ -562,6 +563,22 @@ export class Sol extends BaseCoin {
     return response.body.result.value.feeCalculator.lamportsPerSignature;
   }
 
+  protected async getRentExemptAmount(): Promise<number> {
+    const response = await this.getDataFromNode({
+      payload: {
+        jsonrpc: '2.0',
+        id: '1',
+        method: 'getMinimumBalanceForRentExemption',
+        params: [165],
+      },
+    });
+    if (response.status !== 200 || response.error) {
+      throw new Error(JSON.stringify(response.error));
+    }
+
+    return response.body.result;
+  }
+
   protected async getAccountBalance(pubKey: string): Promise<number> {
     const response = await this.getDataFromNode({
       payload: {
@@ -577,7 +594,7 @@ export class Sol extends BaseCoin {
     return response.body.result.value;
   }
 
-  protected async getAccountInfo(pubKey = ''): Promise<SolDurableNonceFromNode> {
+  protected async getAccountInfo(pubKey: string): Promise<SolDurableNonceFromNode> {
     const response = await this.getDataFromNode({
       payload: {
         id: '1',
@@ -621,7 +638,7 @@ export class Sol extends BaseCoin {
       throw new Error('Account not found');
     }
 
-    if (response.body.result.value !== []) {
+    if (response.body.result.value.length !== 0) {
       const tokenAccounts: TokenAccount[] = [];
       for (const tokenAccount of response.body.result.value) {
         tokenAccounts.push({ info: tokenAccount.account.data.parsed.info, pubKey: tokenAccount.pubKey });
@@ -721,7 +738,8 @@ export class Sol extends BaseCoin {
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     let balance = 0;
     const feePerSignature = await this.getFees();
-    const totalFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
+    const baseFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
+    let totalFee = new BigNumber(baseFee);
 
     const index = params.index || 0;
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
@@ -729,7 +747,7 @@ export class Sol extends BaseCoin {
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
     balance = await this.getAccountBalance(bs58EncodedPublicKey);
-    if (balance < totalFee) {
+    if (totalFee.gt(balance)) {
       throw Error('Did not find address with funds to recover');
     }
 
@@ -753,7 +771,7 @@ export class Sol extends BaseCoin {
       // 1. if there is a recoverable balance
       // 2. if the token is supported by bitgo
       const recovereableTokenAccounts: TokenAccount[] = [];
-      for (const tokenAccount of tokenAccounts as TokenAccount[]) {
+      for (const tokenAccount of tokenAccounts) {
         const tokenAmount = new BigNumber(tokenAccount.info.tokenAmount.amount);
         const network = this.getNetwork();
         const token = getSolTokenFromAddress(tokenAccount.info.mint, network);
@@ -765,23 +783,23 @@ export class Sol extends BaseCoin {
       }
 
       if (recovereableTokenAccounts.length !== 0) {
-        // there are recoverable token accounts, need to check if there is sufficient native solana to recover tokens
-        const totalTokenFees = new BigNumber(totalFee).multipliedBy(new BigNumber(recovereableTokenAccounts.length));
-        if (new BigNumber(balance).lt(totalTokenFees)) {
-          throw Error('Did not find address with funds to recover');
-        }
+        // we can only recover up to 6 tokens per tx, tx have a limit size of 1232 bytes
+        const slicedRecovereableTokenAccounts = recovereableTokenAccounts.slice(0, MAX_SUPPORTED_TOKENS_PER_TX);
+
+        const rentExemptAmount = await this.getRentExemptAmount();
 
         txBuilder = factory
           .getTokenTransferBuilder()
           .nonce(blockhash)
           .sender(bs58EncodedPublicKey)
           .fee({ amount: feePerSignature })
+          .associatedTokenAccountRent(rentExemptAmount.toString())
           .feePayer(bs58EncodedPublicKey);
 
         // need to get all token accounts of the recipient address and need to create them if they do not exist
         const recipientTokenAccounts = await this.getTokenAccountsByOwner(params.recoveryDestination);
 
-        for (const tokenAccount of recovereableTokenAccounts) {
+        for (const tokenAccount of slicedRecovereableTokenAccounts) {
           let recipientTokenAccountExists = false;
           for (const recipientTokenAccount of recipientTokenAccounts as TokenAccount[]) {
             if (recipientTokenAccount.info.mint === tokenAccount.info.mint) {
@@ -804,10 +822,19 @@ export class Sol extends BaseCoin {
           if (!recipientTokenAccountExists) {
             // recipient token account does not exist for token and must be created
             txBuilder.createAssociatedTokenAccount({ ownerAddress: params.recoveryDestination, tokenName: tokenName });
+            // add rent exempt amount to total fee for each token account that has to be created
+            totalFee = totalFee.plus(rentExemptAmount);
           }
         }
+
+        // there are recoverable token accounts, need to check if there is sufficient native solana to recover tokens
+        if (new BigNumber(balance).lt(totalFee)) {
+          throw Error(
+            'Not enough funds to pay for recover tokens fees, have: ' + balance + ' need: ' + totalFee.toString()
+          );
+        }
       } else {
-        const netAmount = balance - totalFee;
+        const netAmount = new BigNumber(balance).minus(totalFee);
 
         txBuilder = factory
           .getTransferBuilder()
@@ -818,7 +845,7 @@ export class Sol extends BaseCoin {
           .feePayer(bs58EncodedPublicKey);
       }
     } else {
-      const netAmount = balance - totalFee;
+      const netAmount = new BigNumber(balance).minus(totalFee);
 
       txBuilder = factory
         .getTransferBuilder()
@@ -917,7 +944,7 @@ export class Sol extends BaseCoin {
     }
     const spendAmount = completedTransaction.inputs.length === 1 ? completedTransaction.inputs[0].value : 0;
     const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
-    const feeInfo = { fee: totalFee, feeString: new BigNumber(totalFee).toString() };
+    const feeInfo = { fee: totalFee.toNumber(), feeString: totalFee.toString() };
     const coinSpecific = { commonKeychain: bitgoKey };
     if (isUnsignedSweep) {
       const transaction: MPCTx = {

@@ -78,6 +78,15 @@ const getFeesResponse = {
   },
 };
 
+const getMinimumBalanceForRentExemptionResponse = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: 2039280,
+    id: 1,
+  },
+};
+
 const getAccountInfoResponse = {
   status: 200,
   body: {
@@ -335,6 +344,67 @@ const getTokenAccountsByOwnerResponseNoAccounts = {
   },
 };
 
+function generateValues() {
+  const tokens = [
+    { pub: '7nLPX6gmwAKrgYtR84qgCLz1f57Y561BceLeqMyy5VmS', mint: 'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6' },
+    { pub: 'tTgPkxhJZC7djSb8YxLHzkXoAXenFZf3aHVKGysLiW7', mint: '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R' },
+    { pub: 'i34VuFZY1Lz8Tg9ajAqq5MNjE3ES32uVR8oPFFtLd9F', mint: '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C' },
+    { pub: 'Fxbh3i7s6hjVK2gZ6n6JdFwHxK78hECdhpkYcKZmiVCp', mint: 'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K' },
+    { pub: 'DS34T8TurqopxjupwTShZNoZ2LvGbcwoA7rMv1JBZBAF', mint: 'Aub3Nun71bD5B98JQAivGtEdwCuFJVvZVXKkcVJkuzgh' },
+    { pub: 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg', mint: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf' },
+    { pub: 'Eg4XVUKdMRwxoEwTgRS1VCWECbaeYM3RFcuycocQUAZw', mint: '64bco36MjrZ8K26FXZGoSrnDFDSCZhvJGfQ5ywLRFUpF' },
+    { pub: '5sErqm6TdUvxEWQ6cLjd3fUnHbnkUHiYA8uqoDzhFsf3', mint: '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h' },
+  ];
+
+  const result = tokens.map((token, index) => {
+    return {
+      account: {
+        data: {
+          parsed: {
+            info: {
+              isNative: false,
+              mint: token.mint,
+              owner: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
+              state: 'initialized',
+              tokenAmount: {
+                amount: (index + 1).toString() + '000000000',
+                decimals: 9,
+                uiAmount: index + 1,
+                uiAmountString: (index + 1).toString(),
+              },
+            },
+            type: 'account',
+          },
+          program: 'spl-token',
+          space: 165,
+        },
+        executable: false,
+        lamports: 2039280,
+        owner: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        rentEpoch: 18446744073709552000,
+        space: 165,
+      },
+      pubkey: token.pub,
+    };
+  });
+  return result;
+}
+
+const getTokenAccountsByOwnerResponse3 = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: {
+        apiVersion: '1.17.5',
+        slot: 259019329,
+      },
+      value: generateValues(),
+    },
+    id: '1',
+  },
+};
+
 export const SolResponses = {
   getBlockhashResponse,
   getFeesResponse,
@@ -346,7 +416,9 @@ export const SolResponses = {
   getAccountBalanceResponseM1Derivation,
   getTokenAccountsByOwnerResponse,
   getTokenAccountsByOwnerResponse2,
+  getTokenAccountsByOwnerResponse3,
   getTokenAccountsByOwnerResponseNoAccounts,
+  getMinimumBalanceForRentExemptionResponse,
 } as const;
 
 export const accountInfo = {
@@ -354,6 +426,7 @@ export const accountInfo = {
   bs58EncodedPublicKeyNoFunds: '3EJt66Hwfi22FRU2HWPet7faPRstiSdGxrEe486CxhTL',
   bs58EncodedPublicKeyM1Derivation: 'EoBmy4FQfhKEqiAysNXbCmhr682dkV92Yk4Y6cpUfopf',
   bs58EncodedPublicKeyM2Derivation: '89QdCRKLvajFUY3f2gZFykUZGgM5dsx3XS5VL4axrHA4',
+  bs58EncodedPublicKeyWithManyTokens: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
 };
 
 export const keys = {
@@ -637,9 +710,12 @@ export const wrwUser = {
   bitgoKey:
     '125746de1919236bd30a4809d718b1c161ab8f7674fe506bed438fa860adcfcc256f3721062' +
     'dfeaea177c38c467a24228b9acf1a9f92fc2f5d0177bbbf218eb8',
+  bitgoKeyWithManyTokens:
+    'f342b7b3bfe5086d189bc0886139d3fbb1669381d725d9f6b6b522c62c8c14e8d772493a05c9bb82fb1adfb42dfae30f8746c3dc17bc0183806094f66d5e2fe0',
   walletPassphrase: 'Ghghjkg!455544llll',
   walletAddress0: 'cyggsFnDvbfsPeiFXziebWsWAp6bW5Nc5SePTx8mebL',
   walletAddress1: '9jCvKZbmzothfWS6P7AJxLKY8JLdapkurZbHsZ8p9TP8',
   walletAddress2: '22USpDwmubAoY5uws4hp4YhJZwt4eoumeLrGGx5z7DWV',
   walletAddress3: 'FNe4or6gc5vmmCCMASJyYu9BRoiL14fDhjC5vxoGFiW2',
+  walletAddress4: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
 };
