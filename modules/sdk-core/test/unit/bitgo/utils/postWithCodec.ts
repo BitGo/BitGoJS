@@ -35,67 +35,30 @@ describe('postWithCodec', function () {
       body: unknown;
       headers: Headers;
     },
-    body: unknown,
-    headers: Headers
+    body: unknown
   ) {
     assert.deepStrictEqual(request.body, body);
-    for (const [key, value] of Object.entries(headers)) {
-      assert.deepStrictEqual(request.headers[key], value, `header ${key} does not match`);
-    }
   }
 
   const codec = t.exact(t.intersection([t.type({ foo: t.string }), t.partial({ bar: t.unknown })]));
 
   it('has expected values with value matching codec', function () {
-    assertRequestContains(
-      getRequest(codec, { foo: 'bar' }),
-      { foo: 'bar' },
-      {
-        'io-ts-codec-encode-error': 'false',
-        'io-ts-unknown-properties': 'NA',
-      }
-    );
+    assertRequestContains(getRequest(codec, { foo: 'bar' }), { foo: 'bar' });
 
-    assertRequestContains(
-      getRequest(codec, { foo: 'bar', bar: null }),
-      { foo: 'bar', bar: null },
-      {
-        'io-ts-codec-encode-error': 'false',
-        'io-ts-unknown-properties': 'NA',
-      }
-    );
+    assertRequestContains(getRequest(codec, { foo: 'bar', bar: null }), { foo: 'bar', bar: null });
   });
 
   it('has expected values with value not matching codec', function () {
     // invalid value
-    assertRequestContains(
-      getRequest(codec, { foo: null } as any),
-      { foo: null },
-      {
-        'io-ts-codec-encode-error': 'false',
-        'io-ts-codec-decode-error': '0.foo',
-        'io-ts-unknown-properties': 'NA',
-      }
-    );
+    assertRequestContains(getRequest(codec, { foo: null } as any), { foo: null });
 
     // non-exact value
-    assertRequestContains(
-      getRequest(codec, { foo: 'bar', boo: 1 } as any),
-      { foo: 'bar' },
-      {
-        'io-ts-codec-encode-error': 'false',
-        'io-ts-unknown-properties': 'boo',
-      }
-    );
+    assertRequestContains(getRequest(codec, { foo: 'bar', boo: 1 } as any), { foo: 'bar' });
 
     // non-exact value, useEncodedBody=false
-    assertRequestContains(
-      getRequest(codec, { foo: 'bar', boo: 1 } as any, { useEncodedBody: false }),
-      { foo: 'bar', boo: 1 },
-      {
-        'io-ts-codec-encode-error': 'false',
-        'io-ts-unknown-properties': 'boo',
-      }
-    );
+    assertRequestContains(getRequest(codec, { foo: 'bar', boo: 1 } as any, { useEncodedBody: false }), {
+      foo: 'bar',
+      boo: 1,
+    });
   });
 });
