@@ -13101,6 +13101,24 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    'd7190522-cc12-435d-9589-23b04bdd949e',
+    'sol:btc-sollet',
+    'Wrapped Bitcoin (Sollet)',
+    6,
+    '9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E',
+    UnderlyingAsset['btc-sollet'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'c0fce6fb-aad5-462c-94c3-82121613f0ba',
+    'sol:eth-sollet',
+    'Wrapped Ethereum (Sollet)',
+    6,
+    '2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk',
+    UnderlyingAsset['eth-sollet'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     '5f98c609-de50-41b4-8f82-c59e5273166e',
     'sol:ftt-sollet',
     'Wrapped FTT (Sollet)',
