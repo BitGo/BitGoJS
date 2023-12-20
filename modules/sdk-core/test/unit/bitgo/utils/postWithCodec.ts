@@ -52,8 +52,7 @@ describe('postWithCodec', function () {
       { foo: 'bar' },
       {
         'io-ts-codec-encode-error': 'false',
-        'io-ts-codec-decode-error': '',
-        'io-ts-unknown-properties': '',
+        'io-ts-unknown-properties': 'NA',
       }
     );
 
@@ -62,8 +61,7 @@ describe('postWithCodec', function () {
       { foo: 'bar', bar: null },
       {
         'io-ts-codec-encode-error': 'false',
-        'io-ts-codec-decode-error': '',
-        'io-ts-unknown-properties': '',
+        'io-ts-unknown-properties': 'NA',
       }
     );
   });
@@ -76,7 +74,7 @@ describe('postWithCodec', function () {
       {
         'io-ts-codec-encode-error': 'false',
         'io-ts-codec-decode-error': '0.foo',
-        'io-ts-unknown-properties': '',
+        'io-ts-unknown-properties': 'NA',
       }
     );
 
@@ -86,7 +84,6 @@ describe('postWithCodec', function () {
       { foo: 'bar' },
       {
         'io-ts-codec-encode-error': 'false',
-        'io-ts-codec-decode-error': '',
         'io-ts-unknown-properties': 'boo',
       }
     );
@@ -97,7 +94,6 @@ describe('postWithCodec', function () {
       { foo: 'bar', boo: 1 },
       {
         'io-ts-codec-encode-error': 'false',
-        'io-ts-codec-decode-error': '',
         'io-ts-unknown-properties': 'boo',
       }
     );

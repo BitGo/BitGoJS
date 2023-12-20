@@ -68,10 +68,17 @@ export function postWithCodec<
     console.error('error encoding request body for url', url, e);
     codecError = true;
   }
-  return agent
-    .post(url)
-    .set('io-ts-codec-encode-error', codecError ? 'true' : 'false')
-    .set('io-ts-codec-decode-error', getDecodeErrorKeys(codec, body).join(','))
-    .set('io-ts-unknown-properties', encodedBody ? getUnknownProperties(body, encodedBody).join(',') : 'NA')
-    .send(useEncodedBody && encodedBody ? encodedBody : body);
+  const postRequest = agent.post(url).set('io-ts-codec-encode-error', codecError ? 'true' : 'false');
+
+  if (codec) {
+    const decodeErrorKeys = getDecodeErrorKeys(codec, body).join(',');
+    if (decodeErrorKeys.trim() !== '') {
+      postRequest.set('io-ts-codec-decode-error', decodeErrorKeys);
+    }
+  }
+
+  const unknownProperties = encodedBody ? getUnknownProperties(body, encodedBody).join(',') : 'NA';
+  postRequest.set('io-ts-unknown-properties', unknownProperties || 'NA');
+
+  return postRequest.send(useEncodedBody && encodedBody ? encodedBody : body);
 }
