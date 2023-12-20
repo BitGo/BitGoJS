@@ -10,6 +10,7 @@ import {
   ERC1155SafeTransferTypeMethodId,
 } from '../walletUtil';
 import { BaseNFTTransferBuilder } from './baseNFTTransferBuilder';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 
 export class ERC1155TransferBuilder extends BaseNFTTransferBuilder {
   private _tokenIds: string[];
@@ -25,6 +26,12 @@ export class ERC1155TransferBuilder extends BaseNFTTransferBuilder {
       this._tokenIds = [];
       this._values = [];
     }
+  }
+
+  coin(coin: string): ERC1155TransferBuilder {
+    this._coin = coins.get(coin);
+    this._nativeCoinOperationHashPrefix = (this._coin.network as EthLikeNetwork).nativeCoinOperationHashPrefix;
+    return this;
   }
 
   tokenContractAddress(address: string): ERC1155TransferBuilder {

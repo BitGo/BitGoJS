@@ -148,8 +148,8 @@ class Arbitrum extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://arbiscan.io/tx/';
   accountExplorerUrl = 'https://arbiscan.io/address/';
   chainId = 42161;
-  nativeCoinOperationHashPrefix = 'ARBETH';
-  tokenOperationHashPrefix = 'ARBETH-ERC20';
+  nativeCoinOperationHashPrefix = '42161';
+  tokenOperationHashPrefix = '42161-ERC20';
 }
 
 class ArbitrumTestnet extends Testnet implements EthereumNetwork {
@@ -158,8 +158,8 @@ class ArbitrumTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://sepolia.arbiscan.io/tx/';
   accountExplorerUrl = 'https://sepolia.arbiscan.io/address/';
   chainId = 421614;
-  nativeCoinOperationHashPrefix = 'ARBETH';
-  tokenOperationHashPrefix = 'ARBETH-ERC20';
+  nativeCoinOperationHashPrefix = '421614';
+  tokenOperationHashPrefix = '421614-ERC20';
 }
 
 class AvalancheC extends Mainnet implements AccountNetwork {
@@ -375,6 +375,8 @@ class Celo extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://explorer.celo.org/tx/';
   accountExplorerUrl = 'https://explorer.celo.org/address/';
   chainId = 42220;
+  nativeCoinOperationHashPrefix = 'CELO';
+  tokenOperationHashPrefix = 'CELO-ERC20';
 }
 
 class CeloTestnet extends Testnet implements EthereumNetwork {
@@ -383,6 +385,8 @@ class CeloTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
   accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
   chainId = 44787;
+  nativeCoinOperationHashPrefix = 'CELO';
+  tokenOperationHashPrefix = 'CELO-ERC20';
 }
 
 // TODO update explorerUrl STLX-1657
@@ -493,6 +497,8 @@ class EthereumClassic extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://blockscout.com/etc/mainnet/address/';
   // from  https://chainid.network/chains/
   chainId = 61;
+  nativeCoinOperationHashPrefix = 'ETC';
+  tokenOperationHashPrefix = 'ETC-ERC20';
 }
 
 class EthereumClassicTestnet extends Testnet implements EthereumNetwork {
@@ -502,6 +508,8 @@ class EthereumClassicTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://blockscout.com/etc/mordor/address/';
   // from  https://chainid.network/chains/
   chainId = 63;
+  nativeCoinOperationHashPrefix = 'ETC';
+  tokenOperationHashPrefix = 'ETC-ERC20';
 }
 
 class Eos extends Mainnet implements AccountNetwork {
@@ -560,6 +568,8 @@ class Rbtc extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://explorer.rsk.co/tx/';
   accountExplorerUrl = 'https://explorer.rsk.co/address/';
   chainId = 30;
+  nativeCoinOperationHashPrefix = 'RSK';
+  tokenOperationHashPrefix = 'RSK-ERC20';
 }
 
 class RbtcTestnet extends Testnet implements EthereumNetwork {
@@ -568,6 +578,8 @@ class RbtcTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://explorer.testnet.rsk.co/tx/';
   accountExplorerUrl = 'https://explorer.testnet.rsk.co/address/';
   chainId = 31;
+  nativeCoinOperationHashPrefix = 'RSK';
+  tokenOperationHashPrefix = 'RSK-ERC20';
 }
 
 class Stellar extends Mainnet implements AccountNetwork {
@@ -910,8 +922,8 @@ class Optimism extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://optimistic.etherscan.io/tx/';
   accountExplorerUrl = 'https://optimistic.etherscan.io/address/';
   chainId = 10;
-  nativeCoinOperationHashPrefix = 'OPETH';
-  tokenOperationHashPrefix = 'OPETH-ERC20';
+  nativeCoinOperationHashPrefix = '10';
+  tokenOperationHashPrefix = '10-ERC20';
 }
 
 class OptimismTestnet extends Testnet implements EthereumNetwork {
@@ -920,8 +932,8 @@ class OptimismTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://sepolia-optimism.etherscan.io/tx/';
   accountExplorerUrl = 'https://sepolia-optimism.etherscan.io/address/';
   chainId = 11155420;
-  nativeCoinOperationHashPrefix = 'OPETH';
-  tokenOperationHashPrefix = 'OPETH-ERC20';
+  nativeCoinOperationHashPrefix = '11155420';
+  tokenOperationHashPrefix = '11155420-ERC20';
 }
 
 class ZkSync extends Mainnet implements EthereumNetwork {

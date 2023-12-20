@@ -1,7 +1,7 @@
 import should from 'should';
-
 import { KeyPair, TransferBuilder } from '../../src';
-import * as testData from '../resources/eth';
+
+import * as testData from '../resources';
 
 describe('Eth send multi sig builder', function () {
   const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
@@ -13,20 +13,8 @@ describe('Eth send multi sig builder', function () {
   describe('should build', () => {
     it('native coin transfer should succeed', async () => {
       const builder = new TransferBuilder()
+        .coin('topeth')
         .expirationTime(1590078260)
-        .amount(amount)
-        .to(toAddress)
-        .contractSequenceId(2)
-        .key(key)
-        .data('0x');
-      const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_FUNDS_DATA);
-    });
-
-    it('native coin transfer with coin explicitly set should succeed', async () => {
-      const builder = new TransferBuilder()
-        .expirationTime(1590078260)
-        .coin('eth')
         .amount(amount)
         .to(toAddress)
         .contractSequenceId(2)
@@ -38,6 +26,7 @@ describe('Eth send multi sig builder', function () {
 
     it('native coin transfer with sequenceId zero should succeed', async () => {
       const builder = new TransferBuilder()
+        .coin('topeth')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -50,6 +39,7 @@ describe('Eth send multi sig builder', function () {
 
     it('native coin transfer with amount 0 should succeed', async () => {
       const builder = new TransferBuilder()
+        .coin('topeth')
         .expirationTime(1590078260)
         .amount('0')
         .to(toAddress)
@@ -62,14 +52,38 @@ describe('Eth send multi sig builder', function () {
 
     it('ERC20 token transfer should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('terc')
+        .coin('topeth:terc18dp')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
         .contractSequenceId(2)
         .key(key);
       const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_TERC_DATA);
+      should.equal(result, testData.SEND_OPETH_TERC_DATA);
+    });
+
+    it('erc20 transfer should succeed', async () => {
+      const builder = new TransferBuilder()
+        .coin('topeth:terc18dp')
+        .expirationTime(1590078260)
+        .amount(amount)
+        .to(toAddress)
+        .contractSequenceId(0)
+        .key(key);
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_TOKEN_SEQUENCE_ZERO_DATA);
+    });
+
+    it('erc20 transfer with amount 0 should succeed', async () => {
+      const builder = new TransferBuilder()
+        .coin('topeth:terc18dp')
+        .expirationTime(1590078260)
+        .amount('0')
+        .to(toAddress)
+        .contractSequenceId(2)
+        .key(key);
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_TOKEN_AMOUNT_ZERO_DATA);
     });
 
     it('should build without a signature set', () => {
@@ -85,7 +99,7 @@ describe('Eth send multi sig builder', function () {
 
     it('should build from a non signed serialized data', () => {
       const builder = new TransferBuilder(testData.SEND_FUNDS_NO_KEY_DATA);
-      builder.key(key);
+      builder.coin('topeth').key(key);
       const result = builder.signAndBuild();
       should.equal(result, testData.SEND_FUNDS_DATA);
     });

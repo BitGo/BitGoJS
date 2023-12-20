@@ -1003,7 +1003,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
-    txBuilder.transfer().key(new KeyPairLib({ prv: params.prv }).getKeys().prv!);
+    txBuilder
+      .transfer()
+      .coin(this.staticsCoin?.name as string)
+      .key(new KeyPairLib({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
 
     const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
@@ -1415,6 +1418,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     });
     const transferBuilder = txBuilder.transfer() as TransferBuilder;
     transferBuilder
+      .coin(this.staticsCoin?.name as string)
       .amount(recipients[0].amount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())
@@ -1440,7 +1444,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       return response;
     }
 
-    txBuilder.transfer().key(new KeyPairLib({ prv: userKey }).getKeys().prv as string);
+    txBuilder
+      .transfer()
+      .coin(this.staticsCoin?.name as string)
+      .key(new KeyPairLib({ prv: userKey }).getKeys().prv as string);
     txBuilder.sign({ key: backupSigningKey });
 
     const signedTx = await txBuilder.build();
@@ -1594,6 +1601,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const transferBuilder = txBuilder.transfer() as TransferBuilder;
 
     transferBuilder
+      .coin(this.staticsCoin?.name as string)
       .amount(batchExecutionInfo.totalAmount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())
@@ -1601,7 +1609,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       .data(batchData);
 
     if (params.walletPassphrase) {
-      txBuilder.transfer().key(userSigningKey);
+      transferBuilder.key(userSigningKey);
     }
 
     const tx = await txBuilder.build();
@@ -1731,6 +1739,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const token = getToken(params.tokenContractAddress as string, network as EthLikeNetwork)?.name as string;
 
     transferBuilder
+      .coin(token)
       .amount(txAmount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())

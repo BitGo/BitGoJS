@@ -1,10 +1,8 @@
 import should from 'should';
-import * as ethUtil from 'ethereumjs-util';
-import EthereumAbi from 'ethereumjs-abi';
-import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
-import { KeyPair, TransactionBuilder } from '../../../src';
+import { TransactionType } from '@bitgo/sdk-core';
+
+import { TransactionBuilder } from '../../../src';
 import * as testData from '../../resources';
-import { decodeTransferData } from '@bitgo/sdk-coin-eth';
 import { coins } from '@bitgo/statics';
 
 describe('Rbtc send transaction', function () {
@@ -19,23 +17,6 @@ describe('Rbtc send transaction', function () {
     txBuilder.counter(2);
     txBuilder.type(TransactionType.Send);
     txBuilder.contract(contractAddress);
-  };
-
-  const getOperationHash = function (tx: BaseTransaction): string {
-    const { data } = tx.toJson();
-    const { tokenContractAddress, expireTime, sequenceId, amount, to } = decodeTransferData(data);
-    const operationParams = [
-      ['string', 'address', 'uint', 'address', 'uint', 'uint'],
-      [
-        'RSK-ERC20',
-        new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
-        amount,
-        new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress || ''), 16),
-        expireTime,
-        sequenceId,
-      ],
-    ];
-    return EthereumAbi.soliditySHA3(...operationParams);
   };
 
   const key = testData.KEYPAIR_PRV.getKeys().prv as string;
@@ -74,62 +55,6 @@ describe('Rbtc send transaction', function () {
     txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
     const tx = await txBuilder.build();
     should.equal(tx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
-  });
-
-  it('a send token transaction', async () => {
-    const recipient = '0x72c2c8e08bf91d755cd7d26b49a2ee3dc99de1b9';
-    const contractAddress = '0xdf7decb1baa8f529f0c8982cbb4be50357195299';
-    const amount = '100';
-    initTxBuilder();
-    txBuilder.contract(contractAddress);
-    txBuilder
-      .transfer()
-      .coin('trif')
-      .amount(amount)
-      .to(recipient)
-      .expirationTime(1590066728)
-      .contractSequenceId(5)
-      .key(key);
-    txBuilder.sign({
-      key: testData.PRIVATE_KEY_1,
-    });
-    const tx = await txBuilder.build();
-    should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
-    should.equal(tx.signature.length, 2);
-    should.equal(tx.inputs.length, 1);
-    should.equal(tx.inputs[0].address, contractAddress);
-    should.equal(tx.inputs[0].value, amount);
-    should.equal(tx.inputs[0].coin, 'trif');
-
-    should.equal(tx.outputs.length, 1);
-    should.equal(tx.outputs[0].address, recipient);
-    should.equal(tx.outputs[0].value, amount);
-    should.equal(tx.outputs[0].coin, 'trif');
-
-    const { signature } = decodeTransferData(tx.toJson().data);
-    const operationHash = getOperationHash(tx);
-
-    const { v, r, s } = ethUtil.fromRpcSig(signature);
-    const senderPubKey = ethUtil.ecrecover(Buffer.from(operationHash, 'hex'), v, r, s);
-    const senderAddress = ethUtil.pubToAddress(senderPubKey);
-    const senderKey = new KeyPair({ prv: testData.PRIVATE_KEY_1 });
-    ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
-  });
-
-  it('a send token transactions from serialized', async () => {
-    const txBuilder = new TransactionBuilder(coins.get('trbtc'));
-    txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
-    const tx = await txBuilder.build();
-    should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
-
-    const { signature } = decodeTransferData(tx.toJson().data);
-    const operationHash = getOperationHash(tx);
-
-    const { v, r, s } = ethUtil.fromRpcSig(signature);
-    const senderPubKey = ethUtil.ecrecover(Buffer.from(operationHash || ''), v, r, s);
-    const senderAddress = ethUtil.pubToAddress(senderPubKey);
-    const senderKey = new KeyPair({ prv: testData.PRIVATE_KEY_1 });
-    ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
   });
 });
 

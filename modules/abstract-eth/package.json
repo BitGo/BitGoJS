@@ -10,7 +10,10 @@
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",

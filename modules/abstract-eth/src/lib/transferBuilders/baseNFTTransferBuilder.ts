@@ -1,6 +1,7 @@
 import { InvalidParameterValueError, InvalidSignatureError } from '@bitgo/sdk-core';
 import { isValidEthAddress } from '../utils';
 import { joinSignature, solidityKeccak256, SigningKey } from 'ethers/lib/utils';
+import { BaseCoin } from '@bitgo/statics';
 
 export abstract class BaseNFTTransferBuilder {
   protected readonly _EMPTY_HEX_VALUE = '0x';
@@ -13,6 +14,8 @@ export abstract class BaseNFTTransferBuilder {
   protected _signature: string;
   protected _data: string;
   protected _tokenContractAddress: string;
+  protected _coin: Readonly<BaseCoin>;
+  protected _nativeCoinOperationHashPrefix?: string;
 
   public abstract build(): string;
 
@@ -85,7 +88,7 @@ export abstract class BaseNFTTransferBuilder {
     if (this._signKey) {
       this._signature = this.ethSignMsgHash();
     }
-    if (this._signature == null) {
+    if (this._signature === null) {
       throw new InvalidSignatureError('Null signature value');
     }
     return this._signature;
@@ -97,7 +100,7 @@ export abstract class BaseNFTTransferBuilder {
    * @returns the string prefix
    */
   protected getNativeOperationHashPrefix(): string {
-    return 'ETHER';
+    return this._nativeCoinOperationHashPrefix ?? 'ETHER';
   }
 
   /**
