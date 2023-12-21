@@ -170,6 +170,9 @@
       "path": "./modules/sdk-coin-zeta"
     },
     {
+      "path": "./modules/sdk-coin-zketh"
+    },
+    {
       "path": "./modules/sdk-core"
     },
     {
