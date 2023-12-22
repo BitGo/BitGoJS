@@ -1,4 +1,5 @@
 import * as sinon from 'sinon';
+import assert from 'assert';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import * as testData from '../fixtures/sol';
@@ -1457,6 +1458,16 @@ describe('SOL:', function () {
           payload: {
             id: '1',
             jsonrpc: '2.0',
+            method: 'getMinimumBalanceForRentExemption',
+            params: [165],
+          },
+        })
+        .resolves(testData.SolResponses.getMinimumBalanceForRentExemptionResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
             method: 'getBalance',
             params: [testData.accountInfo.bs58EncodedPublicKey],
           },
@@ -1489,6 +1500,16 @@ describe('SOL:', function () {
             jsonrpc: '2.0',
             method: 'getBalance',
             params: [testData.accountInfo.bs58EncodedPublicKeyM2Derivation],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseM2Derivation);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.accountInfo.bs58EncodedPublicKeyWithManyTokens],
           },
         })
         .resolves(testData.SolResponses.getAccountBalanceResponseM2Derivation);
@@ -1579,6 +1600,24 @@ describe('SOL:', function () {
           },
         })
         .resolves(testData.SolResponses.getTokenAccountsByOwnerResponse2);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.wrwUser.walletAddress4,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponse3);
       callBack
         .withArgs({
           payload: {
@@ -1832,7 +1871,7 @@ describe('SOL:', function () {
       should.equal((instructionsData[4] as TokenTransfer).params.sourceAddress, sourceUSDCTokenAccount);
 
       const solCoin = basecoin as any;
-      sandBox.assert.callCount(solCoin.getDataFromNode, 6);
+      sandBox.assert.callCount(solCoin.getDataFromNode, 7);
     });
 
     it('should recover sol tokens to recovery destination with existing token accounts', async function () {
@@ -1896,7 +1935,7 @@ describe('SOL:', function () {
       should.equal(instructionsData[2].params.sourceAddress, sourceUSDCTokenAccount);
 
       const solCoin = basecoin as any;
-      sandBox.assert.callCount(solCoin.getDataFromNode, 6);
+      sandBox.assert.callCount(solCoin.getDataFromNode, 7);
     });
 
     it('should recover sol tokens to recovery destination with existing token accounts for unsigned sweep recoveries', async function () {
@@ -1909,20 +1948,62 @@ describe('SOL:', function () {
         },
       })) as MPCSweepTxs;
 
-      tokenTxn.should.not.be.empty();
-      tokenTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('serializedTx');
-      tokenTxn.txRequests[0].transactions[0].unsignedTx.should.hasOwnProperty('scanIndex');
-      should.equal(tokenTxn.txRequests[0].transactions[0].unsignedTx.scanIndex, 0);
+      // 2 signatures and no rent exemption fee since the destination already has token accounts
+      const expectedFee = 5000 + 5000;
+
+      const { serializedTx, scanIndex, feeInfo, parsedTx } = tokenTxn.txRequests[0].transactions[0].unsignedTx;
+      assert.ok(serializedTx);
+      assert.strictEqual(scanIndex, 0);
+      assert.ok(feeInfo);
+      assert.strictEqual(feeInfo.feeString, expectedFee.toString());
+      assert.strictEqual(feeInfo.fee, expectedFee);
+      assert.ok(parsedTx);
+      assert.ok(parsedTx.inputs instanceof Array && parsedTx.inputs.length === 2);
+      assert.ok(parsedTx.outputs instanceof Array && parsedTx.outputs.length === 2);
 
       const tokenTxnDeserialize = new Transaction(coin);
       tokenTxnDeserialize.fromRawTransaction(tokenTxn.txRequests[0].transactions[0].unsignedTx.serializedTx);
       const tokenTxnJson = tokenTxnDeserialize.toJson();
 
-      should.equal(tokenTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
-      should.equal(tokenTxnJson.feePayer, testData.wrwUser.walletAddress0);
-      should.equal(tokenTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+      assert.strictEqual(tokenTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      assert.strictEqual(tokenTxnJson.feePayer, testData.wrwUser.walletAddress0);
+      assert.strictEqual(tokenTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
       const solCoin = basecoin as any;
-      sandBox.assert.callCount(solCoin.getDataFromNode, 6);
+      sandBox.assert.callCount(solCoin.getDataFromNode, 7);
+    });
+
+    it('should recover sol tokens to recovery destination with over 6 existing token accounts for unsigned sweep recoveries', async function () {
+      const tokenTxn = (await basecoin.recover({
+        bitgoKey: testData.wrwUser.bitgoKeyWithManyTokens,
+        recoveryDestination: testData.keys.destinationPubKey,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+      })) as MPCSweepTxs;
+
+      // 2 signatures and 6 times the rent exemption fee since we set the max number of token tx to 6
+      const expectedFee = 5000 + 5000 + 2039280 * 6;
+
+      const { serializedTx, scanIndex, feeInfo, parsedTx } = tokenTxn.txRequests[0].transactions[0].unsignedTx;
+      assert.ok(serializedTx);
+      assert.strictEqual(scanIndex, 0);
+      assert.ok(feeInfo);
+      assert.strictEqual(feeInfo.feeString, expectedFee.toString());
+      assert.strictEqual(feeInfo.fee, expectedFee);
+      assert.ok(parsedTx);
+      assert.ok(parsedTx.inputs instanceof Array && parsedTx.inputs.length === 6);
+      assert.ok(parsedTx.outputs instanceof Array && parsedTx.outputs.length === 6);
+
+      const tokenTxnDeserialize = new Transaction(coin);
+      tokenTxnDeserialize.fromRawTransaction(serializedTx);
+      const tokenTxnJson = tokenTxnDeserialize.toJson();
+
+      assert.strictEqual(tokenTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      assert.strictEqual(tokenTxnJson.feePayer, testData.wrwUser.walletAddress4);
+      assert.strictEqual(tokenTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+      const solCoin = basecoin as any;
+      sandBox.assert.callCount(solCoin.getDataFromNode, 7);
     });
   });
 
