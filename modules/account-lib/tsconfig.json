@@ -101,6 +101,9 @@
       "path": "../sdk-coin-zeta"
     },
     {
+      "path": "../sdk-coin-zketh"
+    },
+    {
       "path": "../sdk-core"
     },
     {
