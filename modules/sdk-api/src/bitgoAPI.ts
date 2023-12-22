@@ -98,7 +98,7 @@ const TransactionBuilder = require('./v1/transactionBuilder');
 let proxyAgent: any;
 if (!isBrowser && !isWebWorker) {
   debug('enabling proxy-agent');
-  proxyAgent = require('proxy-agent').ProxyAgent;
+  proxyAgent = require('proxy-agent');
 }
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
@@ -574,7 +574,13 @@ export class BitGoAPI implements BitGoBase {
     // Proxy settings must still be respected however
     const resultPromise = this.getAgentRequest('get', this.url('/client/constants'));
     resultPromise.set('BitGo-SDK-Version', this._version);
-    const result = await (this._proxy ? resultPromise.proxy(this._proxy) : resultPromise);
+    if (this._proxy) {
+      const agent = new proxyAgent(this._proxy);
+      if (agent) {
+        resultPromise.agent(agent);
+      }
+    }
+    const result = await resultPromise;
     BitGoAPI._constants[env] = result.body.constants;
 
     if (result.body?.ttl && typeof result.body?.ttl === 'number') {
