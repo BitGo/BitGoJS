@@ -1,11 +1,15 @@
+import {
+  CosmosTransaction,
+  CosmosTransactionBuilder,
+  CosmosTransferBuilder,
+  StakingActivateBuilder,
+  StakingDeactivateBuilder,
+  StakingWithdrawRewardsBuilder,
+  ContractCallBuilder,
+} from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilder } from './transactionBuilder';
-import { TransferBuilder } from './transferBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Transaction } from './transaction';
-import { StakingActivateBuilder } from './StakingActivateBuilder';
-import { StakingDeactivateBuilder } from './StakingDeactivateBuilder';
-import { StakingWithdrawRewardsBuilder } from './StakingWithdrawRewardsBuilder';
+import utils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -13,8 +17,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): TransactionBuilder {
-    const tx = new Transaction(this._coinConfig);
+  from(raw: string): CosmosTransactionBuilder {
+    const tx = new CosmosTransaction(this._coinConfig, utils);
     tx.enrichTransactionDetailsFromRawTransaction(raw);
     try {
       switch (tx.type) {
@@ -26,6 +30,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingDeactivateBuilder(tx);
         case TransactionType.StakingWithdraw:
           return this.getStakingWithdrawRewardsBuilder(tx);
+        case TransactionType.ContractCall:
+          return this.getContractCallBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -35,21 +41,26 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  getTransferBuilder(tx?: CosmosTransaction): CosmosTransferBuilder {
+    return this.initializeBuilder(tx, new CosmosTransferBuilder(this._coinConfig, utils));
   }
   /** @inheritdoc */
-  getStakingActivateBuilder(tx?: Transaction): StakingActivateBuilder {
-    return this.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig));
+  getStakingActivateBuilder(tx?: CosmosTransaction): StakingActivateBuilder {
+    return this.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig, utils));
   }
   /** @inheritdoc */
-  getStakingDeactivateBuilder(tx?: Transaction): StakingDeactivateBuilder {
-    return this.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig));
+  getStakingDeactivateBuilder(tx?: CosmosTransaction): StakingDeactivateBuilder {
+    return this.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig, utils));
   }
   /** @inheritdoc */
-  getStakingWithdrawRewardsBuilder(tx?: Transaction): StakingWithdrawRewardsBuilder {
-    return this.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig));
+  getStakingWithdrawRewardsBuilder(tx?: CosmosTransaction): StakingWithdrawRewardsBuilder {
+    return this.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig, utils));
   }
+
+  getContractCallBuilder(tx?: CosmosTransaction): ContractCallBuilder {
+    return this.initializeBuilder(tx, new ContractCallBuilder(this._coinConfig, utils));
+  }
+
   /** @inheritdoc */
   getWalletInitializationBuilder(): void {
     throw new Error('Method not implemented.');
@@ -62,7 +73,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {TransactionBuilder} builder - the builder to be initialized
    * @returns {TransactionBuilder} the builder initialized
    */
-  private initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
+  private initializeBuilder<T extends CosmosTransactionBuilder>(tx: CosmosTransaction | undefined, builder: T): T {
     if (tx) {
       builder.initBuilder(tx);
     }

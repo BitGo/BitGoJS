@@ -40,19 +40,14 @@
     ]
   },
   "dependencies": {
+    "@bitgo/abstract-cosmos": "^1.18.0",
     "@bitgo/sdk-core": "^18.0.0",
     "@bitgo/sdk-lib-mpc": "^8.25.0",
     "@bitgo/statics": "^39.0.0",
-    "@bitgo/utxo-lib": "^9.26.0",
     "@cosmjs/amino": "^0.29.5",
-    "@cosmjs/crypto": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
-    "@cosmjs/proto-signing": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
-    "bignumber.js": "^9.1.1",
-    "cosmjs-types": "^0.6.1",
-    "lodash": "^4.17.21",
-    "superagent": "^3.8.3"
+    "bignumber.js": "^9.1.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.34.0",

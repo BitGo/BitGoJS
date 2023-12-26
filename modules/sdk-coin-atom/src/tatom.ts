@@ -22,18 +22,4 @@ export class Tatom extends Atom {
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tatom(bitgo, staticsCoin);
   }
-
-  /**
-   * Identifier for the blockchain which supports this coin
-   */
-  public getChain(): string {
-    return this._staticsCoin.name;
-  }
-
-  /**
-   * Complete human-readable name of this coin
-   */
-  public getFullName(): string {
-    return this._staticsCoin.fullName;
-  }
 }

@@ -1,21 +1,21 @@
+import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
-import { Atom, Tatom, Transaction } from '../../src';
+import { Atom, Tatom } from '../../src';
 import { GAS_AMOUNT } from '../../src/lib/constants';
-import { SendMessage } from '../../src/lib/iface';
 import utils from '../../src/lib/utils';
 import {
-  address,
   TEST_DELEGATE_TX,
   TEST_SEND_MANY_TX,
   TEST_SEND_TX,
   TEST_TX_WITH_MEMO,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
+  address,
   wrwUser,
 } from '../resources/atom';
 import should = require('should');
@@ -430,12 +430,11 @@ describe('ATOM', function () {
       });
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
       sandBox.assert.calledOnce(basecoin.getAccountBalance);
       sandBox.assert.calledOnce(basecoin.getAccountDetails);
       sandBox.assert.calledOnce(basecoin.getChainId);
 
-      const atomTxn = new Transaction(coin);
+      const atomTxn = new CosmosTransaction(coin, utils);
       atomTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const atomTxnJson = atomTxn.toJson();
       const sendMessage = atomTxnJson.sendMessages[0].value as SendMessage;
