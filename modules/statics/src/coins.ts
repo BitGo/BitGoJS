@@ -35,6 +35,8 @@ import {
   tstellarToken,
   ttronToken,
   txrpToken,
+  tzkethErc20,
+  zkethErc20,
 } from './account';
 import { ada } from './ada';
 import { avaxp } from './avaxp';
@@ -14081,6 +14083,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xe9df68a54bba438c8a6192e95f0f2c53ac93d997',
     UnderlyingAsset['topeth:terc18dp']
+  ),
+  zkethErc20(
+    '53f0e845-f415-44d3-8517-7565dc346390',
+    'zketh:link',
+    'Chainlink Token',
+    18,
+    '0x082fade8b84b18c441d506e1d3a43a387cc59d20',
+    UnderlyingAsset['zketh:link']
+  ),
+  tzkethErc20(
+    'ef49b6d1-b7a7-4c5c-8c53-43d22c15cc17',
+    'tzketh:link',
+    'zkSync Test LINK',
+    18,
+    '0xcccb29bac5ad81290383643c6fb38130cda9d881',
+    UnderlyingAsset['tzketh:link']
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',

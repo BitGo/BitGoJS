@@ -15,7 +15,7 @@
     "coverage": "nyc -- npm run unit-test",
     "unit-test": "mocha"
   },
-  "author": "Ajay Srinivas <ajsrinivas@bitgo.com>",
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
   "engines": {
     "node": ">=16 <21"

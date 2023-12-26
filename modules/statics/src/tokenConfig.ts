@@ -16,6 +16,7 @@ import {
   XrpCoin,
   ArbethERC20Token,
   OpethERC20Token,
+  ZkethERC20Token,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -121,6 +122,9 @@ export interface Tokens {
     xrp: {
       tokens: XrpTokenConfig[];
     };
+    zketh: {
+      tokens: EthLikeTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -170,6 +174,9 @@ export interface Tokens {
     };
     xrp: {
       tokens: XrpTokenConfig[];
+    };
+    zketh: {
+      tokens: EthLikeTokenConfig[];
     };
   };
 }
@@ -346,6 +353,20 @@ const formattedOpethTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedZkethTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
+  if (coin instanceof ZkethERC20Token) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'zketh' : 'tzketh',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
   if (coin instanceof SolCoin) {
     acc.push({
@@ -468,6 +489,9 @@ export const tokens: Tokens = {
     opeth: {
       tokens: formattedOpethTokens.filter((token) => token.network === 'Mainnet'),
     },
+    zketh: {
+      tokens: formattedZkethTokens.filter((token) => token.network === 'Mainnet'),
+    },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Mainnet'),
     },
@@ -518,6 +542,9 @@ export const tokens: Tokens = {
     },
     opeth: {
       tokens: formattedOpethTokens.filter((token) => token.network === 'Testnet'),
+    },
+    zketh: {
+      tokens: formattedZkethTokens.filter((token) => token.network === 'Testnet'),
     },
     sol: {
       tokens: formattedSolTokens.filter((token) => token.network === 'Testnet'),

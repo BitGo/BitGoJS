@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, MPCAlgorithm } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeNewCoins, TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
@@ -17,15 +17,5 @@ export class Zketh extends AbstractEthLikeNewCoins {
 
   protected getTransactionBuilder(): EthLikeTransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
-  }
-
-  /** @inheritDoc */
-  supportsTss(): boolean {
-    return false;
-  }
-
-  /** @inheritDoc */
-  getMPCAlgorithm(): MPCAlgorithm {
-    return 'ecdsa';
   }
 }

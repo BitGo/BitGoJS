@@ -1713,6 +1713,12 @@ export enum UnderlyingAsset {
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
 
+  // zkSync mainnet tokens
+  'zketh:link' = 'zketh:link',
+
+  // zkSync testnet tokens
+  'tzketh:link' = 'tzketh:link',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',

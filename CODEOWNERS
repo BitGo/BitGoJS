@@ -40,6 +40,7 @@
 # All other coins
 /modules/sdk-coin-ada/ @BitGo/ethalt-team
 /modules/sdk-coin-algo/ @BitGo/ethalt-team
+/modules/sdk-coin-arbeth/ @BitGo/ethalt-team
 /modules/sdk-coin-atom/ @BitGo/ethalt-team
 /modules/sdk-coin-avaxc/ @BitGo/ethalt-team
 /modules/sdk-coin-avaxp/ @BitGo/ethalt-team
@@ -49,6 +50,7 @@
 /modules/sdk-coin-eos/ @BitGo/ethalt-team
 /modules/sdk-coin-hbar/ @BitGo/ethalt-team
 /modules/sdk-coin-near/ @BitGo/ethalt-team
+/modules/sdk-coin-opeth/ @BitGo/ethalt-team
 /modules/sdk-coin-polygon/ @BitGo/ethalt-team
 /modules/sdk-coin-sol/ @BitGo/ethalt-team
 /modules/sdk-coin-stx/ @BitGo/ethalt-team
@@ -58,6 +60,7 @@
 /modules/sdk-coin-xlm/ @BitGo/ethalt-team
 /modules/sdk-coin-xrp/ @BitGo/ethalt-team
 /modules/sdk-coin-xtz/ @BitGo/ethalt-team
+/modules/sdk-coin-zketh/ @BitGo/ethalt-team
 
 # Trade
 /modules/sdk-core/src/bitgo/address-book/ @BitGo/prime
