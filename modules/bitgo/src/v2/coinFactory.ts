@@ -122,6 +122,7 @@ import {
   Zec,
   Zeta,
   Zketh,
+  ZkethToken,
 } from './coins';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
@@ -273,6 +274,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   });
 
   OpethToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
+
+  ZkethToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
   });
 

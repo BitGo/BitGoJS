@@ -21,6 +21,8 @@ interface EnvironmentTemplate {
   arbiscanApiToken?: string;
   optimisticEtherscanBaseUrl?: string;
   optimisticEtherscanApiToken?: string;
+  zksyncExplorerBaseUrl?: string;
+  zksyncExplorerApiToken?: string;
   stellarFederationServerUrl?: string;
   eosNodeUrls: string[];
   nearNodeUrls: string[];
@@ -108,6 +110,8 @@ const mainnetBase: EnvironmentTemplate = {
   arbiscanApiToken: process.env.ARBISCAN_API_TOKEN,
   optimisticEtherscanBaseUrl: 'https://api-optimistic.etherscan.io',
   optimisticEtherscanApiToken: process.env.OPTIMISTIC_ETHERSCAN_API_TOKEN,
+  zksyncExplorerBaseUrl: 'https://block-explorer-api.mainnet.zksync.io',
+  zksyncExplorerApiToken: process.env.ZKSYNC_EXPLORER_API_TOKEN,
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://rpc.mainnet.near.org'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
@@ -148,6 +152,8 @@ const testnetBase: EnvironmentTemplate = {
   arbiscanApiToken: process.env.ARBISCAN_API_TOKEN,
   optimisticEtherscanBaseUrl: 'https://api-sepolia-optimistic.etherscan.io',
   optimisticEtherscanApiToken: process.env.OPTIMISTIC_ETHERSCAN_API_TOKEN,
+  zksyncExplorerBaseUrl: 'https://block-explorer-api.sepolia.zksync.dev',
+  zksyncExplorerApiToken: process.env.ZKSYNC_EXPLORER_API_TOKEN,
   // kylin eos endpoints found here
   // https://github.com/cryptokylin/CryptoKylin-Testnet#http-api-list
   // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup
