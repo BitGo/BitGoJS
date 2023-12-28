@@ -1460,10 +1460,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
     txFormat?: 'legacy' | 'psbt';
-    changeAddressType?: ScriptType2Of3;
+    addressType?: ScriptType2Of3;
   }> {
     let txFormat = buildParams.txFormat as 'legacy' | 'psbt' | undefined;
-    let changeAddressType = buildParams.changeAddressType as ScriptType2Of3 | undefined;
+    let addressType = buildParams.addressType as ScriptType2Of3 | undefined;
 
     // if the txFormat is not specified, we need to default to psbt for distributed custody wallets or testnet hot wallets
     if (
@@ -1482,12 +1482,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       buildParams.wallet.type() === 'hot' &&
       this.network === utxolib.networks.testnet
     ) {
-      changeAddressType = 'p2trMusig2';
+      addressType = 'p2trMusig2';
     }
 
     return {
       txFormat,
-      changeAddressType,
+      addressType,
     };
   }
 
