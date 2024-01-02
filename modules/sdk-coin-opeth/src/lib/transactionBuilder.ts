@@ -1,6 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { KeyPair, Transaction, TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo/abstract-eth';
+
 import { getCommon } from './utils';
 import { TransferBuilder } from './transferBuilder';
 import { walletSimpleByteCode } from './walletUtil';

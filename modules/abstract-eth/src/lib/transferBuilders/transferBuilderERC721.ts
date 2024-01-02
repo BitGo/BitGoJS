@@ -5,6 +5,7 @@ import { ContractCall } from '../contractCall';
 import { decodeERC721TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
 import { BaseNFTTransferBuilder } from './baseNFTTransferBuilder';
 import { ERC721SafeTransferTypeMethodId, ERC721SafeTransferTypes } from '../walletUtil';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 
 export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
   private _tokenId: string;
@@ -16,6 +17,12 @@ export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
     if (serializedData) {
       this.decodeTransferData(serializedData);
     }
+  }
+
+  coin(coin: string): ERC721TransferBuilder {
+    this._coin = coins.get(coin);
+    this._nativeCoinOperationHashPrefix = (this._coin.network as EthLikeNetwork).nativeCoinOperationHashPrefix;
+    return this;
   }
 
   tokenContractAddress(address: string): ERC721TransferBuilder {

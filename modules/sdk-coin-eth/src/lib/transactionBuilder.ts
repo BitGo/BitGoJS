@@ -9,7 +9,6 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 
 import { walletSimpleByteCode } from './walletUtil';
 import { ERC721TransferBuilder, ERC1155TransferBuilder } from './transferBuilders';
-
 /**
  * Ethereum transaction builder.
  */
@@ -30,7 +29,7 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
    * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
    *
    * @param [data] transfer data to initialize the transfer builder with, empty if none given
-   * @returns {TransferBuilder} the transfer builder
+   * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder} the transfer builder
    */
   transfer(data?: string): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder {
     if (

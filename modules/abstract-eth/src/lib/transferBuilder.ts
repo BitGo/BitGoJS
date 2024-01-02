@@ -1,7 +1,7 @@
 import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import BN from 'bn.js';
-import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
+import { coins, BaseCoin, ContractAddressDefinedToken, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
 
@@ -30,15 +30,14 @@ export class TransferBuilder {
   }
 
   /**
-   * A method to set the ERC20 token to be transferred.
+   * A method to set the native coin or ERC20 token to be transferred.
    * This ERC20 token may not be compatible with the network.
    *
-   * @param {string} coin the ERC20 coin to be set
+   * @param {string} coin - the native coin or ERC20 token to be set
    * @returns {TransferBuilder} the transfer builder instance modified
    */
   coin(coin: string): TransferBuilder {
     this._coin = coins.get(coin);
-
     if (this._coin instanceof ContractAddressDefinedToken) {
       this._tokenContractAddress = this._coin.contractAddress.toString();
     }
@@ -171,7 +170,7 @@ export class TransferBuilder {
    * @returns the string prefix
    */
   protected getTokenOperationHashPrefix(): string {
-    return 'ERC20';
+    return (this._coin?.network as EthLikeNetwork)?.tokenOperationHashPrefix ?? 'ERC20';
   }
 
   /**
@@ -180,7 +179,7 @@ export class TransferBuilder {
    * @returns the string prefix
    */
   protected getNativeOperationHashPrefix(): string {
-    return 'ETHER';
+    return (this._coin?.network as EthLikeNetwork)?.nativeCoinOperationHashPrefix ?? 'ETHER';
   }
 
   /** Return an expiration time, in seconds, set to one hour from now
@@ -208,7 +207,7 @@ export class TransferBuilder {
   protected ethSignMsgHash(): string {
     const data = this.getOperationHash();
     const keyBuffer = Buffer.from(ethUtil.padToEven(this._signKey), 'hex');
-    if (keyBuffer.length != 32) {
+    if (keyBuffer.length !== 32) {
       throw new Error('private key length is invalid');
     }
     const signatureInParts = ethUtil.ecsign(

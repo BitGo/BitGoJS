@@ -1,9 +1,8 @@
 import should from 'should';
-
 import { KeyPair, TransferBuilder } from '../../src';
-import * as testData from '../resources/eth';
+import * as testData from '../resources/celo';
 
-describe('Eth send multi sig builder', function () {
+describe('Celo send multi sig builder', function () {
   const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
   const xprv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
@@ -11,69 +10,45 @@ describe('Eth send multi sig builder', function () {
   const amount = '100000000000000000'; // equivalent to 0.1 ether
 
   describe('should build', () => {
-    it('native coin transfer should succeed', async () => {
+    it('celo token transfer should succeed', async () => {
       const builder = new TransferBuilder()
-        .expirationTime(1590078260)
-        .amount(amount)
-        .to(toAddress)
-        .contractSequenceId(2)
-        .key(key)
-        .data('0x');
-      const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_FUNDS_DATA);
-    });
-
-    it('native coin transfer with coin explicitly set should succeed', async () => {
-      const builder = new TransferBuilder()
-        .expirationTime(1590078260)
-        .coin('eth')
-        .amount(amount)
-        .to(toAddress)
-        .contractSequenceId(2)
-        .key(key)
-        .data('0x');
-      const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_FUNDS_DATA);
-    });
-
-    it('native coin transfer with sequenceId zero should succeed', async () => {
-      const builder = new TransferBuilder()
-        .expirationTime(1590078260)
-        .amount(amount)
-        .to(toAddress)
-        .contractSequenceId(0)
-        .key(key)
-        .data('0x');
-      const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_FUNDS_SEQUENCE_ZERO_DATA);
-    });
-
-    it('native coin transfer with amount 0 should succeed', async () => {
-      const builder = new TransferBuilder()
-        .expirationTime(1590078260)
-        .amount('0')
-        .to(toAddress)
-        .contractSequenceId(2)
-        .key(key)
-        .data('0x');
-      const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_FUNDS_AMOUNT_ZERO_DATA);
-    });
-
-    it('ERC20 token transfer should succeed', async () => {
-      const builder = new TransferBuilder()
-        .coin('terc')
+        .coin('tcusd')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
         .contractSequenceId(2)
         .key(key);
       const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_TERC_DATA);
+      should.equal(result, testData.SEND_TOKEN_DATA);
+    });
+
+    it('celo erc20 transfer with zero sequence id should succeed', async () => {
+      const builder = new TransferBuilder()
+        .coin('tcusd')
+        .expirationTime(1590078260)
+        .amount(amount)
+        .to(toAddress)
+        .contractSequenceId(0)
+        .key(key);
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_TOKEN_SEQUENCE_ZERO_DATA);
+    });
+
+    it('celo erc20 transfer with amount 0 should succeed', async () => {
+      const builder = new TransferBuilder()
+        .coin('tcusd')
+        .expirationTime(1590078260)
+        .amount('0')
+        .to(toAddress)
+        .contractSequenceId(2)
+        .key(key);
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_TOKEN_AMOUNT_ZERO_DATA);
     });
 
     it('should build without a signature set', () => {
       const builder = new TransferBuilder()
+        .coin('tcelo')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
