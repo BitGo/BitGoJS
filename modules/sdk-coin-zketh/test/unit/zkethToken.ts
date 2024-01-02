@@ -29,4 +29,9 @@ describe('Zketh Token:', function () {
     zkethTokenCoin.network.should.equal('Testnet');
     zkethTokenCoin.decimalPlaces.should.equal(18);
   });
+
+  it('should return same token by contract address', function () {
+    const tokencoinBycontractAddress = bitgo.coin(zkethTokenCoin.tokenContractAddress);
+    zkethTokenCoin.should.deepEqual(tokencoinBycontractAddress);
+  });
 });
