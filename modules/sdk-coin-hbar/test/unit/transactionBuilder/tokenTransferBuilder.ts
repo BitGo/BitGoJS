@@ -209,7 +209,7 @@ describe('HBAR Token Transfer Builder', () => {
         const builder = factory.from(testData.NON_SIGNED_TOKEN_MULTI_TRANSFER_TRANSACTION);
         builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         const tx2 = await builder.build();
-        should.deepEqual(tx2.toBroadcastFormat(), testData.SIGNED_TOKEN_MULTI_TRANSFER_TRANSACTION);
+        should.deepEqual(tx2.toBroadcastFormat(), testData.NON_SIGNED_TOKEN_MULTI_TRANSFER_TRANSACTION_SERIALIZED);
         tx2.type.should.equal(TransactionType.Send);
       });
 

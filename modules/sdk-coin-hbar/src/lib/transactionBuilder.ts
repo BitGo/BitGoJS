@@ -31,7 +31,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _memo: string;
   protected _txBody: proto.TransactionBody;
   protected _node: HederaNode = { nodeId: '0.0.4' };
-  protected _duration: proto.Duration = new proto.Duration({ seconds: Long.fromNumber(120) });
+  protected _duration: proto.Duration = new proto.Duration({ seconds: Long.fromNumber(180) });
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
 
