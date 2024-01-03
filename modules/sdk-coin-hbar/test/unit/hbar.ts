@@ -70,7 +70,7 @@ describe('Hedera Hashgraph:', function () {
     explain.id.should.equal('0.0.43285@1600529800.643093586');
     explain.outputAmount.should.equal('2200000000');
     explain.timestamp.should.equal('1600529800.643093586');
-    explain.expiration.should.equal('120');
+    explain.expiration.should.equal('180');
     explain.outputs[0].amount.should.equal('2200000000');
     explain.outputs[0].address.should.equal('0.0.43283');
     explain.outputs[0].memo.should.equal('1');
@@ -92,7 +92,7 @@ describe('Hedera Hashgraph:', function () {
     explain.id.should.equal('0.0.81320@1596110493.372646570');
     explain.outputAmount.should.equal('0');
     explain.timestamp.should.equal('1596110493.372646570');
-    explain.expiration.should.equal('120');
+    explain.expiration.should.equal('180');
     explain.outputs[0].amount.should.equal('10');
     explain.outputs[0].address.should.equal('0.0.75861');
     explain.outputs[0].memo.should.equal('');
@@ -114,7 +114,7 @@ describe('Hedera Hashgraph:', function () {
 
     explain.id.should.equal('0.0.81320@1596110493.372646570');
     explain.outputAmount.should.equal('25');
-    explain.expiration.should.equal('120');
+    explain.expiration.should.equal('180');
     explain.outputs[0].amount.should.equal('10');
     explain.outputs[0].address.should.equal('0.0.75861');
     explain.outputs[0].memo.should.equal('');
@@ -138,7 +138,7 @@ describe('Hedera Hashgraph:', function () {
     explain.id.should.equal('0.0.81320@1596110493.372646570');
     explain.outputAmount.should.equal('0');
     explain.timestamp.should.equal('1596110493.372646570');
-    explain.expiration.should.equal('120');
+    explain.expiration.should.equal('180');
     explain.outputs[0].amount.should.equal('10');
     explain.outputs[0].address.should.equal('0.0.75861');
     explain.outputs[0].memo.should.equal('');
@@ -164,7 +164,7 @@ describe('Hedera Hashgraph:', function () {
     explain.id.should.equal('0.0.81320@1596110493.372646570');
     explain.outputAmount.should.equal('0');
     explain.timestamp.should.equal('1596110493.372646570');
-    explain.expiration.should.equal('120');
+    explain.expiration.should.equal('180');
     explain.outputs[0].amount.should.equal('0');
     explain.outputs[0].address.should.equal('0.0.81320');
     explain.outputs[0].memo.should.equal('');
