@@ -172,7 +172,7 @@ describe('zkSync', function () {
       builder.counter(1);
       builder.type(TransactionType.Send);
       builder.contract(account_1.address);
-      builder.transfer().amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
+      builder.transfer().coin('tzketh').amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
 
       const unsignedTx = await builder.build();
       const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();
@@ -207,7 +207,7 @@ describe('zkSync', function () {
       builder.counter(1);
       builder.type(TransactionType.Send);
       builder.contract(account_1.address);
-      builder.transfer().amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
+      builder.transfer().coin('tzketh').amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
 
       const unsignedTx = await builder.build();
       const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();

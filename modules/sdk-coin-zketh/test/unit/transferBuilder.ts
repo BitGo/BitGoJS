@@ -1,8 +1,9 @@
 import should from 'should';
 import { KeyPair, TransferBuilder } from '../../src';
+
 import * as testData from '../resources';
 
-describe('Arbeth send multi sig builder', function () {
+describe('Zketh send multi sig builder', function () {
   const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
   const xprv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
@@ -12,7 +13,7 @@ describe('Arbeth send multi sig builder', function () {
   describe('should build', () => {
     it('native coin transfer should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tarbeth')
+        .coin('tzketh')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -25,7 +26,7 @@ describe('Arbeth send multi sig builder', function () {
 
     it('native coin transfer with sequenceId zero should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tarbeth')
+        .coin('tzketh')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -38,7 +39,7 @@ describe('Arbeth send multi sig builder', function () {
 
     it('native coin transfer with amount 0 should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tarbeth')
+        .coin('tzketh')
         .expirationTime(1590078260)
         .amount('0')
         .to(toAddress)
@@ -51,19 +52,19 @@ describe('Arbeth send multi sig builder', function () {
 
     it('ERC20 token transfer should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tarbeth:link')
+        .coin('tzketh:link')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
         .contractSequenceId(2)
         .key(key);
       const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_ARBETH_LINK_DATA);
+      should.equal(result, testData.SEND_ZKETH_LINK_DATA);
     });
 
     it('erc20 transfer should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tarbeth:link')
+        .coin('tzketh:link')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -75,7 +76,7 @@ describe('Arbeth send multi sig builder', function () {
 
     it('erc20 transfer with amount 0 should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tarbeth:link')
+        .coin('tzketh:link')
         .expirationTime(1590078260)
         .amount('0')
         .to(toAddress)
@@ -98,7 +99,7 @@ describe('Arbeth send multi sig builder', function () {
 
     it('should build from a non signed serialized data', () => {
       const builder = new TransferBuilder(testData.SEND_FUNDS_NO_KEY_DATA);
-      builder.coin('tarbeth').key(key);
+      builder.coin('tzketh').key(key);
       const result = builder.signAndBuild();
       should.equal(result, testData.SEND_FUNDS_DATA);
     });
