@@ -14,6 +14,7 @@ export interface BitGoAPIOptions {
   polygonscanApiToken?: string;
   arbiscanApiToken?: string;
   optimisticEtherscanApiToken?: string;
+  zksyncExplorerApiToken?: string;
   hmacVerification?: boolean;
   proxy?: string;
   refreshToken?: string;
