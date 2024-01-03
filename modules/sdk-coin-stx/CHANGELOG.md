@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@2.3.0...@bitgo/sdk-coin-stx@2.3.24) (2024-01-03)
+
+### Bug Fixes
+
+- **sdk-coin-stx:** fix half signed txn format ([4ced6f9](https://github.com/BitGo/BitGoJS/commit/4ced6f927b8e389c4701894f23367c87d89846b9))
+
 ## [2.3.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@2.3.0...@bitgo/sdk-coin-stx@2.3.23) (2023-12-18)
 
 ### Bug Fixes
