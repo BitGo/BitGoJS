@@ -53,7 +53,8 @@ export class ERC1155TransferBuilder extends BaseNFTTransferBuilder {
     return this;
   }
 
-  signAndBuild(): string {
+  signAndBuild(chainId?: string): string {
+    this._chainId = chainId;
     const hasMandatoryFields = this.hasMandatoryFields();
     if (hasMandatoryFields) {
       this._data = this.build();

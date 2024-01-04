@@ -1,18 +1,15 @@
 import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo/statics';
-import {
-  Transaction,
-  getCommon,
-  TransactionBuilder as EthLikeTransactionBuilder,
-  TransferBuilder,
-} from '@bitgo/abstract-eth';
+import { Transaction, getCommon, TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo/abstract-eth';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 
+import { TransferBuilder } from './transferBuilder';
 import { walletSimpleByteCode } from './walletUtil';
 import { ERC721TransferBuilder, ERC1155TransferBuilder } from './transferBuilders';
 /**
  * Ethereum transaction builder.
  */
 export class TransactionBuilder extends EthLikeTransactionBuilder {
+  protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
   /**
    * Public constructor.
    *

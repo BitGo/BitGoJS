@@ -17,6 +17,7 @@ export class TransferBuilder {
   private _data: string;
   private _tokenContractAddress?: string;
   private _coin: Readonly<BaseCoin>;
+  private _chainId?: string;
 
   constructor(serializedData?: string) {
     if (serializedData) {
@@ -92,7 +93,8 @@ export class TransferBuilder {
     throw new InvalidParameterValueError('Invalid expiration time');
   }
 
-  signAndBuild(): string {
+  signAndBuild(chainId?: string): string {
+    this._chainId = chainId;
     if (this.hasMandatoryFields()) {
       if (this._tokenContractAddress !== undefined) {
         return sendMultiSigTokenData(
@@ -170,7 +172,7 @@ export class TransferBuilder {
    * @returns the string prefix
    */
   protected getTokenOperationHashPrefix(): string {
-    return (this._coin?.network as EthLikeNetwork)?.tokenOperationHashPrefix ?? 'ERC20';
+    return (this._coin?.network as EthLikeNetwork)?.tokenOperationHashPrefix ?? `${this._chainId}-ERC20` ?? 'ERC20';
   }
 
   /**
@@ -179,7 +181,7 @@ export class TransferBuilder {
    * @returns the string prefix
    */
   protected getNativeOperationHashPrefix(): string {
-    return (this._coin?.network as EthLikeNetwork)?.nativeCoinOperationHashPrefix ?? 'ETHER';
+    return (this._coin?.network as EthLikeNetwork)?.nativeCoinOperationHashPrefix ?? `${this._chainId}` ?? 'ETHER';
   }
 
   /** Return an expiration time, in seconds, set to one hour from now

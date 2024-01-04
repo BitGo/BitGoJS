@@ -50,7 +50,8 @@ export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
     return contractCall.serialize();
   }
 
-  signAndBuild(): string {
+  signAndBuild(chainId?: string): string {
+    this._chainId = chainId;
     if (this.hasMandatoryFields()) {
       this._data = this.build();
 

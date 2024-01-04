@@ -613,7 +613,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!this._transfer) {
       throw new BuildTransactionError('Missing transfer information');
     }
-    return this._transfer.signAndBuild();
+    const chainId = this._common.chainIdBN().toString();
+    return this._transfer.signAndBuild(chainId);
   }
 
   private buildSendTransaction(): TxData {
