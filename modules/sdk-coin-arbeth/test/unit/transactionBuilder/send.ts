@@ -52,7 +52,6 @@ describe('Arbeth transaction builder send', () => {
       const sequenceId = 5;
       txBuilder
         .transfer()
-        .coin('tarbeth')
         .amount(amount)
         .to(recipient)
         .expirationTime(expireTime)
@@ -88,7 +87,6 @@ describe('Arbeth transaction builder send', () => {
     it('a send funds with amount 0 transaction', async () => {
       txBuilder
         .transfer()
-        .coin('tarbeth')
         .amount('0')
         .to('0x19645032c7f1533395d44a629462e751084d3e4c')
         .expirationTime(1590066728)

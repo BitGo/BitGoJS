@@ -16,6 +16,7 @@ export abstract class BaseNFTTransferBuilder {
   protected _tokenContractAddress: string;
   protected _coin: Readonly<BaseCoin>;
   protected _nativeCoinOperationHashPrefix?: string;
+  protected _chainId?: string;
 
   public abstract build(): string;
 
@@ -100,7 +101,7 @@ export abstract class BaseNFTTransferBuilder {
    * @returns the string prefix
    */
   protected getNativeOperationHashPrefix(): string {
-    return this._nativeCoinOperationHashPrefix ?? 'ETHER';
+    return this._nativeCoinOperationHashPrefix ?? this._chainId ?? 'ETHER';
   }
 
   /**
