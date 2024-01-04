@@ -56,11 +56,11 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-arbeth /var/modules/sdk-coin-arbeth/
 COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
+COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bera /var/modules/sdk-coin-bera/
-COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsc /var/modules/sdk-coin-bsc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-celo /var/modules/sdk-coin-celo/
@@ -87,6 +87,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ton /var/modules/sdk-coin-ton/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-trx /var/modules/sdk-coin-trx/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xtz /var/modules/sdk-coin-xtz/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zeta /var/modules/sdk-coin-zeta/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-zketh /var/modules/sdk-coin-zketh/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ada /var/modules/sdk-coin-ada/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bch /var/modules/sdk-coin-bch/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bcha /var/modules/sdk-coin-bcha/
@@ -102,73 +103,72 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xrp /var/modules/sdk-coin-xrp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-zketh /var/modules/sdk-coin-zketh/
 
 RUN cd /var/modules/sdk-core && yarn link && \
-    cd /var/modules/bls-dkg && yarn link && \
-    cd /var/modules/sdk-lib-mpc && yarn link && \
-    cd /var/modules/statics && yarn link && \
-    cd /var/modules/utxo-lib && yarn link && \
-    cd /var/modules/blake2b && yarn link && \
-    cd /var/modules/blake2b-wasm && yarn link && \
-    cd /var/modules/bitgo && yarn link && \
-    cd /var/modules/abstract-utxo && yarn link && \
-    cd /var/modules/blockapis && yarn link && \
-    cd /var/modules/sdk-api && yarn link && \
-    cd /var/modules/sjcl && yarn link && \
-    cd /var/modules/unspents && yarn link && \
-    cd /var/modules/account-lib && yarn link && \
-    cd /var/modules/sdk-coin-algo && yarn link && \
-    cd /var/modules/sdk-coin-arbeth && yarn link && \
-    cd /var/modules/abstract-eth && yarn link && \
-    cd /var/modules/sdk-coin-atom && yarn link && \
-    cd /var/modules/sdk-coin-avaxc && yarn link && \
-    cd /var/modules/sdk-coin-avaxp && yarn link && \
-    cd /var/modules/sdk-coin-eth && yarn link && \
-    cd /var/modules/sdk-coin-bera && yarn link && \
-    cd /var/modules/abstract-cosmos && yarn link && \
-    cd /var/modules/sdk-coin-bld && yarn link && \
-    cd /var/modules/sdk-coin-bsc && yarn link && \
-    cd /var/modules/sdk-coin-celo && yarn link && \
-    cd /var/modules/sdk-coin-coreum && yarn link && \
-    cd /var/modules/sdk-coin-cspr && yarn link && \
-    cd /var/modules/sdk-coin-dot && yarn link && \
-    cd /var/modules/sdk-coin-etc && yarn link && \
-    cd /var/modules/sdk-coin-eth2 && yarn link && \
-    cd /var/modules/sdk-coin-hash && yarn link && \
-    cd /var/modules/sdk-coin-hbar && yarn link && \
-    cd /var/modules/sdk-coin-injective && yarn link && \
-    cd /var/modules/sdk-coin-islm && yarn link && \
-    cd /var/modules/sdk-coin-near && yarn link && \
-    cd /var/modules/sdk-coin-opeth && yarn link && \
-    cd /var/modules/sdk-coin-osmo && yarn link && \
-    cd /var/modules/sdk-coin-polygon && yarn link && \
-    cd /var/modules/sdk-coin-rbtc && yarn link && \
-    cd /var/modules/sdk-coin-sei && yarn link && \
-    cd /var/modules/sdk-coin-sol && yarn link && \
-    cd /var/modules/sdk-coin-stx && yarn link && \
-    cd /var/modules/sdk-coin-sui && yarn link && \
-    cd /var/modules/sdk-coin-tia && yarn link && \
-    cd /var/modules/sdk-coin-ton && yarn link && \
-    cd /var/modules/sdk-coin-trx && yarn link && \
-    cd /var/modules/sdk-coin-xtz && yarn link && \
-    cd /var/modules/sdk-coin-zeta && yarn link && \
-    cd /var/modules/sdk-coin-ada && yarn link && \
-    cd /var/modules/sdk-coin-bch && yarn link && \
-    cd /var/modules/sdk-coin-bcha && yarn link && \
-    cd /var/modules/sdk-coin-bsv && yarn link && \
-    cd /var/modules/sdk-coin-btc && yarn link && \
-    cd /var/modules/utxo-ord && yarn link && \
-    cd /var/modules/sdk-coin-btg && yarn link && \
-    cd /var/modules/sdk-coin-dash && yarn link && \
-    cd /var/modules/sdk-coin-doge && yarn link && \
-    cd /var/modules/sdk-coin-eos && yarn link && \
-    cd /var/modules/sdk-coin-ethw && yarn link && \
-    cd /var/modules/sdk-coin-ltc && yarn link && \
-    cd /var/modules/sdk-coin-xlm && yarn link && \
-    cd /var/modules/sdk-coin-xrp && yarn link && \
-    cd /var/modules/sdk-coin-zec && yarn link && \
-    cd /var/modules/sdk-coin-zketh && yarn link
+cd /var/modules/bls-dkg && yarn link && \
+cd /var/modules/sdk-lib-mpc && yarn link && \
+cd /var/modules/statics && yarn link && \
+cd /var/modules/utxo-lib && yarn link && \
+cd /var/modules/blake2b && yarn link && \
+cd /var/modules/blake2b-wasm && yarn link && \
+cd /var/modules/bitgo && yarn link && \
+cd /var/modules/abstract-utxo && yarn link && \
+cd /var/modules/blockapis && yarn link && \
+cd /var/modules/sdk-api && yarn link && \
+cd /var/modules/sjcl && yarn link && \
+cd /var/modules/unspents && yarn link && \
+cd /var/modules/account-lib && yarn link && \
+cd /var/modules/sdk-coin-algo && yarn link && \
+cd /var/modules/sdk-coin-arbeth && yarn link && \
+cd /var/modules/abstract-eth && yarn link && \
+cd /var/modules/sdk-coin-atom && yarn link && \
+cd /var/modules/abstract-cosmos && yarn link && \
+cd /var/modules/sdk-coin-avaxc && yarn link && \
+cd /var/modules/sdk-coin-avaxp && yarn link && \
+cd /var/modules/sdk-coin-eth && yarn link && \
+cd /var/modules/sdk-coin-bera && yarn link && \
+cd /var/modules/sdk-coin-bld && yarn link && \
+cd /var/modules/sdk-coin-bsc && yarn link && \
+cd /var/modules/sdk-coin-celo && yarn link && \
+cd /var/modules/sdk-coin-coreum && yarn link && \
+cd /var/modules/sdk-coin-cspr && yarn link && \
+cd /var/modules/sdk-coin-dot && yarn link && \
+cd /var/modules/sdk-coin-etc && yarn link && \
+cd /var/modules/sdk-coin-eth2 && yarn link && \
+cd /var/modules/sdk-coin-hash && yarn link && \
+cd /var/modules/sdk-coin-hbar && yarn link && \
+cd /var/modules/sdk-coin-injective && yarn link && \
+cd /var/modules/sdk-coin-islm && yarn link && \
+cd /var/modules/sdk-coin-near && yarn link && \
+cd /var/modules/sdk-coin-opeth && yarn link && \
+cd /var/modules/sdk-coin-osmo && yarn link && \
+cd /var/modules/sdk-coin-polygon && yarn link && \
+cd /var/modules/sdk-coin-rbtc && yarn link && \
+cd /var/modules/sdk-coin-sei && yarn link && \
+cd /var/modules/sdk-coin-sol && yarn link && \
+cd /var/modules/sdk-coin-stx && yarn link && \
+cd /var/modules/sdk-coin-sui && yarn link && \
+cd /var/modules/sdk-coin-tia && yarn link && \
+cd /var/modules/sdk-coin-ton && yarn link && \
+cd /var/modules/sdk-coin-trx && yarn link && \
+cd /var/modules/sdk-coin-xtz && yarn link && \
+cd /var/modules/sdk-coin-zeta && yarn link && \
+cd /var/modules/sdk-coin-zketh && yarn link && \
+cd /var/modules/sdk-coin-ada && yarn link && \
+cd /var/modules/sdk-coin-bch && yarn link && \
+cd /var/modules/sdk-coin-bcha && yarn link && \
+cd /var/modules/sdk-coin-bsv && yarn link && \
+cd /var/modules/sdk-coin-btc && yarn link && \
+cd /var/modules/utxo-ord && yarn link && \
+cd /var/modules/sdk-coin-btg && yarn link && \
+cd /var/modules/sdk-coin-dash && yarn link && \
+cd /var/modules/sdk-coin-doge && yarn link && \
+cd /var/modules/sdk-coin-eos && yarn link && \
+cd /var/modules/sdk-coin-ethw && yarn link && \
+cd /var/modules/sdk-coin-ltc && yarn link && \
+cd /var/modules/sdk-coin-xlm && yarn link && \
+cd /var/modules/sdk-coin-xrp && yarn link && \
+cd /var/modules/sdk-coin-zec && yarn link
 #COPY_END
 
 #LINK_START
@@ -191,11 +191,11 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-arbeth && \
     yarn link @bitgo/abstract-eth && \
     yarn link @bitgo/sdk-coin-atom && \
+    yarn link @bitgo/abstract-cosmos && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
     yarn link @bitgo/sdk-coin-eth && \
     yarn link @bitgo/sdk-coin-bera && \
-    yarn link @bitgo/abstract-cosmos && \
     yarn link @bitgo/sdk-coin-bld && \
     yarn link @bitgo/sdk-coin-bsc && \
     yarn link @bitgo/sdk-coin-celo && \
@@ -222,6 +222,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-trx && \
     yarn link @bitgo/sdk-coin-xtz && \
     yarn link @bitgo/sdk-coin-zeta && \
+    yarn link @bitgo/sdk-coin-zketh && \
     yarn link @bitgo/sdk-coin-ada && \
     yarn link @bitgo/sdk-coin-bch && \
     yarn link @bitgo/sdk-coin-bcha && \
@@ -236,14 +237,13 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-ltc && \
     yarn link @bitgo/sdk-coin-xlm && \
     yarn link @bitgo/sdk-coin-xrp && \
-    yarn link @bitgo/sdk-coin-zec && \
-    yarn link @bitgo/sdk-coin-zketh
+    yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
 #LABEL_START
-LABEL created="Tue, 19 Dec 2023 13:48:00 GMT"
-LABEL version=9.52.0
-LABEL git_hash=36c495ed9b3a2beafd8119a245d6ba316086ef9d
+LABEL created="Thu, 04 Jan 2024 14:29:47 GMT"
+LABEL version=9.53.0
+LABEL git_hash=afd146fcb946d3d27d0eee75b49bda320b41a370
 #LABEL_END
 
 USER node
