@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.5.0...@bitgo/utxo-lib@9.27.0) (2024-01-03)
+
+### Bug Fixes
+
+- loosen unspent type from WalletUnspent to Unspent ([340a04b](https://github.com/BitGo/BitGoJS/commit/340a04b1c3efe0ebb65285d6cfc7c9d6a22498c8))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **utxo-lib:** assert p2tr sig hash type ([bc41ee6](https://github.com/BitGo/BitGoJS/commit/bc41ee6effa0e3a88d84a3e5409eb0da1042f84f))
+- **utxo-lib:** check prevout script against computed for non-taproot inputs ([c789a70](https://github.com/BitGo/BitGoJS/commit/c789a7057d34bc6592ddc29911ccf3e5a9d1d10c))
+- **utxo-lib:** p2tr fails to check pubkey against script ([09376da](https://github.com/BitGo/BitGoJS/commit/09376da5c621ec3a1d259b1bfd32b5377f18a2f9))
+- **utxo-lib:** remove p2tr sigh hash default from sig ([dc285d2](https://github.com/BitGo/BitGoJS/commit/dc285d2129cf86f413a676b0ced256c694afc2de))
+
+### Features
+
+- **utxo-lib:** accept isReplaceable flag while adding unspents to PSBT ([cd46d67](https://github.com/BitGo/BitGoJS/commit/cd46d670795304fa113428980b55b4c648baac8b))
+- **utxo-lib:** add correct sighashes to non-HD signing ([4ef66d9](https://github.com/BitGo/BitGoJS/commit/4ef66d9efd636057465034ad65561f9a032f2edc))
+- **utxo-lib:** add sighash to replay protection update ([3cf9002](https://github.com/BitGo/BitGoJS/commit/3cf900295df95b484b17e1ae8db936c67d5859fe))
+- **utxo-lib:** add tests for v1 safe wallets with uncompressed ([4ac75f0](https://github.com/BitGo/BitGoJS/commit/4ac75f0031a40aa17de37f176e3493284cba4cac))
+- **utxo-lib:** allow a custom sequenceNumber to be added in tx creation ([8753e05](https://github.com/BitGo/BitGoJS/commit/8753e0574309f4053e641ce9d6d80167a5cfb396))
+- **utxo-lib:** allow both compressed & uncompressed pubkeys ([8db0785](https://github.com/BitGo/BitGoJS/commit/8db0785ecf7e5cfa05460a12c9c6943d0df0e033))
+- **utxo-lib:** build transaction without nonWitnessUtxo when specified ([871ad91](https://github.com/BitGo/BitGoJS/commit/871ad9141ff9a2b529d1a589d6294a7c1d2c5128))
+- **utxo-lib:** disable warning on nonsafe sign segwit ([16a8cc4](https://github.com/BitGo/BitGoJS/commit/16a8cc43a685a11f1ebda6a5ff9d8ce6eb8c7916))
+- **utxo-lib:** parse basic info from the psbt ([d1cd4a8](https://github.com/BitGo/BitGoJS/commit/d1cd4a82432b386e52ebd783c72f3d9dddc79143))
+- **utxo-lib:** remove prev tx from psbt ([69bb9a1](https://github.com/BitGo/BitGoJS/commit/69bb9a1a7bcddb685045e43113926a7a7e6169bd))
+
 # [9.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.5.0...@bitgo/utxo-lib@9.26.0) (2023-12-18)
 
 ### Bug Fixes

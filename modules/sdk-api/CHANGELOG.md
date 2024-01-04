@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.13.0...@bitgo/sdk-api@1.35.0) (2024-01-03)
+
+### Bug Fixes
+
+- **bitgo:** add overrides and resolutions to pkgs ([14c33b4](https://github.com/BitGo/BitGoJS/commit/14c33b4bbffda09ba6a389f540c1fb8cc2a43bf9))
+- **sdk-api:** drop `superagent-proxy` dependency ([06a86fd](https://github.com/BitGo/BitGoJS/commit/06a86fd3def3865ac05713bd879e2d2df32c599d))
+- **sdk-api:** fix proxy-agent usage ([1f194e2](https://github.com/BitGo/BitGoJS/commit/1f194e2cf4b2b8a1e33b7401676a33b09cf46ec9))
+- **sdk-api:** upgrade critical vulnerabilities from snyk scan ([cd97347](https://github.com/BitGo/BitGoJS/commit/cd97347046b1a6644db6682e9f8e9ca8b5fe4ad7))
+- **statics:** make corrections for arbeth and opeth ([5dfc405](https://github.com/BitGo/BitGoJS/commit/5dfc405a36fc97b2c902fec44562b169d8013a18))
+
+### Features
+
+- improve logic and add unit test ([722d729](https://github.com/BitGo/BitGoJS/commit/722d729600ff6de2a04e93329d27e406f51a456b))
+- **sdk-api:** add check to see if the derived xpub matches ([efef716](https://github.com/BitGo/BitGoJS/commit/efef7166e37a2de6b5dfe1d1ea3f4d9493d3a7dd))
+- **sdk-api:** add size correction factor for transactions created ([5f0131c](https://github.com/BitGo/BitGoJS/commit/5f0131cd7016ad7dc4cf4b0be177e0c7ab7f4d25))
+- **sdk-api:** test for fully signed tx of v1 safe wallet ([ec91fb6](https://github.com/BitGo/BitGoJS/commit/ec91fb616187983611044230097236fa9229f55d))
+- **utxo-lib:** add tests for v1 safe wallets with uncompressed ([4ac75f0](https://github.com/BitGo/BitGoJS/commit/4ac75f0031a40aa17de37f176e3493284cba4cac))
+
 # [1.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.13.0...@bitgo/sdk-api@1.34.0) (2023-12-18)
 
 ### Bug Fixes
