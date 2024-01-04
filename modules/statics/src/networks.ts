@@ -922,8 +922,8 @@ class Optimism extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://optimistic.etherscan.io/tx/';
   accountExplorerUrl = 'https://optimistic.etherscan.io/address/';
   chainId = 10;
-  nativeCoinOperationHashPrefix = '10';
-  tokenOperationHashPrefix = '10-ERC20';
+  nativeCoinOperationHashPrefix = 'OPETH';
+  tokenOperationHashPrefix = 'OPETH-ERC20';
 }
 
 class OptimismTestnet extends Testnet implements EthereumNetwork {
@@ -932,8 +932,8 @@ class OptimismTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://sepolia-optimism.etherscan.io/tx/';
   accountExplorerUrl = 'https://sepolia-optimism.etherscan.io/address/';
   chainId = 11155420;
-  nativeCoinOperationHashPrefix = '11155420';
-  tokenOperationHashPrefix = '11155420-ERC20';
+  nativeCoinOperationHashPrefix = 'OPETH';
+  tokenOperationHashPrefix = 'OPETH-ERC20';
 }
 
 class ZkSync extends Mainnet implements EthereumNetwork {
@@ -942,8 +942,8 @@ class ZkSync extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://explorer.zksync.io/tx/';
   accountExplorerUrl = 'https://explorer.zksync.io/address/';
   chainId = 324;
-  nativeCoinOperationHashPrefix = 'ZKETH';
-  tokenOperationHashPrefix = 'ZKETH-ERC20';
+  nativeCoinOperationHashPrefix = '324';
+  tokenOperationHashPrefix = '324-ERC20';
 }
 
 class ZkSyncTestnet extends Testnet implements EthereumNetwork {
@@ -952,8 +952,8 @@ class ZkSyncTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://sepolia.explorer.zksync.io/tx/';
   accountExplorerUrl = 'https://sepolia.explorer.zksync.io/address/';
   chainId = 300;
-  nativeCoinOperationHashPrefix = 'ZKETH';
-  tokenOperationHashPrefix = 'ZKETH-ERC20';
+  nativeCoinOperationHashPrefix = '300';
+  tokenOperationHashPrefix = '300-ERC20';
 }
 
 export const Networks = {

@@ -3,7 +3,7 @@ import { KeyPair, TransferBuilder } from '../../src';
 
 import * as testData from '../resources';
 
-describe('Eth send multi sig builder', function () {
+describe('Opeth send multi sig builder', function () {
   const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
   const xprv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
