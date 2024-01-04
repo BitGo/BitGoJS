@@ -1480,7 +1480,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       buildParams.changeAddressType === undefined &&
       buildParams.changeAddress === undefined &&
       buildParams.wallet.type() === 'hot' &&
-      this.network === utxolib.networks.testnet
+      (this.network === utxolib.networks.testnet || buildParams.wallet.flag('musigKp') === 'true')
     ) {
       addressType = 'p2trMusig2';
     }
