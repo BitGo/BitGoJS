@@ -271,6 +271,14 @@ export class Wallet implements IWallet {
     return this._wallet.label;
   }
 
+  public flags(): { name: string; value: string }[] {
+    return this._wallet.walletFlags ?? [];
+  }
+
+  public flag(name: string): string | undefined {
+    return this.flags().find((flag) => flag.name === name)?.value;
+  }
+
   /**
    * Get the public object ids for the keychains on this wallet.
    */

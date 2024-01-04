@@ -1465,11 +1465,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     let txFormat = buildParams.txFormat as 'legacy' | 'psbt' | undefined;
     let addressType = buildParams.addressType as ScriptType2Of3 | undefined;
 
+    const walletFlagMusigKp = buildParams.wallet.flag('musigKp') === 'true';
+
     // if the txFormat is not specified, we need to default to psbt for distributed custody wallets or testnet hot wallets
     if (
       buildParams.txFormat === undefined &&
       (buildParams.wallet.subType() === 'distributedCustody' ||
-        (isTestnet(this.network) && buildParams.wallet.type() === 'hot'))
+        (isTestnet(this.network) && buildParams.wallet.type() === 'hot') ||
+        walletFlagMusigKp)
     ) {
       txFormat = 'psbt';
     }
@@ -1480,7 +1483,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       buildParams.changeAddressType === undefined &&
       buildParams.changeAddress === undefined &&
       buildParams.wallet.type() === 'hot' &&
-      (this.network === utxolib.networks.testnet || buildParams.wallet.flag('musigKp') === 'true')
+      (this.network === utxolib.networks.testnet || walletFlagMusigKp)
     ) {
       addressType = 'p2trMusig2';
     }
