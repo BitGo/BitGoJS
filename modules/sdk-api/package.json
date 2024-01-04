@@ -4,13 +4,6 @@
   "description": "REST wrapper for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "node": "./dist/src/index.js",
-      "default": "./dist/web/main.js"
-    }
-  },
   "browser": {
     "proxy-agent": false
   },
@@ -21,9 +14,6 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "webpack-dev": "yarn webpack",
-    "webpack-prod": "yarn webpack --mode=production --node-env=production",
-    "prepublishOnly": "yarn webpack-prod",
     "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
     "unit-test": "mocha"
