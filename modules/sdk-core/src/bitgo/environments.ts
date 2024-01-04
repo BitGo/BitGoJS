@@ -141,7 +141,7 @@ const testnetBase: EnvironmentTemplate = {
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
-  etherscanBaseUrl: 'https://api-goerli.etherscan.io',
+  etherscanBaseUrl: 'https://api-holesky.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   avaxcNetworkBaseUrl: 'https://api.avax-test.network',
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
@@ -218,7 +218,7 @@ export const Environments: Environments = {
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
-    etherscanBaseUrl: 'https://api-goerli.etherscan.fakeurl',
+    etherscanBaseUrl: 'https://api-holesky.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
     avaxcNetworkBaseUrl: 'https://api.avax-test.network.fakeurl',
     eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
@@ -251,7 +251,7 @@ export const Environments: Environments = {
         : 'https://blockstream.info/api',
     etherscanBaseUrl:
       process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum'
-        ? 'https://api-goerli.etherscan.io'
+        ? 'https://api-holesky.etherscan.io'
         : 'https://api.etherscan.io',
     stellarFederationServerUrl:
       process.env.BITGO_CUSTOM_STELLAR_NETWORK !== 'stellar'

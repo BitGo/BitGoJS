@@ -20,7 +20,7 @@ describe('EVM Wallets:', function () {
   const expected: UnifiedWallet = {
     id: 'great unified wallet',
     wallets: [
-      { coin: 'gteth', walletId: ethWalletId, address: ethAddress },
+      { coin: 'hteth', walletId: ethWalletId, address: ethAddress },
       { coin: 'tpolygon', walletId: polygonWalletId, address: ethAddress },
     ],
     curve: 'ecdsa',
@@ -29,6 +29,7 @@ describe('EVM Wallets:', function () {
 
   before(function () {
     bitgo.safeRegister('gteth', Gteth.createInstance);
+    bitgo.safeRegister('hteth', Gteth.createInstance);
     bitgo.safeRegister('tpolygon', Tpolygon.createInstance);
     bitgo.initializeTestVars();
     evmWallets = new EcdsaEVMUnifiedWallets(bitgo);
@@ -106,6 +107,7 @@ describe('EVM Wallets:', function () {
     it('should correctly generate wallet', async function () {
       sandbox.stub(UnifiedWallets.prototype, 'generateKeychainsTriplet').resolves(keyTriplet);
       nock(bgUrl).post('/api/v2/gteth/wallet').reply(200, ethWalletData);
+      nock(bgUrl).post('/api/v2/hteth/wallet').reply(200, ethWalletData);
       nock(bgUrl).post('/api/v2/tpolygon/wallet').reply(200, polygonWalletData);
       nock(bgUrl).post('/api/v2/wallet/evm').reply(200, expected);
       params = {
@@ -125,6 +127,7 @@ describe('EVM Wallets:', function () {
         walletVersion: 3,
         passphrase: 'test123',
       };
+      nock(bgUrl).post('/api/v2/hteth/wallet').reply(200, ethWalletData);
       nock(bgUrl).post('/api/v2/gteth/wallet').reply(200, ethWalletData);
       nock(bgUrl).post('/api/v2/tpolygon/wallet').reply(200, polygonWalletData);
       nock(bgUrl).post('/api/v2/wallet/evm').reply(200, expected);
@@ -176,15 +179,15 @@ describe('EVM Wallets:', function () {
       it('should return valid coin wallet', async function () {
         const expectedEthWallet = {
           bitgo,
-          coin: bitgo.coin('gteth'),
+          coin: bitgo.coin('hteth'),
         };
         nock(bgUrl)
           .get('/api/v2/wallet/evm')
           .query({ evmWalletId })
           .reply(200, { result: [expected] });
-        nock(bgUrl).get('/api/v2/gteth/wallet/eth-123-eth').reply(200, expectedEthWallet);
-        const result = await evmWallets.getCoinWalletById(evmWalletId, 'gteth');
-        result.baseCoin.getFullName().should.equal('Goerli Testnet Ethereum');
+        nock(bgUrl).get('/api/v2/hteth/wallet/eth-123-eth').reply(200, expectedEthWallet);
+        const result = await evmWallets.getCoinWalletById(evmWalletId, 'hteth');
+        result.baseCoin.getFullName().should.equal('Holesky Testnet Ethereum');
       });
     });
   });

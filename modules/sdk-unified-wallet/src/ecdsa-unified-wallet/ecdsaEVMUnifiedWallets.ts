@@ -91,7 +91,7 @@ export class EcdsaEVMUnifiedWallets extends UnifiedWallets {
         coinName = 'eth';
         break;
       default:
-        coinName = 'gteth';
+        coinName = 'hteth';
     }
     return coinName;
   }

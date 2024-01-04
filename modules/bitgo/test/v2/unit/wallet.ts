@@ -3794,7 +3794,7 @@ describe('V2 Wallet:', function () {
     before(async function () {
       const walletData = {
         id: '598f606cd8fc24710d2ebadb1d9459bb',
-        coin: 'gteth',
+        coin: 'hteth',
         keys: [
           '598f606cd8fc24710d2ebad89dce86c2',
           '598f606cc8e43aef09fcb785221d9dd2',
@@ -3805,7 +3805,7 @@ describe('V2 Wallet:', function () {
           baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
         },
       };
-      ethWallet = new Wallet(bitgo, bitgo.coin('gteth'), walletData);
+      ethWallet = new Wallet(bitgo, bitgo.coin('hteth'), walletData);
     });
 
     afterEach(async function () {
@@ -3814,7 +3814,7 @@ describe('V2 Wallet:', function () {
 
     it('Should return all nfts in the wallet', async function () {
       const getTokenBalanceNock = nock(bgUrl)
-        .get(`/api/v2/gteth/wallet/${ethWallet.id()}?allTokens=true`)
+        .get(`/api/v2/hteth/wallet/${ethWallet.id()}?allTokens=true`)
         .reply(200, {
           ...walletData,
           ...nftResponse,
@@ -3839,7 +3839,7 @@ describe('V2 Wallet:', function () {
 
     it('Should throw when attempting to transfer a nft collection not in the wallet', async function () {
       const getTokenBalanceNock = nock(bgUrl)
-        .get(`/api/v2/gteth/wallet/${ethWallet.id()}?allTokens=true`)
+        .get(`/api/v2/hteth/wallet/${ethWallet.id()}?allTokens=true`)
         .reply(200, {
           ...walletData,
           ...nftResponse,
@@ -3864,7 +3864,7 @@ describe('V2 Wallet:', function () {
 
     it('Should throw when attempting to transfer a ERC-721 nft not owned by the wallet', async function () {
       const getTokenBalanceNock = nock(bgUrl)
-        .get(`/api/v2/gteth/wallet/${ethWallet.id()}?allTokens=true`)
+        .get(`/api/v2/hteth/wallet/${ethWallet.id()}?allTokens=true`)
         .reply(200, {
           ...walletData,
           ...nftResponse,
@@ -3892,7 +3892,7 @@ describe('V2 Wallet:', function () {
 
     it('Should throw when attempting to transfer ERC-1155 tokens when the amount transferred is more than the spendable balance', async function () {
       const getTokenBalanceNock = nock(bgUrl)
-        .get(`/api/v2/gteth/wallet/${ethWallet.id()}?allTokens=true`)
+        .get(`/api/v2/hteth/wallet/${ethWallet.id()}?allTokens=true`)
         .reply(200, {
           ...walletData,
           ...{
