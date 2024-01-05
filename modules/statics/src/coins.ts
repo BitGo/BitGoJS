@@ -14060,6 +14060,30 @@ export const coins = CoinMap.fromCoins([
     '0xf97f4df75117a78c1a5a0dbb814af92458539fb4',
     UnderlyingAsset['arbeth:link']
   ),
+  arbethErc20(
+    '0606676c-1e6b-488a-abe1-ab46c697c4b9',
+    'arbeth:usdc',
+    'USD Coin',
+    6,
+    '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+    UnderlyingAsset['arbeth:usdc']
+  ),
+  arbethErc20(
+    '8deaaaf0-f81f-4697-bba6-77f4cfcd4efc',
+    'arbeth:usdcv2',
+    'USD Coin (native)',
+    6,
+    '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+    UnderlyingAsset['arbeth:usdcv2']
+  ),
+  arbethErc20(
+    'a49b04e6-5a1b-4d55-9187-4d41c41f8f1e',
+    'arbeth:usdt',
+    'Tether USD',
+    6,
+    '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
+    UnderlyingAsset['arbeth:usdt']
+  ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
     'tarbeth:link',
@@ -14075,6 +14099,30 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6',
     UnderlyingAsset['opeth:link']
+  ),
+  opethErc20(
+    'ff6b3a6a-0cfa-419c-a815-31ea72dd7cb9',
+    'opeth:usdc',
+    'USD Coin',
+    6,
+    '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
+    UnderlyingAsset['opeth:usdc']
+  ),
+  opethErc20(
+    '00abc58e-c1fb-4b9b-8b9a-d609071bb7be',
+    'opeth:usdcv2',
+    'USD Coin (native)',
+    6,
+    '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
+    UnderlyingAsset['opeth:usdcv2']
+  ),
+  opethErc20(
+    '634d052e-8c1c-47ed-aded-d0a2399439b0',
+    'opeth:usdt',
+    'Tether USD',
+    18,
+    '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
+    UnderlyingAsset['opeth:usdt']
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
