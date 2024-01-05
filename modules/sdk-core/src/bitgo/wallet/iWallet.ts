@@ -578,6 +578,10 @@ export interface WalletData {
   receiveAddress: {
     address: string;
   };
+  walletFlags?: {
+    name: string;
+    value: string;
+  }[];
   migratedFrom?: string;
   coinSpecific: WalletCoinSpecific;
   pendingApprovals: PendingApprovalData[];
