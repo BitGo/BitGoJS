@@ -389,7 +389,7 @@ module.exports.nockEthRecovery = function (bitgo, nockData = nockEthData) {
     if (apiKey) {
       data.params.apiKey = apiKey;
     }
-    nock('https://api-goerli.etherscan.io').get('/api').query(data.params).reply(200, data.response);
+    nock('https://api-holesky.etherscan.io').get('/api').query(data.params).reply(200, data.response);
   });
 };
 
@@ -406,7 +406,7 @@ module.exports.nockEtherscanRateLimitError = function () {
     address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
   };
 
-  nock('https://api-goerli.etherscan.io').get('/api').query(params).reply(200, response);
+  nock('https://api-holesky.etherscan.io').get('/api').query(params).reply(200, response);
 };
 
 module.exports.nockXlmRecovery = function () {

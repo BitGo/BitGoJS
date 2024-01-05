@@ -171,7 +171,7 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
     if (isEmpty(this.coinIdMapping) || !Object.keys(this.coinIdMapping).includes(coinName)) {
       let coinWalletId;
       for (const wallet of this.unifiedWallet.wallets) {
-        if (wallet.coin == coinName) {
+        if (wallet.coin === coinName) {
           coinWalletId = wallet.walletId;
           break;
         }
