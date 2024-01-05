@@ -21,7 +21,7 @@ describe('Opeth transaction builder send', () => {
       const operationParams = [
         ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
-          'OPETH-ERC20',
+          '11155420-ERC20',
           new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
           amount,
           new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress || ''), 16),
