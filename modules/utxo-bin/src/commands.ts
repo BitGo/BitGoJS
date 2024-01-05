@@ -333,8 +333,11 @@ export const cmdGenerateAddress = {
     return b
       .option('network', { alias: 'n', type: 'string' })
       .option('userKey', { type: 'string', demandOption: true })
+      .option('userKeyPrefix', { type: 'string', default: '0/0' })
       .option('backupKey', { type: 'string', demandOption: true })
+      .option('backupKeyPrefix', { type: 'string', default: '0/0' })
       .option('bitgoKey', { type: 'string', demandOption: true })
+      .option('bitgoKeyPrefix', { type: 'string', default: '0/0' })
       .option('format', {
         type: 'string',
         default: '%p0\t%a',
