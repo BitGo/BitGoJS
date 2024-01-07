@@ -420,6 +420,7 @@ export enum UnderlyingAsset {
   BAX = 'bax',
   BBANK = 'bbank',
   BBSAMO = 'bbsamo',
+  BBTC = 'BBTC',
   BBX = 'bbx',
   BCAP = 'bcap',
   BCC = 'bcc',
@@ -469,6 +470,7 @@ export enum UnderlyingAsset {
   BRD = 'brd',
   BRIBE = 'bribe',
   BRZ = 'brz',
+  BSGG = 'bsgg',
   BST = 'bst',
   BSVBEAR = 'bsvbear',
   BSVBULL = 'bsvbull',
@@ -526,6 +528,7 @@ export enum UnderlyingAsset {
   CHR = 'chr',
   CHSB = 'chsb',
   CHZ = 'chz',
+  CIBO = 'cibo',
   CIX100 = 'cix100',
   CLIQ = 'cliq',
   CLN = 'cln',
@@ -617,6 +620,7 @@ export enum UnderlyingAsset {
   DPI = 'dpi',
   DPX = 'dpx',
   DPY = 'dpy',
+  DRAM = 'dram',
   DRGNBEAR = 'drgnbear',
   DRGNBULL = 'drgnbull',
   DRPU = 'drpu',
@@ -898,6 +902,7 @@ export enum UnderlyingAsset {
   LITH = 'lith',
   LITv2 = 'litv2',
   LKR = 'lkr',
+  LMWR = 'lmwr',
   LNC = 'lnc',
   LOOKS = 'looks',
   LOOM = 'loom',
@@ -946,6 +951,7 @@ export enum UnderlyingAsset {
   MEDIAv2 = 'mediav2',
   MEDX = 'medx',
   MEME = 'meme',
+  MEOW = 'meow',
   MER = 'mer',
   MET = 'met',
   META = 'meta',
@@ -1373,6 +1379,7 @@ export enum UnderlyingAsset {
   URHD = 'urhd',
   USDC = 'usdc',
   'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',
+  USDGLO = 'usdglo',
   USDH = 'usdh',
   USDK = 'usdk',
   // Also available on EOS
@@ -1495,6 +1502,7 @@ export enum UnderlyingAsset {
   ZCO = 'zco',
   ZECBEAR = 'zecbear',
   ZECBULL = 'zecbull',
+  ZETACHAIN = 'zetachain',
   ZIL = 'zil',
   ZIP = 'zip',
   ZIX = 'zix',
@@ -1629,6 +1637,7 @@ export enum UnderlyingAsset {
   'avaxc:frax' = 'avaxc:frax',
   'avaxc:movr' = 'avaxc:movr',
   'avaxc:ice' = 'avaxc:ice',
+  'avaxc:note' = 'avaxc:note',
   // End FTX missing AVAXC tokens
 
   // polygon Token ERC-20
@@ -1669,6 +1678,8 @@ export enum UnderlyingAsset {
   'polygon:treta' = 'polygon:treta',
   'polygon:orb' = 'polygon:orb',
   'polygon:route' = 'polygon:route',
+  'polygon:sbc' = 'polygon:sbc',
+  'polygon:xsgd' = 'polygon:xsgd',
 
   // Polygon NFTs
   // generic NFTs
@@ -1681,6 +1692,7 @@ export enum UnderlyingAsset {
   'bsc:ksm' = 'bsc:ksm',
   'bsc:usdt' = 'bsc:usdt',
   'bsc:vet' = 'bsc:vet',
+  'bsc:cake' = 'bsc:cake',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs
@@ -1772,6 +1784,7 @@ export enum UnderlyingAsset {
   'sol-weth' = 'sol-weth',
   'btc-sollet' = 'btc-sollet',
   'eth-sollet' = 'eth-sollet',
+  'bonk' = 'bonk',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',

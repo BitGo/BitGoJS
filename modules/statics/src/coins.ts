@@ -1264,6 +1264,17 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '221fb1c9-0fb0-4b06-8dd1-ed857a804d58',
+    'hbar:xsgd',
+    'XSGD',
+    Networks.main.hedera,
+    6,
+    UnderlyingAsset.XSGD,
+    '0.0.3',
+    '0.0.1985922',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '2ea6a6d8-7d14-4bbf-a869-a99ba61bebda',
     'hbar:bct',
     'Mainnet Hedera Bitcarbon Beta Coin',
@@ -1930,6 +1941,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BAX
   ),
   erc20(
+    '4c41ed4d-c627-4703-9fe6-f4ecbf77654a',
+    'bbtc',
+    'Binance Wrapped BTC',
+    8,
+    '0x9be89d2a4cd102d8fecc6bf9da793be995c22541',
+    UnderlyingAsset.BBTC
+  ),
+  erc20(
     'bd8d2723-5c4e-4cdd-852d-7a536e70660a',
     'bbx',
     'BBX',
@@ -2152,6 +2171,14 @@ export const coins = CoinMap.fromCoins([
     4,
     '0x420412e765bfa6d85aaac94b4f7b708c89be2e2b',
     UnderlyingAsset.BRZ
+  ),
+  erc20(
+    '406f4e39-747f-423b-ad53-91f963343a20',
+    'bsgg',
+    'Betswap.gg',
+    18,
+    '0x69570f3e84f51ea70b7b68055c8d667e77735a25',
+    UnderlyingAsset.BSGG
   ),
   erc20(
     '8066434a-af46-4457-bf63-e5c62b006f83',
@@ -2416,6 +2443,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x3506424f91fd33084466f402d5d97f05f8e3b4af',
     UnderlyingAsset.CHZ
+  ),
+  erc20(
+    '47586cb6-5458-458a-bc98-aa46b50bfc30',
+    'cibo',
+    'Cibola',
+    18,
+    '0xd66a2429694446565772636a6a29bd394c07b35b',
+    UnderlyingAsset.CIBO
   ),
   erc20(
     '6e537d9d-766a-47d4-8ee5-66e7b278c0a6',
@@ -4141,6 +4176,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LIT
   ),
   erc20(
+    '0363f7f4-65dd-41d8-959c-7a62c00a84f1',
+    'lmwr',
+    'LimeWire Token',
+    18,
+    '0x628a3b2e302c7e896acc432d2d0dd22b6cb9bc88',
+    UnderlyingAsset.LMWR
+  ),
+  erc20(
     '741a2032-0f4f-400c-8c1c-55fe33af7f5c',
     'lnc',
     'Linker Coin',
@@ -4348,6 +4391,14 @@ export const coins = CoinMap.fromCoins([
     8,
     '0xd5525d397898e5502075ea5e830d8914f6f0affe',
     UnderlyingAsset.MEME
+  ),
+  erc20(
+    'dd2fd2e2-339c-42ad-b1fc-744b7952eea5',
+    'meow',
+    'MEOW',
+    18,
+    '0x0ec78ed49c2d27b315d462d43b5bab94d2c79bf8',
+    UnderlyingAsset.MEOW
   ),
   erc20(
     'cfe6ff8e-6033-4aa6-9b60-b6edc12cc0ae',
@@ -7031,6 +7082,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.DOGEBULL
   ),
   erc20(
+    '1f44b90a-7e1f-4c51-a867-7b5acace0bfd',
+    'dram',
+    'DRAM',
+    18,
+    '0x5216409e5266cf520868545d6674d1f0046fdd9e',
+    UnderlyingAsset.DRAM
+  ),
+  erc20(
     'bc888484-f826-4a4c-b99d-e84561c4c5d5',
     'drgnbear',
     '3X Short Dragon Index Token',
@@ -7325,6 +7384,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd437d88153daef4784cacd2084b1d8cc2d3312b8',
     UnderlyingAsset.ZECBULL
+  ),
+  erc20(
+    '68e5a5eb-e51c-4dba-b3ba-3823bd450f49',
+    'zetachain',
+    'Zeta Chain',
+    18,
+    '0xf091867ec603a6628ed83d274e835539d82e9cc8',
+    UnderlyingAsset.ZETACHAIN
   ),
   erc20(
     '0e6832b9-9ff6-47b9-9250-5e0cd1e69614',
@@ -9569,6 +9636,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['USDC-POS-WORMHOLE']
   ),
   erc20(
+    'efae2e71-10b8-4461-8e84-51390f6e77df',
+    'usdglo',
+    'Glo Dollar',
+    18,
+    '0x4f604735c1cf31399c6e711d5962b2b3e0225ad3',
+    UnderlyingAsset.USDGLO
+  ),
+  erc20(
     'b775f7f9-268f-457a-8476-bc64d832425a',
     'usdk',
     'USDK',
@@ -9825,6 +9900,14 @@ export const coins = CoinMap.fromCoins([
     9,
     '0xa9d810e5555c2951239efe7a3245ef3c1b4ca8cf',
     UnderlyingAsset['bsc:vet']
+  ),
+  bscToken(
+    'aa92b7c0-7562-4273-a265-2184fa91d42e',
+    'bsc:cake',
+    'PancakeSwap Token',
+    18,
+    '0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82',
+    UnderlyingAsset['bsc:cake']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
@@ -11915,6 +11998,14 @@ export const coins = CoinMap.fromCoins([
     '0xe0ce60af0850bf54072635e66e79df17082a1109',
     UnderlyingAsset['avaxc:ice']
   ),
+  avaxErc20(
+    '4c5958cd-7f59-4b1e-9f64-c04fd6fe24d0',
+    'avaxc:note',
+    'Republic Note',
+    8,
+    '0x7c6a937943f135283a2561938de2200994a8f7a7',
+    UnderlyingAsset['avaxc:note']
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',
@@ -13391,6 +13482,15 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    '20847b14-4982-448b-a61c-9b7d42085948',
+    'sol:bonk',
+    'Bonk',
+    5,
+    'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+    UnderlyingAsset['bonk'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     '803bb18c-b9ed-4342-aa94-985f9ab31974',
     'sol:rendoge-usdc',
     'RENDOGE-USDC (Atrix)',
@@ -13963,6 +14063,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x16eccfdbb4ee1a85a33f3a9b21175cd7ae753db4',
     UnderlyingAsset['polygon:route']
+  ),
+  polygonErc20(
+    'a09ea578-80d1-4b09-9004-1eb49bd70366',
+    'polygon:sbc',
+    'Stable Coin',
+    18,
+    '0xfdcc3dd6671eab0709a4c0f3f53de9a333d80798',
+    UnderlyingAsset['polygon:sbc']
+  ),
+  polygonErc20(
+    'c1fda2ae-f4f1-4c39-8d87-71b224018073',
+    'polygon:xsgd',
+    'XSGD',
+    6,
+    '0xdc3326e71d45186f113a2f448984ca0e8d201995',
+    UnderlyingAsset['polygon:xsgd']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
