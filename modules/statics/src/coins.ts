@@ -202,6 +202,7 @@ const SOL_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
+const SOL_TOKEN_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 const STX_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -12030,7 +12031,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt', // https://explorer.solana.com/address/SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt
     UnderlyingAsset.SRM,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '162c00d8-4262-4a89-b85d-8d938435397e',
@@ -12039,7 +12040,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
     UnderlyingAsset.USDC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '2a41c38d-c79a-4734-ae3a-c60e4d1f2d99',
@@ -12048,7 +12049,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'So11111111111111111111111111111111111111112', // https://explorer.solana.com/address/So11111111111111111111111111111111111111112
     UnderlyingAsset.WSOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'bb2fca37-c185-490a-8a27-09829c9f699a',
@@ -12057,7 +12058,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R', // https://explorer.solana.com/address/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R
     UnderlyingAsset.RAY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'fe85e2b5-1b32-444d-b16e-85b9b1814349',
@@ -12066,7 +12067,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx', // https://explorer.solana.com/address/7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx
     UnderlyingAsset.GMT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '1991afb1-84d5-453a-bbc3-e11115389c51',
@@ -12075,7 +12076,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // https://explorer.solana.com/address/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
     UnderlyingAsset.USDT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '4d631f91-02e2-4b89-af01-7b42cb61b1bb',
@@ -12084,7 +12085,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks', // https://explorer.solana.com/address/CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks
     UnderlyingAsset.GARI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '4209203a-ddd8-4dea-ae98-529924a63853',
@@ -12093,7 +12094,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
     UnderlyingAsset.ORCA,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '39022e21-d617-40d8-bf35-0a8a73a55a83',
@@ -12102,7 +12103,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp', // https://explorer.solana.com/address/SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp
     UnderlyingAsset.SLND,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '3aa70291-042d-4aeb-9f8e-f799bd327571',
@@ -12111,7 +12112,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '12uHjozDVgyGWeLqQ8DMCRbig8amW5VmvZu3FdMMdcaG',
     UnderlyingAsset.AKRO,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'fcc057c1-2cee-444b-8684-a511d472fac9',
@@ -12120,7 +12121,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x',
     UnderlyingAsset.ALEPH,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '11a4f5ac-f812-4085-967e-6c3faa95354c',
@@ -12129,7 +12130,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'ATLASXmbPQxBUYbxPsV97usA3fPQYEqzQBUHgiFCUsXx',
     UnderlyingAsset.ATLAS,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'b08f3838-1784-43dc-a6d3-e92cc3424a4f',
@@ -12138,7 +12139,7 @@ export const coins = CoinMap.fromCoins([
     4,
     'FtgGSFADXBtroxq8VCausXRr2of47QBf5AS1NtZCu4GD',
     UnderlyingAsset.BRZ,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '6b734108-6349-43cd-a84e-8af858f267b5',
@@ -12147,7 +12148,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'C98A4nkJXhpVZNAZdHUA95RpTF3T4whtQubL3YobiUX9',
     UnderlyingAsset.C98,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'de1c59e5-54fd-4f12-b313-12d032528313',
@@ -12156,7 +12157,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '8HGyAAB1yoM1ttS7pXjHMa3dukTFGQggnFFH3hJZgzQh',
     UnderlyingAsset.COPE,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '116c9895-8591-4492-82e9-f3c019a86381',
@@ -12165,7 +12166,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'HihxL2iM6L6P1oqoSeiixdJ3PhPYNxvSKH9A2dDqLVDH',
     UnderlyingAsset.CREAM,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '4536ba09-3d64-40fd-a7f8-68336933dec6',
@@ -12174,7 +12175,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'DFL1zNkaGPWm1BqAVqRjCZvHmwTFrEaJtbzJWgseoNJh',
     UnderlyingAsset.DFL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c5a4794c-96c9-4ace-a697-c096cd0f750f',
@@ -12183,7 +12184,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp',
     UnderlyingAsset.FIDA,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'db871834-607b-46d7-94f8-bceddc1a764c',
@@ -12192,7 +12193,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'A9ik2NrpKRRG2snyTjofZQcTuav9yH3mNVHLsLiDQmYt',
     UnderlyingAsset.FRONT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'e155a1f4-b2f6-4cd5-805d-c39673ab82d7',
@@ -12201,7 +12202,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'EzfgjvkSwthhgHaceR3LnKXUoRkP6NUhfghdaHAj1tUv',
     UnderlyingAsset.FTT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'bb248d80-4233-4c02-8a23-5a09fb9b986c',
@@ -12210,7 +12211,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz',
     UnderlyingAsset.GENE,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '24387832-c37b-467a-9509-a2a919eac02e',
@@ -12219,7 +12220,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'AFbX8oGjGpmVFywbVouvhQSRmiW2aR1mohfahi4Y2AdB',
     UnderlyingAsset.GST,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c5d1df84-1a5f-4e97-9845-a503f03a6db3',
@@ -12228,7 +12229,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'HBB111SCo9jkCejsZfz8Ec8nH7T6THF8KEKSnvwT6XK6',
     UnderlyingAsset.HBB,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '36bfbc81-cffa-435c-a769-672cecf7c665',
@@ -12237,7 +12238,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '3GECTP7H4Tww3w8jEPJCJtXUtXxiZty31S9szs84CcwQ',
     UnderlyingAsset.HOLY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '767b8047-1aae-44cb-9079-20e159888b10',
@@ -12246,7 +12247,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'HxhWkVpk5NS4Ltg5nij2G671CKXFRKPK8vy271Ub4uEK',
     UnderlyingAsset.HXRO,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '0474546e-e7c5-4794-8ee8-f7ec7e2be72d',
@@ -12255,7 +12256,7 @@ export const coins = CoinMap.fromCoins([
     5,
     'kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6',
     UnderlyingAsset.KIN,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '4521e670-d0ac-441f-8b7c-cc54fe7bebe0',
@@ -12264,7 +12265,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '3bRTivrVsitbmCTGtqwp7hxXPsybkjn4XLNtPsHqa3zR',
     UnderlyingAsset.LIKE,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '5109c4c8-b64f-4375-81e2-50ca7279405d',
@@ -12273,7 +12274,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '2wpTofQ8SkACrkZWrZDjXPitYa8AwWgX8AfxdeBRRVLX',
     UnderlyingAsset.LINK,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '9e5bf597-fa7a-4cbf-9d16-5e8c5b0494c6',
@@ -12282,7 +12283,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'MAPS41MDahZ9QdKXhVa4dWB9RuyfV4XqhyAZ8XcYepb',
     UnderlyingAsset.MAPS,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '07b7845b-e34b-4dcb-9f3b-92210a319105',
@@ -12291,7 +12292,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'CaGa7pddFXS65Gznqwp42kBhkJQdceoFVT7AQYo8Jr8Q',
     UnderlyingAsset.MATH,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '6052c89c-0283-407b-b662-0dad4dc29430',
@@ -12300,7 +12301,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Fm9rHUTF5v3hwMLbStjZXqNBBoZyGriQaFM6sTFz3K8A',
     UnderlyingAsset.MBS,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '735fdc61-9e4c-4b59-a135-8f004a03cec3',
@@ -12309,7 +12310,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'ETAtLmCmsoiEEKfNrHKJ2kYy3MoABhU6NQvpSfij5tDs',
     UnderlyingAsset.MEDIA,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '26ab4764-b9ab-4eb4-836a-f81d9269f160',
@@ -12318,7 +12319,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'MERt85fc5boKw3BW1eYdxonEuJNvXbiMbs6hvheau5K',
     UnderlyingAsset.MER,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'aa540cc1-4019-48ca-8da4-fa9f6abf195f',
@@ -12327,7 +12328,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac',
     UnderlyingAsset.MNGO,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '5e5ac729-1e79-4b1c-a36d-81a46e72821d',
@@ -12336,7 +12337,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
     UnderlyingAsset.MSOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f33ad79e-31b4-4a6f-b85e-5c2a3669b5a5',
@@ -12345,7 +12346,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M',
     UnderlyingAsset.OXY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'd1d5ce88-f892-4fe3-92be-7b28a1316aaa',
@@ -12354,7 +12355,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk',
     UnderlyingAsset.POLIS,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '0edccd00-fe20-429d-b098-f0ab67df868c',
@@ -12363,7 +12364,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'PoRTjZMPXb9T7dyU7tpLEZRQj7e6ssfAE62j2oQuc6y',
     UnderlyingAsset.PORT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '371b8d0b-8a6f-4118-a2f7-ad55ad961308',
@@ -12372,7 +12373,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'PRSMNsEPqhGVCH1TtWiJqPjJyh2cKrLostPZTNy1o5x',
     UnderlyingAsset.PRISM,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'fd7fc099-4ae9-4c7f-b135-32a47157630d',
@@ -12381,7 +12382,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'PsyFiqqjiv41G7o5SMRzDJCu4psptThNR2GtfeGHfSq',
     UnderlyingAsset.PSY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '2dff3c81-a29b-4687-af81-a4c5c26fb21d',
@@ -12390,7 +12391,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'AD27ov5fVU2XzwsbvnFvb1JpCBaCB5dRXrczV9CqSVGb',
     UnderlyingAsset.REAL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '311a4d58-38f9-4e47-9764-75a28b5b5d6f',
@@ -12399,7 +12400,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '7CnFGR9mZWyAtWxPcVuTewpyC3A3MDW4nLsu5NY6PDbd',
     UnderlyingAsset.SECO,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '0fe956f4-b526-4788-afb8-02bf35d54a69',
@@ -12408,7 +12409,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'SLRSSpSLUTP7okbCUBYStWCo1vUgyt775faPqz8HUMr',
     UnderlyingAsset.SLRS,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c70d0e65-8e79-46d3-88ae-a8d6d35fca57',
@@ -12417,7 +12418,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '4dmKkXNHdgYsXqBHCuMikNQWwVomZURhYvkkX5c4pQ7y',
     UnderlyingAsset.SNY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f6b508ed-96f1-40d5-b1a3-6759ca4ca068',
@@ -12426,7 +12427,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'HCgybxq5Upy8Mccihrp7EsmwwFqYZtrHrsmsKwtGXLgW',
     UnderlyingAsset.STARS,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'ae6b25f8-35a8-4d9e-a581-a05cf087b767',
@@ -12435,7 +12436,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'ChVzxWRmrTeSgwd3Ui3UumcN8KX7VK3WaD4KGeSKpypj',
     UnderlyingAsset.SUSHI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '826fe936-c569-42ee-b49b-994d4b2439ad',
@@ -12444,7 +12445,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '3CyiEDRehaGufzkpXJitCP5tvh7cNhRqd9rPBxZrgK5z',
     UnderlyingAsset.SXP,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '4ee5fe5e-70ee-4afa-9c1d-aa636bc61b7f',
@@ -12453,7 +12454,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'A94X2fRy3wydNShU4dRaDyap2UuoeWJGWyATtyp61WZf',
     UnderlyingAsset.TRYB,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '3ef9c7a1-913d-455d-a2c3-ab6ddef6ae7c',
@@ -12462,7 +12463,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'TuLipcqtGVXP9XR62wM8WWCm6a9vhLs7T1uoWBk6FDs',
     UnderlyingAsset.TULIP,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '60cab12d-0fad-4574-9e6b-0616a64cbbae',
@@ -12471,7 +12472,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'FTtXEUosNn6EKG2SQtfbGuYB4rBttreQQcoWn1YDsuTq',
     UnderlyingAsset.UBXT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '13e7a2c7-ed75-48b4-8616-d8dbee3a580b',
@@ -12480,7 +12481,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '8FU95xFJhUUkyyCLU13HSzDLs7oC4QZdXQHL6SCeab36',
     UnderlyingAsset.UNI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'e29426bf-3ba8-4539-ad0c-199ab106798c',
@@ -12489,7 +12490,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'EPeUFDgHRxs9xxEPVaL6kfGQvCon7jmAWKVUHuux1Tpz',
     UnderlyingAsset.BAT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '0e25361a-64ad-454f-91a5-c1e2b50dee5e',
@@ -12498,7 +12499,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs',
     UnderlyingAsset.WETH,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '22fad997-3fb7-442e-88c8-087601c358c8',
@@ -12507,7 +12508,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'BXZX2JRJFjvKazM1ibeDFxgAngKExb74MRXzXKvgikxX',
     UnderlyingAsset.YFI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'b1baa024-f3d7-4b5b-b1e8-b637bd1f6328',
@@ -12516,7 +12517,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'dK83wTVypEpa1pqiBbHY3MNuUnT3ADUZM4wk9VZXZEc',
     UnderlyingAsset.WAAVE,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '324cb250-bcc0-4178-9455-657f9bd4eb9f',
@@ -12525,7 +12526,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '3vAs4D1WE6Na4tCgt4BApgFfENbm8WY7q4cSPD1yM4Cg',
     UnderlyingAsset.AAVE,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'bd41c638-8184-470d-85d2-c39d653f6969',
@@ -12534,7 +12535,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'ALMmmmbt5KNrPPUBFE4dAKUKSPWTop5s3kUGCdF69gmw',
     UnderlyingAsset.ALM,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '31095adc-01e5-4775-86d0-f59c53c73eda',
@@ -12543,7 +12544,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'APTtJyaRX5yGTsJU522N4VYWg3vCvSb65eam5GrPT5Rt',
     UnderlyingAsset.APT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'fc1c7819-0268-483b-9e1b-cd542f5fa91b',
@@ -12552,7 +12553,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'KgV1GvrHQmRBY8sHQQeUKwTm2r2h8t4C8qt12Cw1HVE',
     UnderlyingAsset.WAVAX,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'b84ba821-b94e-4395-bc6e-2f166ff081ab',
@@ -12561,7 +12562,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '2VTAVf1YCwamD3ALMdYHRMV5vPUCXdnatJH5f1khbmx6',
     UnderlyingAsset.BCHBEAR,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '109285a4-fe08-4436-8343-1a8b497fa33d',
@@ -12570,7 +12571,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '45vwTZSDFBiqCMRdtK4xiLCHEov8LJRW8GwnofG8HYyH',
     UnderlyingAsset.BEAR,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '12ccbec4-50fb-438b-865e-caf37cf48149',
@@ -12579,7 +12580,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '91z91RukFM16hyEUCXuwMQwp2BW3vanNG5Jh5yj6auiJ',
     UnderlyingAsset.BVOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '3be4fde1-cbb0-48e8-ad0b-18ff1d3b4b0b',
@@ -12588,7 +12589,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'CASHVDm2wsJXfhj6VWxb7GiMdoLc17Du7paH4bNr5woT',
     UnderlyingAsset.CASH,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'ee788c01-dfd6-4192-8636-c237ef49e2d6',
@@ -12597,7 +12598,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'E5ndSkaB17Dm7CsD22dvcjfrYSDLCxFcMd6z8ddCk5wp',
     UnderlyingAsset.CCAI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '12ff2857-8b6f-4a39-bcc9-9677a06978ab',
@@ -12606,7 +12607,7 @@ export const coins = CoinMap.fromCoins([
     4,
     'nRtfwU9G82CSHhHGJNxFhtn7FLvWP2rqvQvje1WtL69',
     UnderlyingAsset.CEL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '3e85d244-101d-4873-b957-d52e3843da94',
@@ -12615,7 +12616,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '5Wsd311hY8NXQhkt9cWHwTnqafk7BGEbLu8Py3DSnPAr',
     UnderlyingAsset.CMFI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '5e938e41-cd27-4d36-bae0-3f9121cbf92c',
@@ -12624,7 +12625,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'AwEauVaTMQRB71WeDnwf1DWSBxaMKjEPuxyLr1uixFom',
     UnderlyingAsset.COMP,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'ce347f78-6c1f-4335-a4f9-76bdf675e663',
@@ -12633,7 +12634,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'HfYFjMKNZygfMC8LsQ8LtpPsPxEJoXJx4M6tqi75Hajo',
     UnderlyingAsset.CWAR,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'a0aafc30-172c-4947-ad71-bf2a6ae9e11c',
@@ -12642,7 +12643,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'FANTafPFBAt93BNJVpdu25pGPmca3RfwdsDsRrT3LX1r',
     UnderlyingAsset.FANT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '2c551a1b-194c-453a-a65f-2bd74287adcd',
@@ -12651,7 +12652,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'HGsLG4PnZ28L8A4R5nPqKgZd86zUUdmfnkTRnuFJ5dAX',
     UnderlyingAsset.GRT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '52b645c1-1e8c-4e19-9b16-7cc4511ecb7c',
@@ -12660,7 +12661,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '5TY71D29Cyuk9UrsSxLXw2quJBpS7xDDFuFu2K9W7Wf9',
     UnderlyingAsset.IBVOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '4951ca14-b95a-46a5-91f9-ce255cd08957',
@@ -12669,7 +12670,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'AjkPkq3nsyDe1yKcbyZT7N4aK4Evv9om9tzhQD3wsRC',
     UnderlyingAsset['1INCH'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f8a262cf-1cee-4c17-a974-396f1938a7d4',
@@ -12678,7 +12679,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'JET6zMJWkCN9tpRT2v2jfAmm5VnQFDpUBCyaKojmGtz',
     UnderlyingAsset.JET,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '9fdca02e-29f8-4a13-bf25-ccdf9b522e3b',
@@ -12687,7 +12688,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '64L6o4G2H7Ln1vN7AHZsUMW4pbFciHyuwn4wUdSbcFxh',
     UnderlyingAsset.KEEP,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '1c5b803d-36b5-49fc-8304-c30286365855',
@@ -12696,7 +12697,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '6XWfkyg5mzGtKNftSDgYjyoPyUsLRf2rafj95XSFSFrr',
     UnderlyingAsset.KITTY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f6fec2f1-2ebb-4e72-9a33-3c08202eed4c',
@@ -12705,7 +12706,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'F6v4wfAdJB8D8p77bMXZgYt8TDKsYxLYxH5AFhUkYx9W',
     UnderlyingAsset.LUNA,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'e182c58c-5051-486d-97cf-c64668b06367',
@@ -12714,7 +12715,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'MEANeD3XDdUmNMsRGjASkSWdC8prLYsoRJ61pPeHctD',
     UnderlyingAsset.MEAN,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c8a1e543-bb13-4cd9-b9ca-713fd5e421b7',
@@ -12723,7 +12724,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey',
     UnderlyingAsset.MNDE,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'cca43f5b-b74a-40ea-a659-01b1eaf5c1bb',
@@ -12732,7 +12733,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Ea5SjE2Y6yvCeW5dYTn7PYMuW5ikXkvbGdcmSnXeaLjS',
     UnderlyingAsset.PAI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'd9108c43-75cd-4b5a-88b7-b94076083927',
@@ -12741,7 +12742,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'C6oFsE8nXRDThzrMEQ5SxaNFGKoyyfWDDVPw37JKvPTe',
     UnderlyingAsset.PAXG,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '90709afa-318d-40d3-9b86-0b6eaf1eaeab',
@@ -12750,7 +12751,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '9BsnSWDPfbusseZfnXyZ3un14CyPMZYvsKjWY3Y8Gbqn',
     UnderlyingAsset.PERP,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '882e20ec-fff1-4c6b-8f52-fcfaf6c66178',
@@ -12759,7 +12760,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'PRT88RkA4Kg5z7pKnezeNH4mafTvtQdfFgpQTGRjz44',
     UnderlyingAsset.PRT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '29e0e336-1246-497c-bd59-098145fcec0b',
@@ -12768,7 +12769,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'ArUkYE2XDKzqy77PRRGjo4wREWwqk6RXTfM9NeqzPvjU',
     UnderlyingAsset.RENDOGE,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'ec19e187-5099-4bd6-8be0-6d5e709eef2b',
@@ -12777,7 +12778,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'DkbE8U4gSRuGHcVMA1LwyZPYUjYbfEbjW8DMR3iSXBzr',
     UnderlyingAsset.RSR,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '07247f23-5b0a-4aad-b447-215702022484',
@@ -12786,7 +12787,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '6F9XriABHfWhit6zmMUYAQBSy6XK5VF1cHXuW5LDpRtC',
     UnderlyingAsset.RUN,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f778a49b-2078-4e44-80be-385e4950d169',
@@ -12795,7 +12796,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
     UnderlyingAsset.SAMO,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'd206e2ef-d22b-44d9-8d30-8c52f73d0ca8',
@@ -12804,7 +12805,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Saber2gLauYim4Mvftnrasomsv6NvAuncvMEZwcLpD1',
     UnderlyingAsset.SBR,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'e40dba1c-d240-4474-a199-22c4db805756',
@@ -12813,7 +12814,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'iouQcQBAiEXe6cKLS85zmZxUqaCqBdeHFpqKoSz615u',
     UnderlyingAsset.SBRIOU,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'cb4a4c8f-a707-4fc6-998c-5cc696943ce2',
@@ -12822,7 +12823,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm',
     UnderlyingAsset.SCNSOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f969a869-7923-4a92-b2cf-455d546257fd',
@@ -12831,7 +12832,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y',
     UnderlyingAsset.SHDW,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '431f0f91-85de-4337-b743-efe08ebf7c17',
@@ -12840,7 +12841,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'METAmTMXwdb8gYzyCPfXXFmZZw4rUsXX58PNsDg7zjL',
     UnderlyingAsset.SLC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '60045518-9075-43d7-8bd9-008cac6ddb36',
@@ -12849,7 +12850,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'StepAscQoEioFxxWGnh2sLBDFp9d8rvKz2Yp39iDpyT',
     UnderlyingAsset.STEP,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '3dc8897e-dc11-4566-b5c2-135ae8b0201a',
@@ -12858,7 +12859,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'SUNNYWgPQmFxe9wTZzNK7iPnJ3vYDrkgnxJRJm1s3ag',
     UnderlyingAsset.SUNNY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '4b0af18b-0a8c-41a7-a1a8-e07e3d148ca9',
@@ -12867,7 +12868,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '21jZ1ESEFYh9SBwjT5gqE3jHv3JnaGhgvypLTR96QXW9',
     UnderlyingAsset.SUSD,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c2b1e6bf-50b1-4f06-b0c4-3df1f985b6cb',
@@ -12876,7 +12877,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'svtMpL5eQzdmB3uqK9NXaQkq8prGZoKQFNVJghdWCkV',
     UnderlyingAsset.SVT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'd6ab8429-995a-4125-846f-49e5ccd4e734',
@@ -12885,7 +12886,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '6ry4WBDvAwAnrYJVv6MCog4J8zx6S3cPgSqnTsDZ73AR',
     UnderlyingAsset.TRYB2,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '64523f0c-f87b-46f0-9d50-a1aad2e771c8',
@@ -12894,7 +12895,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'USDH1SM1ojwWUga67PGrgFWUHibbjqMvuMaDkRJTgkX',
     UnderlyingAsset.USDH,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f1dff494-7e67-40ce-af32-dabc35ee0fd4',
@@ -12903,7 +12904,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'UXPhBoR3qG4UCiGNJfV7MqhHyFqKN68g45GoYvAeL2M',
     UnderlyingAsset.UXP,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'e13a4349-aee7-4306-9ef0-9cd0938e5339',
@@ -12912,7 +12913,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '9gP2kCy3wA1ctvYWQk75guqXuHfrEomqydHLtcTCqiLa',
     UnderlyingAsset.WBNB,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '3419b046-397d-4b5b-9d41-b28147f55f75',
@@ -12921,7 +12922,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'EjmyN6qEC1Tf1JxiG1ae7UTJhUxSwk1TCWNWqxWV4J6o',
     UnderlyingAsset.WDAIV2,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c626955d-2eb3-45b0-8c37-7abfe03cc0e3',
@@ -12930,7 +12931,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM',
     UnderlyingAsset.WUSDCV2,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'fcdaedca-10db-4953-b71b-e1dfceadbf21',
@@ -12939,7 +12940,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Dn4noZ5jgGfkntzcQSUZ8czkreiZ1ForXYoV2H8Dm7S1',
     UnderlyingAsset.WUSDTV2,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c7a949fb-3d89-4b69-a9fa-1f098bcce9f7',
@@ -12948,7 +12949,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '83LGLCm7QKpYZbX8q4W2kYWbtt8NJBwbVwEepzkVnJ9y',
     UnderlyingAsset.XUSD,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '11c51225-d615-4c5b-93de-be145435d6b1',
@@ -12957,7 +12958,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'zebeczgi5fSEtbpfQKVZKCJ3WgYXxjkMUkNNx7fLKAF',
     UnderlyingAsset.ZBC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'db4f58d4-e5bd-4b63-8ab3-6c5e22d9be6e',
@@ -12966,7 +12967,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'BLT1noyNr3GttckEVrtcfC6oyK6yV1DpPgSyXbncMwef',
     UnderlyingAsset.BLT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '2014b543-198c-48ec-8968-f2b1beab86f7',
@@ -12975,7 +12976,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '4tJZhSdGePuMEfZQ3h5LaHjTPsw1iWTRFTojnZcwsAU6',
     UnderlyingAsset.ELU,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '26914ee4-08c6-4a4b-a76b-61e56cd36bff',
@@ -12984,7 +12985,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '3uejHm24sWmniGA5m4j4S1DVuGqzYBR5DJpevND4mivq',
     UnderlyingAsset.IP3,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '6f459ab5-5d0c-4d8d-96d8-46aaaa0e73b0',
@@ -12993,7 +12994,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn',
     UnderlyingAsset.JSOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f98eb4de-23c4-475d-80f2-382808e8d350',
@@ -13002,7 +13003,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'ChywntqwNRzaoWYUcDQ3iALqcwSAVtjM2dPshz5AETMm',
     UnderlyingAsset.KTRC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'afa97e79-edd8-4800-8e7e-5f460f3b1fe4',
@@ -13011,7 +13012,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m',
     UnderlyingAsset.MPLX,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '2d3c72f4-e7d2-4861-b3cc-469adea25fb0',
@@ -13020,7 +13021,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'BDrL8huis6S5tpmozaAaT5zhE5A7ZBAB2jMMvpKEeF8A',
     UnderlyingAsset.NOVA,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '9f9896d6-3f9e-462f-afb5-833c01d44699',
@@ -13029,7 +13030,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'SLCLww7nc1PD2gQPQdGayHviVVcpMthnqUz2iWKhNQV',
     UnderlyingAsset.SLCL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '8729f8b6-a5ef-4a8e-a094-6c160589dbfb',
@@ -13038,7 +13039,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
     UnderlyingAsset.STSOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '039d4c7d-3e48-40b3-896d-512fcfe60f1e',
@@ -13047,7 +13048,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '9EaLkQrbjmbbuZG9Wdpo8qfNUEjHATJFSycEmw6f1rGX',
     UnderlyingAsset.PSOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '61a24ea9-7edc-4d6f-a1f5-dd164abe8b69',
@@ -13056,7 +13057,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'TKMKgSh3aADsmjr4yFWG52tkCQvmDxsQC1he1aBsi65',
     UnderlyingAsset.TKMK,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '7dc02656-4e0d-4cec-bb92-30495f622ba5',
@@ -13065,7 +13066,7 @@ export const coins = CoinMap.fromCoins([
     1,
     '7ViSurf5Ve2a8qDWFYsfU8GFmRttQvS5paJ8L94QZgo7',
     UnderlyingAsset.BBSAMO,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'ea958ebb-d9fb-4818-9496-1f07f38e89c8',
@@ -13074,7 +13075,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '5h6ssFpeDeRbzsEHDbTQNH7nVGgsKrZydxdSTnLm6QdV',
     UnderlyingAsset.CSOL,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '343db8ad-8506-463d-b11b-60953433b37f',
@@ -13083,7 +13084,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'E5ndSkaB17Dm7CsD22dvcjfrYSDLCxFcMd6z8ddCk5wp',
     UnderlyingAsset.ALDRIN,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f6b48374-29b6-4d31-a914-71f062be25e9',
@@ -13092,7 +13093,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '658FZo9B4HgKxsKsM7cUHN7jfNFgC7YftusWWYWc4piD',
     UnderlyingAsset.TUPOLIS,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '20fc1d51-4569-440e-b5d1-ddad648c7d1d',
@@ -13101,7 +13102,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'xAURp5XmAG7772mfkSy6vRAjGK9JofYjc3dmQDWdVDP',
     UnderlyingAsset.XAURY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '8b9463df-9df3-4c9e-bd4d-721e414c3879',
@@ -13110,7 +13111,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '5HbkoVbaMnJYEuiTqeC7cBMSK2zG2MFfoxc9e6VkWPQS',
     UnderlyingAsset.SCOPE,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '8111aef5-0548-4e07-8f86-5984cd983aa4',
@@ -13119,7 +13120,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '4QSK13NTKxTBExbMjHFsj3QfHBn4Hfp3DGLSba8GvFvh',
     UnderlyingAsset.TUSRM,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'a605894c-9340-4045-ac4d-b1165d517c23',
@@ -13128,7 +13129,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'A6aY2ceogBz1VaXBxm1j2eJuNZMRqrWUAnKecrMH85zj',
     UnderlyingAsset.LQID,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'd82f66bf-e921-44e4-a9b0-462eda94a9ad',
@@ -13137,7 +13138,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '7zBWymxbZt7PVHQzfi3i85frc1YRiQc23K7bh3gos8ZC',
     UnderlyingAsset.VI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '41e349ad-b727-4659-9b3e-04480304683e',
@@ -13146,7 +13147,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Ga2AXHpfAF6mv2ekZwcsJFqu7wB4NV331qNH7fW9Nst8',
     UnderlyingAsset['xrp-sollet'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '081bd159-8157-4c7e-8836-9147784b7418',
@@ -13155,7 +13156,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'AURYydfxJib1ZkTir1Jn1J9ECYUtjb6rKQVmtYaixWPP',
     UnderlyingAsset['aury'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '86600f43-533c-4109-9bba-c66ac837d94c',
@@ -13164,7 +13165,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'BiDB55p4G3n1fGhwKFpxsokBMqgctL4qnZpDH1bVQxMD',
     UnderlyingAsset['dio'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'cd8013ff-efc4-4512-a07e-5c5c67d7b1f1',
@@ -13173,7 +13174,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'D68NB5JkzvyNCZAvi6EGtEcGvSoRNPanU9heYTAUFFRa',
     UnderlyingAsset['sol-perp'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '667b9655-8f73-4231-9ce4-034b5a544fe5',
@@ -13182,7 +13183,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'E5rk3nmgLUuKUiS94gg4bpWwWwyjCMtddsAXkTFLtHEy',
     UnderlyingAsset['sol-woo'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '58ed3daa-30b1-4352-8a98-0454b7475696',
@@ -13191,7 +13192,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '8kVHYoueJAaZtTqtqK5McRJSqX1yXii1epuxrW6jfsrD',
     UnderlyingAsset['sol-weth'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'd7190522-cc12-435d-9589-23b04bdd949e',
@@ -13200,7 +13201,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E',
     UnderlyingAsset['btc-sollet'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c0fce6fb-aad5-462c-94c3-82121613f0ba',
@@ -13209,7 +13210,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk',
     UnderlyingAsset['eth-sollet'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '5f98c609-de50-41b4-8f82-c59e5273166e',
@@ -13218,7 +13219,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
     UnderlyingAsset.FTT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f194cd14-d0c2-443a-b717-e826143c7e33',
@@ -13227,7 +13228,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'xnorPhAzWXUczCP3KjU5yDxmKKZi5cSbxytQ1LgE3kG',
     UnderlyingAsset.SRM,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'cd7d9622-1467-405d-af1f-09edd1d431d6',
@@ -13236,7 +13237,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'E2VmbootbVCBkMNNxKQgCLMS1X3NoGMaYAsufaAsf7M',
     UnderlyingAsset.WUSDC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '24afee36-2422-415e-a2f4-0010bd34a4b1',
@@ -13245,7 +13246,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'FVsXUnbhifqJ4LiXQEbpUtXVdB8T5ADLKqSs5t1oc54F',
     UnderlyingAsset.WUSDC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'bfc197c1-6fcc-4d63-8f20-596b06bf2eec',
@@ -13254,7 +13255,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '2ueY1bLcPHfuFzEJq7yN1V2Wrpu8nkun9xG2TVCE1mhD',
     UnderlyingAsset.HGET,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'e18a88f5-c4f4-4ba4-b98a-6318c284524a',
@@ -13263,7 +13264,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '9vMJfxuKxXBoEa7rM12mYLMwTacLMLDJqHozw96WQL8i',
     UnderlyingAsset.UST,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '6c8fb4d1-8a73-46ae-a69f-715648ec1748',
@@ -13272,7 +13273,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'GbBWwtYTMPis4VHb8MrBbdibPhn28TSrLB53KvUmb7Gi',
     UnderlyingAsset.WFFT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '2e848aaf-b5ac-49b6-8bd2-eb8b56493ece',
@@ -13281,7 +13282,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'Hgtvu9gsDTzUpBn69WjrhMyzaQhrAM9piTsezmZVQP6Z',
     UnderlyingAsset.INJ,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f6c73cf5-2faf-4076-bcf3-65a7124c0de7',
@@ -13290,7 +13291,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '5Wc4U1ZoQRzF4tPdqKQzBwRSjYe8vEf3EvZMuXgtKUW6',
     UnderlyingAsset.LUA,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '6d542d82-4af1-4d42-b584-bfafc023388f',
@@ -13299,7 +13300,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
     UnderlyingAsset.LDO,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '84ba4555-269a-4e25-8a13-c713defbebb7',
@@ -13308,7 +13309,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh',
     UnderlyingAsset.WBTC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '9e03bb68-c6a2-43c9-95d0-4d27c110ef45',
@@ -13317,7 +13318,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '59McpTVgyGsSu5eQutvcKLFu7wrFe3ZkE2qdAi3HnvBn',
     UnderlyingAsset.CHO,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '61ba259d-f6a7-4007-829b-7ca03a0a6db3',
@@ -13326,7 +13327,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
     UnderlyingAsset.HNT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'ffdd42e7-0788-426e-9094-c12954a858d9',
@@ -13335,7 +13336,7 @@ export const coins = CoinMap.fromCoins([
     2,
     'EeBX9JLdvsp4HnBbMgC1HnAjBkBQxgxtWxspcCLtT6ci',
     UnderlyingAsset.QCAD,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'd805ce9a-f000-46d2-a23d-71188ae868ec',
@@ -13344,7 +13345,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '8Vu7Y3xZg75sUYiNxDi5zRFamtDGn7afMoFVpaeoy4Fj',
     UnderlyingAsset['3uejh-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '68b4748e-72a2-431c-9836-ff6a3d7e7b76',
@@ -13353,7 +13354,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '5Xn6kWHwnQiL5JRFHqZhF9qDE4gWkhCCUomccfak6Pqd',
     UnderlyingAsset['3uejh-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '011fdc13-c2fe-497a-a3c2-84741833ed7f',
@@ -13362,7 +13363,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '9Q2Jcc2Xpjr5QExCezwBTKnRyXRfvtyEFTNssYPKrZSP',
     UnderlyingAsset['avax-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'e4b54695-ea0b-465a-846a-6932f2fc0964',
@@ -13371,7 +13372,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'FuTJE1yfz5u17T7gpqyMuUaCnnzLTes8R5QjXpMd8f1P',
     UnderlyingAsset['bop-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'aa52fdba-4c35-48c0-851c-491b789a1cd2',
@@ -13380,7 +13381,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'GDfnEsia2WLAW5t8yx2X5j2mkfA74i5kwGdDuZHt7XmG',
     UnderlyingAsset['crown'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '3d239b43-9ed2-4ea4-9117-10a20c1476b7',
@@ -13389,7 +13390,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '6DGD2tQaPPaupNKYJhp3JpqSHnY1mUqTMQsVqCASriau',
     UnderlyingAsset['elu-usdt'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'aaf93558-44b2-41a4-b526-17af8a60aa25',
@@ -13398,7 +13399,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '22DFMbkx4jHgaEjKz2D4yaq51YS2LXcQ7GFJT9RDrmJz',
     UnderlyingAsset['fida-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '8d7214f1-00e2-44e3-b5c1-7f25c7ec5c4e',
@@ -13407,7 +13408,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '4aN1Vrq1F292EbZ8cW2SbTby7bCG1Ubqh1sLoFrj8Rkf',
     UnderlyingAsset['fida-usdt'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'b8f5c65b-52fc-4de9-a137-888e5d34e2a4',
@@ -13416,7 +13417,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'HCygAsuXLXyb8Krf88wXi8k3VqJi4qLXJxk9YfojFPEj',
     UnderlyingAsset['ftt-ftt'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '560128e2-1eff-4f3a-b74c-826abf6403d1',
@@ -13425,7 +13426,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '3rAjv5d83R47t5TyTjZTbWAKdFY8tb1jYgt44hEiyRhd',
     UnderlyingAsset['link-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '0300083e-b497-4399-95bc-cb6ee301f42a',
@@ -13434,7 +13435,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '2dHFjKHdmXLMmZQrF4nuxn3V175XQNCR4kcDBHuiQ4So',
     UnderlyingAsset['lqid-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '48ced08b-8ee9-4e7c-920c-825d9cffb98d',
@@ -13443,7 +13444,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'qxWs2xtSZ3ojvhaNiZ48NGRzNjZQU9K46ZmHu6inrc9',
     UnderlyingAsset['maticpo-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '3cf7a8b8-6cdb-46e7-9371-e63b85d4edf2',
@@ -13452,7 +13453,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '5Ho7kHt8vahC2zW6p99y3ENXWp1s2vSbFKWUPwdoPVEC',
     UnderlyingAsset['msol-sol'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '9518933c-9a10-42f1-903e-e1f85034f13d',
@@ -13461,7 +13462,7 @@ export const coins = CoinMap.fromCoins([
     0,
     'H37kHxy82uLoF8t86wK414KzpVJy7uVJ9Kvt5wYsTGPh',
     UnderlyingAsset['msol-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '64edb7e2-6cd4-4257-b0f9-a873718ad5a7',
@@ -13470,7 +13471,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '3baYkTcudvSFMe25UpZcBfdp4FA5kL2E4pfaeJ8AiYJB',
     UnderlyingAsset['prism-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '4d953194-a87c-4d38-923b-a139f4d815f9',
@@ -13479,7 +13480,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',
     UnderlyingAsset['pyth'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '20847b14-4982-448b-a61c-9b7d42085948',
@@ -13497,7 +13498,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'AdP5rgP2cbcG6vib14MRGJZULAAswGLx4desPSMxfzZB',
     UnderlyingAsset['rendoge-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'ff2bd6df-d901-4adc-a5af-2cad6e59d6bf',
@@ -13506,7 +13507,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'BeSq84RRsqQMKonw89mfYDg2dBcVc52LGN3zG6muFczu',
     UnderlyingAsset['shdw-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '5acc0db3-a5fd-415e-a5b1-8d0f1cf530f7',
@@ -13515,7 +13516,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '63F79Xww6UTSJbPiJeuJ6Yn1yRZUzUAqLddbavPiRG6r',
     UnderlyingAsset['shdw-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '594e4ed9-8a17-4386-9569-9c4ebcd35815',
@@ -13524,7 +13525,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '8DUT2gszpXrGjYaJfH6cutUGLCUCDA4zd68dWsxXcF1y',
     UnderlyingAsset['sol-wtust'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'a8b0fd4e-4819-44b1-bb70-7a88dcdb75dd',
@@ -13533,7 +13534,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Ck9t5PgHSxm3TAcwHB7Ncw1HvGGRwRehdWLzSanUtxzJ',
     UnderlyingAsset['srm-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '53e04b66-377f-4330-9b69-22914ec1392c',
@@ -13542,7 +13543,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'E5LLJLgiyQ1QmMAci7efsPXjSxXGfncWrBB6kJ1GaaBT',
     UnderlyingAsset['srmet-srm'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'e784c670-c82f-4cd4-ae43-7416fb68b1ad',
@@ -13551,7 +13552,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Fv1LohviCN4qRzmEUqqJdWd7B5zLxrGEQ7dXADyXdcvA',
     UnderlyingAsset['sushi-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '89312563-c185-4f09-a30f-27501e56a83c',
@@ -13560,7 +13561,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '3wVrtQZsiDNp5yTPyfEzQHPU6iuJoMmpnWg6CTt4V8sR',
     UnderlyingAsset['sushi-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'af08f93f-e8ee-40d9-be0a-b069017c3517',
@@ -13569,7 +13570,7 @@ export const coins = CoinMap.fromCoins([
     8,
     '9eGNc4BZCAgpTSEjbu7ACCLjpnZh1WSdts3y4nMik4e7',
     UnderlyingAsset['tuatlas'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'cb63efc6-5184-4fea-8f97-218cad72f412',
@@ -13578,7 +13579,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '8cm7UrBiDQ4C1ntQSCZfHSWKUizdW31ddTQGNY6Lym3B',
     UnderlyingAsset['tucope'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'a3d947eb-1dcf-4094-be0c-8503f624270f',
@@ -13587,7 +13588,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'DRu91PV94sb6kX6HwMGnGM8TuHrjycS4FmJNRWEgyw6n',
     UnderlyingAsset['tulike'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '8699d0d5-95c1-447b-9f2f-bd2de134a633',
@@ -13596,7 +13597,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '8B1mqpvZYmpjAXVPBevaQBPbnufLz7ZZTBH6tgMVYCWe',
     UnderlyingAsset['tureal'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '9124d731-ab65-4e43-b9df-42fae8931d28',
@@ -13605,7 +13606,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'CEqYVZCL7sHQ8gChh1yL3uajc2UDs6DXuYjPZyRox6MC',
     UnderlyingAsset['tusamo'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '2203150e-0162-467e-b693-4087fcb434f4',
@@ -13614,7 +13615,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '4jL2htQtstTzatmtJL85M6z89E238ozg5eUa9u54Qyxb',
     UnderlyingAsset['usdt-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '79318d31-1c12-4e25-a5ec-f39a86a1459f',
@@ -13623,7 +13624,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'B8ruZRLvFzk5fF3jBNp5RpT5sNrd3sasgfSyEuTbzZqk',
     UnderlyingAsset['wbwbnb-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '134fd5d0-c7aa-4446-b6a2-d59aeca1dc4e',
@@ -13632,7 +13633,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'AW7jJo1Mu6Ht6kgT5RpwGYjpsXEQbEeXpLdKkViotiWU',
     UnderlyingAsset['wheth-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'b3ca6d5b-db84-4814-a0c0-f154a18fe594',
@@ -13641,7 +13642,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '4G6Z1HQcTVE22NgSiZk6JbwiN55KD9Dk2k4Rx6HTnZEm',
     UnderlyingAsset['wtust-usdt'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '78ab6651-a0a0-47b6-9515-08caf7c8e6a6',
@@ -13650,7 +13651,7 @@ export const coins = CoinMap.fromCoins([
     0,
     '2Vyyeuyd15Gp8aH6uKE72c4hxc8TVSLibxDP9vzspQWG',
     UnderlyingAsset['xcope-usdc'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'fce0c388-2167-447f-8d43-d76a1a33833d',
@@ -13659,7 +13660,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '6y8W5YwAuzostqrS4YDJufBvksosfSi47Pd8U4A5vrBC',
     UnderlyingAsset.WEC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
 
   tsolToken(
@@ -13669,7 +13670,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
     UnderlyingAsset.SRM,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   tsolToken(
     'ea7eb0ea-161c-4ce3-a448-e651d358b7a0',
@@ -13678,7 +13679,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
     UnderlyingAsset.USDC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   tsolToken(
     '6dcb8ff8-be59-471f-9e57-c3b68735d71e',
@@ -13687,7 +13688,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
     UnderlyingAsset.USDC,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   tsolToken(
     '476582b6-1b18-471d-bdfd-ff29b8cdfd39',
@@ -13696,7 +13697,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
     UnderlyingAsset.RAY,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   tsolToken(
     '30367323-8c04-475b-a6a4-df231032af4b',
@@ -13705,7 +13706,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '64bco36MjrZ8K26FXZGoSrnDFDSCZhvJGfQ5ywLRFUpF',
     UnderlyingAsset.GMT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   tsolToken(
     '12939712-84a2-4c06-bfd0-a58f7b188948',
@@ -13714,7 +13715,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     UnderlyingAsset.USDT,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   tsolToken(
     '7ad7512f-90ca-44e3-9238-ae78c1a3e57d',
@@ -13723,7 +13724,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'Aub3Nun71bD5B98JQAivGtEdwCuFJVvZVXKkcVJkuzgh',
     UnderlyingAsset.GARI,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   tsolToken(
     '6bac3f31-06b0-4a35-80d9-d6fa1346d4d3',
@@ -13732,7 +13733,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h',
     UnderlyingAsset.ORCA,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   tsolToken(
     'de2477a1-d1db-4b58-a62d-aea4d00d8c0a',
@@ -13741,7 +13742,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
     UnderlyingAsset.SLND,
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
 
   polygonErc20(
