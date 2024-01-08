@@ -45,6 +45,7 @@ interface EnvironmentTemplate {
     solidity: string;
   };
   hmacVerificationEnforced: boolean;
+  tonNodeUrl: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -133,6 +134,7 @@ const mainnetBase: EnvironmentTemplate = {
     solidity: 'https://api.trongrid.io',
   },
   hmacVerificationEnforced: true,
+  tonNodeUrl: 'https://toncenter.com/api/v2/jsonRPC',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -178,6 +180,7 @@ const testnetBase: EnvironmentTemplate = {
     solidity: 'https://api.shasta.trongrid.io',
   },
   hmacVerificationEnforced: false,
+  tonNodeUrl: 'https://testnet.toncenter.com/api/v2/jsonRPC',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

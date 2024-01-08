@@ -399,6 +399,7 @@ export interface MPCRecoveryOptions {
   walletPassphrase?: string;
   seed?: string;
   index?: number;
+  apiKey?: string;
 }
 
 export interface MPCConsolidationRecoveryOptions {
