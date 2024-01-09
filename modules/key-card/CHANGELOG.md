@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.1.16...@bitgo/key-card@0.15.0) (2024-01-09)
+
+### Bug Fixes
+
+- **key-card:** fix types ([810985e](https://github.com/BitGo/BitGoJS/commit/810985e54694a72492470e71731b4db74182cd5b))
+
+### Features
+
+- **key-card:** add boxes for master public keys ([a75e7bd](https://github.com/BitGo/BitGoJS/commit/a75e7bdec4ff524bae5860aa0d5bb02598536c97))
+- **key-card:** add keycard generation for cold tss key creation ([76b7246](https://github.com/BitGo/BitGoJS/commit/76b7246e89ed2dd4c17dcfa330e4194d7d45d02f))
+
 # [0.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.1.16...@bitgo/key-card@0.14.0) (2024-01-03)
 
 ### Bug Fixes
