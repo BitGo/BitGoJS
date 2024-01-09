@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.20) (2024-01-09)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
 ## [1.2.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.2.19) (2024-01-03)
 
 ### Bug Fixes

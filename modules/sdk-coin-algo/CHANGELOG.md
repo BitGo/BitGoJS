@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.5.0...@bitgo/sdk-coin-algo@1.19.0) (2024-01-09)
+
+### Features
+
+- **sdk-coin-algo:** support for token enablement ([af718c9](https://github.com/BitGo/BitGoJS/commit/af718c992d0663722fe951f0a29a20825ba0e91c))
+
 # [1.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.5.0...@bitgo/sdk-coin-algo@1.18.0) (2024-01-03)
 
 ### Features
