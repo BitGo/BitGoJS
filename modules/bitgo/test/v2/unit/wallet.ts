@@ -2107,7 +2107,10 @@ describe('V2 Wallet:', function () {
 
     let tssEthWallet = new Wallet(bitgo, bitgo.coin('teth'), ethWalletData);
     const tssPolygonWallet = new Wallet(bitgo, bitgo.coin('tpolygon'), polygonWalletData);
-    const custodialTssSolWallet = new Wallet(bitgo, tsol, { ...walletData, type: 'custodial' });
+    const custodialTssSolWallet = new Wallet(bitgo, tsol, {
+      ...walletData,
+      type: 'custodial',
+    });
 
     const txRequest: TxRequest = {
       txRequestId: 'id',
@@ -2261,6 +2264,45 @@ describe('V2 Wallet:', function () {
           wallet: tssSolWallet,
           txRequestId: 'id',
           txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'transfer',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build a single recipient transfer with pending approval id if transaction is having one', async function () {
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+        ];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves({ ...txRequest, state: 'pendingApproval', pendingApprovalId: 'some-id' });
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'payment',
+        });
+
+        const txPrebuild = await custodialTssSolWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: custodialTssSolWallet.id(),
+          wallet: custodialTssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          pendingApprovalId: 'some-id',
           buildParams: {
             recipients,
             type: 'transfer',
