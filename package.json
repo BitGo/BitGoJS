@@ -80,6 +80,7 @@
     "buffer": "^6.0.3",
     "degenerator": "5.0.0",
     "eventsource": "2.0.2",
+    "follow-redirects": "1.15.4",
     "io-ts": "2.2.20",
     "minimist": "1.2.6",
     "parse-path": "^5.0.0",
