@@ -67,13 +67,13 @@ type Sortable = {
  * @returns True if value is a sortable array element.
  */
 function isSortable(value: unknown): value is Sortable {
-  return value instanceof Object && 'weight' in value;
+  return value instanceof Object && 'weight' in value && typeof (value as Sortable).weight === 'number';
 }
 
 /**
  * Convert number to base 256 and return as a big-endian Buffer.
  * @param value - Value to convert.
- * @returs Buffer representation of the number.
+ * @returns Buffer representation of the number.
  */
 function numberToBufferBE(value: number): Buffer {
   // Normalize value so that negative numbers aren't compared higher
