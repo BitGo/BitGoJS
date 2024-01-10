@@ -1986,9 +1986,68 @@ export class Wallet implements IWallet {
    * @param params
    */
   async accelerateTransaction(params: AccelerateTransactionOptions = {}): Promise<any> {
+    this.validateAccelerationParams(params);
+
+    params.recipients = [];
+
+    return await this.submitTransaction({
+      ...(await this.prebuildAndSignTransaction(params)),
+      ...BuildParams.encode(params),
+    });
+  }
+
+  private validateAccelerationParams(params: AccelerateTransactionOptions) {
+    if (!params.cpfpTxIds && !params.rbfTxIds) {
+      const error: any = new Error('must pass cpfpTxIds or rbfTxIds');
+      error.code = 'cpfptxids_or_rbftxids_required';
+      throw error;
+    }
+
+    if (params.cpfpTxIds && params.rbfTxIds) {
+      const error: any = new Error('cannot specify both cpfpTxIds and rbfTxIds');
+      error.code = 'cannot_specify_both_cpfp_and_rbf_txids';
+      throw error;
+    }
+
+    if (params.cpfpTxIds) {
+      this.validateCpfpParams(params);
+    }
+
+    if (params.rbfTxIds) {
+      this.validateRbfParams(params);
+    }
+
+    if (params.recipients !== undefined) {
+      if (!Array.isArray(params.recipients) || params.recipients.length !== 0) {
+        throw new Error(`invalid value for 'recipients': must be empty array when set`);
+      }
+    }
+  }
+
+  private validateRbfParams(params: AccelerateTransactionOptions) {
+    if (!Array.isArray(params.rbfTxIds) || params.rbfTxIds.length !== 1) {
+      const error: any = new Error('expecting rbfTxIds to be an array of length 1');
+      error.code = 'rbftxids_not_array';
+      throw error;
+    }
+
+    if (!params.feeMultiplier) {
+      const error: any = new Error('feeMultiplier must be set');
+      error.code = 'feemultiplier_not_set';
+      throw error;
+    }
+
+    if (params.feeMultiplier <= 1) {
+      const error: any = new Error('feeMultiplier must be a greater than 1');
+      error.code = 'feemultiplier_greater_than_one';
+      throw error;
+    }
+  }
+
+  private validateCpfpParams(params: AccelerateTransactionOptions) {
     // TODO(BG-9349): change the last check to > 0 and the error message once platform allows multiple transactions to
-    //                be bumped in the same CPFP transaction
-    if (_.isUndefined(params.cpfpTxIds) || !Array.isArray(params.cpfpTxIds) || params.cpfpTxIds.length !== 1) {
+    // be bumped in the same CPFP transaction
+    if (!Array.isArray(params.cpfpTxIds) || params.cpfpTxIds.length !== 1) {
       const error: any = new Error('expecting cpfpTxIds to be an array of length 1');
       error.code = 'cpfptxids_not_array';
       throw error;
@@ -2021,19 +2080,6 @@ export class Wallet implements IWallet {
         throw error;
       }
     }
-
-    if (params.recipients !== undefined) {
-      if (!Array.isArray(params.recipients) || params.recipients.length !== 0) {
-        throw new Error(`invalid value for 'recipients': must be empty array when set`);
-      }
-    }
-
-    params.recipients = [];
-
-    return await this.submitTransaction({
-      ...(await this.prebuildAndSignTransaction(params)),
-      ...BuildParams.encode(params),
-    });
   }
 
   /**

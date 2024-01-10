@@ -464,10 +464,12 @@ export interface RemoveUserOptions {
 
 export interface AccelerateTransactionOptions {
   cpfpTxIds?: string[];
+  rbfTxIds?: string[];
   cpfpFeeRate?: number;
   noCpfpFeeRate?: boolean;
   maxFee?: number;
   noMaxFee?: boolean;
+  feeMultiplier?: number;
   recipients?: {
     address: string;
     amount: string;

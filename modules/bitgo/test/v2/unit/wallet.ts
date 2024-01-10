@@ -1363,8 +1363,8 @@ describe('V2 Wallet:', function () {
   });
 
   describe('Accelerate Transaction', function () {
-    it('fails if cpfpTxIds is not passed', async function () {
-      await wallet.accelerateTransaction({}).should.be.rejectedWith({ code: 'cpfptxids_not_array' });
+    it('fails if acceleration ids are not passed', async function () {
+      await wallet.accelerateTransaction({}).should.be.rejectedWith({ code: 'cpfptxids_or_rbftxids_required' });
     });
 
     it('fails if cpfpTxIds is not an array', async function () {
@@ -1413,6 +1413,28 @@ describe('V2 Wallet:', function () {
       await wallet
         .accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 })
         .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
+    });
+
+    it('fails if both rbfTxids and cpfpTxids is set', async function () {
+      await wallet
+        .accelerateTransaction({ cpfpTxIds: ['id1'], rbfTxIds: ['id2'] })
+        .should.be.rejectedWith({ code: 'cannot_specify_both_cpfp_and_rbf_txids' });
+    });
+
+    it('fails if rbfTxIds is set but feeMultiplier is missing', async function () {
+      await wallet
+        .accelerateTransaction({ rbfTxIds: ['id'] })
+        .should.be.rejectedWith({ code: 'feemultiplier_not_set' });
+    });
+
+    it('fails if fee multiplier is less than or equal to 1', async function () {
+      await wallet
+        .accelerateTransaction({ rbfTxIds: ['id'], feeMultiplier: 1 })
+        .should.be.rejectedWith({ code: 'feemultiplier_greater_than_one' });
+
+      await wallet
+        .accelerateTransaction({ rbfTxIds: ['id2'], feeMultiplier: 0.5 })
+        .should.be.rejectedWith({ code: 'feemultiplier_greater_than_one' });
     });
 
     it('submits a transaction with all cpfp specific parameters', async function () {
