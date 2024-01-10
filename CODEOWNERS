@@ -75,6 +75,7 @@
 /modules/sdk-api/ @BitGo/custody-experience @BitGo/wallet-platform
 /modules/sdk-core/ @BitGo/wallet-platform @BitGo/hsm
 /modules/sdk-lib-mpc/ @BitGo/wallet-platform @BitGo/hsm
+/modules/deser-lib/ @BitGo/wallet-platform @BitGo/hsm
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team
 /modules/sdk-test/ @BitGo/custody-experience @BitGo/wallet-platform
 /modules/sdk-unified-wallet @BitGo/ethalt-team
