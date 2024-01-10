@@ -26,6 +26,9 @@ export const BuildParamsUTXO = t.partial({
   /* legacy or psbt */
   txFormat: t.unknown,
   maxChangeOutputs: t.unknown,
+  /* rbf */
+  rbfTxIds: t.array(t.string),
+  isReplaceableByFee: t.boolean,
 });
 
 export const BuildParamsStacks = t.partial({
