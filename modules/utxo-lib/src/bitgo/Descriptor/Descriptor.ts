@@ -1,8 +1,9 @@
 import * as assert from 'assert';
 import * as desc from '@saravanan7mani/descriptors';
 import * as ms from '@bitcoinerlab/miniscript';
+import { Network } from 'bitcoinjs-lib';
 import { ecc } from '../../noble_ecc';
-import { getMainnet, Network, networks } from '../../networks';
+
 import { filterByMasterFingerprint, getIndexValueOfBip32Path } from '../PsbtUtil';
 import { PsbtInput } from 'bip174/src/lib/interfaces';
 import { Psbt } from 'bitcoinjs-lib/src/psbt';
@@ -10,6 +11,11 @@ import { checkForInput } from 'bip174/src/lib/utils';
 
 export const scriptTypesOfDescriptor = ['p2pk', 'p2pkh', 'p2wpkh', 'p2shP2wpkh', 'p2sh', 'p2wsh', 'p2shP2wsh'] as const;
 export type ScriptTypeOfDescriptor = (typeof scriptTypesOfDescriptor)[number];
+
+export type Preimage = {
+  digest: string;
+  preimage: string;
+};
 
 export type DescriptorWithExpansion = {
   descriptor: string;
@@ -50,11 +56,12 @@ export interface ParsedPsbtInputWithDescriptor {
 const { expand, Output } = desc.DescriptorsFactory(ecc);
 
 export function isDescriptorSupported(network: Network): boolean {
-  return getMainnet(network) === networks.bitcoin;
+  return true;
+  // return getMainnet(network) === networks.bitcoin;
 }
 
 export function assertDescriptorSupport(network: Network): void {
-  assert(isDescriptorSupported(network), 'Descriptors are supported only for the Bitcoin');
+  // assert(isDescriptorSupported(network), 'Descriptors are supported only for the Bitcoin');
 }
 
 export function endsWithWildcard(path: string): boolean {
@@ -98,7 +105,7 @@ export function parseScriptType(descriptor: string): ScriptTypeOfDescriptor {
   if (descriptor.startsWith('pk(')) {
     return 'p2pk';
   }
-  if (descriptor.startsWith('pk(')) {
+  if (descriptor.startsWith('pkh(')) {
     return 'p2pkh';
   }
   if (descriptor.startsWith('wpkh(')) {
@@ -174,15 +181,19 @@ export function createOutputDescriptor({
   network,
   checksumRequired = true,
   allowMiniscriptInP2SH,
+  preimages,
+  signersPubKeys,
 }: {
   descriptor: string;
   network: Network;
   index?: number;
   checksumRequired?: boolean;
   allowMiniscriptInP2SH?: boolean;
+  preimages?: Preimage[];
+  signersPubKeys?: Buffer[];
 }): desc.OutputInstance {
   assertDescriptorSupport(network);
-  return new Output({ descriptor, index, network, allowMiniscriptInP2SH, checksumRequired });
+  return new Output({ descriptor, index, network, allowMiniscriptInP2SH, checksumRequired, preimages, signersPubKeys });
 }
 
 export function findKeyWithBip32WildcardPath(keys: desc.KeyInfo[]): desc.KeyInfo | undefined {
@@ -224,6 +235,38 @@ export function getValueForDescriptorWildcardIndex(input: PsbtInput, expansion: 
   const index = findValueOfWildcard(input, key);
   assert(index !== undefined, 'Missing index value');
   return index;
+}
+
+export function compilePolicy(policy: string): { miniscript: string; issane: boolean; asm: string } {
+  const { miniscript, issane, asm } = ms.compilePolicy(policy);
+  assert(issane, 'Invalid miniscript');
+  return { miniscript, issane, asm };
+}
+
+export function satisfier(
+  miniscript: string,
+  options?: {
+    unknowns?: string[] | undefined;
+    knowns?: string[] | undefined;
+  }
+): {
+  unknownSats?: Array<{
+    asm: string;
+    nLockTime?: number;
+    nSequence?: number;
+  }>;
+  nonMalleableSats?: Array<{
+    asm: string;
+    nLockTime?: number;
+    nSequence?: number;
+  }>;
+  malleableSats?: Array<{
+    asm: string;
+    nLockTime?: number;
+    nSequence?: number;
+  }>;
+} {
+  return ms.satisfier(miniscript);
 }
 
 export function assertDescriptorKey({
