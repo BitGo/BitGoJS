@@ -3016,6 +3016,7 @@ export class Wallet implements IWallet {
       txHex: unsignedTx.serializedTxHex,
       buildParams: whitelistedParams,
       feeInfo: unsignedTx.feeInfo,
+      ...(txRequest.pendingApprovalId && { pendingApprovalId: txRequest.pendingApprovalId }),
     };
   }
 
