@@ -210,7 +210,13 @@ const STX_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.STAKING,
 ];
-const NEAR_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const NEAR_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.STAKING,
+  CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
+];
 const MATIC_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.STAKING,
