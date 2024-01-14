@@ -1,5 +1,6 @@
+import * as assert from 'assert';
 import { decodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
-import { PsbtInput } from 'bip174/src/lib/interfaces';
+import { Bip32Derivation, PsbtInput } from 'bip174/src/lib/interfaces';
 import { Psbt } from 'bitcoinjs-lib/src/psbt';
 
 /**
@@ -118,4 +119,25 @@ export function withUnsafeNonSegwit<T>(psbt: Psbt, fn: () => T, unsafe = true): 
     (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
     (psbt as any).__CACHE.__WARN_UNSAFE_SIGN_NONSEGWIT = true;
   }
+}
+
+export function isValidBip32DerivationPath(path: string): boolean {
+  return /^(m\/)?(\d+'?\/)*\d+'?$/.test(path);
+}
+
+export function getIndexValueStrOfBip32Path(path: string): string {
+  assert(isValidBip32DerivationPath(path), `Invalid BIP32 derivation path: ${path}`);
+  const match = path.match(/(?:^|\/)([^\/]+)$/);
+  assert(match);
+  return match[1];
+}
+
+export function getIndexValueOfBip32Path(path: string): number {
+  const indexStr = getIndexValueStrOfBip32Path(path);
+  const isHardenedIndex = indexStr.endsWith("'");
+  return isHardenedIndex ? parseInt(indexStr.slice(0, -1), 10) : parseInt(indexStr, 10);
+}
+
+export function filterByMasterFingerprint(bip32Dvs: Bip32Derivation[], masterFingerprint: Buffer): Bip32Derivation[] {
+  return bip32Dvs.filter((bv) => masterFingerprint.equals(bv.masterFingerprint));
 }
