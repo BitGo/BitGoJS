@@ -4,9 +4,11 @@ import { BackupProvider, IWallet } from '../wallet';
 import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
+
 export type SourceType = 'bitgo' | 'backup' | 'user' | 'cold';
 
 export type WebauthnFmt = 'none' | 'packed' | 'fido-u2f';
+
 export interface WebauthnAuthenticatorInfo {
   credID: string;
   fmt: WebauthnFmt;
@@ -40,7 +42,11 @@ export interface Keychain {
   webauthnDevices?: KeychainWebauthnDevice[];
 }
 
-export type KeychainEncryptedKey = Pick<Keychain, 'encryptedPrv' | 'webauthnDevices'>;
+export type OptionalKeychainEncryptedKey = Pick<Keychain, 'encryptedPrv' | 'webauthnDevices'>;
+
+export type KeychainWithEncryptedPrv = Omit<Keychain, 'encryptedPrv'> & {
+  encryptedPrv: string;
+};
 
 export interface ChangedKeychains {
   [pubkey: string]: string;

@@ -1,5 +1,5 @@
 import { BitGoBase } from '../bitgoBase';
-import { KeychainEncryptedKey } from './iKeychains';
+import { OptionalKeychainEncryptedKey } from './iKeychains';
 import { notEmpty } from '../utils';
 
 function maybeDecrypt(bitgo: BitGoBase, input: string, password: string): string | undefined {
@@ -24,7 +24,7 @@ function maybeDecrypt(bitgo: BitGoBase, input: string, password: string): string
  */
 export function decryptKeychainPrivateKey(
   bitgo: BitGoBase,
-  keychain: KeychainEncryptedKey,
+  keychain: OptionalKeychainEncryptedKey,
   password: string
 ): string | undefined {
   const prvs = [keychain.encryptedPrv, ...(keychain.webauthnDevices ?? []).map((d) => d.encryptedPrv)].filter(notEmpty);

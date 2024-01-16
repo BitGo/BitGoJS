@@ -20,7 +20,7 @@ import { getSharedSecret } from '../ecdh';
 import { AddressGenerationError, MethodNotImplementedError } from '../errors';
 import * as internal from '../internal/internal';
 import { drawKeycard } from '../internal/keycard';
-import { Keychain } from '../keychain';
+import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv } from '../keychain';
 import { IPendingApproval, PendingApproval } from '../pendingApproval';
 import { TradingAccount } from '../trading/tradingAccount';
 import {
@@ -1357,14 +1357,13 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Gets the user key chain for this wallet
+   * Gets the user keychain for this wallet
    *
-   * The user key chain is the first keychain of the wallet and usually has the encrypted prv stored on BitGo.
+   * The user keychain is the first keychain of the wallet and usually has the encrypted prv stored on BitGo.
    * Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
-   * @param params
    */
-  async getEncryptedUserKeychain(params: Record<string, never> = {}): Promise<{ encryptedPrv: string }> {
-    const tryKeyChain = async (index: number): Promise<{ encryptedPrv: string }> => {
+  async getEncryptedUserKeychain(): Promise<KeychainWithEncryptedPrv> {
+    const tryKeyChain = async (index: number): Promise<KeychainWithEncryptedPrv> => {
       if (!this._wallet.keys || index >= this._wallet.keys.length) {
         throw new Error('No encrypted keychains on this wallet.');
       }
@@ -1374,7 +1373,7 @@ export class Wallet implements IWallet {
       const keychain = await this.baseCoin.keychains().get(params);
       // If we find the prv, then this is probably the user keychain we're looking for
       if (keychain.encryptedPrv) {
-        return keychain as { encryptedPrv: string };
+        return keychain as KeychainWithEncryptedPrv;
       }
       return tryKeyChain(index + 1);
     };
@@ -1408,16 +1407,14 @@ export class Wallet implements IWallet {
       return params.prv;
     }
 
-    const userKeychain = (await this.getEncryptedUserKeychain()) as any;
-    const userEncryptedPrv = userKeychain.encryptedPrv;
-
-    let userPrv;
-    try {
-      userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
-    } catch (e) {
-      throw new Error('error decrypting wallet passphrase');
+    const userKeychain = await this.getEncryptedUserKeychain();
+    if (!params.walletPassphrase) {
+      throw new Error('wallet passphrase was not provided');
     }
-
+    const userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
+    if (!userPrv) {
+      throw new Error('error decrypting wallet private key');
+    }
     return userPrv;
   }
 
@@ -1472,17 +1469,17 @@ export class Wallet implements IWallet {
     let sharedKeychain;
     if (needsKeychain) {
       try {
-        const keychain = (await this.getEncryptedUserKeychain({})) as any;
+        const keychain = await this.getEncryptedUserKeychain();
         // Decrypt the user key with a passphrase
         if (keychain.encryptedPrv) {
           if (!params.walletPassphrase) {
             throw new Error('Missing walletPassphrase argument');
           }
-          try {
-            keychain.prv = this.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedPrv });
-          } catch (e) {
+          const userPrv = decryptKeychainPrivateKey(this.bitgo, keychain, params.walletPassphrase);
+          if (!userPrv) {
             throw new Error('Unable to decrypt user keychain');
           }
+          keychain.prv = userPrv;
 
           const eckey = makeRandomKey();
           const secret = getSharedSecret(eckey, Buffer.from(sharing.pubkey, 'hex')).toString('hex');
@@ -1841,8 +1838,10 @@ export class Wallet implements IWallet {
       if (!params.walletPassphrase) {
         throw new Error('walletPassphrase property missing');
       }
-
-      userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
+      userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, params.walletPassphrase);
+      if (!userPrv) {
+        throw new Error('failed to decrypt user keychain');
+      }
     }
     return userPrv;
   }
@@ -3410,16 +3409,14 @@ export class Wallet implements IWallet {
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
     // we ignore this check with if customSigningFunction is provided
     //  which means that the user is handling the signing in external signing mode
-    try {
-      if (keychains[0].encryptedPrv && !customSigningFunction && walletPassphrase) {
-        this.bitgo.decrypt({ input: keychains[0].encryptedPrv as string, password: walletPassphrase });
+    if (keychains[0].encryptedPrv && !customSigningFunction && walletPassphrase) {
+      if (!decryptKeychainPrivateKey(this.bitgo, keychains[0], walletPassphrase)) {
+        const error: Error & { code?: string } = new Error(
+          `unable to decrypt keychain with the given wallet passphrase`
+        );
+        error.code = 'wallet_passphrase_incorrect';
+        throw error;
       }
-    } catch (e) {
-      const error: any = new Error(
-        `unable to decrypt keychain with the given wallet passphrase. Error: ${JSON.stringify(e)}`
-      );
-      error.code = 'wallet_passphrase_incorrect';
-      throw error;
     }
     return keychains;
   }

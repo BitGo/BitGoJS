@@ -10,7 +10,7 @@ import {
   NFTTransferOptions,
 } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { Keychain } from '../keychain';
+import { Keychain, KeychainWithEncryptedPrv } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
@@ -719,7 +719,7 @@ export interface IWallet {
   simulateWebhook(params?: SimulateWebhookOptions): Promise<any>;
   addWebhook(params?: ModifyWebhookOptions): Promise<any>;
   removeWebhook(params?: ModifyWebhookOptions): Promise<any>;
-  getEncryptedUserKeychain(params?: Record<string, never>): Promise<{ encryptedPrv: string }>;
+  getEncryptedUserKeychain(): Promise<KeychainWithEncryptedPrv>;
   getPrv(params?: GetPrvOptions): Promise<any>;
   createShare(params?: CreateShareOptions): Promise<any>;
   shareWallet(params?: ShareWalletOptions): Promise<any>;
