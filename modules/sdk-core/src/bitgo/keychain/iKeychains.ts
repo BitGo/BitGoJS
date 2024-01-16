@@ -6,6 +6,22 @@ import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
 export type SourceType = 'bitgo' | 'backup' | 'user' | 'cold';
 
+export type WebauthnFmt = 'none' | 'packed' | 'fido-u2f';
+export interface WebauthnAuthenticatorInfo {
+  credID: string;
+  fmt: WebauthnFmt;
+  publicKey: string;
+}
+
+export interface KeychainWebauthnDevice {
+  otpDeviceId: string;
+  authenticatorInfo: WebauthnAuthenticatorInfo;
+  // salt for the webauthn prf extension
+  prfSalt: string;
+  // Wallet private key encrypted to webauthn derived password
+  encryptedPrv: string;
+}
+
 export interface Keychain {
   id: string;
   pub?: string;
@@ -20,7 +36,11 @@ export interface Keychain {
   walletHSMGPGPublicKeySigs?: string;
   type: KeyType;
   source?: SourceType;
+  // Alternative encryptedPrv using webauthn and the prf extension
+  webauthnDevices?: KeychainWebauthnDevice[];
 }
+
+export type KeychainEncryptedKey = Pick<Keychain, 'encryptedPrv' | 'webauthnDevices'>;
 
 export interface ChangedKeychains {
   [pubkey: string]: string;
