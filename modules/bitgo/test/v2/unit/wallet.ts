@@ -2075,6 +2075,54 @@ describe('V2 Wallet:', function () {
       createShareNock.isDone().should.be.True();
       getSharingKeyNock.isDone().should.be.True();
     });
+
+    it('should decrypt webauthn encryptedPrv for wallet share (spend)', async function () {
+      const userId = '123';
+      const email = 'shareto@sdktest.com';
+      const permissions = 'view,spend';
+      const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+      const path = 'm/999999/1/1';
+      const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+      const privateKey = 'xprv1';
+      const walletPassphrase1 = 'bitgo1234';
+      const walletPassphrase2 = 'bitgo5678';
+
+      const getSharingKeyNock = nock(bgUrl)
+        .post('/api/v1/user/sharingkey', { email })
+        .reply(200, { userId, pubkey, path });
+
+      const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
+      const getKeyNock = nock(bgUrl)
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
+        .reply(200, {
+          id: wallet.keyIds()[0],
+          pub,
+          source: 'user',
+          encryptedPrv: bitgo.encrypt({ input: privateKey, password: walletPassphrase1 }),
+          webauthnDevices: [
+            {
+              otpDeviceId: '123',
+              authenticatorInfo: {
+                credID: 'credID',
+                fmt: 'packed',
+                publicKey: 'some value',
+              },
+              prfSalt: '456',
+              encryptedPrv: bitgo.encrypt({ input: privateKey, password: walletPassphrase2 }),
+            },
+          ],
+          coinSpecific: {},
+        });
+
+      const stub = sinon.stub(wallet, 'createShare').callsFake(async (options) => {
+        options!.keychain!.encryptedPrv!.should.not.be.undefined();
+        return undefined;
+      });
+      await wallet.shareWallet({ email, permissions, walletPassphrase: walletPassphrase2 });
+      stub.calledOnce.should.be.true();
+      getSharingKeyNock.isDone().should.be.True();
+      getKeyNock.isDone().should.be.True();
+    });
   });
 
   describe('Wallet Freezing', function () {
