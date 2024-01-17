@@ -1,6 +1,7 @@
 import 'should';
-import { decryptKeychainPrivateKey, OptionalKeychainEncryptedKey } from '../../../../src';
+import { decryptKeychainPrivateKey, OptionalKeychainEncryptedKey } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
+
 describe('decryptKeychainPrivateKey', () => {
   const bitgo = new BitGoAPI();
 
