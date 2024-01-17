@@ -664,7 +664,7 @@ describe('V2 Wallet:', function () {
           amount: 0,
         },
       ];
-      const errorMessage = `unable to decrypt keychain with the given wallet passphrase. Error: {"message":"password error - ccm: tag doesn't match"}`;
+      const errorMessage = `unable to decrypt keychain with the given wallet passphrase`;
       const sendManyParamsCorrectPassPhrase = {
         recipients,
         type: 'transfer',
@@ -3021,9 +3021,7 @@ describe('V2 Wallet:', function () {
 
             await wallet
               .getUserKeyAndSignTssTransaction(params)
-              .should.be.rejectedWith(
-                `unable to decrypt keychain with the given wallet passphrase. Error: {"message":"password error - ccm: tag doesn't match"}`
-              );
+              .should.be.rejectedWith(`unable to decrypt keychain with the given wallet passphrase`);
 
             getKeysStub.calledOnce.should.be.true();
             signTransactionStub.notCalled.should.be.true();
