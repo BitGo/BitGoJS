@@ -1300,7 +1300,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.USDC,
     '0.0.3',
-    '0.0.2276691',
+    '0.0.13078',
     AccountCoin.DEFAULT_FEATURES
   ),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),

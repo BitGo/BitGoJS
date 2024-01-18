@@ -203,7 +203,7 @@ describe('HBAR Token Associate Builder', () => {
         txBuilder.tokens('thbar:usdc');
         assert.throws(
           () => txBuilder.tokens('thbar:usdc'),
-          (e: any) => e.message === 'Repeated token ID: 0.0.2276691'
+          (e: any) => e.message === 'Repeated token ID: 0.0.13078'
         );
       });
 
