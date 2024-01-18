@@ -10,6 +10,21 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
+"@api-ts/io-ts-http@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@api-ts/io-ts-http/-/io-ts-http-1.0.0.tgz#555f131d7efc4635d9ea7218f6f2935917c27fa9"
+  integrity sha512-eP3pyoR9r7y7YCkJY5avi7NMKBWFGTs4CB1RE053yXcEDgVcq+X8Oxsq4Jaq+g6IPkhGGueCo7APefRiHjTxMw==
+  dependencies:
+    "@api-ts/response" "1.0.0"
+    fp-ts "2.12.3"
+    io-ts "2.1.3"
+    io-ts-types "0.5.16"
+
+"@api-ts/response@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@api-ts/response/-/response-1.0.0.tgz#7d11fd7602a271d7964723da5f8f66cc6566b93f"
+  integrity sha512-OTrMH5yyxNzzkC3fZPcz7KFN2j8A9ZD8YhwiYxy8zGKkE5aOJ4wWQO+q44H5mQLi3txD8AlvwQfkbpo3KyCmGw==
+
 "@babel/code-frame@7.12.11":
   version "7.12.11"
   resolved "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.12.11.tgz"
@@ -1030,12 +1045,17 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@bitgo/public-types@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-1.2.1.tgz#45028dd7ba89103d3fabde295cf33e1b733cc9bc"
-  integrity sha512-smOGrsMtxIJZxPP0CN6FMSP+k0NMxYM1dFbvhAxEZ9rAyMBGknVrCGUtZsman9a1ixE30nBv0SCjHB/6vn1bxA==
+"@bitgo/public-types@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-2.0.1.tgz#5e162f7bb7e1c09787dbe02a42000280905190c9"
+  integrity sha512-G8bTqG48dpMtkAsg4yTYGw1zMrtVdSkOr8wcQSyoO4Cmnk5Enw+FIz5BSpbDCSLZwqtH58pQ38QnySycBci9yA==
   dependencies:
-    io-ts "^2.2.20"
+    "@api-ts/io-ts-http" "1.0.0"
+    fp-ts "2.16.2"
+    io-ts "2.1.3"
+    io-ts-types "0.5.16"
+    monocle-ts "2.3.13"
+    newtype-ts "0.3.5"
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
@@ -10715,6 +10735,16 @@ fp-ts@2.1.1:
   resolved "https://registry.npmjs.org/fp-ts/-/fp-ts-2.1.1.tgz"
   integrity sha512-YcWhMdDCFCja0MmaDroTgNu+NWWrrnUEn92nvDgrtVy9Z71YFnhNVIghoHPt8gs82ijoMzFGeWKvArbyICiJgw==
 
+fp-ts@2.12.3:
+  version "2.12.3"
+  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.12.3.tgz#d991b1e8467d325dadbb6b0ab9524f773e9c3c49"
+  integrity sha512-8m0XvW8kZbfnJOA4NvSVXu95mLbPf4LQGwQyqVukIYS4KzSNJiyKSmuZUmbVHteUi6MGkAJGPb0goPZqI+Tsqg==
+
+fp-ts@2.16.2:
+  version "2.16.2"
+  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.16.2.tgz#7faa90f6fc2e8cf84c711d2c4e606afe2be9e342"
+  integrity sha512-CkqAjnIKFqvo3sCyoBTqgJvF+bHrSik584S9nhTjtBESLx26cbtVMR/T9a6ApChOcSDAaM3JydDmWDUn4EEXng==
+
 fp-ts@^2.12.2:
   version "2.14.0"
   resolved "https://registry.npmjs.org/fp-ts/-/fp-ts-2.14.0.tgz"
@@ -11906,7 +11936,12 @@ invariant@2.2.4, invariant@^2.2.4:
   dependencies:
     loose-envify "^1.0.0"
 
-io-ts@2.0.1, io-ts@2.1.3, io-ts@^2.2.20:
+io-ts-types@0.5.16:
+  version "0.5.16"
+  resolved "https://registry.yarnpkg.com/io-ts-types/-/io-ts-types-0.5.16.tgz#e9eed75371e217c97050cc507915e8eedc250946"
+  integrity sha512-h9noYVfY9rlbmKI902SJdnV/06jgiT2chxG6lYDxaYNp88HscPi+SBCtmcU+m0E7WT5QSwt7sIMj93+qu0FEwQ==
+
+io-ts@2.0.1, io-ts@2.1.3:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/io-ts/-/io-ts-2.1.3.tgz#02c03c375d14079496f0c046ef8a9aad4fbaeb74"
   integrity sha512-QFMR2QEBSP6w1TPmkpfca6xkzBbXO+K7ubdbV26GlCGI7CP9LV59bfty422JYtWgbBITuL/zBb1+mziv9f5Wfg==
@@ -13955,6 +13990,11 @@ module-deps@^4.0.8:
     through2 "^2.0.0"
     xtend "^4.0.0"
 
+monocle-ts@2.3.13:
+  version "2.3.13"
+  resolved "https://registry.yarnpkg.com/monocle-ts/-/monocle-ts-2.3.13.tgz#7c8af489613cd5175df2ea3c02c57c6151995e5d"
+  integrity sha512-D5Ygd3oulEoAm3KuGO0eeJIrhFf1jlQIoEVV2DYsZUMz42j4tGxgct97Aq68+F8w4w4geEnwFa8HayTS/7lpKQ==
+
 morgan@^1.9.1:
   version "1.10.0"
   resolved "https://registry.npmjs.org/morgan/-/morgan-1.10.0.tgz"
@@ -14143,6 +14183,11 @@ netmask@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/netmask/-/netmask-2.0.2.tgz"
   integrity sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==
+
+newtype-ts@0.3.5:
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/newtype-ts/-/newtype-ts-0.3.5.tgz#5c113d34a04938d9e90061437638260ea965c490"
+  integrity sha512-v83UEQMlVR75yf1OUdoSFssjitxzjZlqBAjiGQ4WJaML8Jdc68LJ+BaSAXUmKY4bNzp7hygkKLYTsDi14PxI2g==
 
 next-tick@1, next-tick@^1.1.0:
   version "1.1.0"
