@@ -3,7 +3,7 @@ import assert from 'assert';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { BlsUtils, RequestTracer, EDDSAUtils, ECDSAUtils } from '../utils';
+import { BlsUtils, RequestTracer, EDDSAUtils, ECDSAUtils, decodeOrElse } from '../utils';
 import {
   AddKeychainOptions,
   ApiKeyShare,
@@ -20,7 +20,6 @@ import {
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
 } from './iKeychains';
-import { decodeOrElse } from '../utils/decode';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export class Keychains implements IKeychains {

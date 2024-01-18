@@ -10,13 +10,14 @@ import * as debugLib from 'debug';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 
-import { backupKeyRecovery, RecoverParams } from './recovery/backupKeyRecovery';
 import {
   CrossChainRecoverySigned,
   CrossChainRecoveryUnsigned,
   forCoin,
   recoverCrossChain,
   RecoveryProvider,
+  backupKeyRecovery,
+  RecoverParams,
 } from './recovery';
 
 import {
@@ -24,6 +25,7 @@ import {
   AddressTypeChainMismatchError,
   BaseCoin,
   BitGoBase,
+  decryptKeychainPrivateKey,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
   IBaseCoin,
@@ -642,17 +644,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const userPub = userKeychain.pub;
 
-    // decrypt the user private key so we can verify that the claimed public key is a match
+    // decrypt the user private key, so we can verify that the claimed public key is a match
     let userPrv = userKeychain.prv;
-    if (_.isEmpty(userPrv)) {
-      const encryptedPrv = userKeychain.encryptedPrv;
-      if (encryptedPrv && !_.isEmpty(encryptedPrv)) {
-        // if the decryption fails, it will throw an error
-        userPrv = this.bitgo.decrypt({
-          input: encryptedPrv,
-          password: txParams.walletPassphrase,
-        });
-      }
+    if (!userPrv && txParams.walletPassphrase) {
+      userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, txParams.walletPassphrase);
     }
 
     if (!userPrv) {

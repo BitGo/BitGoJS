@@ -24,6 +24,7 @@ type KeyDoc = {
 };
 
 const walletPassphrase = 'gabagool';
+const webauthnWalletPassPhrase = 'just the gabagool';
 
 const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, 'taprootKeyPathSpend', 'p2shP2pk'] as const;
 export type ScriptType = (typeof scriptTypes)[number];
@@ -41,6 +42,18 @@ const keyDocumentObjects = rootWalletKeys.triple.map((bip32, keyIdx) => {
     pub: bip32.neutered().toBase58(),
     source: ['user', 'backup', 'bitgo'][keyIdx],
     encryptedPrv: encryptKeychain(walletPassphrase, keychainsBase58[keyIdx]),
+    webauthnDevices: [
+      {
+        otpDeviceId: '123',
+        authenticatorInfo: {
+          credID: 'credID',
+          fmt: 'packed',
+          publicKey: 'some value',
+        },
+        prfSalt: '456',
+        encryptedPrv: encryptKeychain(webauthnWalletPassPhrase, keychainsBase58[keyIdx]),
+      },
+    ],
     coinSpecific: {},
   };
 });
@@ -146,33 +159,60 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
 
     afterEach(nock.cleanAll);
 
-    it('should succeed', async function () {
-      const nocks = createNocks({ bgUrl, wallet, keyDocuments: keyDocumentObjects, prebuild, recipient, addressInfo });
+    [true, false].forEach((useWebauthn) => {
+      it(`should succeed with ${useWebauthn ? 'webauthn encryptedPrv' : 'encryptedPrv'}`, async function () {
+        const nocks = createNocks({
+          bgUrl,
+          wallet,
+          keyDocuments: keyDocumentObjects,
+          prebuild,
+          recipient,
+          addressInfo,
+        });
 
-      // call prebuild and sign, nocks should be consumed
-      const res = (await wallet.prebuildAndSignTransaction({
-        recipients: [recipient],
-        walletPassphrase,
-      })) as HalfSignedUtxoTransaction;
+        // call prebuild and sign, nocks should be consumed
+        const res = (await wallet.prebuildAndSignTransaction({
+          recipients: [recipient],
+          walletPassphrase: useWebauthn ? webauthnWalletPassPhrase : walletPassphrase,
+        })) as HalfSignedUtxoTransaction;
 
-      // Can produce the right fee in explain transaction
-      const explainedTransaction = await coin.explainTransaction(res);
-      assert.strictEqual(explainedTransaction.fee, fee.toString());
+        // Can produce the right fee in explain transaction
+        const explainedTransaction = await coin.explainTransaction(res);
+        assert.strictEqual(explainedTransaction.fee, fee.toString());
 
-      nocks.forEach((nock) => assert.ok(nock.isDone()));
+        nocks.forEach((nock) => assert.ok(nock.isDone()));
 
-      // Make sure that you can sign with bitgo key and extract the transaction
-      const psbt = utxolib.bitgo.createPsbtFromHex(res.txHex, coin.network);
+        // Make sure that you can sign with bitgo key and extract the transaction
+        const psbt = utxolib.bitgo.createPsbtFromHex(res.txHex, coin.network);
 
-      // No signatures should be present if it's a p2shP2pk input
-      if (!inputScripts.includes('p2shP2pk')) {
-        const key = inputScripts.includes('p2trMusig2') ? rootWalletKeys.backup : rootWalletKeys.bitgo;
-        psbt.signAllInputsHD(key, { deterministic: true });
-        psbt.validateSignaturesOfAllInputs();
-        psbt.finalizeAllInputs();
-        const tx = psbt.extractTransaction();
-        assert.ok(tx);
-      }
+        // No signatures should be present if it's a p2shP2pk input
+        if (!inputScripts.includes('p2shP2pk')) {
+          const key = inputScripts.includes('p2trMusig2') ? rootWalletKeys.backup : rootWalletKeys.bitgo;
+          psbt.signAllInputsHD(key, { deterministic: true });
+          psbt.validateSignaturesOfAllInputs();
+          psbt.finalizeAllInputs();
+          const tx = psbt.extractTransaction();
+          assert.ok(tx);
+        }
+      });
+
+      it('should fail if the wallet passphrase is incorrect', async function () {
+        createNocks({
+          bgUrl,
+          wallet,
+          keyDocuments: keyDocumentObjects,
+          prebuild,
+          recipient,
+          addressInfo,
+        });
+
+        await wallet
+          .prebuildAndSignTransaction({
+            recipients: [recipient],
+            walletPassphrase: Math.random().toString(),
+          })
+          .should.be.rejectedWith('unable to decrypt keychain with the given wallet passphrase');
+      });
     });
   });
 }

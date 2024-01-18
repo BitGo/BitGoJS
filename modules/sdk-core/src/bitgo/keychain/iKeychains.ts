@@ -4,7 +4,25 @@ import { BackupProvider, IWallet } from '../wallet';
 import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
+
 export type SourceType = 'bitgo' | 'backup' | 'user' | 'cold';
+
+export type WebauthnFmt = 'none' | 'packed' | 'fido-u2f';
+
+export interface WebauthnAuthenticatorInfo {
+  credID: string;
+  fmt: WebauthnFmt;
+  publicKey: string;
+}
+
+export interface KeychainWebauthnDevice {
+  otpDeviceId: string;
+  authenticatorInfo: WebauthnAuthenticatorInfo;
+  // salt for the webauthn prf extension
+  prfSalt: string;
+  // Wallet private key encrypted to webauthn derived password
+  encryptedPrv: string;
+}
 
 export interface Keychain {
   id: string;
@@ -20,7 +38,15 @@ export interface Keychain {
   walletHSMGPGPublicKeySigs?: string;
   type: KeyType;
   source?: SourceType;
+  // Alternative encryptedPrv using webauthn and the prf extension
+  webauthnDevices?: KeychainWebauthnDevice[];
 }
+
+export type OptionalKeychainEncryptedKey = Pick<Keychain, 'encryptedPrv' | 'webauthnDevices'>;
+
+export type KeychainWithEncryptedPrv = Omit<Keychain, 'encryptedPrv'> & {
+  encryptedPrv: string;
+};
 
 export interface ChangedKeychains {
   [pubkey: string]: string;
