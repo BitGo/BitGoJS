@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@bitgo/bls-dkg": "^1.3.1",
-    "@bitgo/public-types": "1.2.1",
+    "@bitgo/public-types": "2.0.1",
     "@bitgo/sdk-lib-mpc": "^8.27.0",
     "@bitgo/statics": "^41.0.0",
     "@bitgo/utxo-lib": "^9.28.0",
@@ -58,7 +58,7 @@
     "elliptic": "^6.5.2",
     "ethereumjs-util": "7.1.5",
     "fp-ts": "^2.12.2",
-    "io-ts": "2.2.20",
+    "io-ts": "2.1.3",
     "keccak": "3.0.3",
     "libsodium-wrappers-sumo": "^0.7.9",
     "lodash": "^4.17.15",
