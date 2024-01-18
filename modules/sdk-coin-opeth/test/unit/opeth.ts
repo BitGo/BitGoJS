@@ -529,7 +529,7 @@ describe('Optimism', function () {
   });
 
   describe('Recover transaction:', function () {
-    const baseUrl = 'https://api-sepolia.arbiscan.io';
+    const baseUrl = 'https://api-sepolia-optimistic.etherscan.io';
     const userXpub =
       'xpub661MyMwAqRbcEeTc8789MK5PUGEYiPG4F4V17n2Rd2LoTATA1XoCnJT5FAYAShQxSxtFjpo5NHmcWwTp2LiWGBMwpUcAA3HywhxivgYfq7q';
     const userXprv =
