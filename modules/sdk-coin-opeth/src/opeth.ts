@@ -22,16 +22,18 @@ export class Opeth extends AbstractEthLikeNewCoins {
   }
 
   /**
-   * Make a query to Arbiscan for information such as balance, token balance, solidity calls
+   * Make a query to Optimism Etherscan for information such as balance, token balance, solidity calls
    * @param {Object} query key-value pairs of parameters to append after /api
-   * @returns {Promise<Object>} response from Arbiscan
+   * @returns {Promise<Object>} response from Optimism Etherscan
    */
   async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
     const token = common.Environments[this.bitgo.getEnv()].optimisticEtherscanApiToken;
     if (token) {
       query.apikey = token;
     }
-    const response = await request.get(common.Environments[this.bitgo.getEnv()].arbiscanBaseUrl + '/api').query(query);
+    const response = await request
+      .get(common.Environments[this.bitgo.getEnv()].optimisticEtherscanBaseUrl + '/api')
+      .query(query);
 
     if (!response.ok) {
       throw new Error('could not reach Optimism Etherscan');
