@@ -62,6 +62,7 @@ const BCH_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
 ];
 const BTC_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
@@ -71,6 +72,7 @@ const BTC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.DISTRIBUTED_CUSTODY,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
 ];
 const BTG_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
@@ -107,6 +109,7 @@ const LTC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
 ];
 const RBTC_FEATURES = [
   ...ETH_FEATURES,
@@ -134,6 +137,7 @@ const XRP_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
 ];
 const CSPR_FEATURES = [
@@ -524,6 +528,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.BULK_TRANSACTION,
     ]
   ), // we should probably refactor this into a eth() method
@@ -555,6 +560,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
     ]
   ),
   account(
@@ -575,6 +581,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
     ]
   ),
   account(
