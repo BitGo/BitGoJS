@@ -848,12 +848,14 @@ class Xtz extends Mainnet implements AccountNetwork {
   name = 'Xtz';
   family = CoinFamily.XTZ;
   explorerUrl = 'https://tzstats.com/';
+  accountExplorerUrl = 'https://tzstats.com/';
 }
 
 class XtzTestnet extends Testnet implements AccountNetwork {
   name = 'XtzTestnet';
   family = CoinFamily.XTZ;
-  explorerUrl = 'https://mumbai.tzstats.com/';
+  explorerUrl = 'https://ghostnet.tzkt.io/';
+  accountExplorerUrl = 'https://ghostnet.tzkt.io/';
 }
 
 class ZCash extends Mainnet implements UtxoNetwork {
