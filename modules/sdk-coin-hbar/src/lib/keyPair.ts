@@ -2,7 +2,7 @@ import { PrivateKey, PublicKey } from '@hashgraph/sdk';
 import { AddressFormat, DefaultKeys, Ed25519KeyPair, InvalidKey, KeyPairOptions, NotSupported } from '@bitgo/sdk-core';
 import { removePrefix } from './utils';
 
-const PUBLIC_KEY_PREFIX = '302a300506032b6570032100';
+export const PUBLIC_KEY_PREFIX = '302a300506032b6570032100';
 const PRIVATE_KEY_PREFIX = '302e020100300506032b657004220420';
 
 export class KeyPair extends Ed25519KeyPair {

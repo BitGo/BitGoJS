@@ -234,4 +234,48 @@ describe('HBAR util library', function () {
       }
     });
   });
+
+  describe('shouldBroadcastNow', function () {
+    const getTimestampInSeconds = (secondsToChange = 0) => (Date.now() / 1000 + secondsToChange).toFixed();
+    it('should return true if the timestamp is in the valid time window', function () {
+      const timestamp = getTimestampInSeconds(-6);
+      Utils.shouldBroadcastNow(timestamp).should.be.true();
+
+      const timestamp2 = getTimestampInSeconds(-173);
+      Utils.shouldBroadcastNow(timestamp2).should.be.true();
+    });
+
+    it('should throw if the timestamp is in the past', function () {
+      const timestamp = getTimestampInSeconds(-1000);
+      assert.throws(
+        () => Utils.shouldBroadcastNow(timestamp),
+        (error: any) => {
+          assert.ok(error.message.includes('startTime window expired'));
+          return true;
+        }
+      );
+    });
+
+    it('should return false if the timestamp is in the future', function () {
+      const timestamp = getTimestampInSeconds(1000);
+      Utils.shouldBroadcastNow(timestamp).should.be.false();
+    });
+  });
+
+  describe('normalizeStarttime', function () {
+    it('should return the same timestamp', function () {
+      const timestamp = '1595374723.356981689';
+      Utils.normalizeStarttime(timestamp).should.equal(timestamp);
+    });
+
+    it('should return the timestamp with nanoseconds', function () {
+      const timestamp = '1595374723';
+      Utils.normalizeStarttime(timestamp).should.equal(timestamp + '.000000000');
+    });
+
+    it('should return the timestamp with nanoseconds', function () {
+      const timestamp = '1595374723.0145';
+      Utils.normalizeStarttime(timestamp).should.equal(timestamp + '00000');
+    });
+  });
 });
