@@ -1,4 +1,6 @@
-import { NetworkType } from '@bitgo/statics';
+import assert from 'assert';
+
+import { AvaxERC20Token, BaseCoin, BaseNetwork, NetworkType, coins } from '@bitgo/statics';
 import { isValidAddress, isValidPrivate, isValidPublic } from 'ethereumjs-util';
 import EthereumCommon from '@ethereumjs/common';
 import { Utils, KeyPair, TxData } from '@bitgo/sdk-coin-eth';
@@ -72,4 +74,25 @@ export function isValidEthPublicKey(publicKey: string): boolean {
   const publicKeyWithoutPrefix = publicKey.slice(2);
   const publicKeyBuffer = Buffer.from(publicKeyWithoutPrefix, 'hex');
   return isValidPublic(publicKeyBuffer);
+}
+
+export function getToken(tokenContractAddress: string, network: BaseNetwork): Readonly<BaseCoin> | undefined {
+  const tokens = coins.filter((coin) => {
+    if (coin instanceof AvaxERC20Token) {
+      return (
+        coin.network.type === network.type && coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase()
+      );
+    }
+    return false;
+  });
+
+  // if length of tokens is 1, return the first, else return undefined
+  // Can't directly index into tokens, or call `length`, so we use map to get an array
+  const tokensArray = tokens.map((token) => token);
+  if (tokensArray.length >= 1) {
+    // there should never be two tokens with the same contract address, so we assert that here
+    assert(tokensArray.length === 1, 'Found more than 1 token: ' + JSON.stringify(tokensArray));
+    return tokensArray[0];
+  }
+  return undefined;
 }

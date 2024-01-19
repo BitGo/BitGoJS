@@ -6,7 +6,14 @@ import { bip32 } from '@bitgo/utxo-lib';
 import Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
-import { AvalancheNetwork, BaseCoin as StaticsBaseCoin, CoinFamily, coins, ethGasConfigs } from '@bitgo/statics';
+import {
+  AvalancheNetwork,
+  BaseCoin as StaticsBaseCoin,
+  CoinFamily,
+  coins,
+  ethGasConfigs,
+  BaseNetwork,
+} from '@bitgo/statics';
 import {
   BaseCoin,
   BaseTransaction,
@@ -34,7 +41,7 @@ import {
   TransactionBuilder as EthTransactionBuilder,
   TransactionPrebuild,
 } from '@bitgo/sdk-coin-eth';
-import { isValidEthAddress } from './lib/utils';
+import { getToken, isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 import request from 'superagent';
 import { BN, pubToAddress } from 'ethereumjs-util';
@@ -55,31 +62,6 @@ import {
   VerifyAvaxcTransactionOptions,
 } from './iface';
 import { AvaxpLib } from '@bitgo/sdk-coin-avaxp';
-
-const AVAXC_TOKENS = {
-  // mainnet tokens
-  'avaxc:png': '0x60781c2586d68229fde47564546784ab3faca982',
-  'avaxc:xava': '0xd1c3f94de7e5b45fa4edbba472491a9f4b166fc4',
-  'avaxc:klo': '0xb27c8941a7df8958a1778c0259f76d1f8b711c35',
-  'avaxc:joe': '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd',
-  'avaxc:qi': '0x8729438eb15e2c8b576fcc6aecda6a148776c0f5',
-  'avaxc:usdt': '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
-  'avaxc:usdc': '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
-  'avaxc:link': '0x5947bb275c521040051d82396192181b413227a3',
-  'avaxc:cai': '0x48f88a3fe843ccb0b5003e70b4192c1d7448bef0',
-  'avaxc:usdc-e': '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-  'avaxc:dai-e': '0xd586e7f844cea2f87f50152665bcbc2c279d8d70',
-  'avaxc:usdt-e': '0xc7198437980c041c805a1edcba50c1ce5db95118',
-  'avaxc:wbtc-e': '0x50b7545627a5162f82a992c33b87adc75187b218',
-  'avaxc:weth-e': '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
-  'avaxc:aave-e': '0x63a72806098bd3d9520cc43356dd78afe5d386d9',
-  'avaxc:usdc-wormhole': '0x543672e9cbec728cbba9c3ccd99ed80ac3607fa8',
-  'avaxc:btc-b': '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
-
-  // testnet tokens
-  'tavaxc:link': '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846',
-  'tavaxc:opm': '0x9a25414c8a41599cb7048f2e4dd42db02c1de487',
-};
 
 export class AvaxC extends BaseCoin {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
@@ -106,6 +88,14 @@ export class AvaxC extends BaseCoin {
 
   getChain(): string {
     return this._staticsCoin.name;
+  }
+
+  /**
+   * Method to return the coin's network object
+   * @returns {BaseNetwork}
+   */
+  getNetwork(): BaseNetwork {
+    return this._staticsCoin.network;
   }
 
   /**
@@ -576,13 +566,12 @@ export class AvaxC extends BaseCoin {
       if (!this.isValidAddress(params.tokenContractAddress)) {
         throw new Error('invalid tokenContractAddress');
       }
-
-      tokenName = (Object.keys(AVAXC_TOKENS) as (keyof typeof AVAXC_TOKENS)[]).find((key) => {
-        return AVAXC_TOKENS[key] === params.tokenContractAddress;
-      });
-      if (_.isUndefined(tokenName)) {
+      const network = this.getNetwork();
+      const token = getToken(params.tokenContractAddress, network);
+      if (_.isUndefined(token)) {
         throw new Error('token not supported');
       }
+      tokenName = token.name;
     }
 
     if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
