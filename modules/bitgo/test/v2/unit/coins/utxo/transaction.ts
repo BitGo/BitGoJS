@@ -237,6 +237,37 @@ describe(`UTXO coin signTransaction`, async function () {
       }
     );
   });
+
+  it('fails when unsupported locking script is used', async function () {
+    const inputs: testutil.Input[] = [
+      { scriptType: 'p2wsh', value: BigInt(1000) },
+      { scriptType: 'p2trMusig2', value: BigInt(1000) },
+    ];
+    const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
+    const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(500) }];
+    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+
+    // override the 1st PSBT input with unsupported 2 of 2 multi-sig locking script.
+    const unspent = testutil.toUnspent(inputs[0], 0, coin.network, rootWalletKeys);
+    if (!utxolib.bitgo.isWalletUnspent(unspent)) {
+      throw new Error('invalid unspent');
+    }
+    const { publicKeys } = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
+    const script2Of2 = utxolib.payments.p2ms({ m: 2, pubkeys: [publicKeys[0], publicKeys[1]] });
+    psbt.data.inputs[0].witnessScript = script2Of2.output;
+
+    await assert.rejects(
+      async () => {
+        await coin.signTransaction({
+          txPrebuild: { txHex: psbt.toHex() },
+          prv: userPrv,
+        });
+      },
+      {
+        message: `length mismatch`,
+      }
+    );
+  });
 });
 
 function run<TNumber extends number | bigint = number>(
