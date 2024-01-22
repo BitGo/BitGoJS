@@ -685,6 +685,7 @@ export enum UnderlyingAsset {
   ETV = 'etv',
   ETX = 'etx',
   EUL = 'eul',
+  EURL = 'eurl',
   EURS = 'eurs',
   EURST = 'eurst',
   EURT = 'eurt',
@@ -747,6 +748,7 @@ export enum UnderlyingAsset {
   GDT = 'gdt',
   GEAR = 'gear',
   GEC = 'gec',
+  GEL = 'gel',
   GEN = 'gen',
   GENE = 'gene',
   GENIE = 'genie',
@@ -869,6 +871,7 @@ export enum UnderlyingAsset {
   KEY = 'key',
   KILL0 = 'kill0',
   KIN = 'kin',
+  KINE = 'kine',
   KIRO = 'kiro',
   KISHUI = 'kishui',
   KITTY = 'kitty',
@@ -1684,6 +1687,8 @@ export enum UnderlyingAsset {
   'polygon:route' = 'polygon:route',
   'polygon:sbc' = 'polygon:sbc',
   'polygon:xsgd' = 'polygon:xsgd',
+  'polygon:dimo' = 'polygon:dimo',
+  'polygon:bcut' = 'polygon:bcut',
 
   // Polygon NFTs
   // generic NFTs
@@ -1697,6 +1702,7 @@ export enum UnderlyingAsset {
   'bsc:usdt' = 'bsc:usdt',
   'bsc:vet' = 'bsc:vet',
   'bsc:cake' = 'bsc:cake',
+  'bsc:litt' = 'bsc:litt',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs
@@ -1789,6 +1795,7 @@ export enum UnderlyingAsset {
   'btc-sollet' = 'btc-sollet',
   'eth-sollet' = 'eth-sollet',
   'bonk' = 'bonk',
+  'jto' = 'jto',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
