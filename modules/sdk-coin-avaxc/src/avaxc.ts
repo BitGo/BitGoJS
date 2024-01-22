@@ -717,6 +717,7 @@ export class AvaxC extends BaseCoin {
     } else {
       txBuilder
         .transfer()
+        .coin(this.getChain())
         .amount(recipients[0].amount)
         .contractSequenceId(sequenceId)
         .expirationTime(this.getDefaultExpireTime())
