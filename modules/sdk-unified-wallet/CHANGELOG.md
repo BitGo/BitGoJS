@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@3.2.0...@bitgo/sdk-unified-wallet@5.0.0) (2024-01-22)
+
+### Features
+
+- **bitgo:** use holesky etherscan url instead of goerli ([61962f6](https://github.com/BitGo/BitGoJS/commit/61962f6e273fd654575d3c93d9faf1a46bd361e4))
+- **sdk-core:** add custodial and smc tss wallet to generateWallet method ([ea80f4f](https://github.com/BitGo/BitGoJS/commit/ea80f4fa208ca6874fdd7d99d597c347e4628ecc))
+
+### BREAKING CHANGES
+
+- **bitgo:** changed default eth testnet etherscan url to holesky
+
 # [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@3.2.0...@bitgo/sdk-unified-wallet@4.0.0) (2024-01-09)
 
 ### Features

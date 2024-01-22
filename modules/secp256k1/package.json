@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/secp256k1",
-  "version": "1.2.20",
+  "version": "1.2.21",
   "description": "Low-level cryptographic methods used in BitGo packages for the secp256k1 curve",
   "main": "./dist/src/index.js",
   "engines": {

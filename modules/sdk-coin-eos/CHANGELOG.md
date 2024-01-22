@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@1.5.0...@bitgo/sdk-coin-eos@1.5.26) (2024-01-22)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
 ## [1.5.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@1.5.0...@bitgo/sdk-coin-eos@1.5.25) (2024-01-09)
 
 ### Bug Fixes
