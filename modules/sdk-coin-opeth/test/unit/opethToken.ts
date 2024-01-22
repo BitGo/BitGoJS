@@ -1,7 +1,7 @@
 import 'should';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { OpethToken } from '../../src';
+import { register } from '../../src';
 import { BitGoAPI } from '@bitgo/sdk-api';
 
 describe('Opeth Token:', function () {
@@ -11,9 +11,7 @@ describe('Opeth Token:', function () {
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
-    OpethToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
-      bitgo.safeRegister(name, coinConstructor);
-    });
+    register(bitgo);
     bitgo.initializeTestVars();
     opethTokenCoin = bitgo.coin(tokenName);
   });
