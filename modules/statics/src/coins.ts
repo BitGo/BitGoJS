@@ -3191,6 +3191,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.EUL
   ),
   erc20(
+    'bc521233-45d2-443f-88b0-2fcf265b9660',
+    'eurl',
+    'LUGH',
+    6,
+    '0xa967dd943b336680540011536e7d8c3d33333515',
+    UnderlyingAsset.EURL
+  ),
+  erc20(
     'df6dd9e6-64bb-4289-8c58-3d7d2d288eff',
     'eurs',
     'Stasis EURS',
@@ -3501,6 +3509,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x543ff227f64aa17ea132bf9886cab5db55dcaddf',
     UnderlyingAsset.GEN
+  ),
+  erc20(
+    'b603b989-3fe0-4bbd-a1e8-84169e073d4f',
+    'gel',
+    'Gelato Network Token',
+    18,
+    '0x15b7c0c907e4c6b9adaaaabc300c08991d6cea05',
+    UnderlyingAsset.GEL
   ),
   erc20(
     '29cbff1a-04bf-4906-983e-14b7fd9656a2',
@@ -4045,6 +4061,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x818fc6c2ec5986bc6e2cbf00939d90556ab12ce5',
     UnderlyingAsset.KIN
+  ),
+  erc20(
+    'dee18bce-9cd2-4d9b-8cc9-0c287a572043',
+    'kine',
+    'Kine Governance Token',
+    18,
+    '0xcbfef8fdd706cde6f208460f2bf39aa9c785f05d',
+    UnderlyingAsset.KINE
   ),
   erc20(
     'dc33d6df-9aed-4b6e-b10c-9874d3c2435e',
@@ -9916,6 +9940,14 @@ export const coins = CoinMap.fromCoins([
     '0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82',
     UnderlyingAsset['bsc:cake']
   ),
+  bscToken(
+    '4bc5e4d3-4467-45a6-aef0-6a5ef30aaf51',
+    'bsc:litt',
+    'LitLabToken',
+    18,
+    '0xcebef3df1f3c5bfd90fde603e71f31a53b11944d',
+    UnderlyingAsset['bsc:litt']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -13498,6 +13530,15 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    '7457400a-dbce-4e33-a50a-356c9a1eca3e',
+    'sol:jto',
+    'Jito',
+    9,
+    'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
+    UnderlyingAsset['jto'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     '803bb18c-b9ed-4342-aa94-985f9ab31974',
     'sol:rendoge-usdc',
     'RENDOGE-USDC (Atrix)',
@@ -14086,6 +14127,22 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xdc3326e71d45186f113a2f448984ca0e8d201995',
     UnderlyingAsset['polygon:xsgd']
+  ),
+  polygonErc20(
+    '59796c49-5253-494b-ba9a-718872df0f37',
+    'polygon:dimo',
+    'Dimo',
+    18,
+    '0xe261d618a959afffd53168cd07d12e37b26761db',
+    UnderlyingAsset['polygon:dimo']
+  ),
+  polygonErc20(
+    '0e72e810-f43a-409e-b7f2-d264ac54d240',
+    'polygon:bcut',
+    'bitsCrunch Token',
+    18,
+    '0x3fb83a9a2c4408909c058b0bfe5b4823f54fafe2',
+    UnderlyingAsset['polygon:bcut']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
