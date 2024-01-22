@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@3.6.0...@bitgo/sdk-coin-atom@6.0.0) (2024-01-22)
+
+### Bug Fixes
+
+- add bech32 validation to cosmos address validation ([f5008a7](https://github.com/BitGo/BitGoJS/commit/f5008a7298f9cb470795f8087b6840cf7f254369))
+- address verification for cosmos like coins ([5ac7879](https://github.com/BitGo/BitGoJS/commit/5ac78799b460d0d03eaa841db08a6855b571a46f))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Code Refactoring
+
+- **sdk-coin-atom:** use abstract-cosmos ([18abbea](https://github.com/BitGo/BitGoJS/commit/18abbea939bb8f1cee1bbc72cfd8a2955468fcc5))
+
+### Features
+
+- **sdk-coin-atom:** add sendMany support for cosmos chains ([ee609ec](https://github.com/BitGo/BitGoJS/commit/ee609ec5de3d3159c78ba59ecf7f43c79f6f5870))
+
+### BREAKING CHANGES
+
+- **sdk-coin-atom:** restructured exports
+
+* Removed constants overlapping with @bitgo/abstract-cosmos
+* Removed common Interfaces exported by @bitgo/abstract-cosmos
+
+Code dependent on the previously exported Interfaces/Constants needs to
+be updated to import these from @bitgo/abstract-cosmos instead
+
 # [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@3.6.0...@bitgo/sdk-coin-atom@5.0.0) (2024-01-09)
 
 ### Bug Fixes

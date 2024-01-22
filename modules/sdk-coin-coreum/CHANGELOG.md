@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 14.0.0 (2024-01-22)
+
+### Bug Fixes
+
+- add bech32 validation to cosmos address validation ([f5008a7](https://github.com/BitGo/BitGoJS/commit/f5008a7298f9cb470795f8087b6840cf7f254369))
+- address verification for cosmos like coins ([5ac7879](https://github.com/BitGo/BitGoJS/commit/5ac78799b460d0d03eaa841db08a6855b571a46f))
+
+### Code Refactoring
+
+- rename coin 'core' to 'coreum' ([baecc01](https://github.com/BitGo/BitGoJS/commit/baecc013ff7243ce78ebd767bffdb0763b8b4cdb))
+
+### BREAKING CHANGES
+
+- rename coin module, coin name, named exports for coreum
+
 # 13.0.0 (2024-01-09)
 
 ### Bug Fixes
