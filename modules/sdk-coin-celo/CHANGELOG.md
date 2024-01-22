@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@1.5.0...@bitgo/sdk-coin-celo@1.8.0) (2024-01-22)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **abstract-eth:** add chain id as network identifier ([3ddec05](https://github.com/BitGo/BitGoJS/commit/3ddec05705cff891e46d21743d0ee864d68ab216))
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@1.5.0...@bitgo/sdk-coin-celo@1.7.0) (2024-01-09)
 
 ### Bug Fixes

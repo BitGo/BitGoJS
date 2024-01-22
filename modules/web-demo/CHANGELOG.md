@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.7.11...@bitgo/web-demo@1.22.0) (2024-01-22)
+
+### Bug Fixes
+
+- **web-demo:** lock @types/styled-components version ([03036dc](https://github.com/BitGo/BitGoJS/commit/03036dc3a8513b05e7b02be1ff42bd8453d28842))
+
+### Features
+
+- **account-lib:** add holesky testnet coin ([0aaefc0](https://github.com/BitGo/BitGoJS/commit/0aaefc0e53a5a48b2c701ca3c6d5e1c6ec7c19d2))
+- **key-card:** add boxes for master public keys ([a75e7bd](https://github.com/BitGo/BitGoJS/commit/a75e7bdec4ff524bae5860aa0d5bb02598536c97))
+- **key-card:** add keycard generation for cold tss key creation ([76b7246](https://github.com/BitGo/BitGoJS/commit/76b7246e89ed2dd4c17dcfa330e4194d7d45d02f))
+
 # [1.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.7.11...@bitgo/web-demo@1.21.0) (2024-01-09)
 
 ### Bug Fixes

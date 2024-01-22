@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [16.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.8.0...@bitgo/sdk-coin-bsc@16.0.0) (2024-01-22)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Code Refactoring
+
+- **abstract-eth:** delete mpc related classes ([52396ed](https://github.com/BitGo/BitGoJS/commit/52396ed5aae8b27f0cc6caee7011a7c6882b9dea))
+
+### Features
+
+- **abstract-eth:** add abstractethliketsscoin class ([eb99545](https://github.com/BitGo/BitGoJS/commit/eb995457d7787af073f0a9eafe6e4d420228f5f0))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** AbstractEthLikeMPCCoin and EthLikeMPCToken classes are removed as we have instead added
+  a new class AbstractEthLikeNewCoins which will be having both multisig
+  and MPC related methods
+
+TICKET: WIN-1021
+
 # [15.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@3.8.0...@bitgo/sdk-coin-bsc@15.0.0) (2024-01-09)
 
 ### Bug Fixes
