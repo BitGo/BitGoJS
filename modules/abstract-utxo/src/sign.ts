@@ -77,7 +77,7 @@ export function signAndVerifyPsbt(
       const outputId = utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(txInputs[inputIndex]));
       outputIds.push(outputId);
 
-      const scriptType = utxolib.bitgo.getPsbtInputScriptType(input);
+      const { scriptType } = utxolib.bitgo.parsePsbtInput(input);
       scriptTypes.push(scriptType);
 
       if (scriptType === 'p2shP2pk') {
