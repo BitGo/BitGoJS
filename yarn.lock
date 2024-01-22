@@ -1045,10 +1045,10 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@bitgo/public-types@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-2.0.1.tgz#5e162f7bb7e1c09787dbe02a42000280905190c9"
-  integrity sha512-G8bTqG48dpMtkAsg4yTYGw1zMrtVdSkOr8wcQSyoO4Cmnk5Enw+FIz5BSpbDCSLZwqtH58pQ38QnySycBci9yA==
+"@bitgo/public-types@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-2.1.0.tgz#b9ede95d490907f610cdc5e9ec4156e13645b852"
+  integrity sha512-EvjvArAExJd/tY8PPii3SE3lWOpAJ2+lJBtn3DVMmTROXfS7q9nLvBbAZHPZZ3Q/VkPEeAfJ7KZ2Fvbr/TgtQg==
   dependencies:
     "@api-ts/io-ts-http" "1.0.0"
     fp-ts "2.16.2"
