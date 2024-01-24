@@ -173,7 +173,7 @@ describe('V2 Base Coin:', function () {
       // missing should be one entry of the two
 
       const utxoBasecoin = bitgo.coin('tltc');
-      const missingOutputs = utxoBasecoin.constructor.findMissingOutputs(expectedOutputs, actualOutputs);
+      const missingOutputs = utxoBasecoin.constructor.outputDifference(expectedOutputs, actualOutputs);
 
       missingOutputs.length.should.equal(1);
       missingOutputs[0].address.should.equal('2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ');
@@ -205,7 +205,7 @@ describe('V2 Base Coin:', function () {
       // missing should be one entry of the two
 
       const utxoBasecoin = bitgo.coin('tltc');
-      const missingOutputs = utxoBasecoin.constructor.findMissingOutputs(expectedOutputs, actualOutputs);
+      const missingOutputs = utxoBasecoin.constructor.outputDifference(expectedOutputs, actualOutputs);
 
       missingOutputs.length.should.equal(1);
       missingOutputs[0].address.should.equal('2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ');
@@ -233,7 +233,7 @@ describe('V2 Base Coin:', function () {
       // missing should be one entry of the two
 
       const utxoBasecoin = bitgo.coin('tltc');
-      const missingOutputs = utxoBasecoin.constructor.findMissingOutputs(expectedOutputs, actualOutputs);
+      const missingOutputs = utxoBasecoin.constructor.outputDifference(expectedOutputs, actualOutputs);
 
       missingOutputs.length.should.equal(2);
       missingOutputs[0].address.should.equal('2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ');

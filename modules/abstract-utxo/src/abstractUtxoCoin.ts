@@ -434,16 +434,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Find outputs that are within expected outputs but not within actual outputs, including duplicates
-   * @param expectedOutputs
-   * @param actualOutputs
-   * @returns {Array}
+   * @param first
+   * @param second
+   * @returns {Array} All outputs that are in the first array but not in the second
    */
-  protected static findMissingOutputs(expectedOutputs: Output[], actualOutputs: Output[]): Output[] {
+  protected static outputDifference(first: Output[], second: Output[]): Output[] {
     const keyFunc = ({ address, amount }: Output): string => `${address}:${amount}`;
-    const groupedOutputs = _.groupBy(expectedOutputs, keyFunc);
+    const groupedOutputs = _.groupBy(first, keyFunc);
 
-    actualOutputs.forEach((output) => {
+    second.forEach((output) => {
       const group = groupedOutputs[keyFunc(output)];
       if (group) {
         group.pop();
@@ -524,7 +523,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       return { ...output, address: this.canonicalAddress(output.address) };
     });
 
-    const missingOutputs = AbstractUtxoCoin.findMissingOutputs(expectedOutputs, allOutputs);
+    const missingOutputs = AbstractUtxoCoin.outputDifference(expectedOutputs, allOutputs);
 
     // get the keychains from the custom change wallet if needed
     let customChange: CustomChangeOptions | undefined;
@@ -585,9 +584,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const changeOutputs = _.filter(allOutputDetails, { external: false });
 
     // these are all the outputs that were not originally explicitly specified in recipients
-    const implicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, expectedOutputs);
+    const implicitOutputs = AbstractUtxoCoin.outputDifference(allOutputDetails, expectedOutputs);
 
-    const explicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, implicitOutputs);
+    const explicitOutputs = AbstractUtxoCoin.outputDifference(allOutputDetails, implicitOutputs);
 
     // these are all the non-wallet outputs that had been originally explicitly specified in recipients
     const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
