@@ -20,6 +20,9 @@
       "path": "./modules/blockapis"
     },
     {
+      "path": "./modules/deser-lib"
+    },
+    {
       "path": "./modules/express"
     },
     {
