@@ -10084,7 +10084,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('7654c1c4-bca5-4067-a004-661609e6b57a', 'ofcreth-h', 'Reward ETH Harbour', 18, UnderlyingAsset['RETH-H']),
   ofcerc20('67fb4a6f-ba00-41fd-972d-728d2226a3d5', 'ofccho', 'Choise.com', 18, UnderlyingAsset.CHO),
   ofcerc20('af198c54-53d5-42b3-9e69-7fcc5887c0a0', 'ofcdia', 'DIA Token', 18, UnderlyingAsset.DIA),
-  ofcerc20('4da7f6a6-9c56-44f7-a9b2-07ae7c669e42', 'ofcldo', 'LDO Token', 18, UnderlyingAsset.LDO),
+  ofcerc20('4da7f6a6-9c56-44f7-a9b2-07ae7c669e42', 'ofcldo', 'Lido DAO Token', 18, UnderlyingAsset.LDO),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
