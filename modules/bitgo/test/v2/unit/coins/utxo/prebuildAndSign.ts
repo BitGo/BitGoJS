@@ -76,13 +76,19 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     prebuild: utxolib.bitgo.UtxoPsbt;
     recipient: { address: string; amount: string };
     addressInfo: Record<string, any>;
+    rbfTxIds?: string[];
+    feeMultiplier?: number;
   }): nock.Scope[] {
     const nocks: nock.Scope[] = [];
 
     // Nock the prebuild route (/tx/build, blockheight)
     nocks.push(
       nock(params.bgUrl)
-        .post(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/tx/build`, { recipients: [params.recipient] })
+        .post(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/tx/build`, {
+          recipients: [params.recipient],
+          rbfTxIds: params.rbfTxIds,
+          feeMultiplier: params.feeMultiplier,
+        })
         .reply(200, { txHex: params.prebuild.toHex(), txInfo: {} })
     );
     nocks.push(nock(params.bgUrl).get(`/api/v2/${coin.getChain()}/public/block/latest`).reply(200, { height: 1000 }));
@@ -100,6 +106,30 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
         .get(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/address/${params.addressInfo.address}`)
         .reply(200, params.addressInfo)
     );
+
+    if (params.rbfTxIds) {
+      nocks.push(
+        nock(params.bgUrl)
+          .get(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/transfer/${params.rbfTxIds[0]}`)
+          .reply(200, {
+            entries: [
+              {
+                address: params.recipient.address,
+                value: Number(params.recipient.amount),
+                valueString: params.recipient.amount,
+                isChange: false,
+              },
+              // Dummy change output to test transfer entries filtering
+              {
+                address: params.recipient.address,
+                value: Number(params.recipient.amount),
+                valueString: params.recipient.amount,
+                isChange: true,
+              },
+            ],
+          })
+      );
+    }
 
     // nock the deterministic nonce response
     if (inputScripts.includes('taprootKeyPathSpend')) {
@@ -131,6 +161,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     let recipient: { address: string; amount: string };
     let addressInfo: Record<string, any>;
     const fee = BigInt(10000);
+
     before(async function () {
       // Make output address information
       const outputAmount = BigInt(inputScripts.length) * BigInt(1e8) - fee;
@@ -213,6 +244,48 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           })
           .should.be.rejectedWith('unable to decrypt keychain with the given wallet passphrase');
       });
+    });
+
+    it(`should be able to build, sign, & verify a replacement transaction`, async function () {
+      const rbfTxIds = ['tx-to-be-replaced'],
+        feeMultiplier = 1.5;
+      const nocks = createNocks({
+        bgUrl,
+        wallet,
+        keyDocuments: keyDocumentObjects,
+        prebuild,
+        recipient,
+        addressInfo,
+        rbfTxIds,
+        feeMultiplier,
+      });
+
+      // call prebuild and sign, nocks should be consumed
+      const res = (await wallet.prebuildAndSignTransaction({
+        recipients: [recipient],
+        walletPassphrase,
+        rbfTxIds,
+        feeMultiplier,
+      })) as HalfSignedUtxoTransaction;
+
+      // Can produce the right fee in explain transaction
+      const explainedTransaction = await coin.explainTransaction(res);
+      assert.strictEqual(explainedTransaction.fee, fee.toString());
+
+      nocks.forEach((nock) => assert.ok(nock.isDone()));
+
+      // Make sure that you can sign with bitgo key and extract the transaction
+      const psbt = utxolib.bitgo.createPsbtFromHex(res.txHex, coin.network);
+
+      // No signatures should be present if it's a p2shP2pk input
+      if (!inputScripts.includes('p2shP2pk')) {
+        const key = inputScripts.includes('p2trMusig2') ? rootWalletKeys.backup : rootWalletKeys.bitgo;
+        psbt.signAllInputsHD(key, { deterministic: true });
+        psbt.validateSignaturesOfAllInputs();
+        psbt.finalizeAllInputs();
+        const tx = psbt.extractTransaction();
+        assert.ok(tx);
+      }
     });
   });
 }

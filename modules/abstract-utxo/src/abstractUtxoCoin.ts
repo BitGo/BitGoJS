@@ -158,6 +158,7 @@ export interface TransactionPrebuild<TNumber extends number | bigint = number> e
 export interface TransactionParams extends BaseTransactionParams {
   walletPassphrase?: string;
   changeAddress?: string;
+  rbfTxIds?: string[];
 }
 
 // parseTransactions' return type makes use of WalletData's type but with customChangeKeySignatures as required.
@@ -518,10 +519,23 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
-    // verify that each recipient from txParams has their own output
-    const expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).map((output) => {
-      return { ...output, address: this.canonicalAddress(output.address) };
-    });
+    let expectedOutputs;
+    if (txParams.rbfTxIds) {
+      assert(txParams.rbfTxIds.length === 1);
+      const txToBeReplacedTransfer = await wallet.getTransfer({ id: txParams.rbfTxIds[0] });
+      // Note: Will work only when there is single transaction output per address
+      // TODO: https://bitgoinc.atlassian.net/browse/BTC-826
+      expectedOutputs = txToBeReplacedTransfer.entries
+        .filter((entry) => !entry.isChange && entry.value >= 0)
+        .map((entry) => {
+          return { amount: BigInt(entry.valueString), address: this.canonicalAddress(entry.address) };
+        });
+    } else {
+      // verify that each recipient from txParams has their own output
+      expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).map((output) => {
+        return { ...output, address: this.canonicalAddress(output.address) };
+      });
+    }
 
     const missingOutputs = AbstractUtxoCoin.outputDifference(expectedOutputs, allOutputs);
 
@@ -584,6 +598,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const changeOutputs = _.filter(allOutputDetails, { external: false });
 
     // these are all the outputs that were not originally explicitly specified in recipients
+    // ideally change outputs or a paygo output that might have been added
     const implicitOutputs = AbstractUtxoCoin.outputDifference(allOutputDetails, expectedOutputs);
 
     const explicitOutputs = AbstractUtxoCoin.outputDifference(allOutputDetails, implicitOutputs);
@@ -888,7 +903,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       nonChangeAmount.toString(),
       payAsYouGoLimit.toString()
     );
-
     // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
     if (nonChangeAmount.gt(payAsYouGoLimit)) {
       // there are some addresses that are outside the scope of intended recipients that are not change addresses
