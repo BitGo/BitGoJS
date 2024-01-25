@@ -541,6 +541,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
   async signTxRequest(params: TSSParams): Promise<TxRequest> {
+    this.bitgo.setRequestTracer(params.reqId);
     let txRequestResolved: TxRequest;
     let txRequestId: string;
 

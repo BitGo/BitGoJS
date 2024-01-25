@@ -2,7 +2,6 @@
  * @prettier
  */
 import * as _ from 'lodash';
-import * as common from '../../common';
 import * as utxolib from '@bitgo/utxo-lib';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
@@ -18,6 +17,18 @@ import {
 import { RequestTracer, TssUtils } from '../utils';
 import { IWallet } from '../wallet';
 import { BuildParams } from '../wallet/BuildParams';
+import { IRequestTracer } from '../../api';
+
+type PreApproveResult = {
+  txHex: string;
+  halfSigned?: string;
+};
+
+type ApprovePendingApprovalRequestBody = {
+  state: 'approved';
+  otp: string | undefined;
+  halfSigned?: string | Omit<PreApproveResult, 'halfSigned'>;
+};
 
 export class PendingApproval implements IPendingApproval {
   private readonly bitgo: BitGoBase;
@@ -161,96 +172,21 @@ export class PendingApproval implements IPendingApproval {
    * Sets this PendingApproval to an approved state
    */
   async approve(params: ApproveOptions = {}): Promise<any> {
-    common.validateParams(params, [], ['walletPassphrase', 'otp']);
-
-    let canRecreateTransaction = true;
     params.previewPendingTxs = true;
     params.pendingApprovalId = this.id();
-    /*
-     * Cold wallets cannot recreate transactions if the only thing provided is the wallet passphrase
-     *
-     * The transaction can be recreated if either
-     * – there is an xprv
-     * – there is a walletPassphrase and the wallet is not cold (because if it's cold, the passphrase is of little use)
-     *
-     * Therefore, if neither of these is true, the transaction cannot be recreated, which is reflected in the if
-     * statement below.
-     */
-    const isColdWallet = !!_.get(this.wallet, '_wallet.isCold');
-    const isOFCWallet = this.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
-    if (!params.xprv && !(params.walletPassphrase && !isColdWallet && !isOFCWallet)) {
-      canRecreateTransaction = false;
-    }
-
-    // If there are no recipients, then the transaction cannot be recreated
-    const recipients = this.info()?.transactionRequest?.buildParams?.recipients || [];
-    const type = this.info()?.transactionRequest?.buildParams?.type;
-
-    // We only want to not recreate transactions with no recipients if it is a UTXO coin.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (utxolib.isValidNetwork((this.baseCoin as any).network) && recipients.length === 0 && type !== 'consolidate') {
-      canRecreateTransaction = false;
-    }
-
+    const canRecreateTransaction = this.canRecreateTransaction(params);
     const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
 
-    /*
-     * Internal helper function to get the serialized transaction which is being approved
-     */
-    const getApprovalTransaction = async (): Promise<{ txHex: string } | undefined> => {
-      if (this.type() === 'transactionRequest') {
-        /*
-         * If this is a request for approving a transaction, depending on whether this user has a private key to the wallet
-         * (some admins may not have the spend permission), the transaction could either be rebroadcast as is, or it could
-         * be reconstructed. It is preferable to reconstruct a tx in order to adhere to the latest network conditions
-         * such as newer unspents, different fees, or a higher sequence id
-         */
-        if (params.tx) {
-          // the approval tx was reconstructed and explicitly specified - pass it through
-          return {
-            txHex: params.tx,
-          };
-        }
+    try {
+      const transaction = await this.preApprove(params, reqId);
 
-        const transaction = _.get(this.info(), `transactionRequest.coinSpecific.${this.baseCoin.type}`) as {
-          txHex: string;
-        };
-
-        // this user may not have spending privileges or a passphrase may not have been passed in
-        if (!canRecreateTransaction) {
-          if (!_.isObject(transaction)) {
-            throw new Error('there is neither an original transaction object nor can a new one be recreated');
-          }
-          return transaction;
-        }
-
-        this.bitgo.setRequestTracer(reqId);
-        await this.populateWallet();
-
-        if (this._pendingApproval.txRequestId) {
-          return await this.recreateAndSignTSSTransaction(params, reqId);
-        }
-        return await this.recreateAndSignTransaction(params);
-      }
-    };
-
-    /*
-     * Internal helper function to prepare the approval payload and send it to bitgo
-     */
-    const sendApproval = (transaction: { txHex: string; halfSigned?: string }): Promise<any> => {
-      const approvalParams: any = { state: 'approved', otp: params.otp };
+      const approvalParams: ApprovePendingApprovalRequestBody = { state: 'approved', otp: params.otp };
       if (transaction) {
         // if the transaction already has a half signed property, we take that directly
         approvalParams.halfSigned = transaction.halfSigned || transaction;
       }
-      this.bitgo.setRequestTracer(reqId);
       return this.bitgo.put(this.url()).send(approvalParams).result();
-    };
-
-    try {
-      const approvalTransaction = (await getApprovalTransaction()) as any;
-      this.bitgo.setRequestTracer(reqId);
-      return await sendApproval(approvalTransaction);
     } catch (e) {
       if (
         !canRecreateTransaction &&
@@ -286,7 +222,7 @@ export class PendingApproval implements IPendingApproval {
    * @param {ApproveOptions} params needed to get txs and use the walletPassphrase to tss sign
    * @param {RequestTracer} reqId id tracer.
    */
-  async recreateAndSignTSSTransaction(params: ApproveOptions, reqId: RequestTracer): Promise<{ txHex: string }> {
+  async recreateAndSignTSSTransaction(params: ApproveOptions, reqId: IRequestTracer): Promise<{ txHex: string }> {
     const { walletPassphrase } = params;
     const txRequestId = this._pendingApproval.txRequestId;
 
@@ -373,5 +309,79 @@ export class PendingApproval implements IPendingApproval {
       throw new Error('recreated transaction is using a higher pay-as-you-go-fee');
     }
     return signedTransaction;
+  }
+
+  /*
+   * Cold wallets cannot recreate transactions if the only thing provided is the wallet passphrase
+   *
+   * The transaction can be recreated if either
+   * – there is an xprv
+   * – there is a walletPassphrase and the wallet is not cold (because if it's cold, the passphrase is of little use)
+   *
+   * Therefore, if neither of these is true, the transaction cannot be recreated, which is reflected in the if
+   * statement below.
+   */
+  private canRecreateTransaction(params: ApproveOptions): boolean {
+    const isColdWallet = !!_.get(this.wallet, '_wallet.isCold');
+    const isOFCWallet = this.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
+    if (!params.xprv && !(params.walletPassphrase && !isColdWallet && !isOFCWallet)) {
+      return false;
+    }
+
+    // If there are no recipients, then the transaction cannot be recreated
+    const recipients = this.info()?.transactionRequest?.buildParams?.recipients || [];
+    const type = this.info()?.transactionRequest?.buildParams?.type;
+
+    // We only want to not recreate transactions with no recipients if it is a UTXO coin.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !(
+      utxolib.isValidNetwork((this.baseCoin as any).network) &&
+      recipients.length === 0 &&
+      type !== 'consolidate'
+    );
+  }
+
+  /*
+   * Internal helper function to get the serialized transaction which is being approved.
+   * If this PA is of type 'transactionRequest' this function will try to rebuild and resign the transaction
+   * @param {ApproveOptions} params
+   * @param {boolean} canRecreateTransaction -
+   * @param {RequestTracer} reqId id tracer
+   */
+  private async preApprove(params: ApproveOptions = {}, reqId: IRequestTracer): Promise<PreApproveResult | undefined> {
+    if (this.type() === 'transactionRequest') {
+      /*
+       * If this is a request for approving a transaction, depending on whether this user has a private key to the wallet
+       * (some admins may not have the spend permission), the transaction could either be rebroadcast as is, or it could
+       * be reconstructed. It is preferable to reconstruct a tx in order to adhere to the latest network conditions
+       * such as newer unspents, different fees, or a higher sequence id
+       */
+      if (params.tx) {
+        // the approval tx was reconstructed and explicitly specified - pass it through
+        return {
+          txHex: params.tx,
+        };
+      }
+
+      const transaction = _.get(
+        this.info(),
+        `transactionRequest.coinSpecific.${this.baseCoin.type}`
+      ) as PreApproveResult;
+
+      // this user may not have spending privileges or a passphrase may not have been passed in
+      if (!this.canRecreateTransaction(params)) {
+        if (!_.isObject(transaction)) {
+          throw new Error('there is neither an original transaction object nor can a new one be recreated');
+        }
+        return transaction;
+      }
+
+      await this.populateWallet();
+
+      if (this._pendingApproval.txRequestId) {
+        return await this.recreateAndSignTSSTransaction(params, reqId);
+      }
+      return await this.recreateAndSignTransaction(params);
+    }
   }
 }
