@@ -145,26 +145,40 @@ export class PendingApproval implements IPendingApproval {
    * Helper function to ensure that self.wallet is set
    */
   private async populateWallet(): Promise<undefined> {
-    const transactionRequest = this.info().transactionRequest;
-    if (_.isUndefined(transactionRequest)) {
-      throw new Error('missing required object property transactionRequest');
+    if (this.wallet) {
+      return;
     }
+    // TODO(WP-1341): consolidate/simplify this logic
+    switch (this.type()) {
+      case Type.TRANSACTION_REQUEST:
+        const transactionRequest = this.info().transactionRequest;
+        if (_.isUndefined(transactionRequest)) {
+          throw new Error('missing required object property transactionRequest');
+        }
 
-    if (_.isUndefined(this.wallet)) {
-      const updatedWallet: IWallet = await this.baseCoin.wallets().get({ id: transactionRequest.sourceWallet });
+        const updatedWallet: IWallet = await this.baseCoin.wallets().get({ id: transactionRequest.sourceWallet });
 
-      if (_.isUndefined(updatedWallet)) {
-        throw new Error('unexpected - unable to get wallet using sourcewallet');
-      }
+        if (_.isUndefined(updatedWallet)) {
+          throw new Error('unexpected - unable to get wallet using sourcewallet');
+        }
 
-      this.wallet = updatedWallet;
+        this.wallet = updatedWallet;
+
+        if (this.wallet.id() !== transactionRequest.sourceWallet) {
+          throw new Error('unexpected source wallet for pending approval');
+        }
+        break;
+      case Type.TRANSACTION_REQUEST_FULL:
+        const walletId = this.walletId();
+        if (!walletId) {
+          throw new Error('Unexpected error, pendingApproval.wallet is expected to be defined!');
+        }
+        this.wallet = await this.baseCoin.wallets().get({ id: this.walletId() });
+        if (!this.wallet) {
+          throw new Error('unexpected - unable to get wallet using pendingApproval.wallet');
+        }
+        break;
     }
-
-    if (this.wallet.id() !== transactionRequest.sourceWallet) {
-      throw new Error('unexpected source wallet for pending approval');
-    }
-
-    // otherwise returns undefined
     return;
   }
 
