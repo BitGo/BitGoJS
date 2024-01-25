@@ -6,13 +6,14 @@ import * as nock from 'nock';
 import * as sinon from 'sinon';
 
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../src/bitgo';
+import { BitGo } from '../../../src';
 
 import {
   BaseCoin,
   Environments,
   PendingApproval,
   PendingApprovalData,
+  PendingApprovalInfo,
   RequestTracer,
   SignatureShareType,
   State,
@@ -58,6 +59,7 @@ describe('Pending Approvals:', () => {
 
   beforeEach(function () {
     sandbox = sinon.createSandbox();
+    nock.disableNetConnect();
   });
 
   afterEach(function () {
@@ -65,7 +67,6 @@ describe('Pending Approvals:', () => {
   });
 
   before(async () => {
-    nock.disableNetConnect();
     // create wallet
     bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
@@ -89,25 +90,33 @@ describe('Pending Approvals:', () => {
     scope.done();
   });
 
-  function testRecreateTransaction(coinName: string, recreateTransaction: boolean) {
+  function testRecreateTransaction(coinName: string, recreateTransaction: boolean, type: Type) {
     it(`[${coinName}] should ${
       recreateTransaction ? 'not ' : ''
-    }recreate the transaction during approving a pending approval if there are no recipients`, async () => {
+    }recreate the transaction during approving a pending approval if there are no recipients for PA type ${type}`, async () => {
+      const coin = bitgo.coin(coinName);
+      const txRequestId = coin.supportsTss() ? 'requestTxIdTest' : undefined;
+      const pendingApprovalInfo =
+        type === 'transactionRequest'
+          ? {
+              type,
+              transactionRequest: {
+                coinSpecific: {
+                  [coinName]: { txHex: 'gabagool' },
+                },
+                recipients: [],
+                buildParams: {},
+                sourceWallet: walletId,
+              },
+            }
+          : ({ type } as unknown as PendingApprovalInfo);
       const pendingApprovalDataTemp: PendingApprovalData = {
         id: 'pa0',
-        info: {
-          type: Type.TRANSACTION_REQUEST,
-          transactionRequest: {
-            coinSpecific: {
-              [coinName]: { txHex: 'gabagool' },
-            },
-            recipients: [],
-            buildParams: {},
-            sourceWallet: walletId,
-          },
-        },
+        info: pendingApprovalInfo,
+        wallet: walletId,
         state: State.PENDING,
         creator: 'test',
+        txRequestId,
       };
 
       const walletDataTemp = {
@@ -115,23 +124,34 @@ describe('Pending Approvals:', () => {
         coinName,
         pendingApprovals: [pendingApprovalDataTemp],
       };
-      const walletTemp = new Wallet(bitgo, bitgo.coin(coinName), walletDataTemp);
-      (pendingApprovalDataTemp as any).wallet = walletTemp;
+      const walletTemp = new Wallet(bitgo, coin, walletDataTemp);
+      pendingApprovalDataTemp.wallet = walletTemp.id();
 
       const pendingApprovals = walletTemp.pendingApprovals();
       pendingApprovals.should.have.length(1);
       const pendingApproval = pendingApprovals[0];
 
-      const stub = sandbox.stub(PendingApproval.prototype, 'recreateAndSignTransaction').resolves({
-        state: 'approved',
-        halfSigned: { txHex: 'gabagool' },
-      });
+      let stub: sinon.SinonStub;
+      if (coin.supportsTss()) {
+        stub = sandbox.stub(PendingApproval.prototype, 'recreateAndSignTSSTransaction').resolves({
+          txHex: 'gabagool',
+        });
+      } else {
+        stub = sandbox.stub(PendingApproval.prototype, 'recreateAndSignTransaction').resolves({
+          state: 'approved',
+          halfSigned: { txHex: 'gabagool' },
+        });
+      }
+
       const paScope = nock(bgUrl)
         .put(`/api/v2/${coinName}/pendingapprovals/${pendingApprovalDataTemp.id}`, {
           state: 'approved',
-          halfSigned: { txHex: 'gabagool' },
+          halfSigned: type === Type.TRANSACTION_REQUEST ? { txHex: 'gabagool' } : undefined,
         })
-        .reply(200);
+        .reply(200, {
+          ...pendingApprovalDataTemp,
+          state: 'approved',
+        });
 
       await pendingApproval.approve({ xprv: 'nonsense', walletPassphrase: 'gabagoolio' });
 
@@ -140,8 +160,10 @@ describe('Pending Approvals:', () => {
       stub.calledOnce.should.equal(recreateTransaction);
     });
   }
-  testRecreateTransaction('tbtc', false);
-  testRecreateTransaction('tsol', true);
+
+  testRecreateTransaction('tbtc', false, Type.TRANSACTION_REQUEST);
+  testRecreateTransaction('tsol', true, Type.TRANSACTION_REQUEST);
+  testRecreateTransaction('tsol', true, Type.TRANSACTION_REQUEST_FULL);
 
   it('should call approve and do the TSS flow and fail if the txRequestId is missing', async () => {
     const pendingApproval = wallet.pendingApprovals()[0];
@@ -167,7 +189,7 @@ describe('Pending Approvals:', () => {
     await pendingApproval.recreateAndSignTSSTransaction(params, reqId).should.be.rejectedWith('Wallet not found');
   });
 
-  it('should call approve and do the TSS flow and success', async () => {
+  it('should call approve and do the TSS flow and success (lite)', async () => {
     pendingApprovalData['txRequestId'] = 'requestTxIdTest';
     const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
     const reqId = new RequestTracer();
@@ -176,6 +198,7 @@ describe('Pending Approvals:', () => {
     const decryptedPrvResponse = 'decryptedPrv';
     const params = { txRequestId, walletPassphrase };
     const txRequest: TxRequest = {
+      apiVersion: 'lite',
       txRequestId: txRequestId,
       unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' }],
       signatureShares: [
@@ -209,6 +232,57 @@ describe('Pending Approvals:', () => {
 
     const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
     recreatedTx.should.be.deepEqual({ txHex: txRequest.unsignedTxs[0].serializedTxHex });
+
+    sandbox.verify();
+  });
+
+  it('should call approve and do the TSS flow and success (full)', async () => {
+    pendingApprovalData['txRequestId'] = 'requestTxIdTest';
+    const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
+    const reqId = new RequestTracer();
+    const txRequestId = 'test';
+    const walletPassphrase = 'test';
+    const decryptedPrvResponse = 'decryptedPrv';
+    const params = { txRequestId, walletPassphrase };
+    const txRequest: TxRequest = {
+      txRequestId: txRequestId,
+      apiVersion: 'full',
+      transactions: [
+        {
+          unsignedTx: { signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' },
+          signatureShares: [
+            {
+              from: SignatureShareType.BITGO,
+              to: SignatureShareType.USER,
+              share: '9d7159a76700635TEST',
+            },
+          ],
+          state: 'initialized',
+        },
+      ],
+      userId: 'userId',
+      date: new Date().toISOString(),
+      intent: {
+        intentType: 'payment',
+      },
+      latest: true,
+      walletId: 'walletId',
+      version: 1,
+      policiesChecked: false,
+      walletType: 'hot',
+      state: 'pendingDelivery',
+    };
+
+    const decryptedPrv = sandbox.stub(Wallet.prototype, 'getPrv');
+    decryptedPrv.calledOnceWithExactly({ walletPassphrase });
+    decryptedPrv.resolves(decryptedPrvResponse);
+
+    const recreateTxRequest = sandbox.stub(TssUtils.prototype, 'recreateTxRequest');
+    recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, reqId);
+    recreateTxRequest.resolves(txRequest);
+
+    const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
+    recreatedTx.should.be.deepEqual({ txHex: txRequest.transactions![0].unsignedTx.serializedTxHex });
 
     sandbox.verify();
   });
