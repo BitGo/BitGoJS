@@ -165,125 +165,130 @@ describe('Pending Approvals:', () => {
   testRecreateTransaction('tsol', true, Type.TRANSACTION_REQUEST);
   testRecreateTransaction('tsol', true, Type.TRANSACTION_REQUEST_FULL);
 
-  it('should call approve and do the TSS flow and fail if the txRequestId is missing', async () => {
-    const pendingApproval = wallet.pendingApprovals()[0];
-    const reqId = new RequestTracer();
-    const params = { walletPassphrase: 'test' };
-    await pendingApproval.recreateAndSignTSSTransaction(params, reqId).should.be.rejectedWith('txRequestId not found');
-  });
+  describe('recreateAndSignTSSTransaction', function () {
+    it('should call approve and do the TSS flow and fail if the txRequestId is missing', async () => {
+      const pendingApproval = wallet.pendingApprovals()[0];
+      const reqId = new RequestTracer();
+      const params = { walletPassphrase: 'test' };
+      await pendingApproval
+        .recreateAndSignTSSTransaction(params, reqId)
+        .should.be.rejectedWith('txRequestId not found');
+    });
 
-  it('should call approve and do the TSS flow and fail if the walletPassphrase is missing', async () => {
-    const pendingApproval = wallet.pendingApprovals()[0];
-    pendingApprovalData['txRequestId'] = 'requestTxIdTest';
-    const reqId = new RequestTracer();
-    const params = {};
-    await pendingApproval
-      .recreateAndSignTSSTransaction(params, reqId)
-      .should.be.rejectedWith('walletPassphrase not found');
-  });
+    it('should call approve and do the TSS flow and fail if the walletPassphrase is missing', async () => {
+      const pendingApproval = wallet.pendingApprovals()[0];
+      pendingApprovalData['txRequestId'] = 'requestTxIdTest';
+      const reqId = new RequestTracer();
+      const params = {};
+      await pendingApproval
+        .recreateAndSignTSSTransaction(params, reqId)
+        .should.be.rejectedWith('walletPassphrase not found');
+    });
 
-  it('should call approve and do the TSS flow and fail if the wallet is missing', async () => {
-    const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData);
-    const reqId = new RequestTracer();
-    const params = { walletPassphrase: 'test' };
-    await pendingApproval.recreateAndSignTSSTransaction(params, reqId).should.be.rejectedWith('Wallet not found');
-  });
+    it('should call approve and do the TSS flow and fail if the wallet is missing', async () => {
+      const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData);
+      const reqId = new RequestTracer();
+      const params = { walletPassphrase: 'test' };
+      await pendingApproval.recreateAndSignTSSTransaction(params, reqId).should.be.rejectedWith('Wallet not found');
+    });
 
-  it('should call approve and do the TSS flow and success (lite)', async () => {
-    pendingApprovalData['txRequestId'] = 'requestTxIdTest';
-    const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
-    const reqId = new RequestTracer();
-    const txRequestId = 'test';
-    const walletPassphrase = 'test';
-    const decryptedPrvResponse = 'decryptedPrv';
-    const params = { txRequestId, walletPassphrase };
-    const txRequest: TxRequest = {
-      apiVersion: 'lite',
-      txRequestId: txRequestId,
-      unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' }],
-      signatureShares: [
-        {
-          from: SignatureShareType.BITGO,
-          to: SignatureShareType.USER,
-          share: '9d7159a76700635TEST',
+    it('should get txHex for transactionRequestLite', async () => {
+      pendingApprovalData['txRequestId'] = 'requestTxIdTest';
+      const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
+      const reqId = new RequestTracer();
+      const txRequestId = 'test';
+      const walletPassphrase = 'test';
+      const decryptedPrvResponse = 'decryptedPrv';
+      const params = { txRequestId, walletPassphrase };
+      const txRequest: TxRequest = {
+        apiVersion: 'lite',
+        txRequestId: txRequestId,
+        unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' }],
+        signatureShares: [
+          {
+            from: SignatureShareType.BITGO,
+            to: SignatureShareType.USER,
+            share: '9d7159a76700635TEST',
+          },
+        ],
+        transactions: [],
+        userId: 'userId',
+        date: new Date().toISOString(),
+        intent: {
+          intentType: 'payment',
         },
-      ],
-      transactions: [],
-      userId: 'userId',
-      date: new Date().toISOString(),
-      intent: {
-        intentType: 'payment',
-      },
-      latest: true,
-      walletId: 'walletId',
-      version: 1,
-      policiesChecked: false,
-      walletType: 'hot',
-      state: 'pendingUserSignature',
-    };
+        latest: true,
+        walletId: 'walletId',
+        version: 1,
+        policiesChecked: false,
+        walletType: 'hot',
+        state: 'pendingUserSignature',
+      };
 
-    const decryptedPrv = sandbox.stub(Wallet.prototype, 'getPrv');
-    decryptedPrv.calledOnceWithExactly({ walletPassphrase });
-    decryptedPrv.resolves(decryptedPrvResponse);
+      const decryptedPrv = sandbox.stub(Wallet.prototype, 'getPrv');
+      decryptedPrv.calledOnceWithExactly({ walletPassphrase });
+      decryptedPrv.resolves(decryptedPrvResponse);
 
-    const recreateTxRequest = sandbox.stub(TssUtils.prototype, 'recreateTxRequest');
-    recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, reqId);
-    recreateTxRequest.resolves(txRequest);
+      const recreateTxRequest = sandbox.stub(TssUtils.prototype, 'recreateTxRequest');
+      recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, reqId);
+      recreateTxRequest.resolves(txRequest);
 
-    const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
-    recreatedTx.should.be.deepEqual({ txHex: txRequest.unsignedTxs[0].serializedTxHex });
+      const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
+      recreatedTx.should.be.deepEqual({ txHex: txRequest.unsignedTxs[0].serializedTxHex });
 
-    sandbox.verify();
-  });
+      sandbox.verify();
+    });
 
-  it('should call approve and do the TSS flow and success (full)', async () => {
-    pendingApprovalData['txRequestId'] = 'requestTxIdTest';
-    const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
-    const reqId = new RequestTracer();
-    const txRequestId = 'test';
-    const walletPassphrase = 'test';
-    const decryptedPrvResponse = 'decryptedPrv';
-    const params = { txRequestId, walletPassphrase };
-    const txRequest: TxRequest = {
-      txRequestId: txRequestId,
-      apiVersion: 'full',
-      transactions: [
-        {
-          unsignedTx: { signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' },
-          signatureShares: [
-            {
-              from: SignatureShareType.BITGO,
-              to: SignatureShareType.USER,
-              share: '9d7159a76700635TEST',
-            },
-          ],
-          state: 'initialized',
+    it('should get txHex for transactionRequestFull ', async () => {
+      pendingApprovalData['txRequestId'] = 'requestTxIdTest';
+      const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
+      const reqId = new RequestTracer();
+      const txRequestId = 'test';
+      const walletPassphrase = 'test';
+      const decryptedPrvResponse = 'decryptedPrv';
+      const params = { txRequestId, walletPassphrase };
+      const txRequest: TxRequest = {
+        txRequestId: txRequestId,
+        apiVersion: 'full',
+        unsignedTxs: [],
+        transactions: [
+          {
+            unsignedTx: { signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' },
+            signatureShares: [
+              {
+                from: SignatureShareType.BITGO,
+                to: SignatureShareType.USER,
+                share: '9d7159a76700635TEST',
+              },
+            ],
+            state: 'initialized',
+          },
+        ],
+        userId: 'userId',
+        date: new Date().toISOString(),
+        intent: {
+          intentType: 'payment',
         },
-      ],
-      userId: 'userId',
-      date: new Date().toISOString(),
-      intent: {
-        intentType: 'payment',
-      },
-      latest: true,
-      walletId: 'walletId',
-      version: 1,
-      policiesChecked: false,
-      walletType: 'hot',
-      state: 'pendingDelivery',
-    };
+        latest: true,
+        walletId: 'walletId',
+        version: 1,
+        policiesChecked: false,
+        walletType: 'hot',
+        state: 'pendingDelivery',
+      };
 
-    const decryptedPrv = sandbox.stub(Wallet.prototype, 'getPrv');
-    decryptedPrv.calledOnceWithExactly({ walletPassphrase });
-    decryptedPrv.resolves(decryptedPrvResponse);
+      const decryptedPrv = sandbox.stub(Wallet.prototype, 'getPrv');
+      decryptedPrv.calledOnceWithExactly({ walletPassphrase });
+      decryptedPrv.resolves(decryptedPrvResponse);
 
-    const recreateTxRequest = sandbox.stub(TssUtils.prototype, 'recreateTxRequest');
-    recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, reqId);
-    recreateTxRequest.resolves(txRequest);
+      const recreateTxRequest = sandbox.stub(TssUtils.prototype, 'recreateTxRequest');
+      recreateTxRequest.calledOnceWithExactly(txRequest.txRequestId, decryptedPrvResponse, reqId);
+      recreateTxRequest.resolves(txRequest);
 
-    const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
-    recreatedTx.should.be.deepEqual({ txHex: txRequest.transactions![0].unsignedTx.serializedTxHex });
+      const recreatedTx = await pendingApproval.recreateAndSignTSSTransaction(params, reqId);
+      recreatedTx.should.be.deepEqual({ txHex: txRequest.transactions![0].unsignedTx.serializedTxHex });
 
-    sandbox.verify();
+      sandbox.verify();
+    });
   });
 });
