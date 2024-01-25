@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@3.5.0...@bitgo/abstract-utxo@3.32.0) (2024-01-25)
+
+### Bug Fixes
+
+- **abstract-utxo:** add changeAddress to change params ([3df744d](https://github.com/BitGo/BitGoJS/commit/3df744dbfe8de6ff846aec13669c38454dd5139f))
+- **abstract-utxo:** add changeAddressType to change params ([b05b278](https://github.com/BitGo/BitGoJS/commit/b05b278a7148b5a5bfb61b17f60b81c7477b6b31))
+- **abstract-utxo:** do not override changeAddressType or txFormat ([9494255](https://github.com/BitGo/BitGoJS/commit/94942559b0be8f9789c7afbb3740924aaab76ab3))
+- **abstract-utxo:** revert to addressType ([5e45e62](https://github.com/BitGo/BitGoJS/commit/5e45e62d512c2794a517030027b1f9f66b20e048))
+- **abstract-utxo:** upper case address should return false ([f0b6c46](https://github.com/BitGo/BitGoJS/commit/f0b6c467daaa0e43bb2923993fb238c7a4ce6f59))
+
+### Features
+
+- **abstract-utxo:** change api used for bitcoin recovery from blockstream to blockchair ([6da5791](https://github.com/BitGo/BitGoJS/commit/6da5791bce2fc73d5d77c1eee6cb581b60da2079))
+- **abstract-utxo:** enable segwit override when flagged ([bdf723c](https://github.com/BitGo/BitGoJS/commit/bdf723ce51d245e97b217941a21b02084b2473cf))
+- **abstract-utxo:** support webauthn decryption in abstract utxo fn ([e9dd17a](https://github.com/BitGo/BitGoJS/commit/e9dd17a87211732a5287144df5a3fb766e6c1142))
+- **abstract-utxo:** this enables psbt unless explicitly disabled for ([9a1722e](https://github.com/BitGo/BitGoJS/commit/9a1722e21e2a2fb3068d2940f439f72a6cbcb421))
+- add walletFlags property, helper methods ([f0fd760](https://github.com/BitGo/BitGoJS/commit/f0fd760122334d86b0d4239bc3b23e0983a1d524))
+- **bitgo:** calculate fees explicitly for psbts ([7a7e288](https://github.com/BitGo/BitGoJS/commit/7a7e288c63718a112abf633b842e7538d1e25693))
+- handle musigKp flag in wallet ([b79b77c](https://github.com/BitGo/BitGoJS/commit/b79b77c4e0d64d85951724946206a5ded4fdd7b2))
+- **unspents:** default unspents dimensions to recovery path ([361eb62](https://github.com/BitGo/BitGoJS/commit/361eb62641aac19c876576a65da7f6777dc532a0))
+- use psbt for prebuild when wallet is distributedCustody ([10f5e1a](https://github.com/BitGo/BitGoJS/commit/10f5e1ab37d2bea6acd93f94defbe786e4a027b9))
+
 # [3.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@3.5.0...@bitgo/abstract-utxo@3.31.0) (2024-01-22)
 
 ### Bug Fixes
