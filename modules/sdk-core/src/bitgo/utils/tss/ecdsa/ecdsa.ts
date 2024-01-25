@@ -1000,6 +1000,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
   async signTxRequest(params: TSSParams): Promise<TxRequest> {
+    this.bitgo.setRequestTracer(params.reqId);
     return this.signRequestBase(params, RequestType.tx);
   }
 
