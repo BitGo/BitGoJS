@@ -67,13 +67,13 @@
 /modules/sdk-core/src/bitgo/trading/ @BitGo/prime
 
 # Core Modules
-/modules/bitgo/ @BitGo/custody-experience @BitGo/wallet-platform
+/modules/bitgo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 /modules/blake2b-wasm/  @BitGo/custody-experience @BitGo/wallet-platform
 /modules/blake2b/ @BitGo/custody-experience @BitGo/wallet-platform
 /modules/express/ @BitGo/wallet-platform
 /modules/key-card/ @BitGo/wallet-platform
 /modules/sdk-api/ @BitGo/custody-experience @BitGo/wallet-platform
-/modules/sdk-core/ @BitGo/wallet-platform @BitGo/hsm
+/modules/sdk-core/ @BitGo/wallet-platform @BitGo/hsm @BitGo/coins
 /modules/sdk-lib-mpc/ @BitGo/wallet-platform @BitGo/hsm
 /modules/deser-lib/ @BitGo/wallet-platform @BitGo/hsm
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team
