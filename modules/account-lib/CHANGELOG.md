@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.12.0...@bitgo/account-lib@18.0.0) (2024-01-25)
+
+### Bug Fixes
+
+- **account-lib:** pin substrate txwrapper ([e0c4b16](https://github.com/BitGo/BitGoJS/commit/e0c4b16615ab47326dce0da3712f0faa572bae44))
+- rename coin 'core' to 'coreum' in coinBuilderMap ([e85f658](https://github.com/BitGo/BitGoJS/commit/e85f658bd42490112716e5ffcb9f6e32f15bd5a0))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-dot:** update DOT sdk to latest ([9385f80](https://github.com/BitGo/BitGoJS/commit/9385f803366b615d09bda31b8efda6f93e26e8e7))
+- **sdk-core:** fix issue related to bignumber version ([519fe47](https://github.com/BitGo/BitGoJS/commit/519fe479ef51a72ddc1e94f87c10e031c0fd2c3f))
+
+### Code Refactoring
+
+- rename coin 'core' to 'coreum' ([baecc01](https://github.com/BitGo/BitGoJS/commit/baecc013ff7243ce78ebd767bffdb0763b8b4cdb))
+
+### Features
+
+- **account-lib:** add holesky testnet coin ([0aaefc0](https://github.com/BitGo/BitGoJS/commit/0aaefc0e53a5a48b2c701ca3c6d5e1c6ec7c19d2))
+- **account-lib:** expose Ton from sdk ([14c8b18](https://github.com/BitGo/BitGoJS/commit/14c8b1806ba82799a973544670fa01a6f2ce8dc4))
+- **sdk-coin-arbeth:** add arbeth sdk skeleton ([f86018e](https://github.com/BitGo/BitGoJS/commit/f86018eef56adf22b5539bfb8716175eb1fb152e))
+- **sdk-coin-bera:** add Berachain skeleton ([b3d43c5](https://github.com/BitGo/BitGoJS/commit/b3d43c52c7fd10d5fdc40123b3ad61cfe4784e5d))
+- **sdk-coin-core:** add coreum sdk ([af73ccd](https://github.com/BitGo/BitGoJS/commit/af73ccd445b52dcf378ebd18260e628de0687043))
+- **sdk-coin-islm:** add Islamic Coin ([c49bdd1](https://github.com/BitGo/BitGoJS/commit/c49bdd18df36a20d6e27cdd2686ec687bf653596))
+- **sdk-coin-opeth:** add opeth sdk skeleton ([42fbefa](https://github.com/BitGo/BitGoJS/commit/42fbefa54f22fa5bdaef4150ef3a643843ec8684))
+- **sdk-coin-zketh:** add zketh sdk skeleton ([dd2952f](https://github.com/BitGo/BitGoJS/commit/dd2952fb82127482f4d3d89a445a07f8592a4a5d))
+- **sdk-core:** generate and verify schnorr proof of X_i ([ff58298](https://github.com/BitGo/BitGoJS/commit/ff58298c21ee8de4f6cee4fec857666e9556d0f3))
+- update secp256k1 to 5.0.0 and keccak to 3.0.3 ([e2c37e6](https://github.com/BitGo/BitGoJS/commit/e2c37e6b0139c9f6948a22d8921bc3e1f88bed4c))
+
+### BREAKING CHANGES
+
+- rename coin module, coin name, named exports for coreum
+
 # [17.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@4.12.0...@bitgo/account-lib@17.0.0) (2024-01-22)
 
 ### Bug Fixes
