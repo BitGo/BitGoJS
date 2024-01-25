@@ -150,6 +150,7 @@ export class PendingApproval implements IPendingApproval {
     const canRecreateTransaction = this.canRecreateTransaction(params);
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
+    await this.populateWallet();
 
     try {
       const transaction = await this.preApprove(params, reqId);
@@ -159,7 +160,11 @@ export class PendingApproval implements IPendingApproval {
         // if the transaction already has a half signed property, we take that directly
         approvalParams.halfSigned = transaction.halfSigned || transaction;
       }
-      return this.bitgo.put(this.url()).send(approvalParams).result();
+      this._pendingApproval = await this.bitgo.put(this.url()).send(approvalParams).result();
+
+      await this.postApprove(params, reqId);
+
+      return this._pendingApproval;
     } catch (e) {
       if (
         !canRecreateTransaction &&
@@ -213,9 +218,21 @@ export class PendingApproval implements IPendingApproval {
 
     const decryptedPrv = await this.wallet.getPrv({ walletPassphrase });
     const txRequest = await this.tssUtils.recreateTxRequest(txRequestId, decryptedPrv, reqId);
-    return {
-      txHex: txRequest.unsignedTxs[0].serializedTxHex,
-    };
+    if (txRequest.apiVersion === 'lite') {
+      if (!txRequest.unsignedTxs || txRequest.unsignedTxs.length === 0) {
+        throw new Error('Unexpected error, no transactions found in txRequest.');
+      }
+      return {
+        txHex: txRequest.unsignedTxs[0].serializedTxHex,
+      };
+    } else {
+      if (!txRequest.transactions || txRequest.transactions.length === 0) {
+        throw new Error('Unexpected error, no transactions found in txRequest.');
+      }
+      return {
+        txHex: txRequest.transactions[0].unsignedTx.serializedTxHex,
+      };
+    }
   }
 
   /**
@@ -322,7 +339,9 @@ export class PendingApproval implements IPendingApproval {
    * @param {RequestTracer} reqId id tracer
    */
   private async preApprove(params: ApproveOptions = {}, reqId: IRequestTracer): Promise<PreApproveResult | undefined> {
-    if (this.type() === 'transactionRequest') {
+    // TransactionRequestLite or Multisig tx's must sign before pending approval is approved
+    // Re-signed tx is provided to the pending approval api
+    if (this.type() === Type.TRANSACTION_REQUEST) {
       /*
        * If this is a request for approving a transaction, depending on whether this user has a private key to the wallet
        * (some admins may not have the spend permission), the transaction could either be rebroadcast as is, or it could
@@ -349,12 +368,27 @@ export class PendingApproval implements IPendingApproval {
         return transaction;
       }
 
-      await this.populateWallet();
-
       if (this._pendingApproval.txRequestId) {
         return await this.recreateAndSignTSSTransaction(params, reqId);
       }
       return await this.recreateAndSignTransaction(params);
+    }
+  }
+
+  /**
+   * Internal helper function to perform any post-approval actions.
+   * If type is 'transactionRequestFull', this will sign the txRequestFull if possible
+   * @param params
+   * @param reqId
+   * @private
+   */
+  private async postApprove(params: ApproveOptions = {}, reqId: IRequestTracer): Promise<void> {
+    switch (this.type()) {
+      case Type.TRANSACTION_REQUEST_FULL:
+        // TransactionRequestFull for SMH or SMC wallets can only be signed after pending approval is approved
+        if (this._pendingApproval.state === State.APPROVED && this.canRecreateTransaction(params)) {
+          await this.recreateAndSignTSSTransaction(params, reqId);
+        }
     }
   }
 
