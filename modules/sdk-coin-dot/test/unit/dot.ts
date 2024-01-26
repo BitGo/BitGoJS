@@ -233,14 +233,14 @@ describe('DOT:', function () {
       unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs[0].address.should.equal(
         '5Dtg2zKjVEL8p9keSM4dQ7nD26sVtMfCsyxkhvZZ9fqBbhw6'
       );
-      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs[0].valueString.should.equal('1500000000000');
-      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs[0].value.should.equal(1500000000000);
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs[0].valueString.should.equal('1510000000000');
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.inputs[0].value.should.equal(1510000000000);
       unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs.should.not.be.undefined();
       unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs.length.should.equal(1);
       unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs[0].address.should.equal(
         '5GPAveMvmDsjxVT6Q2xiu5kYPbFAmdebHaiNZK14FBaSaAKh'
       );
-      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs[0].valueString.should.equal('1500000000000');
+      unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs[0].valueString.should.equal('1510000000000');
       unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.outputs[0].coinName.should.equal('tdot');
       unsigned.txRequests[0].transactions[0].unsignedTx.parsedTx.type.should.equal('');
       unsigned.txRequests[0].transactions[0].unsignedTx.feeInfo.should.not.be.undefined();

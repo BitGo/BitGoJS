@@ -433,10 +433,7 @@ export class Dot extends BaseCoin {
       const signedTransaction = await txnBuilder.build();
       serializedTx = signedTransaction.toBroadcastFormat();
     } else {
-      // Polkadot has a concept of existential desposit (ed), it is the minimum amount required by an address to have
-      // to keep the account active
-      const existentialDeposit = this.getChain() === 'tdot' ? 10000000000 : 1000000000000;
-      const value = new BigNumber(freeBalance).minus(new BigNumber(existentialDeposit));
+      const value = new BigNumber(freeBalance);
       const walletCoin = this.getChain();
       const inputs = [
         {
