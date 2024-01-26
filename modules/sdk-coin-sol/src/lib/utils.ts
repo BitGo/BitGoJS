@@ -133,12 +133,18 @@ export function isValidMemo(memo: string): boolean {
  * Checks if raw transaction can be deserialized
  *
  * @param {string} rawTransaction - transaction in base64 string format
+ * @param {boolean} requireAllSignatures - require all signatures to be present
+ * @param {boolean} verifySignatures - verify signatures
  * @returns {boolean} - the validation result
  */
-export function isValidRawTransaction(rawTransaction: string): boolean {
+export function isValidRawTransaction(
+  rawTransaction: string,
+  requireAllSignatures = false,
+  verifySignatures = false
+): boolean {
   try {
     const tx = SolTransaction.from(Buffer.from(rawTransaction, 'base64'));
-    tx.serialize({ requireAllSignatures: false, verifySignatures: false });
+    tx.serialize({ requireAllSignatures, verifySignatures });
     return true;
   } catch (e) {
     return false;
@@ -364,11 +370,15 @@ export function validateRawMsgInstruction(instructions: TransactionInstruction[]
  *
  * @param {string} rawTransaction - Transaction in base64 string  format
  */
-export function validateRawTransaction(rawTransaction: string): void {
+export function validateRawTransaction(
+  rawTransaction: string,
+  requireAllSignatures = false,
+  verifySignatures = false
+): void {
   if (!rawTransaction) {
     throw new ParseTransactionError('Invalid raw transaction: Undefined');
   }
-  if (!isValidRawTransaction(rawTransaction)) {
+  if (!isValidRawTransaction(rawTransaction, requireAllSignatures, verifySignatures)) {
     throw new ParseTransactionError('Invalid raw transaction');
   }
 }

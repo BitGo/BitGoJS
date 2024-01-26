@@ -57,6 +57,27 @@ const getBlockhashResponse = {
   },
 };
 
+const broadcastTransactionResponse = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: '2id3YC2jK9G5Wo2phDx4gJVAew8DcY5NAojnVuao8rkxwPYPe8cSwE5GzhEgJA2y8fVjDEo6iR6ykBvDxrTQrtpb',
+    id: 1,
+  },
+};
+
+const broadcastTransactionResponseError = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    error: {
+      code: -32002,
+      message: 'Transaction simulation failed: Blockhash not found',
+    },
+    id: 1,
+  },
+};
+
 const getFeesResponse = {
   status: 200,
   body: {
@@ -419,6 +440,8 @@ export const SolResponses = {
   getTokenAccountsByOwnerResponse3,
   getTokenAccountsByOwnerResponseNoAccounts,
   getMinimumBalanceForRentExemptionResponse,
+  broadcastTransactionResponse,
+  broadcastTransactionResponseError,
 } as const;
 
 export const accountInfo = {

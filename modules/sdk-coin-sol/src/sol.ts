@@ -40,6 +40,8 @@ import {
   MPCTxs,
   OvcInput,
   OvcOutput,
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
 } from '@bitgo/sdk-core';
 import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
 import {
@@ -49,6 +51,7 @@ import {
   isValidPrivateKey,
   isValidPublicKey,
   getSolTokenFromAddress,
+  validateRawTransaction,
 } from './lib/utils';
 import * as request from 'superagent';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
@@ -514,7 +517,7 @@ export class Sol extends BaseCoin {
   }
 
   /**
-   * Make a request to one of the public EOS nodes available
+   * Make a request to one of the public SOL nodes available
    * @param params.payload
    */
   protected async getDataFromNode(params: { payload?: Record<string, unknown> }): Promise<request.Response> {
@@ -1088,5 +1091,30 @@ export class Sol extends BaseCoin {
 
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  async broadcastTransaction({
+    serializedSignedTransaction,
+  }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    validateRawTransaction(serializedSignedTransaction, true, true);
+    const response = await this.getDataFromNode({
+      payload: {
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'sendTransaction',
+        params: [
+          serializedSignedTransaction,
+          {
+            encoding: 'base64',
+          },
+        ],
+      },
+    });
+
+    if (response.body.error) {
+      throw new Error('Error broadcasting transaction: ' + response.body.error.message);
+    }
+
+    return { txId: response.body.result };
   }
 }
