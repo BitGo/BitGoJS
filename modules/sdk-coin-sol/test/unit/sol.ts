@@ -2302,4 +2302,91 @@ describe('SOL:', function () {
         );
     });
   });
+
+  describe('broadcastTransaction', function () {
+    const sandBox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('should broadcast a transaction succesfully', async function () {
+      const serializedSignedTransaction = testData.rawTransactions.transfer.signed;
+      const broadcastStub = sandBox
+        .stub(Sol.prototype, 'getDataFromNode' as keyof Sol)
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'sendTransaction',
+            params: [
+              serializedSignedTransaction,
+              {
+                encoding: 'base64',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.broadcastTransactionResponse);
+
+      const broadcastTxn = await basecoin.broadcastTransaction({ serializedSignedTransaction });
+      assert.ok(broadcastTxn);
+      assert.ok(broadcastTxn.txId);
+      assert.strictEqual(
+        broadcastTxn.txId,
+        '2id3YC2jK9G5Wo2phDx4gJVAew8DcY5NAojnVuao8rkxwPYPe8cSwE5GzhEgJA2y8fVjDEo6iR6ykBvDxrTQrtpb'
+      );
+      assert.strictEqual(broadcastStub.callCount, 1);
+    });
+
+    it('should throw if got an error from the node', async function () {
+      const serializedSignedTransaction = testData.rawTransactions.transfer.signed;
+      const broadcastStub = sandBox
+        .stub(Sol.prototype, 'getDataFromNode' as keyof Sol)
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'sendTransaction',
+            params: [
+              serializedSignedTransaction,
+              {
+                encoding: 'base64',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.broadcastTransactionResponseError);
+
+      await assert.rejects(
+        async () => {
+          await basecoin.broadcastTransaction({ serializedSignedTransaction });
+        },
+        { message: 'Error broadcasting transaction: Transaction simulation failed: Blockhash not found' }
+      );
+      assert.strictEqual(broadcastStub.callCount, 1);
+    });
+
+    it('should throw if is not a valid transaction', async function () {
+      const serializedSignedTransaction = 'randomstring';
+
+      await assert.rejects(
+        async () => {
+          await basecoin.broadcastTransaction({ serializedSignedTransaction });
+        },
+        { message: 'Invalid raw transaction' }
+      );
+    });
+
+    it('should throw if is not a signed transaction', async function () {
+      const serializedSignedTransaction = testData.rawTransactions.transfer.unsigned;
+
+      await assert.rejects(
+        async () => {
+          await basecoin.broadcastTransaction({ serializedSignedTransaction });
+        },
+        { message: 'Invalid raw transaction' }
+      );
+    });
+  });
 });
