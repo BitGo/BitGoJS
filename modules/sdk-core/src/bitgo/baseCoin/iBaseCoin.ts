@@ -437,6 +437,14 @@ export type BuildNftTransferDataOptions = NFTTransferOptions & {
   fromAddress: string;
 };
 
+export interface BaseBroadcastTransactionOptions {
+  serializedSignedTransaction: string;
+}
+
+export interface BaseBroadcastTransactionResult {
+  txId: string;
+}
+
 export interface IBaseCoin {
   type: string;
   tokenConfig?: BaseTokenConfig;
@@ -512,4 +520,5 @@ export interface IBaseCoin {
    */
   buildNftTransferData(params: BuildNftTransferDataOptions): string;
   getHashFunction(): Hash;
+  broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult>;
 }

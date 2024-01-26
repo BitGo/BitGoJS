@@ -39,6 +39,8 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   BuildNftTransferDataOptions,
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
@@ -497,5 +499,15 @@ export abstract class BaseCoin implements IBaseCoin {
 
   buildNftTransferData(params: BuildNftTransferDataOptions): string {
     throw new NotImplementedError('buildNftTransferData is not supported for this coin');
+  }
+
+  /**
+   * Broadcast a transaction to the network
+   * @param params options for broadcasting
+   * @returns {Promise<BaseBroadcastTransactionResult>} result of broadcast
+   * @throws {NotImplementedError} if not implemented
+   */
+  broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    throw new NotImplementedError('broadcastTransaction is not supported for this coin');
   }
 }

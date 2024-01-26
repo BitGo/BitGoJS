@@ -388,3 +388,62 @@ export function getHederaTokenNameFromId(tokenId: string): Readonly<BaseCoin> | 
 export function isTokenTransfer(transferTxBody: proto.ICryptoTransferTransactionBody | null): boolean {
   return !!transferTxBody && !!transferTxBody.tokenTransfers && transferTxBody.tokenTransfers.length > 0;
 }
+
+/** validates a startTime string to be a valid timestamp and in the future
+ * @param {string} startTime - The startTime to be validated
+ * @throws {Error} - if startTime is not a valid timestamp or is in the past
+ * @returns {void}
+ * */
+export function validateStartTime(startTime: string): void {
+  if (!isValidTimeString(startTime)) {
+    throw new Error('invalid startTime, got: ' + startTime);
+  }
+  const currentTime = getCurrentTime();
+  const startTimeFixed = normalizeStarttime(startTime);
+  const result = new BigNumber(startTimeFixed).isLessThanOrEqualTo(currentTime);
+  if (result) {
+    throw new Error('startTime must be a future timestamp, got: ' + startTime);
+  }
+}
+
+export function normalizeStarttime(startTime: string): string {
+  return new BigNumber(startTime).toFixed(9);
+}
+
+/**
+ * Await for a given amount of time in milliseconds
+ * @param ms - The amount of time to wait in milliseconds
+ * @returns {Promise<void>} - A promise that resolves after the given amount of time
+ */
+export function sleep(ms: number): Promise<void> {
+  console.log(`sleeping for ${ms} ms`);
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Check if the startTime is within the broadcast window (5 seconds after and 175 seconds after the startTime)
+ */
+export function shouldBroadcastNow(startTime: string): boolean {
+  const startTimeFixed = normalizeStarttime(startTime);
+  const currentTime = getCurrentTime();
+  // startTime plus 5 seconds
+  const startingTimeWindow = new BigNumber(startTimeFixed).plus(5).toFixed(9);
+  // startTime plus 170 seconds
+  const endingTimeWindow = new BigNumber(startTimeFixed).plus(175).toFixed(9);
+
+  if (new BigNumber(currentTime).isGreaterThan(endingTimeWindow)) {
+    throw new Error(
+      'startTime window expired, got: ' +
+        startTimeFixed +
+        ' - currentTime: ' +
+        currentTime +
+        ' - endingTimeWindow ' +
+        endingTimeWindow
+    );
+  }
+
+  return (
+    new BigNumber(currentTime).isGreaterThanOrEqualTo(startingTimeWindow) &&
+    new BigNumber(currentTime).isLessThanOrEqualTo(endingTimeWindow)
+  );
+}

@@ -6,7 +6,6 @@ import {
   BaseCoin,
   BitGoBase,
   KeyPair,
-  MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -19,6 +18,8 @@ import {
   TransactionExplanation,
   Memo,
   TokenEnablementConfig,
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -26,6 +27,14 @@ import { SeedValidator } from './seedValidator';
 import { KeyPair as HbarKeyPair, TransactionBuilderFactory, Transaction } from './lib';
 import * as Utils from './lib/utils';
 import * as _ from 'lodash';
+import {
+  Client,
+  Transaction as HbarTransaction,
+  AccountBalanceQuery,
+  AccountBalanceJson,
+  Hbar as HbarUnit,
+} from '@hashgraph/sdk';
+import { PUBLIC_KEY_PREFIX } from './lib/keyPair';
 
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -65,6 +74,51 @@ export interface HbarVerifyTransactionOptions extends VerifyTransactionOptions {
 
 interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   baseAddress: string;
+}
+
+export interface RecoveryOptions {
+  backupKey: string;
+  userKey: string;
+  rootAddress: string;
+  recoveryDestination: string;
+  bitgoKey?: string;
+  walletPassphrase?: string;
+  maxFee?: string;
+  nodeId?: string;
+  startTime?: string;
+}
+
+interface RecoveryInfo {
+  id: string;
+  tx: string;
+  coin: string;
+  startTime: string;
+  nodeId: string;
+}
+
+export interface OfflineVaultTxInfo {
+  txHex: string;
+  userKey: string;
+  backupKey: string;
+  bitgoKey?: string;
+  address: string;
+  coin: string;
+  maxFee: string;
+  recipients: Recipient[];
+  amount: string;
+  startTime: string;
+  validDuration: string;
+  nodeId: string;
+  memo: string;
+  json?: any;
+}
+
+export interface BroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
+  startTime?: string;
+}
+
+export interface BroadcastTransactionResult extends BaseBroadcastTransactionResult {
+  status?: string;
 }
 
 export class Hbar extends BaseCoin {
@@ -249,8 +303,131 @@ export class Hbar extends BaseCoin {
    * 3) Send signed build - send our signed build to a public node
    * @param params
    */
-  async recover(params: any): Promise<any> {
-    throw new MethodNotImplementedError();
+  public async recover(params: RecoveryOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    const isUnsignedSweep =
+      params.backupKey.startsWith(PUBLIC_KEY_PREFIX) && params.userKey.startsWith(PUBLIC_KEY_PREFIX);
+
+    // Validate the root address
+    if (!this.isValidAddress(params.rootAddress)) {
+      throw new Error('invalid rootAddress, got: ' + params.rootAddress);
+    }
+
+    // Validate the destination address
+    if (!this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination, got: ' + params.recoveryDestination);
+    }
+
+    // Validate nodeId
+    if (params.nodeId && !Utils.isValidAddress(params.nodeId)) {
+      throw new Error('invalid nodeId, got: ' + params.nodeId);
+    }
+
+    // validate fee
+    if (params.maxFee && !Utils.isValidAmount(params.maxFee)) {
+      throw new Error('invalid maxFee, got: ' + params.maxFee);
+    }
+
+    // validate startTime
+
+    if (params.startTime) {
+      Utils.validateStartTime(params.startTime);
+    }
+
+    if (isUnsignedSweep && !params.startTime) {
+      throw new Error('start time is required for unsigned sweep');
+    }
+
+    if (!isUnsignedSweep && !params.walletPassphrase) {
+      throw new Error('walletPassphrase is required for non-bitgo recovery');
+    }
+
+    let userPrv: string | undefined;
+    let backUp: string | undefined;
+    if (!isUnsignedSweep) {
+      try {
+        userPrv = this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
+        backUp = this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
+      } catch (e) {
+        throw new Error(
+          'unable to decrypt userKey or backupKey with the walletPassphrase provided, got error: ' + e.message
+        );
+      }
+    }
+
+    // validate userKey for unsigned sweep
+    if (isUnsignedSweep && !Utils.isValidPublicKey(params.userKey)) {
+      throw new Error('invalid userKey, got: ' + params.userKey);
+    }
+
+    // validate backupKey for unsigned sweep
+    if (isUnsignedSweep && !Utils.isValidPublicKey(params.backupKey)) {
+      throw new Error('invalid backupKey, got: ' + params.backupKey);
+    }
+
+    const { address: destinationAddress, memoId } = Utils.getAddressDetails(params.recoveryDestination);
+
+    const client = this.getHbarClient();
+
+    const balance = await this.getAccountBalance(params.rootAddress, client);
+    const nativeBalance = HbarUnit.fromString(balance.hbars).toTinybars().toString();
+    const fee = params.maxFee ? params.maxFee : '10000000';
+
+    if (new BigNumber(nativeBalance).isZero() || new BigNumber(nativeBalance).isLessThanOrEqualTo(fee)) {
+      throw new Error('Insufficient balance to recover, got balance: ' + nativeBalance + ' fee: ' + fee);
+    }
+
+    const nodeId = params.nodeId ? params.nodeId : '0.0.3';
+
+    const spendableAmount = new BigNumber(nativeBalance).minus(fee).toString();
+
+    const txBuilder = this.getBuilderFactory().getTransferBuilder();
+    txBuilder.node({ nodeId });
+    txBuilder.fee({ fee });
+    txBuilder.source({ address: params.rootAddress });
+    txBuilder.send({ address: destinationAddress, amount: spendableAmount });
+    txBuilder.validDuration(180);
+
+    if (memoId) {
+      txBuilder.memo(memoId);
+    }
+
+    if (params.startTime) {
+      txBuilder.startTime(Utils.normalizeStarttime(params.startTime));
+    }
+    if (isUnsignedSweep) {
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      return {
+        txHex: tx.toBroadcastFormat(),
+        coin: this.getChain(),
+        id: txJson.id,
+        startTime: txJson.startTime,
+        validDuration: txJson.validDuration,
+        nodeId: txJson.node,
+        memo: txJson.memo,
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        maxFee: fee,
+        address: params.rootAddress,
+        recipients: txJson.instructionsData.params.recipients,
+        amount: txJson.amount,
+        json: txJson,
+      };
+    }
+
+    txBuilder.sign({ key: userPrv });
+    txBuilder.sign({ key: backUp });
+
+    const tx = await txBuilder.build();
+
+    return {
+      tx: tx.toBroadcastFormat(),
+      id: tx.toJson().id,
+      coin: this.getChain(),
+      startTime: tx.toJson().startTime,
+      nodeId: tx.toJson().node,
+    };
   }
 
   /**
@@ -371,5 +548,48 @@ export class Hbar extends BaseCoin {
 
   private getBuilderFactory(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  private getHbarClient(): Client {
+    const client = this.bitgo.getEnv() === 'prod' ? Client.forMainnet() : Client.forTestnet();
+    return client;
+  }
+
+  async getAccountBalance(accountId: string, client: Client): Promise<AccountBalanceJson> {
+    try {
+      const balance = await new AccountBalanceQuery().setAccountId(accountId).execute(client);
+
+      return balance.toJSON();
+    } catch (e) {
+      throw new Error('Failed to get account balance, error: ' + e.message);
+    }
+  }
+
+  async broadcastTransaction({
+    serializedSignedTransaction,
+    startTime,
+  }: BroadcastTransactionOptions): Promise<BroadcastTransactionResult> {
+    try {
+      const hbarTx = HbarTransaction.fromBytes(Utils.toUint8Array(serializedSignedTransaction));
+
+      if (startTime) {
+        Utils.isValidTimeString(startTime);
+        while (!Utils.shouldBroadcastNow(startTime)) {
+          await Utils.sleep(1000);
+        }
+      }
+
+      return this.clientBroadcastTransaction(hbarTx);
+    } catch (e) {
+      throw new Error('Failed to broadcast transaction, error: ' + e.message);
+    }
+  }
+
+  async clientBroadcastTransaction(hbarTx: HbarTransaction) {
+    const client = this.getHbarClient();
+    const transactionResponse = await hbarTx.execute(client);
+    const transactionReceipt = await transactionResponse.getReceipt(client);
+
+    return { txId: transactionResponse.transactionId.toString(), status: transactionReceipt.status.toString() };
   }
 }
