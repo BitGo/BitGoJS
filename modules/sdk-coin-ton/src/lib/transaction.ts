@@ -71,7 +71,8 @@ export class Transaction extends BaseTransaction {
 
     this.finalMessage = TonWeb.utils.bytesToBase64(await finalMessage.toBoc(false));
 
-    this._id = TonWeb.utils.bytesToBase64(await finalMessage.hash());
+    const originalTxId = TonWeb.utils.bytesToBase64(await finalMessage.hash());
+    this._id = originalTxId.replace(/\//g, '_').replace(/\+/g, '-');
   }
 
   private createSigningMessage(walletId, seqno, expireAt) {
