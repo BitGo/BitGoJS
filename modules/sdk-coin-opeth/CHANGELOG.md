@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 13.0.0 (2024-01-26)
+
+### Bug Fixes
+
+- **abstract-eth:** fix chainid related changes ([c3a21c4](https://github.com/BitGo/BitGoJS/commit/c3a21c4cc470f2147c80e235607011bd4896f911))
+- **abstract-eth:** fix issues related to chainid ([9114b1b](https://github.com/BitGo/BitGoJS/commit/9114b1b95ca0929d2d1ef5b33ba4f35e1184b5c7))
+- add opeth token support to register ([577ba12](https://github.com/BitGo/BitGoJS/commit/577ba12e3999124036fb880da32dec6f7380d1b9))
+- **sdk-coin-opeth:** enable chainid change for opeth ([d1e0eea](https://github.com/BitGo/BitGoJS/commit/d1e0eeab31d969774bd862736539f7840f7e9fe2))
+- **sdk-coin-opeth:** fix recover methods ([13264d8](https://github.com/BitGo/BitGoJS/commit/13264d87b7b0661ca002f55fdd41ba1c66b1e82b))
+- **sdk-coin-polygon:** fix issues ([85e9396](https://github.com/BitGo/BitGoJS/commit/85e93967abd056f5054198f385a1b109246a281f))
+- **statics:** make corrections for arbeth and opeth ([5dfc405](https://github.com/BitGo/BitGoJS/commit/5dfc405a36fc97b2c902fec44562b169d8013a18))
+
+### Code Refactoring
+
+- **abstract-eth:** add common method to abstract-eth ([df6eea5](https://github.com/BitGo/BitGoJS/commit/df6eea5d299c415b30263d1713335c14e5abef4a))
+
+### Features
+
+- **abstract-eth:** add chain id as network identifier ([3ddec05](https://github.com/BitGo/BitGoJS/commit/3ddec05705cff891e46d21743d0ee864d68ab216))
+- **sdk-coin-opeth:** add opeth sdk skeleton ([42fbefa](https://github.com/BitGo/BitGoJS/commit/42fbefa54f22fa5bdaef4150ef3a643843ec8684))
+- **sdk-coin-opeth:** add opeth tokens ([1e50329](https://github.com/BitGo/BitGoJS/commit/1e503292d26cb46ca3e2336a8514018ab09f6759))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** Type of nextContractSequenceId field in TransactionPrebuild
+  interface is changed from string to number in AbstractEthLikeCoin and AbstractEthLikeNewCoins classes.
+  getCustomChainName method is removed from Polygon class because a common
+  method getCustomChainCommon has been added to AbstractEthLikeNewCoins
+  class for all EthLike coins. replayProtectionOptions is not optional in buildTransaction method in AbstractEthLikeNewCoins
+  and needs to be passed to derive the Eth common object from the chainId.
+  signFinalPolygon method name from Polygon class is updated to signFinalEthLike so that
+  it can be used for other EthLike coins. getBaseFactor method in Eth
+  and Polygon class returns number instead of string just to align with
+  AbstractEthLikeCoin
+  Ticket: WIN-1012
+
 # 12.0.0 (2024-01-25)
 
 ### Bug Fixes

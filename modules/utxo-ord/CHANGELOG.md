@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.4.0...@bitgo/utxo-ord@1.16.0) (2024-01-26)
+
+### Features
+
+- **unspents:** default unspents dimensions to recovery path ([361eb62](https://github.com/BitGo/BitGoJS/commit/361eb62641aac19c876576a65da7f6777dc532a0))
+
 # [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.4.0...@bitgo/utxo-ord@1.15.0) (2024-01-25)
 
 ### Features
