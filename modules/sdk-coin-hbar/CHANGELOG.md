@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.5.0...@bitgo/sdk-coin-hbar@1.9.0) (2024-01-26)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-hbar:** allow explain txn to take both feeParam as well as parsed json ([fcc8bc5](https://github.com/BitGo/BitGoJS/commit/fcc8bc571efb5c7ec218ef1d30b8eac4640a5d7e))
+- **sdk-coin-hbar:** hbar transaction valid duration ([74d7c4d](https://github.com/BitGo/BitGoJS/commit/74d7c4dd71d21a089274b87172aeae126a5af49d))
+
+### Features
+
+- **sdk-coin-hbar:** implement recover method for native hbar ([45c4b7a](https://github.com/BitGo/BitGoJS/commit/45c4b7a7591176cb665efbdbb4279d40f3a869dd))
+- **statics:** update thbar usdc token address ([f83d2aa](https://github.com/BitGo/BitGoJS/commit/f83d2aab9e3bc12cebe73b4bb11f284aab00b2ee))
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.5.0...@bitgo/sdk-coin-hbar@1.8.0) (2024-01-26)
 
 ### Bug Fixes

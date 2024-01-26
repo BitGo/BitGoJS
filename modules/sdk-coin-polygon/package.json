@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-polygon",
-  "version": "16.0.0",
+  "version": "17.0.0",
   "description": "BitGo SDK coin library for Polygon",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,17 +40,17 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^16.0.0",
-    "@bitgo/sdk-core": "^23.0.0",
+    "@bitgo/abstract-eth": "^17.0.0",
+    "@bitgo/sdk-core": "^24.0.0",
     "@bitgo/sjcl": "^1.0.1",
-    "@bitgo/statics": "^44.0.0",
-    "@bitgo/utxo-lib": "^9.31.0",
+    "@bitgo/statics": "^45.0.0",
+    "@bitgo/utxo-lib": "^9.32.0",
     "@ethereumjs/common": "^2.6.5",
     "superagent": "^3.8.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.39.0",
-    "@bitgo/sdk-test": "^5.0.0",
+    "@bitgo/sdk-api": "^1.40.0",
+    "@bitgo/sdk-test": "^6.0.0",
     "secp256k1": "5.0.0"
   }
 }
