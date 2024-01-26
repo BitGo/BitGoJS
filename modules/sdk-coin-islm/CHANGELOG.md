@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 1.18.0 (2024-01-26)
+
+### Bug Fixes
+
+- address verification for cosmos like coins ([5ac7879](https://github.com/BitGo/BitGoJS/commit/5ac78799b460d0d03eaa841db08a6855b571a46f))
+
+### Features
+
+- **sdk-coin-islm:** add Islamic Coin ([c49bdd1](https://github.com/BitGo/BitGoJS/commit/c49bdd18df36a20d6e27cdd2686ec687bf653596))
+
 # 1.17.0 (2024-01-26)
 
 ### Bug Fixes
