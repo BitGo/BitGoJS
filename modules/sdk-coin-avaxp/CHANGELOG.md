@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.7.0...@bitgo/sdk-coin-avaxp@3.19.0) (2024-01-26)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+
+### Features
+
+- **sdk-coin-avaxp:** replace export fee for import fee on output validation ([a0ae101](https://github.com/BitGo/BitGoJS/commit/a0ae101487cf88eecb078ed793b640160703c086))
+
 # [3.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.7.0...@bitgo/sdk-coin-avaxp@3.18.0) (2024-01-26)
 
 ### Bug Fixes
