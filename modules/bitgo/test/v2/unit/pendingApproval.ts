@@ -85,18 +85,12 @@ describe('Pending Approvals:', () => {
       const pendingAproval = new PendingApproval(bitgo, coin, {} as unknown as PendingApprovalData);
       if (coin.supportsTss()) {
         if (coin.getMPCAlgorithm() === 'ecdsa') {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          pendingAproval.tssUtils.should.be.instanceOf(EcdsaUtils);
+          pendingAproval['tssUtils'].should.be.instanceOf(EcdsaUtils);
         } else if (coin.getMPCAlgorithm() === 'eddsa') {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          pendingAproval.tssUtils.should.be.instanceOf(EddsaUtils);
+          pendingAproval['tssUtils'].should.be.instanceOf(EddsaUtils);
         }
       } else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        (pendingAproval.tssUtils === undefined).should.be.true();
+        (pendingAproval['tssUtils'] === undefined).should.be.true();
       }
     });
   });
