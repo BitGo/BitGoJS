@@ -10,6 +10,8 @@ import { BitGo } from '../../../src';
 
 import {
   BaseCoin,
+  EcdsaUtils,
+  EddsaUtils,
   Environments,
   PendingApproval,
   PendingApprovalData,
@@ -75,6 +77,22 @@ describe('Pending Approvals:', () => {
     wallet = new Wallet(bitgo, basecoin, walletData);
     bgUrl = Environments[bitgo.getEnv()].uri;
     (pendingApprovalData as any).wallet = wallet;
+  });
+
+  ['tsol', 'teth', 'tbtc'].forEach((coinName) => {
+    it(`should use correct tssUtils for  ${coinName}`, () => {
+      const coin = bitgo.coin(coinName);
+      const pendingAproval = new PendingApproval(bitgo, coin, {} as unknown as PendingApprovalData);
+      if (coin.supportsTss()) {
+        if (coin.getMPCAlgorithm() === 'ecdsa') {
+          pendingAproval['tssUtils'].should.be.instanceOf(EcdsaUtils);
+        } else if (coin.getMPCAlgorithm() === 'eddsa') {
+          pendingAproval['tssUtils'].should.be.instanceOf(EddsaUtils);
+        }
+      } else {
+        (pendingAproval['tssUtils'] === undefined).should.be.true();
+      }
+    });
   });
 
   it('should call consolidate instead of build when rebuilding consolidation pending approvals', async () => {
@@ -164,8 +182,15 @@ describe('Pending Approvals:', () => {
   testRecreateTransaction('tbtc', false, Type.TRANSACTION_REQUEST);
   testRecreateTransaction('tsol', true, Type.TRANSACTION_REQUEST);
   testRecreateTransaction('tsol', true, Type.TRANSACTION_REQUEST_FULL);
+  testRecreateTransaction('teth', true, Type.TRANSACTION_REQUEST_FULL);
 
   describe('recreateAndSignTSSTransaction', function () {
+    let coin: BaseCoin;
+
+    before(() => {
+      coin = bitgo.coin('tsol');
+    });
+
     it('should call approve and do the TSS flow and fail if the txRequestId is missing', async () => {
       const pendingApproval = wallet.pendingApprovals()[0];
       const reqId = new RequestTracer();
@@ -186,7 +211,7 @@ describe('Pending Approvals:', () => {
     });
 
     it('should call approve and do the TSS flow and fail if the wallet is missing', async () => {
-      const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData);
+      const pendingApproval = new PendingApproval(bitgo, coin, pendingApprovalData);
       const reqId = new RequestTracer();
       const params = { walletPassphrase: 'test' };
       await pendingApproval.recreateAndSignTSSTransaction(params, reqId).should.be.rejectedWith('Wallet not found');
@@ -194,7 +219,7 @@ describe('Pending Approvals:', () => {
 
     it('should get txHex for transactionRequestLite', async () => {
       pendingApprovalData['txRequestId'] = 'requestTxIdTest';
-      const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
+      const pendingApproval = new PendingApproval(bitgo, coin, pendingApprovalData, wallet);
       const reqId = new RequestTracer();
       const txRequestId = 'test';
       const walletPassphrase = 'test';
@@ -241,7 +266,7 @@ describe('Pending Approvals:', () => {
 
     it('should get txHex for transactionRequestFull ', async () => {
       pendingApprovalData['txRequestId'] = 'requestTxIdTest';
-      const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
+      const pendingApproval = new PendingApproval(bitgo, coin, pendingApprovalData, wallet);
       const reqId = new RequestTracer();
       const txRequestId = 'test';
       const walletPassphrase = 'test';

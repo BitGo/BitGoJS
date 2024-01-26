@@ -14,10 +14,15 @@ import {
   State,
   Type,
 } from '../pendingApproval';
-import { RequestTracer, TssUtils } from '../utils';
+import { RequestTracer } from '../utils';
 import { IWallet } from '../wallet';
 import { BuildParams } from '../wallet/BuildParams';
 import { IRequestTracer } from '../../api';
+import BaseTssUtils from '../utils/tss/baseTSSUtils';
+import EddsaUtils from '../utils/tss/eddsa';
+import { EcdsaUtils } from '../utils/tss/ecdsa';
+import { KeyShare as EcdsaKeyShare } from '../utils/tss/ecdsa/types';
+import { KeyShare as EddsaKeyShare } from '../utils/tss/eddsa/types';
 
 type PreApproveResult = {
   txHex: string;
@@ -33,7 +38,7 @@ type ApprovePendingApprovalRequestBody = {
 export class PendingApproval implements IPendingApproval {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
-  private tssUtils: TssUtils;
+  private tssUtils?: BaseTssUtils<EcdsaKeyShare | EddsaKeyShare>;
   private wallet?: IWallet;
   private _pendingApproval: PendingApprovalData;
 
@@ -41,7 +46,15 @@ export class PendingApproval implements IPendingApproval {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this.wallet = wallet;
-    this.tssUtils = new TssUtils(this.bitgo, this.baseCoin, wallet);
+
+    if (this.baseCoin.supportsTss()) {
+      if (this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+        this.tssUtils = new EcdsaUtils(this.bitgo, this.baseCoin, wallet);
+      } else {
+        this.tssUtils = new EddsaUtils(this.bitgo, this.baseCoin, wallet);
+      }
+    }
+
     this._pendingApproval = pendingApprovalData;
   }
 
@@ -217,7 +230,7 @@ export class PendingApproval implements IPendingApproval {
     }
 
     const decryptedPrv = await this.wallet.getPrv({ walletPassphrase });
-    const txRequest = await this.tssUtils.recreateTxRequest(txRequestId, decryptedPrv, reqId);
+    const txRequest = await this.tssUtils!.recreateTxRequest(txRequestId, decryptedPrv, reqId);
     if (txRequest.apiVersion === 'lite') {
       if (!txRequest.unsignedTxs || txRequest.unsignedTxs.length === 0) {
         throw new Error('Unexpected error, no transactions found in txRequest.');
@@ -386,7 +399,11 @@ export class PendingApproval implements IPendingApproval {
     switch (this.type()) {
       case Type.TRANSACTION_REQUEST_FULL:
         // TransactionRequestFull for SMH or SMC wallets can only be signed after pending approval is approved
-        if (this._pendingApproval.state === State.APPROVED && this.canRecreateTransaction(params)) {
+        if (
+          this._pendingApproval.state === State.APPROVED &&
+          this.canRecreateTransaction(params) &&
+          this.baseCoin.supportsTss()
+        ) {
           await this.recreateAndSignTSSTransaction(params, reqId);
         }
     }
