@@ -6400,6 +6400,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.UST
   ),
   erc20(
+    'dee69d23-5898-45e4-89e7-ea90e02856e0',
+    'ustb',
+    'Superstate Short Duration US Government Securities Fund',
+    6,
+    '0x43415eb6ff9db7e26a15b704e7a3edce97d31c4e',
+    UnderlyingAsset.USTB
+  ),
+  erc20(
     '072bda2d-3c21-40a8-8581-0518b75bace1',
     'usx',
     'USD Stable Token',
