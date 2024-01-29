@@ -271,6 +271,8 @@ describe('TON:', function () {
 
     it('should validate transaction id', async function () {
       should.equal(utils.isValidTransactionId('wlTdDOAXwJp8ESRfQAEJQIn0Tci_S5oLbVKBYxDtvpk='), true);
+      should.equal(utils.isValidTransactionId('3sykx6Rujy7UtBwHQ/X5kLgvKE0SKLA+ABiCKi7sX8o='), true); // No url friendly txid
+      should.equal(utils.isValidTransactionId('3sykx6Rujy7UtBwHQ_X5kLgvKE0SKLA-ABiCKi7sX8o='), true); // Url friendly txid
       should.equal(utils.isValidTransactionId('wlTdDOAXwJp8ESRfQAEJQIn0Tci_S5oLb='), false);
       should.equal(utils.isValidTransactionId('wlTdDOAXwJp8ESRfQAEJQIn0Tci_S5oLbVKBYxDtafdsasdadsfvpk='), false);
       should.equal(utils.isValidTransactionId(''), false);
