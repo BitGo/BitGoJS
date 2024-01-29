@@ -5,7 +5,6 @@ import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, SignShare, Signature } from '../../../account-lib/mpc/tss';
 import { KeyShare } from './ecdsa';
-import { Hash } from 'crypto';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
 import { AShare, DShare, SShare } from '../../tss/ecdsa/types';
@@ -346,7 +345,6 @@ export type TSSParams = {
   prv: string;
   reqId: IRequestTracer;
   apiVersion?: ApiVersion;
-  hash?: Hash;
 };
 
 export type TSSParamsForMessage = TSSParams & {

@@ -3,6 +3,7 @@ import { Buffer } from 'buffer';
 import { Key, SerializedKeyPair } from 'openpgp';
 import * as openpgp from 'openpgp';
 import { ec } from 'elliptic';
+import { Hash } from 'crypto';
 
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/utxo-lib';
@@ -973,11 +974,20 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       step2Return.muDShare
     )) as DShare;
 
+    // If only the getHashFunction() is defined for the coin use it otherwise
+    // pass undefined hash, default hash will be used in that case.
+    let hash: Hash | undefined;
+    try {
+      hash = this.baseCoin.getHashFunction();
+    } catch (err) {
+      hash = undefined;
+    }
+
     const userSShare = await ECDSAMethods.createUserSignatureShare(
       step2Return.oShare as OShare,
       bitgoToUserDShare,
       signablePayload,
-      params.hash
+      hash
     );
 
     // signing stage three with SShare send to bitgo and receives SShare
