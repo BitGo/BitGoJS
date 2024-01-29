@@ -96,7 +96,6 @@ import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
-import { Hash } from 'crypto';
 import { ofcTokens } from '@bitgo/statics';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
@@ -3138,21 +3137,12 @@ export class Wallet implements IWallet {
       throw new Error('prv required to sign transactions with TSS');
     }
 
-    // If only the getHashFunction() is defined for the coin use it otherwise
-    // pass undefined hash, default hash will be used in that case.
-    let hash: Hash | undefined;
-    try {
-      hash = this.baseCoin.getHashFunction();
-    } catch (err) {
-      hash = undefined;
-    }
     try {
       const signedTxRequest = await this.tssUtils!.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,
-        hash,
       });
       return {
         txRequestId: signedTxRequest.txRequestId,
