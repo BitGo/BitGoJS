@@ -1401,6 +1401,7 @@ export enum UnderlyingAsset {
   USG = 'usg',
   USPX = 'uspx',
   UST = 'ust',
+  USTB = 'ustb',
   'UST-WORMHOLE' = 'ust-wormhole',
   USX = 'usx',
   UTK = 'utk',
