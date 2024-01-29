@@ -4792,6 +4792,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.OMG
   ),
   erc20(
+    '2f715550-f0c3-47c7-860c-fb1a827d01a8',
+    'ondo',
+    'Ondo',
+    18,
+    '0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3',
+    UnderlyingAsset.ONDO
+  ),
+  erc20(
     'fa692f6a-3491-4c7a-b512-927e6fcdd3f0',
     'onl',
     'On.Live',
@@ -6598,6 +6606,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     UnderlyingAsset.WETH
+  ),
+  erc20(
+    'e59ca3be-86ac-4aa5-8732-c9a3adb3219f',
+    'weeth',
+    'Wrapped eETH',
+    18,
+    '0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee',
+    UnderlyingAsset.WEETH
   ),
   erc20(
     '7292b88e-0a4d-4044-ba0a-caea267a0bea',
@@ -10304,6 +10320,28 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES,
     '',
     'EURC'
+  ),
+  stellarToken(
+    'f41ca148-3c44-48e2-aabf-0e1ab5f0bf3e',
+    'xlm:GYEN-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB',
+    'GMO JPY',
+    6,
+    UnderlyingAsset['xlm:GYEN-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB'],
+    'stablecoin.z.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'GYEN'
+  ),
+  stellarToken(
+    '2f654247-3708-4e20-978b-af896fd910d3',
+    'xlm:ZUSD-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB',
+    'Z.com USD',
+    6,
+    UnderlyingAsset['xlm:ZUSD-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB'],
+    'stablecoin.z.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'ZUSD'
   ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
