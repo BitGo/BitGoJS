@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.4.0...@bitgo/sdk-coin-cspr@1.24.0) (2024-01-30)
+
+### Features
+
+- **sdk-coin-cspr:** modify ttl to new value accepted by the node ([3c07eb4](https://github.com/BitGo/BitGoJS/commit/3c07eb4bb217828c8f17395cb0606833bca0ee96))
+- update secp256k1 to 5.0.0 and keccak to 3.0.3 ([e2c37e6](https://github.com/BitGo/BitGoJS/commit/e2c37e6b0139c9f6948a22d8921bc3e1f88bed4c))
+
 # [1.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@1.4.0...@bitgo/sdk-coin-cspr@1.23.0) (2024-01-26)
 
 ### Features
