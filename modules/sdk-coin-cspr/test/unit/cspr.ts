@@ -368,18 +368,18 @@ describe('Casper', function () {
       const builtTxInfo = {
         txHex: signedRawTransferTx,
         txInfo: {
-          hash: 'e5366e61a3027500b82e2ccfed95ab0e175c65416e187803fbd02597706a30a8',
+          hash: 'cf7eac1a10f350f393163c8254770649b953dcd3cf8e180aaba463816fbd0a0b',
           fee: {
             gasLimit: '11000',
             gasPrice: '1',
           },
           from: '02cc8f78c41d334ad2aaae6da7a88537f9686245761aaddf36d4b2dfbf913bb873',
           startTime: '2021-12-14T00:53:32.836Z',
-          expiration: 64800000,
+          expiration: 7200000,
           deployType: 'Send',
-          to: '0202fba9e5705a8860fc1b5563b981a4c2c94af03fc10916eb7819b183056c43d3b0',
+          to: '0202227faa327bb6607f1b6245d275b0c9aef32db568986b5252323fd498923f1ef1',
           amount: '2500000000',
-          transferId: '12345',
+          transferId: '123',
         },
         feeInfo: {
           gasLimit: '11000',
@@ -478,7 +478,7 @@ describe('Casper', function () {
           from: '0202cc8f78c41d334ad2aaae6da7a88537f9686245761aaddf36d4b2dfbf913bb873',
           deployType: TransactionType.StakingLock,
           amount: delegateAmount,
-          validator: '0100cd28cec3dd6d29b959ae7b36a8201c92fe6af75fa44d5fa84b7d2e417ca940',
+          validator: '0115c9b40c06ff99b0cbadf1140b061b5dbf92103e66a6330fbcc7768f5219c1ce',
         },
         feeInfo: {
           gasLimit: '100000000',
@@ -571,7 +571,7 @@ describe('Casper', function () {
           from: '0202cc8f78c41d334ad2aaae6da7a88537f9686245761aaddf36d4b2dfbf913bb873',
           deployType: TransactionType.StakingUnlock,
           amount: undelegateAmount,
-          validator: '0100cd28cec3dd6d29b959ae7b36a8201c92fe6af75fa44d5fa84b7d2e417ca940',
+          validator: '0115c9b40c06ff99b0cbadf1140b061b5dbf92103e66a6330fbcc7768f5219c1ce',
         },
         feeInfo: {
           gasLimit: '100000000',
