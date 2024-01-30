@@ -10149,6 +10149,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('af198c54-53d5-42b3-9e69-7fcc5887c0a0', 'ofcdia', 'DIA Token', 18, UnderlyingAsset.DIA),
   ofcerc20('4da7f6a6-9c56-44f7-a9b2-07ae7c669e42', 'ofcldo', 'Lido DAO Token', 18, UnderlyingAsset.LDO),
   ofcerc20('c7ac234f-5fb7-4ee3-b1e9-5479ccaab28c', 'ofcsbc', 'Sustainable Bitcoin Certificate', 8, UnderlyingAsset.SBC),
+  ofcerc20('1bc9f8be-81ea-4d1f-b55d-80c1986743f9', 'ofcusdglo', 'Glo Dollar', 18, UnderlyingAsset.USDGLO),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
