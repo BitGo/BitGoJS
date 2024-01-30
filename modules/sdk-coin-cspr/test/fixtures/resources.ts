@@ -123,7 +123,7 @@ export const EXTERNAL_SIGNATURE = {
     '0208437432526364c9fc59313c9eec1e7070de68d96922b66c56a9f97503574ac56b1807d7bf580d1f9d2461a4fe6314c6e2e037b1457ad2a5590bf2398fb9d936',
 };
 
-export const MAX_TRANSACTION_EXPIRATION = 64800000; // 18 hours in milliseconds (max TTL)
+export const MAX_TRANSACTION_EXPIRATION = 7200000; // 2 hours in milliseconds (max TTL)
 
 export const INVALID_TRANSACTION_EXPIRATION_MESSAGE = 'Invalid transaction expiration';
 

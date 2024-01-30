@@ -4,7 +4,7 @@ export const DEFAULT_CHAIN_NAMES = {
   testnet: 'integration-test',
   mainnet: 'casper',
 };
-export const TRANSACTION_EXPIRATION = 64800000; // 18 hours in milliseconds (max TTL)
+export const TRANSACTION_EXPIRATION = 7200000; // 2 hours in milliseconds (max TTL)
 export const DELEGATE_VALIDATOR_ACCOUNT = '0100cd28cec3dd6d29b959ae7b36a8201c92fe6af75fa44d5fa84b7d2e417ca940';
 
 // #region contract arguments
