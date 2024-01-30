@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-lib-mpc",
-  "version": "8.31.0",
+  "version": "8.32.0",
   "description": "library functions for BitGo's MPC solution",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
