@@ -103,6 +103,7 @@ export interface PrebuildTransactionOptions {
   noSplitChange?: boolean;
   unspents?: any[];
   changeAddress?: string;
+  allowExternalChangeAddress?: boolean;
   type?: string;
   closeRemainderTo?: string;
   nonParticipation?: boolean;
@@ -533,6 +534,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   comment?: string;
   otp?: string;
   changeAddress?: string;
+  allowExternalChangeAddress?: boolean;
   instant?: boolean;
   memo?: Memo;
   transferId?: number;

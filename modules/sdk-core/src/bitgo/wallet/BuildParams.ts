@@ -10,6 +10,7 @@ export const BuildParamsUTXO = t.partial({
   changeAddressType: t.unknown,
   /* a fixed change address */
   changeAddress: t.unknown,
+  allowExternalChangeAddress: t.boolean,
   cpfpFeeRate: t.unknown,
   cpfpTxIds: t.unknown,
   unspents: t.unknown,
