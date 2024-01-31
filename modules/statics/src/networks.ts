@@ -694,14 +694,13 @@ class SeiTestnet extends Testnet implements AccountNetwork {
 class Zeta extends Mainnet implements AccountNetwork {
   name = 'Zeta';
   family = CoinFamily.ZETA;
-  //  TODO(WIN-142): Zeta is still only in testnet update to mainnet url when it's live
-  explorerUrl = 'https://explorer.zetachain.com/cc/tx/';
+  explorerUrl = 'https://explorer.zetachain.com/cosmos/tx/';
 }
 
 class ZetaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Zeta';
   family = CoinFamily.ZETA;
-  explorerUrl = 'https://zetachain.explorers.guru/transaction/';
+  explorerUrl = 'https://athens.explorer.zetachain.com/cosmos/tx/';
 }
 
 class Injective extends Mainnet implements AccountNetwork {
