@@ -187,7 +187,7 @@ const HBAR_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
 ];
 const POLYGON_FEATURES = [
-  ...ETH_FEATURES_WITH_STAKING_AND_MMI,
+  ...ETH_FEATURES_WITH_MMI,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
   CoinFeature.MULTISIG_COLD,
