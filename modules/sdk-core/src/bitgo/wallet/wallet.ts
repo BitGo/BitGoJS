@@ -905,6 +905,7 @@ export class Wallet implements IWallet {
       'maxFeeRate',
       'feeTxConfirmTarget',
       'allowPartialSweep',
+      'txFormat',
     ]);
     this.bitgo.setRequestTracer(reqId);
     const response = await this.bitgo.post(this.url('/sweepWallet')).send(filteredParams).result();
