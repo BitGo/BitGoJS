@@ -83,6 +83,7 @@ import {
   TransfersOptions,
   UnspentsOptions,
   UpdateAddressOptions,
+  UpdateBuildDefaultOptions,
   WalletCoinSpecific,
   WalletData,
   WalletEcdsaChallenges,
@@ -1277,6 +1278,14 @@ export class Wallet implements IWallet {
     const url = this.url('/address/' + encodeURIComponent(address));
 
     return this.bitgo.put(url).send(putParams).result();
+  }
+
+  async updateWalletBuildDefaults(params: UpdateBuildDefaultOptions): Promise<unknown> {
+    common.validateParams(params, [], ['minFeeRate', 'changeAddressType', 'txFormat']);
+    return this.bitgo
+      .put(this.url())
+      .send({ minFeeRate: params.minFeeRate, changeAddressType: params.changeAddressType, txFormat: params.txFormat })
+      .result();
   }
 
   /**

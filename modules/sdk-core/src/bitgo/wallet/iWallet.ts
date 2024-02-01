@@ -409,6 +409,12 @@ export interface UpdateAddressOptions {
   address?: string;
 }
 
+export interface UpdateBuildDefaultOptions {
+  minFeeRate?: number;
+  changeAddressType?: string;
+  txFormat?: 'legacy' | 'psbt';
+}
+
 export interface SimulateWebhookOptions {
   webhookId?: string;
   transferId?: string;
