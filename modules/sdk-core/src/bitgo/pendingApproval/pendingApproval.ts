@@ -173,8 +173,14 @@ export class PendingApproval implements IPendingApproval {
         // if the transaction already has a half signed property, we take that directly
         approvalParams.halfSigned = transaction.halfSigned || transaction;
       }
-      this._pendingApproval = await this.bitgo.put(this.url()).send(approvalParams).result();
+      const response = await this.bitgo.put(this.url()).send(approvalParams).result();
 
+      // if the response comes with an error, means that the transaction triggered another condition
+      if (response.hasOwnProperty('error') && response.hasOwnProperty('pendingApproval')) {
+        return response;
+      }
+
+      this._pendingApproval = response;
       await this.postApprove(params, reqId);
 
       return this._pendingApproval;
