@@ -1,4 +1,4 @@
-import { decodeFirstSync, encodeCanonical } from 'cbor';
+import { decodeFirstSync, encode } from 'cbor';
 
 /**
  * Return a string describing value as a type.
@@ -186,7 +186,7 @@ export function untransform<T>(value: T): T | string {
     const properties = Object.getOwnPropertyNames(value);
     for (let i = 1; i < properties.length; i++) {
       if (properties[i - 1].localeCompare(properties[i]) > 0) {
-        throw new Error('Object properties are not in caonical order');
+        throw new Error('Object properties are not in canonical order');
       }
     }
     return properties.reduce((acc, name) => {
@@ -203,7 +203,7 @@ export function untransform<T>(value: T): T | string {
  * @returns Buffer representing serialized value.
  */
 export function serialize<T>(value: T): Buffer {
-  return encodeCanonical(transform(value));
+  return encode(transform(value));
 }
 
 /**
