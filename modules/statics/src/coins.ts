@@ -2191,7 +2191,7 @@ export const coins = CoinMap.fromCoins([
     'bsgg',
     'Betswap.gg',
     18,
-    '0x69570f3e84f51ea70b7b68055c8d667e77735a25',
+    '0xda16cf041e2780618c49dbae5d734b89a6bac9b3',
     UnderlyingAsset.BSGG
   ),
   erc20(
@@ -12034,7 +12034,7 @@ export const coins = CoinMap.fromCoins([
     'avaxc:bsgg',
     'Betswap.gg',
     18,
-    '0x63682bdc5f875e9bf69e201550658492c9763f89',
+    '0x49f519002eeced6902f24c0be72b6d898e4d27fc',
     UnderlyingAsset['avaxc:bsgg']
   ),
   avaxErc20(
