@@ -255,6 +255,11 @@ export enum CoinFeature {
    * This coin supports bulk staking transaction creation
    */
   BULK_STAKING_TRANSACTION = 'bulk-staking-transaction',
+
+  /**
+   * This coin uses non-packed encoding for transaction data
+   */
+  USES_NON_PACKED_ENCODING_FOR_TXDATA = 'uses-non-packed-encoding-for-txdata',
 }
 
 /**
