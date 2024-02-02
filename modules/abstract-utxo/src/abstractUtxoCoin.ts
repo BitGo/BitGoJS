@@ -516,19 +516,20 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       txInfo: txPrebuild.txInfo,
       pubs: keychainArray.map((k) => k.pub) as Triple<string>,
     });
-
     const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
     let expectedOutputs;
     if (txParams.rbfTxIds) {
       assert(txParams.rbfTxIds.length === 1);
-      const txToBeReplacedTransfer = await wallet.getTransfer({ id: txParams.rbfTxIds[0] });
+
+      // TODO: Pass `includeRbf: true` in the `getTransaction` request
+      const txToBeReplaced = await wallet.getTransaction({ txHash: txParams.rbfTxIds[0] });
       // Note: Will work only when there is single transaction output per address
       // TODO: https://bitgoinc.atlassian.net/browse/BTC-826
-      expectedOutputs = txToBeReplacedTransfer.entries
-        .filter((entry) => !entry.isChange && entry.value >= 0)
-        .map((entry) => {
-          return { amount: BigInt(entry.valueString), address: this.canonicalAddress(entry.address) };
+      expectedOutputs = txToBeReplaced.outputs
+        .filter((output) => output.wallet !== wallet.id()) // For self-sends, the walletId will be the same as the wallet's id
+        .map((output) => {
+          return { amount: BigInt(output.valueString), address: this.canonicalAddress(output.address) };
         });
     } else {
       // verify that each recipient from txParams has their own output
