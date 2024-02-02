@@ -27,7 +27,7 @@ export class TokenTransferBuilder extends ContractCallBuilder {
    * @param recipientAddress - recipient of token transfer
    * @param amount - token amount
    */
-  tokenTransferData(recipientAddress: string, amount: number): this {
+  tokenTransferData(recipientAddress: string, amount: string): this {
     this.validateAddress({ address: recipientAddress });
     const recipientHex = getHexAddressFromBase58Address(recipientAddress);
 
