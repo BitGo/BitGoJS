@@ -111,7 +111,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     if (params.rbfTxIds) {
       nocks.push(
         nock(params.bgUrl)
-          .get(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/tx/${params.rbfTxIds[0]}`)
+          .get(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/tx/${params.rbfTxIds[0]}?includeRbf=true`)
           .reply(200, {
             outputs: [
               {
