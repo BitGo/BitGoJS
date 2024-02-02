@@ -28,7 +28,7 @@ describe('TRX Token Transfer Builder', () => {
     describe('non serialized transactions', () => {
       it('a signed token contract call transaction', async () => {
         const txBuilder = initTxBuilder();
-        txBuilder.tokenTransferData(TOKEN_TRANSFER_RECIPIENT, 1000000000).sign({ key: PARTICIPANTS.custodian.pk });
+        txBuilder.tokenTransferData(TOKEN_TRANSFER_RECIPIENT, '1000000000').sign({ key: PARTICIPANTS.custodian.pk });
         const tx = await txBuilder.build();
         const txJson = tx.toJson();
         const rawData = txJson.raw_data;

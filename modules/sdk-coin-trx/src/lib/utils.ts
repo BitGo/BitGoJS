@@ -426,7 +426,7 @@ export function encodeDataParams(types: string[], values: any[], methodId?: stri
   try {
     data = abiCoder.encode(types, values);
   } catch (e) {
-    throw new UtilsError('There was an error encoding the data params.');
+    throw new UtilsError(`There was an error encoding the data params. Error = ${JSON.stringify(e)}`);
   }
   if (methodId) {
     return hexConcat([methodId, data]).replace(/^(0x)/, '');
