@@ -523,8 +523,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       assert(txParams.rbfTxIds.length === 1);
 
       const txToBeReplaced = await wallet.getTransaction({ txHash: txParams.rbfTxIds[0], includeRbf: true });
-      // Note: Will work only when there is single transaction output per address
-      // TODO: https://bitgoinc.atlassian.net/browse/BTC-826
       expectedOutputs = txToBeReplaced.outputs
         .filter((output) => output.wallet !== wallet.id()) // For self-sends, the walletId will be the same as the wallet's id
         .map((output) => {
