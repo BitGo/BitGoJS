@@ -243,6 +243,7 @@ export interface PaginationOptions {
 
 export interface GetTransactionOptions extends PaginationOptions {
   txHash?: string;
+  includeRbf?: boolean;
 }
 
 export interface TransfersOptions extends PaginationOptions {

@@ -419,19 +419,24 @@ export class Wallet implements IWallet {
   async getTransaction(params: GetTransactionOptions = {}): Promise<any> {
     common.validateParams(params, ['txHash'], []);
 
-    const query: PaginationOptions = {};
+    const paginatedOptions: PaginationOptions = {};
     if (!_.isUndefined(params.prevId)) {
       if (!_.isString(params.prevId)) {
         throw new Error('invalid prevId argument, expecting string');
       }
-      query.prevId = params.prevId;
+      paginatedOptions.prevId = params.prevId;
     }
 
     if (!_.isUndefined(params.limit)) {
       if (!_.isInteger(params.limit) || params.limit < 1) {
         throw new Error('invalid limit argument, expecting positive integer');
       }
-      query.limit = params.limit;
+      paginatedOptions.limit = params.limit;
+    }
+
+    const query = paginatedOptions;
+    if (params.includeRbf) {
+      query['includeRbf'] = params.includeRbf;
     }
 
     return await this.bitgo
