@@ -3,6 +3,7 @@ import should from 'should';
 import { Interface, Utils } from '../../src';
 
 import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../resources';
+import { tokenMainnetContractAddresses, tokenTestnetContractAddresses } from '../../src/lib/utils';
 
 describe('Util library should', function () {
   // arbitrary text
@@ -164,5 +165,10 @@ describe('Util library should', function () {
     );
     decodedData[0].should.equal(addressHex.toLocaleLowerCase());
     decodedData[1].toString().should.equal(amount);
+  });
+
+  it('should correctly map testnet and mainnet tokens', () => {
+    tokenMainnetContractAddresses.includes('TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S').should.be.true();
+    tokenTestnetContractAddresses.includes('TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf').should.be.true();
   });
 });
