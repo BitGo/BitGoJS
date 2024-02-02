@@ -4,6 +4,7 @@ import * as tronweb from 'tronweb';
 import { protocol } from '../../resources/protobuf/tron';
 
 import { UtilsError } from '@bitgo/sdk-core';
+import { TronErc20Coin, coins } from '@bitgo/statics';
 import {
   TransferContract,
   RawData,
@@ -18,15 +19,16 @@ import { AbiCoder, hexConcat } from 'ethers/lib/utils';
 const ADDRESS_PREFIX_REGEX = /^(41)/;
 const ADDRESS_PREFIX = '41';
 
-export const tokenMainnetContractAddresses = [
-  'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',
-  'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-];
-export const tokenTestnetContractAddresses = [
-  'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
-  'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
-];
+const getTronTokens = (network = 'mainnet') => {
+  return (
+    coins
+      .filter((coin) => coin.family === 'trx')
+      .filter((trx) => trx.network.type === network && trx.isToken) as unknown as TronErc20Coin[]
+  ).map((coins) => coins.contractAddress.toString());
+};
 
+export const tokenMainnetContractAddresses = getTronTokens('mainnet');
+export const tokenTestnetContractAddresses = getTronTokens('testnet');
 /**
  * Tron-specific helper functions
  */
