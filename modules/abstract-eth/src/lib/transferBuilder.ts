@@ -4,6 +4,7 @@ import BN from 'bn.js';
 import { coins, BaseCoin, ContractAddressDefinedToken, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
+import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils';
 
 /** ETH transfer builder */
 export class TransferBuilder {
@@ -18,6 +19,7 @@ export class TransferBuilder {
   private _tokenContractAddress?: string;
   private _coin: Readonly<BaseCoin>;
   private _chainId?: string;
+  private _coinUsesNonPackedEncodingForTxData?: boolean;
 
   constructor(serializedData?: string) {
     if (serializedData) {
@@ -93,8 +95,13 @@ export class TransferBuilder {
     throw new InvalidParameterValueError('Invalid expiration time');
   }
 
-  signAndBuild(chainId?: string): string {
+  signAndBuild(chainId?: string, coinUsesNonPackedEncodingForTxData?: boolean): string {
     this._chainId = chainId;
+
+    // If the coin uses non-packed encoding for tx data, the operation hash is calculated differently
+    // This new encoding type is applicable only for native coins and not tokens
+    this._coinUsesNonPackedEncodingForTxData =
+      coinUsesNonPackedEncodingForTxData && this._tokenContractAddress === undefined;
     if (this.hasMandatoryFields()) {
       if (this._tokenContractAddress !== undefined) {
         return sendMultiSigTokenData(
@@ -133,7 +140,19 @@ export class TransferBuilder {
    */
   private getOperationHash(): string {
     const operationData = this.getOperationData();
-    return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
+    let operationHash: string;
+
+    if (this._coinUsesNonPackedEncodingForTxData) {
+      const types: string[] = operationData[0] as string[];
+      const values: string[] = operationData[1].map((item) =>
+        item instanceof Buffer ? '0x' + item.toString('hex') : item
+      );
+      operationHash = keccak256(defaultAbiCoder.encode(types, values));
+    } else {
+      // If the coin uses packed encoding for tx data or it is a token, the operation hash is calculated using the Ethereum ABI
+      operationHash = ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
+    }
+    return operationHash;
   }
 
   protected getOperationData(): (string | Buffer)[][] {
@@ -151,11 +170,14 @@ export class TransferBuilder {
         ],
       ];
     } else {
+      const toAddress = this._coinUsesNonPackedEncodingForTxData
+        ? this._toAddress
+        : new BN(ethUtil.stripHexPrefix(this._toAddress), 16);
       operationData = [
         ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
           this.getNativeOperationHashPrefix(),
-          new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
+          toAddress,
           this._amount,
           Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(this._data)) || '', 'hex'),
           this._expirationTime,

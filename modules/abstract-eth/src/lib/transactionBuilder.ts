@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, EthereumNetwork, CoinFeature } from '@bitgo/statics';
 import EthereumCommon from '@ethereumjs/common';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
@@ -614,7 +614,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Missing transfer information');
     }
     const chainId = this._common.chainIdBN().toString();
-    return this._transfer.signAndBuild(chainId);
+    // This change is made to support new contracts with different encoding type
+    const coinUsesNonPackedEncodingForTxData = this._coinConfig.features.includes(
+      CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA
+    );
+    return this._transfer.signAndBuild(chainId, coinUsesNonPackedEncodingForTxData);
   }
 
   private buildSendTransaction(): TxData {
