@@ -3216,6 +3216,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.EURL
   ),
   erc20(
+    '5764186f-c3a1-4872-a7ec-5575d6e543de',
+    'euroe',
+    'EUROe Stablecoin',
+    6,
+    '0x820802fa8a99901f52e39acd21177b0be6ee2974',
+    UnderlyingAsset.EUROE
+  ),
+  erc20(
     'df6dd9e6-64bb-4289-8c58-3d7d2d288eff',
     'eurs',
     'Stasis EURS',
@@ -8828,6 +8836,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LA
   ),
   erc20(
+    '99b6d10c-74c9-41dd-8a98-0cc35f8e006a',
+    'ladys',
+    'Milady',
+    18,
+    '0x12970e6868f88f6557b76120662c1b3e50a646bf',
+    UnderlyingAsset.LADYS
+  ),
+  erc20(
     '2071f805-1e50-4d6a-a5e8-4022341cdb12',
     'layerzero',
     'LAYER ZERO',
@@ -10362,6 +10378,17 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES,
     '',
     'ZUSD'
+  ),
+  stellarToken(
+    'bde64255-0065-4e01-add4-3226325d512e',
+    'xlm:EURS-GC5FGCDEOGOGSNWCCNKS3OMEVDHTE3Q5A5FEQWQKV3AXA7N6KDQ2CUZJ',
+    'STASIS EURS',
+    2,
+    UnderlyingAsset['xlm:EURS-GC5FGCDEOGOGSNWCCNKS3OMEVDHTE3Q5A5FEQWQKV3AXA7N6KDQ2CUZJ'],
+    'stasis.net',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'EURS'
   ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
@@ -14264,6 +14291,14 @@ export const coins = CoinMap.fromCoins([
     0,
     '0x4659bc13c40a5012663b66102415262712303739',
     UnderlyingAsset['tpolygon:pme']
+  ),
+  tpolygonErc20(
+    'eb0abdbf-63a7-45c8-8264-c0f64424c183',
+    'tpolygon:usdc',
+    'USD Coin',
+    6,
+    '0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97',
+    UnderlyingAsset['tpolygon:usdc']
   ),
   terc721(
     '54d98031-6ebc-428a-b47c-b6ec7d6ad28a',

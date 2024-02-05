@@ -691,6 +691,7 @@ export enum UnderlyingAsset {
   ETX = 'etx',
   EUL = 'eul',
   EURL = 'eurl',
+  EUROE = 'euroe',
   EURS = 'eurs',
   EURST = 'eurst',
   EURT = 'eurt',
@@ -889,6 +890,7 @@ export enum UnderlyingAsset {
   KTRC = 'ktrc',
   KZE = 'kze',
   LA = 'la',
+  LADYS = 'ladys',
   LAYER = 'layer',
   LAYERZERO = 'layerzero',
   LBA = 'lba',
@@ -1544,6 +1546,7 @@ export enum UnderlyingAsset {
   'xlm:EURC-GDHU6WRG4IEQXM5NZ4BMPKOXHW76MZM4Y2IEMFDVXBSDP6SJY4ITNPP2' = 'xlm:EURC-GDHU6WRG4IEQXM5NZ4BMPKOXHW76MZM4Y2IEMFDVXBSDP6SJY4ITNPP2',
   'xlm:GYEN-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB' = 'xlm:GYEN-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB',
   'xlm:ZUSD-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB' = 'xlm:ZUSD-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB',
+  'xlm:EURS-GC5FGCDEOGOGSNWCCNKS3OMEVDHTE3Q5A5FEQWQKV3AXA7N6KDQ2CUZJ' = 'xlm:EURS-GC5FGCDEOGOGSNWCCNKS3OMEVDHTE3Q5A5FEQWQKV3AXA7N6KDQ2CUZJ',
 
   // Eth NFTs
   // generic NFTs
@@ -1728,6 +1731,7 @@ export enum UnderlyingAsset {
   'tpolygon:name' = 'tpolygon:name',
   'tpolygon:opm' = 'tpolygon:opm',
   'tpolygon:pme' = 'tpolygon:pme',
+  'tpolygon:usdc' = 'tpolygon:usdc',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
