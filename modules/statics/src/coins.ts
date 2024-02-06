@@ -7468,7 +7468,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '68e5a5eb-e51c-4dba-b3ba-3823bd450f49',
     'zetachain',
-    'Zeta Chain',
+    'Zeta (ERC20)',
     18,
     '0xf091867ec603a6628ed83d274e835539d82e9cc8',
     UnderlyingAsset.ZETACHAIN
