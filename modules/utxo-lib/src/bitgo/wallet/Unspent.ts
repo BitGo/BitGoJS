@@ -255,7 +255,7 @@ export function updateWalletUnspentForPsbt(
   // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
   // segwit transactions
   const isZcashOrSegwit = isSegwit(u.chain) || getMainnet(psbt.network) === networks.zcash;
-  if ((isZcashOrSegwit && !input.witnessUtxo) || customParams?.skipNonWitnessUtxo) {
+  if ((isZcashOrSegwit || customParams?.skipNonWitnessUtxo) && !input.witnessUtxo) {
     const { script, value } = toPrevOutput(u, psbt.network);
     psbt.updateInput(inputIndex, { witnessUtxo: { script, value } });
   } else if (!isZcashOrSegwit) {
