@@ -46,6 +46,13 @@ export interface DelegateOrUndelegeteMessage {
   amount: Coin;
 }
 
+export interface RedelegateMessage {
+  delegatorAddress: string;
+  validatorSrcAddress: string;
+  validatorDstAddress: string;
+  amount: Coin;
+}
+
 export interface WithdrawDelegatorRewardsMessage {
   delegatorAddress: string;
   validatorAddress: string;
@@ -62,7 +69,8 @@ export type CosmosTransactionMessage =
   | SendMessage
   | DelegateOrUndelegeteMessage
   | WithdrawDelegatorRewardsMessage
-  | ExecuteContractMessage;
+  | ExecuteContractMessage
+  | RedelegateMessage;
 
 export interface MessageData {
   typeUrl: string;

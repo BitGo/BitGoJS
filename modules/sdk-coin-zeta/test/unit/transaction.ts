@@ -6,6 +6,7 @@ import should from 'should';
 import {
   CosmosTransaction,
   DelegateOrUndelegeteMessage,
+  RedelegateMessage,
   SendMessage,
   WithdrawDelegatorRewardsMessage,
 } from '@bitgo/abstract-cosmos';
@@ -154,6 +155,39 @@ describe('Zeta Transaction', () => {
         {
           address: testData.TEST_UNDELEGATE_TX.validator,
           value: testData.TEST_UNDELEGATE_TX.sendMessage.value.amount.amount,
+          coin: 'tzeta',
+        },
+      ]);
+    });
+
+    it('should build a redelegate txn from raw signed base64', function () {
+      tx.enrichTransactionDetailsFromRawTransaction(testData.TEST_REDELEGATE_TX.signedTxBase64);
+      const json = tx.toJson();
+      should.equal(json.sequence, testData.TEST_REDELEGATE_TX.sequence);
+      should.deepEqual(json.gasBudget, testData.TEST_REDELEGATE_TX.gasBudget);
+      should.equal(Buffer.from(json.publicKey as any, 'hex').toString('base64'), testData.TEST_REDELEGATE_TX.pubKey);
+      should.equal(
+        (json.sendMessages[0].value as RedelegateMessage).validatorSrcAddress,
+        testData.TEST_REDELEGATE_TX.sendMessage.value.validatorSrcAddress
+      );
+      should.deepEqual(
+        (json.sendMessages[0].value as DelegateOrUndelegeteMessage).amount,
+        testData.TEST_REDELEGATE_TX.sendMessage.value.amount
+      );
+      should.equal(Buffer.from(json.signature as any).toString('base64'), testData.TEST_REDELEGATE_TX.signature);
+      should.equal(tx.type, TransactionType.StakingRedelegate);
+      tx.loadInputsAndOutputs();
+      should.deepEqual(tx.inputs, [
+        {
+          address: testData.TEST_REDELEGATE_TX.delegator,
+          value: testData.TEST_REDELEGATE_TX.sendMessage.value.amount.amount,
+          coin: 'tzeta',
+        },
+      ]);
+      should.deepEqual(tx.outputs, [
+        {
+          address: testData.TEST_REDELEGATE_TX.validator,
+          value: testData.TEST_REDELEGATE_TX.sendMessage.value.amount.amount,
           coin: 'tzeta',
         },
       ]);

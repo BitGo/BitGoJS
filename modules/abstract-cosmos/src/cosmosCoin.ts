@@ -39,6 +39,7 @@ import {
   FeeData,
   GasAmountDetails,
   RecoveryOptions,
+  RedelegateMessage,
   SendMessage,
 } from './lib';
 import { ROOT_PATH } from './lib/constants';
@@ -225,6 +226,116 @@ export class CosmosCoin extends BaseCoin {
     }
 
     // Step 7: Sign the tx
+    const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+    const signableBuffer = Buffer.from(signableHex, 'hex');
+    MPC.verify(signableBuffer, signature, this.getHashFunction());
+    const cosmosKeyPair = this.getKeyPair(publicKey);
+    txnBuilder.addSignature({ pub: cosmosKeyPair.getKeys().pub }, Buffer.from(signature.r + signature.s, 'hex'));
+    const signedTransaction = await txnBuilder.build();
+    serializedTx = signedTransaction.toBroadcastFormat();
+
+    return { serializedTx: serializedTx };
+  }
+
+  /**
+   * Builds a redelegate transaction
+   * @param {RecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {CosmosLikeCoinRecoveryOutput} the serialized transaction hex string
+   */
+  async redelegate(
+    params: RecoveryOptions & {
+      validatorSrcAddress: string;
+      validatorDstAddress: string;
+      amountToRedelegate: string;
+    }
+  ): Promise<CosmosLikeCoinRecoveryOutput> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
+    if (!params.validatorSrcAddress || !this.isValidAddress(params.validatorSrcAddress)) {
+      throw new Error('invalid validatorSrcAddress');
+    }
+
+    if (!params.validatorDstAddress || !this.isValidAddress(params.validatorDstAddress)) {
+      throw new Error('invalid validatorDstAddress');
+    }
+
+    if (!params.userKey) {
+      throw new Error('missing userKey');
+    }
+
+    if (!params.backupKey) {
+      throw new Error('missing backupKey');
+    }
+
+    if (!params.walletPassphrase) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    if (!params.amountToRedelegate) {
+      throw new Error('missing amountToRedelegate');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+
+    const MPC = new Ecdsa();
+    const chainId = await this.getChainId();
+    const publicKey = MPC.deriveUnhardened(bitgoKey, ROOT_PATH).slice(0, 66);
+    const senderAddress = this.getAddressFromPublicKey(publicKey);
+
+    const [accountNumber, sequenceNo] = await this.getAccountDetails(senderAddress);
+    const gasBudget: FeeData = {
+      amount: [{ denom: this.getDenomination(), amount: this.getGasAmountDetails().gasAmount }],
+      gasLimit: this.getGasAmountDetails().gasLimit,
+    };
+
+    const amount: Coin = {
+      denom: this.getDenomination(),
+      amount: new BigNumber(params.amountToRedelegate).toFixed(),
+    };
+
+    const sendMessage: RedelegateMessage[] = [
+      {
+        delegatorAddress: senderAddress,
+        validatorSrcAddress: params.validatorSrcAddress,
+        validatorDstAddress: params.validatorDstAddress,
+        amount: amount,
+      },
+    ];
+
+    const txnBuilder = this.getBuilder().getStakingRedelegateBuilder();
+    txnBuilder
+      .messages(sendMessage)
+      .gasBudget(gasBudget)
+      .publicKey(publicKey)
+      .sequence(Number(sequenceNo))
+      .accountNumber(Number(accountNumber))
+      .chainId(chainId);
+
+    const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction;
+    let serializedTx = unsignedTransaction.toBroadcastFormat();
+    const signableHex = unsignedTransaction.signablePayload.toString('hex');
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+    const [userKeyCombined, backupKeyCombined] = ((): [
+      ECDSAMethodTypes.KeyCombined | undefined,
+      ECDSAMethodTypes.KeyCombined | undefined
+    ] => {
+      const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
+        userKey,
+        backupKey,
+        params.walletPassphrase
+      );
+      return [userKeyCombined, backupKeyCombined];
+    })();
+
+    if (!userKeyCombined || !backupKeyCombined) {
+      throw new Error('Missing combined key shares for user or backup');
+    }
+
     const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
     const signableBuffer = Buffer.from(signableHex, 'hex');
     MPC.verify(signableBuffer, signature, this.getHashFunction());

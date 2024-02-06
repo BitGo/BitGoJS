@@ -82,6 +82,43 @@ export const TEST_DELEGATE_TX = {
   },
 };
 
+export const TEST_REDELEGATE_TX = {
+  hash: 'B88877498F54E8A87E929DBC809321A0B0E0AF53BE63906B50C19093C2C4BF7A',
+  signature: 'RUSFcsfx1dMpmSlKxuUgX4qPtlpjFXbvToJe+JVAJHsludowFS6yXHwpcs38SUKlIRlxx3zS8GoNZwsloTN0QA==',
+  pubKey: 'AzPwxMzrPm6MhzKSAGkvoVlNvR+deyCuBLnxYxm8xQcH',
+  privateKey: 'w7gsHxeGjJBwHNRE8fUwSJHYPrimZqngjc8hNR9vTLQ=',
+  signedTxBase64:
+    'CtgBCtUBCiovY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dCZWdpblJlZGVsZWdhdGUSpgEKK3pldGExZGhzazV2NTNoM3h3ZzQycGRnM3Iwdzd6bDgzeXhneWg1NmxzbmYSMnpldGF2YWxvcGVyMWRoc2s1djUzaDN4d2c0MnBkZzNyMHc3emw4M3l4Z3loczY4djdsGjJ6ZXRhdmFsb3BlcjE5djA3d3Z3bTN6dXg5cGF3Y21jY3I3YzRoZmV6YWgwcjh3aHNjNiIPCgVhemV0YRIGMTk1OTk2EnUKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQMz8MTM6z5ujIcykgBpL6FZTb0fnXsgrgS58WMZvMUHBxIECgIIARgSEiEKGwoFYXpldGESEjE1MzczMDAwMDAwMDAwMDAwMBCE4hIaQEVEhXLH8dXTKZkpSsblIF+Kj7ZaYxV2706CXviVQCR7JbnaMBUuslx8KXLN/ElCpSEZccd80vBqDWcLJaEzdEA=',
+  delegator: 'zeta1dhsk5v53h3xwg42pdg3r0w7zl83yxgyh56lsnf',
+  validator: 'zetavaloper19v07wvwm3zux9pawcmccr7c4hfezah0r8whsc6',
+  chainId: 'athens_7001-1',
+  accountNumber: 258033,
+  sequence: 18,
+  sendAmount: '10000',
+  feeAmount: '100000000000000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+    value: {
+      delegatorAddress: 'zeta1dhsk5v53h3xwg42pdg3r0w7zl83yxgyh56lsnf',
+      validatorSrcAddress: 'zetavaloper1dhsk5v53h3xwg42pdg3r0w7zl83yxgyhs68v7l',
+      validatorDstAddress: 'zetavaloper19v07wvwm3zux9pawcmccr7c4hfezah0r8whsc6',
+      amount: {
+        denom: 'azeta',
+        amount: '195996',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [
+      {
+        denom: 'azeta',
+        amount: '153730000000000000',
+      },
+    ],
+    gasLimit: 307460,
+  },
+};
+
 export const TEST_UNDELEGATE_TX = {
   hash: 'A7FCEA1B657CD3CA0BF7E03CB6B3279D1B737CBE1B8449E920A23453DACE2B1A',
   signature: 'K69sqHfrCe32lsh18jRZ1ZRlr5E5XqdUS1zI3AIfQrRCiPrp/cTVbkyp1HGVr+geoE04CLRDuT7iLHjAwQNlwg==',

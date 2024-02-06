@@ -9,5 +9,6 @@ export { CosmosKeyPair } from './keyPair';
 export { CosmosTransaction } from './transaction';
 export { CosmosTransactionBuilder } from './transactionBuilder';
 export { CosmosTransferBuilder } from './transferBuilder';
+export { StakingRedelegateBuilder } from './StakingRedelegateBuilder';
 export { CosmosUtils } from './utils';
 export { CosmosConstants };

@@ -1,7 +1,7 @@
-import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
+import { CosmosTransaction, RedelegateMessage, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { beforeEach } from 'mocha';
@@ -10,13 +10,13 @@ import { Tzeta, Zeta } from '../../src';
 import { GAS_AMOUNT } from '../../src/lib/constants';
 import utils from '../../src/lib/utils';
 import {
-  address,
-  mockAccountDetailsResponse,
   TEST_DELEGATE_TX,
   TEST_SEND_TX,
   TEST_TX_WITH_MEMO,
   TEST_UNDELEGATE_TX,
   TEST_WITHDRAW_REWARDS_TX,
+  address,
+  mockAccountDetailsResponse,
   wrwUser,
 } from '../resources/zeta';
 import should = require('should');
@@ -397,6 +397,30 @@ describe('Zeta', function () {
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.toAddress, destinationAddress);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+    });
+
+    it('should redelegate funds to new validator', async function () {
+      const res = await basecoin.redelegate({
+        userKey: wrwUser.userPrivateKey,
+        backupKey: wrwUser.backupPrivateKey,
+        bitgoKey: wrwUser.bitgoPublicKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        amountToRedelegate: '10000000000000000',
+        validatorSrcAddress: 'zetavaloper1dhsk5v53h3xwg42pdg3r0w7zl83yxgyhs68v7l',
+        validatorDstAddress: 'zetavaloper19v07wvwm3zux9pawcmccr7c4hfezah0r8whsc6',
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(basecoin.getChainId);
+
+      const txn = new CosmosTransaction(coin, utils);
+      txn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const txnJson = txn.toJson();
+      const redelegateMessage = txnJson.sendMessages[0].value as RedelegateMessage;
+      should.equal(redelegateMessage.validatorSrcAddress, 'zetavaloper1dhsk5v53h3xwg42pdg3r0w7zl83yxgyhs68v7l');
+      should.equal(redelegateMessage.validatorDstAddress, 'zetavaloper19v07wvwm3zux9pawcmccr7c4hfezah0r8whsc6');
+      should.equal(redelegateMessage.amount.amount, '10000000000000000');
     });
   });
 
