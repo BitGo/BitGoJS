@@ -150,4 +150,5 @@ export interface WalletInitializationData {
 export interface ForwarderInitializationData {
   baseAddress?: string;
   addressCreationSalt?: string;
+  feeAddress?: string;
 }

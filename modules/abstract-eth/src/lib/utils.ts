@@ -65,6 +65,9 @@ import {
   v1CreateWalletMethodId,
   createV1ForwarderTypes,
   recoveryWalletInitializationFirstBytes,
+  defaultForwarderVersion,
+  createV4ForwarderTypes,
+  v4CreateForwarderMethodId,
 } from './walletUtil';
 import { EthTransactionData } from './types';
 
@@ -477,6 +480,7 @@ const transactionTypesMap = {
   [v1CreateWalletMethodId]: TransactionType.WalletInitialization,
   [createForwarderMethodId]: TransactionType.AddressInitialization,
   [v1CreateForwarderMethodId]: TransactionType.AddressInitialization,
+  [v4CreateForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
   [flushForwarderTokensMethodId]: TransactionType.FlushTokens,
   [flushCoinsMethodId]: TransactionType.FlushCoins,
@@ -672,18 +676,69 @@ export function getV1WalletInitializationData(walletOwners: string[], salt: stri
 }
 
 /**
- * Returns the create address method calling data for v1 wallets
+ * Returns the create address method calling data for v1, v2, v4 forwarders
  *
  * @param {string} baseAddress - The address of the wallet contract
  * @param {string} salt - The salt for address initialization transactions
+ * @param {string} feeAddress - The fee address for the enterprise
  * @returns {string} - the createForwarder method encoded
  */
-export function getV1AddressInitializationData(baseAddress: string, salt: string): string {
+export function getV1AddressInitializationData(baseAddress: string, salt: string, feeAddress?: string): string {
   const saltBuffer = setLengthLeft(toBuffer(salt), 32);
-  const params = [baseAddress, saltBuffer];
-  const method = EthereumAbi.methodID('createForwarder', createV1ForwarderTypes);
-  const args = EthereumAbi.rawEncode(createV1ForwarderTypes, params);
+  const { createForwarderParams, createForwarderTypes } = getCreateForwarderParamsAndTypes(
+    baseAddress,
+    saltBuffer,
+    feeAddress
+  );
+
+  const method = EthereumAbi.methodID('createForwarder', createForwarderTypes);
+  const args = EthereumAbi.rawEncode(createForwarderTypes, createForwarderParams);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Returns the create address method calling data for all forwarder versions
+ *
+ * @param {number} forwarderVersion - The version of the forwarder to create
+ * @param {string} baseAddress - The address of the wallet contract
+ * @param {string} salt - The salt for address initialization transactions
+ * @param {string} feeAddress - The fee address for the enterprise
+ * @returns {string} - the createForwarder method encoded
+ *
+ */
+export function getAddressInitDataAllForwarderVersions(
+  forwarderVersion: number,
+  baseAddress: string,
+  salt: string,
+  feeAddress?: string
+): string {
+  if (forwarderVersion === defaultForwarderVersion) {
+    return getAddressInitializationData();
+  } else {
+    return getV1AddressInitializationData(baseAddress, salt, feeAddress);
+  }
+}
+
+/**
+ * Returns the createForwarderTypes and createForwarderParams for all forwarder versions
+ *
+ * @param {string} baseAddress - The address of the wallet contract
+ * @param {Buffer} saltBuffer - The salt for address initialization transaction
+ * @param {string} feeAddress - The fee address for the enterprise
+ * @returns {createForwarderParams: (string | Buffer)[], createForwarderTypes: string[]}
+ */
+export function getCreateForwarderParamsAndTypes(
+  baseAddress: string,
+  saltBuffer: Buffer,
+  feeAddress?: string
+): { createForwarderParams: (string | Buffer)[]; createForwarderTypes: string[] } {
+  let createForwarderParams = [baseAddress, saltBuffer];
+  let createForwarderTypes = createV1ForwarderTypes;
+  if (feeAddress) {
+    createForwarderParams = [baseAddress, feeAddress, saltBuffer];
+    createForwarderTypes = createV4ForwarderTypes;
+  }
+  return { createForwarderParams, createForwarderTypes };
 }
 
 /**
@@ -693,7 +748,13 @@ export function getV1AddressInitializationData(baseAddress: string, salt: string
  * @returns parsed transfer data
  */
 export function decodeForwarderCreationData(data: string): ForwarderInitializationData {
-  if (!(data.startsWith(v1CreateForwarderMethodId) || data.startsWith(createForwarderMethodId))) {
+  if (
+    !(
+      data.startsWith(v4CreateForwarderMethodId) ||
+      data.startsWith(v1CreateForwarderMethodId) ||
+      data.startsWith(createForwarderMethodId)
+    )
+  ) {
     throw new BuildTransactionError(`Invalid address bytecode: ${data}`);
   }
 
@@ -701,8 +762,9 @@ export function decodeForwarderCreationData(data: string): ForwarderInitializati
     return {
       baseAddress: undefined,
       addressCreationSalt: undefined,
+      feeAddress: undefined,
     };
-  } else {
+  } else if (data.startsWith(v1CreateForwarderMethodId)) {
     const [baseAddress, saltBuffer] = getRawDecoded(
       createV1ForwarderTypes,
       getBufferedByteCode(v1CreateForwarderMethodId, data)
@@ -711,6 +773,18 @@ export function decodeForwarderCreationData(data: string): ForwarderInitializati
     return {
       baseAddress: addHexPrefix(baseAddress as string),
       addressCreationSalt: bufferToHex(saltBuffer as Buffer),
-    };
+      feeAddress: undefined,
+    } as const;
+  } else {
+    const [baseAddress, feeAddress, saltBuffer] = getRawDecoded(
+      createV4ForwarderTypes,
+      getBufferedByteCode(v4CreateForwarderMethodId, data)
+    );
+
+    return {
+      baseAddress: addHexPrefix(baseAddress as string),
+      addressCreationSalt: bufferToHex(saltBuffer as Buffer),
+      feeAddress: addHexPrefix(feeAddress as string),
+    } as const;
   }
 }
