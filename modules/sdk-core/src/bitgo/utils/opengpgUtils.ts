@@ -25,6 +25,11 @@ export type KeyValidityDict = {
   valid: boolean | null;
 }[];
 
+export type AuthEncMessage = {
+  encryptedMessage: string;
+  signature: string;
+};
+
 /**
  * Fetches BitGo's public gpg key used in MPC flows
  * @param {BitGoBase} bitgo BitGo object
@@ -302,6 +307,75 @@ export async function encryptText(text: string, key: Key): Promise<string> {
       showComment: false,
     },
   });
+}
+
+/**
+ * Encrypts and detach signs a string
+ * @param text string to encrypt and sign
+ * @param publicArmor public key to encrypt with
+ * @param privateArmor private key to sign with
+ */
+export async function encryptAndDetachSignText(
+  text: string,
+  publicArmor: string,
+  privateArmor: string
+): Promise<AuthEncMessage> {
+  const publicKey = await readKey({ armoredKey: publicArmor });
+  const privateKey = await readPrivateKey({ armoredKey: privateArmor });
+  const message = await createMessage({ text });
+  const encryptedMessage = await encrypt({
+    message,
+    encryptionKeys: publicKey,
+    format: 'armored',
+    config: {
+      rejectCurves: new Set(),
+      showVersion: false,
+      showComment: false,
+    },
+  });
+  const signature = await sign({
+    message,
+    signingKeys: privateKey,
+    format: 'armored',
+    detached: true,
+    config: {
+      rejectCurves: new Set(),
+      showVersion: false,
+      showComment: false,
+    },
+  });
+  return {
+    encryptedMessage: encryptedMessage,
+    signature: signature,
+  };
+}
+
+/**
+ * Encrypts and detach signs a string
+ * @param text string to encrypt and sign
+ * @param publicArmor public key to verify signature with
+ * @param privateArmor private key to decrypt with
+ */
+export async function decryptAndVerifySignedText(
+  encryptedAndSignedMessage: AuthEncMessage,
+  publicArmor: string,
+  privateArmor: string
+): Promise<string> {
+  const publicKey = await readKey({ armoredKey: publicArmor });
+  const privateKey = await readPrivateKey({ armoredKey: privateArmor });
+  const decryptedMessage = await decrypt({
+    message: await readMessage({ armoredMessage: encryptedAndSignedMessage.encryptedMessage }),
+    decryptionKeys: privateKey,
+    signature: await readSignature({ armoredSignature: encryptedAndSignedMessage.signature }),
+    verificationKeys: publicKey,
+    expectSigned: true,
+    config: {
+      rejectCurves: new Set(),
+      showVersion: false,
+      showComment: false,
+    },
+  });
+  return decryptedMessage.data;
 }
 
 /**
