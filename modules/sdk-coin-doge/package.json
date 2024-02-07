@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-doge",
-  "version": "1.12.30",
+  "version": "1.13.0",
   "description": "BitGo SDK coin library for Dogecoin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,12 +40,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^6.0.0",
-    "@bitgo/sdk-core": "^25.0.0",
-    "@bitgo/utxo-lib": "^9.33.0"
+    "@bitgo/abstract-utxo": "^6.1.0",
+    "@bitgo/sdk-core": "^25.1.0",
+    "@bitgo/utxo-lib": "^9.34.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.41.0",
-    "@bitgo/sdk-test": "^7.0.0"
+    "@bitgo/sdk-api": "^1.42.0",
+    "@bitgo/sdk-test": "^7.1.0"
   }
 }
