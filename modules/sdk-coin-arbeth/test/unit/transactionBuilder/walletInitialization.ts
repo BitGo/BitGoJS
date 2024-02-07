@@ -35,7 +35,7 @@ describe('Arbeth wallet initialization', function () {
       txJson.gasLimit.should.equal('6800000');
       txJson.gasPrice.should.equal('10000000000');
       should.equal(txJson.nonce, 1);
-      should.equal(txJson.chainId, '0x66eee');
+      should.equal(txJson.chainId, testData.CHAIN_ID);
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
 
@@ -44,7 +44,7 @@ describe('Arbeth wallet initialization', function () {
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0xdc7ebdb8aa3c190888825fb38a29ff0530247a436df0204577b95de96bf6baef');
+      should.equal(newTx.id, testData.SIGNED_INIT_TX_ID);
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);
@@ -66,7 +66,7 @@ describe('Arbeth wallet initialization', function () {
       txJson.gasLimit.should.equal('6800000');
       txJson.gasPrice.should.equal('10000000000');
       should.equal(txJson.nonce, 0);
-      should.equal(txJson.chainId, '0x66eee');
+      should.equal(txJson.chainId, testData.CHAIN_ID);
     });
 
     it('an unsigned init transaction from serialized with 0-prefixed address', async () => {
@@ -103,7 +103,7 @@ describe('Arbeth wallet initialization', function () {
       txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
       txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
       const tx = await txBuilder.build();
-      should.equal(tx.toJson().v, '0x0cddff');
+      should.equal(tx.toJson().v, testData.FINAL_V);
     });
   });
 });
