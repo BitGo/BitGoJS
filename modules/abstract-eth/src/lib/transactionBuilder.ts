@@ -30,15 +30,15 @@ import {
   decodeWalletCreationData,
   flushCoinsData,
   flushTokensData,
-  getAddressInitializationData,
-  getV1AddressInitializationData,
+  getAddressInitDataAllForwarderVersions,
   getCommon,
   getProxyInitcode,
   hasSignature,
   isValidEthAddress,
   getV1WalletInitializationData,
+  getCreateForwarderParamsAndTypes,
 } from './utils';
-import { defaultWalletVersion, defaultForwarderVersion, walletSimpleConstructor } from './walletUtil';
+import { defaultWalletVersion, walletSimpleConstructor } from './walletUtil';
 import { ERC1155TransferBuilder } from './transferBuilders/transferBuilderERC1155';
 import { ERC721TransferBuilder } from './transferBuilders/transferBuilderERC721';
 import { Transaction } from './transaction';
@@ -77,6 +77,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _forwarderVersion: number;
   private _initCode: string;
   private _baseAddress: string;
+  private _feeAddress: string;
 
   // generic contract call builder
   // encoded contract call hex
@@ -116,8 +117,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     this.transaction.setTransactionType(this._type);
     transactionData.from = this._sourceKeyPair ? this._sourceKeyPair.getAddress() : undefined;
-    this.transaction.setTransactionData(transactionData);
 
+    this.transaction.setTransactionData(transactionData);
     // Build and sign a new transaction based on the latest changes
     if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
       await this.transaction.sign(this._sourceKeyPair);
@@ -230,11 +231,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.AddressInitialization:
         this.setContract(transactionJson.to);
-        const { baseAddress, addressCreationSalt } = decodeForwarderCreationData(transactionJson.data);
+        const { baseAddress, addressCreationSalt, feeAddress } = decodeForwarderCreationData(transactionJson.data);
         if (baseAddress && addressCreationSalt) {
-          this.forwarderVersion(1);
           this.baseAddress(baseAddress);
           this.salt(addressCreationSalt);
+          if (feeAddress) {
+            this.feeAddress(feeAddress);
+            this.forwarderVersion(4);
+          } else {
+            this.forwarderVersion(1);
+          }
           const forwarderImplementationAddress = (this._coinConfig.network as EthereumNetwork)
             .forwarderImplementationAddress as string;
           if (forwarderImplementationAddress) {
@@ -651,10 +657,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TxData} The Ethereum transaction data
    */
   private buildAddressInitializationTransaction(): TxData {
-    const addressInitData =
-      this._forwarderVersion === defaultForwarderVersion
-        ? getAddressInitializationData()
-        : getV1AddressInitializationData(this._baseAddress, this._salt);
+    const addressInitData = getAddressInitDataAllForwarderVersions(
+      this._forwarderVersion,
+      this._baseAddress,
+      this._salt,
+      this._feeAddress
+    );
     const tx: TxData = this.buildBase(addressInitData);
     tx.to = this._contractAddress;
 
@@ -664,9 +672,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     if (this._salt && this._initCode) {
       const saltBuffer = ethUtil.setLengthLeft(ethUtil.toBuffer(this._salt), 32);
-      // Hash the wallet base address with the given salt, so the address directly relies on the base address
+
+      const { createForwarderParams, createForwarderTypes } = getCreateForwarderParamsAndTypes(
+        this._baseAddress,
+        saltBuffer,
+        this._feeAddress
+      );
+
+      // Hash the wallet base address and fee address if present with the given salt, so the address directly relies on the base address and fee address
       const calculationSalt = ethUtil.bufferToHex(
-        EthereumAbi.soliditySHA3(['address', 'bytes32'], [this._baseAddress, saltBuffer])
+        EthereumAbi.soliditySHA3(createForwarderTypes, createForwarderParams)
       );
       tx.deployedAddress = calculateForwarderV1Address(this._contractAddress, calculationSalt, this._initCode);
     }
@@ -757,7 +772,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {number} version forwarder version
    */
   forwarderVersion(version: number): void {
-    if (version < 0 || version > 2) {
+    if (version < 0 || version > 4 || version === 3) {
       throw new BuildTransactionError(`Invalid forwarder version: ${version}`);
     }
 
@@ -791,7 +806,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {number} version wallet version
    */
   walletVersion(version: number): void {
-    if (version < 0 || version > 3) {
+    if (version < 0 || version > 4 || version === 3) {
       throw new BuildTransactionError(`Invalid wallet version: ${version}`);
     }
 
@@ -808,5 +823,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Invalid address: ' + address);
     }
     this._baseAddress = address;
+  }
+
+  /**
+   * Set the fee address of the wallet
+   *
+   * @param {string} address The fee address of the wallet
+   */
+  feeAddress(address: string): void {
+    if (!isValidEthAddress(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    this._feeAddress = address;
   }
 }
