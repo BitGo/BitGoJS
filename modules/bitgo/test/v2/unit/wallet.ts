@@ -881,8 +881,8 @@ describe('V2 Wallet:', function () {
       // @ts-expect-error checking type mismatch
       await wallet.createAddress({ allowSkipVerifyAddress: null }).should.be.rejectedWith(message);
 
-      message = 'forwarderVersion has to be an integer 0, 1, 2 or 3';
-      await wallet.createAddress({ forwarderVersion: 4 }).should.be.rejectedWith(message);
+      message = 'forwarderVersion has to be an integer 0, 1, 2, 3 or 4';
+      await wallet.createAddress({ forwarderVersion: 5 }).should.be.rejectedWith(message);
       await wallet.createAddress({ forwarderVersion: -1 }).should.be.rejectedWith(message);
     });
 
