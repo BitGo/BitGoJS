@@ -255,6 +255,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
 ];
+const INJECTIVE_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -998,7 +999,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.INJECTIVE,
     BaseUnit.INJECTIVE,
-    COSMOS_SIDECHAIN_FEATURES
+    INJECTIVE_FEATURES
   ),
   account(
     '6ae81d6a-011c-499c-a3c8-15ac7dcac48a',
@@ -1008,7 +1009,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.INJECTIVE,
     BaseUnit.INJECTIVE,
-    COSMOS_SIDECHAIN_FEATURES
+    INJECTIVE_FEATURES
   ),
   account(
     'c592d110-cf6d-4630-b6e8-cfe044db0be2',
