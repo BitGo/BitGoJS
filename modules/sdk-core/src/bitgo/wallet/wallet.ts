@@ -1289,7 +1289,13 @@ export class Wallet implements IWallet {
     common.validateParams(params, [], ['minFeeRate', 'changeAddressType', 'txFormat']);
     return this.bitgo
       .put(this.url())
-      .send({ minFeeRate: params.minFeeRate, changeAddressType: params.changeAddressType, txFormat: params.txFormat })
+      .send({
+        buildDefaults: {
+          minFeeRate: params.minFeeRate,
+          changeAddressType: params.changeAddressType,
+          txFormat: params.txFormat,
+        },
+      })
       .result();
   }
 
