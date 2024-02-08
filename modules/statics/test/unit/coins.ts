@@ -85,6 +85,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   matic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  injective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   polygon: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -184,6 +185,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   tmatic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  tinjective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   tpolygon: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
