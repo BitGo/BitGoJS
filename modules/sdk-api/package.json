@@ -59,7 +59,8 @@
     "superagent": "3.8.3"
   },
   "overrides": {
-    "degenerator": "5.0.0"
+    "degenerator": "5.0.0",
+    "ip": "../_EXCLUDED_"
   },
   "resolutions": {
     "degenerator": "5.0.0"
