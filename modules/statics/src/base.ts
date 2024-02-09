@@ -1604,6 +1604,7 @@ export enum UnderlyingAsset {
   'avaxc:wbtc' = 'avaxc:wbtc',
   'avaxc:weth' = 'avaxc:weth',
   'tavaxc:opm' = 'tavaxc:opm',
+  'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   // Begin FTX missing AVAXC tokens
   'avaxc:yeti' = 'avaxc:yeti',
   'avaxc:spell' = 'avaxc:spell',
