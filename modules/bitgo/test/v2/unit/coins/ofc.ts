@@ -24,8 +24,8 @@ describe('OFC:', function () {
     ofcCoin.isValidMofNSetup({ m: 1, n: 1 }).should.be.true();
   });
 
-  it('should validate pub key', () => {
-    const { pub } = ofcCoin.keychains().create();
+  it('should validate pub key', async () => {
+    const { pub } = await ofcCoin.keychains().create();
     ofcCoin.isValidPub(pub).should.equal(true);
   });
 });

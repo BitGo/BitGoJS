@@ -1450,7 +1450,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed: Buffer): { pub: string; prv: string } {
+  async generateKeyPair(seed?: Buffer): Promise<{ pub: string; prv: string }> {
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the

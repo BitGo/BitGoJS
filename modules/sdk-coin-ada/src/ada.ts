@@ -195,7 +195,7 @@ export class Ada extends BaseCoin {
     return transactionExplanation as unknown as ParsedTransaction;
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     const keyPair = seed ? new AdaKeyPair({ seed }) : new AdaKeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {

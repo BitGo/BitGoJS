@@ -193,8 +193,8 @@ describe('XRP:', function () {
       details.should.have.property('rootPrivateKey');
     });
 
-    it('should validate pub key', () => {
-      const { pub } = basecoin.keychains().create();
+    it('should validate pub key', async () => {
+      const { pub } = await basecoin.keychains().create();
       basecoin.isValidPub(pub).should.equal(true);
     });
   });

@@ -40,7 +40,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const user = await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.USER] });
     assert(user.pub);
 
-    const derived = this.coin.deriveKeyWithSeed({ key: user.pub, seed: inscriptionData.toString() });
+    const derived = await this.coin.deriveKeyWithSeed({ key: user.pub, seed: inscriptionData.toString() });
     const compressedPublicKey = xpubToCompressedPub(derived.key);
     const xOnlyPublicKey = utxolib.bitgo.outputScripts.toXOnlyPublicKey(Buffer.from(compressedPublicKey, 'hex'));
 
@@ -220,7 +220,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       },
     })) as HalfSignedUtxoTransaction;
 
-    const derived = this.coin.deriveKeyWithSeed({ key: xprv, seed: inscriptionData.toString() });
+    const derived = await this.coin.deriveKeyWithSeed({ key: xprv, seed: inscriptionData.toString() });
     const prv = xprvToRawPrv(derived.key);
 
     const fullySignedRevealTransaction = await inscriptions.signRevealTransaction(
@@ -250,7 +250,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     txPrebuild: PrebuildTransactionResult
   ): Promise<SubmitTransactionResponse> {
     const userKeychain = await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.USER] });
-    const prv = this.wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
+    const prv = await this.wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
 
     const halfSigned = (await this.wallet.signTransaction({ prv, txPrebuild })) as HalfSignedUtxoTransaction;
     return this.wallet.submitTransaction({ halfSigned });

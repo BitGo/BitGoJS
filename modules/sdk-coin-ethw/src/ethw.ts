@@ -43,7 +43,7 @@ export class Ethw extends Eth {
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     throw new Error('Method not implemented.');
   }
-  generateKeyPair(seed?: Buffer | undefined): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     throw new Error('Method not implemented.');
   }
 

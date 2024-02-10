@@ -174,7 +174,7 @@ export class Keychains implements IKeychains {
    * Create a public/private key pair
    * @param params.seed
    */
-  create(params: { seed?: Buffer } = {}): KeyPair {
+  async create(params: { seed?: Buffer } = {}): Promise<KeyPair> {
     return this.baseCoin.generateKeyPair(params.seed);
   }
 

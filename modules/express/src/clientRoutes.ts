@@ -495,7 +495,7 @@ export async function handleV2Sign(req: express.Request) {
   let privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
   const coin = bitgo.coin(req.params.coin);
   if (req.body.derivationSeed) {
-    privKey = coin.deriveKeyWithSeed({ key: privKey, seed: req.body.derivationSeed }).key;
+    privKey = (await coin.deriveKeyWithSeed({ key: privKey, seed: req.body.derivationSeed })).key;
   }
   try {
     return await coin.signTransaction({ ...req.body, prv: privKey });

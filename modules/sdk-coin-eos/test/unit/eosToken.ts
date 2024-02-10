@@ -41,7 +41,7 @@ describe('EOS Token:', function () {
     let newTxPrebuild;
     let newTxParams;
 
-    before(function () {
+    before(async function () {
       const walletData = {
         id: '5a78dd561c6258a907f1eeaee132f796',
         users: [
@@ -126,7 +126,7 @@ describe('EOS Token:', function () {
         },
       };
       const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
-      const keyPair = baseCoin.generateKeyPair(seed);
+      const keyPair = await baseCoin.generateKeyPair(seed);
       const txParams = {
         txPrebuild,
         prv: keyPair.prv,

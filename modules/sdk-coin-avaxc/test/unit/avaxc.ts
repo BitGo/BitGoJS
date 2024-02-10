@@ -93,22 +93,22 @@ describe('Avalanche C-Chain', function () {
   });
 
   describe('KeyPair', () => {
-    it('should generate tavax keyPair without aguments', () => {
-      const kp = tavaxCoin.generateKeyPair();
+    it('should generate tavax keyPair without aguments', async () => {
+      const kp = await tavaxCoin.generateKeyPair();
       kp.should.have.property('prv');
       kp.should.have.property('pub');
     });
 
-    it('should generate avax keyPair without aguments', () => {
-      const kp = avaxCoin.generateKeyPair();
+    it('should generate avax keyPair without aguments', async () => {
+      const kp = await avaxCoin.generateKeyPair();
       kp.should.have.property('prv');
       kp.should.have.property('pub');
     });
 
-    it('should generate avax keyPair from seed', () => {
+    it('should generate avax keyPair from seed', async () => {
       const seed = '4b3b89f6ca897cb729d2146913877f71';
-      const tAvaxKeyPair = tavaxCoin.generateKeyPair(Buffer.from(seed, 'hex'));
-      const avaxKeyPair = avaxCoin.generateKeyPair(Buffer.from(seed, 'hex'));
+      const tAvaxKeyPair = await tavaxCoin.generateKeyPair(Buffer.from(seed, 'hex'));
+      const avaxKeyPair = await avaxCoin.generateKeyPair(Buffer.from(seed, 'hex'));
       tAvaxKeyPair.should.have.property('prv');
       tAvaxKeyPair.should.have.property('pub');
       tAvaxKeyPair.prv.should.equals(

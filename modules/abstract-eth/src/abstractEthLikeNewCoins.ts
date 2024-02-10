@@ -2011,7 +2011,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const walletPassphrase = buildParams.walletPassphrase;
 
     const userKeychain = await this.keychains().get({ id: wallet.keyIds()[0] });
-    const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
+    const userPrv = await wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
     const userPrvBuffer = bip32.fromBase58(userPrv).privateKey;
     if (!userPrvBuffer) {
       throw new Error('invalid userPrv');
@@ -2222,7 +2222,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {Buffer} seed
    * @returns {KeyPair} object with generated pub and prv
    */
-  generateKeyPair(seed: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the

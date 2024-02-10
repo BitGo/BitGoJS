@@ -154,7 +154,7 @@ export class Ton extends BaseCoin {
     };
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     const keyPair = seed ? new TonKeyPair({ seed }) : new TonKeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {

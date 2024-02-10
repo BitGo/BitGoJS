@@ -337,7 +337,7 @@ export class Sol extends BaseCoin {
    * @param {Buffer} seed - Seed from which the new SolKeyPair should be generated, otherwise a random seed is used
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed?: Buffer | undefined): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     const result = seed ? new SolKeyPair({ seed }).getKeys() : new SolKeyPair().getKeys();
     return result as KeyPair;
   }

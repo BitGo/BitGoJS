@@ -210,7 +210,7 @@ export class Trx extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated pub, prv
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     // TODO: move this and address creation logic to account-lib
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256 bit chain code, both of which must be

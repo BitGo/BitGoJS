@@ -35,7 +35,7 @@ export class Ofc extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the

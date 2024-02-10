@@ -117,20 +117,20 @@ describe('Abstract UTXO Coin:', () => {
     });
   });
 
-  describe('Custom Change Wallets', () => {
+  describe('Custom Change Wallets', async () => {
     const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
 
     const keys = {
       send: {
-        user: { id: '0', key: coin.keychains().create() },
-        backup: { id: '1', key: coin.keychains().create() },
-        bitgo: { id: '2', key: coin.keychains().create() },
+        user: { id: '0', key: await coin.keychains().create() },
+        backup: { id: '1', key: await coin.keychains().create() },
+        bitgo: { id: '2', key: await coin.keychains().create() },
       },
       change: {
-        user: { id: '3', key: coin.keychains().create() },
-        backup: { id: '4', key: coin.keychains().create() },
-        bitgo: { id: '5', key: coin.keychains().create() },
+        user: { id: '3', key: await coin.keychains().create() },
+        backup: { id: '4', key: await coin.keychains().create() },
+        bitgo: { id: '5', key: await coin.keychains().create() },
       },
     };
 
@@ -247,17 +247,17 @@ describe('Abstract UTXO Coin:', () => {
     });
   });
 
-  describe('Verify Transaction', () => {
+  describe('Verify Transaction', async () => {
     const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
     const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
 
-    const userKeychain = coin.keychains().create();
-    const otherKeychain = coin.keychains().create();
+    const userKeychain = await coin.keychains().create();
+    const otherKeychain = await coin.keychains().create();
 
     const changeKeys = {
-      user: coin.keychains().create(),
-      backup: coin.keychains().create(),
-      bitgo: coin.keychains().create(),
+      user: await coin.keychains().create(),
+      backup: await coin.keychains().create(),
+      bitgo: await coin.keychains().create(),
     };
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

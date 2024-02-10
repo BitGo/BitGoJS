@@ -1,6 +1,5 @@
 import assert from 'assert';
 import * as _ from 'lodash';
-import * as utxolib from '@bitgo/utxo-lib';
 import * as querystring from 'querystring';
 import * as url from 'url';
 import * as request from 'superagent';
@@ -12,7 +11,6 @@ import {
   BitGoBase,
   checkKrsProvider,
   common,
-  Ed25519KeyDeriver,
   ExtraPrebuildParamsOptions,
   InvalidAddressError,
   InvalidMemoIdError,
@@ -33,6 +31,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
+  EddsaKeyDeriver,
 } from '@bitgo/sdk-core';
 import { toBitgoRequest } from '@bitgo/sdk-api';
 import { getStellarKeys } from './getStellarKeys';
@@ -214,7 +213,11 @@ export class Xlm extends BaseCoin {
    * @param seed
    * @returns generated pub and prv
    */
-  generateKeyPair(seed: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer, rootKey?: boolean): Promise<KeyPair> {
+    if (rootKey) {
+      const keypair = await EddsaKeyDeriver.createRootKeys(seed);
+      return keypair;
+    }
     const pair = seed ? stellar.Keypair.fromRawEd25519Seed(seed) : stellar.Keypair.random();
     return {
       pub: pair.publicKey(),
@@ -782,7 +785,7 @@ export class Xlm extends BaseCoin {
       }
       seed = stellar.StrKey.decodeEd25519SecretSeed(rootPrv);
     }
-    const keyPair = this.generateKeyPair(seed);
+    const keyPair = await this.generateKeyPair(seed);
     // extend the wallet initialization params
     walletParams.rootPrivateKey = keyPair.prv;
     return walletParams;
@@ -1112,29 +1115,8 @@ export class Xlm extends BaseCoin {
     return true;
   }
 
-  /**
-   * Derive a hardened child public key from a master key seed using an additional seed for randomness.
-   *
-   * Due to technical differences between keypairs on the ed25519 curve and the secp256k1 curve,
-   * only hardened private key derivation is supported.
-   *
-   * @param key seed for the master key. Note: Not the public key or encoded private key. This is the raw seed.
-   * @param entropySeed random seed which is hashed to generate the derivation path
-   */
-  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
-    const derivationPathInput = utxolib.crypto.hash256(Buffer.from(seed, 'utf8')).toString('hex');
-    const derivationPathParts = [
-      999999,
-      parseInt(derivationPathInput.slice(0, 7), 16),
-      parseInt(derivationPathInput.slice(7, 14), 16),
-    ];
-    const derivationPath = 'm/' + derivationPathParts.map((part) => `${part}'`).join('/');
-    const derivedKey = Ed25519KeyDeriver.derivePath(derivationPath, key).key;
-    const keypair = stellar.Keypair.fromRawEd25519Seed(derivedKey);
-    return {
-      key: keypair.publicKey(),
-      derivationPath,
-    };
+  async deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): Promise<{ key: any; derivationPath: string }> {
+    return await EddsaKeyDeriver.deriveKeyWithSeed(key, seed);
   }
 
   /**

@@ -20,7 +20,7 @@ describe('BLS Utils:', async function () {
   const coinName = 'eth2';
 
   before(async function () {
-    bitgoKeyShare = eth2.generateKeyPair();
+    bitgoKeyShare = await eth2.generateKeyPair();
 
     const bitGoGPGKey = await openpgp.generateKey({
       userIDs: [
@@ -45,11 +45,11 @@ describe('BLS Utils:', async function () {
 
   it('should generate BLS-DKG key chains', async function () {
     const userKeyShare: IBlsKeyPair = {
-      ...eth2.generateKeyPair(),
+      ...(await eth2.generateKeyPair()),
       chaincode: '0',
     };
     const backupKeyShare: IBlsKeyPair = {
-      ...eth2.generateKeyPair(),
+      ...(await eth2.generateKeyPair()),
       chaincode: '0',
     };
     const userGpgKey = await openpgp.generateKey({
@@ -126,8 +126,8 @@ describe('BLS Utils:', async function () {
     const enterprise = 'enterprise';
     const originalPasscodeEncryptionCode = 'originalPasscodeEncryptionCode';
 
-    const userKeyShare: IBlsKeyPair = { ...eth2.generateKeyPair(), chaincode: '0' };
-    const backupKeyShare: IBlsKeyPair = { ...eth2.generateKeyPair(), chaincode: '0' };
+    const userKeyShare: IBlsKeyPair = { ...(await eth2.generateKeyPair()), chaincode: '0' };
+    const backupKeyShare: IBlsKeyPair = { ...(await eth2.generateKeyPair()), chaincode: '0' };
     const userGpgKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -206,8 +206,8 @@ describe('BLS Utils:', async function () {
   });
 
   it('should fail to generate BLS-DKG key chains', async function () {
-    const userKeyShare: IBlsKeyPair = { ...eth2.generateKeyPair(), chaincode: '0' };
-    const backupKeyShare: IBlsKeyPair = { ...eth2.generateKeyPair(), chaincode: '0' };
+    const userKeyShare: IBlsKeyPair = { ...(await eth2.generateKeyPair()), chaincode: '0' };
+    const backupKeyShare: IBlsKeyPair = { ...(await eth2.generateKeyPair()), chaincode: '0' };
     const userGpgKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -239,7 +239,7 @@ describe('BLS Utils:', async function () {
       .createUserKeychain(
         userGpgKey,
         userKeyShare,
-        { ...eth2.generateKeyPair(), chaincode: '0' },
+        { ...(await eth2.generateKeyPair()), chaincode: '0' },
         bitgoKeychain,
         'passphrase'
       )
@@ -247,7 +247,7 @@ describe('BLS Utils:', async function () {
     await blsUtils
       .createUserKeychain(
         userGpgKey,
-        { ...eth2.generateKeyPair(), chaincode: '0' },
+        { ...(await eth2.generateKeyPair()), chaincode: '0' },
         backupKeyShare,
         bitgoKeychain,
         'passphrase'
@@ -257,7 +257,7 @@ describe('BLS Utils:', async function () {
     await blsUtils
       .createBackupKeychain(
         backupGpgKey,
-        { ...eth2.generateKeyPair(), chaincode: '0' },
+        { ...(await eth2.generateKeyPair()), chaincode: '0' },
         backupKeyShare,
         bitgoKeychain,
         'passphrase'
@@ -267,7 +267,7 @@ describe('BLS Utils:', async function () {
       .createBackupKeychain(
         backupGpgKey,
         userKeyShare,
-        { ...eth2.generateKeyPair(), chaincode: '0' },
+        { ...(await eth2.generateKeyPair()), chaincode: '0' },
         bitgoKeychain,
         'passphrase'
       )

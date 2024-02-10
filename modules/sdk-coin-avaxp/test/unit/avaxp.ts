@@ -87,30 +87,30 @@ describe('Avaxp', function () {
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function () {
-      const keyPair = basecoin.generateKeyPair();
+    it('should generate a keypair from random seed', async function () {
+      const keyPair = await basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
     });
 
-    it('should generate a keypair from a seed', function () {
+    it('should generate a keypair from a seed', async function () {
       const seedText = testData.SEED_ACCOUNT.seed;
       const seed = Buffer.from(seedText, 'hex');
-      const keyPair = basecoin.generateKeyPair(seed);
+      const keyPair = await basecoin.generateKeyPair(seed);
       keyPair.pub.should.equal(testData.SEED_ACCOUNT.publicKey);
       keyPair.prv.should.equal(testData.SEED_ACCOUNT.privateKey);
     });
 
-    it('should validate a public key', function () {
-      const keyPair = basecoin.generateKeyPair();
+    it('should validate a public key', async function () {
+      const keyPair = await basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
 
       basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
-    it('should validate a private key', function () {
-      const keyPair = basecoin.generateKeyPair();
+    it('should validate a private key', async function () {
+      const keyPair = await basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
 

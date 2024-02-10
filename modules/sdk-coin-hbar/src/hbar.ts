@@ -20,6 +20,7 @@ import {
   TokenEnablementConfig,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
+  EddsaKeyDeriver,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -180,7 +181,11 @@ export class Hbar extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated pub, prv
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer, rootKey?: boolean): Promise<KeyPair> {
+    if (rootKey) {
+      const keypair = await EddsaKeyDeriver.createRootKeys(seed);
+      return keypair;
+    }
     const keyPair = seed ? new HbarKeyPair({ seed }) : new HbarKeyPair();
     const keys = keyPair.getKeys();
 
@@ -591,5 +596,10 @@ export class Hbar extends BaseCoin {
     const transactionReceipt = await transactionResponse.getReceipt(client);
 
     return { txId: transactionResponse.transactionId.toString(), status: transactionReceipt.status.toString() };
+  }
+
+  /** @inheritDoc */
+  async deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): Promise<{ key: any; derivationPath: string }> {
+    return EddsaKeyDeriver.deriveKeyWithSeed(key, seed);
   }
 }

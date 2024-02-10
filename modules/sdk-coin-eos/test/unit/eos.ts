@@ -88,14 +88,14 @@ describe('EOS:', function () {
     basecoin.isValidMemoId(EosInputs.string257CharsLong).should.equal(false);
   });
 
-  it('should validate pub key', () => {
-    const { pub } = basecoin.keychains().create();
+  it('should validate pub key', async () => {
+    const { pub } = await basecoin.keychains().create();
     basecoin.isValidPub(pub).should.equal(true);
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function () {
-      const keyPair = basecoin.generateKeyPair();
+    it('should generate a keypair from random seed', async function () {
+      const keyPair = await basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
 
@@ -103,9 +103,9 @@ describe('EOS:', function () {
       basecoin.isValidPrv(keyPair.prv).should.equal(true);
     });
 
-    it('should generate a keypair from seed', function () {
+    it('should generate a keypair from seed', async function () {
       const seed = Buffer.from('c3b09c24731be2851b641d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
-      const keyPair = basecoin.generateKeyPair(seed);
+      const keyPair = await basecoin.generateKeyPair(seed);
 
       keyPair.pub.should.equal(
         'xpub661MyMwAqRbcF2SUqUMiqxWGwaVX6sH4okTtX8jxJ1A14wfL8W7jZEoNE537JqSESXFpTcXCZahPz7RKQLpAEGsVp233dc5CffLSecpU13X'
@@ -212,7 +212,7 @@ describe('EOS:', function () {
       };
 
       const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
-      const keyPair = basecoin.generateKeyPair(seed);
+      const keyPair = await basecoin.generateKeyPair(seed);
 
       const { halfSigned } = await basecoin.signTransaction({ txPrebuild: tx, prv: keyPair.prv });
       const signature = halfSigned.transaction.signatures[0];
@@ -357,7 +357,7 @@ describe('EOS:', function () {
         },
       };
       const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
-      const keyPair = basecoin.generateKeyPair(seed);
+      const keyPair = await basecoin.generateKeyPair(seed);
       const txParams = {
         txPrebuild,
         prv: keyPair.prv,

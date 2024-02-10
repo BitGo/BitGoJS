@@ -324,7 +324,7 @@ describe('V2 Wallet:', function () {
         prv,
         coldDerivationSeed: '123',
       };
-      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+      (await wallet.getUserPrv(userPrvOptions)).should.eql(derivedPrv);
     });
 
     it('should use the user keychain derivedFromParentWithSeed as the cold derivation seed if none is provided', async () => {
@@ -337,7 +337,7 @@ describe('V2 Wallet:', function () {
           type: 'independent',
         },
       };
-      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+      (await wallet.getUserPrv(userPrvOptions)).should.eql(derivedPrv);
     });
 
     it('should prefer the explicit cold derivation seed to the user keychain derivedFromParentWithSeed', async () => {
@@ -351,7 +351,7 @@ describe('V2 Wallet:', function () {
           type: 'independent',
         },
       };
-      wallet.getUserPrv(userPrvOptions).should.eql(derivedPrv);
+      (await wallet.getUserPrv(userPrvOptions)).should.eql(derivedPrv);
     });
 
     it('should return the prv provided for TSS SMC', async () => {
@@ -379,7 +379,7 @@ describe('V2 Wallet:', function () {
         prv,
         keychain,
       };
-      wallet.getUserPrv(userPrvOptions).should.eql(prv);
+      (await wallet.getUserPrv(userPrvOptions)).should.eql(prv);
     });
   });
 

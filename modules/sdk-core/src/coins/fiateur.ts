@@ -50,7 +50,7 @@ export class FiatEur extends BaseCoin {
     throw new MethodNotImplementedError();
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     throw new MethodNotImplementedError();
   }
 

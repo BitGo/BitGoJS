@@ -994,7 +994,7 @@ describe('TSS Ecdsa Utils:', async function () {
     });
 
     // Seems to be flaky on CI, failed here: https://github.com/BitGo/BitGoJS/actions/runs/5902489990/job/16010623888?pr=3822
-    it.skip('createOfflineMuDeltaShare should succeed', async function () {
+    xit('createOfflineMuDeltaShare should succeed', async function () {
       const mockPassword = 'password';
       const alphaLength = 1536;
       const deltaLength = 64;

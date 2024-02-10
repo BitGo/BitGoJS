@@ -118,13 +118,13 @@ describe('SOL:', function () {
   const amount = '10000';
   const validator = resources.validator;
 
-  before(function () {
+  before(async function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('sol', Tsol.createInstance);
     bitgo.safeRegister('tsol', Tsol.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tsol') as Tsol;
-    keyPair = basecoin.generateKeyPair(resources.accountWithSeed.seed);
+    keyPair = await basecoin.generateKeyPair(resources.accountWithSeed.seed);
     newTxPrebuild = () => {
       return _.cloneDeep(txPrebuild);
     };
@@ -1268,12 +1268,17 @@ describe('SOL:', function () {
   });
 
   describe('Keypair:', () => {
-    it('should generate a keypair from random seed', function () {
-      should.throws(() => basecoin.generateKeyPair('placeholder' as any), 'generateKeyPair method not implemented');
+    it('should generate a keypair from random seed', async function () {
+      const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f';
+      const keyPair = await basecoin.generateKeyPair(Buffer.from(seedText, 'hex'));
+      keyPair.should.have.property('pub');
+      keyPair.should.have.property('prv');
     });
 
-    it('should generate a keypair from a seed', function () {
-      should.throws(() => basecoin.generateKeyPair('placeholder' as any), 'generateKeyPair method not implemented');
+    it('should generate a keypair from a seed', async function () {
+      const keyPair = await basecoin.generateKeyPair();
+      keyPair.should.have.property('pub');
+      keyPair.should.have.property('prv');
     });
   });
 

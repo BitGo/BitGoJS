@@ -198,7 +198,7 @@ export class Sui extends BaseCoin {
     };
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     const keyPair = seed ? new SuiKeyPair({ seed }) : new SuiKeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {

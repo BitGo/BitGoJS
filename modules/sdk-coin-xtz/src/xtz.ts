@@ -81,7 +81,7 @@ export class Xtz extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated xpub, xprv
    */
-  generateKeyPair(seed?: Buffer): SdkCoreKeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<SdkCoreKeyPair> {
     const keyPair = seed ? new KeyPair({ seed }) : new KeyPair();
     const keys = keyPair.getExtendedKeys();
 

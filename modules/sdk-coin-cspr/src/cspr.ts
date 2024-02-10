@@ -130,7 +130,7 @@ export class Cspr extends BaseCoin {
    * @param {Buffer} seed - Seed from which the new keypair should be generated, otherwise a random seed is used
    * @returns {Object} object with generated xpub and xprv
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     const keyPair = seed ? new CsprLib.KeyPair({ seed }) : new CsprLib.KeyPair();
     const keys = keyPair.getExtendedKeys();
 

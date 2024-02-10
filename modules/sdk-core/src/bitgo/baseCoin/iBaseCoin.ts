@@ -497,12 +497,12 @@ export interface IBaseCoin {
   ): Promise<SignedTransaction>;
   newWalletObject(walletParams: any): IWallet;
   feeEstimate(params: FeeEstimateOptions): Promise<any>;
-  deriveKeyWithSeed(params: DeriveKeyWithSeedOptions): { key: string; derivationPath: string };
+  deriveKeyWithSeed(params: DeriveKeyWithSeedOptions): Promise<{ key: string; derivationPath: string }>;
   keyIdsForSigning(): number[];
   preCreateBitGo(params: PrecreateBitGoOptions): void;
   initiateRecovery(params: InitiateRecoveryOptions): never;
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction>;
-  generateKeyPair(seed?: Buffer): KeyPair;
+  generateKeyPair(seed?: Buffer, rootKey?: boolean): Promise<KeyPair>;
   isValidPub(pub: string): boolean;
   isValidMofNSetup(params: ValidMofNOptions): boolean;
   isValidAddress(address: string): boolean;

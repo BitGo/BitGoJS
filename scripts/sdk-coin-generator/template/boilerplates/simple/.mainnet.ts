@@ -50,7 +50,7 @@ export class <%= constructor %> extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
+ async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     throw new Error('Method not implemented.');
   }
 

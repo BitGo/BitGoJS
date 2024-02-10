@@ -166,18 +166,18 @@ describe('TRON:', function () {
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function () {
-      const keyPair = basecoin.generateKeyPair();
+    it('should generate a keypair from random seed', async function () {
+      const keyPair = await basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
       basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
-    it('should generate a keypair from a seed', function () {
+    it('should generate a keypair from a seed', async function () {
       const seedText =
         '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
       const seed = Buffer.from(seedText, 'hex');
-      const keyPair = basecoin.generateKeyPair(seed);
+      const keyPair = await basecoin.generateKeyPair(seed);
       keyPair.pub.should.equal(
         'xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws'
       );

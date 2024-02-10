@@ -36,16 +36,16 @@ describe('Ethereum 2.0', function () {
     localBasecoin.preCreateBitGo(params);
   });
 
-  it('should generate keypair from prv', function () {
+  it('should generate keypair from prv', async function () {
     const prv = Buffer.from('4fd90ae1b8f724a4902615c09145ae134617c325b98c6970dcf62ab9cc5e12f3', 'hex');
     const localBaseCoin = bitgo.coin('teth2');
-    const keyPair = localBaseCoin.generateKeyPair(prv);
+    const keyPair = await localBaseCoin.generateKeyPair(prv);
     keyPair.prv.should.equal('4fd90ae1b8f724a4902615c09145ae134617c325b98c6970dcf62ab9cc5e12f3');
   });
 
-  it('should generate keypair without seed', function () {
+  it('should generate keypair without seed', async function () {
     const localBaseCoin = bitgo.coin('teth2') as Teth2;
-    const keyPair = localBaseCoin.generateKeyPair();
+    const keyPair = await localBaseCoin.generateKeyPair();
     keyPair.pub?.length.should.equal(96);
     localBaseCoin.isValidPub(keyPair.pub as string).should.be.true();
     keyPair.secretShares?.every((secretShare) => secretShare.length.should.equal(64));
@@ -53,19 +53,17 @@ describe('Ethereum 2.0', function () {
     keyPair.chaincode.length.should.equal(64);
   });
 
-  it('should reject keypair generation from an invalid prv', function () {
+  it('should reject keypair generation from an invalid prv', async function () {
     const prv = Buffer.from('', 'hex');
     const localBaseCoin = bitgo.coin('teth2');
-    (function () {
-      localBaseCoin.generateKeyPair(prv);
-    }).should.throw();
+    await localBaseCoin.generateKeyPair(prv).should.be.rejected();
   });
 
   describe('Sign message:', () => {
     it('should sign and validate a string message', async function () {
-      const userKeyPair = basecoin.generateKeyPair();
-      const backupKeyPair = basecoin.generateKeyPair();
-      const walletKeyPair = basecoin.generateKeyPair();
+      const userKeyPair = await basecoin.generateKeyPair();
+      const backupKeyPair = await basecoin.generateKeyPair();
+      const walletKeyPair = await basecoin.generateKeyPair();
 
       const message = 'hello world';
       const userKey = basecoin.aggregateShares({
@@ -92,9 +90,9 @@ describe('Ethereum 2.0', function () {
     });
 
     it('should sign with child key and validate a string message', async function () {
-      const userKeyPair = basecoin.generateKeyPair();
-      const backupKeyPair = basecoin.generateKeyPair();
-      const walletKeyPair = basecoin.generateKeyPair();
+      const userKeyPair = await basecoin.generateKeyPair();
+      const backupKeyPair = await basecoin.generateKeyPair();
+      const walletKeyPair = await basecoin.generateKeyPair();
 
       const message = 'hello world';
       const userKey = basecoin.aggregateShares({
@@ -129,10 +127,10 @@ describe('Ethereum 2.0', function () {
     });
 
     it('should fail to validate a string message with wrong public key', async function () {
-      const userKeyPair = basecoin.generateKeyPair();
-      const backupKeyPair = basecoin.generateKeyPair();
-      const walletKeyPair = basecoin.generateKeyPair();
-      const otherKeyPair = basecoin.generateKeyPair();
+      const userKeyPair = await basecoin.generateKeyPair();
+      const backupKeyPair = await basecoin.generateKeyPair();
+      const walletKeyPair = await basecoin.generateKeyPair();
+      const otherKeyPair = await basecoin.generateKeyPair();
 
       const message = 'hello world';
       const userKey = basecoin.aggregateShares({

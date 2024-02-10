@@ -299,7 +299,7 @@ export class Eth2 extends BaseCoin {
    * @param seed - byte array to generate BLS key pair from
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed?: Buffer): IBlsKeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<IBlsKeyPair> {
     let keyPair = new Eth2KeyPair();
     if (seed && Eth2KeyPair.isValidPrv(seed)) {
       const seedStr = Buffer.from(seed).toString('hex');

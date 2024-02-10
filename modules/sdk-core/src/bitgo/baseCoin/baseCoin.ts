@@ -379,7 +379,13 @@ export abstract class BaseCoin implements IBaseCoin {
    * @param seed
    * @returns {{key: string, derivationPath: string}}
    */
-  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { key: string; derivationPath: string } {
+  async deriveKeyWithSeed({
+    key,
+    seed,
+  }: {
+    key: string;
+    seed: string;
+  }): Promise<{ key: string; derivationPath: string }> {
     function sha256(input) {
       return crypto.createHash('sha256').update(input).digest();
     }
@@ -432,7 +438,7 @@ export abstract class BaseCoin implements IBaseCoin {
    *
    * @param seed
    */
-  abstract generateKeyPair(seed?: Buffer): KeyPair;
+  abstract generateKeyPair(seed?: Buffer, rootKey?: boolean): Promise<KeyPair>;
 
   /**
    * Return boolean indicating whether input is valid public key for the coin.

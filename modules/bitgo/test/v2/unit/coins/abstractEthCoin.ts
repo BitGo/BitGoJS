@@ -197,16 +197,16 @@ describe('ETH-like coins', () => {
       });
 
       describe('Generate keypair', () => {
-        it('Should generate valid keypair without seed', () => {
-          const { pub, prv } = basecoin.generateKeyPair();
+        it('Should generate valid keypair without seed', async () => {
+          const { pub, prv } = await basecoin.generateKeyPair();
           basecoin.isValidPub(pub).should.equal(true);
           const bitgoKey = bip32.fromBase58(prv);
           basecoin.isValidPub(bitgoKey.neutered().toBase58()).should.equal(true);
         });
 
-        it('Should generate valid keypair with seed', () => {
+        it('Should generate valid keypair with seed', async () => {
           const seed = Buffer.from('c3b09c24731be2851b641d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
-          const { pub, prv } = basecoin.generateKeyPair(seed);
+          const { pub, prv } = await basecoin.generateKeyPair(seed);
           basecoin.isValidPub(pub).should.equal(true);
           const bitgoKey = bip32.fromBase58(prv);
           basecoin.isValidPub(bitgoKey.neutered().toBase58()).should.equal(true);

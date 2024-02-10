@@ -187,7 +187,7 @@ export class Near extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated pub, prv
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     const keyPair = seed ? new NearKeyPair({ seed }) : new NearKeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {

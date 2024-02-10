@@ -121,7 +121,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return isValidEthAddress(address);
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     const extendedKey = bip32.fromSeed(seed || randomBytes(32));
     const xpub = extendedKey.neutered().toBase58();
 

@@ -621,7 +621,7 @@ export class Xrp extends BaseCoin {
    * Generate a new keypair for this coin.
    * @param seed Seed from which the new keypair should be generated, otherwise a random seed is used
    */
-  public generateKeyPair(seed?: Buffer): KeyPair {
+  public async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the

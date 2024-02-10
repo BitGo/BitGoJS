@@ -1711,7 +1711,11 @@ export class Wallet implements IWallet {
     });
 
     if (this.multisigType() === 'tss') {
-      return this.signTransactionTss({ ...presign, prv: this.getUserPrv(presign as GetUserPrvOptions), apiVersion });
+      return this.signTransactionTss({
+        ...presign,
+        prv: await this.getUserPrv(presign as GetUserPrvOptions),
+        apiVersion,
+      });
     }
 
     let { pubs } = params;
@@ -1743,7 +1747,7 @@ export class Wallet implements IWallet {
     }
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
-      prv: this.getUserPrv(presign as GetUserPrvOptions),
+      prv: await this.getUserPrv(presign as GetUserPrvOptions),
     });
   }
 
@@ -1774,7 +1778,7 @@ export class Wallet implements IWallet {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: this.getUserPrv(userPrvOptions),
+      prv: await this.getUserPrv(userPrvOptions),
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -1810,7 +1814,7 @@ export class Wallet implements IWallet {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: this.getUserPrv(userPrvOptions),
+      prv: await this.getUserPrv(userPrvOptions),
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -1824,7 +1828,7 @@ export class Wallet implements IWallet {
    * @param [params.keychain / params.key] (object) or params.prv (string)
    * @param params.walletPassphrase (string)
    */
-  getUserPrv(params: GetUserPrvOptions = {}): string {
+  async getUserPrv(params: GetUserPrvOptions = {}): Promise<string> {
     const userKeychain = params.keychain || params.key;
     let userPrv = params.prv;
     if (userPrv && typeof userPrv !== 'string') {
@@ -1845,7 +1849,7 @@ export class Wallet implements IWallet {
 
     if (userPrv && params.coldDerivationSeed) {
       // the derivation only makes sense when a key already exists
-      const derivation = this.baseCoin.deriveKeyWithSeed({ key: userPrv, seed: params.coldDerivationSeed });
+      const derivation = await this.baseCoin.deriveKeyWithSeed({ key: userPrv, seed: params.coldDerivationSeed });
       userPrv = derivation.key;
     } else if (!userPrv) {
       if (!userKeychain || typeof userKeychain !== 'object') {

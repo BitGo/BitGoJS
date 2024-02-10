@@ -160,15 +160,15 @@ describe('ADA', function () {
   });
 
   describe('Generate wallet key pair: ', () => {
-    it('should generate key pair', () => {
-      const kp = basecoin.generateKeyPair();
+    it('should generate key pair', async () => {
+      const kp = await basecoin.generateKeyPair();
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
     });
 
-    it('should generate key pair from seed', () => {
+    it('should generate key pair from seed', async () => {
       const seed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
-      const kp = basecoin.generateKeyPair(seed);
+      const kp = await basecoin.generateKeyPair(seed);
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
     });

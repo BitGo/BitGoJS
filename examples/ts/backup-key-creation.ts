@@ -25,7 +25,7 @@ bitgo.register(coin, Tbtc.createInstance);
 // Create the wallet
 async function main() {
   // this function takes one parameter - seed - if you want to create from your own entropy (recommended)
-  const backupKey = bitgo.coin(coin).keychains().create();
+  const backupKey = await bitgo.coin(coin).keychains().create();
 
   console.log('BACK THIS UP: ');
   console.log(`Pub - this is what you add in the browser under the I have a backup key option: ${backupKey.pub}`);

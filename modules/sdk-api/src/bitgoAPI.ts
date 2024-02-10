@@ -769,7 +769,7 @@ export class BitGoAPI implements BitGoBase {
    * @throws {Error} - Throws an error if there is an issue creating the keychain.
    */
   public async createUserEcdhKeychain(loginPassword: string): Promise<any> {
-    const keyData = this.keychains().create();
+    const keyData = await this.keychains().create();
     const hdNode = bitcoin.HDNode.fromBase58(keyData.xprv);
 
     /**

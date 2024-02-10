@@ -265,8 +265,8 @@ export class BlsUtils extends MpcUtils implements IBlsUtils {
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
   }): Promise<KeychainsTriplet> {
-    const userKeyShare = this.baseCoin.generateKeyPair() as IBlsKeyPair;
-    const backupKeyShare = this.baseCoin.generateKeyPair() as IBlsKeyPair;
+    const userKeyShare = (await this.baseCoin.generateKeyPair()) as IBlsKeyPair;
+    const backupKeyShare = (await this.baseCoin.generateKeyPair()) as IBlsKeyPair;
 
     const randomHexString = randomBytes(12).toString('hex');
     const randomHexString2 = randomBytes(12).toString('hex');

@@ -5,8 +5,8 @@ import { utxoCoins } from './util';
 
 function run(coin: AbstractUtxoCoin) {
   describe(`UTXO Keychains ${coin.getChain()}`, function () {
-    it('validates pub', function () {
-      const { pub } = coin.keychains().create();
+    it('validates pub', async function () {
+      const { pub } = await coin.keychains().create();
       assert(pub);
       coin.isValidPub(pub).should.equal(true);
     });

@@ -126,7 +126,7 @@ export class AvaxC extends BaseCoin {
     return false;
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
+  async generateKeyPair(seed?: Buffer): Promise<KeyPair> {
     const avaxKeyPair = seed ? new AvaxcKeyPair({ seed }) : new AvaxcKeyPair();
     const extendedKeys = avaxKeyPair.getExtendedKeys();
     return {

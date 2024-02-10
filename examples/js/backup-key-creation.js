@@ -21,7 +21,7 @@ const coin = 'btc';
 // Create the wallet
 Promise.coroutine(function* () {
   // this function takes one parameter - seed - if you want to create from your own entropy (recommended)
-  const backupKey = bitgo.coin(coin).keychains().create();
+  const backupKey = yield bitgo.coin(coin).keychains().create();
 
   console.log('BACK THIS UP: ');
   console.log(`Pub - this is what you add in the browser under the I have a backup key option: ${backupKey.pub}`);
