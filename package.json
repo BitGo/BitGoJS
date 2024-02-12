@@ -88,6 +88,7 @@
     "terser": "^5.14.2",
     "json5": "^2.2.2",
     "ua-parser-js": ">0.7.30 <0.8.0",
+    "pac-resolver": "7.0.1",
     "protobufjs": "^7.2.4"
   },
   "workspaces": [
