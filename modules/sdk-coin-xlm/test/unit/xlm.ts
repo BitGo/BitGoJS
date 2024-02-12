@@ -124,9 +124,12 @@ describe('XLM:', function () {
     });
   });
 
-  it('should validate pub key', () => {
-    const { pub } = basecoin.keychains().create();
-    basecoin.isValidPub(pub).should.equal(true);
+  describe('sync methods error handling', () => {
+    it('should throw error for deriveKeyWithSeed()', () => {
+      (() => {
+        basecoin.deriveKeyWithSeed();
+      }).should.throw('use deriveKeyWithSeedAsync instead');
+    });
   });
 
   it('should validate stellar username', function () {
@@ -276,7 +279,7 @@ describe('XLM:', function () {
   });
 
   it('should supplement wallet generation with provided private key', async function () {
-    const rootPrivateKey = basecoin.generateKeyPair().prv;
+    const rootPrivateKey = (await basecoin.generateKeyPairAsync()).prv;
     const walletParams = await basecoin.supplementGenerateWallet({ rootPrivateKey });
     walletParams.should.have.property('rootPrivateKey');
     walletParams.rootPrivateKey.should.equal(rootPrivateKey);
@@ -385,8 +388,8 @@ describe('XLM:', function () {
       validSignature.should.equal(true);
     });
 
-    it('should fail to verify the wrong signature on a tx', function () {
-      const keyPair = basecoin.generateKeyPair();
+    it('should fail to verify the wrong signature on a tx', async function () {
+      const keyPair = await basecoin.generateKeyPairAsync();
       const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
       const validSignature = basecoin.verifySignature(keyPair.pub, tx.hash(), tx.signatures[0].signature());
       validSignature.should.equal(false);
@@ -863,8 +866,8 @@ describe('XLM:', function () {
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function () {
-      const keyPair = basecoin.generateKeyPair();
+    it('should generate a keypair from random seed', async function () {
+      const keyPair = await basecoin.generateKeyPairAsync();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
 
@@ -875,9 +878,9 @@ describe('XLM:', function () {
       basecoin.isValidPrv(keyPair.prv).should.equal(true);
     });
 
-    it('should generate a keypair from seed', function () {
+    it('should generate a keypair from seed', async function () {
       const seed = randomBytes(32);
-      const keyPair = basecoin.generateKeyPair(seed);
+      const keyPair = await basecoin.generateKeyPairAsync({ seed });
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
 
@@ -891,20 +894,13 @@ describe('XLM:', function () {
       stellar.StrKey.encodeEd25519SecretSeed(seed).should.equal(secret);
     });
 
-    it('should deterministically derive a child key from master seed and entropy seed', () => {
-      const seed = Buffer.alloc(32).fill(0).toString('hex');
-      const masterSeed = '0x01020304050607080910111213141516171819202122232425262728293031';
-
-      const derivedKey = basecoin.deriveKeyWithSeed({ key: masterSeed, seed });
-
-      derivedKey.should.have.properties({
-        key: 'GCJR3ORBWOKGFA3FTGYDDQVFEEMCYXFHY6KAUOTU4MQMFHK4LLSWWGLW',
-        derivationPath: "m/999999'/230673453'/206129755'",
-      });
-    });
-
     it('should validate pub key', () => {
       const { pub } = basecoin.keychains().create();
+      basecoin.isValidPub(pub).should.equal(true);
+    });
+
+    it('should validate pub key with Async method', async () => {
+      const { pub } = await basecoin.keychains().createAsync();
       basecoin.isValidPub(pub).should.equal(true);
     });
   });

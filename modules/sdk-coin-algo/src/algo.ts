@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { SeedValidator } from './seedValidator';
 import { coins, CoinFamily } from '@bitgo/statics';
@@ -10,7 +9,6 @@ import {
   AddressCoinSpecific,
   BaseCoin,
   BitGoBase,
-  Ed25519KeyDeriver,
   InvalidAddressError,
   InvalidKey,
   KeyIndices,
@@ -26,6 +24,9 @@ import {
   UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  EddsaKeyDeriver,
+  NotImplementedError,
+  GenerateKeyPairAsyncOptions,
 } from '@bitgo/sdk-core';
 import stellar from 'stellar-sdk';
 
@@ -169,12 +170,23 @@ export class Algo extends BaseCoin {
     return true;
   }
 
-  /**
-   * Generate ed25519 key pair
-   *
-   * @param seed
-   * @returns {Object} object with generated pub, prv
-   */
+  /** inheritdoc */
+  deriveKeyWithSeed(): { key: string; derivationPath: string } {
+    throw new NotImplementedError('use deriveKeyWithSeedAsync instead');
+  }
+
+  /** inheritdoc */
+  async deriveKeyWithSeedAsync({
+    key,
+    seed,
+  }: {
+    key: string;
+    seed: string;
+  }): Promise<{ key: any; derivationPath: string }> {
+    return await EddsaKeyDeriver.deriveKeyWithSeed(key, seed);
+  }
+
+  /** inheritdoc */
   generateKeyPair(seed?: Buffer): KeyPair {
     const keyPair = seed ? new AlgoLib.KeyPair({ seed }) : new AlgoLib.KeyPair();
     const keys = keyPair.getKeys();
@@ -186,6 +198,16 @@ export class Algo extends BaseCoin {
       pub: keyPair.getAddress(),
       prv: AlgoLib.algoUtils.encodeSeed(Buffer.from(keyPair.getSigningKey())),
     };
+  }
+
+  /** inheritdoc */
+  async generateKeyPairAsync(options: GenerateKeyPairAsyncOptions = {}): Promise<KeyPair> {
+    const { seed, rootKey } = options;
+    if (rootKey) {
+      const keypair = await EddsaKeyDeriver.createRootKeys(seed);
+      return keypair;
+    }
+    return this.generateKeyPair(seed);
   }
 
   /**
@@ -502,23 +524,6 @@ export class Algo extends BaseCoin {
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     return true;
-  }
-
-  /** @inheritDoc */
-  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
-    const derivationPathInput = utxolib.crypto.hash256(Buffer.from(seed, 'utf8')).toString('hex');
-    const derivationPathParts = [
-      999999,
-      parseInt(derivationPathInput.slice(0, 7), 16),
-      parseInt(derivationPathInput.slice(7, 14), 16),
-    ];
-    const derivationPath = 'm/' + derivationPathParts.map((part) => `${part}'`).join('/');
-    const derivedKey = Ed25519KeyDeriver.derivePath(derivationPath, key).key;
-    const keypair = new AlgoLib.KeyPair({ seed: derivedKey });
-    return {
-      key: keypair.getAddress(),
-      derivationPath,
-    };
   }
 
   decodeTx(txn: Buffer): unknown {

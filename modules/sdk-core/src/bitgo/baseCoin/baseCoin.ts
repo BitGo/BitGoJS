@@ -41,6 +41,7 @@ import {
   BuildNftTransferDataOptions,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
+  GenerateKeyPairAsyncOptions,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
@@ -378,6 +379,8 @@ export abstract class BaseCoin implements IBaseCoin {
    * @param key
    * @param seed
    * @returns {{key: string, derivationPath: string}}
+   *
+   * @deprecated use deriveKeyWithSeedAsync instead
    */
   deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { key: string; derivationPath: string } {
     function sha256(input) {
@@ -395,6 +398,22 @@ export abstract class BaseCoin implements IBaseCoin {
       key: derivedKeyNode.toBase58(),
       derivationPath: derivationPath,
     };
+  }
+
+  /**
+   * The cold wallet tool uses this function to derive an extended key that is based on the passed key and seed
+   * @param key
+   * @param seed
+   * @returns {{key: string, derivationPath: string}}
+   */
+  async deriveKeyWithSeedAsync({
+    key,
+    seed,
+  }: {
+    key: string;
+    seed: string;
+  }): Promise<{ key: string; derivationPath: string }> {
+    return this.deriveKeyWithSeed({ key, seed });
   }
 
   /**
@@ -428,11 +447,24 @@ export abstract class BaseCoin implements IBaseCoin {
   abstract parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction>;
 
   /**
+
    * Generate a key pair on the curve used by the coin
-   *
    * @param seed
+   * 
+   * @deprecated use generateKeyPairAsync instead
    */
-  abstract generateKeyPair(seed?: Buffer): KeyPair;
+  abstract generateKeyPair(seed?: Buffer, rootKey?: boolean): KeyPair;
+
+  /**
+   * Generate a key pair on the curve used by the coin
+   * @param options - optional parameters
+   * @param options.seed - optional - seed to use for key generation
+   * @param options.rootKey - optional - true to generate a root key (if supported by the coin), defaults to false
+   * @returns {Promise<KeyPair>} - the generated key pair
+   */
+  async generateKeyPairAsync(options?: GenerateKeyPairAsyncOptions): Promise<KeyPair> {
+    return this.generateKeyPair(options?.seed);
+  }
 
   /**
    * Return boolean indicating whether input is valid public key for the coin.

@@ -6,6 +6,7 @@ import {
   bigIntToBufferBE,
   clamp,
   getPaillierPublicKey,
+  getDerivationPath,
 } from '@bitgo/sdk-lib-mpc';
 
 /**
@@ -19,4 +20,5 @@ export {
   bigIntToBufferBE,
   clamp,
   getPaillierPublicKey,
+  getDerivationPath,
 };

@@ -20,6 +20,9 @@ import {
   TokenEnablementConfig,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
+  EddsaKeyDeriver,
+  NotImplementedError,
+  GenerateKeyPairAsyncOptions,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -174,12 +177,23 @@ export class Hbar extends BaseCoin {
     }
   }
 
-  /**
-   * Generate Hedera Hashgraph key pair
-   *
-   * @param seed
-   * @returns {Object} object with generated pub, prv
-   */
+  /** inheritdoc */
+  deriveKeyWithSeed(): { key: string; derivationPath: string } {
+    throw new NotImplementedError('use deriveKeyWithSeedAsync instead');
+  }
+
+  /** inheritdoc */
+  async deriveKeyWithSeedAsync({
+    key,
+    seed,
+  }: {
+    key: string;
+    seed: string;
+  }): Promise<{ key: any; derivationPath: string }> {
+    return await EddsaKeyDeriver.deriveKeyWithSeed(key, seed);
+  }
+
+  /** inheritdoc */
   generateKeyPair(seed?: Buffer): KeyPair {
     const keyPair = seed ? new HbarKeyPair({ seed }) : new HbarKeyPair();
     const keys = keyPair.getKeys();
@@ -192,6 +206,16 @@ export class Hbar extends BaseCoin {
       pub: keys.pub,
       prv: keys.prv,
     };
+  }
+
+  /** inheritdoc */
+  async generateKeyPairAsync(options: GenerateKeyPairAsyncOptions = {}): Promise<KeyPair> {
+    const { seed, rootKey } = options;
+    if (rootKey) {
+      const keypair = await EddsaKeyDeriver.createRootKeys(seed);
+      return keypair;
+    }
+    return this.generateKeyPair(seed);
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {

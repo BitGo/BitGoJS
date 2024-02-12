@@ -445,6 +445,11 @@ export interface BaseBroadcastTransactionResult {
   txId: string;
 }
 
+export interface GenerateKeyPairAsyncOptions {
+  seed?: Buffer;
+  rootKey?: boolean;
+}
+
 export interface IBaseCoin {
   type: string;
   tokenConfig?: BaseTokenConfig;
@@ -498,11 +503,13 @@ export interface IBaseCoin {
   newWalletObject(walletParams: any): IWallet;
   feeEstimate(params: FeeEstimateOptions): Promise<any>;
   deriveKeyWithSeed(params: DeriveKeyWithSeedOptions): { key: string; derivationPath: string };
+  deriveKeyWithSeedAsync(params: DeriveKeyWithSeedOptions): Promise<{ key: string; derivationPath: string }>;
   keyIdsForSigning(): number[];
   preCreateBitGo(params: PrecreateBitGoOptions): void;
   initiateRecovery(params: InitiateRecoveryOptions): never;
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction>;
   generateKeyPair(seed?: Buffer): KeyPair;
+  generateKeyPairAsync(options?: GenerateKeyPairAsyncOptions): Promise<KeyPair>;
   isValidPub(pub: string): boolean;
   isValidMofNSetup(params: ValidMofNOptions): boolean;
   isValidAddress(address: string): boolean;

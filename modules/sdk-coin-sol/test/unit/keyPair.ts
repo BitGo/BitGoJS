@@ -2,7 +2,7 @@ import assert from 'assert';
 import { KeyPair } from '../../src';
 import should from 'should';
 import * as testData from '../resources/sol';
-import { isValidPublicKey, isValidAddress, isValidPrivateKey } from '../../src/lib/utils';
+import { isValidPublicKey, isValidAddress } from '../../src/lib/utils';
 
 describe('Sol KeyPair', function () {
   const defaultSeed = { seed: testData.accountWithSeed.seed };
@@ -156,36 +156,6 @@ describe('Sol KeyPair', function () {
       const signature = testData.SIGNED_MESSAGE_SIGNATURE;
       const message = 'incorrect msg';
       keyPair.verifySignature(message, signature).should.equal(false);
-    });
-  });
-
-  describe('deriveHardened', () => {
-    it('should derive child key pairs', () => {
-      const rootKeyPair = new KeyPair();
-      for (let i = 0; i < 50; i++) {
-        const path = `m/0'/0'/0'/${i}'`;
-        const derived = new KeyPair(rootKeyPair.deriveHardened(path));
-
-        isValidPublicKey(derived.getKeys().pub).should.be.true();
-        isValidAddress(derived.getAddress()).should.be.true();
-
-        const derivedPrv = derived.getKeys().prv;
-        should.exist(derivedPrv);
-        isValidPrivateKey(derivedPrv as string | Uint8Array).should.be.true();
-
-        const rederived = new KeyPair(rootKeyPair.deriveHardened(path));
-        rederived.getKeys().should.deepEqual(derived.getKeys());
-      }
-    });
-
-    it('should not be able to derive without private key', () => {
-      const rootKeyPair = new KeyPair({ pub: testData.accountWithSeed.publicKey });
-      assert.throws(() => rootKeyPair.deriveHardened("m/0'/0'/0'/0'"), /need private key to derive hardened keypair/);
-    });
-
-    it('should throw error for non-hardened path', () => {
-      const rootKeyPair = new KeyPair();
-      assert.throws(() => rootKeyPair.deriveHardened('m/0/0/0/0'), /Invalid derivation path/);
     });
   });
 });

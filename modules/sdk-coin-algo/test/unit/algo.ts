@@ -37,6 +37,14 @@ describe('ALGO:', function () {
     });
   });
 
+  describe('sync methods error handling', () => {
+    it('should throw error for deriveKeyWithSeed()', () => {
+      (() => {
+        basecoin.deriveKeyWithSeed();
+      }).should.throw('use deriveKeyWithSeedAsync instead');
+    });
+  });
+
   describe('Transfer Builder: ', () => {
     const buildBaseTransferTransaction = ({ destination, amount = 10000, sender, memo = '' }) => {
       const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
@@ -608,31 +616,17 @@ describe('ALGO:', function () {
   });
 
   describe('Generate wallet key pair: ', () => {
-    it('should generate key pair', () => {
-      const kp = basecoin.generateKeyPair();
+    it('should generate key pair', async () => {
+      const kp = await basecoin.generateKeyPairAsync();
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
     });
 
-    it('should generate key pair from seed', () => {
+    it('should generate key pair from seed', async () => {
       const seed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
-      const kp = basecoin.generateKeyPair(seed);
+      const kp = await basecoin.generateKeyPairAsync({ seed });
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
-    });
-
-    it('should deterministically derive keypair with seed', () => {
-      const derivedKeypair = basecoin.deriveKeyWithSeed({
-        key: 'UBI2KNGT742KGIPHMZDJHHSADIT56HRDPVOOCCRYIETD4BAJLCBMQNSCNE',
-        seed: 'cold derivation seed',
-      });
-      console.log(JSON.stringify(derivedKeypair));
-
-      basecoin.isValidPub(derivedKeypair.key).should.be.true();
-      derivedKeypair.should.deepEqual({
-        key: 'NAYUBR4HQKJBBTNNKXQIY7GMHUCHVAUH5DQ4ZVHVL67CUQLGHRWDKQAHYU',
-        derivationPath: "m/999999'/25725073'/5121434'",
-      });
     });
   });
 

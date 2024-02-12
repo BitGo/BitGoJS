@@ -7,7 +7,7 @@ import { BigNumber } from 'bignumber.js';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TxData, Transfer } from '../../src/lib/iface';
-import { Wallet } from '@bitgo/sdk-core';
+import { EddsaKeyDeriver, Wallet } from '@bitgo/sdk-core';
 
 import * as TestData from '../fixtures/hbar';
 import { Hbar, Thbar, KeyPair, HbarToken } from '../../src';
@@ -28,6 +28,14 @@ describe('Hedera Hashgraph:', function () {
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('thbar');
     token = bitgo.coin('thbar:usdc');
+  });
+
+  describe('sync methods error handling', () => {
+    it('should throw error for deriveKeyWithSeed()', () => {
+      (() => {
+        basecoin.deriveKeyWithSeed();
+      }).should.throw('use deriveKeyWithSeedAsync instead');
+    });
   });
 
   it('should instantiate the coin', function () {
@@ -195,18 +203,18 @@ describe('Hedera Hashgraph:', function () {
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function () {
-      const keyPair = basecoin.generateKeyPair();
+    it('should generate a keypair from random seed', async function () {
+      const keyPair = await basecoin.generateKeyPairAsync();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
 
       basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
-    it('should generate a keypair from a seed', function () {
+    it('should generate a keypair from a seed', async function () {
       const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f';
       const seed = Buffer.from(seedText, 'hex');
-      const keyPair = basecoin.generateKeyPair(seed);
+      const keyPair = await basecoin.generateKeyPairAsync({ seed });
 
       keyPair.prv.should.equal(
         '302e020100300506032b65700422042080350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f'
@@ -225,6 +233,32 @@ describe('Hedera Hashgraph:', function () {
       seed.should.equal(
         '302e020100300506032b6570042204205965b6bfe85e8d543c36bf1b39800d633948bfdf742160d522f2391c57b0b055'
       );
+    });
+
+    it('should generate rootKeys with seed', async function () {
+      const seedText =
+        '3ba996300549b5d303c411fb83fbd5440da67ef1d725d5dbf57974d9187b2c6a3c6de78fed110d6cc17b5d98cd10e6de299a67c24cd767e966ec061717f07c5e';
+      const seed = Buffer.from(seedText, 'hex');
+      const keyPair = await basecoin.generateKeyPairAsync({ seed, rootKey: true });
+
+      assert.equal(
+        keyPair.prv,
+        'rprv50d51c4eba07fb365fe0f6522d6e16fb8958c6c39498f30e5d9e0e946e252d79:136aff358cb5503b0617943ec322f54998fab5df37220474b66026d833310122:3c6de78fed110d6cc17b5d98cd10e6de299a67c24cd767e966ec061717f07c5e:dad7c8d66bd039ee3e1886a2eb060e4b3812b142722d5074ce8364971592f669'
+      );
+      assert.equal(
+        keyPair.pub,
+        'rpub136aff358cb5503b0617943ec322f54998fab5df37220474b66026d833310122:3c6de78fed110d6cc17b5d98cd10e6de299a67c24cd767e966ec061717f07c5e'
+      );
+    });
+
+    it('should generate rootKeys without seed', async function () {
+      const keyPair = await basecoin.generateKeyPairAsync({ rootKey: true });
+      assert.ok(keyPair.prv);
+      assert.ok(keyPair.prv.startsWith('rprv'));
+      assert.equal(keyPair.prv.length, EddsaKeyDeriver.ROOT_PRV_KEY_LENGTH);
+      assert.ok(keyPair.pub);
+      assert.ok(keyPair.pub.startsWith('rpub'));
+      assert.equal(keyPair.pub.length, EddsaKeyDeriver.ROOT_PUB_KEY_LENGTH);
     });
   });
 

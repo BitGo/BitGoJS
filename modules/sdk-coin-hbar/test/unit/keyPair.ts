@@ -10,6 +10,39 @@ const prv = testData.ACCOUNT_1.prvKeyWithPrefix;
 
 describe('Hedera Key Pair', () => {
   describe('should create a valid KeyPair', () => {
+    describe('from root keys', async () => {
+      const rootKey = {
+        prv: 'rprv68d6f1ff76f10f30f4bd21bc900d3e4ed2d0f5ba4f243080f3d12774d5cf6746:bb085bbfc58b8c12945c44a00e68816e183b7f9eca6fac9f1769dd63a981dbf3:028f2c66f941b4049cd5b7f76e43c30633e34abf3e0c7722274c536c8d6a7a85:32bfbd348ccd84e7c37552bfbb908e5aa9c4a605fcd0b5ccfad36f3bc7bc85bc',
+        pub: 'rpubbb085bbfc58b8c12945c44a00e68816e183b7f9eca6fac9f1769dd63a981dbf3:028f2c66f941b4049cd5b7f76e43c30633e34abf3e0c7722274c536c8d6a7a85',
+      };
+      it('should create a valid KeyPair from root private', async () => {
+        const newKeyPair = new KeyPair({ prv: rootKey.prv });
+        const keys = newKeyPair.getKeys();
+        assert.ok(keys.prv);
+        assert.ok(keys.pub);
+        assert.equal(keys.prv.slice(0, 32), testData.ed25519PrivKeyPrefix);
+        assert.equal(keys.pub.slice(0, 24), testData.ed25519PubKeyPrefix);
+        const rawKeys = newKeyPair.getKeys(true);
+        assert.ok(rawKeys.prv);
+        assert.ok(rawKeys.pub);
+        assert.equal(rawKeys.prv.length, 64);
+        assert.equal(rawKeys.pub.length, 64);
+        assert.ok(rootKey.prv.includes(rawKeys.prv));
+        assert.ok(rootKey.pub.includes(rawKeys.pub));
+      });
+
+      it('should create a valid KeyPair from root pub', async () => {
+        const newKeyPair = new KeyPair({ pub: rootKey.pub });
+        const keys = newKeyPair.getKeys();
+        assert.ok(keys.pub);
+        assert.equal(keys.pub.slice(0, 24), testData.ed25519PubKeyPrefix);
+        const rawKeys = newKeyPair.getKeys(true);
+        assert.ok(rawKeys.pub);
+        assert.equal(rawKeys.pub.length, 64);
+        assert.ok(rootKey.pub.includes(rawKeys.pub));
+      });
+    });
+
     it('from an empty value', () => {
       const keyPair = new KeyPair();
       should.exists(keyPair.getKeys().prv);

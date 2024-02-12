@@ -173,9 +173,20 @@ export class Keychains implements IKeychains {
   /**
    * Create a public/private key pair
    * @param params.seed
+   * @deprecated use createAsync instead
    */
   create(params: { seed?: Buffer } = {}): KeyPair {
     return this.baseCoin.generateKeyPair(params.seed);
+  }
+
+  /**
+   * Create a public/private key pair
+   * @param params - optional parameters
+   * @param params.seed - optional - seed to use for key generation
+   * @param params.rootKey - optional - true to generate a root key (if supported by the coin), defaults to false
+   */
+  async createAsync(params: { seed?: Buffer; rootKey?: boolean } = {}): Promise<KeyPair> {
+    return this.baseCoin.generateKeyPairAsync(params);
   }
 
   /**

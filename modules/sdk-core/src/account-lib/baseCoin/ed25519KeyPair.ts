@@ -6,10 +6,10 @@ import {
   toHex,
   toUint8Array,
 } from '../util/crypto';
-import { Ed25519KeyDeriver } from '../util/ed25519KeyDeriver';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat, DotAddressFormat } from './enum';
 import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from './iface';
+import { EddsaKeyDeriver } from '../util/eddsaKeyDeriver';
 
 const DEFAULT_SEED_SIZE_BYTES = 32;
 
@@ -53,7 +53,11 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
 
   /** @inheritdoc */
   recordKeysFromPrivateKey(prv: string): void {
-    if (isValidEd25519Seed(prv)) {
+    if (EddsaKeyDeriver.isValidRootPrvKey(prv)) {
+      const { prv: parsedPrv, pub: parsedPub } = EddsaKeyDeriver.parseRootPrvKey(prv);
+      const naclKeyPair = nacl.sign.keyPair.fromSecretKey(Buffer.from(parsedPrv + parsedPub, 'hex'));
+      this.setKeyPair(naclKeyPair);
+    } else if (isValidEd25519Seed(prv)) {
       const decodedPrv = toUint8Array(prv);
       const naclKeyPair = nacl.sign.keyPair.fromSeed(decodedPrv);
       this.setKeyPair(naclKeyPair);
@@ -68,7 +72,10 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
 
   /** @inheritdoc */
   recordKeysFromPublicKey(pub: string): void {
-    if (isValidEd25519PublicKey(pub)) {
+    if (EddsaKeyDeriver.isValidRootPubKey(pub)) {
+      const { pub: parsedPub } = EddsaKeyDeriver.parseRootPubKey(pub);
+      this.keyPair = { pub: parsedPub };
+    } else if (isValidEd25519PublicKey(pub)) {
       this.keyPair = { pub };
     } else {
       this.keyPair = this.recordKeysFromPublicKeyInProtocolFormat(pub);
@@ -121,22 +128,5 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
     }
     const publicKey = toUint8Array(this.keyPair.pub);
     return nacl.sign.detached.verify(messageToVerify, signature, publicKey);
-  }
-
-  /**
-   * Derives a hardened child key pair using this key pair's secret key
-   * as the seed.
-   *
-   * @param path derivation path
-   */
-  deriveHardened(path: string): DefaultKeys {
-    if (!this.keyPair?.prv) {
-      throw new Error('need private key to derive hardened keypair');
-    }
-
-    const seed = Ed25519KeyDeriver.derivePath(path, this.keyPair.prv).key;
-    const derivedKeyPair = nacl.sign.keyPair.fromSeed(seed);
-
-    return this.getKeyPair(derivedKeyPair);
   }
 }

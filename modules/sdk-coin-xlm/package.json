@@ -42,7 +42,6 @@
   "dependencies": {
     "@bitgo/sdk-core": "^25.1.0",
     "@bitgo/statics": "^46.1.0",
-    "@bitgo/utxo-lib": "^9.34.0",
     "bignumber.js": "^9.1.1",
     "lodash": "^4.17.14",
     "stellar-sdk": "^10.0.1",

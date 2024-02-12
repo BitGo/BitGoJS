@@ -371,7 +371,7 @@ export class Wallets implements IWallets {
         userKeychainParams = userKeychain;
         if (params.coldDerivationSeed) {
           // the derivation only makes sense when a key already exists
-          const derivation = this.baseCoin.deriveKeyWithSeed({
+          const derivation = await this.baseCoin.deriveKeyWithSeedAsync({
             key: params.userKey,
             seed: params.coldDerivationSeed,
           });
@@ -384,7 +384,7 @@ export class Wallets implements IWallets {
           throw new Error('cannot generate user keypair without passphrase');
         }
         // Create the user key.
-        userKeychain = this.baseCoin.keychains().create();
+        userKeychain = await this.baseCoin.keychains().createAsync();
         userKeychain.encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: userKeychain.prv });
         userKeychainParams = {
           pub: userKeychain.pub,
