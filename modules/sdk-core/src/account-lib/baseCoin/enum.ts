@@ -62,6 +62,7 @@ export enum TransactionType {
   StakingDelegate,
   // Custom transaction (e.g. SUI)
   CustomTx,
+  StakingRedelegate,
 }
 
 /**

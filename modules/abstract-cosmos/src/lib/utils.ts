@@ -31,6 +31,7 @@ import {
   ExecuteContractMessage,
   FeeData,
   MessageData,
+  RedelegateMessage,
   SendMessage,
   WithdrawDelegatorRewardsMessage,
 } from './iface';
@@ -234,6 +235,26 @@ export class CosmosUtils implements BaseUtils {
   /**
    * Returns the array of MessageData[] from the decoded transaction
    * @param {DecodedTxRaw} decodedTx
+   * @returns {MessageData[]} Redelegate transaction message data
+   */
+  getRedelegateMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
+    return decodedTx.body.messages.map((message) => {
+      const value = this.registry.decode(message);
+      return {
+        value: {
+          delegatorAddress: value.delegatorAddress,
+          validatorSrcAddress: value.validatorSrcAddress,
+          validatorDstAddress: value.validatorDstAddress,
+          amount: value.amount,
+        },
+        typeUrl: message.typeUrl,
+      };
+    });
+  }
+
+  /**
+   * Returns the array of MessageData[] from the decoded transaction
+   * @param {DecodedTxRaw} decodedTx
    * @returns {MessageData[]} WithdrawDelegatorRewards transaction message data
    */
   getWithdrawRewardsMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
@@ -304,6 +325,8 @@ export class CosmosUtils implements BaseUtils {
         return TransactionType.StakingWithdraw;
       case constants.executeContractMsgTypeUrl:
         return TransactionType.ContractCall;
+      case constants.redelegateTypeUrl:
+        return TransactionType.StakingRedelegate;
       default:
         return undefined;
     }
@@ -496,6 +519,32 @@ export class CosmosUtils implements BaseUtils {
   }
 
   /**
+   * Validates the RedelegateMessage
+   * @param {DelegateOrUndelegeteMessage} redelegateMessage - The RedelegateMessage to validate.
+   * @throws {InvalidTransactionError} Throws an error if the validatorSrcAddress, validatorDstAddress, delegatorAddress, or amount is invalid or missing.
+   */
+  validateRedelegateMessage(redelegateMessage: RedelegateMessage) {
+    this.isObjPropertyNull(redelegateMessage, ['validatorSrcAddress', 'validatorDstAddress', 'delegatorAddress']);
+
+    if (!this.isValidValidatorAddress(redelegateMessage.validatorSrcAddress)) {
+      throw new InvalidTransactionError(
+        `Invalid RedelegateMessage validatorSrcAddress: ` + redelegateMessage.validatorSrcAddress
+      );
+    }
+    if (!this.isValidValidatorAddress(redelegateMessage.validatorDstAddress)) {
+      throw new InvalidTransactionError(
+        `Invalid RedelegateMessage validatorDstAddress: ` + redelegateMessage.validatorDstAddress
+      );
+    }
+    if (!this.isValidAddress(redelegateMessage.delegatorAddress)) {
+      throw new InvalidTransactionError(
+        `Invalid DelegateOrUndelegeteMessage delegatorAddress: ` + redelegateMessage.delegatorAddress
+      );
+    }
+    this.validateAmount(redelegateMessage.amount);
+  }
+
+  /**
    * Validates the MessageData
    * @param {MessageData} messageData - The MessageData to validate.
    * @throws {InvalidTransactionError} Throws an error if the messageData is invalid or missing required fields.
@@ -529,6 +578,11 @@ export class CosmosUtils implements BaseUtils {
       case TransactionType.ContractCall: {
         const value = messageData.value as ExecuteContractMessage;
         this.validateExecuteContractMessage(value, TransactionType.ContractCall);
+        break;
+      }
+      case TransactionType.StakingRedelegate: {
+        const value = messageData.value as RedelegateMessage;
+        this.validateRedelegateMessage(value);
         break;
       }
       default:
@@ -635,6 +689,8 @@ export class CosmosUtils implements BaseUtils {
       sendMessageData = this.getWithdrawRewardsMessageDataFromDecodedTx(decodedTx);
     } else if (type === TransactionType.ContractCall) {
       sendMessageData = this.getExecuteContractMessageDataFromDecodedTx(decodedTx);
+    } else if (type === TransactionType.StakingRedelegate) {
+      sendMessageData = this.getRedelegateMessageDataFromDecodedTx(decodedTx);
     } else {
       throw new Error('Transaction type not supported: ' + typeUrl);
     }

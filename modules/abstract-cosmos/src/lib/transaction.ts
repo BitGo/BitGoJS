@@ -16,6 +16,7 @@ import {
   CosmosLikeTransaction,
   DelegateOrUndelegeteMessage,
   ExecuteContractMessage,
+  RedelegateMessage,
   SendMessage,
   TransactionExplanation,
   TxData,
@@ -232,6 +233,18 @@ export class CosmosTransaction extends BaseTransaction {
           };
         });
         break;
+      case TransactionType.StakingRedelegate:
+        explanationResult.type = TransactionType.StakingRedelegate;
+        outputAmount = BigInt(0);
+        outputs = json.sendMessages.map((message) => {
+          const redelegateMessage = message.value as RedelegateMessage;
+          outputAmount = outputAmount + BigInt(redelegateMessage.amount.amount);
+          return {
+            address: redelegateMessage.validatorDstAddress,
+            amount: redelegateMessage.amount.amount,
+          };
+        });
+        break;
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }
@@ -317,6 +330,21 @@ export class CosmosTransaction extends BaseTransaction {
           outputs.push({
             address: executeContractMessage.contract,
             value: executeContractMessage.funds?.[0]?.amount ?? '0',
+            coin: this._coinConfig.name,
+          });
+        });
+        break;
+      case TransactionType.StakingRedelegate:
+        this.cosmosLikeTransaction.sendMessages.forEach((message) => {
+          const redelegateMessage = message.value as RedelegateMessage;
+          inputs.push({
+            address: redelegateMessage.delegatorAddress,
+            value: redelegateMessage.amount.amount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: redelegateMessage.validatorDstAddress,
+            value: redelegateMessage.amount.amount,
             coin: this._coinConfig.name,
           });
         });
