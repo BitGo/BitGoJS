@@ -598,19 +598,16 @@ describe('ADA', function () {
     const destAddr = address.address2;
     const sandBox = sinon.createSandbox();
 
-    beforeEach(function () {
-      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
-      callBack
-        .withArgs('address_info', sinon.match.has('_addresses'))
-        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
-      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
-    });
-
     afterEach(function () {
       sandBox.restore();
     });
 
     it('should fail to recover due to not finding an address with funds', async function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', sinon.match.has('_addresses'))
+        .resolves(endpointResponses.addressInfoResponse.ZeroUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
       await basecoin
         .recover({
           userKey: wrwUser.userKey,
@@ -620,6 +617,27 @@ describe('ADA', function () {
           recoveryDestination: destAddr,
         })
         .should.rejectedWith('Did not find address with funds to recover');
+      sandBox.assert.calledOnce(basecoin.getDataFromNode);
+    });
+
+    it('should fail to recover due to not having more than 1 ADA in funds', async function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack
+        .withArgs('address_info', sinon.match.has('_addresses'))
+        .resolves(endpointResponses.addressInfoResponse.OneSmallUTXO);
+      callBack.withArgs('tip').resolves(endpointResponses.tipInfoResponse);
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          backupKey: wrwUser.backupKey,
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.rejectedWith(
+          'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 9834367 fees: 165633'
+        );
+      sandBox.assert.calledTwice(basecoin.getDataFromNode);
     });
   });
 });
