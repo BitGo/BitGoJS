@@ -380,6 +380,22 @@ export class Ada extends BaseCoin {
     txBuilder.ttl(Number(tipAbsSlot.abs_slot) + 7 * 86400);
     const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
+    // sum up every output
+    const amount = unsignedTransaction
+      .toJson()
+      .outputs.reduce(
+        (acc: BigNumber, output: { amount: string }) => new BigNumber(acc).plus(output.amount),
+        new BigNumber(0)
+      );
+    if (amount.isLessThan(10000000)) {
+      throw new Error(
+        'Insufficient funds to recover, minimum required is 1 ADA plus fees, got ' +
+          amount.toString() +
+          ' fees: ' +
+          unsignedTransaction.getFee
+      );
+    }
+
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     if (!isUnsignedSweep) {
       if (!params.userKey) {

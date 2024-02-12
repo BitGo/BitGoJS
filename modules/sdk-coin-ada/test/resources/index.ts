@@ -277,12 +277,17 @@ export const testnetUTXO = {
   UTXO_1: {
     tx_hash: '8df8d41207980f9e21de698bd5d6c395c39e420f7de27f8539052dd34e3a28d6',
     tx_index: 0,
-    value: 10000000,
+    value: 12000000,
   },
   UTXO_2: {
     tx_hash: '87f6e905a5796277ffb256265fd18d16f84ddb54ec8a841f7d467360c1c9fc2f',
     tx_index: 0,
-    value: 5000000,
+    value: 15000000,
+  },
+  UTXO_3: {
+    tx_hash: '87f6e905a5796277ffb256265fd18d16f84ddb54ec8a841f7d467360c1c9fc2f',
+    tx_index: 0,
+    value: 10000000,
   },
 };
 
@@ -302,6 +307,16 @@ const OneUTXO = {
     {
       balance: testnetUTXO.UTXO_1.value,
       utxo_set: [testnetUTXO.UTXO_1],
+    },
+  ],
+};
+
+const OneSmallUTXO = {
+  status: 200,
+  body: [
+    {
+      balance: testnetUTXO.UTXO_3.value,
+      utxo_set: [testnetUTXO.UTXO_3],
     },
   ],
 };
@@ -331,6 +346,7 @@ const addressInfoResponse = {
   OneUTXO,
   OneUTXO2,
   TwoUTXO,
+  OneSmallUTXO,
 };
 
 const tipInfoResponse = {
