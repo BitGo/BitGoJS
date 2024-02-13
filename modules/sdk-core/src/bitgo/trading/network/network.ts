@@ -47,17 +47,17 @@ export class TradingNetwork implements ITradingNetwork {
 
   getBalances(params?: GetNetworkBalancesParams): Promise<GetNetworkBalancesResponse> {
     const url = this.bitgo.microservicesUrl(`/api/network/v1/enterprises/${this.enterpriseId}/clients/balances`);
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   getSupportedCurrencies(params: GetNetworkSupportedCurrenciesParams): Promise<GetNetworkSupportedCurrenciesResponse> {
     const url = this.bitgo.microservicesUrl(`/api/network/v1/enterprises/${this.enterpriseId}/supportedCurrencies`);
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   getConnections(params?: GetNetworkConnectionsParams): Promise<GetNetworkConnectionsResponse> {
     const url = this.bitgo.microservicesUrl(`/api/network/v1/enterprises/${this.enterpriseId}/clients/connections`);
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   getConnectionById({
@@ -67,12 +67,12 @@ export class TradingNetwork implements ITradingNetwork {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/connections/${connectionId}`
     );
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   createConnection(params: CreateNetworkConnectionParams): Promise<CreateNetworkConnectionResponse> {
     const url = this.bitgo.microservicesUrl(`/api/network/v1/enterprises/${this.enterpriseId}/clients/connections`);
-    return this.bitgo.post(url).send(params).result();
+    return this.bitgo.post(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   updateConnection({
@@ -82,12 +82,12 @@ export class TradingNetwork implements ITradingNetwork {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/connections/${connectionId}`
     );
-    return this.bitgo.put(url).send(params).result();
+    return this.bitgo.put(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   getAllocations(params?: GetNetworkAllocationsParams): Promise<GetNetworkAllocationsResponse> {
     const url = this.bitgo.microservicesUrl(`/api/network/v1/enterprises/${this.enterpriseId}/clients/allocations`);
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   getAllocationById({
@@ -97,7 +97,7 @@ export class TradingNetwork implements ITradingNetwork {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/allocations/${allocationId}`
     );
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   /**
@@ -142,7 +142,7 @@ export class TradingNetwork implements ITradingNetwork {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/connections/${connectionId}/allocations`
     );
-    return this.bitgo.post(url).send(params).result();
+    return this.bitgo.post(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   createDeallocation({
@@ -152,12 +152,12 @@ export class TradingNetwork implements ITradingNetwork {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/connections/${connectionId}/deallocations`
     );
-    return this.bitgo.post(url).send(params).result();
+    return this.bitgo.post(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   getSettlements(params?: GetNetworkSettlementsParams): Promise<GetNetworkSettlementsResponse> {
     const url = this.bitgo.microservicesUrl(`/api/network/v1/enterprises/${this.enterpriseId}/clients/settlements`);
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   getSettlementById({
@@ -167,13 +167,13 @@ export class TradingNetwork implements ITradingNetwork {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/settlements/${settlementId}`
     );
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
   getSettlementTransfers(params?: GetNetworkSettlementTransfersParams): Promise<GetNetworkSettlementTransfersResponse> {
     const url = this.bitgo.microservicesUrl(
       `/api/network/v1/enterprises/${this.enterpriseId}/clients/settlementTransfers`
     );
-    return this.bitgo.get(url).send(params).result();
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 }
