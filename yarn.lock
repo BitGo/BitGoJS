@@ -4318,6 +4318,11 @@
   resolved "https://registry.npmjs.org/@sideway/pinpoint/-/pinpoint-2.0.0.tgz"
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
 
+"@silencelaboratories/dkls-wasm-ll-node@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-node/-/dkls-wasm-ll-node-0.1.0.tgz#49b175187c6c760706540b1ab28ade4285e8d462"
+  integrity sha512-DTOVmVpRb/P3foeaCky7sD16834Z7kO/oV8DVYbfAUQl30LrqfWBAcQFF4eD+RSNxve5VArsXJWlMM68dWVkDw==
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-0.14.0.tgz"
@@ -5078,6 +5083,13 @@
   version "14.18.43"
   resolved "https://registry.npmjs.org/@types/node/-/node-14.18.43.tgz"
   integrity sha512-n3eFEaoem0WNwLux+k272P0+aq++5o05bA9CfiwKPdYPB5ZambWKdWoeHy7/OJiizMhzg27NLaZ6uzjLTzXceQ==
+
+"@types/node@^20.11.19":
+  version "20.11.19"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.11.19.tgz#b466de054e9cb5b3831bee38938de64ac7f81195"
+  integrity sha512-7xMnVEcZFu0DikYjWOlRq7NTPETrm7teqUT2WkQjrTIkEgUyyGdWsj/Zg8bEJt5TNklzbPD1X3fqfsHw3SpapQ==
+  dependencies:
+    undici-types "~5.26.4"
 
 "@types/node@^20.8.0":
   version "20.8.10"
