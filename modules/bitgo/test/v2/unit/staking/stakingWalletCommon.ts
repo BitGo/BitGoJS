@@ -1,5 +1,5 @@
-import * as should from 'should';
 import * as nock from 'nock';
+import * as should from 'should';
 import fixtures from '../../fixtures/staking/stakingWallet';
 
 import { Enterprise, Environments, StakingRequest, StakingWallet, Wallet } from '@bitgo/sdk-core';
@@ -165,6 +165,7 @@ describe('Staking Wallet Common', function () {
         .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
           amount: '1',
           clientId: 'clientId',
+          delegationId: 'delegation',
           type: 'CLAIM_REWARDS',
         })
         .reply(201, expected);
@@ -172,6 +173,7 @@ describe('Staking Wallet Common', function () {
       const stakingRequest = await stakingWallet.claimRewards({
         amount: '1',
         clientId: 'clientId',
+        delegationId: 'delegation',
       });
 
       should.exist(stakingRequest);
