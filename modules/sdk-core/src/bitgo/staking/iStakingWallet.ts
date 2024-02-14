@@ -1,5 +1,5 @@
-import { PrebuildTransactionOptions, PrebuildTransactionResult } from '../wallet';
 import { SignedTransaction } from '../baseCoin';
+import { PrebuildTransactionOptions, PrebuildTransactionResult } from '../wallet';
 
 export interface StakingRequest {
   id: string;
@@ -78,6 +78,7 @@ export interface SwitchValidatorOptions {
 export interface ClaimRewardsOptions {
   amount: string;
   clientId?: string;
+  delegationId?: string;
 }
 
 export interface DelegationOptions {
