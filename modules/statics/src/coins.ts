@@ -276,8 +276,12 @@ const OPETH_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
 ];
-const ZKETH_FEATURES = [...ETH_FEATURES, CoinFeature.MULTISIG_COLD, CoinFeature.EVM_WALLET];
-
+const ZKETH_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+];
 export const coins = CoinMap.fromCoins([
   utxo(
     '8d6e08d5-399f-414f-8430-6ceca1798cbf',
