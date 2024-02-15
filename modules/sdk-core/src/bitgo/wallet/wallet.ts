@@ -2111,7 +2111,9 @@ export class Wallet implements IWallet {
     } else if (!params.txRequestId && ((hasTxHex && hasHalfSigned) || (!hasTxHex && !hasHalfSigned))) {
       throw new Error('must supply either txHex or halfSigned, but not both');
     }
-    return this.sendTransaction(params);
+    // FIXME: Prefer to use the below assertion for more robustness.
+    // assert(TxSendBody.is(params), 'params must be of type TxSendBody');
+    return this.sendTransaction(params as TxSendBody);
   }
 
   /**

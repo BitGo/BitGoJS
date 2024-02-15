@@ -57,7 +57,7 @@ export const BuildParams = t.exact(
       delayMs: t.unknown,
       fee: t.unknown,
       feeRate: t.unknown,
-      feeMultiplier: t.unknown,
+      feeMultiplier: t.number,
       enableTokens: t.unknown,
       gasLimit: t.unknown,
       gasPrice: t.unknown,
