@@ -3427,4 +3427,33 @@ export class Wallet implements IWallet {
     }
     return keychains;
   }
+
+  async enhanceColdPrebuildTransaction(tx) {
+    const keychains: Keychain[] = await Promise.all(
+      this.keyIds().map((keyId) => this.baseCoin.keychains().get({ id: keyId }))
+    );
+    const pubs: string[] = [];
+    const xpubsWithDerivationPath = {};
+
+    const keyShareTypes = ['user', 'backup', 'bitgo'];
+    keyShareTypes.forEach((source) => {
+      const matchingKeychain = keychains.find((keyChain) => keyChain.source === source);
+      if (matchingKeychain) {
+        const pub = matchingKeychain['pub'];
+        if (pub) {
+          pubs.push(pub);
+          xpubsWithDerivationPath[source] = {
+            xpub: pub,
+            derivedFromParentWithSeed: matchingKeychain['derivedFromParentWithSeed'],
+          };
+        }
+      }
+    });
+
+    return {
+      ...tx,
+      pubs,
+      xpubsWithDerivationPath,
+    };
+  }
 }
