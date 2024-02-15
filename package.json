@@ -82,6 +82,7 @@
     "eventsource": "2.0.2",
     "follow-redirects": "1.15.4",
     "io-ts": "2.1.3",
+    "isbinaryfile" : "5.0.0",
     "minimist": "1.2.6",
     "parse-path": "^5.0.0",
     "parse-url": "8.1.0",

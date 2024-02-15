@@ -12417,14 +12417,9 @@ isarray@^2.0.5:
   resolved "https://registry.npmjs.org/isarray/-/isarray-2.0.5.tgz"
   integrity sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==
 
-isbinaryfile@^4.0.6:
-  version "4.0.10"
-  resolved "https://registry.npmjs.org/isbinaryfile/-/isbinaryfile-4.0.10.tgz"
-  integrity sha512-iHrqe5shvBUcFbmZq9zOQHBoeOhZJu6RQGrDpBgenUm/Am+F3JM2MgQj+rK3Z601fzrL5gLZWtAPH2OBaSVcyw==
-
-isbinaryfile@^5.0.0:
+isbinaryfile@5.0.0, isbinaryfile@^4.0.6, isbinaryfile@^5.0.0:
   version "5.0.0"
-  resolved "https://registry.npmjs.org/isbinaryfile/-/isbinaryfile-5.0.0.tgz"
+  resolved "https://registry.yarnpkg.com/isbinaryfile/-/isbinaryfile-5.0.0.tgz#034b7e54989dab8986598cbcea41f66663c65234"
   integrity sha512-UDdnyGvMajJUWCkib7Cei/dvyJrrvo4FIrsvSFWdPpXSUorzXrDJ0S+X5Q4ZlasfPjca4yqCNNsjbCeiy8FFeg==
 
 isexe@^2.0.0:
