@@ -44,4 +44,19 @@ describe('utils', () => {
       'transactionBuilder: validateAmount: Invalid denom: ' + testData.coinAmounts.amount5.denom
     );
   });
+
+  it('should convert evm address to zeta address correctly', () => {
+    const result = utils.getCosmosLikeAddressFromHex('zeta', testData.zetaEvmAddress);
+    should.equal(result, testData.zetaCosmosAddress);
+  });
+
+  it('should convert evm address to zeta address correctly without 0x prefix', () => {
+    const result = utils.getCosmosLikeAddressFromHex('zeta', testData.zetaEvmAddress.slice(2));
+    should.equal(result, testData.zetaCosmosAddress);
+  });
+
+  it('should convert zeta address to its evm equivalent correctly', () => {
+    const result = utils.getEvmLikeAddressFromCosmos(testData.zetaCosmosAddress);
+    should.equal(result, testData.zetaEvmAddress);
+  });
 });

@@ -437,3 +437,6 @@ export const mockAccountDetailsResponse = {
     code_hash: '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470',
   },
 };
+
+export const zetaEvmAddress = '0x603871c2ddd41c26ee77495e2e31e6de7f9957e0';
+export const zetaCosmosAddress = 'zeta1vqu8rska6swzdmnhf90zuv0xmelej4lqmktpwc';
