@@ -15,7 +15,7 @@ export class AssetTransferBuilder extends TransferBuilder {
 
   /**
    * Sets the token id.
-   *
+
    * The token id uniquely identifies the asset.
    *
    * @param {number} id The token id.
