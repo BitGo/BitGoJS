@@ -5,6 +5,7 @@ import { decode } from 'cbor';
 interface BroadcastMessage<T> {
   payload: T;
   from: number;
+  signatureR?: T;
 }
 
 // P2P message meant to be sent to a specific party
@@ -47,14 +48,16 @@ export type PartyGpgKey = {
   partyId: number;
   gpgKey: string;
 };
-export type DklsSignature = {
-  R: Uint8Array;
-  S: Uint8Array;
+export type DklsSignature<T> = {
+  R: T;
+  S: T;
 };
 export type SerializedBroadcastMessage = BroadcastMessage<string>;
 export type DeserializedBroadcastMessage = BroadcastMessage<Uint8Array>;
 export type SerializedP2PMessage = P2PMessage<string, string>;
 export type DeserializedP2PMessage = P2PMessage<Uint8Array, Uint8Array>;
+export type SerializedDklsSignature = DklsSignature<string>;
+export type DeserializedDklsSignature = DklsSignature<Uint8Array>;
 export type AuthEncP2PMessage = P2PMessage<AuthEncMessage, string>;
 export type AuthBroadcastMessage = BroadcastMessage<AuthMessage>;
 export type SerializedMessages = {
@@ -113,6 +116,7 @@ export function deserializeBroadcastMessage(message: SerializedBroadcastMessage)
   return {
     from: message.from,
     payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
+    signatureR: message.signatureR ? new Uint8Array(Buffer.from(message.signatureR, 'base64')) : undefined,
   };
 }
 
@@ -137,6 +141,7 @@ export function serializeBroadcastMessage(message: DeserializedBroadcastMessage)
   return {
     from: message.from,
     payload: Buffer.from(message.payload).toString('base64'),
+    signatureR: message.signatureR ? Buffer.from(message.signatureR).toString('base64') : undefined,
   };
 }
 

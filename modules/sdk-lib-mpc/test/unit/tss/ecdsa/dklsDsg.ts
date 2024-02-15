@@ -1,11 +1,10 @@
-import { DklsDsg } from '../../../../src/tss/ecdsa-dkls';
+import { DklsDsg, DklsUtils } from '../../../../src/tss/ecdsa-dkls';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 import should from 'should';
 import { Keyshare } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode } from 'cbor';
 import { Secp256k1Bip32HdTree, bigIntFromBufferBE, bigIntToBufferBE } from '../../../../src';
-
 import * as secp256k1 from 'secp256k1';
 
 describe('DKLS Dsg 2x3', function () {
@@ -91,6 +90,17 @@ describe('DKLS Dsg 2x3', function () {
         broadcastMessages: party2Round4Messages.broadcastMessages,
       });
       should.exist(party1.signature);
+      should.exist(party1Round4Messages.broadcastMessages[0].signatureR);
+      const combinedSigUsingUtil = DklsUtils.combinePartialSignatures(
+        [party1Round4Messages.broadcastMessages[0].payload, party2Round4Messages.broadcastMessages[0].payload],
+        Buffer.from(party1Round4Messages.broadcastMessages[0].signatureR!).toString('hex')
+      );
+      (
+        (combinedSigUsingUtil.R.every((p) => party1.signature.R.includes(p)) &&
+          party1.signature.R.every((p) => combinedSigUsingUtil.R.includes(p))) ||
+        (party1.signature.S.every((p) => combinedSigUsingUtil.S.includes(p)) &&
+          combinedSigUsingUtil.S.every((p) => party1.signature.S.includes(p)))
+      ).should.equal(true);
       // ////////////
       party2.handleIncomingMessages({
         p2pMessages: [],

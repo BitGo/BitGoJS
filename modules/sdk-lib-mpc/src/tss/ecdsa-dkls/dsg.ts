@@ -1,11 +1,11 @@
 import { SignSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
-import { DeserializedBroadcastMessage, DeserializedMessages, DklsSignature, DsgState } from './types';
+import { DeserializedBroadcastMessage, DeserializedDklsSignature, DeserializedMessages, DsgState } from './types';
 import { decode } from 'cbor';
 
 export class Dsg {
   protected dsgSession: SignSession | undefined;
   protected dsgSessionBytes: Uint8Array;
-  private _signature: DklsSignature | undefined;
+  private _signature: DeserializedDklsSignature | undefined;
   protected keyShare: Keyshare;
   protected messageHash: Buffer;
   protected derivationPath: string;
@@ -73,7 +73,7 @@ export class Dsg {
     }
   }
 
-  get signature(): DklsSignature {
+  get signature(): DeserializedDklsSignature {
     if (!this._signature) {
       throw Error('Can not request signature. Signature not produced yet.');
     }
@@ -131,6 +131,7 @@ export class Dsg {
             {
               payload: nextRoundMessages[0].payload,
               from: nextRoundMessages[0].from_id,
+              signatureR: decode(this.dsgSession.toBytes()).round.WaitMsg4.r,
             },
           ],
           p2pMessages: [],
