@@ -6395,6 +6395,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.USDX
   ),
   erc20(
+    '28a848d3-0490-4fd6-a1e8-4d1b5dc10966',
+    'usdy',
+    'Ondo U.S. Dollar Yield',
+    18,
+    '0x96f6ef951840721adbf46ac996b59e0235cb985c',
+    UnderlyingAsset.USDY
+  ),
+  erc20(
     'fd8d8929-ebd3-4d12-81bf-5b8183206741',
     'usg',
     'US Gold',
@@ -6433,6 +6441,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xe72f4c4ff9d294fc34829947e4371da306f90465',
     UnderlyingAsset.USX
+  ),
+  erc20(
+    '4fa85b68-95e3-4c92-a921-fe86d3bdc4c0',
+    'usyc',
+    'US Yield Coin',
+    6,
+    '0x136471a34f6ef19fe571effc1ca711fdb8e49f2b',
+    UnderlyingAsset.USYC
   ),
   erc20(
     'ef825ff6-4304-415b-a202-5cfe60e343b4',
@@ -10391,6 +10407,28 @@ export const coins = CoinMap.fromCoins([
     '',
     'EURS'
   ),
+  stellarToken(
+    '86841e89-011e-486d-bd29-1474cca0dd65',
+    'xlm:VEUR-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZNJ',
+    'VNX Euro',
+    7,
+    UnderlyingAsset['xlm:VEUR-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN'],
+    'vnx.li',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'VEUR'
+  ),
+  stellarToken(
+    '2bcb06ec-8043-4568-a236-274ddad2335f',
+    'xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN',
+    'VNX Franc',
+    7,
+    UnderlyingAsset['xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN'],
+    'vnx.li',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'VCHF'
+  ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
     'trx:btt',
@@ -13638,6 +13676,15 @@ export const coins = CoinMap.fromCoins([
     9,
     'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
     UnderlyingAsset['jto'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '407cfd7c-ff3d-4501-a0a5-4d53af00512a',
+    'sol:jup',
+    'Jupiter',
+    6,
+    'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
+    UnderlyingAsset['jup'],
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
