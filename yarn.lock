@@ -4318,10 +4318,15 @@
   resolved "https://registry.npmjs.org/@sideway/pinpoint/-/pinpoint-2.0.0.tgz"
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
 
-"@silencelaboratories/dkls-wasm-ll-node@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-node/-/dkls-wasm-ll-node-0.1.0.tgz#49b175187c6c760706540b1ab28ade4285e8d462"
-  integrity sha512-DTOVmVpRb/P3foeaCky7sD16834Z7kO/oV8DVYbfAUQl30LrqfWBAcQFF4eD+RSNxve5VArsXJWlMM68dWVkDw==
+"@silencelaboratories/dkls-wasm-ll-node@1.0.1-pre.3":
+  version "1.0.1-pre.3"
+  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-node/-/dkls-wasm-ll-node-1.0.1-pre.3.tgz#eee0d7a61b70b9012b3ca6944c3de52e7ffd0e85"
+  integrity sha512-i/pr1vZ6Vp29fZGCsP9pIsmAqZH5p2AWNV4mxkpdjc8twSdEC/VBtpj5ayn0jeFbnjnv2yz81Q4HNhOLXVk7VQ==
+
+"@silencelaboratories/dkls-wasm-ll-web@1.0.1-pre.3":
+  version "1.0.1-pre.3"
+  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-web/-/dkls-wasm-ll-web-1.0.1-pre.3.tgz#5a64c0836eca66fed6414ac7de90266a9c98c31a"
+  integrity sha512-EP9SlqUOsjD4S8lSWUvBC1upDD3+MKAR2ejNOXXJRY7vgFhBeiRwGS1MIVSBA6Juop7umEkD/4xiWeWtrvBaFw==
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
