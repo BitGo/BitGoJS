@@ -22,6 +22,16 @@ export enum DkgState {
   InvalidState,
 }
 
+export enum DsgState {
+  Uninitialized = 0,
+  Round1,
+  Round2,
+  Round3,
+  Round4,
+  Complete,
+  InvalidState,
+}
+
 export type AuthEncMessage = {
   encryptedMessage: string;
   signature: string;
@@ -33,6 +43,10 @@ export type AuthMessage = {
 export type PartyGpgKey = {
   partyId: number;
   gpgKey: string;
+};
+export type DklsSignature = {
+  R: Uint8Array;
+  S: Uint8Array;
 };
 export type SerializedBroadcastMessage = BroadcastMessage<string>;
 export type DeserializedBroadcastMessage = BroadcastMessage<Uint8Array>;

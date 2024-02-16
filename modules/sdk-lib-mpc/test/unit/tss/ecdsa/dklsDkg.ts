@@ -29,38 +29,38 @@ describe('DKLS Dkg 2x3', function () {
     });
     const userRound3Messages = user.handleIncomingMessages({
       p2pMessages: backupRound2Messages.p2pMessages
-        .filter((m) => m.to == 0)
-        .concat(bitgoRound2Messages.p2pMessages.filter((m) => m.to == 0)),
+        .filter((m) => m.to === 0)
+        .concat(bitgoRound2Messages.p2pMessages.filter((m) => m.to === 0)),
       broadcastMessages: [],
     });
     const backupRound3Messages = backup.handleIncomingMessages({
       p2pMessages: bitgoRound2Messages.p2pMessages
-        .filter((m) => m.to == 1)
-        .concat(userRound2Messages.p2pMessages.filter((m) => m.to == 1)),
+        .filter((m) => m.to === 1)
+        .concat(userRound2Messages.p2pMessages.filter((m) => m.to === 1)),
       broadcastMessages: [],
     });
     const bitgoRound3Messages = bitgo.handleIncomingMessages({
       p2pMessages: backupRound2Messages.p2pMessages
-        .filter((m) => m.to == 2)
-        .concat(userRound2Messages.p2pMessages.filter((m) => m.to == 2)),
+        .filter((m) => m.to === 2)
+        .concat(userRound2Messages.p2pMessages.filter((m) => m.to === 2)),
       broadcastMessages: [],
     });
     const userRound4Messages = user.handleIncomingMessages({
       p2pMessages: backupRound3Messages.p2pMessages
-        .filter((m) => m.to == 0)
-        .concat(bitgoRound3Messages.p2pMessages.filter((m) => m.to == 0)),
+        .filter((m) => m.to === 0)
+        .concat(bitgoRound3Messages.p2pMessages.filter((m) => m.to === 0)),
       broadcastMessages: [],
     });
     const backupRound4Messages = backup.handleIncomingMessages({
       p2pMessages: bitgoRound3Messages.p2pMessages
-        .filter((m) => m.to == 1)
-        .concat(userRound3Messages.p2pMessages.filter((m) => m.to == 1)),
+        .filter((m) => m.to === 1)
+        .concat(userRound3Messages.p2pMessages.filter((m) => m.to === 1)),
       broadcastMessages: [],
     });
     const bitgoRound4Messages = bitgo.handleIncomingMessages({
       p2pMessages: backupRound3Messages.p2pMessages
-        .filter((m) => m.to == 2)
-        .concat(userRound3Messages.p2pMessages.filter((m) => m.to == 2)),
+        .filter((m) => m.to === 2)
+        .concat(userRound3Messages.p2pMessages.filter((m) => m.to === 2)),
       broadcastMessages: [],
     });
     user.handleIncomingMessages({
@@ -165,21 +165,21 @@ describe('DKLS Dkg 2x3', function () {
     const bitgoRound2Messages = bitgo.handleIncomingMessages(deserializedDecryptedMessages);
     const userRound3Messages = user.handleIncomingMessages({
       p2pMessages: backupRound2Messages.p2pMessages
-        .filter((m) => m.to == 0)
-        .concat(bitgoRound2Messages.p2pMessages.filter((m) => m.to == 0)),
+        .filter((m) => m.to === 0)
+        .concat(bitgoRound2Messages.p2pMessages.filter((m) => m.to === 0)),
       broadcastMessages: [],
     });
     const backupRound3Messages = backup.handleIncomingMessages({
       p2pMessages: bitgoRound2Messages.p2pMessages
-        .filter((m) => m.to == 1)
-        .concat(userRound2Messages.p2pMessages.filter((m) => m.to == 1)),
+        .filter((m) => m.to === 1)
+        .concat(userRound2Messages.p2pMessages.filter((m) => m.to === 1)),
       broadcastMessages: [],
     });
     serializedMessages = serializeMessages({
       broadcastMessages: [],
       p2pMessages: userRound2Messages.p2pMessages
-        .filter((m) => m.to == 2)
-        .concat(backupRound2Messages.p2pMessages.filter((m) => m.to == 2)),
+        .filter((m) => m.to === 2)
+        .concat(backupRound2Messages.p2pMessages.filter((m) => m.to === 2)),
     });
     authEncMessages = await encryptAndAuthOutgoingMessages(
       serializedMessages,
@@ -193,21 +193,21 @@ describe('DKLS Dkg 2x3', function () {
     );
     const userRound4Messages = user.handleIncomingMessages({
       p2pMessages: backupRound3Messages.p2pMessages
-        .filter((m) => m.to == 0)
-        .concat(bitgoRound3Messages.p2pMessages.filter((m) => m.to == 0)),
+        .filter((m) => m.to === 0)
+        .concat(bitgoRound3Messages.p2pMessages.filter((m) => m.to === 0)),
       broadcastMessages: [],
     });
     const backupRound4Messages = backup.handleIncomingMessages({
       p2pMessages: bitgoRound3Messages.p2pMessages
-        .filter((m) => m.to == 1)
-        .concat(userRound3Messages.p2pMessages.filter((m) => m.to == 1)),
+        .filter((m) => m.to === 1)
+        .concat(userRound3Messages.p2pMessages.filter((m) => m.to === 1)),
       broadcastMessages: [],
     });
     serializedMessages = serializeMessages({
       broadcastMessages: [],
       p2pMessages: userRound3Messages.p2pMessages
-        .filter((m) => m.to == 2)
-        .concat(backupRound3Messages.p2pMessages.filter((m) => m.to == 2)),
+        .filter((m) => m.to === 2)
+        .concat(backupRound3Messages.p2pMessages.filter((m) => m.to === 2)),
     });
     authEncMessages = await encryptAndAuthOutgoingMessages(
       serializedMessages,
