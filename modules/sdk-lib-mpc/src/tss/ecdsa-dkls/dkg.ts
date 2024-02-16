@@ -119,7 +119,7 @@ export class Dkg {
         // Update ronud data.
         this._deserializeState();
       }
-      if (this.dkgState == DkgState.Round3) {
+      if (this.dkgState == DkgState.Round2) {
         this.chainCodeCommitment = this.dkgSession.calculateChainCodeCommitment();
       }
       nextRoundDeserializedMessages = {
