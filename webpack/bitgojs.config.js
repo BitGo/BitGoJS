@@ -47,6 +47,10 @@ module.exports = {
       /\@emurgo\/cardano-serialization-lib-nodejs/,
       '@emurgo/cardano-serialization-lib-browser'
     ),
+    new webpack.NormalModuleReplacementPlugin(
+      /\@silencelaboratories\/dkls-wasm-ll-node/,
+      '@silencelaboratories/dkls-wasm-ll-web'
+    ),
 
     new webpack.ContextReplacementPlugin(/cardano-serialization-lib-browser/),
   ],

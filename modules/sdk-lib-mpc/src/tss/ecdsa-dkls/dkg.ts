@@ -59,6 +59,10 @@ export class Dkg {
     if (this.dkgState != DkgState.Uninitialized) {
       throw 'DKG session already initialized';
     }
+    if (typeof window !== 'undefined') {
+      const initDkls = require('@silencelaboratories/dkls-wasm-ll-web');
+      await initDkls();
+    }
     this.dkgSession = new KeygenSession(this.n, this.t, this.partyIdx);
     try {
       const payload = this.dkgSession.createFirstMessage().payload;
@@ -119,7 +123,7 @@ export class Dkg {
         // Update ronud data.
         this._deserializeState();
       }
-      if (this.dkgState == DkgState.Round3) {
+      if (this.dkgState == DkgState.Round2) {
         this.chainCodeCommitment = this.dkgSession.calculateChainCodeCommitment();
       }
       nextRoundDeserializedMessages = {
