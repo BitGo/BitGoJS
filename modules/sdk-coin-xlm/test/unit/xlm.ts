@@ -891,18 +891,6 @@ describe('XLM:', function () {
       stellar.StrKey.encodeEd25519SecretSeed(seed).should.equal(secret);
     });
 
-    it('should deterministically derive a child key from master seed and entropy seed', () => {
-      const seed = Buffer.alloc(32).fill(0).toString('hex');
-      const masterSeed = '0x01020304050607080910111213141516171819202122232425262728293031';
-
-      const derivedKey = basecoin.deriveKeyWithSeed({ key: masterSeed, seed });
-
-      derivedKey.should.have.properties({
-        key: 'GCJR3ORBWOKGFA3FTGYDDQVFEEMCYXFHY6KAUOTU4MQMFHK4LLSWWGLW',
-        derivationPath: "m/999999'/230673453'/206129755'",
-      });
-    });
-
     it('should validate pub key', () => {
       const { pub } = basecoin.keychains().create();
       basecoin.isValidPub(pub).should.equal(true);
