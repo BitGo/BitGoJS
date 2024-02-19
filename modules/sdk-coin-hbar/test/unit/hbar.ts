@@ -939,4 +939,12 @@ describe('Hedera Hashgraph:', function () {
       );
     });
   });
+
+  describe('deriveKeyWithSeed', function () {
+    it('should derive key with seed', function () {
+      (() => {
+        basecoin.deriveKeyWithSeed('test');
+      }).should.throw('method deriveKeyWithSeed not supported for eddsa curve');
+    });
+  });
 });
