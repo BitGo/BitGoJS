@@ -14,6 +14,8 @@ export interface HdKeypair {
  *
  * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
  * https://github.com/satoshilabs/slips/blob/master/slip-0010.md
+ *
+ * @deprecated
  */
 export class Ed25519KeyDeriver {
   /**
