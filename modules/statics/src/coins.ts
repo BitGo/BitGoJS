@@ -10488,7 +10488,7 @@ export const coins = CoinMap.fromCoins([
     'USDC',
     6,
     UnderlyingAsset['algo:USDC-31566704'],
-    'https://algoexplorer.io/asset/31566704',
+    'https://explorer.bitquery.io/algorand/token/31566704',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDC'
@@ -10500,7 +10500,7 @@ export const coins = CoinMap.fromCoins([
     'Tether USDt',
     6,
     UnderlyingAsset['algo:USDt-312769'],
-    'https://algoexplorer.io/asset/312769',
+    'https://explorer.bitquery.io/algorand/token/312769',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDt'
@@ -10512,7 +10512,7 @@ export const coins = CoinMap.fromCoins([
     'MCAU',
     5,
     UnderlyingAsset['algo:MCAU-6547014'],
-    'https://algoexplorer.io/asset/6547014',
+    'https://explorer.bitquery.io/algorand/token/6547014',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'MCAU'
@@ -10524,7 +10524,7 @@ export const coins = CoinMap.fromCoins([
     'VCAD',
     2,
     UnderlyingAsset['algo:VCAD-438505559'],
-    'https://algoexplorer.io/asset/438505559',
+    'https://explorer.bitquery.io/algorand/token/438505559',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'VCAD'
@@ -10536,7 +10536,7 @@ export const coins = CoinMap.fromCoins([
     'QCAD',
     2,
     UnderlyingAsset['algo:QCAD-84507107'],
-    'https://algoexplorer.io/asset/84507107',
+    'https://explorer.bitquery.io/algorand/token/84507107',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'QCAD'
