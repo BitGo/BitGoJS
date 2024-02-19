@@ -109,13 +109,13 @@ abstract class Testnet extends BaseNetwork {
 class Algorand extends Mainnet implements AccountNetwork {
   name = 'Algorand';
   family = CoinFamily.ALGO;
-  explorerUrl = 'https://algoexplorer.io/tx/';
+  explorerUrl = 'https://explorer.bitquery.io/algorand/tx/';
 }
 
 class AlgorandTestnet extends Testnet implements AccountNetwork {
   name = 'AlgorandTestnet';
   family = CoinFamily.ALGO;
-  explorerUrl = 'https://testnet.algoexplorer.io/tx/';
+  explorerUrl = 'https://explorer.bitquery.io/algorand_testnet/tx/';
 }
 
 class Ada extends Mainnet implements AdaNetwork {
