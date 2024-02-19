@@ -172,9 +172,15 @@ export class Keychains implements IKeychains {
 
   /**
    * Create a public/private key pair
-   * @param params.seed
+   * @param params - optional params
+   * @param params.seed optional - seed to use for keypair generation
+   * @param params.isRootKey optional - whether the resulting keypair should be a root key
+   * @returns {KeyPair} - the generated keypair
    */
-  create(params: { seed?: Buffer } = {}): KeyPair {
+  create(params: { seed?: Buffer; isRootKey?: boolean } = {}): KeyPair {
+    if (params?.isRootKey) {
+      return this.baseCoin.generateRootKeyPair(params.seed);
+    }
     return this.baseCoin.generateKeyPair(params.seed);
   }
 
