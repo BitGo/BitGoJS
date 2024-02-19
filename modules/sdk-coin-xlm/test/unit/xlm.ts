@@ -282,6 +282,14 @@ describe('XLM:', function () {
     walletParams.rootPrivateKey.should.equal(rootPrivateKey);
   });
 
+  describe('deriveKeyWithSeed', function () {
+    it('should derive key with seed', function () {
+      (() => {
+        basecoin.deriveKeyWithSeed('test');
+      }).should.throw('method deriveKeyWithSeed not supported for eddsa curve');
+    });
+  });
+
   describe('Transaction Verification', function () {
     let basecoin;
     let wallet;
@@ -889,18 +897,6 @@ describe('XLM:', function () {
 
       const secret = keyPair.prv;
       stellar.StrKey.encodeEd25519SecretSeed(seed).should.equal(secret);
-    });
-
-    it('should deterministically derive a child key from master seed and entropy seed', () => {
-      const seed = Buffer.alloc(32).fill(0).toString('hex');
-      const masterSeed = '0x01020304050607080910111213141516171819202122232425262728293031';
-
-      const derivedKey = basecoin.deriveKeyWithSeed({ key: masterSeed, seed });
-
-      derivedKey.should.have.properties({
-        key: 'GCJR3ORBWOKGFA3FTGYDDQVFEEMCYXFHY6KAUOTU4MQMFHK4LLSWWGLW',
-        derivationPath: "m/999999'/230673453'/206129755'",
-      });
     });
 
     it('should validate pub key', () => {
