@@ -503,6 +503,7 @@ export interface IBaseCoin {
   initiateRecovery(params: InitiateRecoveryOptions): never;
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction>;
   generateKeyPair(seed?: Buffer): KeyPair;
+  generateRootKeyPair(seed?: Buffer): KeyPair;
   isValidPub(pub: string): boolean;
   isValidMofNSetup(params: ValidMofNOptions): boolean;
   isValidAddress(address: string): boolean;
