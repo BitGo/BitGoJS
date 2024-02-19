@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@8.5.0...@bitgo/sdk-lib-mpc@9.0.0) (2024-02-19)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-lib-mpc:** fix 0 values attack on range proof ([4a689dc](https://github.com/BitGo/BitGoJS/commit/4a689dcfcf0345132e54ddfd3e8a10e2452b0997))
+
+### Features
+
+- **sdk-core:** add getDerivationPath method for smc wallets ([e0be65f](https://github.com/BitGo/BitGoJS/commit/e0be65f4c8904be313b4f453996f86326d2005e8))
+- **sdk-core:** phase 5 of gg18 signing ([d8ab3df](https://github.com/BitGo/BitGoJS/commit/d8ab3df38c7f0dc445117f68340cd3f17dfc9a68))
+- **sdk-lib-mpc:** convert interface to type ([e1c1065](https://github.com/BitGo/BitGoJS/commit/e1c1065928691a1f9d43522aeafa8751c2424d3e))
+- **sdk-lib-mpc:** move ecdsa hdtree from core ([f0311a8](https://github.com/BitGo/BitGoJS/commit/f0311a8606b1a6aa82309ef7bb9a349782819c28))
+- **sdk-lib-mpc:** move shamir ([42fc946](https://github.com/BitGo/BitGoJS/commit/42fc946c8a5c4a1f7a09e5a9cb6c64a0b266a2a7))
+- **sdk-lib-mpc:** move types to types.ts ([cf2f482](https://github.com/BitGo/BitGoJS/commit/cf2f4821792172b1657fbcecd8886df5bacd817a))
+- **sdk-lib-mpc:** support DKLS DKG primitives ([ccd6e66](https://github.com/BitGo/BitGoJS/commit/ccd6e660120c7a0456c1e9f2f950d8c557ec9f75))
+
+### BREAKING CHANGES
+
+- **sdk-lib-mpc:** moves and renames authenticated encryption utility functions to sdk-lib-mpc
+
 # [8.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@8.5.0...@bitgo/sdk-lib-mpc@8.32.0) (2024-01-30)
 
 ### Bug Fixes
