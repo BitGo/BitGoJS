@@ -4,6 +4,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import * as AlgoResources from '../fixtures/algo';
 import { randomBytes } from 'crypto';
 import { coins } from '@bitgo/statics';
+import { TransactionBuilderFactory } from '../../src/lib';
 
 describe('ALGO:', function () {
   let bitgo: TestBitGoAPI;
@@ -536,6 +537,20 @@ describe('ALGO:', function () {
       signed.txHex.should.equal(AlgoResources.rawTx.transfer.signed);
     });
 
+    it('should sign transaction with root key', async function () {
+      const keypair = basecoin.generateRootKeyPair(AlgoResources.accounts.account1.secretKey);
+
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: AlgoResources.rawTx.transfer.unsigned,
+          keys: [keypair.pub],
+          addressVersion: 1,
+        },
+        prv: keypair.prv,
+      });
+      signed.txHex.should.equal(AlgoResources.rawTx.transfer.signed);
+    });
+
     it('should sign half signed transaction', async function () {
       const signed = await basecoin.signTransaction({
         txPrebuild: {
@@ -551,6 +566,29 @@ describe('ALGO:', function () {
         prv: AlgoResources.accounts.account3.prvKey,
       });
       signed.txHex.should.equal(AlgoResources.rawTx.transfer.multisig);
+    });
+
+    it('should sign half signed transaction with root key', async function () {
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          halfSigned: {
+            txHex: AlgoResources.rootKeyData.unsignedTx,
+          },
+          keys: [
+            AlgoResources.rootKeyData.userKeyPair.pub,
+            AlgoResources.rootKeyData.backupPub,
+            AlgoResources.rootKeyData.bitgoPub,
+          ],
+          addressVersion: 1,
+        },
+        prv: AlgoResources.rootKeyData.userKeyPair.prv,
+      });
+
+      signed.txHex.should.deepEqual(AlgoResources.rootKeyData.halfSignedTx);
+      const factory = new TransactionBuilderFactory(coins.get('algo'));
+      const tx = await factory.from(signed.txHex).build();
+      const txJson = tx.toJson();
+      txJson.from.should.equal(AlgoResources.rootKeyData.senderAddress);
     });
 
     it('should verify sign params if the key array contains addresses', function () {
@@ -620,19 +658,24 @@ describe('ALGO:', function () {
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
     });
+  });
 
-    it('should deterministically derive keypair with seed', () => {
-      const derivedKeypair = basecoin.deriveKeyWithSeed({
-        key: 'UBI2KNGT742KGIPHMZDJHHSADIT56HRDPVOOCCRYIETD4BAJLCBMQNSCNE',
-        seed: 'cold derivation seed',
-      });
-      console.log(JSON.stringify(derivedKeypair));
+  describe('Generate wallet Root key pair: ', () => {
+    it('should generate key pair', () => {
+      const kp = basecoin.generateRootKeyPair();
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      basecoin.isValidPrv(kp.prv).should.equal(true);
+    });
 
-      basecoin.isValidPub(derivedKeypair.key).should.be.true();
-      derivedKeypair.should.deepEqual({
-        key: 'NAYUBR4HQKJBBTNNKXQIY7GMHUCHVAUH5DQ4ZVHVL67CUQLGHRWDKQAHYU',
-        derivationPath: "m/999999'/25725073'/5121434'",
-      });
+    it('should generate key pair from seed', () => {
+      const seed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
+      const kp = basecoin.generateRootKeyPair(seed);
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      kp.pub.should.equal('d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a');
+      basecoin.isValidPrv(kp.prv).should.equal(true);
+      kp.prv.should.equal(
+        '9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a'
+      );
     });
   });
 
@@ -700,6 +743,14 @@ describe('ALGO:', function () {
       explain.operations.length.should.equals(1);
       explain.operations[0].type.should.equals('transferToken');
       explain.operations[0].coin.should.equals('talgo:USDC-10458941');
+    });
+  });
+
+  describe('deriveKeyWithSeed', function () {
+    it('should derive key with seed', function () {
+      (() => {
+        basecoin.deriveKeyWithSeed('test');
+      }).should.throw('method deriveKeyWithSeed not supported for eddsa curve');
     });
   });
 });

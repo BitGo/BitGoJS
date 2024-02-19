@@ -14,9 +14,11 @@ import {
   BaseTransactionBuilder,
   BuildTransactionError,
   InvalidTransactionError,
+  isValidEd25519SecretKey,
   isValidEd25519Seed,
   TransactionType,
 } from '@bitgo/sdk-core';
+import { algoUtils } from '.';
 
 const MIN_FEE = 1000; // in microalgos
 
@@ -325,9 +327,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation({ key }: BaseKey): Transaction {
-    const buffKey = Utils.decodeSeed(key);
-    const keypair = new KeyPair({ prv: Buffer.from(buffKey.seed).toString('hex') });
-    this._keyPairs.push(keypair);
+    try {
+      const buffKey = Utils.decodeSeed(key);
+      const keypair = new KeyPair({ prv: Buffer.from(buffKey.seed).toString('hex') });
+      this._keyPairs.push(keypair);
+    } catch (e) {
+      if (algoUtils.isValidPrivateKey(key)) {
+        const keypair = new KeyPair({ prv: key });
+        this._keyPairs.push(keypair);
+      } else {
+        throw e;
+      }
+    }
 
     return this._transaction;
   }
@@ -371,6 +382,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     let isValidPrivateKeyFromBytes;
     const isValidPrivateKeyFromHex = isValidEd25519Seed(key);
     const isValidPrivateKeyFromBase64 = isValidEd25519Seed(Buffer.from(key, 'base64').toString('hex'));
+    const isValidRootPrvKey = isValidEd25519SecretKey(key);
     try {
       const decodedSeed = Utils.decodeSeed(key);
       isValidPrivateKeyFromBytes = isValidEd25519Seed(Buffer.from(decodedSeed.seed).toString('hex'));
@@ -378,7 +390,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       isValidPrivateKeyFromBytes = false;
     }
 
-    if (!isValidPrivateKeyFromBytes && !isValidPrivateKeyFromHex && !isValidPrivateKeyFromBase64) {
+    if (
+      !isValidPrivateKeyFromBytes &&
+      !isValidPrivateKeyFromHex &&
+      !isValidPrivateKeyFromBase64 &&
+      !isValidRootPrvKey
+    ) {
       throw new BuildTransactionError(`Key validation failed`);
     }
   }
