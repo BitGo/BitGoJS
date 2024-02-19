@@ -6,7 +6,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { encodeSecp256k1Pubkey, encodeSecp256k1Signature } from '@cosmjs/amino';
-import { fromBase64, fromBech32, fromHex, toHex } from '@cosmjs/encoding';
+import { fromBase64, fromBech32, fromHex, toHex, toBech32 } from '@cosmjs/encoding';
 import {
   DecodedTxRaw,
   EncodeObject,
@@ -286,6 +286,29 @@ export class CosmosUtils implements BaseUtils {
         typeUrl: message.typeUrl,
       };
     });
+  }
+
+  /**
+   * Get a cosmos chain address from its equivalent hex
+   * @param {string} prefix
+   * @param {string} addressHex
+   * @returns {string}
+   */
+  getCosmosLikeAddressFromHex(prefix: string, addressHex: string): string {
+    if (addressHex.indexOf('0x') === 0) {
+      addressHex = addressHex.slice(2);
+    }
+    return toBech32(prefix, fromHex(addressHex));
+  }
+
+  /**
+   * Get a EVM chain address from its equivalent hex
+   * @param {string} prefix
+   * @param {string} addressHex
+   * @returns {string}
+   */
+  getEvmLikeAddressFromCosmos(cosmosLikeAddress: string): string {
+    return '0x' + toHex(fromBech32(cosmosLikeAddress).data);
   }
 
   /**
