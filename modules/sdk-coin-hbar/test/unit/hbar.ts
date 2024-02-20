@@ -498,6 +498,9 @@ describe('Hedera Hashgraph:', function () {
   });
 
   describe('Sign transaction:', () => {
+    const destination = '0.0.129369';
+    const source = '0.0.1234';
+    const amount = '100000';
     /**
      * Build an unsigned account-lib multi-signature send transaction
      * @param destination The destination address of the transaction
@@ -511,18 +514,13 @@ describe('Hedera Hashgraph:', function () {
         fee: '100000',
       });
       txBuilder.source({ address: source });
-      txBuilder.to(destination);
-      txBuilder.amount(amount);
+      txBuilder.send({ address: destination, amount });
 
       return await txBuilder.build();
     };
 
     it('should sign transaction', async function () {
       const key = new KeyPair();
-      const destination = '0.0.129369';
-      const source = '0.0.1234';
-      const amount = '100000';
-
       const unsignedTransaction = await buildUnsignedTransaction({
         destination,
         source,
@@ -540,14 +538,67 @@ describe('Hedera Hashgraph:', function () {
       const txBuilder = factory.from(tx.halfSigned.txHex);
       const signedTx = await txBuilder.build();
       const txJson = signedTx.toJson() as TxData;
-      txJson.to!.should.equal(destination);
-      txJson.from!.should.equal(source);
-      txJson.amount!.should.equal(amount);
+      txJson.should.have.properties('to', 'amount');
+      txJson.to?.should.equal(destination);
+      txJson.from.should.equal(source);
+      txJson.amount?.should.equal(amount);
       (txJson.instructionsData as Transfer).params.recipients[0].should.deepEqual({
         address: destination,
         amount,
       });
       signedTx.signature.length.should.equal(1);
+    });
+
+    it('should fully sign transaction with root key', async function () {
+      const key1 = basecoin.generateRootKeyPair();
+      const key2 = basecoin.generateRootKeyPair();
+
+      const unsignedTransaction = await buildUnsignedTransaction({
+        destination,
+        source,
+        amount,
+      });
+
+      const txHalfSigned = await basecoin.signTransaction({
+        prv: key1.prv,
+        txPrebuild: {
+          txHex: unsignedTransaction.toBroadcastFormat(),
+        },
+      });
+
+      const factory = getBuilderFactory('thbar');
+      const txBuilderHalfSigned = factory.from(txHalfSigned.halfSigned.txHex);
+      const halfSignedTx = await txBuilderHalfSigned.build();
+      const halfSignedTxJson = halfSignedTx.toJson() as TxData;
+      halfSignedTxJson.should.have.properties('to', 'amount');
+      halfSignedTxJson.to?.should.equal(destination);
+      halfSignedTxJson.from.should.equal(source);
+      halfSignedTxJson.amount?.should.equal(amount);
+      (halfSignedTxJson.instructionsData as Transfer).params.recipients[0].should.deepEqual({
+        address: destination,
+        amount,
+      });
+      halfSignedTx.signature.length.should.equal(1);
+
+      const txSigned = await basecoin.signTransaction({
+        prv: key2.prv,
+        txPrebuild: {
+          txHex: halfSignedTx.toBroadcastFormat(),
+        },
+      });
+
+      const txBuilderSigned = factory.from(txSigned.txHex);
+      const signedTx = await txBuilderSigned.build();
+      const signedTxJson = signedTx.toJson() as TxData;
+      signedTxJson.should.have.properties('to', 'amount');
+      signedTxJson.to?.should.equal(destination);
+      signedTxJson.from.should.equal(source);
+      signedTxJson.amount?.should.equal(amount);
+      (signedTxJson.instructionsData as Transfer).params.recipients[0].should.deepEqual({
+        address: destination,
+        amount,
+      });
+      signedTx.signature.length.should.equal(2);
     });
   });
 
@@ -945,6 +996,32 @@ describe('Hedera Hashgraph:', function () {
       (() => {
         basecoin.deriveKeyWithSeed('test');
       }).should.throw('method deriveKeyWithSeed not supported for eddsa curve');
+    });
+  });
+
+  describe('Generate wallet Root key pair: ', () => {
+    it('should generate key pair', () => {
+      const kp = basecoin.generateRootKeyPair();
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      const keypair = new KeyPair({ prv: kp.prv }).getKeys(true);
+      keypair.should.have.property('prv');
+      keypair.prv?.should.equal(kp.prv.slice(0, 64));
+      keypair.pub.should.equal(kp.pub);
+    });
+
+    it('should generate key pair from seed', () => {
+      const seed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
+      const kp = basecoin.generateRootKeyPair(seed);
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      kp.pub.should.equal('d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a');
+      kp.prv.should.equal(
+        '9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a'
+      );
+
+      const keypair = new KeyPair({ prv: kp.prv }).getKeys(true);
+      keypair.should.have.property('prv');
+      keypair.prv?.should.equal(kp.prv.slice(0, 64));
+      keypair.pub.should.equal(kp.pub);
     });
   });
 });
