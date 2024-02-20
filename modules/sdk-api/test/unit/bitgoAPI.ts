@@ -35,4 +35,24 @@ describe('Constructor', function () {
       bitgo.cookiesPropagationEnabled.should.equal(false);
     });
   });
+  describe('http proxy agent', function () {
+    it('http proxy agent shall be created when proxy is set', function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        proxy: 'http://localhost:3000',
+      });
+
+      bitgo.should.have.property('_proxy', 'http://localhost:3000');
+    });
+
+    it('bitgo api is still initiated when proxy is not set', function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+      });
+
+      bitgo.should.have.property('_proxy', undefined);
+    });
+  });
 });
