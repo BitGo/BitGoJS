@@ -3,6 +3,129 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.13.0...@bitgo/sdk-core@26.0.0) (2024-02-19)
+
+### Bug Fixes
+
+- add pendingApprovaId in prebuildTxTss response ([049466b](https://github.com/BitGo/BitGoJS/commit/049466b56b5353899b6f9172a369f2d3dad58003))
+- **bitgo:** fix updating the wallet build defaults ([fed02a4](https://github.com/BitGo/BitGoJS/commit/fed02a45d14da7b18934106739aa223665963573))
+- downgrade from `io-ts@2.2.x` to `io-ts@2.1.3` ([78f138a](https://github.com/BitGo/BitGoJS/commit/78f138a595b7fca8e4ebb63f7c2012157118cbfc))
+- remove unused dynamic headers ([4243c1d](https://github.com/BitGo/BitGoJS/commit/4243c1d02a59793f30b50a9efb80d1da8709aa4c))
+- **root:** add source to tss smc wallet creation ([316ff20](https://github.com/BitGo/BitGoJS/commit/316ff200f5eb8803f3591ab28a5c1b1f27f28e38))
+- **root:** improve error handling for consolidateAccount ([0d74c2a](https://github.com/BitGo/BitGoJS/commit/0d74c2aaca1076ad6b9ca9bd2de38ade56c886e3))
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-core:** add change address type for utxo coins ([711ba2d](https://github.com/BitGo/BitGoJS/commit/711ba2d8bd00cbb0ec644eefd20356507a50adb1))
+- **sdk-core:** add check to validate if PA triggered another condition ([0d773ec](https://github.com/BitGo/BitGoJS/commit/0d773ecf4eb476e7a45bb6dafa0faa2bfc338812))
+- **sdk-core:** add pendingappr id in build api ([3ace9ac](https://github.com/BitGo/BitGoJS/commit/3ace9ac74a0729f8ade84e8a0c8cd67429563147))
+- **sdk-core:** add rebuild step before eddsa signing ([462c7f8](https://github.com/BitGo/BitGoJS/commit/462c7f8519a96fcbc8d333a49b24d2d07479590b))
+- **sdk-core:** allow v4 forwarders ([90104b8](https://github.com/BitGo/BitGoJS/commit/90104b820d6d128990b1c2f907cd09ed9ebd29c6))
+- **sdk-core:** do not hardcode eddsa tss utils in PA ([366ffd2](https://github.com/BitGo/BitGoJS/commit/366ffd2ccfd52c220e74b32914dcfebc3ae307d3))
+- **sdk-core:** do not sign txRequest full with PA ([6558de2](https://github.com/BitGo/BitGoJS/commit/6558de263edea51ff2c87dc37889af5ba0654a4d))
+- **sdk-core:** export bip32HdTree as BIP32 ([cc80aa6](https://github.com/BitGo/BitGoJS/commit/cc80aa6dfc7ba7ac0657df6a685c7ebd6dc094a0))
+- **sdk-core:** fix coreum node url ([936c76d](https://github.com/BitGo/BitGoJS/commit/936c76d65d7d6b0eaf42ed96c63db1e5efaa62f7))
+- **sdk-core:** fix dc wallet creation ([70c5e35](https://github.com/BitGo/BitGoJS/commit/70c5e35525c2803f739265ebbc734ab8de4d1870))
+- **sdk-core:** fix ecdsa with external signer ([09884c0](https://github.com/BitGo/BitGoJS/commit/09884c03f971e71c55f0461b449c18cf68c095db))
+- **sdk-core:** fix hash for tss ecdsa PA signing ([e57f6f9](https://github.com/BitGo/BitGoJS/commit/e57f6f926d1b99fb3cad3953f05550163474bcfb))
+- **sdk-core:** fix issue related to bignumber version ([519fe47](https://github.com/BitGo/BitGoJS/commit/519fe479ef51a72ddc1e94f87c10e031c0fd2c3f))
+- **sdk-core:** handle txRequest full PA before signing ([9de0eae](https://github.com/BitGo/BitGoJS/commit/9de0eae7cab1ad406e80a818555a7c8557b47eb3))
+- **sdk-core:** include tests in tsconfig.json ([91c1c6c](https://github.com/BitGo/BitGoJS/commit/91c1c6c47f809cbd826db2a7a59c96b74f0273e9))
+- **sdk-core:** move --recursive flag to package.json ([1147ebe](https://github.com/BitGo/BitGoJS/commit/1147ebe3d2ab1868fe1c6bbf343f68becc7d1169))
+- **sdk-core:** only add headers if they exist and nonempty ([e85c55a](https://github.com/BitGo/BitGoJS/commit/e85c55a15c579fb44b853c8937c3dada562210b6))
+- **sdk-core:** sign txRequest full in pendingApproval.approve ([c9f6eea](https://github.com/BitGo/BitGoJS/commit/c9f6eea52ad230f6b5485aba8b70f0b6ec11e8b9))
+- **sdk-core:** use BuildParams.encode when consolidating unspents ([f83f096](https://github.com/BitGo/BitGoJS/commit/f83f096b2839a0324d891d81c01e5265d10e4b97))
+- **sdk-core:** whitelist tx format param for sweep api ([8645f99](https://github.com/BitGo/BitGoJS/commit/8645f990218e5611d4ff35520430683b46163bbb))
+- **statics:** make corrections for arbeth and opeth ([5dfc405](https://github.com/BitGo/BitGoJS/commit/5dfc405a36fc97b2c902fec44562b169d8013a18))
+- use public types for tx send ([6a0e5c7](https://github.com/BitGo/BitGoJS/commit/6a0e5c74d27d4a7ed5e9972e184fb9744b15793e))
+- use whitelisted send params for tx initiate ([0cf9f4c](https://github.com/BitGo/BitGoJS/commit/0cf9f4c4aeb8a74cd81aad4b0da08d1de30d73a0))
+
+### chore
+
+- update `BitGo/public-types` to `2.0.0` ([a74148d](https://github.com/BitGo/BitGoJS/commit/a74148d8f16e565bcd0e64f79b0b0d0b9e683145))
+
+### Code Refactoring
+
+- rename coin 'core' to 'coreum' ([baecc01](https://github.com/BitGo/BitGoJS/commit/baecc013ff7243ce78ebd767bffdb0763b8b4cdb))
+
+### Features
+
+- add address book methods to wallet class ([ff315b3](https://github.com/BitGo/BitGoJS/commit/ff315b33c225e1b56870cf2bc41b68fab520bb92))
+- add bitgo network methods to trading class ([94b3093](https://github.com/BitGo/BitGoJS/commit/94b3093e8cd5791e5fd1877341d4ab7ab5a7009f))
+- add enterprise-id to header ([31dd71b](https://github.com/BitGo/BitGoJS/commit/31dd71b7185e473390488af723d8783cd07fedf4))
+- add rbf params to accelerateTransaction ([605dd31](https://github.com/BitGo/BitGoJS/commit/605dd317321279f320c17460df12f5ac2c959960))
+- add walletFlags property, helper methods ([f0fd760](https://github.com/BitGo/BitGoJS/commit/f0fd760122334d86b0d4239bc3b23e0983a1d524))
+- **bitgo:** use holesky etherscan url instead of goerli ([61962f6](https://github.com/BitGo/BitGoJS/commit/61962f6e273fd654575d3c93d9faf1a46bd361e4))
+- deprecate old settlement code ([550380d](https://github.com/BitGo/BitGoJS/commit/550380d7838586a407bfb805d2ac7e99c6cf1cec))
+- **express:** add external signer support for signig with derivation paths ([ceb89dd](https://github.com/BitGo/BitGoJS/commit/ceb89dd72b7f5f7c59484d5517ac32c4f499fd32))
+- pass down `includeRbf: true` while fetching tx to be replaced ([4a5d9f0](https://github.com/BitGo/BitGoJS/commit/4a5d9f02db9a45a179bcaa3369493e2c57ecdf40))
+- **root:** whitelist apiVersion for buildAccountConsolidations ([83003de](https://github.com/BitGo/BitGoJS/commit/83003de987b49b5c462d08623d6687501958e4b5))
+- **sdk-coin-algo:** support for token enablement ([af718c9](https://github.com/BitGo/BitGoJS/commit/af718c992d0663722fe951f0a29a20825ba0e91c))
+- **sdk-coin-bera:** add Berachain skeleton ([b3d43c5](https://github.com/BitGo/BitGoJS/commit/b3d43c52c7fd10d5fdc40123b3ad61cfe4784e5d))
+- **sdk-coin-core:** add coreum sdk ([af73ccd](https://github.com/BitGo/BitGoJS/commit/af73ccd445b52dcf378ebd18260e628de0687043))
+- **sdk-coin-dot:** create function to produce broadcastable dot sweep ([ad9c9c4](https://github.com/BitGo/BitGoJS/commit/ad9c9c4cc79639a5745e82f62566afa6db2b8c6d))
+- **sdk-coin-hbar:** implement recover method for native hbar ([45c4b7a](https://github.com/BitGo/BitGoJS/commit/45c4b7a7591176cb665efbdbb4279d40f3a869dd))
+- **sdk-coin-islm:** add Islamic Coin ([c49bdd1](https://github.com/BitGo/BitGoJS/commit/c49bdd18df36a20d6e27cdd2686ec687bf653596))
+- **sdk-coin-sol:** add sol token recovery support ([8a46e48](https://github.com/BitGo/BitGoJS/commit/8a46e482205fb33439e123dc288720225926b443))
+- **sdk-coin-sol:** add transaction message authorize builder ([649b7df](https://github.com/BitGo/BitGoJS/commit/649b7df0f65c2eee08e7c1e009ebb3c03cf4d011))
+- **sdk-coin-sol:** add tx builder for delegate and deactivate ([a7cdaaa](https://github.com/BitGo/BitGoJS/commit/a7cdaaa5a7b3bab83bccc82a7c001a9f23e94207))
+- **sdk-coin-sol:** create method to produce broadcastable sol sweep txn ([d69ca4e](https://github.com/BitGo/BitGoJS/commit/d69ca4ea0688c4cf7c738ca826a9231438bb49c5))
+- **sdk-coin-sui:** add custom tx type ([8136220](https://github.com/BitGo/BitGoJS/commit/81362200468f8a2d25b97186f56de5d5729fa0cf))
+- **sdk-coin-trx:** batch consolidate native TRX to base ([a781709](https://github.com/BitGo/BitGoJS/commit/a781709e296ac37edd8c49587fb46a3ae0202cce))
+- **sdk-coin-zeta:** add recovery functionality for zeta ([b7d428f](https://github.com/BitGo/BitGoJS/commit/b7d428fcd69a22add44399a9a0e4eeb4519c4113))
+- **sdk-coin-zeta:** zeta redelegate txn support with tests ([b9bf137](https://github.com/BitGo/BitGoJS/commit/b9bf137d59f370c7d5be820131442bc48fb92825))
+- **sdk-coin-zketh:** add zketh token support ([086b86c](https://github.com/BitGo/BitGoJS/commit/086b86c7886174997a01bea04617256f66e08720))
+- **sdk-core:** add custodial and smc tss wallet to generateWallet method ([ea80f4f](https://github.com/BitGo/BitGoJS/commit/ea80f4fa208ca6874fdd7d99d597c347e4628ecc))
+- **sdk-core:** add delegationId to claim reward options ([c6007cf](https://github.com/BitGo/BitGoJS/commit/c6007cf52dc06ccbbc8f79a1be4a9c1e354f8381))
+- **sdk-core:** add function to transfer nfts ([b77b386](https://github.com/BitGo/BitGoJS/commit/b77b386bf77408d4b1617ba3bc44e5899a65f2e0))
+- **sdk-core:** add helpers to support resigning ent challenges ([e9bb150](https://github.com/BitGo/BitGoJS/commit/e9bb1505af331f6caa7b0bcda2037483f57238fd))
+- **sdk-core:** add limit as a valid build param ([e538192](https://github.com/BitGo/BitGoJS/commit/e5381929667ab4ea622deb7bc2cc916764fce2d3))
+- **sdk-core:** add new fields to StakeOptions ([ed90855](https://github.com/BitGo/BitGoJS/commit/ed90855118014238684643597c8cc9a024d223bf))
+- **sdk-core:** add new method to sign tss txs ([3e2654d](https://github.com/BitGo/BitGoJS/commit/3e2654d31baae8723d5a449ed79be14980410e1b))
+- **sdk-core:** add optional StakeOptions fields ([bff557c](https://github.com/BitGo/BitGoJS/commit/bff557c5d5cc6f5e53096d7ea8a9848b97e18249))
+- **sdk-core:** add postWithCodec utility function ([ff1ad07](https://github.com/BitGo/BitGoJS/commit/ff1ad07dfe476d38ae17cfb691ef0e6375a394ea))
+- **sdk-core:** add support for bulk unspent consolidation ([daee9f0](https://github.com/BitGo/BitGoJS/commit/daee9f0a3480bbae08a5b06d1c7c683ce979210a))
+- **sdk-core:** add support to allow external change address ([cbef823](https://github.com/BitGo/BitGoJS/commit/cbef823c431271ce542124e5a6a079549eec3099))
+- **sdk-core:** add type for serializedNtilde with verifiers ([b8ba323](https://github.com/BitGo/BitGoJS/commit/b8ba323b5a00fceb1017c1c953375edbd5459f60))
+- **sdk-core:** add, use SendTransactionRequest and BuildParams codecs ([724fc6c](https://github.com/BitGo/BitGoJS/commit/724fc6c3adee3ef7dbeb39e023f2270ff36a233d))
+- **sdk-core:** allow tss signing with unencrypted prv ([306dd37](https://github.com/BitGo/BitGoJS/commit/306dd37d61f8648b65be6ca99b0f4014fdc5a61b))
+- **sdk-core:** create distributed custody wallet ([e53c9a4](https://github.com/BitGo/BitGoJS/commit/e53c9a489b557198fc1606856f32d7ede85e269b))
+- **sdk-core:** extend build param codec ([e224ca3](https://github.com/BitGo/BitGoJS/commit/e224ca306608e9618d080fdb623db09307a91910))
+- **sdk-core:** flag to do segwit override for bulk consolidations ([2bcdaf0](https://github.com/BitGo/BitGoJS/commit/2bcdaf01953daf68734e96a0046cf69f85a602f1))
+- **sdk-core:** generate and verify schnorr proof of X_i ([ff58298](https://github.com/BitGo/BitGoJS/commit/ff58298c21ee8de4f6cee4fec857666e9556d0f3))
+- **sdk-core:** get utxo script types by coin ([b3cbc61](https://github.com/BitGo/BitGoJS/commit/b3cbc617565547b05d6ae2b1df184e9c0e2e247c))
+- **sdk-core:** phase 5 of gg18 signing ([d8ab3df](https://github.com/BitGo/BitGoJS/commit/d8ab3df38c7f0dc445117f68340cd3f17dfc9a68))
+- **sdk-core:** provide skipKeychain to wallet share API request ([4fcc705](https://github.com/BitGo/BitGoJS/commit/4fcc705e04de4c6beed541b096f2fe65b44c0a53))
+- **sdk-core:** support authenticated encryption using pgp detached signatures ([1b3b925](https://github.com/BitGo/BitGoJS/commit/1b3b92507c5160817dc37f705b00a64bcbc5e666))
+- **sdk-core:** support webauthn decryption in base wallet fn ([d6dea1a](https://github.com/BitGo/BitGoJS/commit/d6dea1a02affb57ac03bd9019ec02581d897565c))
+- **sdk-core:** update wallet ([12e39d6](https://github.com/BitGo/BitGoJS/commit/12e39d63cd25843a84d04b7be8620deb89a6e33c))
+- **sdk-core:** use BuildParams codec in Wallet.accelerateTransaction ([a9fab81](https://github.com/BitGo/BitGoJS/commit/a9fab813f27cdb40123c49b01570ecb6b9a67d91))
+- **sdk-core:** use BuildParams codec in Wallet.sendAccountConsolidation ([7d340ec](https://github.com/BitGo/BitGoJS/commit/7d340ec674116badf3b05aadf1d9aae130a8c69d))
+- **sdk-core:** util func to get the avail scripts for wallettype ([0fcfbb3](https://github.com/BitGo/BitGoJS/commit/0fcfbb3353314421017d555f95d286af049523a9))
+- **sdk-core:** util to decrypt webauthn encrypted keys ([84a30c4](https://github.com/BitGo/BitGoJS/commit/84a30c4baf7aac110685aa73852f6d3ffb3bd579))
+- **sdk-core:** whitelist distributed custody params ([2536388](https://github.com/BitGo/BitGoJS/commit/253638867d28e874d7d1ba808558cea16bc743f7))
+- **sdk-lib-mpc:** move ecdsa hdtree from core ([f0311a8](https://github.com/BitGo/BitGoJS/commit/f0311a8606b1a6aa82309ef7bb9a349782819c28))
+- **sdk-lib-mpc:** move shamir ([42fc946](https://github.com/BitGo/BitGoJS/commit/42fc946c8a5c4a1f7a09e5a9cb6c64a0b266a2a7))
+- **sdk-lib-mpc:** move types to types.ts ([cf2f482](https://github.com/BitGo/BitGoJS/commit/cf2f4821792172b1657fbcecd8886df5bacd817a))
+- **sdk-lib-mpc:** support DKLS DKG primitives ([ccd6e66](https://github.com/BitGo/BitGoJS/commit/ccd6e660120c7a0456c1e9f2f950d8c557ec9f75))
+- update secp256k1 to 5.0.0 and keccak to 3.0.3 ([e2c37e6](https://github.com/BitGo/BitGoJS/commit/e2c37e6b0139c9f6948a22d8921bc3e1f88bed4c))
+- use psbt for prebuild when wallet is distributedCustody ([10f5e1a](https://github.com/BitGo/BitGoJS/commit/10f5e1ab37d2bea6acd93f94defbe786e4a027b9))
+- whitelist rbf build params ([208bc83](https://github.com/BitGo/BitGoJS/commit/208bc833deedcd620832a7695e0cad1bbd53c59f))
+
+### BREAKING CHANGES
+
+- **sdk-lib-mpc:** moves and renames authenticated encryption utility functions to sdk-lib-mpc
+- Update `public-types` to `2.0.0`
+
+Ticket: VL-000
+
+- BitGo requires using `io-ts@2.1.3` in it's
+  entire stack. this downgrades the version of `io-ts` to
+  adhere to this requirement.
+
+VL-000
+
+- **bitgo:** changed default eth testnet etherscan url to holesky
+- rename coin module, coin name, named exports for coreum
+
 # [25.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.13.0...@bitgo/sdk-core@25.0.0) (2024-01-30)
 
 ### Bug Fixes

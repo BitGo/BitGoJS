@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@1.2.30...@bitgo/sdk-test@8.0.0) (2024-02-19)
+
+### Bug Fixes
+
+- **sdk-core:** fix issue related to bignumber version ([519fe47](https://github.com/BitGo/BitGoJS/commit/519fe479ef51a72ddc1e94f87c10e031c0fd2c3f))
+
+### Features
+
+- **bitgo:** use holesky etherscan url instead of goerli ([61962f6](https://github.com/BitGo/BitGoJS/commit/61962f6e273fd654575d3c93d9faf1a46bd361e4))
+
+### BREAKING CHANGES
+
+- **bitgo:** changed default eth testnet etherscan url to holesky
+
 # [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@1.2.30...@bitgo/sdk-test@7.0.0) (2024-01-30)
 
 ### Bug Fixes

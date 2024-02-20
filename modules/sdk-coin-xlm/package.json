@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-xlm",
-  "version": "2.23.0",
+  "version": "2.24.0",
   "description": "BitGo SDK coin library for Xlm",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,8 +40,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^25.1.0",
-    "@bitgo/statics": "^46.1.0",
+    "@bitgo/sdk-core": "^26.0.0",
+    "@bitgo/statics": "^47.0.0",
     "@bitgo/utxo-lib": "^9.34.0",
     "bignumber.js": "^9.1.1",
     "lodash": "^4.17.14",
@@ -49,7 +49,7 @@
     "superagent": "^3.8.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.42.0",
-    "@bitgo/sdk-test": "^7.1.0"
+    "@bitgo/sdk-api": "^1.43.0",
+    "@bitgo/sdk-test": "^8.0.0"
   }
 }

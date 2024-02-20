@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.10.0...@bitgo/sdk-coin-trx@1.37.0) (2024-02-19)
+
+### Bug Fixes
+
+- **root:** update @types/node ([cedc1a0](https://github.com/BitGo/BitGoJS/commit/cedc1a0035e79bb42fda57bf6ac29d606242f50b))
+- **sdk-coin-trx:** fix withdrawal issue with trx:sun token ([b9866ac](https://github.com/BitGo/BitGoJS/commit/b9866aca9b9ebeb86ebd756eba44abda299ac116))
+- **sdk-coin-trx:** import tron token list from statics ([77a4c3d](https://github.com/BitGo/BitGoJS/commit/77a4c3d147e4234256c9c579d99f291b6abbd7bf))
+- **sdk-coin-trx:** skip sweep address with balance lower than a threshold ([ebbdc8b](https://github.com/BitGo/BitGoJS/commit/ebbdc8b30e4078ffda1c134dfed0211e050e73c9))
+- **sdk-coin-trx:** use a safer fee for sweep ([a7575e0](https://github.com/BitGo/BitGoJS/commit/a7575e081e18e4c9128449e736d970b813a5b021))
+
+### Features
+
+- **sdk-coin-trx:** add trx consolidate batch ([79b4c3b](https://github.com/BitGo/BitGoJS/commit/79b4c3b570151851b836d1d96d61997572270994))
+- **sdk-coin-trx:** batch consolidate native TRX to base ([a781709](https://github.com/BitGo/BitGoJS/commit/a781709e296ac37edd8c49587fb46a3ae0202cce))
+- **sdk-coin-trx:** consolidate to base address ([d3b7558](https://github.com/BitGo/BitGoJS/commit/d3b75585471ca22441acffc58b2f94d192e8c2a1))
+- update secp256k1 to 5.0.0 and keccak to 3.0.3 ([e2c37e6](https://github.com/BitGo/BitGoJS/commit/e2c37e6b0139c9f6948a22d8921bc3e1f88bed4c))
+
 # [1.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@1.10.0...@bitgo/sdk-coin-trx@1.35.0) (2024-01-30)
 
 ### Bug Fixes

@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-lib-mpc",
-  "version": "8.33.0",
+  "version": "9.0.0",
   "description": "library functions for BitGo's MPC solution",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -37,19 +37,19 @@
   },
   "dependencies": {
     "@noble/secp256k1": "1.6.3",
-    "@types/superagent": "4.1.15",
     "@silencelaboratories/dkls-wasm-ll-node": "0.1.0",
+    "@types/superagent": "4.1.15",
     "@wasmer/wasi": "^1.2.2",
     "bigint-crypto-utils": "3.1.4",
     "bigint-mod-arith": "3.1.2",
-    "libsodium-wrappers-sumo": "^0.7.9",
-    "paillier-bigint": "3.3.0",
     "cbor": "^9.0.1",
-    "openpgp": "5.10.1"
+    "libsodium-wrappers-sumo": "^0.7.9",
+    "openpgp": "5.10.1",
+    "paillier-bigint": "3.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.19",
     "@types/lodash": "^4.14.151",
+    "@types/node": "^20.11.19",
     "nyc": "^15.0.0"
   }
 }

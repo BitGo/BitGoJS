@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@36.1.0-reset...bitgo@37.0.0) (2024-02-19)
+
+### Bug Fixes
+
+- **sdk-core:** allow v4 forwarders ([90104b8](https://github.com/BitGo/BitGoJS/commit/90104b820d6d128990b1c2f907cd09ed9ebd29c6))
+
+### Features
+
+- **sdk-core:** add delegationId to claim reward options ([c6007cf](https://github.com/BitGo/BitGoJS/commit/c6007cf52dc06ccbbc8f79a1be4a9c1e354f8381))
+- **sdk-core:** support authenticated encryption using pgp detached signatures ([1b3b925](https://github.com/BitGo/BitGoJS/commit/1b3b92507c5160817dc37f705b00a64bcbc5e666))
+- **sdk-lib-mpc:** support DKLS DKG primitives ([ccd6e66](https://github.com/BitGo/BitGoJS/commit/ccd6e660120c7a0456c1e9f2f950d8c557ec9f75))
+
+### BREAKING CHANGES
+
+- **sdk-lib-mpc:** moves and renames authenticated encryption utility functions to sdk-lib-mpc
+
 # [36.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@19.7.0...bitgo@36.0.0) (2024-01-30)
 
 ### Bug Fixes

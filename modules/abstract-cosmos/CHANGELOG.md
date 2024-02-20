@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.6.0...@bitgo/abstract-cosmos@9.0.0) (2024-02-19)
+
+### Bug Fixes
+
+- **abstract-cosmos:** getAccountDetails fix ([d5c6c74](https://github.com/BitGo/BitGoJS/commit/d5c6c74845e62ee3cd68321c55d729da1526fcae))
+- **abstract-cosmos:** getAccountDetails fix ([3c869f2](https://github.com/BitGo/BitGoJS/commit/3c869f22ce9db917feaa75acec8a47696043bcd3))
+- add bech32 validation to cosmos address validation ([f5008a7](https://github.com/BitGo/BitGoJS/commit/f5008a7298f9cb470795f8087b6840cf7f254369))
+- address verification for cosmos like coins ([5ac7879](https://github.com/BitGo/BitGoJS/commit/5ac78799b460d0d03eaa841db08a6855b571a46f))
+
+### Code Refactoring
+
+- **sdk-coin-atom:** use abstract-cosmos ([18abbea](https://github.com/BitGo/BitGoJS/commit/18abbea939bb8f1cee1bbc72cfd8a2955468fcc5))
+
+### Features
+
+- **abstract-cosmos:** add support for different pubkey types ([e257093](https://github.com/BitGo/BitGoJS/commit/e257093605a4bfe22fbe0b0f9933bfef1a3975c6))
+- add utils to convert to and from cosmos evm address ([fda942c](https://github.com/BitGo/BitGoJS/commit/fda942c6745f6a7b887be958f157cdc0f1372c09))
+- **sdk-coin-atom:** add sendMany support for cosmos chains ([ee609ec](https://github.com/BitGo/BitGoJS/commit/ee609ec5de3d3159c78ba59ecf7f43c79f6f5870))
+- **sdk-coin-zeta:** zeta redelegate txn support with tests ([b9bf137](https://github.com/BitGo/BitGoJS/commit/b9bf137d59f370c7d5be820131442bc48fb92825))
+
+### BREAKING CHANGES
+
+- **sdk-coin-atom:** restructured exports
+
+* Removed constants overlapping with @bitgo/abstract-cosmos
+* Removed common Interfaces exported by @bitgo/abstract-cosmos
+
+Code dependent on the previously exported Interfaces/Constants needs to
+be updated to import these from @bitgo/abstract-cosmos instead
+
 # [8.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@1.6.0...@bitgo/abstract-cosmos@8.0.0) (2024-01-30)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth2@1.4.0...@bitgo/sdk-coin-eth2@1.5.1) (2024-02-19)
+
+### Bug Fixes
+
+- **sdk-core:** fix issue related to bignumber version ([519fe47](https://github.com/BitGo/BitGoJS/commit/519fe479ef51a72ddc1e94f87c10e031c0fd2c3f))
+
 ## [1.4.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth2@1.4.0...@bitgo/sdk-coin-eth2@1.4.30) (2024-01-30)
 
 ### Bug Fixes
