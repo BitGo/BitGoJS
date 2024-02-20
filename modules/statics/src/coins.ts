@@ -1421,6 +1421,14 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   tofc(
+    'dd7fd2c8-df50-4f8b-96ac-ff5f874c80ca',
+    'ofchteth',
+    'Test Holesky Ether',
+    18,
+    UnderlyingAsset.ETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
     'f43d0558-8c07-4927-af7f-33947fd310c9',
     'ofctavaxc',
     'Test Avalanche C-Chain',
