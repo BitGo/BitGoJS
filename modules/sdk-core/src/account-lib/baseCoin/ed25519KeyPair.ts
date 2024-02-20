@@ -128,6 +128,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
    * as the seed.
    *
    * @param path derivation path
+   * @deprecated
    */
   deriveHardened(path: string): DefaultKeys {
     if (!this.keyPair?.prv) {
