@@ -20,6 +20,7 @@ import {
   TokenEnablementConfig,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
+  NotSupported,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -174,12 +175,12 @@ export class Hbar extends BaseCoin {
     }
   }
 
-  /**
-   * Generate Hedera Hashgraph key pair
-   *
-   * @param seed
-   * @returns {Object} object with generated pub, prv
-   */
+  /** inheritdoc */
+  deriveKeyWithSeed(): { derivationPath: string; key: string } {
+    throw new NotSupported('method deriveKeyWithSeed not supported for eddsa curve');
+  }
+
+  /** inheritdoc */
   generateKeyPair(seed?: Buffer): KeyPair {
     const keyPair = seed ? new HbarKeyPair({ seed }) : new HbarKeyPair();
     const keys = keyPair.getKeys();

@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as utxolib from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { SeedValidator } from './seedValidator';
 import { coins, CoinFamily } from '@bitgo/statics';
@@ -10,7 +9,6 @@ import {
   AddressCoinSpecific,
   BaseCoin,
   BitGoBase,
-  Ed25519KeyDeriver,
   InvalidAddressError,
   InvalidKey,
   KeyIndices,
@@ -26,6 +24,7 @@ import {
   UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  NotSupported,
 } from '@bitgo/sdk-core';
 import stellar from 'stellar-sdk';
 import BigNumber from 'bignumber.js';
@@ -227,12 +226,12 @@ export class Algo extends BaseCoin {
     return true;
   }
 
-  /**
-   * Generate ed25519 key pair
-   *
-   * @param seed
-   * @returns {Object} object with generated pub, prv
-   */
+  /** inheritdoc */
+  deriveKeyWithSeed(): { derivationPath: string; key: string } {
+    throw new NotSupported('method deriveKeyWithSeed not supported for eddsa curve');
+  }
+
+  /** inheritdoc */
   generateKeyPair(seed?: Buffer): KeyPair {
     const keyPair = seed ? new AlgoLib.KeyPair({ seed }) : new AlgoLib.KeyPair();
     const keys = keyPair.getKeys();
@@ -246,6 +245,16 @@ export class Algo extends BaseCoin {
     };
   }
 
+  /** inheritdoc */
+  generateRootKeyPair(seed?: Buffer): KeyPair {
+    const keyPair = seed ? new AlgoLib.KeyPair({ seed }) : new AlgoLib.KeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return { prv: keys.prv + keys.pub, pub: keys.pub };
+  }
+
   /**
    * Return boolean indicating whether input is valid public key for the coin.
    *
@@ -253,7 +262,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub: string): boolean {
-    return AlgoLib.algoUtils.isValidAddress(pub);
+    return AlgoLib.algoUtils.isValidAddress(pub) || AlgoLib.algoUtils.isValidPublicKey(pub);
   }
 
   /**
@@ -265,7 +274,7 @@ export class Algo extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return AlgoLib.algoUtils.isValidSeed(prv);
+    return AlgoLib.algoUtils.isValidSeed(prv) || AlgoLib.algoUtils.isValidPrivateKey(prv);
   }
 
   /**
@@ -560,23 +569,6 @@ export class Algo extends BaseCoin {
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     return true;
-  }
-
-  /** @inheritDoc */
-  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
-    const derivationPathInput = utxolib.crypto.hash256(Buffer.from(seed, 'utf8')).toString('hex');
-    const derivationPathParts = [
-      999999,
-      parseInt(derivationPathInput.slice(0, 7), 16),
-      parseInt(derivationPathInput.slice(7, 14), 16),
-    ];
-    const derivationPath = 'm/' + derivationPathParts.map((part) => `${part}'`).join('/');
-    const derivedKey = Ed25519KeyDeriver.derivePath(derivationPath, key).key;
-    const keypair = new AlgoLib.KeyPair({ seed: derivedKey });
-    return {
-      key: keypair.getAddress(),
-      derivationPath,
-    };
   }
 
   decodeTx(txn: Buffer): unknown {

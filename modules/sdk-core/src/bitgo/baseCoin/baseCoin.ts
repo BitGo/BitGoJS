@@ -429,10 +429,19 @@ export abstract class BaseCoin implements IBaseCoin {
 
   /**
    * Generate a key pair on the curve used by the coin
-   *
-   * @param seed
+   * @param {Buffer} seed - seed to use for key pair generation
+   * @returns {KeyPair} the generated key pair
    */
   abstract generateKeyPair(seed?: Buffer): KeyPair;
+
+  /**
+   * Generate a root key pair on the curve used by the coin
+   * @param {Buffer} seed - seed to use for key pair generation
+   * @returns {KeyPair} the generated key pair
+   */
+  generateRootKeyPair(seed?: Buffer): KeyPair {
+    throw new NotImplementedError('generateRootKeyPair is not supported for this coin');
+  }
 
   /**
    * Return boolean indicating whether input is valid public key for the coin.

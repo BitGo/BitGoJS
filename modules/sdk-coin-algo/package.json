@@ -42,7 +42,6 @@
   "dependencies": {
     "@bitgo/sdk-core": "^26.0.0",
     "@bitgo/statics": "^47.0.0",
-    "@bitgo/utxo-lib": "^9.34.0",
     "@hashgraph/cryptography": "1.1.2",
     "@stablelib/hex": "^1.0.0",
     "algosdk": "1.14.0",

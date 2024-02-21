@@ -174,7 +174,7 @@ export interface IKeychains {
   list(params?: ListKeychainOptions): Promise<ListKeychainsResult>;
   updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains>;
   updateSingleKeychainPassword(params?: UpdateSingleKeychainPasswordOptions): Keychain;
-  create(params?: { seed?: Buffer }): KeyPair;
+  create(params?: { seed?: Buffer; isRootKey?: boolean }): KeyPair;
   add(params?: AddKeychainOptions): Promise<Keychain>;
   createBitGo(params?: CreateBitGoOptions): Promise<Keychain>;
   createBackup(params?: CreateBackupOptions): Promise<Keychain>;
