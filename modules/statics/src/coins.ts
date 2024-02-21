@@ -73,6 +73,7 @@ const BTC_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.DISTRIBUTED_CUSTODY,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
 ];
 const BTG_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
@@ -95,6 +96,7 @@ const AVAXC_FEATURES = [
   ...ETH_FEATURES_WITH_MMI,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.MULTISIG_COLD,
 ];
 const CELO_FEATURES = [
@@ -903,7 +905,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.TIA,
     BaseUnit.TIA,
-    COSMOS_SIDECHAIN_FEATURES
+    [CoinFeature.CUSTODY_BITGO_SWITZERLAND, ...COSMOS_SIDECHAIN_FEATURES]
   ),
   account(
     '6ea4f120-6d26-4070-a12a-a0cac39ea552',
@@ -913,7 +915,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.TIA,
     BaseUnit.TIA,
-    COSMOS_SIDECHAIN_FEATURES
+    [CoinFeature.CUSTODY_BITGO_SWITZERLAND, ...COSMOS_SIDECHAIN_FEATURES]
   ),
   account(
     '2e20e302-d743-457c-a023-58b80e8d3a15',
