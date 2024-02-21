@@ -32,7 +32,6 @@ Promise.coroutine(function* () {
     },
     condition: {
       amountString: '100000',
-      excludeTags: [],
       groupTags: [':tag'],
       timeWindow: 60 * 60 * 24,
     },

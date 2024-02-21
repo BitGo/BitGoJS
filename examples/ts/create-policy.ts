@@ -32,7 +32,6 @@ async function main() {
     },
     condition: {
       amountString: '100000',
-      excludeTags: [],
       groupTags: [':tag'],
       timeWindow: 60 * 60 * 24,
     },

@@ -709,7 +709,6 @@ describe('V2 Wallet:', function () {
           },
           condition: {
             amountString: 100000,
-            excludeTags: [],
             groupTags: [':tag'],
             timeWindow: 86400,
           },
@@ -732,7 +731,6 @@ describe('V2 Wallet:', function () {
           },
           condition: {
             amountString: 50000,
-            excludeTags: [],
             groupTags: [':tag'],
             timeWindow: 86400,
           },
@@ -754,7 +752,6 @@ describe('V2 Wallet:', function () {
           },
           condition: {
             amountString: 100000,
-            excludeTags: [],
             groupTags: [':tag'],
             timeWindow: 86400,
           },
