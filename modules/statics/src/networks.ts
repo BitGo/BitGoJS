@@ -537,7 +537,7 @@ class Hedera extends Mainnet implements AccountNetwork {
 class HederaTestnet extends Testnet implements AccountNetwork {
   name = 'HederaTestnet';
   family = CoinFamily.HBAR;
-  explorerUrl = 'https://explorer.kabuto.sh/testnet/transaction/';
+  explorerUrl = 'https://testnet.dragonglass.me/hedera/search?q=';
 }
 
 class Litecoin extends Mainnet implements UtxoNetwork {
