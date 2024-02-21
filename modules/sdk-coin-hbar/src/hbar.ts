@@ -195,6 +195,16 @@ export class Hbar extends BaseCoin {
     };
   }
 
+  /** inheritdoc */
+  generateRootKeyPair(seed?: Buffer): KeyPair {
+    const keyPair = seed ? new HbarKeyPair({ seed }) : new HbarKeyPair();
+    const keys = keyPair.getKeys(true);
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return { prv: keys.prv + keys.pub, pub: keys.pub };
+  }
+
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     return {};
   }
