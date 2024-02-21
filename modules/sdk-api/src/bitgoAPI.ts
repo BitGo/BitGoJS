@@ -95,10 +95,12 @@ const PendingApprovals = require('./v1/pendingapprovals');
 const TravelRule = require('./v1/travelRule');
 const TransactionBuilder = require('./v1/transactionBuilder');
 
-let proxyAgent: any;
+let enableProxyAgent = false;
+let proxyAgentModule;
 if (!isBrowser && !isWebWorker) {
   debug('enabling proxy-agent');
-  proxyAgent = require('proxy-agent');
+  enableProxyAgent = true;
+  proxyAgentModule = require('proxy-agent');
 }
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
@@ -338,9 +340,12 @@ export class BitGoAPI implements BitGoBase {
    */
   private requestPatch(method: (typeof patchedRequestMethods)[number], url: string) {
     const req = this.getAgentRequest(method, url);
-    if (this._proxy && proxyAgent !== undefined) {
+    if (this._proxy && enableProxyAgent) {
       debug('proxying request through %s', this._proxy);
-      const agent = new proxyAgent(this._proxy);
+      const proxyUrl: string = this._proxy;
+      const agent = new proxyAgentModule.ProxyAgent({
+        getProxyForUrl: () => proxyUrl,
+      });
       if (agent) {
         req.agent(agent);
       }
@@ -575,8 +580,11 @@ export class BitGoAPI implements BitGoBase {
     // Proxy settings must still be respected however
     const resultPromise = this.getAgentRequest('get', this.url('/client/constants'));
     resultPromise.set('BitGo-SDK-Version', this._version);
-    if (this._proxy) {
-      const agent = new proxyAgent(this._proxy);
+    if (this._proxy && enableProxyAgent) {
+      const proxyUrl: string = this._proxy;
+      const agent = new proxyAgentModule.ProxyAgent({
+        getProxyForUrl: () => proxyUrl,
+      });
       if (agent) {
         resultPromise.agent(agent);
       }
