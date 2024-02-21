@@ -20,12 +20,12 @@ import {
 
 const MIN_FEE = 1000; // in microalgos
 
-const MAINNET_GENESIS_ID = 'mainnet-v1.0';
-const MAINNET_GENESIS_HASH = 'wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=';
-const TESTNET_GENESIS_ID = 'testnet-v1.0';
-const TESTNET_GENESIS_HASH = 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=';
-const BETANET_GENESIS_ID = 'betanet-v1.0';
-const BETANET_GENESIS_HASH = 'mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=';
+export const MAINNET_GENESIS_ID = 'mainnet-v1.0';
+export const MAINNET_GENESIS_HASH = 'wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=';
+export const TESTNET_GENESIS_ID = 'testnet-v1.0';
+export const TESTNET_GENESIS_HASH = 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=';
+export const BETANET_GENESIS_ID = 'betanet-v1.0';
+export const BETANET_GENESIS_HASH = 'mFgazF+2uRS1tMiL9dsj01hJGySEmPN28B/TjjvpVW0=';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;

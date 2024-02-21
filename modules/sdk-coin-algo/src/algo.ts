@@ -28,6 +28,16 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import stellar from 'stellar-sdk';
+import BigNumber from 'bignumber.js';
+import Utils from './lib/utils';
+import { TxData } from './lib/ifaces';
+import * as algosdk from 'algosdk';
+import {
+  MAINNET_GENESIS_HASH,
+  MAINNET_GENESIS_ID,
+  TESTNET_GENESIS_HASH,
+  TESTNET_GENESIS_ID,
+} from './lib/transactionBuilder';
 
 const SUPPORTED_ADDRESS_VERSION = 1;
 const MSIG_THRESHOLD = 2; // m in m-of-n
@@ -112,6 +122,12 @@ export interface ExplainTransactionOptions {
   feeInfo: TransactionFee;
 }
 
+interface NodeParams {
+  token: string;
+  baseServer: string;
+  port: number;
+}
+
 export interface VerifiedTransactionParameters {
   txHex: string;
   addressVersion: number;
@@ -119,6 +135,48 @@ export interface VerifiedTransactionParameters {
   prv: string;
   isHalfSigned: boolean;
   numberSigners: number;
+}
+
+export interface RecoveryOptions {
+  backupKey: string;
+  userKey: string;
+  rootAddress: string;
+  recoveryDestination: string;
+  bitgoKey?: string;
+  walletPassphrase?: string;
+  fee: number;
+  firstRound?: number;
+  note?: string;
+  nodeParams: NodeParams;
+}
+
+interface RecoveryInfo {
+  id: string;
+  tx: string;
+  coin: string;
+  fee: number;
+  firstRound: number;
+  lastRound: number;
+  genesisId: string;
+  genesisHash: string;
+  note?: string;
+}
+
+export interface OfflineVaultTxInfo {
+  txHex: string;
+  userKey: string;
+  backupKey: string;
+  bitgoKey?: string;
+  type?: string;
+  address: string;
+  coin: string;
+  fee: number;
+  amount: string;
+  firstRound: number;
+  lastRound: number;
+  genesisId: string;
+  genesisHash: string;
+  note?: string;
 }
 
 export class Algo extends BaseCoin {
@@ -539,6 +597,174 @@ export class Algo extends BaseCoin {
     return {
       requiresTokenEnablement: true,
       supportsMultipleTokenEnablements: false,
+    };
+  }
+
+  /**
+   * Gets the balance of the root address in base units of algo
+   * Eg. If balance is 1 Algo, this returns 1*10^6
+   * @param rootAddress
+   * @param client
+   */
+  async getAccountBalance(rootAddress: string, client: algosdk.Algodv2): Promise<number> {
+    const accountInformation = await client.accountInformation(rootAddress).do();
+    // Extract the balance from the account information
+    return accountInformation.amount;
+  }
+
+  /**
+   * Returns the Algo client for the given token, baseServer and port
+   * Used to interact with the Algo network
+   */
+  getClient(token: string, baseServer: string, port: number): algosdk.Algodv2 {
+    return new algosdk.Algodv2(token, baseServer, port);
+  }
+
+  public async recover(params: RecoveryOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    const isUnsignedSweep = this.isValidPub(params.userKey) && this.isValidPub(params.backupKey);
+
+    if (!params.nodeParams) {
+      throw new Error('Please provide the details of an ALGO node to use for recovery');
+    }
+
+    // Validate the root address
+    if (!this.isValidAddress(params.rootAddress)) {
+      throw new Error('invalid rootAddress, got: ' + params.rootAddress);
+    }
+
+    // Validate the destination address
+    if (!this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination, got: ' + params.recoveryDestination);
+    }
+
+    if (params.firstRound && new BigNumber(params.firstRound).isNegative()) {
+      throw new Error('first round needs to be a positive value');
+    }
+
+    const genesisId = this.bitgo.getEnv() === 'prod' ? MAINNET_GENESIS_ID : TESTNET_GENESIS_ID;
+    const genesisHash = this.bitgo.getEnv() === 'prod' ? MAINNET_GENESIS_HASH : TESTNET_GENESIS_HASH;
+
+    Utils.validateBase64(genesisHash);
+
+    if (!isUnsignedSweep && !params.walletPassphrase) {
+      throw new Error('walletPassphrase is required for non-bitgo recovery');
+    }
+
+    const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
+    const txBuilder = factory.getTransferBuilder();
+
+    let userPrv: string | undefined;
+    let backupPrv: string | undefined;
+    if (!isUnsignedSweep) {
+      if (!params.bitgoKey) {
+        throw new Error('bitgo public key from the keyCard is required for non-bitgo recovery');
+      }
+      try {
+        userPrv = this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
+        backupPrv = this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
+        const userKeyAddress = Utils.privateKeyToAlgoAddress(userPrv);
+        const backupKeyAddress = Utils.privateKeyToAlgoAddress(backupPrv);
+        txBuilder.numberOfRequiredSigners(2).setSigners([userKeyAddress, backupKeyAddress, params.bitgoKey]);
+      } catch (e) {
+        throw new Error(
+          'unable to decrypt userKey or backupKey with the walletPassphrase provided, got error: ' + e.message
+        );
+      }
+    }
+
+    const client = this.getClient(params.nodeParams.token, params.nodeParams.baseServer, params.nodeParams.port);
+    const nativeBalance = await this.getAccountBalance(params.rootAddress, client);
+
+    // Algorand accounts require a min. balance of 1 ALGO
+    const MIN_MICROALGOS_BALANCE = 100000;
+    const spendableAmount = new BigNumber(nativeBalance).minus(params.fee).minus(MIN_MICROALGOS_BALANCE).toNumber();
+
+    if (new BigNumber(spendableAmount).isZero() || new BigNumber(spendableAmount).isLessThanOrEqualTo(params.fee)) {
+      throw new Error(
+        'Insufficient balance to recover, got balance: ' +
+          nativeBalance +
+          ' fee: ' +
+          params.fee +
+          ' min account balance: ' +
+          MIN_MICROALGOS_BALANCE
+      );
+    }
+
+    let latestRound: number | undefined;
+    if (!params.firstRound) {
+      latestRound = await client
+        .status()
+        .do()
+        .then((status) => status['last-round']);
+    }
+
+    const firstRound = params.firstRound ?? latestRound;
+    if (!firstRound) {
+      throw new Error('Unable to fetch the latest round from the node. Please provide the firstRound or try again.');
+    }
+    const LAST_ROUND_BUFFER = 1000;
+    const lastRound = firstRound + LAST_ROUND_BUFFER;
+
+    txBuilder
+      .fee({ fee: params.fee.toString() })
+      .isFlatFee(true)
+      .sender({
+        address: params.rootAddress,
+      })
+      .to({
+        address: params.recoveryDestination,
+      })
+      .amount(spendableAmount)
+      .genesisId(genesisId)
+      .genesisHash(genesisHash)
+      .firstRound(firstRound)
+      .lastRound(lastRound);
+
+    if (params.note) {
+      const note = new Uint8Array(Buffer.from(params.note, 'utf-8'));
+      txBuilder.note(note);
+    }
+
+    // Cold wallet, offline vault
+    if (isUnsignedSweep) {
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson() as TxData;
+
+      return {
+        txHex: Buffer.from(tx.toBroadcastFormat()).toString('hex'),
+        type: txJson.type,
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        address: params.rootAddress,
+        coin: this.getChain(),
+        fee: txJson.fee,
+        amount: txJson.amount ?? nativeBalance.toString(),
+        firstRound: txJson.firstRound,
+        lastRound: txJson.lastRound,
+        genesisId: genesisId,
+        genesisHash: genesisHash,
+        note: txJson.note ? Buffer.from(txJson.note.buffer).toString('utf-8') : undefined,
+      };
+    }
+
+    // Non-bitgo Recovery (Hot wallets)
+    txBuilder.sign({ key: userPrv });
+    txBuilder.sign({ key: backupPrv });
+
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson() as TxData;
+
+    return {
+      tx: tx.toBroadcastFormat(),
+      id: txJson.id,
+      coin: this.getChain(),
+      fee: txJson.fee,
+      firstRound: txJson.firstRound,
+      lastRound: txJson.lastRound,
+      genesisId: genesisId,
+      genesisHash: genesisHash,
+      note: txJson.note ? Buffer.from(txJson.note.buffer).toString('utf-8') : undefined,
     };
   }
 

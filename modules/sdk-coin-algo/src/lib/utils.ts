@@ -206,6 +206,18 @@ export class Utils implements BaseUtils {
   publicKeyToAlgoAddress(pk: Uint8Array): string {
     return new KeyPair({ pub: Buffer.from(pk).toString('hex') }).getAddress();
   }
+
+  /**
+   Transforms a decrypted Ed25519 private key into an algorand address.
+   @param {string} privateKey The Ed25519 private key.
+   @returns {string} The algorand address.
+   **/
+  privateKeyToAlgoAddress(privateKey: string): string {
+    // Derive the account from the private key
+    const keypair = new KeyPair({ prv: privateKey });
+    return keypair.getAddress();
+  }
+
   /**
    * Checks if a unsigned algo transaction can be decoded.
    *
