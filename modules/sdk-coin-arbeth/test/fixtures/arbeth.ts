@@ -30,6 +30,12 @@ export function getTokenBalanceRequest(tokenContractAddress: string, address: st
   };
 }
 
+export const getTokenBalanceResponse = {
+  status: '1',
+  message: 'OK',
+  result: '9999999999999999948',
+};
+
 export const getBalanceResponse = {
   status: '1',
   message: 'OK',
