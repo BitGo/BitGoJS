@@ -156,7 +156,7 @@ const incrementVersions = async (preid = 'beta') => {
         console.log(`Setting next version for ${json.name} to ${next}`);
         json.version = next;
         writeFileSync(path.join(modulePath, 'package.json'), JSON.stringify(json, null, 2) + '\n');
-        // since we're manually setting new versions, we must also reconcile all other lerna packages to now use the 'next' version for this module
+        // since we're manually setting new versions, we must also reconcile all other lerna packages to use the 'next' version for this module
         lernaModuleLocations.forEach((otherModulePath) => {
           // skip it for the current version
           if (otherModulePath === modulePath) {
