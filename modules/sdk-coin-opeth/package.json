@@ -46,8 +46,7 @@
     "@bitgo/utxo-lib": "^9.34.0",
     "@ethereumjs/common": "^2.6.5",
     "ethereumjs-abi": "^0.6.5",
-    "ethereumjs-util": "7.1.5",
-    "superagent": "^3.8.3"
+    "ethereumjs-util": "7.1.5"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.43.0",

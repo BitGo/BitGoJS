@@ -1,11 +1,13 @@
 /**
  * @prettier
  */
-
-import request from 'superagent';
 import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeNewCoins, TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo/abstract-eth';
+import {
+  AbstractEthLikeNewCoins,
+  TransactionBuilder as EthLikeTransactionBuilder,
+  recoveryBlockchainExplorerQuery,
+} from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
 export class Opeth extends AbstractEthLikeNewCoins {
@@ -27,21 +29,8 @@ export class Opeth extends AbstractEthLikeNewCoins {
    * @returns {Promise<Object>} response from Optimism Etherscan
    */
   async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
-    const token = common.Environments[this.bitgo.getEnv()].optimisticEtherscanApiToken;
-    if (token) {
-      query.apikey = token;
-    }
-    const response = await request
-      .get(common.Environments[this.bitgo.getEnv()].optimisticEtherscanBaseUrl + '/api')
-      .query(query);
-
-    if (!response.ok) {
-      throw new Error('could not reach Optimism Etherscan');
-    }
-
-    if (response.body.status === '0' && response.body.message === 'NOTOK') {
-      throw new Error('Optimism Etherscan rate limit reached');
-    }
-    return response.body;
+    const apiToken = common.Environments[this.bitgo.getEnv()].optimisticEtherscanApiToken;
+    const explorerUrl = common.Environments[this.bitgo.getEnv()].optimisticEtherscanBaseUrl;
+    return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }
 }
