@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [47.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@47.0.0...@bitgo/statics@47.1.0) (2024-02-22)
+
+### Bug Fixes
+
+- **statics:** fix address for vnx-euro ([4161a05](https://github.com/BitGo/BitGoJS/commit/4161a05505345a7883c614b033a74fc9dded5321))
+- **statics:** update hbar explorer url ([9222a07](https://github.com/BitGo/BitGoJS/commit/9222a07a0cb657a254f6b00ef72123be91c256e9))
+
+### Features
+
+- add ofchteth token ([dbfb1c5](https://github.com/BitGo/BitGoJS/commit/dbfb1c56902366d7f2ad461b17b1e10189dd7dc9))
+- **statics:** add coins as available for switzerland ([5271c73](https://github.com/BitGo/BitGoJS/commit/5271c734d1961906478018ec3fe64621f599e4f5))
+
 # [47.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@18.2.0...@bitgo/statics@47.0.0) (2024-02-19)
 
 ### Bug Fixes

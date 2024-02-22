@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.39.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.39.0...@bitgo/sdk-coin-sol@2.39.1) (2024-02-22)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** deprecate deriveHardened for SOL ([d3cb900](https://github.com/BitGo/BitGoJS/commit/d3cb90057924e874b2319abe962d00daaf06f2a4))
+
 # [2.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.7.0...@bitgo/sdk-coin-sol@2.39.0) (2024-02-19)
 
 ### Bug Fixes

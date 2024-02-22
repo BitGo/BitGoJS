@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.26.0...@bitgo/sdk-coin-algo@1.27.0) (2024-02-22)
+
+### Features
+
+- **sdk-coin-algo:** add wrw support for algo ([da00d83](https://github.com/BitGo/BitGoJS/commit/da00d8313b863af7fdcfd041de6dbe96b10eb97e))
+- **sdk-coin-algo:** implement algo root key creation ([6541032](https://github.com/BitGo/BitGoJS/commit/6541032d45c0bd03d0540f6a4b828c349b8da5a7))
+
 # [1.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.5.0...@bitgo/sdk-coin-algo@1.26.0) (2024-02-19)
 
 ### Features

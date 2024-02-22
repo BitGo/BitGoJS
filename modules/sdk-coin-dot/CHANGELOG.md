@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.34.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.34.0...@bitgo/sdk-coin-dot@3.34.1) (2024-02-22)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** deprecate derivedHardened for DOT ([7e99480](https://github.com/BitGo/BitGoJS/commit/7e99480f2e5041b7c787ec7a4b07b21b813183a8))
+
 # [3.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.2.0...@bitgo/sdk-coin-dot@3.34.0) (2024-02-19)
 
 ### Bug Fixes
