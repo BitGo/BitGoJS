@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer';
+import request from 'superagent';
 import assert from 'assert';
 import {
   addHexPrefix,
@@ -787,4 +788,31 @@ export function decodeForwarderCreationData(data: string): ForwarderInitializati
       feeAddress: addHexPrefix(feeAddress as string),
     } as const;
   }
+}
+
+/**
+ * Make a query to explorer for information such as balance, token balance, solidity calls
+ * @param {Object} query key-value pairs of parameters to append after /api
+ * @param {string} token the API token to use for the request
+ * @param {string} explorerUrl the URL of the explorer
+ * @returns {Promise<Object>} response from explorer
+ */
+export async function recoveryBlockchainExplorerQuery(
+  query: Record<string, string>,
+  explorerUrl: string,
+  token?: string
+): Promise<Record<string, unknown>> {
+  if (token) {
+    query.apikey = token;
+  }
+  const response = await request.get(`${explorerUrl}/api`).query(query);
+
+  if (!response.ok) {
+    throw new Error('could not reach explorer');
+  }
+
+  if (response.body.status === '0' && response.body.message === 'NOTOK') {
+    throw new Error('Explorer rate limit reached');
+  }
+  return response.body;
 }
