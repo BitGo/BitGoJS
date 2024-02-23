@@ -616,10 +616,9 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       bitgoChallenge: TxRequestChallengeResponse;
     };
     prv: string;
-    derivationPath: string;
     walletPassphrase?: string;
   }): Promise<TssEcdsaStep1ReturnMessage> {
-    const { challenges, derivationPath, prv } = params;
+    const { challenges, prv } = params;
     const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
     if (userSigningMaterial.pShare.i !== 1) {
       throw new Error('Invalid user key');
@@ -628,11 +627,10 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupNShare');
     }
     const MPC = new Ecdsa();
-    const signingKey = MPC.keyDerive(
-      userSigningMaterial.pShare,
-      [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare],
-      derivationPath
-    );
+    const signingKey = MPC.keyDerive(userSigningMaterial.pShare, [
+      userSigningMaterial.bitgoNShare,
+      userSigningMaterial.backupNShare,
+    ]);
 
     const bitgoIndex = ShareKeyPosition.BITGO;
     const userIndex = userSigningMaterial.pShare.i;
@@ -738,24 +736,18 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const { tssParams, prv, requestType, challenges } = params;
     assert(typeof tssParams.txRequest !== 'string', 'Invalid txRequest type');
     const txRequest: TxRequest = tssParams.txRequest;
-    let derivationPath;
 
     if (requestType === RequestType.tx) {
       assert(
         txRequest.transactions || (txRequest as TxRequest).unsignedTxs,
         'Unable to find transactions in txRequest'
       );
-      const unsignedTx =
-        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
-      derivationPath = unsignedTx.derivationPath;
     } else if (requestType === RequestType.message) {
       // TODO BG-67299 Message signing with derivation path
-      derivationPath = '';
     }
     return this.createTssEcdsaStep1SigningMaterial({
       prv: prv,
       challenges: challenges,
-      derivationPath: derivationPath,
       walletPassphrase: params.walletPassphrase,
     });
   }
@@ -917,14 +909,12 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
         : params.txRequest;
 
     let signablePayload = new Buffer('');
-    let derivationPath = '';
 
     if (requestType === RequestType.tx) {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
       signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
-      derivationPath = unsignedTx.derivationPath;
     } else if (requestType === RequestType.message) {
       signablePayload = (params as TSSParamsForMessage).bufferToSign;
       // TODO BG-67299 Message signing with derivation path
@@ -940,7 +930,6 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     const step1Return = await this.createTssEcdsaStep1SigningMaterial({
       prv: params.prv,
       challenges: challenges,
-      derivationPath: derivationPath,
     });
 
     // signing stage one with K share send to bitgo and receives A share

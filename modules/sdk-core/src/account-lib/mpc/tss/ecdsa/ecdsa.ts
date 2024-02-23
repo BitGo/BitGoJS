@@ -217,7 +217,7 @@ export default class Ecdsa {
    * @returns {SubkeyShare} Returns the private x-share and n-shares to
    * be distributed to participants at their corresponding index.
    */
-  keyDerive(pShare: PShare, nShares: NShare[], path: string): SubkeyShare {
+  keyDerive(pShare: PShare, nShares: NShare[], path = ''): SubkeyShare {
     const yValues = [pShare, ...nShares].map((share) => hexToBigInt(share.y));
     const y = yValues.reduce((partial, share) => Ecdsa.curve.pointAdd(partial, share));
     const u = BigInt(pShare.uu);
