@@ -698,7 +698,7 @@ export class Algo extends BaseCoin {
         .then((status) => status['last-round']);
     }
 
-    const firstRound = params.firstRound ?? latestRound;
+    const firstRound = !params.firstRound ? latestRound : params.firstRound;
     if (!firstRound) {
       throw new Error('Unable to fetch the latest round from the node. Please provide the firstRound or try again.');
     }
@@ -717,8 +717,8 @@ export class Algo extends BaseCoin {
       .amount(spendableAmount)
       .genesisId(genesisId)
       .genesisHash(genesisHash)
-      .firstRound(firstRound)
-      .lastRound(lastRound);
+      .firstRound(new BigNumber(firstRound).toNumber())
+      .lastRound(new BigNumber(lastRound).toNumber());
 
     if (params.note) {
       const note = new Uint8Array(Buffer.from(params.note, 'utf-8'));
