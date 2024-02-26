@@ -13,10 +13,10 @@ export type TxRequestChallengeResponse = EcdsaTypes.SerializedEcdsaChallenges & 
 };
 
 export type TssEcdsaStep1ReturnMessage = {
-  privateShareProof: string;
+  privateShareProof?: string;
   vssProof?: string;
   userPublicGpgKey: string;
-  publicShare: string;
+  publicShare?: string;
   encryptedSignerOffsetShare: string;
   kShare: KShare;
   // wShare could be encrypted. If it is encrypted, it will be a string, otherwise it will be a WShare.

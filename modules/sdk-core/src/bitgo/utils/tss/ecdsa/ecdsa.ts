@@ -9,6 +9,7 @@ import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulu
 import { bip32 } from '@bitgo/utxo-lib';
 
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
+import { bigIntToBufferBE } from '../../../../account-lib/mpc/util';
 import { AddKeychainOptions, ApiKeyShare, CreateBackupOptions, Keychain, KeyType } from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { IBaseCoin, KeychainsTriplet } from '../../../baseCoin';
@@ -36,7 +37,7 @@ import {
 } from '../baseTypes';
 import { getTxRequest } from '../../../tss';
 import { AShare, DShare, EncryptedNShare, OShare, SendShareType, SShare, WShare } from '../../../tss/ecdsa/types';
-import { createShareProof, generateGPGKeyPair, getBitgoGpgPubKey, getTrustGpgPubKey } from '../../opengpgUtils';
+import { generateGPGKeyPair, getBitgoGpgPubKey, getTrustGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { BackupProvider, IWallet } from '../../../wallet';
 import { buildNShareFromAPIKeyShare, getParticipantFromIndex, verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
@@ -619,7 +620,7 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
     derivationPath: string;
     walletPassphrase?: string;
   }): Promise<TssEcdsaStep1ReturnMessage> {
-    const { challenges, derivationPath, prv } = params;
+    const { challenges, prv } = params;
     const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
     if (userSigningMaterial.pShare.i !== 1) {
       throw new Error('Invalid user key');
@@ -628,11 +629,16 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupNShare');
     }
     const MPC = new Ecdsa();
-    const signingKey = MPC.keyDerive(
-      userSigningMaterial.pShare,
-      [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare],
-      derivationPath
-    );
+    // const signingKey = MPC.keyDerive(
+    //   userSigningMaterial.pShare,
+    //   [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare],
+    //   derivationPath
+    // );
+
+    const signingKey = MPC.keyCombine(userSigningMaterial.pShare, [
+      userSigningMaterial.bitgoNShare,
+      userSigningMaterial.backupNShare,
+    ]);
 
     const bitgoIndex = ShareKeyPosition.BITGO;
     const userIndex = userSigningMaterial.pShare.i;
@@ -650,8 +656,13 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       { p: pb }
     );
 
+    const threshold = 2;
+    const numShares = 3;
+    const uShares = Ecdsa.shamir.split(BigInt(userSigningMaterial.pShare.uu), threshold, numShares);
     const userSignShare = await ECDSAMethods.createUserSignShare(userXShare, bitgoYShare);
-    const u = signingKey.nShares[bitgoIndex].u;
+    //  const u = signingKey.nShares[bitgoIndex].u;
+    //  const u = userSigningMaterial.bitgoNShare.u;
+    const u = bigIntToBufferBE(uShares.shares[3], 32).toString('hex');
 
     let chaincode = userSigningMaterial.bitgoNShare.chaincode;
     while (chaincode.length < 64) {
@@ -669,14 +680,11 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       encryptionKeys: [bitgoGpgKey],
     })) as string;
     const userGpgKey = await generateGPGKeyPair('secp256k1');
-    const privateShareProof = await createShareProof(userGpgKey.privateKey, signingKey.nShares[bitgoIndex].u, 'ecdsa');
-    const vssProof = signingKey.nShares[bitgoIndex].v;
+    //  const privateShareProof = await createShareProof(userGpgKey.privateKey, signingKey.nShares[bitgoIndex].u, 'ecdsa');
+    //  const vssProof = signingKey.nShares[bitgoIndex].v;
     const userPublicGpgKey = userGpgKey.publicKey;
-    const publicShare = signingKey.nShares[bitgoIndex].y + signingKey.nShares[bitgoIndex].chaincode;
+    //  const publicShare = signingKey.nShares[bitgoIndex].y + signingKey.nShares[bitgoIndex].chaincode;
     return {
-      privateShareProof: privateShareProof,
-      vssProof: vssProof,
-      publicShare: publicShare,
       encryptedSignerOffsetShare: encryptedSignerShare,
       userPublicGpgKey: userPublicGpgKey,
       kShare: userSignShare.kShare,
