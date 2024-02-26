@@ -415,6 +415,40 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(rawTx.stake.batchAll.unsigned, txHex);
       });
 
+      it('should build an add proxy + stake more transaction', async () => {
+        builder
+          .atomic(true)
+          .calls(rawTx.stakeMore.batchAll.batch)
+          .sender({ address: sender.address })
+          .validity({ firstValid: 9266787, maxDuration: 64 })
+          .referenceBlock(referenceBlock)
+          .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 0 })
+          .fee({ amount: 0, type: 'tip' });
+
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        should.deepEqual(txJson.batchCalls.length, rawTx.stakeMore.batchAll.batch.length);
+        should.deepEqual(txJson.batchCalls[0].callIndex, rawTx.stakeMore.batchAll.batch[0].slice(0, 6));
+        should.deepEqual(txJson.batchCalls[0].args?.max_additional, 90034235235322);
+        should.deepEqual(txJson.batchCalls[1].callIndex, rawTx.stakeMore.batchAll.batch[1].slice(0, 6));
+        should.deepEqual(txJson.batchCalls[1].args?.delegate, { id: accounts.stakingProxy.address });
+        should.deepEqual(txJson.batchCalls[1].args?.proxy_type, ProxyType.STAKING);
+        should.deepEqual(txJson.batchCalls[1].args?.delay, 0);
+        should.deepEqual(txJson.sender, sender.address);
+        should.deepEqual(txJson.blockNumber, 9266787);
+        should.deepEqual(txJson.referenceBlock, referenceBlock);
+        should.deepEqual(txJson.genesisHash, genesisHash);
+        should.deepEqual(txJson.specVersion, specVersion);
+        should.deepEqual(txJson.nonce, 0);
+        should.deepEqual(txJson.tip, 0);
+        should.deepEqual(txJson.transactionVersion, txVersion);
+        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.eraPeriod, 64);
+
+        const txHex = tx.toBroadcastFormat();
+        should.deepEqual(rawTx.stakeMore.batchAll.unsigned, txHex);
+      });
+
       it('should build an unsigned unstaking batch all transaction', async () => {
         builder
           .atomic(true)

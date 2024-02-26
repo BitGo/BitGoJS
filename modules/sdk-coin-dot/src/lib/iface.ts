@@ -240,6 +240,7 @@ export type BatchCallObject = {
     | AddProxyBatchCallArgs
     | AddAnonymousProxyBatchCallArgs
     | StakeBatchCallArgs
+    | StakeMoreBatchCallArgs
     | StakeMoreCallArgs;
 };
 export interface BatchArgs {
@@ -258,6 +259,10 @@ export interface AddProxyBatchCallArgs {
   delegate: string | AccountId;
   proxy_type: ProxyType;
   delay: number;
+}
+
+export interface StakeMoreBatchCallArgs {
+  max_additional: number;
 }
 
 export type AccountId = { id: string };

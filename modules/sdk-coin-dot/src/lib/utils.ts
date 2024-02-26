@@ -25,6 +25,7 @@ import {
   StakeArgs,
   StakeBatchCallArgs,
   StakeMoreArgs,
+  StakeMoreBatchCallArgs,
   TransferAllArgs,
   TransferArgs,
   TxMethod,
@@ -306,7 +307,9 @@ export class Utils implements BaseUtils {
     const calls = (arg as BatchArgs).calls;
     if (calls !== undefined) {
       return (
-        calls.length === 2 && this.isStakeBatchCallArgs(calls[0].args) && this.isAddProxyBatchCallArgs(calls[1].args)
+        calls.length === 2 &&
+        (this.isStakeBatchCallArgs(calls[0].args) || this.isStakeMoreBatchCallArgs(calls[0].args)) &&
+        this.isAddProxyBatchCallArgs(calls[1].args)
       );
     }
     return false;
@@ -321,6 +324,17 @@ export class Utils implements BaseUtils {
    */
   isStakeBatchCallArgs(arg: BatchCallObject['args']): arg is StakeBatchCallArgs {
     return (arg as StakeBatchCallArgs).value !== undefined && (arg as StakeBatchCallArgs).payee !== undefined;
+  }
+
+  /**
+   * Returns true if arg is of type StakeMoreBatchCallArgs, false otherwise.
+   *
+   * @param arg The object to test.
+   *
+   * @return true if arg is of type StakeMoreBatchCallArgs, false otherwise.
+   */
+  isStakeMoreBatchCallArgs(arg: BatchCallObject['args']): arg is StakeMoreBatchCallArgs {
+    return (arg as StakeMoreBatchCallArgs).max_additional !== undefined;
   }
 
   /**
