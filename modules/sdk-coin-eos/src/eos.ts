@@ -958,7 +958,7 @@ export class Eos extends BaseCoin {
       headers.expiration = expiration.slice(0, -1);
     }
 
-    // create an offline eosjs API client
+    // create an offline eosjs API clientt
     const api = new Api({
       rpc: new NoopJsonRpc(),
       signatureProvider: new NoopSignatureProvider(),
