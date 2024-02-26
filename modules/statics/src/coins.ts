@@ -258,6 +258,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.BULK_STAKING_TRANSACTION,
 ];
 const INJECTIVE_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
+const TOKEN_FEATURES_WITH_SWISS = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -3972,7 +3973,8 @@ export const coins = CoinMap.fromCoins([
     'Injective (ERC20)',
     18,
     '0xe28b3b32b6c345a34ff64674606124dd5aceca30',
-    UnderlyingAsset.INJV2
+    UnderlyingAsset.INJV2,
+    TOKEN_FEATURES_WITH_SWISS
   ),
   erc20(
     '108a64ac-9be8-4bf9-a683-3f30d49708de',
@@ -6390,7 +6392,8 @@ export const coins = CoinMap.fromCoins([
     'USD Coin',
     6,
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-    UnderlyingAsset.USDC
+    UnderlyingAsset.USDC,
+    TOKEN_FEATURES_WITH_SWISS
   ),
   erc20(
     'e1d609f1-eb3f-4b3f-8ef6-87f434a6de83',
@@ -6398,7 +6401,8 @@ export const coins = CoinMap.fromCoins([
     'Tether',
     6,
     '0xdac17f958d2ee523a2206206994597c13d831ec7',
-    UnderlyingAsset.USDT
+    UnderlyingAsset.USDT,
+    TOKEN_FEATURES_WITH_SWISS
   ),
   erc20(
     '7eab6610-5fa7-4a92-8317-c4d143cd58c0',

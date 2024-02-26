@@ -121,6 +121,9 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   trx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  usdt: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  usdc: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  injv2: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   // Test Coins
   talgo: {
     features: [
