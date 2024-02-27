@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.24.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.24.0...@bitgo/sdk-coin-xlm@2.24.1) (2024-02-22)
+
+### Bug Fixes
+
+- **sdk-coin-xlm:** deprecate eddsa key deriver for xlm ([6078fc1](https://github.com/BitGo/BitGoJS/commit/6078fc1049beb5ef7567b79d166cd29ce56b7ab9))
+
 # [2.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@2.3.0...@bitgo/sdk-coin-xlm@2.24.0) (2024-02-19)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [37.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@37.0.0...bitgo@37.1.0) (2024-02-22)
+
+### Features
+
+- **sdk-core:** implement root key creation for eddsa multisig ([69bcaac](https://github.com/BitGo/BitGoJS/commit/69bcaac18a8ad049ea47fb43f09a0e3bc4457d9a))
+
 # [37.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@36.1.0-reset...bitgo@37.0.0) (2024-02-19)
 
 ### Bug Fixes

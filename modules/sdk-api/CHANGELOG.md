@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.43.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.43.0...@bitgo/sdk-api@1.43.1) (2024-02-22)
+
+### Bug Fixes
+
+- **sdk-api:** fix proxy after proxy-agent version bump ([4580762](https://github.com/BitGo/BitGoJS/commit/4580762212b6688a33239fb241de3c6e53a7dc58))
+
 # [1.43.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.13.0...@bitgo/sdk-api@1.43.0) (2024-02-19)
 
 ### Bug Fixes

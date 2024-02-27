@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.0.0...@bitgo/sdk-core@26.1.0) (2024-02-22)
+
+### Bug Fixes
+
+- **sdk-core:** deprecate derivedHardened for eddsa KeyPair ([34d8fb0](https://github.com/BitGo/BitGoJS/commit/34d8fb050db3d18024b7e25a8a5a9084580a059d))
+
+### Features
+
+- **sdk-core:** implement root key creation for eddsa multisig ([69bcaac](https://github.com/BitGo/BitGoJS/commit/69bcaac18a8ad049ea47fb43f09a0e3bc4457d9a))
+
 # [26.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@8.13.0...@bitgo/sdk-core@26.0.0) (2024-02-19)
 
 ### Bug Fixes
