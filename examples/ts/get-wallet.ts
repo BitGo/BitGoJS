@@ -19,6 +19,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { Tltc } from '@bitgo/sdk-coin-ltc';
 require('dotenv').config({ path: '../../.env' });
 
+// BitGo API client
 const bitgo = new BitGoAPI({
   accessToken: process.env.TESTNET_ACCESS_TOKEN,
   env: 'test',
