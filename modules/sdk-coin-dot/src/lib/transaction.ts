@@ -29,6 +29,7 @@ import {
   SectionNames,
   StakeArgsPayeeRaw,
   StakeBatchCallArgs,
+  StakeMoreBatchCallArgs,
   TransactionExplanation,
   TxData,
   UnstakeArgs,
@@ -458,9 +459,12 @@ export class Transaction extends BaseTransaction {
 
       const bondMethod = (txMethod.calls[0] as BatchCallObject).callIndex;
       const decodedBondCall = this._registry.findMetaCall(toUint8Array(utils.stripHexPrefix(bondMethod)));
-      if (decodedBondCall.section !== SectionNames.Staking || decodedBondCall.method !== MethodNames.Bond) {
+      if (
+        decodedBondCall.section !== SectionNames.Staking ||
+        (decodedBondCall.method !== MethodNames.Bond && decodedBondCall.method !== MethodNames.BondExtra)
+      ) {
         throw new InvalidTransactionError(
-          'Invalid batch transaction, only staking batch calls are supported, expected first call to be bond.'
+          'Invalid batch transaction, only staking batch calls are supported, expected first call to be bond or bond exta.'
         );
       }
       const addProxyMethod = (txMethod.calls[1] as BatchCallObject).callIndex;
@@ -471,9 +475,13 @@ export class Transaction extends BaseTransaction {
         );
       }
 
-      const stakeArgs = txMethod.calls[0].args as StakeBatchCallArgs;
+      let bondValue;
+      if (decodedBondCall.method === MethodNames.BondExtra) {
+        bondValue = `${(txMethod.calls[0].args as StakeMoreBatchCallArgs).max_additional}`;
+      } else {
+        bondValue = `${(txMethod.calls[0].args as StakeBatchCallArgs).value}`;
+      }
       const addProxyArgs = txMethod.calls[1].args as AddProxyBatchCallArgs;
-      const bondValue = `${stakeArgs.value}`;
       const proxyAddress = getDelegateAddress(addProxyArgs);
 
       this._inputs.push({

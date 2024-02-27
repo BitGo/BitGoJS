@@ -136,6 +136,8 @@ export class BatchTransactionBuilder extends TransactionBuilder {
           callsToBatch.push(this.getPureProxyCall(call.args as AddAnonymousProxyBatchCallArgs));
         } else if (decodedCall.section === SectionNames.Proxy && decodedCall.method === MethodNames.AddProxy) {
           callsToBatch.push(this.getAddProxyCall(call.args as AddProxyBatchCallArgs));
+        } else if (decodedCall.section === SectionNames.Staking && decodedCall.method === MethodNames.BondExtra) {
+          callsToBatch.push(this.getBondExtraCall(call.args as StakeMoreCallArgs));
         } else if (decodedCall.section === SectionNames.Staking && decodedCall.method === MethodNames.Bond) {
           callsToBatch.push(this.getBondCall(call.args as StakeBatchCallArgs));
         } else if (decodedCall.section === SectionNames.Staking && decodedCall.method === MethodNames.Unbond) {
@@ -253,6 +255,18 @@ export class BatchTransactionBuilder extends TransactionBuilder {
         delegate: getDelegateAddress(args),
         proxyType: args.proxy_type,
         delay: args.delay,
+      },
+      baseTxInfo.baseTxInfo,
+      baseTxInfo.options
+    );
+    return unsigned.method;
+  }
+
+  private getBondExtraCall(args: StakeMoreCallArgs): string {
+    const baseTxInfo = this.createBaseTxInfo();
+    const unsigned = methods.staking.bondExtra(
+      {
+        maxAdditional: args.value,
       },
       baseTxInfo.baseTxInfo,
       baseTxInfo.options
