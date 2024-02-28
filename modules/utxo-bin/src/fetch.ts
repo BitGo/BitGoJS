@@ -84,6 +84,7 @@ export async function fetchOutputSpends(
   try {
     return await getApi(httpClient, tx.network).getTransactionSpends(tx.getId());
   } catch (e) {
+    console.error(`error fetching spends for tx ${tx.getId()}: ${e}`);
     return [];
   }
 }
