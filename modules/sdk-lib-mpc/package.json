@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-lib-mpc",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "library functions for BitGo's MPC solution",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "@noble/secp256k1": "1.6.3",
-    "@silencelaboratories/dkls-wasm-ll-web": "1.0.1-pre.3",
     "@silencelaboratories/dkls-wasm-ll-node": "1.0.1-pre.3",
+    "@silencelaboratories/dkls-wasm-ll-web": "1.0.1-pre.3",
     "@types/superagent": "4.1.15",
     "@wasmer/wasi": "^1.2.2",
     "bigint-crypto-utils": "3.1.4",

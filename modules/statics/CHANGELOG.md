@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [47.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@47.1.0...@bitgo/statics@47.2.0) (2024-02-28)
+
+### Features
+
+- **statics:** add token as available for switzerland ([0cf26a7](https://github.com/BitGo/BitGoJS/commit/0cf26a760c1d8487133eebc5125e5f838c0384c8))
+
 # [47.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@47.0.0...@bitgo/statics@47.1.0) (2024-02-22)
 
 ### Bug Fixes
