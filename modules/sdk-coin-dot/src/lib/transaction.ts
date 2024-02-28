@@ -29,7 +29,7 @@ import {
   SectionNames,
   StakeArgsPayeeRaw,
   StakeBatchCallArgs,
-  StakeMoreBatchCallArgs,
+  StakeMoreArgs,
   TransactionExplanation,
   TxData,
   UnstakeArgs,
@@ -477,7 +477,7 @@ export class Transaction extends BaseTransaction {
 
       let bondValue;
       if (decodedBondCall.method === MethodNames.BondExtra) {
-        bondValue = `${(txMethod.calls[0].args as StakeMoreBatchCallArgs).max_additional}`;
+        bondValue = `${(txMethod.calls[0].args as StakeMoreArgs).maxAdditional}`;
       } else {
         bondValue = `${(txMethod.calls[0].args as StakeBatchCallArgs).value}`;
       }

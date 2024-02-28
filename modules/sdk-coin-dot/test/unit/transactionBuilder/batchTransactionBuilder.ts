@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 import { spy, assert as SinonAssert } from 'sinon';
-import { BatchTransactionBuilder } from '../../../src';
+import { BatchTransactionBuilder, TransactionBuilderFactory } from '../../../src';
 import { ProxyType } from '../../../src/lib/iface';
 import utils from '../../../src/lib/utils';
 import { accounts, mockTssSignature, rawTx, specVersion, txVersion } from '../../resources';
@@ -429,11 +429,11 @@ describe('Dot Batch Transaction Builder', () => {
         const txJson = tx.toJson();
         should.deepEqual(txJson.batchCalls.length, rawTx.stakeMore.batchAll.batch.length);
         should.deepEqual(txJson.batchCalls[0].callIndex, rawTx.stakeMore.batchAll.batch[0].slice(0, 6));
-        should.deepEqual(txJson.batchCalls[0].args?.max_additional, 90034235235322);
+        should.deepEqual(txJson.batchCalls[0].args.max_additional, 90034235235322);
         should.deepEqual(txJson.batchCalls[1].callIndex, rawTx.stakeMore.batchAll.batch[1].slice(0, 6));
-        should.deepEqual(txJson.batchCalls[1].args?.delegate, { id: accounts.stakingProxy.address });
-        should.deepEqual(txJson.batchCalls[1].args?.proxy_type, ProxyType.STAKING);
-        should.deepEqual(txJson.batchCalls[1].args?.delay, 0);
+        should.deepEqual(txJson.batchCalls[1].args.delegate, { id: accounts.stakingProxy.address });
+        should.deepEqual(txJson.batchCalls[1].args.proxy_type, ProxyType.STAKING);
+        should.deepEqual(txJson.batchCalls[1].args.delay, 0);
         should.deepEqual(txJson.sender, sender.address);
         should.deepEqual(txJson.blockNumber, 9266787);
         should.deepEqual(txJson.referenceBlock, referenceBlock);
@@ -447,6 +447,15 @@ describe('Dot Batch Transaction Builder', () => {
 
         const txHex = tx.toBroadcastFormat();
         should.deepEqual(rawTx.stakeMore.batchAll.unsigned, txHex);
+
+        const factory = new TransactionBuilderFactory(buildTestConfig());
+        const builder2 = factory.from(rawTx.stakeMore.batchAll.unsigned);
+        const tx2 = await builder2
+          .sender({ address: sender.address })
+          .validity({ firstValid: 9266787, maxDuration: 64 })
+          .build();
+        const txJson2 = tx2.toJson();
+        should.deepEqual(txJson, txJson2);
       });
 
       it('should build an unsigned unstaking batch all transaction', async () => {
