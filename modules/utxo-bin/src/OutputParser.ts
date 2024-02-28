@@ -20,7 +20,7 @@ export class OutputParser extends Parser {
     super(params);
   }
 
-  parseSpend(params: { conflict: boolean }): ParserNode[] {
+  parsePrevOutputSpend(params: { conflict: boolean }): ParserNode[] {
     if (!this.chainInfo.prevOutputSpends || !this.chainInfo.prevOutputSpends[this.outputIndex]) {
       // no spend data available
       return [];
@@ -34,6 +34,19 @@ export class OutputParser extends Parser {
       return [];
     }
     return [this.node('spent', `${spend.txid}:${spend.vin}`, params.conflict ? [this.node('conflict', true)] : [])];
+  }
+
+  parseOutputSpend(): ParserNode[] {
+    if (!this.chainInfo.outputSpends || !this.chainInfo.outputSpends[this.outputIndex]) {
+      // no spend data available
+      return [];
+    }
+    const spend = this.chainInfo.outputSpends[this.outputIndex];
+    if (spend.txid === undefined) {
+      return [this.node('spent', false)];
+    } else {
+      return [this.node('spent', `${spend.txid}:${spend.vin}`)];
+    }
   }
 
   parseOutput(): ParserNode {
@@ -51,7 +64,7 @@ export class OutputParser extends Parser {
       ...(this.params.parseOutputScript || address === undefined
         ? addressParser.parseOutputScript(this.output.script)
         : []),
-      ...this.parseSpend({ conflict: false }),
+      ...this.parseOutputSpend(),
     ]);
   }
 }

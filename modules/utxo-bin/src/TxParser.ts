@@ -28,6 +28,7 @@ export type TxParserArgs = {
   hide?: string[];
   maxOutputs?: number;
   vin?: number[];
+  vout?: number[];
   parseError?: 'throw' | 'continue';
 };
 
@@ -64,11 +65,15 @@ export class TxParser extends Parser {
   }
 
   parseOuts(outs: ParserTxOutput[], tx: ParserTx, txid: string, params: ChainInfo): ParserNode[] {
-    if (outs.length > (this.params.maxOutputs ?? 200)) {
+    if (this.params.vout === undefined && outs.length > (this.params.maxOutputs ?? 200)) {
       return [this.node('(omitted)', undefined)];
     }
 
-    return outs.map((o, i) => new OutputParser(tx.network, txid, i, o, params, this.params).parseOutput());
+    return outs.flatMap((o, i) =>
+      this.params.vout === undefined || this.params.vout.includes(i)
+        ? [new OutputParser(tx.network, txid, i, o, params, this.params).parseOutput()]
+        : []
+    );
   }
 
   parseStatus(status?: TransactionStatus): ParserNode[] {

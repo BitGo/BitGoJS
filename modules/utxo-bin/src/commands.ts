@@ -185,6 +185,8 @@ export const cmdParseTx = {
       .option('maxOutputs', { type: 'number' })
       .option('vin', { type: 'number' })
       .array('vin')
+      .option('vout', { type: 'number' })
+      .array('vout')
       .option('finalize', {
         type: 'boolean',
         default: false,

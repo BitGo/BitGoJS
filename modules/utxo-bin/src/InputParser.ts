@@ -324,7 +324,14 @@ export class InputParser extends Parser {
       this.parseSigScript(),
       ...(psbtInput ? this.parsePrevOut(psbtInput) : []),
       ...(prevOutput
-        ? new OutputParser(this.tx.network, prevTxid, vout, prevOutput, this.chainInfo, this.params).parseSpend({
+        ? new OutputParser(
+            this.tx.network,
+            prevTxid,
+            vout,
+            prevOutput,
+            this.chainInfo,
+            this.params
+          ).parsePrevOutputSpend({
             conflict: true,
           })
         : []),
