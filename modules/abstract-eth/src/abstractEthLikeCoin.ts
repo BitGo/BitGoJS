@@ -114,6 +114,9 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return true;
   }
 
+  /**
+   * Check if the address is a valid eth address.
+   */
   isValidAddress(address: string): boolean {
     if (!address) {
       return false;
