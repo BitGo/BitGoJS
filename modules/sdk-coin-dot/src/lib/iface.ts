@@ -241,7 +241,7 @@ export type BatchCallObject = {
     | AddAnonymousProxyBatchCallArgs
     | StakeBatchCallArgs
     | StakeMoreBatchCallArgs
-    | StakeMoreCallArgs;
+    | UnstakeCallArgs;
 };
 export interface BatchArgs {
   calls: BatchCallObject[];
@@ -288,8 +288,12 @@ export interface UnstakeBatchCallArgs {
   value: string;
 }
 
-export interface StakeMoreCallArgs {
+export interface UnstakeCallArgs {
   value: string;
+}
+
+export interface StakeMoreCallArgs {
+  max_additional: number;
 }
 
 /**
