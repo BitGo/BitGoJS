@@ -426,6 +426,7 @@ describe('Dot Batch Transaction Builder', () => {
           .fee({ amount: 0, type: 'tip' });
 
         const tx = await builder.build();
+        should.deepEqual(tx.inputs[0].value, '90034235235322');
         const txJson = tx.toJson();
         should.deepEqual(txJson.batchCalls.length, rawTx.stakeMore.batchAll.batch.length);
         should.deepEqual(txJson.batchCalls[0].callIndex, rawTx.stakeMore.batchAll.batch[0].slice(0, 6));
@@ -454,6 +455,7 @@ describe('Dot Batch Transaction Builder', () => {
           .sender({ address: sender.address })
           .validity({ firstValid: 9266787, maxDuration: 64 })
           .build();
+        should.deepEqual(tx2.inputs[0].value, '90034235235322');
         const txJson2 = tx2.toJson();
         should.deepEqual(txJson, txJson2);
       });

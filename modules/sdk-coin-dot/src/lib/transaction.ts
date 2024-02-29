@@ -30,6 +30,7 @@ import {
   StakeArgsPayeeRaw,
   StakeBatchCallArgs,
   StakeMoreArgs,
+  StakeMoreCallArgs,
   TransactionExplanation,
   TxData,
   UnstakeArgs,
@@ -476,7 +477,9 @@ export class Transaction extends BaseTransaction {
       }
 
       let bondValue;
-      if (decodedBondCall.method === MethodNames.BondExtra) {
+      if (decodedBondCall.method === MethodNames.BondExtra && utils.isBondBatchExtra(txMethod.calls[0].args)) {
+        bondValue = `${(txMethod.calls[0].args as StakeMoreCallArgs).max_additional}`;
+      } else if (decodedBondCall.method === MethodNames.BondExtra && utils.isBondExtra(txMethod.calls[0].args)) {
         bondValue = `${(txMethod.calls[0].args as StakeMoreArgs).maxAdditional}`;
       } else {
         bondValue = `${(txMethod.calls[0].args as StakeBatchCallArgs).value}`;
