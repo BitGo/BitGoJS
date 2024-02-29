@@ -244,6 +244,7 @@ export type BatchCallObject = {
     | AddProxyBatchCallArgs
     | AddAnonymousProxyBatchCallArgs
     | StakeBatchCallArgs
+    | StakeMoreArgs
     | StakeMoreCallArgs
     | UnbondCallArgs;
 };
