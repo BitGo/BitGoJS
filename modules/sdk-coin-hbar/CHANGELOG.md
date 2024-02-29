@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.13.0...@bitgo/sdk-coin-hbar@1.13.1) (2024-02-28)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-hbar
+
 # [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.12.0...@bitgo/sdk-coin-hbar@1.13.0) (2024-02-22)
 
 ### Bug Fixes

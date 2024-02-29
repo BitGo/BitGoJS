@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.27.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.27.0...@bitgo/sdk-coin-algo@1.27.1) (2024-02-28)
+
+### Bug Fixes
+
+- **sdk-coin-algo:** fix firstRound value for algo wrw ([9f040d8](https://github.com/BitGo/BitGoJS/commit/9f040d880160542cf21c741364ac1a57b2045663))
+
 # [1.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.26.0...@bitgo/sdk-coin-algo@1.27.0) (2024-02-22)
 
 ### Features

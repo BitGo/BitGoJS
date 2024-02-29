@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.0.0...@bitgo/sdk-lib-mpc@9.0.1) (2024-02-28)
+
+### Bug Fixes
+
+- **sdk-lib-mpc:** expose dkls functions from tss module ([fd1da88](https://github.com/BitGo/BitGoJS/commit/fd1da8843c63f110201f42f0b8c9c5690332dc25))
+
 # [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@8.5.0...@bitgo/sdk-lib-mpc@9.0.0) (2024-02-19)
 
 ### Bug Fixes
