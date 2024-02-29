@@ -7,6 +7,8 @@ import { coins, CoinFamily } from '@bitgo/statics';
 import * as AlgoLib from './lib';
 import {
   AddressCoinSpecific,
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
   BaseCoin,
   BitGoBase,
   InvalidAddressError,
@@ -37,6 +39,7 @@ import {
   TESTNET_GENESIS_HASH,
   TESTNET_GENESIS_ID,
 } from './lib/transactionBuilder';
+import { Buffer } from 'buffer';
 
 const SUPPORTED_ADDRESS_VERSION = 1;
 const MSIG_THRESHOLD = 2; // m in m-of-n
@@ -176,6 +179,10 @@ export interface OfflineVaultTxInfo {
   genesisId: string;
   genesisHash: string;
   note?: string;
+}
+
+export interface BroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
+  nodeParams: NodeParams;
 }
 
 export class Algo extends BaseCoin {
@@ -758,6 +765,30 @@ export class Algo extends BaseCoin {
       genesisHash: genesisHash,
       note: txJson.note ? Buffer.from(txJson.note.buffer).toString('utf-8') : undefined,
     };
+  }
+
+  /**
+   * Accepts a fully signed serialized base64 transaction and broadcasts it on the network.
+   * Uses the external node provided by the client
+   * @param serializedSignedTransaction
+   * @param nodeParams
+   */
+  async broadcastTransaction({
+    serializedSignedTransaction,
+    nodeParams,
+  }: BroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    if (!nodeParams) {
+      throw new Error('Please provide the details of the algorand node');
+    }
+    try {
+      const txHex = Buffer.from(serializedSignedTransaction, 'base64').toString('hex');
+      const algoTx = Utils.toUint8Array(txHex);
+      const client = this.getClient(nodeParams.token, nodeParams.baseServer, nodeParams.port);
+
+      return await client.sendRawTransaction(algoTx).do();
+    } catch (e) {
+      throw new Error('Failed to broadcast transaction, error: ' + e.message);
+    }
   }
 
   /**
