@@ -78,6 +78,10 @@ export function isDkg(source: KeyPairOptions): source is DkgOptions {
   return dkg.threshold !== undefined && dkg.participants !== undefined;
 }
 
+/**
+ * Checks if the provided source is of type `BlsKeys`.
+ * @param source
+ */
 export function isBlsKey(source: KeyPairOptions): source is BlsKeys {
   const bls = source as BlsKeys;
   return bls.publicShare !== undefined && bls.secretShares !== undefined;
