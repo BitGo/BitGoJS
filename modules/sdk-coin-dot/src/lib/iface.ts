@@ -187,6 +187,10 @@ export interface StakeMoreArgs {
   maxAdditional: string;
 }
 
+export interface StakeMoreCallArgs {
+  max_additional: string;
+}
+
 export interface UnstakeArgs {
   value: string;
 }
@@ -240,8 +244,8 @@ export type BatchCallObject = {
     | AddProxyBatchCallArgs
     | AddAnonymousProxyBatchCallArgs
     | StakeBatchCallArgs
-    | StakeMoreBatchCallArgs
-    | StakeMoreCallArgs;
+    | StakeMoreCallArgs
+    | UnbondCallArgs;
 };
 export interface BatchArgs {
   calls: BatchCallObject[];
@@ -259,10 +263,6 @@ export interface AddProxyBatchCallArgs {
   delegate: string | AccountId;
   proxy_type: ProxyType;
   delay: number;
-}
-
-export interface StakeMoreBatchCallArgs {
-  max_additional: number;
 }
 
 export type AccountId = { id: string };
@@ -288,7 +288,7 @@ export interface UnstakeBatchCallArgs {
   value: string;
 }
 
-export interface StakeMoreCallArgs {
+export interface UnbondCallArgs {
   value: string;
 }
 

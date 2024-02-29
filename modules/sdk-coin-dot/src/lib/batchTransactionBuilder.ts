@@ -19,6 +19,7 @@ import {
   StakeArgsPayee,
   StakeBatchCallArgs,
   StakeBatchCallPayee,
+  UnbondCallArgs,
   StakeMoreCallArgs,
 } from './iface';
 import {
@@ -141,7 +142,7 @@ export class BatchTransactionBuilder extends TransactionBuilder {
         } else if (decodedCall.section === SectionNames.Staking && decodedCall.method === MethodNames.Bond) {
           callsToBatch.push(this.getBondCall(call.args as StakeBatchCallArgs));
         } else if (decodedCall.section === SectionNames.Staking && decodedCall.method === MethodNames.Unbond) {
-          callsToBatch.push(this.getUnbondCall(call.args as StakeMoreCallArgs));
+          callsToBatch.push(this.getUnbondCall(call.args as UnbondCallArgs));
         } else if (decodedCall.section === SectionNames.Staking && decodedCall.method === MethodNames.Chill) {
           callsToBatch.push(this.getChillCall());
         } else if (decodedCall.section === SectionNames.Proxy && decodedCall.method === MethodNames.RemoveProxy) {
@@ -222,7 +223,7 @@ export class BatchTransactionBuilder extends TransactionBuilder {
     return unsigned.method;
   }
 
-  private getUnbondCall(args: StakeMoreCallArgs): string {
+  private getUnbondCall(args: UnbondCallArgs): string {
     const baseTxInfo = this.createBaseTxInfo();
     const unsigned = methods.staking.unbond(
       {
@@ -266,7 +267,7 @@ export class BatchTransactionBuilder extends TransactionBuilder {
     const baseTxInfo = this.createBaseTxInfo();
     const unsigned = methods.staking.bondExtra(
       {
-        maxAdditional: args.value,
+        maxAdditional: args.max_additional,
       },
       baseTxInfo.baseTxInfo,
       baseTxInfo.options
