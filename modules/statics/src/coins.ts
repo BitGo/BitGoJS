@@ -8487,6 +8487,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ETHDOOM
   ),
   erc20(
+    'ff133d14-b9a2-4279-9ee3-2ab0867d24ab',
+    'ethfi',
+    'ether.fi governance token',
+    18,
+    '0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb',
+    UnderlyingAsset.ETHFI
+  ),
+  erc20(
     '01123699-1a1c-4d62-8089-af171d4d63b7',
     'ethmoon',
     '10X Long ETH',
@@ -9101,6 +9109,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x9822dcbbc139947dd7bb684033855365078c32fc',
     UnderlyingAsset.MRTWEET
+  ),
+  erc20(
+    'd86e597c-a00f-45f0-9fb6-37c203379761',
+    'msn',
+    'meson.network',
+    18,
+    '0x6c4d441f41e423b88a0edc001fe15bc4657b3abf',
+    UnderlyingAsset.MSN
   ),
   erc20(
     '54e22bcd-9cc4-41b8-b737-e87e916f92a4',
@@ -10040,6 +10056,38 @@ export const coins = CoinMap.fromCoins([
     '0xcebef3df1f3c5bfd90fde603e71f31a53b11944d',
     UnderlyingAsset['bsc:litt']
   ),
+  bscToken(
+    'dd57bbfd-39c8-43a0-8094-c9d4d4843f2c',
+    'bsc:xvs',
+    'Venus',
+    18,
+    '0xcf6bb5389c92bdda8a3747ddb454cb7a64626c63',
+    UnderlyingAsset['bsc:xvs']
+  ),
+  bscToken(
+    '8c59c402-b515-4238-9947-9240b5aed0b7',
+    'bsc:epx',
+    'Ellipsis',
+    18,
+    '0xaf41054c1487b0e5e2b9250c0332ecbce6ce9d71',
+    UnderlyingAsset['bsc:epx']
+  ),
+  bscToken(
+    '56eac82e-d310-4ba0-b48e-2aaa3761f8e0',
+    'bsc:usdc',
+    'USDC',
+    18,
+    '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+    UnderlyingAsset['bsc:usdc']
+  ),
+  bscToken(
+    'ce33169c-7706-4f6b-9cbd-cd00ec785e7d',
+    'bsc:eth',
+    'Ethereum',
+    18,
+    '0x2170ed0880ac9a755fd29b2688956bd959f933f8',
+    UnderlyingAsset['bsc:eth']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -10972,6 +11020,30 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
+    '30179af0-ca75-4cb1-99d9-028bc56bf10e',
+    'tmsn',
+    'meson.network-testnet',
+    18,
+    '0xde939833ed21fe3833d3d9e545dc7faa9f161d06',
+    UnderlyingAsset.TMSN,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
+    '13ff20df-fde8-478e-919b-eff8ea7169ab',
+    'txsgd',
+    'XSGD',
+    6,
+    '0x3f811bb6e605ef518b0cd9281eb4d9ad88a3953f',
+    UnderlyingAsset.TXSGD,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.goerli
+  ),
+  terc20(
     'f49e8632-7cd9-4e0b-a576-7e9cd12bcf82',
     'topm',
     'Goerli Test OPM',
@@ -11745,6 +11817,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab',
     UnderlyingAsset['avaxc:weth']
+  ),
+  avaxErc20(
+    'ada544e1-82ca-402c-8bac-b20321e62f15',
+    'avaxc:sbc',
+    'Stable Coin',
+    18,
+    '0xf9fb20b8e097904f0ab7d12e9dbee88f2dcd0f16',
+    UnderlyingAsset['avaxc:sbc']
   ),
   avaxErc20(
     'dc358736-07c0-4d72-a1cb-51710b4169b1',
@@ -13706,6 +13786,24 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    'c4db311f-8a4a-4821-b7b4-c4d04c4de752',
+    'sol:honey',
+    'HONEY',
+    9,
+    '4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy',
+    UnderlyingAsset['honey'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    'f63bd5b2-32e5-435b-883d-584476266d28',
+    'sol:sbc',
+    'Stable Coin',
+    9,
+    'DBAzBUXaLj1qANCseUPZz4sp9F8d2sc78C4vKjhbTGMA',
+    UnderlyingAsset['SBC'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     '803bb18c-b9ed-4342-aa94-985f9ab31974',
     'sol:rendoge-usdc',
     'RENDOGE-USDC (Atrix)',
@@ -14373,6 +14471,14 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97',
     UnderlyingAsset['tpolygon:usdc']
+  ),
+  tpolygonErc20(
+    '6a24d660-0f7b-457e-bd5b-238ca34848ff',
+    'tpolygon:xsgd',
+    'XSGD',
+    6,
+    '0x16e28369bc318636abbf6cb1035da77ffbf4a3bc',
+    UnderlyingAsset['tpolygon:xsgd']
   ),
   terc721(
     '54d98031-6ebc-428a-b47c-b6ec7d6ad28a',
