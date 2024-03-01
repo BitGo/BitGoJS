@@ -682,6 +682,7 @@ export enum UnderlyingAsset {
   ETCMOON = 'etcmoon',
   ETHBEAR = 'ethbear',
   ETHDOOM = 'ethdoom',
+  ETHFI = 'ethfi',
   ETHHEDGE = 'ethhedge',
   ETHMOON = 'ethmoon',
   ETHOPT = 'ethopt',
@@ -1000,6 +1001,7 @@ export enum UnderlyingAsset {
   MPL = 'mpl',
   MPLX = 'mplx',
   MRTWEET = 'mrtweet',
+  MSN = 'msn',
   MSOL = 'msol',
   MTA = 'mta',
   MTCN = 'mtcn',
@@ -1336,6 +1338,7 @@ export enum UnderlyingAsset {
   TLM = 'tlm',
   TLOS = 'tlos',
   TMATIC = 'tmatic',
+  TMSN = 'tmsn',
   TNT = 'tnt',
   TOKAMAK = 'tokamak',
   TOKE = 'toke',
@@ -1376,6 +1379,7 @@ export enum UnderlyingAsset {
   TUSRM = 'tusrm',
   TWDOGE = 'twdoge',
   TXL = 'txl',
+  TXSGD = 'txsgd',
   UAIR = 'uair',
   UBXT = 'ubxt',
   UCO = 'uco',
@@ -1607,6 +1611,7 @@ export enum UnderlyingAsset {
   'avaxc:tryb' = 'avaxc:tryb',
   'avaxc:wbtc' = 'avaxc:wbtc',
   'avaxc:weth' = 'avaxc:weth',
+  'avaxc:sbc' = 'avaxc:sbc',
   'tavaxc:opm' = 'tavaxc:opm',
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   // Begin FTX missing AVAXC tokens
@@ -1721,6 +1726,10 @@ export enum UnderlyingAsset {
   'bsc:vet' = 'bsc:vet',
   'bsc:cake' = 'bsc:cake',
   'bsc:litt' = 'bsc:litt',
+  'bsc:xvs' = 'bsc:xvs',
+  'bsc:epx' = 'bsc:epx',
+  'bsc:usdc' = 'bsc:usdc',
+  'bsc:eth' = 'bsc:eth',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs
@@ -1737,6 +1746,7 @@ export enum UnderlyingAsset {
   'tpolygon:opm' = 'tpolygon:opm',
   'tpolygon:pme' = 'tpolygon:pme',
   'tpolygon:usdc' = 'tpolygon:usdc',
+  'tpolygon:xsgd' = 'tpolygon:xsgd',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
@@ -1816,6 +1826,7 @@ export enum UnderlyingAsset {
   'bonk' = 'bonk',
   'jto' = 'jto',
   'jup' = 'jup',
+  'honey' = 'honey',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
