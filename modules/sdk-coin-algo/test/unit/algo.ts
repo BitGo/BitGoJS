@@ -9,6 +9,7 @@ import assert from 'assert';
 import { Algo } from '../../src/algo';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory } from '../../src/lib';
+import { KeyPair } from '@bitgo/sdk-core';
 
 describe('ALGO:', function () {
   let bitgo: TestBitGoAPI;
@@ -978,6 +979,113 @@ describe('ALGO:', function () {
         const recovery = await basecoin.recover({
           userKey: userPub,
           backupKey: backupPub,
+          rootAddress,
+          walletPassphrase,
+          fee,
+          recoveryDestination,
+          firstRound: 5003596,
+          nodeParams,
+        });
+
+        getBalanceStub.callCount.should.equal(1);
+
+        recovery.should.not.be.undefined();
+        recovery.should.have.property('txHex');
+        recovery.should.have.property('type');
+        recovery.should.have.property('amount');
+        recovery.should.have.property('fee');
+        recovery.should.have.property('coin', 'talgo');
+        recovery.firstRound.should.not.be.undefined();
+        recovery.lastRound.should.not.be.undefined();
+
+        getBalanceStub.callCount.should.equal(1);
+        const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
+        const txBuilder = factory.from(recovery.txHex);
+        const tx = await txBuilder.build();
+        Buffer.from(tx.toBroadcastFormat()).toString('hex').should.deepEqual(recovery.txHex);
+        const txJson = tx.toJson();
+        txJson.amount.should.equal(expectedAmount);
+        txJson.to.should.equal(recoveryDestination);
+        txJson.from.should.equal(rootAddress);
+        txJson.fee.should.equal(fee);
+      });
+    });
+
+    describe('Recovery with root keys', function () {
+      const sandBox = Sinon.createSandbox();
+      let userKp: KeyPair;
+      let backupKp: KeyPair;
+      let rootAddress: string;
+      let encryptedUserPrv: string;
+      let encryptedBackupPrv: string;
+
+      const expectedAmount = new BigNumber(nativeBalance).minus(fee).minus(MIN_ACCOUNT_BALANCE).toString();
+      let getBalanceStub: SinonStub;
+
+      beforeEach(function () {
+        const userSeed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
+        userKp = basecoin.generateRootKeyPair(userSeed);
+        encryptedUserPrv = bitgo.encrypt({
+          input: userKp.prv,
+          password: walletPassphrase,
+        });
+        assert(userKp.pub);
+
+        const backupSeed = Buffer.from('6d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
+        backupKp = basecoin.generateRootKeyPair(backupSeed);
+        encryptedBackupPrv = bitgo.encrypt({
+          input: backupKp.prv,
+          password: walletPassphrase,
+        });
+        const bitgoPub = 'FJSWLLPRBXEGMWZY5BXA6673YKIK7JOURVCQEOWXC5TQPCXCOK3VHOO2VQ';
+        const userAddress = AlgoLib.algoUtils.privateKeyToAlgoAddress(userKp.prv);
+        const backupAddress = AlgoLib.algoUtils.privateKeyToAlgoAddress(backupKp.prv);
+
+        rootAddress = AlgoLib.algoUtils.multisigAddress(1, 2, [userAddress, backupAddress, bitgoPub]);
+      });
+
+      afterEach(function () {
+        sandBox.verifyAndRestore();
+      });
+
+      it('should build and sign non-bitgo recovery tx with root keys', async function () {
+        getBalanceStub = sandBox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+        const recovery = await basecoin.recover({
+          userKey: encryptedUserPrv,
+          backupKey: encryptedBackupPrv,
+          rootAddress,
+          walletPassphrase,
+          fee,
+          bitgoKey: bitgoPub,
+          recoveryDestination: recoveryDestination,
+          firstRound: 5002596,
+          nodeParams,
+        });
+
+        recovery.should.not.be.undefined();
+        recovery.should.have.property('id');
+        recovery.should.have.property('tx');
+        recovery.should.have.property('fee');
+        recovery.should.have.property('coin', 'talgo');
+        recovery.should.have.property('firstRound');
+        recovery.should.have.property('lastRound');
+        getBalanceStub.callCount.should.equal(1);
+        const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
+        const txBuilder = factory.from(recovery.tx);
+        const tx = await txBuilder.build();
+        tx.toBroadcastFormat().should.deepEqual(recovery.tx);
+        const txJson = tx.toJson();
+        txJson.amount.should.equal(expectedAmount);
+        txJson.to.should.equal(recoveryDestination);
+        txJson.from.should.equal(rootAddress);
+        txJson.fee.should.equal(fee);
+      });
+
+      it('should build unsigned sweep tx', async function () {
+        getBalanceStub = sandBox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+        const recovery = await basecoin.recover({
+          userKey: userKp.pub!,
+          backupKey: backupKp.pub!,
           rootAddress,
           walletPassphrase,
           fee,
