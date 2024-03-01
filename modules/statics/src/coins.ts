@@ -10067,7 +10067,7 @@ export const coins = CoinMap.fromCoins([
   bscToken(
     '8c59c402-b515-4238-9947-9240b5aed0b7',
     'bsc:epx',
-    'Ellipsis',
+    'Ellipsis X',
     18,
     '0xaf41054c1487b0e5e2b9250c0332ecbce6ce9d71',
     UnderlyingAsset['bsc:epx']
@@ -11041,7 +11041,7 @@ export const coins = CoinMap.fromCoins([
     undefined,
     undefined,
     undefined,
-    Networks.test.goerli
+    Networks.test.holesky
   ),
   terc20(
     'f49e8632-7cd9-4e0b-a576-7e9cd12bcf82',
