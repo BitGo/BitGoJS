@@ -932,6 +932,110 @@ describe('Hedera Hashgraph:', function () {
         );
       });
     });
+
+    describe('Recovery with root keys', function () {
+      const sandBox = Sinon.createSandbox();
+      let getBalanceStub: SinonStub;
+      const walletPassphrase = 'testbtcpassword1999';
+      const userEddsaRootXPrv =
+        '{"iv":"lHOTkiuucR2JWFD1x1gqpQ==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"HkFrDVH++d8=","ct":"NBtbYdFEK84oH9uxwl/UrhRsW5nGJPnMSpRAo8Blrc7WTSPxGXmVS/EpUYEV03HG06/EnyBR0/Y6bjLQz4gkL6cGJD9hgyKqDvc9RtKHagEbo75oxPr0zP+r1HMUGBW38Ttgor674gBeb1Myew69xcS9KgguNxwz77X6fdeBhrfogLY22vcuLA=="}';
+      const userEddsaRootPub = 'd9cb9c9c617cfa0b715849516bb054a2b5d78c0e3eeef011176fb8bc0108c531';
+      const backupEddsaRootXprv =
+        '{"iv":"sBoEFBBNoi2YVICPf16/BQ==","v":1,"iter":10000,"ks":128,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"HkFrDVH++d8=","ct":"GscOqJC+Iq+Lr39plQp5ZCamVlpJHOltGTZ7/UnUunIhFmZWMBLxjEVnMOtPreb0NZ4/SFqO/N3mZvq6JbB7vWRxJuqkBIiVcIRwkSWdW55cboKx2ec3ajg8+uO2pbvNDs26Q+9NtZ4jZnKNqSUXiCmtJXLRHQ32oyD+olKRpIR2NQo2+7kIEw=="}';
+      const backupEddsaRootPub = 'f163b1b8ee4c3343a97ac1d2470b967e967ac7b4e3731cacf02f28a1434a2f99';
+      const rootAddress = '0.0.3644667';
+      const memoId = '0';
+
+      beforeEach(function () {
+        getBalanceStub = sandBox
+          .stub(Hbar.prototype, 'getAccountBalance')
+          .resolves({ hbars: formatBalanceResponse(balance), tokens: [] });
+      });
+
+      afterEach(function () {
+        sandBox.verifyAndRestore();
+      });
+
+      it('should build and sign non-bitgo recovery tx with root keys', async function () {
+        const expectedAmount = new BigNumber(balance).minus(defaultFee).toString();
+
+        const recovery = await basecoin.recover({
+          userKey: userEddsaRootXPrv,
+          backupKey: backupEddsaRootXprv,
+          rootAddress,
+          walletPassphrase,
+          recoveryDestination: recoveryDestination + '?memoId=' + memoId,
+        });
+
+        getBalanceStub.callCount.should.equal(1);
+
+        recovery.should.not.be.undefined();
+        recovery.should.have.property('id');
+        recovery.should.have.property('tx');
+        recovery.should.have.property('coin', 'thbar');
+        recovery.should.have.property('nodeId', defaultNodeId);
+        getBalanceStub.callCount.should.equal(1);
+        const txBuilder = basecoin.getBuilderFactory().from(recovery.tx);
+        const tx = await txBuilder.build();
+        tx.toBroadcastFormat().should.equal(recovery.tx);
+        const txJson = tx.toJson();
+        txJson.amount.should.equal(expectedAmount);
+        txJson.to.should.equal(recoveryDestination);
+        txJson.from.should.equal(rootAddress);
+        txJson.fee.should.equal(defaultFee);
+        txJson.node.should.equal(defaultNodeId);
+        txJson.memo.should.equal(memoId);
+        txJson.validDuration.should.equal(defaultValidDuration);
+        txJson.should.have.property('startTime');
+        recovery.should.have.property('startTime', txJson.startTime);
+        recovery.should.have.property('id', rootAddress + '@' + txJson.startTime);
+      });
+
+      it('should build unsigned sweep tx', async function () {
+        const startTime = (Date.now() / 1000 + 10).toFixed(); // timestamp in seconds, 10 seconds from now
+        const expectedAmount = new BigNumber(balance).minus(defaultFee).toString();
+
+        const recovery = await basecoin.recover({
+          userKey: userEddsaRootPub,
+          backupKey: backupEddsaRootPub,
+          rootAddress,
+          bitgoKey,
+          recoveryDestination: recoveryDestination + '?memoId=' + memoId,
+          startTime,
+        });
+
+        getBalanceStub.callCount.should.equal(1);
+
+        recovery.should.not.be.undefined();
+        recovery.should.have.property('txHex');
+        recovery.should.have.property('id', rootAddress + '@' + startTime + '.0');
+        recovery.should.have.property('userKey', userEddsaRootPub);
+        recovery.should.have.property('backupKey', backupEddsaRootPub);
+        recovery.should.have.property('bitgoKey', bitgoKey);
+        recovery.should.have.property('address', rootAddress);
+        recovery.should.have.property('coin', 'thbar');
+        recovery.should.have.property('maxFee', defaultFee.toString());
+        recovery.should.have.property('recipients', [{ address: recoveryDestination, amount: expectedAmount }]);
+        recovery.should.have.property('amount', expectedAmount);
+        recovery.should.have.property('validDuration', defaultValidDuration);
+        recovery.should.have.property('nodeId', defaultNodeId);
+        recovery.should.have.property('memo', memoId);
+        recovery.should.have.property('startTime', startTime + '.0');
+        const txBuilder = basecoin.getBuilderFactory().from(recovery.txHex);
+        const tx = await txBuilder.build();
+        const txJson = tx.toJson();
+        txJson.id.should.equal(rootAddress + '@' + startTime + '.0');
+        txJson.amount.should.equal(expectedAmount);
+        txJson.to.should.equal(recoveryDestination);
+        txJson.from.should.equal(rootAddress);
+        txJson.fee.should.equal(defaultFee);
+        txJson.node.should.equal(defaultNodeId);
+        txJson.memo.should.equal(memoId);
+        txJson.validDuration.should.equal(defaultValidDuration);
+        txJson.startTime.should.equal(startTime + '.0');
+        txJson.validDuration.should.equal(defaultValidDuration);
+      });
+    });
   });
 
   describe('broadcastTransaction', function () {

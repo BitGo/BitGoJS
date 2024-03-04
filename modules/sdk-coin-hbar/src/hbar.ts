@@ -316,7 +316,8 @@ export class Hbar extends BaseCoin {
    */
   public async recover(params: RecoveryOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     const isUnsignedSweep =
-      params.backupKey.startsWith(PUBLIC_KEY_PREFIX) && params.userKey.startsWith(PUBLIC_KEY_PREFIX);
+      (params.backupKey.startsWith(PUBLIC_KEY_PREFIX) && params.userKey.startsWith(PUBLIC_KEY_PREFIX)) ||
+      (Utils.isValidPublicKey(params.userKey) && Utils.isValidPublicKey(params.backupKey));
 
     // Validate the root address
     if (!this.isValidAddress(params.rootAddress)) {
