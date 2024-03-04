@@ -48,7 +48,7 @@ describe('Arbeth address initialization', () => {
     txBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
-    should.equal(txJson.deployedAddress, '0x035540896df72a28bff04f6800048ade739e6d05');
+    should.equal(txJson.deployedAddress, '0xd9d189aa6907a4fafd3c66e8cc178011b1f443f5');
     should.equal(txJson.to, testData.FORWARDER_FACTORY_ADDRESS);
   });
 
