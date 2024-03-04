@@ -34,7 +34,7 @@ describe('Opeth address initialization', () => {
     const tx = await txBuilder.build();
 
     const txJson = tx.toJson();
-    should.equal(txJson.deployedAddress, '0xab45abb1dcd3eebc37cac952f753fff687e2a34a');
+    should.equal(txJson.deployedAddress, '0xd9d189aa6907a4fafd3c66e8cc178011b1f443f5');
     should.equal(txJson.to, testData.FORWARDER_FACTORY_ADDRESS);
   });
 

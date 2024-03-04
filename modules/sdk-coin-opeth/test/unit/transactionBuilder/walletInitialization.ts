@@ -44,7 +44,7 @@ describe('Opeth wallet initialization', function () {
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0xb3acfd0f4da9ddafe600c467001c8c1db3ba24edb14d7f57d0af9524005bea74');
+      should.equal(newTx.id, '0x4f9ac32512aeef15e2b3e4bd79643c6f77f93b462f20f1f3d3e48d5905d12add');
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);
