@@ -275,6 +275,10 @@ export class Xlm extends BaseCoin {
     return memoIdNumber.gte(0) && memoIdNumber.lt(Xlm.maxMemoId);
   }
 
+  supportsDeriveKeyWithSeed(): boolean {
+    return false;
+  }
+
   /**
    * Evaluates whether a memo is valid
    *

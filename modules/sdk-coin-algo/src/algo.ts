@@ -579,6 +579,10 @@ export class Algo extends BaseCoin {
     return AlgoLib.algoUtils.publicKeyToAlgoAddress(pubKey);
   }
 
+  supportsDeriveKeyWithSeed(): boolean {
+    return false;
+  }
+
   /**
    * Gets config for how token enablements work for this coin
    * @returns
