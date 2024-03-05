@@ -42,7 +42,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^26.6.0",
     "@bitgo/statics": "^48.4.0",
-    "@hashgraph/cryptography": "1.1.2",
+    "@hashgraph/cryptography": "1.4.8-beta.5",
     "@stablelib/hex": "^1.0.0",
     "algosdk": "1.14.0",
     "bignumber.js": "^9.0.0",
