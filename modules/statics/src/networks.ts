@@ -150,6 +150,10 @@ class Arbitrum extends Mainnet implements EthereumNetwork {
   chainId = 42161;
   nativeCoinOperationHashPrefix = '42161';
   tokenOperationHashPrefix = '42161-ERC20';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class ArbitrumTestnet extends Testnet implements EthereumNetwork {
@@ -160,10 +164,10 @@ class ArbitrumTestnet extends Testnet implements EthereumNetwork {
   chainId = 421614;
   nativeCoinOperationHashPrefix = '421614';
   tokenOperationHashPrefix = '421614-ERC20';
-  forwarderFactoryAddress = '0xe0fce739287037751555011785c369fb1bdfe9c8';
-  forwarderImplementationAddress = '0x49307e47f160829e2f37873ef9e79132b218cac7';
-  walletFactoryAddress = '0x252a69d9a2be99aae36a80ed92d311cf38ec89ce';
-  walletImplementationAddress = '0xe5301a9c2131d4A9b137a1fa8eee9436dda74f5d';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class AvalancheC extends Mainnet implements AccountNetwork {
@@ -929,6 +933,10 @@ class Optimism extends Mainnet implements EthereumNetwork {
   chainId = 10;
   nativeCoinOperationHashPrefix = '10';
   tokenOperationHashPrefix = '10-ERC20';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class OptimismTestnet extends Testnet implements EthereumNetwork {
@@ -939,10 +947,10 @@ class OptimismTestnet extends Testnet implements EthereumNetwork {
   chainId = 11155420;
   nativeCoinOperationHashPrefix = '11155420';
   tokenOperationHashPrefix = '11155420-ERC20';
-  forwarderFactoryAddress = '0xce54336e87a5cb5440d38c32d996c3ecb3a5968f';
-  forwarderImplementationAddress = '0x50d852c4bbcbe792938ef9375409d353fcd86a77';
-  walletFactoryAddress = '0x2f12cba0f8c47c47995c35042e1055bd3e6388f9';
-  walletImplementationAddress = '0x293878ce5dd09075e6268c06f668fa0e1d3aeed3';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class ZkSync extends Mainnet implements EthereumNetwork {

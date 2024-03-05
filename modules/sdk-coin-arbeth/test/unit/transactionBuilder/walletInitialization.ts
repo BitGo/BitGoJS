@@ -44,7 +44,7 @@ describe('Arbeth wallet initialization', function () {
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0xdc7ebdb8aa3c190888825fb38a29ff0530247a436df0204577b95de96bf6baef');
+      should.equal(newTx.id, '0x2753999553d3602e65fc272738608515f154f83adf37c576118a87f5bc9309f9');
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);
