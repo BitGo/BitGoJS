@@ -1525,7 +1525,7 @@ export enum UnderlyingAsset {
   ZCO = 'zco',
   ZECBEAR = 'zecbear',
   ZECBULL = 'zecbull',
-  ZETACHAIN = 'zetachain',
+  ZETAEVM = 'zetaevm',
   ZIL = 'zil',
   ZIP = 'zip',
   ZIX = 'zix',
