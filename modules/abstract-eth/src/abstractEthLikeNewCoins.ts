@@ -1362,6 +1362,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     // get balance of wallet
     const txAmount = await this.queryAddressBalance(params.walletContractAddress);
+    if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
+      throw new Error('Wallet does not have enough funds to recover');
+    }
 
     // build recipients object
     const recipients = [
