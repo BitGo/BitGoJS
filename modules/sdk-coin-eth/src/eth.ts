@@ -38,6 +38,7 @@ import {
 } from '@bitgo/abstract-eth';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
+import { BigNumber } from 'bignumber.js';
 
 import { TransactionBuilder } from './lib/transactionBuilder';
 import { Erc20Token } from './erc20Token';
@@ -252,6 +253,9 @@ export class Eth extends AbstractEthLikeNewCoins {
 
     // get balance of wallet and deduct fees to get transaction amount
     const txAmount = await this.queryAddressBalance(params.walletContractAddress);
+    if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
+      throw new Error('Wallet does not have enough funds to recover');
+    }
 
     // build recipients object
     const recipients = [

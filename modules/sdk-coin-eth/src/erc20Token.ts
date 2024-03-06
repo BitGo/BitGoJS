@@ -11,6 +11,8 @@ import {
   MPCAlgorithm,
   NamedCoinConstructor,
 } from '@bitgo/sdk-core';
+import { BigNumber } from 'bignumber.js';
+
 import { coins, EthLikeTokenConfig, Erc20TokenConfig, tokens } from '@bitgo/statics';
 import { CoinNames } from '@bitgo/abstract-eth';
 import { bip32 } from '@bitgo/utxo-lib';
@@ -226,6 +228,9 @@ export class Erc20Token extends Eth {
 
     // get token balance of wallet
     const txAmount = await this.queryAddressTokenBalance(this.tokenContractAddress, params.walletContractAddress);
+    if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
+      throw new Error('Wallet does not have enough funds to recover');
+    }
 
     // build recipients object
     const recipients = [
