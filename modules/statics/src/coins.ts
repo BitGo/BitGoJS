@@ -2265,6 +2265,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BTU
   ),
   erc20(
+    'b51b9935-842e-4d07-8c52-c81da372f957',
+    'buidl',
+    'BlackRock USD Institutional Digital Liquidity Fund',
+    6,
+    '0x7712c34205737192402172409a8f7ccef8aa2aec',
+    UnderlyingAsset.BUIDL
+  ),
+  erc20(
     '43a646c7-f137-4f02-ba36-a98a5c72bf45',
     'bull',
     '3X Long Bitcoin Token',
@@ -3308,6 +3316,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.EUROC
   ),
   erc20(
+    '2ec7511c-7794-4f79-9745-d7186ee226b9',
+    'eurr',
+    'StablR Euro',
+    6,
+    '0xdac306d72f48dbad805a11cbf7a512a277c084c9',
+    UnderlyingAsset.EURR
+  ),
+  erc20(
     '7b6c5f6c-088d-49a0-a283-2bf253fc1f8a',
     'eux',
     'EUR Stable Token',
@@ -3322,6 +3338,14 @@ export const coins = CoinMap.fromCoins([
     9,
     '0x29d578cec46b50fa5c88a99c6a4b70184c062953',
     UnderlyingAsset.EVER
+  ),
+  erc20(
+    '5a3af0ed-3233-44e3-aa80-d6c96db23818',
+    'every',
+    'Everyworld',
+    18,
+    '0x9afa9999e45484adf5d8eed8d9dfe0693bacd838',
+    UnderlyingAsset.EVERY
   ),
   erc20(
     'afdc7525-16ec-4999-9422-cfeff69c5829',
@@ -13812,6 +13836,15 @@ export const coins = CoinMap.fromCoins([
     9,
     '4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy',
     UnderlyingAsset['honey'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '51025e9d-74b7-483e-8649-3628049258dc',
+    'sol:mobile',
+    'Helium Mobile',
+    6,
+    'mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6',
+    UnderlyingAsset['mobile'],
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
