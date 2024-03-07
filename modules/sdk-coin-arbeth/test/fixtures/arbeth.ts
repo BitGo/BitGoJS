@@ -42,6 +42,12 @@ export const getBalanceResponse = {
   result: '9999999999999999928',
 };
 
+export const getZeroBalanceResponse = {
+  status: '1',
+  message: 'OK',
+  result: '0',
+};
+
 export const getContractCallRequest = {
   module: 'proxy',
   action: 'eth_call',

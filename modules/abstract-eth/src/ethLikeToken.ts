@@ -4,6 +4,7 @@
 import { coins, EthLikeTokenConfig, tokens, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 import _ from 'lodash';
 import { bip32 } from '@bitgo/utxo-lib';
+import { BigNumber } from 'bignumber.js';
 
 import { BitGoBase, CoinConstructor, NamedCoinConstructor, getIsUnsignedSweep, Util } from '@bitgo/sdk-core';
 import {
@@ -280,6 +281,9 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
       params.tokenContractAddress as string,
       params.walletContractAddress
     );
+    if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
+      throw new Error('Wallet does not have enough funds to recover');
+    }
 
     // build recipients object
     const recipients = [

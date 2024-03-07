@@ -585,6 +585,38 @@ describe('Arbitrum', function () {
       recipient.amount.should.equal('9999999999999999928');
     });
 
+    it('should throw an error in case of no funds to recover', async function () {
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const backupKeyAddress = '0x4f2c4830cc37f2785c646f89ded8a919219fa0e9';
+      nock(baseUrl)
+        .get('/api')
+        .twice()
+        .query(mockData.getTxListRequest(backupKeyAddress))
+        .reply(200, mockData.getTxListResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(walletContractAddress))
+        .reply(200, mockData.getZeroBalanceResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(backupKeyAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+      const basecoin = bitgo.coin('tarbeth') as Arbeth;
+      try {
+        (await basecoin.recover({
+          userKey: userXpub,
+          backupKey: backupXpub,
+          walletContractAddress: walletContractAddress,
+          recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT as string,
+          eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+          gasLimit: 500000,
+        })) as OfflineVaultTxInfo;
+      } catch (e) {
+        e.message.should.equal('Wallet does not have enough funds to recover');
+      }
+    });
+
     it('should construct a recovery transaction without BitGo', async function () {
       const backupKeyAddress = '0x6d22efdd634996248170c948e5726007fc251bb3';
       const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
