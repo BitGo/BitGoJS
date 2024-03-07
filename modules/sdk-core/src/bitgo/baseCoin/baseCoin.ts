@@ -173,6 +173,14 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * Flag indicating if the coin supports deriving a key with a seed (keyID)
+   * to the user/backup keys.
+   */
+  supportsDeriveKeyWithSeed(): boolean {
+    return true;
+  }
+
+  /**
    * Flag indicating if this blockchain runs on EVM architecture.
    * @returns {boolean} True if the blockchain runs on EVM architecture.
    */

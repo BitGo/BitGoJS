@@ -551,6 +551,10 @@ export class Hbar extends BaseCoin {
     return Utils.isValidPublicKey(pub);
   }
 
+  supportsDeriveKeyWithSeed(): boolean {
+    return false;
+  }
+
   public getTokenEnablementConfig(): TokenEnablementConfig {
     return {
       requiresTokenEnablement: true,
