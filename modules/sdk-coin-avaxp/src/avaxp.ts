@@ -85,14 +85,9 @@ export class AvaxP extends BaseCoin {
    * Check if export txn is valid, based on expected tx params.
    *
    * @param {ITransactionRecipient[]} recipients expected recipients and info
-   * @param {string} memo txn memo to verify
    * @param {AvaxpLib.TransactionExplanation} explainedTx explained export transaction
    */
-  validateExportTx(
-    recipients: ITransactionRecipient[],
-    memo: string,
-    explainedTx: AvaxpLib.TransactionExplanation
-  ): void {
+  validateExportTx(recipients: ITransactionRecipient[], explainedTx: AvaxpLib.TransactionExplanation): void {
     if (recipients.length !== 1 || explainedTx.outputs.length !== 1) {
       throw new Error('Export Tx requires one recipient');
     }
@@ -110,15 +105,6 @@ export class AvaxP extends BaseCoin {
 
     if (explainedTx.outputs && !utils.isValidAddress(explainedTx.outputs[0].address)) {
       throw new Error(`Invalid P-chain address ${explainedTx.outputs[0].address}`);
-    }
-
-    const memoValue = memo.split('~');
-    if (!isValidEthAddress(memoValue[0])) {
-      throw new Error(`Txn memo must contain valid C-chain address destination, received: ${memo}`);
-    } else if (memoValue[0] !== recipients[0].address) {
-      throw new Error(
-        `Invalid C-chain receive address ${memoValue[0]}, does not match expected params address ${recipients[0].address}`
-      );
     }
   }
 
@@ -176,10 +162,10 @@ export class AvaxP extends BaseCoin {
       case TransactionType.Export:
         if (!params.txParams.recipients) {
           throw new Error('Export Tx requires a recipient');
-        } else if (!explainedTx.memo) {
-          throw new Error('Export Tx requires a memo with c-chain address');
+        } else if (explainedTx.memo !== '') {
+          throw new Error(`Export Tx requires a memo as empty string, received: ${explainedTx.memo}`);
         } else {
-          this.validateExportTx(params.txParams.recipients, explainedTx.memo, explainedTx);
+          this.validateExportTx(params.txParams.recipients, explainedTx);
         }
         break;
       case TransactionType.Import:

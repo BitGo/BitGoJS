@@ -19,6 +19,7 @@ import {
   EXPORT_P_2_C,
   EXPORT_P_2_C_VERIFY,
   EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT,
+  EXPORT_P_2_C_VERIFY_WRONG_MEMO,
 } from '../resources/avaxp';
 import { IMPORT_C } from '../resources/tx/importC';
 import { EXPORT_C } from '../resources/tx/exportC';
@@ -562,33 +563,6 @@ describe('Avaxp', function () {
         );
     });
 
-    it('should fail verify export transaction with wrong c-address in memo', async () => {
-      const txPrebuild = {
-        txHex: EXPORT_P_2_C_VERIFY.txHex,
-        txInfo: {},
-      };
-      const txParams = {
-        recipients: [
-          {
-            address: EXPORT_P_2_C_VERIFY.receiveAddress2,
-            amount: EXPORT_P_2_C_VERIFY.amount,
-          },
-        ],
-        type: 'Export',
-        locktime: 0,
-        memo: {
-          value: EXPORT_P_2_C_VERIFY.memo,
-          type: 'text',
-        },
-      };
-
-      await basecoin
-        .verifyTransaction({ txParams, txPrebuild })
-        .should.be.rejectedWith(
-          `Invalid C-chain receive address ${EXPORT_P_2_C_VERIFY.receiveAddress}, does not match expected params address ${EXPORT_P_2_C_VERIFY.receiveAddress2}`
-        );
-    });
-
     it('should fail verify export transaction with no memo', async () => {
       const txPrebuild = {
         txHex: EXPORT_C.unsignedTxHex,
@@ -607,12 +581,12 @@ describe('Avaxp', function () {
 
       await basecoin
         .verifyTransaction({ txParams, txPrebuild })
-        .should.be.rejectedWith(`Export Tx requires a memo with c-chain address`);
+        .should.be.rejectedWith(`Export Tx requires a memo as empty string, received: undefined`);
     });
 
-    it('should fail verify export transaction with invalid C address in memo', async () => {
+    it('should fail verify export transaction with C address in memo', async () => {
       const txPrebuild = {
-        txHex: EXPORT_P_2_C.unsignedTxHex,
+        txHex: EXPORT_P_2_C_VERIFY_WRONG_MEMO.txHex,
         txInfo: {},
       };
       const txParams = {
@@ -625,7 +599,7 @@ describe('Avaxp', function () {
         type: 'Export',
         locktime: 0,
         memo: {
-          value: EXPORT_P_2_C.memo,
+          value: EXPORT_P_2_C_VERIFY_WRONG_MEMO.memo,
           type: 'text',
         },
       };
@@ -633,7 +607,7 @@ describe('Avaxp', function () {
       await basecoin
         .verifyTransaction({ txParams, txPrebuild })
         .should.be.rejectedWith(
-          `Txn memo must contain valid C-chain address destination, received: Export AVAX from P-Chain to C-Chain and consume multisig output and create multisig atomic output`
+          `Export Tx requires a memo as empty string, received: ${EXPORT_P_2_C_VERIFY_WRONG_MEMO.memo}`
         );
     });
 
