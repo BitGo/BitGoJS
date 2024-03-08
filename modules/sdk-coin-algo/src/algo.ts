@@ -144,7 +144,7 @@ export interface RecoveryOptions {
   userKey: string;
   rootAddress: string;
   recoveryDestination: string;
-  bitgoKey?: string;
+  bitgoKey: string;
   walletPassphrase?: string;
   fee: number;
   firstRound?: number;
@@ -168,7 +168,7 @@ export interface OfflineVaultTxInfo {
   txHex: string;
   userKey: string;
   backupKey: string;
-  bitgoKey?: string;
+  bitgoKey: string;
   type?: string;
   address: string;
   coin: string;
@@ -179,6 +179,8 @@ export interface OfflineVaultTxInfo {
   genesisId: string;
   genesisHash: string;
   note?: string;
+  addressVersion: number;
+  keys: string[];
 }
 
 export interface BroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
@@ -748,6 +750,8 @@ export class Algo extends BaseCoin {
         genesisId: genesisId,
         genesisHash: genesisHash,
         note: txJson.note ? Buffer.from(txJson.note.buffer).toString('utf-8') : undefined,
+        keys: [params.userKey, params.backupKey, params.bitgoKey],
+        addressVersion: 1,
       };
     }
 
