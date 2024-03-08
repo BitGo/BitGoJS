@@ -979,6 +979,7 @@ describe('ALGO:', function () {
         const recovery = await basecoin.recover({
           userKey: userPub,
           backupKey: backupPub,
+          bitgoKey: bitgoPub,
           rootAddress,
           walletPassphrase,
           fee,
@@ -997,6 +998,9 @@ describe('ALGO:', function () {
         recovery.should.have.property('coin', 'talgo');
         recovery.firstRound.should.not.be.undefined();
         recovery.lastRound.should.not.be.undefined();
+        recovery.should.have.property('keys');
+        recovery.keys.should.deepEqual([userPub, backupPub, bitgoPub]);
+        recovery.addressVersion.should.equal(1);
 
         getBalanceStub.callCount.should.equal(1);
         const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
@@ -1086,6 +1090,7 @@ describe('ALGO:', function () {
         const recovery = await basecoin.recover({
           userKey: userKp.pub!,
           backupKey: backupKp.pub!,
+          bitgoKey: bitgoPub,
           rootAddress,
           walletPassphrase,
           fee,
@@ -1104,6 +1109,9 @@ describe('ALGO:', function () {
         recovery.should.have.property('coin', 'talgo');
         recovery.firstRound.should.not.be.undefined();
         recovery.lastRound.should.not.be.undefined();
+        recovery.should.have.property('keys');
+        recovery.keys.should.deepEqual([userKp.pub, backupKp.pub, bitgoPub]);
+        recovery.addressVersion.should.equal(1);
 
         getBalanceStub.callCount.should.equal(1);
         const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
