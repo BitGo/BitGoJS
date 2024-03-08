@@ -87,11 +87,15 @@ export class Ton extends BaseCoin {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
         return {
           address: new TonWeb.Address(recipient.address).toString(true, true, true),
-          amount: recipient.amount,
+          amount: BigInt(recipient.amount),
         };
       });
-      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
-
+      const filteredOutputs = explainedTx.outputs.map((output) => {
+        return {
+          address: output.address,
+          amount: BigInt(output.amount),
+        };
+      });
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }

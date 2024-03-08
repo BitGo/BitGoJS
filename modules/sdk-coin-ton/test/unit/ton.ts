@@ -52,6 +52,19 @@ describe('TON:', function () {
 
     it('should succeed to verify transaction when recipients amount are numbers', async function () {
       const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+      txParamsWithNumberAmounts.recipients[0].amount = 20000000;
+      const verification = {};
+      await basecoin
+        .verifyTransaction({
+          txParams: txParamsWithNumberAmounts,
+          txPrebuild,
+          verification,
+        } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify transaction when recipients amount are strings', async function () {
+      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
       txParamsWithNumberAmounts.recipients[0].amount = '20000000';
       const verification = {};
       await basecoin
@@ -63,9 +76,9 @@ describe('TON:', function () {
         .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
 
-    it('should succeed to verify transaction when recipients amount are numbers', async function () {
+    it('should succeed to verify transaction when recipients amounts are number and amount is same', async function () {
       const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
-      txParamsWithNumberAmounts.recipients[0].amount = '20000000';
+      txParamsWithNumberAmounts.recipients[0].amount = 10000000;
       const verification = {};
       await basecoin
         .verifyTransaction({
@@ -73,7 +86,20 @@ describe('TON:', function () {
           txPrebuild,
           verification,
         } as any)
-        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+        .should.resolvedWith(true);
+    });
+
+    it('should succeed to verify transaction when recipients amounts are string and amount is same', async function () {
+      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+      txParamsWithNumberAmounts.recipients[0].amount = '10000000';
+      const verification = {};
+      await basecoin
+        .verifyTransaction({
+          txParams: txParamsWithNumberAmounts,
+          txPrebuild,
+          verification,
+        } as any)
+        .should.resolvedWith(true);
     });
 
     it('should succeed to verify transaction when recipient address are non bouncable', async function () {
