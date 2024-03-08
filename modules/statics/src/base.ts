@@ -303,6 +303,7 @@ export enum UnderlyingAsset {
   EURCVV0 = 'eurcvv0',
   EURCV = 'eurcv',
   EUROC = 'euroc',
+  EURR = 'eurr',
   GBP = 'gbp',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
@@ -494,6 +495,7 @@ export enum UnderlyingAsset {
   BTSG = 'btsg',
   BTT = 'btt',
   BTU = 'btu',
+  BUIDL = 'buidl',
   BULL = 'bull',
   BULLSHIT = 'bullshit',
   BURP = 'burp',
@@ -699,6 +701,7 @@ export enum UnderlyingAsset {
   EURX = 'eurx',
   EUX = 'eux',
   EVER = 'ever',
+  EVERY = 'every',
   EVRY = 'evry',
   EVX = 'evx',
   EXCHBEAR = 'exchbear',
@@ -1827,6 +1830,7 @@ export enum UnderlyingAsset {
   'jto' = 'jto',
   'jup' = 'jup',
   'honey' = 'honey',
+  'mobile' = 'mobile',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
