@@ -19,7 +19,6 @@ import {
   EXPORT_P_2_C,
   EXPORT_P_2_C_VERIFY,
   EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT,
-  EXPORT_P_2_C_VERIFY_WRONG_MEMO,
 } from '../resources/avaxp';
 import { IMPORT_C } from '../resources/tx/importC';
 import { EXPORT_C } from '../resources/tx/exportC';
@@ -49,10 +48,6 @@ describe('Avaxp', function () {
       delegationFeeRate: testData.ADDVALIDATOR_SAMPLES.delegationFee,
     },
     locktime: 0,
-    memo: {
-      value: testData.ADDVALIDATOR_SAMPLES.memo,
-      type: 'text',
-    },
   };
 
   before(function () {
@@ -135,7 +130,6 @@ describe('Avaxp', function () {
         .stakeAmount(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.stakeAmount)
         .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
         .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
-        .memo(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.memo)
         .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
       const tx = await txBuilder.build();
 
@@ -170,7 +164,6 @@ describe('Avaxp', function () {
         .stakeAmount(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.stakeAmount)
         .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
         .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
-        .memo(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.memo)
         .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
       const tx = await txBuilder.build();
 
@@ -296,7 +289,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.AddValidator);
       txExplain.outputs[0].address.should.equal(testData.nodeID);
       txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
-      txExplain.memo.should.equal(testData.memo);
+      should.not.exist(txExplain.memo);
     });
 
     it('should explain a signed AddValidator transaction', async () => {
@@ -306,7 +299,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.AddValidator);
       txExplain.outputs[0].address.should.equal(testData.nodeID);
       txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
-      txExplain.memo.should.equal(testData.memo);
+      should.not.exist(txExplain.memo);
     });
 
     it('should explain a half signed export transaction', async () => {
@@ -316,7 +309,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
       txExplain.changeOutputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
-      txExplain.memo.should.equal(testData.memo);
+      should.not.exist(txExplain.memo);
     });
 
     it('should explain a signed export transaction', async () => {
@@ -326,7 +319,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
       txExplain.changeOutputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
-      txExplain.memo.should.equal(testData.memo);
+      should.not.exist(txExplain.memo);
     });
 
     it('should explain a half signed export transaction without cahngeoutput ', async () => {
@@ -338,7 +331,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
       txExplain.changeOutputs.should.be.empty();
-      txExplain.memo.should.equal(testData.memo);
+      should.not.exist(txExplain.memo);
     });
 
     it('should explain a signed export transaction without cahngeoutput ', async () => {
@@ -348,7 +341,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
       txExplain.changeOutputs.should.be.empty();
-      txExplain.memo.should.equal(testData.memo);
+      should.not.exist(txExplain.memo);
     });
 
     it('should explain a half signed import transaction', async () => {
@@ -360,7 +353,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.Import);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
       txExplain.changeOutputs.should.be.empty();
-      txExplain.memo.should.equal(testData.memo);
+      should.not.exist(txExplain.memo);
     });
 
     it('should explain a signed import transaction', async () => {
@@ -370,7 +363,7 @@ describe('Avaxp', function () {
       txExplain.type.should.equal(TransactionType.Import);
       txExplain.outputs[0].address.should.equal(testData.pAddresses.sort().join('~'));
       txExplain.changeOutputs.should.be.empty();
-      txExplain.memo.should.equal(testData.memo);
+      should.not.exist(txExplain.memo);
     });
 
     it('should explain a half signed import in C transaction', async () => {
@@ -468,7 +461,6 @@ describe('Avaxp', function () {
         recipients: [],
         type: 'Import',
         locktime: 0,
-        memo: undefined,
       };
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
       isTransactionVerified.should.equal(true);
@@ -483,7 +475,6 @@ describe('Avaxp', function () {
         recipients: [],
         type: 'Import',
         locktime: 0,
-        memo: undefined,
         unspents: ['e8ixKnba52yufXrTVKrTXVQTj5cd5e6o6Lc3rVkhahDGEs72L:0'],
       };
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
@@ -499,7 +490,6 @@ describe('Avaxp', function () {
         recipients: [],
         type: 'Import',
         locktime: 0,
-        memo: undefined,
         unspents: ['test:1'],
       };
       await basecoin
@@ -526,10 +516,6 @@ describe('Avaxp', function () {
         ],
         type: 'Export',
         locktime: 0,
-        memo: {
-          value: EXPORT_P_2_C_VERIFY.memo,
-          type: 'text',
-        },
       };
 
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
@@ -550,64 +536,12 @@ describe('Avaxp', function () {
         ],
         type: 'Export',
         locktime: 0,
-        memo: {
-          value: EXPORT_P_2_C_VERIFY.memo,
-          type: 'text',
-        },
       };
 
       await basecoin
         .verifyTransaction({ txParams, txPrebuild })
         .should.be.rejectedWith(
           `Tx total amount ${EXPORT_P_2_C_VERIFY.amount} does not match with expected total amount field 9999999 and max import fee 10000000`
-        );
-    });
-
-    it('should fail verify export transaction with no memo', async () => {
-      const txPrebuild = {
-        txHex: EXPORT_C.unsignedTxHex,
-        txInfo: {},
-      };
-      const txParams = {
-        recipients: [
-          {
-            address: EXPORT_P_2_C_VERIFY.receiveAddress2,
-            amount: EXPORT_P_2_C_VERIFY.amount,
-          },
-        ],
-        type: 'Export',
-        locktime: 0,
-      };
-
-      await basecoin
-        .verifyTransaction({ txParams, txPrebuild })
-        .should.be.rejectedWith(`Export Tx requires a memo as empty string, received: undefined`);
-    });
-
-    it('should fail verify export transaction with C address in memo', async () => {
-      const txPrebuild = {
-        txHex: EXPORT_P_2_C_VERIFY_WRONG_MEMO.txHex,
-        txInfo: {},
-      };
-      const txParams = {
-        recipients: [
-          {
-            address: EXPORT_P_2_C.pAddresses,
-            amount: EXPORT_P_2_C.amount,
-          },
-        ],
-        type: 'Export',
-        locktime: 0,
-        memo: {
-          value: EXPORT_P_2_C_VERIFY_WRONG_MEMO.memo,
-          type: 'text',
-        },
-      };
-
-      await basecoin
-        .verifyTransaction({ txParams, txPrebuild })
-        .should.be.rejectedWith(
-          `Export Tx requires a memo as empty string, received: ${EXPORT_P_2_C_VERIFY_WRONG_MEMO.memo}`
         );
     });
 

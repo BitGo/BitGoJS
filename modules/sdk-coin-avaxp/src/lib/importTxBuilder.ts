@@ -69,7 +69,7 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
             this.transaction._blockchainID,
             outputs,
             [], // P-Chain input
-            this.transaction._memo,
+            undefined,
             this._externalChainId,
             inputs
           )

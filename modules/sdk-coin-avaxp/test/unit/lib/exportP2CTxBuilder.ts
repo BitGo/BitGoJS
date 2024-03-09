@@ -76,7 +76,6 @@ describe('AvaxP Export P2C Tx Builder', () => {
         .fromPubKey(testData.EXPORT_P_2_C.pAddresses)
         .amount(testData.EXPORT_P_2_C.amount)
         .externalChainId(testData.EXPORT_P_2_C.targetChainId)
-        .memo(testData.EXPORT_P_2_C.memo)
         .utxos(testData.EXPORT_P_2_C.outputs),
     unsignedTxHex: testData.EXPORT_P_2_C.unsignedTxHex,
     halfsigntxHex: testData.EXPORT_P_2_C.halfsigntxHex,
@@ -98,7 +97,6 @@ describe('AvaxP Export P2C Tx Builder', () => {
         .fromPubKey(testData.EXPORT_P_2_C.pAddresses)
         .amount(testData.EXPORT_P_2_C.amount)
         .externalChainId(testData.EXPORT_P_2_C.targetChainId)
-        .memo(testData.EXPORT_P_2_C.memo)
         .utxos(testData.EXPORT_P_2_C.outputs)
         .recoverMode(),
     unsignedTxHex: testData.EXPORT_P_2_C.rUnsignedTxHex,
@@ -121,7 +119,6 @@ describe('AvaxP Export P2C Tx Builder', () => {
         .fromPubKey(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.pAddresses)
         .amount(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.amount)
         .externalChainId(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.targetChainId)
-        .memo(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.memo)
         .utxos(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.outputs),
     unsignedTxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.unsignedTxHex,
     halfsigntxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.halfsigntxHex,
@@ -143,7 +140,6 @@ describe('AvaxP Export P2C Tx Builder', () => {
         .fromPubKey(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.pAddresses)
         .amount(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.amount)
         .externalChainId(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.targetChainId)
-        .memo(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.memo)
         .utxos(testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.outputs)
         .recoverMode(),
     unsignedTxHex: testData.EXPORT_P_2_C_WITHOUT_CHANGEOUTPUT.rUnsignedTxHex,

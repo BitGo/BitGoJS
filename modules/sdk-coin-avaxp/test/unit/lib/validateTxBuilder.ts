@@ -121,7 +121,6 @@ describe('AvaxP Validate Tx Builder', () => {
         .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
-        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
         .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
 
       const tx = await txBuilder.build();
@@ -140,7 +139,6 @@ describe('AvaxP Validate Tx Builder', () => {
         .stakeAmount('24938830298') // stake amount is total amount in outputs
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
-        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
         .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
 
       await txBuilder.build().should.not.throw();
@@ -166,7 +164,6 @@ describe('AvaxP Validate Tx Builder', () => {
         .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
-        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
         .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
 
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
@@ -223,7 +220,6 @@ describe('AvaxP Validate Tx Builder', () => {
         .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
-        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
         .utxos(testData.ADDVALIDATOR_SAMPLES.outputs);
 
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
@@ -265,7 +261,6 @@ describe('AvaxP Validate Tx Builder', () => {
         .stakeAmount(testData.ADDVALIDATOR_SAMPLES.minValidatorStake)
         .delegationFeeRate(testData.ADDVALIDATOR_SAMPLES.delegationFee)
         .nodeID(testData.ADDVALIDATOR_SAMPLES.nodeID)
-        .memo(testData.ADDVALIDATOR_SAMPLES.memo)
         .utxos(testData.ADDVALIDATOR_SAMPLES.outputs)
         .recoverMode();
 
@@ -273,7 +268,7 @@ describe('AvaxP Validate Tx Builder', () => {
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHexWithoutMemo);
     });
 
     it('Should recover half sign a AddValidator tx with recovery key from half signed raw tx', async () => {
@@ -304,7 +299,7 @@ describe('AvaxP Validate Tx Builder', () => {
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv2 });
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
-      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHex);
+      rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHexWithMemo);
     });
 
     xit('Compare size and location of signatures in credentials for halfsign', async () => {

@@ -153,17 +153,11 @@ export class AvaxP extends BaseCoin {
     switch (explainedTx.type) {
       case TransactionType.AddDelegator:
       case TransactionType.AddValidator:
-        if (params.txParams.memo && explainedTx.memo !== params.txParams.memo.value) {
-          throw new Error('Tx memo does not match with expected txParams memo');
-        }
-
         this.validateStakingTx(stakingOptions, explainedTx);
         break;
       case TransactionType.Export:
         if (!params.txParams.recipients) {
           throw new Error('Export Tx requires a recipient');
-        } else if (explainedTx.memo !== '') {
-          throw new Error(`Export Tx requires a memo as empty string, received: ${explainedTx.memo}`);
         } else {
           this.validateExportTx(params.txParams.recipients, explainedTx);
         }

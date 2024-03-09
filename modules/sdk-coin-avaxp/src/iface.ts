@@ -43,10 +43,6 @@ export interface AvaxpTransactionParams extends TransactionParams {
   type: string;
   stakingOptions: AvaxpTransactionStakingOptions;
   locktime?: number;
-  memo?: {
-    type?: string;
-    value: string;
-  };
   unspents?: string[];
   sourceChain?: string;
 }
