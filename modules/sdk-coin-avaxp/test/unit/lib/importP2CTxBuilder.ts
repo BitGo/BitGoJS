@@ -68,7 +68,6 @@ describe('AvaxP Import P2C Tx Builder', () => {
         .locktime(IMPORT_P.locktime)
         .fromPubKey(IMPORT_P.pAddresses)
         .externalChainId(IMPORT_P.targetChainId)
-        .memo(IMPORT_P.memo)
         .utxos(IMPORT_P.outputs),
     unsignedTxHex: IMPORT_P.unsignedTxHex,
     halfsigntxHex: IMPORT_P.halfsigntxHex,
@@ -89,7 +88,6 @@ describe('AvaxP Import P2C Tx Builder', () => {
         .locktime(IMPORT_P.locktime)
         .fromPubKey(IMPORT_P.pAddresses)
         .externalChainId(IMPORT_P.targetChainId)
-        .memo(IMPORT_P.memo)
         .utxos(IMPORT_P.outputs)
         .recoverMode(),
     unsignedTxHex: IMPORT_P.rUnsignedTxHex,

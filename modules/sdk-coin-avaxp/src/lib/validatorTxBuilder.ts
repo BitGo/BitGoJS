@@ -78,7 +78,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
             this.transaction._blockchainID,
             outputs,
             inputs,
-            this.transaction._memo,
+            undefined,
             utils.NodeIDStringToBuffer(this._nodeID),
             this._startTime,
             this._endTime,

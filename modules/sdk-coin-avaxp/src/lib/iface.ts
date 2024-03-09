@@ -9,7 +9,6 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
   rewardAddresses: string[];
   inputs: Entry[];
-  memo?: string;
 }
 
 /**
@@ -30,7 +29,6 @@ export interface TxData {
   fromAddresses: string[];
   threshold: number;
   locktime: string;
-  memo?: string;
   signatures: string[];
   outputs: Entry[];
   changeOutputs: Entry[];

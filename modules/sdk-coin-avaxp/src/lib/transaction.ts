@@ -73,7 +73,6 @@ export class Transaction extends BaseTransaction {
   public _networkID: number;
   public _assetId: BufferAvax;
   public _blockchainID: BufferAvax;
-  public _memo?: BufferAvax;
   public _threshold = 2;
   public _locktime: BN = new BN(0);
   public _fromAddresses: BufferAvax[] = [];
@@ -173,8 +172,6 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    // EVMTx do not have memo.
-    const memo = 'getMemo' in this.avaxPTransaction ? utils.bufferToString(this.avaxPTransaction.getMemo()) : undefined;
     return {
       id: this.id,
       inputs: this.inputs,
@@ -182,7 +179,6 @@ export class Transaction extends BaseTransaction {
       threshold: this._threshold,
       locktime: this._locktime.toString(),
       type: this.type,
-      memo,
       signatures: this.signature,
       outputs: this.outputs,
       changeOutputs: this.changeOutputs,
@@ -317,17 +313,7 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   explainTransaction(): TransactionExplanation {
     const txJson = this.toJson();
-    const displayOrder = [
-      'id',
-      'inputs',
-      'outputAmount',
-      'changeAmount',
-      'outputs',
-      'changeOutputs',
-      'fee',
-      'type',
-      'memo',
-    ];
+    const displayOrder = ['id', 'inputs', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
 
     const outputAmount = txJson.outputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
     const changeAmount = txJson.changeOutputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
@@ -349,7 +335,6 @@ export class Transaction extends BaseTransaction {
       rewardAddresses,
       fee: this.fee,
       type: txJson.type,
-      memo: txJson.memo,
     };
   }
 

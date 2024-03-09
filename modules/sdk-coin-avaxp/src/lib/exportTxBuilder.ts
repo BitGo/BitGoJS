@@ -91,7 +91,7 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
             this.transaction._blockchainID,
             outputs,
             inputs,
-            this.transaction._memo,
+            undefined,
             this._externalChainId,
             this.exportedOutputs()
           )

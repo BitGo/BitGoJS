@@ -39,10 +39,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     ) {
       throw new Error('Network or blockchain is not equals');
     }
-    // EVMBaseTx has not memo.
-    if ('getMemo' in baseTx) {
-      this._transaction._memo = baseTx.getMemo();
-    }
     this._transaction.setTransaction(tx);
     return this;
   }
@@ -122,16 +118,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   utxos(value: DecodedUtxoObj[]): this {
     this.validateUtxos(value);
     this._transaction._utxos = value;
-    return this;
-  }
-  /**
-   *
-   * @param value Optional Buffer for the memo
-   * @returns value Buffer for the memo
-   * set using Buffer.from("message")
-   */
-  memo(value: string): this {
-    this._transaction._memo = utils.stringToBuffer(value);
     return this;
   }
 
