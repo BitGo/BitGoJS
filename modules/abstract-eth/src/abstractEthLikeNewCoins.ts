@@ -1350,7 +1350,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
     // get balance of backupKey to ensure funds are available to pay fees
     const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
-    const totalGasNeeded = gasPrice.mul(gasLimit);
+    let totalGasNeeded = gasPrice.mul(gasLimit);
+
+    // On optimism chain, L1 fees is to be paid as well apart from L2 fees
+    // So we are adding the amount that can be used up as l1 fees
+    if (this.staticsCoin?.family === 'opeth') {
+      totalGasNeeded = totalGasNeeded.add(new optionalDeps.ethUtil.BN(ethGasConfigs.opethGasL1Fees));
+    }
+
     const weiToGwei = 10 ** 9;
     if (backupKeyBalance.lt(totalGasNeeded)) {
       throw new Error(

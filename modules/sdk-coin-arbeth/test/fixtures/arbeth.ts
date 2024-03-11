@@ -48,6 +48,12 @@ export const getZeroBalanceResponse = {
   result: '0',
 };
 
+export const getFeeAddressLowBalanceResponse = {
+  status: '1',
+  message: 'OK',
+  result: '100000000000000',
+};
+
 export const getContractCallRequest = {
   module: 'proxy',
   action: 'eth_call',

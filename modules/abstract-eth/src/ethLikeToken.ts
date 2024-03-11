@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { coins, EthLikeTokenConfig, tokens, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
+import { coins, EthLikeTokenConfig, tokens, EthereumNetwork as EthLikeNetwork, ethGasConfigs } from '@bitgo/statics';
 import _ from 'lodash';
 import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
@@ -268,11 +268,20 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
     // get balance of backup key and make sure we can afford gas
     const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
 
-    if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
+    let totalGasNeeded = gasPrice.mul(gasLimit);
+
+    // On optimism chain, L1 fees is to be paid as well apart from L2 fees
+    // So we are adding the amount that can be used up as l1 fees
+    if (this.staticsCoin?.family === 'opeth') {
+      totalGasNeeded = totalGasNeeded.add(new optionalDeps.ethUtil.BN(ethGasConfigs.opethGasL1Fees));
+    }
+
+    const weiToGwei = 10 ** 9;
+    if (backupKeyBalance.lt(totalGasNeeded)) {
       throw new Error(
-        `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(
-          10
-        )}. This address must have a balance of at least 0.01 ETH to perform recoveries`
+        `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some funds to this address then retry.`
       );
     }
 
@@ -390,5 +399,23 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
    */
   protected getTransactionBuilder(): EthLikeTransactionBuilder {
     throw new Error('Method not implemented');
+  }
+
+  /**
+   * Check whether gas limit passed in by user are within our max and min bounds
+   * If they are not set, set them to the defaults
+   * @param {number} userGasLimit user defined gas limit
+   * @returns {number} the gas limit to use for this transaction
+   */
+  setGasLimit(userGasLimit?: number): number {
+    if (!userGasLimit) {
+      return ethGasConfigs.defaultGasLimit;
+    }
+    const gasLimitMax = ethGasConfigs.maximumGasLimit;
+    const gasLimitMin = ethGasConfigs.newEthLikeCoinsMinGasLimit;
+    if (userGasLimit < gasLimitMin || userGasLimit > gasLimitMax) {
+      throw new Error(`Gas limit must be between ${gasLimitMin} and ${gasLimitMax}`);
+    }
+    return userGasLimit;
   }
 }
