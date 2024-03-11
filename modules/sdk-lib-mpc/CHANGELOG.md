@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.0.1...@bitgo/sdk-lib-mpc@9.1.0) (2024-03-11)
+
+### Features
+
+- **sdk-lib-mpc:** support DSG Dkls primitives ([899082f](https://github.com/BitGo/BitGoJS/commit/899082f3bb99b4e8a5bcfb5bf19a20e4c40d5023))
+
 ## [9.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.0.0...@bitgo/sdk-lib-mpc@9.0.1) (2024-02-28)
 
 ### Bug Fixes

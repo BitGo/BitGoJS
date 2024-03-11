@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.22.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.22.2...@bitgo/sdk-coin-avaxp@3.22.3) (2024-03-11)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** pass memo as empty string in avaxp txs ([cf423dc](https://github.com/BitGo/BitGoJS/commit/cf423dc6ee45d0814fdd30379e99efd6290333dc))
+- **sdk-coin-avaxp:** remove memo id from AVAXP transactions ([9bf1d02](https://github.com/BitGo/BitGoJS/commit/9bf1d020ad756a88674b2d0f7a6d948bb4e6ed24))
+
 ## [3.22.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.22.1...@bitgo/sdk-coin-avaxp@3.22.2) (2024-02-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

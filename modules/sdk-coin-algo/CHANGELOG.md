@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.27.1...@bitgo/sdk-coin-algo@1.28.0) (2024-03-11)
+
+### Bug Fixes
+
+- **sdk-coin-algo:** return extra fields for unsigned sweep recovery ([e85d303](https://github.com/BitGo/BitGoJS/commit/e85d303fe1943a25b611740106fb356ae7e4949b))
+
+### Features
+
+- **sdk-coin-algo:** add tx broadcast support for algo ([fcfd9d8](https://github.com/BitGo/BitGoJS/commit/fcfd9d893df6e302dcf0b7a3c1463a515a16229d))
+- **sdk-core:** add new supportsDeriveKeyWithSeed flag ([c82bc46](https://github.com/BitGo/BitGoJS/commit/c82bc4686806d572be158b3862c232ab58547657))
+
 ## [1.27.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.27.0...@bitgo/sdk-coin-algo@1.27.1) (2024-02-28)
 
 ### Bug Fixes

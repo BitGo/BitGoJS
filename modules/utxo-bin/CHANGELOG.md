@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.47.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.46.2...@bitgo/utxo-bin@2.47.0) (2024-03-11)
+
+### Features
+
+- **utxo-bin:** add param `--vout` to parseTx ([55c6328](https://github.com/BitGo/BitGoJS/commit/55c6328d89064c3cd9cd9d70c6b104d49b5d7591))
+- **utxo-bin:** show error when fetching spends fails ([67095fb](https://github.com/BitGo/BitGoJS/commit/67095fbfb4f58467ee26874fd08f3685384f9061))
+
 ## [2.46.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.46.1...@bitgo/utxo-bin@2.46.2) (2024-02-28)
 
 **Note:** Version bump only for package @bitgo/utxo-bin
