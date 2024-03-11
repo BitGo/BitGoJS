@@ -20,6 +20,12 @@ export function getBalanceRequest(address: string) {
   };
 }
 
+export const getTokenBalanceResponse = {
+  status: '1',
+  message: 'OK',
+  result: '9999999999999999948',
+};
+
 export function getTokenBalanceRequest(tokenContractAddress: string, address: string) {
   return {
     module: 'account',
@@ -34,6 +40,12 @@ export const getBalanceResponse = {
   status: '1',
   message: 'OK',
   result: '9999999999999999928',
+};
+
+export const getFeeAddressLowBalanceResponse = {
+  status: '1',
+  message: 'OK',
+  result: '100000000000000',
 };
 
 export const getContractCallRequest = {
