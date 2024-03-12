@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@47.2.0...@bitgo/statics@48.0.0) (2024-03-11)
+
+### Bug Fixes
+
+- **abstract-eth:** fixes issue related to gasestimate for ethlike ([190bdb2](https://github.com/BitGo/BitGoJS/commit/190bdb2b225fc2fd87fe536aeb77734f102b9984))
+- **statics:** fix name and network for tokens ([6a21d0e](https://github.com/BitGo/BitGoJS/commit/6a21d0e1f54e212e537cb601024283d08eaec044))
+- **statics:** update zetachain to zetaevm ([f410f81](https://github.com/BitGo/BitGoJS/commit/f410f81a5446f4b3aae279c7c80055c5a9ee33a2))
+
+### Features
+
+- add singapore trust to all multisig coins ([4a417cc](https://github.com/BitGo/BitGoJS/commit/4a417cc92189d4453a68dd5ec1f09a0712ac324f))
+- **statics:** add new batch of tokens ([da6c844](https://github.com/BitGo/BitGoJS/commit/da6c84489b2ab4379d4f8922b167d62e1bafc1c9))
+- **statics:** add new batch of tokens ([99442b0](https://github.com/BitGo/BitGoJS/commit/99442b07e870e5ba60c00c28a80ec1f99275511d))
+- **statics:** added erc20 token in coins.ts ([a14d764](https://github.com/BitGo/BitGoJS/commit/a14d764fd7d3aa143879f1405d5486a8945437a7))
+
+### BREAKING CHANGES
+
+- **statics:** we modify the symbol of the coins, and need to update this in indexer and wp also
+  to avoid errors and inconsistances
+
 # [47.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@47.1.0...@bitgo/statics@47.2.0) (2024-02-28)
 
 ### Features

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.13.1...@bitgo/sdk-coin-hbar@1.14.0) (2024-03-11)
+
+### Features
+
+- **sdk-coin-hbar:** fix and test hbar recovery with root keys ([b9bdcb7](https://github.com/BitGo/BitGoJS/commit/b9bdcb73351a0a5131093748eeb9a768777a9e76))
+- **sdk-core:** add new supportsDeriveKeyWithSeed flag ([c82bc46](https://github.com/BitGo/BitGoJS/commit/c82bc4686806d572be158b3862c232ab58547657))
+
 ## [1.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@1.13.0...@bitgo/sdk-coin-hbar@1.13.1) (2024-02-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar

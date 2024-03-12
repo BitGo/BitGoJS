@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.34.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.34.2...@bitgo/sdk-coin-dot@3.34.3) (2024-03-11)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** check correct arg type for BondExtra ([766dbed](https://github.com/BitGo/BitGoJS/commit/766dbed60975ee269b4b76dc0f95e0aad341e182))
+
 ## [3.34.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@3.34.1...@bitgo/sdk-coin-dot@3.34.2) (2024-02-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

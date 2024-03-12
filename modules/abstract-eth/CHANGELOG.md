@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [19.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@19.0.2...@bitgo/abstract-eth@19.0.3) (2024-03-11)
+
+### Bug Fixes
+
+- **abstract-eth:** fix recover method in case of 0 funds ([3738568](https://github.com/BitGo/BitGoJS/commit/37385687397f1f8c4522cc8e1f6843504d47eca8))
+- **abstract-eth:** fixes issue related to gasestimate for ethlike ([190bdb2](https://github.com/BitGo/BitGoJS/commit/190bdb2b225fc2fd87fe536aeb77734f102b9984))
+
 ## [19.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@19.0.1...@bitgo/abstract-eth@19.0.2) (2024-02-28)
 
 ### Bug Fixes

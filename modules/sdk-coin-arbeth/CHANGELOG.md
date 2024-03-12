@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [19.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@19.0.2...@bitgo/sdk-coin-arbeth@19.0.3) (2024-03-11)
+
+### Bug Fixes
+
+- **abstract-eth:** fixes issue related to gasestimate for ethlike ([190bdb2](https://github.com/BitGo/BitGoJS/commit/190bdb2b225fc2fd87fe536aeb77734f102b9984))
+
 ## [19.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@19.0.1...@bitgo/sdk-coin-arbeth@19.0.2) (2024-02-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-arbeth
