@@ -172,7 +172,7 @@ export interface OfflineVaultTxInfo {
   type?: string;
   address: string;
   coin: string;
-  fee: number;
+  feeInfo: number;
   amount: string;
   firstRound: number;
   lastRound: number;
@@ -743,7 +743,7 @@ export class Algo extends BaseCoin {
         bitgoKey: params.bitgoKey,
         address: params.rootAddress,
         coin: this.getChain(),
-        fee: txJson.fee,
+        feeInfo: txJson.fee,
         amount: txJson.amount ?? nativeBalance.toString(),
         firstRound: txJson.firstRound,
         lastRound: txJson.lastRound,
