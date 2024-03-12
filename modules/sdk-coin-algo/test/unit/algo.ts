@@ -993,7 +993,7 @@ describe('ALGO:', function () {
         recovery.should.have.property('txHex');
         recovery.should.have.property('type');
         recovery.should.have.property('amount');
-        recovery.should.have.property('fee');
+        recovery.should.have.property('feeInfo');
         recovery.should.have.property('coin', 'talgo');
         recovery.firstRound.should.not.be.undefined();
         recovery.lastRound.should.not.be.undefined();
@@ -1100,7 +1100,7 @@ describe('ALGO:', function () {
         recovery.should.have.property('txHex');
         recovery.should.have.property('type');
         recovery.should.have.property('amount');
-        recovery.should.have.property('fee');
+        recovery.should.have.property('feeInfo');
         recovery.should.have.property('coin', 'talgo');
         recovery.firstRound.should.not.be.undefined();
         recovery.lastRound.should.not.be.undefined();
