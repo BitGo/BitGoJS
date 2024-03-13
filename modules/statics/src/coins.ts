@@ -14634,7 +14634,7 @@ export const coins = CoinMap.fromCoins([
     '634d052e-8c1c-47ed-aded-d0a2399439b0',
     'opeth:usdt',
     'Tether USD',
-    18,
+    6,
     '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
     UnderlyingAsset['opeth:usdt']
   ),

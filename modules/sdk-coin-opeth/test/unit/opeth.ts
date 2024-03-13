@@ -610,7 +610,7 @@ describe('Optimism', function () {
         })) as OfflineVaultTxInfo;
       } catch (e) {
         e.message.should.equal(
-          'Backup key address 0x4f2c4830cc37f2785c646f89ded8a919219fa0e9 has balance 100000 Gwei.This address must have a balance of at least 12000000 Gwei to perform recoveries. Try sending some funds to this address then retry.'
+          'Backup key address 0x4f2c4830cc37f2785c646f89ded8a919219fa0e9 has balance 100000 Gwei.This address must have a balance of at least 11000000 Gwei to perform recoveries. Try sending some funds to this address then retry.'
         );
       }
     });
