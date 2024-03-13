@@ -1481,6 +1481,10 @@ export class Wallet implements IWallet {
       throw new Error('Expected disableEmail to be a boolean.');
     }
 
+    if (params.disableAdminApproval !== undefined && !_.isBoolean(params.disableAdminApproval)) {
+      throw new Error('Expected disableAdminApproval to be a boolean.');
+    }
+
     if (!_.isString(params.email)) {
       throw new Error('missing required string parameter email');
     }
@@ -1537,6 +1541,7 @@ export class Wallet implements IWallet {
       disableEmail: params.disableEmail,
       skipKeychain: Object.keys(sharedKeychain ?? {}).length === 0,
       keychain: Object.keys(sharedKeychain ?? {}).length === 0 ? undefined : sharedKeychain,
+      disableAdminApproval: params.disableAdminApproval,
     };
 
     return await this.createShare(options);
