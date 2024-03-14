@@ -568,6 +568,47 @@ describe('Recovery:', function () {
       transaction.recipient.should.have.property('amount');
       transaction.recipient.amount.should.equal('1000000000000000000');
     });
+
+    it('should use user provided gas params when building recovery transaction', async function () {
+      recoveryNocks.nockEthRecovery(bitgo);
+
+      const basecoin = bitgo.coin('tdai');
+
+      // There should be 1 TDAI token in our test wallet (based on nock)
+      const transaction = await basecoin.recover({
+        userKey:
+          'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+        backupKey:
+          'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+        walletContractAddress: TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
+        tokenContractAddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
+        recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
+        gasLimit: '400000',
+        eip1559: {
+          maxFeePerGas: '10000000000',
+          maxPriorityFeePerGas: '5000',
+        },
+      });
+      should.exist(transaction);
+      transaction.should.have.property('tx');
+
+      transaction.should.have.property('contractSequenceId');
+      transaction.should.have.property('expireTime');
+      transaction.should.have.property('gasLimit');
+      transaction.should.have.property('eip1559');
+      transaction.gasLimit.should.equal('400000');
+      transaction.should.have.property('gasPrice');
+      transaction.gasPrice.should.equal('10000000000');
+      transaction.should.have.property('tokenContractAddress');
+      transaction.tokenContractAddress.should.equal(TestBitGo.V2.TEST_TDAI_TOKEN_ADDRESS);
+      transaction.should.have.property('walletContractAddress');
+      transaction.walletContractAddress.should.equal(TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS);
+      transaction.should.have.property('recipient');
+      transaction.recipient.should.have.property('address');
+      transaction.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      transaction.recipient.should.have.property('amount');
+      transaction.recipient.amount.should.equal('1000000000000000000');
+    });
   });
 
   describe('Recover Ethereum', function () {
