@@ -93,11 +93,12 @@ export const stakingDeactivateInstructionsIndexes = {
 
 /** Const to check the order of the Partial Staking Deactivate instructions when decoded */
 export const stakingPartialDeactivateInstructionsIndexes = {
-  Allocate: 0,
-  Assign: 1,
-  Split: 2,
-  Deactivate: 3,
-  Memo: 4,
+  Transfer: 0,
+  Allocate: 1,
+  Assign: 2,
+  Split: 3,
+  Deactivate: 4,
+  Memo: 5,
 } as const;
 
 /** Const to check the order of the Staking Withdraw instructions when decode */

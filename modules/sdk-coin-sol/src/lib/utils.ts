@@ -265,13 +265,16 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.StakingAuthorizeRaw;
   }
   validateIntructionTypes(instructions);
-  for (const instruction of instructions) {
-    const instructionType = getInstructionType(instruction);
-    if (
-      instructionType === ValidInstructionTypesEnum.Transfer ||
-      instructionType === ValidInstructionTypesEnum.TokenTransfer
-    ) {
-      return TransactionType.Send;
+  // check if deactivate instruction does not exist because deactivate can be include a transfer instruction
+  if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length == 0) {
+    for (const instruction of instructions) {
+      const instructionType = getInstructionType(instruction);
+      if (
+        instructionType === ValidInstructionTypesEnum.Transfer ||
+        instructionType === ValidInstructionTypesEnum.TokenTransfer
+      ) {
+        return TransactionType.Send;
+      }
     }
   }
   if (matchTransactionTypeByInstructionsOrder(instructions, walletInitInstructionIndexes)) {

@@ -4,6 +4,7 @@ import {
   AuthorizeStakeParams,
   CreateAccountParams,
   DeactivateStakeParams,
+  DecodedTransferInstruction,
   DelegateStakeParams,
   InitializeStakeParams,
   SplitStakeParams,
@@ -395,6 +396,20 @@ function parseStakingDeactivateInstructions(
           });
         }
         break;
+
+      case ValidInstructionTypesEnum.Transfer:
+        if (
+          unstakingInstructions.length > 0 &&
+          unstakingInstructions[unstakingInstructions.length - 1].transfer === undefined
+        ) {
+          unstakingInstructions[unstakingInstructions.length - 1].transfer =
+            SystemInstruction.decodeTransfer(instruction);
+        } else {
+          unstakingInstructions.push({
+            transfer: SystemInstruction.decodeTransfer(instruction),
+          });
+        }
+        break;
     }
   }
 
@@ -423,12 +438,18 @@ interface UnstakingInstructions {
   assign?: AssignParams;
   split?: SplitStakeParams;
   deactivate?: DeactivateStakeParams;
+  transfer?: DecodedTransferInstruction;
 }
 
 function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructions) {
   if (!unstakingInstructions.deactivate) {
     throw new NotSupported('Invalid deactivate stake transaction, missing deactivate stake account instruction');
-  } else if (unstakingInstructions.allocate || unstakingInstructions.assign || unstakingInstructions.split) {
+  } else if (
+    unstakingInstructions.allocate ||
+    unstakingInstructions.assign ||
+    unstakingInstructions.split ||
+    unstakingInstructions.transfer
+  ) {
     if (!unstakingInstructions.allocate) {
       throw new NotSupported(
         'Invalid partial deactivate stake transaction, missing allocate unstake account instruction'
@@ -463,6 +484,10 @@ function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructi
     ) {
       throw new NotSupported(
         'Invalid partial deactivate stake transaction, the unstaking account must be different from the Stake Account'
+      );
+    } else if (!unstakingInstructions.transfer) {
+      throw new NotSupported(
+        'Invalid partial deactivate stake transaction, missing funding of unstake address instruction'
       );
     }
   }
