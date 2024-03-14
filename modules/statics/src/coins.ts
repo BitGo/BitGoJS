@@ -4719,6 +4719,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.MWT
   ),
   erc20(
+    '27f214d8-4feb-4cda-8177-876056f69536',
+    'myrc',
+    'MYRC',
+    18,
+    '0xbed7d999f1d71ac70c263f64c7c7e009d691be2e',
+    UnderlyingAsset.MYRC
+  ),
+  erc20(
     '5c73eef9-53ce-42d0-a72e-1900d1eef499',
     'nas',
     'Nebulas',
@@ -9151,7 +9159,7 @@ export const coins = CoinMap.fromCoins([
     'msn',
     'meson.network',
     18,
-    '0x6c4d441f41e423b88a0edc001fe15bc4657b3abf',
+    '0xaa247c0d81b83812e1abf8bab078e4540d87e3fb',
     UnderlyingAsset.MSN
   ),
   erc20(
