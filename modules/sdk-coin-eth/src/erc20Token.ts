@@ -159,9 +159,11 @@ export class Erc20Token extends Eth {
     const userKey = params.userKey.replace(/\s/g, '');
     const backupKey = params.backupKey.replace(/\s/g, '');
 
-    // Set new eth tx fees (using default config values from platform)
-    const gasPrice = this.getRecoveryGasPrice();
-    const gasLimit = this.getRecoveryGasLimit();
+    // Set new eth tx fees (default to using platform values if none are provided)
+    const gasPrice = params.eip1559
+      ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
+      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
 
     // Decrypt private keys from KeyCard values
     let userPrv;
@@ -283,7 +285,7 @@ export class Erc20Token extends Eth {
     });
 
     if (isUnsignedSweep) {
-      return this.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit) as any;
+      return this.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit, params.eip1559) as any;
     }
 
     if (!isKrsRecovery) {

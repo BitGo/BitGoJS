@@ -410,22 +410,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   }
 
   /**
-   * Default gas price from platform
-   * @returns {BigNumber}
-   */
-  getRecoveryGasPrice(): any {
-    return new optionalDeps.ethUtil.BN('20000000000');
-  }
-
-  /**
-   * Default gas limit from platform
-   * @returns {BigNumber}
-   */
-  getRecoveryGasLimit(): any {
-    return new optionalDeps.ethUtil.BN('500000');
-  }
-
-  /**
    * Default expire time for a contract call (1 week)
    * @returns {number} Time in seconds
    */
