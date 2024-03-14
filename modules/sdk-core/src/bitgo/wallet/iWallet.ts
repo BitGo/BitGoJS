@@ -452,7 +452,6 @@ export interface CreateShareOptions {
    * A falsy value is expected to throw an API error if an empty or undefined `keychain` is provided.
    */
   skipKeychain?: boolean;
-  disableAdminApproval?: boolean;
 }
 
 export interface ShareWalletOptions {
@@ -466,10 +465,6 @@ export interface ShareWalletOptions {
    */
   skipKeychain?: boolean;
   disableEmail?: boolean;
-  /**
-   * If true, skips admin approval for the share, it will become active immediately.
-   */
-  disableAdminApproval?: boolean;
 }
 
 export interface RemoveUserOptions {
