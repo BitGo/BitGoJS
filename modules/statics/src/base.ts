@@ -1015,6 +1015,7 @@ export enum UnderlyingAsset {
   MVL = 'mvl',
   MVI = 'mvi',
   MWT = 'mwt',
+  MYRC = 'myrc',
   NAAI = 'naai',
   NAS = 'nas',
   NCT = 'nct',
