@@ -3,7 +3,7 @@ import assert from 'assert';
 
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { InstructionBuilderTypes } from './constants';
-import { StakingDeactivate } from './iface';
+import { StakingDeactivate, Transfer } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidStakingAmount, validateAddress } from './utils';
@@ -12,6 +12,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
   protected _stakingAddresses: string[];
   protected _amount?: string;
+  protected _fundUnstakeAddress = 2282880;
   protected _unstakingAddress: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -135,12 +136,21 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           'When partially unstaking the unstaking address must be set before building the transaction'
         );
       }
-
+      this._instructionsData = [];
       if (this._unstakingAddress) {
         assert(
           this._amount,
           'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
         );
+        const stakingFundUnstakeAddress: Transfer = {
+          type: InstructionBuilderTypes.Transfer,
+          params: {
+            fromAddress: this._sender,
+            amount: this._fundUnstakeAddress.toString(),
+            toAddress: this._unstakingAddress,
+          },
+        };
+        this._instructionsData.push(stakingFundUnstakeAddress);
       }
 
       const stakingDeactivateData: StakingDeactivate = {
@@ -152,7 +162,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           unstakingAddress: this._unstakingAddress,
         },
       };
-      this._instructionsData = [stakingDeactivateData];
+      this._instructionsData.push(stakingDeactivateData);
     }
     return await super.buildImplementation();
   }

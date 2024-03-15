@@ -606,6 +606,59 @@ describe('Instruction Parser Staking Tests: ', function () {
             'Invalid partial deactivate stake transaction, missing split stake account instruction'
           );
         });
+        it('Should throw an error if the transfer instruction is missing for partial', () => {
+          const fromAccount = new PublicKey(testData.authAccount.pub);
+          const nonceAccount = testData.nonceAccount.pub;
+          const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+          const splitStakeAccount = new PublicKey(testData.splitStakeAccount.pub);
+          const memo = 'test memo';
+
+          // Instructions
+          const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+            noncePubkey: new PublicKey(nonceAccount),
+            authorizedPubkey: fromAccount,
+          });
+
+          const allocateInstruction = SystemProgram.allocate({
+            accountPubkey: splitStakeAccount,
+            space: StakeProgram.space,
+          });
+
+          const splitInstructions = StakeProgram.split({
+            stakePubkey: stakingAccount,
+            authorizedPubkey: fromAccount,
+            splitStakePubkey: splitStakeAccount,
+            lamports: 100000,
+          }).instructions;
+
+          const assignInstruction = SystemProgram.assign({
+            accountPubkey: splitStakeAccount,
+            programId: StakeProgram.programId,
+          });
+
+          const stakingDeactivateInstructions = StakeProgram.deactivate({
+            authorizedPubkey: fromAccount,
+            stakePubkey: splitStakeAccount,
+          }).instructions;
+
+          const memoInstruction = new TransactionInstruction({
+            keys: [],
+            programId: new PublicKey(MEMO_PROGRAM_PK),
+            data: Buffer.from(memo),
+          });
+
+          const instructions = [
+            nonceAdvanceInstruction,
+            allocateInstruction,
+            assignInstruction,
+            ...splitInstructions,
+            ...stakingDeactivateInstructions,
+            memoInstruction,
+          ];
+          should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+            'Invalid partial deactivate stake transaction, missing funding of unstake address instruction'
+          );
+        });
 
         it('Should throw an error if the allocated account does not match the assigned account', () => {
           const fromAccount = new PublicKey(testData.authAccount.pub);
@@ -894,6 +947,13 @@ describe('Instruction Parser Staking Tests: ', function () {
           authorizedPubkey: fromAccount,
         });
 
+        // transfer
+        const transferInstruction = SystemProgram.transfer({
+          fromPubkey: new PublicKey(fromAccount),
+          toPubkey: new PublicKey(splitStakeAccount),
+          lamports: parseInt((2282880).toString(), 10),
+        });
+
         const allocateInstruction = SystemProgram.allocate({
           accountPubkey: splitStakeAccount,
           space: StakeProgram.space,
@@ -945,6 +1005,7 @@ describe('Instruction Parser Staking Tests: ', function () {
 
         const instructions = [
           nonceAdvanceInstruction,
+          transferInstruction,
           allocateInstruction,
           assignInstruction,
           ...splitInstructions,
