@@ -21,6 +21,7 @@ export class UtxoCoin extends BaseCoin {
     CoinFeature.CUSTODY,
     CoinFeature.CUSTODY_BITGO_TRUST,
     CoinFeature.MULTISIG_COLD,
+    CoinFeature.PAYGO,
   ];
 
   /**
