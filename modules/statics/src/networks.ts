@@ -535,7 +535,7 @@ class EosTestnet extends Testnet implements AccountNetwork {
 class Hedera extends Mainnet implements AccountNetwork {
   name = 'Hedera';
   family = CoinFamily.HBAR;
-  explorerUrl = 'https://explorer.kabuto.sh/mainnet/transaction/';
+  explorerUrl = 'https://hashscan.io/mainnet/transaction/';
 }
 
 class HederaTestnet extends Testnet implements AccountNetwork {
