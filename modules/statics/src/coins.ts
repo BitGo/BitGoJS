@@ -10309,6 +10309,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('688725ff-e582-44bc-b42e-0de600426594', 'ofcstrk', 'StarkNet Token', 18, UnderlyingAsset.STRK),
   ofcerc20('d6d6ee90-05c1-4fdd-8621-bfaefaa703ae', 'ofctkx', 'Tokenize', 18, UnderlyingAsset.TKX),
   ofcerc20('1181f8b6-1bb6-4555-a6eb-29944ad4877b', 'ofcfet', 'Fetch', 18, UnderlyingAsset.FET),
+  ofcerc20('b15ff97c-3153-4aa0-8d72-ecc21e7b80cb', 'ofcfet1', 'Fetch', 18, UnderlyingAsset.FET1),
   ofcerc20('b5bfe73b-9b60-4961-914e-245c7e0dd7c3', 'ofcblur', 'Blur', 18, UnderlyingAsset.BLUR),
   ofcerc20('c93ded62-7a1a-4dd1-8398-0e68106f5009', 'ofcwld', 'Worldcoin', 18, UnderlyingAsset.WLD),
 
