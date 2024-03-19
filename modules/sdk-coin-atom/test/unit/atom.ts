@@ -1,4 +1,4 @@
-import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
+import { CosmosTransaction, RedelegateMessage, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
@@ -442,6 +442,30 @@ describe('ATOM', function () {
       const gasAmount = new BigNumber(GAS_AMOUNT);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+    });
+
+    it('should redelegate funds to new validator', async function () {
+      const res = await basecoin.redelegate({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        amountToRedelegate: '10000000000000000',
+        validatorSrcAddress: 'cosmosvaloper1409te27da74uahh6hn0040x7l272hjs2padjuz',
+        validatorDstAddress: 'cosmosvaloper183aycgtstp67r6s4vd7ts2npp2ckk4xah7rxj6',
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(basecoin.getChainId);
+
+      const txn = new CosmosTransaction(coin, utils);
+      txn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const txnJson = txn.toJson();
+      const redelegateMessage = txnJson.sendMessages[0].value as RedelegateMessage;
+      should.equal(redelegateMessage.validatorSrcAddress, 'cosmosvaloper1409te27da74uahh6hn0040x7l272hjs2padjuz');
+      should.equal(redelegateMessage.validatorDstAddress, 'cosmosvaloper183aycgtstp67r6s4vd7ts2npp2ckk4xah7rxj6');
+      should.equal(redelegateMessage.amount.amount, '10000000000000000');
     });
   });
 

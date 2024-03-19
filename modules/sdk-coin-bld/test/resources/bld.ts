@@ -191,6 +191,37 @@ export const TEST_TX_WITH_MEMO = {
   },
 };
 
+export const TEST_REDELEGATE_TX = {
+  hash: 'CE8E9ACCA55C4A186BCCD4E7F1A61EC4A50AA9FCF8163A61C88318ABBC6C1989',
+  signature: 'vFWX5AbPPcrDmy1znKneVFyF+Zu+ZtccN5rD7521dth+x4HBTRcvSjv1BH089/rEV9I8C9A2tZTkmuygUA/59Q==',
+  pubKey: 'A7GpQESSpV24eEjRCzZS2fD6J9rN+gfivysh4nt05gkL',
+  privateKey: 'lFjrreTB2/7/KJkdTwXsNqyDihgAMDkzM8sBDNia5mw=',
+  signedTxBase64:
+    'CtkBCtYBCiovY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dCZWdpblJlZGVsZWdhdGUSpwEKLWFnb3JpYzEzZmUwZzV6OGtyaDJ6d3p6eW51c3Z1czVxOGMwZWE3aG4wcXkzbRI0YWdvcmljdmFsb3BlcjF3eTNoM2duZTk0eHBtbmp3ZndkM2V5YXl0djlnNG5qNnl5a2traho0YWdvcmljdmFsb3BlcjFxZDBoMmhqN3Vsampoa3R3OWwzZmpuejV1MjJnMHh1NzRhdzM4dyIKCgR1YmxkEgIyMBJnClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiEDsalARJKlXbh4SNELNlLZ8Pon2s36B+K/KyHie3TmCQsSBAoCCAEYCxITCg0KBHVibGQSBTUwMDAwEMCaDBpAvFWX5AbPPcrDmy1znKneVFyF+Zu+ZtccN5rD7521dth+x4HBTRcvSjv1BH089/rEV9I8C9A2tZTkmuygUA/59Q==',
+  delegator: 'agoric13fe0g5z8krh2zwzzynusvus5q8c0ea7hn0qy3m',
+  validator: 'agoricvaloper1qd0h2hj7uljjhktw9l3fjnz5u22g0xu74aw38w',
+  chainId: 'agoricdev-19',
+  accountNumber: 152,
+  sequence: 11,
+  feeAmount: '50000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+    value: {
+      delegatorAddress: 'agoric13fe0g5z8krh2zwzzynusvus5q8c0ea7hn0qy3m',
+      validatorSrcAddress: 'agoricvaloper1wy3h3gne94xpmnjwfwd3eyaytv9g4nj6yykkkj',
+      validatorDstAddress: 'agoricvaloper1qd0h2hj7uljjhktw9l3fjnz5u22g0xu74aw38w',
+      amount: {
+        denom: 'ubld',
+        amount: '20',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'ubld', amount: '50000' }],
+    gasLimit: 200000,
+  },
+};
+
 export const address = {
   address1: 'agoric1tkfnp4khzd0f7mgtznwrvr0lv2at3p8c8sz89p',
   address2: 'agoric13fe0g5z8krh2zwzzynusvus5q8c0ea7hn0qy3m',
