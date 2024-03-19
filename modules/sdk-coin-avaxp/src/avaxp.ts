@@ -156,7 +156,7 @@ export class AvaxP extends BaseCoin {
         this.validateStakingTx(stakingOptions, explainedTx);
         break;
       case TransactionType.Export:
-        if (!params.txParams.recipients) {
+        if (!params.txParams.recipients || params.txParams.recipients?.length !== 1) {
           throw new Error('Export Tx requires a recipient');
         } else {
           this.validateExportTx(params.txParams.recipients, explainedTx);
@@ -165,16 +165,16 @@ export class AvaxP extends BaseCoin {
       case TransactionType.Import:
         if (tx.isTransactionForCChain) {
           // Import to C-chain
-          if (
-            (params.txParams.recipients && params.txParams.recipients.length !== 0) ||
-            explainedTx.outputs.length !== 1
-          ) {
-            throw new Error('Expected 1 output in import txn and does not require recipients');
+          if (explainedTx.outputs.length !== 1) {
+            throw new Error('Expected 1 output in import transaction');
+          }
+          if (!params.txParams.recipients || params.txParams.recipients.length !== 1) {
+            throw new Error('Expected 1 recipient in import transaction');
           }
         } else {
           // Import to P-chain
           if (explainedTx.outputs.length !== 1) {
-            throw new Error('Expected 1 output in import txn');
+            throw new Error('Expected 1 output in import transaction');
           }
           this.validateImportTx(explainedTx.inputs, params.txParams);
         }
