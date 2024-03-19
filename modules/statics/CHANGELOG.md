@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.0.0...@bitgo/statics@48.1.0) (2024-03-19)
+
+### Bug Fixes
+
+- adding PayGo to coinFeatures paygo ([f9b7d20](https://github.com/BitGo/BitGoJS/commit/f9b7d208c3de64cd7d88ab402b1941e7df123281))
+- **statics:** correct NEAR testnet explorer url ([530ec7b](https://github.com/BitGo/BitGoJS/commit/530ec7bd6a8f0b782c6aab27b88502e22d13eed4))
+- **statics:** update hbar explorer url ([0bdfd6b](https://github.com/BitGo/BitGoJS/commit/0bdfd6b6dbb3805a22b174cdfface27ae5923938))
+- **statics:** updates decimal for opeth:usdt ([0e98be4](https://github.com/BitGo/BitGoJS/commit/0e98be4e4151b8d64050f475e4fb3302e3b31b75))
+
+### Features
+
+- **statics:** add new token MYRC and fix MSN address ([4e96305](https://github.com/BitGo/BitGoJS/commit/4e9630595808d6aa9c493014d2ac1f9b2775c858))
+- **statics:** added fet1 (new contract) token in coins.ts ([a060a8e](https://github.com/BitGo/BitGoJS/commit/a060a8ef7e12a7360c5f7b37d24f2d4e4054d4b0))
+
 # [48.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@47.2.0...@bitgo/statics@48.0.0) (2024-03-11)
 
 ### Bug Fixes

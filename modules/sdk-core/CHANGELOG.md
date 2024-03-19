@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.2.0...@bitgo/sdk-core@26.3.0) (2024-03-19)
+
+### Features
+
+- **sdk-core:** add support for wallet shares without admin approvals ([734478d](https://github.com/BitGo/BitGoJS/commit/734478de791832ee95c1d52dedead30634260e02))
+
 # [26.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.1.1...@bitgo/sdk-core@26.2.0) (2024-03-11)
 
 ### Features
