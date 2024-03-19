@@ -415,7 +415,24 @@ describe('Avaxp', function () {
     });
   });
 
-  describe('verify transaction', function () {
+  describe('Verify transaction', function () {
+    it('should fail to verify P > C import transaction without recipients', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_C.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+      };
+      try {
+        await basecoin.verifyTransaction({ txParams, txPrebuild });
+      } catch (e) {
+        e.message.should.equal('Expected 1 recipient in import transaction');
+      }
+    });
+
     it('should succeed to verify signed add validator transaction', async () => {
       const txPrebuild = {
         txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex,
@@ -458,7 +475,12 @@ describe('Avaxp', function () {
         txInfo: {},
       };
       const txParams = {
-        recipients: [],
+        recipients: [
+          {
+            address: EXPORT_P_2_C_VERIFY.receiveAddress,
+            amount: '1',
+          },
+        ],
         type: 'Import',
         locktime: 0,
       };
@@ -510,7 +532,7 @@ describe('Avaxp', function () {
       const txParams = {
         recipients: [
           {
-            address: EXPORT_P_2_C_VERIFY.receiveAddress,
+            address: '',
             amount: EXPORT_P_2_C_VERIFY.amount,
           },
         ],
