@@ -9,6 +9,8 @@ import { Txlm } from '../../src';
 
 import nock from 'nock';
 import * as assert from 'assert';
+import { KeyPair as AlgoKeyPair } from '../../../sdk-coin-algo/dist/src/lib/keyPair';
+import { Utils as AlgoUtils } from '../../../sdk-coin-algo/dist/src/lib/utils';
 nock.enableNetConnect();
 
 describe('XLM:', function () {
@@ -902,6 +904,18 @@ describe('XLM:', function () {
     it('should validate pub key', () => {
       const { pub } = basecoin.keychains().create();
       basecoin.isValidPub(pub).should.equal(true);
+    });
+
+    it('convert ALGO pub to XLM pub and back to ALGO pub', () => {
+      const startingAlgoPub = 'L3EYCIUKXPOIMWEL76LL6HZJNCJQCTMSBE2IQE44NTZIVIISAEWG25DZRM';
+      const algoKeyPair = new AlgoKeyPair({ pub: startingAlgoPub });
+      const algoRawPub = algoKeyPair.getKeys().pub;
+      const resultXLM = basecoin.getPubFromRaw(algoRawPub);
+      basecoin.isValidPub(resultXLM).should.equal(true);
+      console.log(resultXLM);
+      const algoUtils = new AlgoUtils();
+      const algoResult = algoUtils.stellarAddressToAlgoAddress(resultXLM);
+      startingAlgoPub.should.equal(algoResult);
     });
   });
 });
