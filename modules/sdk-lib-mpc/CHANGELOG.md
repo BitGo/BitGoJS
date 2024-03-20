@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.1.0...@bitgo/sdk-lib-mpc@9.1.1) (2024-03-19)
+
+### Bug Fixes
+
+- **sdk-lib-mpc:** add derivation path signing tests to dkls module ([7ab038f](https://github.com/BitGo/BitGoJS/commit/7ab038f1b8e54d93d600f3be4e1aa7c1d75426c4))
+
 # [9.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.0.1...@bitgo/sdk-lib-mpc@9.1.0) (2024-03-11)
 
 ### Features

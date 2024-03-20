@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [37.1.3](https://github.com/BitGo/BitGoJS/compare/bitgo@37.1.2...bitgo@37.1.3) (2024-03-19)
+
+### Bug Fixes
+
+- factor gas and eip1559 params on ethlike token recovery ([7744d83](https://github.com/BitGo/BitGoJS/commit/7744d831f7d974802501245312787b81f8abae47))
+
 ## [37.1.2](https://github.com/BitGo/BitGoJS/compare/bitgo@37.1.1...bitgo@37.1.2) (2024-03-11)
 
 **Note:** Version bump only for package bitgo

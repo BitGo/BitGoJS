@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.39.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.39.3...@bitgo/sdk-coin-sol@2.39.4) (2024-03-19)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** update partial unstake SOL ([4b2a941](https://github.com/BitGo/BitGoJS/commit/4b2a9417c282aae0f1d5624db610e63b3e091c82))
+
 ## [2.39.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@2.39.2...@bitgo/sdk-coin-sol@2.39.3) (2024-03-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

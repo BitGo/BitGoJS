@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [19.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@19.0.3...@bitgo/abstract-eth@19.0.4) (2024-03-19)
+
+### Bug Fixes
+
+- factor gas and eip1559 params on ethlike token recovery ([7744d83](https://github.com/BitGo/BitGoJS/commit/7744d831f7d974802501245312787b81f8abae47))
+
 ## [19.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@19.0.2...@bitgo/abstract-eth@19.0.3) (2024-03-11)
 
 ### Bug Fixes

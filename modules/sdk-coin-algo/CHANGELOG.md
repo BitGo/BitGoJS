@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.28.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.28.0...@bitgo/sdk-coin-algo@1.28.1) (2024-03-19)
+
+### Bug Fixes
+
+- **sdk-coin-algo:** replace fee with feeInfo for algo unsigned sweep ([1c4d6f0](https://github.com/BitGo/BitGoJS/commit/1c4d6f0dab9b701bf4f60a3fd00e31b19c001beb))
+
 # [1.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.27.1...@bitgo/sdk-coin-algo@1.28.0) (2024-03-11)
 
 ### Bug Fixes
