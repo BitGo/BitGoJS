@@ -947,6 +947,7 @@ export enum UnderlyingAsset {
   MANA = 'mana',
   MANTRADAO = 'mantradao',
   MAPS = 'maps',
+  MASA = 'masa',
   MASK = 'mask',
   MATH = 'math',
   MATIC = 'matic',
