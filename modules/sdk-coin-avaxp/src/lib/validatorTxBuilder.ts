@@ -2,7 +2,7 @@ import { DelegatorTxBuilder } from './delegatorTxBuilder';
 import { BaseCoin } from '@bitgo/statics';
 import { AddValidatorTx, PlatformVMConstants, UnsignedTx, Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
-import { Tx, BaseTx } from './iface';
+import { DeprecatedTx, DeprecatedBaseTx } from './iface';
 import utils from './utils';
 
 export class ValidatorTxBuilder extends DelegatorTxBuilder {
@@ -46,9 +46,9 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
   }
 
   /** @inheritdoc */
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: DeprecatedTx): this {
     super.initBuilder(tx);
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
+    const baseTx: DeprecatedBaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
@@ -56,11 +56,11 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is AddValidatorTx {
+  static verifyTxType(baseTx: DeprecatedBaseTx): baseTx is AddValidatorTx {
     return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
   }
 
-  verifyTxType(baseTx: BaseTx): baseTx is AddValidatorTx {
+  verifyTxType(baseTx: DeprecatedBaseTx): baseTx is AddValidatorTx {
     return ValidatorTxBuilder.verifyTxType(baseTx);
   }
 

@@ -10,13 +10,14 @@ import {
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 import {
-  BaseTx,
+  DeprecatedBaseTx,
   DecodedUtxoObj,
   TransactionExplanation,
-  Tx,
+  DeprecatedTx,
   TxData,
   INPUT_SEPARATOR,
   ADDRESS_SEPARATOR,
+  // AvaxTx,
 } from './iface';
 import { AddDelegatorTx, AmountInput, BaseTx as PVMBaseTx, ExportTx, ImportTx } from 'avalanche/dist/apis/platformvm';
 import { ExportTx as EVMExportTx, ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
@@ -24,6 +25,8 @@ import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
 import { Buffer } from 'buffer';
+// import { AddPermissionlessDelegatorTx, AddPermissionlessValidatorTx } from '@avalabs/avalanchejs/dist/serializable/pvm';
+// import { BaseTx } from '@avalabs/avalanchejs/dist/serializable/avax';
 
 // region utils to sign
 interface signatureSerialized {
@@ -67,7 +70,7 @@ function generateSelectorSignature(signatures: signatureSerialized[]): CheckSign
 // end region utils for sign
 
 export class Transaction extends BaseTransaction {
-  protected _avaxTransaction: Tx;
+  protected _avaxTransaction: DeprecatedTx;
   public _type: TransactionType;
   public _network: AvalancheNetwork;
   public _networkID: number;
@@ -89,9 +92,13 @@ export class Transaction extends BaseTransaction {
     this._networkID = this._network.networkID;
   }
 
-  get avaxPTransaction(): BaseTx {
+  get avaxPTransaction(): DeprecatedBaseTx {
     return this._avaxTransaction.getUnsignedTx().getTransaction();
   }
+
+  // get avaxTransaction(): AvaxTx {
+  //   return this._avaxTransaction.getUnsignedTx().getTransaction();
+  // }
 
   get signature(): string[] {
     if (this.credentials.length === 0) {
@@ -187,7 +194,7 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  setTransaction(tx: Tx): void {
+  setTransaction(tx: DeprecatedTx): void {
     this._avaxTransaction = tx;
   }
 
@@ -234,7 +241,7 @@ export class Transaction extends BaseTransaction {
           return (this.avaxPTransaction as ExportTx).getExportOutputs().map(utils.mapOutputToEntry(this._network));
         }
       case TransactionType.AddDelegator:
-      case TransactionType.AddValidator:
+      case TransactionType.AddValidator: {
         // Get staked outputs
         const addValidatorTx = this.avaxPTransaction as AddDelegatorTx;
         return [
@@ -243,6 +250,19 @@ export class Transaction extends BaseTransaction {
             value: addValidatorTx.getStakeAmount().toString(),
           },
         ];
+      }
+      // case TransactionType.AddPermissionlessDelegator:
+      // case TransactionType.AddPermissionlessValidator:
+      //   // Get staked outputs
+      //   // const addValidatorTx = this.avaxTransaction as AddPermissionlessDelegatorTx;
+      //   const addValidatorTx = (this.avaxTransaction as BaseTx);
+      //   return [
+      //     {
+      //       // address: addValidatorTx.getNodeIDString(),
+      //       address: addValidatorTx., // todo fix
+      //       value: addValidatorTx.getStakeAmount().toString(),
+      //     },
+      //   ];
       default:
         return [];
     }

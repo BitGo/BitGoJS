@@ -15,8 +15,10 @@ import {
   Tx as PVMTx,
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
+// import { addTxSignatures, Context, networkIDs, pvm, utils } from '@avalabs/avalanchejs';
+// import { TypeSymbols } from '@avalabs/avalanchejs';
 import { BinTools, BN } from 'avalanche';
-import { SECP256K1_Transfer_Output, Tx, BaseTx } from './iface';
+import { SECP256K1_Transfer_Output, DeprecatedTx, DeprecatedBaseTx } from './iface';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
 import { recoverUtxos } from './utxoEngine';
@@ -149,9 +151,9 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   // endregion
 
   /** @inheritdoc */
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: DeprecatedTx): this {
     super.initBuilder(tx);
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
+    const baseTx: DeprecatedBaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
@@ -178,11 +180,12 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
+  static verifyTxType(baseTx: DeprecatedBaseTx): baseTx is AddDelegatorTx {
     return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
+    // return baseTx.getTypeID() === TypeSymbols.AddPermissionlessDelegatorTx;
   }
 
-  verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
+  verifyTxType(baseTx: DeprecatedBaseTx): baseTx is AddDelegatorTx {
     return DelegatorTxBuilder.verifyTxType(baseTx);
   }
 

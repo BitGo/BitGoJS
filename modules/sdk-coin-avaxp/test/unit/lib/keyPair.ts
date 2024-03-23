@@ -32,7 +32,8 @@ describe('Avax P Key Pair', () => {
     });
 
     it('from a xprv', () => {
-      const keyPairObj = new KeyPair({ prv: testData.SEED_ACCOUNT.xPrivateKey });
+      // const keyPairObj = new KeyPair({ prv: testData.SEED_ACCOUNT.xPrivateKey });
+      const keyPairObj = new KeyPair({ prv: 'PrivateKey-2exwJAqDHyo35bRBpXL5Sy4yrcm9JES68tdTDC2wi3CeArDpja' });
       const keys = keyPairObj.getKeys();
       should.exists(keys.prv);
       should.exists(keys.pub);

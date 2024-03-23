@@ -15,7 +15,7 @@ import { costImportTx } from 'avalanche/dist/utils';
 import { BN } from 'avalanche';
 import { Credential } from 'avalanche/dist/common';
 import { recoverUtxos, utxoToInput } from './utxoEngine';
-import { BaseTx, Tx } from './iface';
+import { DeprecatedBaseTx, DeprecatedTx } from './iface';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 import utils from './utils';
 
@@ -39,8 +39,8 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   }
 
   /** @inheritdoc */
-  initBuilder(tx: Tx): this {
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
+  initBuilder(tx: DeprecatedTx): this {
+    const baseTx: DeprecatedBaseTx = tx.getUnsignedTx().getTransaction();
     if (
       baseTx.getNetworkID() !== this.transaction._networkID ||
       !baseTx.getBlockchainID().equals(this.transaction._blockchainID)
@@ -84,11 +84,11 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
+  static verifyTxType(baseTx: DeprecatedBaseTx): baseTx is ImportTx {
     return baseTx.getTypeID() === EVMConstants.IMPORTTX;
   }
 
-  verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
+  verifyTxType(baseTx: DeprecatedBaseTx): baseTx is ImportTx {
     return ImportInCTxBuilder.verifyTxType(baseTx);
   }
 

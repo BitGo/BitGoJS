@@ -12,8 +12,11 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { DecodedUtxoObj, Tx } from './iface';
+import { DecodedUtxoObj, DeprecatedTx } from './iface';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
+import { BaseTx as AvaxBaseTx } from '@avalabs/avalanchejs/dist/serializable/avax/baseTx';
+import { Tx as PMVTx } from 'avalanche/dist/apis/platformvm/tx';
+import { Tx as EMVTx } from 'avalanche/dist/apis/evm/tx';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -31,15 +34,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {Transaction} tx the transaction data
    * @returns itself
    */
-  initBuilder(tx: Tx): this {
-    const baseTx = tx.getUnsignedTx().getTransaction();
-    if (
-      baseTx.getNetworkID() !== this._transaction._networkID ||
-      !baseTx.getBlockchainID().equals(this._transaction._blockchainID)
-    ) {
-      throw new Error('Network or blockchain is not equals');
+  initBuilder(tx: DeprecatedTx | AvaxBaseTx): this {
+    if (tx instanceof PMVTx || tx instanceof EMVTx) {
+      const baseTx = tx.getUnsignedTx().getTransaction();
+      if (
+        baseTx.getNetworkID() !== this._transaction._networkID ||
+        !baseTx.getBlockchainID().equals(this._transaction._blockchainID)
+      ) {
+        throw new Error('Network or blockchain is not equals');
+      }
+      this._transaction.setTransaction(tx);
     }
-    this._transaction.setTransaction(tx);
     return this;
   }
 

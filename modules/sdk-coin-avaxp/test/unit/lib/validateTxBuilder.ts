@@ -146,7 +146,8 @@ describe('AvaxP Validate Tx Builder', () => {
 
     it('Should recover AddValidator tx from raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
-        testData.ADDVALIDATOR_SAMPLES.unsignedTxHex
+        // testData.ADDVALIDATOR_SAMPLES.unsignedTxHex
+        testData.ADDVALIDATOR_SAMPLES.unsignedTxHex2
       );
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
