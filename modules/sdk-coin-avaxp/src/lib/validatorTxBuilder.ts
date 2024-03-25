@@ -2,7 +2,7 @@ import { DelegatorTxBuilder } from './delegatorTxBuilder';
 import { BaseCoin } from '@bitgo/statics';
 import { AddValidatorTx, PlatformVMConstants, UnsignedTx, Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
-import { Tx, BaseTx } from './iface';
+import { DeprecatedTx, BaseTx } from './iface';
 import utils from './utils';
 
 export class ValidatorTxBuilder extends DelegatorTxBuilder {
@@ -46,7 +46,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
   }
 
   /** @inheritdoc */
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: DeprecatedTx): this {
     super.initBuilder(tx);
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {

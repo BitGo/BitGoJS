@@ -5,7 +5,7 @@ import { ImportTx, PlatformVMConstants, Tx as PVMTx, UnsignedTx } from 'avalanch
 import utils from './utils';
 import { BN } from 'avalanche';
 import { recoverUtxos } from './utxoEngine';
-import { Tx, BaseTx } from './iface';
+import { DeprecatedTx, BaseTx } from './iface';
 
 export class ImportTxBuilder extends AtomicTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -17,7 +17,7 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
     return TransactionType.Import;
   }
 
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: DeprecatedTx): this {
     super.initBuilder(tx);
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {

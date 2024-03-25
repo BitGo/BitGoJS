@@ -13,7 +13,7 @@ import {
   BaseTx,
   DecodedUtxoObj,
   TransactionExplanation,
-  Tx,
+  DeprecatedTx,
   TxData,
   INPUT_SEPARATOR,
   ADDRESS_SEPARATOR,
@@ -67,7 +67,7 @@ function generateSelectorSignature(signatures: signatureSerialized[]): CheckSign
 // end region utils for sign
 
 export class Transaction extends BaseTransaction {
-  protected _avaxTransaction: Tx;
+  protected _avaxTransaction: DeprecatedTx;
   public _type: TransactionType;
   public _network: AvalancheNetwork;
   public _networkID: number;
@@ -187,7 +187,7 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  setTransaction(tx: Tx): void {
+  setTransaction(tx: DeprecatedTx): void {
     this._avaxTransaction = tx;
   }
 

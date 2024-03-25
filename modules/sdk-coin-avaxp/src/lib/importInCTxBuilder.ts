@@ -15,7 +15,7 @@ import { costImportTx } from 'avalanche/dist/utils';
 import { BN } from 'avalanche';
 import { Credential } from 'avalanche/dist/common';
 import { recoverUtxos, utxoToInput } from './utxoEngine';
-import { BaseTx, Tx } from './iface';
+import { BaseTx, DeprecatedTx } from './iface';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 import utils from './utils';
 
@@ -39,7 +39,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   }
 
   /** @inheritdoc */
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: DeprecatedTx): this {
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
     if (
       baseTx.getNetworkID() !== this.transaction._networkID ||

@@ -10,6 +10,7 @@ import { ExportTxBuilder } from './exportTxBuilder';
 import { ImportTxBuilder } from './importTxBuilder';
 import { ImportInCTxBuilder } from './importInCTxBuilder';
 import { ExportInCTxBuilder } from './exportInCTxBuilder';
+import { PermissionlessValidatorTxBuilder } from './permissionlessValidatorTxBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -76,6 +77,15 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getValidatorBuilder(): ValidatorTxBuilder {
     return new ValidatorTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Initialize Permissionless Validator builder
+   *
+   * @returns {PermissionlessValidatorTxBuilder} the builder initialized
+   */
+  getPermissionlessValidatorTxBuilder(): PermissionlessValidatorTxBuilder {
+    return new PermissionlessValidatorTxBuilder(this._coinConfig);
   }
 
   /**
