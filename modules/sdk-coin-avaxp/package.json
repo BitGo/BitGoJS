@@ -51,6 +51,7 @@
     "@bitgo/sdk-core": "^26.3.0",
     "@bitgo/statics": "^48.1.0",
     "@bitgo/utxo-lib": "^9.34.0",
+    "@bitgo/avalanchejs": "1.0.0-alpha.3",
     "avalanche": "3.15.3",
     "bignumber.js": "^9.0.0",
     "create-hash": "^1.2.0",
