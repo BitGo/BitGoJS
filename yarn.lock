@@ -6963,6 +6963,17 @@ bitcoinjs-lib@^6.0.0:
     secp256k1 "5.0.0"
     varuint-bitcoin "^1.0.1"
 
+bitgo-aaron-avalanchejs@^4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/bitgo-aaron-avalanchejs/-/bitgo-aaron-avalanchejs-4.0.5.tgz#57afef67efba87f98171bba2e541c277cb1e3da3"
+  integrity sha512-LyiivQ7xftZ2fL5UbP8RRWoWLBgmx5V8x0FgfoKLqRxiPiLNlmA7YQYBVvtBO3aQ9kWN3pXviDAg84IoA2juFQ==
+  dependencies:
+    "@noble/curves" "1.3.0"
+    "@noble/hashes" "1.3.3"
+    "@noble/secp256k1" "2.0.0"
+    "@scure/base" "1.1.5"
+    micro-eth-signer "0.7.2"
+
 bl@^4.0.3, bl@^4.1.0:
   version "4.1.0"
   resolved "https://registry.npmjs.org/bl/-/bl-4.1.0.tgz"
