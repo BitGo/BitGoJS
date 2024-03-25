@@ -1,17 +1,13 @@
-import { TransactionBuilder } from './transactionBuilder';
-import { BinTools, BN } from 'avalanche';
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
-import utils from './utils';
-// import { DeprecatedBaseTx, DeprecatedTx, Tx } from './iface';
-import { Tx } from './iface';
-// import { recoverUtxos } from './utxoEngine';
-// import { BaseTx } from '@avalabs/avalanchejs/dist/serializable/avax';
-// import { AddDelegatorTx, PlatformVMConstants, UnsignedTx } from 'avalanche/dist/apis/platformvm';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BinTools, BN } from 'avalanche';
 import { AddDelegatorTx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
-import { AddPermissionlessValidatorTx } from '@avalabs/avalanchejs/dist/serializable/pvm';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm/tx';
-import { TypeSymbols } from '@avalabs/avalanchejs/src/serializable/constants';
+import { AddPermissionlessValidatorTx } from 'bitgo-aaron-avalanchejs/dist/serializable/pvm';
+import { TypeSymbols } from 'bitgo-aaron-avalanchejs/src/serializable/constants';
+import { Tx } from './iface';
+import { TransactionBuilder } from './transactionBuilder';
+import utils from './utils';
 
 export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   protected _nodeID: string;

@@ -1,4 +1,3 @@
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   BaseKey,
   BaseTransaction,
@@ -8,25 +7,23 @@ import {
   TransactionFee,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { KeyPair } from './keyPair';
-import {
-  DeprecatedBaseTx,
-  DecodedUtxoObj,
-  TransactionExplanation,
-  DeprecatedTx,
-  TxData,
-  INPUT_SEPARATOR,
-  ADDRESS_SEPARATOR,
-  // AvaxTx,
-} from './iface';
-import { AddDelegatorTx, AmountInput, BaseTx as PVMBaseTx, ExportTx, ImportTx } from 'avalanche/dist/apis/platformvm';
-import { ExportTx as EVMExportTx, ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import utils from './utils';
+import { ExportTx as EVMExportTx, ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
+import { AddDelegatorTx, AmountInput, ExportTx, ImportTx, BaseTx as PVMBaseTx } from 'avalanche/dist/apis/platformvm';
 import { Credential } from 'avalanche/dist/common';
 import { Buffer } from 'buffer';
-// import { AddPermissionlessDelegatorTx, AddPermissionlessValidatorTx } from '@avalabs/avalanchejs/dist/serializable/pvm';
-// import { BaseTx } from '@avalabs/avalanchejs/dist/serializable/avax';
+import {
+  ADDRESS_SEPARATOR,
+  DecodedUtxoObj,
+  DeprecatedBaseTx,
+  DeprecatedTx,
+  INPUT_SEPARATOR,
+  TransactionExplanation,
+  TxData,
+} from './iface';
+import { KeyPair } from './keyPair';
+import utils from './utils';
 
 // region utils to sign
 interface signatureSerialized {

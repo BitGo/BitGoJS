@@ -1,26 +1,24 @@
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionBuilder } from './transactionBuilder';
+import { BinTools, BN } from 'avalanche';
 import {
   AddDelegatorTx,
-  BaseTx as PVMBaseTx,
   ParseableOutput,
   PlatformVMConstants,
+  BaseTx as PVMBaseTx,
+  Tx as PVMTx,
   SECPOwnerOutput,
   SECPTransferInput,
   SECPTransferOutput,
   SelectCredentialClass,
   TransferableInput,
   TransferableOutput,
-  Tx as PVMTx,
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
-// import { addTxSignatures, Context, networkIDs, pvm, utils } from '@avalabs/avalanchejs';
-// import { TypeSymbols } from '@avalabs/avalanchejs';
-import { BinTools, BN } from 'avalanche';
-import { SECP256K1_Transfer_Output, DeprecatedTx, DeprecatedBaseTx } from './iface';
-import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
+import { DeprecatedBaseTx, DeprecatedTx, SECP256K1_Transfer_Output } from './iface';
+import { TransactionBuilder } from './transactionBuilder';
+import utils from './utils';
 import { recoverUtxos } from './utxoEngine';
 
 export class DelegatorTxBuilder extends TransactionBuilder {
@@ -182,7 +180,6 @@ export class DelegatorTxBuilder extends TransactionBuilder {
 
   static verifyTxType(baseTx: DeprecatedBaseTx): baseTx is AddDelegatorTx {
     return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
-    // return baseTx.getTypeID() === TypeSymbols.AddPermissionlessDelegatorTx;
   }
 
   verifyTxType(baseTx: DeprecatedBaseTx): baseTx is AddDelegatorTx {

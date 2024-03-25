@@ -1,22 +1,21 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import BigNumber from 'bignumber.js';
 import {
   BaseAddress,
   BaseKey,
-  BaseTransactionBuilder,
-  TransactionType,
-  BuildTransactionError,
   BaseTransaction,
+  BaseTransactionBuilder,
+  BuildTransactionError,
+  TransactionType,
 } from '@bitgo/sdk-core';
-import { Transaction } from './transaction';
-import { KeyPair } from './keyPair';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import utils from './utils';
+import { Tx as EVMTx } from 'avalanche/dist/apis/evm/tx';
+import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm/tx';
+import BigNumber from 'bignumber.js';
+import { BaseTx as AvaxBaseTx } from 'bitgo-aaron-avalanchejs/dist/serializable/avax/baseTx';
 import { DecodedUtxoObj, DeprecatedTx } from './iface';
-import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
-import { BaseTx as AvaxBaseTx } from '@avalabs/avalanchejs/dist/serializable/avax/baseTx';
-import { Tx as PMVTx } from 'avalanche/dist/apis/platformvm/tx';
-import { Tx as EMVTx } from 'avalanche/dist/apis/evm/tx';
+import { KeyPair } from './keyPair';
+import { Transaction } from './transaction';
+import utils from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -35,7 +34,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns itself
    */
   initBuilder(tx: DeprecatedTx | AvaxBaseTx): this {
-    if (tx instanceof PMVTx || tx instanceof EMVTx) {
+    if (tx instanceof PVMTx || tx instanceof EVMTx) {
       const baseTx = tx.getUnsignedTx().getTransaction();
       if (
         baseTx.getNetworkID() !== this._transaction._networkID ||

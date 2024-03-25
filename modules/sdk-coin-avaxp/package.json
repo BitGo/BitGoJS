@@ -50,7 +50,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^26.3.0",
     "@bitgo/statics": "^48.1.0",
-    "@avalabs/avalanchejs": "^4.0.5",
+    "bitgo-aaron-avalanchejs": "^4.0.5",
     "@bitgo/utxo-lib": "^9.34.0",
     "avalanche": "3.15.3",
     "bignumber.js": "^9.0.0",

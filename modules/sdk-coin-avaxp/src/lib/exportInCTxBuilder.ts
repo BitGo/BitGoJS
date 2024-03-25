@@ -1,21 +1,21 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
-import {
-  EVMConstants,
-  Tx as EMVTx,
-  UnsignedTx,
-  SelectCredentialClass,
-  ExportTx,
-  EVMInput,
-  TransferableOutput,
-  SECPTransferOutput,
-  AmountOutput,
-} from 'avalanche/dist/apis/evm';
-import utils from './utils';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import { Transaction } from './transaction';
-import { DeprecatedTx, DeprecatedBaseTx, DecodedUtxoObj } from './iface';
+import {
+  AmountOutput,
+  EVMConstants,
+  EVMInput,
+  Tx as EVMTx,
+  ExportTx,
+  SECPTransferOutput,
+  SelectCredentialClass,
+  TransferableOutput,
+  UnsignedTx,
+} from 'avalanche/dist/apis/evm';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
+import { DecodedUtxoObj, DeprecatedBaseTx, DeprecatedTx } from './iface';
+import { Transaction } from './transaction';
+import utils from './utils';
 
 export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
   private _amount: BN;
@@ -168,7 +168,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     input.addSignatureIdx(0, this.transaction._fromAddresses[0]);
 
     this.transaction.setTransaction(
-      new EMVTx(
+      new EVMTx(
         new UnsignedTx(
           new ExportTx(
             this.transaction._networkID,
@@ -196,7 +196,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new EMVTx();
+    const tx = new EVMTx();
     tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
     this.initBuilder(tx);
     return this.transaction;
