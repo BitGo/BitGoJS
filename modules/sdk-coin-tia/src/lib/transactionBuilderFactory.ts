@@ -1,11 +1,12 @@
 import {
+  ContractCallBuilder,
   CosmosTransaction,
   CosmosTransactionBuilder,
   CosmosTransferBuilder,
   StakingActivateBuilder,
   StakingDeactivateBuilder,
+  StakingRedelegateBuilder,
   StakingWithdrawRewardsBuilder,
-  ContractCallBuilder,
 } from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -32,6 +33,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingWithdrawRewardsBuilder(tx);
         case TransactionType.ContractCall:
           return this.getContractCallBuilder(tx);
+        case TransactionType.StakingRedelegate:
+          return this.getStakingRedelegateBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -62,6 +65,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getContractCallBuilder(tx?: CosmosTransaction): ContractCallBuilder {
     return this.initializeBuilder(tx, new ContractCallBuilder(this._coinConfig, tiaUtils));
+  }
+
+  getStakingRedelegateBuilder(tx?: CosmosTransaction): StakingRedelegateBuilder {
+    return this.initializeBuilder(tx, new StakingRedelegateBuilder(this._coinConfig, tiaUtils));
   }
 
   /** @inheritdoc */

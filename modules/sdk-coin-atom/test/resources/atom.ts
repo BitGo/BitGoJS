@@ -189,6 +189,37 @@ export const TEST_WITHDRAW_REWARDS_TX = {
   },
 };
 
+export const TEST_REDELEGATE_TX = {
+  hash: '124DEDC4D12623C62993E9A12CB710D03F887F128A17549907AD7E3BFFCFFB36',
+  signature: 'wwHiDPmsMzI8BPmOhukGwufrgs4b5dH5AMnM21AdAyI6IwNPSrMM+iqf+1xH99xUxLFke9vb7a3vV5gj9ZmaPg==',
+  pubKey: 'Ah0Xud1r7fdljxs/dx9Rud1Un55KArr94VMtAMoUXBsO',
+  privateKey: 'cGQSjk/xusPlqScte8OnHMAaW7Zjt1wu7R6W4eYzLUg=',
+  signedTxBase64:
+    'Ct4BCtsBCiovY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dCZWdpblJlZGVsZWdhdGUSrAEKLWNvc21vczFzbWVma3E5eWF4Z3c5YzlmaHltNnFzcDc0NnE4ODRjemVhY24zMhI0Y29zbW9zdmFsb3BlcjE4M2F5Y2d0c3RwNjdyNnM0dmQ3dHMybnBwMmNrazR4YWg3cnhqNho0Y29zbW9zdmFsb3BlcjFtbmd2a2tobTZnN25xeGg0aGN2OGhqeHZnYXg0bTh4dWp6dDk2NCIPCgV1YXRvbRIGMTAwMDAwEmgKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQIdF7nda+33ZY8bP3cfUbndVJ+eSgK6/eFTLQDKFFwbDhIECgIIARgpEhQKDgoFdWF0b20SBTUwMDAwEIC1GBpAwwHiDPmsMzI8BPmOhukGwufrgs4b5dH5AMnM21AdAyI6IwNPSrMM+iqf+1xH99xUxLFke9vb7a3vV5gj9ZmaPg==',
+  delegator: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+  validator: 'cosmosvaloper1mngvkkhm6g7nqxh4hcv8hjxvgax4m8xujzt964',
+  chainId: 'theta-testnet-001',
+  accountNumber: 723763,
+  sequence: 41,
+  feeAmount: '50000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+    value: {
+      delegatorAddress: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+      validatorSrcAddress: 'cosmosvaloper183aycgtstp67r6s4vd7ts2npp2ckk4xah7rxj6',
+      validatorDstAddress: 'cosmosvaloper1mngvkkhm6g7nqxh4hcv8hjxvgax4m8xujzt964',
+      amount: {
+        denom: 'uatom',
+        amount: '100000',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'uatom', amount: '50000' }],
+    gasLimit: 400000,
+  },
+};
+
 export const TEST_TX_WITH_MEMO = {
   hash: 'AEA8DFD3A86BFFE1B172E5B5E5F993BD90DBB08646AD082C1877167B0105D66C',
   signature: 'qeHDhr9ZwWQO2KcRINp8V7szW2fTgPJilX5eV/MI5PwoHKkgI8X6qH1IxgFC+EBFG04C9GhYoLyBtIa8vfcJnQ==',
