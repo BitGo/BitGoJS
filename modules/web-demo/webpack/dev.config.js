@@ -16,7 +16,7 @@ const { mergeCustomizer } = require('../../../webpack/mergeCustomizer');
 module.exports = (env, options) => {
   return mergeWith(
     {
-      mode: options.mode,
+      mode: options?.mode,
       entry: entryConfig,
       devServer,
       // Dev only

@@ -180,7 +180,7 @@ Engines should be set to the following:
 ```json
 {
   "engines": {
-    "node": ">=16 <19",
+    "node": ">=18 <21",
     "npm": ">=3.10.10"
   }
 }

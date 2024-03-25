@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -98,10 +98,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Setup node 16
+      - name: Setup node 18
         uses: actions/setup-node@v3
         with:
-          node-version: 16 # this just needs to pass our lock file requirement for compilation
+          node-version: 18 # this just needs to pass our lock file requirement for compilation
 
       - name: Build Info
         run: |
