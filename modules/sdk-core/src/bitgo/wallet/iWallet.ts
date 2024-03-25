@@ -497,6 +497,14 @@ export interface SubmitTransactionOptions {
   };
   comment?: string;
   txRequestId?: string;
+  rbfTxIds?: string[];
+  feeMultiplier?: number;
+  recipients?:
+    | {
+        address: string;
+        amount: string;
+      }[]
+    | unknown;
 }
 
 export interface SendOptions {
