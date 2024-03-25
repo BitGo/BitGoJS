@@ -4,8 +4,8 @@ import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { ImportTx, PlatformVMConstants, Tx as PVMTx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import utils from './utils';
 import { BN } from 'avalanche';
-import { recoverUtxos } from './utxoEngine';
-import { DeprecatedTx, BaseTx } from './iface';
+import { deprecatedRecoverUtxos } from './utxoEngine';
+import { DeprecatedTx, DeprecatedBaseTx } from './iface';
 
 export class ImportTxBuilder extends AtomicTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -19,7 +19,7 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
 
   initBuilder(tx: DeprecatedTx): this {
     super.initBuilder(tx);
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
+    const baseTx: DeprecatedBaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
@@ -41,15 +41,15 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
     // output addresses are the sender addresses
     this.transaction._fromAddresses = secpOut.getAddresses();
     this._externalChainId = baseTx.getSourceChain();
-    this.transaction._utxos = recoverUtxos(baseTx.getImportInputs());
+    this.transaction._utxos = deprecatedRecoverUtxos(baseTx.getImportInputs());
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
+  static verifyTxType(baseTx: DeprecatedBaseTx): baseTx is ImportTx {
     return baseTx.getTypeID() === PlatformVMConstants.IMPORTTX;
   }
 
-  verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
+  verifyTxType(baseTx: DeprecatedBaseTx): baseTx is ImportTx {
     return ImportTxBuilder.verifyTxType(baseTx);
   }
 

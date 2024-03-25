@@ -14,8 +14,8 @@ import {
 import { costImportTx } from 'avalanche/dist/utils';
 import { BN } from 'avalanche';
 import { Credential } from 'avalanche/dist/common';
-import { recoverUtxos, utxoToInput } from './utxoEngine';
-import { BaseTx, DeprecatedTx } from './iface';
+import { deprecatedRecoverUtxos, utxoToInput } from './utxoEngine';
+import { DeprecatedBaseTx, DeprecatedTx } from './iface';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 import utils from './utils';
 
@@ -40,7 +40,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
   /** @inheritdoc */
   initBuilder(tx: DeprecatedTx): this {
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
+    const baseTx: DeprecatedBaseTx = tx.getUnsignedTx().getTransaction();
     if (
       baseTx.getNetworkID() !== this.transaction._networkID ||
       !baseTx.getBlockchainID().equals(this.transaction._blockchainID)
@@ -67,7 +67,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
     const input = baseTx.getImportInputs();
 
-    this.transaction._utxos = recoverUtxos(input);
+    this.transaction._utxos = deprecatedRecoverUtxos(input);
 
     const totalInputAmount = input.reduce((t, i) => t.add((i.getInput() as AmountInput).getAmount()), new BN(0));
     // it should be (output as AmountOutput).getAmount(), but it's not working.
@@ -84,11 +84,11 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
+  static verifyTxType(baseTx: DeprecatedBaseTx): baseTx is ImportTx {
     return baseTx.getTypeID() === EVMConstants.IMPORTTX;
   }
 
-  verifyTxType(baseTx: BaseTx): baseTx is ImportTx {
+  verifyTxType(baseTx: DeprecatedBaseTx): baseTx is ImportTx {
     return ImportInCTxBuilder.verifyTxType(baseTx);
   }
 

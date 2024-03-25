@@ -1,23 +1,29 @@
+import { Signature as AvaxSignature, TransferableOutput, TransferOutput, TypeSymbols } from '@bitgo/avalanchejs';
 import {
-  isValidXpub,
-  isValidXprv,
-  NotImplementedError,
   BaseUtils,
-  InvalidTransactionError,
-  ParseTransactionError,
   Entry,
+  InvalidTransactionError,
+  isValidXprv,
+  isValidXpub,
+  NotImplementedError,
+  ParseTransactionError,
 } from '@bitgo/sdk-core';
-import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
-import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
-import { ec } from 'elliptic';
-import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
-import { Credential } from 'avalanche/dist/common/credentials';
-import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { AvalancheNetwork } from '@bitgo/statics';
-import { Signature } from 'avalanche/dist/common';
-import * as createHash from 'create-hash';
+import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import { EVMOutput } from 'avalanche/dist/apis/evm';
-import { ADDRESS_SEPARATOR, Output, DeprecatedTx } from './iface';
+import {
+  AmountOutput,
+  BaseTx,
+  TransferableOutput as DeprecatedTransferableOutput,
+  SelectCredentialClass,
+} from 'avalanche/dist/apis/platformvm';
+import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
+import { Signature } from 'avalanche/dist/common';
+import { Credential } from 'avalanche/dist/common/credentials';
+import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
+import * as createHash from 'create-hash';
+import { ec } from 'elliptic';
+import { ADDRESS_SEPARATOR, DeprecatedOutput, DeprecatedTx, Output } from './iface';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -222,6 +228,11 @@ export class Utils implements BaseUtils {
     return sig;
   }
 
+  createNewSig(sigHex: string): AvaxSignature {
+    const buffer = BufferAvax.from(sigHex.padStart(130, '0'), 'hex');
+    return new AvaxSignature(buffer);
+  }
+
   /**
    * Avaxp wrapper to recovery signature using Avalanche's buffer
    * @param network
@@ -272,7 +283,17 @@ export class Utils implements BaseUtils {
    * @returns true if tx is for blockchainId
    */
   isTransactionOf(tx: DeprecatedTx, blockchainId: string): boolean {
-    return utils.cb58Encode(tx.getUnsignedTx().getTransaction().getBlockchainID()) === blockchainId;
+    return utils.cb58Encode((tx as DeprecatedTx).getUnsignedTx().getTransaction().getBlockchainID()) === blockchainId;
+  }
+
+  /**
+   * Check if Output is from PVM.
+   * Output could be EVM or PVM output.
+   * @param {DeprecatedOutput} output
+   * @returns {boolean} output is DeprecatedTransferableOutput
+   */
+  deprecatedIsTransferableOutput(output: DeprecatedOutput): output is DeprecatedTransferableOutput {
+    return 'getOutput' in output;
   }
 
   /**
@@ -282,7 +303,7 @@ export class Utils implements BaseUtils {
    * @returns {boolean} output is TransferableOutput
    */
   isTransferableOutput(output: Output): output is TransferableOutput {
-    return 'getOutput' in output;
+    return output?._type === TypeSymbols.TransferableOutput;
   }
 
   /**
@@ -290,9 +311,9 @@ export class Utils implements BaseUtils {
    * @param network required to stringify addresses
    * @return mapper function
    */
-  mapOutputToEntry(network: AvalancheNetwork): (Output) => Entry {
-    return (output: Output) => {
-      if (this.isTransferableOutput(output)) {
+  deprecatedMapOutputToEntry(network: AvalancheNetwork): (DeprecatedOutput) => Entry {
+    return (output: DeprecatedOutput) => {
+      if (this.deprecatedIsTransferableOutput(output)) {
         const amountOutput = output.getOutput() as AmountOutput;
         const address = amountOutput
           .getAddresses()
@@ -311,6 +332,30 @@ export class Utils implements BaseUtils {
           // C-Chain address.
           address: '0x' + evmOutput.getAddressString(),
         };
+      }
+    };
+  }
+
+  /**
+   * Return a mapper function to that network address representation.
+   * @param network required to stringify addresses
+   * @return mapper function
+   */
+  mapOutputToEntry(network: AvalancheNetwork): (Output) => Entry {
+    return (output: Output) => {
+      if (this.isTransferableOutput(output)) {
+        const outputAmount = output.amount();
+        const address = (output.output as TransferOutput)
+          .getOwners()
+          .map((a) => this.addressToString(network.hrp, network.alias, BufferAvax.from(a)))
+          .sort()
+          .join(ADDRESS_SEPARATOR);
+        return {
+          value: outputAmount.toString(),
+          address,
+        };
+      } else {
+        throw new Error('Invalid output type');
       }
     };
   }

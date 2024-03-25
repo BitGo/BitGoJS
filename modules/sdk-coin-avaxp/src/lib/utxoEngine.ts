@@ -4,6 +4,7 @@ import { Signature } from 'avalanche/dist/common';
 import utils from './utils';
 import { BuildTransactionError } from '@bitgo/sdk-core';
 import { StandardAmountInput, StandardTransferableInput } from 'avalanche/dist/common/input';
+import { avaxSerial } from '@bitgo/avalanchejs';
 
 export interface InputData {
   amount: BN;
@@ -20,7 +21,7 @@ export interface InputData {
  * @param {StandardTransferableInput[]} utxos as transaction ins.
  * @returns the list of UTXOs
  */
-export function recoverUtxos(utxos: StandardTransferableInput[]): DecodedUtxoObj[] {
+export function deprecatedRecoverUtxos(utxos: StandardTransferableInput[]): DecodedUtxoObj[] {
   return utxos.map((utxo) => {
     const secpInput = utxo.getInput() as StandardAmountInput;
 
@@ -32,6 +33,32 @@ export function recoverUtxos(utxos: StandardTransferableInput[]): DecodedUtxoObj
       outputidx: utils.outputidxBufferToNumber(utxo.getOutputIdx()),
       txid: utils.cb58Encode(utxo.getTxID()),
       amount: secpInput.getAmount().toString(),
+      threshold: addressesIndex.length,
+      addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
+      addressesIndex,
+    };
+  });
+}
+
+/**
+ * Inputs can be controlled but outputs get reordered in transactions
+ * In order to make sure that the mapping is always correct we create an addressIndex which matches to the appropriate
+ * signatureIdx
+ * @param {avaxSerial.TransferableInput[]} utxos as transaction ins.
+ * @returns the list of UTXOs
+ */
+export function recoverUtxos(utxos: avaxSerial.TransferableInput[]): DecodedUtxoObj[] {
+  return utxos.map((utxo) => {
+    const input = utxo.input;
+
+    // use the same addressesIndex as existing ones in the inputs
+    const addressesIndex: number[] = utxo.sigIndicies();
+
+    return {
+      outputID: SECP256K1_Transfer_Output,
+      outputidx: utxo.utxoID.outputIdx.value().toString(),
+      txid: utxo.utxoID.txID.value(),
+      amount: input.amount().toString(),
       threshold: addressesIndex.length,
       addresses: [], // this is empty since the inputs from deserialized transaction don't contain addresses
       addressesIndex,

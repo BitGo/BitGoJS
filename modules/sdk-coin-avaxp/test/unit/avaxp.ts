@@ -302,6 +302,27 @@ describe('Avaxp', function () {
       should.not.exist(txExplain.memo);
     });
 
+    // TODO(CR-1073): find unsiged, signed and half signed transactions for AddPermissionlessValidator
+    it('should explain a half signed AddPermissionlessValidator transaction', async () => {
+      const testData = ADDVALIDATOR_SAMPLES;
+      const txExplain = await basecoin.explainTransaction({ halfSigned: { txHex: testData.halfsigntxHex } });
+      txExplain.outputAmount.should.equal(testData.minValidatorStake);
+      txExplain.type.should.equal(TransactionType.AddValidator);
+      txExplain.outputs[0].address.should.equal(testData.nodeID);
+      txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
+      should.not.exist(txExplain.memo);
+    });
+
+    it('should explain a signed AddPermissionlessValidator transaction', async () => {
+      const testData = ADDVALIDATOR_SAMPLES;
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
+      txExplain.outputAmount.should.equal(testData.minValidatorStake);
+      txExplain.type.should.equal(TransactionType.AddValidator);
+      txExplain.outputs[0].address.should.equal(testData.nodeID);
+      txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
+      should.not.exist(txExplain.memo);
+    });
+
     it('should explain a half signed export transaction', async () => {
       const testData = EXPORT_P_2_C;
       const txExplain = await basecoin.explainTransaction({ halfSigned: { txHex: testData.halfsigntxHex } });
@@ -454,6 +475,34 @@ describe('Avaxp', function () {
     });
 
     it('should succeed to verify unsigned add validator transaction', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    // TODO(CR-1073): find unsiged, signed and half signed transactions for AddPermissionlessValidator
+    it('should succeed to verify signed add permissionless validator transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify half signed add permissionless validator transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.ADDVALIDATOR_SAMPLES.halfsigntxHex,
+        txInfo: {},
+      };
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify unsigned add permissionless validator transaction', async () => {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
