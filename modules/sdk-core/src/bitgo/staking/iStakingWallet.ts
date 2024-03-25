@@ -43,6 +43,14 @@ export interface StakeOptions {
    */
   duration?: string;
   /**
+   * BLS public key (currently used for AVAXP staking)
+   */
+  blsPublicKey?: string;
+  /**
+   * BLS signature (currently used for AVAXP staking)
+   */
+  blsSignature?: string;
+  /**
    * coin sepcific staking subtype
    */
   subType?: string;
