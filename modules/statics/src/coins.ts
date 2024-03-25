@@ -4397,6 +4397,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.MAPS
   ),
   erc20(
+    'bcdfd73d-f204-4dca-b0eb-09b804336ff7',
+    'masa',
+    'Masa Token',
+    18,
+    '0x944824290cc12f31ae18ef51216a223ba4063092',
+    UnderlyingAsset.MASA
+  ),
+  erc20(
     '6c8efb37-d870-4e4f-b25a-d8ef914b2c7b',
     'mask',
     'Mask Network',
