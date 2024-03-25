@@ -1,6 +1,6 @@
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionBuilder } from './transactionBuilder';
+import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
 import {
   AddDelegatorTx,
   BaseTx as PVMBaseTx,
@@ -21,7 +21,7 @@ import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
 import { recoverUtxos } from './utxoEngine';
 
-export class DelegatorTxBuilder extends TransactionBuilder {
+export class DelegatorTxBuilder extends DeprecatedTransactionBuilder {
   protected _nodeID: string;
   protected _startTime: BN;
   protected _endTime: BN;

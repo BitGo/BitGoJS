@@ -1,6 +1,6 @@
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
-import { TransactionBuilder } from './transactionBuilder';
+import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
 import { ValidatorTxBuilder } from './validatorTxBuilder';
 import { Tx } from 'avalanche/dist/apis/platformvm';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
@@ -19,12 +19,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): TransactionBuilder {
+  from(raw: string): DeprecatedTransactionBuilder {
     utils.validateRawTransaction(raw);
     raw = utils.removeHexPrefix(raw);
     let txSource: 'EVM' | 'PVM' = 'PVM';
     let tx: Tx | EVMTx;
-    let transactionBuilder: TransactionBuilder | undefined = undefined;
+    let transactionBuilder: DeprecatedTransactionBuilder | undefined = undefined;
 
     try {
       tx = new Tx();
@@ -66,7 +66,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getTransferBuilder(): TransactionBuilder {
+  getTransferBuilder(): DeprecatedTransactionBuilder {
     throw new NotSupported('Transfer is not supported in P Chain');
   }
 
@@ -125,7 +125,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getWalletInitializationBuilder(): TransactionBuilder {
+  getWalletInitializationBuilder(): DeprecatedTransactionBuilder {
     throw new NotSupported('Wallet initialization is not needed');
   }
 }
