@@ -8,7 +8,7 @@ import {
   BuildTransactionError,
   BaseTransaction,
 } from '@bitgo/sdk-core';
-import { Transaction } from './transaction';
+import { DeprecatedTransaction } from './deprecatedTransaction';
 import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
@@ -16,19 +16,19 @@ import { DecodedUtxoObj, DeprecatedTx } from './iface';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 
 export abstract class DeprecatedTransactionBuilder extends BaseTransactionBuilder {
-  private _transaction: Transaction;
+  private _transaction: DeprecatedTransaction;
   public _signer: KeyPair[] = [];
   protected recoverSigner = false;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new Transaction(_coinConfig);
+    this._transaction = new DeprecatedTransaction(_coinConfig);
   }
 
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
-   * @param {Transaction} tx the transaction data
+   * @param {DeprecatedTx} tx the transaction data
    * @returns itself
    */
   initBuilder(tx: DeprecatedTx): this {
@@ -44,7 +44,7 @@ export abstract class DeprecatedTransactionBuilder extends BaseTransactionBuilde
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
+  protected fromImplementation(rawTransaction: string): DeprecatedTransaction {
     const tx = new PVMTx();
     tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
     this.initBuilder(tx);
@@ -52,7 +52,7 @@ export abstract class DeprecatedTransactionBuilder extends BaseTransactionBuilde
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<DeprecatedTransaction> {
     this.buildAvaxTransaction();
     this.transaction.setTransactionType(this.transactionType);
     if (this.hasSigner) {
@@ -129,11 +129,11 @@ export abstract class DeprecatedTransactionBuilder extends BaseTransactionBuilde
   }
 
   /** @inheritdoc */
-  protected get transaction(): Transaction {
+  protected get transaction(): DeprecatedTransaction {
     return this._transaction;
   }
 
-  protected set transaction(transaction: Transaction) {
+  protected set transaction(transaction: DeprecatedTransaction) {
     this._transaction = transaction;
   }
 
@@ -193,7 +193,7 @@ export abstract class DeprecatedTransactionBuilder extends BaseTransactionBuilde
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
+  validateTransaction(transaction?: DeprecatedTransaction): void {
     // throw new NotImplementedError('validateTransaction not implemented');
   }
 

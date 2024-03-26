@@ -10,7 +10,7 @@ import {
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
 import {
-  BaseTx,
+  DeprecatedBaseTx,
   DecodedUtxoObj,
   TransactionExplanation,
   DeprecatedTx,
@@ -89,7 +89,7 @@ export class DeprecatedTransaction extends BaseTransaction {
     this._networkID = this._network.networkID;
   }
 
-  get avaxPTransaction(): BaseTx {
+  get avaxPTransaction(): DeprecatedBaseTx {
     return this._avaxTransaction.getUnsignedTx().getTransaction();
   }
 

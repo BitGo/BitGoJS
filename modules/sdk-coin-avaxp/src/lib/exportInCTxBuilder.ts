@@ -13,9 +13,9 @@ import {
 } from 'avalanche/dist/apis/evm';
 import utils from './utils';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import { Transaction } from './transaction';
-import { DeprecatedTx, BaseTx, DecodedUtxoObj } from './iface';
+import { DeprecatedTx, DeprecatedBaseTx, DecodedUtxoObj } from './iface';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
+import { DeprecatedTransaction } from './deprecatedTransaction';
 
 export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
   private _amount: BN;
@@ -76,7 +76,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
   }
 
   initBuilder(tx: DeprecatedTx): this {
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
+    const baseTx: DeprecatedBaseTx = tx.getUnsignedTx().getTransaction();
     if (
       baseTx.getNetworkID() !== this.transaction._networkID ||
       !baseTx.getBlockchainID().equals(this.transaction._blockchainID)
@@ -123,11 +123,11 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is ExportTx {
+  static verifyTxType(baseTx: DeprecatedBaseTx): baseTx is ExportTx {
     return baseTx.getTypeID() === EVMConstants.EXPORTTX;
   }
 
-  verifyTxType(baseTx: BaseTx): baseTx is ExportTx {
+  verifyTxType(baseTx: DeprecatedBaseTx): baseTx is ExportTx {
     return ExportInCTxBuilder.verifyTxType(baseTx);
   }
 
@@ -195,7 +195,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
+  protected fromImplementation(rawTransaction: string): DeprecatedTransaction {
     const tx = new EMVTx();
     tx.fromBuffer(BufferAvax.from(rawTransaction, 'hex'));
     this.initBuilder(tx);
