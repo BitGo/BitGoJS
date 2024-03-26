@@ -5,7 +5,8 @@
     "rootDir": ".",
     "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
     "allowJs": false,
-    "strict": true
+    "strict": true,
+    "useUnknownInCatchVariables": false
   },
   "include": ["src/**/*", "bin/**/*", "test/**/*"],
   "exclude": ["node_modules"],
