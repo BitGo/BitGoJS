@@ -14731,10 +14731,3 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.GBP
   ),
 ]);
-
-export const ofcTokens: string[] = [];
-coins.forEach((coin) => {
-  if (coin.baseUnit === BaseUnit.OFC) {
-    ofcTokens.push(coin.name);
-  }
-});

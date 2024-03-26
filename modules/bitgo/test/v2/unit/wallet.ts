@@ -763,7 +763,6 @@ describe('V2 Wallet:', function () {
 
     it('should correctly validate arguments to create address on OFC wallet', async function () {
       await ofcWallet.createAddress().should.be.rejectedWith('onToken is a mandatory parameter for OFC wallets');
-      await ofcWallet.createAddress({ onToken: 'ofcMyCoin' }).should.be.rejectedWith('Unknown OFC token');
       // @ts-expect-error test passing invalid number argument
       await ofcWallet.createAddress({ onToken: 42 }).should.be.rejectedWith('onToken has to be a string');
     });
