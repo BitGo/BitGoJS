@@ -13,7 +13,7 @@ import { BN } from 'avalanche';
 import { AmountOutput } from 'avalanche/dist/apis/evm/outputs';
 import utils from './utils';
 import { recoverUtxos } from './utxoEngine';
-import { Tx, BaseTx } from './iface';
+import { DeprecatedTx, BaseTx } from './iface';
 
 export class ExportTxBuilder extends AtomicTransactionBuilder {
   private _amount: BN;
@@ -40,7 +40,7 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
   }
 
   /** @inheritdoc */
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: DeprecatedTx): this {
     super.initBuilder(tx);
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {

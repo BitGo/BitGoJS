@@ -14,7 +14,7 @@ import {
 import utils from './utils';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import { Transaction } from './transaction';
-import { Tx, BaseTx, DecodedUtxoObj } from './iface';
+import { DeprecatedTx, BaseTx, DecodedUtxoObj } from './iface';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 
 export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
@@ -75,7 +75,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     return TransactionType.Export;
   }
 
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: DeprecatedTx): this {
     const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
     if (
       baseTx.getNetworkID() !== this.transaction._networkID ||

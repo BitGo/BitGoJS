@@ -12,7 +12,7 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { DecodedUtxoObj, Tx } from './iface';
+import { DecodedUtxoObj, DeprecatedTx } from './iface';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -31,7 +31,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {Transaction} tx the transaction data
    * @returns itself
    */
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: DeprecatedTx): this {
     const baseTx = tx.getUnsignedTx().getTransaction();
     if (
       baseTx.getNetworkID() !== this._transaction._networkID ||

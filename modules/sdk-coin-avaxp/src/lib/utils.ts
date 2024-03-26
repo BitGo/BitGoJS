@@ -17,7 +17,7 @@ import { AvalancheNetwork } from '@bitgo/statics';
 import { Signature } from 'avalanche/dist/common';
 import * as createHash from 'create-hash';
 import { EVMOutput } from 'avalanche/dist/apis/evm';
-import { ADDRESS_SEPARATOR, Output, Tx } from './iface';
+import { ADDRESS_SEPARATOR, Output, DeprecatedTx } from './iface';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -267,11 +267,11 @@ export class Utils implements BaseUtils {
   /**
    * Check if tx is for the blockchainId
    *
-   * @param {Tx} tx
+   * @param {DeprecatedTx} tx
    * @param {string} blockchainId
    * @returns true if tx is for blockchainId
    */
-  isTransactionOf(tx: Tx, blockchainId: string): boolean {
+  isTransactionOf(tx: DeprecatedTx, blockchainId: string): boolean {
     return utils.cb58Encode(tx.getUnsignedTx().getTransaction().getBlockchainID()) === blockchainId;
   }
 
