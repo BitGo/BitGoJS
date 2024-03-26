@@ -8,7 +8,7 @@ import {
 } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BinTools, BN } from 'avalanche';
-import { AddPermissionlessValidatorTx } from 'bitgo-aaron-avalanchejs/dist/serializable/pvm';
+import { pvmSerial } from '@bitgo/avalanchejs';
 import { Tx } from './iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
@@ -167,11 +167,11 @@ export class PermissionlessValidatorTxBuilder extends BaseTransactionBuilder {
   }
 
   // TODO Implement
-  static verifyTxType(tx: Tx): tx is AddPermissionlessValidatorTx {
+  static verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
     return true;
   }
 
-  verifyTxType(tx: Tx): tx is AddPermissionlessValidatorTx {
+  verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
     return PermissionlessValidatorTxBuilder.verifyTxType(tx);
   }
 

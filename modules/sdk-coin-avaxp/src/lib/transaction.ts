@@ -10,11 +10,7 @@ import {
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import { Credential } from 'avalanche/dist/common';
-import { BaseTx } from 'bitgo-aaron-avalanchejs/dist/serializable/avax';
-import type { TransferableInput } from 'bitgo-aaron-avalanchejs/dist/serializable/avax/transferableInput';
-import { getAVMManager } from 'bitgo-aaron-avalanchejs/dist/serializable/avm/codec';
-import { AddPermissionlessValidatorTx } from 'bitgo-aaron-avalanchejs/dist/serializable/pvm';
-import { bufferToHex } from 'bitgo-aaron-avalanchejs/dist/utils/buffer';
+import { avmSerial, avaxSerial, pvmSerial, utils as avaxUtils } from '@bitgo/avalanchejs';
 import { Buffer } from 'buffer';
 import { ADDRESS_SEPARATOR, DecodedUtxoObj, INPUT_SEPARATOR, TransactionExplanation, Tx, TxData } from './iface';
 import { KeyPair } from './keyPair';
@@ -83,7 +79,7 @@ export class Transaction extends BaseTransaction {
     this._networkID = this._network.networkID;
   }
 
-  get avaxPTransaction(): BaseTx {
+  get avaxPTransaction(): avaxSerial.BaseTx {
     return this._avaxTransaction.baseTx;
   }
 
@@ -151,7 +147,7 @@ export class Transaction extends BaseTransaction {
   }
 
   toHexString(byteArray: Uint8Array): string {
-    return bufferToHex(byteArray);
+    return avaxUtils.bufferToHex(byteArray);
   }
 
   /** @inheritdoc */
@@ -162,7 +158,7 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return this.toHexString(this._avaxTransaction.toBytes(getAVMManager().getDefaultCodec()));
+    return this.toHexString(this._avaxTransaction.toBytes(avmSerial.getAVMManager().getDefaultCodec()));
   }
 
   // types - stakingTransaction, import, export
@@ -207,11 +203,11 @@ export class Transaction extends BaseTransaction {
    * Only needed for coins that support adding signatures directly (e.g. TSS).
    */
   get signablePayload(): Buffer {
-    return utils.sha256(this._avaxTransaction.toBytes(getAVMManager().getDefaultCodec()));
+    return utils.sha256(this._avaxTransaction.toBytes(avmSerial.getAVMManager().getDefaultCodec()));
   }
 
   get id(): string {
-    const bufferArray = utils.sha256(this._avaxTransaction.toBytes(getAVMManager().getDefaultCodec()));
+    const bufferArray = utils.sha256(this._avaxTransaction.toBytes(avmSerial.getAVMManager().getDefaultCodec()));
     return utils.cb58Encode(BufferAvax.from(bufferArray));
   }
 
@@ -246,7 +242,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get changeOutputs(): Entry[] {
-    return (this._avaxTransaction as AddPermissionlessValidatorTx).baseTx.outputs.map(
+    return (this._avaxTransaction as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs.map(
       utils.mapOutputToEntry(this._network)
     );
   }
@@ -259,7 +255,7 @@ export class Transaction extends BaseTransaction {
         inputs = this._avaxTransaction.baseTx.inputs;
         break;
     }
-    return inputs.map((input: TransferableInput) => {
+    return inputs.map((input) => {
       return {
         id: input.utxoID.txID.toString() + INPUT_SEPARATOR + input.utxoID.outputIdx.value(),
         address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),

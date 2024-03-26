@@ -3,9 +3,9 @@ import { BaseTransactionBuilder } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Tx } from './iface';
-// import { BaseTx } from 'bitgo-aaron-avalanchejs/dist/serializable/avm/baseTx';
-// import { PVMTx } from 'bitgo-aaron-avalanchejs/dist/serializable/pvm/abstractTx';
-// import { AbstractTx } from 'bitgo-aaron-avalanchejs/dist/serializable/pvm/abstractTx';
+// import { BaseTx } from '@bitgo/avalanchejs/dist/serializable/avm/baseTx';
+// import { PVMTx } from '@bitgo/avalanchejs/dist/serializable/pvm/abstractTx';
+// import { AbstractTx } from '@bitgo/avalanchejs/dist/serializable/pvm/abstractTx';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
