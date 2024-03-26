@@ -1197,7 +1197,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '020b57ce-bff0-4e25-95ce-0f3a94086db4',
     'arbeth',
-    'Arbitrum Ethereum',
+    'Arbitrum Ethereum (L2 Chain)',
     Networks.main.arbitrum,
     18,
     UnderlyingAsset.ARBETH,
@@ -1207,7 +1207,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '1c51d919-9a1a-48b6-ac6d-ec3c593af949',
     'tarbeth',
-    'Testnet Arbitrum Ethereum',
+    'Testnet Arbitrum Ethereum (L2 Chain)',
     Networks.test.arbitrum,
     18,
     UnderlyingAsset.ARBETH,
@@ -1217,7 +1217,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '1d1cd251-88e1-4d0a-81a9-3e080de8757b',
     'opeth',
-    'Optimism Ethereum',
+    'Optimism Ethereum (L2 Chain)',
     Networks.main.optimism,
     18,
     UnderlyingAsset.OPETH,
@@ -1227,7 +1227,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'efe943c4-1144-44d2-ae34-acdbe469cfcd',
     'topeth',
-    'Testnet Optimism Ethereum',
+    'Testnet Optimism Ethereum (L2 Chain)',
     Networks.test.optimism,
     18,
     UnderlyingAsset.OPETH,
@@ -14615,6 +14615,14 @@ export const coins = CoinMap.fromCoins([
     '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
     UnderlyingAsset['arbeth:usdt']
   ),
+  arbethErc20(
+    '7dfbdd2b-efd6-45ab-90bd-9c3bc16d1397',
+    'arbeth:arb',
+    'Arbitrum',
+    18,
+    '0x912ce59144191c1204e64559fe8253a0e49e6548',
+    UnderlyingAsset['arbeth:arb']
+  ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
     'tarbeth:link',
@@ -14654,6 +14662,14 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
     UnderlyingAsset['opeth:usdt']
+  ),
+  opethErc20(
+    '949c4e1f-83b8-4ca0-a6dc-72817a8a86e7',
+    'opeth:op',
+    'Optimism',
+    18,
+    '0x4200000000000000000000000000000000000042',
+    UnderlyingAsset['opeth:op']
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
