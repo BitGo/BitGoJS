@@ -9,21 +9,14 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
-import {
-  BaseTx,
-  DecodedUtxoObj,
-  TransactionExplanation,
-  DeprecatedTx,
-  TxData,
-  INPUT_SEPARATOR,
-  ADDRESS_SEPARATOR,
-} from './iface';
-import { AddDelegatorTx, AmountInput, BaseTx as PVMBaseTx, ExportTx, ImportTx } from 'avalanche/dist/apis/platformvm';
-import { ExportTx as EVMExportTx, ImportTx as EVMImportTx } from 'avalanche/dist/apis/evm';
+import { ADDRESS_SEPARATOR, BaseTx, DecodedUtxoObj, INPUT_SEPARATOR, Tx, TxData } from './iface';
+import { getAVMManager } from 'bitgo-aaron-avalanchejs/dist/serializable/avm/codec';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
 import { Buffer } from 'buffer';
+import { AddPermissionlessValidatorTx } from 'bitgo-aaron-avalanchejs/dist/serializable/pvm';
+import type { TransferableInput } from 'bitgo-aaron-avalanchejs/dist/serializable/avax/transferableInput';
 
 // region utils to sign
 interface signatureSerialized {
@@ -59,15 +52,14 @@ function generateSelectorSignature(signatures: signatureSerialized[]): CheckSign
   } else {
     // Look for empty string
     return function (sig, address): boolean {
-      if (isEmptySignature(sig.bytes)) return true;
-      return false;
+      return isEmptySignature(sig.bytes);
     };
   }
 }
 // end region utils for sign
 
 export class Transaction extends BaseTransaction {
-  protected _avaxTransaction: DeprecatedTx;
+  protected _avaxTransaction: Tx;
   public _type: TransactionType;
   public _network: AvalancheNetwork;
   public _networkID: number;
@@ -90,7 +82,10 @@ export class Transaction extends BaseTransaction {
   }
 
   get avaxPTransaction(): BaseTx {
-    return this._avaxTransaction.getUnsignedTx().getTransaction();
+    // TODO(CR-1073): fix
+    // return this._avaxTransaction.getUnsignedTx().getTransaction();
+    // return this._avaxTransaction.baseTx;
+    return this._avaxTransaction;
   }
 
   get signature(): string[] {
@@ -156,6 +151,11 @@ export class Transaction extends BaseTransaction {
     });
   }
 
+  // TODO(CR-1073): find a way to do this using avalanchejs
+  toHexString(byteArray: Uint8Array): string {
+    return Array.from(byteArray, (byte) => ('0' + (byte & 0xff).toString(16)).slice(-2)).join('');
+  }
+
   /** @inheritdoc */
   /**
    * should be of signedTx doing this with baseTx
@@ -164,7 +164,9 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return this._avaxTransaction.toStringHex();
+    // TODO(CR-1073): check this
+    // return this._avaxTransaction.toStringHex();
+    return this.toHexString(this._avaxTransaction.toBytes(getAVMManager().getDefaultCodec()));
   }
 
   // types - stakingTransaction, import, export
@@ -182,12 +184,10 @@ export class Transaction extends BaseTransaction {
       signatures: this.signature,
       outputs: this.outputs,
       changeOutputs: this.changeOutputs,
-      sourceChain: this.sourceChain,
-      destinationChain: this.destinationChain,
     };
   }
 
-  setTransaction(tx: DeprecatedTx): void {
+  setTransaction(tx: Tx): void {
     this._avaxTransaction = tx;
   }
 
@@ -197,6 +197,9 @@ export class Transaction extends BaseTransaction {
    * @param {TransactionType} transactionType The transaction type to be set
    */
   setTransactionType(transactionType: TransactionType): void {
+    if (![TransactionType.AddPermissionlessValidator].includes(transactionType)) {
+      throw new Error(`Transaction type ${transactionType} is not supported`);
+    }
     this._type = transactionType;
   }
 
@@ -205,11 +208,15 @@ export class Transaction extends BaseTransaction {
    * Only needed for coins that support adding signatures directly (e.g. TSS).
    */
   get signablePayload(): Buffer {
-    return utils.sha256(this._avaxTransaction.getUnsignedTx().toBuffer());
+    // TODO(CR-1073): Fix
+    // return utils.sha256(this._avaxTransaction.getUnsignedTx().toBuffer());
+    return Buffer.from([]);
   }
 
   get id(): string {
-    return utils.cb58Encode(BufferAvax.from(utils.sha256(this._avaxTransaction.toBuffer())));
+    // TODO(CR-1073): Fix
+    // return utils.cb58Encode(BufferAvax.from(utils.sha256(this._avaxTransaction.toBuffer())));
+    return '';
   }
 
   get fromAddresses(): string[] {
@@ -225,22 +232,13 @@ export class Transaction extends BaseTransaction {
    */
   get outputs(): Entry[] {
     switch (this.type) {
-      case TransactionType.Import:
-        return (this.avaxPTransaction as ImportTx | EVMImportTx).getOuts().map(utils.mapOutputToEntry(this._network));
-      case TransactionType.Export:
-        if (utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID)) {
-          return (this.avaxPTransaction as EVMExportTx).getExportedOutputs().map(utils.mapOutputToEntry(this._network));
-        } else {
-          return (this.avaxPTransaction as ExportTx).getExportOutputs().map(utils.mapOutputToEntry(this._network));
-        }
-      case TransactionType.AddDelegator:
-      case TransactionType.AddValidator:
-        // Get staked outputs
-        const addValidatorTx = this.avaxPTransaction as AddDelegatorTx;
+      case TransactionType.AddPermissionlessValidator:
+        const addValidatorTx = this.avaxPTransaction as AddPermissionlessValidatorTx;
         return [
           {
-            address: addValidatorTx.getNodeIDString(),
-            value: addValidatorTx.getStakeAmount().toString(),
+            // TODO(CR-1073): check this
+            address: addValidatorTx.subnetValidator.validator.nodeId.toString(),
+            value: addValidatorTx.stake[0].amount.toString(),
           },
         ];
       default:
@@ -248,50 +246,31 @@ export class Transaction extends BaseTransaction {
     }
   }
 
-  /**
-   * Get a Transasction Fee.
-   */
   get fee(): TransactionFee {
     return { fee: '0', ...this._fee };
   }
 
   get changeOutputs(): Entry[] {
-    // C-chain tx adn Import Txs don't have change outputs
-    if (
-      this.type === TransactionType.Import ||
-      utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID)
-    ) {
-      return [];
-    }
-    // general support any transaction type, but it's scoped yet
-    return (this.avaxPTransaction as PVMBaseTx).getOuts().map(utils.mapOutputToEntry(this._network));
+    // TODO(CR-1073): check this
+    return (this.avaxPTransaction as AddPermissionlessValidatorTx).baseTx.outputs.map(
+      utils.mapOutputToEntry(this._network)
+    );
   }
 
   get inputs(): Entry[] {
     let inputs;
     switch (this.type) {
-      case TransactionType.Import:
-        inputs = (this.avaxPTransaction as ImportTx | EVMImportTx).getImportInputs();
-        break;
-      case TransactionType.Export:
-        if (utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID)) {
-          return (this.avaxPTransaction as EVMExportTx).getInputs().map((evmInput) => ({
-            address: '0x' + evmInput.getAddressString(),
-            value: new BN((evmInput as any).amount).toString(),
-            nonce: evmInput.getNonce().toNumber(),
-          }));
-        }
-        inputs = (this.avaxPTransaction as PVMBaseTx).getIns();
-        break;
+      case TransactionType.AddPermissionlessValidator:
       default:
-        inputs = (this.avaxPTransaction as PVMBaseTx).getIns();
+        inputs = (this.avaxPTransaction as AddPermissionlessValidatorTx).getInputs();
+        break;
     }
-    return inputs.map((input) => {
-      const amountInput = input.getInput() as any as AmountInput;
+    return inputs.map((input: TransferableInput) => {
+      // TODO(CR-1073): check this
       return {
-        id: utils.cb58Encode(input.getTxID()) + INPUT_SEPARATOR + utils.outputidxBufferToNumber(input.getOutputIdx()),
+        id: input.utxoID.txID.toString() + INPUT_SEPARATOR + input.utxoID.outputIdx.value(),
         address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
-        value: amountInput.getAmount().toString(),
+        value: input.amount().toString(),
       };
     });
   }
@@ -302,6 +281,7 @@ export class Transaction extends BaseTransaction {
    * @return hexstring
    */
   createSignature(prv: Buffer): string {
+    // TODO(CR-1073): check this
     const signval = utils.createSignatureAvaxBuffer(
       this._network,
       BufferAvax.from(this.signablePayload),
@@ -311,82 +291,41 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  explainTransaction(): TransactionExplanation {
-    const txJson = this.toJson();
-    const displayOrder = ['id', 'inputs', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
-
-    const outputAmount = txJson.outputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
-    const changeAmount = txJson.changeOutputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
-
-    let rewardAddresses;
-    if ([TransactionType.AddValidator, TransactionType.AddDelegator].includes(txJson.type)) {
-      rewardAddresses = this.rewardAddresses;
-      displayOrder.splice(6, 0, 'rewardAddresses');
-    }
-
-    return {
-      displayOrder,
-      id: txJson.id,
-      inputs: txJson.inputs,
-      outputs: txJson.outputs.map((o) => ({ address: o.address, amount: o.value })),
-      outputAmount,
-      changeOutputs: txJson.changeOutputs.map((o) => ({ address: o.address, amount: o.value })),
-      changeAmount,
-      rewardAddresses,
-      fee: this.fee,
-      type: txJson.type,
-    };
-  }
-
-  /**
-   * Check if this transaction is a P chain
-   */
-  get isTransactionForCChain(): boolean {
-    return utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID);
-  }
+  // TODO(CR-1073): Implement
+  // explainTransaction(): TransactionExplanation {
+  //   const txJson = this.toJson();
+  //   const displayOrder = ['id', 'inputs', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
+  //
+  //   const outputAmount = txJson.outputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
+  //   const changeAmount = txJson.changeOutputs.reduce((p, n) => p.add(new BN(n.value)), new BN(0)).toString();
+  //
+  //   let rewardAddresses;
+  //   if ([TransactionType.AddValidator, TransactionType.AddDelegator].includes(txJson.type)) {
+  //     rewardAddresses = this.rewardAddresses;
+  //     displayOrder.splice(6, 0, 'rewardAddresses');
+  //   }
+  //
+  //   return {
+  //     displayOrder,
+  //     id: txJson.id,
+  //     inputs: txJson.inputs,
+  //     outputs: txJson.outputs.map((o) => ({ address: o.address, amount: o.value })),
+  //     outputAmount,
+  //     changeOutputs: txJson.changeOutputs.map((o) => ({ address: o.address, amount: o.value })),
+  //     changeAmount,
+  //     rewardAddresses,
+  //     fee: this.fee,
+  //     type: txJson.type,
+  //   };
+  // }
 
   /**
-   * get the source chain id or undefined if it's a cross chain transfer.
-   */
-  get sourceChain(): string | undefined {
-    let blockchainID;
-    switch (this.type) {
-      case TransactionType.Import:
-        blockchainID = (this.avaxPTransaction as ImportTx | EVMImportTx).getSourceChain();
-        break;
-      case TransactionType.Export:
-        blockchainID = (this.avaxPTransaction as ExportTx | EVMExportTx).getBlockchainID();
-        break;
-      default:
-        return undefined;
-    }
-    return this.blockchainIDtoAlias(blockchainID);
-  }
-
-  /**
-   * get the destinationChain or undefined if it's a cross chain transfer.
-   */
-  get destinationChain(): string | undefined {
-    let blockchainID;
-    switch (this.type) {
-      case TransactionType.Import:
-        blockchainID = (this.avaxPTransaction as ImportTx | EVMImportTx).getBlockchainID();
-        break;
-      case TransactionType.Export:
-        blockchainID = (this.avaxPTransaction as ExportTx | EVMExportTx).getDestinationChain();
-        break;
-      default:
-        return undefined;
-    }
-    return this.blockchainIDtoAlias(blockchainID);
-  }
-
-  /**
-   * Convert a blockchainId buffer to string and return P or C alias if match of any of that chains.
+   * Get blockchain alias by blockchain id
    * @param {BufferAvax} blockchainIDBuffer
-   * @return {string} blocchainID or alias if exists.
+   * @return {string} alias or blockchainID
    * @private
    */
+  // TODO(CR-1073): check this
   private blockchainIDtoAlias(blockchainIDBuffer: BufferAvax): string {
     const blockchainId = utils.cb58Encode(blockchainIDBuffer);
     switch (blockchainId) {
