@@ -104,7 +104,7 @@ describe('Arbitrum', function () {
       arbeth.should.be.an.instanceof(Arbeth);
       arbeth.getChain().should.equal('arbeth');
       arbeth.getFamily().should.equal('arbeth');
-      arbeth.getFullName().should.equal('Arbitrum Ethereum');
+      arbeth.getFullName().should.equal('Arbitrum Ethereum (L2 Chain)');
       arbeth.getBaseFactor().should.equal(1e18);
     });
 
@@ -114,7 +114,7 @@ describe('Arbitrum', function () {
       tarbeth.should.be.an.instanceof(Tarbeth);
       tarbeth.getChain().should.equal('tarbeth');
       tarbeth.getFamily().should.equal('arbeth');
-      tarbeth.getFullName().should.equal('Testnet Arbitrum Ethereum');
+      tarbeth.getFullName().should.equal('Testnet Arbitrum Ethereum (L2 Chain)');
       tarbeth.getBaseFactor().should.equal(1e18);
     });
   });
