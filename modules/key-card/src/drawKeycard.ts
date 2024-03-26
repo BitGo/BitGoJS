@@ -131,8 +131,7 @@ export async function drawKeycard({
   // Generate the first page's data for the backup PDF
   y = moveDown(y, 35);
   const qrSize = 130;
-
-  const qrKeys = ['user', 'userMasterPublicKey', 'passcode', 'backup', 'backupMasterPublicKey', 'bitgo'].filter(
+  const qrKeys = ['user', 'userMasterPublicKey', 'backup', 'backupMasterPublicKey', 'bitgo', 'passcode'].filter(
     (key) => !!qrData[key]
   );
   for (let index = 0; index < qrKeys.length; index++) {
