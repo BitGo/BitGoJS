@@ -1,7 +1,7 @@
 # Requirements
 
 - yarn version 1 (classic)
-- node version >=16 and <19
+- node version >=18 and <21
 
 # Installing
 
