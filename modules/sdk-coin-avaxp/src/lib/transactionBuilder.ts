@@ -1,16 +1,17 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransactionBuilder } from '@bitgo/sdk-core';
+import { BaseTransactionBuilder, BuildTransactionError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { Tx } from './iface';
+import { DecodedUtxoObj, Tx } from './iface';
+import utils from './utils';
 // import { BaseTx } from '@bitgo/avalanchejs/dist/serializable/avm/baseTx';
 // import { PVMTx } from '@bitgo/avalanchejs/dist/serializable/pvm/abstractTx';
 // import { AbstractTx } from '@bitgo/avalanchejs/dist/serializable/pvm/abstractTx';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  private _transaction: Transaction;
-  public _signer: KeyPair[] = [];
+  protected _transaction: Transaction;
   protected recoverSigner = false;
+  public _signer: KeyPair[] = [];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -25,8 +26,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   initBuilder(tx: Tx): this {
     const baseTx = tx.baseTx;
+    // TODO check blockchainId
     if (
-      // TODO check blockchainId
       baseTx.NetworkId.value() !== this._transaction._networkID
       // ||
       // baseTx.BlockchainId.value() !== this._transaction._blockchainID
@@ -35,6 +36,82 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new Error('Network or blockchain is not equals');
     }
     this._transaction.setTransaction(tx);
+    return this;
+  }
+
+  // region Validators
+  /**
+   * Validates the threshold
+   * @param threshold
+   */
+  validateThreshold(threshold: number): void {
+    if (!threshold || threshold !== 2) {
+      throw new BuildTransactionError('Invalid transaction: threshold must be set to 2');
+    }
+  }
+
+  /**
+   * Check the UTXO has expected fields.
+   * @param UTXO
+   */
+  validateUtxo(value: DecodedUtxoObj): void {
+    ['outputID', 'amount', 'txid', 'outputidx'].forEach((field) => {
+      if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`Utxos required ${field}`);
+    });
+  }
+
+  /**
+   * Check the list of UTXOS is empty and check each UTXO.
+   * @param values
+   */
+  validateUtxos(values: DecodedUtxoObj[]): void {
+    if (values.length === 0) {
+      throw new BuildTransactionError("Utxos can't be empty array");
+    }
+    values.forEach(this.validateUtxo);
+  }
+  // endregion
+
+  /**
+   * Threshold is an int that names the number of unique signatures required to spend the output.
+   * Must be less than or equal to the length of Addresses.
+   * @param {number} value
+   */
+  threshold(value: number): this {
+    this.validateThreshold(value);
+    this._transaction._threshold = value;
+    return this;
+  }
+
+  /**
+   * When using recovery key must be set here
+   * TODO: STLX-17317 recovery key signing
+   * @param {boolean}[recoverSigner=true] whether it's recovery signer
+   */
+  recoverMode(recoverSigner = true): this {
+    this.recoverSigner = recoverSigner;
+    return this;
+  }
+
+  /**
+   * fromPubKey is a list of unique addresses that correspond to the private keys that can be used to spend this output
+   * @param {string | string[]} senderPubKey
+   */
+  fromPubKey(senderPubKey: string | string[]): this {
+    const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
+    this._transaction._fromAddresses = pubKeys.map(utils.parseAddress);
+    return this;
+  }
+
+  /**
+   * List of UTXO required as inputs.
+   * A UTXO is a standalone representation of a transaction output.
+   *
+   * @param {DecodedUtxoObj[]} list of UTXOS
+   */
+  utxos(value: DecodedUtxoObj[]): this {
+    this.validateUtxos(value);
+    this._transaction._utxos = value;
     return this;
   }
 

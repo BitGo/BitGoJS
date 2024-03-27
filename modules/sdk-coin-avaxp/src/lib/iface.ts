@@ -1,7 +1,7 @@
 import { TransactionExplanation as BaseTransactionExplanation, Entry, TransactionType } from '@bitgo/sdk-core';
 import { EVMBaseTx as DeprecatedEVMBaseTx, EVMOutput, Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { BaseTx as DeprecatedPMVBaseTx, Tx as PVMTx, TransferableOutput } from 'avalanche/dist/apis/platformvm';
-import { pvmSerial } from '@bitgo/avalanchejs';
+import { avaxSerial, pvmSerial } from '@bitgo/avalanchejs';
 export interface AvaxpEntry extends Entry {
   id: string;
 }
@@ -66,4 +66,6 @@ export const INPUT_SEPARATOR = ':';
 export type DeprecatedTx = PVMTx | EVMTx;
 export type DeprecatedBaseTx = DeprecatedPMVBaseTx | DeprecatedEVMBaseTx;
 export type Tx = pvmSerial.AddPermissionlessValidatorTx;
+export type BaseTx = avaxSerial.BaseTx;
+export type AvaxTx = avaxSerial.AvaxTx;
 export type Output = TransferableOutput | EVMOutput;

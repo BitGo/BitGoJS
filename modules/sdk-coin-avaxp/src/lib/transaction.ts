@@ -9,8 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import { Credential } from 'avalanche/dist/common';
-import { avmSerial, avaxSerial, pvmSerial, utils as avaxUtils } from '@bitgo/avalanchejs';
+import { avmSerial, avaxSerial, Credential, pvmSerial, utils as avaxUtils } from '@bitgo/avalanchejs';
 import { Buffer } from 'buffer';
 import { ADDRESS_SEPARATOR, DecodedUtxoObj, INPUT_SEPARATOR, TransactionExplanation, Tx, TxData } from './iface';
 import { KeyPair } from './keyPair';
@@ -61,21 +60,23 @@ export class Transaction extends BaseTransaction {
   public _type: TransactionType;
   public _network: AvalancheNetwork;
   public _networkID: number;
-  public _assetId: BufferAvax;
-  public _blockchainID: BufferAvax;
+  public _assetId: string;
+  public _blockchainID: string;
   public _threshold = 2;
-  public _locktime: BN = new BN(0);
+  public _locktime = BigInt(0);
   public _fromAddresses: BufferAvax[] = [];
   public _rewardAddresses: BufferAvax[];
   public _utxos: DecodedUtxoObj[] = [];
   public _to: BufferAvax[];
   public _fee: Partial<TransactionFee> = {};
+  public _blsPublicKey: string;
+  public _blsSignature: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._network = coinConfig.network as AvalancheNetwork;
-    this._assetId = utils.cb58Decode(this._network.avaxAssetID);
-    this._blockchainID = utils.cb58Decode(this._network.blockchainID);
+    this._assetId = this._network.avaxAssetID;
+    this._blockchainID = this._network.blockchainID;
     this._networkID = this._network.networkID;
   }
 
@@ -87,7 +88,8 @@ export class Transaction extends BaseTransaction {
     if (this.credentials.length === 0) {
       return [];
     }
-    const obj: any = this.credentials[0].serialize();
+    // TODO(CR-1073): check this
+    const obj: any = this.credentials[0].getSignatures();
     return obj.sigArray.map((s) => s.bytes).filter((s) => !isEmptySignature(s));
   }
 
@@ -106,13 +108,9 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
+  // TODO(CR-1073): verify this implementation
   /**
-   * Sign a avaxp transaction and update the transaction hex
-   * validator, delegator, import, exports extend baseTx
-   * unsignedTx: UnsignedTx = new UnsignedTx(baseTx)  (baseTx = addValidatorTx)
-   * const tx: Tx = unsignedTx.sign(keychain) (tx is type standard signed tx)
-   * get baseTx then create new unsignedTx then sign
-   *
+   * Sign an avaxp transaction and update the transaction hex
    * @param {KeyPair} keyPair
    */
   sign(keyPair: KeyPair): void {
@@ -130,7 +128,8 @@ export class Transaction extends BaseTransaction {
     const signature = this.createSignature(prv);
     let checkSign: CheckSignature | undefined = undefined;
     this.credentials.forEach((c) => {
-      const cs: any = c.serialize();
+      // const cs: any = c.serialize();
+      const cs: any = c.getSignatures();
       if (checkSign === undefined) {
         checkSign = generateSelectorSignature(cs.sigArray);
       }
@@ -142,7 +141,7 @@ export class Transaction extends BaseTransaction {
         }
       });
       if (!find) throw new SigningError('Private key cannot sign the transaction');
-      c.deserialize(cs);
+      // c.deserialize(cs);
     });
   }
 
@@ -176,9 +175,6 @@ export class Transaction extends BaseTransaction {
       signatures: this.signature,
       outputs: this.outputs,
       changeOutputs: this.changeOutputs,
-      // TODO(CR-1073): is this required here
-      // sourceChain: this.sourceChain,
-      // destinationChain: this.destinationChain,
     };
   }
 
@@ -304,25 +300,5 @@ export class Transaction extends BaseTransaction {
       fee: this.fee,
       type: txJson.type,
     };
-  }
-
-  /**
-   * Get blockchain alias by blockchain id
-   * @param {BufferAvax} blockchainIDBuffer
-   * @return {string} alias or blockchainID
-   * @private
-   */
-  // TODO(CR-1073): this is only used when we are identifying sourceChain or destinationChain,
-  // which is only required for crossChain transactions. So probably we don't need this.
-  private blockchainIDtoAlias(blockchainIDBuffer: BufferAvax): string {
-    const blockchainId = this._avaxTransaction.baseTx.BlockchainId.toString();
-    switch (blockchainId) {
-      case this._network.cChainBlockchainID:
-        return 'C';
-      case this._network.blockchainID:
-        return 'P';
-      default:
-        return blockchainId;
-    }
   }
 }

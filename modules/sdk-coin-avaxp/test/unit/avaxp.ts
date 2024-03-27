@@ -117,6 +117,27 @@ describe('Avaxp', function () {
   describe('Sign Transaction', () => {
     const factory = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName));
 
+    it('build and sign an AddPermissionlessValidator transaction', async () => {
+      const recoveryMode = false;
+      const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
+        .getPermissionlessValidatorTxBuilder()
+        .threshold(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.threshold)
+        .locktime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.locktime)
+        .recoverMode(recoveryMode)
+        .fromPubKey(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.bitgoAddresses)
+        .startTime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.startTime)
+        .endTime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.endTime)
+        .stakeAmount(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.stakeAmount)
+        .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
+        .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
+        .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
+      const tx = await txBuilder.build();
+
+      // TODO(CR-1073): continue testing
+      const txHex = tx.toBroadcastFormat();
+      txHex.should.not.be.empty();
+    });
+
     it('build and sign a transaction in regular mode', async () => {
       const recoveryMode = false;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
