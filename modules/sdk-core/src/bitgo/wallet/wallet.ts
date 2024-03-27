@@ -97,7 +97,6 @@ import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
-import { ofcTokens } from '@bitgo/statics';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
 import { TxSendBody } from '@bitgo/public-types';
@@ -1192,9 +1191,6 @@ export class Wallet implements IWallet {
       if (!_.isUndefined(onToken)) {
         if (!_.isString(onToken)) {
           throw new Error('onToken has to be a string');
-        }
-        if (!ofcTokens.includes(onToken)) {
-          throw new Error('Unknown OFC token');
         }
         addressParams.onToken = onToken;
       } else {
