@@ -100,7 +100,7 @@ describe('Optimism', function () {
       opeth.should.be.an.instanceof(Opeth);
       opeth.getChain().should.equal('opeth');
       opeth.getFamily().should.equal('opeth');
-      opeth.getFullName().should.equal('Optimism Ethereum');
+      opeth.getFullName().should.equal('Optimism Ethereum (L2 Chain)');
       opeth.getBaseFactor().should.equal(1e18);
     });
 
@@ -110,7 +110,7 @@ describe('Optimism', function () {
       topeth.should.be.an.instanceof(Topeth);
       topeth.getChain().should.equal('topeth');
       topeth.getFamily().should.equal('opeth');
-      topeth.getFullName().should.equal('Testnet Optimism Ethereum');
+      topeth.getFullName().should.equal('Testnet Optimism Ethereum (L2 Chain)');
       topeth.getBaseFactor().should.equal(1e18);
     });
   });

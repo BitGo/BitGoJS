@@ -1762,6 +1762,7 @@ export enum UnderlyingAsset {
   'arbeth:usdc' = 'arbeth:usdc',
   'arbeth:usdcv2' = 'arbeth:usdcv2',
   'arbeth:usdt' = 'arbeth:usdt',
+  'arbeth:arb' = 'arbeth:arb',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -1771,6 +1772,7 @@ export enum UnderlyingAsset {
   'opeth:usdc' = 'opeth:usdc',
   'opeth:usdcv2' = 'opeth:usdcv2',
   'opeth:usdt' = 'opeth:usdt',
+  'opeth:op' = 'opeth:op',
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
