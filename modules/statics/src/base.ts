@@ -1053,6 +1053,7 @@ export enum UnderlyingAsset {
   OKBMOON = 'okbmoon',
   OM = 'om',
   OMG = 'omg',
+  OMNIA = 'omnia',
   ONDO = 'ondo',
   ONL = 'onl',
   OP = 'op',
