@@ -128,20 +128,18 @@ export class Transaction extends BaseTransaction {
     const signature = this.createSignature(prv);
     let checkSign: CheckSignature | undefined = undefined;
     this.credentials.forEach((c) => {
-      // const cs: any = c.serialize();
-      const cs: any = c.getSignatures();
+      const cs: signatureSerialized[] = c.getSignatures().map((s) => ({ bytes: s }));
       if (checkSign === undefined) {
-        checkSign = generateSelectorSignature(cs.sigArray);
+        checkSign = generateSelectorSignature(cs);
       }
       let find = false;
-      cs.sigArray.forEach((sig) => {
+      cs.forEach((sig) => {
         if (checkSign && checkSign(sig, addressHex)) {
           sig.bytes = signature;
           find = true;
         }
       });
       if (!find) throw new SigningError('Private key cannot sign the transaction');
-      // c.deserialize(cs);
     });
   }
 
