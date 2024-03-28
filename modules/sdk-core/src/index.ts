@@ -4,7 +4,6 @@ export * from './api';
 export * from './bitgo';
 export * from './bitgojsError';
 export * as coins from './coins';
-export * from './openssl';
 import { EddsaUtils } from './bitgo/utils/tss/eddsa/eddsa';
 export { EddsaUtils };
 import { EcdsaUtils } from './bitgo/utils/tss/ecdsa/ecdsa';
