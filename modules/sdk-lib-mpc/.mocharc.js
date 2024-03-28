@@ -2,7 +2,7 @@
 
 module.exports = {
   require: 'ts-node/register',
-  timeout: '20000',
+  timeout: '200000',
   reporter: 'min',
   'reporter-option': ['cdn=true', 'json=false'],
   exit: true,

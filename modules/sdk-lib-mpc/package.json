@@ -43,7 +43,7 @@
     "@wasmer/wasi": "^1.2.2",
     "bigint-crypto-utils": "3.1.4",
     "bigint-mod-arith": "3.1.2",
-    "cbor": "^9.0.1",
+    "cbor-x": "1.5.8",
     "libsodium-wrappers-sumo": "^0.7.9",
     "openpgp": "5.10.1",
     "paillier-bigint": "3.3.0"
