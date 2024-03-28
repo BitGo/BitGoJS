@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
-import { TransactionBuilder } from './transactionBuilder';
+import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
 import {
   SECPTransferInput,
   SECPTransferOutput,
@@ -16,7 +16,7 @@ import { SECP256K1_Transfer_Output } from './iface';
 /**
  * Cross-chain transactions (export and import) are atomic operations.
  */
-export abstract class AtomicTransactionBuilder extends TransactionBuilder {
+export abstract class AtomicTransactionBuilder extends DeprecatedTransactionBuilder {
   protected _externalChainId: BufferAvax;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {

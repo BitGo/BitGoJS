@@ -1,15 +1,15 @@
 import { bip32, ECPair, networks } from '@bitgo/utxo-lib';
-import * as nacl from 'tweetnacl';
 import * as hex from '@stablelib/hex';
+import bs58 from 'bs58';
 import * as bls from 'noble-bls12-381';
 import stripHexPrefix from 'strip-hex-prefix';
+import * as nacl from 'tweetnacl';
 import { ExtendedKeys } from '../baseCoin';
-import bs58 from 'bs58';
 
 /**
  * @deprecated - use @bitgo/sdk-lib-mpc instead
  */
-export { convertHexArrToBigIntArr, convertBigIntArrToHexArr, hexToBigInt, bigIntToHex } from '@bitgo/sdk-lib-mpc';
+export { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '@bitgo/sdk-lib-mpc';
 
 /**
  * @param xpub - a base-58 encoded extended public key (BIP32)
@@ -203,6 +203,21 @@ export function isValidBLSPrivateKey(prv: string): boolean {
 export function isValidBLSPublicKey(pub: string): boolean {
   try {
     bls.PointG1.fromCompressedHex(stripHexPrefix(pub)).assertValidity();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Whether input is a valid BLS signature
+ *
+ * @param {string} sig the signature to validate
+ * @returns {boolean} Whether input is a valid signature or not
+ */
+export function isValidBLSSignature(sig: string): boolean {
+  try {
+    bls.PointG2.fromSignature(sig).assertValidity();
     return true;
   } catch (e) {
     return false;

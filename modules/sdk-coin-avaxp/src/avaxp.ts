@@ -158,7 +158,8 @@ export class AvaxP extends BaseCoin {
         break;
       case TransactionType.AddPermissionlessDelegator:
       case TransactionType.AddPermissionlessValidator:
-        this.validateStakingTx(stakingOptions, explainedTx);
+        // TODO(CR-1073): implement validatePermissionlessStakingTx
+        // this.validatePermissionlessStakingTx(stakingOptions, explainedTx);
         break;
       case TransactionType.Export:
         if (!params.txParams.recipients || params.txParams.recipients?.length !== 1) {
