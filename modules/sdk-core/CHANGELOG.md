@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.3.0...@bitgo/sdk-core@26.4.0) (2024-03-28)
+
+### Bug Fixes
+
+- **sdk-core:** remove onToken validation when creating address ([75f7fb7](https://github.com/BitGo/BitGoJS/commit/75f7fb7d3a98995f8086743d9db1662808d2315f))
+
+### Features
+
+- **sdk-coin-avaxp:** add skeleton for addPermissionLessValidator tx ([08ad690](https://github.com/BitGo/BitGoJS/commit/08ad6909f9a51153bc0e76f67d4892cecb5ab805))
+- **sdk-core:** add 2 new fields for staking options ([abdddd7](https://github.com/BitGo/BitGoJS/commit/abdddd7f5520ea67b930b9b96bc7099ebbf6be19))
+
 # [26.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.2.0...@bitgo/sdk-core@26.3.0) (2024-03-19)
 
 ### Features

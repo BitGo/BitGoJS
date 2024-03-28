@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.22.4...@bitgo/sdk-coin-avaxp@4.0.0) (2024-03-28)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** add support for recipient in P > C import tx ([0ffc818](https://github.com/BitGo/BitGoJS/commit/0ffc81859d620be1090e8ac4f3907a0fb690a1b3))
+
+### Features
+
+- **root:** deprecate node 16 ([d3ec624](https://github.com/BitGo/BitGoJS/commit/d3ec6240bddae2a4ab7fa80c4a16efecc36210bd))
+- **sdk-coin-avaxp:** add new avaxp library ([14d3767](https://github.com/BitGo/BitGoJS/commit/14d3767db8e8734ecdb3226fdcc5dd170630e1f5))
+- **sdk-coin-avaxp:** add skeleton for addPermissionLessValidator tx ([08ad690](https://github.com/BitGo/BitGoJS/commit/08ad6909f9a51153bc0e76f67d4892cecb5ab805))
+
+### BREAKING CHANGES
+
+- **root:** Node 16 is no longer supported in bitgojs.
+  TICKET: WP-1100
+
 ## [3.22.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.22.3...@bitgo/sdk-coin-avaxp@3.22.4) (2024-03-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

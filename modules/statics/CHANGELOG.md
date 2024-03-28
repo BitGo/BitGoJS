@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.1.0...@bitgo/statics@48.2.0) (2024-03-28)
+
+### Bug Fixes
+
+- **sdk-core:** remove onToken validation when creating address ([75f7fb7](https://github.com/BitGo/BitGoJS/commit/75f7fb7d3a98995f8086743d9db1662808d2315f))
+
+### Features
+
+- **statics:** add new token MASA ([24dac2a](https://github.com/BitGo/BitGoJS/commit/24dac2a926e66975f9b2d048587da8e87c8d8e59))
+
 # [48.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.0.0...@bitgo/statics@48.1.0) (2024-03-19)
 
 ### Bug Fixes
