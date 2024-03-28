@@ -302,14 +302,14 @@ describe('AvaxP Validate Tx Builder', () => {
       rawTx.should.equal(testData.ADDVALIDATOR_SAMPLES.recoveryFullsigntxHexWithMemo);
     });
 
-    xit('Compare size and location of signatures in credentials for halfsign', async () => {
+    it('Compare size and location of signatures in credentials for halfsign', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.unsignedTxHex
       );
       txBuilder.sign({ key: testData.ADDVALIDATOR_SAMPLES.privKey.prv1 });
       // look into credentials make sure that index 0 is signed with user key
     });
-    xit('Compare size and location of signatures in credentials for full sign', async () => {
+    it('Compare size and location of signatures in credentials for full sign', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tavaxp')).from(
         testData.ADDVALIDATOR_SAMPLES.unsignedTxHex
       );

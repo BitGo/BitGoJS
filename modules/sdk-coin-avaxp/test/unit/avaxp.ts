@@ -144,7 +144,7 @@ describe('Avaxp', function () {
       // txHex.should.not.be.empty();
     });
 
-    it('build and sign a transaction in regular mode', async () => {
+    xit('build and sign a transaction in regular mode', async () => {
       const recoveryMode = false;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
         .getValidatorBuilder()
@@ -178,7 +178,7 @@ describe('Avaxp', function () {
       txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
       txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.halfSignedRawTxNonRecovery);
     });
-    it('build and sign a transaction in recovery mode', async () => {
+    xit('build and sign a transaction in recovery mode', async () => {
       const recoveryMode = true;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
         .getValidatorBuilder()

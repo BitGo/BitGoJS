@@ -270,8 +270,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   }
 
   static verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
-    (tx as pvmSerial.AddPermissionlessValidatorTx)._type === TypeSymbols.AddPermissionlessDelegatorTx;
-    return true;
+    return (tx as pvmSerial.AddPermissionlessValidatorTx)._type === TypeSymbols.AddPermissionlessDelegatorTx;
   }
 
   verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
@@ -506,7 +505,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
             credentials.push(
               new Credential([
-                utils.createNewSig('0x0'),
+                utils.createNewSig(''),
                 utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString('hex')),
               ])
             );
@@ -514,7 +513,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             credentials.push(
               new Credential([
                 utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString('hex')),
-                utils.createNewSig('0x0'),
+                utils.createNewSig(''),
               ])
             );
           }

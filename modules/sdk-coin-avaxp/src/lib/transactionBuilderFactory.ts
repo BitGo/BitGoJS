@@ -13,6 +13,9 @@ import { PermissionlessValidatorTxBuilder } from './permissionlessValidatorTxBui
 import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
 import { ValidatorTxBuilder } from './validatorTxBuilder';
+import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
+import { Buffer as BufferAvax } from 'avalanche';
+import { Tx } from 'avalanche/dist/apis/platformvm';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -25,21 +28,40 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     utils.validateRawTransaction(raw);
     let txSource: 'EVM' | 'PVM' = 'PVM';
     let transactionBuilder: TransactionBuilder | DeprecatedTransactionBuilder | undefined = undefined;
-    let tx;
+    let tx: any; // Tx | EVMTx | pvmSerial.BaseTx;
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [tx, _] = pvmSerial.BaseTx.fromBytes(Buffer.from(raw, 'hex'), avmSerial.getAVMManager().getDefaultCodec());
+      tx = pvmSerial.BaseTx.fromBytes(Buffer.from(raw, 'hex'), avmSerial.getAVMManager().getDefaultCodec())[0];
       if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
         throw new Error('It is not a transaction of this network');
       }
     } catch {
-      txSource = 'EVM';
-      // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
-      // tx = new ExportTx();
-      // if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
-      //   throw new Error('It is not a transaction of this network or C chain');
-      // }
+      try {
+        raw = utils.removeHexPrefix(raw);
+        tx = new Tx();
+        // could throw an error if a txType doesn't match.
+        tx.fromBuffer(BufferAvax.from(raw, 'hex'));
+
+        if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
+          throw new Error('It is not a transaction of this network');
+        }
+      } catch {
+        txSource = 'EVM';
+        // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
+        // tx = evmSerial.ExportTx.fromBytes(Buffer.from(raw, 'hex'), avmSerial.getAVMManager().getDefaultCodec())[0];
+        // tx = new ExportTx();
+        // if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
+        //   throw new Error('It is not a transaction of this network or C chain');
+        // }
+        txSource = 'EVM';
+        tx = new EVMTx();
+        tx.fromBuffer(BufferAvax.from(raw, 'hex'));
+
+        if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
+          throw new Error('It is not a transaction of this network or C chain');
+        }
+      }
     }
     if (txSource === 'PVM') {
       if (PermissionlessValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
