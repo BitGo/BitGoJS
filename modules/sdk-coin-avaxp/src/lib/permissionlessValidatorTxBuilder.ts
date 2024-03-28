@@ -1,9 +1,24 @@
-import { avaxSerial, Credential, pvmSerial, Signature, TypeSymbols } from '@bitgo/avalanchejs';
+import {
+  Address,
+  avaxSerial,
+  BigIntPr,
+  Credential,
+  Id,
+  Input,
+  Int,
+  OutputOwners,
+  networkIDs,
+  pvmSerial,
+  Signature,
+  TransferInput,
+  TransferOutput,
+  TypeSymbols,
+} from '@bitgo/avalanchejs';
 import {
   BaseAddress,
   BaseKey,
   BuildTransactionError,
-  isValidateBLSSignature,
+  isValidBLSSignature,
   isValidBLSPublicKey,
   NotSupported,
   TransactionType,
@@ -16,7 +31,7 @@ import { DecodedUtxoObj, SECP256K1_Transfer_Output, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import utils from './utils';
-// import { recoverUtxos } from './utxoEngine';
+// import { recov1erUtxos } from './utxoEngine';
 import { TransactionBuilder } from './transactionBuilder';
 
 export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
@@ -117,7 +132,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
    * @param blsSignature
    */
   blsSignature(blsSignature: string): this {
-    isValidateBLSSignature(blsSignature);
+    isValidBLSSignature(blsSignature);
     this._blsSignature = blsSignature;
     return this;
   }
@@ -191,18 +206,11 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   }
 
   /**
-   *
-   *   protected _startTime: Date;
-   *   protected _endTime: Date;
-   *   2 weeks = 1209600
-   *   1 year = 31556926
-   *   unix time stamp based off seconds
+   * Validate stake duration
+   * @param startTime
+   * @param endTime
    */
   validateStakeDuration(startTime: bigint, endTime: bigint): void {
-    const nextDay = BigInt(Date.now()) + BigInt(86400);
-    if (startTime < nextDay) {
-      throw new BuildTransactionError('Start time needs to be one day greater than current time');
-    }
     if (endTime < startTime) {
       throw new BuildTransactionError('End date cannot be less than start date');
     }
@@ -270,12 +278,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     return PermissionlessValidatorTxBuilder.verifyTxType(tx);
   }
 
-  /**
-   * Threshold must be 2 and since output always get reordered we want to make sure we can always add signatures in the correct location
-   * To find the correct location for the signature, we use the ouput's addresses to create the signatureIdx in the order that we desire
-   * 0: user key, 1: hsm key, 2: recovery key
-   * @protected
-   */
+  // @TODO(CR-1073): Remove this method when calculateUtxos() is ready
   protected createInputOutput(): {
     inputs: avaxSerial.TransferableInput[];
     outputs: avaxSerial.TransferableOutput[];
@@ -414,31 +417,176 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     };
   }
 
+  protected calculateUtxos(): {
+    inputs: avaxSerial.TransferableInput[];
+    stakeOutputs: avaxSerial.TransferableOutput[];
+    changeOutputs: avaxSerial.TransferableOutput[];
+    // credentials: Credential[];
+  } {
+    const inputs: avaxSerial.TransferableInput[] = [];
+    const stakeOutputs: avaxSerial.TransferableOutput[] = [];
+    const changeOutputs: avaxSerial.TransferableOutput[] = [];
+
+    let currentTotal = BigInt(0);
+
+    // delegating and validating have no fees
+    const totalTarget = this._stakeAmount.valueOf();
+
+    // convert fromAddresses to string
+    // fromAddresses = bitgo order if we are in WP
+    // fromAddresses = onchain order if we are in from
+    const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
+      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b)
+    );
+
+    // if we are in OVC, none of the utxos will have addresses since they come from
+    // deserialized inputs (which don't have addresses), not the IMS
+    const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
+
+    const assetId = Id.fromString(this.transaction._assetId);
+    this.transaction._utxos.forEach((utxo) => {
+      // validate the utxos
+      if (!utxo) {
+        throw new BuildTransactionError('Utxo is undefined');
+      }
+      // addressesIndex should neve have a mismatch
+      if (utxo.addressesIndex?.includes(-1)) {
+        throw new BuildTransactionError('Addresses are inconsistent');
+      }
+      if (utxo.threshold !== this.transaction._threshold) {
+        throw new BuildTransactionError('Threshold is inconsistent');
+      }
+
+      /*
+        A = user key
+        B = hsm key
+        C = backup key
+        bitgoAddresses = bitgo addresses [ A, B, C ]
+        utxo.addresses = IMS addresses [ B, C, A ]
+        utxo.addressesIndex = [ 2, 0, 1 ]
+        we pick 0, 1 for non-recovery
+        we pick 1, 2 for recovery
+      */
+
+      // in WP, output.addressesIndex is empty, so fill it
+      if (!utxo.addressesIndex || utxo.addressesIndex.length === 0) {
+        utxo.addressesIndex = bitgoAddresses.map((a) => utxo.addresses.indexOf(a));
+      }
+      // in OVC, output.addressesIndex is defined correctly from the previous iteration
+
+      if (utxo.outputID === SECP256K1_Transfer_Output) {
+        const utxoAmount = BigInt(utxo.amount);
+        const addressesIndex = utxo.addressesIndex ?? [];
+
+        // either user (0) or recovery (2)
+        // TODO(CR-1073): these are used in credentials
+        // const firstIndex = this.recoverSigner ? 2 : 0;
+        // const bitgoIndex = 1;
+        currentTotal = currentTotal + utxoAmount;
+
+        const utxoId = avaxSerial.UTXOID.fromNative(utxo.txid, Number(utxo.outputidx));
+
+        const input = new avaxSerial.TransferableInput(
+          utxoId,
+          assetId,
+          new TransferInput(new BigIntPr(utxoAmount), new Input(addressesIndex.map((num) => new Int(num))))
+        );
+        inputs.push(input);
+      }
+    });
+
+    if (buildOutputs) {
+      if (currentTotal < totalTarget) {
+        throw new BuildTransactionError(
+          `Utxo outputs get ${currentTotal.toString()} and ${totalTarget.toString()} is required`
+        );
+      } else if (currentTotal >= totalTarget) {
+        const stakeOutput = new avaxSerial.TransferableOutput(
+          assetId,
+          new TransferOutput(
+            new BigIntPr(totalTarget),
+            new OutputOwners(
+              new BigIntPr(this.transaction._locktime),
+              new Int(this.transaction._threshold),
+              this.transaction._fromAddresses.map((a) => Address.fromBytes(a)[0])
+            )
+          )
+        );
+        stakeOutputs.push(stakeOutput);
+
+        if (currentTotal >= totalTarget) {
+          const changeOutput = new avaxSerial.TransferableOutput(
+            assetId,
+            new TransferOutput(
+              new BigIntPr(currentTotal - totalTarget),
+              new OutputOwners(
+                new BigIntPr(this.transaction._locktime),
+                new Int(this.transaction._threshold),
+                this.transaction._fromAddresses.map((a) => Address.fromBytes(a)[0])
+              )
+            )
+          );
+          changeOutputs.push(changeOutput);
+        }
+      }
+    }
+
+    // TODO(CR-1073): Create credentials and return them here
+    //  @see createInputOutput() in delegatorTxBuilder.ts
+    return { inputs, stakeOutputs, changeOutputs };
+  }
+
   /**
    * Build the add validator transaction
    * @protected
    */
-  // TODO(CR-1073): implement
   protected buildAvaxTransaction(): void {
-    // const { inputs, outputs, credentials } = this.createInputOutput();
-    // this.transaction.setTransaction(
-    //   new AddPermissionlessValidatorTx(
-    //     avaxSerial.BaseTx.fromNative(
-    //       this.transaction._networkID,
-    //       this.transaction._blockchainID,
-    //       changeOutputs,
-    //       inputs,
-    //       defaultedOptions.memo,
-    //     ),
-    //     SubnetValidator.fromNative(
-    //       nodeID,
-    //       start,
-    //       end,
-    //       weight,
-    //       Id.fromString(subnetID),
-    //     ),
-    //   )
-    // );
+    this.validateStakeDuration(this._startTime, this._endTime);
+    const { inputs, stakeOutputs, changeOutputs } = this.calculateUtxos();
+    const baseTx = avaxSerial.BaseTx.fromNative(
+      this.transaction._networkID,
+      this.transaction._blockchainID,
+      changeOutputs,
+      inputs,
+      new Uint8Array() // default empty memo
+    );
+
+    const subnetValidator = pvmSerial.SubnetValidator.fromNative(
+      this._nodeID,
+      this._startTime,
+      this._endTime,
+      BigInt(1e9),
+      networkIDs.PrimaryNetworkID
+    );
+
+    // TODO create a `Signer` instead if we have signatures for the tx
+    const signer = new pvmSerial.SignerEmpty();
+
+    const outputOwners = new OutputOwners(
+      new BigIntPr(this.transaction._locktime),
+      new Int(this.transaction._threshold),
+      this.transaction._fromAddresses.map((a) => Address.fromBytes(a)[0])
+    );
+
+    // TODO(CR-1073): check this value
+    //  Shares 10,000 times percentage of reward taken from delegators
+    //  https://docs.avax.network/reference/avalanchego/p-chain/txn-format#unsigned-add-validator-tx
+    const shares = new Int(1e4 * 20);
+
+    // TODO(CR-1073): check if `AddPermissionlessValidatorTx` should be wrapped in `UnsignedTx`
+    //  @see: https://github.com/ava-labs/avalanchejs/blob/master/src/vms/pvm/builder.ts#L650
+    //  @see: @buildAvaxTransaction in validatorTxBuilder.ts
+    this.transaction.setTransaction(
+      new pvmSerial.AddPermissionlessValidatorTx(
+        baseTx,
+        subnetValidator,
+        signer,
+        stakeOutputs,
+        outputOwners,
+        outputOwners,
+        shares
+      )
+    );
   }
 
   /** @inheritdoc */

@@ -215,7 +215,7 @@ export function isValidBLSPublicKey(pub: string): boolean {
  * @param {string} sig the signature to validate
  * @returns {boolean} Whether input is a valid signature or not
  */
-export function isValidateBLSSignature(sig: string): boolean {
+export function isValidBLSSignature(sig: string): boolean {
   try {
     bls.PointG2.fromSignature(sig).assertValidity();
     return true;
