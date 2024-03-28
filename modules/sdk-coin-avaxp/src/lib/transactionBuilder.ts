@@ -5,9 +5,6 @@ import { DecodedUtxoObj, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import utils from './utils';
-// import { BaseTx } from '@bitgo/avalanchejs/dist/serializable/avm/baseTx';
-// import { PVMTx } from '@bitgo/avalanchejs/dist/serializable/pvm/abstractTx';
-// import { AbstractTx } from '@bitgo/avalanchejs/dist/serializable/pvm/abstractTx';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -26,7 +23,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns itself
    */
   initBuilder(tx: Tx): this {
-    const baseTx = tx.baseTx;
+    // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
+    const baseTx = (tx as pvmSerial.AddPermissionlessValidatorTx).baseTx;
     if (
       baseTx.NetworkId.value() !== this._transaction._networkID ||
       baseTx.BlockchainId.value() !== this._transaction._blockchainID

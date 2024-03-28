@@ -2,9 +2,8 @@ import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 // import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 // import { Tx } from 'avalanche/dist/apis/platformvm';
-import { avmSerial } from '@bitgo/avalanchejs';
+import { avmSerial, pvmSerial } from '@bitgo/avalanchejs';
 // eslint-disable-next-line import/no-internal-modules
-import { BaseTx } from '@bitgo/avalanchejs/dist/serializable/pvm/baseTx';
 import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
 import { ExportInCTxBuilder } from './exportInCTxBuilder';
 import { ExportTxBuilder } from './exportTxBuilder';
@@ -30,7 +29,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [tx, _] = BaseTx.fromBytes(Buffer.from(raw, 'hex'), avmSerial.getAVMManager().getDefaultCodec());
+      const [tx, _] = pvmSerial.BaseTx.fromBytes(Buffer.from(raw, 'hex'), avmSerial.getAVMManager().getDefaultCodec());
       if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
         throw new Error('It is not a transaction of this network');
       }

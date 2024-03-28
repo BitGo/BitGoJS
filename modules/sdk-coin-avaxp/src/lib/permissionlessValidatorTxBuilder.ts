@@ -240,7 +240,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
 
-    const outputs = (tx.getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs;
+    const outputs = (tx as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs;
     if (outputs.length !== 1) {
       throw new BuildTransactionError('Transaction can have one external output');
     }
@@ -269,12 +269,12 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     return this;
   }
 
-  static verifyTxType(tx: Tx): tx is UnsignedTx {
-    tx.getTx()._type === TypeSymbols.AddPermissionlessDelegatorTx;
+  static verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
+    (tx as pvmSerial.AddPermissionlessValidatorTx)._type === TypeSymbols.AddPermissionlessDelegatorTx;
     return true;
   }
 
-  verifyTxType(tx: Tx): tx is UnsignedTx {
+  verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
     return PermissionlessValidatorTxBuilder.verifyTxType(tx);
   }
 

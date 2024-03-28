@@ -9,7 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import { avaxSerial, Credential, pvmSerial, utils as avaxUtils } from '@bitgo/avalanchejs';
+import { avaxSerial, Credential, pvmSerial, UnsignedTx, utils as avaxUtils } from '@bitgo/avalanchejs';
 import { Buffer } from 'buffer';
 import { ADDRESS_SEPARATOR, DecodedUtxoObj, INPUT_SEPARATOR, TransactionExplanation, Tx, TxData } from './iface';
 import { KeyPair } from './keyPair';
@@ -82,7 +82,7 @@ export class Transaction extends BaseTransaction {
 
   get avaxPTransaction(): avaxSerial.BaseTx {
     // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
-    return (this._avaxTransaction.getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx;
+    return ((this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx;
   }
 
   get signature(): string[] {
@@ -95,7 +95,7 @@ export class Transaction extends BaseTransaction {
 
   get credentials(): Credential[] {
     // it should be this._avaxpTransaction?.getCredentials(), but EVMTx doesn't have it
-    return this._avaxTransaction.credentials;
+    return (this._avaxTransaction as UnsignedTx)?.credentials;
   }
 
   get hasCredentials(): boolean {
@@ -155,7 +155,7 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return this.toHexString(this._avaxTransaction.toBytes());
+    return this.toHexString((this._avaxTransaction as UnsignedTx).toBytes());
   }
 
   // types - stakingTransaction, import, export
@@ -197,11 +197,11 @@ export class Transaction extends BaseTransaction {
    * Only needed for coins that support adding signatures directly (e.g. TSS).
    */
   get signablePayload(): Buffer {
-    return utils.sha256(this._avaxTransaction.toBytes());
+    return utils.sha256((this._avaxTransaction as UnsignedTx).toBytes());
   }
 
   get id(): string {
-    const bufferArray = utils.sha256(this._avaxTransaction.toBytes());
+    const bufferArray = utils.sha256((this._avaxTransaction as UnsignedTx).toBytes());
     return utils.cb58Encode(BufferAvax.from(bufferArray));
   }
 
@@ -223,10 +223,10 @@ export class Transaction extends BaseTransaction {
           {
             // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
             address: (
-              this._avaxTransaction.getTx() as pvmSerial.AddPermissionlessValidatorTx
+              (this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
             ).subnetValidator.validator.nodeId.toString(),
             value: (
-              this._avaxTransaction.getTx() as pvmSerial.AddPermissionlessValidatorTx
+              (this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
             ).subnetValidator.validator.weight.toString(),
           },
         ];
@@ -241,7 +241,7 @@ export class Transaction extends BaseTransaction {
 
   get changeOutputs(): Entry[] {
     // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
-    return (this._avaxTransaction.getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs.map(
+    return ((this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs.map(
       utils.mapOutputToEntry(this._network)
     );
   }
@@ -252,7 +252,8 @@ export class Transaction extends BaseTransaction {
       case TransactionType.AddPermissionlessValidator:
       default:
         // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
-        inputs = (this._avaxTransaction.getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx.inputs;
+        inputs = ((this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx
+          .inputs;
         break;
     }
     return inputs.map((input) => {
