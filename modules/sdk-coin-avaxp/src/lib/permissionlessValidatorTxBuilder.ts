@@ -1,4 +1,5 @@
 import {
+  utils as AvaxUtils,
   Address,
   avaxSerial,
   BigIntPr,
@@ -13,6 +14,7 @@ import {
   TransferInput,
   TransferOutput,
   TypeSymbols,
+  UnsignedTx,
 } from '@bitgo/avalanchejs';
 import {
   BaseAddress,
@@ -25,13 +27,12 @@ import {
 } from '@bitgo/sdk-core';
 
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BinTools } from 'avalanche';
 import BigNumber from 'bignumber.js';
 import { DecodedUtxoObj, SECP256K1_Transfer_Output, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import utils from './utils';
-// import { recov1erUtxos } from './utxoEngine';
+// import { recoverUtxos } from './utxoEngine';
 import { TransactionBuilder } from './transactionBuilder';
 
 export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
@@ -199,8 +200,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     if (nodeID.slice(0, 6) !== 'NodeID') {
       throw new BuildTransactionError('Invalid transaction: invalid NodeID tag');
     }
-    const bintools = BinTools.getInstance();
-    if (!(bintools.b58ToBuffer(nodeID.slice(7)).length === 24)) {
+    if (!(AvaxUtils.base58.decode(nodeID.slice(7)).length === 24)) {
       throw new BuildTransactionError('Invalid transaction: NodeID is not in cb58 format');
     }
   }
@@ -240,7 +240,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
 
-    const outputs = tx.baseTx.outputs;
+    const outputs = (tx.getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs;
     if (outputs.length !== 1) {
       throw new BuildTransactionError('Transaction can have one external output');
     }
@@ -269,12 +269,12 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     return this;
   }
 
-  static verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
-    tx.baseTx._type === TypeSymbols.AddPermissionlessDelegatorTx;
+  static verifyTxType(tx: Tx): tx is UnsignedTx {
+    tx.getTx()._type === TypeSymbols.AddPermissionlessDelegatorTx;
     return true;
   }
 
-  verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
+  verifyTxType(tx: Tx): tx is UnsignedTx {
     return PermissionlessValidatorTxBuilder.verifyTxType(tx);
   }
 
@@ -421,7 +421,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     inputs: avaxSerial.TransferableInput[];
     stakeOutputs: avaxSerial.TransferableOutput[];
     changeOutputs: avaxSerial.TransferableOutput[];
-    // credentials: Credential[];
+    credentials: Credential[];
   } {
     const inputs: avaxSerial.TransferableInput[] = [];
     const stakeOutputs: avaxSerial.TransferableOutput[] = [];
@@ -431,6 +431,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     // delegating and validating have no fees
     const totalTarget = this._stakeAmount.valueOf();
+
+    const credentials: Credential[] = [];
 
     // convert fromAddresses to string
     // fromAddresses = bitgo order if we are in WP
@@ -478,20 +480,45 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         const utxoAmount = BigInt(utxo.amount);
         const addressesIndex = utxo.addressesIndex ?? [];
 
-        // either user (0) or recovery (2)
         // TODO(CR-1073): these are used in credentials
-        // const firstIndex = this.recoverSigner ? 2 : 0;
-        // const bitgoIndex = 1;
+        // either user (0) or recovery (2)
+        const firstIndex = this.recoverSigner ? 2 : 0;
+        const bitgoIndex = 1;
         currentTotal = currentTotal + utxoAmount;
 
         const utxoId = avaxSerial.UTXOID.fromNative(utxo.txid, Number(utxo.outputidx));
 
-        const input = new avaxSerial.TransferableInput(
-          utxoId,
-          assetId,
-          new TransferInput(new BigIntPr(utxoAmount), new Input(addressesIndex.map((num) => new Int(num))))
+        const transferInputs = new TransferInput(
+          new BigIntPr(utxoAmount),
+          new Input(addressesIndex.map((num) => new Int(num)))
         );
+        const input = new avaxSerial.TransferableInput(utxoId, assetId, transferInputs);
         inputs.push(input);
+
+        if (!buildOutputs) {
+          credentials.push(
+            new Credential(
+              addressesIndex.map((i) => utils.createNewSig(this.transaction._fromAddresses[i].toString('hex')))
+            )
+          );
+        } else {
+          // if user/backup > bitgo
+          if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+            credentials.push(
+              new Credential([
+                utils.createNewSig('0x0'),
+                utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString('hex')),
+              ])
+            );
+          } else {
+            credentials.push(
+              new Credential([
+                utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString('hex')),
+                utils.createNewSig('0x0'),
+              ])
+            );
+          }
+        }
       }
     });
 
@@ -533,7 +560,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     // TODO(CR-1073): Create credentials and return them here
     //  @see createInputOutput() in delegatorTxBuilder.ts
-    return { inputs, stakeOutputs, changeOutputs };
+    return { inputs, stakeOutputs, changeOutputs, credentials };
   }
 
   /**
@@ -542,7 +569,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
    */
   protected buildAvaxTransaction(): void {
     this.validateStakeDuration(this._startTime, this._endTime);
-    const { inputs, stakeOutputs, changeOutputs } = this.calculateUtxos();
+    const { inputs, stakeOutputs, changeOutputs, credentials } = this.calculateUtxos();
     const baseTx = avaxSerial.BaseTx.fromNative(
       this.transaction._networkID,
       this.transaction._blockchainID,
@@ -577,14 +604,21 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     //  @see: https://github.com/ava-labs/avalanchejs/blob/master/src/vms/pvm/builder.ts#L650
     //  @see: @buildAvaxTransaction in validatorTxBuilder.ts
     this.transaction.setTransaction(
-      new pvmSerial.AddPermissionlessValidatorTx(
-        baseTx,
-        subnetValidator,
-        signer,
-        stakeOutputs,
-        outputOwners,
-        outputOwners,
-        shares
+      new UnsignedTx(
+        new pvmSerial.AddPermissionlessValidatorTx(
+          baseTx,
+          subnetValidator,
+          signer,
+          stakeOutputs,
+          outputOwners,
+          outputOwners,
+          shares
+        ),
+        [],
+        new AvaxUtils.AddressMaps(
+          this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap(Address.fromBytes(address)[0][0]))
+        ),
+        credentials
       )
     );
   }

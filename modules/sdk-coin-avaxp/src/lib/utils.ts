@@ -11,14 +11,15 @@ import {
 } from '@bitgo/sdk-core';
 import { AvalancheNetwork } from '@bitgo/statics';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
-import { EVMOutput } from 'avalanche/dist/apis/evm';
+import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
+import { ec } from 'elliptic';
 import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
+import { Credential } from 'avalanche/dist/common/credentials';
+import { EVMOutput } from 'avalanche/dist/apis/evm';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { Signature } from 'avalanche/dist/common';
-import { Credential } from 'avalanche/dist/common/credentials';
-import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
+import { Signature as AvaxSignature } from '@bitgo/avalanchejs';
 import * as createHash from 'create-hash';
-import { ec } from 'elliptic';
 import { ADDRESS_SEPARATOR, DeprecatedTx, Output } from './iface';
 
 export class Utils implements BaseUtils {
@@ -222,6 +223,10 @@ export class Utils implements BaseUtils {
     const sig = new Signature();
     sig.fromBuffer(BufferAvax.from(sigHex.padStart(130, '0'), 'hex'));
     return sig;
+  }
+
+  createNewSig(sigHex: string): AvaxSignature {
+    return new AvaxSignature(BufferAvax.from(sigHex.padStart(130, '0'), 'hex'));
   }
 
   /**
