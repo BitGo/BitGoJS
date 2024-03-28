@@ -172,7 +172,7 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return {
+    return structuredClone({
       id: this.id,
       inputs: this.inputs,
       fromAddresses: this.fromAddresses,
@@ -184,7 +184,7 @@ export class Transaction extends BaseTransaction {
       changeOutputs: this.changeOutputs,
       sourceChain: this.sourceChain,
       destinationChain: this.destinationChain,
-    };
+    });
   }
 
   setTransaction(tx: DeprecatedTx): void {

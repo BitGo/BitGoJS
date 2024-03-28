@@ -39,7 +39,7 @@ export class Transaction extends BaseTransaction {
 
   toJson(): TxData {
     const non_bouncable = new TonWeb.Address(this.recipient.address).toString(true, true, false);
-    return {
+    return structuredClone({
       id: this._id as string,
       sender: this.sender,
       destination: this.recipient.address,
@@ -49,7 +49,7 @@ export class Transaction extends BaseTransaction {
       expirationTime: this.expireTime,
       publicKey: this.publicKey,
       signature: this._signatures[0],
-    };
+    });
   }
 
   get signablePayload(): Buffer {

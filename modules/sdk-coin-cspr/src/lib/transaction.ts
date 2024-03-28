@@ -145,7 +145,7 @@ export class Transaction extends BaseTransaction {
         result.amount = getDelegateAmount(this.casperTx.session);
         break;
     }
-    return result;
+    return structuredClone(result);
   }
 
   /**

@@ -115,7 +115,7 @@ export class Transaction extends BaseTransaction {
       nonce: this.getNonce(),
       payload: this.getPayloadData(),
     };
-    return result;
+    return structuredClone(result);
   }
 
   private getPayloadData(): StacksTransactionPayload | StacksContractPayload {

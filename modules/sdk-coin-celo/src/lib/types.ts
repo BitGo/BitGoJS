@@ -222,7 +222,7 @@ export class CeloTransactionData implements EthLikeTransactionData {
 
     this.setSignatureFields(result);
 
-    return result;
+    return structuredClone(result);
   }
 
   private setSignatureFields(result: LegacyTxData): void {

@@ -130,7 +130,7 @@ export class CustomTransaction extends Transaction<CustomProgrammableTransaction
     }
 
     const tx = this._suiTransaction;
-    return {
+    return structuredClone({
       id: tx.id,
       sender: tx.sender,
       expiration: { None: null },
@@ -138,7 +138,7 @@ export class CustomTransaction extends Transaction<CustomProgrammableTransaction
       kind: {
         ProgrammableTransaction: tx.tx,
       },
-    };
+    });
   }
 
   /**

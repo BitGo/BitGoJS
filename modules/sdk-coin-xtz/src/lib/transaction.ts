@@ -243,7 +243,7 @@ export class Transaction extends BaseTransaction {
     if (!this._parsedTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    return this._parsedTransaction;
+    return structuredClone(this._parsedTransaction);
   }
 
   /** @inheritdoc */
@@ -294,7 +294,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get owners(): string[] {
-    return this._owners;
+    return structuredClone(this._owners);
   }
 
   /**

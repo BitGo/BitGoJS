@@ -211,7 +211,7 @@ export class Transaction extends BaseTransaction {
         });
       }
     }
-    return result;
+    return structuredClone(result);
   }
 
   /**

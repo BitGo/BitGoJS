@@ -74,7 +74,7 @@ export class Transaction extends BaseTransaction {
       };
     }
 
-    return {
+    return structuredClone({
       id: this._id,
       signerId: this._nearTransaction.signerId,
       publicKey: this._nearTransaction.publicKey.toString(),
@@ -82,7 +82,7 @@ export class Transaction extends BaseTransaction {
       receiverId: this._nearTransaction.receiverId,
       actions: [parsedAction],
       signature: typeof this._nearSignedTransaction === 'undefined' ? undefined : this._nearSignedTransaction.signature,
-    };
+    });
   }
 
   /**

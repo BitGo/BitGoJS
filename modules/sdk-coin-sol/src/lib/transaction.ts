@@ -250,7 +250,7 @@ export class Transaction extends BaseTransaction {
       numSignatures: this.signature.length,
       instructionsData: instructionData,
     };
-    return result;
+    return structuredClone(result);
   }
 
   /**

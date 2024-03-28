@@ -250,7 +250,7 @@ export class Transaction extends BaseTransaction {
     if (!this._transaction) {
       throw new ParseTransactionError('Empty transaction');
     }
-    return this._transaction;
+    return structuredClone(this._transaction);
   }
 
   /** @inheritdoc */

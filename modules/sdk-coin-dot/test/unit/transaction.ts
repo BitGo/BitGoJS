@@ -25,9 +25,9 @@ class StubTransaction extends Transaction {
 
   toJson(): Interface.TxData {
     if (this._txJson) {
-      return this._txJson;
+      return structuredClone(this._txJson);
     }
-    return super.toJson();
+    return structuredClone(super.toJson());
   }
 }
 

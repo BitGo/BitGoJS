@@ -111,7 +111,7 @@ export class Transaction extends BaseTransaction {
         break;
     }
 
-    return result;
+    return structuredClone(result);
   }
 
   /**

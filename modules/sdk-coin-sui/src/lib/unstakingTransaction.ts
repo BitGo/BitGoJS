@@ -70,13 +70,13 @@ export class UnstakingTransaction extends Transaction<UnstakingProgrammableTrans
     }
 
     const tx = this._suiTransaction;
-    return {
+    return structuredClone({
       id: this._id,
       sender: tx.sender,
       kind: { ProgrammableTransaction: tx.tx },
       gasData: tx.gasData,
       expiration: { None: null },
-    };
+    });
   }
 
   /** @inheritDoc */

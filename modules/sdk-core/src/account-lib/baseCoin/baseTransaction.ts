@@ -39,14 +39,14 @@ export abstract class BaseTransaction {
    * One of {@link TransactionType}
    */
   get type(): TransactionType {
-    return this._type as TransactionType;
+    return structuredClone(this._type as TransactionType);
   }
 
   /**
    * Get the list of outputs. Amounts are expressed in absolute value.
    */
   get outputs(): Entry[] {
-    return this._outputs;
+    return structuredClone(this._outputs);
   }
 
   /**

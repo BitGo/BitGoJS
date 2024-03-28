@@ -680,12 +680,12 @@ export class BitGoAPI implements BitGoBase {
    * Caution: contains sensitive data
    */
   toJSON(): BitGoJson {
-    return {
+    return structuredClone({
       user: this._user,
       token: this._token,
       extensionKey: this._extensionKey ? this._extensionKey.toWIF() : undefined,
       ecdhXprv: this._ecdhXprv,
-    };
+    });
   }
 
   /**

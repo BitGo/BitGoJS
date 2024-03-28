@@ -89,7 +89,7 @@ export class CosmosTransaction extends BaseTransaction {
       throw new ParseTransactionError('Empty transaction');
     }
     const tx = this._cosmosLikeTransaction;
-    return {
+    return structuredClone({
       id: this.id,
       type: this._type,
       sequence: tx.sequence,
@@ -101,7 +101,7 @@ export class CosmosTransaction extends BaseTransaction {
       chainId: this._chainId,
       hash: tx.hash,
       memo: tx.memo,
-    };
+    });
   }
 
   /**
