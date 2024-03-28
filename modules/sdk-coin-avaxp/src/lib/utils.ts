@@ -1,23 +1,25 @@
+// eslint-disable-next-line import/no-internal-modules
+import { BaseTx as PVMTx } from '@bitgo/avalanchejs/dist/serializable/pvm/baseTx';
 import {
-  isValidXpub,
-  isValidXprv,
-  NotImplementedError,
   BaseUtils,
-  InvalidTransactionError,
-  ParseTransactionError,
   Entry,
+  InvalidTransactionError,
+  isValidXprv,
+  isValidXpub,
+  NotImplementedError,
+  ParseTransactionError,
 } from '@bitgo/sdk-core';
-import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
-import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
-import { ec } from 'elliptic';
-import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
-import { Credential } from 'avalanche/dist/common/credentials';
-import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { AvalancheNetwork } from '@bitgo/statics';
-import { Signature } from 'avalanche/dist/common';
-import * as createHash from 'create-hash';
+import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import { EVMOutput } from 'avalanche/dist/apis/evm';
-import { ADDRESS_SEPARATOR, Output, DeprecatedTx } from './iface';
+import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
+import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
+import { Signature } from 'avalanche/dist/common';
+import { Credential } from 'avalanche/dist/common/credentials';
+import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
+import * as createHash from 'create-hash';
+import { ec } from 'elliptic';
+import { ADDRESS_SEPARATOR, DeprecatedTx, Output } from './iface';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -271,8 +273,9 @@ export class Utils implements BaseUtils {
    * @param {string} blockchainId
    * @returns true if tx is for blockchainId
    */
-  isTransactionOf(tx: DeprecatedTx, blockchainId: string): boolean {
-    return utils.cb58Encode(tx.getUnsignedTx().getTransaction().getBlockchainID()) === blockchainId;
+  isTransactionOf(tx: DeprecatedTx | PVMTx, blockchainId: string): boolean {
+    // TODO(CR-1073): Change this to support both Txn types
+    return utils.cb58Encode((tx as DeprecatedTx).getUnsignedTx().getTransaction().getBlockchainID()) === blockchainId;
   }
 
   /**

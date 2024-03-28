@@ -1,8 +1,9 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { avmSerial, pvmSerial } from '@bitgo/avalanchejs';
 import { BaseTransactionBuilder, BuildTransactionError } from '@bitgo/sdk-core';
-import { Transaction } from './transaction';
-import { KeyPair } from './keyPair';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedUtxoObj, Tx } from './iface';
+import { KeyPair } from './keyPair';
+import { Transaction } from './transaction';
 import utils from './utils';
 // import { BaseTx } from '@bitgo/avalanchejs/dist/serializable/avm/baseTx';
 // import { PVMTx } from '@bitgo/avalanchejs/dist/serializable/pvm/abstractTx';
@@ -26,12 +27,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   initBuilder(tx: Tx): this {
     const baseTx = tx.baseTx;
-    // TODO check blockchainId
     if (
-      baseTx.NetworkId.value() !== this._transaction._networkID
-      // ||
-      // baseTx.BlockchainId.value() !== this._transaction._blockchainID
-      // !baseTx.BlockchainId.toBytes().equals(this._transaction._blockchainID)
+      baseTx.NetworkId.value() !== this._transaction._networkID ||
+      baseTx.BlockchainId.value() !== this._transaction._blockchainID
     ) {
       throw new Error('Network or blockchain is not equals');
     }
@@ -124,9 +122,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   //  validateRawTransaction
 
   /** @inheritdoc */
-  // protected fromImplementation(rawTransaction: string): Transaction {
-  // TODO(CR-1073): Create instance of Transaction from raw hex
-  // this.initBuilder(tx);
-  // return this.transaction;
-  // }
+  protected fromImplementation(rawTransaction: string): Transaction {
+    const [tx] = pvmSerial.AddPermissionlessValidatorTx.fromBytes(
+      Buffer.from(rawTransaction, 'hex'),
+      avmSerial.getAVMManager().getDefaultCodec()
+    );
+    this.initBuilder(tx);
+    return this._transaction;
+  }
 }

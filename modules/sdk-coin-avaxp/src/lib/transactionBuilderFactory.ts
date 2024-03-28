@@ -1,16 +1,19 @@
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+// import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
+// import { Tx } from 'avalanche/dist/apis/platformvm';
+import { avmSerial } from '@bitgo/avalanchejs';
+// eslint-disable-next-line import/no-internal-modules
+import { BaseTx } from '@bitgo/avalanchejs/dist/serializable/pvm/baseTx';
 import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
-import { ValidatorTxBuilder } from './validatorTxBuilder';
-import { Tx } from 'avalanche/dist/apis/platformvm';
-import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
-import { Buffer as BufferAvax } from 'avalanche';
-import utils from './utils';
-import { ExportTxBuilder } from './exportTxBuilder';
-import { ImportTxBuilder } from './importTxBuilder';
-import { ImportInCTxBuilder } from './importInCTxBuilder';
 import { ExportInCTxBuilder } from './exportInCTxBuilder';
+import { ExportTxBuilder } from './exportTxBuilder';
+import { ImportInCTxBuilder } from './importInCTxBuilder';
+import { ImportTxBuilder } from './importTxBuilder';
 import { PermissionlessValidatorTxBuilder } from './permissionlessValidatorTxBuilder';
+import { TransactionBuilder } from './transactionBuilder';
+import utils from './utils';
+import { ValidatorTxBuilder } from './validatorTxBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -19,32 +22,30 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): DeprecatedTransactionBuilder {
+  from(raw: string): TransactionBuilder | DeprecatedTransactionBuilder {
     utils.validateRawTransaction(raw);
-    raw = utils.removeHexPrefix(raw);
     let txSource: 'EVM' | 'PVM' = 'PVM';
-    let tx: Tx | EVMTx;
-    let transactionBuilder: DeprecatedTransactionBuilder | undefined = undefined;
+    let transactionBuilder: TransactionBuilder | DeprecatedTransactionBuilder | undefined = undefined;
+    let tx;
 
     try {
-      tx = new Tx();
-      // could throw an error if a txType doesn't match.
-      tx.fromBuffer(BufferAvax.from(raw, 'hex'));
-
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [tx, _] = BaseTx.fromBytes(Buffer.from(raw, 'hex'), avmSerial.getAVMManager().getDefaultCodec());
       if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
         throw new Error('It is not a transaction of this network');
       }
     } catch {
       txSource = 'EVM';
-      tx = new EVMTx();
-      tx.fromBuffer(BufferAvax.from(raw, 'hex'));
-
-      if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
-        throw new Error('It is not a transaction of this network or C chain');
-      }
+      // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
+      // tx = new ExportTx();
+      // if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
+      //   throw new Error('It is not a transaction of this network or C chain');
+      // }
     }
     if (txSource === 'PVM') {
-      if (ValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
+      if (PermissionlessValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
+        transactionBuilder = this.getPermissionlessValidatorTxBuilder();
+      } else if (ValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
         transactionBuilder = this.getValidatorBuilder();
       } else if (ExportTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
         transactionBuilder = this.getExportBuilder();
