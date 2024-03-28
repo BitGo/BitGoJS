@@ -810,24 +810,30 @@ export class Algo extends BaseCoin {
    * @return {*}
    */
   private stellarAddressToAlgoAddress(addressOrPubKey: string): string {
+    // we have an Algorand address
     if (this.isValidAddress(addressOrPubKey)) {
-      // we have an Algorand address
       return addressOrPubKey;
     }
 
-    if (!stellar.StrKey.isValidEd25519PublicKey(addressOrPubKey)) {
-      throw new UnexpectedAddressError('Neither an Algorand address nor a stellar pubkey.');
-    }
-
     // we have a stellar key
-    const stellarPub = stellar.StrKey.decodeEd25519PublicKey(addressOrPubKey);
-    const algoAddress = AlgoLib.algoUtils.encodeAddress(stellarPub);
-
-    if (!this.isValidAddress(algoAddress)) {
-      throw new UnexpectedAddressError('Cannot convert Stellar address to an Algorand address via pubkey.');
+    if (stellar.StrKey.isValidEd25519PublicKey(addressOrPubKey)) {
+      const stellarPub = stellar.StrKey.decodeEd25519PublicKey(addressOrPubKey);
+      const algoAddress = AlgoLib.algoUtils.encodeAddress(stellarPub);
+      if (this.isValidAddress(algoAddress)) {
+        return algoAddress;
+      }
+      throw new UnexpectedAddressError('Cannot convert Stellar address to an Algorand address via stellar pubkey.');
+      // we have a root pubkey
+    } else if (AlgoLib.algoUtils.isValidPublicKey(addressOrPubKey)) {
+      const kp = new AlgoLib.KeyPair({ pub: addressOrPubKey });
+      const algoAddress = kp.getAddress();
+      if (this.isValidAddress(algoAddress)) {
+        return algoAddress;
+      }
+      throw new UnexpectedAddressError('Invalid root pubkey.');
     }
 
-    return algoAddress;
+    throw new UnexpectedAddressError('Neither an Algorand address, a stellar pubkey or a root public key.');
   }
 
   private getBuilder(): AlgoLib.TransactionBuilderFactory {
