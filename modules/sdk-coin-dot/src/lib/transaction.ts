@@ -277,7 +277,7 @@ export class Transaction extends BaseTransaction {
       result.batchCalls = txMethod.calls;
     }
 
-    return result;
+    return structuredClone(result);
   }
 
   explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {

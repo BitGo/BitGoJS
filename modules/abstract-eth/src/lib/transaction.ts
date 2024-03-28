@@ -170,7 +170,7 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   toJson(): TxData {
     if (this._transactionData) {
-      return this._transactionData.toJson();
+      return structuredClone(this._transactionData.toJson());
     }
     throw new InvalidTransactionError('Empty transaction');
   }

@@ -129,23 +129,23 @@ export class EthTransactionData implements EthLikeTransactionData {
     if (this.tx instanceof LegacyTransaction) {
       const gasPrice = new BigNumber(bufferToHex(toUnsigned(this.tx.gasPrice)), 16).toString(10);
 
-      return {
+      return structuredClone({
         ...result,
         _type: ETHTransactionType.LEGACY,
         gasPrice,
-      };
+      });
     } else if (this.tx instanceof FeeMarketEIP1559Transaction) {
       const maxFeePerGas = new BigNumber(bufferToHex(toUnsigned(this.tx.maxFeePerGas)), 16).toString(10);
       const maxPriorityFeePerGas = new BigNumber(bufferToHex(toUnsigned(this.tx.maxPriorityFeePerGas)), 16).toString(
         10
       );
 
-      return {
+      return structuredClone({
         ...result,
         _type: ETHTransactionType.EIP1559,
         maxFeePerGas,
         maxPriorityFeePerGas,
-      };
+      });
     } else {
       throw new Error(`Unsupported tx type: ${AccessListEIP2930Transaction.name}`);
     }
