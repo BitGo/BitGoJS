@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.29.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.28.4...@bitgo/web-demo@1.29.0) (2024-03-28)
+
+### Bug Fixes
+
+- ignore type-checks of error objects ([82c9cae](https://github.com/BitGo/BitGoJS/commit/82c9caeea94affa9c2bd960f2c392df387cdde96))
+
+### Features
+
+- upgrade cypress ([9343f18](https://github.com/BitGo/BitGoJS/commit/9343f18df02bd13504fca2943e79de8629f87bf4))
+
 ## [1.28.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.28.3...@bitgo/web-demo@1.28.4) (2024-03-19)
 
 **Note:** Version bump only for package @bitgo/web-demo

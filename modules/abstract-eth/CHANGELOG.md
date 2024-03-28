@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [20.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@19.0.4...@bitgo/abstract-eth@20.0.0) (2024-03-28)
+
+### Features
+
+- **root:** deprecate node 16 ([d3ec624](https://github.com/BitGo/BitGoJS/commit/d3ec6240bddae2a4ab7fa80c4a16efecc36210bd))
+
+### BREAKING CHANGES
+
+- **root:** Node 16 is no longer supported in bitgojs.
+  TICKET: WP-1100
+
 ## [19.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@19.0.3...@bitgo/abstract-eth@19.0.4) (2024-03-19)
 
 ### Bug Fixes

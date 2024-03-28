@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.13.5...@bitgo/sdk-coin-doge@2.0.0) (2024-03-28)
+
+### Features
+
+- **root:** deprecate node 16 ([d3ec624](https://github.com/BitGo/BitGoJS/commit/d3ec6240bddae2a4ab7fa80c4a16efecc36210bd))
+
+### BREAKING CHANGES
+
+- **root:** Node 16 is no longer supported in bitgojs.
+  TICKET: WP-1100
+
 ## [1.13.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-doge@1.13.4...@bitgo/sdk-coin-doge@1.13.5) (2024-03-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-doge

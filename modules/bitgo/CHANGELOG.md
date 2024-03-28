@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@37.1.3...bitgo@38.0.0) (2024-03-28)
+
+### Bug Fixes
+
+- **sdk-core:** remove onToken validation when creating address ([75f7fb7](https://github.com/BitGo/BitGoJS/commit/75f7fb7d3a98995f8086743d9db1662808d2315f))
+
+### Features
+
+- **root:** deprecate node 16 ([d3ec624](https://github.com/BitGo/BitGoJS/commit/d3ec6240bddae2a4ab7fa80c4a16efecc36210bd))
+
+### BREAKING CHANGES
+
+- **root:** Node 16 is no longer supported in bitgojs.
+  TICKET: WP-1100
+
 ## [37.1.3](https://github.com/BitGo/BitGoJS/compare/bitgo@37.1.2...bitgo@37.1.3) (2024-03-19)
 
 ### Bug Fixes
