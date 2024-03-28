@@ -4879,6 +4879,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.OMG
   ),
   erc20(
+    'def47964-e90c-4862-a724-086e439d01de',
+    'omnia',
+    'OMNIA Protocol',
+    18,
+    '0x2e7e487d84b5baba5878a9833fb394bc89633fd7',
+    UnderlyingAsset.OMNIA
+  ),
+  erc20(
     '2f715550-f0c3-47c7-860c-fb1a827d01a8',
     'ondo',
     'Ondo',
@@ -7535,6 +7543,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x8af17a6396c8f315f6b6dbc6aa686c85f9b3e554',
     UnderlyingAsset.XTZBULL
+  ),
+  erc20(
+    'fec45ebe-80a0-4cfa-8fb3-7c4100517f18',
+    'xusd',
+    'XUSD',
+    6,
+    '0xc08e7e23c235073c6807c2efe7021304cb7c2815',
+    UnderlyingAsset.XUSD
   ),
   erc20(
     '54f3b3be-016f-43b7-b460-61caeed82e27',
