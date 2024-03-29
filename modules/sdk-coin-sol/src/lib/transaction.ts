@@ -33,7 +33,12 @@ import {
 } from './utils';
 import { KeyPair } from '.';
 import { instructionParamsFactory } from './instructionParamsFactory';
-import { InstructionBuilderTypes, UNAVAILABLE_TEXT, ValidInstructionTypesEnum } from './constants';
+import {
+  InstructionBuilderTypes,
+  UNAVAILABLE_TEXT,
+  validInstructionData,
+  ValidInstructionTypesEnum,
+} from './constants';
 
 export class Transaction extends BaseTransaction {
   protected _solTransaction: SolTransaction;
@@ -499,12 +504,22 @@ export class Transaction extends BaseTransaction {
       walletNonceAddress: nonceInstruction.noncePubkey.toString(),
       authWalletAddress: nonceInstruction.authorizedPubkey.toString(),
     };
-    const stakingAuthorizeParams: StakingAuthorizeParams = {
-      stakingAddress: instructions[1].keys[0].pubkey.toString(),
-      oldWithdrawAddress: instructions[1].keys[2].pubkey.toString(),
-      newWithdrawAddress: instructions[1].keys[3].pubkey.toString(),
-      custodianAddress: instructions[1].keys[4].pubkey.toString(),
-    };
+    const data = instructions[1].data.toString('hex');
+    const stakingAuthorizeParams: StakingAuthorizeParams =
+      data === validInstructionData
+        ? {
+            stakingAddress: instructions[1].keys[0].pubkey.toString(),
+            oldWithdrawAddress: instructions[1].keys[2].pubkey.toString(),
+            newWithdrawAddress: instructions[1].keys[3].pubkey.toString(),
+            custodianAddress: instructions[1].keys[4].pubkey.toString(),
+          }
+        : {
+            stakingAddress: instructions[1].keys[0].pubkey.toString(),
+            oldWithdrawAddress: '',
+            newWithdrawAddress: '',
+            oldStakingAuthorityAddress: instructions[1].keys[2].pubkey.toString(),
+            newStakingAuthorityAddress: instructions[1].keys[3].pubkey.toString(),
+          };
     const feeString = this.calculateFee();
     return {
       displayOrder: [

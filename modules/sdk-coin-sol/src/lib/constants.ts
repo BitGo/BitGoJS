@@ -115,3 +115,4 @@ export const ataInitInstructionIndexes = {
 
 export const nonceAdvanceInstruction = 'AdvanceNonceAccount';
 export const validInstructionData = '0a00000001000000';
+export const validInstructionData2 = '0a00000000000000';
