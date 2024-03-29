@@ -33,7 +33,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const buffer = Buffer.from(raw);
-      tx = pvmSerial.BaseTx.fromBytes(buffer, AvaxUtils.getManagerForVM('PVM').getDefaultCodec())[0];
+      const codec = AvaxUtils.getManagerForVM('PVM').getDefaultCodec();
+
+      try {
+        AvaxUtils.unpackWithManager('PVM', Buffer.from(raw));
+      } catch (e) {
+        console.log(e);
+      }
+      tx = pvmSerial.BaseTx.fromBytes(buffer, codec)[0];
       if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
         throw new Error('It is not a transaction of this pvmSerial new flow');
       }
