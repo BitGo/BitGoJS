@@ -24,7 +24,7 @@ interface CheckSignature {
 }
 
 function isEmptySignature(s: string): boolean {
-  return !!s && s.startsWith(''.padStart(90, '0'));
+  return !!s && s.replace(/^0x/i, '').startsWith(''.padStart(90, '0'));
 }
 
 /**
