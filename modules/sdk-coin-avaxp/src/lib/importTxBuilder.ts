@@ -4,7 +4,7 @@ import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { ImportTx, PlatformVMConstants, Tx as PVMTx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import utils from './utils';
 import { BN } from 'avalanche';
-import { recoverUtxos } from './utxoEngine';
+import { deprecatedRecoverUtxos } from './utxoEngine';
 import { DeprecatedTx, DeprecatedBaseTx } from './iface';
 
 export class ImportTxBuilder extends AtomicTransactionBuilder {
@@ -41,7 +41,7 @@ export class ImportTxBuilder extends AtomicTransactionBuilder {
     // output addresses are the sender addresses
     this.transaction._fromAddresses = secpOut.getAddresses();
     this._externalChainId = baseTx.getSourceChain();
-    this.transaction._utxos = recoverUtxos(baseTx.getImportInputs());
+    this.transaction._utxos = deprecatedRecoverUtxos(baseTx.getImportInputs());
     return this;
   }
 

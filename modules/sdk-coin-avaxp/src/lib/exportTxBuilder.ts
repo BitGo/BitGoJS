@@ -12,7 +12,7 @@ import {
 import { BN } from 'avalanche';
 import { AmountOutput } from 'avalanche/dist/apis/evm/outputs';
 import utils from './utils';
-import { recoverUtxos } from './utxoEngine';
+import { deprecatedRecoverUtxos } from './utxoEngine';
 import { DeprecatedTx, DeprecatedBaseTx } from './iface';
 
 export class ExportTxBuilder extends AtomicTransactionBuilder {
@@ -63,7 +63,7 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
     this.transaction._fromAddresses = secpOut.getAddresses();
     this._externalChainId = baseTx.getDestinationChain();
     this._amount = (secpOut as AmountOutput).getAmount();
-    this.transaction._utxos = recoverUtxos(baseTx.getIns());
+    this.transaction._utxos = deprecatedRecoverUtxos(baseTx.getIns());
     return this;
   }
 

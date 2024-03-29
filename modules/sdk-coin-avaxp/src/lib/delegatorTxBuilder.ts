@@ -19,7 +19,7 @@ import { BinTools, BN } from 'avalanche';
 import { SECP256K1_Transfer_Output, DeprecatedTx, DeprecatedBaseTx } from './iface';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
-import { recoverUtxos } from './utxoEngine';
+import { deprecatedRecoverUtxos } from './utxoEngine';
 
 export class DelegatorTxBuilder extends DeprecatedTransactionBuilder {
   protected _nodeID: string;
@@ -174,7 +174,7 @@ export class DelegatorTxBuilder extends DeprecatedTransactionBuilder {
     this._startTime = baseTx.getStartTime();
     this._endTime = baseTx.getEndTime();
     this._stakeAmount = baseTx.getStakeAmount();
-    this.transaction._utxos = recoverUtxos(baseTx.getIns());
+    this.transaction._utxos = deprecatedRecoverUtxos(baseTx.getIns());
     return this;
   }
 

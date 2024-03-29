@@ -32,7 +32,7 @@ import { DecodedUtxoObj, SECP256K1_Transfer_Output, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import utils from './utils';
-// import { recoverUtxos } from './utxoEngine';
+import { recoverUtxos } from './utxoEngine';
 import { TransactionBuilder } from './transactionBuilder';
 
 export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
@@ -266,6 +266,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     // this._endTime = baseTx.getEndTime();
     // this._stakeAmount = baseTx.getStakeAmount();
     // this.transaction._utxos = recoverUtxos(baseTx.getIns());
+    this.transaction._utxos = recoverUtxos(tx.getInputs());
     return this;
   }
 

@@ -14,7 +14,7 @@ import {
 import { costImportTx } from 'avalanche/dist/utils';
 import { BN } from 'avalanche';
 import { Credential } from 'avalanche/dist/common';
-import { recoverUtxos, utxoToInput } from './utxoEngine';
+import { deprecatedRecoverUtxos, utxoToInput } from './utxoEngine';
 import { DeprecatedBaseTx, DeprecatedTx } from './iface';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 import utils from './utils';
@@ -67,7 +67,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
     const input = baseTx.getImportInputs();
 
-    this.transaction._utxos = recoverUtxos(input);
+    this.transaction._utxos = deprecatedRecoverUtxos(input);
 
     const totalInputAmount = input.reduce((t, i) => t.add((i.getInput() as AmountInput).getAmount()), new BN(0));
     // it should be (output as AmountOutput).getAmount(), but it's not working.
