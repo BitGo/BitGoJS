@@ -2,8 +2,11 @@ import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 // import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 // import { Tx } from 'avalanche/dist/apis/platformvm';
-import { pvmSerial, utils as AvaxUtils } from '@bitgo/avalanchejs';
+import { utils as AvaxUtils, pvmSerial } from '@bitgo/avalanchejs';
 // eslint-disable-next-line import/no-internal-modules
+import { Buffer as BufferAvax } from 'avalanche';
+import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
+import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
 import { ExportInCTxBuilder } from './exportInCTxBuilder';
 import { ExportTxBuilder } from './exportTxBuilder';
@@ -13,9 +16,6 @@ import { PermissionlessValidatorTxBuilder } from './permissionlessValidatorTxBui
 import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
 import { ValidatorTxBuilder } from './validatorTxBuilder';
-import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
-import { Buffer as BufferAvax } from 'avalanche';
-import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -39,8 +39,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         throw new Error('It is not a transaction of this platformvm old flow');
       }
     } catch (e) {
-      // TODO(CR-1073): remove log
-      console.log(e);
       try {
         // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
         txSource = 'EVM';

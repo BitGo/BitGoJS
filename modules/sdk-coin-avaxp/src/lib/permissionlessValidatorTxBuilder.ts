@@ -1,14 +1,14 @@
 import {
-  utils as AvaxUtils,
   Address,
   avaxSerial,
+  utils as AvaxUtils,
   BigIntPr,
   Credential,
   Id,
   Input,
   Int,
-  OutputOwners,
   networkIDs,
+  OutputOwners,
   pvmSerial,
   Signature,
   TransferInput,
@@ -20,20 +20,21 @@ import {
   BaseAddress,
   BaseKey,
   BuildTransactionError,
-  isValidBLSSignature,
   isValidBLSPublicKey,
+  isValidBLSSignature,
   NotSupported,
   TransactionType,
 } from '@bitgo/sdk-core';
 
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { Buffer as BufferAvax } from 'avalanche';
 import BigNumber from 'bignumber.js';
 import { DecodedUtxoObj, SECP256K1_Transfer_Output, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
+import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
 import { recoverUtxos } from './utxoEngine';
-import { TransactionBuilder } from './transactionBuilder';
 
 export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   public _signer: KeyPair[] = [];
@@ -230,11 +231,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
   // endregion
 
-  // TODO Implement
   /** @inheritdoc */
   initBuilder(tx: Tx): this {
     super.initBuilder(tx);
-    // const baseTx: BaseTx = tx.baseTx;
 
     if (!this.verifyTxType(tx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
@@ -245,27 +244,19 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       throw new BuildTransactionError('Transaction can have one external output');
     }
 
-    // The StakeOuts is a {@link stakeTransferOut} result.
-    // It's expected to have only one outputs with the addresses of the sender.
-    // const outputs = baseTx.getStakeOuts();
-    // if (outputs.length != 1) {
-    //   throw new BuildTransactionError('Transaction can have one external output');
-    // }
-    // TODO(CR-1073): fix the type casting here
-    // const output = outputs[0].output as TransferOutput;
-    const output = outputs[0];
-    // if (!output.getAssetID().equals(this.transaction._assetId)) {
-    if (output.assetId.toString() !== this.transaction._assetId) {
+    const output = outputs[0].output as TransferOutput;
+    if (outputs[0].getAssetId() !== this.transaction._assetId) {
       throw new Error('The Asset ID of the output does not match the transaction');
     }
 
-    // this.transaction._locktime = output.outputOwners.locktime.value();
-    // this.transaction._threshold = output.outputOwners.threshold.value();
+    this.transaction._locktime = output.outputOwners.locktime.value();
+    this.transaction._threshold = output.outputOwners.threshold.value();
     this.transaction._nodeID = tx.subnetValidator.validator.nodeId.toString();
     this.transaction._startTime = tx.subnetValidator.validator.startTime.value();
     this.transaction._endTime = tx.subnetValidator.validator.endTime.value();
-    // this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
-    // this.transaction._stakeAmount = tx.stake[0].output.amt;
+    const _fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
+    this.transaction._fromAddresses = _fromAddresses;
+    this.transaction._stakeAmount = tx.stake[0].output.amount();
     this.transaction._utxos = recoverUtxos(tx.getInputs());
     return this;
   }
@@ -299,7 +290,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     // fromAddresses = bitgo order if we are in WP
     // fromAddresses = onchain order if we are in from
     const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
-      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b)
+      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, BufferAvax.from(b))
     );
 
     /*
@@ -364,7 +355,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             // secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
             credentials.push(
               new Credential(
-                ['', this.transaction._fromAddresses[firstIndex].toString('hex')].map(
+                ['', this.transaction._fromAddresses[firstIndex].toString()].map(
                   utils.createSig
                 ) as unknown as Signature[]
               )
@@ -374,7 +365,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             // secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
             credentials.push(
               new Credential(
-                [this.transaction._fromAddresses[firstIndex].toString('hex'), ''].map(
+                [this.transaction._fromAddresses[firstIndex].toString(), ''].map(
                   utils.createSig
                 ) as unknown as Signature[]
               )
@@ -438,7 +429,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     // fromAddresses = bitgo order if we are in WP
     // fromAddresses = onchain order if we are in from
     const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
-      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b)
+      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b as BufferAvax)
     );
 
     // if we are in OVC, none of the utxos will have addresses since they come from
@@ -497,9 +488,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
         if (!buildOutputs) {
           credentials.push(
-            new Credential(
-              addressesIndex.map((i) => utils.createNewSig(this.transaction._fromAddresses[i].toString('hex')))
-            )
+            new Credential(addressesIndex.map((i) => utils.createNewSig(this.transaction._fromAddresses[i].toString())))
           );
         } else {
           // if user/backup > bitgo
@@ -507,13 +496,13 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             credentials.push(
               new Credential([
                 utils.createNewSig(''),
-                utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString('hex')),
+                utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString()),
               ])
             );
           } else {
             credentials.push(
               new Credential([
-                utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString('hex')),
+                utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString()),
                 utils.createNewSig(''),
               ])
             );

@@ -1,3 +1,4 @@
+import { avaxSerial, utils as avaxUtils, Credential, pvmSerial, UnsignedTx } from '@bitgo/avalanchejs';
 import {
   BaseKey,
   BaseTransaction,
@@ -9,7 +10,6 @@ import {
 } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import { avaxSerial, Credential, pvmSerial, UnsignedTx, utils as avaxUtils } from '@bitgo/avalanchejs';
 import { Buffer } from 'buffer';
 import { ADDRESS_SEPARATOR, DecodedUtxoObj, INPUT_SEPARATOR, TransactionExplanation, Tx, TxData } from './iface';
 import { KeyPair } from './keyPair';
@@ -69,9 +69,8 @@ export class Transaction extends BaseTransaction {
   public _threshold = 2;
   public _locktime = BigInt(0);
   // TODO use Uint8Array
-  // public _fromAddresses: Uint8Array[] = [];
   // public _rewardAddresses: Uint8Array[];
-  public _fromAddresses: BufferAvax[] = [];
+  public _fromAddresses: Uint8Array[] = [];
   public _rewardAddresses: BufferAvax[];
   public _utxos: DecodedUtxoObj[] = [];
   // public _to: Uint8Array[];
@@ -215,8 +214,9 @@ export class Transaction extends BaseTransaction {
 
   get fromAddresses(): string[] {
     // TODO(CR-1073): use the new library to get _fromAddresses
-    // return this._fromAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
-    return [];
+    return this._fromAddresses.map((a) =>
+      utils.addressToString(this._network.hrp, this._network.alias, BufferAvax.from(a))
+    );
   }
 
   get rewardAddresses(): string[] {

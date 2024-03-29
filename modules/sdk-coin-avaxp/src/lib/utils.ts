@@ -1,4 +1,6 @@
 // eslint-disable-next-line import/no-internal-modules
+import { Signature as AvaxSignature } from '@bitgo/avalanchejs';
+// eslint-disable-next-line import/no-internal-modules
 import { BaseTx as PVMTx } from '@bitgo/avalanchejs/dist/serializable/pvm/baseTx';
 import {
   BaseUtils,
@@ -11,15 +13,14 @@ import {
 } from '@bitgo/sdk-core';
 import { AvalancheNetwork } from '@bitgo/statics';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
-import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
-import { ec } from 'elliptic';
-import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
-import { Credential } from 'avalanche/dist/common/credentials';
 import { EVMOutput } from 'avalanche/dist/apis/evm';
+import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { Signature } from 'avalanche/dist/common';
-import { Signature as AvaxSignature } from '@bitgo/avalanchejs';
+import { Credential } from 'avalanche/dist/common/credentials';
+import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import * as createHash from 'create-hash';
+import { ec } from 'elliptic';
 import { ADDRESS_SEPARATOR, DeprecatedTx, Output } from './iface';
 
 export class Utils implements BaseUtils {
@@ -226,6 +227,7 @@ export class Utils implements BaseUtils {
   }
 
   createNewSig(sigHex: string): AvaxSignature {
+    // TODO(CR-1073): check error - Error: incorrect number of bytes for signature
     return new AvaxSignature(BufferAvax.from(sigHex.padStart(130, '0'), 'hex'));
   }
 
