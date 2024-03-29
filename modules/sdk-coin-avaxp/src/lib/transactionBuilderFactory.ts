@@ -67,7 +67,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       }
     }
     if (txSource === 'PVM') {
-      if (PermissionlessValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
+      if (PermissionlessValidatorTxBuilder.verifyTxType((tx as pvmSerial.BaseTx)._type)) {
         transactionBuilder = this.getPermissionlessValidatorTxBuilder();
       } else if (ValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
         transactionBuilder = this.getValidatorBuilder();

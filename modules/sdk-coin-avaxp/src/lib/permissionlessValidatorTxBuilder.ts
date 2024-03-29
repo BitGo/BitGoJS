@@ -269,12 +269,12 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     return this;
   }
 
-  static verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
-    return (tx as pvmSerial.AddPermissionlessValidatorTx)._type === TypeSymbols.AddPermissionlessDelegatorTx;
+  static verifyTxType(type: TypeSymbols): boolean {
+    return type === TypeSymbols.AddPermissionlessValidatorTx;
   }
 
   verifyTxType(tx: Tx): tx is pvmSerial.AddPermissionlessValidatorTx {
-    return PermissionlessValidatorTxBuilder.verifyTxType(tx);
+    return PermissionlessValidatorTxBuilder.verifyTxType((tx as pvmSerial.AddPermissionlessValidatorTx)._type);
   }
 
   // @TODO(CR-1073): Remove this method when calculateUtxos() is ready
