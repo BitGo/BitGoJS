@@ -145,7 +145,7 @@ describe('Avaxp', function () {
       tx.type.should.equal(TransactionType.AddPermissionlessValidator);
       // TODO(CR-1073): continue testing
       const txHex = tx.toBroadcastFormat();
-      // console.log(tx.toJson());
+      console.log(tx.toJson());
       txHex.should.not.be.empty();
     });
 

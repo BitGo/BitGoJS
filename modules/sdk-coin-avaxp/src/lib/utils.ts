@@ -1,7 +1,10 @@
-// eslint-disable-next-line import/no-internal-modules
-import { Signature as AvaxSignature } from '@bitgo/avalanchejs';
-// eslint-disable-next-line import/no-internal-modules
-import { BaseTx as PVMTx } from '@bitgo/avalanchejs/dist/serializable/pvm/baseTx';
+import {
+  pvmSerial,
+  Signature as AvaxSignature,
+  TransferOutput,
+  TransferableOutput,
+  TypeSymbols,
+} from '@bitgo/avalanchejs';
 import {
   BaseUtils,
   Entry,
@@ -14,14 +17,19 @@ import {
 import { AvalancheNetwork } from '@bitgo/statics';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import { EVMOutput } from 'avalanche/dist/apis/evm';
-import { AmountOutput, BaseTx, SelectCredentialClass, TransferableOutput } from 'avalanche/dist/apis/platformvm';
+import {
+  AmountOutput,
+  BaseTx,
+  SelectCredentialClass,
+  TransferableOutput as DeprecatedTransferableOutput,
+} from 'avalanche/dist/apis/platformvm';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { Signature } from 'avalanche/dist/common';
 import { Credential } from 'avalanche/dist/common/credentials';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import * as createHash from 'create-hash';
 import { ec } from 'elliptic';
-import { ADDRESS_SEPARATOR, DeprecatedTx, Output } from './iface';
+import { ADDRESS_SEPARATOR, DeprecatedOutput, DeprecatedTx, Output } from './iface';
 
 export class Utils implements BaseUtils {
   private binTools = BinTools.getInstance();
@@ -281,9 +289,20 @@ export class Utils implements BaseUtils {
    * @param {string} blockchainId
    * @returns true if tx is for blockchainId
    */
-  isTransactionOf(tx: DeprecatedTx | PVMTx, blockchainId: string): boolean {
+  isTransactionOf(tx: DeprecatedTx | pvmSerial.BaseTx, blockchainId: string): boolean {
     // TODO(CR-1073): Change this to support both Txn types
     return utils.cb58Encode((tx as DeprecatedTx).getUnsignedTx().getTransaction().getBlockchainID()) === blockchainId;
+  }
+
+  /**
+   * Check if Output is from PVM.
+   * Output could be EVM or PVM output.
+   * @param {DeprecatedOutput} output
+   * @returns {boolean} output is DeprecatedTransferableOutput
+   */
+  deprecatedIsTransferableOutput(output: DeprecatedOutput): output is DeprecatedTransferableOutput {
+    // TODO(CR-1073) newer library TransferableOutput doesn't have getOutput method
+    return 'getOutput' in output || output[0].output;
   }
 
   /**
@@ -293,8 +312,7 @@ export class Utils implements BaseUtils {
    * @returns {boolean} output is TransferableOutput
    */
   isTransferableOutput(output: Output): output is TransferableOutput {
-    // TODO(CR-1073) newer library TransferableOutput doesn't have getOutput method
-    return 'getOutput' in output || output[0].output;
+    return output?._type === TypeSymbols.TransferableOutput;
   }
 
   /**
@@ -302,9 +320,9 @@ export class Utils implements BaseUtils {
    * @param network required to stringify addresses
    * @return mapper function
    */
-  mapOutputToEntry(network: AvalancheNetwork): (Output) => Entry {
-    return (output: Output) => {
-      if (this.isTransferableOutput(output)) {
+  deprecatedMapOutputToEntry(network: AvalancheNetwork): (DeprecatedOutput) => Entry {
+    return (output: DeprecatedOutput) => {
+      if (this.deprecatedIsTransferableOutput(output)) {
         // TODO(CR-1073) newer library TransferableOutput doesn't have getOutput method
         const amountOutput = output.getOutput() as AmountOutput;
         const address = amountOutput
@@ -324,6 +342,30 @@ export class Utils implements BaseUtils {
           // C-Chain address.
           address: '0x' + evmOutput.getAddressString(),
         };
+      }
+    };
+  }
+
+  /**
+   * Return a mapper function to that network address representation.
+   * @param network required to stringify addresses
+   * @return mapper function
+   */
+  mapOutputToEntry(network: AvalancheNetwork): (Output) => Entry {
+    return (output: Output) => {
+      if (this.isTransferableOutput(output)) {
+        const outputAmount = output.amount();
+        const address = (output.output as TransferOutput)
+          .getOwners()
+          .map((a) => this.addressToString(network.hrp, network.alias, BufferAvax.from(a)))
+          .sort()
+          .join(ADDRESS_SEPARATOR);
+        return {
+          value: outputAmount.toString(),
+          address,
+        };
+      } else {
+        throw new Error('Invalid output type');
       }
     };
   }

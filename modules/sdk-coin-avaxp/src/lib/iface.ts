@@ -1,7 +1,11 @@
 import { TransactionExplanation as BaseTransactionExplanation, Entry, TransactionType } from '@bitgo/sdk-core';
 import { EVMBaseTx as DeprecatedEVMBaseTx, EVMOutput, Tx as EVMTx } from 'avalanche/dist/apis/evm';
-import { BaseTx as DeprecatedPMVBaseTx, Tx as PVMTx, TransferableOutput } from 'avalanche/dist/apis/platformvm';
-import { avaxSerial, pvmSerial, UnsignedTx } from '@bitgo/avalanchejs';
+import {
+  BaseTx as DeprecatedPMVBaseTx,
+  Tx as PVMTx,
+  TransferableOutput as DeprecatedTransferableOutput,
+} from 'avalanche/dist/apis/platformvm';
+import { avaxSerial, pvmSerial, UnsignedTx, TransferableOutput } from '@bitgo/avalanchejs';
 export interface AvaxpEntry extends Entry {
   id: string;
 }
@@ -68,4 +72,5 @@ export type DeprecatedBaseTx = DeprecatedPMVBaseTx | DeprecatedEVMBaseTx;
 export type Tx = DeprecatedTx | pvmSerial.BaseTx | UnsignedTx;
 export type BaseTx = avaxSerial.BaseTx;
 export type AvaxTx = avaxSerial.AvaxTx;
-export type Output = TransferableOutput | EVMOutput;
+export type DeprecatedOutput = DeprecatedTransferableOutput | EVMOutput;
+export type Output = TransferableOutput;

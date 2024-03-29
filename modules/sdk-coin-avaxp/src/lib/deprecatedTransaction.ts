@@ -226,12 +226,18 @@ export class DeprecatedTransaction extends BaseTransaction {
   get outputs(): Entry[] {
     switch (this.type) {
       case TransactionType.Import:
-        return (this.avaxPTransaction as ImportTx | EVMImportTx).getOuts().map(utils.mapOutputToEntry(this._network));
+        return (this.avaxPTransaction as ImportTx | EVMImportTx)
+          .getOuts()
+          .map(utils.deprecatedMapOutputToEntry(this._network));
       case TransactionType.Export:
         if (utils.isTransactionOf(this._avaxTransaction, this._network.cChainBlockchainID)) {
-          return (this.avaxPTransaction as EVMExportTx).getExportedOutputs().map(utils.mapOutputToEntry(this._network));
+          return (this.avaxPTransaction as EVMExportTx)
+            .getExportedOutputs()
+            .map(utils.deprecatedMapOutputToEntry(this._network));
         } else {
-          return (this.avaxPTransaction as ExportTx).getExportOutputs().map(utils.mapOutputToEntry(this._network));
+          return (this.avaxPTransaction as ExportTx)
+            .getExportOutputs()
+            .map(utils.deprecatedMapOutputToEntry(this._network));
         }
       case TransactionType.AddDelegator:
       case TransactionType.AddValidator:
@@ -264,7 +270,7 @@ export class DeprecatedTransaction extends BaseTransaction {
       return [];
     }
     // general support any transaction type, but it's scoped yet
-    return (this.avaxPTransaction as PVMBaseTx).getOuts().map(utils.mapOutputToEntry(this._network));
+    return (this.avaxPTransaction as PVMBaseTx).getOuts().map(utils.deprecatedMapOutputToEntry(this._network));
   }
 
   get inputs(): Entry[] {

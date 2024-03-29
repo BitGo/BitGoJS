@@ -262,7 +262,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this._startTime = this.transaction._startTime;
     this.transaction._endTime = tx.subnetValidator.validator.endTime.value();
     this._endTime = this.transaction._endTime;
-
     this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
     this.transaction._stakeAmount = tx.stake[0].output.amount();
     this.transaction._utxos = recoverUtxos(tx.getInputs());
