@@ -301,8 +301,7 @@ export class Utils implements BaseUtils {
    * @returns {boolean} output is DeprecatedTransferableOutput
    */
   deprecatedIsTransferableOutput(output: DeprecatedOutput): output is DeprecatedTransferableOutput {
-    // TODO(CR-1073) newer library TransferableOutput doesn't have getOutput method
-    return 'getOutput' in output || output[0].output;
+    return 'getOutput' in output;
   }
 
   /**
