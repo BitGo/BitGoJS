@@ -2,7 +2,7 @@ import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 // import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 // import { Tx } from 'avalanche/dist/apis/platformvm';
-import { avmSerial, pvmSerial } from '@bitgo/avalanchejs';
+import { pvmSerial, utils as AvaxUtils } from '@bitgo/avalanchejs';
 // eslint-disable-next-line import/no-internal-modules
 import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
 import { ExportInCTxBuilder } from './exportInCTxBuilder';
@@ -32,11 +32,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      tx = pvmSerial.BaseTx.fromBytes(Buffer.from(raw, 'hex'), avmSerial.getAVMManager().getDefaultCodec())[0];
+      const buffer = Buffer.from(raw);
+      tx = pvmSerial.BaseTx.fromBytes(buffer, AvaxUtils.getManagerForVM('PVM').getDefaultCodec())[0];
       if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
-        throw new Error('It is not a transaction of this network');
+        throw new Error('It is not a transaction of this pvmSerial new flow');
       }
-    } catch {
+    } catch (e) {
+      // TODO(CR-1073): remove log
+      console.log(e);
       try {
         raw = utils.removeHexPrefix(raw);
         tx = new Tx();
@@ -44,22 +47,24 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         tx.fromBuffer(BufferAvax.from(raw, 'hex'));
 
         if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
-          throw new Error('It is not a transaction of this network');
+          throw new Error('It is not a transaction of this platformvm old flow');
         }
-      } catch {
-        txSource = 'EVM';
-        // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
-        // tx = evmSerial.ExportTx.fromBytes(Buffer.from(raw, 'hex'), avmSerial.getAVMManager().getDefaultCodec())[0];
-        // tx = new ExportTx();
-        // if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
-        //   throw new Error('It is not a transaction of this network or C chain');
-        // }
-        txSource = 'EVM';
-        tx = new EVMTx();
-        tx.fromBuffer(BufferAvax.from(raw, 'hex'));
+      } catch (e) {
+        // TODO(CR-1073): remove log
+        console.log(e);
+        try {
+          // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
+          txSource = 'EVM';
+          tx = new EVMTx();
+          tx.fromBuffer(BufferAvax.from(raw, 'hex'));
 
-        if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
-          throw new Error('It is not a transaction of this network or C chain');
+          if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
+            throw new Error('It is not a transaction of this network or C chain EVM');
+          }
+        } catch (e) {
+          // TODO(CR-1073): remove log
+          console.log('failed all attempts to parse tx');
+          throw e;
         }
       }
     }
