@@ -145,7 +145,7 @@ describe('Avaxp', function () {
       // txHex.should.not.be.empty();
     });
 
-    xit('build and sign a transaction in regular mode', async () => {
+    it('build and sign a transaction in regular mode', async () => {
       const recoveryMode = false;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
         .getValidatorBuilder()

@@ -15,7 +15,7 @@ import utils from './utils';
 import { ValidatorTxBuilder } from './validatorTxBuilder';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { Buffer as BufferAvax } from 'avalanche';
-import { Tx } from 'avalanche/dist/apis/platformvm';
+import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected recoverSigner = false;
@@ -28,37 +28,35 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     utils.validateRawTransaction(raw);
     let txSource: 'EVM' | 'PVM' = 'PVM';
     let transactionBuilder: TransactionBuilder | DeprecatedTransactionBuilder | undefined = undefined;
-    let tx: any; // Tx | EVMTx | pvmSerial.BaseTx;
-
+    let tx: PVMTx | EVMTx | pvmSerial.BaseTx;
+    const rawNoHex = utils.removeHexPrefix(raw);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const manager = AvaxUtils.getManagerForVM('PVM');
-      const [codec, rest] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
-      tx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(rest)[0];
+      tx = new PVMTx();
+      // could throw an error if a txType doesn't match.
+      tx.fromBuffer(BufferAvax.from(rawNoHex, 'hex'));
+
+      if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
+        throw new Error('It is not a transaction of this platformvm old flow');
+      }
     } catch (e) {
       // TODO(CR-1073): remove log
       console.log(e);
       try {
-        raw = utils.removeHexPrefix(raw);
-        tx = new Tx();
-        // could throw an error if a txType doesn't match.
-        tx.fromBuffer(BufferAvax.from(raw, 'hex'));
+        // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
+        txSource = 'EVM';
+        tx = new EVMTx();
+        tx.fromBuffer(BufferAvax.from(rawNoHex, 'hex'));
 
-        if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
-          throw new Error('It is not a transaction of this platformvm old flow');
+        if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
+          throw new Error('It is not a transaction of this network or C chain EVM');
         }
       } catch (e) {
-        // TODO(CR-1073): remove log
-        console.log(e);
         try {
-          // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
-          txSource = 'EVM';
-          tx = new EVMTx();
-          tx.fromBuffer(BufferAvax.from(raw, 'hex'));
-
-          if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).cChainBlockchainID)) {
-            throw new Error('It is not a transaction of this network or C chain EVM');
-          }
+          txSource = 'PVM';
+          // this should be the last because other PVM functions are still being detected in the new SDK
+          const manager = AvaxUtils.getManagerForVM('PVM');
+          const [codec, rest] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
+          tx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(rest)[0];
         } catch (e) {
           // TODO(CR-1073): remove log
           console.log('failed all attempts to parse tx');
@@ -66,27 +64,27 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         }
       }
     }
+
     if (txSource === 'PVM') {
       if (PermissionlessValidatorTxBuilder.verifyTxType((tx as pvmSerial.BaseTx)._type)) {
-        transactionBuilder = this.getPermissionlessValidatorTxBuilder();
-      } else if (ValidatorTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getValidatorBuilder();
-      } else if (ExportTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getExportBuilder();
-      } else if (ImportTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getImportBuilder();
+        transactionBuilder = this.getPermissionlessValidatorTxBuilder().initBuilder(tx as pvmSerial.BaseTx);
+      } else if (ValidatorTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
+        transactionBuilder = this.getValidatorBuilder().initBuilder(tx as PVMTx);
+      } else if (ExportTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
+        transactionBuilder = this.getExportBuilder().initBuilder(tx as PVMTx);
+      } else if (ImportTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
+        transactionBuilder = this.getImportBuilder().initBuilder(tx as PVMTx);
       }
     } else if (txSource === 'EVM') {
-      if (ImportInCTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getImportInCBuilder();
-      } else if (ExportInCTxBuilder.verifyTxType(tx.getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getExportInCBuilder();
+      if (ImportInCTxBuilder.verifyTxType((tx as EVMTx).getUnsignedTx().getTransaction())) {
+        transactionBuilder = this.getImportInCBuilder().initBuilder(tx as EVMTx);
+      } else if (ExportInCTxBuilder.verifyTxType((tx as EVMTx).getUnsignedTx().getTransaction())) {
+        transactionBuilder = this.getExportInCBuilder().initBuilder(tx as EVMTx);
       }
     }
     if (transactionBuilder === undefined) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
-    transactionBuilder.initBuilder(tx);
     return transactionBuilder;
   }
 
