@@ -497,17 +497,25 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
             credentials.push(
               new Credential([
-                // TODO(CR-1073): sig.length !== SepkSignatureLength
-                // utils.createNewSig(''),
-                utils.createNewSig(AvaxUtils.bufferToHex(this.transaction._fromAddresses[firstIndex])),
+                utils.createNewSig(
+                  utils.addressToString(
+                    this.transaction._network.hrp,
+                    this.transaction._network.alias,
+                    this.transaction._fromAddresses[firstIndex] as BufferAvax
+                  )
+                ),
               ])
             );
           } else {
             credentials.push(
               new Credential([
-                utils.createNewSig(AvaxUtils.bufferToHex(this.transaction._fromAddresses[firstIndex])),
-                // TODO(CR-1073): sig.length !== SepkSignatureLength
-                // utils.createNewSig(''),
+                utils.createNewSig(
+                  utils.addressToString(
+                    this.transaction._network.hrp,
+                    this.transaction._network.alias,
+                    this.transaction._fromAddresses[firstIndex] as BufferAvax
+                  )
+                ),
               ])
             );
           }
@@ -572,9 +580,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     );
 
     const subnetValidator = pvmSerial.SubnetValidator.fromNative(
-      this.transaction._nodeID,
-      this.transaction._startTime,
-      this.transaction._endTime,
+      this._nodeID,
+      this._startTime,
+      this._endTime,
       BigInt(1e9),
       networkIDs.PrimaryNetworkID
     );

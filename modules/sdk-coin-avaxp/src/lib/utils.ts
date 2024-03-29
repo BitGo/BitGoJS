@@ -235,8 +235,8 @@ export class Utils implements BaseUtils {
   }
 
   createNewSig(sigHex: string): AvaxSignature {
-    // TODO(CR-1073): check error - Error: incorrect number of bytes for signature
-    const buffer = BufferAvax.from(sigHex);
+    // TODO(CR-1073): check error - Error: incorrect number of bytes for signature sig.length !== SepkSignatureLength
+    const buffer = BufferAvax.from(sigHex.padStart(175, '0'), 'hex');
     return new AvaxSignature(buffer);
   }
 

@@ -139,6 +139,8 @@ describe('Avaxp', function () {
         .stakeAmount(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.stakeAmount)
         .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
         .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
+        .blsPublicKey(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.blsPublicKey)
+        .blsSignature(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.blsSignature)
         .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
       const tx = await txBuilder.build();
 
@@ -146,6 +148,8 @@ describe('Avaxp', function () {
       // TODO(CR-1073): continue testing
       const txHex = tx.toBroadcastFormat();
       console.log(tx.toJson());
+      const txJson2 = tx.toJson();
+      txJson2.type.should.equal(TransactionType.AddPermissionlessValidator);
       txHex.should.not.be.empty();
     });
 
