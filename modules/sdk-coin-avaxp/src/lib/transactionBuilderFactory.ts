@@ -32,18 +32,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const buffer = Buffer.from(raw);
-      const codec = AvaxUtils.getManagerForVM('PVM').getDefaultCodec();
-
-      try {
-        AvaxUtils.unpackWithManager('PVM', Buffer.from(raw));
-      } catch (e) {
-        console.log(e);
-      }
-      tx = pvmSerial.BaseTx.fromBytes(buffer, codec)[0];
-      if (!utils.isTransactionOf(tx, (this._coinConfig.network as AvalancheNetwork).blockchainID)) {
-        throw new Error('It is not a transaction of this pvmSerial new flow');
-      }
+      const manager = AvaxUtils.getManagerForVM('PVM');
+      const [codec, rest] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
+      tx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(rest)[0];
     } catch (e) {
       // TODO(CR-1073): remove log
       console.log(e);
