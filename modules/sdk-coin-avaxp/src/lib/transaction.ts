@@ -239,7 +239,7 @@ export class Transaction extends BaseTransaction {
             ).subnetValidator.validator.nodeId.toString(),
             value: (
               (this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
-            ).subnetValidator.validator.weight.toString(),
+            ).subnetValidator.validator.weight.toJSON(),
           },
         ];
       default:
