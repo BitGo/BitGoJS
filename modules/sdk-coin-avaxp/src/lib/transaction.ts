@@ -1,4 +1,4 @@
-import { Address, avaxSerial, utils as avaxUtils, Credential, pvmSerial, UnsignedTx } from '@bitgo/avalanchejs';
+import { avaxSerial, utils as avaxUtils, Credential, pvmSerial, UnsignedTx } from '@bitgo/avalanchejs';
 import {
   BaseKey,
   BaseTransaction,
@@ -214,7 +214,9 @@ export class Transaction extends BaseTransaction {
 
   get fromAddresses(): string[] {
     // TODO(CR-1073): use the new library to get _fromAddresses
-    return this._fromAddresses.map((a) => Address.fromBytes(a)[0].toString());
+    return this._fromAddresses.map((a) =>
+      utils.addressToString(this._network.hrp, this._network.alias, BufferAvax.from(a))
+    );
   }
 
   get rewardAddresses(): string[] {
