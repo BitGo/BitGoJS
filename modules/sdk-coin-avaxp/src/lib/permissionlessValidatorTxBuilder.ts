@@ -485,24 +485,27 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         );
         const input = new avaxSerial.TransferableInput(utxoId, assetId, transferInputs);
         inputs.push(input);
-
         if (!buildOutputs) {
-          credentials.push(
-            new Credential(addressesIndex.map((i) => utils.createNewSig(this.transaction._fromAddresses[i].toString())))
-          );
+          // TODO(CR-1073): no need to add credentials if buildOutputs is false, similar to delegatorTxBuilder.ts
+          console.log('buildOutputs is false');
+          // credentials.push(
+          //   new Credential(
+          //     addressesIndex.map((i) => utils.createNewSig(AvaxUtils.bufferToHex(this.transaction._fromAddresses[i])))
+          //   )
+          // );
         } else {
           // if user/backup > bitgo
           if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
             credentials.push(
               new Credential([
                 utils.createNewSig(''),
-                utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString()),
+                utils.createNewSig(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
               ])
             );
           } else {
             credentials.push(
               new Credential([
-                utils.createNewSig(this.transaction._fromAddresses[firstIndex].toString()),
+                utils.createNewSig(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
                 utils.createNewSig(''),
               ])
             );

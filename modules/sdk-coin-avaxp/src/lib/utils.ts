@@ -292,7 +292,8 @@ export class Utils implements BaseUtils {
    * @returns {boolean} output is TransferableOutput
    */
   isTransferableOutput(output: Output): output is TransferableOutput {
-    return 'getOutput' in output;
+    // TODO(CR-1073) newer library TransferableOutput doesn't have getOutput method
+    return 'getOutput' in output || output[0].output;
   }
 
   /**
@@ -303,6 +304,7 @@ export class Utils implements BaseUtils {
   mapOutputToEntry(network: AvalancheNetwork): (Output) => Entry {
     return (output: Output) => {
       if (this.isTransferableOutput(output)) {
+        // TODO(CR-1073) newer library TransferableOutput doesn't have getOutput method
         const amountOutput = output.getOutput() as AmountOutput;
         const address = amountOutput
           .getAddresses()
