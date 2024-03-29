@@ -120,6 +120,8 @@ export type StakingAuthorizeParams = {
   oldWithdrawAddress: string;
   newWithdrawAddress: string;
   custodianAddress?: string;
+  oldStakingAuthorityAddress?: string;
+  newStakingAuthorityAddress?: string;
 };
 
 export type StakingDelegateParams = {

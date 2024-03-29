@@ -18,7 +18,7 @@ import {
 
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
-import { nonceAdvanceInstruction, validInstructionData } from './constants';
+import { nonceAdvanceInstruction, validInstructionData, validInstructionData2 } from './constants';
 
 export class StakingRawMsgAuthorizeBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -93,7 +93,7 @@ export class StakingRawMsgAuthorizeBuilder extends BaseTransactionBuilder {
           break;
         case StakeProgram.programId.toString():
           const data = instruction.data.toString('hex');
-          if (data !== validInstructionData) {
+          if (data !== validInstructionData && data !== validInstructionData2) {
             throw new Error(`Invalid staking instruction data: ${data}`);
           }
           break;

@@ -26,6 +26,7 @@ import {
   walletInitInstructionIndexes,
   nonceAdvanceInstruction,
   validInstructionData,
+  validInstructionData2,
 } from './constants';
 import {
   BuildTransactionError,
@@ -361,7 +362,10 @@ export function validateRawMsgInstruction(instructions: TransactionInstruction[]
     if (programId1 === SystemProgram.programId.toString() && programId2 === StakeProgram.programId.toString()) {
       const instructionName1 = SystemInstruction.decodeInstructionType(instructions[0]);
       const data = instructions[1].data.toString('hex');
-      if (instructionName1 === nonceAdvanceInstruction && data === validInstructionData) {
+      if (
+        instructionName1 === nonceAdvanceInstruction &&
+        (data === validInstructionData || data === validInstructionData2)
+      ) {
         return true;
       }
     }
