@@ -52,8 +52,8 @@ export function recoverUtxos(utxos: avaxSerial.TransferableInput[]): DecodedUtxo
     const input = utxo.input;
 
     // use the same addressesIndex as existing ones in the inputs
-    // const addressesIndex: number[] = input.getSigIdxs().map((s) => s.toBuffer().readUInt32BE(0));
-    const addressesIndex = utxo.sigIndicies();
+    const addressesIndex: number[] = utxo.sigIndicies();
+    // const addressesIndex = utxo.sigIndicies();
 
     return {
       outputID: SECP256K1_Transfer_Output,

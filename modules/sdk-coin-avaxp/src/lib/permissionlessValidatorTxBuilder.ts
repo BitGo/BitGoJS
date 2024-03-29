@@ -109,6 +109,25 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     return this;
   }
 
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: string): Transaction {
+    const manager = AvaxUtils.getManagerForVM('PVM');
+    const [codec, rest] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(rawTransaction));
+    const tx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(rest)[0];
+    this.initBuilder(tx);
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    this.buildAvaxTransaction();
+    this.transaction.setTransactionType(this.transactionType);
+    if (this.hasSigner()) {
+      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
+    }
+    return this.transaction;
+  }
+
   /**
    *
    * @param nodeID
@@ -441,7 +460,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     // if we are in OVC, none of the utxos will have addresses since they come from
     // deserialized inputs (which don't have addresses), not the IMS
-    const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
+    const buildOutputs =
+      this.transaction._utxos[0].addresses.length !== 0 || this.transaction._utxos[0].addressesIndex?.length !== 0;
 
     const assetId = Id.fromString(this.transaction._assetId);
     this.transaction._utxos.forEach((utxo) => {
@@ -453,7 +473,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       if (utxo.addressesIndex?.includes(-1)) {
         throw new BuildTransactionError('Addresses are inconsistent');
       }
-      if (utxo.threshold !== this.transaction._threshold) {
+      if (utxo.threshold < this.transaction._threshold) {
         throw new BuildTransactionError('Threshold is inconsistent');
       }
 
@@ -519,6 +539,10 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
               ])
             );
           }
+        } else {
+          // TODO(CR-1073): check this
+          // need this else case for OVC
+          // addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
         }
       }
     });
@@ -630,24 +654,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    this.buildAvaxTransaction();
-    this.transaction.setTransactionType(this.transactionType);
-    if (this.hasSigner()) {
-      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
-    }
-    return this.transaction;
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    // TODO Implement
-    return this.transaction;
-  }
-
-  /** @inheritdoc */
   protected signImplementation({ key }: BaseKey): Transaction {
     // TODO Implement
+    this._signer.push(new KeyPair({ prv: key }));
     return this.transaction;
   }
 
