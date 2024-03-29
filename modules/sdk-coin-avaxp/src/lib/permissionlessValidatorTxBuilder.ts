@@ -251,21 +251,21 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     // if (outputs.length != 1) {
     //   throw new BuildTransactionError('Transaction can have one external output');
     // }
+    // TODO(CR-1073): fix the type casting here
+    // const output = outputs[0].output as TransferOutput;
     const output = outputs[0];
     // if (!output.getAssetID().equals(this.transaction._assetId)) {
     if (output.assetId.toString() !== this.transaction._assetId) {
       throw new Error('The Asset ID of the output does not match the transaction');
     }
-    // const secpOut = output.getOutput();
-    // this.transaction._locktime = secpOut.getLocktime();
-    // this.transaction._threshold = secpOut.getThreshold();
-    // // output addresses are the sender addresses
-    // this.transaction._fromAddresses = secpOut.getAddresses();
-    // this._nodeID = baseTx.getNodeIDString();
-    // this._startTime = baseTx.getStartTime();
-    // this._endTime = baseTx.getEndTime();
-    // this._stakeAmount = baseTx.getStakeAmount();
-    // this.transaction._utxos = recoverUtxos(baseTx.getIns());
+
+    // this.transaction._locktime = output.outputOwners.locktime.value();
+    // this.transaction._threshold = output.outputOwners.threshold.value();
+    this.transaction._nodeID = tx.subnetValidator.validator.nodeId.toString();
+    this.transaction._startTime = tx.subnetValidator.validator.startTime.value();
+    this.transaction._endTime = tx.subnetValidator.validator.endTime.value();
+    // this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
+    // this.transaction._stakeAmount = tx.stake[0].output.amt;
     this.transaction._utxos = recoverUtxos(tx.getInputs());
     return this;
   }

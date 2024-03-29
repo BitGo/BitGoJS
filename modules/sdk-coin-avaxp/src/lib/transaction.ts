@@ -62,11 +62,19 @@ export class Transaction extends BaseTransaction {
   public _networkID: number;
   public _assetId: string;
   public _blockchainID: string;
+  public _nodeID: string;
+  public _startTime: bigint;
+  public _endTime: bigint;
+  public _stakeAmount: bigint;
   public _threshold = 2;
   public _locktime = BigInt(0);
+  // TODO use Uint8Array
+  // public _fromAddresses: Uint8Array[] = [];
+  // public _rewardAddresses: Uint8Array[];
   public _fromAddresses: BufferAvax[] = [];
   public _rewardAddresses: BufferAvax[];
   public _utxos: DecodedUtxoObj[] = [];
+  // public _to: Uint8Array[];
   public _to: BufferAvax[];
   public _fee: Partial<TransactionFee> = {};
   public _blsPublicKey: string;
@@ -206,11 +214,15 @@ export class Transaction extends BaseTransaction {
   }
 
   get fromAddresses(): string[] {
-    return this._fromAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
+    // TODO(CR-1073): use the new library to get _fromAddresses
+    // return this._fromAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
+    return [];
   }
 
   get rewardAddresses(): string[] {
-    return this._rewardAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
+    // TODO(CR-1073): use the new library to get _rewardAddresses
+    // return this._rewardAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
+    return [];
   }
 
   /**
