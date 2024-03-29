@@ -249,13 +249,21 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       throw new Error('The Asset ID of the output does not match the transaction');
     }
 
+    this.transaction._blsPublicKey = AvaxUtils.bufferToHex((tx.signer as pvmSerial.Signer).proof.publicKey);
+    this._blsPublicKey = this.transaction._blsPublicKey;
+    this.transaction._blsSignature = AvaxUtils.bufferToHex((tx.signer as pvmSerial.Signer).proof.signature);
+    this._blsSignature = this.transaction._blsSignature;
+
     this.transaction._locktime = output.outputOwners.locktime.value();
     this.transaction._threshold = output.outputOwners.threshold.value();
     this.transaction._nodeID = tx.subnetValidator.validator.nodeId.toString();
+    this._nodeID = this.transaction._nodeID;
     this.transaction._startTime = tx.subnetValidator.validator.startTime.value();
+    this._startTime = this.transaction._startTime;
     this.transaction._endTime = tx.subnetValidator.validator.endTime.value();
-    const _fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
-    this.transaction._fromAddresses = _fromAddresses;
+    this._endTime = this.transaction._endTime;
+
+    this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
     this.transaction._stakeAmount = tx.stake[0].output.amount();
     this.transaction._utxos = recoverUtxos(tx.getInputs());
     return this;
@@ -485,28 +493,22 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         );
         const input = new avaxSerial.TransferableInput(utxoId, assetId, transferInputs);
         inputs.push(input);
-        if (!buildOutputs) {
-          // TODO(CR-1073): no need to add credentials if buildOutputs is false, similar to delegatorTxBuilder.ts
-          console.log('buildOutputs is false');
-          // credentials.push(
-          //   new Credential(
-          //     addressesIndex.map((i) => utils.createNewSig(AvaxUtils.bufferToHex(this.transaction._fromAddresses[i])))
-          //   )
-          // );
-        } else {
+        if (buildOutputs) {
           // if user/backup > bitgo
           if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
             credentials.push(
               new Credential([
-                utils.createNewSig(''),
-                utils.createNewSig(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
+                // TODO(CR-1073): sig.length !== SepkSignatureLength
+                // utils.createNewSig(''),
+                utils.createNewSig(AvaxUtils.bufferToHex(this.transaction._fromAddresses[firstIndex])),
               ])
             );
           } else {
             credentials.push(
               new Credential([
-                utils.createNewSig(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-                utils.createNewSig(''),
+                utils.createNewSig(AvaxUtils.bufferToHex(this.transaction._fromAddresses[firstIndex])),
+                // TODO(CR-1073): sig.length !== SepkSignatureLength
+                // utils.createNewSig(''),
               ])
             );
           }
@@ -560,7 +562,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
    * @protected
    */
   protected buildAvaxTransaction(): void {
-    this.validateStakeDuration(this._startTime, this._endTime);
+    this.validateStakeDuration(this.transaction._startTime, this.transaction._endTime);
     const { inputs, stakeOutputs, changeOutputs, credentials } = this.calculateUtxos();
     const baseTx = avaxSerial.BaseTx.fromNative(
       this.transaction._networkID,
@@ -571,15 +573,20 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     );
 
     const subnetValidator = pvmSerial.SubnetValidator.fromNative(
-      this._nodeID,
-      this._startTime,
-      this._endTime,
+      this.transaction._nodeID,
+      this.transaction._startTime,
+      this.transaction._endTime,
       BigInt(1e9),
       networkIDs.PrimaryNetworkID
     );
 
     // TODO create a `Signer` instead if we have signatures for the tx
-    const signer = new pvmSerial.SignerEmpty();
+    const signer = new pvmSerial.Signer(
+      new pvmSerial.ProofOfPossession(
+        AvaxUtils.hexToBuffer(this._blsPublicKey),
+        AvaxUtils.hexToBuffer(this._blsSignature)
+      )
+    );
 
     const outputOwners = new OutputOwners(
       new BigIntPr(this.transaction._locktime),
