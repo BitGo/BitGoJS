@@ -116,63 +116,6 @@ describe('Avaxp', function () {
 
   describe('Sign Transaction', () => {
     const factory = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName));
-
-    it('build and sign an AddPermissionlessValidator transaction', async () => {
-      // TODO (CR-1073): Use transction built from PermissionlessValidatorTxBuilder
-      // const rawTx =
-      //   '0x000000000019000000050000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa0000000700000000000f424000000000000000000000000100000001bb6de9adcfbf2e0dfeffbe7792afd0c4085fdd3700000002838f002bb625807c559dd1980cd471b4f54a7b7302fd9af016ccca1046f18d5b000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa0000000500000000000f42400000000100000000b0a0dc0114f9870ed1d35d9299c9ddcd317cafaf742bac42d7e96d4e2a9c4e60000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b9aca00000000010000000000000000b2fa09a63ee0fc74e51ae1f3bf4e1eade876f0240000000066071c1d000000006622cb9d000000003b9aca0000000000000000000000000000000000000000000000000000000000000000000000001c8f95423f7142d00a48e1014a3de8d28907d420dc33b3052a6dee03a3f2941a393c2351e354704ca66a3fc29870282e1586a3ab4c45cfe31cae34c1d06f212434ac71b1be6cfe046c80c162e057614a94a5bc9f1ded1a7029deb0ba4ca7c9b71411e293438691be79c2dbf19d1ca7c3eadb9c756246fc5de5b7b89511c7d7302ae051d9e03d7991138299b5ed6a570a98000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000003b9aca0000000000000000000000000100000001bb6de9adcfbf2e0dfeffbe7792afd0c4085fdd370000000b00000000000000000000000100000001bb6de9adcfbf2e0dfeffbe7792afd0c4085fdd370000000b00000000000000000000000100000001bb6de9adcfbf2e0dfeffbe7792afd0c4085fdd3700030d40000000020000000900000001c7a71a4a5f6358f0d9d6c62df8abb30fd17f4e40e2cbae661b0cb8b13cf55c2271e567292255e43426a69f1d71c48fd0bbd83c886ffe63e42616a6de73344b2a000000000900000001c7a71a4a5f6358f0d9d6c62df8abb30fd17f4e40e2cbae661b0cb8b13cf55c2271e567292255e43426a69f1d71c48fd0bbd83c886ffe63e42616a6de73344b2a00';
-      // const txBuilderRaw = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(rawTx);
-      // const txRaw = await txBuilderRaw.build();
-      // const txJson = txRaw.toJson();
-      // console.log(txJson);
-      //
-      // txJson.type.should.equal(TransactionType.AddPermissionlessValidator);
-
-      const recoveryMode = false;
-      const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
-        .getPermissionlessValidatorTxBuilder()
-        .threshold(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.threshold)
-        .locktime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.locktime)
-        .recoverMode(recoveryMode)
-        .fromPubKey(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.bitgoAddresses)
-        .startTime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.startTime)
-        .endTime(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.endTime)
-        .stakeAmount(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.stakeAmount)
-        .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.delegationFeeRate)
-        .nodeID(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.nodeId)
-        .blsPublicKey(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.blsPublicKey)
-        .blsSignature(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.blsSignature)
-        .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
-      const tx = await txBuilder.build();
-      console.log(tx.toJson());
-      tx.type.should.equal(TransactionType.AddPermissionlessValidator);
-      // TODO(CR-1073): continue testing
-      const txHex = tx.toBroadcastFormat();
-
-      const privateKey = recoveryMode
-        ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey
-        : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey;
-
-      const params = {
-        txPrebuild: {
-          txHex: txHex,
-        },
-        prv: privateKey,
-      };
-
-      const halfSignedTransaction = await basecoin.signTransaction(params);
-      const halfSignedTxHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
-      const txBuilderRaw2 = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(halfSignedTxHex as string);
-
-      const buildHalfSigned = await txBuilderRaw2.build();
-      console.log(txHex);
-      console.log(buildHalfSigned.toJson());
-      console.log(halfSignedTxHex);
-      const txJson2 = tx.toJson();
-      txJson2.type.should.equal(TransactionType.AddPermissionlessValidator);
-      txHex.should.not.be.empty();
-    });
-
     it('build and sign a transaction in regular mode', async () => {
       const recoveryMode = false;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
@@ -205,6 +148,9 @@ describe('Avaxp', function () {
 
       const halfSignedTransaction = await basecoin.signTransaction(params);
       txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
+      const halfSignedTxnBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(txHex);
+      const halfSignedTx = await halfSignedTxnBuilder.build();
+      console.log(halfSignedTx.toJson());
       txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.halfSignedRawTxNonRecovery);
     });
     it('build and sign a transaction in recovery mode', async () => {
@@ -349,6 +295,27 @@ describe('Avaxp', function () {
     });
 
     it('should explain a signed AddValidator transaction', async () => {
+      const testData = ADDVALIDATOR_SAMPLES;
+      const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
+      txExplain.outputAmount.should.equal(testData.minValidatorStake);
+      txExplain.type.should.equal(TransactionType.AddValidator);
+      txExplain.outputs[0].address.should.equal(testData.nodeID);
+      txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
+      should.not.exist(txExplain.memo);
+    });
+
+    // TODO(CR-1073): find unsiged, signed and half signed transactions for AddPermissionlessValidator
+    it('should explain a half signed AddPermissionlessValidator transaction', async () => {
+      const testData = ADDVALIDATOR_SAMPLES;
+      const txExplain = await basecoin.explainTransaction({ halfSigned: { txHex: testData.halfsigntxHex } });
+      txExplain.outputAmount.should.equal(testData.minValidatorStake);
+      txExplain.type.should.equal(TransactionType.AddValidator);
+      txExplain.outputs[0].address.should.equal(testData.nodeID);
+      txExplain.changeOutputs[0].address.split('~').length.should.equal(3);
+      should.not.exist(txExplain.memo);
+    });
+
+    it('should explain a signed AddPermissionlessValidator transaction', async () => {
       const testData = ADDVALIDATOR_SAMPLES;
       const txExplain = await basecoin.explainTransaction({ txHex: testData.fullsigntxHex });
       txExplain.outputAmount.should.equal(testData.minValidatorStake);
@@ -510,6 +477,34 @@ describe('Avaxp', function () {
     });
 
     it('should succeed to verify unsigned add validator transaction', async () => {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    // TODO(CR-1073): find unsiged, signed and half signed transactions for AddPermissionlessValidator
+    it('should succeed to verify signed add permissionless validator transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.ADDVALIDATOR_SAMPLES.fullsigntxHex,
+        txInfo: {},
+      };
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify half signed add permissionless validator transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.ADDVALIDATOR_SAMPLES.halfsigntxHex,
+        txInfo: {},
+      };
+      const txParams = newTxParams();
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify unsigned add permissionless validator transaction', async () => {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });

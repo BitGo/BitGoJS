@@ -1,9 +1,6 @@
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-// import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
-// import { Tx } from 'avalanche/dist/apis/platformvm';
-import { utils as AvaxUtils, pvmSerial } from '@bitgo/avalanchejs';
-// eslint-disable-next-line import/no-internal-modules
+import { utils as AvaxUtils, pvmSerial, avaxSerial } from '@bitgo/avalanchejs';
 import { Buffer as BufferAvax } from 'avalanche';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
@@ -54,7 +51,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           // this should be the last because other PVM functions are still being detected in the new SDK
           const manager = AvaxUtils.getManagerForVM('PVM');
           const [codec, rest] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
-          tx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(rest)[0];
+          const wholeTxn = manager.unpackTransaction(AvaxUtils.hexToBuffer(raw));
+          console.log(wholeTxn);
+          // const customCodec = this.getCodec();
+          const signedTx = avaxSerial.SignedTx.fromBytes(AvaxUtils.hexToBuffer(raw), codec);
+          console.log(signedTx);
+          const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(rest);
+          tx = unpacked[0];
+          // TODO(CR-1073): find a way to unmarshal remaining bytes https://docs.avax.network/reference/avalanchego/x-chain/txn-format#signed-transaction-example
+          // const creds = codec.UnpackPrefix<Credential>(unpacked[1]);
+          // console.log(creds);
         } catch (e) {
           // TODO(CR-1073): remove log
           console.log('failed all attempts to parse tx');
@@ -85,6 +91,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
     return transactionBuilder;
   }
+
+  // TODO(CR-1073): export codec from avalanchejs if needed
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  // getCodec() {
+  //   return new Codec([undefined, undefined, Int, undefined, undefined]);
+  // }
 
   /** @inheritdoc */
   getTransferBuilder(): DeprecatedTransactionBuilder {

@@ -519,25 +519,13 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
             credentials.push(
               new Credential([
-                utils.createNewSig(
-                  utils.addressToString(
-                    this.transaction._network.hrp,
-                    this.transaction._network.alias,
-                    this.transaction._fromAddresses[firstIndex] as BufferAvax
-                  )
-                ),
+                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
               ])
             );
           } else {
             credentials.push(
               new Credential([
-                utils.createNewSig(
-                  utils.addressToString(
-                    this.transaction._network.hrp,
-                    this.transaction._network.alias,
-                    this.transaction._fromAddresses[firstIndex] as BufferAvax
-                  )
-                ),
+                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
               ])
             );
           }
