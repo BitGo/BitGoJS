@@ -646,7 +646,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         ),
         [],
         new AvaxUtils.AddressMaps(
-          this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap(Address.fromBytes(address)[0][0]))
+          this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]))
         ),
         credentials
       )

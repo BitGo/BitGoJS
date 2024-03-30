@@ -124,9 +124,11 @@ export class Transaction extends BaseTransaction {
   }): Promise<void> {
     const unsignedBytes = unsignedTx.toBytes();
 
+    console.log(unsignedTx.getAddresses());
     await Promise.all(
       privateKeys.map(async (privateKey) => {
         const publicKey = secp256k1.getPublicKey(privateKey);
+        console.log(publicKey);
 
         if (unsignedTx.hasPubkey(publicKey)) {
           const signature = await secp256k1.sign(unsignedBytes, privateKey);
