@@ -123,7 +123,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this.buildAvaxTransaction();
     this.transaction.setTransactionType(this.transactionType);
     if (this.hasSigner()) {
-      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
+      for (const keyPair of this._signer) {
+        await this.transaction.sign(keyPair);
+      }
     }
     return this.transaction;
   }

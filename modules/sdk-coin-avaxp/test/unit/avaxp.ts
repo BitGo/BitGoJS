@@ -165,6 +165,7 @@ describe('Avaxp', function () {
       const txBuilderRaw2 = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(halfSignedTxHex as string);
 
       const buildHalfSigned = await txBuilderRaw2.build();
+      console.log(txHex);
       console.log(buildHalfSigned.toJson());
       console.log(halfSignedTxHex);
       const txJson2 = tx.toJson();

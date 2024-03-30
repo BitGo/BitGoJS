@@ -124,12 +124,9 @@ export class Transaction extends BaseTransaction {
   }): Promise<void> {
     const unsignedBytes = unsignedTx.toBytes();
 
-    console.log(unsignedTx.getAddresses());
     await Promise.all(
       privateKeys.map(async (privateKey) => {
         const publicKey = secp256k1.getPublicKey(privateKey);
-        console.log(publicKey);
-
         if (unsignedTx.hasPubkey(publicKey)) {
           const signature = await secp256k1.sign(unsignedBytes, privateKey);
           unsignedTx.addSignature(signature);
@@ -158,10 +155,12 @@ export class Transaction extends BaseTransaction {
     // const signature = this.createSignature(prv);
     // let checkSign: CheckSignature | undefined = undefined;
 
+    console.log((this._avaxTransaction as UnsignedTx).getCredentials());
     await this.addTxSignatures({
       unsignedTx: this._avaxTransaction as UnsignedTx,
       privateKeys: [prv],
     });
+    console.log((this._avaxTransaction as UnsignedTx).getCredentials());
 
     // this.credentials.forEach((c) => {
     //   const cs: signatureSerialized[] = c.getSignatures().map((s) => ({ bytes: s }));
@@ -191,7 +190,8 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return this.toHexString((this._avaxTransaction as UnsignedTx).toBytes());
+    // TODO(CR-1073): should have logic for the getSignedTx
+    return this.toHexString((this._avaxTransaction as UnsignedTx).getSignedTx().toBytes());
   }
 
   // types - stakingTransaction, import, export
