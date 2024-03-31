@@ -1,4 +1,4 @@
-import { avmSerial, pvmSerial } from '@bitgo/avalanchejs';
+import { avmSerial, pvmSerial, UnsignedTx } from '@bitgo/avalanchejs';
 import { BaseTransactionBuilder, BuildTransactionError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedUtxoObj, Tx } from './iface';
@@ -24,7 +24,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   initBuilder(tx: Tx): this {
     // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
-    const baseTx = (tx as pvmSerial.AddPermissionlessValidatorTx).baseTx;
+    const baseTx = ((tx as UnsignedTx).tx as pvmSerial.AddPermissionlessValidatorTx).baseTx;
     if (
       baseTx.NetworkId.value() !== this._transaction._networkID ||
       baseTx.BlockchainId.value() !== this._transaction._blockchainID

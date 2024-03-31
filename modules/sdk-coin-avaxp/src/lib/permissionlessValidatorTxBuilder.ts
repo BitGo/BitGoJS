@@ -255,12 +255,12 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Tx): this {
     super.initBuilder(tx);
-
-    if (!this.verifyTxType(tx)) {
+    const permissionlessValidatorTx = (tx as UnsignedTx).tx as pvmSerial.AddPermissionlessValidatorTx;
+    if (!this.verifyTxType(permissionlessValidatorTx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
 
-    const outputs = (tx as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs;
+    const outputs = permissionlessValidatorTx.baseTx.outputs;
     if (outputs.length !== 1) {
       throw new BuildTransactionError('Transaction can have one external output');
     }
@@ -270,22 +270,26 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       throw new Error('The Asset ID of the output does not match the transaction');
     }
 
-    this.transaction._blsPublicKey = AvaxUtils.bufferToHex((tx.signer as pvmSerial.Signer).proof.publicKey);
+    this.transaction._blsPublicKey = AvaxUtils.bufferToHex(
+      (permissionlessValidatorTx.signer as pvmSerial.Signer).proof.publicKey
+    );
     this._blsPublicKey = this.transaction._blsPublicKey;
-    this.transaction._blsSignature = AvaxUtils.bufferToHex((tx.signer as pvmSerial.Signer).proof.signature);
+    this.transaction._blsSignature = AvaxUtils.bufferToHex(
+      (permissionlessValidatorTx.signer as pvmSerial.Signer).proof.signature
+    );
     this._blsSignature = this.transaction._blsSignature;
 
     this.transaction._locktime = output.outputOwners.locktime.value();
     this.transaction._threshold = output.outputOwners.threshold.value();
-    this.transaction._nodeID = tx.subnetValidator.validator.nodeId.toString();
+    this.transaction._nodeID = permissionlessValidatorTx.subnetValidator.validator.nodeId.toString();
     this._nodeID = this.transaction._nodeID;
-    this.transaction._startTime = tx.subnetValidator.validator.startTime.value();
+    this.transaction._startTime = permissionlessValidatorTx.subnetValidator.validator.startTime.value();
     this._startTime = this.transaction._startTime;
-    this.transaction._endTime = tx.subnetValidator.validator.endTime.value();
+    this.transaction._endTime = permissionlessValidatorTx.subnetValidator.validator.endTime.value();
     this._endTime = this.transaction._endTime;
     this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
-    this.transaction._stakeAmount = tx.stake[0].output.amount();
-    this.transaction._utxos = recoverUtxos(tx.getInputs());
+    this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
+    this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
     return this;
   }
 
@@ -588,7 +592,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     // TODO(CR-1073): Create credentials and return them here
     //  @see createInputOutput() in delegatorTxBuilder.ts
-    return { inputs, stakeOutputs, changeOutputs, credentials };
+    const finalCredentials = this.transaction.credentials ?? credentials;
+
+    return { inputs, stakeOutputs, changeOutputs, credentials: finalCredentials };
   }
 
   /**
@@ -643,6 +649,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[0]), 0]]),
           new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[1]), 0]]),
         ];
+
+    // const addressMaps = this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
 
     // TODO(CR-1073): check if `AddPermissionlessValidatorTx` should be wrapped in `UnsignedTx`
     //  @see: https://github.com/ava-labs/avalanchejs/blob/master/src/vms/pvm/builder.ts#L650

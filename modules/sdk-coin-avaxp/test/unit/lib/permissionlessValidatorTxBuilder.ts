@@ -94,7 +94,7 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
 
   describe('Sign Transaction', () => {
     it('build and sign an AddPermissionlessValidator transaction', async () => {
-      const recoveryMode = false;
+      const recoveryMode = true;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp'))
         .getPermissionlessValidatorTxBuilder()
         .threshold(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.threshold)
@@ -110,9 +110,7 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
         .blsSignature(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.blsSignature)
         .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
       const tx = await txBuilder.build();
-      // console.log(tx.toJson());
       tx.type.should.equal(TransactionType.AddPermissionlessValidator);
-      // TODO(CR-1073): continue testing
       const txHex = tx.toBroadcastFormat();
       console.log('unsigned txHex\n' + txHex);
 
@@ -130,7 +128,6 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
       const halfSignedTransaction = await basecoin.signTransaction(params);
       const halfSignedTxHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
       console.log('halfSigned txHex\n' + halfSignedTxHex);
-      // const txBuilderRaw2 = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(halfSignedTxHex as string);
 
       const params2 = {
         txPrebuild: {

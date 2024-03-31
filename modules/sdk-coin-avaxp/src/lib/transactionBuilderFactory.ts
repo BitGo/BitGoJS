@@ -1,6 +1,6 @@
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Credential, pvmSerial, utils as AvaxUtils } from '@bitgo/avalanchejs';
+import { Credential, pvmSerial, UnsignedTx, utils as AvaxUtils } from '@bitgo/avalanchejs';
 import { Buffer as BufferAvax } from 'avalanche';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
@@ -25,7 +25,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     utils.validateRawTransaction(raw);
     let txSource: 'EVM' | 'PVM' = 'PVM';
     let transactionBuilder: TransactionBuilder | DeprecatedTransactionBuilder | undefined = undefined;
-    let tx: PVMTx | EVMTx | pvmSerial.BaseTx;
+    let tx: PVMTx | EVMTx | UnsignedTx;
     const rawNoHex = utils.removeHexPrefix(raw);
     try {
       tx = new PVMTx();
@@ -79,7 +79,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           // const signedTx = avaxSerial.SignedTx.fromBytes(AvaxUtils.hexToBuffer(raw), codec);
           // console.log(signedTx);
           const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
-          tx = unpacked[0];
+          tx = new UnsignedTx(unpacked[0], [], undefined as any, [credential1, credential2]);
           // TODO(CR-1073): find a way to unmarshal remaining bytes https://docs.avax.network/reference/avalanchego/x-chain/txn-format#signed-transaction-example
           // const creds = codec.UnpackPrefix<Credential>(unpacked[1]);
           // console.log(creds);
@@ -92,8 +92,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
 
     if (txSource === 'PVM') {
-      if (PermissionlessValidatorTxBuilder.verifyTxType((tx as pvmSerial.BaseTx)._type)) {
-        transactionBuilder = this.getPermissionlessValidatorTxBuilder().initBuilder(tx as pvmSerial.BaseTx);
+      if ((tx as UnsignedTx)?.tx?._type && PermissionlessValidatorTxBuilder.verifyTxType((tx as UnsignedTx).tx._type)) {
+        transactionBuilder = this.getPermissionlessValidatorTxBuilder().initBuilder(tx);
       } else if (ValidatorTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
         transactionBuilder = this.getValidatorBuilder().initBuilder(tx as PVMTx);
       } else if (ExportTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
