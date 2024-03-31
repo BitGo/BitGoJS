@@ -23,36 +23,14 @@ import utils from './utils';
 //   (sigature: signatureSerialized, addressHex: string): boolean;
 // }
 
-function isEmptySignature(s: string): boolean {
-  return !!s && s.replace(/^0x/i, '').startsWith(''.padStart(90, '0'));
-}
-
 /**
- * Signatures are prestore as empty buffer for hsm and address of signar for first signature.
- * When sign is required, this method return the function that identify a signature to be replaced.
- * @param signatures any signatures as samples to identify which signature required replace.
+ * Checks if a signature is empty
+ * @param signature
+ * @returns {boolean}
  */
-// function generateSelectorSignature(signatures: signatureSerialized[]): CheckSignature {
-//   if (signatures.length > 1 && signatures.every((sig) => isEmptySignature(sig.bytes))) {
-//     // Look for address.
-//     return function (sig, address): boolean {
-//       try {
-//         if (!isEmptySignature(sig.bytes)) {
-//           return false;
-//         }
-//         const pub = sig.bytes.substring(90);
-//         return pub === address;
-//       } catch (e) {
-//         return false;
-//       }
-//     };
-//   } else {
-//     // Look for empty string
-//     return function (sig, address): boolean {
-//       return isEmptySignature(sig.bytes);
-//     };
-//   }
-// }
+function isEmptySignature(signature: string): boolean {
+  return !!signature && utils.removeHexPrefix(signature).startsWith(''.padStart(90, '0'));
+}
 // end region utils for sign
 
 export class Transaction extends BaseTransaction {
@@ -115,33 +93,13 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  async addTxSignatures({
-    unsignedTx,
-    privateKeys,
-  }: {
-    unsignedTx: UnsignedTx;
-    privateKeys: Uint8Array[];
-  }): Promise<void> {
-    const unsignedBytes = unsignedTx.toBytes();
-
-    await Promise.all(
-      privateKeys.map(async (privateKey) => {
-        const publicKey = secp256k1.getPublicKey(privateKey);
-        if (unsignedTx.hasPubkey(publicKey)) {
-          const signature = await secp256k1.sign(unsignedBytes, privateKey);
-          unsignedTx.addSignature(signature);
-        }
-      })
-    );
-  }
-
   // TODO(CR-1073): verify this implementation
   /**
    * Sign an avaxp transaction and update the transaction hex
    * @param {KeyPair} keyPair
    */
   async sign(keyPair: KeyPair): Promise<void> {
-    const prv = keyPair.getPrivateKey();
+    const prv = keyPair.getPrivateKey() as Uint8Array;
     // const addressHex = keyPair.getAddressBuffer().toString('hex');
     if (!prv) {
       throw new SigningError('Missing private key');
@@ -155,13 +113,26 @@ export class Transaction extends BaseTransaction {
     // const signature = this.createSignature(prv);
     // let checkSign: CheckSignature | undefined = undefined;
 
-    console.log((this._avaxTransaction as UnsignedTx).getCredentials());
-    await this.addTxSignatures({
-      unsignedTx: this._avaxTransaction as UnsignedTx,
-      privateKeys: [prv],
-    });
-    console.log((this._avaxTransaction as UnsignedTx).getCredentials());
+    // console.log((this._avaxTransaction as UnsignedTx).getCredentials());
+    const unsignedTx = this._avaxTransaction as UnsignedTx;
+    const unsignedBytes = unsignedTx.toBytes();
 
+    const publicKey = secp256k1.getPublicKey(prv);
+    if (unsignedTx.hasPubkey(publicKey)) {
+      const signature = await secp256k1.sign(unsignedBytes, prv);
+      // TODO(CR-1073): Fix "index out of bounds" error when signing with backup key
+      console.log('unsignedIndicesForPublicKey: ', unsignedTx.getSigIndicesForPubKey(publicKey));
+      unsignedTx.addSignature(signature);
+    }
+
+    // console.log((this._avaxTransaction as UnsignedTx).getCredentials());
+
+    /*
+     * @TODO(CR-1073):
+     *   for each signature, if it's empty, checkSign is a function that will
+     *   look for the address to be replaced with the signature.
+     *   Otherwise, it's a function that will look for the empty space for the signature
+     */
     // this.credentials.forEach((c) => {
     //   const cs: signatureSerialized[] = c.getSignatures().map((s) => ({ bytes: s }));
     //   if (checkSign === undefined) {
@@ -176,6 +147,33 @@ export class Transaction extends BaseTransaction {
     //   });
     //   if (!find) throw new SigningError('Private key cannot sign the transaction');
     // });
+    //
+    // /**
+    //  * Signatures are prestore as empty buffer for hsm and address of signar for first signature.
+    //  * When sign is required, this method return the function that identify a signature to be replaced.
+    //  * @param signatures any signatures as samples to identify which signature required replace.
+    //  */
+    // function generateSelectorSignature(signatures: signatureSerialized[]): CheckSignature {
+    //   if (signatures.length > 1 && signatures.every((sig) => isEmptySignature(sig.bytes))) {
+    //     // Look for address.
+    //     return function (sig, address): boolean {
+    //       try {
+    //         if (!isEmptySignature(sig.bytes)) {
+    //           return false;
+    //         }
+    //         const pub = sig.bytes.substring(90);
+    //         return pub === address;
+    //       } catch (e) {
+    //         return false;
+    //       }
+    //     };
+    //   } else {
+    //     // Look for empty string
+    //     return function (sig, address): boolean {
+    //       return isEmptySignature(sig.bytes);
+    //     };
+    //   }
+    // }
   }
 
   toHexString(byteArray: Uint8Array): string {

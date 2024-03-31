@@ -3,7 +3,12 @@ import * as testData from '../../resources/avaxp';
 import * as AvaxpLib from '../../../src/lib';
 import { TransactionBuilderFactory } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
-import { BaseTransaction, HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
+import {
+  BaseTransaction,
+  FullySignedTransaction,
+  HalfSignedAccountTransaction,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { AvaxP, TavaxP } from '../../../src';
@@ -23,11 +28,9 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
     basecoin = bitgo.coin('tavaxp');
   });
 
-  describe('should validate', () => {
-    it('Should validate a correct raw tx', () => {
-      factory.from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
-      // should not throw a error!
-    });
+  it('should create transaction builder from hex', () => {
+    const txBuilder = factory.from(testData.ADDVALIDATOR_SAMPLES.unsignedTxHex);
+    console.log(txBuilder);
   });
 
   describe('Transaction readable', () => {
@@ -111,8 +114,7 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
       tx.type.should.equal(TransactionType.AddPermissionlessValidator);
       // TODO(CR-1073): continue testing
       const txHex = tx.toBroadcastFormat();
-      console.log('unsigned txHex');
-      console.log(txHex);
+      console.log('unsigned txHex\n' + txHex);
 
       const privateKey = recoveryMode
         ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey
@@ -127,17 +129,21 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
 
       const halfSignedTransaction = await basecoin.signTransaction(params);
       const halfSignedTxHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
-      const txBuilderRaw2 = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(halfSignedTxHex as string);
+      console.log('halfSigned txHex\n' + halfSignedTxHex);
+      // const txBuilderRaw2 = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(halfSignedTxHex as string);
 
-      const buildHalfSigned = await txBuilderRaw2.build();
-      // console.log(txHex);
-      // console.log(buildHalfSigned.toJson());
-      console.log('halfSigned txHex');
-      console.log(buildHalfSigned.toBroadcastFormat());
-      console.log('\n' + halfSignedTxHex);
-      // const txJson2 = tx.toJson();
-      // txJson2.type.should.equal(TransactionType.AddPermissionlessValidator);
-      // txHex.should.not.be.empty();
+      const params2 = {
+        txPrebuild: {
+          txHex,
+        },
+        prv: recoveryMode
+          ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey
+          : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey,
+      };
+
+      const fullySignedTransaction = await basecoin.signTransaction(params2);
+      const fullySignedTxHex = (fullySignedTransaction as FullySignedTransaction)?.txHex;
+      console.log('fullySigned txHex\n' + fullySignedTxHex);
     });
 
     it('build and sign a transaction in recovery mode', async () => {

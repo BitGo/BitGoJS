@@ -436,6 +436,13 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     };
   }
 
+  /**
+   * Since addresses in outputs get reordered, we need to make sure signatures
+   * are added in the correct position
+   * To find the position, we use the output's addresses to create the
+   * signatureIdx in the order needed (i.e. [user, bitgo, backup])
+   * @protected
+   */
   protected calculateUtxos(): {
     inputs: avaxSerial.TransferableInput[];
     stakeOutputs: avaxSerial.TransferableOutput[];
@@ -453,9 +460,10 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     const credentials: Credential[] = [];
 
-    // convert fromAddresses to string
-    // fromAddresses = bitgo order if we are in WP
-    // fromAddresses = onchain order if we are in from
+    // Convert fromAddresses to string
+    // The order of fromAddresses is determined by the source of the data
+    // When building from params, the order is [user, bitgo, backup]
+    // The order from tx hex is [bitgo, backup, user]
     const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
       utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, b as BufferAvax)
     );
@@ -480,14 +488,10 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       }
 
       /*
-        A = user key
-        B = hsm key
-        C = backup key
-        bitgoAddresses = bitgo addresses [ A, B, C ]
-        utxo.addresses = IMS addresses [ B, C, A ]
-        utxo.addressesIndex = [ 2, 0, 1 ]
-        we pick 0, 1 for non-recovery
-        we pick 1, 2 for recovery
+      TODO(CR-1073): verify if the indices below based on the order of `fromAddresses`
+        utxo.addressesIndex = [ 2, 0, 1 ] | equivalent to [backup, user, bitgo]?
+        we pick 0, 1 for non-recovery |  equivalent to user, bitgo?
+        we pick 1, 2 for recovery | equivalent to user, backupp?
       */
 
       // in WP, output.addressesIndex is empty, so fill it
@@ -502,8 +506,13 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
         // TODO(CR-1073): these are used in credentials
         // either user (0) or recovery (2)
+        // On regular mode: [user, bitgo] (i.e. [0, 1])
+        // On recovery mode: [backup, bitgo] (i.e. [2, 1])
         const firstIndex = this.recoverSigner ? 2 : 0;
         const bitgoIndex = 1;
+        // TODO(CR-1073): remove this clog
+        console.log('firstIndex, bitgoIndex', firstIndex, bitgoIndex);
+
         currentTotal = currentTotal + utxoAmount;
 
         const utxoId = avaxSerial.UTXOID.fromNative(utxo.txid, Number(utxo.outputidx));
@@ -515,10 +524,13 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         const input = new avaxSerial.TransferableInput(utxoId, assetId, transferInputs);
         inputs.push(input);
         if (buildOutputs) {
+          // For the bitgo signature we create an empty signature
+          // For the user/backup signature we store the address that matches the key
           // if user/backup > bitgo
           if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
             credentials.push(
               new Credential([
+                utils.createNewSig(BufferAvax.from('').toString('hex')),
                 utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
               ])
             );
@@ -526,6 +538,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             credentials.push(
               new Credential([
                 utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
+                utils.createNewSig(BufferAvax.from('').toString('hex')),
               ])
             );
           }
@@ -620,6 +633,17 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     //  https://docs.avax.network/reference/avalanchego/p-chain/txn-format#unsigned-add-validator-tx
     const shares = new Int(1e4 * 20);
 
+    // TODO(CR-1073): Check how addressMaps are created
+    //  If we define them non-recovery mode, signing with the backup key fails with error:
+    //  "index out of bounds", trying to sign on index 2 (@see sign() on transaction.ts)
+    const addressMaps = !this.recoverMode()
+      ? this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]))
+      : [
+          new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[2]), 0]]),
+          new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[0]), 0]]),
+          new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[1]), 0]]),
+        ];
+
     // TODO(CR-1073): check if `AddPermissionlessValidatorTx` should be wrapped in `UnsignedTx`
     //  @see: https://github.com/ava-labs/avalanchejs/blob/master/src/vms/pvm/builder.ts#L650
     //  @see: @buildAvaxTransaction in validatorTxBuilder.ts
@@ -635,9 +659,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           shares
         ),
         [],
-        new AvaxUtils.AddressMaps(
-          this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]))
-        ),
+        new AvaxUtils.AddressMaps(addressMaps),
         credentials
       )
     );
@@ -645,7 +667,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation({ key }: BaseKey): Transaction {
-    // TODO Implement
     this._signer.push(new KeyPair({ prv: key }));
     return this.transaction;
   }

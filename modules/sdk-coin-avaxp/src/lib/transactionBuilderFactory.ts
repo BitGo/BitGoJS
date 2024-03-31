@@ -1,6 +1,6 @@
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { utils as AvaxUtils, pvmSerial, avaxSerial } from '@bitgo/avalanchejs';
+import { Credential, pvmSerial, utils as AvaxUtils } from '@bitgo/avalanchejs';
 import { Buffer as BufferAvax } from 'avalanche';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
@@ -50,13 +50,35 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           txSource = 'PVM';
           // this should be the last because other PVM functions are still being detected in the new SDK
           const manager = AvaxUtils.getManagerForVM('PVM');
-          const [codec, rest] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
-          const wholeTxn = manager.unpackTransaction(AvaxUtils.hexToBuffer(raw));
-          console.log(wholeTxn);
+          const [codec, txBytes] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
+          const unpackedTx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
+          // A signed transaction includes 4 bytes for the number of credentials as an Int type that is not known by the codec
+          // We can skip those 4 bytes because we know number of credentials is 2
+          // @see https://docs.avax.network/reference/avalanchego/p-chain/txn-format#signed-transaction-example
+          const credentialBytes = unpackedTx[1].slice(4);
+          const [credential1, credential2Bytes] = codec.UnpackPrefix<Credential>(credentialBytes);
+          console.log('credential1', JSON.stringify(credential1.getSignatures()));
+          // const [credential2,rest2] = Credential.fromBytes(credentials[1], codec);
+          const [credential2, rest] = codec.UnpackPrefix<Credential>(credential2Bytes);
+          console.log('credential2', JSON.stringify(credential2.getSignatures()));
+          if (rest.length > 0) {
+            throw new Error('AddPermissionlessValidator tx has more than 2 credentials');
+          }
+
+          // const unpackedTx = codec.UnpackPrefix<Common.Transaction>(txBytes)[0];
+
+          // const unpackedTx = codec.UnpackPrefix<avaxSerial.SignedTx>(txBytes)[0];
+          // console.log(unpackedTx);
+          // const wholeTxn = manager.unpackTransaction(AvaxUtils.hexToBuffer(raw));
+          //
+          // const unpackedCredentials = codec.UnpackPrefix<Credential>(txBytes)[0]
+          // console.log('unpackedCredentials', unpackedCredentials);
+
+          // console.log(wholeTxn);
           // const customCodec = this.getCodec();
-          const signedTx = avaxSerial.SignedTx.fromBytes(AvaxUtils.hexToBuffer(raw), codec);
-          console.log(signedTx);
-          const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(rest);
+          // const signedTx = avaxSerial.SignedTx.fromBytes(AvaxUtils.hexToBuffer(raw), codec);
+          // console.log(signedTx);
+          const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
           tx = unpacked[0];
           // TODO(CR-1073): find a way to unmarshal remaining bytes https://docs.avax.network/reference/avalanchego/x-chain/txn-format#signed-transaction-example
           // const creds = codec.UnpackPrefix<Credential>(unpacked[1]);
