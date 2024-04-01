@@ -36,6 +36,7 @@ import {
   getTransactionAmountsFromPsbt,
   WalletUnspent,
   getDefaultSigHash,
+  getTotalAmountOfInternalPsbtOutputs,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -68,6 +69,7 @@ import {
 
 import { mockUnspents } from '../../../src/testutil';
 import { constructPsbt } from './Musig2Util';
+import { fromOutputScript } from '../../../src/address';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -111,6 +113,45 @@ describe('Psbt Misc', function () {
       () => psbt.finalizeAllInputs(),
       (e: any) => e.message === 'signature sighash does not match input sighash type'
     );
+  });
+});
+
+describe('validate psbt internal outputs', function () {
+  let psbt: UtxoPsbt;
+  before(function () {
+    psbt = testutil.constructPsbt(
+      [
+        { scriptType: 'p2wsh', value: BigInt(1e8) },
+        { scriptType: 'p2shP2wsh', value: BigInt(1e8) },
+        { scriptType: 'p2trMusig2', value: BigInt(1e12) },
+        { scriptType: 'p2tr', value: BigInt(1e8) },
+        { scriptType: 'p2sh', value: BigInt(1e8) },
+      ],
+      [
+        { scriptType: 'p2sh', value: BigInt(9e7), isInternalAddress: true },
+        { scriptType: 'p2shP2wsh', value: BigInt(9e7), isInternalAddress: true },
+        { scriptType: 'p2wsh', value: BigInt(9e7), isInternalAddress: true },
+        { scriptType: 'p2tr', value: BigInt(9e7), isInternalAddress: true },
+        { scriptType: 'p2trMusig2', value: BigInt(9e6), isInternalAddress: true },
+        {
+          address: fromOutputScript(
+            createOutputScriptP2shP2pk(replayProtectionKeyPair.publicKey).scriptPubKey,
+            networks.bitcoin
+          ),
+          value: BigInt(1e8),
+        },
+      ],
+      networks.bitcoin,
+      rootWalletKeys,
+      'unsigned'
+    );
+    addXpubsToPsbt(psbt, rootWalletKeys);
+  });
+
+  describe('success', function () {
+    it('can validate using the globalXpubs', function () {
+      assert.strictEqual(getTotalAmountOfInternalPsbtOutputs(psbt.clone()), BigInt(9e7 * 4 + 9e6));
+    });
   });
 });
 

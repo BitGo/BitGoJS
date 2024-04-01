@@ -1,15 +1,22 @@
 import * as assert from 'assert';
 
-import { GlobalXpub, PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
-import { checkForInput } from 'bip174/src/lib/utils';
-import { BIP32Interface } from 'bip32';
+import { GlobalXpub, PartialSig, PsbtInput, PsbtOutput, TapScriptSig } from 'bip174/src/lib/interfaces';
+import { checkForInput, checkForOutput } from 'bip174/src/lib/utils';
+import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { UtxoTransaction } from '../UtxoTransaction';
-import { createOutputScript2of3, getLeafHash, scriptTypeForChain, toXOnlyPublicKey } from '../outputScripts';
+import {
+  createOutputScript2of3,
+  getLeafHash,
+  ScriptType2Of3,
+  scriptTypeForChain,
+  scriptTypes2Of3,
+  toXOnlyPublicKey,
+} from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
-import { createPsbtFromHex, createPsbtFromTransaction } from '../transaction';
+import { createPsbtFromHex, createPsbtFromTransaction, createTransactionFromBuffer } from '../transaction';
 import { isWalletUnspent, WalletUnspent } from './Unspent';
 
 import {
@@ -26,12 +33,13 @@ import {
   ParsedScriptType,
   isPlaceholderSignature,
   parseSignatureScript,
+  ParsedScriptType2Of3,
 } from '../parseInput';
 import { parsePsbtMusig2PartialSigs } from '../Musig2';
-import { isTuple, Triple } from '../types';
+import { isTriple, isTuple, Triple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
 import { opcodes as ops, script as bscript, TxInput } from 'bitcoinjs-lib';
-import { opcodes, payments } from '../../index';
+import { ecc as eccLib, Network, opcodes, payments } from '../../index';
 import { getPsbtInputSignatureCount, isPsbtInputFinalized } from '../PsbtUtil';
 
 // only used for building `SignatureContainer`
@@ -487,6 +495,159 @@ export function addXpubsToPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): 
     })
   );
   psbt.updateGlobal({ globalXpub: xPubs });
+}
+
+export function deriveKeyPairForOutput(bip32: BIP32Interface, output: PsbtOutput): BIP32Interface | undefined {
+  return output.tapBip32Derivation?.length
+    ? UtxoPsbt.deriveKeyPair(bip32, output.tapBip32Derivation, { ignoreY: true })
+    : output.bip32Derivation?.length
+    ? UtxoPsbt.deriveKeyPair(bip32, output.bip32Derivation, { ignoreY: false })
+    : bip32;
+}
+
+export function getMultiSigRootNodes(psbt: UtxoPsbt): Triple<BIP32Interface> | undefined {
+  const bip32s = psbt.data.globalMap.globalXpub?.map((xpub) =>
+    BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey))
+  );
+  assert(!bip32s || isTriple(bip32s), `Invalid globalXpubs in PSBT. Expected 3 or none. Got ${bip32s}`);
+  return bip32s;
+}
+
+export function toScriptType2Of3s(parsedScriptType: ParsedScriptType2Of3): ScriptType2Of3[] {
+  return parsedScriptType === 'taprootScriptPathSpend'
+    ? ['p2trMusig2', 'p2tr']
+    : parsedScriptType === 'taprootKeyPathSpend'
+    ? ['p2trMusig2']
+    : [parsedScriptType];
+}
+
+function matchesScript({
+  publicKeys,
+  perm,
+  scriptPubKey,
+  parsedScriptType,
+  network,
+}: {
+  publicKeys: Buffer[];
+  perm: Triple<number>;
+  scriptPubKey: Buffer;
+  parsedScriptType: ParsedScriptType2Of3;
+  network: Network;
+}): boolean {
+  const orderedPublicKeys: Triple<Buffer> = [publicKeys[perm[0]], publicKeys[perm[1]], publicKeys[perm[2]]];
+  const scriptTypes = toScriptType2Of3s(parsedScriptType);
+  return scriptTypes.some((scriptType) =>
+    createOutputScript2of3(orderedPublicKeys, scriptType, network).scriptPubKey.equals(scriptPubKey)
+  );
+}
+
+function determineOrder(
+  publicKeys: Triple<Buffer>,
+  scriptPubKey: Buffer,
+  parsedScriptType: ParsedScriptType2Of3,
+  network: Network
+): Triple<number> {
+  const permutations: Array<Triple<number>> = [
+    [0, 1, 2],
+    [0, 2, 1],
+    [1, 0, 2],
+    [1, 2, 0],
+    [2, 0, 1],
+    [2, 1, 0],
+  ];
+
+  const order = permutations.find((perm) =>
+    matchesScript({ publicKeys, perm, scriptPubKey, parsedScriptType, network })
+  );
+  assert(order, 'Could not determine order of multi sig public keys');
+  return order;
+}
+
+function getDerivationInfo(psbt: UtxoPsbt): {
+  parsedScriptType: ParsedScriptType2Of3;
+  scriptPubKey: Buffer;
+  derivationPath: string;
+} {
+  const txInputs = psbt.txInputs;
+  for (let i = 0; i < psbt.data.inputs.length; i++) {
+    const input = psbt.data.inputs[i];
+    const parsedScriptType = getPsbtInputScriptType(input);
+    if (parsedScriptType === 'p2shP2pk') {
+      continue;
+    }
+
+    const prevOutIndex = txInputs[i].index;
+    const scriptPubKey =
+      input.witnessUtxo?.script ??
+      (input.nonWitnessUtxo
+        ? createTransactionFromBuffer(input.nonWitnessUtxo, psbt.network, { amountType: 'bigint' }).outs[prevOutIndex]
+            .script
+        : undefined);
+    assert(scriptPubKey, 'Input scriptPubKey can not be found');
+
+    const bip32Dv = input?.bip32Derivation ?? input?.tapBip32Derivation;
+    assert(bip32Dv?.length, 'Input Bip32Derivation can not be found');
+    const derivationPath = bip32Dv[0].path;
+
+    return { parsedScriptType, scriptPubKey, derivationPath };
+  }
+  throw new Error('No multi sig input found');
+}
+
+export function getCanonicalOrderedRootNodes(
+  psbt: UtxoPsbt,
+  { rootNodes }: { rootNodes?: Triple<BIP32Interface> } = {}
+): Triple<BIP32Interface> {
+  const unorderedRootNodes = rootNodes ? rootNodes : getMultiSigRootNodes(psbt);
+  assert(unorderedRootNodes, 'Either rootNodes or PSBT globalXpub must be provided');
+
+  const { parsedScriptType, scriptPubKey, derivationPath } = getDerivationInfo(psbt);
+
+  const publicKeys = unorderedRootNodes.map(
+    (rootNode) => rootNode.derivePath(derivationPath).publicKey
+  ) as Triple<Buffer>;
+
+  const order = determineOrder(publicKeys, scriptPubKey, parsedScriptType, psbt.network);
+  return order.map((i) => unorderedRootNodes[i]) as Triple<BIP32Interface>;
+}
+
+export function isInternalPsbtOutput(
+  psbt: UtxoPsbt,
+  outputIndex: number,
+  { rootNodes, ordered }: { rootNodes?: Triple<BIP32Interface>; ordered?: boolean } = {}
+): boolean {
+  const output = checkForOutput(psbt.data.outputs, outputIndex);
+  const orderedRootNodes = rootNodes && ordered ? rootNodes : getCanonicalOrderedRootNodes(psbt, { rootNodes });
+
+  const publicKeys = orderedRootNodes.map((rootNode) => {
+    const publicKey = deriveKeyPairForOutput(rootNode, output)?.publicKey;
+    assert(publicKey, 'Public key of multi sig output can not be derived');
+    return publicKey;
+  });
+
+  const outputScript = psbt.getOutputScript(outputIndex);
+  return scriptTypes2Of3.some((scriptType) =>
+    outputScript.equals(createOutputScript2of3(publicKeys, scriptType).scriptPubKey)
+  );
+}
+
+export function findIndicesOfInternalPsbtOutputs(
+  psbt: UtxoPsbt,
+  { rootNodes, ordered }: { rootNodes?: Triple<BIP32Interface>; ordered?: boolean } = {}
+): number[] {
+  const orderedRootNodes = rootNodes && ordered ? rootNodes : getCanonicalOrderedRootNodes(psbt, { rootNodes });
+  return psbt.data.outputs
+    .map((_, i) => (isInternalPsbtOutput(psbt, i, { rootNodes: orderedRootNodes, ordered: true }) ? i : undefined))
+    .filter((i) => i !== undefined) as number[];
+}
+
+export function getTotalAmountOfInternalPsbtOutputs(
+  psbt: UtxoPsbt,
+  { rootNodes, ordered }: { rootNodes?: Triple<BIP32Interface>; ordered?: boolean } = {}
+): bigint {
+  const indices = findIndicesOfInternalPsbtOutputs(psbt, { rootNodes, ordered });
+  const txOutputs = psbt.txOutputs;
+  return indices.reduce((sum, i) => sum + txOutputs[i].value, BigInt(0));
 }
 
 /**
