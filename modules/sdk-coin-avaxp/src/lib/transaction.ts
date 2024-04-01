@@ -99,6 +99,9 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair
    */
   async sign(keyPair: KeyPair): Promise<void> {
+    // TODO(CR-1073): remove clog
+    console.log('====================Signing====================');
+    console.log('keypair address: ', keyPair.getAddress());
     const prv = keyPair.getPrivateKey() as Uint8Array;
     // const addressHex = keyPair.getAddressBuffer().toString('hex');
     if (!prv) {
@@ -120,9 +123,20 @@ export class Transaction extends BaseTransaction {
     const publicKey = secp256k1.getPublicKey(prv);
     if (unsignedTx.hasPubkey(publicKey)) {
       const signature = await secp256k1.sign(unsignedBytes, prv);
-      // TODO(CR-1073): Fix "index out of bounds" error when signing with backup key
-      console.log('unsignedIndicesForPublicKey: ', unsignedTx.getSigIndicesForPubKey(publicKey));
+      // TODO(CR-1073): remove clogs
+      // console.log(Address.fromBytes(secp256k1.publicKeyBytesToAddress(publicKey))[0]);
+      console.log('unsignedIndicesForPublicKey: ', JSON.stringify(unsignedTx.getSigIndicesForPubKey(publicKey)));
+      console.log('unsignedTx.addressMaps', JSON.stringify(unsignedTx.addressMaps));
       unsignedTx.addSignature(signature);
+      for (const [index, credential] of unsignedTx.getCredentials().entries()) {
+        console.log(`credential [${index}] signatures: ${JSON.stringify(credential.getSignatures())}`);
+      }
+      try {
+        console.log('unsignedTx hasAllSignatures: ', unsignedTx.hasAllSignatures());
+      } catch (e) {
+        console.log(e.message);
+      }
+      console.log('====================Signing ends====================');
     }
 
     // console.log((this._avaxTransaction as UnsignedTx).getCredentials());

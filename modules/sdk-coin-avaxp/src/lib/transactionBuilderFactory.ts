@@ -1,6 +1,6 @@
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Credential, pvmSerial, UnsignedTx, utils as AvaxUtils } from '@bitgo/avalanchejs';
+import { Address, Credential, pvmSerial, TransferOutput, UnsignedTx, utils as AvaxUtils } from '@bitgo/avalanchejs';
 import { Buffer as BufferAvax } from 'avalanche';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
@@ -51,7 +51,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           // this should be the last because other PVM functions are still being detected in the new SDK
           const manager = AvaxUtils.getManagerForVM('PVM');
           const [codec, txBytes] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
-          const unpackedTx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
+          const unpackedTx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes); // todo check if unpackPrefix works with SignedTx
           // A signed transaction includes 4 bytes for the number of credentials as an Int type that is not known by the codec
           // We can skip those 4 bytes because we know number of credentials is 2
           // @see https://docs.avax.network/reference/avalanchego/p-chain/txn-format#signed-transaction-example
@@ -65,24 +65,21 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
             throw new Error('AddPermissionlessValidator tx has more than 2 credentials');
           }
 
-          // const unpackedTx = codec.UnpackPrefix<Common.Transaction>(txBytes)[0];
-
-          // const unpackedTx = codec.UnpackPrefix<avaxSerial.SignedTx>(txBytes)[0];
-          // console.log(unpackedTx);
-          // const wholeTxn = manager.unpackTransaction(AvaxUtils.hexToBuffer(raw));
-          //
-          // const unpackedCredentials = codec.UnpackPrefix<Credential>(txBytes)[0]
-          // console.log('unpackedCredentials', unpackedCredentials);
-
-          // console.log(wholeTxn);
-          // const customCodec = this.getCodec();
-          // const signedTx = avaxSerial.SignedTx.fromBytes(AvaxUtils.hexToBuffer(raw), codec);
-          // console.log(signedTx);
           const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
-          tx = new UnsignedTx(unpacked[0], [], undefined as any, [credential1, credential2]);
-          // TODO(CR-1073): find a way to unmarshal remaining bytes https://docs.avax.network/reference/avalanchego/x-chain/txn-format#signed-transaction-example
-          // const creds = codec.UnpackPrefix<Credential>(unpacked[1]);
-          // console.log(creds);
+          const permissionlessValidatorTx = unpacked[0] as pvmSerial.AddPermissionlessValidatorTx;
+          const outputs = permissionlessValidatorTx.baseTx.outputs;
+          const output = outputs[0].output as TransferOutput;
+          if (outputs[0].getAssetId() !== (this._coinConfig.network as AvalancheNetwork).avaxAssetID) {
+            throw new Error('The Asset ID of the output does not match the transaction');
+          }
+          const fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
+          const addressMaps = [
+            new AvaxUtils.AddressMap([[new Address(fromAddresses[2]), 0]]),
+            new AvaxUtils.AddressMap([[new Address(fromAddresses[0]), 0]]),
+            new AvaxUtils.AddressMap([[new Address(fromAddresses[1]), 0]]),
+          ];
+          // const addressMaps = fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
+          tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), [credential1, credential2]);
         } catch (e) {
           // TODO(CR-1073): remove log
           console.log('failed all attempts to parse tx');
@@ -92,6 +89,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
 
     if (txSource === 'PVM') {
+      // if (PermissionlessValidatorTxBuilder.verifyTxType((tx as UnsignedTx).tx?._type)) {
       if ((tx as UnsignedTx)?.tx?._type && PermissionlessValidatorTxBuilder.verifyTxType((tx as UnsignedTx).tx._type)) {
         transactionBuilder = this.getPermissionlessValidatorTxBuilder().initBuilder(tx);
       } else if (ValidatorTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {

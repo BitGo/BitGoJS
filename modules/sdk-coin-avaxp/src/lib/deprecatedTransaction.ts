@@ -126,6 +126,9 @@ export class DeprecatedTransaction extends BaseTransaction {
    * @param {KeyPair} keyPair
    */
   sign(keyPair: KeyPair): void {
+    console.log('====================Signing====================');
+    console.log('keypair address: ', keyPair.getAddress());
+
     const prv = keyPair.getPrivateKey();
     const addressHex = keyPair.getAddressBuffer().toString('hex');
     if (!prv) {
@@ -139,7 +142,8 @@ export class DeprecatedTransaction extends BaseTransaction {
     }
     const signature = this.createSignature(prv);
     let checkSign: CheckSignature | undefined = undefined;
-    this.credentials.forEach((c) => {
+    this.credentials.forEach((c, index) => {
+      console.log(`credential [${index}] signatures: ${JSON.stringify(c)}`);
       const cs: any = c.serialize();
       if (checkSign === undefined) {
         checkSign = generateSelectorSignature(cs.sigArray);

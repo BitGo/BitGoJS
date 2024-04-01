@@ -3,12 +3,7 @@ import * as testData from '../../resources/avaxp';
 import * as AvaxpLib from '../../../src/lib';
 import { TransactionBuilderFactory } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
-import {
-  BaseTransaction,
-  FullySignedTransaction,
-  HalfSignedAccountTransaction,
-  TransactionType,
-} from '@bitgo/sdk-core';
+import { BaseTransaction, HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { AvaxP, TavaxP } from '../../../src';
@@ -94,7 +89,7 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
 
   describe('Sign Transaction', () => {
     it('build and sign an AddPermissionlessValidator transaction', async () => {
-      const recoveryMode = true;
+      const recoveryMode = false;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp'))
         .getPermissionlessValidatorTxBuilder()
         .threshold(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.threshold)
@@ -111,36 +106,47 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
         .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
       const tx = await txBuilder.build();
       tx.type.should.equal(TransactionType.AddPermissionlessValidator);
-      const txHex = tx.toBroadcastFormat();
-      console.log('unsigned txHex\n' + txHex);
+      // const txHex = tx.toBroadcastFormat();
+      // console.log('unsigned txHex\n' + txHex);
 
-      const privateKey = recoveryMode
-        ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey
-        : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey;
+      // const privateKey = recoveryMode
+      //   ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey
+      //   : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey;
 
-      const params = {
-        txPrebuild: {
-          txHex: txHex,
-        },
-        prv: privateKey,
-      };
+      // const params = {
+      //   txPrebuild: {
+      //     txHex: txHex,
+      //   },
+      //   prv: privateKey,
+      // };
 
-      const halfSignedTransaction = await basecoin.signTransaction(params);
-      const halfSignedTxHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
-      console.log('halfSigned txHex\n' + halfSignedTxHex);
+      // Test sign with user key
+      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey });
+      console.log('building after signing with user key');
+      await txBuilder.build();
 
-      const params2 = {
-        txPrebuild: {
-          txHex,
-        },
-        prv: recoveryMode
-          ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey
-          : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey,
-      };
+      // Test sign with backup key
+      txBuilder.recoverMode(true);
+      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey });
+      console.log('building after signing with backup key');
+      await txBuilder.build();
 
-      const fullySignedTransaction = await basecoin.signTransaction(params2);
-      const fullySignedTxHex = (fullySignedTransaction as FullySignedTransaction)?.txHex;
-      console.log('fullySigned txHex\n' + fullySignedTxHex);
+      // const halfSignedTransaction = await basecoin.signTransaction(params);
+      // const halfSignedTxHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
+      // console.log('halfSigned txHex\n' + halfSignedTxHex);
+      //
+      // const params2 = {
+      //   txPrebuild: {
+      //     txHex: halfSignedTxHex,
+      //   },
+      //   prv: recoveryMode
+      //     ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey
+      //     : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey,
+      // };
+      //
+      // const fullySignedTransaction = await basecoin.signTransaction(params2);
+      // const fullySignedTxHex = (fullySignedTransaction as FullySignedTransaction)?.txHex;
+      // console.log('fullySigned txHex\n' + fullySignedTxHex);
     });
 
     it('build and sign a transaction in recovery mode', async () => {

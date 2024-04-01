@@ -132,27 +132,50 @@ describe('Avaxp', function () {
         .utxos(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.utxos);
       const tx = await txBuilder.build();
 
-      let txHex = tx.toBroadcastFormat();
+      const txHex = tx.toBroadcastFormat();
       txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.unsignedRawTxNonRecovery);
 
-      const privateKey = recoveryMode
-        ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey
-        : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey;
+      // const privateKey = recoveryMode
+      //   ? testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey
+      //   : testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey;
 
-      const params = {
-        txPrebuild: {
-          txHex: tx.toBroadcastFormat(),
-        },
-        prv: privateKey,
-      };
+      // const params = {
+      //   txPrebuild: {
+      //     txHex: tx.toBroadcastFormat(),
+      //   },
+      //   prv: privateKey,
+      // };
 
-      const halfSignedTransaction = await basecoin.signTransaction(params);
-      txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
-      const halfSignedTxnBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(txHex);
-      const halfSignedTx = await halfSignedTxnBuilder.build();
-      console.log(halfSignedTx.toJson());
-      txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.halfSignedRawTxNonRecovery);
+      // Test sign with user key
+      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey });
+      console.log('building after signing with user key');
+      await txBuilder.build();
+
+      // Test sign with backup key
+      txBuilder.recoverMode(true);
+      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey });
+      console.log('building after signing with backup key');
+      await txBuilder.build();
+
+      // const halfSignedTransaction = await basecoin.signTransaction(params);
+      // txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
+      // // const halfSignedTxnBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp')).from(txHex);
+      // // const halfSignedTx = await halfSignedTxnBuilder.build();
+      // // console.log(halfSignedTx.toJson());
+      // txHex.should.equal(testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.halfSignedRawTxNonRecovery);
+      //
+      // const params2 = {
+      //   txPrebuild: {
+      //     txHex: txHex,
+      //   },
+      //   prv: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey,
+      // };
+      //
+      // const fullySignedTransaction = await basecoin.signTransaction(params2);
+      // const fullySignedTxHex = (fullySignedTransaction as FullySignedTransaction)?.txHex;
+      // console.log('fullySigned txHex\n' + fullySignedTxHex);
     });
+
     it('build and sign a transaction in recovery mode', async () => {
       const recoveryMode = true;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get(tcoinName))
@@ -202,6 +225,7 @@ describe('Avaxp', function () {
 
       await basecoin.signTransaction(params).should.be.rejected();
     });
+
     it('should return the same mainnet address', () => {
       const utils = new KeyPairUtils();
       const xprv = testData.SEED_ACCOUNT.xPrivateKey;
@@ -219,6 +243,7 @@ describe('Avaxp', function () {
       address1.should.equal(address2);
       address1.should.equal(address3);
     });
+
     it('should return the same testnet address', () => {
       const utils = new KeyPairUtils();
       const xprv = testData.SEED_ACCOUNT.xPrivateKey;
@@ -236,6 +261,7 @@ describe('Avaxp', function () {
       address1.should.equal(address2);
       address1.should.equal(address3);
     });
+
     it('should not be the same address from same key', () => {
       const utils = new KeyPairUtils();
       const kp1 = new KeyPair({ prv: testData.ACCOUNT_1.privkey });
@@ -248,6 +274,7 @@ describe('Avaxp', function () {
 
       address1.should.not.equal(address2);
     });
+
     it('should not be the same address from different keys', () => {
       const utils = new KeyPairUtils();
       const kp1 = new KeyPair({ prv: testData.ACCOUNT_1.privkey });

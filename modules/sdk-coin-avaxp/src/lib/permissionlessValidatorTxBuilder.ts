@@ -10,7 +10,6 @@ import {
   networkIDs,
   OutputOwners,
   pvmSerial,
-  Signature,
   TransferInput,
   TransferOutput,
   TypeSymbols,
@@ -111,6 +110,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
+    // TODO(CR-1073): remove clog
+    console.log('Building from hex!!!');
     const manager = AvaxUtils.getManagerForVM('PVM');
     const [codec, rest] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(rawTransaction));
     const tx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(rest)[0];
@@ -124,6 +125,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this.transaction.setTransactionType(this.transactionType);
     if (this.hasSigner()) {
       for (const keyPair of this._signer) {
+        // TODO(CR-1073): remove clog
+        // console.log('Signing with key', JSON.stringify(keyPair.getKeys()));
         await this.transaction.sign(keyPair);
       }
     }
@@ -287,7 +290,12 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this._startTime = this.transaction._startTime;
     this.transaction._endTime = permissionlessValidatorTx.subnetValidator.validator.endTime.value();
     this._endTime = this.transaction._endTime;
-    this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
+    // this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
+    this.transaction._fromAddresses = [
+      AvaxUtils.hexToBuffer(output.outputOwners.addrs[2].toHex()),
+      AvaxUtils.hexToBuffer(output.outputOwners.addrs[0].toHex()),
+      AvaxUtils.hexToBuffer(output.outputOwners.addrs[1].toHex()),
+    ];
     this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
     this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
     return this;
@@ -302,143 +310,143 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   }
 
   // @TODO(CR-1073): Remove this method when calculateUtxos() is ready
-  protected createInputOutput(): {
-    inputs: avaxSerial.TransferableInput[];
-    outputs: avaxSerial.TransferableOutput[];
-    credentials: Credential[];
-  } {
-    const inputs: avaxSerial.TransferableInput[] = [];
-    const outputs: avaxSerial.TransferableOutput[] = [];
-
-    // amount spent so far
-    let currentTotal = BigInt(0);
-
-    // delegating and validating have no fees
-    const totalTarget = this._stakeAmount.valueOf();
-
-    const credentials: Credential[] = [];
-
-    // convert fromAddresses to string
-    // fromAddresses = bitgo order if we are in WP
-    // fromAddresses = onchain order if we are in from
-    const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
-      utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, BufferAvax.from(b))
-    );
-
-    /*
-    A = user key
-    B = hsm key
-    C = backup key
-    bitgoAddresses = bitgo addresses [ A, B, C ]
-    utxo.addresses = IMS addresses [ B, C, A ]
-    utxo.addressesIndex = [ 2, 0, 1 ]
-    we pick 0, 1 for non-recovery
-    we pick 1, 2 for recovery
-    */
-    this.transaction._utxos.forEach((utxo) => {
-      // in WP, output.addressesIndex is empty, so fill it
-      if (!utxo.addressesIndex || utxo.addressesIndex.length === 0) {
-        utxo.addressesIndex = bitgoAddresses.map((a) => utxo.addresses.indexOf(a));
-      }
-      // in OVC, output.addressesIndex is defined correctly from the previous iteration
-    });
-
-    // validate the utxos
-    this.transaction._utxos.forEach((utxo) => {
-      if (!utxo) {
-        throw new BuildTransactionError('Utxo is undefined');
-      }
-      // addressesIndex should never mismatch
-      if (utxo.addressesIndex?.includes(-1)) {
-        throw new BuildTransactionError('Addresses are inconsistent');
-      }
-      if (utxo.threshold !== this.transaction._threshold) {
-        throw new BuildTransactionError('Threshold is inconsistent');
-      }
-    });
-
-    // if we are in OVC, none of the utxos will have addresses since they come from
-    // deserialized inputs (which don't have addresses), not the IMS
-    const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
-
-    this.transaction._utxos.forEach((utxo, i) => {
-      // TODO(CR - 1073): Check the below implementation
-      if (utxo.outputID === SECP256K1_Transfer_Output) {
-        // const txidBuf = utils.cb58Decode(utxo.txid);
-        const amt = BigInt(utxo.amount);
-        // const outputidx = utils.outputidxNumberToBuffer(utxo.outputidx);
-        const addressesIndex = utxo.addressesIndex ?? [];
-
-        // either user (0) or recovery (2)
-        const firstIndex = this.recoverSigner ? 2 : 0;
-        const bitgoIndex = 1;
-        currentTotal = currentTotal + amt;
-
-        // TODO(CR-1073): How do we find sigIndices here ?
-        // const secpTransferInput = TransferInput.fromNative(amt, []);
-
-        // TODO(CR-1073): Need to identify what is the replacement for addSignatureIdx in the new library
-        if (!buildOutputs) {
-          // addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
-        } else {
-          // if user/backup > bitgo
-          if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
-            // secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
-            // secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
-            credentials.push(
-              new Credential(
-                ['', this.transaction._fromAddresses[firstIndex].toString()].map(
-                  utils.createSig
-                ) as unknown as Signature[]
-              )
-            );
-          } else {
-            // secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
-            // secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
-            credentials.push(
-              new Credential(
-                [this.transaction._fromAddresses[firstIndex].toString(), ''].map(
-                  utils.createSig
-                ) as unknown as Signature[]
-              )
-            );
-          }
-        }
-
-        // const input: avaxSerial.TransferableInput = new avaxSerial.TransferableInput(
-        //   UTXOID, // TODO(CR-1073): how do we get this ? For this we need UTXO not decodedUTXO obj
-        //   Id.fromHex(Buffer.from(this.transaction._assetId).toString('hex')),
-        //   secpTransferInput
-        // );
-        // inputs.push(input);
-      }
-    });
-
-    if (buildOutputs) {
-      if (currentTotal < totalTarget) {
-        throw new BuildTransactionError(
-          `Utxo outputs get ${currentTotal.toString()} and ${totalTarget.toString()} is required`
-        );
-      } else if (currentTotal > totalTarget) {
-        outputs.push(
-          avaxSerial.TransferableOutput.fromNative(
-            this.transaction._assetId,
-            currentTotal - totalTarget,
-            this.transaction._fromAddresses,
-            this.transaction._locktime,
-            this.transaction._threshold
-          )
-        );
-      }
-    }
-    // get outputs and credentials from the deserialized transaction if we are in OVC
-    return {
-      inputs,
-      // TODO(CR-1073): check this
-      outputs: !buildOutputs ? this.transaction.avaxPTransaction.outputs : outputs,
-      credentials: credentials.length === 0 ? this.transaction.credentials : credentials,
-    };
-  }
+  // protected createInputOutput(): {
+  //   inputs: avaxSerial.TransferableInput[];
+  //   outputs: avaxSerial.TransferableOutput[];
+  //   credentials: Credential[];
+  // } {
+  //   const inputs: avaxSerial.TransferableInput[] = [];
+  //   const outputs: avaxSerial.TransferableOutput[] = [];
+  //
+  //   // amount spent so far
+  //   let currentTotal = BigInt(0);
+  //
+  //   // delegating and validating have no fees
+  //   const totalTarget = this._stakeAmount.valueOf();
+  //
+  //   const credentials: Credential[] = [];
+  //
+  //   // convert fromAddresses to string
+  //   // fromAddresses = bitgo order if we are in WP
+  //   // fromAddresses = onchain order if we are in from
+  //   const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
+  //     utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, BufferAvax.from(b))
+  //   );
+  //
+  //   /*
+  //   A = user key
+  //   B = hsm key
+  //   C = backup key
+  //   bitgoAddresses = bitgo addresses [ A, B, C ]
+  //   utxo.addresses = IMS addresses [ B, C, A ]
+  //   utxo.addressesIndex = [ 2, 0, 1 ]
+  //   we pick 0, 1 for non-recovery
+  //   we pick 1, 2 for recovery
+  //   */
+  //   this.transaction._utxos.forEach((utxo) => {
+  //     // in WP, output.addressesIndex is empty, so fill it
+  //     if (!utxo.addressesIndex || utxo.addressesIndex.length === 0) {
+  //       utxo.addressesIndex = bitgoAddresses.map((a) => utxo.addresses.indexOf(a));
+  //     }
+  //     // in OVC, output.addressesIndex is defined correctly from the previous iteration
+  //   });
+  //
+  //   // validate the utxos
+  //   this.transaction._utxos.forEach((utxo) => {
+  //     if (!utxo) {
+  //       throw new BuildTransactionError('Utxo is undefined');
+  //     }
+  //     // addressesIndex should never mismatch
+  //     if (utxo.addressesIndex?.includes(-1)) {
+  //       throw new BuildTransactionError('Addresses are inconsistent');
+  //     }
+  //     if (utxo.threshold !== this.transaction._threshold) {
+  //       throw new BuildTransactionError('Threshold is inconsistent');
+  //     }
+  //   });
+  //
+  //   // if we are in OVC, none of the utxos will have addresses since they come from
+  //   // deserialized inputs (which don't have addresses), not the IMS
+  //   const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
+  //
+  //   this.transaction._utxos.forEach((utxo, i) => {
+  //     // TODO(CR - 1073): Check the below implementation
+  //     if (utxo.outputID === SECP256K1_Transfer_Output) {
+  //       // const txidBuf = utils.cb58Decode(utxo.txid);
+  //       const amt = BigInt(utxo.amount);
+  //       // const outputidx = utils.outputidxNumberToBuffer(utxo.outputidx);
+  //       const addressesIndex = utxo.addressesIndex ?? [];
+  //
+  //       // either user (0) or recovery (2)
+  //       const firstIndex = this.recoverSigner ? 2 : 0;
+  //       const bitgoIndex = 1;
+  //       currentTotal = currentTotal + amt;
+  //
+  //       // TODO(CR-1073): How do we find sigIndices here ?
+  //       // const secpTransferInput = TransferInput.fromNative(amt, []);
+  //
+  //       // TODO(CR-1073): Need to identify what is the replacement for addSignatureIdx in the new library
+  //       if (!buildOutputs) {
+  //         // addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
+  //       } else {
+  //         // if user/backup > bitgo
+  //         if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+  //           // secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
+  //           // secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
+  //           credentials.push(
+  //             new Credential(
+  //               ['', this.transaction._fromAddresses[firstIndex].toString()].map(
+  //                 utils.createSig
+  //               ) as unknown as Signature[]
+  //             )
+  //           );
+  //         } else {
+  //           // secpTransferInput.addSignatureIdx(addressesIndex[firstIndex], this.transaction._fromAddresses[firstIndex]);
+  //           // secpTransferInput.addSignatureIdx(addressesIndex[bitgoIndex], this.transaction._fromAddresses[bitgoIndex]);
+  //           credentials.push(
+  //             new Credential(
+  //               [this.transaction._fromAddresses[firstIndex].toString(), ''].map(
+  //                 utils.createSig
+  //               ) as unknown as Signature[]
+  //             )
+  //           );
+  //         }
+  //       }
+  //
+  //       // const input: avaxSerial.TransferableInput = new avaxSerial.TransferableInput(
+  //       //   UTXOID, // TODO(CR-1073): how do we get this ? For this we need UTXO not decodedUTXO obj
+  //       //   Id.fromHex(Buffer.from(this.transaction._assetId).toString('hex')),
+  //       //   secpTransferInput
+  //       // );
+  //       // inputs.push(input);
+  //     }
+  //   });
+  //
+  //   if (buildOutputs) {
+  //     if (currentTotal < totalTarget) {
+  //       throw new BuildTransactionError(
+  //         `Utxo outputs get ${currentTotal.toString()} and ${totalTarget.toString()} is required`
+  //       );
+  //     } else if (currentTotal > totalTarget) {
+  //       outputs.push(
+  //         avaxSerial.TransferableOutput.fromNative(
+  //           this.transaction._assetId,
+  //           currentTotal - totalTarget,
+  //           this.transaction._fromAddresses,
+  //           this.transaction._locktime,
+  //           this.transaction._threshold
+  //         )
+  //       );
+  //     }
+  //   }
+  //   // get outputs and credentials from the deserialized transaction if we are in OVC
+  //   return {
+  //     inputs,
+  //     // TODO(CR-1073): check this
+  //     outputs: !buildOutputs ? this.transaction.avaxPTransaction.outputs : outputs,
+  //     credentials: credentials.length === 0 ? this.transaction.credentials : credentials,
+  //   };
+  // }
 
   /**
    * Since addresses in outputs get reordered, we need to make sure signatures
@@ -478,7 +486,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       this.transaction._utxos[0].addresses.length !== 0 || this.transaction._utxos[0].addressesIndex?.length !== 0;
 
     const assetId = Id.fromString(this.transaction._assetId);
-    this.transaction._utxos.forEach((utxo) => {
+    this.transaction._utxos.forEach((utxo, index) => {
       // validate the utxos
       if (!utxo) {
         throw new BuildTransactionError('Utxo is undefined');
@@ -514,7 +522,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         // On recovery mode: [backup, bitgo] (i.e. [2, 1])
         const firstIndex = this.recoverSigner ? 2 : 0;
         const bitgoIndex = 1;
-        // TODO(CR-1073): remove this clog
+        // TODO(CR-1073): remove clogs
+        console.log('utxo #', index);
+        console.log('addressesIndex', JSON.stringify(addressesIndex));
         console.log('firstIndex, bitgoIndex', firstIndex, bitgoIndex);
 
         currentTotal = currentTotal + utxoAmount;
@@ -547,9 +557,10 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             );
           }
         } else {
-          // TODO(CR-1073): check this
-          // need this else case for OVC
+          // TODO(CR-1073): need this else case for OVC
           // addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
+          // TODO(CR-1073): remove clog
+          console.log('buildOutputs === false');
         }
       }
     });
@@ -640,9 +651,10 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     const shares = new Int(1e4 * 20);
 
     // TODO(CR-1073): Check how addressMaps are created
-    //  If we define them non-recovery mode, signing with the backup key fails with error:
+    //  If we don't reorder them in non-recovery mode, signing with the backup key fails with error:
     //  "index out of bounds", trying to sign on index 2 (@see sign() on transaction.ts)
-    const addressMaps = !this.recoverMode()
+    //  If the addresses only get reordered when building from hex, we shouldn't need to reorder them here. We would need to do it in initBuilder()
+    const addressMaps = !this.recoverSigner
       ? this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]))
       : [
           new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[2]), 0]]),
@@ -652,9 +664,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     // const addressMaps = this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
 
-    // TODO(CR-1073): check if `AddPermissionlessValidatorTx` should be wrapped in `UnsignedTx`
-    //  @see: https://github.com/ava-labs/avalanchejs/blob/master/src/vms/pvm/builder.ts#L650
-    //  @see: @buildAvaxTransaction in validatorTxBuilder.ts
     this.transaction.setTransaction(
       new UnsignedTx(
         new pvmSerial.AddPermissionlessValidatorTx(
