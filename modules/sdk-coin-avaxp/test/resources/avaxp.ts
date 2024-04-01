@@ -527,6 +527,58 @@ export const BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE = {
     'xprv9zHRJvm9tob6rDeP8DNL4JnD1GC897uib2vwSQKLv1seGqyhwaF1xrUKoesuLLu67Z4NS5VFXwZzHxNU1CnMSUQHXs29z4w8W7WB5ZBozC7',
 };
 
+export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
+  threshold: 2,
+  locktime: 0,
+  bitgoAddresses: [
+    'P-fuji1w4jjs4qfugq0m3nu0d3htx6662dlq87zq5nz33', // user
+    'P-fuji1k3ca2njcunzl4hhxy24avca7htf66cmjjukl0n', // bitgo
+    'P-fuji1wzr0hsm8zlr6gpaakxvt67f999nj044ete07uw', // backup
+  ],
+  startTime: '1656423398',
+  endTime: '1659053398',
+  stakeAmount: '1000000000',
+  delegationFeeRate: 10,
+  nodeId: 'NodeID-KeNHPP5bXbGV25Ujjp6cYfExVzQrmCfkq',
+  blsPublicKey: '0x8e5a0a01a8525675caa56d03c87e70e7568b8415a189f9bd83d2178e163758f924feba3b417817d843eb7540811bc719',
+  blsSignature:
+    '0xb4c644df73fd304394b614383521c0f5da6b1bf4e05e29d446059032dcbe6f7e3bf06dab5afed58ce5a2e316433227ac177c95abbc36d078807d4f668c2c0291f0c3b8d6120902f1370fc52f684c4ce8423cadf6d722d31dcf374b111a938191',
+  utxos: [
+    {
+      outputID: 7,
+      amount: '997000000',
+      txid: 'eLUVV9V5yUgzF7hVJdBCkep2za1nJrv4Pr6vg7SxbYJiCbDDF',
+      threshold: 2,
+      addresses: [
+        'P-fuji1wzr0hsm8zlr6gpaakxvt67f999nj044ete07uw',
+        'P-fuji1w4jjs4qfugq0m3nu0d3htx6662dlq87zq5nz33',
+        'P-fuji1k3ca2njcunzl4hhxy24avca7htf66cmjjukl0n',
+      ],
+      outputidx: '0',
+      locktime: '0',
+    },
+    {
+      outputID: 7,
+      amount: '497000000',
+      txid: '7wrMTeYJoTjiF7ApHsGu7aJRsum5SLufhwRPhzR2r96fHKLe5',
+      threshold: 2,
+      addresses: [
+        'P-fuji1wzr0hsm8zlr6gpaakxvt67f999nj044ete07uw',
+        'P-fuji1w4jjs4qfugq0m3nu0d3htx6662dlq87zq5nz33',
+        'P-fuji1k3ca2njcunzl4hhxy24avca7htf66cmjjukl0n',
+      ],
+      outputidx: '0',
+      locktime: '0',
+    },
+  ],
+  unsignedRawTxNonRecovery: '',
+  halfSignedRawTxNonRecovery: '',
+  unsignedRawtxRecovery: '',
+  halfSignedRawTxRecovery: '',
+  userPrivateKey: 'f45d1c9bf57d3c02299a727d6e5d8d4e76498846b1a289b4e31a2ecccbc212fb',
+  backupPrivateKey: '2e0ffe6efbfcc27e9aaf4bce6af78d4c66e89b0955b85f02d7e15910e16ed4cd',
+};
+
 export const ADD_VALIDATOR_ID_SAMPLE = {
   fullsigntxHex:
     '00000000000c000000050000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000002a8d6abd0000000000000000000000020000000320829837bfba5d602b19cb9102b99eb3f895d5e47c71b9ae100e813e6332eddad2554ec12a0591fcbb6de9adcfbf2e0dfeffbe7792afd0c4085fdd37000000021da3c01318791619e5350977b2f7fb407ba3b83ff16a5bda3048d76e3f57b389000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000001ff23e8c000000020000000000000001c37d4d2dd4de61e2e2b91ff905b40725537be14e461aa8f9d43fe627099919b0000000053d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa0000000500000000464538710000000200000000000000010000003e003c4d616e75616c6c792061646420612064656c656761746f7220746f20746865207072696d617279207375626e65742077697468206d756c7469736967479f66c8be895830547e70b4b298cafd433dba6e0000000062b4ad990000000062dccf09000000003b9aca00000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000003b9aca000000000000000000000000020000000320829837bfba5d602b19cb9102b99eb3f895d5e47c71b9ae100e813e6332eddad2554ec12a0591fcbb6de9adcfbf2e0dfeffbe7792afd0c4085fdd370000000b0000000000000000000000020000000320829837bfba5d602b19cb9102b99eb3f895d5e47c71b9ae100e813e6332eddad2554ec12a0591fcbb6de9adcfbf2e0dfeffbe7792afd0c4085fdd37000186a0000000020000000900000002c34c35601ac5c7f91e22a95769d1bef6fc902ac3ceefba0d9b21fed1964088fa02bf974d310b54ff81957d8d70de6ed7cc87a84acad08cf14fc30338959199e100dedba0b7987f23b645a1c3ec7eb8fdace1b21d0bf3de62bcc57528fff7ee2b895bc2845dc23e20baf708f892b53f5a20cce4a4daec82c3f8fb9b9614e90af918000000000900000002c34c35601ac5c7f91e22a95769d1bef6fc902ac3ceefba0d9b21fed1964088fa02bf974d310b54ff81957d8d70de6ed7cc87a84acad08cf14fc30338959199e100dedba0b7987f23b645a1c3ec7eb8fdace1b21d0bf3de62bcc57528fff7ee2b895bc2845dc23e20baf708f892b53f5a20cce4a4daec82c3f8fb9b9614e90af9180052e16963',

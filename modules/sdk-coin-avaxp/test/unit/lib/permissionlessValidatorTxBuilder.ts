@@ -7,6 +7,7 @@ import { BaseTransaction, HalfSignedAccountTransaction, TransactionType } from '
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { AvaxP, TavaxP } from '../../../src';
+import { pvm } from '@bitgo/avalanchejs';
 
 describe('AvaxP permissionlessValidatorTxBuilder', () => {
   let basecoin;
@@ -88,6 +89,48 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
   });
 
   describe('Sign Transaction', () => {
+    it('build and sign an AddPermissionlessValidator transaction', async () => {
+      const unixNow = BigInt(Math.round(new Date().getTime() / 1000));
+      const startTime = unixNow + BigInt(60);
+      const endTime = startTime + BigInt(2630000);
+
+      const recoveryMode = false;
+      const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp'))
+        .getPermissionlessValidatorTxBuilder()
+        .threshold(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.threshold)
+        .locktime(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.locktime)
+        .recoverMode(recoveryMode)
+        .fromPubKey(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.bitgoAddresses)
+        // .startTime(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.startTime)
+        // .endTime(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.endTime)
+        .startTime(startTime.toString())
+        .endTime(endTime.toString())
+        .stakeAmount(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.stakeAmount)
+        .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.delegationFeeRate)
+        .nodeID(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.nodeId)
+        .blsPublicKey(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.blsPublicKey)
+        .blsSignature(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.blsSignature)
+        .utxos(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.utxos);
+      const tx = await txBuilder.build();
+      tx.type.should.equal(TransactionType.AddPermissionlessValidator);
+
+      // Test sign with user key
+      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.userPrivateKey });
+      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
+      console.log('building after signing with user key');
+      const fullSignedTx = await txBuilder.build();
+      console.log(fullSignedTx.toJson());
+
+      const AVAX_PUBLIC_URL = 'https://api.avax-test.network';
+      const pvmapi = new pvm.PVMApi(AVAX_PUBLIC_URL);
+      try {
+        const res = await pvmapi.issueTx({ tx: fullSignedTx.toBroadcastFormat() });
+        console.log(res);
+      } catch (e) {
+        console.log(e);
+      }
+    });
+
     it('build and sign an AddPermissionlessValidator transaction', async () => {
       const recoveryMode = false;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp'))
