@@ -36,6 +36,9 @@ import {
   getTransactionAmountsFromPsbt,
   WalletUnspent,
   getDefaultSigHash,
+  validateChangeOutput,
+  validateAllChangeOutputs,
+  RootWalletKeys,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -48,6 +51,7 @@ import {
 
 import {
   getDefaultWalletKeys,
+  getKeyTriple,
   Input,
   inputScriptTypes,
   mockReplayProtectionUnspent,
@@ -68,6 +72,7 @@ import {
 
 import { mockUnspents } from '../../../src/testutil';
 import { constructPsbt } from './Musig2Util';
+import { fromOutputScript } from '../../../src/address';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -111,6 +116,195 @@ describe('Psbt Misc', function () {
       () => psbt.finalizeAllInputs(),
       (e: any) => e.message === 'signature sighash does not match input sighash type'
     );
+  });
+});
+
+describe('validate psbt internal outputs', function () {
+  let psbt: UtxoPsbt;
+  before(function () {
+    psbt = testutil.constructPsbt(
+      [
+        { scriptType: 'p2sh', value: BigInt(1e8) },
+        { scriptType: 'p2shP2wsh', value: BigInt(1e8) },
+        { scriptType: 'p2wsh', value: BigInt(1e8) },
+        { scriptType: 'p2tr', value: BigInt(1e8) },
+        { scriptType: 'p2trMusig2', value: BigInt(1e12) },
+      ],
+      [
+        { scriptType: 'p2sh', value: BigInt(9e7), isInternalAddress: true },
+        { scriptType: 'p2shP2wsh', value: BigInt(9e7), isInternalAddress: true },
+        { scriptType: 'p2wsh', value: BigInt(9e7), isInternalAddress: true },
+        { scriptType: 'p2tr', value: BigInt(9e7), isInternalAddress: true },
+        { scriptType: 'p2trMusig2', value: BigInt(9e6), isInternalAddress: true },
+        {
+          address: fromOutputScript(
+            createOutputScriptP2shP2pk(replayProtectionKeyPair.publicKey).scriptPubKey,
+            networks.bitcoin
+          ),
+          value: BigInt(1e8),
+        },
+      ],
+      networks.bitcoin,
+      rootWalletKeys,
+      'unsigned'
+    );
+    addXpubsToPsbt(psbt, rootWalletKeys);
+  });
+
+  describe('success', function () {
+    it('can validate all internal outputs individually using the globalXpubs', function () {
+      scriptTypes2Of3.forEach((scriptType, i) => {
+        try {
+          assert.ok(validateChangeOutput(psbt, i), `Unable to validate ${scriptType} output`);
+        } catch (e) {
+          assert.ok(false, `Threw exception on script type ${scriptType}: ${e.message}`);
+        }
+      });
+    });
+
+    it('can validate all internal outputs individually using rootNodes', function () {
+      scriptTypes2Of3.forEach((scriptType, i) => {
+        try {
+          assert.ok(
+            validateChangeOutput(psbt, i, { rootNodes: rootWalletKeys.triple }),
+            `Unable to validate ${scriptType} output`
+          );
+        } catch (e) {
+          assert.ok(false, `Threw exception on script type ${scriptType}: ${e.message}`);
+        }
+      });
+    });
+
+    it('can validate all internal outputs at once using the globalXpubs', function () {
+      try {
+        validateAllChangeOutputs(psbt);
+      } catch (e) {
+        assert.ok(false, `Threw exception: ${e.message}`);
+      }
+    });
+
+    it('can validate all internal outputs at once using rootNodes', function () {
+      try {
+        validateAllChangeOutputs(psbt, { rootNodes: rootWalletKeys.triple });
+      } catch (e) {
+        assert.ok(false, `Threw exception: ${e.message}`);
+      }
+    });
+
+    it('should fail if the output is not internal', function () {
+      assert.throws(
+        () => validateChangeOutput(psbt, 5),
+        (e: any) => e.message === 'Output not detected as change.'
+      );
+    });
+
+    it('can validate outputs on a cloned psbt', function () {
+      assert.ok(validateAllChangeOutputs(psbt.clone()));
+    });
+  });
+
+  describe('failure', function () {
+    const otherRootWalletKeys = new RootWalletKeys(getKeyTriple('betty-white-dabbing'));
+
+    it('one of the keys are wrong', function () {
+      assert.throws(
+        () =>
+          validateChangeOutput(psbt, 0, {
+            rootNodes: [otherRootWalletKeys.triple[0], rootWalletKeys.triple[1], rootWalletKeys.triple[2]],
+          }),
+        (e: any) => e.message === 'No derivation path found for fingerprint 0fa58436 (key 1)'
+      );
+      assert.throws(
+        () =>
+          validateChangeOutput(psbt, 0, {
+            rootNodes: [rootWalletKeys.triple[0], otherRootWalletKeys.triple[1], rootWalletKeys.triple[2]],
+          }),
+        (e: any) => e.message === 'No derivation path found for fingerprint 28c1f734 (key 2)'
+      );
+      assert.throws(
+        () =>
+          validateChangeOutput(psbt, 0, {
+            rootNodes: [rootWalletKeys.triple[0], rootWalletKeys.triple[1], otherRootWalletKeys.triple[2]],
+          }),
+        (e: any) => e.message === 'No derivation path found for fingerprint 7cbafc84 (key 3)'
+      );
+      assert.throws(
+        () =>
+          validateAllChangeOutputs(psbt, {
+            rootNodes: [otherRootWalletKeys.triple[0], rootWalletKeys.triple[1], rootWalletKeys.triple[2]],
+          }),
+        (e: any) =>
+          e.message ===
+          'Output 0: No derivation path found for fingerprint 0fa58436 (key 1), Output 1: No derivation path found for fingerprint 0fa58436 (key 1), Output 2: No derivation path found for fingerprint 0fa58436 (key 1), Output 3: No derivation path found for fingerprint 0fa58436 (key 1), Output 4: No derivation path found for fingerprint 0fa58436 (key 1)'
+      );
+    });
+
+    it('number of keys are wrong', function () {
+      assert.throws(
+        () =>
+          validateChangeOutput(psbt, 0, {
+            rootNodes: [
+              rootWalletKeys.triple[0],
+              rootWalletKeys.triple[1],
+              rootWalletKeys.triple[2],
+              // @ts-expect-error extra key
+              otherRootWalletKeys.triple[0],
+            ],
+          }),
+        (e: any) => e.message === 'Invalid number of rootNodes found'
+      );
+
+      assert.throws(
+        () =>
+          validateChangeOutput(psbt, 0, {
+            // @ts-expect-error missing key
+            rootNodes: [rootWalletKeys.triple[0], rootWalletKeys.triple[1]],
+          }),
+        (e: any) => e.message === 'Invalid number of rootNodes found'
+      );
+
+      assert.throws(
+        () =>
+          validateAllChangeOutputs(psbt, {
+            rootNodes: [
+              rootWalletKeys.triple[0],
+              rootWalletKeys.triple[1],
+              rootWalletKeys.triple[2],
+              // @ts-expect-error extra key
+              otherRootWalletKeys.triple[0],
+            ],
+          }),
+        (e: any) =>
+          e.message ===
+          'Output 0: Invalid number of rootNodes found, Output 1: Invalid number of rootNodes found, Output 2: Invalid number of rootNodes found, Output 3: Invalid number of rootNodes found, Output 4: Invalid number of rootNodes found'
+      );
+
+      assert.throws(
+        () =>
+          validateAllChangeOutputs(psbt, {
+            // @ts-expect-error missing key
+            rootNodes: [rootWalletKeys.triple[0], rootWalletKeys.triple[1]],
+          }),
+        (e: any) =>
+          e.message ===
+          'Output 0: Invalid number of rootNodes found, Output 1: Invalid number of rootNodes found, Output 2: Invalid number of rootNodes found, Output 3: Invalid number of rootNodes found, Output 4: Invalid number of rootNodes found'
+      );
+    });
+
+    it('should fail if the derivation path does not match the derived scripts', function () {
+      const psbtCopy = UtxoPsbt.fromHex(psbt.toHex(), { network: psbt.network });
+      const walletKeys = rootWalletKeys.deriveForChainAndIndex(1, 5);
+
+      const update = {
+        bip32Derivation: [0, 1, 2].map((idx) => ({
+          pubkey: walletKeys.triple[idx].publicKey,
+          path: walletKeys.paths[idx],
+          masterFingerprint: rootWalletKeys.triple[idx].fingerprint,
+        })),
+      };
+      psbtCopy.updateOutput(psbtCopy.data.outputs.length - 1, update);
+      assert.deepStrictEqual(validateChangeOutput(psbtCopy, psbtCopy.data.outputs.length - 1), false);
+    });
   });
 });
 

@@ -1,12 +1,25 @@
 import * as assert from 'assert';
 
-import { GlobalXpub, PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
-import { checkForInput } from 'bip174/src/lib/utils';
-import { BIP32Interface } from 'bip32';
+import {
+  GlobalXpub,
+  PartialSig,
+  PsbtInput,
+  TapScriptSig,
+  Bip32Derivation as PsbtBip32Derivation,
+  TapBip32Derivation as PsbtTapBip32Derivation,
+} from 'bip174/src/lib/interfaces';
+import { checkForInput, checkForOutput } from 'bip174/src/lib/utils';
+import { BIP32Factory, BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { UtxoTransaction } from '../UtxoTransaction';
-import { createOutputScript2of3, getLeafHash, scriptTypeForChain, toXOnlyPublicKey } from '../outputScripts';
+import {
+  createOutputScript2of3,
+  getLeafHash,
+  scriptTypeForChain,
+  scriptTypes2Of3,
+  toXOnlyPublicKey,
+} from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
 import { createPsbtFromHex, createPsbtFromTransaction } from '../transaction';
@@ -31,7 +44,7 @@ import { parsePsbtMusig2PartialSigs } from '../Musig2';
 import { isTuple, Triple } from '../types';
 import { createTaprootOutputScript } from '../../taproot';
 import { opcodes as ops, script as bscript, TxInput } from 'bitcoinjs-lib';
-import { opcodes, payments } from '../../index';
+import { ecc as eccLib, opcodes, payments } from '../../index';
 import { getPsbtInputSignatureCount, isPsbtInputFinalized } from '../PsbtUtil';
 
 // only used for building `SignatureContainer`
@@ -487,6 +500,116 @@ export function addXpubsToPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): 
     })
   );
   psbt.updateGlobal({ globalXpub: xPubs });
+}
+
+/**
+ * Given the rootWalletKeys and the derivation information that is contained in a PSBT (tap)bip32Derivation,
+ * derive the wallet keys. We concatenate the derivation prefix in the rootWalletKeys with the derivation
+ * path in the (tap)bip32Derivation to get the full derivation path.
+ * @param rootWalletKeys
+ * @param derivations
+ * @returns DerivedWalletKeys
+ */
+export function deriveWalletKeysBasedOnPsbtBip32Derivation({
+  rootWalletKeys,
+  derivations,
+}: {
+  rootWalletKeys: RootWalletKeys;
+  derivations: PsbtBip32Derivation[] | PsbtTapBip32Derivation[];
+}): DerivedWalletKeys {
+  const paths = rootWalletKeys.triple.map((bip32, i) => {
+    const derivationPath = derivations.find((d) => d.masterFingerprint.equals(bip32.fingerprint))?.path;
+    if (!derivationPath) {
+      throw new Error(`No derivation path found for fingerprint ${bip32.fingerprint.toString('hex')} (key ${i + 1})`);
+    }
+    return derivationPath;
+  });
+
+  return new DerivedWalletKeys(rootWalletKeys, paths as Triple<string>);
+}
+
+/**
+ * Check if the output is a valid change output. An output is considered a change output if it has a
+ * bip32Derivation or tapBip32Derivation on the PSBT. We verify the change output by trying to create
+ * the output scripts that we support given the 3 wallet keys. If the output script in on the PSBT
+ * does not match any of them, then it is invalid. If it matches any of them, then we return true.
+ * @param psbt
+ * @param outputIndex
+ * @param rootNodes
+ * @returns boolean
+ */
+export function validateChangeOutput(
+  psbt: UtxoPsbt,
+  outputIndex: number,
+  { rootNodes }: { rootNodes?: Triple<BIP32Interface> } = {}
+): boolean {
+  const output = checkForOutput(psbt.data.outputs, outputIndex);
+  if (!output.bip32Derivation && !output.tapBip32Derivation) {
+    throw new Error('Output not detected as change.');
+  }
+
+  const bip32Derivations = output.bip32Derivation ? output.bip32Derivation : output.tapBip32Derivation;
+  assert(bip32Derivations);
+
+  const bip32s = rootNodes
+    ? rootNodes
+    : psbt.data.globalMap.globalXpub?.map((xpub) =>
+        BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey))
+      );
+  const prefixes = (
+    psbt.data.globalMap.globalXpub
+      ? psbt.data.globalMap.globalXpub?.map((globalXpub) => globalXpub.path)
+      : ['m', 'm', 'm']
+  ) as Triple<string>;
+  if (!bip32s) {
+    throw new Error(`No rootNodes or globalXpubs found`);
+  } else if (bip32s.length !== 3 || prefixes.length !== 3) {
+    throw new Error(`Invalid number of rootNodes found`);
+  }
+  const rootWalletKeys = new RootWalletKeys(bip32s as Triple<BIP32Interface>, prefixes);
+  const walletKeys = deriveWalletKeysBasedOnPsbtBip32Derivation({
+    rootWalletKeys,
+    derivations: bip32Derivations,
+  });
+
+  const psbtOutputScript = psbt.getOutputScript(outputIndex);
+  const outputScripts = scriptTypes2Of3.map((scriptType) => createOutputScript2of3(walletKeys.publicKeys, scriptType));
+  return outputScripts.some((outputScript) => outputScript.scriptPubKey.equals(psbtOutputScript));
+}
+
+/**
+ * Verify all the internal outputs on the PSBT. If there are any errors or invalid outputs, an error is thrown.
+ * @param psbt
+ * @param rootNodes
+ */
+export function validateAllChangeOutputs(
+  psbt: UtxoPsbt,
+  { rootNodes }: { rootNodes?: Triple<BIP32Interface> } = {}
+): void {
+  const errors: string[] = [];
+  const results: (boolean | undefined)[] = [];
+  psbt.data.outputs.forEach((_, i) => {
+    try {
+      results.push(validateChangeOutput(psbt, i, { rootNodes }));
+    } catch (e) {
+      if (e.message !== 'Output not detected as change.') {
+        errors.push(`Output ${i}: ${e.message}`);
+      }
+      // In the case that the PSBT output is not a change output, we push undefined to the results array
+      // so that the indexes of the results array match the indexes of the outputs array.
+      results.push(undefined);
+    }
+  });
+  if (errors.length) {
+    throw new Error(errors.join(', '));
+  }
+
+  if (results.some((r) => r === false)) {
+    throw new Error(
+      'Invalid change outputs detected on outputs ' +
+        results.flatMap((r, i) => (r === false ? [`${i}`] : [])).join(', ')
+    );
+  }
 }
 
 /**
