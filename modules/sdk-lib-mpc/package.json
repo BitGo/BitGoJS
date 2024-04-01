@@ -40,7 +40,6 @@
     "@silencelaboratories/dkls-wasm-ll-node": "1.0.1-pre.3",
     "@silencelaboratories/dkls-wasm-ll-web": "1.0.1-pre.3",
     "@types/superagent": "4.1.15",
-    "@wasmer/wasi": "^1.2.2",
     "bigint-crypto-utils": "3.1.4",
     "bigint-mod-arith": "3.1.2",
     "cbor": "^9.0.1",
