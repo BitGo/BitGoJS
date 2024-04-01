@@ -31,6 +31,34 @@ import utils from './utils';
 function isEmptySignature(signature: string): boolean {
   return !!signature && utils.removeHexPrefix(signature).startsWith(''.padStart(90, '0'));
 }
+
+interface CheckSignature {
+  (sigature: string, addressHex: string): boolean;
+}
+
+function generateSelectorSignature(signatures: string[]): CheckSignature {
+  if (signatures.length > 1 && signatures.every((sig) => isEmptySignature(sig))) {
+    // Look for address.
+    return function (sig, address): boolean {
+      try {
+        if (!isEmptySignature(sig)) {
+          return false;
+        }
+        if (sig.startsWith('0x')) sig = sig.substring(2);
+        const pub = sig.substring(90);
+        return pub === address;
+      } catch (e) {
+        return false;
+      }
+    };
+  } else {
+    // Look for empty string
+    return function (sig, address): boolean {
+      if (isEmptySignature(sig)) return true;
+      return false;
+    };
+  }
+}
 // end region utils for sign
 
 export class Transaction extends BaseTransaction {
@@ -103,7 +131,7 @@ export class Transaction extends BaseTransaction {
     console.log('====================Signing====================');
     console.log('keypair address: ', keyPair.getAddress());
     const prv = keyPair.getPrivateKey() as Uint8Array;
-    // const addressHex = keyPair.getAddressBuffer().toString('hex');
+    const addressHex = keyPair.getAddressBuffer().toString('hex');
     if (!prv) {
       throw new SigningError('Missing private key');
     }
@@ -124,19 +152,35 @@ export class Transaction extends BaseTransaction {
     if (unsignedTx.hasPubkey(publicKey)) {
       const signature = await secp256k1.sign(unsignedBytes, prv);
       // TODO(CR-1073): remove clogs
-      // console.log(Address.fromBytes(secp256k1.publicKeyBytesToAddress(publicKey))[0]);
-      console.log('unsignedIndicesForPublicKey: ', JSON.stringify(unsignedTx.getSigIndicesForPubKey(publicKey)));
-      console.log('unsignedTx.addressMaps', JSON.stringify(unsignedTx.addressMaps));
-      unsignedTx.addSignature(signature);
-      for (const [index, credential] of unsignedTx.getCredentials().entries()) {
-        console.log(`credential [${index}] signatures: ${JSON.stringify(credential.getSignatures())}`);
-      }
-      try {
-        console.log('unsignedTx hasAllSignatures: ', unsignedTx.hasAllSignatures());
-      } catch (e) {
-        console.log(e.message);
-      }
-      console.log('====================Signing ends====================');
+      console.log(Buffer.from(secp256k1.publicKeyBytesToAddress(publicKey)).toString('hex'));
+      console.log(addressHex);
+      // console.log('unsignedIndicesForPublicKey: ', JSON.stringify(unsignedTx.getSigIndicesForPubKey(publicKey)));
+      // console.log('unsignedTx.addressMaps', JSON.stringify(unsignedTx.addressMaps));
+      // unsignedTx.addSignature(signature);
+      // for (const [index, credential] of unsignedTx.getCredentials().entries()) {
+      //   console.log(`credential [${index}] signatures: ${JSON.stringify(credential.getSignatures())}`);
+      // }
+      // try {
+      //   console.log('unsignedTx hasAllSignatures: ', unsignedTx.hasAllSignatures());
+      // } catch (e) {
+      //   console.log(e.message);
+      // }
+      // console.log('====================Signing ends====================');
+      let checkSign: CheckSignature | undefined = undefined;
+      unsignedTx.credentials.forEach((c, index) => {
+        console.log(`credential [${index}] signatures: ${JSON.stringify(c)}`);
+        if (checkSign === undefined) {
+          checkSign = generateSelectorSignature(c.getSignatures());
+        }
+        let find = false;
+        c.getSignatures().forEach((sig, index) => {
+          if (checkSign && checkSign(sig, addressHex)) {
+            c.setSignature(index, signature);
+            find = true;
+          }
+        });
+        if (!find) throw new SigningError('Private key cannot sign the transaction');
+      });
     }
 
     // console.log((this._avaxTransaction as UnsignedTx).getCredentials());

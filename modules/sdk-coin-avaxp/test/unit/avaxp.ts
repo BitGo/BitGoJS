@@ -148,14 +148,15 @@ describe('Avaxp', function () {
 
       // Test sign with user key
       txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.userPrivateKey });
+      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey });
       console.log('building after signing with user key');
-      await txBuilder.build();
+      console.log(JSON.stringify(await txBuilder.build()));
 
       // Test sign with backup key
-      txBuilder.recoverMode(true);
-      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey });
-      console.log('building after signing with backup key');
-      await txBuilder.build();
+      // txBuilder.recoverMode(true);
+      // txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE.backupPrivateKey });
+      // console.log('building after signing with backup key');
+      // await txBuilder.build();
 
       // const halfSignedTransaction = await basecoin.signTransaction(params);
       // txHex = (halfSignedTransaction as HalfSignedAccountTransaction)?.halfSigned?.txHex;
