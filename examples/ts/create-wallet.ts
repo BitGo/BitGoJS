@@ -37,10 +37,14 @@ const label = 'Example Test Wallet';
 // TODO: set your passphrase for your new wallet here
 const passphrase = 'test_wallet_passphrase';
 
+// TODO: set your enterprise ID for your new wallet here
+const enterprise = 'your_enterprise_id'
+
 async function main() {
   const response = await bitgo.coin(coin).wallets().generateWallet({
     label,
     passphrase,
+    enterprise
   });
 
   const { wallet } = response;
