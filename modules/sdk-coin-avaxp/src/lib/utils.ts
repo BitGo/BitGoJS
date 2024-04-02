@@ -1,10 +1,4 @@
-import {
-  pvmSerial,
-  Signature as AvaxSignature,
-  TransferOutput,
-  TransferableOutput,
-  TypeSymbols,
-} from '@bitgo/avalanchejs';
+import { Signature as AvaxSignature, TransferableOutput, TransferOutput, TypeSymbols } from '@bitgo/avalanchejs';
 import {
   BaseUtils,
   Entry,
@@ -20,8 +14,8 @@ import { EVMOutput } from 'avalanche/dist/apis/evm';
 import {
   AmountOutput,
   BaseTx,
-  SelectCredentialClass,
   TransferableOutput as DeprecatedTransferableOutput,
+  SelectCredentialClass,
 } from 'avalanche/dist/apis/platformvm';
 import { KeyPair as KeyPairAvax } from 'avalanche/dist/apis/platformvm/keychain';
 import { Signature } from 'avalanche/dist/common';
@@ -235,7 +229,6 @@ export class Utils implements BaseUtils {
   }
 
   createNewSig(sigHex: string): AvaxSignature {
-    // TODO(CR-1073): check error - Error: incorrect number of bytes for signature sig.length !== SepkSignatureLength
     const buffer = BufferAvax.from(sigHex.padStart(130, '0'), 'hex');
     return new AvaxSignature(buffer);
   }
@@ -289,8 +282,7 @@ export class Utils implements BaseUtils {
    * @param {string} blockchainId
    * @returns true if tx is for blockchainId
    */
-  isTransactionOf(tx: DeprecatedTx | pvmSerial.BaseTx, blockchainId: string): boolean {
-    // TODO(CR-1073): Change this to support both Txn types
+  isTransactionOf(tx: DeprecatedTx, blockchainId: string): boolean {
     return utils.cb58Encode((tx as DeprecatedTx).getUnsignedTx().getTransaction().getBlockchainID()) === blockchainId;
   }
 
@@ -322,7 +314,6 @@ export class Utils implements BaseUtils {
   deprecatedMapOutputToEntry(network: AvalancheNetwork): (DeprecatedOutput) => Entry {
     return (output: DeprecatedOutput) => {
       if (this.deprecatedIsTransferableOutput(output)) {
-        // TODO(CR-1073) newer library TransferableOutput doesn't have getOutput method
         const amountOutput = output.getOutput() as AmountOutput;
         const address = amountOutput
           .getAddresses()

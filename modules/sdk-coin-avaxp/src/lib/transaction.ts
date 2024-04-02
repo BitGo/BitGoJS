@@ -1,4 +1,4 @@
-import { avaxSerial, utils as avaxUtils, Credential, pvmSerial, UnsignedTx, secp256k1 } from '@bitgo/avalanchejs';
+import { avaxSerial, utils as avaxUtils, Credential, pvmSerial, secp256k1, UnsignedTx } from '@bitgo/avalanchejs';
 import {
   BaseKey,
   BaseTransaction,
@@ -54,8 +54,7 @@ function generateSelectorSignature(signatures: string[]): CheckSignature {
   } else {
     // Look for empty string
     return function (sig, address): boolean {
-      if (isEmptySignature(sig)) return true;
-      return false;
+      return isEmptySignature(sig);
     };
   }
 }
@@ -94,7 +93,6 @@ export class Transaction extends BaseTransaction {
   }
 
   get avaxPTransaction(): avaxSerial.BaseTx {
-    // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
     return ((this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx;
   }
 
@@ -102,7 +100,6 @@ export class Transaction extends BaseTransaction {
     if (this.credentials.length === 0) {
       return [];
     }
-    // TODO(CR-1073): check this
     return this.credentials[0].getSignatures().filter((s) => !isEmptySignature(s));
   }
 
@@ -182,56 +179,6 @@ export class Transaction extends BaseTransaction {
         if (!find) throw new SigningError('Private key cannot sign the transaction');
       });
     }
-
-    // console.log((this._avaxTransaction as UnsignedTx).getCredentials());
-
-    /*
-     * @TODO(CR-1073):
-     *   for each signature, if it's empty, checkSign is a function that will
-     *   look for the address to be replaced with the signature.
-     *   Otherwise, it's a function that will look for the empty space for the signature
-     */
-    // this.credentials.forEach((c) => {
-    //   const cs: signatureSerialized[] = c.getSignatures().map((s) => ({ bytes: s }));
-    //   if (checkSign === undefined) {
-    //     checkSign = generateSelectorSignature(cs);
-    //   }
-    //   let find = false;
-    //   cs.forEach((sig) => {
-    //     if (checkSign && checkSign(sig, addressHex)) {
-    //       sig.bytes = signature;
-    //       find = true;
-    //     }
-    //   });
-    //   if (!find) throw new SigningError('Private key cannot sign the transaction');
-    // });
-    //
-    // /**
-    //  * Signatures are prestore as empty buffer for hsm and address of signar for first signature.
-    //  * When sign is required, this method return the function that identify a signature to be replaced.
-    //  * @param signatures any signatures as samples to identify which signature required replace.
-    //  */
-    // function generateSelectorSignature(signatures: signatureSerialized[]): CheckSignature {
-    //   if (signatures.length > 1 && signatures.every((sig) => isEmptySignature(sig.bytes))) {
-    //     // Look for address.
-    //     return function (sig, address): boolean {
-    //       try {
-    //         if (!isEmptySignature(sig.bytes)) {
-    //           return false;
-    //         }
-    //         const pub = sig.bytes.substring(90);
-    //         return pub === address;
-    //       } catch (e) {
-    //         return false;
-    //       }
-    //     };
-    //   } else {
-    //     // Look for empty string
-    //     return function (sig, address): boolean {
-    //       return isEmptySignature(sig.bytes);
-    //     };
-    //   }
-    // }
   }
 
   toHexString(byteArray: Uint8Array): string {
@@ -337,7 +284,6 @@ export class Transaction extends BaseTransaction {
   }
 
   get changeOutputs(): Entry[] {
-    // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
     return ((this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs.map(
       utils.mapOutputToEntry(this._network)
     );
@@ -348,7 +294,6 @@ export class Transaction extends BaseTransaction {
     switch (this.type) {
       case TransactionType.AddPermissionlessValidator:
       default:
-        // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
         inputs = ((this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx
           .inputs;
         break;

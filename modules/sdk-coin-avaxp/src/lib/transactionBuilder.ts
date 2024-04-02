@@ -23,7 +23,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns itself
    */
   initBuilder(tx: Tx): this {
-    // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
     const baseTx = ((tx as UnsignedTx).tx as pvmSerial.AddPermissionlessValidatorTx).baseTx;
     if (
       baseTx.NetworkId.value() !== this._transaction._networkID ||

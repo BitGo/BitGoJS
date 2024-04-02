@@ -1,6 +1,6 @@
+import { Address, utils as AvaxUtils, Credential, pvmSerial, TransferOutput, UnsignedTx } from '@bitgo/avalanchejs';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Address, Credential, pvmSerial, TransferOutput, UnsignedTx, utils as AvaxUtils } from '@bitgo/avalanchejs';
 import { Buffer as BufferAvax } from 'avalanche';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
@@ -37,7 +37,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       }
     } catch (e) {
       try {
-        // TODO(CR-1073): How do we create other EVM Tx types here, may be unpack from rawTx
         txSource = 'EVM';
         tx = new EVMTx();
         tx.fromBuffer(BufferAvax.from(rawNoHex, 'hex'));
@@ -81,9 +80,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           // const addressMaps = fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
           tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), [credential1, credential2]);
         } catch (e) {
-          // TODO(CR-1073): remove log
-          console.log('failed all attempts to parse tx');
-          throw e;
+          throw new Error(
+            'The transaction type is not recognized as an old PVM or old EVM transaction. Additionally, parsing of the new PVM AddPermissionlessValidatorTx type failed.'
+          );
         }
       }
     }
@@ -111,12 +110,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
     return transactionBuilder;
   }
-
-  // TODO(CR-1073): export codec from avalanchejs if needed
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  // getCodec() {
-  //   return new Codec([undefined, undefined, Int, undefined, undefined]);
-  // }
 
   /** @inheritdoc */
   getTransferBuilder(): DeprecatedTransactionBuilder {

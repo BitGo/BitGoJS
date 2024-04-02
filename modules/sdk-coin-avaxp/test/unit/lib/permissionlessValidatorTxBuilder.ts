@@ -1,5 +1,5 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import assert from 'assert';
