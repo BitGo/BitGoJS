@@ -14,6 +14,7 @@ import {
   TransferOutput,
   TypeSymbols,
   UnsignedTx,
+  Utxo,
 } from '@bitgo/avalanchejs';
 import {
   BaseAddress,
@@ -290,12 +291,12 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this._startTime = this.transaction._startTime;
     this.transaction._endTime = permissionlessValidatorTx.subnetValidator.validator.endTime.value();
     this._endTime = this.transaction._endTime;
-    // this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
-    this.transaction._fromAddresses = [
-      AvaxUtils.hexToBuffer(output.outputOwners.addrs[2].toHex()),
-      AvaxUtils.hexToBuffer(output.outputOwners.addrs[0].toHex()),
-      AvaxUtils.hexToBuffer(output.outputOwners.addrs[1].toHex()),
-    ];
+    this.transaction._fromAddresses = output.outputOwners.addrs.sort().map((a) => AvaxUtils.hexToBuffer(a.toHex()));
+    // this.transaction._fromAddresses = [
+    //   AvaxUtils.hexToBuffer(output.outputOwners.addrs[2].toHex()),
+    //   AvaxUtils.hexToBuffer(output.outputOwners.addrs[0].toHex()),
+    //   AvaxUtils.hexToBuffer(output.outputOwners.addrs[1].toHex()),
+    // ];
     this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
     this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
     return this;
@@ -459,11 +460,13 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     inputs: avaxSerial.TransferableInput[];
     stakeOutputs: avaxSerial.TransferableOutput[];
     changeOutputs: avaxSerial.TransferableOutput[];
+    utxos: Utxo[];
     credentials: Credential[];
   } {
     const inputs: avaxSerial.TransferableInput[] = [];
     const stakeOutputs: avaxSerial.TransferableOutput[] = [];
     const changeOutputs: avaxSerial.TransferableOutput[] = [];
+    const utxos: Utxo[] = [];
 
     let currentTotal = BigInt(0);
 
@@ -536,6 +539,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           new Input(addressesIndex.map((num) => new Int(num)))
         );
         const input = new avaxSerial.TransferableInput(utxoId, assetId, transferInputs);
+        utxos.push(new Utxo(utxoId, assetId, transferInputs));
+
         inputs.push(input);
         if (buildOutputs) {
           // For the bitgo signature we create an empty signature
@@ -578,7 +583,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             new OutputOwners(
               new BigIntPr(this.transaction._locktime),
               new Int(this.transaction._threshold),
-              this.transaction._fromAddresses.map((a) => Address.fromBytes(a)[0])
+              this.transaction._fromAddresses.sort().map((a) => Address.fromBytes(a)[0])
             )
           )
         );
@@ -592,7 +597,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
               new OutputOwners(
                 new BigIntPr(this.transaction._locktime),
                 new Int(this.transaction._threshold),
-                this.transaction._fromAddresses.map((a) => Address.fromBytes(a)[0])
+                this.transaction._fromAddresses.sort().map((a) => Address.fromBytes(a)[0])
               )
             )
           );
@@ -605,7 +610,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     //  @see createInputOutput() in delegatorTxBuilder.ts
     const finalCredentials = this.transaction.credentials ?? credentials;
 
-    return { inputs, stakeOutputs, changeOutputs, credentials: finalCredentials };
+    return { inputs, stakeOutputs, changeOutputs, utxos, credentials: finalCredentials };
   }
 
   /**
@@ -614,7 +619,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
    */
   protected buildAvaxTransaction(): void {
     this.validateStakeDuration(this.transaction._startTime, this.transaction._endTime);
-    const { inputs, stakeOutputs, changeOutputs, credentials } = this.calculateUtxos();
+    const { inputs, stakeOutputs, changeOutputs, utxos, credentials } = this.calculateUtxos();
     const baseTx = avaxSerial.BaseTx.fromNative(
       this.transaction._networkID,
       this.transaction._blockchainID,
@@ -642,7 +647,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     const outputOwners = new OutputOwners(
       new BigIntPr(this.transaction._locktime),
       new Int(this.transaction._threshold),
-      this.transaction._fromAddresses.map((a) => Address.fromBytes(a)[0])
+      this.transaction._fromAddresses.sort().map((a) => Address.fromBytes(a)[0])
     );
 
     // TODO(CR-1073): check this value
@@ -654,15 +659,17 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     //  If we don't reorder them in non-recovery mode, signing with the backup key fails with error:
     //  "index out of bounds", trying to sign on index 2 (@see sign() on transaction.ts)
     //  If the addresses only get reordered when building from hex, we shouldn't need to reorder them here. We would need to do it in initBuilder()
-    const addressMaps = !this.recoverSigner
-      ? this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]))
-      : [
-          new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[2]), 0]]),
-          new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[0]), 0]]),
-          new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[1]), 0]]),
-        ];
+    // const addressMaps = !this.recoverSigner
+    //   ? this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]))
+    //   : [
+    //       new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[2]), 0]]),
+    //       new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[0]), 0]]),
+    //       new AvaxUtils.AddressMap([[new Address(this.transaction._fromAddresses[1]), 0]]),
+    //     ];
 
-    // const addressMaps = this.transaction._fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
+    const addressMaps = this.transaction._fromAddresses
+      .sort()
+      .map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
 
     this.transaction.setTransaction(
       new UnsignedTx(
@@ -675,7 +682,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           outputOwners,
           shares
         ),
-        [],
+        utxos,
         new AvaxUtils.AddressMaps(addressMaps),
         credentials
       )
