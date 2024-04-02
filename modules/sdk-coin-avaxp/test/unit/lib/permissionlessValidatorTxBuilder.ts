@@ -7,6 +7,7 @@ import { AvaxP, TavaxP } from '../../../src';
 import * as AvaxpLib from '../../../src/lib';
 import { TransactionBuilderFactory } from '../../../src/lib';
 import * as testData from '../../resources/avaxp';
+import { pvm } from '@bitgo/avalanchejs';
 
 describe('AvaxP permissionlessValidatorTxBuilder', () => {
   let basecoin;
@@ -128,14 +129,17 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
       // console.log(fullSignedTx.toJson());
       // console.log(fullSignedTx.toBroadcastFormat());
 
-      // const AVAX_PUBLIC_URL = 'https://api.avax-test.network';
-      // const pvmapi = new pvm.PVMApi(AVAX_PUBLIC_URL);
-      // try {
-      //   const res = await pvmapi.issueTx({ tx: fullSignedTx.toBroadcastFormat() });
-      //   console.log(res);
-      // } catch (e) {
-      //   console.log(e);
-      // }
+      const AVAX_PUBLIC_URL = 'https://api.avax-test.network';
+      const pvmapi = new pvm.PVMApi(AVAX_PUBLIC_URL);
+      try {
+        // const res = await pvmapi.issueTx({ tx: fullSignedTx.toBroadcastFormat() });
+        const tx =
+          '0x000000000019000000050000000000000000000000000000000000000000000000000000000000000000000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000001d71d780000000000000000000000002000000037086fbc36717c7a407bdb198bd7925296727d6b97565285409e200fdc67c7b63759b5ad29bf01fc2b471d54e58e4c5fadee622abd663bebad3ad637200000002efbbd5eb9092b09ef25c4e5b1d489f1328a4ad218dc60735ec687d610d777c67000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000001d9f9e400000000200000000000000013317df1c40b100a3ba790df6f9e8648bf05df18c2082ffa56e1c4f0461288d27000000003d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000005000000003b6d0340000000020000000000000001000000006ee7db447679cb4708ae3a133cad215505e07fe400000000660c3f7800000000660d90f8000000003b9aca0000000000000000000000000000000000000000000000000000000000000000000000001cb57c81ad9d26a997ec7205e9926559c03abf18b7ded13335ab9ec9260368c81092f1ab352e7c24ebfc8e46ed93b0601cb81be2c1612e5532cd51a800b62294d3ab1289e3cdcda9f216d3812c2f0a0e26c0b16b46026f93bad5d88fef7fd1c8761120e2f81a884a9a6219f5956260336139cb2f918b4aff289119ea5e9d85f9e4a1f24dbfc14ec8725a3cdc7e9127f6cc000000013d9bdac0ed1d761330cf680efdeb1a42159eb387d6d2950c96f7d28f61bbe2aa00000007000000003b9aca00000000000000000000000002000000037086fbc36717c7a407bdb198bd7925296727d6b97565285409e200fdc67c7b63759b5ad29bf01fc2b471d54e58e4c5fadee622abd663bebad3ad63720000000b000000000000000000000002000000037086fbc36717c7a407bdb198bd7925296727d6b97565285409e200fdc67c7b63759b5ad29bf01fc2b471d54e58e4c5fadee622abd663bebad3ad63720000000b000000000000000000000002000000037086fbc36717c7a407bdb198bd7925296727d6b97565285409e200fdc67c7b63759b5ad29bf01fc2b471d54e58e4c5fadee622abd663bebad3ad637200030d4000000002000000090000000282eb03313b20f578fb52d4df81a031688bfba0d48e8e8dbe987fe602dd6dd9d51c0649969b3b9aa73a482b756db9d45a951d187dd54ba0e079c49c5e3590fb85000817ff3800a5215735d4eb870bfc6ba427b6ac4dff2cd143eec8c9e2ebacd58c6b75d7811f12b59b413697630debe11aa6607f3734acd102b66db5dd224caccd01000000090000000282eb03313b20f578fb52d4df81a031688bfba0d48e8e8dbe987fe602dd6dd9d51c0649969b3b9aa73a482b756db9d45a951d187dd54ba0e079c49c5e3590fb85000817ff3800a5215735d4eb870bfc6ba427b6ac4dff2cd143eec8c9e2ebacd58c6b75d7811f12b59b413697630debe11aa6607f3734acd102b66db5dd224caccd0164755419';
+        const res = await pvmapi.issueTx({ tx });
+        console.log(res);
+      } catch (e) {
+        console.log(e);
+      }
     });
 
     it('build and sign an AddPermissionlessValidator transaction', async () => {
