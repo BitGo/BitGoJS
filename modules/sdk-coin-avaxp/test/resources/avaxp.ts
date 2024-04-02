@@ -527,6 +527,29 @@ export const BUILD_AND_SIGN_ADD_VALIDATOR_SAMPLE = {
     'xprv9zHRJvm9tob6rDeP8DNL4JnD1GC897uib2vwSQKLv1seGqyhwaF1xrUKoesuLLu67Z4NS5VFXwZzHxNU1CnMSUQHXs29z4w8W7WB5ZBozC7',
 };
 
+/**
+ * Test accounts:
+ * [
+ *   {
+ *     source: 'user',
+ *     pub: '02abb451c0cc240e9a4fb97a130846d90a87247264e57014e41dc226ebf4965724',
+ *     prv: 'f45d1c9bf57d3c02299a727d6e5d8d4e76498846b1a289b4e31a2ecccbc212fb',
+ *     address: 'P-fuji1w4jjs4qfugq0m3nu0d3htx6662dlq87zq5nz33'
+ *   },
+ *   {
+ *     source: 'backup',
+ *     pub: '025523fa48a5b0c8ed4a8344aab8396061fb42cb4f168ba5d3ae19f034c4ea2d4d',
+ *     prv: '2e0ffe6efbfcc27e9aaf4bce6af78d4c66e89b0955b85f02d7e15910e16ed4cd',
+ *     address: 'P-fuji1wzr0hsm8zlr6gpaakxvt67f999nj044ete07uw'
+ *   },
+ *   {
+ *     source: 'bitgo',
+ *     pub: '03d71cda3b1c32eed044866ec96c2ac54af43e7edb8f1535df51f341e49674ffaa',
+ *     prv: '5a360c848021024528dfc02e79ba441f1727c765b4d0dcec288ffbd2772cd432',
+ *     address: 'P-fuji1k3ca2njcunzl4hhxy24avca7htf66cmjjukl0n'
+ *   }
+ * ]
+ */
 export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
   threshold: 2,
   locktime: 0,
