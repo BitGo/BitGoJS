@@ -110,8 +110,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  // TODO(CR-1073) Implement:
-  //  fromImplementation
+  // Implement:
   //  buildImplementation
   //  signImplementation
   //  get transaction

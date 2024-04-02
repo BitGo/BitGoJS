@@ -15,14 +15,6 @@ import { ADDRESS_SEPARATOR, DecodedUtxoObj, INPUT_SEPARATOR, TransactionExplanat
 import { KeyPair } from './keyPair';
 import utils from './utils';
 
-// region utils to sign
-// interface signatureSerialized {
-//   bytes: string;
-// }
-// interface CheckSignature {
-//   (sigature: signatureSerialized, addressHex: string): boolean;
-// }
-
 /**
  * Checks if a signature is empty
  * @param signature
@@ -73,12 +65,9 @@ export class Transaction extends BaseTransaction {
   public _stakeAmount: bigint;
   public _threshold = 2;
   public _locktime = BigInt(0);
-  // TODO use Uint8Array
-  // public _rewardAddresses: Uint8Array[];
   public _fromAddresses: Uint8Array[] = [];
   public _rewardAddresses: BufferAvax[];
   public _utxos: DecodedUtxoObj[] = [];
-  // public _to: Uint8Array[];
   public _to: BufferAvax[];
   public _fee: Partial<TransactionFee> = {};
   public _blsPublicKey: string;
@@ -104,7 +93,6 @@ export class Transaction extends BaseTransaction {
   }
 
   get credentials(): Credential[] {
-    // it should be this._avaxpTransaction?.getCredentials(), but EVMTx doesn't have it
     return (this._avaxTransaction as UnsignedTx)?.credentials;
   }
 
@@ -118,15 +106,11 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  // TODO(CR-1073): verify this implementation
   /**
    * Sign an avaxp transaction and update the transaction hex
    * @param {KeyPair} keyPair
    */
   async sign(keyPair: KeyPair): Promise<void> {
-    // TODO(CR-1073): remove clog
-    console.log('====================Signing====================');
-    console.log('keypair address: ', keyPair.getAddress());
     const prv = keyPair.getPrivateKey() as Uint8Array;
     const addressHex = keyPair.getAddressBuffer().toString('hex');
     if (!prv) {
@@ -138,34 +122,14 @@ export class Transaction extends BaseTransaction {
     if (!this.hasCredentials) {
       throw new InvalidTransactionError('empty credentials to sign');
     }
-    // const signature = this.createSignature(prv);
-    // let checkSign: CheckSignature | undefined = undefined;
-
-    // console.log((this._avaxTransaction as UnsignedTx).getCredentials());
     const unsignedTx = this._avaxTransaction as UnsignedTx;
     const unsignedBytes = unsignedTx.toBytes();
 
     const publicKey = secp256k1.getPublicKey(prv);
     if (unsignedTx.hasPubkey(publicKey)) {
       const signature = await secp256k1.sign(unsignedBytes, prv);
-      // TODO(CR-1073): remove clogs
-      console.log(Buffer.from(secp256k1.publicKeyBytesToAddress(publicKey)).toString('hex'));
-      console.log(addressHex);
-      // console.log('unsignedIndicesForPublicKey: ', JSON.stringify(unsignedTx.getSigIndicesForPubKey(publicKey)));
-      // console.log('unsignedTx.addressMaps', JSON.stringify(unsignedTx.addressMaps));
-      // unsignedTx.addSignature(signature);
-      // for (const [index, credential] of unsignedTx.getCredentials().entries()) {
-      //   console.log(`credential [${index}] signatures: ${JSON.stringify(credential.getSignatures())}`);
-      // }
-      // try {
-      //   console.log('unsignedTx hasAllSignatures: ', unsignedTx.hasAllSignatures());
-      // } catch (e) {
-      //   console.log(e.message);
-      // }
-      // console.log('====================Signing ends====================');
       let checkSign: CheckSignature | undefined = undefined;
       unsignedTx.credentials.forEach((c, index) => {
-        console.log(`credential [${index}] signatures: ${JSON.stringify(c)}`);
         if (checkSign === undefined) {
           checkSign = generateSelectorSignature(c.getSignatures());
         }
@@ -193,7 +157,6 @@ export class Transaction extends BaseTransaction {
     if (!this.avaxPTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    // TODO(CR-1073): should have logic for the getSignedTx
     return this.toHexString(avaxUtils.addChecksum((this._avaxTransaction as UnsignedTx).getSignedTx().toBytes()));
   }
 
@@ -245,16 +208,11 @@ export class Transaction extends BaseTransaction {
   }
 
   get fromAddresses(): string[] {
-    // TODO(CR-1073): use the new library to get _fromAddresses
-    return this._fromAddresses.map((a) =>
-      utils.addressToString(this._network.hrp, this._network.alias, BufferAvax.from(a))
-    );
+    return this._fromAddresses.map((a) => avaxUtils.format(this._network.alias, this._network.hrp, a));
   }
 
   get rewardAddresses(): string[] {
-    // TODO(CR-1073): use the new library to get _rewardAddresses
-    // return this._rewardAddresses.map((a) => utils.addressToString(this._network.hrp, this._network.alias, a));
-    return [];
+    return this._rewardAddresses.map((a) => avaxUtils.format(this._network.alias, this._network.hrp, a));
   }
 
   /**
@@ -265,7 +223,6 @@ export class Transaction extends BaseTransaction {
       case TransactionType.AddPermissionlessValidator:
         return [
           {
-            // TODO(CR-1073): check as pvmSerial.AddPermissionlessValidatorTx
             address: (
               (this._avaxTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
             ).subnetValidator.validator.nodeId.toString(),

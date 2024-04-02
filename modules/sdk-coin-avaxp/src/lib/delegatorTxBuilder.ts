@@ -318,10 +318,6 @@ export class DelegatorTxBuilder extends DeprecatedTransactionBuilder {
         // either user (0) or recovery (2)
         const firstIndex = this.recoverSigner ? 2 : 0;
         const bitgoIndex = 1;
-        // TODO(CR-1073): remove this clog
-        console.log('utxo #', i);
-        console.log('addressesIndex', JSON.stringify(addressesIndex));
-        console.log('firstIndex, bitgoIndex', firstIndex, bitgoIndex);
         currentTotal = currentTotal.add(amt);
 
         const secpTransferInput = new SECPTransferInput(amt);

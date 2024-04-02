@@ -50,19 +50,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           // this should be the last because other PVM functions are still being detected in the new SDK
           const manager = AvaxUtils.getManagerForVM('PVM');
           const [codec, txBytes] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
-          const unpackedTx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes); // todo check if unpackPrefix works with SignedTx
+          const unpackedTx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
           // A signed transaction includes 4 bytes for the number of credentials as an Int type that is not known by the codec
           // We can skip those 4 bytes because we know number of credentials is 2
           // @see https://docs.avax.network/reference/avalanchego/p-chain/txn-format#signed-transaction-example
           const credentialBytes = unpackedTx[1].slice(4);
           const [credential1, credential2Bytes] = codec.UnpackPrefix<Credential>(credentialBytes);
-          console.log('credential1', JSON.stringify(credential1.getSignatures()));
-          // const [credential2,rest2] = Credential.fromBytes(credentials[1], codec);
           const [credential2] = codec.UnpackPrefix<Credential>(credential2Bytes);
-          console.log('credential2', JSON.stringify(credential2.getSignatures()));
-          // if (rest.length > 0) {
-          //   throw new Error('AddPermissionlessValidator tx has more than 2 credentials');
-          // }
 
           const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
           const permissionlessValidatorTx = unpacked[0] as pvmSerial.AddPermissionlessValidatorTx;
@@ -77,7 +71,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
             new AvaxUtils.AddressMap([[new Address(fromAddresses[0]), 0]]),
             new AvaxUtils.AddressMap([[new Address(fromAddresses[1]), 0]]),
           ];
-          // const addressMaps = fromAddresses.map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
           tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), [credential1, credential2]);
         } catch (e) {
           throw new Error(
@@ -88,7 +81,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
 
     if (txSource === 'PVM') {
-      // if (PermissionlessValidatorTxBuilder.verifyTxType((tx as UnsignedTx).tx?._type)) {
       if ((tx as UnsignedTx)?.tx?._type && PermissionlessValidatorTxBuilder.verifyTxType((tx as UnsignedTx).tx._type)) {
         transactionBuilder = this.getPermissionlessValidatorTxBuilder().initBuilder(tx);
       } else if (ValidatorTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
