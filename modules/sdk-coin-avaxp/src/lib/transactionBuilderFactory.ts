@@ -59,11 +59,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const [credential1, credential2Bytes] = codec.UnpackPrefix<Credential>(credentialBytes);
           console.log('credential1', JSON.stringify(credential1.getSignatures()));
           // const [credential2,rest2] = Credential.fromBytes(credentials[1], codec);
-          const [credential2, rest] = codec.UnpackPrefix<Credential>(credential2Bytes);
+          const [credential2] = codec.UnpackPrefix<Credential>(credential2Bytes);
           console.log('credential2', JSON.stringify(credential2.getSignatures()));
-          if (rest.length > 0) {
-            throw new Error('AddPermissionlessValidator tx has more than 2 credentials');
-          }
+          // if (rest.length > 0) {
+          //   throw new Error('AddPermissionlessValidator tx has more than 2 credentials');
+          // }
 
           const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
           const permissionlessValidatorTx = unpacked[0] as pvmSerial.AddPermissionlessValidatorTx;

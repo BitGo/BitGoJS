@@ -89,7 +89,7 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
   });
 
   describe('Sign Transaction', () => {
-    it('build and sign an AddPermissionlessValidator transaction', async () => {
+    it('build and sign an AddPermissionlessValidator transaction and broadcast', async () => {
       const unixNow = BigInt(Math.round(new Date().getTime() / 1000));
       const startTime = unixNow + BigInt(60);
       const endTime = startTime + BigInt(2630000);
@@ -116,9 +116,10 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
 
       // Test sign with user key
       txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.userPrivateKey });
-      txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
+      const txBuilder2 = factory.from((await txBuilder.build()).toBroadcastFormat());
+      txBuilder2.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
       console.log('building after signing with user key');
-      const fullSignedTx = await txBuilder.build();
+      const fullSignedTx = await txBuilder2.build();
       console.log(fullSignedTx.toJson());
 
       const AVAX_PUBLIC_URL = 'https://api.avax-test.network';

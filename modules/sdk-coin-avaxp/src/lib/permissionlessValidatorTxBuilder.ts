@@ -528,16 +528,25 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         // TODO(CR-1073): remove clogs
         console.log('utxo #', index);
         console.log('addressesIndex', JSON.stringify(addressesIndex));
+        addressesIndex.sort();
+        console.log('addressesIndex', JSON.stringify(addressesIndex));
         console.log('firstIndex, bitgoIndex', firstIndex, bitgoIndex);
 
         currentTotal = currentTotal + utxoAmount;
 
         const utxoId = avaxSerial.UTXOID.fromNative(utxo.txid, Number(utxo.outputidx));
-
+        if (addressesIndex.length > this.transaction._threshold && !this.recoverSigner) {
+          addressesIndex.pop();
+        } else if (addressesIndex.length > this.transaction._threshold) {
+          addressesIndex.shift();
+        }
         const transferInputs = new TransferInput(
           new BigIntPr(utxoAmount),
           new Input(addressesIndex.map((num) => new Int(num)))
         );
+        console.log(addressesIndex);
+        console.log(transferInputs.sigIndicies());
+        transferInputs.sigIndicies().sort();
         const input = new avaxSerial.TransferableInput(utxoId, assetId, transferInputs);
         utxos.push(new Utxo(utxoId, assetId, transferInputs));
 
@@ -610,6 +619,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     //  @see createInputOutput() in delegatorTxBuilder.ts
     const finalCredentials = this.transaction.credentials ?? credentials;
 
+    inputs.sort((a, b) => a.utxoID.txID.value().localeCompare(b.utxoID.txID.value()));
     return { inputs, stakeOutputs, changeOutputs, utxos, credentials: finalCredentials };
   }
 

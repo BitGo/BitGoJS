@@ -247,7 +247,7 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Empty transaction data');
     }
     // TODO(CR-1073): should have logic for the getSignedTx
-    return this.toHexString((this._avaxTransaction as UnsignedTx).getSignedTx().toBytes());
+    return this.toHexString(avaxUtils.addChecksum((this._avaxTransaction as UnsignedTx).getSignedTx().toBytes()));
   }
 
   // types - stakingTransaction, import, export
