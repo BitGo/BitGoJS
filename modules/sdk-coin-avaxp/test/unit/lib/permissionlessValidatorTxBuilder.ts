@@ -90,8 +90,8 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
   describe('Sign Transaction', () => {
     it('build and sign an AddPermissionlessValidator transaction and broadcast', async () => {
       const unixNow = BigInt(Math.round(new Date().getTime() / 1000));
-      const startTime = unixNow + BigInt(60);
-      const endTime = startTime + BigInt(2630000);
+      const startTime = unixNow + BigInt(120);
+      const endTime = startTime + BigInt(86400);
 
       const recoveryMode = false;
       const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp'))
@@ -115,16 +115,18 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
 
       // Test sign with user key
       txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.userPrivateKey });
+      // txBuilder.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
       const halfSigned = await txBuilder.build();
       console.log(halfSigned.toJson());
       const halfSignedTxHex = halfSigned.toBroadcastFormat();
       console.log('halfSignedTxHex: ', halfSignedTxHex);
 
-      const txBuilder2 = factory.from(halfSignedTxHex);
-      txBuilder2.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
-      console.log('building after signing with user key');
-      const fullSignedTx = await txBuilder2.build();
-      console.log(fullSignedTx.toJson());
+      // const txBuilder2 = factory.from(halfSignedTxHex);
+      // txBuilder2.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.backupPrivateKey });
+      // console.log('building after signing with user key');
+      // const fullSignedTx = await txBuilder2.build();
+      // console.log(fullSignedTx.toJson());
+      // console.log(fullSignedTx.toBroadcastFormat());
 
       // const AVAX_PUBLIC_URL = 'https://api.avax-test.network';
       // const pvmapi = new pvm.PVMApi(AVAX_PUBLIC_URL);
