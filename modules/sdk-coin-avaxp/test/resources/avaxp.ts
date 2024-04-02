@@ -562,15 +562,15 @@ export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
   endTime: '1659053398',
   stakeAmount: '1000000000',
   delegationFeeRate: 10,
-  nodeId: 'NodeID-KeNHPP5bXbGV25Ujjp6cYfExVzQrmCfkq',
+  nodeId: 'NodeID-B7R5mup1BGypqosat4fvCxWXGgziRaZgB',
   blsPublicKey: '0x8e5a0a01a8525675caa56d03c87e70e7568b8415a189f9bd83d2178e163758f924feba3b417817d843eb7540811bc719',
   blsSignature:
     '0xb4c644df73fd304394b614383521c0f5da6b1bf4e05e29d446059032dcbe6f7e3bf06dab5afed58ce5a2e316433227ac177c95abbc36d078807d4f668c2c0291f0c3b8d6120902f1370fc52f684c4ce8423cadf6d722d31dcf374b111a938191',
   utxos: [
     {
       outputID: 7,
-      amount: '997000000',
-      txid: 'eLUVV9V5yUgzF7hVJdBCkep2za1nJrv4Pr6vg7SxbYJiCbDDF',
+      amount: '497000000',
+      txid: '2pagEad34XErSssBEjpHVuj9ACR8U7wkYdeUiV2rdunVPMVpMe',
       threshold: 2,
       addresses: [
         'P-fuji1wzr0hsm8zlr6gpaakxvt67f999nj044ete07uw',
@@ -582,8 +582,8 @@ export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
     },
     {
       outputID: 7,
-      amount: '497000000',
-      txid: '7wrMTeYJoTjiF7ApHsGu7aJRsum5SLufhwRPhzR2r96fHKLe5',
+      amount: '997000000',
+      txid: 'PW7HpniaXTJEDauqNS1nXNbkCisrHP8jCYicLbSwysgsmTxrN',
       threshold: 2,
       addresses: [
         'P-fuji1wzr0hsm8zlr6gpaakxvt67f999nj044ete07uw',
@@ -593,6 +593,19 @@ export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
       outputidx: '0',
       locktime: '0',
     },
+    // {
+    //   outputID: 7,
+    //   amount: '494000000',
+    //   txid: 'qjKFYJ7PY6shcCLjnNmT5zE7CpaMXrbDD7UVTr9aqf1DyirU6',
+    //   threshold: 2,
+    //   addresses: [
+    //     'P-fuji1wzr0hsm8zlr6gpaakxvt67f999nj044ete07uw',
+    //     'P-fuji1w4jjs4qfugq0m3nu0d3htx6662dlq87zq5nz33',
+    //     'P-fuji1k3ca2njcunzl4hhxy24avca7htf66cmjjukl0n',
+    //   ],
+    //   outputidx: '0',
+    //   locktime: '0',
+    // },
   ],
   unsignedRawTxNonRecovery: '',
   halfSignedRawTxNonRecovery: '',

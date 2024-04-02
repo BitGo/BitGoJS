@@ -555,21 +555,21 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           // For the bitgo signature we create an empty signature
           // For the user/backup signature we store the address that matches the key
           // if user/backup > bitgo
-          // if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
-          credentials.push(
-            new Credential([
-              utils.createNewSig(BufferAvax.from('').toString('hex')),
-              utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-            ])
-          );
-          // } else {
-          //   credentials.push(
-          //     new Credential([
-          //       utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-          //       utils.createNewSig(BufferAvax.from('').toString('hex')),
-          //     ])
-          //   );
-          // }
+          if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+            credentials.push(
+              new Credential([
+                utils.createNewSig(BufferAvax.from('').toString('hex')),
+                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
+              ])
+            );
+          } else {
+            credentials.push(
+              new Credential([
+                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
+                utils.createNewSig(BufferAvax.from('').toString('hex')),
+              ])
+            );
+          }
         } else {
           // TODO(CR-1073): need this else case for OVC
           // addressesIndex.forEach((i) => secpTransferInput.addSignatureIdx(i, this.transaction._fromAddresses[i]));
