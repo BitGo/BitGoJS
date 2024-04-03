@@ -52,11 +52,20 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const [codec, txBytes] = manager.getCodecFromBuffer(AvaxUtils.hexToBuffer(raw));
           const unpackedTx = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
           // A signed transaction includes 4 bytes for the number of credentials as an Int type that is not known by the codec
-          // We can skip those 4 bytes because we know number of credentials is 2
+          // We'll skip those 4 bytes, instead we'll loop until we've parsed all credentials
           // @see https://docs.avax.network/reference/avalanchego/p-chain/txn-format#signed-transaction-example
-          const credentialBytes = unpackedTx[1].slice(4);
-          const [credential1, credential2Bytes] = codec.UnpackPrefix<Credential>(credentialBytes);
-          const [credential2] = codec.UnpackPrefix<Credential>(credential2Bytes);
+          const credentials: Credential[] = [];
+          let credentialBytes = unpackedTx[1].slice(4);
+          let moreCredentials = true;
+          do {
+            try {
+              const [credential, rest] = codec.UnpackPrefix<Credential>(credentialBytes);
+              credentials.push(credential);
+              credentialBytes = rest;
+            } catch (e) {
+              moreCredentials = false;
+            }
+          } while (credentialBytes.length > 0 && moreCredentials);
 
           const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
           const permissionlessValidatorTx = unpacked[0] as pvmSerial.AddPermissionlessValidatorTx;
@@ -71,7 +80,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
             new AvaxUtils.AddressMap([[new Address(fromAddresses[0]), 0]]),
             new AvaxUtils.AddressMap([[new Address(fromAddresses[1]), 0]]),
           ];
-          tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), [credential1, credential2]);
+          tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), credentials);
         } catch (e) {
           throw new Error(
             'The transaction type is not recognized as an old PVM or old EVM transaction. Additionally, parsing of the new PVM AddPermissionlessValidatorTx type failed.'
