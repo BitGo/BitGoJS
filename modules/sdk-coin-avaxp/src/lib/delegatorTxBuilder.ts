@@ -1,6 +1,6 @@
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionBuilder } from './transactionBuilder';
+import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
 import {
   AddDelegatorTx,
   BaseTx as PVMBaseTx,
@@ -16,12 +16,12 @@ import {
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN } from 'avalanche';
-import { SECP256K1_Transfer_Output, DeprecatedTx, BaseTx } from './iface';
+import { SECP256K1_Transfer_Output, DeprecatedTx, DeprecatedBaseTx } from './iface';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
-import { recoverUtxos } from './utxoEngine';
+import { deprecatedRecoverUtxos } from './utxoEngine';
 
-export class DelegatorTxBuilder extends TransactionBuilder {
+export class DelegatorTxBuilder extends DeprecatedTransactionBuilder {
   protected _nodeID: string;
   protected _startTime: BN;
   protected _endTime: BN;
@@ -151,7 +151,7 @@ export class DelegatorTxBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: DeprecatedTx): this {
     super.initBuilder(tx);
-    const baseTx: BaseTx = tx.getUnsignedTx().getTransaction();
+    const baseTx: DeprecatedBaseTx = tx.getUnsignedTx().getTransaction();
     if (!this.verifyTxType(baseTx)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
@@ -174,15 +174,15 @@ export class DelegatorTxBuilder extends TransactionBuilder {
     this._startTime = baseTx.getStartTime();
     this._endTime = baseTx.getEndTime();
     this._stakeAmount = baseTx.getStakeAmount();
-    this.transaction._utxos = recoverUtxos(baseTx.getIns());
+    this.transaction._utxos = deprecatedRecoverUtxos(baseTx.getIns());
     return this;
   }
 
-  static verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
+  static verifyTxType(baseTx: DeprecatedBaseTx): baseTx is AddDelegatorTx {
     return baseTx.getTypeID() === PlatformVMConstants.ADDVALIDATORTX;
   }
 
-  verifyTxType(baseTx: BaseTx): baseTx is AddDelegatorTx {
+  verifyTxType(baseTx: DeprecatedBaseTx): baseTx is AddDelegatorTx {
     return DelegatorTxBuilder.verifyTxType(baseTx);
   }
 

@@ -1,8 +1,11 @@
-import { Entry, TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
-import { BaseTx as PMVBaseTx, TransferableOutput, Tx as PMVTx } from 'avalanche/dist/apis/platformvm';
-import { EVMBaseTx, EVMOutput, Tx as EMVTx } from 'avalanche/dist/apis/evm';
-import { pvmSerial as avaxSdkPvmSerial } from '@bitgo/avalanchejs';
-
+import { TransactionExplanation as BaseTransactionExplanation, Entry, TransactionType } from '@bitgo/sdk-core';
+import { EVMBaseTx as DeprecatedEVMBaseTx, EVMOutput, Tx as EVMTx } from 'avalanche/dist/apis/evm';
+import {
+  BaseTx as DeprecatedPMVBaseTx,
+  Tx as PVMTx,
+  TransferableOutput as DeprecatedTransferableOutput,
+} from 'avalanche/dist/apis/platformvm';
+import { avaxSerial, pvmSerial, UnsignedTx, TransferableOutput } from '@bitgo/avalanchejs';
 export interface AvaxpEntry extends Entry {
   id: string;
 }
@@ -64,7 +67,10 @@ export const SECP256K1_Transfer_Output = 7;
 
 export const ADDRESS_SEPARATOR = '~';
 export const INPUT_SEPARATOR = ':';
-export type DeprecatedTx = PMVTx | EMVTx;
-export type Tx = avaxSdkPvmSerial.AddPermissionlessValidatorTx;
-export type BaseTx = PMVBaseTx | EVMBaseTx;
-export type Output = TransferableOutput | EVMOutput;
+export type DeprecatedTx = PVMTx | EVMTx;
+export type DeprecatedBaseTx = DeprecatedPMVBaseTx | DeprecatedEVMBaseTx;
+export type Tx = DeprecatedTx | pvmSerial.BaseTx | UnsignedTx;
+export type BaseTx = avaxSerial.BaseTx;
+export type AvaxTx = avaxSerial.AvaxTx;
+export type DeprecatedOutput = DeprecatedTransferableOutput | EVMOutput;
+export type Output = TransferableOutput;
