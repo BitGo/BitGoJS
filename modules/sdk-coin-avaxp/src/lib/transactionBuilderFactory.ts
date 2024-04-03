@@ -79,7 +79,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), credentials);
         } catch (e) {
           throw new Error(
-            'The transaction type is not recognized as an old PVM or old EVM transaction. Additionally, parsing of the new PVM AddPermissionlessValidatorTx type failed.'
+            `The transaction type is not recognized as an old PVM or old EVM transaction. Additionally, parsing of the new PVM AddPermissionlessValidatorTx type failed: ${e.message}`
           );
         }
       }
@@ -87,19 +87,25 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
     if (txSource === 'PVM') {
       if ((tx as UnsignedTx)?.tx?._type && PermissionlessValidatorTxBuilder.verifyTxType((tx as UnsignedTx).tx._type)) {
-        transactionBuilder = this.getPermissionlessValidatorTxBuilder().initBuilder(tx);
+        transactionBuilder = this.getPermissionlessValidatorTxBuilder();
+        transactionBuilder.initBuilder(tx);
       } else if (ValidatorTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getValidatorBuilder().initBuilder(tx as PVMTx);
+        transactionBuilder = this.getValidatorBuilder();
+        transactionBuilder.initBuilder(tx as PVMTx);
       } else if (ExportTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getExportBuilder().initBuilder(tx as PVMTx);
+        transactionBuilder = this.getExportBuilder();
+        transactionBuilder.initBuilder(tx as PVMTx);
       } else if (ImportTxBuilder.verifyTxType((tx as PVMTx).getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getImportBuilder().initBuilder(tx as PVMTx);
+        transactionBuilder = this.getImportBuilder();
+        transactionBuilder.initBuilder(tx as PVMTx);
       }
     } else if (txSource === 'EVM') {
       if (ImportInCTxBuilder.verifyTxType((tx as EVMTx).getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getImportInCBuilder().initBuilder(tx as EVMTx);
+        transactionBuilder = this.getImportInCBuilder();
+        transactionBuilder.initBuilder(tx as EVMTx);
       } else if (ExportInCTxBuilder.verifyTxType((tx as EVMTx).getUnsignedTx().getTransaction())) {
-        transactionBuilder = this.getExportInCBuilder().initBuilder(tx as EVMTx);
+        transactionBuilder = this.getExportInCBuilder();
+        transactionBuilder.initBuilder(tx as EVMTx);
       }
     }
     if (transactionBuilder === undefined) {
