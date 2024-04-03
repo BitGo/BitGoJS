@@ -10320,6 +10320,13 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('b15ff97c-3153-4aa0-8d72-ecc21e7b80cb', 'ofcfet1', 'Fetch', 18, UnderlyingAsset.FET1),
   ofcerc20('b5bfe73b-9b60-4961-914e-245c7e0dd7c3', 'ofcblur', 'Blur', 18, UnderlyingAsset.BLUR),
   ofcerc20('c93ded62-7a1a-4dd1-8398-0e68106f5009', 'ofcwld', 'Worldcoin', 18, UnderlyingAsset.WLD),
+  ofcerc20(
+    'd45e7c2c-bd1f-4586-8a87-2a715824d665',
+    'ofcbuidl',
+    'BlackRock USD Institutional Digital Liquidity Fund',
+    6,
+    UnderlyingAsset.BUIDL
+  ),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
