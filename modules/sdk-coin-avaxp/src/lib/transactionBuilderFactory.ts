@@ -75,11 +75,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
             throw new Error('The Asset ID of the output does not match the transaction');
           }
           const fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
-          const addressMaps = [
-            new AvaxUtils.AddressMap([[new Address(fromAddresses[2]), 0]]),
-            new AvaxUtils.AddressMap([[new Address(fromAddresses[0]), 0]]),
-            new AvaxUtils.AddressMap([[new Address(fromAddresses[1]), 0]]),
-          ];
+          const addressMaps = fromAddresses.map((a) => new AvaxUtils.AddressMap([[new Address(a), 0]]));
           tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), credentials);
         } catch (e) {
           throw new Error(
