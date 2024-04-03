@@ -55,9 +55,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           // We can skip those 4 bytes because we know number of credentials is 2
           // @see https://docs.avax.network/reference/avalanchego/p-chain/txn-format#signed-transaction-example
           const credentialBytes = unpackedTx[1].slice(4);
+          // TODO(CR-1073): Need to parse the rest bytes after credentials
           const [credential1, credential2Bytes] = codec.UnpackPrefix<Credential>(credentialBytes);
-          const [credential2] = codec.UnpackPrefix<Credential>(credential2Bytes);
-
+          const [credential2, rest] = codec.UnpackPrefix<Credential>(credential2Bytes);
+          console.log(rest);
           const unpacked = codec.UnpackPrefix<pvmSerial.AddPermissionlessValidatorTx>(txBytes);
           const permissionlessValidatorTx = unpacked[0] as pvmSerial.AddPermissionlessValidatorTx;
           const outputs = permissionlessValidatorTx.baseTx.outputs;
@@ -65,12 +66,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           if (outputs[0].getAssetId() !== (this._coinConfig.network as AvalancheNetwork).avaxAssetID) {
             throw new Error('The Asset ID of the output does not match the transaction');
           }
-          const fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
-          const addressMaps = [
-            new AvaxUtils.AddressMap([[new Address(fromAddresses[2]), 0]]),
-            new AvaxUtils.AddressMap([[new Address(fromAddresses[0]), 0]]),
-            new AvaxUtils.AddressMap([[new Address(fromAddresses[1]), 0]]),
-          ];
+          const addressMaps = output.outputOwners.addrs.map(
+            (a) => new AvaxUtils.AddressMap([[new Address(AvaxUtils.hexToBuffer(a.toHex())), 0]])
+          );
           tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), [credential1, credential2]);
         } catch (e) {
           throw new Error(

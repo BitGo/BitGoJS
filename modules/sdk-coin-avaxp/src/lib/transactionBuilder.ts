@@ -65,6 +65,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
     values.forEach(this.validateUtxo);
   }
+
+  /**
+   * Validates locktime
+   * @param locktime
+   */
+  validateLocktime(locktime: bigint): void {
+    if (!locktime || locktime < BigInt(0)) {
+      throw new BuildTransactionError('Invalid transaction: locktime must be 0 or higher');
+    }
+  }
   // endregion
 
   /**
@@ -75,6 +85,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   threshold(value: number): this {
     this.validateThreshold(value);
     this._transaction._threshold = value;
+    return this;
+  }
+
+  /**
+   * Locktime is a long that contains the unix timestamp that this output can be spent after.
+   * The unix timestamp is specific to the second.
+   * @param value
+   */
+  locktime(value: string | number): this {
+    this.validateLocktime(BigInt(value));
+    this._transaction._locktime = BigInt(value);
     return this;
   }
 
