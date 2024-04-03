@@ -79,7 +79,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           tx = new UnsignedTx(unpacked[0], [], new AvaxUtils.AddressMaps(addressMaps), credentials);
         } catch (e) {
           throw new Error(
-            'The transaction type is not recognized as an old PVM or old EVM transaction. Additionally, parsing of the new PVM AddPermissionlessValidatorTx type failed.'
+            `The transaction type is not recognized as an old PVM or old EVM transaction. Additionally, parsing of the new PVM AddPermissionlessValidatorTx type failed: ${e.message}`
           );
         }
       }
