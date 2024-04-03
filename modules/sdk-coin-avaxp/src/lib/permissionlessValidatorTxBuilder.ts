@@ -291,7 +291,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this._endTime = this.transaction._endTime;
     // not sorted addresses
     this._rawAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
-    this.transaction._fromAddresses = output.outputOwners.addrs.sort().map((a) => AvaxUtils.hexToBuffer(a.toHex()));
+    this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
     this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
     this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
     return this;
@@ -445,7 +445,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             new OutputOwners(
               new BigIntPr(this.transaction._locktime),
               new Int(this.transaction._threshold),
-              this.transaction._fromAddresses.sort().map((a) => Address.fromBytes(a)[0])
+              [...this.transaction._fromAddresses].sort().map((a) => Address.fromBytes(a)[0])
             )
           )
         );
@@ -459,7 +459,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
               new OutputOwners(
                 new BigIntPr(this.transaction._locktime),
                 new Int(this.transaction._threshold),
-                this.transaction._fromAddresses.sort().map((a) => Address.fromBytes(a)[0])
+                [...this.transaction._fromAddresses].sort().map((a) => Address.fromBytes(a)[0])
               )
             )
           );
@@ -507,7 +507,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     const outputOwners = new OutputOwners(
       new BigIntPr(this.transaction._locktime),
       new Int(this.transaction._threshold),
-      this.transaction._fromAddresses.sort().map((a) => Address.fromBytes(a)[0])
+      [...this.transaction._fromAddresses].sort().map((a) => Address.fromBytes(a)[0])
     );
 
     // TODO(CR-1073): check this value
@@ -515,7 +515,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     //  https://docs.avax.network/reference/avalanchego/p-chain/txn-format#unsigned-add-validator-tx
     const shares = new Int(1e4 * 20);
 
-    const addressMaps = this.transaction._fromAddresses
+    const addressMaps = [...this.transaction._fromAddresses]
       .sort()
       .map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
 
