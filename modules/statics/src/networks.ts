@@ -738,13 +738,13 @@ class KavaTestnet extends Testnet implements AccountNetwork {
 class Ton extends Mainnet implements AccountNetwork {
   name = 'Ton';
   family = CoinFamily.TON;
-  explorerUrl = 'https://https://tonscan.org/';
+  explorerUrl = 'https://tonscan.org/tx/';
 }
 
 class TonTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Ton';
   family = CoinFamily.TON;
-  explorerUrl = 'https://https://testnet.tonscan.org/';
+  explorerUrl = 'https://testnet.tonscan.org/tx/';
 }
 
 class Coreum extends Mainnet implements AccountNetwork {
