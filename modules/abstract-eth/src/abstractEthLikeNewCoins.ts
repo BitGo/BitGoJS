@@ -1507,7 +1507,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const weiToGwei = 10 ** 9;
     if (bitgoFeeAddressBalance.lt(totalGasNeeded)) {
       throw new Error(
-        `Fee address ${bitgoFeeAddressBalance} has balance ${(bitgoFeeAddressBalance / weiToGwei).toString()} Gwei.` +
+        `Fee address ${bitgoFeeAddress} has balance ${(bitgoFeeAddressBalance / weiToGwei).toString()} Gwei.` +
           `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
           ` Gwei to perform recoveries. Try sending some ${this.getChain()} to this address then retry.`
       );
