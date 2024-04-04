@@ -117,7 +117,7 @@ const mainnetBase: EnvironmentTemplate = {
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
   adaNodeUrl: 'https://api.koios.rest/api/v0',
   hashNodeUrl: 'https://api.provenance.io',
-  injNodeUrl: 'https://k8s.global.mainnet.lcd.injective.network',
+  injNodeUrl: 'https://sentry.lcd.injective.network', // reference https://docs.injective.network/develop/public-endpoints/
   atomNodeUrl: 'https://rest.cosmos.directory/cosmoshub/',
   osmoNodeUrl: 'https://lcd.osmosis.zone',
   tiaNodeUrl: 'https://api-mocha.pops.one', //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
@@ -162,7 +162,7 @@ const testnetBase: EnvironmentTemplate = {
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v0',
   hashNodeUrl: 'https://api.test.provenance.io',
-  injNodeUrl: 'https://k8s.testnet.lcd.injective.network',
+  injNodeUrl: 'https://injective-testnet-rest.publicnode.com', // Official endpoint is not working so using this : reference https://injective-rpc.publicnode.com/?testnet
   atomNodeUrl: 'https://rest.sentry-02.theta-testnet.polypore.xyz/',
   osmoNodeUrl: 'https://lcd.osmotest5.osmosis.zone',
   tiaNodeUrl: 'https://api-mocha.pops.one',
