@@ -8,6 +8,7 @@ export const createForwarderMethodId = '0xa68a76cc';
 export const walletInitializationFirstBytes = '0x60606040';
 export const recoveryWalletInitializationFirstBytes = '0x60c06040';
 export const flushForwarderTokensMethodId = '0x2da03409';
+export const flushForwarderTokensMethodIdV4 = '0x3ef13367';
 export const flushCoinsMethodId = '0x6b9f96ea';
 
 export const ERC721SafeTransferTypeMethodId = '0xb88d4fde';
@@ -19,6 +20,7 @@ export const defaultWalletVersion = 0;
 export const walletSimpleConstructor = ['address[]'];
 export const createV1WalletTypes = ['address[]', 'bytes32'];
 export const flushTokensTypes = ['address', 'address'];
+export const flushTokensTypesv4 = ['address'];
 export const flushCoinsTypes = [];
 
 export const sendMultiSigTypes = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];

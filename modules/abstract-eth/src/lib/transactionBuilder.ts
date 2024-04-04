@@ -216,7 +216,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.FlushTokens:
         this.setContract(transactionJson.to);
-        const { forwarderAddress, tokenAddress } = decodeFlushTokensData(transactionJson.data);
+        const { forwarderAddress, tokenAddress } = decodeFlushTokensData(transactionJson.data, transactionJson.to);
         this.forwarderAddress(forwarderAddress);
         this.tokenAddress(tokenAddress);
         break;
@@ -720,7 +720,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TxData} The Ethereum transaction data
    */
   private buildFlushTokensTransaction(): TxData {
-    return this.buildBase(flushTokensData(this._forwarderAddress, this._tokenAddress));
+    if (this._forwarderVersion >= 4 && this._contractAddress !== this._forwarderAddress) {
+      throw new BuildTransactionError('Invalid contract address: ' + this._contractAddress);
+    }
+    return this.buildBase(flushTokensData(this._forwarderAddress, this._tokenAddress, this._forwarderVersion));
   }
 
   /**

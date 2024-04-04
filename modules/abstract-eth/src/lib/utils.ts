@@ -69,6 +69,8 @@ import {
   defaultForwarderVersion,
   createV4ForwarderTypes,
   v4CreateForwarderMethodId,
+  flushTokensTypesv4,
+  flushForwarderTokensMethodIdV4,
 } from './walletUtil';
 import { EthTransactionData } from './types';
 
@@ -178,10 +180,20 @@ export function sendMultiSigTokenData(
  * @param forwarderAddress The forwarder address to flush
  * @param tokenAddress The token address to flush from
  */
-export function flushTokensData(forwarderAddress: string, tokenAddress: string): string {
-  const params = [forwarderAddress, tokenAddress];
-  const method = EthereumAbi.methodID('flushForwarderTokens', flushTokensTypes);
-  const args = EthereumAbi.rawEncode(flushTokensTypes, params);
+export function flushTokensData(forwarderAddress: string, tokenAddress: string, forwarderVersion: number): string {
+  let params: string[];
+  let method: Uint8Array;
+  let args: Uint8Array;
+
+  if (forwarderVersion >= 4) {
+    params = [tokenAddress];
+    method = EthereumAbi.methodID('flushTokens', flushTokensTypesv4);
+    args = EthereumAbi.rawEncode(flushTokensTypesv4, params);
+  } else {
+    params = [forwarderAddress, tokenAddress];
+    method = EthereumAbi.methodID('flushForwarderTokens', flushTokensTypes);
+    args = EthereumAbi.rawEncode(flushTokensTypes, params);
+  }
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
 }
 
@@ -431,22 +443,31 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
  * Decode the given ABI-encoded flush tokens data and return parsed fields
  *
  * @param data The data to decode
+ * @param to Optional to parameter of tx
  * @returns parsed transfer data
  */
-export function decodeFlushTokensData(data: string): FlushTokensData {
-  if (!data.startsWith(flushForwarderTokensMethodId)) {
+export function decodeFlushTokensData(data: string, to?: string): FlushTokensData {
+  if (data.startsWith(flushForwarderTokensMethodId)) {
+    const [forwarderAddress, tokenAddress] = getRawDecoded(
+      flushTokensTypes,
+      getBufferedByteCode(flushForwarderTokensMethodId, data)
+    );
+    return {
+      forwarderAddress: addHexPrefix(forwarderAddress as string),
+      tokenAddress: addHexPrefix(tokenAddress as string),
+    };
+  } else if (data.startsWith(flushForwarderTokensMethodIdV4)) {
+    const [tokenAddress] = getRawDecoded(flushTokensTypesv4, getBufferedByteCode(flushForwarderTokensMethodIdV4, data));
+    if (!to) {
+      throw new BuildTransactionError(`Missing to address: ${to}`);
+    }
+    return {
+      forwarderAddress: to,
+      tokenAddress: addHexPrefix(tokenAddress as string),
+    };
+  } else {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
-
-  const [forwarderAddress, tokenAddress] = getRawDecoded(
-    flushTokensTypes,
-    getBufferedByteCode(flushForwarderTokensMethodId, data)
-  );
-
-  return {
-    forwarderAddress: addHexPrefix(forwarderAddress as string),
-    tokenAddress: addHexPrefix(tokenAddress as string),
-  };
 }
 
 /**
@@ -484,6 +505,7 @@ const transactionTypesMap = {
   [v4CreateForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
   [flushForwarderTokensMethodId]: TransactionType.FlushTokens,
+  [flushForwarderTokensMethodIdV4]: TransactionType.FlushTokens,
   [flushCoinsMethodId]: TransactionType.FlushCoins,
   [sendMultisigTokenMethodId]: TransactionType.Send,
   [LockMethodId]: TransactionType.StakingLock,

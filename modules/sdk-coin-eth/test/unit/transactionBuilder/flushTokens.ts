@@ -1,6 +1,13 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-import { ETHTransactionType, Fee, flushForwarderTokensMethodId, KeyPair, Transaction } from '../../../src';
+import {
+  ETHTransactionType,
+  Fee,
+  flushForwarderTokensMethodId,
+  flushForwarderTokensMethodIdV4,
+  KeyPair,
+  Transaction,
+} from '../../../src';
 import { getBuilder } from '../getBuilder';
 
 describe('Eth Transaction builder flush tokens', function () {
@@ -15,6 +22,7 @@ describe('Eth Transaction builder flush tokens', function () {
     counter?: number;
     fee?: Fee;
     key?: KeyPair;
+    forwarderVersion?: number;
   }
 
   const buildTransaction = async function (details: FlushTokensDetails): Promise<Transaction> {
@@ -43,6 +51,10 @@ describe('Eth Transaction builder flush tokens', function () {
 
     if (details.key !== undefined) {
       txBuilder.sign({ key: details.key.getKeys().prv });
+    }
+
+    if (details.forwarderVersion !== undefined) {
+      txBuilder.forwarderVersion(details.forwarderVersion);
     }
 
     return await txBuilder.build();
@@ -117,6 +129,65 @@ describe('Eth Transaction builder flush tokens', function () {
       txJson.data.should.startWith(flushForwarderTokensMethodId);
     });
 
+    it('a wallet flush forwarder transaction with forwarder Version 4', async () => {
+      const tx = await buildTransaction({
+        fee: {
+          fee: '10',
+          gasLimit: '1000',
+        },
+        counter: 0,
+        forwarderAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
+        tokenAddress: '0xbcf935d206ca32929e1b887a07ed240f0d8ccd22',
+        contractAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
+        forwarderVersion: 4,
+      });
+
+      tx.type.should.equal(TransactionType.FlushTokens);
+      const txJson = tx.toJson();
+      txJson.gasLimit.should.equal('1000');
+      txJson._type.should.equals(ETHTransactionType.LEGACY);
+      should.equal(txJson.nonce, 0);
+      txJson.data.should.startWith(flushForwarderTokensMethodIdV4);
+    });
+
+    it('decode wallet flush forwarder transaction with forwarder Version 4', async () => {
+      const tx = await buildTransaction({
+        fee: {
+          fee: '10',
+          gasLimit: '1000',
+        },
+        counter: 0,
+        forwarderAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
+        tokenAddress: '0xbcf935d206ca32929e1b887a07ed240f0d8ccd22',
+        contractAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
+        forwarderVersion: 4,
+      });
+      const txBuiderFromRaw: any = getBuilder('teth');
+      txBuiderFromRaw.fromImplementation(tx.toBroadcastFormat());
+      // txBuiderFromRaw.type.should.equal(TransactionType.FlushTokens);
+      txBuiderFromRaw._forwarderAddress.should.equal('0x53b8e91bb3b8f618b5f01004ef108f134f219573');
+      txBuiderFromRaw._tokenAddress.should.equal('0xbcf935d206ca32929e1b887a07ed240f0d8ccd22');
+    });
+
+    it('decode wallet flush forwarder transaction with forwarder Version < 4', async () => {
+      const tx = await buildTransaction({
+        fee: {
+          fee: '10',
+          gasLimit: '1000',
+        },
+        counter: 0,
+        forwarderAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
+        tokenAddress: '0xbcf935d206ca32929e1b887a07ed240f0d8ccd22',
+        contractAddress: '0x8f977e912ef500548a0c3be6ddde9899f1199b81',
+        forwarderVersion: 2,
+      });
+      const txBuiderFromRaw: any = getBuilder('teth');
+      txBuiderFromRaw.fromImplementation(tx.toBroadcastFormat());
+      // txBuiderFromRaw.type.should.equal(TransactionType.FlushTokens);
+      txBuiderFromRaw._forwarderAddress.should.equal('0x53b8e91bb3b8f618b5f01004ef108f134f219573');
+      txBuiderFromRaw._tokenAddress.should.equal('0xbcf935d206ca32929e1b887a07ed240f0d8ccd22');
+    });
+
     it('an unsigned flush transaction from serialized', async () => {
       const tx = await buildTransaction({
         fee: {
@@ -187,6 +258,20 @@ describe('Eth Transaction builder flush tokens', function () {
         forwarderAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
         tokenAddress: '0xbcf935d206ca32929e1b887a07ed240f0d8ccd22',
       }).should.be.rejectedWith('Invalid transaction: missing contract address');
+    });
+
+    it('a wallet flush forwarder V4 transaction with different contract address', async () => {
+      await buildTransaction({
+        fee: {
+          fee: '10',
+          gasLimit: '1000',
+        },
+        counter: 0,
+        forwarderAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
+        tokenAddress: '0xbcf935d206ca32929e1b887a07ed240f0d8ccd22',
+        contractAddress: '0x8f977e912ef500548a0c3be6ddde9899f1199b81',
+        forwarderVersion: 4,
+      }).should.be.rejectedWith('Invalid contract address: 0x8f977e912ef500548a0c3be6ddde9899f1199b81');
     });
 
     it('a transaction without tokenAddress', async () => {
