@@ -638,13 +638,23 @@ export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
  * Get the statics coin object matching a given contract address if it exists
  *
  * @param tokenContractAddress The contract address to match against
+ * @param network - the coin network
+ * @param family - the coin family
  * @returns statics BaseCoin object for the matching token
  */
-export function getToken(tokenContractAddress: string, network: BaseNetwork): Readonly<BaseCoin> | undefined {
+export function getToken(
+  tokenContractAddress: string,
+  network: BaseNetwork,
+  family: string
+): Readonly<BaseCoin> | undefined {
+  // filter the coins array to find the token with the matching contract address, network and coin family
+  // coin family is needed to avoid causing issues when a token has same contract address on two different chains
   const tokens = coins.filter((coin) => {
     if (coin instanceof ContractAddressDefinedToken) {
       return (
-        coin.network.type === network.type && coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase()
+        coin.network.type === network.type &&
+        coin.family === family &&
+        coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase()
       );
     }
     return false;
