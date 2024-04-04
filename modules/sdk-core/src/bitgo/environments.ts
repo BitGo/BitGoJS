@@ -120,11 +120,11 @@ const mainnetBase: EnvironmentTemplate = {
   injNodeUrl: 'https://sentry.lcd.injective.network', // reference https://docs.injective.network/develop/public-endpoints/
   atomNodeUrl: 'https://rest.cosmos.directory/cosmoshub/',
   osmoNodeUrl: 'https://lcd.osmosis.zone',
-  tiaNodeUrl: 'https://api-mocha.pops.one', //  TODO(BG-78997): Celestia is still only in testnet update to mainnet url when it's live
-  seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io', //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
+  tiaNodeUrl: 'https://public-celestia-lcd.numia.xyz', // reference https://docs.celestia.org/nodes/mainnet#api-endpoints
+  seiNodeUrl: 'https://sei-api.polkachu.com',
   bldNodeUrl: 'https://agoric-api.polkachu.com',
   beraNodeUrl: '', // TODO(WIN-693): update url when mainnet goes live
-  zetaNodeUrl: 'https://zetachain-athens.blockpi.network/lcd/v1/public', // TODO(WIN-142): update to mainnet url when it's live
+  zetaNodeUrl: 'https://zetachain.blockpi.network', // reference https://www.zetachain.com/docs/reference/api/
   coreumNodeUrl: 'https://full-node.mainnet-1.coreum.dev:1317',
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
@@ -169,7 +169,7 @@ const testnetBase: EnvironmentTemplate = {
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io',
   bldNodeUrl: 'https://devnet.api.agoric.net',
   beraNodeUrl: '', // TODO(WIN-693): update url when testnet goes live
-  zetaNodeUrl: 'https://rpc.ankr.com/http/zetachain_athens_testnet',
+  zetaNodeUrl: 'https://rest.nodejumper.io/zetachaintestnet', // reference : https://www.zetachain.com/docs/reference/api/
   coreumNodeUrl: 'https://full-node.testnet-1.coreum.dev:1317',
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
