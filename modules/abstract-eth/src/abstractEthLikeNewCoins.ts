@@ -1730,7 +1730,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const transferBuilder = txBuilder.transfer() as TransferBuilder;
 
     const network = this.getNetwork();
-    const token = getToken(params.tokenContractAddress as string, network as EthLikeNetwork)?.name as string;
+    const token = getToken(
+      params.tokenContractAddress as string,
+      network as EthLikeNetwork,
+      this.staticsCoin?.family as string
+    )?.name as string;
 
     transferBuilder
       .coin(token)
