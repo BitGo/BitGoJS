@@ -39,7 +39,6 @@ import { recoverUtxos } from './utxoEngine';
 
 export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   public _signer: KeyPair[] = [];
-  protected _rawAddresses: Uint8Array[] = [];
   protected _nodeID: string;
   protected _blsPublicKey: string;
   protected _blsSignature: string;
@@ -289,9 +288,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this._startTime = this.transaction._startTime;
     this.transaction._endTime = permissionlessValidatorTx.subnetValidator.validator.endTime.value();
     this._endTime = this.transaction._endTime;
-    // not sorted addresses
-    this._rawAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
-    this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => AvaxUtils.hexToBuffer(a.toHex()));
+    this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => a.toBytes());
     this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
     this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
     return this;
@@ -331,14 +328,11 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     const credentials: Credential[] = [];
 
-    if (this._rawAddresses.length === 0) {
-      this._rawAddresses = [...this.transaction._fromAddresses];
-    }
     // Convert fromAddresses to string
     // The order of fromAddresses is determined by the source of the data
     // When building from params, the order is [user, bitgo, backup]
     // The order from tx hex is [bitgo, backup, user]
-    const bitgoAddresses = this._rawAddresses.map((b) =>
+    const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
       avaxUtils.format(this.transaction._network.alias, this.transaction._network.hrp, b)
     );
 
@@ -410,13 +404,13 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             credentials.push(
               new Credential([
                 utils.createNewSig(BufferAvax.from('').toString('hex')),
-                utils.createNewSig(BufferAvax.from(this._rawAddresses[firstIndex]).toString('hex')),
+                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
               ])
             );
           } else {
             credentials.push(
               new Credential([
-                utils.createNewSig(BufferAvax.from(this._rawAddresses[firstIndex]).toString('hex')),
+                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
                 utils.createNewSig(BufferAvax.from('').toString('hex')),
               ])
             );
@@ -425,7 +419,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           // TODO(CR-1073): verify this else case for OVC
           credentials.push(
             new Credential(
-              addressesIndex.map((i) => utils.createNewSig(BufferAvax.from(this._rawAddresses[i]).toString('hex')))
+              addressesIndex.map((i) =>
+                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[i]).toString('hex'))
+              )
             )
           );
         }
@@ -445,7 +441,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             new OutputOwners(
               new BigIntPr(this.transaction._locktime),
               new Int(this.transaction._threshold),
-              [...this.transaction._fromAddresses].sort().map((a) => Address.fromBytes(a)[0])
+              [...this.transaction._fromAddresses]
+                .sort((a, b) => avaxUtils.bytesCompare(a, b))
+                .map((a) => Address.fromBytes(a)[0])
             )
           )
         );
@@ -459,7 +457,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
               new OutputOwners(
                 new BigIntPr(this.transaction._locktime),
                 new Int(this.transaction._threshold),
-                [...this.transaction._fromAddresses].sort().map((a) => Address.fromBytes(a)[0])
+                [...this.transaction._fromAddresses]
+                  .sort((a, b) => avaxUtils.bytesCompare(a, b))
+                  .map((a) => Address.fromBytes(a)[0])
               )
             )
           );
@@ -507,7 +507,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     const outputOwners = new OutputOwners(
       new BigIntPr(this.transaction._locktime),
       new Int(this.transaction._threshold),
-      [...this.transaction._fromAddresses].sort().map((a) => Address.fromBytes(a)[0])
+      [...this.transaction._fromAddresses]
+        .sort((a, b) => avaxUtils.bytesCompare(a, b))
+        .map((a) => Address.fromBytes(a)[0])
     );
 
     // TODO(CR-1073): check this value
@@ -516,7 +518,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     const shares = new Int(1e4 * 20);
 
     const addressMaps = [...this.transaction._fromAddresses]
-      .sort()
+      .sort((a, b) => avaxUtils.bytesCompare(a, b))
       .map((address) => new AvaxUtils.AddressMap([[new Address(address), 0]]));
 
     this.transaction.setTransaction(
