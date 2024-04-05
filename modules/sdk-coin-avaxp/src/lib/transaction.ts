@@ -140,7 +140,11 @@ export class Transaction extends BaseTransaction {
             find = true;
           }
         });
-        if (!find) throw new SigningError('Private key cannot sign the transaction');
+        if (!find) {
+          throw new SigningError(
+            `Private key cannot sign the transaction, address hex ${addressHex}, public key: ${publicKey}`
+          );
+        }
       });
     }
   }

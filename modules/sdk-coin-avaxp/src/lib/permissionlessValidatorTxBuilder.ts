@@ -291,6 +291,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => a.toBytes());
     this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
     this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
+    // TODO(CR-1073): remove log
+    console.log('utxos: ', this.transaction._utxos);
+    console.log('fromAddresses: ', this.transaction.fromAddresses);
     return this;
   }
 
@@ -335,6 +338,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
       avaxUtils.format(this.transaction._network.alias, this.transaction._network.hrp, b)
     );
+    // TODO(CR-1073): remove log
+    console.log(`bitgoAddress: ${bitgoAddresses}`);
 
     // if we are in OVC, none of the utxos will have addresses since they come from
     // deserialized inputs (which don't have addresses), not the IMS
@@ -347,7 +352,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       if (!utxo) {
         throw new BuildTransactionError('Utxo is undefined');
       }
-      // addressesIndex should neve have a mismatch
+      // addressesIndex should never have a mismatch
       if (utxo.addressesIndex?.includes(-1)) {
         throw new BuildTransactionError('Addresses are inconsistent');
       }
@@ -355,17 +360,20 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         throw new BuildTransactionError('Threshold is inconsistent');
       }
 
-      const bitGoAddressMapOnChain = new Map();
-      const onChainAddressMapBitgo = new Map();
-
+      const bitgoIndexToOnChainIndex = new Map();
       // in WP, output.addressesIndex is empty, so fill it
       if (!utxo.addressesIndex || utxo.addressesIndex.length === 0) {
         utxo.addressesIndex = bitgoAddresses.map((a) => utxo.addresses.indexOf(a));
       }
+      // utxo.addresses is null when build from raw
+      // but utxo.addressesIndex has only 2 elements when build from raw
+      // so the bitgoIndexToOnChainIndex map will be empty
       utxo.addresses.forEach((a) => {
-        bitGoAddressMapOnChain.set(bitgoAddresses.indexOf(a), a);
-        onChainAddressMapBitgo.set(a, utxo.addresses.indexOf(a));
+        bitgoIndexToOnChainIndex.set(bitgoAddresses.indexOf(a), utxo.addresses.indexOf(a));
       });
+      // TODO(CR-1073): remove log
+      console.log(`utxo.addresses: ${utxo.addresses}`);
+      console.log(`bitgoIndexToOnChainIndex: ${Array.from(bitgoIndexToOnChainIndex)}`);
       // in OVC, output.addressesIndex is defined correctly from the previous iteration
 
       if (utxo.outputID === SECP256K1_Transfer_Output) {
@@ -373,7 +381,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         // either user (0) or recovery (2)
         // On regular mode: [user, bitgo] (i.e. [0, 1])
         // On recovery mode: [backup, bitgo] (i.e. [2, 1])
-        const firstIndex = this.recoverSigner ? 2 : 0;
+        const userOrBackupIndex = this.recoverSigner ? 2 : 0;
         const bitgoIndex = 1;
 
         currentTotal = currentTotal + utxoAmount;
@@ -381,17 +389,20 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         const utxoId = avaxSerial.UTXOID.fromNative(utxo.txid, Number(utxo.outputidx));
 
         let addressesIndex: number[] = [];
-        if (utxo.addressesIndex && onChainAddressMapBitgo.size === 0) {
+        if (utxo.addressesIndex && bitgoIndexToOnChainIndex.size === 0) {
           addressesIndex = [...utxo.addressesIndex];
         } else {
-          addressesIndex.push(onChainAddressMapBitgo.get(bitGoAddressMapOnChain.get(bitgoIndex)));
-          addressesIndex.push(onChainAddressMapBitgo.get(bitGoAddressMapOnChain.get(firstIndex)));
+          addressesIndex.push(bitgoIndexToOnChainIndex.get(userOrBackupIndex));
+          addressesIndex.push(bitgoIndexToOnChainIndex.get(bitgoIndex));
         }
 
         const transferInputs = new TransferInput(
           new BigIntPr(utxoAmount),
           new Input([...addressesIndex].sort().map((num) => new Int(num)))
         );
+        // TODO(CR-1073): remove log
+        console.log(`using addressesIndex sorted: ${[...addressesIndex].sort()}`);
+
         const input = new avaxSerial.TransferableInput(utxoId, assetId, transferInputs);
         utxos.push(new Utxo(utxoId, assetId, transferInputs));
 
@@ -399,22 +410,12 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         if (buildOutputs) {
           // For the bitgo signature we create an empty signature
           // For the user/backup signature we store the address that matches the key
-          // if user/backup > bitgo
-          if (utxo.addressesIndex[bitgoIndex] < utxo.addressesIndex[firstIndex]) {
-            credentials.push(
-              new Credential([
-                utils.createNewSig(BufferAvax.from('').toString('hex')),
-                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-              ])
-            );
-          } else {
-            credentials.push(
-              new Credential([
-                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-                utils.createNewSig(BufferAvax.from('').toString('hex')),
-              ])
-            );
-          }
+          credentials.push(
+            new Credential([
+              utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[userOrBackupIndex]).toString('hex')),
+              utils.createNewSig(BufferAvax.from('').toString('hex')),
+            ])
+          );
         } else {
           // TODO(CR-1073): verify this else case for OVC
           credentials.push(
@@ -468,9 +469,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       }
     }
     const finalCredentials = this.transaction.credentials ?? credentials;
-    inputs.sort((a, b) =>
-      avaxUtils.bufferToHex(a.utxoID.txID.toBytes()).localeCompare(avaxUtils.bufferToHex(b.utxoID.txID.toBytes()))
-    );
+    inputs.sort((a, b) => avaxUtils.bytesCompare(a.utxoID.txID.toBytes(), b.utxoID.txID.toBytes()));
     return { inputs, stakeOutputs, changeOutputs, utxos, credentials: finalCredentials };
   }
 
