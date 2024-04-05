@@ -178,6 +178,7 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
       txBuilder2.sign({ key: testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.userPrivateKey });
       const halfSigned = await txBuilder2.build();
       const halfSignedTxHex = halfSigned.toBroadcastFormat();
+      assert(txBuilder['_stakeAmount'] === txBuilder2['_stakeAmount']);
       console.log(halfSignedTxHex);
 
       // const txBuilder2 = factory.from(halfSignedTxHex);

@@ -613,7 +613,7 @@ export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
   ],
   startTime: '1656423398',
   endTime: '1659053398',
-  stakeAmount: '1000000000',
+  stakeAmount: '2370000000',
   delegationFeeRate: 10,
   nodeId: 'NodeID-2hMqBQdjZMWdHvYu7ZPLA2CmrAdbTvpGf',
   blsPublicKey: '0xad9e9476b701edec88e53b1c314456053b3cf846a1192117872e41455f440c074d6ee89530d45e88f79ac0eda06f2887',
@@ -635,7 +635,7 @@ export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
     },
     {
       outputID: 7,
-      amount: '1000000000',
+      amount: '4000000000',
       txid: 'WyjYJHa7Ye1KMsBZiQ8hQJzY7YYxTJTTyMkxcVrKRDiNytTY8',
       threshold: 2,
       addresses: [

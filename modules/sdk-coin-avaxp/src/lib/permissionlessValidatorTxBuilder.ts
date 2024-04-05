@@ -27,7 +27,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Buffer as BufferAvax } from 'avalanche';
 import BigNumber from 'bignumber.js';
 import { DecodedUtxoObj, SECP256K1_Transfer_Output, Tx } from './iface';
@@ -54,8 +54,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
    */
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    const network = coinConfig.network as AvalancheNetwork;
-    this._stakeAmount = BigInt(network.minStake);
   }
 
   /**
@@ -290,6 +288,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this._endTime = this.transaction._endTime;
     this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => a.toBytes());
     this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
+    this.stakeAmount(permissionlessValidatorTx.stake[0].output.amount());
     this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
     // TODO(CR-1073): remove log
     console.log('utxos: ', this.transaction._utxos);
