@@ -516,7 +516,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       this._nodeID,
       this._startTime,
       this._endTime,
-      BigInt(1e9),
+      this._stakeAmount,
       networkIDs.PrimaryNetworkID
     );
 
@@ -538,7 +538,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     // TODO(CR-1073): check this value
     //  Shares 10,000 times percentage of reward taken from delegators
     //  https://docs.avax.network/reference/avalanchego/p-chain/txn-format#unsigned-add-validator-tx
-    const shares = new Int(1e4 * 20);
+    const shares = new Int(1e4 * 2);
 
     const addressMaps = [...this.transaction._fromAddresses]
       .sort((a, b) => avaxUtils.bytesCompare(a, b))
