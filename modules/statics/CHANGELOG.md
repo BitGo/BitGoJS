@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.2.0...@bitgo/statics@48.3.0) (2024-04-05)
+
+### Features
+
+- **statics:** add offchain coin for BUIDL ([2b0db4a](https://github.com/BitGo/BitGoJS/commit/2b0db4a509ab77bd39c27c9c52d7cc3dcd5feac0))
+- **statics:** corrected decimal places for wbtc and TKX ([d694492](https://github.com/BitGo/BitGoJS/commit/d6944925be55091e2b1254b6ee515ae7ab72d600))
+- **statics:** update testnet atom explorer link ([bdc6512](https://github.com/BitGo/BitGoJS/commit/bdc651233fddfe2f8277f059e1109a40544da8fc))
+- **statics:** update ton explorer link ([df944e6](https://github.com/BitGo/BitGoJS/commit/df944e68848f32a394d6daef1fbc5fba102ac8da))
+
 # [48.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.1.0...@bitgo/statics@48.2.0) (2024-03-28)
 
 ### Bug Fixes

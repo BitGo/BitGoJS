@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.1.1...@bitgo/sdk-lib-mpc@9.2.0) (2024-04-05)
+
+### Features
+
+- **sdk-lib-mpc:** use crypto module for safe prime ([3113e6a](https://github.com/BitGo/BitGoJS/commit/3113e6ad2e536a5c16cefa60bb318543895c8497))
+
 ## [9.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.1.0...@bitgo/sdk-lib-mpc@9.1.1) (2024-03-19)
 
 ### Bug Fixes

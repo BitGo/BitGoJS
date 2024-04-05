@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@17.0.0...@bitgo/sdk-coin-opeth@17.0.1) (2024-04-05)
+
+### Bug Fixes
+
+- **abstract-eth:** fix opeth:op transfers ([37a8f4f](https://github.com/BitGo/BitGoJS/commit/37a8f4f03325d76c32b4764381e3d2d7976dd414))
+
 # [17.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@16.0.4...@bitgo/sdk-coin-opeth@17.0.0) (2024-03-28)
 
 ### Features

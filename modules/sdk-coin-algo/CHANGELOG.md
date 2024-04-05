@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.0.0...@bitgo/sdk-coin-algo@2.0.1) (2024-04-05)
+
+### Bug Fixes
+
+- **sdk-coin-algo:** fix stellarAddressToAlgoAddress ([b44c8fd](https://github.com/BitGo/BitGoJS/commit/b44c8fd546fdfd17374d3131f21ad711055eac70))
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@1.28.1...@bitgo/sdk-coin-algo@2.0.0) (2024-03-28)
 
 ### Features
