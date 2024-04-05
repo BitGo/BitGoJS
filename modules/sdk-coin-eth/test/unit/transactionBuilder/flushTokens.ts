@@ -162,9 +162,8 @@ describe('Eth Transaction builder flush tokens', function () {
         contractAddress: '0x53b8e91bb3b8f618b5f01004ef108f134f219573',
         forwarderVersion: 4,
       });
-      const txBuiderFromRaw: any = getBuilder('teth');
+      const txBuiderFromRaw: any = getBuilder('tarbeth'); // we are not using teth anymore
       txBuiderFromRaw.fromImplementation(tx.toBroadcastFormat());
-      // txBuiderFromRaw.type.should.equal(TransactionType.FlushTokens);
       txBuiderFromRaw._forwarderAddress.should.equal('0x53b8e91bb3b8f618b5f01004ef108f134f219573');
       txBuiderFromRaw._tokenAddress.should.equal('0xbcf935d206ca32929e1b887a07ed240f0d8ccd22');
     });
