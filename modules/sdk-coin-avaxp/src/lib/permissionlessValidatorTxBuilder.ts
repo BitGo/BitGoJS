@@ -329,8 +329,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     // delegating and validating have no fees
     const totalTarget = this._stakeAmount.valueOf();
 
-    const credentials: Credential[] = [];
-
+    const credentials: Credential[] = this.transaction.credentials ?? [];
     // Convert fromAddresses to string
     // The order of fromAddresses is determined by the source of the data
     // When building from params, the order is [user, bitgo, backup]
@@ -407,24 +406,51 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         utxos.push(new Utxo(utxoId, assetId, transferInputs));
 
         inputs.push(input);
-        if (buildOutputs) {
-          // For the bitgo signature we create an empty signature
-          // For the user/backup signature we store the address that matches the key
-          credentials.push(
-            new Credential([
-              utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[userOrBackupIndex]).toString('hex')),
-              utils.createNewSig(BufferAvax.from('').toString('hex')),
-            ])
-          );
-        } else {
-          // TODO(CR-1073): verify this else case for OVC
-          credentials.push(
-            new Credential(
-              addressesIndex.map((i) =>
-                utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[i]).toString('hex'))
+        if (!this.transaction.credentials || this.transaction.credentials.length == 0) {
+          if (buildOutputs) {
+            // For the bitgo signature we create an empty signature
+            // For the user/backup signature we store the address that matches the key
+            // if bitgo address comes before  < user/backup address
+
+            // TODO(CR-1073): remove log
+            console.log(`bitgo index on chain: ${utxo.addressesIndex[bitgoIndex]}`);
+            console.log(`user Or Backup Index: ${utxo.addressesIndex[userOrBackupIndex]}`);
+            if (utxo.addressesIndex[bitgoIndex] < utxo.addressesIndex[userOrBackupIndex]) {
+              // TODO(CR-1073): remove log
+              console.log(`user or backup credentials after bitgo`);
+              credentials.push(
+                new Credential([
+                  utils.createNewSig(BufferAvax.from('').toString('hex')),
+                  utils.createNewSig(
+                    BufferAvax.from(this.transaction._fromAddresses[userOrBackupIndex]).toString('hex')
+                  ),
+                ])
+              );
+            } else {
+              // TODO(CR-1073): remove log
+              console.log(`user or backup credentials before bitgo`);
+              credentials.push(
+                new Credential([
+                  utils.createNewSig(
+                    BufferAvax.from(this.transaction._fromAddresses[userOrBackupIndex]).toString('hex')
+                  ),
+                  utils.createNewSig(BufferAvax.from('').toString('hex')),
+                ])
+              );
+            }
+          } else {
+            // TODO(CR-1073): verify this else case for OVC
+            credentials.push(
+              new Credential(
+                addressesIndex.map((i) =>
+                  utils.createNewSig(BufferAvax.from(this.transaction._fromAddresses[i]).toString('hex'))
+                )
               )
-            )
-          );
+            );
+          }
+        } else {
+          // TODO(CR-1073): remove log
+          console.log(`reusing credentials from transaction`);
         }
       }
     });
@@ -468,9 +494,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         }
       }
     }
-    const finalCredentials = this.transaction.credentials ?? credentials;
     inputs.sort((a, b) => avaxUtils.bytesCompare(a.utxoID.txID.toBytes(), b.utxoID.txID.toBytes()));
-    return { inputs, stakeOutputs, changeOutputs, utxos, credentials: finalCredentials };
+    return { inputs, stakeOutputs, changeOutputs, utxos, credentials };
   }
 
   /**
