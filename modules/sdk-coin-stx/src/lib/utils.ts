@@ -219,7 +219,7 @@ export function isValidRawTransaction(rawTransaction: unknown): boolean {
 }
 
 /**
- * Returns whether or not the memo string is valid
+ * Returns whether the memo string is valid
  *
  * @param {string} memo - the string to be validated
  * @returns {boolean} - the validation result

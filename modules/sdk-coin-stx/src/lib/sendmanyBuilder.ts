@@ -20,7 +20,7 @@ import { Transaction } from './transaction';
 import {
   functionArgsToSendParams,
   getSTXAddressFromPubKeys,
-  isValidAddress,
+  isValidAddressWithPaymentId,
   isValidAmount,
   isValidMemo,
 } from './utils';
@@ -87,7 +87,7 @@ export class SendmanyBuilder extends AbstractContractBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   send({ address, amount, memo }: SendParams): this {
-    if (!address || !isValidAddress(address)) {
+    if (!address || !isValidAddressWithPaymentId(address)) {
       throw new BuildTransactionError('Invalid or missing address, got: ' + address);
     }
     if (!amount || !isValidAmount(amount)) {
