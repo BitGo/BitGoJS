@@ -216,7 +216,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.FlushTokens:
         this.setContract(transactionJson.to);
-        const { forwarderAddress, tokenAddress } = decodeFlushTokensData(transactionJson.data, transactionJson.to);
+        const { forwarderAddress, tokenAddress, forwarderVersion } = decodeFlushTokensData(
+          transactionJson.data,
+          transactionJson.to
+        );
+        if (forwarderVersion === 4) {
+          this.forwarderVersion(4);
+        }
         this.forwarderAddress(forwarderAddress);
         this.tokenAddress(tokenAddress);
         break;

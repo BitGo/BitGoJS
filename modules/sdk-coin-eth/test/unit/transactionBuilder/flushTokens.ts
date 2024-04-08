@@ -163,10 +163,11 @@ describe('Eth Transaction builder flush tokens', function () {
         forwarderVersion: 4,
       });
       const txBuiderFromRaw: any = getBuilder('teth');
-      txBuiderFromRaw.fromImplementation(tx.toBroadcastFormat());
-      // txBuiderFromRaw.type.should.equal(TransactionType.FlushTokens);
-      txBuiderFromRaw._forwarderAddress.should.equal('0x53b8e91bb3b8f618b5f01004ef108f134f219573');
-      txBuiderFromRaw._tokenAddress.should.equal('0xbcf935d206ca32929e1b887a07ed240f0d8ccd22');
+      txBuiderFromRaw.from(tx.toBroadcastFormat());
+      const result = await txBuiderFromRaw.build();
+      const txJson = result.toJson();
+      txJson.to.should.equal('0x53b8e91bb3b8f618b5f01004ef108f134f219573');
+      txJson.data.should.containEql('bcf935d206ca32929e1b887a07ed240f0d8ccd22');
     });
 
     it('decode wallet flush forwarder transaction with forwarder Version < 4', async () => {
@@ -182,10 +183,12 @@ describe('Eth Transaction builder flush tokens', function () {
         forwarderVersion: 2,
       });
       const txBuiderFromRaw: any = getBuilder('teth');
-      txBuiderFromRaw.fromImplementation(tx.toBroadcastFormat());
-      // txBuiderFromRaw.type.should.equal(TransactionType.FlushTokens);
-      txBuiderFromRaw._forwarderAddress.should.equal('0x53b8e91bb3b8f618b5f01004ef108f134f219573');
-      txBuiderFromRaw._tokenAddress.should.equal('0xbcf935d206ca32929e1b887a07ed240f0d8ccd22');
+      txBuiderFromRaw.from(tx.toBroadcastFormat());
+      const result = await txBuiderFromRaw.build();
+      const txJson = result.toJson();
+      txJson.to.should.equal('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
+      txJson.data.should.containEql('bcf935d206ca32929e1b887a07ed240f0d8ccd22');
+      txJson.data.should.containEql('53b8e91bb3b8f618b5f01004ef108f134f219573');
     });
 
     it('an unsigned flush transaction from serialized', async () => {

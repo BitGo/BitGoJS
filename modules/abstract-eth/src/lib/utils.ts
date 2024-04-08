@@ -464,6 +464,7 @@ export function decodeFlushTokensData(data: string, to?: string): FlushTokensDat
     return {
       forwarderAddress: to,
       tokenAddress: addHexPrefix(tokenAddress as string),
+      forwarderVersion: 4,
     };
   } else {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
