@@ -95,6 +95,16 @@ describe('Stacks: Contract Builder', function () {
 
       it('an unsigned self stacking contract call transaction', async () => {
         const builder = initTxBuilder();
+        /* Contract call in clarity POX-4
+        (define-public (stack-stx (amount-ustx uint)
+                          (pox-addr (tuple (version (buff 1)) (hashbytes (buff 32))))
+                          (start-burn-ht uint)
+                          (lock-period uint)
+                          (signer-sig (optional (buff 65)))
+                          (signer-key (buff 33))
+                          (max-amount uint)
+                          (auth-id uint))
+         */
         builder.functionArgs([
           { type: 'uint128', val: '400000000' },
           {
@@ -106,6 +116,12 @@ describe('Stacks: Contract Builder', function () {
           },
           { type: 'uint128', val: '52800' },
           { type: 'uint128', val: '2' },
+          // Nakamoto upgrade new 4 parameters
+          // https://docs.stacks.co/nakamoto-upgrade/signing-and-stacking/stacking-flow#solo-stacker-flow
+          { type: 'optional', val: { type: 'buffer', val: Buffer.from('some-hash') } },
+          { type: 'buffer', val: Buffer.from('some-hash') },
+          { type: 'uint128', val: '340282366920938463463374607431768211455' },
+          { type: 'uint128', val: '123456' },
         ]);
         builder.fromPubKey(testData.TX_SENDER.pub);
         builder.numberSignatures(1);
@@ -167,6 +183,58 @@ describe('Stacks: Contract Builder', function () {
 
       it('a signed self stacking contract call', async () => {
         const builder = initTxBuilder();
+        /* Contract call in clarity POX-4
+        (define-public (stack-stx (amount-ustx uint)
+                          (pox-addr (tuple (version (buff 1)) (hashbytes (buff 32))))
+                          (start-burn-ht uint)
+                          (lock-period uint)
+                          (signer-sig (optional (buff 65)))
+                          (signer-key (buff 33))
+                          (max-amount uint)
+                          (auth-id uint))
+         */
+        builder.functionArgs([
+          { type: 'uint128', val: '400000000' },
+          {
+            type: 'tuple',
+            val: [
+              { key: 'hashbytes', type: 'buffer', val: Buffer.from('some-hash') },
+              { key: 'version', type: 'buffer', val: new BigNum(1).toBuffer() },
+            ],
+          },
+          { type: 'uint128', val: '52800' },
+          { type: 'uint128', val: '2' },
+          // Nakamoto upgrade new 4 parameters
+          // https://docs.stacks.co/nakamoto-upgrade/signing-and-stacking/stacking-flow#solo-stacker-flow
+          { type: 'optional', val: { type: 'buffer', val: Buffer.from('some-hash') } },
+          { type: 'buffer', val: Buffer.from('some-hash') },
+          { type: 'uint128', val: '340282366920938463463374607431768211455' },
+          { type: 'uint128', val: '123456' },
+        ]);
+        builder.sign({ key: testData.TX_SENDER.prv });
+        const tx = await builder.build();
+
+        const txJson = tx.toJson();
+        should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
+        should.deepEqual(txJson.payload.contractName, testData.CONTRACT_NAME);
+        should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
+        should.deepEqual(txJson.nonce, 0);
+        should.deepEqual(txJson.fee.toString(), '180');
+        should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_SELF_STACK_CONTRACT_CALL);
+
+        tx.type.should.equal(TransactionType.ContractCall);
+        tx.outputs.length.should.equal(1);
+        tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+        tx.outputs[0].value.should.equal('0');
+        tx.inputs.length.should.equal(1);
+        tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+        tx.inputs[0].value.should.equal('0');
+      });
+
+      // TODO: remove support to this contract version after STX fork
+      // https://bitgoinc.atlassian.net/browse/EA-3482
+      it('a signed pox-3 backward support pre-fork self stacking contract call', async () => {
+        const builder = initTxBuilder();
         builder.functionArgs([
           { type: 'uint128', val: '400000000' },
           {
@@ -188,7 +256,7 @@ describe('Stacks: Contract Builder', function () {
         should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.fee.toString(), '180');
-        should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_SELF_STACK_CONTRACT_CALL);
+        should.deepEqual(tx.toBroadcastFormat(), testData.POX_3_SIGNED_SELF_STACK_CONTRACT_CALL);
 
         tx.type.should.equal(TransactionType.ContractCall);
         tx.outputs.length.should.equal(1);
@@ -246,8 +314,33 @@ describe('Stacks: Contract Builder', function () {
         should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.fee.toString(), '180');
-        should.deepEqual(txJson.payload.functionArgs.length, 4);
+        // Now stacks-stx self-stacking supports 8 parameters
+        // https://docs.stacks.co/nakamoto-upgrade/signing-and-stacking/stacking-flow#solo-stacker-flow
+        should.deepEqual(txJson.payload.functionArgs.length, 8);
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_SELF_STACK_CONTRACT_CALL);
+        tx.type.should.equal(TransactionType.ContractCall);
+        tx.outputs.length.should.equal(1);
+        tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+        tx.outputs[0].value.should.equal('0');
+        tx.inputs.length.should.equal(1);
+        tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+        tx.inputs[0].value.should.equal('0');
+      });
+
+      // TODO: remove support to this contract version after STX fork
+      // https://bitgoinc.atlassian.net/browse/EA-3482
+      it('a signed serialized pox-3 backward support pre-fork self stacking contract call transaction', async () => {
+        const builder = factory.from(testData.POX_3_SIGNED_SELF_STACK_CONTRACT_CALL);
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
+        should.deepEqual(txJson.payload.contractName, testData.CONTRACT_NAME);
+        should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
+        should.deepEqual(txJson.nonce, 0);
+        should.deepEqual(txJson.fee.toString(), '180');
+        // POX-3 stacks-stx self-stacking supports 4 parameters
+        should.deepEqual(txJson.payload.functionArgs.length, 4);
+        should.deepEqual(tx.toBroadcastFormat(), testData.POX_3_SIGNED_SELF_STACK_CONTRACT_CALL);
         tx.type.should.equal(TransactionType.ContractCall);
         tx.outputs.length.should.equal(1);
         tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
@@ -374,7 +467,10 @@ describe('Stacks: Contract Builder', function () {
         });
         it('a contract call with an invalid contract name', () => {
           const builder = initTxBuilder();
-          assert.throws(() => builder.contractName('pox-2'), /Only pox-3 and send-many-memo contracts supported/);
+          assert.throws(
+            () => builder.contractName('pox-2'),
+            /Only pox-3, pox-4 and send-many-memo contracts supported/
+          );
         });
         it('a contract call with an invalid contract function name', () => {
           const builder = initTxBuilder();
