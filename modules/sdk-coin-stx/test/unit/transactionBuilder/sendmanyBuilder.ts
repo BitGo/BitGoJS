@@ -9,6 +9,7 @@ import { coins } from '@bitgo/statics';
 
 import { Stx, Tstx, StxLib } from '../../../src';
 import * as testData from '../resources';
+import { getAddressDetails } from '../../../src/lib/utils';
 
 describe('Stacks: Send Many Builder', function () {
   const coinName = 'stx';
@@ -61,7 +62,7 @@ describe('Stacks: Send Many Builder', function () {
         builder.sign({ key: testData.prvKeysString[1] });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        txJson.id.should.equal('01793eeb993d15791ea9af8910d867407803fe4c7d1db2dac592a2e8200de12a');
+        txJson.id.should.equal('0f7f8c1d980b8de08b9a2f3a735a4aad7a1b0debeacbab74a02501c32b7f1ff5');
         txJson.fee.should.equal('532');
         txJson.from.should.equal('SN3KT9DVM9TCTAHV0S9VEAKTDG7JBC0K26ZMWEBNT');
         txJson.nonce.should.equal(45);
@@ -75,18 +76,22 @@ describe('Stacks: Send Many Builder', function () {
         list.length.should.equal(testData.sendManyRecipients.length);
         for (let i = 0; i < testData.sendManyRecipients.length; i++) {
           list[i].data.should.have.properties(['to', 'ustx', 'memo']);
-          principalToString(list[i].data.to).should.equal(testData.sendManyRecipients[i].address);
-          list[i].data.memo.buffer.toString('ascii').should.equal(testData.sendManyRecipients[i].memo);
+          const addressDetails = getAddressDetails(testData.sendManyRecipients[i].address);
+          principalToString(list[i].data.to).should.equal(addressDetails.address);
+          list[i].data.memo.buffer
+            .toString('ascii')
+            .should.equal(addressDetails.memoId ?? testData.sendManyRecipients[i].memo);
           list[i].data.ustx.value.should.equal(testData.sendManyRecipients[i].amount);
         }
         tx.outputs.length.should.equal(testData.sendManyRecipients.length);
         for (let i = 0; i < testData.sendManyRecipients.length; i++) {
-          tx.outputs[i].address.should.equal(testData.sendManyRecipients[i].address);
+          const addressDetails = getAddressDetails(testData.sendManyRecipients[i].address);
+          tx.outputs[i].address.should.equal(addressDetails.address);
           tx.outputs[i].value.should.equal(testData.sendManyRecipients[i].amount);
         }
         tx.inputs.length.should.equal(1);
         tx.inputs[0].address.should.equal('SN3KT9DVM9TCTAHV0S9VEAKTDG7JBC0K26ZMWEBNT');
-        tx.inputs[0].value.should.equal('6000000');
+        tx.inputs[0].value.should.equal('10000000');
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_SEND_MANY_WITH_MEMO);
       });
 

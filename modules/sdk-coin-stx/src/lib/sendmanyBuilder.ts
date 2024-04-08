@@ -19,6 +19,7 @@ import { BuildTransactionError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import {
   functionArgsToSendParams,
+  getAddressDetails,
   getSTXAddressFromPubKeys,
   isValidAddressWithPaymentId,
   isValidAmount,
@@ -96,6 +97,10 @@ export class SendmanyBuilder extends AbstractContractBuilder {
     if (!!memo && !isValidMemo(memo)) {
       throw new BuildTransactionError('Invalid memo, got: ' + memo);
     }
+    const addressDetails = getAddressDetails(address);
+    address = addressDetails.address;
+    // if recipient address includes memoId, it will be given preference over the input param 'memo'
+    memo = addressDetails.memoId ?? memo;
 
     this._sendParams.push({ address, amount, memo });
     return this;
