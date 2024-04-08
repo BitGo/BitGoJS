@@ -374,13 +374,17 @@ export class PendingApproval implements IPendingApproval {
         };
       }
 
-      const transaction = _.get(
-        this.info(),
-        `transactionRequest.coinSpecific.${this.baseCoin.type}`
-      ) as PreApproveResult;
-
       // this user may not have spending privileges or a passphrase may not have been passed in
       if (!this.canRecreateTransaction(params)) {
+        // If this is a TransactionRequest, then the txRequest already has the unsigned transaction
+        if (this._pendingApproval.txRequestId) {
+          return undefined;
+        }
+        // If this is a MultiSig, then we need to fetch the half signed tx to propagate to the approval API
+        const transaction = _.get(
+          this.info(),
+          `transactionRequest.coinSpecific.${this.baseCoin.type}`
+        ) as PreApproveResult;
         if (!_.isObject(transaction)) {
           throw new Error('there is neither an original transaction object nor can a new one be recreated');
         }
