@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [23.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@23.0.0...@bitgo/sdk-coin-eth@23.1.0) (2024-04-05)
+
+### Features
+
+- **abstract-eth:** support token flush directly from forwarderV4 contract ([f41a404](https://github.com/BitGo/BitGoJS/commit/f41a404bac7ed952b41effe88e818c6d602a9c22))
+
 # [23.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@22.0.4...@bitgo/sdk-coin-eth@23.0.0) (2024-03-28)
 
 ### Features

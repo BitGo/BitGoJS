@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [20.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@20.0.0...@bitgo/abstract-eth@20.1.0) (2024-04-05)
+
+### Bug Fixes
+
+- **abstract-eth:** error msg when fee is low than expected ([5adb4cd](https://github.com/BitGo/BitGoJS/commit/5adb4cd838790f0fb0f65a6bf3242f987ce3a7bc))
+- **abstract-eth:** fix opeth:op transfers ([37a8f4f](https://github.com/BitGo/BitGoJS/commit/37a8f4f03325d76c32b4764381e3d2d7976dd414))
+
+### Features
+
+- **abstract-eth:** support token flush directly from forwarderV4 contract ([f41a404](https://github.com/BitGo/BitGoJS/commit/f41a404bac7ed952b41effe88e818c6d602a9c22))
+
 # [20.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@19.0.4...@bitgo/abstract-eth@20.0.0) (2024-03-28)
 
 ### Features

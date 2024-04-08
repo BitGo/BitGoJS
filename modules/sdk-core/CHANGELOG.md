@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.4.0...@bitgo/sdk-core@26.5.0) (2024-04-05)
+
+### Features
+
+- **sdk-coin-avaxp:** update avaxp staking ([b6df6ce](https://github.com/BitGo/BitGoJS/commit/b6df6ce84484c3f20898eeb6bc01f04a69086b42))
+- **sdk-core:** deprecate openssl class ([9fa06ba](https://github.com/BitGo/BitGoJS/commit/9fa06ba7a6e3c3938addbcad5a22241214c0bb65))
+
 # [26.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.3.0...@bitgo/sdk-core@26.4.0) (2024-03-28)
 
 ### Bug Fixes

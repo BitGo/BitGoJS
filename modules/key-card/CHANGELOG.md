@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.22.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.22.5...@bitgo/key-card@0.22.6) (2024-04-05)
+
+### Bug Fixes
+
+- **key-card:** qr codes should print in alp order ([03b01c6](https://github.com/BitGo/BitGoJS/commit/03b01c6770fb5783189a0461ba6cf416ad7235d1))
+
 ## [0.22.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.22.4...@bitgo/key-card@0.22.5) (2024-03-28)
 
 **Note:** Version bump only for package @bitgo/key-card

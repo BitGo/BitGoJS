@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.61.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.61.5...@bitgo/express@9.61.6) (2024-04-05)
+
+**Note:** Version bump only for package @bitgo/express
+
 ## [9.61.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.61.4...@bitgo/express@9.61.5) (2024-03-28)
 
 **Note:** Version bump only for package @bitgo/express

@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.22.4...@bitgo/sdk-coin-avaxp@5.0.0) (2024-04-05)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** add back the credentials order ([5b395f4](https://github.com/BitGo/BitGoJS/commit/5b395f4cca44974eb12973af81386299204b594b))
+- **sdk-coin-avaxp:** add locktime to transactionBuilder ([aa4b537](https://github.com/BitGo/BitGoJS/commit/aa4b537399dbc2a1649d4760a39560f556532f93))
+- **sdk-coin-avaxp:** add support for recipient in P > C import tx ([0ffc818](https://github.com/BitGo/BitGoJS/commit/0ffc81859d620be1090e8ac4f3907a0fb690a1b3))
+- **sdk-coin-avaxp:** parse any number of credentials ([e93cd79](https://github.com/BitGo/BitGoJS/commit/e93cd7950df0b0315292d4bd8297a9187da584a7))
+- **sdk-coin-avaxp:** set stake amount correctly when build from raw ([68df26f](https://github.com/BitGo/BitGoJS/commit/68df26f7ea26248f03e38e213fd78634654d36bd))
+- **sdk-coin-avaxp:** stop sorting \_fromAddresses when not needed ([04b6029](https://github.com/BitGo/BitGoJS/commit/04b6029c947cd755f8fdc85df51722c912e71a5c))
+- **sdk-coin-avaxp:** update builder factory return builder ([b30fd10](https://github.com/BitGo/BitGoJS/commit/b30fd1025b87bf50dd5370db60247de7256114b4))
+- **sdk-coin-avaxp:** update mapping of addresses ([56e6f6c](https://github.com/BitGo/BitGoJS/commit/56e6f6c2e5c1fa13a2d40ecd9380dae46be2ba5a))
+- **sdk-coin-avaxp:** update sorting for stake tx ([081037f](https://github.com/BitGo/BitGoJS/commit/081037f82d0f665aff476e9c91f95ba5b25fafaa))
+
+### Features
+
+- **root:** deprecate node 16 ([d3ec624](https://github.com/BitGo/BitGoJS/commit/d3ec6240bddae2a4ab7fa80c4a16efecc36210bd))
+- **sdk-coin-avaxp:** add new avaxp library ([14d3767](https://github.com/BitGo/BitGoJS/commit/14d3767db8e8734ecdb3226fdcc5dd170630e1f5))
+- **sdk-coin-avaxp:** add skeleton for addPermissionLessValidator tx ([08ad690](https://github.com/BitGo/BitGoJS/commit/08ad6909f9a51153bc0e76f67d4892cecb5ab805))
+- **sdk-coin-avaxp:** log error when failing to build tx from hex ([f9fc7bf](https://github.com/BitGo/BitGoJS/commit/f9fc7bf6750f53902be531f8ad68373b76fa04aa))
+- **sdk-coin-avaxp:** update avaxp staking ([b6df6ce](https://github.com/BitGo/BitGoJS/commit/b6df6ce84484c3f20898eeb6bc01f04a69086b42))
+
+### BREAKING CHANGES
+
+- **root:** Node 16 is no longer supported in bitgojs.
+  TICKET: WP-1100
+
 # [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.22.4...@bitgo/sdk-coin-avaxp@4.0.0) (2024-03-28)
 
 ### Bug Fixes
