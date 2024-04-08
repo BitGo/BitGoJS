@@ -1412,6 +1412,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.POLYGON,
     CoinKind.CRYPTO
   ),
+  ofc(
+    'd3c07741-d4cd-4013-9884-653f437bbfd7',
+    'ofcarbeth',
+    'Arbitrum Ethereum (L2 Chain)',
+    18,
+    UnderlyingAsset.ARBETH,
+    CoinKind.CRYPTO
+  ),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
@@ -1526,6 +1534,14 @@ export const coins = CoinMap.fromCoins([
     'Test Polygon (MATIC native)',
     18,
     UnderlyingAsset.POLYGON,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'd4e13852-6b90-4e4c-a664-67d73137faa3',
+    'ofctarbeth',
+    'Testnet Arbitrum Ethereum (L2 Chain)',
+    18,
+    UnderlyingAsset.ARBETH,
     CoinKind.CRYPTO
   ),
   erc20(
@@ -10327,6 +10343,16 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BUIDL
   ),
+  ofcerc20(
+    'df2296e6-366e-4707-bab0-bf16ce592601',
+    'ofcarbeth:link',
+    'Chainlink Token',
+    18,
+    UnderlyingAsset['arbeth:link']
+  ),
+  ofcerc20('59220e6e-d94b-40b7-8e10-2f7c691c2482', 'ofcarbeth:usdc', 'USD Coin', 6, UnderlyingAsset['arbeth:usdc']),
+  ofcerc20('4834e014-0282-4e27-ad9c-c4a4468ce732', 'ofcarbeth:usdt', 'Tether USD', 6, UnderlyingAsset['arbeth:usdt']),
+  ofcerc20('e91ce545-8ace-4f12-b6d4-8c5a3e84022f', 'ofcarbeth:arb', 'Arbitrum', 18, UnderlyingAsset['arbeth:arb']),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
@@ -11551,6 +11577,13 @@ export const coins = CoinMap.fromCoins([
     undefined,
     undefined,
     'gteth'
+  ),
+  tofcerc20(
+    '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',
+    'ofctarbeth:link',
+    'Arbitrum Test LINK',
+    18,
+    UnderlyingAsset['tarbeth:link']
   ),
   tstellarToken(
     '47887cb5-98bb-4942-bd25-3ccca0847f36',
