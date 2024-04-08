@@ -497,6 +497,13 @@ export function addXpubsToPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): 
   psbt.updateGlobal({ globalXpub: xPubs });
 }
 
+/**
+ * Derives the appropriate BIP32 key pair for a given output.
+ * It uses either tapBip32Derivation or bip32Derivation paths from the output, considering taproot specifics.
+ * @param bip32 - The BIP32Interface object to derive from.
+ * @param output - The specific PSBT output to derive for.
+ * @returns The derived BIP32 key pair, or the original bip32 if no derivation was possible.
+ */
 export function deriveKeyPairForOutput(bip32: BIP32Interface, output: PsbtOutput): BIP32Interface | undefined {
   return output.tapBip32Derivation?.length
     ? UtxoPsbt.deriveKeyPair(bip32, output.tapBip32Derivation, { ignoreY: true })
@@ -505,14 +512,26 @@ export function deriveKeyPairForOutput(bip32: BIP32Interface, output: PsbtOutput
     : bip32;
 }
 
+/**
+ * Retrieves the root BIP32 keys from a PSBT's global xpubs.
+ * Asserts that there are exactly three keys (or none), as expected for a 2-of-3 multisig setup.
+ * @param psbt - The PSBT to extract root nodes from.
+ * @returns An array of the three root BIP32 keys, or undefined if none are present.
+ */
 export function getMultiSigRootNodes(psbt: UtxoPsbt): Triple<BIP32Interface> | undefined {
   const bip32s = psbt.data.globalMap.globalXpub?.map((xpub) =>
     BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey))
   );
-  assert(!bip32s || isTriple(bip32s), `Invalid globalXpubs in PSBT. Expected 3 or none. Got ${bip32s}`);
+  assert(!bip32s || isTriple(bip32s), `Invalid globalXpubs in PSBT. Expected 3 or none. Got ${bip32s?.length}`);
   return bip32s;
 }
 
+/**
+ * Maps a parsed 2-of-3 script type to its corresponding ScriptType2Of3 array.
+ * Used to handle the various script types a PSBT input or output can be part of.
+ * @param parsedScriptType - The parsed script type from a PSBT input/output.
+ * @returns An array of ScriptType2Of3 based on the parsedScriptType.
+ */
 export function toScriptType2Of3s(parsedScriptType: ParsedScriptType2Of3): ScriptType2Of3[] {
   return parsedScriptType === 'taprootScriptPathSpend'
     ? ['p2trMusig2', 'p2tr']
@@ -521,6 +540,12 @@ export function toScriptType2Of3s(parsedScriptType: ParsedScriptType2Of3): Scrip
     : [parsedScriptType];
 }
 
+/**
+ * Checks if a specific permutation of public keys matches the provided scriptPubKey.
+ * Utilizes script type conversion and script creation to verify the match.
+ * @param params - An object containing the required parameters for script matching.
+ * @returns True if the scriptPubKey matches the constructed script for the given permutation and type.
+ */
 function matchesScript({
   publicKeys,
   perm,
@@ -541,6 +566,15 @@ function matchesScript({
   );
 }
 
+/**
+ * Determines the correct order of public keys for a 2-of-3 multisig input based on the scriptPubKey.
+ * It iterates through all possible permutations to find a match.
+ * @param publicKeys - The public keys involved in the multisig setup.
+ * @param scriptPubKey - The scriptPubKey from the PSBT input to match against.
+ * @param parsedScriptType - The type of script the PSBT input is using.
+ * @param network - The Bitcoin network the PSBT is for.
+ * @returns An ordered array of indices representing the correct order of public keys.
+ */
 function determineOrder(
   publicKeys: Triple<Buffer>,
   scriptPubKey: Buffer,
@@ -559,11 +593,17 @@ function determineOrder(
   const order = permutations.find((perm) =>
     matchesScript({ publicKeys, perm, scriptPubKey, parsedScriptType, network })
   );
-  assert(order, 'Could not determine order of multi sig public keys');
+  assert(order, 'Could not determine order of public keys of multi sig input');
   return order;
 }
 
-function getDerivationInfo(psbt: UtxoPsbt): {
+/**
+ * Extracts multi-sig related information from a PSBT, necessary for root node ordering.
+ * This includes script type, scriptPubKey, and derivation path for the first non-p2shP2pk input.
+ * @param psbt - The PSBT to extract information from.
+ * @returns An object containing the extracted details or undefined if not found.
+ */
+function getMultiSigDetailsForSortRootNodes(psbt: UtxoPsbt): {
   parsedScriptType: ParsedScriptType2Of3;
   scriptPubKey: Buffer;
   derivationPath: string;
@@ -594,6 +634,13 @@ function getDerivationInfo(psbt: UtxoPsbt): {
   throw new Error('No multi sig input found');
 }
 
+/**
+ * Orders the root nodes (BIP32 keys) canonically based on a PSBT's multi-sig script.
+ * This is used to ensure consistent ordering of keys across PSBT operations.
+ * @param psbt - The PSBT to order root nodes for.
+ * @param rootNodes - Optionally, a specific set of root nodes to order if no PSBT globalXpub is provided.
+ * @returns An ordered array of Triple<BIP32Interface>, representing the canonically ordered root nodes.
+ */
 export function getCanonicalOrderedRootNodes(
   psbt: UtxoPsbt,
   { rootNodes }: { rootNodes?: Triple<BIP32Interface> } = {}
@@ -601,7 +648,7 @@ export function getCanonicalOrderedRootNodes(
   const unorderedRootNodes = rootNodes ? rootNodes : getMultiSigRootNodes(psbt);
   assert(unorderedRootNodes, 'Either rootNodes or PSBT globalXpub must be provided');
 
-  const { parsedScriptType, scriptPubKey, derivationPath } = getDerivationInfo(psbt);
+  const { parsedScriptType, scriptPubKey, derivationPath } = getMultiSigDetailsForSortRootNodes(psbt);
 
   const publicKeys = unorderedRootNodes.map(
     (rootNode) => rootNode.derivePath(derivationPath).publicKey
@@ -611,6 +658,15 @@ export function getCanonicalOrderedRootNodes(
   return order.map((i) => unorderedRootNodes[i]) as Triple<BIP32Interface>;
 }
 
+/**
+ * Determines if a PSBT output is internal to the multi-sig setup.
+ * Checks if the output script matches any of the scripts generated from the ordered root nodes.
+ * @param psbt - The PSBT containing the output to check.
+ * @param outputIndex - The index of the output to check.
+ * @param rootNodes - Optionally, a specific set of root nodes to order if no PSBT globalXpub is provided.
+ * @param ordered - Specifies if the provided rootNodes are already ordered.
+ * @returns True if the output is internal to the multi-sig setup, false otherwise.
+ */
 export function isInternalPsbtOutput(
   psbt: UtxoPsbt,
   outputIndex: number,
@@ -631,6 +687,14 @@ export function isInternalPsbtOutput(
   );
 }
 
+/**
+ * Finds the indices of all internal PSBT outputs that are part of the multi-sig setup.
+ * Utilizes isInternalPsbtOutput to check each output.
+ * @param psbt - The PSBT to check outputs for.
+ * @param rootNodes - Optionally, the root nodes to use for checking if no PSBT globalXpub is provided.
+ * @param ordered - Specifies if the provided rootNodes are already ordered.
+ * @returns An array of indices for the internal PSBT outputs.
+ */
 export function findIndicesOfInternalPsbtOutputs(
   psbt: UtxoPsbt,
   { rootNodes, ordered }: { rootNodes?: Triple<BIP32Interface>; ordered?: boolean } = {}
@@ -641,6 +705,14 @@ export function findIndicesOfInternalPsbtOutputs(
     .filter((i) => i !== undefined) as number[];
 }
 
+/**
+ * Calculates the total amount of all internal PSBT outputs.
+ * Aggregates the value of outputs determined to be internal by findIndicesOfInternalPsbtOutputs.
+ * @param psbt - The PSBT to calculate the total internal output amount for.
+ * @param rootNodes - Optionally, the root nodes to use for the calculation if no PSBT globalXpub is provided.
+ * @param ordered - Specifies if the provided rootNodes are already ordered.
+ * @returns The total amount of all internal PSBT outputs as a bigint.
+ */
 export function getTotalAmountOfInternalPsbtOutputs(
   psbt: UtxoPsbt,
   { rootNodes, ordered }: { rootNodes?: Triple<BIP32Interface>; ordered?: boolean } = {}

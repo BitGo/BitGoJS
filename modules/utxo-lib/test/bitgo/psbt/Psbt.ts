@@ -1,5 +1,7 @@
 import * as assert from 'assert';
 
+import * as bs58check from 'bs58check';
+
 import { Network, getNetworkName, networks, getNetworkList, testutil, isMainnet, Transaction } from '../../../src';
 import {
   getExternalChainCode,
@@ -37,6 +39,8 @@ import {
   WalletUnspent,
   getDefaultSigHash,
   getTotalAmountOfInternalPsbtOutputs,
+  RootWalletKeys,
+  findIndicesOfInternalPsbtOutputs,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -49,6 +53,7 @@ import {
 
 import {
   getDefaultWalletKeys,
+  getKeyTriple,
   Input,
   inputScriptTypes,
   mockReplayProtectionUnspent,
@@ -70,6 +75,9 @@ import {
 import { mockUnspents } from '../../../src/testutil';
 import { constructPsbt } from './Musig2Util';
 import { fromOutputScript } from '../../../src/address';
+import { BIP32Interface } from 'bip32';
+import { Triple } from '@bitgo/sdk-core';
+import { GlobalXpub } from 'bip174/src/lib/interfaces';
 
 const CHANGE_INDEX = 100;
 const FEE = BigInt(100);
@@ -116,41 +124,225 @@ describe('Psbt Misc', function () {
   });
 });
 
-describe('validate psbt internal outputs', function () {
-  let psbt: UtxoPsbt;
-  before(function () {
-    psbt = testutil.constructPsbt(
-      [
-        { scriptType: 'p2wsh', value: BigInt(1e8) },
-        { scriptType: 'p2shP2wsh', value: BigInt(1e8) },
-        { scriptType: 'p2trMusig2', value: BigInt(1e12) },
-        { scriptType: 'p2tr', value: BigInt(1e8) },
-        { scriptType: 'p2sh', value: BigInt(1e8) },
-      ],
-      [
-        { scriptType: 'p2sh', value: BigInt(9e7), isInternalAddress: true },
-        { scriptType: 'p2shP2wsh', value: BigInt(9e7), isInternalAddress: true },
-        { scriptType: 'p2wsh', value: BigInt(9e7), isInternalAddress: true },
-        { scriptType: 'p2tr', value: BigInt(9e7), isInternalAddress: true },
-        { scriptType: 'p2trMusig2', value: BigInt(9e6), isInternalAddress: true },
-        {
-          address: fromOutputScript(
-            createOutputScriptP2shP2pk(replayProtectionKeyPair.publicKey).scriptPubKey,
-            networks.bitcoin
-          ),
-          value: BigInt(1e8),
-        },
-      ],
-      networks.bitcoin,
-      rootWalletKeys,
-      'unsigned'
-    );
-    addXpubsToPsbt(psbt, rootWalletKeys);
-  });
+describe('psbt internal outputs', function () {
+  const value = BigInt(1e8);
+  const fee = BigInt(1000);
+  const externalAddress = fromOutputScript(
+    createOutputScriptP2shP2pk(replayProtectionKeyPair.publicKey).scriptPubKey,
+    networks.bitcoin
+  );
 
   describe('success', function () {
-    it('can validate using the globalXpubs', function () {
-      assert.strictEqual(getTotalAmountOfInternalPsbtOutputs(psbt.clone()), BigInt(9e7 * 4 + 9e6));
+    it(`findIndicesOfInternalPsbtOutputs`, function () {
+      const psbt = testutil.constructPsbt(
+        [
+          { scriptType: 'p2wsh', value: BigInt(value + value) },
+          { scriptType: 'p2shP2wsh', value: BigInt(value) },
+          { scriptType: 'p2trMusig2', value: BigInt(value) },
+          { scriptType: 'p2tr', value: BigInt(value) },
+          { scriptType: 'p2sh', value: BigInt(value) },
+        ],
+        [
+          { scriptType: 'p2sh', value: BigInt(value) },
+          { scriptType: 'p2shP2wsh', value: BigInt(value) },
+          { scriptType: 'p2wsh', value: BigInt(value) },
+          {
+            address: externalAddress,
+            value: BigInt(value - fee),
+          },
+          { scriptType: 'p2tr', value: BigInt(value), isInternalAddress: true },
+          { scriptType: 'p2trMusig2', value: BigInt(value), isInternalAddress: true },
+        ],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+
+      addXpubsToPsbt(psbt, rootWalletKeys);
+      assert.deepEqual(findIndicesOfInternalPsbtOutputs(psbt), [0, 1, 2, 4, 5]);
+    });
+
+    scriptTypes2Of3.forEach((scriptType) => {
+      const psbt = testutil.constructPsbt(
+        [
+          { scriptType: scriptType, value: BigInt(value) },
+          { scriptType: 'p2wsh', value: BigInt(value) },
+          { scriptType: 'p2shP2wsh', value: BigInt(value) },
+          { scriptType: 'p2trMusig2', value: BigInt(value) },
+          { scriptType: 'p2tr', value: BigInt(value) },
+          { scriptType: 'p2sh', value: BigInt(value) },
+        ],
+        [
+          { scriptType: 'p2sh', value: BigInt(value) },
+          { scriptType: 'p2shP2wsh', value: BigInt(value) },
+          { scriptType: 'p2wsh', value: BigInt(value) },
+          {
+            address: externalAddress,
+            value: BigInt(value - fee),
+          },
+          { scriptType: 'p2tr', value: BigInt(value), isInternalAddress: true },
+          { scriptType: 'p2trMusig2', value: BigInt(value), isInternalAddress: true },
+        ],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+
+      addXpubsToPsbt(psbt, rootWalletKeys);
+
+      const totalInternalAmount = value * BigInt(psbt.inputCount - 1);
+
+      it(`PSBT with ${scriptType} input and globalXpub`, function () {
+        assert.strictEqual(getTotalAmountOfInternalPsbtOutputs(psbt), totalInternalAmount);
+      });
+
+      it(`Cloned PSBT with ${scriptType} input and globalXpub`, function () {
+        assert.strictEqual(getTotalAmountOfInternalPsbtOutputs(psbt.clone()), totalInternalAmount);
+      });
+
+      it(`PSBT with ${scriptType} input and ordered rootNodes`, function () {
+        assert.strictEqual(
+          getTotalAmountOfInternalPsbtOutputs(psbt, { rootNodes: rootWalletKeys.triple, ordered: true }),
+          totalInternalAmount
+        );
+      });
+
+      it(`PSBT with ${scriptType} input and unordered rootNodes`, function () {
+        const rootNodes: Triple<BIP32Interface> = [
+          rootWalletKeys.triple[1],
+          rootWalletKeys.triple[0],
+          rootWalletKeys.triple[2],
+        ];
+        assert.strictEqual(getTotalAmountOfInternalPsbtOutputs(psbt, { rootNodes }), totalInternalAmount);
+      });
+    });
+
+    it(`PSBT with p2shP2pk as first input`, function () {
+      const psbt = testutil.constructPsbt(
+        [
+          { scriptType: 'p2shP2pk', value: BigInt(value) },
+          { scriptType: 'p2wsh', value: BigInt(value) },
+        ],
+        [
+          { scriptType: 'p2sh', value: BigInt(value) },
+          {
+            address: externalAddress,
+            value: BigInt(value - fee),
+          },
+        ],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+      addXpubsToPsbt(psbt, rootWalletKeys);
+      assert.strictEqual(getTotalAmountOfInternalPsbtOutputs(psbt), value);
+    });
+
+    it(`PSBT with no internal output`, function () {
+      const psbt = testutil.constructPsbt(
+        [{ scriptType: 'p2wsh', value: BigInt(value) }],
+        [
+          {
+            address: externalAddress,
+            value: BigInt(value - fee),
+          },
+        ],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+      addXpubsToPsbt(psbt, rootWalletKeys);
+      assert.strictEqual(getTotalAmountOfInternalPsbtOutputs(psbt), BigInt(0));
+    });
+  });
+
+  describe('failure', function () {
+    it('PSBT without globalXpub and rootNodes', function () {
+      const psbt = testutil.constructPsbt([], [], network, rootWalletKeys, 'unsigned');
+      assert.throws(
+        () => getTotalAmountOfInternalPsbtOutputs(psbt),
+        (e: any) => e.message === 'Either rootNodes or PSBT globalXpub must be provided'
+      );
+    });
+
+    it('PSBT with invalid number of globalXpub', function () {
+      const psbt = testutil.constructPsbt([], [], network, rootWalletKeys, 'unsigned');
+      const globalXpub: GlobalXpub[] = [
+        {
+          extendedPubkey: bs58check.decode(rootWalletKeys.triple[0].neutered().toBase58()),
+          masterFingerprint: rootWalletKeys.triple[0].fingerprint,
+          path: 'm',
+        },
+      ];
+      psbt.updateGlobal({ globalXpub });
+      assert.throws(
+        () => getTotalAmountOfInternalPsbtOutputs(psbt),
+        (e: any) => e.message === 'Invalid globalXpubs in PSBT. Expected 3 or none. Got 1'
+      );
+    });
+
+    it('PSBT without input scriptPubKey', function () {
+      const psbt = testutil.constructPsbt(
+        [{ scriptType: 'p2wsh', value: BigInt(value) }],
+        [
+          {
+            address: externalAddress,
+            value: BigInt(value - fee),
+          },
+        ],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+      psbt.data.inputs[0].witnessUtxo = undefined;
+      addXpubsToPsbt(psbt, rootWalletKeys);
+      assert.throws(
+        () => getTotalAmountOfInternalPsbtOutputs(psbt),
+        (e: any) => e.message === 'Input scriptPubKey can not be found'
+      );
+    });
+
+    it('PSBT without input Bip32Derivation', function () {
+      const psbt = testutil.constructPsbt(
+        [{ scriptType: 'p2wsh', value: BigInt(value) }],
+        [
+          {
+            address: externalAddress,
+            value: BigInt(value - fee),
+          },
+        ],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+      psbt.data.inputs[0].bip32Derivation = undefined;
+      addXpubsToPsbt(psbt, rootWalletKeys);
+      assert.throws(
+        () => getTotalAmountOfInternalPsbtOutputs(psbt),
+        (e: any) => e.message === 'Input Bip32Derivation can not be found'
+      );
+    });
+
+    it('PSBT with invalid rootNodes', function () {
+      const psbt = testutil.constructPsbt(
+        [{ scriptType: 'p2wsh', value: BigInt(value) }],
+        [
+          {
+            address: externalAddress,
+            value: BigInt(value - fee),
+          },
+        ],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+      assert.throws(
+        () =>
+          getTotalAmountOfInternalPsbtOutputs(psbt, {
+            rootNodes: new RootWalletKeys(getKeyTriple('dummy')).triple,
+          }),
+        (e: any) => e.message === 'Could not determine order of public keys of multi sig input'
+      );
     });
   });
 });
