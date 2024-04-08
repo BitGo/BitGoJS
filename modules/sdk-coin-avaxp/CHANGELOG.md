@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.0...@bitgo/sdk-coin-avaxp@5.0.1) (2024-04-08)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** fix hard coded amount and default fee percentage ([5153f3d](https://github.com/BitGo/BitGoJS/commit/5153f3d572c0fe827b7d90e5e109acbd59b9c3ca))
+
 # [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@3.22.4...@bitgo/sdk-coin-avaxp@5.0.0) (2024-04-05)
 
 ### Bug Fixes

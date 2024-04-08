@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.0.1...@bitgo/sdk-coin-algo@2.1.0) (2024-04-08)
+
+### Features
+
+- protect pass by value when sending data out ([8755bdd](https://github.com/BitGo/BitGoJS/commit/8755bdd5f4174de21f0b7e4c1e7bb74fb9b8e40f))
+
 ## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.0.0...@bitgo/sdk-coin-algo@2.0.1) (2024-04-05)
 
 ### Bug Fixes
