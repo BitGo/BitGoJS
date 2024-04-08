@@ -136,6 +136,7 @@ export interface ERC1155TransferData extends TokenTransferData {
 export interface FlushTokensData {
   forwarderAddress: string;
   tokenAddress: string;
+  forwarderVersion?: number;
 }
 
 export interface NativeTransferData extends TransferData {
