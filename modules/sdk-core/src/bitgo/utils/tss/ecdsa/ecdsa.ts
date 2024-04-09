@@ -1,10 +1,18 @@
 import assert from 'assert';
 import { Buffer } from 'buffer';
-import { Key, SerializedKeyPair } from 'openpgp';
 import * as openpgp from 'openpgp';
-import { Hash } from 'crypto';
+import { Key, SerializedKeyPair } from 'openpgp';
+import { createHash, Hash, randomBytes } from 'crypto';
 
-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
+import {
+  DklsDsg,
+  EcdsaPaillierProof,
+  EcdsaRangeProof,
+  EcdsaTypes,
+  hexToBigInt,
+  minModulusBitLength,
+  DklsTypes,
+} from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/utxo-lib';
 
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
@@ -31,7 +39,7 @@ import {
   TSSParamsForMessage,
   TxRequest,
 } from '../baseTypes';
-import { getTxRequest } from '../../../tss';
+import { getTxRequest, sendSignatureShare } from '../../../tss';
 import { AShare, DShare, EncryptedNShare, OShare, SendShareType, SShare, WShare } from '../../../tss/ecdsa/types';
 import { createShareProof, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
@@ -46,6 +54,15 @@ import {
   TxRequestChallengeResponse,
 } from '../../../tss/types';
 import { BaseEcdsaUtils } from './base';
+import {
+  getSignatureShareRoundOne,
+  getSignatureShareRoundThree,
+  getSignatureShareRoundTwo,
+  verifyBitGoMessagesAndSignaturesRoundOne,
+  verifyBitGoMessagesAndSignaturesRoundTwo,
+} from "../../../tss/ecdsa/dkls";
+
+import { MPCv2SignatureShareRound1Output, MPCv2SignatureShareRound2Output } from "../../../tss/ecdsa/dkls-types";
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -791,7 +808,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       requestType: requestType,
     });
     // signing stage one with K share send to bitgo and receives A share
-    const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
+    const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgoMpcV1(
       this.bitgo,
       this.wallet.id(),
       txRequestObj.txRequestId,
@@ -811,7 +828,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       encryptedWShare: step1SigningMaterial.wShare as string,
     });
     // signing stage two with muShare and dShare send to bitgo and receives D share
-    const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgo(
+    const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgoMpcV1(
       this.bitgo,
       this.wallet.id(),
       txRequestObj.txRequestId,
@@ -829,7 +846,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       encryptedOShare: step2Return.oShare as string,
     });
     // signing stage three with SShare send to bitgo and receives SShare
-    await ECDSAMethods.sendShareToBitgo(
+    await ECDSAMethods.sendShareToBitgoMpcV1(
       this.bitgo,
       this.wallet.id(),
       txRequestObj.txRequestId,
@@ -895,7 +912,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     });
 
     // signing stage one with K share send to bitgo and receives A share
-    const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgo(
+    const bitgoToUserAShare = (await ECDSAMethods.sendShareToBitgoMpcV1(
       this.bitgo,
       this.wallet.id(),
       txRequest.txRequestId,
@@ -916,7 +933,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     });
 
     // signing stage two with muShare and dShare send to bitgo and receives D share
-    const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgo(
+    const bitgoToUserDShare = (await ECDSAMethods.sendShareToBitgoMpcV1(
       this.bitgo,
       this.wallet.id(),
       txRequest.txRequestId,
@@ -942,13 +959,128 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     );
 
     // signing stage three with SShare send to bitgo and receives SShare
-    await ECDSAMethods.sendShareToBitgo(
+    await ECDSAMethods.sendShareToBitgoMpcV1(
       this.bitgo,
       this.wallet.id(),
       txRequest.txRequestId,
       requestType,
       SendShareType.SShare,
       userSShare
+    );
+    return await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId);
+  }
+
+  private async signTxRequestMpcV2(
+    params: TSSParams | TSSParamsForMessage,
+    requestType: RequestType
+  ): Promise<TxRequest> {
+    const msg = randomBytes(128);
+    const userKeyShare = Buffer.from(params.prv, 'base64');
+    const txRequest: TxRequest =
+      typeof params.txRequest === 'string'
+        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
+        : params.txRequest;
+
+    let derivationPath = '';
+    const userGpgKey = await openpgp.generateKey({
+      userIDs: [
+        {
+          name: 'user',
+          email: txRequest.userId,
+        },
+      ],
+      curve: 'secp256k1',
+    });
+    const bitgoGpgPubkey = await getBitgoGpgPubKey(this.bitgo);
+
+    if (requestType === RequestType.tx) {
+      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      const unsignedTx =
+        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      derivationPath = unsignedTx.derivationPath;
+    } else if (requestType === RequestType.message) {
+      throw new Error('DKLS message signing not supported yet.');
+    }
+    const hash = createHash('sha256').update(msg).digest();
+    const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hash);
+    const userSignerBroadcastMsg1 = await otherSigner.init();
+    const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
+    const roundOneBitGoRes = await sendSignatureShare(
+      this.bitgo,
+      txRequest.walletId,
+      txRequest.txRequestId,
+      signatureShareRound1,
+      RequestType.tx,
+      undefined,
+      'ecdsa',
+      'full',
+      userGpgKey.publicKey
+    );
+    // TODO: Use codec for parsing
+    const parsedBitGoToUserSigShareRoundOne = JSON.parse(roundOneBitGoRes.share) as MPCv2SignatureShareRound1Output;
+    if (parsedBitGoToUserSigShareRoundOne.type !== 'round1Output') {
+      throw new Error('Unexpected signature share response. Unable to parse data.');
+    }
+    const serializedBitGoToUserMessagesRoundOne = await verifyBitGoMessagesAndSignaturesRoundOne(
+      parsedBitGoToUserSigShareRoundOne,
+      userGpgKey,
+      bitgoGpgPubkey
+    );
+
+    /** Round 2 **/
+    const deserializedMessages = DklsTypes.deserializeMessages(serializedBitGoToUserMessagesRoundOne);
+    const userToBitGoMessages2 = otherSigner.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: deserializedMessages.broadcastMessages,
+    });
+    const userToBitGoMessages3 = otherSigner.handleIncomingMessages({
+      p2pMessages: deserializedMessages.p2pMessages,
+      broadcastMessages: [],
+    });
+    const signatureShareRoundTwo = await getSignatureShareRoundTwo(
+      userToBitGoMessages2,
+      userToBitGoMessages3,
+      userGpgKey,
+      bitgoGpgPubkey
+    );
+    const roundTwoBitGoRes = await sendSignatureShare(
+      this.bitgo,
+      txRequest.walletId,
+      txRequest.txRequestId,
+      signatureShareRoundTwo,
+      RequestType.tx,
+      undefined,
+      'ecdsa',
+      'full',
+      userGpgKey.publicKey
+    );
+    // TODO: Use codec for parsing
+    const parsedBitGoToUserSigShareRoundTwo = JSON.parse(roundTwoBitGoRes.share) as MPCv2SignatureShareRound2Output;
+    const serializedBitGoToUserMessagesRoundTwo = await verifyBitGoMessagesAndSignaturesRoundTwo(
+      parsedBitGoToUserSigShareRoundTwo,
+      userGpgKey,
+      bitgoGpgPubkey
+    );
+
+    /** Round 3 **/
+    const deserializedMessagesRoundTwo = DklsTypes.deserializeMessages(serializedBitGoToUserMessagesRoundTwo);
+    const userToBitGoMessages4 = otherSigner.handleIncomingMessages(deserializedMessagesRoundTwo);
+    const signatureShareRoundThree = await getSignatureShareRoundThree(
+      userToBitGoMessages4,
+      userGpgKey,
+      bitgoGpgPubkey
+    );
+    // Submit for final signature share combine
+    await sendSignatureShare(
+      this.bitgo,
+      txRequest.walletId,
+      txRequest.txRequestId,
+      signatureShareRoundThree,
+      RequestType.tx,
+      undefined,
+      'ecdsa',
+      'full',
+      userGpgKey.publicKey
     );
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId);
   }

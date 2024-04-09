@@ -201,7 +201,7 @@ export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition }
  * @param userPublicGpgKey - the public key of the gpg key used for creating the privateShareProof
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
-export async function sendShareToBitgo(
+export async function sendShareToBitgoMpcV1(
   bitgo: BitGoBase,
   walletId: string,
   txRequestId: string,

@@ -151,8 +151,8 @@ describe('DKLS Dkg 2x3', function () {
     });
     let authEncMessages = await encryptAndAuthOutgoingMessages(
       serializedMessages,
-      [bitgoGpgPubKey],
-      [userGpgPrvKey, backupGpgPrvKey]
+      [],
+      [userGpgPrvKey]
     );
     const userRound2Messages = user.handleIncomingMessages({
       p2pMessages: [],
