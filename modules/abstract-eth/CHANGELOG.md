@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [20.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@20.1.0...@bitgo/abstract-eth@20.1.1) (2024-04-08)
+
+### Bug Fixes
+
+- **abstract-eth:** fix flush v4 tx building from hex ([f20dc10](https://github.com/BitGo/BitGoJS/commit/f20dc106e90222f27f0ee774fe9844fc0b55f77e))
+
 # [20.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@20.0.0...@bitgo/abstract-eth@20.1.0) (2024-04-05)
 
 ### Bug Fixes
