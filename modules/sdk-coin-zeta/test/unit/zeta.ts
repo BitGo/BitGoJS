@@ -2,6 +2,7 @@ import { CosmosTransaction, RedelegateMessage, SendMessage } from '@bitgo/abstra
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
+import { Environments } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { beforeEach } from 'mocha';
@@ -356,7 +357,7 @@ describe('Zeta', function () {
     const testChainId = 'test-chain';
 
     beforeEach(() => {
-      nock('https://rpc.ankr.com/http/zetachain_athens_testnet')
+      nock(Environments.test.zetaNodeUrl)
         .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
         .reply(200, mockAccountDetailsResponse);
 
@@ -431,7 +432,7 @@ describe('Zeta', function () {
     const testChainId = 'test-chain';
 
     beforeEach(() => {
-      nock('https://rpc.ankr.com/http/zetachain_athens_testnet')
+      nock(Environments.test.zetaNodeUrl)
         .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
         .reply(200, mockAccountDetailsResponse);
 
