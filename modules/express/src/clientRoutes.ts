@@ -994,7 +994,7 @@ function handleV2CoinSpecificREST(req: express.Request, res: express.Response, n
 }
 
 /**
- * Redirect a request using the bitgo request functions
+ * Redirect a request using the bitgo request functions.
  * @param bitgo
  * @param method
  * @param url
@@ -1009,6 +1009,10 @@ function redirectRequest(bitgo: BitGo, method: string, url: string, req: express
       return bitgo.post(url).send(req.body).result();
     case 'PUT':
       return bitgo.put(url).send(req.body).result();
+    case 'PATCH':
+      return bitgo.patch(url).send(req.body).result();
+    case 'OPTIONS':
+      return bitgo.options(url).send(req.body).result();
     case 'DELETE':
       return bitgo.del(url).send(req.body).result();
   }

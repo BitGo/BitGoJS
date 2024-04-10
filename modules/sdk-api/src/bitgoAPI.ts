@@ -103,7 +103,7 @@ if (!isBrowser && !isWebWorker) {
   proxyAgentModule = require('proxy-agent');
 }
 
-const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
+const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
 
 export class BitGoAPI implements BitGoBase {
   // v1 types
@@ -455,6 +455,9 @@ export class BitGoAPI implements BitGoBase {
   }
   patch(url: string): BitGoRequest {
     return this.requestPatch('patch', url);
+  }
+  options(url: string): BitGoRequest {
+    return this.requestPatch('options', url);
   }
 
   /**
