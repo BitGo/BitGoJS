@@ -32,7 +32,13 @@ export interface DelegationRequest {
  * @property {string} [duration] - delegation duration: a numeric string, in days or cycles
  * @property {string} [subType] - coin sepcific staking subtype
  * @property {string} [btcRewardAddress] - btc reward address
+ * @property {string} [signerPub] - stx signer public key
+ * @property {string} [signerSignature] - stx signer signature
  * @property {DelegationRequest[]} [delegationRequests] - The delegation requests
+ * TODO: remove support to this contract version after STX fork
+ * https://bitgoinc.atlassian.net/browse/EA-3482
+ * @property {string} [contractName] - stx contract name: valid names are pox-3 and pox-4 only, used only for backward compatibility during nakamoto fork
+
  */
 export interface StakeOptions {
   amount?: string;
@@ -51,14 +57,32 @@ export interface StakeOptions {
    */
   blsSignature?: string;
   /**
-   * coin sepcific staking subtype
+   * coin specific staking subtype
    */
   subType?: string;
   /**
-   * btc reward address
+   * stx btc reward address
    */
   btcRewardAddress?: string;
+
+  /**
+   * stx signer pub
+   */
+  signerPub?: string;
+
+  /**
+   * stx signer signature
+   */
+  signerSignature?: string;
+
   delegationRequests?: DelegationRequest[];
+
+  // TODO: remove support to this contract version after STX fork
+  // https://bitgoinc.atlassian.net/browse/EA-3482
+  /**
+   * pox-contract name (valid values are pox-3 and pox-4)
+   */
+  contractName?: 'pox-3' | 'pox-4';
 }
 
 export interface UnstakeOptions {
