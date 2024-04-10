@@ -6,7 +6,13 @@ import { BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { UtxoTransaction } from '../UtxoTransaction';
-import { createOutputScript2of3, getLeafHash, scriptTypeForChain, toXOnlyPublicKey } from '../outputScripts';
+import {
+  createOutputScript2of3,
+  getLeafHash,
+  ScriptType2Of3,
+  scriptTypeForChain,
+  toXOnlyPublicKey,
+} from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
 import { createPsbtFromHex, createPsbtFromTransaction } from '../transaction';
@@ -26,6 +32,7 @@ import {
   ParsedScriptType,
   isPlaceholderSignature,
   parseSignatureScript,
+  ParsedScriptType2Of3,
 } from '../parseInput';
 import { parsePsbtMusig2PartialSigs } from '../Musig2';
 import { isTuple, Triple } from '../types';
@@ -390,6 +397,19 @@ export function parsePsbtInput(input: PsbtInput): ParsedPsbtP2ms | ParsedPsbtTap
     };
   }
   throw new Error('invalid pub script');
+}
+
+/**
+ * Converts a parsed script type into an array of script types.
+ * @param parsedScriptType - The parsed script type.
+ * @returns An array of ScriptType2Of3 values corresponding to the parsed script type.
+ */
+export function toScriptType2Of3s(parsedScriptType: ParsedScriptType2Of3): ScriptType2Of3[] {
+  return parsedScriptType === 'taprootScriptPathSpend'
+    ? ['p2trMusig2', 'p2tr']
+    : parsedScriptType === 'taprootKeyPathSpend'
+    ? ['p2trMusig2']
+    : [parsedScriptType];
 }
 
 /**
