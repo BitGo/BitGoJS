@@ -27,6 +27,8 @@ import {
   WalletWithKeychains,
 } from './iWallets';
 import { Wallet } from './wallet';
+import * as sjcl from '@bitgo/sjcl';
+import * as bs58 from 'bs58';
 
 export class Wallets implements IWallets {
   private readonly bitgo: BitGoBase;
@@ -539,6 +541,77 @@ export class Wallets implements IWallets {
   }
 
   /**
+   * Re-share wallet with existing spenders of the wallet
+   * @param walletId
+   * @param userPassword
+   */
+  async reshareOfcAccountWithSpenders(walletId: string, userPassword: string): Promise<void> {
+    const wallet = await this.bitgo.coin('ofc').wallets().get({ id: walletId });
+    const enterpriseUsersResponse = (await this.bitgo
+      .get(`/api/v2/enterprise/${wallet?._wallet?.enterprise}/user`)
+      .result()) as any;
+    // create a map of users for easy lookup - we need the user email id to share the wallet
+    const usersMap = new Map(
+      [...enterpriseUsersResponse?.adminUsers, ...enterpriseUsersResponse?.nonAdminUsers].map((obj) => [obj.id, obj])
+    );
+    wallet?._wallet?.users?.forEach(async (user) => {
+      try {
+        // user should be a spender and not an admin
+        if (user.permissions.includes('spend') && !user.permissions.includes('admin')) {
+          const userObject = usersMap.get(user.user);
+          const shareParams = {
+            walletId: walletId,
+            user: user.user,
+            permissions: user.permissions.join(','),
+            walletPassphrase: userPassword,
+            email: userObject.email.email,
+            coin: wallet.coin,
+            reshare: true,
+          };
+          wallet.shareWallet(shareParams);
+        }
+      } catch (e) {
+        // TODO: gracefully handle this error
+        console.error(e);
+      }
+    });
+  }
+
+  /**
+   * Generate a random password
+   * @param   {Number} numWords     Number of 32-bit words
+   * @returns {String}          base58 random password
+   */
+  generateRandomPassword(numWords = 5): string {
+    const bytes = sjcl.codec.bytes.fromBits(sjcl.random.randomWords(numWords));
+    return bs58.encode(bytes);
+  }
+
+  /**
+   * Create keychain for ofc wallet using the password
+   * @param userPassword
+   * @returns
+   */
+  async createKeychain(userPassword: string): Promise<Keychain> {
+    const sdkCoin = await this.bitgo.coin('ofc');
+    const keychains = sdkCoin.keychains();
+    const newKeychain = keychains.create();
+    const originalPasscodeEncryptionCode = this.generateRandomPassword();
+
+    const encryptedPrv = this.bitgo.encrypt({
+      password: userPassword,
+      input: newKeychain.prv,
+    });
+
+    const walletKeychain = await keychains.add({
+      encryptedPrv,
+      originalPasscodeEncryptionCode,
+      pub: newKeychain.pub,
+      source: 'user',
+    });
+    return walletKeychain;
+  }
+  /**
    * Accepts a wallet share, adding the wallet to the user's list
    * Needs a user's password to decrypt the shared key
    *
@@ -554,9 +627,28 @@ export class Wallets implements IWallets {
     common.validateParams(params, ['walletShareId'], ['overrideEncryptedPrv', 'userPassword', 'newWalletPassphrase']);
 
     let encryptedPrv = params.overrideEncryptedPrv;
-
     const walletShare = (await this.getShare({ walletShareId: params.walletShareId })) as any;
-
+    if (walletShare.keychainOverrideRequired && walletShare.permissions.indexOf('admin') !== -1) {
+      if (_.isUndefined(params.userPassword)) {
+        throw new Error('userPassword param must be provided to decrypt shared key');
+      }
+      const walletKeychain = await this.createKeychain(params.userPassword);
+      const response = await this.updateShare({
+        walletShareId: params.walletShareId,
+        state: 'accepted',
+        keyId: walletKeychain.id,
+      });
+      // If the wallet share was accepted successfully (changed=true), reshare the wallet with the spenders
+      if (response.changed && response.state === 'accepted') {
+        try {
+          await this.reshareOfcAccountWithSpenders(walletShare.wallet, params.userPassword);
+        } catch (e) {
+          // TODO: gracefully handle this error
+          console.error(e);
+        }
+      }
+      return response;
+    }
     // Return right away if there is no keychain to decrypt, or if explicit encryptedPrv was provided
     if (!walletShare.keychain || !walletShare.keychain.encryptedPrv || encryptedPrv) {
       return this.updateShare({
@@ -606,7 +698,6 @@ export class Wallets implements IWallets {
     if (encryptedPrv) {
       updateParams.encryptedPrv = encryptedPrv;
     }
-
     return this.updateShare(updateParams);
   }
 

@@ -609,6 +609,7 @@ export interface WalletData {
   tokens?: Record<string, any>[];
   nfts?: { [contractAddressOrToken: string]: NftBalance };
   unsupportedNfts?: { [contractAddress: string]: NftBalance };
+  users?: any[];
 }
 
 export interface RecoverTokenOptions {
