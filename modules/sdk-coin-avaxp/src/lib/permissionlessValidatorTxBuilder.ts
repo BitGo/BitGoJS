@@ -475,7 +475,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         );
         stakeOutputs.push(stakeOutput);
 
-        if (currentTotal >= totalTarget) {
+        if (currentTotal > totalTarget) {
           const changeOutput = new avaxSerial.TransferableOutput(
             assetId,
             new TransferOutput(

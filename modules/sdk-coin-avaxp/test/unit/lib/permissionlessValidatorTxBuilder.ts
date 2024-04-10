@@ -298,4 +298,30 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
       console.log(fullSignedTx.toJson());
     });
   });
+  it('Should fail to build if utxos change output 0', async () => {
+    const unixNow = BigInt(Math.round(new Date().getTime() / 1000));
+    const startTime = unixNow + BigInt(60);
+    const endTime = startTime + BigInt(60 * 60 * 24 + 600);
+
+    const txBuilder = new AvaxpLib.TransactionBuilderFactory(coins.get('tavaxp'))
+      .getPermissionlessValidatorTxBuilder()
+      .threshold(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.threshold)
+      .locktime(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.locktime)
+      .recoverMode(false)
+      .fromPubKey(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.bitgoAddresses)
+      .startTime(startTime.toString())
+      .endTime(endTime.toString())
+      .stakeAmount(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.stakeAmountNoOutput)
+      .delegationFeeRate(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.delegationFeeRate)
+      .nodeID(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.nodeId)
+      .blsPublicKey(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.blsPublicKey)
+      .blsSignature(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.blsSignature)
+      .utxos(testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.utxos);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+    const txExplain = tx.explainTransaction();
+    txJson.changeOutputs.length.should.equal(0);
+    txExplain.changeOutputs.length.should.equal(0);
+    txExplain.changeAmount.should.equal('0');
+  });
 });
