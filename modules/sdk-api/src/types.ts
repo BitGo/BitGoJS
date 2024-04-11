@@ -34,7 +34,7 @@ export interface PingOptions {
   reqId?: IRequestTracer;
 }
 
-export const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch'] as const;
+export const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
 
 export interface CalculateHmacSubjectOptions {
   urlPath: string;

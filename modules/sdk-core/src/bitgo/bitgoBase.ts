@@ -21,6 +21,8 @@ export interface BitGoBase {
   microservicesUrl(path: string): string;
   post(url: string): BitGoRequest;
   put(url: string): BitGoRequest;
+  patch(url: string): BitGoRequest;
+  options(url: string): BitGoRequest;
   setRequestTracer(reqTracer: IRequestTracer): void;
   url(path: string, version?: number): string;
   register(name: string, coin: CoinConstructor): void;
