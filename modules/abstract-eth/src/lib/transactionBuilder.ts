@@ -626,6 +626,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Missing transfer information');
     }
     const chainId = this._common.chainIdBN().toString();
+    this._transfer.walletVersion(this._walletVersion);
     // This change is made to support new contracts with different encoding type
     return this._transfer.signAndBuild(chainId, this.coinUsesNonPackedEncodingForTxData());
   }

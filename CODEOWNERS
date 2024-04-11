@@ -31,6 +31,7 @@
 /modules/account-lib/ @BitGo/ethalt-team
 /modules/sdk-coin-celo/ @BitGo/ethalt-team
 /modules/sdk-coin-etc/ @BitGo/ethalt-team
+/modules/abstract-eth/ @BitGo/ethalt-team
 /modules/sdk-coin-eth/ @BitGo/ethalt-team
 /modules/sdk-coin-eth2/ @BitGo/ethalt-team
 /modules/sdk-coin-rbtc/ @BitGo/ethalt-team
