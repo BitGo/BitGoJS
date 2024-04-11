@@ -442,6 +442,7 @@ export enum UnderlyingAsset {
   BCIO = 'bcio',
   BCUT = 'bcut',
   BCT = 'bct',
+  BDXN = 'bdxn',
   BEAR = 'bear',
   BEARSHIT = 'bearshit',
   BED = 'bed',
@@ -1176,6 +1177,7 @@ export enum UnderlyingAsset {
   RGT = 'rgt',
   RIF = 'rif',
   RINGX = 'ringx',
+  RIO = 'rio',
   RLC = 'rlc',
   RLY = 'rly',
   RND = 'rnd',
@@ -1763,6 +1765,7 @@ export enum UnderlyingAsset {
   'arbeth:usdcv2' = 'arbeth:usdcv2',
   'arbeth:usdt' = 'arbeth:usdt',
   'arbeth:arb' = 'arbeth:arb',
+  'arbeth:sqd' = 'arbeth:sqd',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -1835,6 +1838,7 @@ export enum UnderlyingAsset {
   'jup' = 'jup',
   'honey' = 'honey',
   'mobile' = 'mobile',
+  'wif' = 'wif',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
