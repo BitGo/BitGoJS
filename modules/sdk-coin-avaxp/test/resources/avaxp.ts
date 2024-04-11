@@ -636,7 +636,7 @@ export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
     },
     {
       outputID: 7,
-      amount: '4000000000',
+      amount: '2000000000',
       txid: 'WyjYJHa7Ye1KMsBZiQ8hQJzY7YYxTJTTyMkxcVrKRDiNytTY8',
       threshold: 2,
       addresses: [
@@ -645,6 +645,19 @@ export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
         'P-fuji1k3ca2njcunzl4hhxy24avca7htf66cmjjukl0n', // bitgo
       ],
       outputidx: '1',
+      locktime: '0',
+    },
+    {
+      outputID: 7,
+      amount: '2000000000',
+      txid: 'WyjYJHa7Ye1KMsBZiQ8hQJzY7YYxTJTTyMkxcVrKRDiNytTY8',
+      threshold: 2,
+      addresses: [
+        'P-fuji1wzr0hsm8zlr6gpaakxvt67f999nj044ete07uw', // backup
+        'P-fuji1w4jjs4qfugq0m3nu0d3htx6662dlq87zq5nz33', // user
+        'P-fuji1k3ca2njcunzl4hhxy24avca7htf66cmjjukl0n', // bitgo
+      ],
+      outputidx: '0',
       locktime: '0',
     },
   ],
