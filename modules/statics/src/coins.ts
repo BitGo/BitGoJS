@@ -10369,6 +10369,13 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('59220e6e-d94b-40b7-8e10-2f7c691c2482', 'ofcarbeth:usdc', 'USD Coin', 6, UnderlyingAsset['arbeth:usdc']),
   ofcerc20('4834e014-0282-4e27-ad9c-c4a4468ce732', 'ofcarbeth:usdt', 'Tether USD', 6, UnderlyingAsset['arbeth:usdt']),
   ofcerc20('e91ce545-8ace-4f12-b6d4-8c5a3e84022f', 'ofcarbeth:arb', 'Arbitrum', 18, UnderlyingAsset['arbeth:arb']),
+  ofcerc20(
+    'baded9c2-d530-4188-b35d-2fd00cf6ee2e',
+    'ofcustb',
+    'Superstate Short Duration US Government Securities Fund',
+    6,
+    UnderlyingAsset.USTB
+  ),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
