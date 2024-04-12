@@ -51,7 +51,7 @@ export abstract class MpcUtils {
     keyType: KeyType,
     enterprise?: string
   ): Promise<Keychain> {
-    const bitgoKey = await getBitgoGpgPubKey(this.bitgo);
+    const bitgoKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
     const encUserToBitGoMessage = await encryptText(userKeyShare.privateShare, bitgoKey);
     const encBackupToBitGoMessage = await encryptText(backupKeyShare.privateShare, bitgoKey);
 

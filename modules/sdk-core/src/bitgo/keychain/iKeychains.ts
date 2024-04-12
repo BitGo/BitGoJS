@@ -141,6 +141,7 @@ export interface CreateMpcOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   backupProvider?: BackupProvider;
+  walletVersion?: number;
 }
 
 export interface GetKeysForSigningOptions {

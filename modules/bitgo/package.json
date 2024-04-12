@@ -114,6 +114,7 @@
   },
   "devDependencies": {
     "@bitgo/sdk-test": "^8.0.13",
+    "@bitgo/public-types": "2.9.3",
     "@openpgp/web-stream-tools": "0.0.14",
     "@types/create-hmac": "^1.1.0",
     "@types/debug": "^4.1.4",

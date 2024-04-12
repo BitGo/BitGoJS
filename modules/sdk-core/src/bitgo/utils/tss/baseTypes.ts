@@ -367,6 +367,7 @@ export interface BackupKeyShare {
 export interface BitgoGPGPublicKey {
   name: string;
   publicKey: string;
+  mpcv2PublicKey?: string;
   enterpriseId: string;
 }
 
