@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.62.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.61.9...@bitgo/express@9.62.0) (2024-04-12)
+
+### Features
+
+- **bitgo:** add PATCH and OPTIONS to redirectRequest ([4c8ba7a](https://github.com/BitGo/BitGoJS/commit/4c8ba7abb5718261774352e1a191f0ab5dc5e616))
+
 ## [9.61.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.61.8...@bitgo/express@9.61.9) (2024-04-10)
 
 **Note:** Version bump only for package @bitgo/express

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.6.2...@bitgo/sdk-core@26.7.0) (2024-04-12)
+
+### Bug Fixes
+
+- pending approvals for txRequestLite should not use multiSig flow ([7802998](https://github.com/BitGo/BitGoJS/commit/7802998082594a970c8ef71a794cf48b748cc555))
+
+### Features
+
+- **bitgo:** add PATCH and OPTIONS to redirectRequest ([4c8ba7a](https://github.com/BitGo/BitGoJS/commit/4c8ba7abb5718261774352e1a191f0ab5dc5e616))
+- **sdk-coin-stx:** add support to nakamoto updgrade stack-stx tx ([f9cab3a](https://github.com/BitGo/BitGoJS/commit/f9cab3a0f836f3411f45e3ab1a04ee131680f649))
+
 ## [26.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.6.1...@bitgo/sdk-core@26.6.2) (2024-04-10)
 
 **Note:** Version bump only for package @bitgo/sdk-core

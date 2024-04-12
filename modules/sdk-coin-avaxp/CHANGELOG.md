@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.3...@bitgo/sdk-coin-avaxp@5.0.4) (2024-04-12)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** sort inputs by txid and output id ([7db0fd2](https://github.com/BitGo/BitGoJS/commit/7db0fd230d6d70244cace2778e77f95872ab3b66))
+- **sdk-coin-avaxp:** stake output cannot be 0 ([33262f6](https://github.com/BitGo/BitGoJS/commit/33262f6f5ff987a24bee2fe1e3259541eca29e06))
+
 ## [5.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.2...@bitgo/sdk-coin-avaxp@5.0.3) (2024-04-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp
