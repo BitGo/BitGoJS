@@ -18,7 +18,7 @@ function isHttpEnabled(): boolean {
 function getTestAddresses(coinName: string): string[] {
   switch (coinName) {
     case 'tbtc':
-      return ['2NEhVzd2Lom5g7ZF5K1qYrgZLpXecniqHcE'];
+      return ['2NEhVzd2Lom5g7ZF5K1qYrgZLpXecniqHcE', 'bc1qv669qw5tzxsue5qrl36ygqnaahm98n9t68hdz577cz2r8eldyj3q6d90c4'];
   }
   throw new Error(`unsupported coin ${coinName}`);
 }
