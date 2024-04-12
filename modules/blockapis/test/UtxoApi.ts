@@ -1,3 +1,11 @@
+/**
+ * This test suite iterates over a set of backends and test methods.
+ *
+ * For each backend and method, we test that the backend can fetch the resource.
+ *
+ * We then compare the normalized results from all backends to make sure they are the same.
+ */
+
 import 'mocha';
 import * as assert from 'assert';
 import { BlockchairApi, BlockstreamApi, UtxoApi, CachingHttpClient } from '../src';
@@ -34,13 +42,30 @@ function getTestTransactionIds(coinName: string): string[] {
 
 type MethodArguments = unknown[];
 
+/**
+ * A test case for a UtxoApi method.
+ */
 class TestCase<T> {
+  /**
+   * @param coinName - coin to test
+   * @param methodName - method to test
+   * @param args - method arguments
+   */
   constructor(public coinName: string, public methodName: keyof UtxoApi, public args: unknown[]) {}
 
+  /**
+   * Call the method on the given API.
+   * @param api
+   */
   func(api: UtxoApi) {
     return (api[this.methodName] as any)(...this.args);
   }
 
+  /**
+   * Get the fixture for this test case.
+   * @param api
+   * @param defaultValue
+   */
   async getFixture(api: UtxoApi, defaultValue?: T): Promise<T> {
     const filename = [
       'UtxoApi',
@@ -53,6 +78,10 @@ class TestCase<T> {
     return await getFixture(`${__dirname}/fixtures/${filename}`, defaultValue);
   }
 
+  /**
+   * Get the fixture, but with the API-specific fields removed.
+   * @param api
+   */
   async getFixtureNormal(api: UtxoApi): Promise<T> {
     if (this.methodName === 'getTransactionStatus') {
       // remove api-specific fields
@@ -78,6 +107,9 @@ class TestCase<T> {
     return false;
   }
 
+  /**
+   * @return a human-readable title for this test case.
+   */
   title(): string {
     function elide(s: string, len: number) {
       return s.length > len ? `${s.slice(0, len)}...` : s;
@@ -86,10 +118,18 @@ class TestCase<T> {
   }
 }
 
+/**
+ * @param name
+ * @return a new CachingHttpClient that reads from the given fixture directory.
+ */
 function getHttpClient(name: string): CachingHttpClient {
   return new CachingHttpClient(`${__dirname}/fixtures/responses/` + name, { isHttpEnabled: isHttpEnabled() });
 }
 
+/**
+ * @param coinName
+ * @return a list of APIs to test.
+ */
 function getApis(coinName: string): UtxoApi[] {
   if (coinName === 'tbtc') {
     return [
@@ -101,6 +141,10 @@ function getApis(coinName: string): UtxoApi[] {
   return [];
 }
 
+/**
+ * @param coinName
+ * @return a list of test cases for the given coin.
+ */
 function getTestCases(coinName: string): TestCase<unknown>[] {
   function getArguments(coinName: string, methodName: keyof UtxoApi): MethodArguments[] {
     switch (methodName) {
@@ -130,6 +174,12 @@ function getTestCases(coinName: string): TestCase<unknown>[] {
   );
 }
 
+/**
+ * Set up fetch tests for the given API.
+ *
+ * @param api
+ * @param coinName
+ */
 function runTestFetch(api: UtxoApi, coinName: string) {
   getTestCases(coinName).forEach((testCase) => {
     describe(`${api.constructor.name} ${testCase.title()}`, function () {
@@ -146,6 +196,12 @@ function runTestFetch(api: UtxoApi, coinName: string) {
   });
 }
 
+/**
+ * Set up comparison tests for the given API.
+ *
+ * @param api
+ * @param coinName
+ */
 function runTestCompare(api: UtxoApi, coinName: string) {
   getTestCases(coinName).forEach((testCase) => {
     describe(`method ${testCase.title()}`, function () {
