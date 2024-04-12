@@ -1,5 +1,5 @@
-import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
-import { UtxoNetwork } from './networks';
+import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from '../base';
+import { UtxoNetwork } from '../networks';
 
 export interface UtxoConstructorOptions {
   id: string;

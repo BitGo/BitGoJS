@@ -80,7 +80,8 @@
 /modules/sdk-test/ @BitGo/custody-experience @BitGo/wallet-platform
 /modules/sdk-unified-wallet @BitGo/ethalt-team
 /modules/sjcl/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/modules/statics/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+/modules/statics/ @BitGo/custody-experience @BitGo/wallet-platform @BitGo/ethalt-team
+/modules/statics/src/utxo @BitGo/btc-team
 /modules/web-demo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 /scripts/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 /types/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform

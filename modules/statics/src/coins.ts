@@ -55,7 +55,7 @@ import {
   tofcHederaToken,
   tofcStellarToken,
 } from './ofc';
-import { utxo, UtxoCoin } from './utxo';
+import { utxo, UtxoCoin } from './utxo/utxo';
 
 const BCH_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
