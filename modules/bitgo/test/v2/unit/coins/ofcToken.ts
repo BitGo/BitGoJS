@@ -284,6 +284,29 @@ describe('OFC:', function () {
     });
   });
 
+  describe('check ofc tokens for arbethErc20', function () {
+    const tokenMain = 'ofcarbeth:link';
+    const tokenTest = 'ofctarbeth:link';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('Chainlink Token');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_18);
+        ofcCoin.addressCoin.should.equal('arbeth');
+      });
+    });
+    describe('for test network', function () {
+      it(`should have the correct values for ${tokenTest}`, function () {
+        const ofcCoin = bitgo.coin(tokenTest);
+        ofcCoin.getChain().should.equal(tokenTest);
+        ofcCoin.getFullName().should.equal('Arbitrum Test LINK');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_18);
+        ofcCoin.addressCoin.should.equal('tarbeth');
+      });
+    });
+  });
+
   it('can sign payloads', async function () {
     const inputParams = {
       txPrebuild: {

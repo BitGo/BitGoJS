@@ -24,9 +24,12 @@ const publicIdRegex = /^[a-f\d]{32}$/i;
 export class OfcToken extends Ofc {
   public readonly tokenConfig: OfcTokenConfig;
 
+  public readonly addressCoin?: string;
+
   constructor(bitgo: BitGoBase, tokenConfig: OfcTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
+    this.addressCoin = tokenConfig.addressCoin;
   }
 
   get coin() {
