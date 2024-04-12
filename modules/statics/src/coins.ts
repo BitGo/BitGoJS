@@ -2065,6 +2065,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BCT
   ),
   erc20(
+    '10ffc090-0c82-4a0c-8907-54b1adbb8fc2',
+    'bdxn',
+    'Bondex Token',
+    18,
+    '0xbdbdbdd0c22888e63cb9098ad6d68439197cb091',
+    UnderlyingAsset.BDXN
+  ),
+  erc20(
     '04c44584-c417-4fce-883f-8f316854c63e',
     'bed',
     'Bankless BED Index',
@@ -5597,6 +5605,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x7f86c782ec802ac402e0369d2e6d500256f7abc5',
     UnderlyingAsset.RINGX
+  ),
+  erc20(
+    '676dc40d-270b-40a9-b259-b68547bbb1b7',
+    'rio',
+    'Realio Network',
+    18,
+    '0xf21661d0d1d76d3ecb8e1b9f1c923dbfffae4097',
+    UnderlyingAsset.RIO
   ),
   erc20(
     'f2908def-0fdb-4294-9ec7-ac783d9b9b4e',
@@ -13920,6 +13936,15 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    '15852e6a-342c-4e37-8745-9782ae25a476',
+    'sol:wif',
+    'dogwifhat',
+    6,
+    'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
+    UnderlyingAsset['wif'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     '51025e9d-74b7-483e-8649-3628049258dc',
     'sol:mobile',
     'Helium Mobile',
@@ -14686,6 +14711,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x912ce59144191c1204e64559fe8253a0e49e6548',
     UnderlyingAsset['arbeth:arb']
+  ),
+  arbethErc20(
+    '65668b2e-6560-4749-a965-4d03eaeffaec',
+    'arbeth:sqd',
+    'Subsquid',
+    18,
+    '0x1337420ded5adb9980cfc35f8f2b054ea86f8ab1',
+    UnderlyingAsset['arbeth:sqd']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
