@@ -37,6 +37,7 @@ type BlockchairUnspent = {
   script_hex: string;
   spending_transaction_hash: string;
   spending_index: number;
+  address: string;
 };
 
 // https://blockchair.com/api/docs#link_300
@@ -144,19 +145,24 @@ export class BlockchairApi implements AddressApi, UtxoApi {
     if (addr.length > 100) {
       throw new Error(`invalid size`);
     }
-    // https://blockchair.com/api/docs#link_300
-    return (
-      await this.get<BlockchairResponse<{ utxo: BlockchairUnspent[] }>>(`/dashboards/addresses/${addr.join(',')}`)
-    ).map((body) => {
-      return addr.flatMap((a) => {
-        return body.data.utxo.map((unspent): Unspent => {
-          return {
-            id: formatOutputId({ txid: unspent.transaction_hash, vout: unspent.index }),
-            address: a,
-            value: unspent.value,
-          };
-        });
-      });
+
+    const response = await this.get<BlockchairResponse<{ utxo: BlockchairUnspent[] }>>(
+      `/dashboards/addresses/${addr.join(',')}`
+    );
+
+    return response.map((body) => {
+      return body.data.utxo
+        .flatMap((unspent): Unspent | undefined => {
+          if (addr.includes(unspent.address)) {
+            return {
+              id: formatOutputId({ txid: unspent.transaction_hash, vout: unspent.index }),
+              address: unspent.address,
+              value: unspent.value,
+            };
+          }
+          return undefined;
+        })
+        .filter((unspent): unspent is Unspent => unspent !== undefined);
     });
   }
 
