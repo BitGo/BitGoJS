@@ -293,7 +293,6 @@ describe('OFC:', function () {
         ofcCoin.getChain().should.equal(tokenMain);
         ofcCoin.getFullName().should.equal('Chainlink Token');
         ofcCoin.getBaseFactor().should.equal(PRECISION_18);
-        ofcCoin.addressCoin.should.equal('arbeth');
       });
     });
     describe('for test network', function () {
@@ -302,7 +301,6 @@ describe('OFC:', function () {
         ofcCoin.getChain().should.equal(tokenTest);
         ofcCoin.getFullName().should.equal('Arbitrum Test LINK');
         ofcCoin.getBaseFactor().should.equal(PRECISION_18);
-        ofcCoin.addressCoin.should.equal('tarbeth');
       });
     });
   });

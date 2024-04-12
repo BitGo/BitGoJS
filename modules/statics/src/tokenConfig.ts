@@ -62,7 +62,6 @@ export type AlgoTokenConfig = BaseNetworkConfig & {
 export type OfcTokenConfig = BaseTokenConfig & {
   backingCoin: string;
   isFiat: boolean;
-  addressCoin?: string;
 };
 
 export type HbarTokenConfig = BaseNetworkConfig;
@@ -250,7 +249,6 @@ const formattedOfcCoins = coins.reduce((acc: OfcTokenConfig[], coin) => {
       name: coin.fullName,
       decimalPlaces: coin.decimalPlaces,
       isFiat: coin.kind === CoinKind.FIAT,
-      addressCoin: coin.addressCoin,
     });
   }
   return acc;
