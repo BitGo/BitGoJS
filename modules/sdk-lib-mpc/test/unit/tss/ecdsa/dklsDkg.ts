@@ -1,4 +1,5 @@
-import { DklsDkg } from '../../../../src/tss/ecdsa-dkls';
+import assert from 'assert';
+import { DklsDkg, DklsTypes } from '../../../../src/tss/ecdsa-dkls';
 import {
   decryptAndVerifyIncomingMessages,
   encryptAndAuthOutgoingMessages,
@@ -75,9 +76,14 @@ describe('DKLS Dkg 2x3', function () {
       p2pMessages: [],
       broadcastMessages: bitgoRound4Messages.broadcastMessages.concat(userRound4Messages.broadcastMessages),
     });
-    const backupKeyShare = decode(backup.getKeyShare());
-    decode(user.getKeyShare()).public_key.should.deepEqual(backupKeyShare.public_key);
-    decode(bitgo.getKeyShare()).public_key.should.deepEqual(backupKeyShare.public_key);
+
+    const userKeyShare = user.getKeyShare();
+    const backupKeyShare = backup.getKeyShare();
+    const bitgoKeyShare = bitgo.getKeyShare();
+    assert.deepEqual(decode(userKeyShare).public_key, decode(bitgoKeyShare).public_key);
+    assert.deepEqual(decode(backupKeyShare).public_key, decode(bitgoKeyShare).public_key);
+    assert.deepEqual(DklsTypes.getCommonKeychain(userKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
+    assert.deepEqual(DklsTypes.getCommonKeychain(backupKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
   });
 
   it(`should create key shares with authenticated encryption`, async function () {
@@ -241,5 +247,13 @@ describe('DKLS Dkg 2x3', function () {
       p2pMessages: [],
       broadcastMessages: bitgoRound4Messages.broadcastMessages.concat(userRound4Messages.broadcastMessages),
     });
+
+    const userKeyShare = user.getKeyShare();
+    const backupKeyShare = backup.getKeyShare();
+    const bitgoKeyShare = bitgo.getKeyShare();
+    assert.deepEqual(decode(userKeyShare).public_key, decode(bitgoKeyShare).public_key);
+    assert.deepEqual(decode(backupKeyShare).public_key, decode(bitgoKeyShare).public_key);
+    assert.deepEqual(DklsTypes.getCommonKeychain(userKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
+    assert.deepEqual(DklsTypes.getCommonKeychain(backupKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
   });
 });

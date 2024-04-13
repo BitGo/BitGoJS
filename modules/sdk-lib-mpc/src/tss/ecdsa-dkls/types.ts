@@ -1,3 +1,6 @@
+import assert from 'assert';
+import { decode } from 'cbor';
+
 // Broadcast message meant to be sent to multiple parties
 interface BroadcastMessage<T> {
   payload: T;
@@ -73,42 +76,80 @@ export type DeserializedMessages = {
  */
 export function serializeMessages(messages: DeserializedMessages): SerializedMessages {
   return {
-    p2pMessages: messages.p2pMessages.map((m) => {
-      return {
-        to: m.to,
-        from: m.from,
-        payload: Buffer.from(m.payload).toString('base64'),
-        commitment: m.commitment ? Buffer.from(m.commitment).toString('base64') : m.commitment,
-      };
-    }),
-    broadcastMessages: messages.broadcastMessages.map((m) => {
-      return {
-        from: m.from,
-        payload: Buffer.from(m.payload).toString('base64'),
-      };
-    }),
+    p2pMessages: messages.p2pMessages.map(serializeP2PMessage),
+    broadcastMessages: messages.broadcastMessages.map(serializeBroadcastMessage),
   };
 }
 
 /**
- * Desrializes messages payloads to Uint8Array.
+ * Deserialize messages payloads to Uint8Array.
  * @param messages
  */
 export function deserializeMessages(messages: SerializedMessages): DeserializedMessages {
   return {
-    p2pMessages: messages.p2pMessages.map((m) => {
-      return {
-        to: m.to,
-        from: m.from,
-        payload: new Uint8Array(Buffer.from(m.payload, 'base64')),
-        commitment: m.commitment ? new Uint8Array(Buffer.from(m.commitment, 'base64')) : undefined,
-      };
-    }),
-    broadcastMessages: messages.broadcastMessages.map((m) => {
-      return {
-        from: m.from,
-        payload: new Uint8Array(Buffer.from(m.payload, 'base64')),
-      };
-    }),
+    p2pMessages: messages.p2pMessages.map(deserializeP2PMessage),
+    broadcastMessages: messages.broadcastMessages.map(deserializeBroadcastMessage),
   };
+}
+
+/**
+ * Deserializes a P2P message.
+ * @param message
+ */
+export function deserializeP2PMessage(message: SerializedP2PMessage): DeserializedP2PMessage {
+  return {
+    to: message.to,
+    from: message.from,
+    payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
+    commitment: message.commitment ? new Uint8Array(Buffer.from(message.commitment, 'base64')) : undefined,
+  };
+}
+
+/**
+ * Deserializes a Broadcast message.
+ * @param message
+ */
+export function deserializeBroadcastMessage(message: SerializedBroadcastMessage): DeserializedBroadcastMessage {
+  return {
+    from: message.from,
+    payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
+  };
+}
+
+/**
+ * Serializes a P2P message.
+ * @param message
+ */
+export function serializeP2PMessage(message: DeserializedP2PMessage): SerializedP2PMessage {
+  return {
+    to: message.to,
+    from: message.from,
+    payload: Buffer.from(message.payload).toString('base64'),
+    commitment: message.commitment ? Buffer.from(message.commitment).toString('base64') : undefined,
+  };
+}
+
+/**
+ * Serializes a Broadcast message.
+ * @param message
+ */
+export function serializeBroadcastMessage(message: DeserializedBroadcastMessage): SerializedBroadcastMessage {
+  return {
+    from: message.from,
+    payload: Buffer.from(message.payload).toString('base64'),
+  };
+}
+
+/**
+ * Gets commonkeyChain from DKLS keyShare
+ * @param {Buffer} keyShare - DKLS keyShare
+ * @returns {string} commonKeychain
+ */
+export function getCommonKeychain(keyShare: Buffer): string {
+  const parsedKeyShare = decode(keyShare);
+  assert(parsedKeyShare.public_key, 'public_key not found in keyShare');
+  assert(parsedKeyShare.root_chain_code, 'root_chain_code not found in public_key');
+  const publicKey = Buffer.from(parsedKeyShare.public_key).toString('hex');
+  const rootChainCode = Buffer.from(parsedKeyShare.root_chain_code).toString('hex');
+  return publicKey + rootChainCode;
 }
