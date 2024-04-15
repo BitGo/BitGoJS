@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.5.0...@bitgo/statics@48.6.0) (2024-04-12)
+
+### Features
+
+- **statics:** add new batch of tokens ([534a156](https://github.com/BitGo/BitGoJS/commit/534a156cafecbcd9f1d918036516771270f79610))
+- **statics:** add ofc for TBILL (erc20) ([5e6c6f6](https://github.com/BitGo/BitGoJS/commit/5e6c6f6474eaf391ac120f721b255868193d5853))
+- **statics:** add ofc for USTB (erc20) ([b40d72c](https://github.com/BitGo/BitGoJS/commit/b40d72cf90b07fd890ea95b5feb759054403330c))
+
 # [48.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.4.0...@bitgo/statics@48.5.0) (2024-04-09)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [38.0.5](https://github.com/BitGo/BitGoJS/compare/bitgo@38.0.4...bitgo@38.0.5) (2024-04-12)
+
+### Bug Fixes
+
+- pending approvals for txRequestLite should not use multiSig flow ([7802998](https://github.com/BitGo/BitGoJS/commit/7802998082594a970c8ef71a794cf48b748cc555))
+
 ## [38.0.4](https://github.com/BitGo/BitGoJS/compare/bitgo@38.0.3...bitgo@38.0.4) (2024-04-10)
 
 **Note:** Version bump only for package bitgo

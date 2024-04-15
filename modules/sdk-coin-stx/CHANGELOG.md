@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.0.4...@bitgo/sdk-coin-stx@3.1.0) (2024-04-12)
+
+### Features
+
+- **sdk-coin-stx:** add support to nakamoto updgrade stack-stx tx ([f9cab3a](https://github.com/BitGo/BitGoJS/commit/f9cab3a0f836f3411f45e3ab1a04ee131680f649))
+
 ## [3.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.0.3...@bitgo/sdk-coin-stx@3.0.4) (2024-04-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.45.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.44.2...@bitgo/sdk-api@1.45.0) (2024-04-12)
+
+### Features
+
+- **bitgo:** add PATCH and OPTIONS to redirectRequest ([4c8ba7a](https://github.com/BitGo/BitGoJS/commit/4c8ba7abb5718261774352e1a191f0ab5dc5e616))
+
 ## [1.44.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.44.1...@bitgo/sdk-api@1.44.2) (2024-04-10)
 
 **Note:** Version bump only for package @bitgo/sdk-api
