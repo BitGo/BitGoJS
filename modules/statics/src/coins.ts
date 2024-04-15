@@ -49,11 +49,13 @@ import {
   ofcerc20,
   ofcHederaToken,
   ofcStellarToken,
+  ofcArbethErc20,
   tofc,
   tofcAlgoToken,
   tofcerc20,
   tofcHederaToken,
   tofcStellarToken,
+  tofcArbethErc20,
 } from './ofc';
 import { utxo, UtxoCoin } from './utxo/utxo';
 
@@ -10375,16 +10377,34 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BUIDL
   ),
-  ofcerc20(
+  ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
     'Chainlink Token',
     18,
     UnderlyingAsset['arbeth:link']
   ),
-  ofcerc20('59220e6e-d94b-40b7-8e10-2f7c691c2482', 'ofcarbeth:usdc', 'USD Coin', 6, UnderlyingAsset['arbeth:usdc']),
-  ofcerc20('4834e014-0282-4e27-ad9c-c4a4468ce732', 'ofcarbeth:usdt', 'Tether USD', 6, UnderlyingAsset['arbeth:usdt']),
-  ofcerc20('e91ce545-8ace-4f12-b6d4-8c5a3e84022f', 'ofcarbeth:arb', 'Arbitrum', 18, UnderlyingAsset['arbeth:arb']),
+  ofcArbethErc20(
+    '59220e6e-d94b-40b7-8e10-2f7c691c2482',
+    'ofcarbeth:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset['arbeth:usdc']
+  ),
+  ofcArbethErc20(
+    '4834e014-0282-4e27-ad9c-c4a4468ce732',
+    'ofcarbeth:usdt',
+    'Tether USD',
+    6,
+    UnderlyingAsset['arbeth:usdt']
+  ),
+  ofcArbethErc20(
+    'e91ce545-8ace-4f12-b6d4-8c5a3e84022f',
+    'ofcarbeth:arb',
+    'Arbitrum',
+    18,
+    UnderlyingAsset['arbeth:arb']
+  ),
   ofcerc20(
     'baded9c2-d530-4188-b35d-2fd00cf6ee2e',
     'ofcustb',
@@ -11618,7 +11638,7 @@ export const coins = CoinMap.fromCoins([
     undefined,
     'gteth'
   ),
-  tofcerc20(
+  tofcArbethErc20(
     '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',
     'ofctarbeth:link',
     'Arbitrum Test LINK',
