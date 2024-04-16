@@ -11,6 +11,7 @@ import {
   EcdhDerivedKeypair,
   EncryptOptions,
   EnvironmentName,
+  generateRandomPassword,
   getAddressP2PKH,
   getSharedSecret,
   GetSharingKeyOptions,
@@ -1205,8 +1206,7 @@ export class BitGoAPI implements BitGoBase {
    * @returns {String}          base58 random password
    */
   generateRandomPassword(numWords = 5): string {
-    const bytes = sjcl.codec.bytes.fromBits(sjcl.random.randomWords(numWords));
-    return bs58.encode(bytes);
+    return generateRandomPassword(numWords);
   }
 
   /**
