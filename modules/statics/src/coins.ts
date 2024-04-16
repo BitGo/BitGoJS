@@ -57,7 +57,7 @@ import {
   tofcStellarToken,
   tofcArbethErc20,
 } from './ofc';
-import { utxo, UtxoCoin } from './utxo/utxo';
+import { utxo, UtxoCoin } from './utxo';
 
 const BCH_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
