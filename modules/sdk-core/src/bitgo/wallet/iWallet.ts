@@ -575,6 +575,11 @@ export interface CrossChainUTXO {
 export type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';
 export type SubWalletType = 'distributedCustody';
 
+export type WalletUser = {
+  user: string;
+  permissions: string[];
+};
+
 export interface WalletData {
   id: string;
   approvalsRequired: number;
@@ -609,7 +614,7 @@ export interface WalletData {
   tokens?: Record<string, any>[];
   nfts?: { [contractAddressOrToken: string]: NftBalance };
   unsupportedNfts?: { [contractAddress: string]: NftBalance };
-  users?: any[];
+  users?: WalletUser[];
 }
 
 export interface RecoverTokenOptions {
