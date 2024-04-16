@@ -503,6 +503,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   private getAllSignatures(): Signature[] {
-    return structuredClone(this._initSignatures.concat(this._signatures));
+    return this._initSignatures.concat(this._signatures);
   }
 }

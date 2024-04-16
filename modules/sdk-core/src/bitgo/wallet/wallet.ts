@@ -271,7 +271,7 @@ export class Wallet implements IWallet {
   }
 
   public flags(): { name: string; value: string }[] {
-    return structuredClone(this._wallet.walletFlags ?? []);
+    return this._wallet.walletFlags ?? [];
   }
 
   public flag(name: string): string | undefined {
@@ -282,7 +282,7 @@ export class Wallet implements IWallet {
    * Get the public object ids for the keychains on this wallet.
    */
   public keyIds(): string[] {
-    return structuredClone(this._wallet.keys);
+    return this._wallet.keys;
   }
 
   /**
@@ -317,7 +317,7 @@ export class Wallet implements IWallet {
    * Get wallet properties which are specific to certain coin implementations
    */
   coinSpecific(): WalletCoinSpecific | undefined {
-    return structuredClone(this._wallet.coinSpecific);
+    return this._wallet.coinSpecific;
   }
 
   /**
@@ -831,7 +831,7 @@ export class Wallet implements IWallet {
     }
     const url = this.url(`/address/${encodeURIComponent(query)}/deployment`);
     this._wallet = await this.bitgo.post(url).send(params).result();
-    return structuredClone(this._wallet);
+    return this._wallet;
   }
 
   /**
@@ -858,7 +858,7 @@ export class Wallet implements IWallet {
     }
     const url = this.url(`/address/${encodeURIComponent(query)}/tokenforward`);
     this._wallet = await this.bitgo.post(url).send(params).result();
-    return structuredClone(this._wallet);
+    return this._wallet;
   }
 
   /**
@@ -2479,7 +2479,7 @@ export class Wallet implements IWallet {
    * Extract a JSON representable version of this wallet
    */
   toJSON(): WalletData {
-    return structuredClone(this._wallet);
+    return this._wallet;
   }
 
   /**
@@ -3335,7 +3335,7 @@ export class Wallet implements IWallet {
     }
     const url = this.url('/fundForwarder');
     this._wallet = await this.bitgo.post(url).send(params).result();
-    return structuredClone(this._wallet);
+    return this._wallet;
   }
 
   /**

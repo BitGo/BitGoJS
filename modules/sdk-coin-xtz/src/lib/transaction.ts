@@ -294,7 +294,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get owners(): string[] {
-    return structuredClone(this._owners);
+    return this._owners;
   }
 
   /**
