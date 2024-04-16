@@ -29,6 +29,7 @@ module.exports = {
         'DES-',
         'DO-',
         'DOS-',
+        'DX-',
         'EA-',
         'ERC20-',
         'FAC-',
