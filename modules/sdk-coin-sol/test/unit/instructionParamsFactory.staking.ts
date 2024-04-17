@@ -3,7 +3,7 @@ import * as testData from '../resources/sol';
 import { instructionParamsFactory } from '../../src/lib/instructionParamsFactory';
 import { TransactionType } from '@bitgo/sdk-core';
 import { InstructionParams, Nonce, StakingActivate, StakingDeactivate, StakingWithdraw } from '../../src/lib/iface';
-import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
+import { InstructionBuilderTypes, MEMO_PROGRAM_PK, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from '../../src/lib/constants';
 import {
   Keypair as SolKeypair,
   Lockup,
@@ -484,12 +484,15 @@ describe('Instruction Parser Staking Tests: ', function () {
             programId: StakeProgram.programId,
           });
 
-          const splitInstructions = StakeProgram.split({
-            stakePubkey: stakingAccount,
-            authorizedPubkey: fromAccount,
-            splitStakePubkey: splitStakeAccount,
-            lamports: 100000,
-          }).instructions;
+          const splitInstructions = StakeProgram.split(
+            {
+              stakePubkey: stakingAccount,
+              authorizedPubkey: fromAccount,
+              splitStakePubkey: splitStakeAccount,
+              lamports: 100000,
+            },
+            0
+          ).instructions;
 
           const stakingDeactivateInstructions = StakeProgram.deactivate({
             authorizedPubkey: fromAccount,
@@ -532,12 +535,15 @@ describe('Instruction Parser Staking Tests: ', function () {
             space: StakeProgram.space,
           });
 
-          const splitInstructions = StakeProgram.split({
-            stakePubkey: stakingAccount,
-            authorizedPubkey: fromAccount,
-            splitStakePubkey: splitStakeAccount,
-            lamports: 100000,
-          }).instructions;
+          const splitInstructions = StakeProgram.split(
+            {
+              stakePubkey: stakingAccount,
+              authorizedPubkey: fromAccount,
+              splitStakePubkey: splitStakeAccount,
+              lamports: 100000,
+            },
+            0
+          ).instructions;
 
           const stakingDeactivateInstructions = StakeProgram.deactivate({
             authorizedPubkey: fromAccount,
@@ -624,12 +630,15 @@ describe('Instruction Parser Staking Tests: ', function () {
             space: StakeProgram.space,
           });
 
-          const splitInstructions = StakeProgram.split({
-            stakePubkey: stakingAccount,
-            authorizedPubkey: fromAccount,
-            splitStakePubkey: splitStakeAccount,
-            lamports: 100000,
-          }).instructions;
+          const splitInstructions = StakeProgram.split(
+            {
+              stakePubkey: stakingAccount,
+              authorizedPubkey: fromAccount,
+              splitStakePubkey: splitStakeAccount,
+              lamports: 100000,
+            },
+            0
+          ).instructions;
 
           const assignInstruction = SystemProgram.assign({
             accountPubkey: splitStakeAccount,
@@ -683,12 +692,15 @@ describe('Instruction Parser Staking Tests: ', function () {
             programId: StakeProgram.programId,
           });
 
-          const splitInstructions = StakeProgram.split({
-            stakePubkey: stakingAccount,
-            authorizedPubkey: fromAccount,
-            splitStakePubkey: splitStakeAccount,
-            lamports: 100000,
-          }).instructions;
+          const splitInstructions = StakeProgram.split(
+            {
+              stakePubkey: stakingAccount,
+              authorizedPubkey: fromAccount,
+              splitStakePubkey: splitStakeAccount,
+              lamports: 100000,
+            },
+            0
+          ).instructions;
 
           const stakingDeactivateInstructions = StakeProgram.deactivate({
             authorizedPubkey: fromAccount,
@@ -738,12 +750,15 @@ describe('Instruction Parser Staking Tests: ', function () {
               programId: StakeProgram.programId,
             });
 
-            const splitInstructions = StakeProgram.split({
-              stakePubkey: stakingAccount,
-              authorizedPubkey: fromAccount,
-              splitStakePubkey: splitStakeAccount,
-              lamports: 100000,
-            }).instructions;
+            const splitInstructions = StakeProgram.split(
+              {
+                stakePubkey: stakingAccount,
+                authorizedPubkey: fromAccount,
+                splitStakePubkey: splitStakeAccount,
+                lamports: 100000,
+              },
+              0
+            ).instructions;
 
             const stakingDeactivateInstructions = StakeProgram.deactivate({
               authorizedPubkey: fromAccount,
@@ -793,12 +808,15 @@ describe('Instruction Parser Staking Tests: ', function () {
             programId: SystemProgram.programId,
           });
 
-          const splitInstructions = StakeProgram.split({
-            stakePubkey: stakingAccount,
-            authorizedPubkey: fromAccount,
-            splitStakePubkey: splitStakeAccount,
-            lamports: 100000,
-          }).instructions;
+          const splitInstructions = StakeProgram.split(
+            {
+              stakePubkey: stakingAccount,
+              authorizedPubkey: fromAccount,
+              splitStakePubkey: splitStakeAccount,
+              lamports: 100000,
+            },
+            0
+          ).instructions;
 
           const stakingDeactivateInstructions = StakeProgram.deactivate({
             authorizedPubkey: fromAccount,
@@ -848,12 +866,15 @@ describe('Instruction Parser Staking Tests: ', function () {
             programId: StakeProgram.programId,
           });
 
-          const splitInstructions = StakeProgram.split({
-            stakePubkey: stakingAccount,
-            authorizedPubkey: fromAccount,
-            splitStakePubkey: stakingAccount,
-            lamports: 100000,
-          }).instructions;
+          const splitInstructions = StakeProgram.split(
+            {
+              stakePubkey: stakingAccount,
+              authorizedPubkey: fromAccount,
+              splitStakePubkey: stakingAccount,
+              lamports: 100000,
+            },
+            0
+          ).instructions;
 
           const stakingDeactivateInstructions = StakeProgram.deactivate({
             authorizedPubkey: fromAccount,
@@ -902,12 +923,15 @@ describe('Instruction Parser Staking Tests: ', function () {
             programId: StakeProgram.programId,
           });
 
-          const splitInstructions = StakeProgram.split({
-            stakePubkey: stakingAccount,
-            authorizedPubkey: fromAccount,
-            splitStakePubkey: stakingAccount,
-            lamports: 100000,
-          }).instructions;
+          const splitInstructions = StakeProgram.split(
+            {
+              stakePubkey: stakingAccount,
+              authorizedPubkey: fromAccount,
+              splitStakePubkey: stakingAccount,
+              lamports: 100000,
+            },
+            0
+          ).instructions;
 
           const stakingDeactivateInstructions = StakeProgram.deactivate({
             authorizedPubkey: fromAccount,
@@ -951,7 +975,7 @@ describe('Instruction Parser Staking Tests: ', function () {
         const transferInstruction = SystemProgram.transfer({
           fromPubkey: new PublicKey(fromAccount),
           toPubkey: new PublicKey(splitStakeAccount),
-          lamports: parseInt((2282880).toString(), 10),
+          lamports: parseInt(STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT.toString(), 10),
         });
 
         const allocateInstruction = SystemProgram.allocate({
@@ -964,12 +988,15 @@ describe('Instruction Parser Staking Tests: ', function () {
           programId: StakeProgram.programId,
         });
 
-        const splitInstructions = StakeProgram.split({
-          stakePubkey: stakingAccount,
-          authorizedPubkey: fromAccount,
-          splitStakePubkey: splitStakeAccount,
-          lamports: 100000,
-        }).instructions;
+        const splitInstructions = StakeProgram.split(
+          {
+            stakePubkey: stakingAccount,
+            authorizedPubkey: fromAccount,
+            splitStakePubkey: splitStakeAccount,
+            lamports: 100000,
+          },
+          0
+        ).instructions;
 
         const stakingDeactivateInstructions = StakeProgram.deactivate({
           authorizedPubkey: fromAccount,

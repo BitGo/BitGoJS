@@ -241,12 +241,15 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
     });
     tx.add(assignAccount);
 
-    const splitStake = StakeProgram.split({
-      stakePubkey: new PublicKey(stakingAddress),
-      authorizedPubkey: new PublicKey(fromAddress),
-      splitStakePubkey: unstakingAddress,
-      lamports: new BigNumber(data.params.amount).toNumber(),
-    });
+    const splitStake = StakeProgram.split(
+      {
+        stakePubkey: new PublicKey(stakingAddress),
+        authorizedPubkey: new PublicKey(fromAddress),
+        splitStakePubkey: unstakingAddress,
+        lamports: new BigNumber(data.params.amount).toNumber(),
+      },
+      0
+    );
     tx.add(splitStake.instructions[1]);
 
     const deactivateStaking = StakeProgram.deactivate({

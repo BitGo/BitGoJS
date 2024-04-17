@@ -75,6 +75,7 @@
     "@polkadot/x-global": "12.3.2",
     "@polkadot/x-randomvalues": "12.3.2",
     "@polkadot/x-ws": "12.3.2",
+    "@solana/web3.js": "1.91.6",
     "@substrate/txwrapper-core": "7.0.1",
     "@substrate/txwrapper-polkadot": "7.0.1",
     "buffer": "^6.0.3",
