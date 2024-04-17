@@ -1664,7 +1664,7 @@ export function polygonErc20(
 }
 
 /**
- * Factory function for Mumbai testnet polygonErc20 token instances.
+ * Factory function for Amoy testnet polygonErc20 token instances.
  *
  * @param id uuid v4
  * @param name unique identifier of the token

@@ -692,7 +692,7 @@ describe('Polygon', function () {
         gasPrice: 20000000000,
         gasLimit: 500000,
         replayProtectionOptions: {
-          chain: 80001,
+          chain: 80002,
           hardfork: 'london',
         },
       };
@@ -737,7 +737,7 @@ describe('Polygon', function () {
         walletContractAddress: walletContractAddress,
         recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT as string,
         eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
-        replayProtectionOptions: { chain: 80001, hardfork: 'london' },
+        replayProtectionOptions: { chain: 80002, hardfork: 'london' },
         gasLimit: 500000,
       })) as OfflineVaultTxInfo;
 

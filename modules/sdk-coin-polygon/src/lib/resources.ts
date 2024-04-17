@@ -4,14 +4,18 @@ import EthereumCommon from '@ethereumjs/common';
 /**
  * A Common object defining the chain and the hardfork for Polygon Testnet
  */
-export const testnetCommon = EthereumCommon.forCustomChain(
-  'goerli',
+
+export const testnetCommon = EthereumCommon.custom(
   {
-    name: 'mumbai',
+    name: 'polygon amoy testnet',
     networkId: (coins.get('tpolygon').network as EthereumNetwork).chainId,
     chainId: (coins.get('tpolygon').network as EthereumNetwork).chainId,
   },
-  'london'
+  {
+    baseChain: 'sepolia',
+    hardfork: 'london',
+    eips: [1559],
+  }
 );
 
 /**

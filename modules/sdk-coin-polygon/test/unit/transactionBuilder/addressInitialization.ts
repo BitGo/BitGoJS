@@ -32,7 +32,7 @@ describe('Eth address initialization', () => {
     txBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
-    should.equal(txJson.deployedAddress, '0x96bbdd57fe67f5d5d86c06ba5f205c8793f2e162');
+    should.equal(txJson.deployedAddress, '0xde4133877caa961ff30caf3373c5a2f9e9cd31b2');
     should.equal(txJson.to, testData.FORWARDER_FACTORY_ADDRESS);
   });
 
