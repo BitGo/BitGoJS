@@ -5,8 +5,9 @@ import {
   MPCv2SignatureShareRound1Input,
   MPCv2SignatureShareRound1Output,
   MPCv2SignatureShareRound2Input,
-  MPCv2SignatureShareRound2Output, MPCv2SignatureShareRound3Input,
-} from "./dkls-types";
+  MPCv2SignatureShareRound2Output,
+  MPCv2SignatureShareRound3Input,
+} from './dkls-types';
 
 export async function getSignatureShareRoundOne(
   round1Message: DklsTypes.DeserializedBroadcastMessage,
@@ -83,10 +84,10 @@ export async function getSignatureShareRoundTwo(
   };
 }
 
-export async function getSignatureShareRoundThree(
+export async function getSignatureShareRoundFour(
   userToBitGoMessages4: DklsTypes.DeserializedMessages,
   userGpgKey: openpgp.SerializedKeyPair<string>,
-  bitgoGpgKey: openpgp.Key,
+  bitgoGpgKey: openpgp.Key
 ): Promise<SignatureShareRecord> {
   const userToBitGoEncryptedMsg4 = await EcdsaComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages4),
@@ -183,7 +184,7 @@ export function getBitGoPartyGpgKey(key: openpgp.Key): DklsTypes.PartyGpgKey {
 
 export function getUserPartyGpgKey(key: openpgp.SerializedKeyPair<string>): DklsTypes.PartyGpgKey {
   return {
-    partyId: 2,
+    partyId: 0,
     gpgKey: key.privateKey,
   };
 }
