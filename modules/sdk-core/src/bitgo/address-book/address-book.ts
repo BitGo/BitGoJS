@@ -42,7 +42,7 @@ export class AddressBook implements IAddressBook {
      * TODO(PX-2794): Move to structuredClone
      * https://github.com/BitGo/BitGoJS/pull/4119
      */
-    return structuredClone(this._listing);
+    return JSON.parse(JSON.stringify(this._listing));
   }
 
   /**

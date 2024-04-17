@@ -139,7 +139,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get signers(): string[] {
-    return structuredClone(this._signers);
+    return this._signers;
   }
 
   set signedBy(signer: string[]) {
@@ -147,7 +147,7 @@ export class Transaction extends BaseTransaction {
   }
 
   get signedBy(): string[] {
-    return structuredClone(this._signedBy);
+    return this._signedBy;
   }
 
   /**
