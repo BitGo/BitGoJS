@@ -1,13 +1,15 @@
 import { SignatureShareRecord, SignatureShareType } from '../../utils';
 import openpgp from 'openpgp';
-import { EcdsaComms, DklsTypes } from '@bitgo/sdk-lib-mpc';
+import { DklsComms, DklsTypes } from '@bitgo/sdk-lib-mpc';
 import {
   MPCv2SignatureShareRound1Input,
   MPCv2SignatureShareRound1Output,
   MPCv2SignatureShareRound2Input,
   MPCv2SignatureShareRound2Output,
   MPCv2SignatureShareRound3Input,
-} from './dkls-types';
+  MPCv2PartyFromStringOrNumber,
+} from '@bitgo/public-types';
+import assert from 'assert';
 
 export async function getSignatureShareRoundOne(
   round1Message: DklsTypes.DeserializedBroadcastMessage,
@@ -18,13 +20,14 @@ export async function getSignatureShareRoundOne(
     p2pMessages: [],
   });
   const authEncBroadcastMessage = (
-    await EcdsaComms.encryptAndAuthOutgoingMessages(
+    await DklsComms.encryptAndAuthOutgoingMessages(
       serializedMessages,
       [], // Broadcast message so doesn't need to encrypt to BitGo's GPG key
       [getUserPartyGpgKey(userGpgKey)]
     )
   ).broadcastMessages[0];
   // Share type expected by Wallet Platform's API
+  assert(MPCv2PartyFromStringOrNumber.is(authEncBroadcastMessage.from));
   const share: MPCv2SignatureShareRound1Input = {
     type: 'round1Input',
     data: {
@@ -49,17 +52,21 @@ export async function getSignatureShareRoundTwo(
   userGpgKey: openpgp.SerializedKeyPair<string>,
   bitgoGpgKey: openpgp.Key
 ): Promise<SignatureShareRecord> {
-  const userToBitGoEncryptedMsg2 = await EcdsaComms.encryptAndAuthOutgoingMessages(
+  const userToBitGoEncryptedMsg2 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages2),
     [getBitGoPartyGpgKey(bitgoGpgKey)],
     [getUserPartyGpgKey(userGpgKey)]
   );
 
-  const userToBitGoEncryptedMsg3 = await EcdsaComms.encryptAndAuthOutgoingMessages(
+  const userToBitGoEncryptedMsg3 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages3),
     [getBitGoPartyGpgKey(bitgoGpgKey)],
     [getUserPartyGpgKey(userGpgKey)]
   );
+  assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg2.p2pMessages[0].from));
+  assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg2.p2pMessages[0].to));
+  assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg3.p2pMessages[0].from));
+  assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg3.p2pMessages[0].to));
   const share: MPCv2SignatureShareRound2Input = {
     type: 'round2Input',
     data: {
@@ -89,11 +96,12 @@ export async function getSignatureShareRoundFour(
   userGpgKey: openpgp.SerializedKeyPair<string>,
   bitgoGpgKey: openpgp.Key
 ): Promise<SignatureShareRecord> {
-  const userToBitGoEncryptedMsg4 = await EcdsaComms.encryptAndAuthOutgoingMessages(
+  const userToBitGoEncryptedMsg4 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages4),
     [getBitGoPartyGpgKey(bitgoGpgKey)],
     [getUserPartyGpgKey(userGpgKey)]
   );
+  assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg4.broadcastMessages[0].from));
   const share: MPCv2SignatureShareRound3Input = {
     type: 'round3Input',
     data: {
@@ -116,7 +124,7 @@ export async function verifyBitGoMessagesAndSignaturesRoundOne(
   userGpgKey: openpgp.SerializedKeyPair<string>,
   bitgoGpgKey: openpgp.Key
 ): Promise<DklsTypes.SerializedMessages> {
-  return await EcdsaComms.decryptAndVerifyIncomingMessages(
+  return await DklsComms.decryptAndVerifyIncomingMessages(
     {
       p2pMessages: [
         {
@@ -148,7 +156,7 @@ export async function verifyBitGoMessagesAndSignaturesRoundTwo(
   userGpgKey: openpgp.SerializedKeyPair<string>,
   bitgoGpgKey: openpgp.Key
 ): Promise<DklsTypes.SerializedMessages> {
-  return await EcdsaComms.decryptAndVerifyIncomingMessages(
+  return await DklsComms.decryptAndVerifyIncomingMessages(
     {
       p2pMessages: [
         {
@@ -160,15 +168,7 @@ export async function verifyBitGoMessagesAndSignaturesRoundTwo(
           },
         },
       ],
-      broadcastMessages: [
-        {
-          from: parsedSignatureShare.data.msg4.from,
-          payload: {
-            message: parsedSignatureShare.data.msg4.message,
-            signature: parsedSignatureShare.data.msg4.signature,
-          },
-        },
-      ],
+      broadcastMessages: [],
     },
     [getBitGoPartyGpgKey(bitgoGpgKey)],
     [getUserPartyGpgKey(userGpgKey)]

@@ -62,7 +62,7 @@ import {
   verifyBitGoMessagesAndSignaturesRoundTwo,
 } from '../../../tss/ecdsa/dkls';
 
-import { MPCv2SignatureShareRound1Output, MPCv2SignatureShareRound2Output } from '../../../tss/ecdsa/dkls-types';
+import { MPCv2SignatureShareRound1Output, MPCv2SignatureShareRound2Output } from '@bitgo/public-types';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
