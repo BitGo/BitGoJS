@@ -15900,7 +15900,7 @@ protobufjs-cli@^1.0.2:
     tmp "^0.2.1"
     uglify-js "^3.7.7"
 
-protobufjs@7.2.4, protobufjs@^6.8.8, protobufjs@^7.0.0, protobufjs@^7.1.2, protobufjs@^7.2.4, protobufjs@~6.11.2, protobufjs@~6.11.3:
+protobufjs@7.2.4, protobufjs@7.2.5, protobufjs@^6.8.8, protobufjs@^7.0.0, protobufjs@^7.1.2, protobufjs@^7.2.4, protobufjs@~6.11.2, protobufjs@~6.11.3:
   version "7.2.5"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-7.2.5.tgz#45d5c57387a6d29a17aab6846dcc283f9b8e7f2d"
   integrity sha512-gGXRSXvxQ7UiPgfw8gevrfRWcTlSbOFg+p/N+JVJEK5VhueL2miT6qTymqAmjr1Q5WbOCyJbyrk6JfWKwlFn6A==
