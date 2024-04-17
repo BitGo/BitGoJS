@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.7.0...@bitgo/sdk-core@26.8.0) (2024-04-17)
+
+### Features
+
+- **sdk-lib-mpc:** combine partial signatures util support ([c7f126f](https://github.com/BitGo/BitGoJS/commit/c7f126f68f9ebfed370248daa3321fb14145c5c0))
+
+### Reverts
+
+- Revert "feat: protect pass by value when sending data out" ([ef1497f](https://github.com/BitGo/BitGoJS/commit/ef1497ffdc9c158300c32a596828081d32eb6f3a))
+
 # [26.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.6.2...@bitgo/sdk-core@26.7.0) (2024-04-12)
 
 ### Bug Fixes

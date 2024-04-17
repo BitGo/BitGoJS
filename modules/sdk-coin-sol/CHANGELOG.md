@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.0.4...@bitgo/sdk-coin-sol@4.0.5) (2024-04-17)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** update `split` with latest SOL library ([85d3cc3](https://github.com/BitGo/BitGoJS/commit/85d3cc3643bb3994d13f31f603ce0df8a9ea2e4b))
+
 ## [4.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.0.3...@bitgo/sdk-coin-sol@4.0.4) (2024-04-12)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
