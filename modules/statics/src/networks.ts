@@ -913,13 +913,13 @@ class Polygon extends Mainnet implements EthereumNetwork {
 class PolygonTestnet extends Testnet implements EthereumNetwork {
   name = 'PolygonTestnet';
   family = CoinFamily.POLYGON;
-  explorerUrl = 'https://mumbai.polygonscan.com/tx/';
-  accountExplorerUrl = 'https://mumbai.polygonscan.com/address/';
-  chainId = 80001;
-  forwarderFactoryAddress = '0x7d10cfdcb763375fb5f0a0e9101f490f0bf1b43a';
-  forwarderImplementationAddress = '0xaa2216d72d7c149dfe4c3dd2154cd00994216506';
-  walletFactoryAddress = '0xe37c07faec87be075ce4002b5fedbde00a4fe9d5';
-  walletImplementationAddress = '0x11f8d70a4ee9d0962bb1160d776d4a996cfdff40';
+  explorerUrl = 'https://amoy.polygonscan.com/tx/';
+  accountExplorerUrl = 'https://amoy.polygonscan.com/address/';
+  chainId = 80002;
+  forwarderFactoryAddress = '0x23223fd7cfc5f34b20f38ebb9a489e1ff3c084d1';
+  forwarderImplementationAddress = '0xd4c24325b5ef514fbb1ecc76a9bb4dcb57a8341e';
+  walletFactoryAddress = '0xe9c16033e01bf9f94bf9f99fc0fefcfb8b124992';
+  walletImplementationAddress = '0xf8360c213e4f44cce03e48cb9281254de2a7a566';
   batcherContractAddress = '0xcdf01a31ea2a1d62951aac3a5743c4416f9da3fb';
   nativeCoinOperationHashPrefix = 'POLYGON';
   tokenOperationHashPrefix = 'POLYGON-ERC20';

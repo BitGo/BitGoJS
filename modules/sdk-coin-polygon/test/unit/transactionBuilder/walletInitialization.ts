@@ -36,7 +36,7 @@ describe('Polygon wallet initialization', function () {
       txJson.gasLimit.should.equal('6800000');
       txJson.gasPrice.should.equal('10000000000');
       should.equal(txJson.nonce, 1);
-      should.equal(txJson.chainId, '0x13881');
+      should.equal(txJson.chainId, '0x13882');
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
 
@@ -45,7 +45,7 @@ describe('Polygon wallet initialization', function () {
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0x400357e2d5fdbcd16ee09cb484b7e20d87ebea9b0d92935f1ed0566b6e8d44c6');
+      should.equal(newTx.id, '0x9c955e671f05f8e4e909757675f535bdbcdb95cc66fbb4e897146dec20383303');
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);
@@ -67,7 +67,7 @@ describe('Polygon wallet initialization', function () {
       txJson.gasLimit.should.equal('6800000');
       txJson.gasPrice.should.equal('10000000000');
       should.equal(txJson.nonce, 0);
-      should.equal(txJson.chainId, '0x13881');
+      should.equal(txJson.chainId, '0x13882');
     });
 
     it('an unsigned init transaction from serialized with 0-prefixed address', async () => {
@@ -104,7 +104,7 @@ describe('Polygon wallet initialization', function () {
       txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
       txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
       const tx = await txBuilder.build();
-      should.equal(tx.toJson().v, '0x027125');
+      should.equal(tx.toJson().v, '0x027127');
     });
 
     it('wallet deployment transaction for recovery', async () => {

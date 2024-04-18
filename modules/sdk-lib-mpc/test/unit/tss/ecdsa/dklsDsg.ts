@@ -5,7 +5,7 @@ import should from 'should';
 import { Keyshare } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode } from 'cbor';
 import { Secp256k1Bip32HdTree, bigIntFromBufferBE, bigIntToBufferBE } from '../../../../src';
-import * as secp256k1 from 'secp256k1';
+import { verifyAndConvertDklsSignature } from '../../../../src/tss/ecdsa-dkls/util';
 
 describe('DKLS Dsg 2x3', function () {
   const vectors = [
@@ -112,24 +112,17 @@ describe('DKLS Dsg 2x3', function () {
       const chaincode = bigIntFromBufferBE(Buffer.from(decode(keyShare.toBytes()).root_chain_code));
       const hdTree = new Secp256k1Bip32HdTree();
       const derivedKey = hdTree.publicDerive({ pk: pk, chaincode: chaincode }, vector.derivationPath);
-      const pub1 = secp256k1.ecdsaRecover(
-        Buffer.concat([party1.signature.R, party1.signature.S]),
-        0,
-        crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest(),
-        true
-      );
-      const pub2 = secp256k1.ecdsaRecover(
-        Buffer.concat([party1.signature.R, party1.signature.S]),
-        1,
-        crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest(),
-        true
-      );
       const derivedPub =
-        vector.derivationPath === 'm' ? keyShare.publicKey : new Uint8Array(bigIntToBufferBE(derivedKey.pk));
-      (
-        (pub1.every((p) => derivedPub.includes(p)) && derivedPub.every((p) => pub1.includes(p))) ||
-        (pub2.every((p) => derivedPub.includes(p)) && derivedPub.every((p) => pub2.includes(p)))
-      ).should.equal(true);
+        vector.derivationPath === 'm'
+          ? Buffer.from(keyShare.publicKey).toString('hex')
+          : bigIntToBufferBE(derivedKey.pk).toString('hex');
+      const convertedSignature = verifyAndConvertDklsSignature(
+        Buffer.from(vector.msgToSign, 'hex'),
+        party1.signature,
+        derivedPub
+      );
+      should.exist(convertedSignature);
+      convertedSignature.split(':').length.should.equal(4);
     });
   });
 

@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { InstructionBuilderTypes } from './constants';
+import { InstructionBuilderTypes, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from './constants';
 import { StakingDeactivate, Transfer } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -12,7 +12,6 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
   protected _stakingAddresses: string[];
   protected _amount?: string;
-  protected _fundUnstakeAddress = 2282880;
   protected _unstakingAddress: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -146,7 +145,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           type: InstructionBuilderTypes.Transfer,
           params: {
             fromAddress: this._sender,
-            amount: this._fundUnstakeAddress.toString(),
+            amount: STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT.toString(),
             toAddress: this._unstakingAddress,
           },
         };
