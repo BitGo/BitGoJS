@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.45.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.45.0...@bitgo/sdk-api@1.45.1) (2024-04-17)
+
+### Reverts
+
+- Revert "feat: protect pass by value when sending data out" ([ef1497f](https://github.com/BitGo/BitGoJS/commit/ef1497ffdc9c158300c32a596828081d32eb6f3a))
+
 # [1.45.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.44.2...@bitgo/sdk-api@1.45.0) (2024-04-12)
 
 ### Features

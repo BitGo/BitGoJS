@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.6.0...@bitgo/statics@48.7.0) (2024-04-17)
+
+### Features
+
+- **statics:** add ofc token to represent Erc20 token on arbitrun chain ([32ccf68](https://github.com/BitGo/BitGoJS/commit/32ccf682b4329fd53f06c6466585af58dacc4a57))
+- **statics:** remove test on addressCoin ([c5356b9](https://github.com/BitGo/BitGoJS/commit/c5356b92fe9099babaee0085da63a440436b7220))
+
 # [48.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.5.0...@bitgo/statics@48.6.0) (2024-04-12)
 
 ### Features

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.2.0...@bitgo/sdk-lib-mpc@9.3.0) (2024-04-17)
+
+### Features
+
+- **sdk-lib-mpc:** add dkls utils ([3a198d4](https://github.com/BitGo/BitGoJS/commit/3a198d453c46bc9a7217c34111fae85add6f13a1))
+- **sdk-lib-mpc:** combine partial signatures util support ([c7f126f](https://github.com/BitGo/BitGoJS/commit/c7f126f68f9ebfed370248daa3321fb14145c5c0))
+
 # [9.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.1.1...@bitgo/sdk-lib-mpc@9.2.0) (2024-04-05)
 
 ### Features
