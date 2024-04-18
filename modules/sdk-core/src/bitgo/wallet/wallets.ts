@@ -558,22 +558,25 @@ export class Wallets implements IWallets {
     const usersMap = new Map(
       [...enterpriseUsersResponse?.adminUsers, ...enterpriseUsersResponse?.nonAdminUsers].map((obj) => [obj.id, obj])
     );
-    wallet?._wallet?.users?.forEach(async (user) => {
-      // user should be a spender and not an admin
-      if (user.permissions.includes('spend') && !user.permissions.includes('admin')) {
+
+    if (wallet._wallet.users) {
+      for (const user of wallet._wallet.users) {
         const userObject = usersMap.get(user.user);
-        const shareParams = {
-          walletId: walletId,
-          user: user.user,
-          permissions: user.permissions.join(','),
-          walletPassphrase: userPassword,
-          email: userObject.email.email,
-          coin: wallet.coin,
-          reshare: true,
-        };
-        wallet.shareWallet(shareParams);
+        if (user.permissions.includes('spend') && !user.permissions.includes('admin') && userObject) {
+          const shareParams = {
+            walletId: walletId,
+            user: user.user,
+            permissions: user.permissions.join(','),
+            walletPassphrase: userPassword,
+            email: userObject.email.email,
+            // coin: wallet.coin,
+            reshare: true,
+            skipKeychain: false,
+          };
+          await wallet.shareWallet(shareParams);
+        }
       }
-    });
+    }
   }
 
   /**
