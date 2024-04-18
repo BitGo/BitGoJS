@@ -1056,10 +1056,10 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-2.1.0.tgz#b9ede95d490907f610cdc5e9ec4156e13645b852"
-  integrity sha512-EvjvArAExJd/tY8PPii3SE3lWOpAJ2+lJBtn3DVMmTROXfS7q9nLvBbAZHPZZ3Q/VkPEeAfJ7KZ2Fvbr/TgtQg==
+"@bitgo/public-types@2.8.0":
+  version "2.8.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-2.8.0.tgz#4ebad052056246fa721876fb424227db8ce750f7"
+  integrity sha512-zVMe7PDoneGdTT6XHwEnNy8pUPbggyPzSa+ojqxLBG7iIgLb3WxnUgCejAOuRtF5pgcr5tyBLVS3ceijudjG/Q==
   dependencies:
     "@api-ts/io-ts-http" "1.0.0"
     fp-ts "2.16.2"
@@ -7270,11 +7270,6 @@ bs58@4.0.1, bs58@^4.0.0, bs58@^4.0.1:
   integrity sha512-Ok3Wdf5vOIlBrgCvTq96gBkJw+JUEzdBgyaza5HLtPm7yTHkjRy8+JzNyHF7BHa0bNWOQIp3m5YF0nnFcOIKLw==
   dependencies:
     base-x "^3.0.2"
-
-bs58@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/bs58/-/bs58-2.0.1.tgz"
-  integrity sha512-77ld2g7Hn1GyIUpuUVfbZdhO1q9R9gv/GYam4HAeAW/tzhQDrbJ2ZttN1tIe4hmKrWFE+oUtAhBNx/EA5SVdTg==
 
 bs58@^5.0.0:
   version "5.0.0"

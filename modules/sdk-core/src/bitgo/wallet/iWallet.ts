@@ -28,6 +28,7 @@ import {
 import { ILightning } from '../lightning';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IAddressBook } from '../address-book';
+import { WalletUser } from '@bitgo/public-types';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -609,6 +610,7 @@ export interface WalletData {
   tokens?: Record<string, any>[];
   nfts?: { [contractAddressOrToken: string]: NftBalance };
   unsupportedNfts?: { [contractAddress: string]: NftBalance };
+  users?: WalletUser[];
 }
 
 export interface RecoverTokenOptions {

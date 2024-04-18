@@ -11,6 +11,7 @@ import {
   ECDSAUtils,
   KeychainsTriplet,
   GenerateWalletOptions,
+  Wallet,
 } from '@bitgo/sdk-core';
 import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -783,8 +784,350 @@ describe('V2 Wallets:', function () {
   });
 
   describe('Sharing', () => {
+    describe('Wallet share where keychainOverrideRequired is set true', () => {
+      afterEach(function () {
+        sinon.restore();
+      });
+
+      it('when password not provived we should receive validation error', async function () {
+        const shareId = 'test_case_1';
+
+        const walletShareNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            keychainOverrideRequired: true,
+            permissions: ['admin', 'spend', 'view'],
+          });
+
+        // Validate accept share case
+        await wallets
+          .acceptShare({ walletShareId: shareId })
+          .should.be.rejectedWith('userPassword param must be provided to decrypt shared key');
+        walletShareNock.done();
+      });
+
+      it('when we accept share and failed to make changes, reshare should not be called', async function () {
+        const shareId = 'test_case_2';
+        const keychainId = 'test_case_2';
+        const userPassword = 'test_case_2';
+
+        // create a user key
+        const keyChainNock = nock(bgUrl)
+          .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+          .reply(200, { id: keychainId });
+
+        const walletShareInfoNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            keychainOverrideRequired: true,
+            permissions: ['admin', 'spend', 'view'],
+          });
+
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, {
+            walletShareId: shareId,
+            state: 'accepted',
+            keyId: keychainId,
+          })
+          .reply(200, { changed: false });
+
+        // Stub wallet share wallet method
+        const walletShareStub = sinon.stub(Wallet.prototype, 'shareWallet').onCall(0).resolves('success');
+
+        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        should.equal(res.changed, false);
+        keyChainNock.done();
+        walletShareInfoNock.done();
+        acceptShareNock.done();
+        should.equal(walletShareStub.called, false);
+      });
+
+      it('when we accept share but state is not valid, reshare should not be called', async function () {
+        const shareId = 'test_case_3';
+        const keychainId = 'test_case_3';
+        const userPassword = 'test_case_3';
+
+        // create a user key
+        const keyChainNock = nock(bgUrl)
+          .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+          .reply(200, { id: keychainId });
+
+        const walletShareInfoNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            keychainOverrideRequired: true,
+            permissions: ['admin', 'spend', 'view'],
+          });
+
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, {
+            walletShareId: shareId,
+            state: 'accepted',
+            keyId: keychainId,
+          })
+          .reply(200, { changed: true, state: 'not_accepted' });
+
+        // Stub wallet share wallet method
+        const walletShareStub = sinon.stub(Wallet.prototype, 'shareWallet').onCall(0).resolves('success');
+
+        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        should.equal(res.changed, true);
+        should.equal(res.state, 'not_accepted');
+        keyChainNock.done();
+        walletShareInfoNock.done();
+        acceptShareNock.done();
+        should.equal(walletShareStub.called, false);
+      });
+
+      it('when we get a correct resposne from accept share method, but failed to reshare wallet with spenders', async function () {
+        const shareId = 'test_case_6';
+        const keychainId = 'test_case_6';
+        const spenderUserOne = {
+          payload: {
+            permissions: ['spend', 'view'],
+            user: 'test_case_6',
+          },
+          email: { email: 'test_case_6' },
+          id: 'test_case_6',
+          coin: 'ofc',
+        };
+        const spenderUserTwo = {
+          payload: {
+            permissions: ['spend', 'view'],
+            user: 'test_case_9',
+          },
+          email: { email: 'test_case_9' },
+          id: 'test_case_9',
+          coin: 'ofc',
+        };
+        const adminUser = {
+          payload: {
+            permissions: ['admin', 'spend', 'view'],
+            user: 'test_case_7',
+          },
+          email: { email: 'test_case_7' },
+          id: 'test_case_7',
+          coin: 'ofc',
+        };
+        const viewerUser = {
+          payload: {
+            permissions: ['view'],
+            user: 'test_case_8',
+          },
+          email: { email: 'test_case_8' },
+          id: 'test_case_8',
+          coin: 'ofc',
+        };
+        const userPassword = 'test_case_6';
+        const walletId = 'test_case_6';
+        const enterpriseId = 'test_case_6';
+
+        const walletShareNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            keychainOverrideRequired: true,
+            permissions: ['admin', 'spend', 'view'],
+            wallet: walletId,
+          });
+
+        // create a user key
+        const keyChainCreateNock = nock(bgUrl)
+          .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+          .reply(200, { id: keychainId });
+
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, {
+            walletShareId: shareId,
+            state: 'accepted',
+            keyId: keychainId,
+          })
+          .reply(200, { changed: true, state: 'accepted' });
+
+        const walletInfoNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/wallet/${walletId}`)
+          .reply(200, {
+            users: [spenderUserOne.payload, spenderUserTwo.payload, adminUser.payload, viewerUser.payload],
+            enterprise: enterpriseId,
+            coin: spenderUserOne.coin,
+            id: walletId,
+            keys: [{}],
+          });
+
+        const enterpriseUserNock = nock('http://localhost:80')
+          .get(`/api/v2/enterprise/${enterpriseId}/user`)
+          .reply(200, {
+            adminUsers: [
+              { id: spenderUserOne.id, email: spenderUserOne.email },
+              { id: spenderUserTwo.id, email: spenderUserTwo.email },
+              { id: adminUser.id, email: adminUser.email },
+              { id: viewerUser.id, email: viewerUser.email },
+            ],
+            nonAdminUsers: [],
+          });
+
+        const walletShareStub = sinon
+          .stub(Wallet.prototype, 'shareWallet')
+          .returns(new Promise((_resolve, reject) => reject(new Error('Failed to reshare wallet'))));
+
+        const shareParamsOne = {
+          walletId: walletId,
+          user: spenderUserOne.id,
+          permissions: spenderUserOne.payload.permissions.join(','),
+          walletPassphrase: userPassword,
+          email: spenderUserOne.email.email,
+          reshare: true,
+          skipKeychain: false,
+        };
+
+        const shareParamsTwo = {
+          walletId: walletId,
+          user: spenderUserTwo.id,
+          permissions: spenderUserTwo.payload.permissions.join(','),
+          walletPassphrase: userPassword,
+          email: spenderUserTwo.email.email,
+          reshare: true,
+          skipKeychain: false,
+        };
+
+        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        should.equal(res.changed, true);
+        should.equal(res.state, 'accepted');
+        keyChainCreateNock.done();
+        walletShareNock.done();
+        walletInfoNock.done();
+        acceptShareNock.done();
+        enterpriseUserNock.done();
+        should.equal(walletShareStub.calledOnce, true);
+        should.equal(walletShareStub.calledWith(shareParamsOne), true);
+        should.equal(walletShareStub.calledWith(shareParamsTwo), false);
+      });
+
+      it('when we get a correct resposne from accept share method and reshare wallet with spenders', async function () {
+        const shareId = 'test_case_6';
+        const keychainId = 'test_case_6';
+        const spenderUserOne = {
+          payload: {
+            permissions: ['spend', 'view'],
+            user: 'test_case_6',
+          },
+          email: { email: 'test_case_6' },
+          id: 'test_case_6',
+          coin: 'ofc',
+        };
+        const spenderUserTwo = {
+          payload: {
+            permissions: ['spend', 'view'],
+            user: 'test_case_9',
+          },
+          email: { email: 'test_case_9' },
+          id: 'test_case_9',
+          coin: 'ofc',
+        };
+        const adminUser = {
+          payload: {
+            permissions: ['admin', 'spend', 'view'],
+            user: 'test_case_7',
+          },
+          email: { email: 'test_case_7' },
+          id: 'test_case_7',
+          coin: 'ofc',
+        };
+        const viewerUser = {
+          payload: {
+            permissions: ['view'],
+            user: 'test_case_8',
+          },
+          email: { email: 'test_case_8' },
+          id: 'test_case_8',
+          coin: 'ofc',
+        };
+        const userPassword = 'test_case_6';
+        const walletId = 'test_case_6';
+        const enterpriseId = 'test_case_6';
+
+        const walletShareNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .reply(200, {
+            keychainOverrideRequired: true,
+            permissions: ['admin', 'spend', 'view'],
+            wallet: walletId,
+          });
+
+        // create a user key
+        const keyChainCreateNock = nock(bgUrl)
+          .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+          .reply(200, { id: keychainId });
+
+        const acceptShareNock = nock(bgUrl)
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, {
+            walletShareId: shareId,
+            state: 'accepted',
+            keyId: keychainId,
+          })
+          .reply(200, { changed: true, state: 'accepted' });
+
+        const walletInfoNock = nock(bgUrl)
+          .get(`/api/v2/tbtc/wallet/${walletId}`)
+          .reply(200, {
+            users: [spenderUserOne.payload, spenderUserTwo.payload, adminUser.payload, viewerUser.payload],
+            enterprise: enterpriseId,
+            coin: spenderUserOne.coin,
+            id: walletId,
+            keys: [{}],
+          });
+
+        const enterpriseUserNock = nock('http://localhost:80')
+          .get(`/api/v2/enterprise/${enterpriseId}/user`)
+          .reply(200, {
+            adminUsers: [
+              { id: spenderUserOne.id, email: spenderUserOne.email },
+              { id: spenderUserTwo.id, email: spenderUserTwo.email },
+              { id: adminUser.id, email: adminUser.email },
+              { id: viewerUser.id, email: viewerUser.email },
+            ],
+            nonAdminUsers: [],
+          });
+
+        const walletShareStub = sinon
+          .stub(Wallet.prototype, 'shareWallet')
+          .returns(new Promise((resolve, _reject) => resolve('success')));
+
+        const shareParamsOne = {
+          walletId: walletId,
+          user: spenderUserOne.id,
+          permissions: spenderUserOne.payload.permissions.join(','),
+          walletPassphrase: userPassword,
+          email: spenderUserOne.email.email,
+          reshare: true,
+          skipKeychain: false,
+        };
+
+        const shareParamsTwo = {
+          walletId: walletId,
+          user: spenderUserTwo.id,
+          permissions: spenderUserTwo.payload.permissions.join(','),
+          walletPassphrase: userPassword,
+          email: spenderUserTwo.email.email,
+          reshare: true,
+          skipKeychain: false,
+        };
+
+        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        should.equal(res.changed, true);
+        should.equal(res.state, 'accepted');
+        keyChainCreateNock.done();
+        walletShareNock.done();
+        walletInfoNock.done();
+        acceptShareNock.done();
+        enterpriseUserNock.done();
+        should.equal(walletShareStub.calledTwice, true);
+        should.equal(walletShareStub.calledWith(shareParamsOne), true);
+        should.equal(walletShareStub.calledWith(shareParamsTwo), true);
+      });
+    });
+
     it('should share a wallet to viewer', async function () {
-      const shareId = '123';
+      const shareId = '12311';
 
       nock(bgUrl).get(`/api/v2/tbtc/walletshare/${shareId}`).reply(200, {});
       const acceptShareNock = nock(bgUrl)
