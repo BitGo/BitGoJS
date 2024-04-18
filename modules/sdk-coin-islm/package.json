@@ -51,7 +51,7 @@
     "cosmjs-types": "^0.6.1",
     "ethers": "^5.7.2",
     "keccak": "3.0.3",
-    "protobufjs": "^7.2.4"
+    "protobufjs": "7.2.5"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.45.0",

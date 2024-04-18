@@ -90,7 +90,6 @@
     "terser": "^5.14.2",
     "json5": "^2.2.2",
     "ua-parser-js": ">0.7.30 <0.8.0",
-    "protobufjs": "^7.2.4",
     "socks": "2.7.3",
     "web3-utils": "4.2.1"
   },
