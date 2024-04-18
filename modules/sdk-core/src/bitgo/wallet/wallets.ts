@@ -28,8 +28,6 @@ import {
 } from './iWallets';
 import { Wallet } from './wallet';
 
-const debug = require('debug')('bitgo:v2:wallets');
-
 export class Wallets implements IWallets {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
@@ -545,8 +543,8 @@ export class Wallets implements IWallets {
    * @param walletId
    * @param userPassword
    */
-  async reshareOfcAccountWithSpenders(walletId: string, userPassword: string): Promise<void> {
-    const wallet = await this.bitgo.coin('ofc').wallets().get({ id: walletId });
+  async reshareWalletWithSpenders(walletId: string, userPassword: string): Promise<void> {
+    const wallet = await this.get({ id: walletId });
     if (!wallet?._wallet?.enterprise) {
       throw new Error('Enterprise not found for the wallet');
     }
@@ -632,9 +630,9 @@ export class Wallets implements IWallets {
       // If the wallet share was accepted successfully (changed=true), reshare the wallet with the spenders
       if (response.changed && response.state === 'accepted') {
         try {
-          await this.reshareOfcAccountWithSpenders(walletShare.wallet, params.userPassword);
+          await this.reshareWalletWithSpenders(walletShare.wallet, params.userPassword);
         } catch (e) {
-          debug('failed to reshare wallet with spenders', e);
+          throw new Error('Failed to reshare wallet with spenders');
         }
       }
       return response;
