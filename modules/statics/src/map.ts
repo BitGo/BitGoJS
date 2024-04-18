@@ -41,7 +41,7 @@ export class CoinMap {
       5: 'gteth',
       17000: 'hteth',
       10001: 'ethw',
-      80001: 'tpolygon',
+      80002: 'tpolygon',
       137: 'polygon',
       56: 'bsc',
       97: 'tbsc',
