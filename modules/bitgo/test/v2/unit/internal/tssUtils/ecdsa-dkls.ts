@@ -290,7 +290,7 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
         const bitgoToUserRound3Msg = bitgoSession.handleIncomingMessages(deserializedMessages);
         const serializedBitGoToUserRound3Msgs = DklsTypes.serializeMessages(bitgoToUserRound3Msg);
 
-        let authEncMessages = await DklsComms.encryptAndAuthOutgoingMessages(
+        const authEncMessages = await DklsComms.encryptAndAuthOutgoingMessages(
           serializedBitGoToUserRound3Msgs,
           [getUserPartyGpgKeyPublic(body.userPublicGpgKey)],
           [getBitGoPartyGpgKeyPrv(bitgoGpgKey)]

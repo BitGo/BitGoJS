@@ -91,7 +91,7 @@ export async function getSignatureShareRoundTwo(
   };
 }
 
-export async function getSignatureShareRoundFour(
+export async function getSignatureShareRoundThree(
   userToBitGoMessages4: DklsTypes.DeserializedMessages,
   userGpgKey: openpgp.SerializedKeyPair<string>,
   bitgoGpgKey: openpgp.Key
