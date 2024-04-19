@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import { createHash, randomBytes } from 'crypto';
@@ -158,8 +159,9 @@ interface VoteActionData {
 }
 
 interface ExplainTransactionOptions {
-  transaction: { packed_trx: string };
+  transaction: { packed_trx?: string };
   headers: EosTransactionHeaders;
+  txHex?: string;
 }
 
 interface RecoveryTransaction {
@@ -519,6 +521,7 @@ export class Eos extends BaseCoin {
     transaction,
     headers,
   }: ExplainTransactionOptions): Promise<DeserializedEosTransaction> {
+    assert(transaction.packed_trx, 'missing packed_trx in transaction');
     // create an eosjs API client
     const api = new Api({
       abiProvider: new OfflineAbiProvider(),
@@ -731,6 +734,13 @@ export class Eos extends BaseCoin {
   async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
     let transaction;
     try {
+      if (params.txHex) {
+        const txFromHex = Buffer.from(params.txHex, 'hex');
+        const txDataWithPadding = txFromHex.slice(32);
+        const txData = txDataWithPadding.slice(0, txDataWithPadding.length - 32);
+        params.transaction = { packed_trx: txData.toString('hex') };
+      }
+      assert(params.transaction.packed_trx, 'missing packed_trx in transaction');
       transaction = await this.deserializeTransaction(params);
     } catch (e) {
       throw new Error('invalid EOS transaction or headers: ' + e.toString());
