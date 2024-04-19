@@ -11,5 +11,6 @@ export * from './tss';
 export * from './util';
 export * from './decode';
 export * from './notEmpty';
+export * from './wallet';
 
 export { openpgpUtils };
