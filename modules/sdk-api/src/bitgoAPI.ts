@@ -11,7 +11,6 @@ import {
   EcdhDerivedKeypair,
   EncryptOptions,
   EnvironmentName,
-  generateRandomPassword,
   getAddressP2PKH,
   getSharedSecret,
   GetSharingKeyOptions,
@@ -26,6 +25,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { isBrowser, isWebWorker } from 'browser-or-node';
+import * as bs58 from 'bs58';
 import { createHmac } from 'crypto';
 import debugLib from 'debug';
 import * as _ from 'lodash';
@@ -1205,7 +1205,8 @@ export class BitGoAPI implements BitGoBase {
    * @returns {String}          base58 random password
    */
   generateRandomPassword(numWords = 5): string {
-    return generateRandomPassword(numWords);
+    const bytes = sjcl.codec.bytes.fromBits(sjcl.random.randomWords(numWords));
+    return bs58.encode(bytes);
   }
 
   /**

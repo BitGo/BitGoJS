@@ -3,7 +3,7 @@ import assert from 'assert';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { BlsUtils, RequestTracer, EDDSAUtils, ECDSAUtils, decodeOrElse, generateRandomPassword } from '../utils';
+import { BlsUtils, RequestTracer, EDDSAUtils, ECDSAUtils, decodeOrElse } from '../utils';
 import {
   AddKeychainOptions,
   ApiKeyShare,
@@ -425,29 +425,6 @@ export class Keychains implements IKeychains {
 
     return decodeOrElse(BitGoKeyFromOvcShares.name, BitGoKeyFromOvcShares, output, (errors) => {
       throw new Error(`Error producing the output: ${errors}`);
-    });
-  }
-
-  /**
-   * Create keychain for ofc wallet using the password
-   * @param userPassword
-   * @returns
-   */
-  async createUserKeychain(userPassword: string): Promise<Keychain> {
-    const keychains = this.baseCoin.keychains();
-    const newKeychain = keychains.create();
-    const originalPasscodeEncryptionCode = generateRandomPassword(5);
-
-    const encryptedPrv = this.bitgo.encrypt({
-      password: userPassword,
-      input: newKeychain.prv,
-    });
-
-    return await keychains.add({
-      encryptedPrv,
-      originalPasscodeEncryptionCode,
-      pub: newKeychain.pub,
-      source: 'user',
     });
   }
 }
