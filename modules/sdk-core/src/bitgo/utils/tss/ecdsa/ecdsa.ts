@@ -3,6 +3,7 @@ import { Buffer } from 'buffer';
 import * as openpgp from 'openpgp';
 import { Key, SerializedKeyPair } from 'openpgp';
 import { createHash, Hash, randomBytes } from 'crypto';
+import createKeccakHash from 'keccak';
 
 import {
   DklsDsg,
@@ -974,7 +975,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     params: TSSParams | TSSParamsForMessage,
     requestType: RequestType
   ): Promise<TxRequest> {
-    const msg = randomBytes(128);
+    const msg = 'dkls-testing';
     const userKeyShare = Buffer.from(params.prv, 'base64');
     const txRequest: TxRequest =
       typeof params.txRequest === 'string'
@@ -993,8 +994,18 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     } else if (requestType === RequestType.message) {
       throw new Error('DKLS message signing not supported yet.');
     }
-    const hash = createHash('sha256').update(msg).digest();
-    const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hash);
+
+    let hash: Hash;
+    try {
+      hash = this.baseCoin.getHashFunction();
+    } catch (err) {
+      hash = createKeccakHash('keccak256') as Hash;
+    }
+    const hashBuffer = hash.update(msg).digest();
+    // const hashBuffer = createHash('sha256').update(msg).digest();
+
+
+    const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, 'm/0', hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
     await sendSignatureShare(
@@ -1065,8 +1076,14 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     );
 
     /** Round 4 **/
-    const deserializedMessagesRound3 = DklsTypes.deserializeMessages(serializedBitGoToUserMessagesRound3);
-    const userToBitGoMessages4 = otherSigner.handleIncomingMessages(deserializedMessagesRound3);
+    const deserializedBitGoToUserMessagesRound3 = DklsTypes.deserializeMessages({
+      p2pMessages: serializedBitGoToUserMessagesRound3.p2pMessages,
+      broadcastMessages: [],
+    });
+    const userToBitGoMessagesRound4 = otherSigner.handleIncomingMessages({
+      p2pMessages: deserializedBitGoToUserMessagesRound3.p2pMessages,
+      broadcastMessages: [],
+    });
     // // Verify if the signature combine is valid. If not, quit the signing process.
     // try {
     //   otherSigner.handleIncomingMessages({
@@ -1078,7 +1095,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     // }
 
     const signatureShareRoundThree = await getSignatureShareRoundThree(
-      userToBitGoMessages4,
+      userToBitGoMessagesRound4,
       userGpgKey,
       bitgoGpgPubKey
     );

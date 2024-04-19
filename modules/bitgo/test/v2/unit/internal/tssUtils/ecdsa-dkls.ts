@@ -10,6 +10,7 @@ import {
   TxRequest,
   Wallet,
 } from "@bitgo/sdk-core";
+import createKeccakHash from 'keccak';
 import * as sinon from 'sinon';
 import { DklsDsg, DklsTypes, DklsComms } from '@bitgo/sdk-lib-mpc';
 import * as crypto from 'crypto';
@@ -26,6 +27,7 @@ import * as openpgp from 'openpgp';
 import * as nock from 'nock';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src';
+import { createHash, Hash } from "crypto";
 
 getBitgoGpgPubKey;
 describe('signTxRequest:', function () {
@@ -109,12 +111,22 @@ describe('signTxRequest:', function () {
 
     baseCoin = bitgo.coin(coinName);
 
+    // let hash: Hash;
+    // try {
+    //   hash = baseCoin.getHashFunction();
+    // } catch (err) {
+    //   hash = createKeccakHash('keccak256') as Hash;
+    // }
+    // const hashBuffer = hash.update('dkls-testing').digest();
+    const msg = 'dkls-testing';
+    const hashBuffer = createHash('sha256').update(msg).digest();
+
     // Nock out both the user and bitgo side responses to create valid signatures
     bitgoParty = new DklsDsg.Dsg(
       fs.readFileSync(shareFiles[vector.party2]),
       vector.party2,
       vector.derivationPath,
-      crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
+      hashBuffer
     );
     // // Round 1 ////
     const walletData = {
