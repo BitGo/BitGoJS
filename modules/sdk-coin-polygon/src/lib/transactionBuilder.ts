@@ -26,4 +26,11 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
     }
     return this._transfer;
   }
+
+  /** @inheritdoc */
+  protected coinUsesNonPackedEncodingForTxData(): boolean {
+    // This is because the contracts which have been deployed for
+    // polygon amoy testnet use non-packed encoding for tx data
+    return this._common.chainIdBN().toString() === '80002';
+  }
 }
