@@ -206,12 +206,26 @@ export function explainPsbt<TNumber extends number | bigint>(
   } catch (e) {
     throw new Error('failed to parse psbt hex');
   }
+  const txOutputs = psbt.txOutputs;
+  function getChangeAddresses() {
+    try {
+      return utxolib.bitgo
+        .findInternalOutputIndices(psbt)
+        .map((i) => utxolib.address.fromOutputScript(txOutputs[i].script, network));
+    } catch (e) {
+      if (e instanceof utxolib.bitgo.ErrorNoMultiSigInputFound) {
+        return [];
+      }
+      throw e;
+    }
+  }
+  const changeAddresses = getChangeAddresses();
   const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
-  const common = explainCommon(tx, params, network);
+  const common = explainCommon(tx, { ...params, txInfo: { ...params.txInfo, changeAddresses } }, network);
   const inputSignaturesCount = getPsbtInputSignaturesCount(psbt, params);
 
   // Set fee from subtracting inputs from outputs
-  const outputAmount = psbt.txOutputs.reduce((cumulative, curr) => cumulative + BigInt(curr.value), BigInt(0));
+  const outputAmount = txOutputs.reduce((cumulative, curr) => cumulative + BigInt(curr.value), BigInt(0));
   const inputAmount = psbt.txInputs.reduce((cumulative, txInput, i) => {
     const data = psbt.data.inputs[i];
     if (data.witnessUtxo) {

@@ -60,13 +60,15 @@ const keyDocumentObjects = rootWalletKeys.triple.map((bip32, keyIdx) => {
 
 function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFormat): void {
   function createPrebuildPsbt(inputs: Input[], outputs: { scriptType: 'p2sh'; value: bigint }[]) {
-    return utxolib.testutil.constructPsbt(
+    const psbt = utxolib.testutil.constructPsbt(
       inputs as utxolib.testutil.Input[],
       outputs,
       coin.network,
       rootWalletKeys,
       'unsigned'
     );
+    utxolib.bitgo.addXpubsToPsbt(psbt, rootWalletKeys);
+    return psbt;
   }
 
   function createNocks(params: {
