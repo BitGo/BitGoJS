@@ -539,44 +539,6 @@ export class Wallets implements IWallets {
   }
 
   /**
-   * Re-share wallet with existing spenders of the wallet
-   * @param walletId
-   * @param userPassword
-   */
-  async reshareWalletWithSpenders(walletId: string, userPassword: string): Promise<void> {
-    const wallet = await this.get({ id: walletId });
-    if (!wallet?._wallet?.enterprise) {
-      throw new Error('Enterprise not found for the wallet');
-    }
-
-    const enterpriseUsersResponse = await this.bitgo
-      .get(`/api/v2/enterprise/${wallet?._wallet?.enterprise}/user`)
-      .result();
-    // create a map of users for easy lookup - we need the user email id to share the wallet
-    const usersMap = new Map(
-      [...enterpriseUsersResponse?.adminUsers, ...enterpriseUsersResponse?.nonAdminUsers].map((obj) => [obj.id, obj])
-    );
-
-    if (wallet._wallet.users) {
-      for (const user of wallet._wallet.users) {
-        const userObject = usersMap.get(user.user);
-        if (user.permissions.includes('spend') && !user.permissions.includes('admin') && userObject) {
-          const shareParams = {
-            walletId: walletId,
-            user: user.user,
-            permissions: user.permissions.join(','),
-            walletPassphrase: userPassword,
-            email: userObject.email.email,
-            reshare: true,
-            skipKeychain: false,
-          };
-          await wallet.shareWallet(shareParams);
-        }
-      }
-    }
-  }
-
-  /**
    * Accepts a wallet share, adding the wallet to the user's list
    * Needs a user's password to decrypt the shared key
    *
@@ -592,31 +554,9 @@ export class Wallets implements IWallets {
     common.validateParams(params, ['walletShareId'], ['overrideEncryptedPrv', 'userPassword', 'newWalletPassphrase']);
 
     let encryptedPrv = params.overrideEncryptedPrv;
-    const walletShare = await this.getShare({ walletShareId: params.walletShareId });
-    if (
-      walletShare.keychainOverrideRequired &&
-      walletShare.permissions.indexOf('admin') !== -1 &&
-      walletShare.permissions.indexOf('spend') !== -1
-    ) {
-      if (_.isUndefined(params.userPassword)) {
-        throw new Error('userPassword param must be provided to decrypt shared key');
-      }
-      const walletKeychain = await this.baseCoin.keychains().createUserKeychain(params.userPassword);
-      const response = await this.updateShare({
-        walletShareId: params.walletShareId,
-        state: 'accepted',
-        keyId: walletKeychain.id,
-      });
-      // If the wallet share was accepted successfully (changed=true), reshare the wallet with the spenders
-      if (response.changed && response.state === 'accepted') {
-        try {
-          await this.reshareWalletWithSpenders(walletShare.wallet, params.userPassword);
-        } catch (e) {
-          // Do nothing
-        }
-      }
-      return response;
-    }
+
+    const walletShare = (await this.getShare({ walletShareId: params.walletShareId })) as any;
+
     // Return right away if there is no keychain to decrypt, or if explicit encryptedPrv was provided
     if (!walletShare.keychain || !walletShare.keychain.encryptedPrv || encryptedPrv) {
       return this.updateShare({
@@ -666,6 +606,7 @@ export class Wallets implements IWallets {
     if (encryptedPrv) {
       updateParams.encryptedPrv = encryptedPrv;
     }
+
     return this.updateShare(updateParams);
   }
 
