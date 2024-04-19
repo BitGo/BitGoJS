@@ -2950,6 +2950,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.DIA
   ),
   erc20(
+    '2c5d2806-5592-4ae2-84f6-33fd2b862d6e',
+    'dipe',
+    'DIPE',
+    6,
+    '0x757a03cd018d020955b4324feecccf93d1c5be27',
+    UnderlyingAsset.DIPE
+  ),
+  erc20(
     '429ed0f6-7fa8-4bcb-9573-654762805725',
     'dmg',
     'DMM: Governance',
@@ -3268,6 +3276,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd9fcd98c322942075a5c3860693e9f4f03aae07b',
     UnderlyingAsset.EUL
+  ),
+  erc20(
+    '63dbe6a6-b738-43b6-a6aa-fee3f2bc5c1d',
+    'eure',
+    'Monerium EUR emoney',
+    18,
+    '0x3231cb76718cdef2155fc47b5286d82e6eda273f',
+    UnderlyingAsset.EURE
   ),
   erc20(
     'bc521233-45d2-443f-88b0-2fcf265b9660',
@@ -5889,6 +5905,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SLVX
   ),
   erc20(
+    '1289fae7-ca46-45fa-9edc-19455507b7e3',
+    'smt',
+    'Swarm Markets',
+    18,
+    '0xb17548c7b510427baac4e267bea62e800b247173',
+    UnderlyingAsset.SMT
+  ),
+  erc20(
     'd736cd6a-55d1-48a5-8cf5-6b920715cb7f',
     'snc',
     'SunContract',
@@ -6327,6 +6351,14 @@ export const coins = CoinMap.fromCoins([
     8,
     '0x4c19596f5aaff459fa38b0f7ed92f11ae6543784',
     UnderlyingAsset.TRU
+  ),
+  erc20(
+    '8385ecb0-1053-4630-a46e-417bad13584f',
+    'truf',
+    'Truflation',
+    18,
+    '0x38c2a4a7330b22788374b8ff70bba513c8d848ca',
+    UnderlyingAsset.TRUF
   ),
   erc20(
     '800b8416-6928-4adf-b291-5016760e740b',
@@ -7057,6 +7089,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xf3c092ca8cd6d3d4ca004dc1d0f1fe8ccab53599',
     UnderlyingAsset.ZIX
+  ),
+  erc20(
+    '273ff2f7-c89b-4baf-ab0a-10f0e228d7f4',
+    'zkl',
+    'ZKLink',
+    18,
+    '0xfc385a1df85660a7e041423db512f779070fcede',
+    UnderlyingAsset.ZKL
   ),
   erc20(
     '209dfdfa-1549-4251-8eaa-efb70dbf24ce',
@@ -9579,6 +9619,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x557b933a7c2c45672b610f8954a3deb39a51a8ca',
     UnderlyingAsset.REVV
+  ),
+  erc20(
+    'f596f1a4-530c-46fe-9021-f401655dd870',
+    'rn',
+    'Rio Network',
+    18,
+    '0x3c61297e71e9bb04b9fbfead72a6d3c70e4f1e4a',
+    UnderlyingAsset.RN
   ),
   erc20(
     '9f0bb336-b6a9-4a58-9841-333b836ef186',
@@ -14588,6 +14636,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x3fb83a9a2c4408909c058b0bfe5b4823f54fafe2',
     UnderlyingAsset['polygon:bcut']
+  ),
+  polygonErc20(
+    '0e7eaee4-55f9-42f0-bee1-3dfa04082fe5',
+    'polygon:pme',
+    'PME',
+    0,
+    '0xe94cdf7da562b5fc67100a75293e170ff67bb7eb',
+    UnderlyingAsset['polygon:pme']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
