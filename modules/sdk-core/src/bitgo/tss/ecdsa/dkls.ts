@@ -1,4 +1,4 @@
-import { getBitgoGpgPubKey, SignatureShareRecord, SignatureShareType } from "../../utils";
+import { /* getBitgoGpgPubKey,*/ SignatureShareRecord, SignatureShareType } from '../../utils';
 import openpgp from 'openpgp';
 import { DklsComms, DklsTypes } from '@bitgo/sdk-lib-mpc';
 import {
@@ -102,13 +102,16 @@ export async function getSignatureShareRoundThree(
     [getUserPartyGpgKey(userGpgKey)]
   );
   assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg4.broadcastMessages[0].from));
+  if (!userToBitGoEncryptedMsg4.broadcastMessages[0].signatureR?.message) {
+    throw Error('signatureR should be defined');
+  }
   const share: MPCv2SignatureShareRound3Input = {
     type: 'round3Input',
     data: {
       msg4: {
         from: userToBitGoEncryptedMsg4.broadcastMessages[0].from,
         message: userToBitGoEncryptedMsg4.broadcastMessages[0].payload.message,
-        signature: userToBitGoEncryptedMsg4.broadcastMessages[0].payload.signature,
+        signature: userToBitGoEncryptedMsg4.broadcastMessages[0].signatureR?.message,
       },
     },
   };

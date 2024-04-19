@@ -981,32 +981,33 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
         : params.txRequest;
 
-    let derivationPath = '';
-    let msgToSign = '';
+    // let derivationPath = '';
+    // let msgToSign = '';
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const bitgoGpgPubKey = await getBitgoGpgPubKey(this.bitgo);
 
     if (requestType === RequestType.tx) {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
-      const unsignedTx =
-        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
-      msgToSign = unsignedTx.signableHex;
-      derivationPath = unsignedTx.derivationPath;
+      // const unsignedTx =
+      //  txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      // msgToSign = unsignedTx.signableHex;
+      // derivationPath = unsignedTx.derivationPath;
     } else if (requestType === RequestType.message) {
       throw new Error('DKLS message signing not supported yet.');
     }
 
-    let hash: Hash;
-    try {
-      hash = this.baseCoin.getHashFunction();
-    } catch (err) {
-      hash = createKeccakHash('keccak256') as Hash;
-    }
-    const hashBuffer = hash.update(msgToSign).digest();
+    // let hash: Hash;
+    // try {
+    //   hash = this.baseCoin.getHashFunction();
+    // } catch (err) {
+    //   hash = createKeccakHash('keccak256') as Hash;
+    // }
+    // const hashBuffer = hash.update(msgToSign).digest();
     // const hashBuffer = createHash('sha256').update(msg).digest();
+    const testTx = Buffer.from('testTx', 'utf-8').toString('hex');
+    const txHash = createHash('sha256').update(testTx).digest().toString('hex');
 
-
-    const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
+    const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, 'm/0', Buffer.from(txHash, 'hex'));
     const userSignerBroadcastMsg1 = await otherSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
     await sendSignatureShare(
@@ -1033,7 +1034,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     const serializedBitGoToUserMessagesRound1And2 = await verifyBitGoMessagesAndSignaturesRoundOne(
       parsedBitGoToUserSigShareRoundOne,
       userGpgKey,
-      bitgoGpgPubKey,
+      bitgoGpgPubKey
     );
 
     /** Round 2 **/
