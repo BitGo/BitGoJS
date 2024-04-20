@@ -15,7 +15,7 @@ import {
 } from '../outputScripts';
 import { DerivedWalletKeys, RootWalletKeys } from './WalletKeys';
 import { toPrevOutputWithPrevTx } from '../Unspent';
-import { createPsbtFromHex, createPsbtFromTransaction } from '../transaction';
+import { createPsbtFromHex, createPsbtFromTransaction, createTransactionFromBuffer } from '../transaction';
 import { isWalletUnspent, WalletUnspent } from './Unspent';
 
 import {
@@ -581,7 +581,7 @@ export function clonePsbtWithoutNonWitnessUtxo(psbt: UtxoPsbt): UtxoPsbt {
 
   psbt.data.inputs.forEach((input, i) => {
     if (input.nonWitnessUtxo && !input.witnessUtxo) {
-      const tx = UtxoTransaction.fromBuffer<bigint>(input.nonWitnessUtxo, false, 'bigint', psbt.network);
+      const tx = createTransactionFromBuffer(input.nonWitnessUtxo, psbt.network, { amountType: 'bigint' });
       if (!txInputs[i].hash.equals(tx.getHash())) {
         throw new Error(`Non-witness UTXO hash for input #${i} doesn't match the hash specified in the prevout`);
       }
