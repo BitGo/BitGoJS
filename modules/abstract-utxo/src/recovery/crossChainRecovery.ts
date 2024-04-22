@@ -105,9 +105,26 @@ export async function getWalletKeys(
   return new utxolib.bitgo.RootWalletKeys(xpubs.map((k) => bip32.fromBase58(k)) as Triple<BIP32Interface>);
 }
 
+export async function isWalletAddress(wallet: IWallet | WalletV1, address: string): Promise<boolean> {
+  try {
+    let addressData;
+    if (wallet instanceof Wallet) {
+      addressData = await wallet.getAddress({ address });
+    } else {
+      addressData = await (wallet as WalletV1).address({ address });
+    }
+
+    return addressData !== undefined;
+  } catch (e) {
+    return false;
+  }
+}
+
 /**
  * @param coin
  * @param txid
+ * @param amountType
+ * @param wallet
  * @param apiKey - a blockchair api key
  * @return all unspents for transaction outputs, including outputs from other transactions
  */
@@ -115,12 +132,24 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,
   txid: string,
   amountType: 'number' | 'bigint' = 'number',
+  wallet: IWallet | WalletV1,
   apiKey?: string
 ): Promise<Unspent<TNumber>[]> {
   const api = coin.getRecoveryProvider(apiKey);
   const tx = await api.getTransactionIO(txid);
-  const addresses = tx.outputs.map((output) => output.address);
-  const unspents = await api.getUnspentsForAddresses(addresses);
+  const walletAddresses = (
+    await Promise.all(
+      tx.outputs.map(async (output) => {
+        const isWalletOwned = await isWalletAddress(wallet, output.address);
+        return isWalletOwned ? output.address : null;
+      })
+    )
+  ).filter((address) => address !== null);
+
+  const unspents = await api.getUnspentsForAddresses(walletAddresses as string[]);
+  if (unspents.length === 0) {
+    throw new Error(`No recovery unspents found.`);
+  }
   // the api may return cashaddr's instead of legacy for BCH and BCHA
   // downstream processes's only expect legacy addresses
   return unspents.map((recoveryOutput) => {
@@ -400,6 +429,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
     params.sourceCoin,
     params.txid,
     params.sourceCoin.amountType,
+    wallet,
     params.apiKey
   );
   const walletUnspents = await toWalletUnspents<TNumber>(params.sourceCoin, params.recoveryCoin, unspents, wallet);
