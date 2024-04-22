@@ -1002,7 +1002,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     } catch (err) {
       hash = createKeccakHash('keccak256') as Hash;
     }
-    const hashBuffer = hash.update(msgToSign).digest();
+    const hashBuffer = hash.update(Buffer.from(msgToSign, 'hex')).digest();
+    const hashBufferHex = Buffer.from(hashBuffer).toString('hex');
 
     const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
@@ -1074,7 +1075,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       bitgoGpgPubKey
     );
 
-    /** Round 4 **/
+    /** Round 3 **/
     const deserializedBitGoToUserMessagesRound3 = DklsTypes.deserializeMessages({
       p2pMessages: serializedBitGoToUserMessagesRound3.p2pMessages,
       broadcastMessages: [],
