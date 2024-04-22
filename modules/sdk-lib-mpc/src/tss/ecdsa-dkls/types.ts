@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { decode } from 'cbor';
+import { XShare } from '../ecdsa/types';
 
 // Broadcast message meant to be sent to multiple parties
 interface BroadcastMessage<T> {
@@ -51,6 +52,10 @@ export type PartyGpgKey = {
 export type DklsSignature<T> = {
   R: T;
   S: T;
+};
+export type RetrofitData = {
+  bigSiList: string[];
+  xShare: Partial<XShare>;
 };
 export type SerializedBroadcastMessage = BroadcastMessage<string>;
 export type DeserializedBroadcastMessage = BroadcastMessage<Uint8Array>;

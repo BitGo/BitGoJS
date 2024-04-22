@@ -4,9 +4,17 @@ import {
   decryptAndVerifyIncomingMessages,
   encryptAndAuthOutgoingMessages,
 } from '../../../../src/tss/ecdsa-dkls/commsLayer';
-import { PartyGpgKey, deserializeMessages, serializeMessages } from '../../../../src/tss/ecdsa-dkls/types';
+import {
+  PartyGpgKey,
+  RetrofitData,
+  deserializeMessages,
+  serializeMessages,
+} from '../../../../src/tss/ecdsa-dkls/types';
+import * as fixtures from './fixtures/mpcv1shares';
 import * as openpgp from 'openpgp';
 import { decode } from 'cbor';
+import { Secp256k1Curve } from '../../../../src/curves';
+import { bigIntToBufferBE } from '../../../../src/util';
 
 describe('DKLS Dkg 2x3', function () {
   it(`should create key shares`, async function () {
@@ -84,6 +92,109 @@ describe('DKLS Dkg 2x3', function () {
     assert.deepEqual(decode(backupKeyShare).public_key, decode(bitgoKeyShare).public_key);
     assert.deepEqual(DklsTypes.getCommonKeychain(userKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
     assert.deepEqual(DklsTypes.getCommonKeychain(backupKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
+  });
+
+  it(`should create retrofit MPCV1 shares`, async function () {
+    const secp256k1 = new Secp256k1Curve();
+    const aKeyCombine = {
+      xShare: fixtures.mockDKeyShare.xShare,
+    };
+    const bKeyCombine = {
+      xShare: fixtures.mockEKeyShare.xShare,
+    };
+    const cKeyCombine = {
+      xShare: fixtures.mockFKeyShare.xShare,
+    };
+    const aPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + aKeyCombine.xShare.x))).toString('hex');
+    const bPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + bKeyCombine.xShare.x))).toString('hex');
+    const cPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + cKeyCombine.xShare.x))).toString('hex');
+    const retrofitDataA: RetrofitData = {
+      bigSiList: [bPub, cPub],
+      xShare: aKeyCombine.xShare,
+    };
+    const retrofitDataB: RetrofitData = {
+      bigSiList: [aPub, cPub],
+      xShare: bKeyCombine.xShare,
+    };
+    const retrofitDataC: RetrofitData = {
+      bigSiList: [aPub, bPub],
+      xShare: cKeyCombine.xShare,
+    };
+    const user = new DklsDkg.Dkg(3, 2, 0, retrofitDataA);
+    const backup = new DklsDkg.Dkg(3, 2, 1, retrofitDataB);
+    const bitgo = new DklsDkg.Dkg(3, 2, 2, retrofitDataC);
+    const userRound1Message = await user.initDkg();
+    const backupRound1Message = await backup.initDkg();
+    const bitgoRound1Message = await bitgo.initDkg();
+    const userRound2Messages = user.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [bitgoRound1Message, backupRound1Message],
+    });
+    const backupRound2Messages = backup.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [userRound1Message, bitgoRound1Message],
+    });
+    const bitgoRound2Messages = bitgo.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [userRound1Message, backupRound1Message],
+    });
+    const userRound3Messages = user.handleIncomingMessages({
+      p2pMessages: backupRound2Messages.p2pMessages
+        .filter((m) => m.to === 0)
+        .concat(bitgoRound2Messages.p2pMessages.filter((m) => m.to === 0)),
+      broadcastMessages: [],
+    });
+    const backupRound3Messages = backup.handleIncomingMessages({
+      p2pMessages: bitgoRound2Messages.p2pMessages
+        .filter((m) => m.to === 1)
+        .concat(userRound2Messages.p2pMessages.filter((m) => m.to === 1)),
+      broadcastMessages: [],
+    });
+    const bitgoRound3Messages = bitgo.handleIncomingMessages({
+      p2pMessages: backupRound2Messages.p2pMessages
+        .filter((m) => m.to === 2)
+        .concat(userRound2Messages.p2pMessages.filter((m) => m.to === 2)),
+      broadcastMessages: [],
+    });
+    const userRound4Messages = user.handleIncomingMessages({
+      p2pMessages: backupRound3Messages.p2pMessages
+        .filter((m) => m.to === 0)
+        .concat(bitgoRound3Messages.p2pMessages.filter((m) => m.to === 0)),
+      broadcastMessages: [],
+    });
+    const backupRound4Messages = backup.handleIncomingMessages({
+      p2pMessages: bitgoRound3Messages.p2pMessages
+        .filter((m) => m.to === 1)
+        .concat(userRound3Messages.p2pMessages.filter((m) => m.to === 1)),
+      broadcastMessages: [],
+    });
+    const bitgoRound4Messages = bitgo.handleIncomingMessages({
+      p2pMessages: backupRound3Messages.p2pMessages
+        .filter((m) => m.to === 2)
+        .concat(userRound3Messages.p2pMessages.filter((m) => m.to === 2)),
+      broadcastMessages: [],
+    });
+    user.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: bitgoRound4Messages.broadcastMessages.concat(backupRound4Messages.broadcastMessages),
+    });
+    bitgo.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: backupRound4Messages.broadcastMessages.concat(userRound4Messages.broadcastMessages),
+    });
+    backup.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: bitgoRound4Messages.broadcastMessages.concat(userRound4Messages.broadcastMessages),
+    });
+
+    const userKeyShare = user.getKeyShare();
+    const backupKeyShare = backup.getKeyShare();
+    const bitgoKeyShare = bitgo.getKeyShare();
+    assert.deepEqual(decode(userKeyShare).public_key, decode(bitgoKeyShare).public_key);
+    assert.deepEqual(decode(backupKeyShare).public_key, decode(bitgoKeyShare).public_key);
+    assert.deepEqual(DklsTypes.getCommonKeychain(userKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
+    assert.deepEqual(DklsTypes.getCommonKeychain(backupKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
+    assert.deepEqual(aKeyCombine.xShare.y, Buffer.from(decode(userKeyShare).public_key).toString('hex'));
   });
 
   it(`should create key shares with authenticated encryption`, async function () {
