@@ -11,6 +11,10 @@ import {
 } from '@bitgo/public-types';
 import assert from 'assert';
 
+/**
+ Helpers in this take care of all interaction with WP API's
+**/
+
 export async function getSignatureShareRoundOne(
   round1Message: DklsTypes.DeserializedBroadcastMessage,
   userGpgKey: openpgp.SerializedKeyPair<string>
@@ -111,7 +115,8 @@ export async function getSignatureShareRoundThree(
       msg4: {
         from: userToBitGoEncryptedMsg4.broadcastMessages[0].from,
         message: userToBitGoEncryptedMsg4.broadcastMessages[0].payload.message,
-        signature: userToBitGoEncryptedMsg4.broadcastMessages[0].signatureR?.message,
+        signature: userToBitGoEncryptedMsg4.broadcastMessages[0].payload.signature,
+        signatureR: userToBitGoEncryptedMsg4.broadcastMessages[0].signatureR.message,
       },
     },
   };

@@ -1,15 +1,14 @@
 import {
-  BaseCoin, BitgoGPGPublicKey, common,
-  DKLSMethods,
-  ECDSA,
+  BaseCoin,
+  BitgoGPGPublicKey,
+  common,
   ECDSAUtils,
-  getBitgoGpgPubKey,
   RequestTracer,
   SignatureShareRecord,
   SignatureShareType,
   TxRequest,
   Wallet,
-} from "@bitgo/sdk-core";
+} from '@bitgo/sdk-core';
 import createKeccakHash from 'keccak';
 import * as sinon from 'sinon';
 import { DklsDsg, DklsTypes, DklsComms } from '@bitgo/sdk-lib-mpc';
@@ -21,15 +20,21 @@ import {
   MPCv2SignatureShareRound1Input,
   MPCv2SignatureShareRound2Input,
   MPCv2SignatureShareRound2Output,
+  MPCv2SignatureShareRound3Input,
   MPCv2Party,
 } from '@bitgo/public-types';
 import * as openpgp from 'openpgp';
 import * as nock from 'nock';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src';
-import { createHash, Hash } from "crypto";
+import { createHash, Hash } from 'crypto';
+import * as assert from "assert";
 
-getBitgoGpgPubKey;
+interface SignatureShareApiBody {
+  signatureShare: SignatureShareRecord;
+  userPublicGpgKey: string;
+}
+
 describe('signTxRequest:', function () {
   let tssUtils: ECDSAUtils.EcdsaUtils;
   let wallet: Wallet;
@@ -89,7 +94,6 @@ describe('signTxRequest:', function () {
   let bitgoParty: DklsDsg.Dsg;
 
   before(async () => {
-
     bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
     bitgo.initializeTestVars();
     const bgUrl = common.Environments[bitgo.getEnv()].uri;
@@ -105,7 +109,7 @@ describe('signTxRequest:', function () {
       mpc: {
         bitgoPublicKey: bitgoGpgKey.publicKey,
       },
-    }
+    };
     await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, 'whatever', bitgoGpgKey);
     nock(bgUrl).get('/api/v1/client/constants').times(16).reply(200, { ttl: 3600, constants });
 
@@ -141,20 +145,23 @@ describe('signTxRequest:', function () {
   });
 
   it('test', async function () {
-
     const nockPromises = [
       await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
       await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(bitgoParty, txRequest),
     ];
     await Promise.all(nockPromises);
 
-    const userShare = fs.readFileSync(shareFiles[vector.party1])
-    const userPrvBase64 = Buffer.from(userShare).toString('base64')
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
     await tssUtils.signTxRequest({
       txRequest,
       prv: userPrvBase64,
       reqId,
     });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
   });
 });
 
@@ -176,7 +183,7 @@ async function nockTxRequestResponseSignatureShareRoundOne(
   bitgoSession: DklsDsg.Dsg,
   txRequest: TxRequest,
   bitgoGpgKey: openpgp.SerializedKeyPair<string>
-) {
+): Promise<nock.Scope> {
   const transactions = getRoute('ecdsa');
   return nock('https://bitgo.fakeurl')
     .persist(true)
@@ -184,7 +191,7 @@ async function nockTxRequestResponseSignatureShareRoundOne(
       `/api/v2/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId + transactions}/signatureshares`,
       (body) => (JSON.parse(body.signatureShare.share) as MPCv2SignatureShareRound1Input).type === 'round1Input'
     )
-    .reply(200, async (uri, body) => {
+    .reply(200, async (uri, body: SignatureShareApiBody) => {
       // Do the actual signing on BitGo's side based on User's messages
       const signatureShare = JSON.parse(body.signatureShare.share) as MPCv2SignatureShareRound1Input;
       const deserializedMessages = DklsTypes.deserializeMessages({
@@ -207,7 +214,7 @@ async function nockTxRequestResponseSignatureShareRoundOne(
           broadcastMessages: [bitgoToUserRound1BroadcastMsg],
         });
 
-        let authEncMessages = await DklsComms.encryptAndAuthOutgoingMessages(
+        const authEncMessages = await DklsComms.encryptAndAuthOutgoingMessages(
           serializedBitGoToUserRound1And2Msgs,
           [getUserPartyGpgKeyPublic(body.userPublicGpgKey)],
           [getBitGoPartyGpgKeyPrv(bitgoGpgKey)]
@@ -258,7 +265,7 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
   bitgoSession: DklsDsg.Dsg,
   txRequest: TxRequest,
   bitgoGpgKey: openpgp.SerializedKeyPair<string>
-) {
+): Promise<nock.Scope> {
   const transactions = getRoute('ecdsa');
   return nock('https://bitgo.fakeurl')
     .persist(true)
@@ -266,7 +273,7 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
       `/api/v2/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId + transactions}/signatureshares`,
       (body) => (JSON.parse(body.signatureShare.share) as MPCv2SignatureShareRound2Input).type === 'round2Input'
     )
-    .reply(200, async (uri, body) => {
+    .reply(200, async (uri, body: SignatureShareApiBody) => {
       // Do the actual signing on BitGo's side based on User's messages
       const parsedSignatureShare = JSON.parse(body.signatureShare.share) as MPCv2SignatureShareRound2Input;
       const serializedMessages = await DklsComms.decryptAndVerifyIncomingMessages(
@@ -330,6 +337,11 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
                   {
                     signatureShares: [
                       {
+                        from: SignatureShareType.USER,
+                        to: SignatureShareType.BITGO,
+                        share: 'some old share we dont care about',
+                      },
+                      {
                         from: SignatureShareType.BITGO,
                         to: SignatureShareType.USER,
                         share: JSON.stringify(bitgoToUserSignatureShare),
@@ -341,6 +353,34 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
             ],
           });
       }
+    });
+}
+
+async function nockTxRequestResponseSignatureShareRoundThree(
+  bitgoSession: DklsDsg.Dsg,
+  txRequest: TxRequest,
+): Promise<nock.Scope> {
+  const transactions = getRoute('ecdsa');
+  return nock('https://bitgo.fakeurl')
+    .persist(true)
+    .post(
+      `/api/v2/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId + transactions}/signatureshares`,
+      (body: SignatureShareApiBody) =>
+        (JSON.parse(body.signatureShare.share) as MPCv2SignatureShareRound3Input).type === 'round3Input'
+    )
+    .reply(200, async (uri, body) => {
+      // Do the actual signing on BitGo's side based on User's messages
+
+      nock('https://bitgo.fakeurl')
+        .get('/api/v2/wallet/' + txRequest.walletId + '/txrequests')
+        .query({ txRequestIds: txRequest.txRequestId, latest: 'true' })
+        .reply(200, {
+          txRequests: [
+            {
+              txRequestId: txRequest.txRequestId,
+            },
+          ],
+        });
     });
 }
 
