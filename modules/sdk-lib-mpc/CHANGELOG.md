@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.3.0...@bitgo/sdk-lib-mpc@9.4.0) (2024-04-22)
+
+### Bug Fixes
+
+- **sdk-lib-mpc:** fix mpcv2 commitment and signatureR serialization ([89efa0c](https://github.com/BitGo/BitGoJS/commit/89efa0c1dbcc2aa6cb587692e989a0e8a6c7a984))
+
+### Features
+
+- **sdk-lib-mpc:** add utility to verify dkls signatures ([eb0824d](https://github.com/BitGo/BitGoJS/commit/eb0824dfaf7e9c2c9bb85df08b2e9012d1bf657b))
+
 # [9.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.2.0...@bitgo/sdk-lib-mpc@9.3.0) (2024-04-17)
 
 ### Features

@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-bcha",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "BitGo SDK coin library for Bitcoin abc",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,13 +40,13 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^8.0.6",
-    "@bitgo/sdk-coin-bch": "^2.0.6",
-    "@bitgo/sdk-core": "^26.8.0",
-    "@bitgo/utxo-lib": "^9.35.0"
+    "@bitgo/abstract-utxo": "^8.1.0",
+    "@bitgo/sdk-coin-bch": "^2.0.7",
+    "@bitgo/sdk-core": "^26.8.1",
+    "@bitgo/utxo-lib": "^9.36.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.45.1",
-    "@bitgo/sdk-test": "^8.0.11"
+    "@bitgo/sdk-api": "^1.45.2",
+    "@bitgo/sdk-test": "^8.0.12"
   }
 }

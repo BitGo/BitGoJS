@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [20.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@20.0.6...@bitgo/sdk-coin-polygon@20.1.0) (2024-04-22)
+
+### Bug Fixes
+
+- **sdk-coin-polygon:** fix send tx for polygon testnet ([172a081](https://github.com/BitGo/BitGoJS/commit/172a081cc4bec1eedf9876a438bc8828dc543d31))
+
+### Features
+
+- **statics:** add polygon amoy testnet ([b9a770d](https://github.com/BitGo/BitGoJS/commit/b9a770d4833a9175832629912ecae4687b2681b4))
+
 ## [20.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@20.0.5...@bitgo/sdk-coin-polygon@20.0.6) (2024-04-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polygon

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.1.0...bitgo@38.2.0) (2024-04-22)
+
+### Features
+
+- **abstract-utxo:** support trustless change outputs from explaintx ([445ed53](https://github.com/BitGo/BitGoJS/commit/445ed5357c24357b5f9137669551e146bf2f2e60))
+
 # [38.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.0.5...bitgo@38.1.0) (2024-04-17)
 
 ### Features

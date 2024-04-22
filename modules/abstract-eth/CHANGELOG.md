@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [20.1.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@20.1.5...@bitgo/abstract-eth@20.1.6) (2024-04-22)
+
+### Bug Fixes
+
+- **sdk-coin-polygon:** fix send tx for polygon testnet ([172a081](https://github.com/BitGo/BitGoJS/commit/172a081cc4bec1eedf9876a438bc8828dc543d31))
+
 ## [20.1.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@20.1.4...@bitgo/abstract-eth@20.1.5) (2024-04-17)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

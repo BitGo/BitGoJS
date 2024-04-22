@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.36.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.35.0...@bitgo/utxo-lib@9.36.0) (2024-04-22)
+
+### Bug Fixes
+
+- **utxo-lib:** psbt clone should use valid create tx function ([c251cfb](https://github.com/BitGo/BitGoJS/commit/c251cfb9a1cf4cf8ab68aad2e0aee8d6feaf9d91))
+
+### Features
+
+- **abstract-utxo:** support trustless change outputs from explaintx ([445ed53](https://github.com/BitGo/BitGoJS/commit/445ed5357c24357b5f9137669551e146bf2f2e60))
+
 # [9.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.5.0...@bitgo/utxo-lib@9.35.0) (2024-04-10)
 
 ### Bug Fixes

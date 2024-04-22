@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-stx",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "BitGo SDK coin library for Stacks",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,9 +40,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^26.8.0",
-    "@bitgo/statics": "^48.7.0",
-    "@bitgo/utxo-lib": "^9.35.0",
+    "@bitgo/sdk-core": "^26.8.1",
+    "@bitgo/statics": "^48.8.0",
+    "@bitgo/utxo-lib": "^9.36.0",
     "@stacks/network": "^4.3.0",
     "@stacks/transactions": "2.0.1",
     "bignumber.js": "^9.0.0",
@@ -52,8 +52,8 @@
     "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.45.1",
-    "@bitgo/sdk-test": "^8.0.11",
+    "@bitgo/sdk-api": "^1.45.2",
+    "@bitgo/sdk-test": "^8.0.12",
     "@types/elliptic": "^6.4.12"
   }
 }
