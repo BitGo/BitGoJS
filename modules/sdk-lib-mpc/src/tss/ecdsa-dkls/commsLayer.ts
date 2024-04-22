@@ -206,6 +206,12 @@ export async function encryptAndAuthOutgoingMessages(
         return {
           from: m.from,
           payload: await detachSignData(Buffer.from(m.payload, 'base64'), prvGpgKey.gpgKey),
+          signatureR: m.signatureR
+            ? {
+                message: m.signatureR,
+                signature: '',
+              }
+            : undefined,
         };
       })
     ),

@@ -104,7 +104,7 @@ export function deserializeP2PMessage(message: SerializedP2PMessage): Deserializ
     to: message.to,
     from: message.from,
     payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
-    commitment: message.commitment ? new Uint8Array(Buffer.from(message.commitment, 'base64')) : undefined,
+    commitment: message.commitment ? new Uint8Array(Buffer.from(message.commitment, 'hex')) : undefined,
   };
 }
 
@@ -129,7 +129,7 @@ export function serializeP2PMessage(message: DeserializedP2PMessage): Serialized
     to: message.to,
     from: message.from,
     payload: Buffer.from(message.payload).toString('base64'),
-    commitment: message.commitment ? Buffer.from(message.commitment).toString('base64') : undefined,
+    commitment: message.commitment ? Buffer.from(message.commitment).toString('hex') : undefined,
   };
 }
 
