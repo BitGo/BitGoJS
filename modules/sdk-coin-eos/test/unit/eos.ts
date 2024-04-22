@@ -242,6 +242,24 @@ describe('EOS:', function () {
       explainedTx.id.should.equal('6132f3bf4a746e6ecad8a31df67d71b4741fc5b7c868ae36dde18309a91df8a6');
       explainedTx.memo.should.equal('1');
     });
+    it('should explain an EOS transaction when we only pass in txHex', async function () {
+      const explainTransactionParams = {
+        headers: {
+          ref_block_prefix: 100,
+          ref_block_num: 995,
+          expiration: '2018-04-27T18:40:34.000Z',
+        },
+        txHex:
+          '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c256391915a77ca65dfaaac9ae2200000000100408c7a02ea3055000000000085269d00060531343339320100a6823403ea3055000000572d3ccdcd01403599e98cf9fb7600000000a8ed323221403599e98cf9fb7610201db53053c8c4dd0700000000000004454f530000000000000000000000000000000000000000000000000000000000000000000000000000',
+      };
+
+      const explainedTx = await basecoin.explainTransaction(explainTransactionParams);
+      explainedTx.outputAmount.should.equal('2013');
+      explainedTx.outputs.length.should.equal(1);
+      explainedTx.outputs[0].amount.should.equal('2013');
+      explainedTx.outputs[0].address.should.equal('sn45ag5p3ok1');
+      explainedTx.id.should.equal('b5a2310cb281b00afa671e0be370f6742dab4f5c3bc6bf76adeaa4356be1286b');
+    });
     it(
       'explains EOS native transfer transaction',
       testExplainTransaction(EosInputs.explainTransactionInputNative, EosResponses.explainTransactionOutputNative)
