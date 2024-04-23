@@ -48,7 +48,7 @@
     "bech32": "^2.0.0",
     "bignumber.js": "^9.0.2",
     "lodash": "^4.17.21",
-    "superagent": "^3.8.3",
+    "superagent": "^9.0.1",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {

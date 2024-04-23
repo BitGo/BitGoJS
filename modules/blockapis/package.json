@@ -25,7 +25,7 @@
     "@bitgo/utxo-lib": "^9.35.0",
     "@types/superagent": "4.1.16",
     "bluebird": "^3.7.2",
-    "superagent": "^7.1.1"
+    "superagent": "^9.0.1"
   },
   "lint-staged": {
     "*.{js,ts}": [
