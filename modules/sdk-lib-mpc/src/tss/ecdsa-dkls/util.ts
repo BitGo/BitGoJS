@@ -1,5 +1,5 @@
 import { Signature } from '@noble/secp256k1';
-import { Secp256k1Curve } from '../../curves';
+import { HDTree, Secp256k1Bip32HdTree, Secp256k1Curve } from '../../curves';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 import { DeserializedDklsSignature } from './types';
 import { decode } from 'cbor';
@@ -37,6 +37,7 @@ export function combinePartialSignatures(round4MessagePayloads: Uint8Array[], rH
  * @param message - message that was signed.
  * @param dklsSignature - R and S values of the ECDSA signature.
  * @param commonKeychain - public key appended to chaincode in hex.
+ * @param derivationPath - optional derivation path to derive on the commonkeychain before verification.
  * @param hash - optional hash function to apply on message before verifying. Default is sha256.
  * @param shouldHash - flag to determine whether message should be hashed before verifying.
  * @returns {string} - serialized signature in `recid:r:s:publickey` format
@@ -45,13 +46,27 @@ export function verifyAndConvertDklsSignature(
   message: Buffer,
   dklsSignature: DeserializedDklsSignature,
   commonKeychain: string,
+  derivationPath?: string,
   hash?: Hash,
   shouldHash = true
 ): string {
+  let truePub = '';
+  if (derivationPath && derivationPath !== 'm') {
+    const hdTree: HDTree = new Secp256k1Bip32HdTree();
+    const derivedPub = hdTree.publicDerive(
+      {
+        pk: bigIntFromBufferBE(Buffer.from(commonKeychain.slice(0, 66), 'hex')),
+        chaincode: bigIntFromBufferBE(Buffer.from(commonKeychain.slice(66), 'hex')),
+      },
+      derivationPath
+    );
+    truePub = bigIntToBufferBE(derivedPub.pk).toString('hex');
+  } else {
+    truePub = commonKeychain.slice(0, 66);
+  }
   const messageToVerify = shouldHash ? (hash || createHash('sha256')).update(message).digest() : message;
   const pub0 = secp256k1.ecdsaRecover(Buffer.concat([dklsSignature.R, dklsSignature.S]), 0, messageToVerify, true);
   const pub1 = secp256k1.ecdsaRecover(Buffer.concat([dklsSignature.R, dklsSignature.S]), 1, messageToVerify, true);
-  const truePub = commonKeychain.slice(0, 66);
   let recId: number;
   if (truePub === Buffer.from(pub0).toString('hex')) {
     recId = 0;

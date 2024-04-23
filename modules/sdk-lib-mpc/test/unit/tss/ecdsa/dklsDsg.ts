@@ -4,7 +4,6 @@ import * as crypto from 'crypto';
 import should from 'should';
 import { Keyshare } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode } from 'cbor';
-import { Secp256k1Bip32HdTree, bigIntFromBufferBE, bigIntToBufferBE } from '../../../../src';
 import { verifyAndConvertDklsSignature } from '../../../../src/tss/ecdsa-dkls/util';
 
 describe('DKLS Dsg 2x3', function () {
@@ -108,18 +107,12 @@ describe('DKLS Dsg 2x3', function () {
       });
       party1.signature.should.deepEqual(party2.signature);
       const keyShare: Keyshare = Keyshare.fromBytes(fs.readFileSync(shareFiles[vector.party1]));
-      const pk = bigIntFromBufferBE(Buffer.from(keyShare.publicKey));
-      const chaincode = bigIntFromBufferBE(Buffer.from(decode(keyShare.toBytes()).root_chain_code));
-      const hdTree = new Secp256k1Bip32HdTree();
-      const derivedKey = hdTree.publicDerive({ pk: pk, chaincode: chaincode }, vector.derivationPath);
-      const derivedPub =
-        vector.derivationPath === 'm'
-          ? Buffer.from(keyShare.publicKey).toString('hex')
-          : bigIntToBufferBE(derivedKey.pk).toString('hex');
       const convertedSignature = verifyAndConvertDklsSignature(
         Buffer.from(vector.msgToSign, 'hex'),
         party1.signature,
-        derivedPub
+        Buffer.from(keyShare.publicKey).toString('hex') +
+          Buffer.from(decode(keyShare.toBytes()).root_chain_code).toString('hex'),
+        vector.derivationPath
       );
       should.exist(convertedSignature);
       convertedSignature.split(':').length.should.equal(4);
