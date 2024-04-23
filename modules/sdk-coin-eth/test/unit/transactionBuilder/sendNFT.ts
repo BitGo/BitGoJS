@@ -1,4 +1,5 @@
 import { TransactionType } from '@bitgo/sdk-core';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 import { ERC1155TransferBuilder, ERC721TransferBuilder, TransactionBuilder } from '../../../src';
 import * as testData from '../../resources/eth';
 import { ethers } from 'ethers';
@@ -23,6 +24,7 @@ describe('Eth transaction builder sendNFT', () => {
   const erc721ContractAddress = '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85';
   // opensea erc1155
   const erc1155ContractAddress = '0x495f947276749ce646f68ac8c248420045cb7b5e';
+  const coin = coins.get('hteth') as unknown as EthLikeNetwork;
   let key;
 
   beforeEach(() => {
@@ -30,7 +32,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign ERC721 properly', async () => {
-    const txBuilder = getBuilder('teth') as TransactionBuilder;
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -59,7 +61,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC721 transfer with Builder pattern', async () => {
-    const txBuilder = getBuilder('teth') as TransactionBuilder;
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -83,7 +85,7 @@ describe('Eth transaction builder sendNFT', () => {
       .tokenId(tokenId)
       .key(key);
 
-    const sendMultisigCallData = erc721Transfer.signAndBuild();
+    const sendMultisigCallData = erc721Transfer.signAndBuild(`${coin.chainId}`);
     const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), sendMultisigCallData);
 
     const safeTransferFromCallData = decodedSendMultisigCallData.args[2];
@@ -95,7 +97,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC721 transfer with Decoder pattern', async () => {
-    const txBuilder = getBuilder('teth') as TransactionBuilder;
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -107,7 +109,7 @@ describe('Eth transaction builder sendNFT', () => {
     const tokenId = '1';
 
     const erc721Transfer = txBuilder.transfer(erc721Encoding) as ERC721TransferBuilder;
-    const sendMultisigCallData = erc721Transfer.signAndBuild();
+    const sendMultisigCallData = erc721Transfer.signAndBuild(`${coin.chainId}`);
     const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), sendMultisigCallData);
 
     const safeTransferFromCallData = decodedSendMultisigCallData.args[2];
@@ -119,7 +121,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC1155 single transfer with Builder pattern', async () => {
-    const txBuilder = getBuilder('teth') as TransactionBuilder;
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -143,7 +145,7 @@ describe('Eth transaction builder sendNFT', () => {
       .entry(tokenId, value)
       .key(key);
 
-    const sendMultisigCallData = erc1155Transfer.signAndBuild();
+    const sendMultisigCallData = erc1155Transfer.signAndBuild(`${coin.chainId}`);
     const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), sendMultisigCallData);
 
     const safeTransferFromCallData = decodedSendMultisigCallData.args[2];
@@ -159,7 +161,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC1155 single transfer with Decoder pattern', async () => {
-    const txBuilder = getBuilder('teth') as TransactionBuilder;
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -172,7 +174,7 @@ describe('Eth transaction builder sendNFT', () => {
     const value = '10';
 
     const erc1155Transfer = txBuilder.transfer(erc1155SafeTransferEncoding) as ERC1155TransferBuilder;
-    const sendMultisigCallData = erc1155Transfer.signAndBuild();
+    const sendMultisigCallData = erc1155Transfer.signAndBuild(`${coin.chainId}`);
 
     const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), sendMultisigCallData);
 
@@ -186,7 +188,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC1155 batch transfer with Builder pattern', async () => {
-    const txBuilder = getBuilder('teth') as TransactionBuilder;
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -212,7 +214,7 @@ describe('Eth transaction builder sendNFT', () => {
       .entry(tokenIds[2], values[2])
       .key(key);
 
-    const sendMultisigCallData = erc1155Transfer.signAndBuild();
+    const sendMultisigCallData = erc1155Transfer.signAndBuild(`${coin.chainId}`);
     const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), sendMultisigCallData);
 
     const safeTransferFromCallData = decodedSendMultisigCallData.args[2];
@@ -231,7 +233,7 @@ describe('Eth transaction builder sendNFT', () => {
   });
 
   it('should sign and build ERC1155 batch transfer with Decoder pattern', async () => {
-    const txBuilder = getBuilder('teth') as TransactionBuilder;
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -245,7 +247,7 @@ describe('Eth transaction builder sendNFT', () => {
 
     const erc1155Transfer = txBuilder.transfer(erc1155BatchTransferEncoding) as ERC1155TransferBuilder;
 
-    const sendMultisigCallData = erc1155Transfer.signAndBuild();
+    const sendMultisigCallData = erc1155Transfer.signAndBuild(`${coin.chainId}`);
     const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), sendMultisigCallData);
 
     const safeTransferFromCallData = decodedSendMultisigCallData.args[2];

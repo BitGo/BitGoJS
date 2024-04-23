@@ -1,5 +1,6 @@
 import assert from 'assert';
 import should from 'should';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 import { KeyPair, TransferBuilder } from '../../src';
 
 describe('Eth send multi sig builder', function () {
@@ -19,6 +20,7 @@ describe('Eth send multi sig builder', function () {
 
     ethLikeCoins.forEach((coin) => {
       it('should fail with an invalid key', () => {
+        const staticsCoin = coins.get(coin) as unknown as EthLikeNetwork;
         const builder = new TransferBuilder()
           .coin(coin)
           .expirationTime(1590078260)
@@ -27,7 +29,7 @@ describe('Eth send multi sig builder', function () {
           .contractSequenceId(2)
           .key('invalidkey');
         should(() => {
-          builder.signAndBuild();
+          builder.signAndBuild(`${staticsCoin.chainId}`);
         }).throw('private key length is invalid');
       });
     });
@@ -64,17 +66,17 @@ describe('Eth send multi sig builder', function () {
 
     it('should fail if a sequenceId param is missing', () => {
       const builder = new TransferBuilder().amount(amount).to(toAddress).key(key);
-      assert.throws(() => builder.signAndBuild());
+      assert.throws(() => builder.signAndBuild(''));
     });
 
     it('should fail if a destination param is missing', () => {
       const builder = new TransferBuilder().amount(amount).contractSequenceId(2).key(key);
-      assert.throws(() => builder.signAndBuild());
+      assert.throws(() => builder.signAndBuild(''));
     });
 
     it('should fail if a amount param is missing', () => {
       const builder = new TransferBuilder().to(toAddress).contractSequenceId(2).key(key);
-      assert.throws(() => builder.signAndBuild());
+      assert.throws(() => builder.signAndBuild(''));
     });
   });
 });
