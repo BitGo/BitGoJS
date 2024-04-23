@@ -117,6 +117,7 @@ describe('Eth transaction builder send', () => {
       await txBuilder.build();
       const operationData = txBuilder.transfer().getOperationData();
       should.equal(operationData[1][0], '17000');
+      should.equal(txBuilder.coinUsesNonPackedEncodingForTxData(), true);
     });
 
     it('a send funds with amount 0 transaction', async () => {

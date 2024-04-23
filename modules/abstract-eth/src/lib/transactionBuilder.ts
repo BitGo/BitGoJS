@@ -636,8 +636,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @returns {boolean} true if the coin uses non-packed encoding for tx data
    */
-  protected coinUsesNonPackedEncodingForTxData(): boolean {
-    return this._coinConfig.features.includes(CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA);
+  public coinUsesNonPackedEncodingForTxData(): boolean {
+    return (
+      this._walletVersion === 4 || this._coinConfig.features.includes(CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA)
+    );
   }
 
   private buildSendTransaction(): TxData {
