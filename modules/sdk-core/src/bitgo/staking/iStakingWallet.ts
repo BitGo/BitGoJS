@@ -34,6 +34,8 @@ export interface DelegationRequest {
  * @property {string} [btcRewardAddress] - btc reward address
  * @property {string} [signerPub] - stx signer public key
  * @property {string} [signerSignature] - stx signer signature
+ * @property {string} [maxAmount] - stx max amount
+ * @property {string} [authId] - stx auth-id
  * @property {DelegationRequest[]} [delegationRequests] - The delegation requests
  * TODO: remove support to this contract version after STX fork
  * https://bitgoinc.atlassian.net/browse/EA-3482
@@ -74,6 +76,16 @@ export interface StakeOptions {
    * stx signer signature
    */
   signerSignature?: string;
+
+  /**
+   * stx max amount
+   */
+  maxAmount?: string;
+
+  /**
+   * stx auth-id
+   */
+  authId?: string;
 
   delegationRequests?: DelegationRequest[];
 
