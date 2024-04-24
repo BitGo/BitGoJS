@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@2.1.0...@bitgo/sdk-coin-eos@2.1.1) (2024-04-24)
+
+### Bug Fixes
+
+- superagent upgrade to 9.0 ([6e9aa43](https://github.com/BitGo/BitGoJS/commit/6e9aa43a6d2999298abd450ceb168d664b8b926d))
+
 # [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@2.0.6...@bitgo/sdk-coin-eos@2.1.0) (2024-04-22)
 
 ### Features

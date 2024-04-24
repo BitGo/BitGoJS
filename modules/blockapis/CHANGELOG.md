@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.9.1...@bitgo/blockapis@1.9.2) (2024-04-24)
+
+### Bug Fixes
+
+- superagent upgrade to 9.0 ([6e9aa43](https://github.com/BitGo/BitGoJS/commit/6e9aa43a6d2999298abd450ceb168d664b8b926d))
+
 ## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.9.0...@bitgo/blockapis@1.9.1) (2024-04-22)
 
 **Note:** Version bump only for package @bitgo/blockapis
