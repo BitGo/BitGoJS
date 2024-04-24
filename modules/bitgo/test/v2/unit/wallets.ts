@@ -810,11 +810,12 @@ describe('V2 Wallets:', function () {
         const shareId = 'test_case_2';
         const keychainId = 'test_case_2';
         const userPassword = 'test_case_2';
-
         // create a user key
         const keyChainNock = nock(bgUrl)
           .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
-          .reply(200, { id: keychainId });
+          .reply(200, (uri, requestBody) => {
+            return { id: keychainId, encryptedPrv: requestBody['encryptedPrv'], pub: requestBody['pub'] };
+          });
 
         const walletShareInfoNock = nock(bgUrl)
           .get(`/api/v2/tbtc/walletshare/${shareId}`)
@@ -824,10 +825,11 @@ describe('V2 Wallets:', function () {
           });
 
         const acceptShareNock = nock(bgUrl)
-          .post(`/api/v2/tbtc/walletshare/${shareId}`, {
-            walletShareId: shareId,
-            state: 'accepted',
-            keyId: keychainId,
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, (body: any) => {
+            if (body.walletShareId !== shareId || body.state !== 'accepted' || body.keyId !== keychainId) {
+              return false;
+            }
+            return true;
           })
           .reply(200, { changed: false });
 
@@ -850,7 +852,9 @@ describe('V2 Wallets:', function () {
         // create a user key
         const keyChainNock = nock(bgUrl)
           .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
-          .reply(200, { id: keychainId });
+          .reply(200, (uri, requestBody) => {
+            return { id: keychainId, encryptedPrv: requestBody['encryptedPrv'], pub: requestBody['pub'] };
+          });
 
         const walletShareInfoNock = nock(bgUrl)
           .get(`/api/v2/tbtc/walletshare/${shareId}`)
@@ -860,10 +864,11 @@ describe('V2 Wallets:', function () {
           });
 
         const acceptShareNock = nock(bgUrl)
-          .post(`/api/v2/tbtc/walletshare/${shareId}`, {
-            walletShareId: shareId,
-            state: 'accepted',
-            keyId: keychainId,
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, (body: any) => {
+            if (body.walletShareId !== shareId || body.state !== 'accepted' || body.keyId !== keychainId) {
+              return false;
+            }
+            return true;
           })
           .reply(200, { changed: true, state: 'not_accepted' });
 
@@ -933,13 +938,16 @@ describe('V2 Wallets:', function () {
         // create a user key
         const keyChainCreateNock = nock(bgUrl)
           .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
-          .reply(200, { id: keychainId });
+          .reply(200, (uri, requestBody) => {
+            return { id: keychainId, encryptedPrv: requestBody['encryptedPrv'], pub: requestBody['pub'] };
+          });
 
         const acceptShareNock = nock(bgUrl)
-          .post(`/api/v2/tbtc/walletshare/${shareId}`, {
-            walletShareId: shareId,
-            state: 'accepted',
-            keyId: keychainId,
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, (body: any) => {
+            if (body.walletShareId !== shareId || body.state !== 'accepted' || body.keyId !== keychainId) {
+              return false;
+            }
+            return true;
           })
           .reply(200, { changed: true, state: 'accepted' });
 
@@ -1056,13 +1064,16 @@ describe('V2 Wallets:', function () {
         // create a user key
         const keyChainCreateNock = nock(bgUrl)
           .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
-          .reply(200, { id: keychainId });
+          .reply(200, (uri, requestBody) => {
+            return { id: keychainId, encryptedPrv: requestBody['encryptedPrv'], pub: requestBody['pub'] };
+          });
 
         const acceptShareNock = nock(bgUrl)
-          .post(`/api/v2/tbtc/walletshare/${shareId}`, {
-            walletShareId: shareId,
-            state: 'accepted',
-            keyId: keychainId,
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, (body: any) => {
+            if (body.walletShareId !== shareId || body.state !== 'accepted' || body.keyId !== keychainId) {
+              return false;
+            }
+            return true;
           })
           .reply(200, { changed: true, state: 'accepted' });
 
