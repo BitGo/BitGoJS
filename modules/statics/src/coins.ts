@@ -14701,11 +14701,11 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['tpolygon:pme']
   ),
   tpolygonErc20(
-    'eb0abdbf-63a7-45c8-8264-c0f64424c183',
+    'fd225008-18d9-4354-bcc3-f7d180ff4d84',
     'tpolygon:usdc',
     'USD Coin',
     6,
-    '0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97',
+    '0x6eebe75caf9c579b3fba9030760b84050283b50a',
     UnderlyingAsset['tpolygon:usdc']
   ),
   tpolygonErc20(
@@ -14715,6 +14715,30 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x16e28369bc318636abbf6cb1035da77ffbf4a3bc',
     UnderlyingAsset['tpolygon:xsgd']
+  ),
+  tpolygonErc20(
+    'aeaea7f4-d7dd-4a65-bc60-035f1129f43e',
+    'tpolygon:usdt',
+    'Tether USD',
+    6,
+    '0xbcf39d8616d15fd146dd5db4a86b4f244a9bc772',
+    UnderlyingAsset['tpolygon:usdt']
+  ),
+  tpolygonErc20(
+    '2262a12e-1154-4f66-9f52-c2554454d2a1',
+    'tpolygon:terc18dp',
+    'Test ERC Token 18 Decimals',
+    18,
+    '0xa94c028c2e138b8ce20406e7e0d0b1e6180cb31f',
+    UnderlyingAsset['tpolygon:terc18dp']
+  ),
+  tpolygonErc20(
+    '00bc4884-8c13-4b71-90b2-73e8ef4ebda4',
+    'tpolygon:terc6dp',
+    'Test ERC Token 6 Decimals',
+    6,
+    '0x46bada38d482c0973f45d307ebedd402be104e2d',
+    UnderlyingAsset['tpolygon:terc6dp']
   ),
   terc721(
     '54d98031-6ebc-428a-b47c-b6ec7d6ad28a',
