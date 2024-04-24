@@ -975,12 +975,15 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     params: TSSParams | TSSParamsForMessage,
     requestType: RequestType
   ): Promise<TxRequest> {
+    console.time('SDK-WP-HSM Full back and forth signing');
     const userKeyShare = Buffer.from(params.prv, 'base64');
+    console.time('Getting first tx request with txn info');
     const txRequest: TxRequest =
       typeof params.txRequest === 'string'
         ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
         : params.txRequest;
 
+    console.timeEnd('Getting first tx request with txn info');
     let derivationPath = '';
     let msgToSign = '';
     const userGpgKey = await generateGPGKeyPair('secp256k1');
@@ -1002,9 +1005,11 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     } catch (err) {
       hash = createKeccakHash('keccak256') as Hash;
     }
+    console.time(
+      'First round time Creating first round message from user, Sending Request And Waiting for HSM Response'
+    );
     const hashBuffer = hash.update(Buffer.from(msgToSign, 'hex')).digest();
-    const hashBufferHex = Buffer.from(hashBuffer).toString('hex');
-
+    // const hashBufferHex = Buffer.from(hashBuffer).toString('hex');
     const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
@@ -1019,8 +1024,16 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       'full',
       userGpgKey.publicKey
     );
+    console.timeEnd(
+      'First round time Creating first round message from user, Sending Request And Waiting for HSM Response'
+    );
+    console.time('First round time Getting TxRequest with HSMs result');
     let latestTxRequest = await getTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId);
+    console.timeEnd('First round time Getting TxRequest with HSMs result');
     assert(latestTxRequest.transactions);
+    console.time(
+      'Second round time Creating second round message from user, Sending Request And Waiting for HSM Response'
+    );
     const bitgoToUserMessages1And2 = latestTxRequest.transactions[0].signatureShares;
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundOne = JSON.parse(
@@ -1062,7 +1075,12 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       'full',
       userGpgKey.publicKey
     );
+    console.timeEnd(
+      'Second round time Creating second round message from user, Sending Request And Waiting for HSM Response'
+    );
+    console.time('Second round time Getting HSMs response');
     latestTxRequest = await getTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId);
+    console.timeEnd('Second round time Getting HSMs response');
     assert(latestTxRequest.transactions);
     const txRequestSignatureShares = latestTxRequest.transactions[0].signatureShares;
     // TODO: Use codec for parsing
@@ -1074,7 +1092,9 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       userGpgKey,
       bitgoGpgPubKey
     );
-
+    console.time(
+      'Third round time Creating final message from user and Sending request to WP for combining signatures'
+    );
     /** Round 3 **/
     const deserializedBitGoToUserMessagesRound3 = DklsTypes.deserializeMessages({
       p2pMessages: serializedBitGoToUserMessagesRound3.p2pMessages,
@@ -1102,7 +1122,15 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       'full',
       userGpgKey.publicKey
     );
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId);
+    console.timeEnd(
+      'Third round time Creating final message from user and Sending request to WP for combining signatures'
+    );
+
+    console.time('Third round time getting fully signed tx request');
+    const finalRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId);
+    console.timeEnd('Third round time getting fully signed tx request');
+    console.timeEnd('SDK-WP-HSM Full back and forth signing');
+    return finalRequest;
   }
 
   /**
