@@ -53,6 +53,7 @@ module.exports = {
         'VL-',
         'WIN-',
         'WP-',
+        'COIN-',
         '#', // Prefix used by GitHub issues
       ],
     },
