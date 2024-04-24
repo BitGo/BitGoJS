@@ -4,6 +4,7 @@ import { getBuilder } from './getBuilder';
 import * as testData from '../resources/avaxc';
 import { TransactionType } from '@bitgo/sdk-core';
 import { decodeTokenTransferData } from '@bitgo/sdk-coin-eth';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 
 const amount = '20000';
 const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
@@ -20,7 +21,7 @@ const tokensNames = [
   'avaxc:link',
   'tavaxc:link',
 ];
-
+const coin = coins.get('avaxc') as unknown as EthLikeNetwork;
 let txBuilder: TransactionBuilder;
 const contractAddress = testData.TEST_ACCOUNT.ethAddress;
 const initTxBuilder = (): void => {
@@ -44,7 +45,7 @@ describe('AVAXERC20 Tokens', () => {
         .to(toAddress)
         .contractSequenceId(2)
         .key(key);
-      const result = builder.signAndBuild();
+      const result = builder.signAndBuild(`${coin.chainId}`);
       const decode = decodeTokenTransferData(result);
       should.equal(decode.amount, '20000');
       should.equal(decode.expireTime, 1590078260);

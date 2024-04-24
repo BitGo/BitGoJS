@@ -44,7 +44,7 @@
     "@bitgo/statics": "^48.8.0",
     "@hashgraph/cryptography": "1.1.2",
     "@stablelib/hex": "^1.0.0",
-    "algosdk": "1.14.0",
+    "algosdk": "1.23.1",
     "bignumber.js": "^9.0.0",
     "hi-base32": "^0.5.1",
     "joi": "^17.4.0",

@@ -48,7 +48,7 @@
     "express": "^4.17.3",
     "lodash": "^4.17.20",
     "morgan": "^1.9.1",
-    "superagent": "^3.8.3"
+    "superagent": "^9.0.1"
   },
   "devDependencies": {
     "@bitgo/sdk-lib-mpc": "^9.4.0",

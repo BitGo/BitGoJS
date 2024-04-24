@@ -50,7 +50,7 @@ describe('Eth transaction builder send', () => {
 
     beforeEach(() => {
       contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
-      txBuilder = getBuilder('teth') as TransactionBuilder;
+      txBuilder = getBuilder('hteth') as TransactionBuilder;
       key = testData.KEYPAIR_PRV.getKeys().prv as string;
       txBuilder.fee({
         fee: '1000000000',
@@ -76,7 +76,7 @@ describe('Eth transaction builder send', () => {
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
 
-      should.equal(tx.toJson().chainId, 42);
+      should.equal(tx.toJson().chainId, 17000);
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST_LEGACY);
       should.equal(tx.signature.length, 2);
       should.equal(tx.inputs.length, 1);
@@ -98,6 +98,25 @@ describe('Eth transaction builder send', () => {
       should.equal(parsedAmount, amount);
       should.equal(parsedExpireTime, expireTime);
       should.equal(parsedSequenceId, sequenceId);
+    });
+
+    it('should send funds for wallet version 4', async () => {
+      const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+      const amount = '1000000000';
+      const expireTime = 1590066728;
+      const sequenceId = 5;
+      txBuilder.walletVersion(4);
+      txBuilder
+        .transfer()
+        .amount(amount)
+        .to(recipient)
+        .expirationTime(expireTime)
+        .contractSequenceId(sequenceId)
+        .key(key);
+      txBuilder.sign({ key: testData.PRIVATE_KEY });
+      await txBuilder.build();
+      const operationData = txBuilder.transfer().getOperationData();
+      should.equal(operationData[1][0], '17000');
     });
 
     it('a send funds with amount 0 transaction', async () => {
@@ -195,7 +214,7 @@ describe('Eth transaction builder send', () => {
     });
 
     it('a send token transactions from serialized', async () => {
-      const txBuilder = new TransactionBuilder(coins.get('teth'));
+      const txBuilder = new TransactionBuilder(coins.get('hteth'));
       txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
@@ -220,7 +239,7 @@ describe('Eth transaction builder send', () => {
 
       testParams.map(([txnType, txnHex]) => {
         it(`should be able to create a send transaction from serialized ${txnType} tx hex`, async () => {
-          const txBuilder = getBuilder('teth') as TransactionBuilder;
+          const txBuilder = getBuilder('hteth') as TransactionBuilder;
           txBuilder.from(txnHex);
           const signedTx = await txBuilder.build();
           should.equal(signedTx.toBroadcastFormat(), txnHex);
@@ -229,7 +248,7 @@ describe('Eth transaction builder send', () => {
     }
 
     it('a send funds transaction with amount 0 from serialized', async () => {
-      const txBuilder = getBuilder('teth') as TransactionBuilder;
+      const txBuilder = getBuilder('hteth') as TransactionBuilder;
       txBuilder.from(testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
       const signedTx = await txBuilder.build();
       should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);

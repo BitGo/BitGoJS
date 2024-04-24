@@ -56,6 +56,6 @@
     "keccak": "^3.0.3",
     "lodash": "4.17.21",
     "secp256k1": "5.0.0",
-    "superagent": "^3.8.3"
+    "superagent": "^9.0.1"
   }
 }

@@ -110,7 +110,7 @@
     "lodash": "^4.17.14",
     "openpgp": "5.10.1",
     "stellar-sdk": "^10.0.1",
-    "superagent": "^3.8.3"
+    "superagent": "^9.0.1"
   },
   "devDependencies": {
     "@bitgo/sdk-test": "^8.0.12",

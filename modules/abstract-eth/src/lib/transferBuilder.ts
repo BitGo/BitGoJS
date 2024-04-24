@@ -20,6 +20,7 @@ export class TransferBuilder {
   private _coin: Readonly<BaseCoin>;
   private _chainId?: string;
   private _coinUsesNonPackedEncodingForTxData?: boolean;
+  private _walletVersion?: number;
 
   constructor(serializedData?: string) {
     if (serializedData) {
@@ -45,6 +46,11 @@ export class TransferBuilder {
       this._tokenContractAddress = this._coin.contractAddress.toString();
     }
 
+    return this;
+  }
+
+  walletVersion(version: number): TransferBuilder {
+    this._walletVersion = version;
     return this;
   }
 
@@ -95,7 +101,7 @@ export class TransferBuilder {
     throw new InvalidParameterValueError('Invalid expiration time');
   }
 
-  signAndBuild(chainId?: string, coinUsesNonPackedEncodingForTxData?: boolean): string {
+  signAndBuild(chainId: string, coinUsesNonPackedEncodingForTxData?: boolean): string {
     this._chainId = chainId;
 
     // If the coin uses non-packed encoding for tx data, the operation hash is calculated differently
@@ -157,11 +163,12 @@ export class TransferBuilder {
 
   protected getOperationData(): (string | Buffer)[][] {
     let operationData;
+    const prefix = this.getOperationHashPrefix();
     if (this._tokenContractAddress !== undefined) {
       operationData = [
         ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
-          this.getTokenOperationHashPrefix(),
+          prefix,
           new BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
           new BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
@@ -176,7 +183,7 @@ export class TransferBuilder {
       operationData = [
         ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
-          this.getNativeOperationHashPrefix(),
+          prefix,
           toAddress,
           this._amount,
           Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(this._data)) || '', 'hex'),
@@ -186,6 +193,13 @@ export class TransferBuilder {
       ];
     }
     return operationData;
+  }
+
+  private getOperationHashPrefix(): string {
+    if (this._walletVersion === 4) {
+      return this._tokenContractAddress ? `${this._chainId}-ERC20` : `${this._chainId}`;
+    }
+    return this._tokenContractAddress ? this.getTokenOperationHashPrefix() : this.getNativeOperationHashPrefix();
   }
 
   /**

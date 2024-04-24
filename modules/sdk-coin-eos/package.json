@@ -47,7 +47,7 @@
     "eosjs": "^21.0.2",
     "eosjs-ecc": "^4.0.4",
     "lodash": "^4.17.14",
-    "superagent": "^3.8.3"
+    "superagent": "^9.0.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.45.2",

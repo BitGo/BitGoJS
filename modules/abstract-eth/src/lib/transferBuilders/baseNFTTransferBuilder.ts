@@ -17,6 +17,7 @@ export abstract class BaseNFTTransferBuilder {
   protected _coin: Readonly<BaseCoin>;
   protected _nativeCoinOperationHashPrefix?: string;
   protected _chainId?: string;
+  protected _walletVersion?: number;
 
   public abstract build(): string;
 
@@ -36,6 +37,11 @@ export abstract class BaseNFTTransferBuilder {
       return this;
     }
     throw new InvalidParameterValueError('Invalid expiration time');
+  }
+
+  walletVersion(version: number): this {
+    this._walletVersion = version;
+    return this;
   }
 
   key(signKey: string): this {
@@ -101,6 +107,9 @@ export abstract class BaseNFTTransferBuilder {
    * @returns the string prefix
    */
   protected getNativeOperationHashPrefix(): string {
+    if (this._walletVersion === 4) {
+      return this._chainId ?? 'ETHER';
+    }
     return this._nativeCoinOperationHashPrefix ?? this._chainId ?? 'ETHER';
   }
 
