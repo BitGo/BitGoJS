@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.1.0...@bitgo/abstract-utxo@8.1.1) (2024-04-24)
+
+### Bug Fixes
+
+- superagent upgrade to 9.0 ([6e9aa43](https://github.com/BitGo/BitGoJS/commit/6e9aa43a6d2999298abd450ceb168d664b8b926d))
+
+# [8.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.0.6...@bitgo/abstract-utxo@8.1.0) (2024-04-22)
+
+### Features
+
+- **abstract-utxo:** support trustless change outputs from explaintx ([445ed53](https://github.com/BitGo/BitGoJS/commit/445ed5357c24357b5f9137669551e146bf2f2e60))
+- only query unspents for wallet owned addresses ([5beaff5](https://github.com/BitGo/BitGoJS/commit/5beaff54e8fc11b642c13e3ac17ffd6b6ff4752c))
+
 ## [8.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.0.5...@bitgo/abstract-utxo@8.0.6) (2024-04-17)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

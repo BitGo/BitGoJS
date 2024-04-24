@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.7.0...@bitgo/statics@48.8.0) (2024-04-22)
+
+### Features
+
+- **statics:** add new batch of tokens ([bdb16bc](https://github.com/BitGo/BitGoJS/commit/bdb16bc50059d391219a9b93366f20038d702f05))
+- **statics:** add polygon amoy testnet ([b9a770d](https://github.com/BitGo/BitGoJS/commit/b9a770d4833a9175832629912ecae4687b2681b4))
+- **statics:** adding support for jasmycoin (erc20) for go account ([d3cdb98](https://github.com/BitGo/BitGoJS/commit/d3cdb9841262bc253aa43a16221ae5957e85cf8a))
+
 # [48.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.6.0...@bitgo/statics@48.7.0) (2024-04-17)
 
 ### Features

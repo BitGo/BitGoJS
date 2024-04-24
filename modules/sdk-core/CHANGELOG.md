@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [26.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.8.1...@bitgo/sdk-core@26.8.2) (2024-04-24)
+
+### Bug Fixes
+
+- superagent upgrade to 9.0 ([6e9aa43](https://github.com/BitGo/BitGoJS/commit/6e9aa43a6d2999298abd450ceb168d664b8b926d))
+
+## [26.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.8.0...@bitgo/sdk-core@26.8.1) (2024-04-22)
+
+**Note:** Version bump only for package @bitgo/sdk-core
+
 # [26.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.7.0...@bitgo/sdk-core@26.8.0) (2024-04-17)
 
 ### Features

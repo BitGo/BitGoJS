@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@20.1.6...@bitgo/abstract-eth@21.0.0) (2024-04-24)
+
+### Bug Fixes
+
+- superagent upgrade to 9.0 ([6e9aa43](https://github.com/BitGo/BitGoJS/commit/6e9aa43a6d2999298abd450ceb168d664b8b926d))
+
+### Features
+
+- **abstract-eth:** support txn bulding for v4 wallet on eth chain ([d8aabea](https://github.com/BitGo/BitGoJS/commit/d8aabead0197072ee5b6c7fb11bd9c379606208d))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** Made ChainID mandatory for signAndBuild method
+
+## [20.1.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@20.1.5...@bitgo/abstract-eth@20.1.6) (2024-04-22)
+
+### Bug Fixes
+
+- **sdk-coin-polygon:** fix send tx for polygon testnet ([172a081](https://github.com/BitGo/BitGoJS/commit/172a081cc4bec1eedf9876a438bc8828dc543d31))
+
 ## [20.1.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@20.1.4...@bitgo/abstract-eth@20.1.5) (2024-04-17)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

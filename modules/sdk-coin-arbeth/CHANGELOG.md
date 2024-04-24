@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@20.0.7...@bitgo/sdk-coin-arbeth@21.0.0) (2024-04-24)
+
+### Features
+
+- **abstract-eth:** support txn bulding for v4 wallet on eth chain ([d8aabea](https://github.com/BitGo/BitGoJS/commit/d8aabead0197072ee5b6c7fb11bd9c379606208d))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** Made ChainID mandatory for signAndBuild method
+
+## [20.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@20.0.6...@bitgo/sdk-coin-arbeth@20.0.7) (2024-04-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-arbeth
+
 ## [20.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@20.0.5...@bitgo/sdk-coin-arbeth@20.0.6) (2024-04-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-arbeth
