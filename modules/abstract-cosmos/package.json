@@ -49,7 +49,7 @@
     "bignumber.js": "^9.1.1",
     "cosmjs-types": "^0.6.1",
     "lodash": "^4.17.21",
-    "superagent": "^3.8.3"
+    "superagent": "^9.0.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.183"

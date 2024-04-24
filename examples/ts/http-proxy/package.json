@@ -12,7 +12,7 @@
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3",
     "typescript-cached-transpile": "^0.0.6",
-    "superagent": "4.1",
+    "superagent": "9.0.1",
     "proxy-agent": "6.4.0",
     "proxy": "2.1.1"
   }
