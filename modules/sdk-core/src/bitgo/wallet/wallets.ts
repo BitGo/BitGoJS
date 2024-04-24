@@ -602,10 +602,29 @@ export class Wallets implements IWallets {
         throw new Error('userPassword param must be provided to decrypt shared key');
       }
       const walletKeychain = await this.baseCoin.keychains().createUserKeychain(params.userPassword);
+      if (_.isUndefined(walletKeychain.encryptedPrv)) {
+        throw new Error('encryptedPrv was not found on wallet keychain');
+      }
+
+      const payload = {
+        tradingAccountId: walletShare.wallet,
+        pubkey: walletKeychain.pub,
+        timestamp: new Date().toISOString(),
+      };
+      const payloadString = JSON.stringify(payload);
+
+      const privateKey = this.bitgo.decrypt({
+        password: params.userPassword,
+        input: walletKeychain.encryptedPrv,
+      });
+      const signature = await this.baseCoin.signMessage({ prv: privateKey }, payloadString);
+
       const response = await this.updateShare({
         walletShareId: params.walletShareId,
         state: 'accepted',
         keyId: walletKeychain.id,
+        signature: signature.toString('hex'),
+        payload: payloadString,
       });
       // If the wallet share was accepted successfully (changed=true), reshare the wallet with the spenders
       if (response.changed && response.state === 'accepted') {

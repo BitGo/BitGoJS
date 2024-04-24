@@ -73,6 +73,8 @@ export interface UpdateShareOptions {
   state?: string;
   encryptedPrv?: string;
   keyId?: string;
+  signature?: string;
+  payload?: string;
 }
 
 export interface AcceptShareOptions {
