@@ -41,6 +41,7 @@ COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
 COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
 COPY --from=builder /tmp/bitgo/modules/bls-dkg /var/modules/bls-dkg/
 COPY --from=builder /tmp/bitgo/modules/sdk-lib-mpc /var/modules/sdk-lib-mpc/
+COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
 COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
 COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
@@ -49,7 +50,6 @@ COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
 COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
-COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
 COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
@@ -107,6 +107,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
 RUN cd /var/modules/sdk-core && yarn link && \
 cd /var/modules/bls-dkg && yarn link && \
 cd /var/modules/sdk-lib-mpc && yarn link && \
+cd /var/modules/sjcl && yarn link && \
 cd /var/modules/statics && yarn link && \
 cd /var/modules/utxo-lib && yarn link && \
 cd /var/modules/blake2b && yarn link && \
@@ -115,7 +116,6 @@ cd /var/modules/bitgo && yarn link && \
 cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/blockapis && yarn link && \
 cd /var/modules/sdk-api && yarn link && \
-cd /var/modules/sjcl && yarn link && \
 cd /var/modules/unspents && yarn link && \
 cd /var/modules/account-lib && yarn link && \
 cd /var/modules/sdk-coin-algo && yarn link && \
@@ -176,6 +176,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-core && \
     yarn link @bitgo/bls-dkg && \
     yarn link @bitgo/sdk-lib-mpc && \
+    yarn link @bitgo/sjcl && \
     yarn link @bitgo/statics && \
     yarn link @bitgo/utxo-lib && \
     yarn link @bitgo/blake2b && \
@@ -184,7 +185,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/abstract-utxo && \
     yarn link @bitgo/blockapis && \
     yarn link @bitgo/sdk-api && \
-    yarn link @bitgo/sjcl && \
     yarn link @bitgo/unspents && \
     yarn link @bitgo/account-lib && \
     yarn link @bitgo/sdk-coin-algo && \
@@ -241,9 +241,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 24 Apr 2024 03:43:33 GMT"
-LABEL version=9.62.3
-LABEL git_hash=c23f09aa5fa61b986d7ae5f47e60f15bffe858f0
+LABEL created="Thu, 25 Apr 2024 21:05:17 GMT"
+LABEL version=9.62.4
+LABEL git_hash=ce8263362a087b79aa6b74d7eeb10e9640f12b52
 #LABEL_END
 
 USER node
