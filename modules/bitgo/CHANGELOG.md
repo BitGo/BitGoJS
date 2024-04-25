@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.2.1...bitgo@38.3.0) (2024-04-25)
+
+### Features
+
+- **sdk-core:** modify accept share method ([74cba44](https://github.com/BitGo/BitGoJS/commit/74cba44bc994ead576ac7d03a7b8171df9298f4b))
+
 ## [38.2.1](https://github.com/BitGo/BitGoJS/compare/bitgo@38.2.0...bitgo@38.2.1) (2024-04-24)
 
 ### Bug Fixes

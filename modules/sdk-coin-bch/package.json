@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-bch",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "BitGo SDK coin library for Bitcoin Cash",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,12 +40,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^8.1.1",
-    "@bitgo/sdk-core": "^26.8.2",
+    "@bitgo/abstract-utxo": "^8.1.2",
+    "@bitgo/sdk-core": "^26.9.0",
     "@bitgo/utxo-lib": "^9.36.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.45.3",
-    "@bitgo/sdk-test": "^8.0.13"
+    "@bitgo/sdk-api": "^1.45.4",
+    "@bitgo/sdk-test": "^8.0.14"
   }
 }

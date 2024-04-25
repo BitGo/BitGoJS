@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.8.2...@bitgo/sdk-core@26.9.0) (2024-04-25)
+
+### Features
+
+- **sdk-coin-stx:** add max amount and auth-id for self-stack pox-4 ([bf12091](https://github.com/BitGo/BitGoJS/commit/bf12091d0230f3b9fb82683a1dc32b5e270d0c8c))
+- **sdk-core:** modify accept share method ([74cba44](https://github.com/BitGo/BitGoJS/commit/74cba44bc994ead576ac7d03a7b8171df9298f4b))
+
 ## [26.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.8.1...@bitgo/sdk-core@26.8.2) (2024-04-24)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.4.0...@bitgo/sdk-lib-mpc@9.5.0) (2024-04-25)
+
+### Features
+
+- **sdk-lib-mpc:** add derivation to verify mpcv2 signature ([672b6fb](https://github.com/BitGo/BitGoJS/commit/672b6fbcfca926b2275ec7cc4d9f5b1d5f717f42))
+
 # [9.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.3.0...@bitgo/sdk-lib-mpc@9.4.0) (2024-04-22)
 
 ### Bug Fixes

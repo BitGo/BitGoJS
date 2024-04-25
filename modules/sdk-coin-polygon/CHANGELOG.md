@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [20.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@20.1.1...@bitgo/sdk-coin-polygon@20.2.0) (2024-04-25)
+
+### Features
+
+- **abstract-eth:** use non packed encode for V4 wallet ([54fd3a8](https://github.com/BitGo/BitGoJS/commit/54fd3a8dbafb14bdeae78204c122885d288d48b6))
+
 ## [20.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@20.1.0...@bitgo/sdk-coin-polygon@20.1.1) (2024-04-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polygon

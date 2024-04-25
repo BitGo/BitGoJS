@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-avaxc",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "BitGo SDK coin library for Avalanche c-chain",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,10 +40,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-coin-avaxp": "^5.0.7",
-    "@bitgo/sdk-coin-eth": "^24.0.0",
-    "@bitgo/sdk-core": "^26.8.2",
-    "@bitgo/statics": "^48.8.0",
+    "@bitgo/sdk-coin-avaxp": "^5.0.8",
+    "@bitgo/sdk-coin-eth": "^24.1.0",
+    "@bitgo/sdk-core": "^26.9.0",
+    "@bitgo/statics": "^48.8.1",
     "@bitgo/utxo-lib": "^9.36.0",
     "@ethereumjs/common": "^2.6.5",
     "bignumber.js": "^9.1.1",
@@ -55,8 +55,8 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.45.3",
-    "@bitgo/sdk-test": "^8.0.13",
+    "@bitgo/sdk-api": "^1.45.4",
+    "@bitgo/sdk-test": "^8.0.14",
     "ethers": "^5.1.3"
   }
 }
