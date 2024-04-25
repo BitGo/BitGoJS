@@ -72,6 +72,9 @@ export interface UpdateShareOptions {
   walletShareId?: string;
   state?: string;
   encryptedPrv?: string;
+  keyId?: string;
+  signature?: string;
+  payload?: string;
 }
 
 export interface AcceptShareOptions {
