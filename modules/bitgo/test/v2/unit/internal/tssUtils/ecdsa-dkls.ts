@@ -9,12 +9,9 @@ import {
   TxRequest,
   Wallet,
 } from '@bitgo/sdk-core';
-import createKeccakHash from 'keccak';
-import * as sinon from 'sinon';
 import { DklsDsg, DklsTypes, DklsComms } from '@bitgo/sdk-lib-mpc';
-import * as crypto from 'crypto';
 import * as fs from 'fs';
-import { getRoute, nockSendSignatureShare } from './common';
+import { getRoute } from './common';
 import {
   MPCv2SignatureShareRound1Output,
   MPCv2SignatureShareRound1Input,
@@ -27,8 +24,7 @@ import * as openpgp from 'openpgp';
 import * as nock from 'nock';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src';
-import { createHash, Hash } from 'crypto';
-import * as assert from "assert";
+import { createHash } from 'crypto';
 
 interface SignatureShareApiBody {
   signatureShare: SignatureShareRecord;

@@ -1,4 +1,4 @@
-import { /* getBitgoGpgPubKey,*/ SignatureShareRecord, SignatureShareType } from '../../utils';
+import { SignatureShareRecord, SignatureShareType } from '../../utils';
 import openpgp from 'openpgp';
 import { DklsComms, DklsTypes } from '@bitgo/sdk-lib-mpc';
 import {
