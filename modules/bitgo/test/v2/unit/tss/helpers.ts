@@ -43,6 +43,13 @@ export async function nockGetTxRequest(params: {
   }
   return n.reply(200, params.response);
 }
+
+export async function nockGetTxRequest502(params: { walletId: string; txRequestId: string }): Promise<nock.Scope> {
+  return nock('https://bitgo.fakeurl')
+    .get(`/api/v2/wallet/${params.walletId}/txrequests?txRequestIds=${params.txRequestId}&latest=true`)
+    .reply(502, { error: 'Bad Gateway' });
+}
+
 export async function nockGetEnterprise(params: {
   enterpriseId: string;
   response: any;

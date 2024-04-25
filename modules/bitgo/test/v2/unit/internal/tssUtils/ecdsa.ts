@@ -41,6 +41,7 @@ import {
   nockGetEnterprise,
   nockGetSigningKey,
   nockGetTxRequest,
+  nockGetTxRequest502,
 } from '../../tss/helpers';
 import { bip32, ecc } from '@bitgo/utxo-lib';
 import { Hash } from 'crypto';
@@ -927,6 +928,50 @@ describe('TSS Ecdsa Utils:', async function () {
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
     });
 
+    it('signTxRequest should give proper error msg when 502 with txRequest object as input', async function () {
+      const sendShareSpy = sinon.spy(ECDSAMethods, 'sendShareToBitgo' as any);
+      await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData, true);
+      try {
+        await tssUtils.signTxRequest({
+          txRequest,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+        });
+      } catch (error) {
+        error.message.should.equal(
+          'Transaction broadcasted successfully, but BitGo failed to get the transaction status ApiResponseError: Bad Gateway'
+        );
+      }
+      const userGpgActual = sendShareSpy.getCalls()[0].args[10];
+      userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+    });
+
+    it('signTxRequest should give proper error msg when 502 with txRequest id as input', async function () {
+      const sendShareSpy = sinon.spy(ECDSAMethods, 'sendShareToBitgo' as any);
+      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData, true);
+      try {
+        await tssUtils.signTxRequest({
+          txRequest: txRequestId,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+        });
+      } catch (error) {
+        error.message.should.equal(
+          'Transaction broadcasted successfully, but BitGo failed to get the transaction status ApiResponseError: Bad Gateway'
+        );
+      }
+      const userGpgActual = sendShareSpy.getCalls()[0].args[10];
+      userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+    });
+
     it('getOfflineSignerPaillierModulus should succeed', async function () {
       const paillierModulus = tssUtils.getOfflineSignerPaillierModulus({
         prv: JSON.stringify({
@@ -1099,7 +1144,8 @@ describe('TSS Ecdsa Utils:', async function () {
       userSignShare: ECDSA.SignShareRT,
       aShare: ECDSA.AShare,
       dShare: ECDSA.DShare,
-      enterpriseData?: EnterpriseData
+      enterpriseData?: EnterpriseData,
+      badGatewayCheck?: boolean
     ) {
       if (enterpriseData) {
         await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: enterpriseData, times: 1 });
@@ -1167,7 +1213,11 @@ describe('TSS Ecdsa Utils:', async function () {
         ],
       };
       await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
-      await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
+      if (badGatewayCheck) {
+        await nockGetTxRequest502({ walletId: wallet.id(), txRequestId: txRequest.txRequestId });
+      } else {
+        await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response: response });
+      }
     }
   });
 

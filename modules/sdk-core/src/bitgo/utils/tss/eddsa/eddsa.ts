@@ -529,7 +529,17 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     };
     const gShare = await externalSignerGShareGenerator(gSignShareTransactionParams);
     await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, gShare, apiVersion);
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+    try {
+      return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+    } catch (error) {
+      if (error.status === 502) {
+        throw new Error(
+          'Transaction broadcasted successfully, but BitGo failed to get the transaction status ' + error
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**
@@ -629,8 +639,17 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     );
 
     await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare, apiVersion);
-
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+    try {
+      return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+    } catch (error) {
+      if (error.status === 502) {
+        throw new Error(
+          'Transaction broadcasted successfully, but BitGo failed to get the transaction status ' + error
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**

@@ -886,7 +886,17 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       SendShareType.SShare,
       userSShare
     );
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestObj.txRequestId);
+    try {
+      return await getTxRequest(this.bitgo, this.wallet.id(), txRequestObj.txRequestId);
+    } catch (error) {
+      if (error.status === 502) {
+        throw new Error(
+          'Transaction broadcasted successfully, but BitGo failed to get the transaction status ' + error
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**
@@ -999,7 +1009,17 @@ export class EcdsaUtils extends baseTSSUtils<KeyShare> {
       SendShareType.SShare,
       userSShare
     );
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId);
+    try {
+      return await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId);
+    } catch (error) {
+      if (error.status === 502) {
+        throw new Error(
+          'Transaction broadcasted successfully, but BitGo failed to get the transaction status ' + error
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**
