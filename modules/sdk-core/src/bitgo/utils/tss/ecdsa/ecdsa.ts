@@ -2,7 +2,7 @@ import assert from 'assert';
 import { Buffer } from 'buffer';
 import * as openpgp from 'openpgp';
 import { Key, SerializedKeyPair } from 'openpgp';
-import { createHash, Hash, randomBytes } from 'crypto';
+import { Hash } from 'crypto';
 import createKeccakHash from 'keccak';
 
 import {
@@ -987,7 +987,10 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     let derivationPath = '';
     let msgToSign = '';
     const userGpgKey = await generateGPGKeyPair('secp256k1');
-    const bitgoGpgPubKey = await getBitgoGpgPubKey(this.bitgo);
+    const bitgoGpgPubKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV2;
+    if (!bitgoGpgPubKey) {
+      throw new Error('Missing BitGo GPG key for MPCv2');
+    }
 
     if (requestType === RequestType.tx) {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');

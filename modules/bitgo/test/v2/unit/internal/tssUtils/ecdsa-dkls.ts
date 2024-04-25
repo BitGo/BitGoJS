@@ -103,7 +103,8 @@ describe('signTxRequest:', function () {
     });
     const constants = {
       mpc: {
-        bitgoPublicKey: bitgoGpgKey.publicKey,
+        bitgoPublicKey: 'wtv',
+        bitgoMPCv2PublicKey: bitgoGpgKey.publicKey,
       },
     };
     await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, 'whatever', bitgoGpgKey);
@@ -354,7 +355,7 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
 
 async function nockTxRequestResponseSignatureShareRoundThree(
   bitgoSession: DklsDsg.Dsg,
-  txRequest: TxRequest,
+  txRequest: TxRequest
 ): Promise<nock.Scope> {
   const transactions = getRoute('ecdsa');
   return nock('https://bitgo.fakeurl')
