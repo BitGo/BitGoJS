@@ -615,6 +615,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const parsedBitGoToUserSigShareRoundTwo = JSON.parse(
       txRequestSignatureShares[txRequestSignatureShares.length - 1].share
     ) as MPCv2SignatureShareRound2Output;
+    if (parsedBitGoToUserSigShareRoundTwo.type !== 'round2Output') {
+      throw new Error('Unexpected signature share response. Unable to parse data.');
+    }
     const serializedBitGoToUserMessagesRound3 = await verifyBitGoMessagesAndSignaturesRoundTwo(
       parsedBitGoToUserSigShareRoundTwo,
       userGpgKey,

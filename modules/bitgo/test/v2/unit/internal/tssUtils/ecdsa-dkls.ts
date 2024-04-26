@@ -25,8 +25,7 @@ import * as openpgp from 'openpgp';
 import * as nock from 'nock';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src';
-import { Buffer } from 'buffer';
-import createKeccakHash from 'keccak';
+const createKeccakHash = require('keccak');
 
 interface SignatureShareApiBody {
   signatureShare: SignatureShareRecord;
@@ -39,7 +38,7 @@ describe('signTxRequest:', function () {
   let bitgo: TestableBG & BitGo;
   let baseCoin: BaseCoin;
   let bitgoGpgKey: openpgp.SerializedKeyPair<string>;
-  const coinName = 'gteth';
+  const coinName = 'hteth';
 
   const reqId = new RequestTracer();
   const txRequestId = 'randomTxReqId';
@@ -51,19 +50,13 @@ describe('signTxRequest:', function () {
         unsignedTx: {
           serializedTxHex: 'TOO MANY SECRETS',
           signableHex,
-          derivationPath: 'm/0/0', // Needs this when key derivation is supported
+          derivationPath: 'm/0', // Needs this when key derivation is supported
         },
         state: 'pendingSignature',
         signatureShares: [],
       },
     ],
-    unsignedTxs: [
-      {
-        serializedTxHex: 'TOO MANY SECRETS',
-        signableHex,
-        derivationPath: 'm/0/0', // Needs this when key derivation is supported
-      },
-    ],
+    unsignedTxs: [],
     date: new Date().toISOString(),
     intent: {
       intentType: 'payment',
@@ -75,13 +68,12 @@ describe('signTxRequest:', function () {
     policiesChecked: true,
     version: 1,
     userId: 'userId',
+    apiVersion: 'full',
   };
 
   const vector = {
     party1: 0,
     party2: 2,
-    msgToSign: 'ffff',
-    derivationPath: 'm/0',
   };
   // To generate the fixtures, run DKG as in the dklsDkg.ts tests and save the resulting party.getKeyShare in a file by doing fs.writeSync(party.getKeyShare()).
   const shareFiles = [
@@ -106,7 +98,7 @@ describe('signTxRequest:', function () {
     });
     const constants = {
       mpc: {
-        bitgoPublicKey: 'wtv',
+        bitgoPublicKey: bitgoGpgKey.publicKey,
         bitgoMPCv2PublicKey: bitgoGpgKey.publicKey,
       },
     };
@@ -127,7 +119,7 @@ describe('signTxRequest:', function () {
     bitgoParty = new DklsDsg.Dsg(
       fs.readFileSync(shareFiles[vector.party2]),
       vector.party2,
-      vector.derivationPath,
+      txRequest.transactions![0].unsignedTx.derivationPath,
       hashBuffer
     );
     // // Round 1 ////
