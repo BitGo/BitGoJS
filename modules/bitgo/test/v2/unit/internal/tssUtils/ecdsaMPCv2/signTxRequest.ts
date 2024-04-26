@@ -12,7 +12,7 @@ import {
 } from '@bitgo/sdk-core';
 import { DklsDsg, DklsTypes, DklsComms } from '@bitgo/sdk-lib-mpc';
 import * as fs from 'fs';
-import { getRoute } from './common';
+import { getRoute } from '../common';
 import {
   MPCv2SignatureShareRound1Output,
   MPCv2SignatureShareRound1Input,
@@ -24,7 +24,7 @@ import {
 import * as openpgp from 'openpgp';
 import * as nock from 'nock';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../src';
+import { BitGo } from '../../../../../../src';
 const createKeccakHash = require('keccak');
 
 interface SignatureShareApiBody {
@@ -45,6 +45,7 @@ describe('signTxRequest:', function () {
   const signableHex = 'e27aecaea559fbedc9ae8a22b0ab6654c2d686403c2aeb434b302545c94eed3b';
   const txRequest: TxRequest = {
     txRequestId,
+    enterpriseId: '4517abfb-f567-4b7a-9f91-407509d29403',
     transactions: [
       {
         unsignedTx: {
@@ -102,8 +103,8 @@ describe('signTxRequest:', function () {
         bitgoMPCv2PublicKey: bitgoGpgKey.publicKey,
       },
     };
-    await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, 'whatever', bitgoGpgKey);
-    nock(bgUrl).get('/api/v1/client/constants').times(16).reply(200, { ttl: 3600, constants });
+    await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, txRequest.enterpriseId!, bitgoGpgKey);
+    nock(bgUrl).get('/api/v1/client/constants').times(20).reply(200, { ttl: 3600, constants });
 
     baseCoin = bitgo.coin(coinName);
 
@@ -129,7 +130,7 @@ describe('signTxRequest:', function () {
       coin: coinName,
       coinSpecific: {},
       multisigType: 'tss',
-      multisigTypeVersion: 'MpcV2',
+      multisigTypeVersion: 'MPCv2',
     };
     wallet = new Wallet(bitgo, baseCoin, walletData);
     tssUtils = new ECDSAUtils.EcdsaMPCv2Utils(bitgo, baseCoin, wallet);
@@ -392,11 +393,12 @@ async function nockGetBitgoPublicKeyBasedOnFeatureFlags(
   const bitgoGPGPublicKeyResponse: BitgoGPGPublicKey = {
     name: 'irrelevant',
     publicKey: bitgoGpgKeyPair.publicKey,
+    mpcv2PublicKey: bitgoGpgKeyPair.publicKey,
     enterpriseId,
   };
   nock('https://bitgo.fakeurl')
     .get(`/api/v2/${coin}/tss/pubkey`)
-    .times(1)
+    .times(4)
     .query({ enterpriseId })
     .reply(200, bitgoGPGPublicKeyResponse);
   return bitgoGPGPublicKeyResponse;

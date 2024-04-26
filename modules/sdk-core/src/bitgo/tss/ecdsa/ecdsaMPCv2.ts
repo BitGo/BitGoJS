@@ -67,6 +67,8 @@ export async function getSignatureShareRoundTwo(
     [getBitGoPartyGpgKey(bitgoGpgKey)],
     [getUserPartyGpgKey(userGpgKey)]
   );
+  assert(userToBitGoEncryptedMsg2.p2pMessages.length, 'User to BitGo messages 2 not present.');
+  assert(userToBitGoEncryptedMsg3.p2pMessages.length, 'User to BitGo messages 3 not present.');
   assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg2.p2pMessages[0].from));
   assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg2.p2pMessages[0].to));
   assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg3.p2pMessages[0].from));

@@ -7,7 +7,7 @@ import { DklsDkg, DklsTypes, DklsComms, DklsDsg } from '@bitgo/sdk-lib-mpc';
 
 import { Keychain, KeyType } from '../../../keychain';
 import { KeychainsTriplet } from '../../../baseCoin';
-import { generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
+import { generateGPGKeyPair } from '../../opengpgUtils';
 import { BaseEcdsaUtils } from './base';
 import {
   MPCv2Party,
@@ -31,7 +31,7 @@ import {
   getSignatureShareRoundTwo,
   verifyBitGoMessagesAndSignaturesRoundOne,
   verifyBitGoMessagesAndSignaturesRoundTwo,
-} from '../../../tss/ecdsa/dkls';
+} from '../../../tss/ecdsa/ecdsaMPCv2';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -506,10 +506,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
         : params.txRequest;
 
-    let derivationPath = '';
-    let msgToSign = '';
+    let derivationPath: string;
+    let txToSign: string;
     const userGpgKey = await generateGPGKeyPair('secp256k1');
-    const bitgoGpgPubKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV2;
+    const bitgoGpgPubKey =
+      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true)) ?? this.bitgoMPCv2PublicGpgKey;
     if (!bitgoGpgPubKey) {
       throw new Error('Missing BitGo GPG key for MPCv2');
     }
@@ -518,10 +519,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
-      msgToSign = unsignedTx.signableHex;
+      txToSign = unsignedTx.signableHex;
       derivationPath = unsignedTx.derivationPath;
     } else if (requestType === RequestType.message) {
-      throw new Error('DKLS message signing not supported yet.');
+      throw new Error('MPCv2 message signing not supported yet.');
+    } else {
+      throw new Error('Invalid request type');
     }
 
     let hash: Hash;
@@ -530,7 +533,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     } catch (err) {
       hash = createKeccakHash('keccak256') as Hash;
     }
-    const hashBuffer = hash.update(Buffer.from(msgToSign, 'hex')).digest();
+    const hashBuffer = hash.update(Buffer.from(txToSign, 'hex')).digest();
 
     const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
