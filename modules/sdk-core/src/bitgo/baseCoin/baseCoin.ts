@@ -6,6 +6,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 import { InitiateRecoveryOptions } from '../recovery';
 import { signMessage } from '../bip32util';
@@ -55,6 +56,7 @@ export abstract class BaseCoin implements IBaseCoin {
   protected readonly _pendingApprovals: PendingApprovals;
   protected readonly _markets: Markets;
   protected static readonly _coinTokenPatternSeparator = ':';
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   protected constructor(bitgo: BitGoBase) {
     this.bitgo = bitgo;
@@ -101,6 +103,14 @@ export abstract class BaseCoin implements IBaseCoin {
 
   public get type(): string {
     return this.getChain();
+  }
+
+  /**
+   * Gets the statics coin object
+   * @returns {Readonly<StaticsBaseCoin>} the statics coin object
+   */
+  getConfig(): Readonly<StaticsBaseCoin> {
+    return this._staticsCoin;
   }
 
   /**

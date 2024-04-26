@@ -35,14 +35,17 @@ export type AuthEncMessage = {
  * @param {BitGoBase} bitgo BitGo object
  * @return {Key} public gpg key
  */
-export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<Key> {
+export async function getBitgoGpgPubKey(bitgo: BitGoBase): Promise<{ mpcV1: Key; mpcV2: Key | undefined }> {
   const constants = await bitgo.fetchConstants();
   if (!constants.mpc || !constants.mpc.bitgoPublicKey) {
     throw new Error('Unable to create MPC keys - bitgoPublicKey is missing from constants');
   }
 
   const bitgoPublicKeyStr = constants.mpc.bitgoPublicKey as string;
-  return await readKey({ armoredKey: bitgoPublicKeyStr });
+  const bitgoMPCv2PublicKeyStr = constants.mpc.bitgoMPCv2PublicKey
+    ? await readKey({ armoredKey: constants.mpc.bitgoMPCv2PublicKey as string })
+    : undefined;
+  return { mpcV1: await readKey({ armoredKey: bitgoPublicKeyStr }), mpcV2: bitgoMPCv2PublicKeyStr };
 }
 
 /**

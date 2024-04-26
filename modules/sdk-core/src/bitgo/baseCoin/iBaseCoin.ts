@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { BaseCoin as StaticsBaseCoin, BaseTokenConfig } from '@bitgo/statics';
 import { IRequestTracer } from '../../api';
 import { IEnterprises } from '../enterprise';
 import { Keychain, IKeychains } from '../keychain';
@@ -10,7 +11,6 @@ import EddsaUtils, { TxRequest } from '../utils/tss/eddsa';
 import { CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
-import { BaseTokenConfig } from '@bitgo/statics';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
@@ -448,6 +448,7 @@ export interface BaseBroadcastTransactionResult {
 export interface IBaseCoin {
   type: string;
   tokenConfig?: BaseTokenConfig;
+  getConfig(): Readonly<StaticsBaseCoin>;
   url(suffix: string): string;
   wallets(): IWallets;
   enterprises(): IEnterprises;

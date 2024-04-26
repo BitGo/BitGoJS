@@ -1,8 +1,12 @@
 //
 // Tests for Wallets
 //
-
+import * as assert from 'assert';
 import * as nock from 'nock';
+import * as sinon from 'sinon';
+import * as should from 'should';
+import * as _ from 'lodash';
+import { TestBitGo } from '@bitgo/sdk-test';
 import {
   BlsUtils,
   common,
@@ -13,11 +17,7 @@ import {
   GenerateWalletOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-import * as _ from 'lodash';
-import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
-import * as sinon from 'sinon';
-import * as should from 'should';
 
 describe('V2 Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
@@ -700,6 +700,105 @@ describe('V2 Wallets:', function () {
       bitgoKeyNock.isDone().should.be.true();
 
       sandbox.verifyAndRestore();
+    });
+  });
+
+  describe('Generate TSS MPCv2 wallet:', async function () {
+    it('should create a new TSS MPCv2 wallet', async function () {
+      const hteth = bitgo.coin('hteth');
+      const sandbox = sinon.createSandbox();
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'user',
+        },
+        backupKeychain: {
+          id: '2',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'backup',
+        },
+        bitgoKeychain: {
+          id: '3',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'bitgo',
+        },
+      };
+      sandbox.stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/hteth/wallet').reply(200);
+
+      const wallets = new Wallets(bitgo, hteth);
+
+      await wallets.generateWallet({
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss',
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+        walletVersion: 5,
+      });
+
+      walletNock.isDone().should.be.true();
+      sandbox.verifyAndRestore();
+    });
+
+    it('should throw for an unsupported coin', async function () {
+      const tpolygon = bitgo.coin('tpolygon');
+      const wallets = new Wallets(bitgo, tpolygon);
+
+      await assert.rejects(
+        async () => {
+          await wallets.generateWallet({
+            label: 'tss wallet',
+            passphrase: 'tss password',
+            multisigType: 'tss',
+            enterprise: 'enterprise',
+            passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+            walletVersion: 5,
+          });
+        },
+        { message: 'coin polygon does not support TSS MPCv2 at this time' }
+      );
+    });
+
+    it('should throw for a cold wallet', async function () {
+      const hteth = bitgo.coin('hteth');
+      const wallets = new Wallets(bitgo, hteth);
+
+      await assert.rejects(
+        async () => {
+          await wallets.generateWallet({
+            label: 'tss wallet',
+            multisigType: 'tss',
+            enterprise: 'enterprise',
+            walletVersion: 5,
+            type: 'cold',
+          });
+        },
+        { message: 'EVM TSS MPCv2 wallets are not supported for cold wallets' }
+      );
+    });
+
+    it('should throw for a custodial wallet', async function () {
+      const hteth = bitgo.coin('hteth');
+      const wallets = new Wallets(bitgo, hteth);
+
+      await assert.rejects(
+        async () => {
+          await wallets.generateWallet({
+            label: 'tss wallet',
+            multisigType: 'tss',
+            enterprise: 'enterprise',
+            walletVersion: 5,
+            type: 'custodial',
+          });
+        },
+        { message: 'EVM TSS MPCv2 wallets are not supported for custodial wallets' }
+      );
     });
   });
 
