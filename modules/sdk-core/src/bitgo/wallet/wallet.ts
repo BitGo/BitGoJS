@@ -141,10 +141,10 @@ export class Wallet implements IWallet {
     if (baseCoin?.supportsTss() && this._wallet.multisigType === 'tss') {
       switch (baseCoin.getMPCAlgorithm()) {
         case 'ecdsa':
-          if (walletData.multisigTypeVersion === 'MpcV2') {
-            this.tssUtils = new EcdsaUtils(bitgo, baseCoin, this);
-          } else {
+          if (walletData.multisigTypeVersion === 'MPCv2') {
             this.tssUtils = new EcdsaMPCv2Utils(bitgo, baseCoin, this);
+          } else {
+            this.tssUtils = new EcdsaUtils(bitgo, baseCoin, this);
           }
           break;
         case 'eddsa':
