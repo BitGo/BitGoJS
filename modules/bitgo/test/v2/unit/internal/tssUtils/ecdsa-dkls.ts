@@ -1,3 +1,4 @@
+import { Hash } from 'crypto';
 import {
   BaseCoin,
   BitgoGPGPublicKey,
@@ -24,7 +25,8 @@ import * as openpgp from 'openpgp';
 import * as nock from 'nock';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src';
-import { createHash } from 'crypto';
+import { Buffer } from 'buffer';
+import createKeccakHash from 'keccak';
 
 interface SignatureShareApiBody {
   signatureShare: SignatureShareRecord;
@@ -32,7 +34,7 @@ interface SignatureShareApiBody {
 }
 
 describe('signTxRequest:', function () {
-  let tssUtils: ECDSAUtils.EcdsaUtils;
+  let tssUtils: ECDSAUtils.EcdsaMPCv2Utils;
   let wallet: Wallet;
   let bitgo: TestableBG & BitGo;
   let baseCoin: BaseCoin;
@@ -41,13 +43,14 @@ describe('signTxRequest:', function () {
 
   const reqId = new RequestTracer();
   const txRequestId = 'randomTxReqId';
+  const signableHex = 'e27aecaea559fbedc9ae8a22b0ab6654c2d686403c2aeb434b302545c94eed3b';
   const txRequest: TxRequest = {
     txRequestId,
     transactions: [
       {
         unsignedTx: {
           serializedTxHex: 'TOO MANY SECRETS',
-          signableHex: 'TOO MANY SECRETS',
+          signableHex,
           derivationPath: 'm/0/0', // Needs this when key derivation is supported
         },
         state: 'pendingSignature',
@@ -57,7 +60,7 @@ describe('signTxRequest:', function () {
     unsignedTxs: [
       {
         serializedTxHex: 'TOO MANY SECRETS',
-        signableHex: 'TOO MANY SECRETS',
+        signableHex,
         derivationPath: 'm/0/0', // Needs this when key derivation is supported
       },
     ],
@@ -112,15 +115,13 @@ describe('signTxRequest:', function () {
 
     baseCoin = bitgo.coin(coinName);
 
-    // let hash: Hash;
-    // try {
-    //   hash = baseCoin.getHashFunction();
-    // } catch (err) {
-    //   hash = createKeccakHash('keccak256') as Hash;
-    // }
-    // const hashBuffer = hash.update('dkls-testing').digest();
-    const msg = 'dkls-testing';
-    const hashBuffer = createHash('sha256').update(msg).digest();
+    let hashFn: Hash;
+    try {
+      hashFn = baseCoin.getHashFunction();
+    } catch (err) {
+      hashFn = createKeccakHash('keccak256') as Hash;
+    }
+    const hashBuffer = hashFn.update(Buffer.from(signableHex, 'hex')).digest();
 
     // Nock out both the user and bitgo side responses to create valid signatures
     bitgoParty = new DklsDsg.Dsg(
@@ -136,12 +137,13 @@ describe('signTxRequest:', function () {
       coin: coinName,
       coinSpecific: {},
       multisigType: 'tss',
+      multisigTypeVersion: 'MpcV2',
     };
     wallet = new Wallet(bitgo, baseCoin, walletData);
-    tssUtils = new ECDSAUtils.EcdsaUtils(bitgo, baseCoin, wallet);
+    tssUtils = new ECDSAUtils.EcdsaMPCv2Utils(bitgo, baseCoin, wallet);
   });
 
-  it('test', async function () {
+  it('successfully signs a txRequest for a dkls hot wallet with WP', async function () {
     const nockPromises = [
       await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
       await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey),

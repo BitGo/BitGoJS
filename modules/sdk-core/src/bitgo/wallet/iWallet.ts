@@ -198,6 +198,7 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   customMuDeltaShareGeneratingFunction?: CustomMuDeltaShareGeneratingFunction;
   customSShareGeneratingFunction?: CustomSShareGeneratingFunction;
   apiVersion?: ApiVersion;
+  multisigTypeVersion?: 'MPCv2';
   [index: string]: unknown;
 }
 
@@ -605,6 +606,7 @@ export interface WalletData {
     bitgo?: string;
   };
   multisigType: 'onchain' | 'tss';
+  multisigTypeVersion?: 'MPCv2';
   type?: WalletType;
   subType?: SubWalletType;
   tokens?: Record<string, any>[];

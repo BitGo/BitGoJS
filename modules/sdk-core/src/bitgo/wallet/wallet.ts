@@ -95,7 +95,7 @@ import {
 import { StakingWallet } from '../staking/stakingWallet';
 import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
-import { EcdsaUtils } from '../utils/tss/ecdsa';
+import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
@@ -126,7 +126,7 @@ export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
   public _wallet: WalletData;
-  private readonly tssUtils: EcdsaUtils | EddsaUtils | undefined;
+  private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | undefined;
   private readonly _permissions?: string[];
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
@@ -141,7 +141,11 @@ export class Wallet implements IWallet {
     if (baseCoin?.supportsTss() && this._wallet.multisigType === 'tss') {
       switch (baseCoin.getMPCAlgorithm()) {
         case 'ecdsa':
-          this.tssUtils = new EcdsaUtils(bitgo, baseCoin, this);
+          if (walletData.multisigTypeVersion === 'MpcV2') {
+            this.tssUtils = new EcdsaUtils(bitgo, baseCoin, this);
+          } else {
+            this.tssUtils = new EcdsaMPCv2Utils(bitgo, baseCoin, this);
+          }
           break;
         case 'eddsa':
           this.tssUtils = new EddsaUtils(bitgo, baseCoin, this);
@@ -257,6 +261,10 @@ export class Wallet implements IWallet {
 
   multisigType(): 'onchain' | 'tss' {
     return this._wallet.multisigType;
+  }
+
+  multisigTypeVersion(): 'MPCv2' | undefined {
+    return this._wallet.multisigTypeVersion;
   }
 
   subType(): SubWalletType | undefined {
@@ -1707,7 +1715,11 @@ export class Wallet implements IWallet {
     });
 
     if (this.multisigType() === 'tss') {
-      return this.signTransactionTss({ ...presign, prv: this.getUserPrv(presign as GetUserPrvOptions), apiVersion });
+      return this.signTransactionTss({
+        ...presign,
+        prv: this.getUserPrv(presign as GetUserPrvOptions),
+        apiVersion,
+      });
     }
 
     let { pubs } = params;
