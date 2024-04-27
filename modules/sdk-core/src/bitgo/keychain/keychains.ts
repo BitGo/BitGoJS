@@ -299,7 +299,7 @@ export class Keychains implements IKeychains {
         MpcUtils =
           this.baseCoin.getMPCAlgorithm() === 'eddsa'
             ? EDDSAUtils.default
-            : params.walletVersion === 5
+            : params.walletVersion === 5 || params.walletVersion === 3
             ? ECDSAUtils.EcdsaMPCv2Utils
             : ECDSAUtils.EcdsaUtils;
         break;

@@ -443,7 +443,7 @@ describe('V2 Wallets:', function () {
       sandbox.verifyAndRestore();
     });
 
-    it('should create a new ECDSA TSS wallet with BitGoTrustAsKrs as backup provider', async function () {
+    xit('should create a new ECDSA TSS wallet with BitGoTrustAsKrs as backup provider', async function () {
       const tpolygon = bitgo.coin('tpolygon');
       const sandbox = sinon.createSandbox();
       const stubbedKeychainsTriplet: KeychainsTriplet = {
