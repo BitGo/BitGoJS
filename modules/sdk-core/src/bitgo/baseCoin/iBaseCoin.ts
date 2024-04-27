@@ -6,7 +6,7 @@ import { Keychain, IKeychains } from '../keychain';
 import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
-import { EcdsaUtils } from '../utils/tss/ecdsa';
+import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { TxRequest } from '../utils/tss/eddsa';
 import { CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
@@ -194,7 +194,7 @@ export interface ExtraPrebuildParamsOptions {
 export interface PresignTransactionOptions {
   txPrebuild?: TransactionPrebuild;
   walletData: WalletData;
-  tssUtils: EcdsaUtils | EddsaUtils | undefined;
+  tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | undefined;
   [index: string]: unknown;
 }
 

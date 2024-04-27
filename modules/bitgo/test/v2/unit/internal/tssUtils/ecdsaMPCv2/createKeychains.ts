@@ -14,7 +14,7 @@ import {
   MPCv2KeyGenRound3Request,
   MPCv2KeyGenRound3Response,
 } from '@bitgo/public-types';
-import { BitGo, BitgoGPGPublicKey } from '../../../../../src';
+import { BitGo, BitgoGPGPublicKey } from '../../../../../../src';
 
 describe('TSS Ecdsa MPCv2 Utils:', async function () {
   const coinName = 'hteth';

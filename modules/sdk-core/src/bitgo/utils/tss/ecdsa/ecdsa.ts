@@ -1,9 +1,8 @@
 import assert from 'assert';
 import { Buffer } from 'buffer';
-import { Key, SerializedKeyPair } from 'openpgp';
 import * as openpgp from 'openpgp';
+import { Key, SerializedKeyPair } from 'openpgp';
 import { Hash } from 'crypto';
-
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/utxo-lib';
 
@@ -32,7 +31,7 @@ import {
   TxRequest,
 } from '../baseTypes';
 import { getTxRequest } from '../../../tss';
-import { AShare, DShare, EncryptedNShare, OShare, SendShareType, SShare, WShare } from '../../../tss/ecdsa/types';
+import { AShare, DShare, EncryptedNShare, SendShareType, SShare, WShare, OShare } from '../../../tss/ecdsa/types';
 import { createShareProof, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { BackupProvider } from '../../../wallet';
