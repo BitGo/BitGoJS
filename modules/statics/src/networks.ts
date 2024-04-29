@@ -683,7 +683,7 @@ class Bld extends Mainnet implements AccountNetwork {
 class BldTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Agoric';
   family = CoinFamily.BLD;
-  explorerUrl = 'https://devnet.agoric.explorers.guru/transaction/';
+  explorerUrl = 'https://emerynet.explorer.agoric.net/agoric/tx/';
 }
 
 class Sei extends Mainnet implements AccountNetwork {
