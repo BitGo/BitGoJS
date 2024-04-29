@@ -611,6 +611,7 @@ export enum UnderlyingAsset {
   DFD = 'dfd',
   DFI = 'dfi',
   DFL = 'dfl',
+  DFX = 'dfx',
   DGCL = 'dgcl',
   DGD = 'dgd',
   DGLD = 'dgld',
@@ -1104,6 +1105,7 @@ export enum UnderlyingAsset {
   PICKLE = 'pickle',
   PIE = 'pie',
   PINE = 'pine',
+  PIRATE = 'pirate',
   PLC = 'plc',
   PFCT = 'pfct',
   PLANET = 'planet',
@@ -1388,6 +1390,7 @@ export enum UnderlyingAsset {
   TRYBBEAR = 'trybbear',
   TRYBBULL = 'trybbull',
   TRYX = 'tryx',
+  TST = 'tst',
   TSUKA = 'tsuka',
   TULIP = 'tulip',
   TUPOLIS = 'tupolis',
@@ -1528,6 +1531,7 @@ export enum UnderlyingAsset {
   XTZBULL = 'xtzbull',
   XUSD = 'xusd',
   XX = 'xx',
+  XZK = 'xzk',
   YAMV2 = 'yamv2',
   YFDAI = 'yfdai',
   YFI = 'yfi',
@@ -1732,6 +1736,7 @@ export enum UnderlyingAsset {
   'polygon:dimo' = 'polygon:dimo',
   'polygon:bcut' = 'polygon:bcut',
   'polygon:pme' = 'polygon:pme',
+  'polygon:dipe' = 'polygon:dipe',
 
   // Polygon NFTs
   // generic NFTs
