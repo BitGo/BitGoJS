@@ -61,7 +61,7 @@ export class Dkg {
     }
     if (typeof window !== 'undefined') {
       const initDkls = require('@silencelaboratories/dkls-wasm-ll-web');
-      await initDkls();
+      await initDkls.default();
     }
     this.dkgSession = new KeygenSession(this.n, this.t, this.partyIdx);
     try {
