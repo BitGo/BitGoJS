@@ -1,4 +1,11 @@
-import { Address, utils as AvaxUtils, Credential, pvmSerial, TransferOutput, UnsignedTx } from '@bitgo/avalanchejs';
+import {
+  Address,
+  utils as AvaxUtils,
+  Credential,
+  pvmSerial,
+  TransferOutput,
+  UnsignedTx,
+} from '@bitgo-forks/avalanchejs';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Buffer as BufferAvax } from 'avalanche';

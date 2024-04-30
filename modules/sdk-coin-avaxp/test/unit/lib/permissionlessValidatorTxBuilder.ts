@@ -8,7 +8,7 @@ import * as AvaxpLib from '../../../src/lib';
 import { TransactionBuilderFactory } from '../../../src/lib';
 import { PermissionlessValidatorTxBuilder } from '../../../src/lib/permissionlessValidatorTxBuilder';
 import * as testData from '../../resources/avaxp';
-// import { pvm } from '@bitgo/avalanchejs';
+// import { pvm } from '@bitgo-forks/avalanchejs';
 
 describe('AvaxP permissionlessValidatorTxBuilder', () => {
   let basecoin;

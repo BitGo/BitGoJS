@@ -992,10 +992,10 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@bitgo/avalanchejs@1.0.0-alpha.3":
-  version "1.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@bitgo/avalanchejs/-/avalanchejs-1.0.0-alpha.3.tgz#0cac8bbc5d694b695fa813e5d5adda1b87035a1f"
-  integrity sha512-uQEXCQT4qmDjPpfsSNXvT/mNwEVtALDm0YBNkDA9O88fuICqcFmSOnginb0vseoPTVgwI+GgGrhUosl0P8hO4A==
+"@bitgo-forks/avalanchejs@4.1.0-alpha.1":
+  version "4.1.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@bitgo-forks/avalanchejs/-/avalanchejs-4.1.0-alpha.1.tgz#2ea96f7801669c9c6e012647f13f4872c29a606e"
+  integrity sha512-iVyxSLaNEBL1GNNYOAnvvNCuYOTz07b/8Y20WLWVtGSTjeZS/MSfoo31uUlDYTQX01CsI16WvbFDyRBKlKh1Jg==
   dependencies:
     "@noble/curves" "1.3.0"
     "@noble/hashes" "1.3.3"

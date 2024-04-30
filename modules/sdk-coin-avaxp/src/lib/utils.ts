@@ -1,4 +1,4 @@
-import { Signature as AvaxSignature, TransferableOutput, TransferOutput, TypeSymbols } from '@bitgo/avalanchejs';
+import { Signature as AvaxSignature, TransferableOutput, TransferOutput, TypeSymbols } from '@bitgo-forks/avalanchejs';
 import {
   BaseUtils,
   Entry,

@@ -16,7 +16,7 @@ import {
   UnsignedTx,
   Utxo,
   utils as avaxUtils,
-} from '@bitgo/avalanchejs';
+} from '@bitgo-forks/avalanchejs';
 import {
   BaseAddress,
   BaseKey,
