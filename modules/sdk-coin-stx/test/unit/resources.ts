@@ -20,6 +20,7 @@ export const secretKey2 = '35794adf0dd2a313c18bc118b422740bb94f85114134be34703ff
 export const pubKey2 =
   '0421d6f42c99f7d23ec2c0dc21208a9c5edfce4e5bc7b63972e68e86e3cea6f41a94a9a7c24a1ccd83792173f475fdb590cc82f94ff615df39142766e759ce6387';
 export const pubKey2Compressed = '0321d6f42c99f7d23ec2c0dc21208a9c5edfce4e5bc7b63972e68e86e3cea6f41a';
+export const pubKey2CompressedWithPrefix = '0x0321d6f42c99f7d23ec2c0dc21208a9c5edfce4e5bc7b63972e68e86e3cea6f41a';
 export const address2 = 'SPS4HSXAD1WSD3943WZ52MPSY9WPK56SDG54HTAR';
 
 // extended private/public keys

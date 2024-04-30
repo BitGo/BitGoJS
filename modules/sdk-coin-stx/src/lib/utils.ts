@@ -142,6 +142,8 @@ export function isValidTransactionId(txId: string): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidPublicKey(pub: string): boolean {
+  pub = pub.replace(/^(0x)/, '');
+
   if (isValidXpub(pub)) return true;
 
   if (pub.length !== 66 && pub.length !== 130) return false;

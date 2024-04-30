@@ -145,7 +145,12 @@ describe('Stx util library', function () {
 
   describe('public key', function () {
     it('should validate proper keys', function () {
-      const keys = [testData.pubKey1, testData.pubKey2, testData.pubKey2Compressed];
+      const keys = [
+        testData.pubKey1,
+        testData.pubKey2,
+        testData.pubKey2Compressed,
+        testData.pubKey2CompressedWithPrefix,
+      ];
 
       for (const key of keys) {
         Utils.isValidPublicKey(key).should.be.true();
@@ -161,7 +166,6 @@ describe('Stx util library', function () {
         'bitgo-stacks',
         '0921d6f42c99f7d23ec2c0dc21208a9c5edfce4e5bc7b63972e68e86e3cea6f41a',
         '0321d6f42c99f7d23ec2c0dc21208a9c5edfce4e5bc7b63972e68ezze3cea6f41a',
-        '0x0321d6f42c99f7d23ec2c0dc21208a9c5edfce4e5bc7b63972e68e86e3cea6f41a',
         testData.invalidPubKey1,
         testData.invalidPubKey2,
       ];
