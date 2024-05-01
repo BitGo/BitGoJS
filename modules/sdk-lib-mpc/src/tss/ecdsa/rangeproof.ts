@@ -16,20 +16,11 @@ import {
   DeserializedNtildeWithProofs,
 } from './types';
 import { bigIntFromBufferBE, bigIntToBufferBE, randomPositiveCoPrimeTo } from '../../util';
-import { OpenSSL } from '../../openssl';
 import { minModulusBitLength } from './index';
+import { generateSafePrimes } from '../../safePrime';
 
 // 128 as recommend by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
 const ITERATIONS = 128;
-
-export async function generateSafePrimes(bitLengths: number[]): Promise<bigint[]> {
-  const openSSL = new OpenSSL();
-  await openSSL.init();
-  const promises: Promise<bigint>[] = bitLengths.map((bitlength: number) => {
-    return openSSL.generateSafePrime(bitlength);
-  });
-  return await Promise.all(promises);
-}
 
 async function generateModulus(bitlength = minModulusBitLength, retry = 10): Promise<RSAModulus> {
   if (bitlength < minModulusBitLength) {
