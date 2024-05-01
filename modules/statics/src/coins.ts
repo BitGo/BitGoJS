@@ -10477,6 +10477,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.USTB
   ),
   ofcerc20('fb5ba281-b060-4e68-86c8-55da5c7e7fe9', 'ofctbill', 'OpenEden T-Bills', 6, UnderlyingAsset.TBILL),
+  ofcerc20('fcc0e550-ff67-4c0a-9d28-4a6e8ee32d93', 'ofcmasa', 'Masa Token', 18, UnderlyingAsset.MASA),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
