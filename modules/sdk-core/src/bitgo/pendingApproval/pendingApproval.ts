@@ -20,7 +20,7 @@ import { BuildParams } from '../wallet/BuildParams';
 import { IRequestTracer } from '../../api';
 import BaseTssUtils from '../utils/tss/baseTSSUtils';
 import EddsaUtils from '../utils/tss/eddsa';
-import { EcdsaUtils } from '../utils/tss/ecdsa';
+import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import { KeyShare as EcdsaKeyShare } from '../utils/tss/ecdsa/types';
 import { KeyShare as EddsaKeyShare } from '../utils/tss/eddsa/types';
 
@@ -49,7 +49,11 @@ export class PendingApproval implements IPendingApproval {
 
     if (this.baseCoin.supportsTss()) {
       if (this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
-        this.tssUtils = new EcdsaUtils(this.bitgo, this.baseCoin, wallet);
+        if (this.wallet?.multisigTypeVersion() === 'MPCv2') {
+          this.tssUtils = new EcdsaMPCv2Utils(this.bitgo, this.baseCoin, wallet);
+        } else {
+          this.tssUtils = new EcdsaUtils(this.bitgo, this.baseCoin, wallet);
+        }
       } else {
         this.tssUtils = new EddsaUtils(this.bitgo, this.baseCoin, wallet);
       }

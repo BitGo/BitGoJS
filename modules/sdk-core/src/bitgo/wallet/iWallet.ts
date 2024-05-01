@@ -699,6 +699,7 @@ export interface IWallet {
   coin(): string;
   type(): WalletType | undefined;
   multisigType(): 'onchain' | 'tss';
+  multisigTypeVersion(): 'MPCv2' | undefined;
   label(): string;
   keyIds(): string[];
   receiveAddress(): string;
