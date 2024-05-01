@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.1.2...@bitgo/abstract-utxo@8.1.3) (2024-05-01)
+
+### Reverts
+
+- Revert "feat(abstract-utxo): support trustless change outputs from explaintx" ([23442a9](https://github.com/BitGo/BitGoJS/commit/23442a9873ae432c1d5efee8a3b3d4c0c3a772e2))
+
 ## [8.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.1.1...@bitgo/abstract-utxo@8.1.2) (2024-04-25)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

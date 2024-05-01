@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-trx",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "BitGo SDK coin library for Tron",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -46,9 +46,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^26.9.0",
-    "@bitgo/statics": "^48.8.1",
-    "@bitgo/utxo-lib": "^9.36.0",
+    "@bitgo/sdk-core": "^26.10.0",
+    "@bitgo/statics": "^48.9.0",
+    "@bitgo/utxo-lib": "^9.36.1",
     "@stablelib/hex": "^1.0.0",
     "bignumber.js": "^9.0.0",
     "ethers": "^5.7.2",
@@ -59,8 +59,8 @@
     "tronweb": "5.1.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.45.4",
-    "@bitgo/sdk-test": "^8.0.14",
+    "@bitgo/sdk-api": "^1.46.0",
+    "@bitgo/sdk-test": "^8.0.15",
     "shx": "^0.3.4"
   }
 }
