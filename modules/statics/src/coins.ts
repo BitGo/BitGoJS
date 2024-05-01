@@ -2904,6 +2904,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.DFI
   ),
   erc20(
+    'a51ea723-2d14-4a1a-8e39-b688e436896d',
+    'dfx',
+    'DFX Token',
+    18,
+    '0x888888435fde8e7d4c54cab67f206e4199454c60',
+    UnderlyingAsset.DFX
+  ),
+  erc20(
     '8a3cdf12-ee74-4284-8883-3d69e83d7a01',
     'dgcl',
     'Dgcl',
@@ -6379,6 +6387,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TRYX
   ),
   erc20(
+    'a655736c-7625-4eeb-9fc3-6c13b0f7a600',
+    'tst',
+    'Teleport System Token',
+    18,
+    '0x0828096494ad6252f0f853abfc5b6ec9dfe9fdad',
+    UnderlyingAsset.TST
+  ),
+  erc20(
     '461b6246-659b-4bb4-ab78-c68ccc446c40',
     'tusd',
     'TrueUSD',
@@ -7627,6 +7643,14 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xc08e7e23c235073c6807c2efe7021304cb7c2815',
     UnderlyingAsset.XUSD
+  ),
+  erc20(
+    '2b9ec367-e156-4431-ba24-ba2b9ef670d8',
+    'xzk',
+    'Mystiko Token',
+    18,
+    '0xe8fc52b1bb3a40fd8889c0f8f75879676310ddf0',
+    UnderlyingAsset.XZK
   ),
   erc20(
     '54f3b3be-016f-43b7-b460-61caeed82e27',
@@ -9485,6 +9509,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x569424c5ee13884a193773fdc5d1c5f79c443a51',
     UnderlyingAsset.PINE
+  ),
+  erc20(
+    '92fd332f-4fd4-4346-9e24-12446d595abe',
+    'pirate',
+    'Pirate Nation Token',
+    18,
+    '0x7613c48e0cd50e42dd9bf0f6c235063145f6f8dc',
+    UnderlyingAsset.PIRATE
   ),
   erc20(
     '94e47b5b-c0ac-4634-bcdb-b321f12d6953',
@@ -14659,6 +14691,14 @@ export const coins = CoinMap.fromCoins([
     0,
     '0xe94cdf7da562b5fc67100a75293e170ff67bb7eb',
     UnderlyingAsset['polygon:pme']
+  ),
+  polygonErc20(
+    '350ff415-7df8-4149-8e18-1b85911055ab',
+    'polygon:dipe',
+    'DIPE',
+    6,
+    '0x5e749d596d2a4cf1e9aa48fbba5843ccd9b7994d',
+    UnderlyingAsset['polygon:dipe']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
