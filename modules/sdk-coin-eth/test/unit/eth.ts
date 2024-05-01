@@ -7,19 +7,24 @@ import {
   common,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
+  TransactionType,
   UnexpectedAddressError,
   Wallet,
 } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Erc20Token, Teth } from '../../src';
+import { AbstractEthLikeNewCoins, Erc20Token, Hteth, Teth, TransactionBuilder, TransferBuilder } from '../../src';
 import { EthereumNetwork } from '@bitgo/statics';
 import assert from 'assert';
+import { getBuilder } from './getBuilder';
+import * as testData from '../resources/eth';
+import sinon from 'sinon';
 
 nock.enableNetConnect();
 
 describe('ETH:', function () {
   let bitgo: TestBitGoAPI;
   let hopTxBitgoSignature;
+  let sandbox: sinon.SinonSandbox;
 
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
@@ -51,12 +56,15 @@ describe('ETH:', function () {
       bitgo.safeRegister(name, coinConstructor);
     });
     bitgo.safeRegister('teth', Teth.createInstance);
+    bitgo.safeRegister('hteth', Hteth.createInstance);
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
+    sandbox = sinon.createSandbox();
   });
 
   after(function () {
     nock.cleanAll();
+    sandbox.restore();
   });
 
   describe('EIP1559', function () {
@@ -94,6 +102,63 @@ describe('ETH:', function () {
 
       (halfSignedTransaction as any).halfSigned.eip1559.maxPriorityFeePerGas.should.equal(10);
       (halfSignedTransaction as any).halfSigned.eip1559.maxFeePerGas.should.equal(10);
+    });
+
+    it('should sign a transaction with EIP1559 fee params for CCR', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const signTransaction = sinon.spy(AbstractEthLikeNewCoins.prototype, 'signTransaction');
+
+      const userKeychain = {
+        prv: 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g',
+        pub: 'xpub661MyMwAqRbcGBjE5QG7pkf9cZD33UUD6K46q7ELrbuG7FqXfLNGiXYGHeEnGBb5AWREnk1eA28g8ArZvURbhshXWkTtddHRo54fgyVvLdb',
+        rawPub: '023636e68b7b204573abda2616aff6b584910dece2543f1cc6d842caac7d74974b',
+        rawPrv: '7438a50010ce7b1dfd86e68046cc78ba1ebd242d6d85d9904d3fcc08734bc172',
+      };
+      const txBuilder = getBuilder('hteth') as TransactionBuilder;
+      txBuilder.type(TransactionType.Send);
+      txBuilder.fee({
+        fee: '10',
+        gasLimit: '1000',
+      });
+      const key = testData.KEYPAIR_PRV.getKeys().prv as string;
+      const transferBuilder = txBuilder.transfer() as TransferBuilder;
+      transferBuilder
+        .amount('0')
+        .to('0x19645032c7f1533395d44a629462e751084d3e4c')
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      txBuilder.contract(address1);
+      const tx = await txBuilder.build();
+
+      const halfSignedTransaction = await coin.signTransaction({
+        txPrebuild: {
+          eip1559: { maxPriorityFeePerGas: 10, maxFeePerGas: 10 },
+          isBatch: false,
+          recipients: [
+            {
+              amount: '42',
+              address: '0xc93b13642d93b4218bb85f67317d6b37286e8028',
+            },
+          ],
+          expireTime: 1627949214,
+          contractSequenceId: 12,
+          gasLimit: undefined,
+          gasPrice: undefined,
+          hopTransaction: undefined,
+          backupKeyNonce: undefined,
+          sequenceId: undefined,
+          nextContractSequenceId: 0,
+          txHex: tx.toBroadcastFormat(),
+        },
+        prv: userKeychain.prv,
+        isEvmBasedCrossChainRecovery: true,
+      } as any);
+
+      assert((halfSignedTransaction as any).halfSigned.txHex);
+      assert.strictEqual((halfSignedTransaction as any).halfSigned.eip1559.maxFeePerGas, 10);
+
+      sandbox.assert.calledOnce(signTransaction);
     });
   });
 
