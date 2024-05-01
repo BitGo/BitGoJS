@@ -1477,14 +1477,12 @@ export class BitGoAPI implements BitGoBase {
     const networkName = common.Environments[this.getEnv()].network;
     const network = utxolib.networks[networkName];
 
-    let address;
     try {
-      address = utxolib.address.fromBase58Check(params.address, network);
+      const script = utxolib.addressFormat.toOutputScriptTryFormats(params.address, network);
+      return params.address === utxolib.address.fromOutputScript(script, network);
     } catch (e) {
       return false;
     }
-
-    return address.version === network.pubKeyHash || address.version === network.scriptHash;
   }
 
   /**

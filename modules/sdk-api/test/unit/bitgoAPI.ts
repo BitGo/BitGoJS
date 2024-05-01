@@ -55,4 +55,24 @@ describe('Constructor', function () {
       bitgo.should.have.property('_proxy', undefined);
     });
   });
+
+  describe('verifyAddress', function () {
+    it('should successfully verify a base58 address', function () {
+      const bitgo = new BitGoAPI({
+        env: 'test',
+      });
+
+      bitgo.verifyAddress({ address: '2N6paT2TU4N1XpaZjJiApWJXoeyrL3UWpkZ' }).should.be.true();
+    });
+
+    it('should successfully verify a bech32 address', function () {
+      const bitgo = new BitGoAPI({
+        env: 'test',
+      });
+
+      bitgo
+        .verifyAddress({ address: 'tb1qguzyk4w6kaqtpsczs5aj0w8r7598jq36egm8e98wqph3rwmex68seslgsg' })
+        .should.be.true();
+    });
+  });
 });
