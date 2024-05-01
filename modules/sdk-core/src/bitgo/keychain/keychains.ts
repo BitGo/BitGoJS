@@ -296,7 +296,12 @@ export class Keychains implements IKeychains {
     let MpcUtils;
     switch (params.multisigType) {
       case 'tss':
-        MpcUtils = this.baseCoin.getMPCAlgorithm() === 'ecdsa' ? ECDSAUtils.EcdsaUtils : EDDSAUtils.default;
+        MpcUtils =
+          this.baseCoin.getMPCAlgorithm() === 'eddsa'
+            ? EDDSAUtils.default
+            : params.walletVersion === 5
+            ? ECDSAUtils.EcdsaMPCv2Utils
+            : ECDSAUtils.EcdsaUtils;
         break;
       case 'blsdkg':
         if (_.isUndefined(params.passphrase)) {

@@ -260,6 +260,11 @@ export enum CoinFeature {
    * This coin uses non-packed encoding for transaction data
    */
   USES_NON_PACKED_ENCODING_FOR_TXDATA = 'uses-non-packed-encoding-for-txdata',
+
+  /**
+   * This coins supports MPCv2 for key creation and signing
+   */
+  MPCV2 = 'mpcv2',
 }
 
 /**

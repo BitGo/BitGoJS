@@ -1,7 +1,7 @@
 import EDDSAMethods, { EDDSAMethodTypes } from './eddsa';
-import ECDSAMethods, { ECDSAMethodTypes } from './ecdsa';
+import ECDSAMethods, { ECDSAMethodTypes, DKLSMethods } from './ecdsa';
 
-export { EDDSAMethods, EDDSAMethodTypes, ECDSAMethods, ECDSAMethodTypes };
+export { EDDSAMethods, EDDSAMethodTypes, ECDSAMethods, ECDSAMethodTypes, DKLSMethods };
 export { ShareKeyPosition } from './types';
 
 // exporting this types for backward compatibility.

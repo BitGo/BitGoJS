@@ -27,8 +27,8 @@ export function combinePartialSignatures(round4MessagePayloads: Uint8Array[], rH
   const sig = new Signature(r, s);
   const normalizedSig = sig.normalizeS();
   return {
-    R: new Uint8Array(bigIntToBufferBE(normalizedSig.r)),
-    S: new Uint8Array(bigIntToBufferBE(normalizedSig.s)),
+    R: new Uint8Array(bigIntToBufferBE(normalizedSig.r, 32)),
+    S: new Uint8Array(bigIntToBufferBE(normalizedSig.s, 32)),
   };
 }
 

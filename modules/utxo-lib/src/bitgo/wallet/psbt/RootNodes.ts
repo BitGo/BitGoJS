@@ -17,15 +17,6 @@ import { createTransactionFromBuffer } from '../../transaction';
 import { getPsbtInputScriptType, toScriptType2Of3s } from '../Psbt';
 
 /**
- * Error thrown when no multi-sig input is found in a PSBT.
- * */
-export class ErrorNoMultiSigInputFound extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-/**
  * Retrieves unsorted root BIP32Interface nodes from a PSBT if available.
  * @param psbt - The PSBT from which to extract the global Xpubs.
  * @returns An array of BIP32Interface objects or undefined if not available.
@@ -131,7 +122,7 @@ function getFirstMultiSigInputData(psbt: UtxoPsbt): {
     return { parsedScriptType, scriptPubKey, derivationPath };
   }
 
-  throw new ErrorNoMultiSigInputFound('No multi sig input found');
+  throw new Error('No multi sig input found');
 }
 
 /**

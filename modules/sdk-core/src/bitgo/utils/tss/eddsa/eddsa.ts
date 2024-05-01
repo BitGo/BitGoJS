@@ -52,7 +52,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     assert(bitgoKeychain.commonKeychain);
     assert(bitgoKeychain.walletHSMGPGPublicKeySigs);
 
-    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    const bitgoGpgKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
 
     const userKeyPub = await openpgp.readKey({ armoredKey: userGpgPub });
     const userKeyId = userKeyPub.keyPacket.getFingerprint();
@@ -407,7 +407,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const userToBitgoCommitment = this.createUserToBitgoCommitmentShare(commitment);
 
     const signerShare = signingKey.yShares[bitgoIndex].u + signingKey.yShares[bitgoIndex].chaincode;
-    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    const bitgoGpgKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
     const userToBitgoEncryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
     const encryptedSignerShare = this.createUserToBitgoEncryptedSignerShare(userToBitgoEncryptedSignerShare);
@@ -580,7 +580,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const bitgoIndex = ShareKeyPosition.BITGO;
     const signerShare = signingKey.yShares[bitgoIndex].u + signingKey.yShares[bitgoIndex].chaincode;
-    const bitgoGpgKey = await getBitgoGpgPubKey(this.bitgo);
+    const bitgoGpgKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
     const userToBitgoEncryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
     const userGpgKey = await generateGPGKeyPair('secp256k1');

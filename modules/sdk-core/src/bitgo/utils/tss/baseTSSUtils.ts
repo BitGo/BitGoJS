@@ -387,14 +387,15 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * It gets the appropriate BitGo GPG public key for key creation based on a
    * combination of coin and the feature flags on the user and their enterprise if set.
    * @param enterpriseId - enterprise under which user wants to create the wallet
+   * @param isMPCv2 - true to get the MPCv2 GPG public key, defaults to false
    */
-  public async getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId: string | undefined): Promise<Key> {
+  public async getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId: string | undefined, isMPCv2 = false): Promise<Key> {
     const response: BitgoGPGPublicKey = await this.bitgo
       .get(this.baseCoin.url('/tss/pubkey'))
       .query({ enterpriseId })
       .result();
-    const bitgoPublicKeyStr = response.publicKey as string;
-    return readKey({ armoredKey: bitgoPublicKeyStr });
+    const bitgoPublicKeyStr = isMPCv2 ? response.mpcv2PublicKey : response.publicKey;
+    return readKey({ armoredKey: bitgoPublicKeyStr as string });
   }
 
   /**

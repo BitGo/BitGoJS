@@ -61,7 +61,7 @@ export class Dkg {
     }
     if (typeof window !== 'undefined') {
       const initDkls = require('@silencelaboratories/dkls-wasm-ll-web');
-      await initDkls();
+      await initDkls.default();
     }
     this.dkgSession = new KeygenSession(this.n, this.t, this.partyIdx);
     try {
@@ -90,7 +90,7 @@ export class Dkg {
       throw Error('Session not initialized');
     }
     try {
-      if (this.dkgState == DkgState.Round3) {
+      if (this.dkgState === DkgState.Round3) {
         const commitmentsUnsorted = messagesForIthRound.p2pMessages
           .map((m) => {
             return { from: m.from, commitment: m.commitment };
@@ -115,15 +115,15 @@ export class Dkg {
           undefined
         );
       }
-      if (this.dkgState == DkgState.Round4) {
+      if (this.dkgState === DkgState.Round4) {
         this.dkgKeyShare = this.dkgSession.keyshare();
         this.dkgState = DkgState.Complete;
         return { broadcastMessages: [], p2pMessages: [] };
       } else {
-        // Update ronud data.
+        // Update round data.
         this._deserializeState();
       }
-      if (this.dkgState == DkgState.Round2) {
+      if (this.dkgState === DkgState.Round2) {
         this.chainCodeCommitment = this.dkgSession.calculateChainCodeCommitment();
       }
       nextRoundDeserializedMessages = {

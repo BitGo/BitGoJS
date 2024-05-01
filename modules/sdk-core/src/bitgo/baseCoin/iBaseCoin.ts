@@ -1,16 +1,16 @@
 import BigNumber from 'bignumber.js';
+import { BaseCoin as StaticsBaseCoin, BaseTokenConfig } from '@bitgo/statics';
 import { IRequestTracer } from '../../api';
 import { IEnterprises } from '../enterprise';
 import { Keychain, IKeychains } from '../keychain';
 import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
-import { EcdsaUtils } from '../utils/tss/ecdsa';
+import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { TxRequest } from '../utils/tss/eddsa';
 import { CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
-import { BaseTokenConfig } from '@bitgo/statics';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
@@ -194,7 +194,7 @@ export interface ExtraPrebuildParamsOptions {
 export interface PresignTransactionOptions {
   txPrebuild?: TransactionPrebuild;
   walletData: WalletData;
-  tssUtils: EcdsaUtils | EddsaUtils | undefined;
+  tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | undefined;
   [index: string]: unknown;
 }
 
@@ -448,6 +448,7 @@ export interface BaseBroadcastTransactionResult {
 export interface IBaseCoin {
   type: string;
   tokenConfig?: BaseTokenConfig;
+  getConfig(): Readonly<StaticsBaseCoin>;
   url(suffix: string): string;
   wallets(): IWallets;
   enterprises(): IEnterprises;
