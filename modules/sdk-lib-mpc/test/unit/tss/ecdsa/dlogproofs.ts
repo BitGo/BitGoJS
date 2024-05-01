@@ -1,12 +1,17 @@
 import sinon from 'sinon';
-import { generateNtilde, generateNtildeProof, verifyNtildeProof } from '../../../../src/tss/ecdsa/rangeproof';
-import * as safePrimes from '../../../../src/safePrime';
+import {
+  generateNtilde,
+  generateNtildeProof,
+  generateSafePrimes,
+  verifyNtildeProof,
+} from '../../../../src/tss/ecdsa/rangeproof';
+import { OpenSSL } from '../../../../src';
 
 describe('h1H2DiscreteLogProofs', function () {
   let switchPrime = false;
   let safePrimeMock: sinon.SinonStub;
   before(async function () {
-    safePrimeMock = sinon.stub(safePrimes, 'generateSafePrime').callsFake(async (bitlength: number) => {
+    safePrimeMock = sinon.stub(OpenSSL.prototype, 'generateSafePrime').callsFake(async (bitlength: number) => {
       // Both primes below were generated using 'openssl prime -bits 256 -generate -safe'.
       if (switchPrime) {
         switchPrime = false;
@@ -39,7 +44,7 @@ describe('h1H2DiscreteLogProofs', function () {
     ).should.be.true();
   });
   it('catch h1 and h2 not being in the same group', async function () {
-    const [p, q] = [await safePrimes.generateSafePrime(257), await safePrimes.generateSafePrime(257)];
+    const [p, q] = await generateSafePrimes([257, 257]);
     const ntilde = p * q;
     const ntildeObj = {
       ntilde: ntilde,

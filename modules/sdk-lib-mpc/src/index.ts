@@ -1,5 +1,5 @@
 export * from './curves';
-export * from './safePrime';
+export * from './openssl';
 export * from './shamir';
 export * from './tss';
 

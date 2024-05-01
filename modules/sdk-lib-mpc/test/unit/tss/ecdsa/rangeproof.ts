@@ -4,11 +4,11 @@ import { EcdsaRangeProof, EcdsaTypes } from '../../../../src/tss/ecdsa';
 import {
   randomPositiveCoPrimeTo,
   Secp256k1Curve,
+  OpenSSL,
   BaseCurve,
   bigIntToBufferBE,
   bigIntFromBufferBE,
 } from '../../../../src';
-import * as safePrimes from '../../../../src/safePrime';
 import { DeserializedNtilde, RangeProof } from '../../../../src/tss/ecdsa/types';
 import { modPow, randBetween } from 'bigint-crypto-utils';
 import { createHash } from 'crypto';
@@ -22,7 +22,7 @@ describe('MtA range proof', function () {
   let ntilde: EcdsaTypes.DeserializedNtilde;
 
   before('set up paillier and ntile', async function () {
-    safePrimeMock = sinon.stub(safePrimes, 'generateSafePrime').callsFake(async (bitlength: number) => {
+    safePrimeMock = sinon.stub(OpenSSL.prototype, 'generateSafePrime').callsFake(async (bitlength: number) => {
       // Both primes below were generated using 'openssl prime -bits 256 -generate -safe'.
       if (switchPrime) {
         switchPrime = false;
