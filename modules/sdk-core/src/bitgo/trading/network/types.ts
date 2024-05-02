@@ -1,5 +1,6 @@
 export interface ITradingNetwork {
   getBalances: (params?: GetNetworkBalancesParams) => Promise<GetNetworkBalancesResponse>;
+  getPartners: (params?: GetNetworkPartnersParams) => Promise<GetNetworkPartnersResponse>;
   getSupportedCurrencies: (
     params: GetNetworkSupportedCurrenciesParams
   ) => Promise<GetNetworkSupportedCurrenciesResponse>;
@@ -33,6 +34,18 @@ export type GetNetworkBalancesResponse = {
   networkBalances: Record<string, NetworkBalance>;
 };
 
+export type GetNetworkPartnersParams = NetworkPaginationParams & {
+  ids?: string[];
+  names?: string[];
+  institutionIds?: string[];
+  institutionIdentifiers?: string[];
+  active?: boolean;
+};
+
+export type GetNetworkPartnersResponse = {
+  partners: NetworkPartner[];
+};
+
 export type GetNetworkSupportedCurrenciesParams = {
   partnerIds: string[];
 };
@@ -64,12 +77,12 @@ export type GetNetworkConnectionByIdResponse = {
 };
 
 export type CreateNetworkConnectionParams = {
-  payload: string;
-  signature: string;
   partnerId: string;
   name: string;
   connectionKey: NetworkConnectionKey;
   nonce: string;
+  payload: string;
+  signature: string;
 };
 
 export type CreateNetworkConnectionResponse = {
@@ -227,15 +240,27 @@ export type NetworkConnection = {
 };
 
 export type NetworkConnectionKey =
-  | {
-      schema: 'token';
-      connectionToken: string;
-    }
-  | {
-      schema: 'tokenAndSignature';
-      connectionToken: string;
-      signature: string;
-    };
+  | NetworkConnectionKeyToken
+  | NetworkConnectionKeyTokenAndSignature
+  | NetworkConnectionKeyApiKeyAndSecret;
+
+export type NetworkConnectionKeyToken = {
+  schema: 'token';
+  connectionToken: string;
+};
+
+export type NetworkConnectionKeyTokenAndSignature = {
+  schema: 'tokenAndSignature';
+  connectionToken: string;
+  signature: string;
+};
+
+export type NetworkConnectionKeyApiKeyAndSecret = {
+  schema: 'apiKeyAndSecret';
+  apiKey: string;
+  apiSecret: string;
+  clientAccountId: string;
+};
 
 export type NetworkAllocationType = 'allocation' | 'deallocation';
 export type NetworkAllocationStatus = 'cleared' | 'released' | 'reserved';
@@ -296,3 +321,15 @@ export type NetworkSettlementTransfer = {
 };
 
 export type NetworkSettlementStatus = 'failed' | 'completed' | 'pending';
+
+export type ConnectionKeySchema = 'token' | 'tokenAndSignature' | 'apiKeyAndSecret';
+
+export type NetworkPartner = {
+  id: string;
+  name: string;
+  institutionId: string;
+  institutionIdentifier: string;
+  connectionKeySchema: ConnectionKeySchema;
+  active: boolean;
+  publicKey?: string;
+};
