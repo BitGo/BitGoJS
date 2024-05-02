@@ -2,7 +2,7 @@ import { Signature } from '@noble/secp256k1';
 import { HDTree, Secp256k1Bip32HdTree, Secp256k1Curve } from '../../curves';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 import { DeserializedDklsSignature } from './types';
-import { decode } from 'cbor';
+import { decode } from 'cbor-x';
 import * as secp256k1 from 'secp256k1';
 import { Hash, createHash } from 'crypto';
 

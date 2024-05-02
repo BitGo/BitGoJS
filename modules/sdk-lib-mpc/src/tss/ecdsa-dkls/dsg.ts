@@ -1,6 +1,6 @@
 import { SignSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
 import { DeserializedBroadcastMessage, DeserializedDklsSignature, DeserializedMessages, DsgState } from './types';
-import { decode } from 'cbor';
+import { decode } from 'cbor-x';
 
 export class Dsg {
   protected dsgSession: SignSession | undefined;

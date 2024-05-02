@@ -1,7 +1,6 @@
 import { KeygenSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
 import { DeserializedBroadcastMessage, DeserializedMessages, DkgState, RetrofitData } from './types';
-import { decode } from 'cbor';
-import { encode } from 'cbor-x';
+import { decode, encode } from 'cbor-x';
 import { bigIntToBufferBE } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 
@@ -16,60 +15,62 @@ export class Dkg {
   protected partyIdx: number;
   protected dkgState: DkgState = DkgState.Uninitialized;
   protected dklsKeyShareRetrofitObject: Keyshare | undefined;
+  protected retrofitData: RetrofitData | undefined;
 
   constructor(n: number, t: number, partyIdx: number, retrofitData?: RetrofitData) {
     this.n = n;
     this.t = t;
     this.partyIdx = partyIdx;
     this.chainCodeCommitment = undefined;
-    if (retrofitData) {
-      if (!retrofitData.xShare.y || !retrofitData.xShare.chaincode || !retrofitData.xShare.x) {
-        throw Error('xShare must have a public key, private share value, and a chaincode.');
-      }
-      if (n !== 3 || t !== 2) {
-        throw Error('only 2 of 3 retrofit is supported.');
-      }
-      if (retrofitData.bigSiList.length !== 2) {
-        throw Error("bigSiList should contain the other parties' Si's");
-      }
-      const bigSList: Array<Array<number>> = [];
-      let j = 0;
-      for (let i = 0; i < n; i++) {
-        if (i === partyIdx) {
-          const secp256k1 = new Secp256k1Curve();
-          bigSList.push(Array.from(bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + retrofitData.xShare.x)))));
-        } else {
-          bigSList.push(Array.from(Buffer.from(retrofitData.bigSiList[j], 'hex')));
-          j++;
-        }
-      }
-      const x_i_list = [new Array(32).fill(0), new Array(32).fill(0), new Array(32).fill(0)];
-      x_i_list[0][31] = 1;
-      x_i_list[1][31] = 2;
-      x_i_list[2][31] = 3;
-      const dklsKeyShare = {
-        total_parties: 3,
-        threshold: 2,
-        rank_list: [0, 0, 0],
-        party_id: partyIdx,
-        public_key: Array.from(Buffer.from(retrofitData.xShare.y, 'hex')),
-        root_chain_code: Array.from(Buffer.from(retrofitData.xShare.chaincode, 'hex')),
-        final_session_id: Array(32).fill(0),
-        seed_ot_receivers: [Array(32832).fill(0), Array(32832).fill(0)],
-        seed_ot_senders: [Array(32768).fill(0), Array(32768).fill(0)],
-        sent_seed_list: [Array(32).fill(0)],
-        rec_seed_list: [Array(32).fill(0)],
-        s_i: Array.from(Buffer.from(retrofitData.xShare.x, 'hex')),
-        big_s_list: bigSList,
-        x_i_list: x_i_list,
-      };
-      this.dklsKeyShareRetrofitObject = Keyshare.fromBytes(encode(dklsKeyShare));
-    }
+    this.retrofitData = retrofitData;
   }
 
   private _restoreSession() {
     if (!this.dkgSession) {
       this.dkgSession = KeygenSession.fromBytes(this.dkgSessionBytes);
+    }
+  }
+
+  private _createDKLsRetrofitKeyShare() {
+    if (this.retrofitData) {
+      if (!this.retrofitData.xShare.y || !this.retrofitData.xShare.chaincode || !this.retrofitData.xShare.x) {
+        throw Error('xShare must have a public key, private share value, and a chaincode.');
+      }
+      if (this.retrofitData.bigSiList.length !== this.n - 1) {
+        throw Error("bigSiList should contain the other parties' Si's");
+      }
+      const bigSList: Array<Array<number>> = [];
+      const xiList: Array<Array<number>> = [];
+      let j = 0;
+      for (let i = 0; i < this.n; i++) {
+        if (i === this.partyIdx) {
+          const secp256k1 = new Secp256k1Curve();
+          bigSList.push(
+            Array.from(bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + this.retrofitData.xShare.x))))
+          );
+        } else {
+          bigSList.push(Array.from(Buffer.from(this.retrofitData.bigSiList[j], 'hex')));
+          j++;
+        }
+        xiList.push(Array.from(bigIntToBufferBE(BigInt(i + 1), 32)));
+      }
+      const dklsKeyShare = {
+        total_parties: this.n,
+        threshold: this.t,
+        rank_list: new Array(this.n).fill(0),
+        party_id: this.partyIdx,
+        public_key: Array.from(Buffer.from(this.retrofitData.xShare.y, 'hex')),
+        root_chain_code: Array.from(Buffer.from(this.retrofitData.xShare.chaincode, 'hex')),
+        final_session_id: Array(32).fill(0),
+        seed_ot_receivers: new Array(this.n - 1).fill(Array(32832).fill(0)),
+        seed_ot_senders: new Array(this.n - 1).fill(Array(32768).fill(0)),
+        sent_seed_list: [Array(32).fill(0)],
+        rec_seed_list: [Array(32).fill(0)],
+        s_i: Array.from(Buffer.from(this.retrofitData.xShare.x, 'hex')),
+        big_s_list: bigSList,
+        x_i_list: this.retrofitData.xiList ? this.retrofitData.xiList : xiList,
+      };
+      this.dklsKeyShareRetrofitObject = Keyshare.fromBytes(encode(dklsKeyShare));
     }
   }
 
@@ -111,6 +112,7 @@ export class Dkg {
       const initDkls = require('@silencelaboratories/dkls-wasm-ll-web');
       await initDkls.default();
     }
+    this._createDKLsRetrofitKeyShare();
     if (this.dklsKeyShareRetrofitObject) {
       this.dkgSession = KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject);
     } else {
