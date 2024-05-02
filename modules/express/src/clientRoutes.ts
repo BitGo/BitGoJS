@@ -6,7 +6,6 @@ import {
   EcdsaUtils,
   CustomGShareGeneratingFunction,
   CustomRShareGeneratingFunction,
-  UnsupportedCoinError,
   GShare,
   SignShare,
   CustomCommitmentGeneratingFunction,
@@ -28,7 +27,6 @@ import * as debugLib from 'debug';
 import * as express from 'express';
 import type { ParamsDictionary } from 'express-serve-static-core';
 import * as _ from 'lodash';
-import * as url from 'url';
 import * as superagent from 'superagent';
 
 // RequestTracer should be extracted into a separate npm package (along with
@@ -39,6 +37,7 @@ import { Config } from './config';
 import { ApiResponseError } from './errors';
 import { promises as fs } from 'fs';
 import { retryPromise } from './retryPromise';
+import { handleProxyReq, handleREST, handleV2CoinSpecificREST, handleV2UserREST } from './middlewares';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -285,51 +284,6 @@ function handleCalculateMinerFeeInfo(req: express.Request) {
     nP2shP2wshInputs: req.body.nP2shP2wshInputs,
     nOutputs: req.body.nOutputs,
   });
-}
-
-/**
- * Builds the API's URL string, optionally building the querystring if parameters exist
- * @param req
- * @return {string}
- */
-function createAPIPath(req: express.Request) {
-  let apiPath = '/' + req.params[0];
-  if (!_.isEmpty(req.query)) {
-    // req.params does not contain the querystring, so we manually add them here
-    const urlDetails = url.parse(req.url);
-    if (urlDetails.search) {
-      // "search" is the properly URL encoded query params, prefixed with "?"
-      apiPath += urlDetails.search;
-    }
-  }
-  return apiPath;
-}
-
-/**
- * handle any other V1 API call
- * @deprecated
- * @param req
- * @param res
- * @param next
- */
-function handleREST(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const method = req.method;
-  const bitgo = req.bitgo;
-  const bitgoURL = bitgo.url(createAPIPath(req));
-  return redirectRequest(bitgo, method, bitgoURL, req, next);
-}
-
-/**
- * handle any other V2 API call
- * @param req
- * @param res
- * @param next
- */
-function handleV2UserREST(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const method = req.method;
-  const bitgo = req.bitgo;
-  const bitgoURL = bitgo.url('/user' + createAPIPath(req), 2);
-  return redirectRequest(bitgo, method, bitgoURL, req, next);
 }
 
 /**
@@ -953,84 +907,6 @@ export async function handleV2EnableTokens(req: express.Request) {
     err.status = 400;
     throw err;
   }
-}
-
-/**
- * handle any other API call
- * @param req
- * @param res
- * @param next
- */
-function handleV2CoinSpecificREST(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const method = req.method;
-  const bitgo = req.bitgo;
-
-  debug('handling v2 coin specific rest req');
-
-  try {
-    const coin = bitgo.coin(req.params.coin);
-    const coinURL = coin.url(createAPIPath(req));
-    return redirectRequest(bitgo, method, coinURL, req, next);
-  } catch (e) {
-    if (e instanceof UnsupportedCoinError) {
-      const queryParams = _.transform(
-        req.query,
-        (acc: string[], value, key) => {
-          for (const val of _.castArray(value)) {
-            acc.push(`${key}=${val}`);
-          }
-        },
-        []
-      );
-      const baseUrl = bitgo.url(req.baseUrl.replace(/^\/api\/v2/, ''), 2);
-      const url = _.isEmpty(queryParams) ? baseUrl : `${baseUrl}?${queryParams.join('&')}`;
-
-      debug(`coin ${req.params.coin} not supported, attempting to handle as a coinless route with url ${url}`);
-      return redirectRequest(bitgo, method, url, req, next);
-    }
-
-    throw e;
-  }
-}
-
-/**
- * Redirect a request using the bitgo request functions.
- * @param bitgo
- * @param method
- * @param url
- * @param req
- * @param next
- */
-function redirectRequest(bitgo: BitGo, method: string, url: string, req: express.Request, next: express.NextFunction) {
-  switch (method) {
-    case 'GET':
-      return bitgo.get(url).result();
-    case 'POST':
-      return bitgo.post(url).send(req.body).result();
-    case 'PUT':
-      return bitgo.put(url).send(req.body).result();
-    case 'PATCH':
-      return bitgo.patch(url).send(req.body).result();
-    case 'OPTIONS':
-      return bitgo.options(url).send(req.body).result();
-    case 'DELETE':
-      return bitgo.del(url).send(req.body).result();
-  }
-  // something has presumably gone wrong
-  next();
-}
-
-async function handleProxyReq(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const fullUrl = req.bitgo.microservicesUrl(req.url);
-  if (req.url && (/^\/api.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
-    req.isProxy = true;
-    debug('proxying %s request to %s', req.method, fullUrl);
-    return await redirectRequest(req.bitgo, req.method, fullUrl, req, next);
-  }
-
-  // user tried to access a url which is not an api route, do not proxy
-  debug('unable to proxy %s request to %s', req.method, fullUrl);
-  throw new ApiResponseError('bitgo-express can only proxy BitGo API requests', 404);
 }
 
 /**
