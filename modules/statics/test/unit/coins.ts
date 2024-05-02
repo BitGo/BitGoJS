@@ -13,7 +13,7 @@ import {
   UnderlyingAsset,
   UtxoCoin,
 } from '../../src';
-import { utxo } from '../../src/utxo/utxo';
+import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
 
 interface DuplicateCoinObject {
