@@ -1,4 +1,4 @@
-import { avaxSerial, utils as avaxUtils, Credential, pvmSerial, secp256k1, UnsignedTx } from '@bitgo/avalanchejs';
+import { avaxSerial, utils as avaxUtils, Credential, pvmSerial, secp256k1, UnsignedTx } from '@bitgo-forks/avalanchejs';
 import {
   BaseKey,
   BaseTransaction,

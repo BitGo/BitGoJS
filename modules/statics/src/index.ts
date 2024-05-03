@@ -4,7 +4,7 @@ export * from './networks';
 export * from './errors';
 export * from './tokenConfig';
 export { OfcCoin } from './ofc';
-export { UtxoCoin } from './utxo/utxo';
+export { UtxoCoin } from './utxo';
 export {
   AccountCoin,
   CeloCoin,

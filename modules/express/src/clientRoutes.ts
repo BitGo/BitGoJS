@@ -21,6 +21,9 @@ import {
   SShare,
   ShareType,
   MPCType,
+  CreateNetworkConnectionParams,
+  GetNetworkPartnersResponse,
+  encryptRsaWithAesGcm,
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
@@ -994,6 +997,71 @@ function handleV2CoinSpecificREST(req: express.Request, res: express.Response, n
 }
 
 /**
+ * Handle additional option to encrypt on the express route for partners requiring value encryption
+ * @param req.body.encrypt - boolean to determine if the request should handle encryption on behalf of the submission.
+ */
+async function handleNetworkV1EnterpriseClientConnections(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) {
+  debug('handling network v1 partner connection creation');
+
+  const bitgo = req.bitgo;
+  const params = req.params;
+  const body = req.body as CreateNetworkConnectionParams & {
+    encrypt?: boolean;
+  };
+
+  if (body.encrypt === true) {
+    if (!body.partnerId) {
+      throw new ApiResponseError('Missing required field: partnerId', 400);
+    }
+
+    const partnersUrl = bitgo.microservicesUrl(`/api/network/v1/enterprises/${params.enterpriseId}/partners`);
+
+    const response: GetNetworkPartnersResponse = await bitgo
+      .get(partnersUrl)
+      .set('enterprise-id', params.enterpriseId)
+      .send({ ids: [params.partnerId] })
+      .result();
+
+    const partners = response.partners;
+    const partner = partners.find((p) => p.id === body.partnerId);
+
+    if (!partner) {
+      throw new ApiResponseError(`Partner not found for partnerId: ${body.partnerId}`, 400);
+    }
+
+    if (!partner.publicKey) {
+      throw new ApiResponseError('Partner does not require encryption', 400);
+    }
+
+    switch (body.connectionKey.schema) {
+      case 'token':
+        req.body.connectionKey.connectionToken = await encryptRsaWithAesGcm(
+          partner.publicKey,
+          body.connectionKey.connectionToken
+        );
+        break;
+      case 'tokenAndSignature':
+        req.body.connectionKey.connectionToken = await encryptRsaWithAesGcm(
+          partner.publicKey,
+          body.connectionKey.connectionToken
+        );
+        req.body.connectionKey.signature = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.signature);
+        break;
+      case 'apiKeyAndSecret':
+        req.body.connectionKey.apiKey = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.apiKey);
+        req.body.connectionKey.apiSecret = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.apiSecret);
+        break;
+    }
+  }
+
+  return handleProxyReq(req, res, next);
+}
+
+/**
  * Redirect a request using the bitgo request functions.
  * @param bitgo
  * @param method
@@ -1002,32 +1070,47 @@ function handleV2CoinSpecificREST(req: express.Request, res: express.Response, n
  * @param next
  */
 function redirectRequest(bitgo: BitGo, method: string, url: string, req: express.Request, next: express.NextFunction) {
+  let request;
+
   switch (method) {
     case 'GET':
-      return bitgo.get(url).result();
+      request = bitgo.get(url);
+      break;
     case 'POST':
-      return bitgo.post(url).send(req.body).result();
+      request = bitgo.post(url).send(req.body);
+      break;
     case 'PUT':
-      return bitgo.put(url).send(req.body).result();
+      request = bitgo.put(url).send(req.body);
+      break;
     case 'PATCH':
-      return bitgo.patch(url).send(req.body).result();
+      request = bitgo.patch(url).send(req.body);
+      break;
     case 'OPTIONS':
-      return bitgo.options(url).send(req.body).result();
+      request = bitgo.options(url).send(req.body);
+      break;
     case 'DELETE':
-      return bitgo.del(url).send(req.body).result();
+      request = bitgo.del(url).send(req.body);
+      break;
   }
+
+  if (request) {
+    if (req.params.enterpriseId) {
+      request.set('enterprise-id', req.params.enterpriseId);
+    }
+    return request.result();
+  }
+
   // something has presumably gone wrong
   next();
 }
 
 async function handleProxyReq(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const fullUrl = req.bitgo.microservicesUrl(req.url);
-  if (req.url && (/^\/api.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
+  const fullUrl = req.bitgo.microservicesUrl(req.originalUrl);
+  if (req.url && (/^\/api.*$/.test(req.originalUrl) || /^\/oauth\/token.*$/.test(req.url))) {
     req.isProxy = true;
     debug('proxying %s request to %s', req.method, fullUrl);
     return await redirectRequest(req.bitgo, req.method, fullUrl, req, next);
   }
-
   // user tried to access a url which is not an api route, do not proxy
   debug('unable to proxy %s request to %s', req.method, fullUrl);
   throw new ApiResponseError('bitgo-express can only proxy BitGo API requests', 404);
@@ -1449,8 +1532,22 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   app.use('/api/v2/user/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2UserREST));
   app.use('/api/v2/:coin/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2CoinSpecificREST));
 
+  app.post(
+    '/api/network/v1/enterprises/:enterpriseId/clients/connections',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleNetworkV1EnterpriseClientConnections)
+  );
+
   // everything else should use the proxy handler
-  if (!config.disableProxy) {
+  if (config.disableProxy !== true) {
+    app.use(
+      '/api/:namespace/v[12]/enterprises/:enterpriseId/*',
+      parseBody,
+      prepareBitGo(config),
+      promiseWrapper(handleProxyReq)
+    );
+
     app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
   }
 }
