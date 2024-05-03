@@ -24,6 +24,7 @@ import {
   getDefaultWalletKeys,
   getUtxoCoin,
   keychainsBase58,
+  getWalletKeys,
 } from './util';
 
 import {
@@ -313,9 +314,9 @@ function run<TNumber extends number | bigint = number>(
       );
     }
 
-    function getOutputAddress(): string {
+    function getOutputAddress(rootWalletKeys: utxolib.bitgo.RootWalletKeys): string {
       return coin.generateAddress({
-        keychains: walletKeys.triple.map((k) => ({ pub: k.neutered().toBase58() })),
+        keychains: rootWalletKeys.triple.map((k) => ({ pub: k.neutered().toBase58() })),
       }).address;
     }
 
@@ -393,15 +394,19 @@ function run<TNumber extends number | bigint = number>(
         })
       );
       const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
-      const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-      return testutil.constructPsbt(inputs, outputs, coin.network, walletKeys, 'unsigned');
+      const outputs: testutil.Output[] = [
+        { address: getOutputAddress(getWalletKeys('test')), value: unspentSum - BigInt(1000) },
+      ];
+      const psbt = testutil.constructPsbt(inputs, outputs, coin.network, walletKeys, 'unsigned');
+      utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
+      return psbt;
     }
 
     async function getTransactionStages(): Promise<TransactionStages> {
       const prebuild =
         txFormat === 'psbt'
           ? createPrebuildPsbt()
-          : createPrebuildTransaction<TNumber>(coin.network, getUnspents(), getOutputAddress());
+          : createPrebuildTransaction<TNumber>(coin.network, getUnspents(), getOutputAddress(walletKeys));
 
       const halfSignedUserBitGo = await createHalfSignedTransaction(prebuild, walletKeys.user, walletKeys.bitgo);
       const fullSignedUserBitGo =
