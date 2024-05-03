@@ -1247,8 +1247,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ARBETH,
     CoinKind.CRYPTO
   ),
-  ofc('8b93e788-52fa-4fd6-b499-40f13fe194fc', 'ofcCoreum', 'Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
-  tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctCoreum', 'Test Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
+  ofc('8b93e788-52fa-4fd6-b499-40f13fe194fc', 'ofccoreum', 'Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
@@ -1373,6 +1372,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ARBETH,
     CoinKind.CRYPTO
   ),
+  tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctcoreum', 'Test Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
   erc20(
     '919ba34e-c61e-4346-831f-87660586572a',
     '1inch',
