@@ -184,10 +184,11 @@ describe('V2 Keychains', function () {
     });
 
     describe('successful password update', function () {
-      const validateKeys = function (keys, newPassword) {
-        _.each(keys, function (encryptedPrv, pub) {
-          pub.should.startWith('xpub');
-          const decryptedPrv = bitgo.decrypt({ input: encryptedPrv, password: newPassword });
+      const validateKeys = function (keys, newPassword, expectedLength) {
+        assert.ok(Object.keys(keys).length === expectedLength, 'should have the expected number of keys');
+        _.each(keys, function (value, key) {
+          assert.ok(key.includes('xpub') || key.includes('randomid'), 'key should be xpub or randomid');
+          const decryptedPrv = bitgo.decrypt({ input: value, password: newPassword });
           decryptedPrv.should.startWith('xprv');
         });
       };
@@ -206,11 +207,16 @@ describe('V2 Keychains', function () {
                 pub: 'xpub2',
                 encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
               },
+              {
+                id: 'randomid1',
+                type: 'tss',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv3', password: oldPassword }),
+              },
             ],
           });
 
         const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
-        validateKeys(keys, newPassword);
+        validateKeys(keys, newPassword, 2);
       });
 
       it('receive multiple pages when listing keychains', async function () {
@@ -228,6 +234,11 @@ describe('V2 Keychains', function () {
               {
                 pub: 'xpub2',
                 encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+              },
+              {
+                id: 'randomid1',
+                type: 'tss',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv3', password: oldPassword }),
               },
             ],
           });
@@ -251,7 +262,7 @@ describe('V2 Keychains', function () {
           });
 
         const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
-        validateKeys(keys, newPassword);
+        validateKeys(keys, newPassword, 3);
       });
 
       it('single keychain password update', () => {
@@ -265,6 +276,29 @@ describe('V2 Keychains', function () {
 
         const decryptedPrv = bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
         decryptedPrv.should.equal(prv);
+      });
+
+      it('should return the updated keys with ids', async function () {
+        nock(bgUrl)
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            keys: [
+              {
+                id: 'randomid1',
+                type: 'tss',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+              },
+              {
+                id: 'randomid2',
+                type: 'tss',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+              },
+            ],
+          });
+
+        const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
+        validateKeys(keys, newPassword, 1);
       });
     });
 

@@ -116,8 +116,7 @@ export class Keychains implements IKeychains {
             newPassword: params.newPassword,
           });
           if (updatedKeychain.encryptedPrv) {
-            const changedKeyIdentifier =
-              updatedKeychain.type === 'tss' ? updatedKeychain.commonKeychain : updatedKeychain.pub;
+            const changedKeyIdentifier = updatedKeychain.type === 'tss' ? updatedKeychain.id : updatedKeychain.pub;
             if (changedKeyIdentifier) {
               changedKeys[changedKeyIdentifier] = updatedKeychain.encryptedPrv;
             }
