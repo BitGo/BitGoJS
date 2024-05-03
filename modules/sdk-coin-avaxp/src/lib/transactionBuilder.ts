@@ -1,4 +1,4 @@
-import { avmSerial, pvmSerial, UnsignedTx } from '@bitgo/avalanchejs';
+import { avmSerial, pvmSerial, UnsignedTx } from '@bitgo-forks/avalanchejs';
 import { BaseTransactionBuilder, BuildTransactionError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedUtxoObj, Tx } from './iface';

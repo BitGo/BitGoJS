@@ -48,7 +48,7 @@
     "@types/elliptic": "^6.4.12"
   },
   "dependencies": {
-    "@bitgo/avalanchejs": "1.0.0-alpha.3",
+    "@bitgo-forks/avalanchejs": "4.1.0-alpha.1",
     "@bitgo/sdk-core": "^26.10.0",
     "@bitgo/statics": "^48.9.0",
     "@bitgo/utxo-lib": "^9.36.1",

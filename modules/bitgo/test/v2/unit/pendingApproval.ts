@@ -4,13 +4,12 @@
 import 'should';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
-
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';
 
 import {
   BaseCoin,
-  EcdsaUtils,
+  ECDSAUtils,
   EddsaUtils,
   Environments,
   PendingApproval,
@@ -85,12 +84,30 @@ describe('Pending Approvals:', () => {
       const pendingAproval = new PendingApproval(bitgo, coin, {} as unknown as PendingApprovalData);
       if (coin.supportsTss()) {
         if (coin.getMPCAlgorithm() === 'ecdsa') {
-          pendingAproval['tssUtils'].should.be.instanceOf(EcdsaUtils);
+          pendingAproval['tssUtils'].should.be.instanceOf(ECDSAUtils.EcdsaUtils);
         } else if (coin.getMPCAlgorithm() === 'eddsa') {
           pendingAproval['tssUtils'].should.be.instanceOf(EddsaUtils);
         }
       } else {
         (pendingAproval['tssUtils'] === undefined).should.be.true();
+      }
+    });
+  });
+
+  ['MPCv2', undefined].forEach((multisigTypeVersion) => {
+    it(`should use correct tssUtils for multisigTypeVersion: ${multisigTypeVersion}`, () => {
+      const coin = bitgo.coin('hteth');
+      const walletDataMpcV2 = {
+        ...walletData,
+        multisigTypeVersion: multisigTypeVersion,
+      };
+      const walletMPCv2 = new Wallet(bitgo, basecoin, walletDataMpcV2);
+
+      const pendingAproval = new PendingApproval(bitgo, coin, {} as unknown as PendingApprovalData, walletMPCv2);
+      if (walletMPCv2.multisigTypeVersion() === 'MPCv2') {
+        pendingAproval['tssUtils'].should.be.instanceOf(ECDSAUtils.EcdsaMPCv2Utils);
+      } else {
+        pendingAproval['tssUtils'].should.be.instanceOf(ECDSAUtils.EcdsaUtils);
       }
     });
   });
