@@ -19,6 +19,7 @@ import { VirtualSizes } from '@bitgo/unspents';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 import { common, getAddressP2PKH, getNetwork, sanitizeLegacyPath } from '@bitgo/sdk-core';
+import { verifyAddress } from './verifyAddress';
 
 interface BaseOutput {
   amount: number;
@@ -186,9 +187,7 @@ exports.createTransaction = function (params) {
 
   recipients.forEach(function (recipient) {
     if (_.isString(recipient.address)) {
-      try {
-        utxolib.address.fromBase58Check(recipient.address, network);
-      } catch (e) {
+      if (!verifyAddress(recipient.address, network)) {
         throw new Error('invalid bitcoin address: ' + recipient.address);
       }
       if (!!recipient.script) {

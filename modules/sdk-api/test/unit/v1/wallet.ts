@@ -143,7 +143,7 @@ describe('Wallet Prototype Methods', function () {
     });
 
     it('extra unspent fetch params', async function () {
-      const billingAddress = '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco';
+      const billingAddress = '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy';
       const customUnspentsFetchParams = { test: 123 };
       const sendAmount = 1e5;
 
@@ -581,6 +581,88 @@ describe('Wallet Prototype Methods', function () {
       // changed, changing the output amounts and thus the tx hex.
       signature2.tx.should.equal(
         '010000000001027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f601000000fdff0000483045022100ffc45d93cbaf4c1c850e21f277c5b311d3e3957f1338955cb165d72a768a054c022052020593b36781eea00a9f8dcbeb76608f920c7a933a9088318ab2f70c11e1d9014830450221008254d100401a3a831ed019e1662dbd90b96c6c4072b81ce640d152bc29295c10022013f86c5af5716234999a7bd6e94fc8f428f7697cc3138b3649d0ec4dd8681bc701004c69522103da95b28a13aa2d4bb490d70628e2e5d912461d375fef381aadd89dc1256220752103121287a510c5f32e8ba72d2479e90eb52ba44a467173df339feb0ff215f100e32102977cdfbee76066ae739db72d55371ad49dc6712fb8f2f3f69bb1a4c2422b0b1a53aeffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a400000000232200208b91aa03eb0f7f31e3917088084168ba5282a915e7cde0a5a934b7ea02eb057bffffffff030084d71700000000206a1e426974476f206d6978656420703273682026207365677769742074657374b08ff9020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba98700050047304402205898bee711467c09a5e22e1dcb1a11fce1a0d6ea129d911f813f87c7d45e067b02202f69fb118bbf0b072ed26d72cf8073e7acd66c205419a4a00f86a7ba0f6e3dd60147304402207713d671b45989688e2665c2b11ab7e5ea8d57eb14f9da233c095dabe441308d022069521b5aeb071b07a70a7197a0c2bbc40a23ae63a04160cf3627250c4ba4c40f0100695221030780186c0be5df0d2d62cf54cc2f3d2c09911e377aa95b5fe875fa352aed0a592103f3237edd2d87010e8fe9f43f34e8c63de6384283de909795d62af4ddb4d579542102ad03de5504ef947e4e6ee2fa6b15d150d553c21275f49f2ce2359d9fdedb9ade53ae00000000'
+      );
+    });
+
+    it('should send to bech32 recipient', async function () {
+      const p2shAddress = fakeWallet.generateAddress({ path: '/0/14', segwit: false });
+      const segwitAddress = fakeWallet.generateAddress({ path: '/10/14', segwit: true });
+      const p2shUnspent = {
+        addresses: ['2N533fqgyPYKVD892nBRaYmFHbbTykhYSEw'],
+        value: '2.99996610',
+        value_int: 299996610,
+        txid: 'f654ce0a5be3f12df7fecf4ee777b6d86b5aa8c710ef6946ec121206b4f8757c',
+        n: 1,
+        script_pub_key: {
+          asm: 'OP_HASH160 8153e7a35508088b6cf599226792c7de2dbff252 OP_EQUAL',
+          hex: 'a9148153e7a35508088b6cf599226792c7de2dbff25287',
+        },
+        req_sigs: 1,
+        type: 'scripthash',
+        confirmations: 0,
+        id: 61331263,
+      };
+      const segwitUnspent = {
+        addresses: ['2NBtpXcDruf3zRutmF4AbCMFNQHXsGNP6kT'],
+        value: '1.50000000',
+        value_int: 150000000,
+        txid: 'a4409c3f042fae67b890ac3df40ef0db03539c67331fd7e9260511893b4f9f24',
+        n: 0,
+        script_pub_key: {
+          asm: 'OP_HASH160 cc8e7cbf481389d3183a590acfa6aa66eb97c8e1 OP_EQUAL',
+          hex: 'a914cc8e7cbf481389d3183a590acfa6aa66eb97c8e187',
+        },
+        req_sigs: 1,
+        type: 'scripthash',
+        confirmations: 0,
+        id: 61330882,
+      };
+      const addresses = [p2shAddress, segwitAddress];
+      const unspents = [p2shUnspent, segwitUnspent].map((unspent: any, index) => {
+        const address = addresses[index];
+        _.extend(unspent, address);
+        unspent.value = unspent.value_int;
+        unspent.tx_hash = unspent.txid;
+        unspent.tx_output_n = unspent.n;
+        unspent.script = unspent.outputScript;
+        return unspent;
+      });
+
+      const transaction = (await fakeWallet.createTransaction({
+        changeAddress: p2shAddress.address,
+        unspents: unspents,
+        recipients: { tb1qguzyk4w6kaqtpsczs5aj0w8r7598jq36egm8e98wqph3rwmex68seslgsg: 300000 },
+        noSplitChange: true,
+        forceChangeAtEnd: true,
+        feeRate: 10000,
+        opReturns: { 'BitGo mixed p2sh & segwit test': 400000000 },
+        bitgoFee: {
+          amount: 81760,
+          address: '2ND7jQR5itjGTbh3DKgbpZWSY9ungDrwcwb',
+        },
+      })) as any;
+      transaction.transactionHex.should.equal(
+        '01000000027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f60100000000ffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a40000000000ffffffff04e09304000000000022002047044b55dab740b0c302853b27b8e3f50a79023aca367c94ee006f11bb79368f0084d71700000000206a1e426974476f206d69786564207032736820262073656777697420746573747cfaf4020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba98700000000'
+      );
+
+      // add first signature
+      transaction.keychain = userKeypair;
+      const signature1 = (await fakeProdWallet.signTransaction(transaction)) as any;
+      signature1.tx.should.equal(
+        '010000000001027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f601000000b7004830450221008809377634e667d6e19f38a138a55b2b6370312af76a5ca3b776df61fc719617022021d90347b9085ab71a76c8400f984e322c15451ecc673dd37de30887436d37b40100004c69522103da95b28a13aa2d4bb490d70628e2e5d912461d375fef381aadd89dc1256220752103121287a510c5f32e8ba72d2479e90eb52ba44a467173df339feb0ff215f100e32102977cdfbee76066ae739db72d55371ad49dc6712fb8f2f3f69bb1a4c2422b0b1a53aeffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a400000000232200208b91aa03eb0f7f31e3917088084168ba5282a915e7cde0a5a934b7ea02eb057bffffffff04e09304000000000022002047044b55dab740b0c302853b27b8e3f50a79023aca367c94ee006f11bb79368f0084d71700000000206a1e426974476f206d69786564207032736820262073656777697420746573747cfaf4020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba9870005004830450221008b95ac83e44c727b79ffbf4571171925d06f883a05c122b3b33c055f0bffa70102207b5ee3412ea8a5cec4a5c386f1b464ab68d531c6c697077bc462c05eb44a2832010000695221030780186c0be5df0d2d62cf54cc2f3d2c09911e377aa95b5fe875fa352aed0a592103f3237edd2d87010e8fe9f43f34e8c63de6384283de909795d62af4ddb4d579542102ad03de5504ef947e4e6ee2fa6b15d150d553c21275f49f2ce2359d9fdedb9ade53ae00000000'
+      );
+
+      // add second signature
+      transaction.transactionHex = signature1.tx;
+      transaction.keychain = backupKeypair;
+      transaction.fullLocalSigning = true;
+      const signature2 = (await fakeProdWallet.signTransaction(transaction)) as any;
+      console.log('signature1 ' + JSON.stringify(signature2));
+      // this transaction has actually worked: https://testnet.smartbit.com.au/tx/e2f696bcba91a376c36bb525df8c367938f6e2fd6344c90587bf12802091124c
+      // Note that the tx hex below no longer corresponds to the above transaction because our fee estimation has
+      // changed, changing the output amounts and thus the tx hex.
+      signature2.tx.should.equal(
+        '010000000001027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f601000000fdfe00004830450221008809377634e667d6e19f38a138a55b2b6370312af76a5ca3b776df61fc719617022021d90347b9085ab71a76c8400f984e322c15451ecc673dd37de30887436d37b40147304402205a58e602042b8e8a5da509d19ce31050147dd0ffcfbe2bb337c23d4c88f4cc41022075bfa455d1f74e30fbd9c786cd4811a1defe54310f235b4193ce4ffa0e8309a101004c69522103da95b28a13aa2d4bb490d70628e2e5d912461d375fef381aadd89dc1256220752103121287a510c5f32e8ba72d2479e90eb52ba44a467173df339feb0ff215f100e32102977cdfbee76066ae739db72d55371ad49dc6712fb8f2f3f69bb1a4c2422b0b1a53aeffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a400000000232200208b91aa03eb0f7f31e3917088084168ba5282a915e7cde0a5a934b7ea02eb057bffffffff04e09304000000000022002047044b55dab740b0c302853b27b8e3f50a79023aca367c94ee006f11bb79368f0084d71700000000206a1e426974476f206d69786564207032736820262073656777697420746573747cfaf4020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba9870005004830450221008b95ac83e44c727b79ffbf4571171925d06f883a05c122b3b33c055f0bffa70102207b5ee3412ea8a5cec4a5c386f1b464ab68d531c6c697077bc462c05eb44a283201473044022053690234582a6911a28cae9f534c980b7d7918749a7413c1c59327debf16ff0b022056175f5c27a363416b2ce4791aefc3d55545cacbd0527202e869e1127fc2f24d0100695221030780186c0be5df0d2d62cf54cc2f3d2c09911e377aa95b5fe875fa352aed0a592103f3237edd2d87010e8fe9f43f34e8c63de6384283de909795d62af4ddb4d579542102ad03de5504ef947e4e6ee2fa6b15d150d553c21275f49f2ce2359d9fdedb9ade53ae00000000'
       );
     });
   });
