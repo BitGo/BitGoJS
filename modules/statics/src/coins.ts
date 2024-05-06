@@ -11120,6 +11120,42 @@ export const coins = CoinMap.fromCoins([
     Networks.test.holesky
   ),
   terc20(
+    '95f5bf48-f2bb-4c64-a851-4f95ddce2fcf',
+    'hterc18dp',
+    'TERC18DP',
+    18,
+    '0x7ca1945d697ac04965774700db8d0b64d81b288d',
+    UnderlyingAsset.TERC18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
+    'e09792d6-87f9-412e-9394-03ececf56232',
+    'hterc6dp',
+    'TERC6DP',
+    6,
+    '0xdd415a799a11c2bcc380937b7c46d5035df4f1e2',
+    UnderlyingAsset.TERC6DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
+    'c316d8ef-20d6-40b7-b0c1-e3cc278d0c17',
+    'hterc2dp',
+    'TERC2DP',
+    2,
+    '0x5b494aba42b752b46c91e35fc914b4c2f8d61a00',
+    UnderlyingAsset.TERC2DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
     'f49e8632-7cd9-4e0b-a576-7e9cd12bcf82',
     'topm',
     'Goerli Test OPM',
