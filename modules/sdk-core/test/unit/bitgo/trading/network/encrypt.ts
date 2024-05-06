@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { _decryptRsa } from '../../../../../src/bitgo/trading/network/decrypt-rsa';
-import { _decryptBrowserRsa } from '../../../../../src/bitgo/trading/network/decrypt-rsa-browser';
 import { _encryptRsa } from '../../../../../src/bitgo/trading/network/encrypt-rsa';
 import { _encryptBrowserRsa } from '../../../../../src/bitgo/trading/network/encrypt-rsa-browser';
 import { _decryptAesGcm } from '../../../../../src/bitgo/trading/network/decrypt-aes-gcm';
@@ -12,7 +11,6 @@ import {
   decryptRsaWithAesGcm,
   encryptBrowserRsaWithAesGcm,
   encryptRsaWithAesGcm,
-  decryptBrowserRsaWithAesGcm,
 } from '../../../../../src/bitgo/trading/network';
 
 describe('network encrypt', () => {
@@ -24,7 +22,6 @@ describe('network encrypt', () => {
   let encryptedRsa;
   let decryptedRsa;
   let encryptedBrowserRsa;
-  let decryptedBrowserRsa;
 
   it('should encrypt the string with a rsa public key', async () => {
     encryptedRsa = await _encryptRsa(publicKey.toString(), password);
@@ -40,12 +37,6 @@ describe('network encrypt', () => {
   it('should encrypt the string with a rsa public key for the browser', async () => {
     encryptedBrowserRsa = await _encryptBrowserRsa(publicKey.toString(), password);
     assert(encryptedBrowserRsa);
-  });
-
-  it('should decrypt the string with a rsa private key for the browser', async () => {
-    decryptedBrowserRsa = await _decryptBrowserRsa(privateKey.toString(), encryptedBrowserRsa);
-    assert.strictEqual(decryptedBrowserRsa, password);
-    assert.strictEqual(decryptedRsa, decryptedBrowserRsa);
   });
 
   it('should encrypt and decrypt aes-gcm', async () => {
@@ -71,33 +62,22 @@ describe('network encrypt', () => {
 
   it('should encrypt and decrypt RsaWithAesGcm for the browser', async () => {
     encryptedBrowserRsaWithAesGcm = await encryptBrowserRsaWithAesGcm(publicKey.toString(), password);
-    decryptedBrowserRsaWithAesGcm = await decryptBrowserRsaWithAesGcm(
-      privateKey.toString(),
-      encryptedBrowserRsaWithAesGcm
-    );
+    decryptedBrowserRsaWithAesGcm = await decryptRsaWithAesGcm(privateKey.toString(), encryptedBrowserRsaWithAesGcm);
 
     assert.strictEqual(decryptedBrowserRsaWithAesGcm, password);
     assert.strictEqual(decryptedRsaWithAesGcm, decryptedBrowserRsaWithAesGcm);
   });
 
   it('should check that the encryptions for node and browser work with each other', async () => {
-    const nodeEncrypted = await _encryptRsa(publicKey.toString(), password);
-    const browserDecrypted = await _decryptBrowserRsa(privateKey.toString(), nodeEncrypted);
-    assert(browserDecrypted, password);
+    // We only care about browser and node encryption working with node decryption
+    // We will never decrypt in the browser
 
     const browserEncrypted = await _encryptBrowserRsa(publicKey.toString(), password);
     const nodeDecrypted = await _decryptRsa(privateKey.toString(), browserEncrypted);
-    assert(nodeDecrypted, password);
-
-    const nodeEncryptedWithAesGcm = await encryptRsaWithAesGcm(publicKey.toString(), password);
-    const browserDecryptedWithAesGcm = await decryptBrowserRsaWithAesGcm(
-      privateKey.toString(),
-      nodeEncryptedWithAesGcm
-    );
-    assert(browserDecryptedWithAesGcm, password);
+    assert.strictEqual(nodeDecrypted, password);
 
     const browserEncryptedWithAesGcm = await encryptBrowserRsaWithAesGcm(publicKey.toString(), password);
     const nodeDecryptedWithAesGcm = await decryptRsaWithAesGcm(privateKey.toString(), browserEncryptedWithAesGcm);
-    assert(nodeDecryptedWithAesGcm, password);
+    assert.strictEqual(nodeDecryptedWithAesGcm, password);
   });
 });

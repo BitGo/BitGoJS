@@ -54,9 +54,7 @@ async function encryptRSA(key: CryptoKey, plaintext: ArrayBuffer) {
  * @returns {ArrayBuffer} DER-formatted public key
  */
 function getSpkiDer(spkiPem: string) {
-  const pemHeader = '-----BEGIN PUBLIC KEY-----';
-  const pemFooter = '-----END PUBLIC KEY-----';
-  const pemContents = spkiPem.substring(pemHeader.length, spkiPem.length - pemFooter.length);
-  const binaryDerString = atob(pemContents);
+  spkiPem = spkiPem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
+  const binaryDerString = atob(spkiPem);
   return str2ab(binaryDerString);
 }
