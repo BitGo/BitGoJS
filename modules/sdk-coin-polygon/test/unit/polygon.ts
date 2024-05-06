@@ -772,12 +772,11 @@ describe('Polygon', function () {
     const baseUrl = 'https://api-testnet.polygonscan.com';
     const userXpub =
       'xpub661MyMwAqRbcEeTc8789MK5PUGEYiPG4F4V17n2Rd2LoTATA1XoCnJT5FAYAShQxSxtFjpo5NHmcWwTp2LiWGBMwpUcAA3HywhxivgYfq7q';
-
+    const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
+    const destinationAddress = '0xd5adde17fed8baed3f32b84af05b8f2816f7b560';
+    const bitgoDestinationAddress = '0xe5986ce4490deb67d2950562ceb930ddf9be7a14';
     it('should generate an unsigned recovery txn for cold wallet', async function () {
       const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
-      const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
-      const destinationAddress = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
-      const bitgoDestinationAddress = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
 
       const basecoin = bitgo.coin('tpolygon') as Polygon;
       nock(baseUrl)
@@ -827,9 +826,6 @@ describe('Polygon', function () {
 
     it('should generate an unsigned recovery txn for custody wallet', async function () {
       const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
-      const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
-      const destinationAddress = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
-      const bitgoDestinationAddress = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
 
       const basecoin = bitgo.coin('tpolygon') as Polygon;
       nock(baseUrl)
@@ -883,9 +879,6 @@ describe('Polygon', function () {
         '53PBlCde5KZRmlUKKHLtDMk+HJfuU46hW+x+C9WsIAO4gFPnTCvFVmQ8x7czCtcNFub5AO2otOG\n' +
         'OsX4GE2gXOEmCl1TpWwwNhm7yMUjGJUpgW6ZZgXSXdDitSKi4V/hk78SGSzjFOBSPYRa6I="}\n';
       const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
-      const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
-      const destinationAddress = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
-      const bitgoDestinationAddress = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
       const walletPassphrase = TestBitGo.V2.TEST_RECOVERY_PASSCODE as string;
 
       const basecoin = bitgo.coin('tpolygon') as Polygon;
@@ -941,9 +934,6 @@ describe('Polygon', function () {
 
     it('should generate an unsigned recovery txn of a token for cold wallet ', async function () {
       const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
-      const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
-      const destinationAddress = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
-      const bitgoDestinationAddress = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
       const tokenContractAddress = '0x326c977e6efc84e512bb9c30f76e30c160ed06fb'; // tpolygon-link contract token address
 
       const basecoin = bitgo.coin('tpolygon') as Polygon;
@@ -996,9 +986,6 @@ describe('Polygon', function () {
 
     it('should generate an unsigned recovery txn of a token for custody wallet', async function () {
       const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
-      const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
-      const destinationAddress = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
-      const bitgoDestinationAddress = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
       const tokenContractAddress = '0x326c977e6efc84e512bb9c30f76e30c160ed06fb'; // tpolygon-link contract token address
 
       const basecoin = bitgo.coin('tpolygon') as Polygon;
@@ -1055,9 +1042,6 @@ describe('Polygon', function () {
         '53PBlCde5KZRmlUKKHLtDMk+HJfuU46hW+x+C9WsIAO4gFPnTCvFVmQ8x7czCtcNFub5AO2otOG\n' +
         'OsX4GE2gXOEmCl1TpWwwNhm7yMUjGJUpgW6ZZgXSXdDitSKi4V/hk78SGSzjFOBSPYRa6I="}\n';
       const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
-      const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
-      const destinationAddress = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
-      const bitgoDestinationAddress = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
       const walletPassphrase = TestBitGo.V2.TEST_RECOVERY_PASSCODE as string;
       const tokenContractAddress = '0x326c977e6efc84e512bb9c30f76e30c160ed06fb'; // tpolygon-link contract token address
 
