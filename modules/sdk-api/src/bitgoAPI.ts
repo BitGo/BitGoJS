@@ -41,6 +41,7 @@ import {
   verifyResponse,
 } from './api';
 import { decrypt, encrypt } from './encrypt';
+import { verifyAddress } from './v1/verifyAddress';
 import {
   AccessTokenOptions,
   AddAccessTokenOptions,
@@ -1477,12 +1478,7 @@ export class BitGoAPI implements BitGoBase {
     const networkName = common.Environments[this.getEnv()].network;
     const network = utxolib.networks[networkName];
 
-    try {
-      const script = utxolib.addressFormat.toOutputScriptTryFormats(params.address, network);
-      return params.address === utxolib.address.fromOutputScript(script, network);
-    } catch (e) {
-      return false;
-    }
+    return verifyAddress(params.address, network);
   }
 
   /**
