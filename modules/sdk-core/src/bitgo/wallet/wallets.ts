@@ -562,7 +562,7 @@ export class Wallets implements IWallets {
     }
 
     const enterpriseUsersResponse = await this.bitgo
-      .get(`/api/v2/enterprise/${wallet?._wallet?.enterprise}/user`)
+      .get(this.bitgo.url(`/enterprise/${wallet?._wallet?.enterprise}/user`))
       .result();
     // create a map of users for easy lookup - we need the user email id to share the wallet
     const usersMap = new Map(

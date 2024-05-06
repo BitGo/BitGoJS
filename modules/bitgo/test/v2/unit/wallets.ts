@@ -1060,8 +1060,8 @@ describe('V2 Wallets:', function () {
             keys: [{}],
           });
 
-        const enterpriseUserNock = nock('http://localhost:80')
-          .get(`/api/v2/enterprise/${enterpriseId}/user`)
+        const enterpriseUserNock = nock(bgUrl)
+          .get(`/api/v1/enterprise/${enterpriseId}/user`)
           .reply(200, {
             adminUsers: [
               { id: spenderUserOne.id, email: spenderUserOne.email },
@@ -1186,8 +1186,8 @@ describe('V2 Wallets:', function () {
             keys: [{}],
           });
 
-        const enterpriseUserNock = nock('http://localhost:80')
-          .get(`/api/v2/enterprise/${enterpriseId}/user`)
+        const enterpriseUserNock = nock(bgUrl)
+          .get(`/api/v1/enterprise/${enterpriseId}/user`)
           .reply(200, {
             adminUsers: [
               { id: spenderUserOne.id, email: spenderUserOne.email },
