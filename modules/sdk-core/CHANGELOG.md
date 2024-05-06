@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.9.0...@bitgo/sdk-core@26.10.0) (2024-05-01)
+
+### Bug Fixes
+
+- **root:** fix tests ([1324cda](https://github.com/BitGo/BitGoJS/commit/1324cdad62f64da99b645b3c6bd9c4e53639611d))
+
+### Features
+
+- **sdk-core:** add MPCv2 wallet creation ([3b15e71](https://github.com/BitGo/BitGoJS/commit/3b15e715a5cdb165ce671bd216d1191170ee8980))
+- **sdk-core:** create dkls wallets with version 3 as well ([a14151a](https://github.com/BitGo/BitGoJS/commit/a14151a34047326334ed434ea3b16454f61c12a5))
+- **sdk-core:** dkls signing with wallet platform ([90341a9](https://github.com/BitGo/BitGoJS/commit/90341a9cdce6a0c3eb3a5b5b253486070e8a03ed))
+- **sdk-core:** switch tss signing b/w mpc v1/v2 ([c3d05f8](https://github.com/BitGo/BitGoJS/commit/c3d05f80b45faacea8e588b91633c1594ffc1070))
+- **wp:** add sig combine verification check on client side ([c069f8b](https://github.com/BitGo/BitGoJS/commit/c069f8b61b0a62d6e5fddd35fc72fcdeb618024a))
+- **wp:** update public-types and pass signatureR ([b0dba88](https://github.com/BitGo/BitGoJS/commit/b0dba888413230b6727713c0a8aec73959d62915))
+
+# [26.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.8.2...@bitgo/sdk-core@26.9.0) (2024-04-25)
+
+### Features
+
+- **sdk-coin-stx:** add max amount and auth-id for self-stack pox-4 ([bf12091](https://github.com/BitGo/BitGoJS/commit/bf12091d0230f3b9fb82683a1dc32b5e270d0c8c))
+- **sdk-core:** modify accept share method ([74cba44](https://github.com/BitGo/BitGoJS/commit/74cba44bc994ead576ac7d03a7b8171df9298f4b))
+
 ## [26.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.8.1...@bitgo/sdk-core@26.8.2) (2024-04-24)
 
 ### Bug Fixes
