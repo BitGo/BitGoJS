@@ -140,7 +140,11 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
   const walletAddresses = (
     await Promise.all(
       tx.outputs.map(async (output) => {
-        const isWalletOwned = await isWalletAddress(wallet, output.address);
+        // For some coins (bch) we need to convert the address to legacy format since the api returns the address
+        // in non legacy format. However, we want to keep the address in the same format as the response since we
+        // are going to hit the API again to fetch address unspents.
+        const canonicalAddress = coin.canonicalAddress(output.address);
+        const isWalletOwned = await isWalletAddress(wallet, canonicalAddress);
         return isWalletOwned ? output.address : null;
       })
     )
