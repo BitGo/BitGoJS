@@ -19,7 +19,14 @@ export async function _encryptBrowserRsa(publicKey: string, text: string): Promi
  * @returns {CryptoKey}
  */
 async function importPublicKey(spkiPem: string) {
-  return await crypto.subtle.importKey(
+  // Pull from window.crypto when running in the browser.
+  // This is due to libraries like crypto-browserify overriding "crypto" while not supporting various crypto functions.
+  let cryptoJS: any = crypto;
+  if (typeof window !== 'undefined') {
+    cryptoJS = window.crypto;
+  }
+
+  return await cryptoJS.subtle.importKey(
     'spki',
     getSpkiDer(spkiPem),
     {
@@ -38,7 +45,14 @@ async function importPublicKey(spkiPem: string) {
  * @returns {ArrayBuffer} The encrypted text
  */
 async function encryptRSA(key: CryptoKey, plaintext: ArrayBuffer) {
-  const encrypted = await crypto.subtle.encrypt(
+  // Pull from window.crypto when running in the browser.
+  // This is due to libraries like crypto-browserify overriding "crypto" while not supporting various crypto functions.
+  let cryptoJS: any = crypto;
+  if (typeof window !== 'undefined') {
+    cryptoJS = window.crypto;
+  }
+
+  const encrypted = await cryptoJS.subtle.encrypt(
     {
       name: 'RSA-OAEP',
     },
