@@ -1710,6 +1710,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ATRI
   ),
   erc20(
+    '20d977ec-b8a3-49e4-9491-2780ee028342',
+    'audf',
+    'Forte AUD',
+    2,
+    '0x28f732962ebcacdcd94f419d301e6be21cc3025a',
+    UnderlyingAsset.AUDF
+  ),
+  erc20(
     'fc2c10bf-be78-4055-8ca9-5620b05d13d5',
     'audio',
     'Audio',
@@ -5540,6 +5548,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.RSR
   ),
   erc20(
+    'd68ebc1e-9ae7-4586-a87d-2b9c16893eb5',
+    'rsweth',
+    'Restaked Swell Ethereum',
+    18,
+    '0xfae103dc9cf190ed75350761e95403b7b8afa6c0',
+    UnderlyingAsset.RSWETH
+  ),
+  erc20(
     '2c06fb96-9436-4fde-b6e9-3a8aa7c775d9',
     'rubx',
     'eToro Russian Ruble',
@@ -8864,6 +8880,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.KOL
   ),
   erc20(
+    'ce0d0ac5-006b-471e-adaa-038e82d27906',
+    'l3usd',
+    'L3USD',
+    18,
+    '0x2c2d8a078b33bf7782a16acce2c5ba6653a90d5f',
+    UnderlyingAsset.L3USD
+  ),
+  erc20(
     '704e5fc2-e25d-4772-918b-42b70c5a71c5',
     'la',
     'LAtoken',
@@ -8942,6 +8966,14 @@ export const coins = CoinMap.fromCoins([
     8,
     '0xab37e1358b639fd877f015027bb62d3ddaa7557e',
     UnderlyingAsset.LIEN
+  ),
+  erc20(
+    '85bce310-6d8f-4864-9db2-4c248d4e8e75',
+    'lif3',
+    'LIF3',
+    18,
+    '0x7138eb0d563f3f6722500936a11dcae99d738a2c',
+    UnderlyingAsset.LIF3
   ),
   erc20(
     '618813cf-6c14-431b-aa37-3018d8ca1ca0',
@@ -9646,6 +9678,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xb4b9dc1c77bdbb135ea907fd5a08094d98883a35',
     UnderlyingAsset.SWEAT
+  ),
+  erc20(
+    '98618b8f-ce85-4c78-8b9a-7cd001c11873',
+    'sweth',
+    'Swell Ethereum',
+    18,
+    '0xf951e335afb289353dc249e82926178eac7ded78',
+    UnderlyingAsset.SWETH
   ),
   erc20(
     '868974cb-029a-4166-8d43-5cab2dadef13',
