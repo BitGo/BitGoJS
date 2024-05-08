@@ -14691,7 +14691,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['tpolygon:pme']
   ),
   tpolygonErc20(
-    'fd225008-18d9-4354-bcc3-f7d180ff4d84',
+    'eb0abdbf-63a7-45c8-8264-c0f64424c183',
     'tpolygon:usdc',
     'USD Coin',
     6,
