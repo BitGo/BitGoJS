@@ -16,6 +16,13 @@ function getPubFromKey(key: Keychain): string | undefined {
 }
 
 function generateUserQrData(userKeychain: Keychain, userMasterKey?: string): QrDataEntry {
+  if (userKeychain.reducedEncryptedPrv) {
+    return {
+      title: 'A: User Key',
+      description: 'This is your private key, encrypted with your wallet password.',
+      data: userKeychain.reducedEncryptedPrv,
+    };
+  }
   if (userKeychain.encryptedPrv) {
     return {
       title: 'A: User Key',
@@ -47,6 +54,13 @@ function generateBackupQrData(
   } = {}
 ): QrDataEntry {
   const title = 'B: Backup Key';
+  if (backupKeychain.reducedEncryptedPrv) {
+    return {
+      title,
+      description: 'This is your backup private key, encrypted with your wallet password.',
+      data: backupKeychain.reducedEncryptedPrv,
+    };
+  }
   if (backupKeychain.encryptedPrv) {
     return {
       title,

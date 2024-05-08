@@ -130,9 +130,21 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
     it('should create TSS key chains', async function () {
       const nockPromises = [
-        nockKeychain({ coin: coinName, keyChain: { id: '1', pub: '1', type: 'tss' }, source: 'user' }),
-        nockKeychain({ coin: coinName, keyChain: { id: '2', pub: '2', type: 'tss' }, source: 'backup' }),
-        nockKeychain({ coin: coinName, keyChain: { id: '3', pub: '3', type: 'tss' }, source: 'bitgo' }),
+        nockKeychain({
+          coin: coinName,
+          keyChain: { id: '1', pub: '1', type: 'tss', reducedEncryptedPrv: '' },
+          source: 'user',
+        }),
+        nockKeychain({
+          coin: coinName,
+          keyChain: { id: '2', pub: '2', type: 'tss', reducedEncryptedPrv: '' },
+          source: 'backup',
+        }),
+        nockKeychain({
+          coin: coinName,
+          keyChain: { id: '3', pub: '3', type: 'tss', reducedEncryptedPrv: '' },
+          source: 'bitgo',
+        }),
       ];
       const [nockedUserKeychain, nockedBackupKeychain, nockedBitGoKeychain] = await Promise.all(nockPromises);
 
@@ -141,12 +153,14 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         ECDSAUtils.MPCv2PartiesEnum.USER,
         'test',
         Buffer.from('test'),
+        Buffer.from('test'),
         'passphrase',
         'test'
       );
       const backupKeychainPromise = tssUtils.createParticipantKeychain(
         ECDSAUtils.MPCv2PartiesEnum.BACKUP,
         'test',
+        Buffer.from('test'),
         Buffer.from('test'),
         'passphrase',
         'test'
@@ -158,9 +172,9 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         bitgoKeychainPromise,
       ]);
 
-      userKeychain.should.deepEqual(nockedUserKeychain);
-      backupKeychain.should.deepEqual(nockedBackupKeychain);
-      bitgoKeychain.should.deepEqual(nockedBitGoKeychain);
+      ({ ...userKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedUserKeychain);
+      ({ ...backupKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedBackupKeychain);
+      ({ ...bitgoKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedBitGoKeychain);
     });
   });
 
