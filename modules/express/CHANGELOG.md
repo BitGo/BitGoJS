@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.63.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.62.5...@bitgo/express@9.63.0) (2024-05-08)
+
+### Features
+
+- add network connection encryption function ([8d43b26](https://github.com/BitGo/BitGoJS/commit/8d43b26d99ba7a07ce5e35cbf1906131e2779269))
+
 ## [9.62.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.62.4...@bitgo/express@9.62.5) (2024-05-01)
 
 **Note:** Version bump only for package @bitgo/express

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.1.1...@bitgo/abstract-eth@21.2.0) (2024-05-08)
+
+### Features
+
+- **abstract-eth:** support v4 wallet for recover method ([142ec9f](https://github.com/BitGo/BitGoJS/commit/142ec9f220ec2af54545aca4b4d95b39a4179002))
+
 ## [21.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.1.0...@bitgo/abstract-eth@21.1.1) (2024-05-01)
 
 **Note:** Version bump only for package @bitgo/abstract-eth
