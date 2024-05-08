@@ -31,6 +31,7 @@ import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
 import { TransactionReceipt } from './lib/iface';
 import { isInteger, isUndefined } from 'lodash';
+import { tokenMainnetContractAddresses, tokenTestnetContractAddresses } from './lib/utils';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 export const SAFE_TRON_TRANSACTION_FEE = 2.1 * 1e6; // TRON foundation recommends 2.1 TRX as fees for guaranteed transaction
@@ -795,11 +796,17 @@ export class Trx extends BaseCoin {
         let recoveryAmount = 0;
         // Tokens must be consolidate before the native asset. First construct token txns
         let rawTokenTxn: any | undefined;
-        for (const token of accountInfo.data[0].trc20) {
-          for (const tokenContractAddr of TOKEN_CONTRACT_ADDRESSES) {
-            if (token[tokenContractAddr]) {
-              const amount = token[tokenContractAddr];
-              const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(tokenContractAddr);
+        // token address
+        if (accountInfo.data[0].balance > SAFE_TRON_TOKEN_TRANSACTION_FEE && accountInfo.data[0].trc20[0]) {
+          const tokenDataArray = accountInfo.data[0].trc20;
+          for (const tokenData of tokenDataArray) {
+            const contractAddress = Object.keys(tokenData) as Array<string>;
+            if (
+              tokenMainnetContractAddresses.includes(contractAddress[0]) ||
+              tokenTestnetContractAddresses.includes(contractAddress[0])
+            ) {
+              const amount = tokenData[contractAddress[0]];
+              const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(contractAddress[0]);
               rawTokenTxn = (
                 await this.getTriggerSmartContractTransaction(
                   baseAddrHex,
@@ -832,7 +839,7 @@ export class Trx extends BaseCoin {
             txBuilder.sign({ key: userPrv });
           }
           const tx = await txBuilder.build();
-          txnsBatch.push(this.formatForOfflineVault(tx, SAFE_TRON_TRANSACTION_FEE, recoveryAmount, addressInfo));
+          txnsBatch.push(this.formatForOfflineVault(tx, SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount, addressInfo));
         } else {
           const addressBalance = accountInfo.data[0].balance;
           const addressInfo = {
