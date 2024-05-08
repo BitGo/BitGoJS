@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.5.0...@bitgo/sdk-lib-mpc@9.6.0) (2024-05-01)
+
+### Bug Fixes
+
+- **sdk-lib-mpc:** fix mpcv2 sig combine to pad signatures to 64 bytes ([421698d](https://github.com/BitGo/BitGoJS/commit/421698d3ccd8eaab22ba5e0989474421d11bd773))
+- **sdk-lib-mpc:** fix wasm init in mpcv2 wallets ([efbe63a](https://github.com/BitGo/BitGoJS/commit/efbe63a147000f3c0b601f065b70e4fa0e71eb58))
+
+### Features
+
+- **sdk-core:** add MPCv2 wallet creation ([3b15e71](https://github.com/BitGo/BitGoJS/commit/3b15e715a5cdb165ce671bd216d1191170ee8980))
+
+# [9.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.4.0...@bitgo/sdk-lib-mpc@9.5.0) (2024-04-25)
+
+### Features
+
+- **sdk-lib-mpc:** add derivation to verify mpcv2 signature ([672b6fb](https://github.com/BitGo/BitGoJS/commit/672b6fbcfca926b2275ec7cc4d9f5b1d5f717f42))
+
 # [9.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.3.0...@bitgo/sdk-lib-mpc@9.4.0) (2024-04-22)
 
 ### Bug Fixes

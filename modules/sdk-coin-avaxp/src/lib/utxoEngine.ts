@@ -4,7 +4,7 @@ import { Signature } from 'avalanche/dist/common';
 import utils from './utils';
 import { BuildTransactionError } from '@bitgo/sdk-core';
 import { StandardAmountInput, StandardTransferableInput } from 'avalanche/dist/common/input';
-import { avaxSerial } from '@bitgo/avalanchejs';
+import { avaxSerial } from '@bitgo-forks/avalanchejs';
 
 export interface InputData {
   amount: BN;

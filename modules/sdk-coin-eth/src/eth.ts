@@ -429,6 +429,9 @@ export class Eth extends AbstractEthLikeNewCoins {
    * @returns {Promise<SignedTransaction>}
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    if (params.isEvmBasedCrossChainRecovery) {
+      return super.signTransaction(params);
+    }
     const txPrebuild = params.txPrebuild;
 
     const userPrv = params.prv;

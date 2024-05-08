@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.8.1...@bitgo/statics@48.9.0) (2024-05-01)
+
+### Features
+
+- **sdk-core:** add MPCv2 wallet creation ([3b15e71](https://github.com/BitGo/BitGoJS/commit/3b15e715a5cdb165ce671bd216d1191170ee8980))
+- **statics:** adding support for tokens (erc20) for go account ([5f21569](https://github.com/BitGo/BitGoJS/commit/5f21569bafc6a7f0648c6d4d3b1e2eb800b3eef4))
+
+## [48.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.8.0...@bitgo/statics@48.8.1) (2024-04-25)
+
+**Note:** Version bump only for package @bitgo/statics
+
 # [48.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.7.0...@bitgo/statics@48.8.0) (2024-04-22)
 
 ### Features

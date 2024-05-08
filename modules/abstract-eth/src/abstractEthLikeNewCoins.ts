@@ -214,6 +214,7 @@ export interface RecoverOptions {
   bitgoFeeAddress?: string;
   bitgoDestinationAddress?: string;
   tokenContractAddress?: string;
+  intendedChain?: string;
 }
 
 export type GetBatchExecutionInfoRT = {
@@ -1467,11 +1468,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     // Clean up whitespace from entered values
     const userKey = params.userKey.replace(/\s/g, '');
-    const bitgoFeeAddress = params.bitgoFeeAddress?.replace(/\s/g, '') as string;
-    const bitgoDestinationAddress = params.bitgoDestinationAddress?.replace(/\s/g, '') as string;
-    const recoveryDestination = params.recoveryDestination?.replace(/\s/g, '') as string;
-    const walletContractAddress = params.walletContractAddress?.replace(/\s/g, '') as string;
-    const tokenContractAddress = params.tokenContractAddress?.replace(/\s/g, '') as string;
+    const bitgoFeeAddress = params.bitgoFeeAddress?.replace(/\s/g, '').toLowerCase() as string;
+    const bitgoDestinationAddress = params.bitgoDestinationAddress?.replace(/\s/g, '').toLowerCase() as string;
+    const recoveryDestination = params.recoveryDestination?.replace(/\s/g, '').toLowerCase() as string;
+    const walletContractAddress = params.walletContractAddress?.replace(/\s/g, '').toLowerCase() as string;
+    const tokenContractAddress = params.tokenContractAddress?.replace(/\s/g, '').toLowerCase() as string;
 
     let userSigningKey;
     let userKeyPrv;
@@ -1604,6 +1605,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     if (params.walletPassphrase) {
       transferBuilder.key(userSigningKey);
+    }
+
+    // If the intended chain is arbitrum or optimism, we need to use wallet version 4
+    // since these contracts construct operationHash differently
+    if (params.intendedChain && ['arbeth', 'opeth'].includes(coins.get(params.intendedChain).family)) {
+      txBuilder.walletVersion(4);
     }
 
     const tx = await txBuilder.build();
@@ -1746,6 +1753,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     if (params.walletPassphrase) {
       txBuilder.transfer().key(userSigningKey);
+    }
+    // If the intended chain is arbitrum or optimism, we need to use wallet version 4
+    // since these contracts construct operationHash differently
+    if (params.intendedChain && ['arbeth', 'opeth'].includes(coins.get(params.intendedChain).family)) {
+      txBuilder.walletVersion(4);
     }
 
     const tx = await txBuilder.build();

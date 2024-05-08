@@ -1,25 +1,31 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
-import * as nock from 'nock';
+import nock from 'nock';
+import sinon from 'sinon';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as secp256k1 from 'secp256k1';
 import {
   common,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
+  TransactionType,
   UnexpectedAddressError,
   Wallet,
 } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Erc20Token, Teth } from '../../src';
+import { AbstractEthLikeNewCoins, Erc20Token, Hteth, Teth, TransactionBuilder, TransferBuilder } from '../../src';
 import { EthereumNetwork } from '@bitgo/statics';
 import assert from 'assert';
+import { getBuilder } from './getBuilder';
+import * as testData from '../resources/eth';
+import * as mockData from '../fixtures/eth';
 
 nock.enableNetConnect();
 
 describe('ETH:', function () {
   let bitgo: TestBitGoAPI;
   let hopTxBitgoSignature;
+  let sandbox: sinon.SinonSandbox;
 
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
@@ -51,12 +57,15 @@ describe('ETH:', function () {
       bitgo.safeRegister(name, coinConstructor);
     });
     bitgo.safeRegister('teth', Teth.createInstance);
+    bitgo.safeRegister('hteth', Hteth.createInstance);
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
+    sandbox = sinon.createSandbox();
   });
 
   after(function () {
     nock.cleanAll();
+    sandbox.restore();
   });
 
   describe('EIP1559', function () {
@@ -94,6 +103,63 @@ describe('ETH:', function () {
 
       (halfSignedTransaction as any).halfSigned.eip1559.maxPriorityFeePerGas.should.equal(10);
       (halfSignedTransaction as any).halfSigned.eip1559.maxFeePerGas.should.equal(10);
+    });
+
+    it('should sign a transaction with EIP1559 fee params for CCR', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const signTransaction = sinon.spy(AbstractEthLikeNewCoins.prototype, 'signTransaction');
+
+      const userKeychain = {
+        prv: 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g',
+        pub: 'xpub661MyMwAqRbcGBjE5QG7pkf9cZD33UUD6K46q7ELrbuG7FqXfLNGiXYGHeEnGBb5AWREnk1eA28g8ArZvURbhshXWkTtddHRo54fgyVvLdb',
+        rawPub: '023636e68b7b204573abda2616aff6b584910dece2543f1cc6d842caac7d74974b',
+        rawPrv: '7438a50010ce7b1dfd86e68046cc78ba1ebd242d6d85d9904d3fcc08734bc172',
+      };
+      const txBuilder = getBuilder('hteth') as TransactionBuilder;
+      txBuilder.type(TransactionType.Send);
+      txBuilder.fee({
+        fee: '10',
+        gasLimit: '1000',
+      });
+      const key = testData.KEYPAIR_PRV.getKeys().prv as string;
+      const transferBuilder = txBuilder.transfer() as TransferBuilder;
+      transferBuilder
+        .amount('0')
+        .to('0x19645032c7f1533395d44a629462e751084d3e4c')
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      txBuilder.contract(address1);
+      const tx = await txBuilder.build();
+
+      const halfSignedTransaction = await coin.signTransaction({
+        txPrebuild: {
+          eip1559: { maxPriorityFeePerGas: 10, maxFeePerGas: 10 },
+          isBatch: false,
+          recipients: [
+            {
+              amount: '42',
+              address: '0xc93b13642d93b4218bb85f67317d6b37286e8028',
+            },
+          ],
+          expireTime: 1627949214,
+          contractSequenceId: 12,
+          gasLimit: undefined,
+          gasPrice: undefined,
+          hopTransaction: undefined,
+          backupKeyNonce: undefined,
+          sequenceId: undefined,
+          nextContractSequenceId: 0,
+          txHex: tx.toBroadcastFormat(),
+        },
+        prv: userKeychain.prv,
+        isEvmBasedCrossChainRecovery: true,
+      } as any);
+
+      assert((halfSignedTransaction as any).halfSigned.txHex);
+      assert.strictEqual((halfSignedTransaction as any).halfSigned.eip1559.maxFeePerGas, 10);
+
+      sandbox.assert.calledOnce(signTransaction);
     });
   });
 
@@ -755,6 +821,52 @@ describe('ETH:', function () {
       };
 
       assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
+    });
+  });
+
+  describe('EVM Cross Chain Recovery', function () {
+    const baseUrl = 'https://api-holesky.etherscan.io';
+    it('should build a recovery transaction for hot wallet', async function () {
+      const userKey =
+        '{"iv":"VFZ3jvXhxo1Z+Yaf2MtZnA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+        ':"ccm","adata":"","cipher":"aes","salt":"p+fkHuLa/8k=","ct":"hYG7pvljLIgCjZ\n' +
+        '53PBlCde5KZRmlUKKHLtDMk+HJfuU46hW+x+C9WsIAO4gFPnTCvFVmQ8x7czCtcNFub5AO2otOG\n' +
+        'OsX4GE2gXOEmCl1TpWwwNhm7yMUjGJUpgW6ZZgXSXdDitSKi4V/hk78SGSzjFOBSPYRa6I="}\n';
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
+      const destinationAddress = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
+      const bitgoDestinationAddress = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
+      const walletPassphrase = TestBitGo.V2.TEST_RECOVERY_PASSCODE as string;
+
+      const basecoin = bitgo.coin('hteth') as Hteth;
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getTxListRequest(bitgoFeeAddress))
+        .reply(200, mockData.getTxListResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(bitgoFeeAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(walletContractAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+
+      const spy = sinon.spy(TransactionBuilder.prototype, 'coinUsesNonPackedEncodingForTxData');
+      await basecoin.recover({
+        userKey: userKey,
+        backupKey: '',
+        walletPassphrase: walletPassphrase,
+        walletContractAddress: walletContractAddress,
+        bitgoFeeAddress: bitgoFeeAddress,
+        recoveryDestination: destinationAddress,
+        eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+        gasLimit: 500000,
+        bitgoDestinationAddress: bitgoDestinationAddress,
+        intendedChain: 'tarbeth',
+      });
+      assert(spy.returned(true));
     });
   });
 });

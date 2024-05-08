@@ -642,7 +642,9 @@ export class Trx extends BaseCoin {
       }
 
       const txBuilder = getBuilder(this.getChain()).from(rawTokenTxn);
-
+      // Default expiry is 1 minute which is too short for recovery purposes
+      // extend the expiry to 1 day
+      txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
       // this tx should be enough to drop into a node
       if (isUnsignedSweep) {
         return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);

@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-hbar",
-  "version": "2.0.8",
+  "version": "2.0.10",
   "description": "BitGo SDK coin library for Hbar",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,9 +40,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-coin-algo": "^2.1.6",
-    "@bitgo/sdk-core": "^26.8.2",
-    "@bitgo/statics": "^48.8.0",
+    "@bitgo/sdk-coin-algo": "^2.1.8",
+    "@bitgo/sdk-core": "^26.10.0",
+    "@bitgo/statics": "^48.9.0",
     "@hashgraph/proto": "2.12.0",
     "@hashgraph/sdk": "2.29.0",
     "@stablelib/sha384": "^1.0.0",
@@ -54,7 +54,7 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.45.3",
-    "@bitgo/sdk-test": "^8.0.13"
+    "@bitgo/sdk-api": "^1.46.0",
+    "@bitgo/sdk-test": "^8.0.15"
   }
 }

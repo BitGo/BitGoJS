@@ -32,6 +32,10 @@ export type SerializedNtilde = EcdsaTypes.SerializedNtilde;
  * @deprecated use SerializedNtildeWithProofs from sdk-lib-mpc instead
  */
 export type SerializedNtildeWithProofs = EcdsaTypes.SerializedNtildeWithProofs;
+/**
+ * @deprecated use XShare from sdk-lib-mpc instead
+ */
+export type XShare = EcdsaTypes.XShare;
 
 // Private share of the user generated during key generation
 export type PShare = {
@@ -66,19 +70,9 @@ export type KeyShare = {
   nShares: Record<number, NShare>;
 };
 
-// Private XShare of the current participant
-export type XShare = {
-  i: number;
-  l: string;
-  m: string;
-  n: string;
-  y: string; // combined public key
-  x: string; // combined secret
-  schnorrProofX: SchnorrProof; // schnorr proof of knowledge of x
-  chaincode: string;
-};
-
-export type XShareWithChallenges = XShare & EcdsaTypes.SerializedNtilde & EcdsaTypes.SerializedPaillierChallenge;
+export type XShareWithChallenges = EcdsaTypes.XShare &
+  EcdsaTypes.SerializedNtilde &
+  EcdsaTypes.SerializedPaillierChallenge;
 
 // YShares used during signature generation
 export type YShare = SignIndex & {
@@ -88,7 +82,7 @@ export type YShare = SignIndex & {
 export type YShareWithChallenges = YShare & EcdsaTypes.SerializedNtilde & EcdsaTypes.SerializedPaillierChallenge;
 
 export interface KeyCombined {
-  xShare: XShare;
+  xShare: EcdsaTypes.XShare;
   yShares: Record<number, YShare>;
 }
 
@@ -98,7 +92,7 @@ export type KeyCombinedWithNtilde = {
 };
 
 export type SubkeyShare = {
-  xShare: XShare;
+  xShare: EcdsaTypes.XShare;
   nShares: Record<number, NShare>;
 };
 

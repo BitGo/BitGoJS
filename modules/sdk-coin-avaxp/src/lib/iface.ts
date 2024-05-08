@@ -5,7 +5,7 @@ import {
   Tx as PVMTx,
   TransferableOutput as DeprecatedTransferableOutput,
 } from 'avalanche/dist/apis/platformvm';
-import { avaxSerial, pvmSerial, UnsignedTx, TransferableOutput } from '@bitgo/avalanchejs';
+import { avaxSerial, pvmSerial, UnsignedTx, TransferableOutput } from '@bitgo-forks/avalanchejs';
 export interface AvaxpEntry extends Entry {
   id: string;
 }

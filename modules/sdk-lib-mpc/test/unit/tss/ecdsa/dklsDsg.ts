@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as crypto from 'crypto';
 import should from 'should';
 import { Keyshare } from '@silencelaboratories/dkls-wasm-ll-node';
-import { decode } from 'cbor';
+import { decode } from 'cbor-x';
 import { verifyAndConvertDklsSignature } from '../../../../src/tss/ecdsa-dkls/util';
 
 describe('DKLS Dsg 2x3', function () {

@@ -1,5 +1,18 @@
 // Ntilde Proof where both alpha and t are a set of 128 proofs each.
+import { SchnorrProof } from '../../types';
 import { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '../../util';
+
+// Private XShare of the current participant
+export type XShare = {
+  i: number;
+  l: string;
+  m: string;
+  n: string;
+  y: string; // combined public key
+  x: string; // combined secret
+  schnorrProofX: SchnorrProof; // schnorr proof of knowledge of x
+  chaincode: string;
+};
 
 interface NtildeProof<T> {
   alpha: T[];

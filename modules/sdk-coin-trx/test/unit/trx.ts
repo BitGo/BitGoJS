@@ -274,6 +274,8 @@ describe('TRON:', function () {
       res.should.not.be.empty();
       res.recoveryAmount.should.equal(1100000000);
       res.feeInfo.fee.should.equal('100000000');
+      const expirationDuration = res.tx.raw_data.expiration - res.tx.raw_data.timestamp;
+      expirationDuration.should.greaterThanOrEqual(86400000);
       should.not.exist(res.addressInfo);
       const rawData = JSON.parse(res.txHex).raw_data;
       rawData.should.hasOwnProperty('contract');

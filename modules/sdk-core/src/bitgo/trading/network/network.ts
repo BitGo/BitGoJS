@@ -19,6 +19,8 @@ import {
   GetNetworkConnectionByIdResponse,
   GetNetworkConnectionsParams,
   GetNetworkConnectionsResponse,
+  GetNetworkPartnersParams,
+  GetNetworkPartnersResponse,
   GetNetworkSettlementByIdParams,
   GetNetworkSettlementByIdResponse,
   GetNetworkSettlementTransfersParams,
@@ -47,6 +49,11 @@ export class TradingNetwork implements ITradingNetwork {
 
   getBalances(params?: GetNetworkBalancesParams): Promise<GetNetworkBalancesResponse> {
     const url = this.bitgo.microservicesUrl(`/api/network/v1/enterprises/${this.enterpriseId}/clients/balances`);
+    return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
+  }
+
+  getPartners(params?: GetNetworkPartnersParams): Promise<GetNetworkPartnersResponse> {
+    const url = this.bitgo.microservicesUrl(`/api/network/v1/enterprises/${this.enterpriseId}/partners`);
     return this.bitgo.get(url).set('enterprise-id', this.enterpriseId).send(params).result();
   }
 
