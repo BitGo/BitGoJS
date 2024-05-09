@@ -1157,6 +1157,17 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '44beb5f1-7581-4b0d-a09a-bae78d8c266f',
+    'hbar:clxy',
+    'Calaxy Tokens',
+    Networks.main.hedera,
+    6,
+    UnderlyingAsset.CLXY,
+    '0.0.3',
+    '0.0.859814',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '842c2119-3071-409d-b86f-49f0b46b676e',
     'thbar:usdc',
     'Testnet Hedera USD Coin',
@@ -1713,8 +1724,8 @@ export const coins = CoinMap.fromCoins([
     '20d977ec-b8a3-49e4-9491-2780ee028342',
     'audf',
     'Forte AUD',
-    2,
-    '0x28f732962ebcacdcd94f419d301e6be21cc3025a',
+    6,
+    '0xd2a530170d71a9cfe1651fb468e2b98f7ed7456b',
     UnderlyingAsset.AUDF
   ),
   erc20(
@@ -4034,6 +4045,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.KINE
   ),
   erc20(
+    'dbbc8474-8899-48a8-b57e-28300469b856',
+    'king',
+    'KING',
+    18,
+    '0x149d8290f653deb8e34c037d239d3d8eee9de5ad',
+    UnderlyingAsset.KING
+  ),
+  erc20(
     'dc33d6df-9aed-4b6e-b10c-9874d3c2435e',
     'kiro',
     'Kirobo',
@@ -5290,6 +5309,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x31c8eacbffdd875c74b94b077895bd78cf1e64a3',
     UnderlyingAsset.RAD
+  ),
+  erc20(
+    '762c91d4-fd7c-4ee1-af55-a9440e1ce054',
+    'rain',
+    'Rainmaker Games',
+    18,
+    '0x71fc1f555a39e0b698653ab0b475488ec3c34d57',
+    UnderlyingAsset.RAIN
   ),
   erc20(
     '6868686e-08e2-4afa-81be-907d663b3185',
@@ -14635,6 +14662,22 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x5e749d596d2a4cf1e9aa48fbba5843ccd9b7994d',
     UnderlyingAsset['polygon:dipe']
+  ),
+  polygonErc20(
+    '74184b74-f8fb-44ea-a444-64646488eb0b',
+    'polygon:lif3',
+    'LIF3',
+    18,
+    '0x110b25d2b21ee73eb401f3ae7833f7072912a0bf',
+    UnderlyingAsset['polygon:lif3']
+  ),
+  polygonErc20(
+    'b9c251ed-0002-414e-b0af-bb8a5073a3dd',
+    'polygon:l3usd',
+    'L3USD',
+    18,
+    '0x2c2d8a078b33bf7782a16acce2c5ba6653a90d5f',
+    UnderlyingAsset['polygon:l3usd']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',

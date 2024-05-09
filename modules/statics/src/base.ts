@@ -551,6 +551,7 @@ export enum UnderlyingAsset {
   CLIQ = 'cliq',
   CLN = 'cln',
   CLT = 'clt',
+  CLXY = 'clxy',
   CLV = 'clv',
   CMFI = 'cmfi',
   CNFI = 'cnfi',
@@ -892,6 +893,7 @@ export enum UnderlyingAsset {
   KILL0 = 'kill0',
   KIN = 'kin',
   KINE = 'kine',
+  KING = 'king',
   KIRO = 'kiro',
   KISHUI = 'kishui',
   KITTY = 'kitty',
@@ -1153,6 +1155,7 @@ export enum UnderlyingAsset {
   QSP = 'qsp',
   QVT = 'qvt',
   RAD = 'rad',
+  RAIN = 'rain',
   RALPH = 'ralph',
   RAMP = 'ramp',
   RARE = 'rare',
@@ -1742,6 +1745,8 @@ export enum UnderlyingAsset {
   'polygon:bcut' = 'polygon:bcut',
   'polygon:pme' = 'polygon:pme',
   'polygon:dipe' = 'polygon:dipe',
+  'polygon:lif3' = 'polygon:lif3',
+  'polygon:l3usd' = 'polygon:l3usd',
 
   // Polygon NFTs
   // generic NFTs
