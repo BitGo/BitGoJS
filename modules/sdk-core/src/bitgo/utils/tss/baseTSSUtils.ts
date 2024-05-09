@@ -393,6 +393,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     const response: BitgoGPGPublicKey = await this.bitgo
       .get(this.baseCoin.url('/tss/pubkey'))
       .query({ enterpriseId })
+      .retry(3)
       .result();
     const bitgoPublicKeyStr = isMPCv2 ? response.mpcv2PublicKey : response.publicKey;
     return readKey({ armoredKey: bitgoPublicKeyStr as string });
