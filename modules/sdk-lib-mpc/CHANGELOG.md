@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.6.0...@bitgo/sdk-lib-mpc@9.7.0) (2024-05-08)
+
+### Features
+
+- make openssl prime gen non-breaking change ([e74357f](https://github.com/BitGo/BitGoJS/commit/e74357fa7ed64721d024c45f0105f6f87731de83))
+- **sdk-lib-mpc:** support mpcv1 to mpcv2 retrofit ([b54a465](https://github.com/BitGo/BitGoJS/commit/b54a46575be40a51b4791cfc082695591dfd5d14))
+
+### Reverts
+
+- Revert "feat(sdk-lib-mpc): use crypto module for safe prime" ([1b69c40](https://github.com/BitGo/BitGoJS/commit/1b69c4096d183e6515d77e95e775aa44b386a809))
+
 # [9.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.5.0...@bitgo/sdk-lib-mpc@9.6.0) (2024-05-01)
 
 ### Bug Fixes

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.1.3...@bitgo/abstract-utxo@8.2.0) (2024-05-08)
+
+### Features
+
+- use canonical address when checking if owned by wallet ([82a13bd](https://github.com/BitGo/BitGoJS/commit/82a13bdaed9cf4f7ae5a1aa87e6ff7d92bf989eb))
+
+### Reverts
+
+- Revert "Revert "feat(abstract-utxo): support trustless change outputs from explaintx"" ([03896f6](https://github.com/BitGo/BitGoJS/commit/03896f65ecaaa85f6a5a9be9d45012d848329938))
+
 ## [8.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.1.2...@bitgo/abstract-utxo@8.1.3) (2024-05-01)
 
 ### Reverts

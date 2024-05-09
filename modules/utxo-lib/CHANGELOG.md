@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.36.1...@bitgo/utxo-lib@9.37.0) (2024-05-08)
+
+### Features
+
+- **utxo-lib:** remove TransactionBuilder warning ([521af3e](https://github.com/BitGo/BitGoJS/commit/521af3efd4c09c1d1bb9371810ef2de0d155620a))
+
+### Reverts
+
+- Revert "Revert "feat(abstract-utxo): support trustless change outputs from explaintx"" ([03896f6](https://github.com/BitGo/BitGoJS/commit/03896f65ecaaa85f6a5a9be9d45012d848329938))
+
 ## [9.36.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.36.0...@bitgo/utxo-lib@9.36.1) (2024-05-01)
 
 ### Reverts

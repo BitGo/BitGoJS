@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [38.4.1](https://github.com/BitGo/BitGoJS/compare/bitgo@38.4.0...bitgo@38.4.1) (2024-05-08)
+
+### Bug Fixes
+
+- **root:** fix keychains updatePassword for tss ([4cc09a8](https://github.com/BitGo/BitGoJS/commit/4cc09a8882194e19b55c10f21937ef0ffff39465))
+- **sdk-core:** fix ci check issue ([d0eb311](https://github.com/BitGo/BitGoJS/commit/d0eb311141bee9b52919178a5f033212a299ddcf))
+
+### Reverts
+
+- Revert "Revert "feat(abstract-utxo): support trustless change outputs from explaintx"" ([03896f6](https://github.com/BitGo/BitGoJS/commit/03896f65ecaaa85f6a5a9be9d45012d848329938))
+
 # [38.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.3.0...bitgo@38.4.0) (2024-05-01)
 
 ### Bug Fixes

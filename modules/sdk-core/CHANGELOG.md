@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.10.0...@bitgo/sdk-core@26.11.0) (2024-05-08)
+
+### Bug Fixes
+
+- **root:** fix keychains updatePassword for tss ([4cc09a8](https://github.com/BitGo/BitGoJS/commit/4cc09a8882194e19b55c10f21937ef0ffff39465))
+- rsa decrypt only needed for node ([3ce36cc](https://github.com/BitGo/BitGoJS/commit/3ce36ccc65b1f6a82fd15a6c7a49359a8eb7098e))
+- **sdk-core:** fix ci check issue ([d0eb311](https://github.com/BitGo/BitGoJS/commit/d0eb311141bee9b52919178a5f033212a299ddcf))
+- **sdk-core:** route PA flow to use MPCv2 ([7c116e9](https://github.com/BitGo/BitGoJS/commit/7c116e9e84d858953746b68ee693c25845feaebd))
+- use native crypto when overridden ([027245e](https://github.com/BitGo/BitGoJS/commit/027245eff5e320ecc679d97081a3c94a8e22c55b))
+
+### Features
+
+- add network connection encryption function ([8d43b26](https://github.com/BitGo/BitGoJS/commit/8d43b26d99ba7a07ce5e35cbf1906131e2779269))
+- breakout encryption logic functions ([af048f7](https://github.com/BitGo/BitGoJS/commit/af048f76709aa89c000b7bf43cdb2931cb00d7fa))
+- **sdk-lib-mpc:** support mpcv1 to mpcv2 retrofit ([b54a465](https://github.com/BitGo/BitGoJS/commit/b54a46575be40a51b4791cfc082695591dfd5d14))
+
 # [26.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.9.0...@bitgo/sdk-core@26.10.0) (2024-05-01)
 
 ### Bug Fixes

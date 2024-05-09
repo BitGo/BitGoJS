@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.9.0...@bitgo/statics@48.10.0) (2024-05-08)
+
+### Features
+
+- onboard celo token ([75002b3](https://github.com/BitGo/BitGoJS/commit/75002b3a8a5c36f14e2ae46318bc1b55c4b91339))
+- **statics:** add COREUM(CORE) coin support to Go Accounts ([7c8a797](https://github.com/BitGo/BitGoJS/commit/7c8a797e1339277448fd6b00cff2ff7a11978e74))
+- **statics:** add COREUM(CORE) coin support to Go Accounts ([c43ef7f](https://github.com/BitGo/BitGoJS/commit/c43ef7f14fdc87558c9e55f70520c5dc7bf9aaf6))
+- **statics:** add MASA(ERC-20) token support to Go Account ([eeccfef](https://github.com/BitGo/BitGoJS/commit/eeccfef88835384494905c6ef626e3b3b2b102c8))
+- **statics:** add new batch of tokens ([bc5f92e](https://github.com/BitGo/BitGoJS/commit/bc5f92e4b8cf0010ecf077a70d5db5a0cc0b981c))
+- **statics:** add new batch of tokens ([6fbc1c7](https://github.com/BitGo/BitGoJS/commit/6fbc1c7f2194bd53fc5a40d221f12d7924db1ed2))
+- **statics:** add new erc20 tokens on holesky ([3f019f7](https://github.com/BitGo/BitGoJS/commit/3f019f7b574fe31ba532630a6c4f55515701cd9e))
+- **statics:** adding support for tokens (erc20) for go account ([913fd92](https://github.com/BitGo/BitGoJS/commit/913fd9275a5b2095ba1eb45a04bb7b81216d582e))
+
 # [48.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.8.1...@bitgo/statics@48.9.0) (2024-05-01)
 
 ### Features
