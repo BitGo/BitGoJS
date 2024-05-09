@@ -235,7 +235,9 @@ async function nockTxRequestResponseSignatureShareRoundOne(
         };
         nock('https://bitgo.fakeurl')
           .get('/api/v2/wallet/' + txRequest.walletId + '/txrequests')
-          .times(1)
+          .query({ txRequestIds: txRequest.txRequestId, latest: 'true' })
+          .reply(429) // For simulating a retry
+          .get('/api/v2/wallet/' + txRequest.walletId + '/txrequests')
           .query({ txRequestIds: txRequest.txRequestId, latest: 'true' })
           .reply(200, {
             txRequests: [

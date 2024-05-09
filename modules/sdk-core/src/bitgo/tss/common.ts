@@ -25,6 +25,7 @@ export async function getTxRequest(bitgo: BitGoBase, walletId: string, txRequest
   const txRequestRes = await bitgo
     .get(bitgo.url('/wallet/' + walletId + '/txrequests', 2))
     .query({ txRequestIds: txRequestId, latest: 'true' })
+    .retry(3)
     .result();
 
   if (txRequestRes.txRequests.length <= 0) {
