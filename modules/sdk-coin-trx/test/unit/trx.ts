@@ -392,6 +392,48 @@ describe('TRON:', function () {
       Utils.getBase58AddressFromHex(value2.to_address).should.equal(TestRecoverData.baseAddress);
     });
 
+    it('should build consolidate token recoveries', async () => {
+      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
+      accountBalance.withArgs(TestRecoverData.firstReceiveAddress).resolves(
+        receiveAddressBalance(202100000, TestRecoverData.firstReceiveAddress, [
+          {
+            TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id: '1100000000',
+          },
+        ])
+      );
+      accountBalance
+        .withArgs(TestRecoverData.secondReceiveAddress)
+        .resolves(receiveAddressBalance(500, TestRecoverData.secondReceiveAddress));
+
+      const createtransaction = sandBox.stub(Trx.prototype, 'getBuildTransaction' as keyof Trx);
+      const firstReceiveAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.firstReceiveAddress);
+      const baseAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.baseAddress);
+      createtransaction
+        .withArgs(baseAddrHex, firstReceiveAddrHex, 1100000000)
+        .resolves(creationTransaction(firstReceiveAddrHex, baseAddrHex, 1100000000));
+
+      const res = await basecoin.recoverConsolidations({
+        userKey: TestRecoverData.userKey,
+        backupKey: TestRecoverData.backupKey,
+        bitgoKey: TestRecoverData.bitgoKey,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('transactions');
+      res.transactions.length.should.equal(1);
+      const txn = res.transactions[0];
+      const rawData = JSON.parse(txn.txHex).raw_data;
+      rawData.should.hasOwnProperty('contract');
+      const value = rawData.contract[0].parameter.value;
+      value.data.should.equal(
+        'a9059cbb000000000000000000000000c25420255c2c5a2dd54ef69f92ef261e6bd4216a000000000000000000000000000000000000000000000000000000004190ab00'
+      );
+      Utils.getBase58AddressFromHex(value.owner_address).should.equal(TestRecoverData.firstReceiveAddress);
+      Utils.getBase58AddressFromHex(value.contract_address).should.equal('TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id');
+    });
+
     it('should skip building consolidate transaction if balance is lower than reserved fee', async () => {
       const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
       accountBalance

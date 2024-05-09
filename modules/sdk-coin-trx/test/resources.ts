@@ -163,7 +163,7 @@ export function baseAddressBalance(trxBalance: number, trc20Balances: any[] = []
   };
 }
 
-export function receiveAddressBalance(balance: number, address: string) {
+export function receiveAddressBalance(balance: number, address: string, trc20Balances: any[] = []) {
   return {
     data: [
       {
@@ -193,7 +193,7 @@ export function receiveAddressBalance(balance: number, address: string) {
           },
         ],
         balance: balance,
-        trc20: [],
+        trc20: trc20Balances,
       },
     ],
   };
