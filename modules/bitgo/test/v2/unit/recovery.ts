@@ -158,10 +158,10 @@ describe('Recovery:', function () {
       const basecoin = bitgo.coin('txlm');
       const recovery = await basecoin.recover(recoveryParams);
 
-      recovery.should.have.property('tx');
+      recovery.should.have.property('txBase64');
       recovery.should.have.property('recoveryAmount', recoveryAmount);
 
-      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
     });
 
     it('should recover to an unfunded XLM wallet', async function () {
@@ -179,10 +179,10 @@ describe('Recovery:', function () {
       const basecoin = bitgo.coin('txlm');
       const recovery = await basecoin.recover(recoveryParams);
 
-      recovery.should.have.property('tx');
+      recovery.should.have.property('txBase64');
       recovery.should.have.property('recoveryAmount', recoveryAmount);
 
-      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
     });
 
     it('should generate XLM recovery tx with unencrypted keys', async function () {
@@ -199,10 +199,10 @@ describe('Recovery:', function () {
       const basecoin = bitgo.coin('txlm');
       const recovery = await basecoin.recover(recoveryParams);
 
-      recovery.should.have.property('tx');
+      recovery.should.have.property('txBase64');
       recovery.should.have.property('recoveryAmount', recoveryAmount);
 
-      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
     });
 
     it('should generate XLM recovery tx with KRS', async function () {
@@ -221,10 +221,10 @@ describe('Recovery:', function () {
       const basecoin = bitgo.coin('txlm');
       const recovery = await basecoin.recover(recoveryParams);
 
-      recovery.should.have.property('tx');
+      recovery.should.have.property('txBase64');
       recovery.should.have.property('recoveryAmount', 74999500);
 
-      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
     });
 
     it('should generate an XLM unsigned sweep', async function () {
@@ -243,10 +243,10 @@ describe('Recovery:', function () {
       const basecoin = bitgo.coin('txlm');
       const recovery = await basecoin.recover(recoveryParams);
 
-      recovery.should.have.property('tx');
+      recovery.should.have.property('txBase64');
       recovery.should.have.property('recoveryAmount', 74999500);
 
-      await checkRecoveryTxExplanation(basecoin, recovery.tx, recoveryAmount, recoveryParams.recoveryDestination);
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
     });
   });
 
