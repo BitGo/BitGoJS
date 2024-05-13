@@ -1259,6 +1259,7 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   ofc('8b93e788-52fa-4fd6-b499-40f13fe194fc', 'ofccoreum', 'Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
+  ofc('a88adc55-c1c8-4a4e-8436-df3868a50daa', 'ofccelo', 'Celo Gold', 18, UnderlyingAsset.CELO, CoinKind.CRYPTO),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
@@ -1384,6 +1385,14 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctcoreum', 'Test Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
+  tofc(
+    '90ac199d-4061-4c5f-9d48-4439c7ec2033',
+    'ofctcelo',
+    'Testnet Celo Gold',
+    18,
+    UnderlyingAsset.CELO,
+    CoinKind.CRYPTO
+  ),
   erc20(
     '919ba34e-c61e-4346-831f-87660586572a',
     '1inch',
@@ -10435,7 +10444,6 @@ export const coins = CoinMap.fromCoins([
   ),
   ofcerc20('fb5ba281-b060-4e68-86c8-55da5c7e7fe9', 'ofctbill', 'OpenEden T-Bills', 6, UnderlyingAsset.TBILL),
   ofcerc20('fcc0e550-ff67-4c0a-9d28-4a6e8ee32d93', 'ofcmasa', 'Masa Token', 18, UnderlyingAsset.MASA),
-  ofcerc20('01579151-675c-413a-9be1-2c1fcaf7641c', 'ofccelo', 'Celo Gold', 18, UnderlyingAsset.CELO),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
