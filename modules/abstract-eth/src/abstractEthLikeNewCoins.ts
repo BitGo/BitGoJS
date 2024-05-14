@@ -3,12 +3,14 @@
  */
 import {
   AddressCoinSpecific,
+  bigIntToBufferBE,
   BitGoBase,
   BuildNftTransferDataOptions,
   common,
   ECDSA,
   Ecdsa,
   ECDSAMethodTypes,
+  ECDSAUtils,
   EthereumLibraryUnavailableError,
   FeeEstimateOptions,
   FullySignedTransaction,
@@ -24,6 +26,7 @@ import {
   PrebuildTransactionResult,
   PresignTransactionOptions as BasePresignTransactionOptions,
   Recipient,
+  Secp256k1Curve,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
@@ -35,7 +38,15 @@ import {
   VerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import {
+  DklsDkg,
+  DklsDsg,
+  DklsTypes,
+  DklsUtils,
+  EcdsaPaillierProof,
+  EcdsaRangeProof,
+  EcdsaTypes,
+} from '@bitgo/sdk-lib-mpc';
 import {
   BaseCoin as StaticsBaseCoin,
   CoinMap,
@@ -50,7 +61,7 @@ import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@
 import { SignTypedDataVersion, TypedDataUtils, TypedMessage } from '@metamask/eth-sig-util';
 import { BigNumber } from 'bignumber.js';
 import BN from 'bn.js';
-import { randomBytes } from 'crypto';
+import crypto, { randomBytes } from 'crypto';
 import debugLib from 'debug';
 import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
 import Keccak from 'keccak';
@@ -70,6 +81,8 @@ import {
   TransactionBuilder,
   TransferBuilder,
 } from './lib';
+import { Keyshare } from '@silencelaboratories/dkls-wasm-ll-node';
+import { decode } from 'cbor-x';
 
 /**
  * The prebuilt hop transaction returned from the HSM
@@ -1941,9 +1954,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       if (!userKeyCombined || !backupKeyCombined) {
         throw new Error('Missing key combined shares for user or backup');
       }
-      const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+      // const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+      const dklsSignature = await this.signRecoveryTssWithRetrofit(userKeyCombined, backupKeyCombined, signableHex);
       const ethCommmon = AbstractEthLikeNewCoins.getEthLikeCommon(params.eip1559, params.replayProtectionOptions);
-      tx = this.getSignedTxFromSignature(ethCommmon, tx, signature);
+      tx = this.getSignedTxFromSignature(ethCommmon, tx, dklsSignature);
 
       return {
         id: addHexPrefix(tx.hash().toString('hex')),
@@ -1953,6 +1967,143 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       // DKLS
       throw new Error('DKLS recovery is not implemented yet');
     }
+  }
+
+  private async signRecoveryTssWithRetrofit(
+    userKeyCombined: ECDSAMethodTypes.KeyCombined,
+    backupKeyCombined: ECDSAMethodTypes.KeyCombined,
+    signableHex: string
+  ): Promise<ECDSAMethodTypes.Signature> {
+    const secp256k1 = new Secp256k1Curve();
+    const userPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + userKeyCombined.xShare.x))).toString('hex');
+    const backupPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + backupKeyCombined.xShare.x))).toString(
+      'hex'
+    );
+    const retrofitDataA: DklsTypes.RetrofitData = {
+      bigSiList: [backupPub],
+      xShare: userKeyCombined.xShare,
+    };
+    const retrofitDataB: DklsTypes.RetrofitData = {
+      bigSiList: [userPub],
+      xShare: backupKeyCombined.xShare,
+    };
+    const user = new DklsDkg.Dkg(2, 2, 0, retrofitDataA);
+    const backup = new DklsDkg.Dkg(2, 2, 1, retrofitDataB);
+    const userRound1Message = await user.initDkg();
+    const backupRound1Message = await backup.initDkg();
+    const userRound2Messages = user.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [backupRound1Message],
+    });
+    const backupRound2Messages = backup.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [userRound1Message],
+    });
+    const userRound3Messages = user.handleIncomingMessages({
+      p2pMessages: backupRound2Messages.p2pMessages.filter((m) => m.to === 0),
+      broadcastMessages: [],
+    });
+    const backupRound3Messages = backup.handleIncomingMessages({
+      p2pMessages: userRound2Messages.p2pMessages.filter((m) => m.to === 1),
+      broadcastMessages: [],
+    });
+    const userRound4Messages = user.handleIncomingMessages({
+      p2pMessages: backupRound3Messages.p2pMessages.filter((m) => m.to === 0),
+      broadcastMessages: [],
+    });
+    const backupRound4Messages = backup.handleIncomingMessages({
+      p2pMessages: userRound3Messages.p2pMessages.filter((m) => m.to === 1),
+      broadcastMessages: [],
+    });
+    user.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: backupRound4Messages.broadcastMessages,
+    });
+    backup.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: userRound4Messages.broadcastMessages,
+    });
+
+    const userKeyShare = user.getKeyShare();
+    const backupKeyShare = backup.getKeyShare();
+
+    const userDsg = new DklsDsg.Dsg(
+      userKeyShare,
+      ECDSAUtils.MPCv2PartiesEnum.USER,
+      'm',
+      crypto.createHash('sha256').update(Buffer.from(signableHex, 'hex')).digest()
+    );
+    const backupDsg = new DklsDsg.Dsg(
+      backupKeyShare,
+      ECDSAUtils.MPCv2PartiesEnum.BACKUP,
+      'm',
+      crypto.createHash('sha256').update(Buffer.from(signableHex, 'hex')).digest()
+    );
+    // Round 1 ////
+    const party1Round1Message = await userDsg.init();
+    const party2Round1Message = await backupDsg.init();
+    const party2Round2Messages = backupDsg.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [party1Round1Message],
+    });
+    // ////////////
+    // Round 2
+    const party1Round2Messages = userDsg.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [party2Round1Message],
+    });
+    const party1Round3Messages = userDsg.handleIncomingMessages({
+      p2pMessages: party2Round2Messages.p2pMessages,
+      broadcastMessages: [],
+    });
+    const party2Round3Messages = backupDsg.handleIncomingMessages({
+      p2pMessages: party1Round2Messages.p2pMessages,
+      broadcastMessages: [],
+    });
+    const party2Round4Messages = backupDsg.handleIncomingMessages({
+      p2pMessages: party1Round3Messages.p2pMessages,
+      broadcastMessages: [],
+    });
+    // ////////////
+    // / Produce Signature
+    const party1Round4Messages = userDsg.handleIncomingMessages({
+      p2pMessages: party2Round3Messages.p2pMessages,
+      broadcastMessages: [],
+    });
+    userDsg.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: party2Round4Messages.broadcastMessages,
+    });
+    const combinedSigUsingUtil = DklsUtils.combinePartialSignatures(
+      [party1Round4Messages.broadcastMessages[0].payload, party2Round4Messages.broadcastMessages[0].payload],
+      Buffer.from(party1Round4Messages.broadcastMessages[0].signatureR!).toString('hex')
+    );
+    (
+      (combinedSigUsingUtil.R.every((p) => userDsg.signature.R.includes(p)) &&
+        userDsg.signature.R.every((p) => combinedSigUsingUtil.R.includes(p))) ||
+      (userDsg.signature.S.every((p) => combinedSigUsingUtil.S.includes(p)) &&
+        combinedSigUsingUtil.S.every((p) => userDsg.signature.S.includes(p)))
+    ).should.equal(true);
+    // ////////////
+    backupDsg.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: party1Round4Messages.broadcastMessages,
+    });
+    const keyShare: Keyshare = Keyshare.fromBytes(userKeyShare);
+    const convertedSignature = DklsUtils.verifyAndConvertDklsSignature(
+      Buffer.from(signableHex, 'hex'),
+      userDsg.signature,
+      Buffer.from(keyShare.publicKey).toString('hex') +
+        Buffer.from(decode(keyShare.toBytes()).root_chain_code).toString('hex'),
+      'm'
+    );
+    const sigParts = convertedSignature.split(':');
+    return {
+      recid: Number.parseInt(sigParts[0], 10),
+      r: sigParts[1],
+      s: sigParts[2],
+      y: sigParts[3],
+    };
   }
 
   private isGG18SigningMaterial(keyShare: string, walletPassphrase: string | undefined): boolean {
@@ -1972,7 +2123,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
   }
 
-  private async buildTssRecoveryTxn(baseAddress: string, gasPrice: any, gasLimit: any, params: RecoverOptions) {
+  private async buildTssRecoveryTxn(baseAddress: string, gasPrice: BN, gasLimit: BN, params: RecoverOptions) {
     const nonce = await this.getAddressNonce(baseAddress);
     const txAmount = await this.validateBalanceAndGetTxAmount(baseAddress, gasPrice, gasLimit);
     const recipients = [
@@ -1992,8 +2143,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       to: params.recoveryDestination,
       nonce: nonce,
       value: txAmount,
-      gasPrice: gasPrice,
-      gasLimit: gasLimit,
+      gasPrice: gasPrice.toNumber(),
+      gasLimit: gasLimit.toNumber(),
       data: Buffer.from('0x'),
       eip1559: params.eip1559,
       replayProtectionOptions: params.replayProtectionOptions,
