@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.10.0...@bitgo/statics@48.11.0) (2024-05-13)
+
+### Bug Fixes
+
+- **statics:** fix display name issue for arbeth tokens ([6f096c7](https://github.com/BitGo/BitGoJS/commit/6f096c75502bdce40dd02a4b86db1b37a4759faf))
+
+### Features
+
+- onboard celo coin ([d922c02](https://github.com/BitGo/BitGoJS/commit/d922c02e24ea3a80757f92c0aa9cc6f3a2441946))
+- **statics:** add new batch of tokens ([983e919](https://github.com/BitGo/BitGoJS/commit/983e919a2b702013f7409606ee68587ead61e640))
+
 # [48.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.9.0...@bitgo/statics@48.10.0) (2024-05-08)
 
 ### Features

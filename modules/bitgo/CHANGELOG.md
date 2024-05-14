@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [38.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo@38.4.1...bitgo@38.4.2) (2024-05-13)
+
+### Bug Fixes
+
+- **sdk-coin-xlm:** fix returned data from recover function ([77b1eba](https://github.com/BitGo/BitGoJS/commit/77b1eba312b08ce846e240e7e64cf560204b786b))
+
 ## [38.4.1](https://github.com/BitGo/BitGoJS/compare/bitgo@38.4.0...bitgo@38.4.1) (2024-05-08)
 
 ### Bug Fixes
