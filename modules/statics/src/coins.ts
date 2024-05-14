@@ -10416,6 +10416,13 @@ export const coins = CoinMap.fromCoins([
   ),
   ofcArbethErc20(
     '59220e6e-d94b-40b7-8e10-2f7c691c2482',
+    'ofcarbeth:usdcv2',
+    'USD Coin (native)',
+    6,
+    UnderlyingAsset['arbeth:usdcv2']
+  ),
+  ofcArbethErc20(
+    'eed6696c-9c38-4897-9cae-de3aa3cb6297',
     'ofcarbeth:usdc',
     'USD Coin',
     6,
