@@ -794,7 +794,7 @@ class Stx extends Mainnet implements StacksNetwork {
 class StxTestnet extends Testnet implements StacksNetwork {
   name = 'StxTestnet';
   family = CoinFamily.STX;
-  explorerUrl = 'https://explorer.stacks.co/txid/?chain=testnet';
+  explorerUrl = 'https://explorer.stacks.co/txid/?chain=testnet&api=https://api.nakamoto.testnet.hiro.so';
   sendmanymemoContractAddress = 'ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B';
   stakingContractAddress = 'ST000000000000000000002AMW42H';
 }
