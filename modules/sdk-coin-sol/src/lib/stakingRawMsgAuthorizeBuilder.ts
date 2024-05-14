@@ -80,7 +80,7 @@ export class StakingRawMsgAuthorizeBuilder extends BaseTransactionBuilder {
   protected validateMessage(msg: string): boolean {
     const tx = SOLTransaction.populate(SOLMessage.from(Buffer.from(msg, 'base64')), []);
     const instructions = tx.instructions;
-    if (instructions.length !== 2) {
+    if (instructions.length !== 2 && instructions.length !== 3) {
       throw new Error(`Invalid transaction, expected 2 instruction, got ${instructions.length}`);
     }
     for (const instruction of instructions) {

@@ -97,6 +97,72 @@ describe('Sol Staking Raw Message Authorize Builder', () => {
     should.equal(signable2.toString('base64'), txMessage);
   });
 
+  it('should build the same signable from serialized for change staking authority with only old staking authority', async () => {
+    const txBuilder = factory.getStakingRawMsgAuthorizeBuilder();
+    const txMessage =
+      'AwIECbZUs4LtRe9+UioPSy2m6K6F7iQd8/mBQo4UkcsRoWu7xKyh5llTYqoyu1i2FxsS0OLrLADlMByubjb3WCU27a3j0nRBRADfmtBBJQtQo/SchIvD5HD+7+z6yOE5VfQ2r8bppEBr0RwuVORQTtBPznEMy+u9+wstd8sIxiCk71VMyGLRKRwyNmh40eeGFTuqIhRwuGxh38mmSeTpsSEn+FsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAah2BeRN1QqmDQ3vf4qerJVf1NcinhyK2ikncAAAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAAPjn5uoR7/6SxOU7WPigQNKFTZcdrQNRCAmkevrN7G+3AgUDAwgABAQAAAAGBAQHAQIICgAAAAAAAAA=';
+    txBuilder.transactionMessage(txMessage);
+    const tx = await txBuilder.build();
+    tx.inputs.length.should.equal(0);
+    tx.outputs.length.should.equal(0);
+    const rawTx = tx.toBroadcastFormat();
+    const signable = tx.signablePayload;
+    const signableHex = signable.toString('base64');
+    should.equal(signableHex, txMessage);
+    should.equal(Utils.isValidRawTransaction(rawTx), true);
+    const unsignedTxHex = Buffer.from(rawTx, 'base64').toString('hex');
+
+    const txBuilder2 = factory.from(Buffer.from(unsignedTxHex, 'hex').toString('base64'));
+    const tx2 = await txBuilder2.build();
+
+    const signable2 = tx2.signablePayload;
+    should.equal(signable2.toString('base64'), txMessage);
+  });
+
+  it('should build the same signable from serialized for change staking and withdraw authority with custodial authority', async () => {
+    const txBuilder = factory.getStakingRawMsgAuthorizeBuilder();
+    const txMessage =
+      'BAMECrZUs4LtRe9+UioPSy2m6K6F7iQd8/mBQo4UkcsRoWu7BUdHZ+Tx/Eaem+0Vb6TThw9npPPveW2WCR3KCfOulqPErKHmWVNiqjK7WLYXGxLQ4ussAOUwHK5uNvdYJTbtrePSdEFEAN+a0EElC1Cj9JyEi8PkcP7v7PrI4TlV9DavxumkQGvRHC5U5FBO0E/OcQzL6737Cy13ywjGIKTvVUzIYtEpHDI2aHjR54YVO6oiFHC4bGHfyaZJ5OmxISf4WwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABqHYF5E3VCqYNDe9/ip6slV/U1yKeHIraKSdwAAAAAAGp9UXGMd0yShWY5hpHV62i164o5tLbVxzVVshAAAAAAan1RcZLFaO4IqEX3PSl4jPA1wxRbIas0TYBi6pQAAA+Ofm6hHv/pLE5TtY+KBA0oVNlx2tA1EICaR6+s3sb7cDBgMECQAEBAAAAAcFBQgCAwEICgAAAAAAAAAHBQUIAgMBCAoAAAABAAAA';
+    txBuilder.transactionMessage(txMessage);
+    const tx = await txBuilder.build();
+    tx.inputs.length.should.equal(0);
+    tx.outputs.length.should.equal(0);
+    const rawTx = tx.toBroadcastFormat();
+    const signable = tx.signablePayload;
+    const signableHex = signable.toString('base64');
+    should.equal(signableHex, txMessage);
+    should.equal(Utils.isValidRawTransaction(rawTx), true);
+    const unsignedTxHex = Buffer.from(rawTx, 'base64').toString('hex');
+
+    const txBuilder2 = factory.from(Buffer.from(unsignedTxHex, 'hex').toString('base64'));
+    const tx2 = await txBuilder2.build();
+
+    const signable2 = tx2.signablePayload;
+    should.equal(signable2.toString('base64'), txMessage);
+  });
+
+  it('should build the same signable from serialized for change staking and withdraw authority without custodial authority', async () => {
+    const txBuilder = factory.getStakingRawMsgAuthorizeBuilder();
+    const txMessage =
+      'AwIECbZUs4LtRe9+UioPSy2m6K6F7iQd8/mBQo4UkcsRoWu7xKyh5llTYqoyu1i2FxsS0OLrLADlMByubjb3WCU27a3j0nRBRADfmtBBJQtQo/SchIvD5HD+7+z6yOE5VfQ2r8bppEBr0RwuVORQTtBPznEMy+u9+wstd8sIxiCk71VMyGLRKRwyNmh40eeGFTuqIhRwuGxh38mmSeTpsSEn+FsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAah2BeRN1QqmDQ3vf4qerJVf1NcinhyK2ikncAAAAAABqfVFxjHdMkoVmOYaR1etoteuKObS21cc1VbIQAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAAPjn5uoR7/6SxOU7WPigQNKFTZcdrQNRCAmkevrN7G+3AwUDAwgABAQAAAAGBAQHAQIICgAAAAAAAAAGBAQHAQIICgAAAAEAAAA=';
+    txBuilder.transactionMessage(txMessage);
+    const tx = await txBuilder.build();
+    tx.inputs.length.should.equal(0);
+    tx.outputs.length.should.equal(0);
+    const rawTx = tx.toBroadcastFormat();
+    const signable = tx.signablePayload;
+    const signableHex = signable.toString('base64');
+    should.equal(signableHex, txMessage);
+    should.equal(Utils.isValidRawTransaction(rawTx), true);
+    const unsignedTxHex = Buffer.from(rawTx, 'base64').toString('hex');
+
+    const txBuilder2 = factory.from(Buffer.from(unsignedTxHex, 'hex').toString('base64'));
+    const tx2 = await txBuilder2.build();
+
+    const signable2 = tx2.signablePayload;
+    should.equal(signable2.toString('base64'), txMessage);
+  });
+
   it('should build from an unsigned transaction', async () => {
     const txBuilder = factory.from(testData.STAKING_AUTHORIZE_RAW_MSG_TXN);
     const tx = await txBuilder.build();
