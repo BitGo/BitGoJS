@@ -370,6 +370,27 @@ export function validateRawMsgInstruction(instructions: TransactionInstruction[]
       }
     }
   }
+  if (instructions.length === 3) {
+    const programId1 = instructions[0].programId.toString();
+    const programId2 = instructions[1].programId.toString();
+    const programId3 = instructions[2].programId.toString();
+    if (
+      programId1 === SystemProgram.programId.toString() &&
+      programId2 === StakeProgram.programId.toString() &&
+      programId3 === StakeProgram.programId.toString()
+    ) {
+      const instructionName1 = SystemInstruction.decodeInstructionType(instructions[0]);
+      const data = instructions[1].data.toString('hex');
+      const data2 = instructions[2].data.toString('hex');
+      if (
+        instructionName1 === nonceAdvanceInstruction &&
+        (data === validInstructionData || data === validInstructionData2) &&
+        (data2 === validInstructionData || data2 === validInstructionData2)
+      ) {
+        return true;
+      }
+    }
+  }
   return false;
 }
 /**
