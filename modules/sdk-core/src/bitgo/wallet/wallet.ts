@@ -2329,7 +2329,8 @@ export class Wallet implements IWallet {
     }
 
     const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
-    const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
+    const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
+    const finalTxParams = _.extend({}, halfSignedTransaction, selectParams, extraParams);
     return this.sendTransaction(finalTxParams);
   }
 

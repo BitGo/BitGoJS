@@ -1489,9 +1489,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       buildParams.addressType === undefined && // addressType is deprecated and replaced by `changeAddress`
       buildParams.changeAddressType === undefined &&
       buildParams.changeAddress === undefined &&
-      buildParams.wallet.type() === 'hot' &&
-      // FIXME(BTC-92): remove this check once p2trMusig2 is fully rolled out
-      (this.network === utxolib.networks.testnet || walletFlagMusigKp)
+      buildParams.wallet.type() === 'hot'
     ) {
       changeAddressType = ['p2trMusig2', 'p2tr', 'p2wsh', 'p2shP2wsh', 'p2sh'];
     }
