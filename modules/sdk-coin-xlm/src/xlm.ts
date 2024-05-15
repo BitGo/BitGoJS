@@ -701,9 +701,6 @@ export class Xlm extends BaseCoin {
         });
     const tx = txBuilder.addOperation(operation).setTimeout(stellar.TimeoutInfinite).build();
 
-    const txInfo = { ...tx };
-    txInfo.fee = baseTxFee.toFixed(0);
-
     const feeInfo = {
       fee: new BigNumber(tx.fee).toNumber(),
       feeString: tx.fee,
@@ -727,7 +724,6 @@ export class Xlm extends BaseCoin {
     }
 
     transaction.coin = this.getChain();
-    transaction.txInfo = txInfo;
     transaction.feeInfo = feeInfo;
 
     return transaction;

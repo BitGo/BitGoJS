@@ -443,7 +443,6 @@ describe('XLM:', function () {
         recoveryDestination: destinationAddress,
         rootAddress: wallet.receiveAddress(),
       });
-      should.exist(recovery.txInfo);
       should.exist(recovery.txBase64);
       should.exist(recovery.feeInfo);
       recovery.coin.should.equal('txlm');
