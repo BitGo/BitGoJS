@@ -10547,7 +10547,7 @@ export const coins = CoinMap.fromCoins([
   stellarToken(
     '36dc0757-8583-4f42-bf62-8eea12cb5268',
     'xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
-    'Ethereum',
+    'Stellar ETH',
     7,
     UnderlyingAsset['xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5'],
     'stellarport.io',
