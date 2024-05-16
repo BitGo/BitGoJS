@@ -50,6 +50,7 @@ import {
   ofcHederaToken,
   ofcStellarToken,
   ofcArbethErc20,
+  ofcAvaxErc20,
   tofc,
   tofcAlgoToken,
   ofcsolToken,
@@ -58,6 +59,7 @@ import {
   tofcHederaToken,
   tofcStellarToken,
   tofcArbethErc20,
+  tofcAvaxErc20,
 } from './ofc';
 import { utxoCoins } from './utxo';
 
@@ -10599,6 +10601,60 @@ export const coins = CoinMap.fromCoins([
     'Arbitrum',
     18,
     UnderlyingAsset['arbeth:arb']
+  ),
+  ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
+  ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),
+  ofcAvaxErc20(
+    'b8c9ea9d-4be3-4d3c-b1de-a1bb963fc03b',
+    'ofcavaxc:cai',
+    'Colony Avalanche Index',
+    18,
+    UnderlyingAsset['avaxc:cai']
+  ),
+  ofcAvaxErc20(
+    '58d7ae4a-296c-4215-b133-01bf553f8500',
+    'ofcavaxc:dai-e',
+    'Dai Stablecoin',
+    18,
+    UnderlyingAsset['avaxc:dai']
+  ),
+  ofcAvaxErc20('ad7a51a1-81fb-483f-b338-9bb236ce9662', 'ofcavaxc:joe', 'Trader Joe', 18, UnderlyingAsset['avaxc:joe']),
+  ofcAvaxErc20('18d60ded-bc60-48aa-a38a-6f85384ea6cc', 'ofcavaxc:klo', 'Kalao', 18, UnderlyingAsset['avaxc:klo']),
+  ofcAvaxErc20('4ad0a18d-36b0-42db-ac94-938a0862ef0b', 'ofcavaxc:link', 'Chainlink', 18, UnderlyingAsset['avaxc:link']),
+  ofcAvaxErc20('cf570f0c-8c17-4ba8-b658-69d38e4f37a9', 'ofcavaxc:png', 'Pangolin', 18, UnderlyingAsset['avaxc:png']),
+  ofcAvaxErc20('6753faa0-7c76-4c97-ad78-667ff2416c62', 'ofcavaxc:qi', 'BenQi', 18, UnderlyingAsset['avaxc:qi']),
+  ofcAvaxErc20('786e03a4-c156-48ea-8782-42ea3c63c5a3', 'ofcavaxc:sbc', 'Stable Coin', 18, UnderlyingAsset['avaxc:sbc']),
+  ofcAvaxErc20('300dbac5-76a3-4ed5-96fb-1d7898da4b4e', 'ofcavaxc:usdc', 'USD Coin', 6, UnderlyingAsset['avaxc:usdc']),
+  ofcAvaxErc20('974e85e7-d6ad-4a5a-9aea-cae055842f36', 'ofcavaxc:usdc-e', 'USD Coin', 6, UnderlyingAsset['avaxc:usdc']),
+  ofcAvaxErc20('861e2833-90be-45ec-8c8b-a41b1b86fac3', 'ofcavaxc:usdt', 'Tether USD', 6, UnderlyingAsset['avaxc:usdt']),
+  ofcAvaxErc20(
+    'e56e42a8-1566-4b5b-a2f3-5439278b1e8c',
+    'ofcavaxc:usdt-e',
+    'Tether USD',
+    6,
+    UnderlyingAsset['avaxc:usdt']
+  ),
+  ofcAvaxErc20(
+    '3986ecd8-dda6-4b30-8883-b6bf111e4624',
+    'ofcavaxc:wbtc-e',
+    'Wrapped BTC',
+    8,
+    UnderlyingAsset['avaxc:wbtc']
+  ),
+  ofcAvaxErc20(
+    '26281e88-f83a-4b13-b69d-b8a7ce9f4598',
+    'ofcavaxc:weth-e',
+    'Wrapped ETH',
+    18,
+    UnderlyingAsset['avaxc:weth']
+  ),
+  ofcAvaxErc20('caeec903-4c42-4d03-8cee-91319ab708c9', 'ofcavaxc:xava', 'Avalaunch', 18, UnderlyingAsset['avaxc:xava']),
+  tofcAvaxErc20(
+    'e70417f4-61df-4622-a933-40a43f807923',
+    'ofctavaxc:link',
+    'Test Chainlink',
+    18,
+    UnderlyingAsset['avaxc:link']
   ),
   ofcerc20(
     'baded9c2-d530-4188-b35d-2fd00cf6ee2e',

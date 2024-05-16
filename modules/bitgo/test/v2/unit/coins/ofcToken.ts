@@ -305,6 +305,27 @@ describe('OFC:', function () {
     });
   });
 
+  describe('check ofc tokens for avaxErc20', function () {
+    const tokenMain = 'ofcavaxc:link';
+    const tokenTest = 'ofctavaxc:link';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('Chainlink');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_18);
+      });
+    });
+    describe('for test network', function () {
+      it(`should have the correct values for ${tokenTest}`, function () {
+        const ofcCoin = bitgo.coin(tokenTest);
+        ofcCoin.getChain().should.equal(tokenTest);
+        ofcCoin.getFullName().should.equal('Test Chainlink');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_18);
+      });
+    });
+  });
+
   describe('check ofc tokens for solana', function () {
     const tokenMain = 'ofcsol:hnt';
     const tokenTest = 'ofctsol:hnt';
