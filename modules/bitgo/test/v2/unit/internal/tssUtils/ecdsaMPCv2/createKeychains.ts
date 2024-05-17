@@ -39,6 +39,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
   let bitgoGpgPrvKey: { partyId: number; gpgKey: string };
   let userGpgPubKey: { partyId: number; gpgKey: string };
   let backupGpgPubKey: { partyId: number; gpgKey: string };
+  let bitgoGpgPubKey: { partyId: number; gpgKey: string };
 
   beforeEach(async function () {
     nock.cleanAll();
@@ -61,6 +62,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         bitgoPublicKey: bitGoGgpKey.publicKey,
         bitgoMPCv2PublicKey: bitGoGgpKey.publicKey,
       },
+    };
+
+    bitgoGpgPubKey = {
+      partyId: 2,
+      gpgKey: bitGoGgpKey.publicKey,
     };
 
     bitgoGpgPrvKey = {
@@ -258,6 +264,500 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       ({ ...userKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedUserKeychain);
       ({ ...backupKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedBackupKeychain);
       ({ ...bitgoKeychain, reducedEncryptedPrv: '' }).should.deepEqual(nockedBitGoKeychain);
+    });
+
+    it('should create TSS MPCv2 key chains with OVCs', async function () {
+      const MPCv2SMCUtils = new ECDSAUtils.MPCv2SMCUtils(bitgo, baseCoin);
+      const OVC1_INDEX = 1;
+      const OVC2_INDEX = 2;
+      const bitgoSession = new DklsDkg.Dkg(3, 2, 2);
+
+      const round1Nock = await nockKeyGenRound1(bitgoSession, 1);
+      const round2Nock = await nockKeyGenRound2(bitgoSession, 1);
+      const round3Nock = await nockKeyGenRound3(bitgoSession, 1);
+      const addKeyNock = await nockAddKeyChain(coinName, 3);
+
+      // OVC 1 - User GPG key
+      const userGgpKey = await openpgp.generateKey({
+        userIDs: [
+          {
+            name: 'user',
+            email: 'user@test.com',
+          },
+        ],
+        curve: 'secp256k1',
+      });
+      const userGpgPrvKey = {
+        partyId: 0,
+        gpgKey: userGgpKey.privateKey,
+      };
+
+      // Round 1 User
+      const userSession = new DklsDkg.Dkg(3, 2, 0);
+      let OVC1ToOVC2Round1Payload: ECDSAUtils.OVC1ToOVC2Round1Payload;
+      {
+        const userBroadcastMsg1Unsigned = await userSession.initDkg();
+        const userMsgs1Signed = await DklsComms.encryptAndAuthOutgoingMessages(
+          { broadcastMessages: [DklsTypes.serializeBroadcastMessage(userBroadcastMsg1Unsigned)], p2pMessages: [] },
+          [],
+          [userGpgPrvKey]
+        );
+        const userMsg1 = userMsgs1Signed.broadcastMessages.find((m) => m.from === 0);
+        assert(userMsg1, 'userMsg1 not found');
+
+        OVC1ToOVC2Round1Payload = {
+          tssVersion: '0.0.1',
+          walletType: 'tss',
+          coin: 'eth',
+          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC2Round1Data,
+          ovc: {
+            [OVC1_INDEX]: {
+              gpgPubKey: userGgpKey.publicKey,
+              ovcMsg1: userMsg1,
+            },
+          },
+        };
+      }
+
+      // OVC 2 - Backup GPG key
+      const backupGgpKey = await openpgp.generateKey({
+        userIDs: [
+          {
+            name: 'backup',
+            email: 'backup@test.com',
+          },
+        ],
+        curve: 'secp256k1',
+      });
+
+      const backupGpgPrvKey = {
+        partyId: 1,
+        gpgKey: backupGgpKey.privateKey,
+      };
+      // Round 1 Backup
+      const backupSession = new DklsDkg.Dkg(3, 2, 1);
+      let OVC2ToBitgoRound1Payload: ECDSAUtils.OVC2ToBitgoRound1Payload;
+      {
+        assert(OVC1ToOVC2Round1Payload.state === 0, 'OVC1ToOVC2Round1Payload.state should be 0');
+        const backupBroadcastMsg1Unsigned = await backupSession.initDkg();
+        const backupMsgs1Signed = await DklsComms.encryptAndAuthOutgoingMessages(
+          { broadcastMessages: [DklsTypes.serializeBroadcastMessage(backupBroadcastMsg1Unsigned)], p2pMessages: [] },
+          [],
+          [backupGpgPrvKey]
+        );
+        const backupMsg1 = backupMsgs1Signed.broadcastMessages.find((m) => m.from === 1);
+        assert(backupMsg1, 'backupMsg1 not found');
+
+        OVC2ToBitgoRound1Payload = {
+          ...OVC1ToOVC2Round1Payload,
+          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForBitgoRound1Data,
+          ovc: {
+            ...OVC1ToOVC2Round1Payload.ovc,
+            [OVC2_INDEX]: {
+              gpgPubKey: backupGgpKey.publicKey,
+              ovcMsg1: backupMsg1,
+            },
+          },
+        };
+      }
+
+      // Round 1 BitGo
+      const bitgoToOVC1Round1Payload = await MPCv2SMCUtils.keyGenRound1('testId', OVC2ToBitgoRound1Payload);
+
+      // Round 2 User
+      let OVC1ToOVC2Round2Payload: ECDSAUtils.OVC1ToOVC2Round2Payload;
+      {
+        assert(bitgoToOVC1Round1Payload.wallet.state === 2, 'bitgoToOVC1Round1Payload.wallet.state should be 2');
+        const toUserRound1BroadcastMessages = await DklsComms.decryptAndVerifyIncomingMessages(
+          {
+            p2pMessages: [],
+            broadcastMessages: [
+              bitgoToOVC1Round1Payload.wallet.ovc[OVC2_INDEX].ovcMsg1,
+              bitgoToOVC1Round1Payload.wallet.platform.bitgoMsg1,
+            ],
+          },
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }],
+          [userGpgPrvKey]
+        );
+
+        const userRound2P2PMessages = userSession.handleIncomingMessages({
+          p2pMessages: [],
+          broadcastMessages: toUserRound1BroadcastMessages.broadcastMessages.map(DklsTypes.deserializeBroadcastMessage),
+        });
+        const userRound2Messages = await DklsComms.encryptAndAuthOutgoingMessages(
+          DklsTypes.serializeMessages(userRound2P2PMessages),
+          [{ partyId: 1, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }, bitgoGpgPubKey],
+          [userGpgPrvKey]
+        );
+        const userToBackupMsg2 = userRound2Messages.p2pMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER && m.to === ECDSAUtils.MPCv2PartiesEnum.BACKUP
+        );
+        assert(userToBackupMsg2, 'userToBackupMsg2 not found');
+        const userToBitgoMsg2 = userRound2Messages.p2pMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER && m.to === ECDSAUtils.MPCv2PartiesEnum.BITGO
+        );
+        assert(userToBitgoMsg2, 'userToBitgoMsg2 not found');
+
+        OVC1ToOVC2Round2Payload = {
+          ...bitgoToOVC1Round1Payload.wallet,
+          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC2Round2Data,
+          ovc: {
+            ...bitgoToOVC1Round1Payload.wallet.ovc,
+            [OVC1_INDEX]: Object.assign(bitgoToOVC1Round1Payload.wallet.ovc[OVC1_INDEX], {
+              ovcToBitgoMsg2: userToBitgoMsg2,
+              ovcToOvcMsg2: userToBackupMsg2,
+            }),
+          },
+        };
+      }
+
+      // Round 2 Backup
+      let OVC2ToBitgoRound2Payload: ECDSAUtils.OVC2ToBitgoRound2Payload;
+
+      {
+        assert(OVC1ToOVC2Round2Payload.state === 3, 'bitgoToOVC1Round1Payload.wallet.state should be 3');
+        const toBackupRound1BroadcastMessages = await DklsComms.decryptAndVerifyIncomingMessages(
+          {
+            p2pMessages: [],
+            broadcastMessages: [
+              bitgoToOVC1Round1Payload.wallet.ovc[OVC1_INDEX].ovcMsg1,
+              bitgoToOVC1Round1Payload.wallet.platform.bitgoMsg1,
+            ],
+          },
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round2Payload.ovc[OVC1_INDEX].gpgPubKey }],
+          [backupGpgPrvKey]
+        );
+
+        const backupRound2P2PMessages = backupSession.handleIncomingMessages({
+          p2pMessages: [],
+          broadcastMessages: toBackupRound1BroadcastMessages.broadcastMessages.map(
+            DklsTypes.deserializeBroadcastMessage
+          ),
+        });
+        const backupRound2Messages = await DklsComms.encryptAndAuthOutgoingMessages(
+          DklsTypes.serializeMessages(backupRound2P2PMessages),
+          [{ partyId: 0, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVC1_INDEX].gpgPubKey }, bitgoGpgPubKey],
+          [backupGpgPrvKey]
+        );
+        const backupToUserMsg2 = backupRound2Messages.p2pMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP && m.to === ECDSAUtils.MPCv2PartiesEnum.USER
+        );
+        assert(backupToUserMsg2, 'backupToUserMsg2 not found');
+        const backupToBitgoMsg2 = backupRound2Messages.p2pMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP && m.to === ECDSAUtils.MPCv2PartiesEnum.BITGO
+        );
+        assert(backupToBitgoMsg2, 'backupToBitgoMsg2 not found');
+
+        OVC2ToBitgoRound2Payload = {
+          ...OVC1ToOVC2Round2Payload,
+          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForBitgoRound2Data,
+          ovc: {
+            ...OVC1ToOVC2Round2Payload.ovc,
+            [OVC2_INDEX]: Object.assign(OVC1ToOVC2Round2Payload.ovc[OVC2_INDEX], {
+              ovcToBitgoMsg2: backupToBitgoMsg2,
+              ovcToOvcMsg2: backupToUserMsg2,
+            }),
+          },
+        };
+      }
+
+      // Round 2 BitGo
+      // call bitgo round 2
+      const bitgoToOVC1Round2Payload = await MPCv2SMCUtils.keyGenRound2('testId', OVC2ToBitgoRound2Payload);
+
+      // Round 3A User
+      let OVC1ToOVC2Round3Payload: ECDSAUtils.OVC1ToOVC2Round3Payload;
+      {
+        assert(bitgoToOVC1Round2Payload.wallet.state === 5, 'bitgoToOVC1Round2Payload.wallet.state should be 5');
+        const toUserRound2P2PMessages = await DklsComms.decryptAndVerifyIncomingMessages(
+          {
+            p2pMessages: [
+              bitgoToOVC1Round2Payload.wallet.ovc[OVC2_INDEX].ovcToOvcMsg2,
+              bitgoToOVC1Round2Payload.wallet.platform.ovc[OVC1_INDEX].bitgoToOvcMsg2,
+            ],
+            broadcastMessages: [],
+          },
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round2Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }],
+          [userGpgPrvKey]
+        );
+        const userRound3AP2PMessages = userSession.handleIncomingMessages({
+          p2pMessages: toUserRound2P2PMessages.p2pMessages.map(DklsTypes.deserializeP2PMessage),
+          broadcastMessages: [],
+        }).p2pMessages;
+
+        const userRound3AMessages = await DklsComms.encryptAndAuthOutgoingMessages(
+          DklsTypes.serializeMessages({
+            p2pMessages: userRound3AP2PMessages,
+            broadcastMessages: [],
+          }),
+          [{ partyId: 1, gpgKey: bitgoToOVC1Round2Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }, bitgoGpgPubKey],
+          [userGpgPrvKey]
+        );
+
+        const userToBitgoMsg3 = userRound3AMessages.p2pMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER && m.to === ECDSAUtils.MPCv2PartiesEnum.BITGO
+        );
+        assert(userToBitgoMsg3, 'userToBitgoMsg3 not found');
+        const userToBackupMsg3 = userRound3AMessages.p2pMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER && m.to === ECDSAUtils.MPCv2PartiesEnum.BACKUP
+        );
+        assert(userToBackupMsg3, 'userToBackupMsg3 not found');
+
+        OVC1ToOVC2Round3Payload = {
+          ...bitgoToOVC1Round2Payload.wallet,
+          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC2Round3Data,
+          ovc: {
+            ...bitgoToOVC1Round2Payload.wallet.ovc,
+            [OVC1_INDEX]: Object.assign(bitgoToOVC1Round2Payload.wallet.ovc[OVC1_INDEX], {
+              ovcToBitgoMsg3: userToBitgoMsg3,
+              ovcToOvcMsg3: userToBackupMsg3,
+            }),
+          },
+        };
+      }
+
+      // Round 3 Backup
+      let OVC2ToOVC1Round3Payload: ECDSAUtils.OVC2ToOVC1Round3Payload;
+      {
+        assert(OVC1ToOVC2Round3Payload.state === 6, 'OVC1ToOVC2Round3Payload.state should be 6');
+        const toBackupRound3P2PMessages = await DklsComms.decryptAndVerifyIncomingMessages(
+          {
+            p2pMessages: [
+              OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].ovcToOvcMsg2,
+              OVC1ToOVC2Round3Payload.platform.ovc[OVC2_INDEX].bitgoToOvcMsg2,
+            ],
+            broadcastMessages: [],
+          },
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].gpgPubKey }],
+          [backupGpgPrvKey]
+        );
+
+        const backupRound3P2PMessages = backupSession.handleIncomingMessages({
+          p2pMessages: toBackupRound3P2PMessages.p2pMessages.map(DklsTypes.deserializeP2PMessage),
+          broadcastMessages: [],
+        });
+
+        const backupRound3Messages = await DklsComms.encryptAndAuthOutgoingMessages(
+          DklsTypes.serializeMessages(backupRound3P2PMessages),
+          [{ partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].gpgPubKey }, bitgoGpgPubKey],
+          [backupGpgPrvKey]
+        );
+
+        const backupToBitgoMsg3 = backupRound3Messages.p2pMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP && m.to === ECDSAUtils.MPCv2PartiesEnum.BITGO
+        );
+        assert(backupToBitgoMsg3, 'backupToBitgoMsg3 not found');
+        const backupToUserMsg3 = backupRound3Messages.p2pMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP && m.to === ECDSAUtils.MPCv2PartiesEnum.USER
+        );
+        assert(backupToUserMsg3, 'backupToUserMsg3 not found');
+
+        const toBackupRound3Messages = await DklsComms.decryptAndVerifyIncomingMessages(
+          {
+            p2pMessages: [
+              {
+                ...OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].ovcToOvcMsg3,
+                commitment: OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].ovcToOvcMsg2.commitment,
+              },
+              {
+                ...OVC1ToOVC2Round3Payload.platform.ovc[OVC2_INDEX].bitgoToOvcMsg3,
+                commitment: OVC1ToOVC2Round3Payload.platform.bitgoCommitment2,
+              },
+            ],
+            broadcastMessages: [],
+          },
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].gpgPubKey }],
+          [backupGpgPrvKey]
+        );
+
+        const backupRound4Messages = backupSession.handleIncomingMessages({
+          p2pMessages: toBackupRound3Messages.p2pMessages.map(DklsTypes.deserializeP2PMessage),
+          broadcastMessages: [],
+        }).broadcastMessages;
+
+        const backupRound4BroadcastMessages = await DklsComms.encryptAndAuthOutgoingMessages(
+          DklsTypes.serializeMessages({
+            p2pMessages: [],
+            broadcastMessages: backupRound4Messages,
+          }),
+          [],
+          [backupGpgPrvKey]
+        );
+
+        const backupMsg4 = backupRound4BroadcastMessages.broadcastMessages.find(
+          (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP
+        );
+        assert(backupMsg4, 'backupMsg4 not found');
+
+        OVC2ToOVC1Round3Payload = {
+          ...OVC1ToOVC2Round3Payload,
+          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC1Round3bData,
+          ovc: {
+            ...OVC1ToOVC2Round3Payload.ovc,
+            [OVC2_INDEX]: Object.assign(OVC1ToOVC2Round3Payload.ovc[OVC2_INDEX], {
+              ovcToOvcMsg3: backupToUserMsg3,
+              ovcToBitgoMsg3: backupToBitgoMsg3,
+              ovcMsg4: backupMsg4,
+            }),
+          },
+        };
+      }
+
+      // Round 3B User
+      let OVC1ToBitgoRound3BPayload: ECDSAUtils.OVC1ToBitgoRound3Payload;
+      {
+        assert(OVC2ToOVC1Round3Payload.state === 7, 'OVC2ToOVC1Round3Payload.state should be 7');
+        const toUserRound4Messages = await DklsComms.decryptAndVerifyIncomingMessages(
+          {
+            p2pMessages: [
+              {
+                ...OVC2ToOVC1Round3Payload.ovc[OVC2_INDEX].ovcToOvcMsg3,
+                commitment: OVC2ToOVC1Round3Payload.ovc[OVC2_INDEX].ovcToOvcMsg2.commitment,
+              },
+              {
+                ...OVC2ToOVC1Round3Payload.platform.ovc[OVC1_INDEX].bitgoToOvcMsg3,
+                commitment: OVC2ToOVC1Round3Payload.platform.bitgoCommitment2,
+              },
+            ],
+            broadcastMessages: [],
+          },
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: OVC2ToOVC1Round3Payload.ovc[OVC2_INDEX].gpgPubKey }],
+          [userGpgPrvKey]
+        );
+
+        const userRound4BroadcastMessages = userSession.handleIncomingMessages({
+          p2pMessages: toUserRound4Messages.p2pMessages.map(DklsTypes.deserializeP2PMessage),
+          broadcastMessages: [],
+        }).broadcastMessages;
+        assert(userRound4BroadcastMessages.length === 1, 'userRound4BroadcastMessages length should be 1');
+
+        const userRound4Messages = await DklsComms.encryptAndAuthOutgoingMessages(
+          DklsTypes.serializeMessages({
+            p2pMessages: [],
+            broadcastMessages: userRound4BroadcastMessages,
+          }),
+          [],
+          [userGpgPrvKey]
+        );
+
+        const userMsg4 = userRound4Messages.broadcastMessages.find((m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER);
+        assert(userMsg4, 'userMsg4 not found');
+
+        OVC1ToBitgoRound3BPayload = {
+          ...OVC2ToOVC1Round3Payload,
+          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForBitgoRound3Data,
+          ovc: {
+            ...OVC2ToOVC1Round3Payload.ovc,
+            [OVC1_INDEX]: Object.assign(OVC2ToOVC1Round3Payload.ovc[OVC1_INDEX], {
+              ovcMsg4: userMsg4,
+            }),
+          },
+        };
+      }
+
+      // Round 3 BitGo
+      // creates bitgo keychain
+      const bitgoToOVC1Round3Payload = await MPCv2SMCUtils.keyGenRound3('testId', OVC1ToBitgoRound3BPayload);
+
+      // Round 4 User
+      let userCommonKeychain: string;
+      let OVC1ToOVC2Round4Payload;
+      {
+        assert(bitgoToOVC1Round3Payload.wallet.state === 9, 'bitgoToOVC1Round3Payload.wallet.state should be 9');
+        assert(bitgoToOVC1Round3Payload.bitGoKeyId, 'bitgoToOVC1Round3Payload.bitGoKeyId not found');
+        const toUserBitgoRound3Msg = await DklsComms.decryptAndVerifyIncomingMessages(
+          {
+            p2pMessages: [],
+            broadcastMessages: [
+              bitgoToOVC1Round3Payload.wallet.ovc[OVC2_INDEX].ovcMsg4,
+              bitgoToOVC1Round3Payload.wallet.platform.bitgoMsg4,
+            ],
+          },
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round3Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }],
+          [userGpgPrvKey]
+        );
+
+        userSession.handleIncomingMessages({
+          p2pMessages: [],
+          broadcastMessages: toUserBitgoRound3Msg.broadcastMessages.map(DklsTypes.deserializeBroadcastMessage),
+        });
+
+        const userPrivateMaterial = userSession.getKeyShare();
+        userCommonKeychain = DklsTypes.getCommonKeychain(userPrivateMaterial);
+        assert.equal(
+          bitgoToOVC1Round3Payload.wallet.platform.commonKeychain,
+          userCommonKeychain,
+          'User and Bitgo Common keychains do not match'
+        );
+        const userPrv = userPrivateMaterial.toString('base64');
+        assert(userPrv, 'userPrv not found');
+
+        OVC1ToOVC2Round4Payload = {
+          bitgoKeyId: bitgoToOVC1Round3Payload.bitGoKeyId,
+          wallet: {
+            ...bitgoToOVC1Round3Payload.wallet,
+            state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC2GenerateKey,
+          },
+        };
+      }
+
+      // Round 4 Backup
+      let backupCommonKeychain: string;
+      {
+        assert(OVC1ToOVC2Round4Payload.wallet.state === 10, 'OVC1ToOVC2Round4Payload.wallet.state should be 10');
+        assert(OVC1ToOVC2Round4Payload.bitgoKeyId, 'OVC1ToOVC2Round4Payload.bitGoKeyId not found');
+
+        const toBackupBitgoRound3Msg = await DklsComms.decryptAndVerifyIncomingMessages(
+          {
+            p2pMessages: [],
+            broadcastMessages: [
+              OVC1ToOVC2Round4Payload.wallet.ovc[OVC1_INDEX].ovcMsg4,
+              OVC1ToOVC2Round4Payload.wallet.platform.bitgoMsg4,
+            ],
+          },
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round4Payload.wallet.ovc[OVC1_INDEX].gpgPubKey }],
+          [backupGpgPrvKey]
+        );
+
+        backupSession.handleIncomingMessages({
+          p2pMessages: [],
+          broadcastMessages: toBackupBitgoRound3Msg.broadcastMessages.map(DklsTypes.deserializeBroadcastMessage),
+        });
+
+        const backupPrivateMaterial = backupSession.getKeyShare();
+        backupCommonKeychain = DklsTypes.getCommonKeychain(backupPrivateMaterial);
+        assert.equal(
+          OVC1ToOVC2Round4Payload.wallet.platform.commonKeychain,
+          backupCommonKeychain,
+          'Backup and Bitgo Common keychains do not match'
+        );
+        const backupPrv = backupPrivateMaterial.toString('base64');
+        assert(backupPrv, 'backupPrv not found');
+      }
+
+      // Round 4 BitGo
+      // creates user and backup keychain
+      const keychains = await MPCv2SMCUtils.uploadClientKeys(
+        bitgoToOVC1Round3Payload.bitGoKeyId,
+        userCommonKeychain,
+        backupCommonKeychain
+      );
+      assert.deepEqual(keychains.userKeychain, {
+        commonKeychain: userCommonKeychain,
+        type: 'tss',
+        source: 'user',
+        id: 'user',
+      });
+      assert.deepEqual(keychains.backupKeychain, {
+        commonKeychain: backupCommonKeychain,
+        type: 'tss',
+        source: 'backup',
+        id: 'backup',
+      });
+      assert.ok(round1Nock.isDone());
+      assert.ok(round2Nock.isDone());
+      assert.ok(round3Nock.isDone());
+      assert.ok(addKeyNock.isDone());
     });
   });
 
@@ -484,7 +984,6 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
               broadcastMessages: [
                 {
                   from: userMsg4.from,
-
                   payload: { signature: userMsg4.signature, message: userMsg4.message },
                 },
                 {
@@ -515,13 +1014,16 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       .post(`/api/v2/${coin}/key`, (body) => body.keyType === 'tss' && body.isMPCv2)
       .times(times)
       .reply(200, async (uri, requestBody: AddKeychainOptions) => {
-        return {
+        const key = {
           id: requestBody.source,
           source: requestBody.source,
-          keyType: requestBody.keyType,
+          type: requestBody.keyType,
           commonKeychain: requestBody.commonKeychain,
           encryptedPrv: requestBody.encryptedPrv,
         };
+        // nock gets
+        nock('https://bitgo.fakeurl').get(`/api/v2/${coin}/key/${requestBody.source}`).reply(200, key);
+        return key;
       });
   }
 });

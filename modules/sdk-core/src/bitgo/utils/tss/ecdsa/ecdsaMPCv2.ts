@@ -25,6 +25,7 @@ import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
 import { sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
+import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
 import {
   getSignatureShareRoundOne,
   getSignatureShareRoundThree,
@@ -47,7 +48,6 @@ import {
   TxRequest,
 } from '../baseTypes';
 import { BaseEcdsaUtils } from './base';
-import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -532,7 +532,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       .result();
   }
 
-  private async sendKeyGenerationRound1(
+  async sendKeyGenerationRound1(
     enterprise: string,
     userGpgPublicKey: string,
     backupGpgPublicKey: string,
@@ -554,7 +554,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     });
   }
 
-  private async sendKeyGenerationRound2(
+  async sendKeyGenerationRound2(
     enterprise: string,
     sessionId: string,
     payload: DklsTypes.AuthEncMessages
@@ -592,7 +592,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     });
   }
 
-  private async sendKeyGenerationRound3(
+  async sendKeyGenerationRound3(
     enterprise: string,
     sessionId: string,
     payload: DklsTypes.AuthEncMessages
@@ -814,15 +814,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
   // #endregion
 
-  // #region private utils
-  private formatBitgoBroadcastMessage(broadcastMessage: MPCv2BroadcastMessage) {
+  // #region formatting utils
+  formatBitgoBroadcastMessage(broadcastMessage: MPCv2BroadcastMessage) {
     return {
       from: broadcastMessage.from,
       payload: { message: broadcastMessage.message, signature: broadcastMessage.signature },
     };
   }
 
-  private formatP2PMessage(p2pMessage: MPCv2P2PMessage, commitment?: string) {
+  formatP2PMessage(p2pMessage: MPCv2P2PMessage, commitment?: string) {
     return {
       payload: { encryptedMessage: p2pMessage.encryptedMessage, signature: p2pMessage.signature },
       from: p2pMessage.from,
@@ -830,7 +830,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       commitment,
     };
   }
+  // #endregion
 
+  // #region private utils
   /**
    * Get the hash string and derivation path from the transaction request.
    * @param {TxRequest} txRequest - the transaction request object
