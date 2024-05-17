@@ -67,10 +67,12 @@ interface RecoveryOptions extends InitiateRecoveryOptions {
 }
 
 interface RecoveryTransaction {
-  tx: string;
+  txBase64: string;
   recoveryAmount: number;
-  backupKey?: string;
   coin?: string;
+  backupKey?: string;
+  txInfo?: any;
+  feeInfo?: any;
 }
 
 interface BuildOptions {
@@ -699,6 +701,11 @@ export class Xlm extends BaseCoin {
         });
     const tx = txBuilder.addOperation(operation).setTimeout(stellar.TimeoutInfinite).build();
 
+    const feeInfo = {
+      fee: new BigNumber(tx.fee).toNumber(),
+      feeString: tx.fee,
+    };
+
     if (!isUnsignedSweep) {
       tx.sign(userKey);
     }
@@ -708,14 +715,16 @@ export class Xlm extends BaseCoin {
     }
 
     const transaction: RecoveryTransaction = {
-      tx: Xlm.txToString(tx),
+      txBase64: Xlm.txToString(tx),
       recoveryAmount,
     };
 
     if (isKrsRecovery) {
       transaction.backupKey = params.backupKey;
-      transaction.coin = this.getChain();
     }
+
+    transaction.coin = this.getChain();
+    transaction.feeInfo = feeInfo;
 
     return transaction;
   }

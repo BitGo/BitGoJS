@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.0.10...@bitgo/sdk-coin-sol@4.0.11) (2024-05-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+## [4.0.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.0.9...@bitgo/sdk-coin-sol@4.0.10) (2024-05-08)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
 ## [4.0.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.0.8...@bitgo/sdk-coin-sol@4.0.9) (2024-05-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

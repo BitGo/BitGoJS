@@ -508,9 +508,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     let derivationPath: string;
     let txToSign: string;
-    const userGpgKey = await generateGPGKeyPair('secp256k1');
-    const bitgoGpgPubKey =
-      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true)) ?? this.bitgoMPCv2PublicGpgKey;
+    const [userGpgKey, bitgoGpgPubKey] = await Promise.all([
+      generateGPGKeyPair('secp256k1'),
+      this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true).then(
+        (pubKey) => pubKey ?? this.bitgoMPCv2PublicGpgKey
+      ),
+    ]);
     if (!bitgoGpgPubKey) {
       throw new Error('Missing BitGo GPG key for MPCv2');
     }

@@ -400,6 +400,57 @@ describe('XLM:', function () {
       validSignature.should.equal(false);
     });
 
+    it('should create a recovery transaction', async function () {
+      const destinationAddress = 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH';
+      nock('https://horizon-testnet.stellar.org/accounts')
+        .get('/' + wallet.receiveAddress())
+        .reply(200, {
+          sequence: '35995558267060226',
+          balances: [
+            {
+              asset_type: 'native',
+              balance: '6500000000',
+            },
+          ],
+        });
+
+      nock('https://horizon-testnet.stellar.org/accounts')
+        .get('/' + destinationAddress)
+        .reply(200, {
+          sequence: '35995558267060213',
+          balances: 13131313,
+        });
+
+      nock('https://horizon-testnet.stellar.org')
+        .get('/ledgers')
+        .query({
+          order: 'desc',
+          limit: 1,
+        })
+        .reply(200, {
+          records: [
+            {
+              base_reserve_in_stroops: '5000000',
+              base_fee_in_stroops: 100,
+            },
+          ],
+        })
+        .persist();
+
+      const recovery = await basecoin.recover({
+        userKey: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+        backupKey: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+        recoveryDestination: destinationAddress,
+        rootAddress: wallet.receiveAddress(),
+      });
+      should.exist(recovery.txBase64);
+      should.exist(recovery.feeInfo);
+      recovery.coin.should.equal('txlm');
+      recovery.txBase64.should.be.a.String();
+      recovery.recoveryAmount.should.be.a.Number();
+      recovery.feeInfo.fee.should.equal(100);
+    });
+
     it('should fail to verify a transaction signed with the wrong key', async function () {
       // sign transaction
       const tx = await wallet.signTransaction({

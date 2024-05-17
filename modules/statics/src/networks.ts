@@ -109,7 +109,7 @@ abstract class Testnet extends BaseNetwork {
 class Algorand extends Mainnet implements AccountNetwork {
   name = 'Algorand';
   family = CoinFamily.ALGO;
-  explorerUrl = 'https://explorer.bitquery.io/algorand/tx/';
+  explorerUrl = 'https://allo.info/tx/';
 }
 
 class AlgorandTestnet extends Testnet implements AccountNetwork {
@@ -124,7 +124,7 @@ class Ada extends Mainnet implements AdaNetwork {
   utxolibName = 'cardano';
   poolDeposit = 500000000;
   stakeKeyDeposit = 2000000;
-  explorerUrl = 'https://explorer.cardano.org/en/transaction?id=';
+  explorerUrl = 'https://beta.explorer.cardano.org/en/transactions/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
@@ -794,7 +794,7 @@ class Stx extends Mainnet implements StacksNetwork {
 class StxTestnet extends Testnet implements StacksNetwork {
   name = 'StxTestnet';
   family = CoinFamily.STX;
-  explorerUrl = 'https://explorer.stacks.co/txid/?chain=testnet';
+  explorerUrl = 'https://explorer.stacks.co/txid/?chain=testnet&api=https://api.nakamoto.testnet.hiro.so';
   sendmanymemoContractAddress = 'ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B';
   stakingContractAddress = 'ST000000000000000000002AMW42H';
 }

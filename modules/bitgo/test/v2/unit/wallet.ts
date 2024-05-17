@@ -71,7 +71,10 @@ describe('V2 Wallet:', function () {
   const bgUrl = common.Environments[bitgo.getEnv()].uri;
   const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
-  const tbtcHotWalletDefaultParams = { txFormat: 'psbt', addressType: 'p2trMusig2' };
+  const tbtcHotWalletDefaultParams = {
+    txFormat: 'psbt',
+    changeAddressType: ['p2trMusig2', 'p2tr', 'p2wsh', 'p2shP2wsh', 'p2sh'],
+  };
 
   afterEach(function () {
     sinon.restore();
@@ -1795,6 +1798,30 @@ describe('V2 Wallet:', function () {
         blockHeight: 100,
         wallet: wallet,
         buildParams: tbtcHotWalletDefaultParams,
+      });
+      blockHeightStub.restore();
+      postProcessStub.restore();
+    });
+
+    it('prebuild should not have changeAddressType array in post body when changeAddressType is defined', async function () {
+      const expectedBuildPostBodyParams = {
+        changeAddressType: 'p2trMusig2',
+        txFormat: 'psbt',
+      };
+
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, expectedBuildPostBodyParams)
+        .query({})
+        .reply(200, {});
+      const blockHeight = 100;
+      const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      await wallet.prebuildTransaction({ changeAddressType: 'p2trMusig2' });
+      blockHeightStub.should.have.been.calledOnce();
+      postProcessStub.should.have.been.calledOnceWith({
+        blockHeight: 100,
+        wallet: wallet,
+        buildParams: expectedBuildPostBodyParams,
       });
       blockHeightStub.restore();
       postProcessStub.restore();

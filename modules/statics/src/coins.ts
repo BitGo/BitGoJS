@@ -50,12 +50,16 @@ import {
   ofcHederaToken,
   ofcStellarToken,
   ofcArbethErc20,
+  ofcAvaxErc20,
   tofc,
   tofcAlgoToken,
+  ofcsolToken,
+  tofcsolToken,
   tofcerc20,
   tofcHederaToken,
   tofcStellarToken,
   tofcArbethErc20,
+  tofcAvaxErc20,
 } from './ofc';
 import { utxoCoins } from './utxo';
 
@@ -1157,6 +1161,17 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '44beb5f1-7581-4b0d-a09a-bae78d8c266f',
+    'hbar:clxy',
+    'Calaxy Tokens',
+    Networks.main.hedera,
+    6,
+    UnderlyingAsset.CLXY,
+    '0.0.3',
+    '0.0.859814',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '842c2119-3071-409d-b86f-49f0b46b676e',
     'thbar:usdc',
     'Testnet Hedera USD Coin',
@@ -1166,6 +1181,160 @@ export const coins = CoinMap.fromCoins([
     '0.0.3',
     '0.0.13078',
     AccountCoin.DEFAULT_FEATURES
+  ),
+  ofcsolToken(
+    '7d1b17b3-d606-4ba7-82dc-3e3a0eede46a',
+    'ofcsol:wsol',
+    'Wrapped SOL',
+    9,
+    UnderlyingAsset.WSOL,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'c382f3cc-c071-4ef5-89ac-bcb85d8d415f',
+    'ofcsol:wec',
+    'Whole Earth Coin',
+    9,
+    UnderlyingAsset.WEC,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'fb3b730f-c2cc-4598-8165-ddd42de8cbdf',
+    'ofcsol:usdt',
+    'USD Tether',
+    6,
+    UnderlyingAsset.USDT,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '0d96e2db-d01e-4ea0-ac87-3b51d563ea91',
+    'ofcsol:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset.USDC,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ebbe0d38-44cb-4464-999f-68c9765e37ef',
+    'ofcsol:srm',
+    'Serum',
+    6,
+    UnderlyingAsset.SRM,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '6bd37226-443b-41d3-9c5f-2f33279edffa',
+    'ofcsol:slnd',
+    'SOLEND',
+    6,
+    UnderlyingAsset.SLND,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '9e8cf6cd-19bd-440d-a73d-bfda85876008',
+    'ofcsol:ray',
+    'Raydium',
+    6,
+    UnderlyingAsset.RAY,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '76bb31fc-62a6-4b45-9013-ca278a4bca3c',
+    'ofcsol:qcad',
+    'QCAD',
+    2,
+    UnderlyingAsset.QCAD,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '2e567f9f-6bd8-4f2d-8b6b-e8c1bb6f619b',
+    'ofcsol:pyth',
+    'Pyth',
+    6,
+    UnderlyingAsset['pyth'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'd52d3d8b-a4c9-4f31-81a0-07fa1ca2e010',
+    'ofcsol:orca',
+    'ORCA',
+    6,
+    UnderlyingAsset.ORCA,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken('84b18d96-b8c3-4315-a500-fe624e3b5dfe', 'ofcsol:kin', 'Kin', 5, UnderlyingAsset.KIN, SOL_TOKEN_FEATURES),
+  ofcsolToken(
+    'ee4bcc0d-7ffd-4854-b2be-21e7efe9e7c5',
+    'ofcsol:jet',
+    'Jet Protocol',
+    9,
+    UnderlyingAsset.JET,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken('0f7d1c02-2f2d-4b39-b1f7-892edf9ff21a', 'ofcsol:gmt', 'GMT', 9, UnderlyingAsset.GMT, SOL_TOKEN_FEATURES),
+  ofcsolToken(
+    '8e4ec661-0ebc-46c8-afcd-1a1c4d9fdf5f',
+    'ofcsol:gari',
+    'GARI',
+    9,
+    UnderlyingAsset.GARI,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '9f4dcf91-fa4a-41a3-aab9-e309d86f30b3',
+    'ofcsol:crown',
+    'CROWN Token',
+    9,
+    UnderlyingAsset['crown'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '65050658-411f-4e3c-be92-105b8c662cf6',
+    'ofcsol:sbc',
+    'Stable Coin',
+    9,
+    UnderlyingAsset['SBC'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  ofcsolToken(
+    'dfe78bd9-c67c-455b-a731-0c9dadd8078e',
+    'ofcsol:bonk',
+    'Bonk',
+    5,
+    UnderlyingAsset['bonk'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  ofcsolToken(
+    'de579e9d-c830-491e-8d5a-760c14a0be91',
+    'ofcsol:honey',
+    'HONEY',
+    9,
+    UnderlyingAsset['honey'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  ofcsolToken(
+    '8a8309b4-8587-4a95-b4a8-4e46c6206b50',
+    'ofcsol:mplx',
+    'Metaplex Token',
+    6,
+    UnderlyingAsset.MPLX,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'cbc48e26-9eb9-47ea-b72f-9f8bad54ac3d',
+    'ofcsol:hnt',
+    'Helium Network Token',
+    8,
+    UnderlyingAsset.HNT,
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    '3bca91fa-2c1a-4e7a-b1f1-b9c4402075a2',
+    'ofctsol:hnt',
+    'testnet Helium Network Token',
+    8,
+    UnderlyingAsset.HNT,
+    SOL_TOKEN_FEATURES
   ),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
@@ -1248,6 +1417,8 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   ofc('8b93e788-52fa-4fd6-b499-40f13fe194fc', 'ofccoreum', 'Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
+  ofc('a88adc55-c1c8-4a4e-8436-df3868a50daa', 'ofccelo', 'Celo Gold', 18, UnderlyingAsset.CELO, CoinKind.CRYPTO),
+  ofc('9e2da785-8349-4153-8276-941319575833', 'ofcxtz', 'Tezos', 6, UnderlyingAsset.XTZ, CoinKind.CRYPTO),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
@@ -1373,6 +1544,15 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctcoreum', 'Test Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
+  tofc(
+    '90ac199d-4061-4c5f-9d48-4439c7ec2033',
+    'ofctcelo',
+    'Testnet Celo Gold',
+    18,
+    UnderlyingAsset.CELO,
+    CoinKind.CRYPTO
+  ),
+  tofc('f5ad87e8-7c86-406b-9776-b7f6910b5e3b', 'ofctxtz', 'Testnet Tezos', 6, UnderlyingAsset.XTZ, CoinKind.CRYPTO),
   erc20(
     '919ba34e-c61e-4346-831f-87660586572a',
     '1inch',
@@ -1713,8 +1893,8 @@ export const coins = CoinMap.fromCoins([
     '20d977ec-b8a3-49e4-9491-2780ee028342',
     'audf',
     'Forte AUD',
-    2,
-    '0x28f732962ebcacdcd94f419d301e6be21cc3025a',
+    6,
+    '0xd2a530170d71a9cfe1651fb468e2b98f7ed7456b',
     UnderlyingAsset.AUDF
   ),
   erc20(
@@ -4034,6 +4214,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.KINE
   ),
   erc20(
+    'dbbc8474-8899-48a8-b57e-28300469b856',
+    'king',
+    'KING',
+    18,
+    '0x149d8290f653deb8e34c037d239d3d8eee9de5ad',
+    UnderlyingAsset.KING
+  ),
+  erc20(
     'dc33d6df-9aed-4b6e-b10c-9874d3c2435e',
     'kiro',
     'Kirobo',
@@ -5290,6 +5478,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x31c8eacbffdd875c74b94b077895bd78cf1e64a3',
     UnderlyingAsset.RAD
+  ),
+  erc20(
+    '762c91d4-fd7c-4ee1-af55-a9440e1ce054',
+    'rain',
+    'Rainmaker Games',
+    18,
+    '0x71fc1f555a39e0b698653ab0b475488ec3c34d57',
+    UnderlyingAsset.RAIN
   ),
   erc20(
     '6868686e-08e2-4afa-81be-907d663b3185',
@@ -10380,6 +10576,13 @@ export const coins = CoinMap.fromCoins([
   ),
   ofcArbethErc20(
     '59220e6e-d94b-40b7-8e10-2f7c691c2482',
+    'ofcarbeth:usdcv2',
+    'USD Coin (native)',
+    6,
+    UnderlyingAsset['arbeth:usdcv2']
+  ),
+  ofcArbethErc20(
+    'eed6696c-9c38-4897-9cae-de3aa3cb6297',
     'ofcarbeth:usdc',
     'USD Coin',
     6,
@@ -10399,6 +10602,60 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset['arbeth:arb']
   ),
+  ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
+  ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),
+  ofcAvaxErc20(
+    'b8c9ea9d-4be3-4d3c-b1de-a1bb963fc03b',
+    'ofcavaxc:cai',
+    'Colony Avalanche Index',
+    18,
+    UnderlyingAsset['avaxc:cai']
+  ),
+  ofcAvaxErc20(
+    '58d7ae4a-296c-4215-b133-01bf553f8500',
+    'ofcavaxc:dai-e',
+    'Dai Stablecoin',
+    18,
+    UnderlyingAsset['avaxc:dai']
+  ),
+  ofcAvaxErc20('ad7a51a1-81fb-483f-b338-9bb236ce9662', 'ofcavaxc:joe', 'Trader Joe', 18, UnderlyingAsset['avaxc:joe']),
+  ofcAvaxErc20('18d60ded-bc60-48aa-a38a-6f85384ea6cc', 'ofcavaxc:klo', 'Kalao', 18, UnderlyingAsset['avaxc:klo']),
+  ofcAvaxErc20('4ad0a18d-36b0-42db-ac94-938a0862ef0b', 'ofcavaxc:link', 'Chainlink', 18, UnderlyingAsset['avaxc:link']),
+  ofcAvaxErc20('cf570f0c-8c17-4ba8-b658-69d38e4f37a9', 'ofcavaxc:png', 'Pangolin', 18, UnderlyingAsset['avaxc:png']),
+  ofcAvaxErc20('6753faa0-7c76-4c97-ad78-667ff2416c62', 'ofcavaxc:qi', 'BenQi', 18, UnderlyingAsset['avaxc:qi']),
+  ofcAvaxErc20('786e03a4-c156-48ea-8782-42ea3c63c5a3', 'ofcavaxc:sbc', 'Stable Coin', 18, UnderlyingAsset['avaxc:sbc']),
+  ofcAvaxErc20('300dbac5-76a3-4ed5-96fb-1d7898da4b4e', 'ofcavaxc:usdc', 'USD Coin', 6, UnderlyingAsset['avaxc:usdc']),
+  ofcAvaxErc20('974e85e7-d6ad-4a5a-9aea-cae055842f36', 'ofcavaxc:usdc-e', 'USD Coin', 6, UnderlyingAsset['avaxc:usdc']),
+  ofcAvaxErc20('861e2833-90be-45ec-8c8b-a41b1b86fac3', 'ofcavaxc:usdt', 'Tether USD', 6, UnderlyingAsset['avaxc:usdt']),
+  ofcAvaxErc20(
+    'e56e42a8-1566-4b5b-a2f3-5439278b1e8c',
+    'ofcavaxc:usdt-e',
+    'Tether USD',
+    6,
+    UnderlyingAsset['avaxc:usdt']
+  ),
+  ofcAvaxErc20(
+    '3986ecd8-dda6-4b30-8883-b6bf111e4624',
+    'ofcavaxc:wbtc-e',
+    'Wrapped BTC',
+    8,
+    UnderlyingAsset['avaxc:wbtc']
+  ),
+  ofcAvaxErc20(
+    '26281e88-f83a-4b13-b69d-b8a7ce9f4598',
+    'ofcavaxc:weth-e',
+    'Wrapped ETH',
+    18,
+    UnderlyingAsset['avaxc:weth']
+  ),
+  ofcAvaxErc20('caeec903-4c42-4d03-8cee-91319ab708c9', 'ofcavaxc:xava', 'Avalaunch', 18, UnderlyingAsset['avaxc:xava']),
+  tofcAvaxErc20(
+    'e70417f4-61df-4622-a933-40a43f807923',
+    'ofctavaxc:link',
+    'Test Chainlink',
+    18,
+    UnderlyingAsset['avaxc:link']
+  ),
   ofcerc20(
     'baded9c2-d530-4188-b35d-2fd00cf6ee2e',
     'ofcustb',
@@ -10408,7 +10665,6 @@ export const coins = CoinMap.fromCoins([
   ),
   ofcerc20('fb5ba281-b060-4e68-86c8-55da5c7e7fe9', 'ofctbill', 'OpenEden T-Bills', 6, UnderlyingAsset.TBILL),
   ofcerc20('fcc0e550-ff67-4c0a-9d28-4a6e8ee32d93', 'ofcmasa', 'Masa Token', 18, UnderlyingAsset.MASA),
-  ofcerc20('01579151-675c-413a-9be1-2c1fcaf7641c', 'ofccelo', 'Celo Gold', 18, UnderlyingAsset.CELO),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
@@ -10505,7 +10761,7 @@ export const coins = CoinMap.fromCoins([
   stellarToken(
     '36dc0757-8583-4f42-bf62-8eea12cb5268',
     'xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
-    'Ethereum',
+    'Stellar ETH',
     7,
     UnderlyingAsset['xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5'],
     'stellarport.io',
@@ -10700,7 +10956,7 @@ export const coins = CoinMap.fromCoins([
     'USDC',
     6,
     UnderlyingAsset['algo:USDC-31566704'],
-    'https://explorer.bitquery.io/algorand/token/31566704',
+    'https://allo.info/asset/31566704/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDC'
@@ -10712,7 +10968,7 @@ export const coins = CoinMap.fromCoins([
     'Tether USDt',
     6,
     UnderlyingAsset['algo:USDt-312769'],
-    'https://explorer.bitquery.io/algorand/token/312769',
+    'https://allo.info/asset/312769/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDt'
@@ -10724,7 +10980,7 @@ export const coins = CoinMap.fromCoins([
     'MCAU',
     5,
     UnderlyingAsset['algo:MCAU-6547014'],
-    'https://explorer.bitquery.io/algorand/token/6547014',
+    'https://allo.info/asset/6547014/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'MCAU'
@@ -10736,7 +10992,7 @@ export const coins = CoinMap.fromCoins([
     'VCAD',
     2,
     UnderlyingAsset['algo:VCAD-438505559'],
-    'https://explorer.bitquery.io/algorand/token/438505559',
+    'https://allo.info/asset/438505559/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'VCAD'
@@ -10748,7 +11004,7 @@ export const coins = CoinMap.fromCoins([
     'QCAD',
     2,
     UnderlyingAsset['algo:QCAD-84507107'],
-    'https://explorer.bitquery.io/algorand/token/84507107',
+    'https://allo.info/asset/84507107/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'QCAD'
@@ -14635,6 +14891,22 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x5e749d596d2a4cf1e9aa48fbba5843ccd9b7994d',
     UnderlyingAsset['polygon:dipe']
+  ),
+  polygonErc20(
+    '74184b74-f8fb-44ea-a444-64646488eb0b',
+    'polygon:lif3',
+    'LIF3',
+    18,
+    '0x110b25d2b21ee73eb401f3ae7833f7072912a0bf',
+    UnderlyingAsset['polygon:lif3']
+  ),
+  polygonErc20(
+    'b9c251ed-0002-414e-b0af-bb8a5073a3dd',
+    'polygon:l3usd',
+    'L3USD',
+    18,
+    '0x2c2d8a078b33bf7782a16acce2c5ba6653a90d5f',
+    UnderlyingAsset['polygon:l3usd']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',

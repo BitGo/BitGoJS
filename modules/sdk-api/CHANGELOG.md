@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.47.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.47.0...@bitgo/sdk-api@1.47.1) (2024-05-13)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+# [1.47.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.46.0...@bitgo/sdk-api@1.47.0) (2024-05-08)
+
+### Features
+
+- move verifyAddress func to own file ([07797bc](https://github.com/BitGo/BitGoJS/commit/07797bc9bc1265a878a066c41e971bd50b3abb0d))
+- support creating v1 transaction to bech32 recipient ([2039ee5](https://github.com/BitGo/BitGoJS/commit/2039ee5e5677e48582e5e1b53281888a965b2f0d))
+
 # [1.46.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.45.4...@bitgo/sdk-api@1.46.0) (2024-05-01)
 
 ### Features
