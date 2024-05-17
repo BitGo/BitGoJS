@@ -5820,7 +5820,7 @@ export const coins = CoinMap.fromCoins([
     'sbc',
     'Sustainable Bitcoin Certificate',
     8,
-    '0xd5978e6ca51ae45f4c1821ce95025502d0246f5e',
+    '0xae8eeb1f92f0f76d3f21d5887096999254f06ea5',
     UnderlyingAsset.SBC
   ),
   erc20(
