@@ -305,6 +305,27 @@ describe('OFC:', function () {
     });
   });
 
+  describe('check ofc tokens for solana', function () {
+    const tokenMain = 'ofcsol:hnt';
+    const tokenTest = 'ofctsol:hnt';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('Helium Network Token');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_8);
+      });
+    });
+    describe('for test network', function () {
+      it(`should have the correct values for ${tokenTest}`, function () {
+        const ofcCoin = bitgo.coin(tokenTest);
+        ofcCoin.getChain().should.equal(tokenTest);
+        ofcCoin.getFullName().should.equal('testnet Helium Network Token');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_8);
+      });
+    });
+  });
+
   it('can sign payloads', async function () {
     const inputParams = {
       txPrebuild: {

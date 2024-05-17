@@ -52,6 +52,8 @@ import {
   ofcArbethErc20,
   tofc,
   tofcAlgoToken,
+  ofcsolToken,
+  tofcsolToken,
   tofcerc20,
   tofcHederaToken,
   tofcStellarToken,
@@ -1177,6 +1179,160 @@ export const coins = CoinMap.fromCoins([
     '0.0.3',
     '0.0.13078',
     AccountCoin.DEFAULT_FEATURES
+  ),
+  ofcsolToken(
+    '7d1b17b3-d606-4ba7-82dc-3e3a0eede46a',
+    'ofcsol:wsol',
+    'Wrapped SOL',
+    9,
+    UnderlyingAsset.WSOL,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'c382f3cc-c071-4ef5-89ac-bcb85d8d415f',
+    'ofcsol:wec',
+    'Whole Earth Coin',
+    9,
+    UnderlyingAsset.WEC,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'fb3b730f-c2cc-4598-8165-ddd42de8cbdf',
+    'ofcsol:usdt',
+    'USD Tether',
+    6,
+    UnderlyingAsset.USDT,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '0d96e2db-d01e-4ea0-ac87-3b51d563ea91',
+    'ofcsol:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset.USDC,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ebbe0d38-44cb-4464-999f-68c9765e37ef',
+    'ofcsol:srm',
+    'Serum',
+    6,
+    UnderlyingAsset.SRM,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '6bd37226-443b-41d3-9c5f-2f33279edffa',
+    'ofcsol:slnd',
+    'SOLEND',
+    6,
+    UnderlyingAsset.SLND,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '9e8cf6cd-19bd-440d-a73d-bfda85876008',
+    'ofcsol:ray',
+    'Raydium',
+    6,
+    UnderlyingAsset.RAY,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '76bb31fc-62a6-4b45-9013-ca278a4bca3c',
+    'ofcsol:qcad',
+    'QCAD',
+    2,
+    UnderlyingAsset.QCAD,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '2e567f9f-6bd8-4f2d-8b6b-e8c1bb6f619b',
+    'ofcsol:pyth',
+    'Pyth',
+    6,
+    UnderlyingAsset['pyth'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'd52d3d8b-a4c9-4f31-81a0-07fa1ca2e010',
+    'ofcsol:orca',
+    'ORCA',
+    6,
+    UnderlyingAsset.ORCA,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken('84b18d96-b8c3-4315-a500-fe624e3b5dfe', 'ofcsol:kin', 'Kin', 5, UnderlyingAsset.KIN, SOL_TOKEN_FEATURES),
+  ofcsolToken(
+    'ee4bcc0d-7ffd-4854-b2be-21e7efe9e7c5',
+    'ofcsol:jet',
+    'Jet Protocol',
+    9,
+    UnderlyingAsset.JET,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken('0f7d1c02-2f2d-4b39-b1f7-892edf9ff21a', 'ofcsol:gmt', 'GMT', 9, UnderlyingAsset.GMT, SOL_TOKEN_FEATURES),
+  ofcsolToken(
+    '8e4ec661-0ebc-46c8-afcd-1a1c4d9fdf5f',
+    'ofcsol:gari',
+    'GARI',
+    9,
+    UnderlyingAsset.GARI,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '9f4dcf91-fa4a-41a3-aab9-e309d86f30b3',
+    'ofcsol:crown',
+    'CROWN Token',
+    9,
+    UnderlyingAsset['crown'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '65050658-411f-4e3c-be92-105b8c662cf6',
+    'ofcsol:sbc',
+    'Stable Coin',
+    9,
+    UnderlyingAsset['SBC'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  ofcsolToken(
+    'dfe78bd9-c67c-455b-a731-0c9dadd8078e',
+    'ofcsol:bonk',
+    'Bonk',
+    5,
+    UnderlyingAsset['bonk'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  ofcsolToken(
+    'de579e9d-c830-491e-8d5a-760c14a0be91',
+    'ofcsol:honey',
+    'HONEY',
+    9,
+    UnderlyingAsset['honey'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  ofcsolToken(
+    '8a8309b4-8587-4a95-b4a8-4e46c6206b50',
+    'ofcsol:mplx',
+    'Metaplex Token',
+    6,
+    UnderlyingAsset.MPLX,
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'cbc48e26-9eb9-47ea-b72f-9f8bad54ac3d',
+    'ofcsol:hnt',
+    'Helium Network Token',
+    8,
+    UnderlyingAsset.HNT,
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    '3bca91fa-2c1a-4e7a-b1f1-b9c4402075a2',
+    'ofctsol:hnt',
+    'testnet Helium Network Token',
+    8,
+    UnderlyingAsset.HNT,
+    SOL_TOKEN_FEATURES
   ),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
