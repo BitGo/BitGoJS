@@ -1,5 +1,6 @@
 import assert from 'assert';
 import { decode } from 'cbor-x';
+import * as t from 'io-ts';
 import { XShare } from '../ecdsa/types';
 
 // Broadcast message meant to be sent to multiple parties
@@ -56,8 +57,19 @@ export type DklsSignature<T> = {
 export type RetrofitData = {
   bigSiList: string[];
   xShare: Partial<XShare>;
-  xiList?: string[];
+  xiList?: number[][];
 };
+
+export const ReducedKeyShareType = t.type({
+  bigSList: t.array(t.array(t.number)),
+  xList: t.array(t.array(t.number)),
+  rootChainCode: t.array(t.number),
+  prv: t.array(t.number),
+  pub: t.array(t.number),
+});
+
+export type ReducedKeyShare = t.TypeOf<typeof ReducedKeyShareType>;
+
 export type SerializedBroadcastMessage = BroadcastMessage<string>;
 export type DeserializedBroadcastMessage = BroadcastMessage<Uint8Array>;
 export type SerializedP2PMessage = P2PMessage<string, string>;

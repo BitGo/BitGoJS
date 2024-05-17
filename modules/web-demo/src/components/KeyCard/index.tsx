@@ -5,6 +5,7 @@ import {
   downloadKeycardForSelfManagedHotAdvancedPolygonWallet,
   downloadKeycardForSelfManagedColdEddsaKey,
   downloadKeycardForSelfManagedColdEddsaKeyWithDerivedKeys,
+  downloadKeycardForDKLsTSS,
 } from '@components/KeyCard/fixtures';
 
 const KeyCard = () => {
@@ -14,6 +15,9 @@ const KeyCard = () => {
       <br />
       <button onClick={downloadKeycardForHotLtcWallet}>
         Download for Hot LTC Wallet
+      </button>
+      <button onClick={downloadKeycardForDKLsTSS}>
+        Download for Hot DKLS Wallet
       </button>
       <button onClick={downloadKeycardForHotEthTSSWallet}>
         Download for Hot ETH TSS Wallet

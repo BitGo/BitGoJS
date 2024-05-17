@@ -5,7 +5,7 @@ import { Hash } from 'crypto';
 import createKeccakHash from 'keccak';
 import { DklsDkg, DklsTypes, DklsComms, DklsDsg } from '@bitgo/sdk-lib-mpc';
 
-import { Keychain, KeyType } from '../../../keychain';
+import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { BaseEcdsaUtils } from './base';
@@ -278,6 +278,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     const userPrivateMaterial = userSession.getKeyShare();
     const backupPrivateMaterial = backupSession.getKeyShare();
+    const userReducedPrivateMaterial = userSession.getReducedKeyShare();
+    const backupReducedPrivateMaterial = backupSession.getReducedKeyShare();
 
     const userCommonKeychain = DklsTypes.getCommonKeychain(userPrivateMaterial);
     const backupCommonKeychain = DklsTypes.getCommonKeychain(backupPrivateMaterial);
@@ -288,12 +290,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const userKeychainPromise = this.addUserKeychain(
       bitgoCommonKeychain,
       userPrivateMaterial,
+      userReducedPrivateMaterial,
       params.passphrase,
       params.originalPasscodeEncryptionCode
     );
     const backupKeychainPromise = this.addBackupKeychain(
       bitgoCommonKeychain,
       userPrivateMaterial,
+      backupReducedPrivateMaterial,
       params.passphrase,
       params.originalPasscodeEncryptionCode
     );
@@ -318,19 +322,28 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     participantIndex: MPCv2Party,
     commonKeychain: string,
     privateMaterial?: Buffer,
+    reducedPrivateMaterial?: Buffer,
     passphrase?: string,
     originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
+    let reducedEncryptedPrv: string | undefined = undefined;
     switch (participantIndex) {
       case MPCv2PartiesEnum.USER:
       case MPCv2PartiesEnum.BACKUP:
         source = participantIndex === MPCv2PartiesEnum.USER ? 'user' : 'backup';
         assert(privateMaterial, `Private material is required for ${source} keychain`);
+        assert(reducedPrivateMaterial, `Reduced private material is required for ${source} keychain`);
         assert(passphrase, `Passphrase is required for ${source} keychain`);
         encryptedPrv = this.bitgo.encrypt({
           input: privateMaterial.toString('base64'),
+          password: passphrase,
+        });
+        reducedEncryptedPrv = this.bitgo.encrypt({
+          // Buffer.toString('base64') can not be used here as it does not work on the browser.
+          // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma seperated string of the array values.
+          input: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial)))),
           password: passphrase,
         });
         break;
@@ -341,7 +354,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         throw new Error('Invalid participant index');
     }
 
-    const recipientKeychainParams = {
+    const recipientKeychainParams: AddKeychainOptions = {
       source,
       keyType: 'tss' as KeyType,
       commonKeychain,
@@ -350,12 +363,13 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     };
 
     const keychains = this.baseCoin.keychains();
-    return keychains.add(recipientKeychainParams);
+    return { ...(await keychains.add(recipientKeychainParams)), reducedEncryptedPrv: reducedEncryptedPrv };
   }
 
   private async addUserKeychain(
     commonKeychain: string,
     privateMaterial: Buffer,
+    reducedPrivateMaterial: Buffer,
     passphrase: string,
     originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
@@ -363,6 +377,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       MPCv2PartiesEnum.USER,
       commonKeychain,
       privateMaterial,
+      reducedPrivateMaterial,
       passphrase,
       originalPasscodeEncryptionCode
     );
@@ -371,6 +386,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   private async addBackupKeychain(
     commonKeychain: string,
     privateMaterial: Buffer,
+    reducedPrivateMaterial: Buffer,
     passphrase: string,
     originalPasscodeEncryptionCode?: string
   ): Promise<Keychain> {
@@ -378,6 +394,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       MPCv2PartiesEnum.BACKUP,
       commonKeychain,
       privateMaterial,
+      reducedPrivateMaterial,
       passphrase,
       originalPasscodeEncryptionCode
     );

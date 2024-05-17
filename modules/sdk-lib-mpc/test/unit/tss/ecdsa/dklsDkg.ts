@@ -1,11 +1,13 @@
 import assert from 'assert';
 import { DklsDkg, DklsTypes } from '../../../../src/tss/ecdsa-dkls';
+import { isRight } from 'fp-ts/Either';
 import {
   decryptAndVerifyIncomingMessages,
   encryptAndAuthOutgoingMessages,
 } from '../../../../src/tss/ecdsa-dkls/commsLayer';
 import {
   PartyGpgKey,
+  ReducedKeyShareType,
   RetrofitData,
   deserializeMessages,
   serializeMessages,
@@ -88,6 +90,9 @@ describe('DKLS Dkg 2x3', function () {
     const userKeyShare = user.getKeyShare();
     const backupKeyShare = backup.getKeyShare();
     const bitgoKeyShare = bitgo.getKeyShare();
+    const userReducedKeyShare = user.getReducedKeyShare();
+    const decodeReducedKeyshare = ReducedKeyShareType.decode(decode(userReducedKeyShare));
+    assert(isRight(decodeReducedKeyshare));
     assert.deepEqual(decode(userKeyShare).public_key, decode(bitgoKeyShare).public_key);
     assert.deepEqual(decode(backupKeyShare).public_key, decode(bitgoKeyShare).public_key);
     assert.deepEqual(DklsTypes.getCommonKeychain(userKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));

@@ -1,6 +1,8 @@
 import { generateKeycard } from '@bitgo/key-card';
 import { KeyCurve, coins } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
+import { DklsDkg, DklsTypes } from '@bitgo/sdk-lib-mpc';
+import * as sjcl from 'sjcl';
 
 function downloadKeycardImage(coinFamily: string): Promise<HTMLImageElement> {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -15,6 +17,98 @@ function downloadKeycardImage(coinFamily: string): Promise<HTMLImageElement> {
     keyCardImage.onerror = () => {
       reject(new Error(`not a valid image for ${coinFamily}`));
     };
+  });
+}
+
+export async function downloadKeycardForDKLsTSS() {
+  const user = new DklsDkg.Dkg(2, 2, 0);
+  const backup = new DklsDkg.Dkg(2, 2, 1);
+  const userRound1Message = await user.initDkg();
+  const backupRound1Message = await backup.initDkg();
+  const userRound2Messages = user.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: [backupRound1Message],
+  });
+  const backupRound2Messages = backup.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: [userRound1Message],
+  });
+  const userRound3Messages = user.handleIncomingMessages({
+    p2pMessages: backupRound2Messages.p2pMessages.filter((m) => m.to === 0),
+    broadcastMessages: [],
+  });
+  const backupRound3Messages = backup.handleIncomingMessages({
+    p2pMessages: userRound2Messages.p2pMessages.filter((m) => m.to === 1),
+    broadcastMessages: [],
+  });
+  const userRound4Messages = user.handleIncomingMessages({
+    p2pMessages: backupRound3Messages.p2pMessages.filter((m) => m.to === 0),
+    broadcastMessages: [],
+  });
+  const backupRound4Messages = backup.handleIncomingMessages({
+    p2pMessages: userRound3Messages.p2pMessages.filter((m) => m.to === 1),
+    broadcastMessages: [],
+  });
+  user.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: backupRound4Messages.broadcastMessages,
+  });
+  backup.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: userRound4Messages.broadcastMessages,
+  });
+  const userKeyShare = user.getKeyShare();
+  const commonKeychain = DklsTypes.getCommonKeychain(userKeyShare);
+  const userCompressed = user.getReducedKeyShare();
+  const backupCompressed = backup.getReducedKeyShare();
+  const encryptedUser = sjcl.encrypt(
+    't3stSicretly!',
+    btoa(
+      String.fromCharCode.apply(
+        null,
+        Array.from(new Uint8Array(userCompressed)),
+      ),
+    ),
+  );
+  const encryptedBackup = sjcl.encrypt(
+    't3stSicretly!',
+    btoa(
+      String.fromCharCode.apply(
+        null,
+        Array.from(new Uint8Array(backupCompressed)),
+      ),
+    ),
+  );
+  const userKeychain: Keychain = {
+    id: '63e107b5ef7bba0007145e41065b26a6',
+    commonKeychain: commonKeychain,
+    reducedEncryptedPrv: encryptedUser.toString(),
+    prv: userCompressed.toString('base64'),
+    type: 'tss',
+  };
+  const backupKeychain: Keychain = {
+    id: '63e107b51af424000794ea5e39db15c6',
+    commonKeychain: commonKeychain,
+    type: 'tss',
+    reducedEncryptedPrv: encryptedBackup.toString(),
+    prv: backupCompressed.toString('base64'),
+  };
+  const bitgoKeychain: Keychain = {
+    id: '63e107b5ca60390007008767278e5fc4',
+    commonKeychain: commonKeychain,
+    type: 'tss',
+  };
+
+  await generateKeycard({
+    activationCode: '123456',
+    backupKeychain,
+    bitgoKeychain,
+    coin: coins.get('hteth'),
+    keyCardImage: await downloadKeycardImage('eth'),
+    passcodeEncryptionCode: '654321',
+    passphrase: 't3stSicretly!',
+    userKeychain,
+    walletLabel: 'Hot DKLS Wallet',
   });
 }
 
