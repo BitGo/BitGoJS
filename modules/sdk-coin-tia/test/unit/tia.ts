@@ -455,7 +455,7 @@ describe('TIA', function () {
     const testChainId = 'test-chain';
 
     beforeEach(() => {
-      nock('https://k8s.testnet.lcd.injective.network')
+      nock('https://api-mocha.pops.one')
         .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
         .reply(200, mockAccountDetailsResponse);
 
@@ -506,7 +506,7 @@ describe('TIA', function () {
     const testChainId = 'test-chain';
 
     beforeEach(() => {
-      nock('https://k8s.testnet.lcd.injective.network')
+      nock('https://api-mocha.pops.one')
         .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
         .reply(200, mockAccountDetailsResponse);
 
