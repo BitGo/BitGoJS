@@ -398,6 +398,38 @@ describe('V2 Wallets:', function () {
         scope.done();
       }
     });
+
+    it('should generate custodial onchain wallet without passing m, n, keys, keySignatures', async () => {
+      const params: GenerateWalletOptions = {
+        label: 'test wallet',
+        enterprise: 'myenterprise',
+        type: 'custodial',
+        passphrase: 'secret',
+      };
+
+      const walletNock = nock(bgUrl)
+        .post('/api/v2/tbtc/wallet', function (body) {
+          body.type.should.equal('custodial');
+          should.not.exist(body.m);
+          should.not.exist(body.n);
+          should.not.exist(body.keys);
+          should.not.exist(body.keySignatures);
+          return true;
+        })
+        .reply(200);
+
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+        .reply(200, { pub: 'bitgoPub' });
+      nock(bgUrl).post('/api/v2/tbtc/key', _.matches({})).reply(200);
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'backup' }))
+        .reply(200, { pub: 'backupPub' });
+
+      await wallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+    });
   });
 
   describe('Generate TSS wallet:', function () {

@@ -155,8 +155,8 @@ export interface VerifyTransactionOptions {
 
 export interface SupplementGenerateWalletOptions {
   label: string;
-  m: number;
-  n: number;
+  m?: number;
+  n?: number;
   enterprise?: string;
   disableTransactionNotifications?: boolean;
   gasPrice?: number | string;
@@ -165,7 +165,7 @@ export interface SupplementGenerateWalletOptions {
     maxPriorityFeePerGas?: number | string;
   };
   walletVersion?: number;
-  keys: string[];
+  keys?: string[];
   keySignatures?: {
     backup: string;
     bitgo: string;

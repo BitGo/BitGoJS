@@ -463,6 +463,14 @@ export class Wallets implements IWallets {
       walletParams.rootPrivateKey = params.rootPrivateKey;
     }
 
+    // Custodial onchain wallets do not need m, n, keys, or keySignatures
+    if (params.type === 'custodial' && (params.multisigType ?? 'onchain') === 'onchain') {
+      walletParams.n = undefined;
+      walletParams.m = undefined;
+      walletParams.keys = undefined;
+      walletParams.keySignatures = undefined;
+    }
+
     const keychains = {
       userKeychain,
       backupKeychain,
