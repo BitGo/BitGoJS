@@ -1329,6 +1329,14 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
+    '20b20bc7-86b8-4f58-a8e9-a7cedbc2a507',
+    'ofctsol:gari',
+    'testnet Gari Token',
+    9,
+    UnderlyingAsset.GARI,
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
     '3bca91fa-2c1a-4e7a-b1f1-b9c4402075a2',
     'ofctsol:hnt',
     'testnet Helium Network Token',
