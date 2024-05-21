@@ -1154,8 +1154,6 @@ export class Wallet implements IWallet {
         throw new Error('forwarderVersion has to be an integer 0, 1, 2, 3 or 4');
       }
       addressParams.forwarderVersion = forwarderVersion;
-    } else if (this._wallet.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
-      addressParams.forwarderVersion = 3;
     }
 
     if (!_.isUndefined(label)) {
