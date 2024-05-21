@@ -677,7 +677,7 @@ class HashTestnet extends Testnet implements AccountNetwork {
 class Bld extends Mainnet implements AccountNetwork {
   name = 'Agoric';
   family = CoinFamily.BLD;
-  explorerUrl = 'https://bigdipper.live/agoric/transactions/';
+  explorerUrl = 'https://agoric.explorers.guru/transaction/';
 }
 
 class BldTestnet extends Testnet implements AccountNetwork {
