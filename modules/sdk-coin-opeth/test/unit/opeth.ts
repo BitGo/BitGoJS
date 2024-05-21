@@ -714,4 +714,69 @@ describe('Optimism', function () {
       rebuiltTx.outputs.length.should.equal(1);
     });
   });
+  describe('Evm Based Cross Chain Recovery transaction:', function () {
+    const baseUrl = 'https://api-sepolia-optimistic.etherscan.io';
+    it('should generate an unsigned recovery txn for hot wallet', async function () {
+      const userKey =
+        '{"iv":"VFZ3jvXhxo1Z+Yaf2MtZnA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+        ':"ccm","adata":"","cipher":"aes","salt":"p+fkHuLa/8k=","ct":"hYG7pvljLIgCjZ\n' +
+        '53PBlCde5KZRmlUKKHLtDMk+HJfuU46hW+x+C9WsIAO4gFPnTCvFVmQ8x7czCtcNFub5AO2otOG\n' +
+        'OsX4GE2gXOEmCl1TpWwwNhm7yMUjGJUpgW6ZZgXSXdDitSKi4V/hk78SGSzjFOBSPYRa6I="}\n';
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
+      const destinationAddress = '0xd5adde17fed8baed3f32b84af05b8f2816f7b560';
+      const bitgoDestinationAddress = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
+      const walletPassphrase = TestBitGo.V2.TEST_RECOVERY_PASSCODE as string;
+
+      const basecoin = bitgo.coin('topeth') as Opeth;
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getTxListRequest(bitgoFeeAddress))
+        .reply(200, mockData.getTxListResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(bitgoFeeAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getBalanceRequest(walletContractAddress))
+        .reply(200, mockData.getBalanceResponse);
+      nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+
+      const transaction = (await basecoin.recover({
+        userKey: userKey,
+        backupKey: '',
+        walletPassphrase: walletPassphrase,
+        walletContractAddress: walletContractAddress,
+        bitgoFeeAddress: bitgoFeeAddress,
+        recoveryDestination: destinationAddress,
+        eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+        gasLimit: 500000,
+        bitgoDestinationAddress: bitgoDestinationAddress,
+      })) as OfflineVaultTxInfo;
+
+      should.exist(transaction);
+      transaction.should.have.property('txHex');
+      transaction.should.have.property('coin');
+      transaction.should.have.property('contractSequenceId');
+      transaction.should.have.property('expireTime');
+      transaction.should.have.property('gasLimit');
+      transaction.gasLimit.should.equal('500000');
+      transaction.should.have.property('isEvmBasedCrossChainRecovery');
+      transaction.isEvmBasedCrossChainRecovery?.should.equal(true);
+      transaction.should.have.property('walletContractAddress');
+      transaction.walletContractAddress.should.equal(TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS);
+      transaction.should.have.property('recipients');
+      const recipient = transaction.recipients[0];
+      recipient.should.have.property('address');
+      recipient.address.should.equal(destinationAddress);
+      recipient.should.have.property('amount');
+      recipient.amount.should.equal('9999999999999999928');
+      transaction.should.have.property('feesUsed');
+      transaction.feesUsed?.gasLimit.should.equal('500000');
+      transaction.should.have.property('halfSigned');
+      transaction.halfSigned?.should.have.property('txHex');
+      transaction.halfSigned?.should.have.property('recipients');
+    });
+  });
 });

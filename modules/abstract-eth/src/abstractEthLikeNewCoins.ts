@@ -1594,14 +1594,22 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     });
 
     const transferBuilder = txBuilder.transfer() as TransferBuilder;
-
-    transferBuilder
-      .coin(this.staticsCoin?.name as string)
-      .amount(batchExecutionInfo.totalAmount)
-      .contractSequenceId(sequenceId)
-      .expirationTime(this.getDefaultExpireTime())
-      .to(batcherContractAddress)
-      .data(batchData);
+    if (!batcherContractAddress) {
+      transferBuilder
+        .coin(this.staticsCoin?.name as string)
+        .amount(batchExecutionInfo.totalAmount)
+        .contractSequenceId(sequenceId)
+        .expirationTime(this.getDefaultExpireTime())
+        .to(recoveryDestination);
+    } else {
+      transferBuilder
+        .coin(this.staticsCoin?.name as string)
+        .amount(batchExecutionInfo.totalAmount)
+        .contractSequenceId(sequenceId)
+        .expirationTime(this.getDefaultExpireTime())
+        .to(batcherContractAddress)
+        .data(batchData);
+    }
 
     if (params.walletPassphrase) {
       transferBuilder.key(userSigningKey);
