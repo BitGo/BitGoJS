@@ -1373,7 +1373,6 @@ export function teosToken(
 
 /**
  * Factory function for sol token instances.
- *
  * @param id uuid v4
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
