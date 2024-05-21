@@ -265,6 +265,9 @@ export class Keychains implements IKeychains {
       // if the provider is undefined, we generate a local key and add the source details
       const key = this.create();
       _.extend(params, key);
+      if (params.passphrase !== undefined) {
+        _.extend(params, { encryptedPrv: this.bitgo.encrypt({ input: key.prv, password: params.passphrase }) });
+      }
     }
 
     const serverResponse = await this.add(params);

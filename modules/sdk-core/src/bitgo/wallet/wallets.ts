@@ -431,6 +431,7 @@ export class Wallets implements IWallets {
           disableKRSEmail: params.disableKRSEmail,
           krsSpecific: params.krsSpecific,
           type: this.baseCoin.getChain(),
+          passphrase: params.passphrase,
           reqId,
         });
       }
@@ -448,7 +449,7 @@ export class Wallets implements IWallets {
           throw new Error('cannot generate backup keypair without passphrase');
         }
         // No provided backup xpub or address, so default to creating one here
-        return this.baseCoin.keychains().createBackup({ reqId });
+        return this.baseCoin.keychains().createBackup({ reqId, passphrase: params.passphrase });
       }
     };
 
