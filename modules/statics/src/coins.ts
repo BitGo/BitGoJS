@@ -15,8 +15,8 @@ import {
   hederaCoin,
   hederaToken,
   nonstandardToken,
-  polygonErc20,
   opethErc20,
+  polygonErc20,
   solToken,
   stellarToken,
   talgoToken,
@@ -28,8 +28,8 @@ import {
   terc1155,
   terc20,
   terc721,
-  tpolygonErc20,
   topethErc20,
+  tpolygonErc20,
   tronToken,
   tsolToken,
   tstellarToken,
@@ -46,16 +46,16 @@ import { Networks } from './networks';
 import {
   ofc,
   ofcAlgoToken,
+  ofcArbethErc20,
   ofcerc20,
   ofcHederaToken,
   ofcStellarToken,
-  ofcArbethErc20,
   tofc,
   tofcAlgoToken,
+  tofcArbethErc20,
   tofcerc20,
   tofcHederaToken,
   tofcStellarToken,
-  tofcArbethErc20,
 } from './ofc';
 import { utxo, UtxoCoin } from './utxo/utxo';
 

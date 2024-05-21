@@ -1524,6 +1524,101 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       );
     }
 
+    const network = this.getNetwork();
+    const batcherContractAddress = network?.batcherContractAddress as string;
+
+    if (!batcherContractAddress) {
+      // Handle native currency recovery without batcher contract
+      const txAmount = await this.queryAddressBalance(walletContractAddress);
+      const recipients: Recipient[] = [
+        {
+          address: recoveryDestination,
+          amount: new BigNumber(txAmount).toFixed(),
+        },
+      ];
+      // Get sequence ID using contract call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const sequenceId = await this.querySequenceId(walletContractAddress);
+
+      const txInfo = {
+        recipients: recipients,
+        expireTime: this.getDefaultExpireTime(),
+        contractSequenceId: sequenceId,
+        gasLimit: gasLimit.toString(10),
+        isEvmBasedCrossChainRecovery: true,
+      };
+
+      const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+      txBuilder.counter(bitgoFeeAddressNonce);
+      txBuilder.contract(walletContractAddress);
+
+      let txFee;
+      if (params.eip1559) {
+        txFee = {
+          eip1559: {
+            maxPriorityFeePerGas: params.eip1559.maxPriorityFeePerGas,
+            maxFeePerGas: params.eip1559.maxFeePerGas,
+          },
+        };
+      } else {
+        txFee = { fee: gasPrice.toString() };
+      }
+      txBuilder.fee({
+        ...txFee,
+        gasLimit: gasLimit.toString(),
+      });
+
+      const transferBuilder = txBuilder.transfer() as TransferBuilder;
+
+      transferBuilder
+        .coin(this.staticsCoin?.name as string)
+        .amount(txAmount)
+        .contractSequenceId(sequenceId)
+        .expirationTime(this.getDefaultExpireTime())
+        .to(recoveryDestination);
+
+      if (params.walletPassphrase) {
+        transferBuilder.key(userSigningKey);
+      }
+
+      const tx = await txBuilder.build();
+
+      const response: OfflineVaultTxInfo = {
+        txHex: tx.toBroadcastFormat(),
+        userKey,
+        coin: this.getChain(),
+        gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasLimit,
+        recipients: txInfo.recipients,
+        walletContractAddress: tx.toJson().to,
+        amount: txAmount.toString(),
+        backupKeyNonce: bitgoFeeAddressNonce,
+        eip1559: params.eip1559,
+      };
+      _.extend(response, txInfo);
+      response.nextContractSequenceId = response.contractSequenceId;
+
+      if (params.walletPassphrase) {
+        const halfSignedTxn: HalfSignedTransaction = {
+          halfSigned: {
+            txHex: tx.toBroadcastFormat(),
+            recipients: txInfo.recipients,
+            expireTime: txInfo.expireTime,
+          },
+        };
+        _.extend(response, halfSignedTxn);
+
+        const feesUsed: FeesUsed = {
+          gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+          gasLimit: optionalDeps.ethUtil.bufferToInt(gasLimit).toFixed(),
+        };
+        response['feesUsed'] = feesUsed;
+      }
+
+      return response;
+    }
+
+    // Original batcher contract logic for native currency recovery
     // get balance of wallet
     const txAmount = await this.queryAddressBalance(walletContractAddress);
 
@@ -1569,9 +1664,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       gasLimit: gasLimit.toString(10),
       isEvmBasedCrossChainRecovery: true,
     };
-
-    const network = this.getNetwork();
-    const batcherContractAddress = network?.batcherContractAddress as string;
 
     const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
     txBuilder.counter(bitgoFeeAddressNonce);
