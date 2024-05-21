@@ -965,6 +965,14 @@ describe('Polygon', function () {
 
       should.exist(transaction);
       transaction.should.have.property('txHex');
+
+      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
+      txBuilder.from(transaction.txHex);
+      const rebuiltTx = await txBuilder.build();
+      const rebuiltTxJson = rebuiltTx.toJson();
+      rebuiltTxJson.should.have.property('data');
+      rebuiltTxJson.data.should.startWith('0x0dcd7a6c'); // sendMultiSigToken func
+
       transaction.should.have.property('userKey');
       transaction.should.have.property('coin');
       transaction.coin.should.equal('tpolygon:link');
@@ -1017,6 +1025,14 @@ describe('Polygon', function () {
 
       should.exist(transaction);
       transaction.should.have.property('txHex');
+
+      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
+      txBuilder.from(transaction.txHex);
+      const rebuiltTx = await txBuilder.build();
+      const rebuiltTxJson = rebuiltTx.toJson();
+      rebuiltTxJson.should.have.property('data');
+      rebuiltTxJson.data.should.startWith('0x0dcd7a6c'); // sendMultiSigToken func
+
       transaction.should.have.property('coin');
       transaction.coin.should.equal('tpolygon:link');
       transaction.should.have.property('contractSequenceId');
@@ -1075,6 +1091,14 @@ describe('Polygon', function () {
 
       should.exist(transaction);
       transaction.should.have.property('txHex');
+
+      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
+      txBuilder.from(transaction.txHex);
+      const rebuiltTx = await txBuilder.build();
+      const rebuiltTxJson = rebuiltTx.toJson();
+      rebuiltTxJson.should.have.property('data');
+      rebuiltTxJson.data.should.startWith('0x0dcd7a6c'); // sendMultiSigToken func
+
       transaction.should.have.property('coin');
       transaction.coin.should.equal('tpolygon:link');
       transaction.should.have.property('contractSequenceId');
