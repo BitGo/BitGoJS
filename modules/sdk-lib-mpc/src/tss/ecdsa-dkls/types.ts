@@ -2,6 +2,7 @@ import assert from 'assert';
 import { decode } from 'cbor-x';
 import * as t from 'io-ts';
 import { XShare } from '../ecdsa/types';
+import { isLeft } from 'fp-ts/Either';
 
 // Broadcast message meant to be sent to multiple parties
 interface BroadcastMessage<T> {
@@ -166,7 +167,7 @@ export function serializeBroadcastMessage(message: DeserializedBroadcastMessage)
 /**
  * Gets commonkeyChain from DKLS keyShare
  * @param {Buffer} keyShare - DKLS keyShare
- * @returns {string} commonKeychain
+ * @returns {string} commonKeychain in hex format
  */
 export function getCommonKeychain(keyShare: Buffer): string {
   const parsedKeyShare = decode(keyShare);
@@ -175,4 +176,12 @@ export function getCommonKeychain(keyShare: Buffer): string {
   const publicKey = Buffer.from(parsedKeyShare.public_key).toString('hex');
   const rootChainCode = Buffer.from(parsedKeyShare.root_chain_code).toString('hex');
   return publicKey + rootChainCode;
+}
+
+export function getDecodedReducedKeyShare(reducedKeyShare: Buffer | Uint8Array): ReducedKeyShare {
+  const decoded = ReducedKeyShareType.decode(decode(reducedKeyShare));
+  if (isLeft(decoded)) {
+    throw new Error(`Unable to parse reducedKeyShare: ${decoded.left}`);
+  }
+  return decoded.right;
 }
