@@ -1491,7 +1491,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       buildParams.changeAddress === undefined &&
       buildParams.wallet.type() === 'hot'
     ) {
-      changeAddressType = ['p2trMusig2', 'p2wsh', 'p2shP2wsh', 'p2sh'];
+      changeAddressType = ['p2trMusig2', 'p2wsh', 'p2shP2wsh', 'p2sh', 'p2tr'];
     }
 
     return {
