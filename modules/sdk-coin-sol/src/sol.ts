@@ -57,7 +57,6 @@ import * as request from 'superagent';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
-export const MAX_SUPPORTED_TOKENS_PER_TX = 6; // max number of tokens that can be recovered per tx
 
 export interface TransactionFee {
   fee: string;
@@ -149,6 +148,7 @@ export interface SolRecoveryOptions extends MPCRecoveryOptions {
     publicKey: string;
     secretKey: string;
   };
+  tokenContractAddress?: string;
 }
 
 export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecoveryOptions {
@@ -767,85 +767,85 @@ export class Sol extends BaseCoin {
       authority = durableNonceInfo.authority;
     }
 
-    // check for possible token recovery, token assets must be recovered first
-    const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey);
-    if (tokenAccounts.length !== 0) {
-      // there exists token accounts on the given address, but need to check certain conditions:
-      // 1. if there is a recoverable balance
-      // 2. if the token is supported by bitgo
-      const recovereableTokenAccounts: TokenAccount[] = [];
-      for (const tokenAccount of tokenAccounts) {
-        const tokenAmount = new BigNumber(tokenAccount.info.tokenAmount.amount);
-        const network = this.getNetwork();
-        const token = getSolTokenFromAddress(tokenAccount.info.mint, network);
+    // check for possible token recovery, recover the token provide by user
+    if (params.tokenContractAddress) {
+      const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey);
+      if (tokenAccounts.length !== 0) {
+        // there exists token accounts on the given address, but need to check certain conditions:
+        // 1. if there is a recoverable balance
+        // 2. if the token is supported by bitgo
+        const recovereableTokenAccounts: TokenAccount[] = [];
+        for (const tokenAccount of tokenAccounts) {
+          if (params.tokenContractAddress === tokenAccount.info.mint) {
+            const tokenAmount = new BigNumber(tokenAccount.info.tokenAmount.amount);
+            const network = this.getNetwork();
+            const token = getSolTokenFromAddress(tokenAccount.info.mint, network);
 
-        if (!_.isUndefined(token) && tokenAmount.gt(new BigNumber(0))) {
-          tokenAccount.tokenName = token.name;
-          recovereableTokenAccounts.push(tokenAccount);
+            if (!_.isUndefined(token) && tokenAmount.gt(new BigNumber(0))) {
+              tokenAccount.tokenName = token.name;
+              recovereableTokenAccounts.push(tokenAccount);
+            }
+            break;
+          }
         }
-      }
 
-      if (recovereableTokenAccounts.length !== 0) {
-        // we can only recover up to 6 tokens per tx, tx have a limit size of 1232 bytes
-        const slicedRecovereableTokenAccounts = recovereableTokenAccounts.slice(0, MAX_SUPPORTED_TOKENS_PER_TX);
+        if (recovereableTokenAccounts.length !== 0) {
+          const rentExemptAmount = await this.getRentExemptAmount();
 
-        const rentExemptAmount = await this.getRentExemptAmount();
+          txBuilder = factory
+            .getTokenTransferBuilder()
+            .nonce(blockhash)
+            .sender(bs58EncodedPublicKey)
+            .fee({ amount: feePerSignature })
+            .associatedTokenAccountRent(rentExemptAmount.toString())
+            .feePayer(bs58EncodedPublicKey);
 
-        txBuilder = factory
-          .getTokenTransferBuilder()
-          .nonce(blockhash)
-          .sender(bs58EncodedPublicKey)
-          .fee({ amount: feePerSignature })
-          .associatedTokenAccountRent(rentExemptAmount.toString())
-          .feePayer(bs58EncodedPublicKey);
+          // need to get all token accounts of the recipient address and need to create them if they do not exist
+          const recipientTokenAccounts = await this.getTokenAccountsByOwner(params.recoveryDestination);
 
-        // need to get all token accounts of the recipient address and need to create them if they do not exist
-        const recipientTokenAccounts = await this.getTokenAccountsByOwner(params.recoveryDestination);
+          for (const tokenAccount of recovereableTokenAccounts) {
+            let recipientTokenAccountExists = false;
+            for (const recipientTokenAccount of recipientTokenAccounts as TokenAccount[]) {
+              if (recipientTokenAccount.info.mint === tokenAccount.info.mint) {
+                recipientTokenAccountExists = true;
+                break;
+              }
+            }
 
-        for (const tokenAccount of slicedRecovereableTokenAccounts) {
-          let recipientTokenAccountExists = false;
-          for (const recipientTokenAccount of recipientTokenAccounts as TokenAccount[]) {
-            if (recipientTokenAccount.info.mint === tokenAccount.info.mint) {
-              recipientTokenAccountExists = true;
-              break;
+            const recipientTokenAccount = await getAssociatedTokenAccountAddress(
+              tokenAccount.info.mint,
+              params.recoveryDestination
+            );
+            const tokenName = tokenAccount.tokenName as string;
+            txBuilder.send({
+              address: recipientTokenAccount,
+              amount: tokenAccount.info.tokenAmount.amount,
+              tokenName: tokenName,
+            });
+
+            if (!recipientTokenAccountExists) {
+              // recipient token account does not exist for token and must be created
+              txBuilder.createAssociatedTokenAccount({
+                ownerAddress: params.recoveryDestination,
+                tokenName: tokenName,
+              });
+              // add rent exempt amount to total fee for each token account that has to be created
+              totalFee = totalFee.plus(rentExemptAmount);
             }
           }
 
-          const recipientTokenAccount = await getAssociatedTokenAccountAddress(
-            tokenAccount.info.mint,
-            params.recoveryDestination
-          );
-          const tokenName = tokenAccount.tokenName as string;
-          txBuilder.send({
-            address: recipientTokenAccount,
-            amount: tokenAccount.info.tokenAmount.amount,
-            tokenName: tokenName,
-          });
-
-          if (!recipientTokenAccountExists) {
-            // recipient token account does not exist for token and must be created
-            txBuilder.createAssociatedTokenAccount({ ownerAddress: params.recoveryDestination, tokenName: tokenName });
-            // add rent exempt amount to total fee for each token account that has to be created
-            totalFee = totalFee.plus(rentExemptAmount);
+          // there are recoverable token accounts, need to check if there is sufficient native solana to recover tokens
+          if (new BigNumber(balance).lt(totalFee)) {
+            throw Error(
+              'Not enough funds to pay for recover tokens fees, have: ' + balance + ' need: ' + totalFee.toString()
+            );
           }
-        }
-
-        // there are recoverable token accounts, need to check if there is sufficient native solana to recover tokens
-        if (new BigNumber(balance).lt(totalFee)) {
-          throw Error(
-            'Not enough funds to pay for recover tokens fees, have: ' + balance + ' need: ' + totalFee.toString()
-          );
+        } else {
+          throw Error('Not enough token funds to recover');
         }
       } else {
-        const netAmount = new BigNumber(balance).minus(totalFee);
-
-        txBuilder = factory
-          .getTransferBuilder()
-          .nonce(blockhash)
-          .sender(bs58EncodedPublicKey)
-          .send({ address: params.recoveryDestination, amount: netAmount.toString() })
-          .fee({ amount: feePerSignature })
-          .feePayer(bs58EncodedPublicKey);
+        // there are no recoverable token accounts , need to check if there are tokens to recover
+        throw Error('Not found token account to recover tokens, please check token account');
       }
     } else {
       const netAmount = new BigNumber(balance).minus(totalFee);
