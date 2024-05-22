@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.29.13...@bitgo/web-demo@1.30.0) (2024-05-22)
+
+### Features
+
+- **sdk-core:** support smaller mpcv2 keycard ([63512d4](https://github.com/BitGo/BitGoJS/commit/63512d4279d012c0a151720cffb195b198d25e21))
+
 ## [1.29.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@1.29.12...@bitgo/web-demo@1.29.13) (2024-05-17)
 
 **Note:** Version bump only for package @bitgo/web-demo

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.7.0...@bitgo/sdk-lib-mpc@9.8.0) (2024-05-22)
+
+### Features
+
+- **abstract-eth:** wrw recovery for dkls wallet ([bf374e8](https://github.com/BitGo/BitGoJS/commit/bf374e89522c9688619d9b20ed66d3873b55d75e))
+- **sdk-core:** support smaller mpcv2 keycard ([63512d4](https://github.com/BitGo/BitGoJS/commit/63512d4279d012c0a151720cffb195b198d25e21))
+
 # [9.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.6.0...@bitgo/sdk-lib-mpc@9.7.0) (2024-05-08)
 
 ### Features

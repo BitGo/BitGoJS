@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.12.0...@bitgo/statics@48.13.0) (2024-05-22)
+
+### Features
+
+- **statics:** add new batch of tokens ([8f705eb](https://github.com/BitGo/BitGoJS/commit/8f705eb0905b15d24e07fd3e4c5a40534c1dfef0))
+- **statics:** update sbc address to the new one ([cf8a122](https://github.com/BitGo/BitGoJS/commit/cf8a122ddd9714186216a1a3183fc1a4b14e4226))
+
 # [48.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.11.0...@bitgo/statics@48.12.0) (2024-05-17)
 
 ### Bug Fixes

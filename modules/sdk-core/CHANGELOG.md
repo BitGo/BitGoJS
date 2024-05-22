@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.12.0...@bitgo/sdk-core@26.13.0) (2024-05-22)
+
+### Features
+
+- **sdk-core:** support smaller mpcv2 keycard ([63512d4](https://github.com/BitGo/BitGoJS/commit/63512d4279d012c0a151720cffb195b198d25e21))
+
 # [26.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.11.1...@bitgo/sdk-core@26.12.0) (2024-05-17)
 
 ### Features
