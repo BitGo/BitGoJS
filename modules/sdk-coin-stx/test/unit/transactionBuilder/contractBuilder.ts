@@ -231,42 +231,6 @@ describe('Stacks: Contract Builder', function () {
         tx.inputs[0].value.should.equal('0');
       });
 
-      // TODO: remove support to this contract version after STX fork
-      // https://bitgoinc.atlassian.net/browse/EA-3482
-      it('a signed pox-3 backward support pre-fork self stacking contract call', async () => {
-        const builder = initTxBuilder();
-        builder.functionArgs([
-          { type: 'uint128', val: '400000000' },
-          {
-            type: 'tuple',
-            val: [
-              { key: 'hashbytes', type: 'buffer', val: Buffer.from('some-hash') },
-              { key: 'version', type: 'buffer', val: new BigNum(1).toBuffer() },
-            ],
-          },
-          { type: 'uint128', val: '52800' },
-          { type: 'uint128', val: '2' },
-        ]);
-        builder.sign({ key: testData.TX_SENDER.prv });
-        const tx = await builder.build();
-
-        const txJson = tx.toJson();
-        should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
-        should.deepEqual(txJson.payload.contractName, testData.CONTRACT_NAME);
-        should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
-        should.deepEqual(txJson.nonce, 0);
-        should.deepEqual(txJson.fee.toString(), '180');
-        should.deepEqual(tx.toBroadcastFormat(), testData.POX_3_SIGNED_SELF_STACK_CONTRACT_CALL);
-
-        tx.type.should.equal(TransactionType.ContractCall);
-        tx.outputs.length.should.equal(1);
-        tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
-        tx.outputs[0].value.should.equal('0');
-        tx.inputs.length.should.equal(1);
-        tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
-        tx.inputs[0].value.should.equal('0');
-      });
-
       it('a signed contract call transaction', async () => {
         const amount = 123;
         const builder = initTxBuilder();
@@ -318,29 +282,6 @@ describe('Stacks: Contract Builder', function () {
         // https://docs.stacks.co/nakamoto-upgrade/signing-and-stacking/stacking-flow#solo-stacker-flow
         should.deepEqual(txJson.payload.functionArgs.length, 8);
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_SELF_STACK_CONTRACT_CALL);
-        tx.type.should.equal(TransactionType.ContractCall);
-        tx.outputs.length.should.equal(1);
-        tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
-        tx.outputs[0].value.should.equal('0');
-        tx.inputs.length.should.equal(1);
-        tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
-        tx.inputs[0].value.should.equal('0');
-      });
-
-      // TODO: remove support to this contract version after STX fork
-      // https://bitgoinc.atlassian.net/browse/EA-3482
-      it('a signed serialized pox-3 backward support pre-fork self stacking contract call transaction', async () => {
-        const builder = factory.from(testData.POX_3_SIGNED_SELF_STACK_CONTRACT_CALL);
-        const tx = await builder.build();
-        const txJson = tx.toJson();
-        should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
-        should.deepEqual(txJson.payload.contractName, testData.CONTRACT_NAME);
-        should.deepEqual(txJson.payload.functionName, testData.CONTRACT_FUNCTION_NAME);
-        should.deepEqual(txJson.nonce, 0);
-        should.deepEqual(txJson.fee.toString(), '180');
-        // POX-3 stacks-stx self-stacking supports 4 parameters
-        should.deepEqual(txJson.payload.functionArgs.length, 4);
-        should.deepEqual(tx.toBroadcastFormat(), testData.POX_3_SIGNED_SELF_STACK_CONTRACT_CALL);
         tx.type.should.equal(TransactionType.ContractCall);
         tx.outputs.length.should.equal(1);
         tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
@@ -465,12 +406,13 @@ describe('Stacks: Contract Builder', function () {
           const builder = initTxBuilder();
           assert.throws(() => builder.contractAddress(testData.ACCOUNT_1.address), /Invalid contract address/);
         });
-        it('a contract call with an invalid contract name', () => {
+        it('a contract call with an invalid contract name pox-2', () => {
           const builder = initTxBuilder();
-          assert.throws(
-            () => builder.contractName('pox-2'),
-            /Only pox-3, pox-4 and send-many-memo contracts supported/
-          );
+          assert.throws(() => builder.contractName('pox-2'), /Only pox-4 and send-many-memo contracts supported/);
+        });
+        it('a contract call with an invalid contract name pox-3', () => {
+          const builder = initTxBuilder();
+          assert.throws(() => builder.contractName('pox-3'), /Only pox-4 and send-many-memo contracts supported/);
         });
         it('a contract call with an invalid contract function name', () => {
           const builder = initTxBuilder();

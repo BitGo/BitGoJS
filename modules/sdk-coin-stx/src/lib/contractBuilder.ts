@@ -15,11 +15,7 @@ import { Transaction } from './transaction';
 import { isValidAddress } from './utils';
 import { ClarityValueJson } from './iface';
 import { Utils } from '.';
-import {
-  BACKWARD_COMPATIBILITY_CONTRACT_NAME_STAKING,
-  CONTRACT_NAME_SENDMANY,
-  CONTRACT_NAME_STAKING,
-} from './constants';
+import { CONTRACT_NAME_SENDMANY, CONTRACT_NAME_STAKING } from './constants';
 import { AbstractContractBuilder } from './abstractContractBuilder';
 
 export class ContractBuilder extends AbstractContractBuilder {
@@ -64,14 +60,8 @@ export class ContractBuilder extends AbstractContractBuilder {
     if (name.length === 0) {
       throw new InvalidParameterValueError('Invalid name');
     }
-    if (
-      // TODO: remove support to this contract version after STX fork
-      // https://bitgoinc.atlassian.net/browse/EA-3482
-      name !== BACKWARD_COMPATIBILITY_CONTRACT_NAME_STAKING &&
-      name !== CONTRACT_NAME_STAKING &&
-      name !== CONTRACT_NAME_SENDMANY
-    ) {
-      throw new InvalidParameterValueError('Only pox-3, pox-4 and send-many-memo contracts supported');
+    if (name !== CONTRACT_NAME_STAKING && name !== CONTRACT_NAME_SENDMANY) {
+      throw new InvalidParameterValueError('Only pox-4 and send-many-memo contracts supported');
     }
     this._contractName = name;
     return this;
