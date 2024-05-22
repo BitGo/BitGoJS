@@ -1,6 +1,8 @@
 import assert from 'assert';
 import { decode } from 'cbor-x';
+import * as t from 'io-ts';
 import { XShare } from '../ecdsa/types';
+import { isLeft } from 'fp-ts/Either';
 
 // Broadcast message meant to be sent to multiple parties
 interface BroadcastMessage<T> {
@@ -56,8 +58,19 @@ export type DklsSignature<T> = {
 export type RetrofitData = {
   bigSiList: string[];
   xShare: Partial<XShare>;
-  xiList?: string[];
+  xiList?: number[][];
 };
+
+export const ReducedKeyShareType = t.type({
+  bigSList: t.array(t.array(t.number)),
+  xList: t.array(t.array(t.number)),
+  rootChainCode: t.array(t.number),
+  prv: t.array(t.number),
+  pub: t.array(t.number),
+});
+
+export type ReducedKeyShare = t.TypeOf<typeof ReducedKeyShareType>;
+
 export type SerializedBroadcastMessage = BroadcastMessage<string>;
 export type DeserializedBroadcastMessage = BroadcastMessage<Uint8Array>;
 export type SerializedP2PMessage = P2PMessage<string, string>;
@@ -154,7 +167,7 @@ export function serializeBroadcastMessage(message: DeserializedBroadcastMessage)
 /**
  * Gets commonkeyChain from DKLS keyShare
  * @param {Buffer} keyShare - DKLS keyShare
- * @returns {string} commonKeychain
+ * @returns {string} commonKeychain in hex format
  */
 export function getCommonKeychain(keyShare: Buffer): string {
   const parsedKeyShare = decode(keyShare);
@@ -163,4 +176,12 @@ export function getCommonKeychain(keyShare: Buffer): string {
   const publicKey = Buffer.from(parsedKeyShare.public_key).toString('hex');
   const rootChainCode = Buffer.from(parsedKeyShare.root_chain_code).toString('hex');
   return publicKey + rootChainCode;
+}
+
+export function getDecodedReducedKeyShare(reducedKeyShare: Buffer | Uint8Array): ReducedKeyShare {
+  const decoded = ReducedKeyShareType.decode(decode(reducedKeyShare));
+  if (isLeft(decoded)) {
+    throw new Error(`Unable to parse reducedKeyShare: ${decoded.left}`);
+  }
+  return decoded.right;
 }

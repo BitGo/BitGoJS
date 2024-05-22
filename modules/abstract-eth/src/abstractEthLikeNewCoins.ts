@@ -35,7 +35,7 @@ import {
   VerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { DklsDsg, DklsTypes, DklsUtils, EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import {
   BaseCoin as StaticsBaseCoin,
   CoinMap,
@@ -1057,6 +1057,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       rangeProofChallenge?: EcdsaTypes.SerializedNtilde;
     } = {}
   ): Promise<ECDSAMethodTypes.Signature> {
+    if (!userKeyCombined || !backupKeyCombined) {
+      throw new Error('Missing key combined shares for user or backup');
+    }
+
     const MPC = new Ecdsa();
     const signerOneIndex = userKeyCombined.xShare.i;
     const signerTwoIndex = backupKeyCombined.xShare.i;
@@ -1926,33 +1930,128 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         params.eip1559,
         params.replayProtectionOptions
       );
-    } else if (this.isGG18SigningMaterial(userPublicOrPrivateKeyShare, params.walletPassphrase)) {
-      const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
-        userPublicOrPrivateKeyShare,
-        backupPrivateOrPublicKeyShare,
-        params.walletPassphrase
-      );
-      const backupKeyPair = new KeyPairLib({ pub: backupKeyCombined.xShare.y });
-      const baseAddress = backupKeyPair.getAddress();
+    } else {
+      const isGG18SigningMaterial = this.isGG18SigningMaterial(userPublicOrPrivateKeyShare, params.walletPassphrase);
+      let signature: ECDSAMethodTypes.Signature;
+      let unsignedTx: EthLikeTxLib.Transaction | EthLikeTxLib.FeeMarketEIP1559Transaction;
+      if (isGG18SigningMaterial) {
+        const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
+          userPublicOrPrivateKeyShare,
+          backupPrivateOrPublicKeyShare,
+          params.walletPassphrase
+        );
+        const backupKeyPair = new KeyPairLib({ pub: backupKeyCombined.xShare.y });
+        const baseAddress = backupKeyPair.getAddress();
 
-      let { tx } = await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params);
+        unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
 
-      const signableHex = tx.getMessageToSign(false).toString('hex');
-      if (!userKeyCombined || !backupKeyCombined) {
-        throw new Error('Missing key combined shares for user or backup');
+        signature = await this.signRecoveryTSS(
+          userKeyCombined,
+          backupKeyCombined,
+          unsignedTx.getMessageToSign(false).toString('hex')
+        );
+      } else {
+        const { userKeyShare, backupKeyShare, commonKeyChain, baseAddress } = await this.getMpcV2RecoveryKeyShares(
+          userPublicOrPrivateKeyShare,
+          backupPrivateOrPublicKeyShare,
+          params.walletPassphrase
+        );
+
+        unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
+
+        signature = await AbstractEthLikeNewCoins.signRecoveryMpcV2(
+          unsignedTx,
+          userKeyShare,
+          backupKeyShare,
+          commonKeyChain
+        );
       }
-      const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+
       const ethCommmon = AbstractEthLikeNewCoins.getEthLikeCommon(params.eip1559, params.replayProtectionOptions);
-      tx = this.getSignedTxFromSignature(ethCommmon, tx, signature);
+      const signedTx = this.getSignedTxFromSignature(ethCommmon, unsignedTx, signature);
 
       return {
-        id: addHexPrefix(tx.hash().toString('hex')),
-        tx: addHexPrefix(tx.serialize().toString('hex')),
+        id: addHexPrefix(signedTx.hash().toString('hex')),
+        tx: addHexPrefix(signedTx.serialize().toString('hex')),
       };
-    } else {
-      // DKLS
-      throw new Error('DKLS recovery is not implemented yet');
     }
+  }
+
+  private static async signRecoveryMpcV2(
+    tx: EthLikeTxLib.FeeMarketEIP1559Transaction | EthLikeTxLib.Transaction,
+    userKeyShare: Buffer,
+    backupKeyShare: Buffer,
+    commonKeyChain: string
+  ) {
+    const messageHash = tx.getMessageToSign(true);
+    const userDsg = new DklsDsg.Dsg(userKeyShare, 0, 'm', messageHash);
+    const backupDsg = new DklsDsg.Dsg(backupKeyShare, 1, 'm', messageHash);
+
+    const signatureString = DklsUtils.verifyAndConvertDklsSignature(
+      messageHash,
+      (await DklsUtils.executeTillRound(5, userDsg, backupDsg)) as DklsTypes.DeserializedDklsSignature,
+      commonKeyChain,
+      'm',
+      undefined,
+      false
+    );
+    const sigParts = signatureString.split(':');
+
+    return {
+      recid: parseInt(sigParts[0], 10),
+      r: sigParts[1],
+      s: sigParts[2],
+      y: sigParts[3],
+    };
+  }
+
+  private async getMpcV2RecoveryKeyShares(
+    userPublicOrPrivateKeyShare: string,
+    backupPrivateOrPublicKeyShare: string,
+    walletPassphrase?: string
+  ) {
+    const userCompressedPrv = Buffer.from(
+      this.bitgo.decrypt({
+        input: userPublicOrPrivateKeyShare,
+        password: walletPassphrase,
+      }),
+      'base64'
+    );
+    const bakcupCompressedPrv = Buffer.from(
+      this.bitgo.decrypt({
+        input: backupPrivateOrPublicKeyShare,
+        password: walletPassphrase,
+      }),
+      'base64'
+    );
+
+    const userPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(userCompressedPrv);
+    const backupPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(bakcupCompressedPrv);
+    const userKeyRetrofit: DklsTypes.RetrofitData = {
+      xShare: {
+        x: Buffer.from(userPrvJSON.prv).toString('hex'),
+        y: Buffer.from(userPrvJSON.pub).toString('hex'),
+        chaincode: Buffer.from(userPrvJSON.rootChainCode).toString('hex'),
+      },
+      bigSiList: [Buffer.from(userPrvJSON.bigSList[1]).toString('hex')],
+      xiList: userPrvJSON.xList.slice(0, 2),
+    };
+    const backupKeyRetrofit: DklsTypes.RetrofitData = {
+      xShare: {
+        x: Buffer.from(backupPrvJSON.prv).toString('hex'),
+        y: Buffer.from(backupPrvJSON.pub).toString('hex'),
+        chaincode: Buffer.from(backupPrvJSON.rootChainCode).toString('hex'),
+      },
+      bigSiList: [Buffer.from(backupPrvJSON.bigSList[0]).toString('hex')],
+      xiList: backupPrvJSON.xList.slice(0, 2),
+    };
+    const [user, backup] = await DklsUtils.generate2of2KeyShares(userKeyRetrofit, backupKeyRetrofit);
+    const userKeyShare = user.getKeyShare();
+    const backupKeyShare = backup.getKeyShare();
+    const commonKeyChain = DklsTypes.getCommonKeychain(userKeyShare).slice(0, 66);
+    const backupKeyPair = new KeyPairLib({ pub: commonKeyChain });
+    const baseAddress = backupKeyPair.getAddress();
+    return { userKeyShare, backupKeyShare, commonKeyChain, baseAddress };
   }
 
   private isGG18SigningMaterial(keyShare: string, walletPassphrase: string | undefined): boolean {

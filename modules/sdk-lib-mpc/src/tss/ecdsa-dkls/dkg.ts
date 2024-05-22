@@ -1,5 +1,5 @@
 import { KeygenSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
-import { DeserializedBroadcastMessage, DeserializedMessages, DkgState, RetrofitData } from './types';
+import { DeserializedBroadcastMessage, DeserializedMessages, DkgState, ReducedKeyShare, RetrofitData } from './types';
 import { decode, encode } from 'cbor-x';
 import { bigIntToBufferBE } from '../../util';
 import { Secp256k1Curve } from '../../curves';
@@ -135,6 +135,22 @@ export class Dkg {
       throw Error('Can not get key share, DKG is not complete yet.');
     }
     return this.keyShareBuff;
+  }
+
+  getReducedKeyShare(): Buffer {
+    if (!this.keyShareBuff) {
+      throw Error('Can not get key share, DKG is not complete yet.');
+    }
+    const decodedKeyshare = decode(this.keyShareBuff);
+    const reducedKeyShare: ReducedKeyShare = {
+      bigSList: decodedKeyshare.big_s_list,
+      xList: decodedKeyshare.x_i_list,
+      rootChainCode: decodedKeyshare.root_chain_code,
+      prv: decodedKeyshare.s_i,
+      pub: decodedKeyshare.public_key,
+    };
+    const encodedKeyShare = encode(reducedKeyShare);
+    return encodedKeyShare;
   }
 
   handleIncomingMessages(messagesForIthRound: DeserializedMessages): DeserializedMessages {

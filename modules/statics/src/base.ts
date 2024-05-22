@@ -894,6 +894,7 @@ export enum UnderlyingAsset {
   KIN = 'kin',
   KINE = 'kine',
   KING = 'king',
+  KINTO = 'kinto',
   KIRO = 'kiro',
   KISHUI = 'kishui',
   KITTY = 'kitty',
@@ -1409,6 +1410,7 @@ export enum UnderlyingAsset {
   TWDOGE = 'twdoge',
   TXL = 'txl',
   TXSGD = 'txsgd',
+  TXUSD = 'txusd',
   UAIR = 'uair',
   UBXT = 'ubxt',
   UCO = 'uco',
@@ -1466,6 +1468,7 @@ export enum UnderlyingAsset {
   VSP = 'vsp',
   VXC = 'vxc',
   VXV = 'vxv',
+  W = 'w',
   // Wrapped AAVE
   WAAVE = 'waave',
   WABI = 'wabi',
@@ -1747,6 +1750,7 @@ export enum UnderlyingAsset {
   'polygon:dipe' = 'polygon:dipe',
   'polygon:lif3' = 'polygon:lif3',
   'polygon:l3usd' = 'polygon:l3usd',
+  'polygon:moca' = 'polygon:moca',
 
   // Polygon NFTs
   // generic NFTs
@@ -1797,6 +1801,7 @@ export enum UnderlyingAsset {
   'arbeth:usdt' = 'arbeth:usdt',
   'arbeth:arb' = 'arbeth:arb',
   'arbeth:sqd' = 'arbeth:sqd',
+  'arbeth:w' = 'arbeth:w',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -1870,6 +1875,7 @@ export enum UnderlyingAsset {
   'honey' = 'honey',
   'mobile' = 'mobile',
   'wif' = 'wif',
+  'natix' = 'natix',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',

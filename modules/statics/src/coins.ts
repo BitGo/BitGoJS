@@ -4222,6 +4222,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.KING
   ),
   erc20(
+    'b408ff17-e3a4-411c-b1a5-b84100c034c4',
+    'kinto',
+    'Kinto Token',
+    18,
+    '0x2367c8395a283f0285c6e312d5aa15826f1fea25',
+    UnderlyingAsset.KINTO
+  ),
+  erc20(
     'dc33d6df-9aed-4b6e-b10c-9874d3c2435e',
     'kiro',
     'Kirobo',
@@ -5812,7 +5820,7 @@ export const coins = CoinMap.fromCoins([
     'sbc',
     'Sustainable Bitcoin Certificate',
     8,
-    '0xd5978e6ca51ae45f4c1821ce95025502d0246f5e',
+    '0xae8eeb1f92f0f76d3f21d5887096999254f06ea5',
     UnderlyingAsset.SBC
   ),
   erc20(
@@ -10124,6 +10132,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VXV
   ),
   erc20(
+    'ff69a200-eea1-4708-abef-69b6920700f8',
+    'w',
+    'Wormhole Token',
+    18,
+    '0xb0ffa8000886e57f86dd5264b9582b2ad87b2b91',
+    UnderlyingAsset.W
+  ),
+  erc20(
     '68355bfb-c8c4-49bd-ba3b-bb58195e55a0',
     'wagmi',
     'WAGMI GAMES',
@@ -11444,6 +11460,18 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x3f811bb6e605ef518b0cd9281eb4d9ad88a3953f',
     UnderlyingAsset.TXSGD,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
+    'd48aae8b-3a3c-46b7-a98f-ea7347dc5b45',
+    'txusd',
+    'XUSD Holesky',
+    6,
+    '0x6d41906cce58491daf2ca8141a1c4b180fa6e7b9',
+    UnderlyingAsset.TXUSD,
     undefined,
     undefined,
     undefined,
@@ -14253,6 +14281,24 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(
+    '683e5064-fff0-401d-bf62-08f49bb130fc',
+    'sol:natix',
+    'NATIX Network ',
+    6,
+    'FRySi8LPkuByB7VPSCCggxpewFUeeJiwEGRKKuhwpKcX',
+    UnderlyingAsset['natix'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '2b1d83de-1cb8-4e22-bc25-8f66e758c809',
+    'sol:w',
+    'Wormhole Token',
+    6,
+    '85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ',
+    UnderlyingAsset['W'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
     '51025e9d-74b7-483e-8649-3628049258dc',
     'sol:mobile',
     'Helium Mobile',
@@ -14908,6 +14954,14 @@ export const coins = CoinMap.fromCoins([
     '0x2c2d8a078b33bf7782a16acce2c5ba6653a90d5f',
     UnderlyingAsset['polygon:l3usd']
   ),
+  polygonErc20(
+    '3452066a-aabf-43b7-9e5d-22f543cc4ac5',
+    'polygon:moca',
+    'Moca',
+    18,
+    '0xf944e35f95e819e752f3ccb5faf40957d311e8c5',
+    UnderlyingAsset['polygon:moca']
+  ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
     'erc721:polygontoken',
@@ -15083,6 +15137,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x1337420ded5adb9980cfc35f8f2b054ea86f8ab1',
     UnderlyingAsset['arbeth:sqd']
+  ),
+  arbethErc20(
+    '5a160655-9d96-4fdd-a362-224026b7c1e8',
+    'arbeth:w',
+    'Wormhole Token',
+    18,
+    '0xb0ffa8000886e57f86dd5264b9582b2ad87b2b91',
+    UnderlyingAsset['arbeth:w']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
