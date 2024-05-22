@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.12.0...@bitgo/statics@48.13.0) (2024-05-22)
+
+### Features
+
+- **statics:** add new batch of tokens ([8f705eb](https://github.com/BitGo/BitGoJS/commit/8f705eb0905b15d24e07fd3e4c5a40534c1dfef0))
+- **statics:** update sbc address to the new one ([cf8a122](https://github.com/BitGo/BitGoJS/commit/cf8a122ddd9714186216a1a3183fc1a4b14e4226))
+
+# [48.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.11.0...@bitgo/statics@48.12.0) (2024-05-17)
+
+### Bug Fixes
+
+- **statics:** update explorer for ADA and ALGO ([75773b5](https://github.com/BitGo/BitGoJS/commit/75773b5025fbed82d67b730684e96e38dc5807e6))
+- **statics:** update stellar token label ([639ee43](https://github.com/BitGo/BitGoJS/commit/639ee43aeb047b7bddd177c952d6303f3a364006))
+
+### Features
+
+- **statics:** add ofc token to represent Erc20 token on avalance chain ([abc09c2](https://github.com/BitGo/BitGoJS/commit/abc09c2009883e535a91a95c235801da87ce87e1))
+- **statics:** add offchain token for arbeth:usdcv2 ([aad0b16](https://github.com/BitGo/BitGoJS/commit/aad0b166763242cc2bd0837e9d0138f721e17f86))
+- **statics:** add Tezos(XTZ) coin support to Go Accounts ([7e9b7e8](https://github.com/BitGo/BitGoJS/commit/7e9b7e8931ba5f3337d74baf9a563e6b7651c497))
+- **statics:** adding support for solana tokens for go account ([076ff13](https://github.com/BitGo/BitGoJS/commit/076ff133de149de8e6c6a1382b9f082f7f838316))
+- **statics:** rename stx explorer testnet url to nakamoto testnet url ([8ccdca8](https://github.com/BitGo/BitGoJS/commit/8ccdca8500a5f5a91baa9f5bcabeb022067e6590))
+
 # [48.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.10.0...@bitgo/statics@48.11.0) (2024-05-13)
 
 ### Bug Fixes

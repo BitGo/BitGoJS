@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.5.0...bitgo@38.6.0) (2024-05-22)
+
+### Features
+
+- **abstract-eth:** wrw recovery for dkls wallet ([bf374e8](https://github.com/BitGo/BitGoJS/commit/bf374e89522c9688619d9b20ed66d3873b55d75e))
+- **sdk-core:** support smaller mpcv2 keycard ([63512d4](https://github.com/BitGo/BitGoJS/commit/63512d4279d012c0a151720cffb195b198d25e21))
+
+# [38.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.4.2...bitgo@38.5.0) (2024-05-17)
+
+### Features
+
+- send changeAddressType preferences array ([bd18c9e](https://github.com/BitGo/BitGoJS/commit/bd18c9e5e897655036676db49070858e11b6e028))
+- **statics:** add ofc token to represent Erc20 token on avalance chain ([abc09c2](https://github.com/BitGo/BitGoJS/commit/abc09c2009883e535a91a95c235801da87ce87e1))
+- **statics:** adding support for solana tokens for go account ([076ff13](https://github.com/BitGo/BitGoJS/commit/076ff133de149de8e6c6a1382b9f082f7f838316))
+
 ## [38.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo@38.4.1...bitgo@38.4.2) (2024-05-13)
 
 ### Bug Fixes

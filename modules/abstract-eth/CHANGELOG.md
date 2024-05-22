@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.3.0...@bitgo/abstract-eth@21.4.0) (2024-05-22)
+
+### Features
+
+- **abstract-eth:** wrw recovery for dkls wallet ([bf374e8](https://github.com/BitGo/BitGoJS/commit/bf374e89522c9688619d9b20ed66d3873b55d75e))
+
+# [21.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.2.1...@bitgo/abstract-eth@21.3.0) (2024-05-17)
+
+### Features
+
+- **abstract-eth:** refactor eth wrw recovery tss ([0fdbd5e](https://github.com/BitGo/BitGoJS/commit/0fdbd5eaf25c414b43b61bcfa6bdcdf0150b880f))
+
 ## [21.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.2.0...@bitgo/abstract-eth@21.2.1) (2024-05-13)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

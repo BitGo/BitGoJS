@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.3.0...@bitgo/abstract-utxo@8.3.1) (2024-05-22)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
+# [8.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.2.1...@bitgo/abstract-utxo@8.3.0) (2024-05-17)
+
+### Features
+
+- remove conditional p2trMusig2 check ([9683f33](https://github.com/BitGo/BitGoJS/commit/9683f3325fd454a804a60894c618ee0212acc6b2))
+- send changeAddressType preferences array ([bd18c9e](https://github.com/BitGo/BitGoJS/commit/bd18c9e5e897655036676db49070858e11b6e028))
+
 ## [8.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.2.0...@bitgo/abstract-utxo@8.2.1) (2024-05-13)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo
