@@ -10,7 +10,6 @@ import { KeychainsTriplet } from '../../../baseCoin';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { BaseEcdsaUtils } from './base';
 import {
-  MPCv2Party,
   MPCv2KeyGenState,
   MPCv2BroadcastMessage,
   MPCv2KeyGenRound1Response,
@@ -21,6 +20,7 @@ import {
   MPCv2KeyGenStateEnum,
   MPCv2SignatureShareRound1Output,
   MPCv2SignatureShareRound2Output,
+  MPCv2PartyFromStringOrNumber,
 } from '@bitgo/public-types';
 import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
 import { RequestType, TSSParams, TSSParamsForMessage, TxRequest } from '../baseTypes';
@@ -319,7 +319,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
   // #region keychain utils
   async createParticipantKeychain(
-    participantIndex: MPCv2Party,
+    participantIndex: MPCv2PartyFromStringOrNumber,
     commonKeychain: string,
     privateMaterial?: Buffer,
     reducedPrivateMaterial?: Buffer,

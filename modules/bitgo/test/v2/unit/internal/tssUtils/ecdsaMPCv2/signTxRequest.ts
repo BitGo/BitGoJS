@@ -19,7 +19,7 @@ import {
   MPCv2SignatureShareRound2Input,
   MPCv2SignatureShareRound2Output,
   MPCv2SignatureShareRound3Input,
-  MPCv2Party,
+  MPCv2PartyFromStringOrNumber,
 } from '@bitgo/public-types';
 import * as openpgp from 'openpgp';
 import * as nock from 'nock';
@@ -221,13 +221,13 @@ async function nockTxRequestResponseSignatureShareRoundOne(
           type: 'round1Output',
           data: {
             msg1: {
-              from: authEncMessages.broadcastMessages[0].from as MPCv2Party,
+              from: authEncMessages.broadcastMessages[0].from as MPCv2PartyFromStringOrNumber,
               signature: authEncMessages.broadcastMessages[0].payload.signature,
               message: authEncMessages.broadcastMessages[0].payload.message,
             },
             msg2: {
-              from: authEncMessages.p2pMessages[0].from as MPCv2Party,
-              to: authEncMessages.p2pMessages[0].to as MPCv2Party,
+              from: authEncMessages.p2pMessages[0].from as MPCv2PartyFromStringOrNumber,
+              to: authEncMessages.p2pMessages[0].to as MPCv2PartyFromStringOrNumber,
               encryptedMessage: authEncMessages.p2pMessages[0].payload.encryptedMessage,
               signature: authEncMessages.p2pMessages[0].payload.signature,
             },
@@ -320,8 +320,8 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
           type: 'round2Output',
           data: {
             msg3: {
-              from: authEncMessages.p2pMessages[0].from as MPCv2Party,
-              to: authEncMessages.p2pMessages[0].to as MPCv2Party,
+              from: authEncMessages.p2pMessages[0].from as MPCv2PartyFromStringOrNumber,
+              to: authEncMessages.p2pMessages[0].to as MPCv2PartyFromStringOrNumber,
               encryptedMessage: authEncMessages.p2pMessages[0].payload.encryptedMessage,
               signature: authEncMessages.p2pMessages[0].payload.signature,
             },
