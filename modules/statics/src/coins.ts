@@ -1277,7 +1277,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:gari',
     'GARI',
     9,
-    UnderlyingAsset.GARI,
+    UnderlyingAsset['sol:gari'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1333,7 +1333,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:gari',
     'testnet Gari Token',
     9,
-    UnderlyingAsset.GARI,
+    UnderlyingAsset['sol:gari'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -12845,7 +12845,7 @@ export const coins = CoinMap.fromCoins([
     'GARI',
     9,
     'CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks', // https://explorer.solana.com/address/CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks
-    UnderlyingAsset.GARI,
+    UnderlyingAsset['sol:gari'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14556,7 +14556,7 @@ export const coins = CoinMap.fromCoins([
     'GARI',
     9,
     'Aub3Nun71bD5B98JQAivGtEdwCuFJVvZVXKkcVJkuzgh',
-    UnderlyingAsset.GARI,
+    UnderlyingAsset['sol:gari'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(

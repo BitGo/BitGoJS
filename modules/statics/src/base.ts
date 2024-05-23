@@ -762,7 +762,7 @@ export enum UnderlyingAsset {
   GALAV2 = 'galav2',
   'GAME.COM' = 'game.com',
   GAMMA = 'gamma',
-  GARI = 'gari',
+  'sol:gari' = 'sol:gari',
   GATE = 'gate',
   GBPT = 'gbpt',
   GBPX = 'gbpx',
