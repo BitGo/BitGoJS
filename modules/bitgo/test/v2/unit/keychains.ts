@@ -342,6 +342,9 @@ describe('V2 Keychains', function () {
 
       ['tbsc'].forEach((coin) => {
         it('should create ECDSA TSS Keychains', async function () {
+          nock(bgUrl).get('/api/v2/tss/settings').reply(200, {
+            coinSettings: {},
+          });
           sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
           const keychains = await bitgo.coin(coin).keychains().createMpc({
             multisigType: 'tss',

@@ -29,6 +29,7 @@ import {
   WalletWithKeychains,
 } from './iWallets';
 import { Wallet } from './wallet';
+import { TssSettings } from '@bitgo/public-types';
 
 export class Wallets implements IWallets {
   private readonly bitgo: BitGoBase;
@@ -125,8 +126,20 @@ export class Wallets implements IWallets {
       throw new Error('invalid argument for gasPrice - number expected');
     }
 
-    if (params.walletVersion && !_.isNumber(params.walletVersion)) {
-      throw new Error('invalid argument for walletVersion - number expected');
+    if (params.walletVersion) {
+      if (!_.isNumber(params.walletVersion)) {
+        throw new Error('invalid argument for walletVersion - number expected');
+      }
+      if (params.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa' && params.walletVersion === 3) {
+        const tssSettings: TssSettings = await this.bitgo
+          .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+          .result();
+        const multisigTypeVersion =
+          tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
+        if (multisigTypeVersion === 'MPCv2') {
+          params.walletVersion = 5;
+        }
+      }
     }
 
     if (params.tags && Array.isArray(params.tags) === false) {
@@ -775,6 +788,17 @@ export class Wallets implements IWallets {
     originalPasscodeEncryptionCode,
     backupProvider,
   }: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
+    if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa' && walletVersion === 3) {
+      const tssSettings: TssSettings = await this.bitgo
+        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .result();
+      const multisigTypeVersion =
+        tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
+      if (multisigTypeVersion === 'MPCv2') {
+        walletVersion = 5;
+      }
+    }
+
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 

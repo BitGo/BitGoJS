@@ -158,16 +158,12 @@ describe('ETH-like coins', () => {
           basecoin.isValidAddress('3KgL6DTUb6gEoqSwMMJzyf96ekH8oZtWtZ').should.equal(false);
         });
 
-        it('Should not throw when verifying valid addresses', function () {
+        xit('Should not throw when verifying valid addresses', function () {
           // FIXME(BG-43225): not implemented
-          // @ts-expect-error - no implicit this
-          this.skip();
         });
 
-        it('Should throw when verifying invalid addresses', function () {
+        xit('Should throw when verifying invalid addresses', function () {
           // FIXME(BG-43225): not implemented
-          // @ts-expect-error - no implicit this
-          this.skip();
         });
       });
 
