@@ -101,6 +101,11 @@ export class TransferBuilder {
     throw new InvalidParameterValueError('Invalid expiration time');
   }
 
+  tokenContractAddress(tokenContractAddress: string): TransferBuilder {
+    this._tokenContractAddress = tokenContractAddress;
+    return this;
+  }
+
   signAndBuild(chainId: string, coinUsesNonPackedEncodingForTxData?: boolean): string {
     this._chainId = chainId;
 

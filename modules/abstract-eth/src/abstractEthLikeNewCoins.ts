@@ -1756,12 +1756,18 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     )?.name as string;
 
     transferBuilder
-      .coin(token)
       .amount(txAmount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())
-      .to(params.recoveryDestination)
-      .coin(token);
+      .to(params.recoveryDestination);
+
+    if (token) {
+      transferBuilder.coin(token);
+    } else {
+      transferBuilder
+        .coin(this.staticsCoin?.name as string)
+        .tokenContractAddress(params.tokenContractAddress as string);
+    }
 
     if (params.walletPassphrase) {
       txBuilder.transfer().key(userSigningKey);
@@ -1777,7 +1783,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const response: OfflineVaultTxInfo = {
       txHex: tx.toBroadcastFormat(),
       userKey,
-      coin: token,
+      coin: token ? token : this.getChain(),
       gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
       gasLimit,
       recipients: txInfo.recipients,
