@@ -704,8 +704,8 @@ describe('V2 Wallets:', function () {
   });
 
   describe('Generate TSS MPCv2 wallet:', async function () {
-    ['hteth', 'tbsc', 'tpolygon'].forEach((coin) => {
-      it('should create a new TSS MPCv2 wallet', async function () {
+    ['hteth', 'tbsc', 'tpolygon', 'ttia', 'tatom'].forEach((coin) => {
+      it('should create a new TSS MPCv2 wallet for coin: ' + coin, async function () {
         const testCoin = bitgo.coin(coin);
         const sandbox = sinon.createSandbox();
         const stubbedKeychainsTriplet: KeychainsTriplet = {

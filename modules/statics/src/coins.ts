@@ -231,6 +231,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
   CoinFeature.STAKING,
   CoinFeature.SHA256_WITH_ECDSA_TSS,
   CoinFeature.COSMOS_LIKE_COINS,
