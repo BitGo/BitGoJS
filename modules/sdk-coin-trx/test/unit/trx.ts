@@ -258,6 +258,9 @@ describe('TRON:', function () {
       accountBalance.withArgs(TestRecoverData.baseAddress).resolves(
         baseAddressBalance(100000000, [
           {
+            TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id: '1000000000',
+          },
+          {
             TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
           },
         ])
@@ -269,6 +272,7 @@ describe('TRON:', function () {
         userKey: TestRecoverData.userKey,
         backupKey: TestRecoverData.backupKey,
         bitgoKey: TestRecoverData.bitgoKey,
+        tokenContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
         recoveryDestination: TestRecoverData.recoveryDestination,
       });
       res.should.not.be.empty();
@@ -302,6 +306,7 @@ describe('TRON:', function () {
           userKey: TestRecoverData.userKey,
           backupKey: TestRecoverData.backupKey,
           bitgoKey: TestRecoverData.bitgoKey,
+          tokenContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
           recoveryDestination: TestRecoverData.recoveryDestination,
         })
         .should.be.rejectedWith(
