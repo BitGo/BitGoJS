@@ -824,7 +824,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {number} version wallet version
    */
   walletVersion(version: number): void {
-    if (version < 0 || version > 4 || version === 3) {
+    if (version < 0 || version > 5 || version === 3) {
       throw new BuildTransactionError(`Invalid wallet version: ${version}`);
     }
 
