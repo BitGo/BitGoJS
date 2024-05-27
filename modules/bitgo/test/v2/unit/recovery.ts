@@ -399,6 +399,7 @@ describe('Recovery:', function () {
         bitgoKey:
           'xpub661MyMwAqRbcGYq9RtWYzKuvqba2EHr9vAkDbPsNi1L9TmiHSRUXHqxe18P4DHXtDFtUy4Sb9bhpShHEWW9h3LwHM9bB2qoP2cwWTduV9nP',
         walletPassphrase: 'test_wallet_passphrase',
+        tokenContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
         recoveryDestination: 'TYPgx8NfDxB8pyiyTeiMkYzem1dNA6G12i',
       });
 

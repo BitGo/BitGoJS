@@ -39,15 +39,6 @@ export const SAFE_TRON_TOKEN_TRANSACTION_FEE = 100 * 1e6; // TRON foundation rec
 export const RECOVER_TRANSACTION_EXPIRY = 86400000; // 24 hour
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
-export const TOKEN_CONTRACT_ADDRESSES = [
-  // mainnet tokens
-  'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',
-  'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-  // testnet tokens
-  'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
-  'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
-];
-
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -91,6 +82,7 @@ export interface RecoveryOptions {
   bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
   recoveryDestination: string; // base58 address
   krsProvider?: string;
+  tokenContractAddress?: string;
   walletPassphrase?: string;
   startingScanIndex?: number;
   scan?: number;
@@ -610,11 +602,11 @@ export class Trx extends BaseCoin {
     let userXPrv = keys[0].toBase58();
     let isReceiveAddress = false;
     let addressInfo: AddressInfo | undefined;
-
-    // Tokens must be recovered before the native asset. First construct token txns
-    let rawTokenTxn: any | undefined;
-    for (const token of account.data[0].trc20) {
-      for (const tokenContractAddr of TOKEN_CONTRACT_ADDRESSES) {
+    const tokenContractAddr = params.tokenContractAddress;
+    // check for possible token recovery, recover the token provide by user
+    if (tokenContractAddr) {
+      let rawTokenTxn: any | undefined;
+      for (const token of account.data[0].trc20) {
         if (token[tokenContractAddr]) {
           const amount = token[tokenContractAddr];
           const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(tokenContractAddr);
@@ -630,42 +622,43 @@ export class Trx extends BaseCoin {
           break;
         }
       }
-    }
 
-    // build and sign token txns
-    if (rawTokenTxn) {
-      // Check there is sufficient of the native asset to cover fees
-      const trxBalance = account.data[0].balance;
-      if (trxBalance < SAFE_TRON_TOKEN_TRANSACTION_FEE) {
-        throw new Error(
-          `Amount of funds to recover ${trxBalance} is less than ${SAFE_TRON_TOKEN_TRANSACTION_FEE} and wouldn't be able to fund a trc20 send`
-        );
-      }
+      // build and sign token txns
+      if (rawTokenTxn) {
+        // Check there is sufficient of the native asset to cover fees
+        const trxBalance = account.data[0].balance;
+        if (trxBalance < SAFE_TRON_TOKEN_TRANSACTION_FEE) {
+          throw new Error(
+            `Amount of funds to recover ${trxBalance} is less than ${SAFE_TRON_TOKEN_TRANSACTION_FEE} and wouldn't be able to fund a trc20 send`
+          );
+        }
 
-      const txBuilder = getBuilder(this.getChain()).from(rawTokenTxn);
-      // Default expiry is 1 minute which is too short for recovery purposes
-      // extend the expiry to 1 day
-      txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
-      // this tx should be enough to drop into a node
-      if (isUnsignedSweep) {
+        const txBuilder = getBuilder(this.getChain()).from(rawTokenTxn);
+        // Default expiry is 1 minute which is too short for recovery purposes
+        // extend the expiry to 1 day
+        txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
+        // this tx should be enough to drop into a node
+        if (isUnsignedSweep) {
+          return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
+        }
+
+        const userPrv = this.xprvToCompressedPrv(userXPrv);
+
+        txBuilder.sign({ key: userPrv });
+
+        // krs recoveries don't get signed
+        if (!isKrsRecovery && !isReceiveAddress) {
+          const backupXPrv = keys[1].toBase58();
+          const backupPrv = this.xprvToCompressedPrv(backupXPrv);
+
+          txBuilder.sign({ key: backupPrv });
+        }
         return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
+      } else {
+        throw Error('Not found token to recover, please check token balance');
       }
-
-      const userPrv = this.xprvToCompressedPrv(userXPrv);
-
-      txBuilder.sign({ key: userPrv });
-
-      // krs recoveries don't get signed
-      if (!isKrsRecovery && !isReceiveAddress) {
-        const backupXPrv = keys[1].toBase58();
-        const backupPrv = this.xprvToCompressedPrv(backupXPrv);
-
-        txBuilder.sign({ key: backupPrv });
-      }
-      return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
     }
-
-    // Now let us recover the native Tron
+    // let us recover the native Tron
     if (recoveryAmount > SAFE_TRON_TRANSACTION_FEE) {
       const userXPub = keys[0].neutered().toBase58();
       const backupXPub = keys[1].neutered().toBase58();
