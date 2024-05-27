@@ -4831,6 +4831,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.MYRC
   ),
   erc20(
+    'e4ef14c9-6d7d-425d-a313-f2a536c6f513',
+    'myth',
+    'Mythos',
+    18,
+    '0xba41ddf06b7ffd89d1267b5a93bfef2424eb2003',
+    UnderlyingAsset.MYTH
+  ),
+  erc20(
     '5c73eef9-53ce-42d0-a72e-1900d1eef499',
     'nas',
     'Nebulas',
@@ -5501,6 +5509,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x31c8eacbffdd875c74b94b077895bd78cf1e64a3',
     UnderlyingAsset.RAD
+  ),
+  erc20(
+    '5641e709-977d-486f-b000-842f43a2d82d',
+    'radar',
+    'DappRadar',
+    18,
+    '0x44709a920fccf795fbc57baa433cc3dd53c44dbe',
+    UnderlyingAsset.RADAR
   ),
   erc20(
     '762c91d4-fd7c-4ee1-af55-a9440e1ce054',
@@ -10364,6 +10380,14 @@ export const coins = CoinMap.fromCoins([
     '0x2170ed0880ac9a755fd29b2688956bd959f933f8',
     UnderlyingAsset['bsc:eth']
   ),
+  bscToken(
+    '77ea0dcf-808c-4abf-9f5e-4028cb557cab',
+    'bsc:dd',
+    'Diment Dollar',
+    6,
+    '0x71b3a0566f4bf80331d115d8026a7022bf670cce',
+    UnderlyingAsset['bsc:dd']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -12320,6 +12344,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xf9fb20b8e097904f0ab7d12e9dbee88f2dcd0f16',
     UnderlyingAsset['avaxc:sbc']
+  ),
+  avaxErc20(
+    '68f70a2d-cfbf-4ba6-a92e-bdd6eaf4663f',
+    'avaxc:xsgd',
+    'XSGD',
+    6,
+    '0xcff17e464626adef615ffc1ecdb1661f1ed1ca16',
+    UnderlyingAsset['avaxc:xsgd']
   ),
   avaxErc20(
     'dc358736-07c0-4d72-a1cb-51710b4169b1',
