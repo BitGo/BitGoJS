@@ -1032,6 +1032,7 @@ export enum UnderlyingAsset {
   MVI = 'mvi',
   MWT = 'mwt',
   MYRC = 'myrc',
+  MYTH = 'myth',
   NAAI = 'naai',
   NAS = 'nas',
   NCT = 'nct',
@@ -1156,6 +1157,7 @@ export enum UnderlyingAsset {
   QSP = 'qsp',
   QVT = 'qvt',
   RAD = 'rad',
+  RADAR = 'radar',
   RAIN = 'rain',
   RALPH = 'ralph',
   RAMP = 'ramp',
@@ -1646,6 +1648,7 @@ export enum UnderlyingAsset {
   'avaxc:wbtc' = 'avaxc:wbtc',
   'avaxc:weth' = 'avaxc:weth',
   'avaxc:sbc' = 'avaxc:sbc',
+  'avaxc:xsgd' = 'avaxc:xsgd',
   'tavaxc:opm' = 'tavaxc:opm',
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   // Begin FTX missing AVAXC tokens
@@ -1769,6 +1772,7 @@ export enum UnderlyingAsset {
   'bsc:epx' = 'bsc:epx',
   'bsc:usdc' = 'bsc:usdc',
   'bsc:eth' = 'bsc:eth',
+  'bsc:dd' = 'bsc:dd',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs
