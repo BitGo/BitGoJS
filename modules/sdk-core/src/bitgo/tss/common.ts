@@ -84,6 +84,68 @@ export async function sendSignatureShare(
 }
 
 /**
+ * Sends a Signature Share using the sign txRequest route
+ *
+ * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {String} walletId - the wallet id  *
+ * @param {String} txRequestId - the txRequest Id
+ * @param signatureShares
+ * @param requestType - The type of request being submitted (either tx or message for signing)
+ * @param signerShare
+ * @param mpcAlgorithm
+ * @param multisigTypeVersion
+ * @param signerGpgPublicKey
+ * @returns {Promise<SignatureShareRecord>} - a Signature Share
+ */
+export async function sendSignatureShareV2(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  signatureShares: SignatureShareRecord[],
+  requestType: RequestType,
+  mpcAlgorithm: 'eddsa' | 'ecdsa',
+  signerGpgPublicKey: string,
+  signerShare?: string,
+  multisigTypeVersion?: 'MPCv2' | undefined
+): Promise<TxRequest> {
+  const addendum = requestType === RequestType.tx ? '/transactions/0' : '/messages/0';
+  const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/sign';
+  let type = '';
+  if (multisigTypeVersion === 'MPCv2' && mpcAlgorithm === 'ecdsa') {
+    type = 'ecdsaMpcV2';
+  } else if (multisigTypeVersion === undefined && mpcAlgorithm === 'eddsa') {
+    type = 'eddsaMpcV1';
+  }
+  const requestBody = {
+    type,
+    signatureShares,
+    signerShare,
+    signerGpgPublicKey,
+  };
+  return bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
+}
+
+/**
+ * Sends a Transaction Request for broadcast once signing is complete
+ *
+ * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {String} walletId - the wallet id  *
+ * @param {String} txRequestId - the txRequest Id
+ * @param requestType - The type of request being submitted (either tx or message for signing)
+ * @returns {Promise<SignatureShareRecord>} - a Signature Share
+ */
+export async function sendTxRequest(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  requestType: RequestType
+): Promise<TxRequest> {
+  const addendum = requestType === RequestType.tx ? '/transactions/0' : '/messages/0';
+  const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/send';
+  return bitgo.post(bitgo.url(urlPath, 2)).send().result();
+}
+
+/**
  * Sends the client commitment and encrypted signer share to the server, getting back the server commitment
  * @param {BitGoBase} bitgo - the bitgo instance
  * @param {string} walletId - the wallet id
