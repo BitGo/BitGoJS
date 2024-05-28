@@ -18,6 +18,8 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
+import { afterEach } from 'mocha';
+import { TssSettings } from '@bitgo/public-types';
 
 describe('V2 Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
@@ -434,9 +436,33 @@ describe('V2 Wallets:', function () {
 
   describe('Generate TSS wallet:', function () {
     const tsol = bitgo.coin('tsol');
+    const sandbox = sinon.createSandbox();
+
+    beforeEach(function () {
+      nock('https://bitgo.fakeurl')
+        .get(`/api/v2/tss/settings`)
+        .times(2)
+        .reply(200, {
+          coinSettings: {
+            eth: {
+              walletCreationSettings: {},
+            },
+            bsc: {
+              walletCreationSettings: {},
+            },
+            polygon: {
+              walletCreationSettings: {},
+            },
+          },
+        });
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+      sandbox.verifyAndRestore();
+    });
 
     it('should create a new TSS wallet', async function () {
-      const sandbox = sinon.createSandbox();
       const stubbedKeychainsTriplet: KeychainsTriplet = {
         userKeychain: {
           id: '1',
@@ -472,12 +498,10 @@ describe('V2 Wallets:', function () {
       });
 
       walletNock.isDone().should.be.true();
-      sandbox.verifyAndRestore();
     });
 
     it('should create a new ECDSA TSS wallet with BitGoTrustAsKrs as backup provider', async function () {
       const tpolygon = bitgo.coin('tpolygon');
-      const sandbox = sinon.createSandbox();
       const stubbedKeychainsTriplet: KeychainsTriplet = {
         userKeychain: {
           id: '1',
@@ -512,7 +536,6 @@ describe('V2 Wallets:', function () {
       });
 
       walletNock.isDone().should.be.true();
-      sandbox.verifyAndRestore();
     });
 
     it('should fail to create TSS wallet with invalid inputs', async function () {
@@ -575,6 +598,7 @@ describe('V2 Wallets:', function () {
 
       const walletNock = nock('https://bitgo.fakeurl')
         .post('/api/v2/tsol/wallet')
+        .times(1)
         .reply(200, { ...walletParams, keys });
 
       const wallets = new Wallets(bitgo, tsol);
@@ -593,7 +617,6 @@ describe('V2 Wallets:', function () {
     });
 
     it('should create a new TSS SMC wallet', async function () {
-      const sandbox = sinon.createSandbox();
       const commonKeychain = 'longstring';
       const seed = 'seed';
       const keys: KeychainsTriplet = {
@@ -680,12 +703,9 @@ describe('V2 Wallets:', function () {
       userKeyNock.isDone().should.be.true();
       backupKeyNock.isDone().should.be.true();
       walletNock.isDone().should.be.true();
-
-      sandbox.verifyAndRestore();
     });
 
     it('should throw an error for TSS SMC wallet if the bitgoKeyId is not a bitgo key ', async function () {
-      const sandbox = sinon.createSandbox();
       const commonKeychain = 'longstring';
       const seed = 'seed';
       const keys: KeychainsTriplet = {
@@ -730,16 +750,53 @@ describe('V2 Wallets:', function () {
         .should.be.rejectedWith('The provided bitgoKeyId is not a BitGo keychain');
 
       bitgoKeyNock.isDone().should.be.true();
-
-      sandbox.verifyAndRestore();
     });
   });
 
   describe('Generate TSS MPCv2 wallet:', async function () {
+    const sandbox = sinon.createSandbox();
+
+    beforeEach(function () {
+      const tssSettings: TssSettings = {
+        coinSettings: {
+          eth: {
+            walletCreationSettings: {
+              multiSigTypeVersion: 'MPCv2',
+            },
+          },
+          bsc: {
+            walletCreationSettings: {
+              multiSigTypeVersion: 'MPCv2',
+            },
+          },
+          polygon: {
+            walletCreationSettings: {
+              multiSigTypeVersion: 'MPCv2',
+            },
+          },
+          atom: {
+            walletCreationSettings: {
+              multiSigTypeVersion: 'MPCv2',
+            },
+          },
+          tia: {
+            walletCreationSettings: {
+              multiSigTypeVersion: 'MPCv2',
+            },
+          },
+        },
+      };
+      nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).times(2).reply(200, tssSettings);
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+      sandbox.verifyAndRestore();
+    });
+
     ['hteth', 'tbsc', 'tpolygon', 'ttia', 'tatom'].forEach((coin) => {
-      it('should create a new TSS MPCv2 wallet for coin: ' + coin, async function () {
+      it(`should create a new ${coin} TSS MPCv2 wallet`, async function () {
         const testCoin = bitgo.coin(coin);
-        const sandbox = sinon.createSandbox();
         const stubbedKeychainsTriplet: KeychainsTriplet = {
           userKeychain: {
             id: '1',
@@ -760,7 +817,9 @@ describe('V2 Wallets:', function () {
             source: 'bitgo',
           },
         };
-        sandbox.stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+        const stubCreateKeychains = sandbox
+          .stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychains')
+          .resolves(stubbedKeychainsTriplet);
 
         const walletNock = nock('https://bitgo.fakeurl').post(`/api/v2/${coin}/wallet`).reply(200);
 
@@ -772,15 +831,15 @@ describe('V2 Wallets:', function () {
           multisigType: 'tss',
           enterprise: 'enterprise',
           passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
-          walletVersion: 5,
+          walletVersion: 3,
         });
 
         walletNock.isDone().should.be.true();
-        sandbox.verifyAndRestore();
+        stubCreateKeychains.calledOnce.should.be.true();
       });
     });
 
-    it('should throw for a cold wallet', async function () {
+    it('should throw for a cold wallet using wallet version 5', async function () {
       const hteth = bitgo.coin('hteth');
       const wallets = new Wallets(bitgo, hteth);
 
@@ -798,7 +857,7 @@ describe('V2 Wallets:', function () {
       );
     });
 
-    it('should throw for a custodial wallet', async function () {
+    it('should throw for a custodial wallet using wallet version 5', async function () {
       const hteth = bitgo.coin('hteth');
       const wallets = new Wallets(bitgo, hteth);
 
@@ -819,6 +878,12 @@ describe('V2 Wallets:', function () {
 
   describe('Generate BLS-DKG wallet:', function () {
     const eth2 = bitgo.coin('eth2');
+    const sandbox = sinon.createSandbox();
+
+    afterEach(function () {
+      nock.cleanAll();
+      sandbox.verifyAndRestore();
+    });
 
     it('should create a new BLS-DKG wallet', async function () {
       const stubbedKeychainsTriplet: KeychainsTriplet = {
@@ -838,7 +903,7 @@ describe('V2 Wallets:', function () {
           type: 'independent',
         },
       };
-      sinon.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+      sandbox.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
       const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/eth2/wallet').reply(200);
 
@@ -852,7 +917,6 @@ describe('V2 Wallets:', function () {
       });
 
       walletNock.isDone().should.be.true();
-      sinon.verify();
     });
 
     it('should fail to create BLS-DKG wallet with invalid inputs', async function () {
@@ -899,8 +963,10 @@ describe('V2 Wallets:', function () {
 
   describe('Sharing', () => {
     describe('Wallet share where keychainOverrideRequired is set true', () => {
+      const sandbox = sinon.createSandbox();
+
       afterEach(function () {
-        sinon.restore();
+        sandbox.verifyAndRestore();
       });
 
       it('when password not provived we should receive validation error', async function () {
@@ -948,7 +1014,7 @@ describe('V2 Wallets:', function () {
           .reply(200, { changed: false });
 
         // Stub wallet share wallet method
-        const walletShareStub = sinon.stub(Wallet.prototype, 'shareWallet').onCall(0).resolves('success');
+        const walletShareStub = sandbox.stub(Wallet.prototype, 'shareWallet').onCall(0).resolves('success');
 
         const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
         should.equal(res.changed, false);
@@ -987,7 +1053,7 @@ describe('V2 Wallets:', function () {
           .reply(200, { changed: true, state: 'not_accepted' });
 
         // Stub wallet share wallet method
-        const walletShareStub = sinon.stub(Wallet.prototype, 'shareWallet').onCall(0).resolves('success');
+        const walletShareStub = sandbox.stub(Wallet.prototype, 'shareWallet').onCall(0).resolves('success');
 
         const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
         should.equal(res.changed, true);
@@ -1087,7 +1153,7 @@ describe('V2 Wallets:', function () {
             nonAdminUsers: [],
           });
 
-        const walletShareStub = sinon
+        const walletShareStub = sandbox
           .stub(Wallet.prototype, 'shareWallet')
           .returns(new Promise((_resolve, reject) => reject(new Error('Failed to reshare wallet'))));
 
@@ -1213,7 +1279,7 @@ describe('V2 Wallets:', function () {
             nonAdminUsers: [],
           });
 
-        const walletShareStub = sinon
+        const walletShareStub = sandbox
           .stub(Wallet.prototype, 'shareWallet')
           .returns(new Promise((resolve, _reject) => resolve('success')));
 

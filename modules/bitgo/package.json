@@ -113,7 +113,8 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/public-types": "2.9.3",
+    "io-ts-types": "0.5.16",
+    "@bitgo/public-types": "2.23.1",
     "@bitgo/sdk-test": "^8.0.19",
     "@openpgp/web-stream-tools": "0.0.14",
     "@types/create-hmac": "^1.1.0",

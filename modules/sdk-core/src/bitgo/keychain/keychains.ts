@@ -21,6 +21,7 @@ import {
   UpdateSingleKeychainPasswordOptions,
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
+import { TssSettings } from '@bitgo/public-types';
 
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
@@ -293,12 +294,21 @@ export class Keychains implements IKeychains {
    */
   async createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet> {
     let MpcUtils;
+    let multisigTypeVersion: 'MPCv2' | undefined = undefined;
+    if (params.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      const tssSettings: TssSettings = await this.bitgo
+        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .result();
+      multisigTypeVersion =
+        tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
+    }
+
     switch (params.multisigType) {
       case 'tss':
         MpcUtils =
           this.baseCoin.getMPCAlgorithm() === 'eddsa'
             ? EDDSAUtils.default
-            : params.walletVersion === 5
+            : multisigTypeVersion === 'MPCv2'
             ? ECDSAUtils.EcdsaMPCv2Utils
             : ECDSAUtils.EcdsaUtils;
         break;

@@ -14,6 +14,7 @@ import {
   MPCv2KeyGenRound3Request,
   MPCv2KeyGenRound3Response,
 } from '@bitgo/public-types';
+import { NonEmptyString } from 'io-ts-types';
 import { BitGo, BitgoGPGPublicKey } from '../../../../../../src';
 
 describe('TSS Ecdsa MPCv2 Utils:', async function () {
@@ -282,6 +283,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
               encryptedMessage: bitgoToUserMsg2.payload.encryptedMessage,
               signature: bitgoToUserMsg2.payload.signature,
             },
+            walletGpgPubKeySigs: 'something' as NonEmptyString,
           };
         }
       );
