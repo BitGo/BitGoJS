@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [20.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@20.3.3...@bitgo/sdk-coin-polygon@20.4.0) (2024-05-28)
+
+### Features
+
+- **abstract-eth:** add support to build tx for CCR of unsupported token ([a6dac7c](https://github.com/BitGo/BitGoJS/commit/a6dac7c00d47acfa3d4dd072b9cfcdf99215a743))
+
 ## [20.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@20.3.2...@bitgo/sdk-coin-polygon@20.3.3) (2024-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polygon

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.13.0...@bitgo/statics@48.14.0) (2024-05-28)
+
+### Features
+
+- **statics:** add new batch of tokens ([30316f1](https://github.com/BitGo/BitGoJS/commit/30316f1077a8cd303f3293735aa4e7db9e6fac42))
+- **statics:** added offchain support for ANKR,PENDLE,OM ([60d73c1](https://github.com/BitGo/BitGoJS/commit/60d73c16b935f1c205ec2f197eebe6682351b06a))
+- **statics:** adding test token for solana tokens for go account ([e89757d](https://github.com/BitGo/BitGoJS/commit/e89757d12a1540b433a856acb0aef6ee22c88ebe))
+- **statics:** enable cosmosLike MPCv2 ([231d25e](https://github.com/BitGo/BitGoJS/commit/231d25eccaeb8e4cd96a3b5b79ae3c11e73ea991))
+- **statics:** enable mpcv2 for bsc and polygon ([e8cbbb8](https://github.com/BitGo/BitGoJS/commit/e8cbbb8d2e4fa1e079298faa5ccac17e19228aff))
+- **statics:** fixing gari token ([065b9f0](https://github.com/BitGo/BitGoJS/commit/065b9f01adf7e477025608645c9fcbf361745ba4))
+
 # [48.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.12.0...@bitgo/statics@48.13.0) (2024-05-22)
 
 ### Features

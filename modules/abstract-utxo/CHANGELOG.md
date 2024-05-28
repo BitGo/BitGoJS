@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.3.1...@bitgo/abstract-utxo@8.4.0) (2024-05-28)
+
+### Features
+
+- add p2tr as the last option ([673c7d8](https://github.com/BitGo/BitGoJS/commit/673c7d8444be8147ca2b3803e641ab35890e6521))
+- remove p2tr from changeAddressType list ([561a8bd](https://github.com/BitGo/BitGoJS/commit/561a8bdd4f785a4e8ef483e0271a40a4a5c192d9))
+
 ## [8.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.3.0...@bitgo/abstract-utxo@8.3.1) (2024-05-22)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

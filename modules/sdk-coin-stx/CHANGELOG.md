@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.1.9...@bitgo/sdk-coin-stx@3.2.0) (2024-05-28)
+
+### Features
+
+- **sdk-coin-stx:** remove legacy support to pox-3 contract ([99e50d9](https://github.com/BitGo/BitGoJS/commit/99e50d92f03ad98df90694f091b7b45e00edc01f))
+
 ## [3.1.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.1.8...@bitgo/sdk-coin-stx@3.1.9) (2024-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

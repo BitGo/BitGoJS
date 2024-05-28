@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.64.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.63.3...@bitgo/express@9.64.0) (2024-05-28)
+
+### Features
+
+- use settings API to switch between MPCv2 and v1 ([85e2df2](https://github.com/BitGo/BitGoJS/commit/85e2df2856fd0b673bae29b9d6e9aabaa8c8a932))
+
 ## [9.63.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.63.2...@bitgo/express@9.63.3) (2024-05-22)
 
 **Note:** Version bump only for package @bitgo/express
