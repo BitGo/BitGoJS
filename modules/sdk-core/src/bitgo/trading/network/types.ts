@@ -242,7 +242,8 @@ export type NetworkConnection = {
 export type NetworkConnectionKey =
   | NetworkConnectionKeyToken
   | NetworkConnectionKeyTokenAndSignature
-  | NetworkConnectionKeyApiKeyAndSecret;
+  | NetworkConnectionKeyApiKeyAndSecret
+  | NetworkConnectionKeyClearloop;
 
 export type NetworkConnectionKeyToken = {
   schema: 'token';
@@ -259,7 +260,12 @@ export type NetworkConnectionKeyApiKeyAndSecret = {
   schema: 'apiKeyAndSecret';
   apiKey: string;
   apiSecret: string;
+};
+
+export type NetworkConnectionKeyClearloop = Omit<NetworkConnectionKeyApiKeyAndSecret, 'schema'> & {
+  schema: 'clearloop';
   clientAccountId: string;
+  companyRegistrationNumber: string;
 };
 
 export type NetworkAllocationType = 'allocation' | 'deallocation';
@@ -322,7 +328,7 @@ export type NetworkSettlementTransfer = {
 
 export type NetworkSettlementStatus = 'failed' | 'completed' | 'pending';
 
-export type ConnectionKeySchema = 'token' | 'tokenAndSignature' | 'apiKeyAndSecret';
+export type ConnectionKeySchema = 'token' | 'tokenAndSignature' | 'apiKeyAndSecret' | 'clearloop';
 
 export type NetworkPartner = {
   id: string;
