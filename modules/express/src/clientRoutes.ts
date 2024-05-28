@@ -1052,6 +1052,7 @@ async function handleNetworkV1EnterpriseClientConnections(
         req.body.connectionKey.signature = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.signature);
         break;
       case 'apiKeyAndSecret':
+      case 'clearloop':
         req.body.connectionKey.apiKey = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.apiKey);
         req.body.connectionKey.apiSecret = await encryptRsaWithAesGcm(partner.publicKey, body.connectionKey.apiSecret);
         break;
