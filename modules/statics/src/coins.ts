@@ -11007,6 +11007,14 @@ export const coins = CoinMap.fromCoins([
     'TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S',
     UnderlyingAsset.SUN
   ),
+  tronToken(
+    '888fb35c-1b3d-425d-af65-e6aa7453edce',
+    'trx:jst',
+    'Just',
+    18,
+    'TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9',
+    UnderlyingAsset['trx:jst']
+  ),
   algoToken(
     'bf444e89-e762-48a9-a27d-8efa2aed7867',
     'algo:USDC-31566704',
@@ -14337,6 +14345,15 @@ export const coins = CoinMap.fromCoins([
     6,
     'FRySi8LPkuByB7VPSCCggxpewFUeeJiwEGRKKuhwpKcX',
     UnderlyingAsset['natix'],
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  solToken(
+    '36b8ee60-47d4-47bf-9abb-40268b253f3c',
+    'sol:ks',
+    'Kalisten ',
+    9,
+    '3swraHsc77KMg1tFvwH3tfYcd8SWr5fcUhtmRxjavG7H',
+    UnderlyingAsset['sol:ks'],
     AccountCoin.DEFAULT_FEATURES
   ),
   solToken(

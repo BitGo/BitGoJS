@@ -1880,6 +1880,10 @@ export enum UnderlyingAsset {
   'mobile' = 'mobile',
   'wif' = 'wif',
   'natix' = 'natix',
+  'sol:ks' = 'sol:ks',
+
+  // TRX tokens
+  'trx:jst' = 'trx:jst',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
