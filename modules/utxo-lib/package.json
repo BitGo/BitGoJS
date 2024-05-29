@@ -48,7 +48,9 @@
   "dependencies": {
     "@bitgo/blake2b": "^3.2.4",
     "@brandonblack/musig": "^0.0.1-alpha.0",
-    "@noble/secp256k1": "1.6.3",
+    "@noble/curves": "1.4.0",
+    "@noble/hashes": "1.4.0",
+    "@noble/secp256k1": "2.1.0",
     "bech32": "^2.0.0",
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
     "bip32": "^3.0.1",
@@ -58,7 +60,6 @@
     "bs58check": "^2.1.2",
     "cashaddress": "^1.1.0",
     "create-hash": "^1.2.0",
-    "create-hmac": "^1.1.7",
     "ecpair": "npm:@bitgo/ecpair@2.1.0-rc.0",
     "elliptic": "^6.5.2",
     "fastpriorityqueue": "^0.7.1",
