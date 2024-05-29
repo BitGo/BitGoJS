@@ -809,7 +809,6 @@ export class Wallets implements IWallets {
       enterprise,
       originalPasscodeEncryptionCode,
       backupProvider,
-      walletVersion,
     });
 
     // Create Wallet
