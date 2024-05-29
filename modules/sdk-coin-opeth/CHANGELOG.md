@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.0.6...@bitgo/sdk-coin-opeth@18.1.0) (2024-05-28)
+
+### Bug Fixes
+
+- **abstract-eth:** handle absence of batcher contract for native coin ([37ede15](https://github.com/BitGo/BitGoJS/commit/37ede15f2fc8e24f732a6d8f513327650d58590c))
+
+### Features
+
+- **abstract-eth:** add support to build tx for CCR of unsupported token ([a6dac7c](https://github.com/BitGo/BitGoJS/commit/a6dac7c00d47acfa3d4dd072b9cfcdf99215a743))
+
 ## [18.0.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.0.5...@bitgo/sdk-coin-opeth@18.0.6) (2024-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-opeth

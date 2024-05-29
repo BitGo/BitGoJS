@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.4.0...@bitgo/abstract-eth@21.5.0) (2024-05-28)
+
+### Bug Fixes
+
+- **abstract-eth:** handle absence of batcher contract for native coin ([37ede15](https://github.com/BitGo/BitGoJS/commit/37ede15f2fc8e24f732a6d8f513327650d58590c))
+
+### Features
+
+- **abstract-eth:** add support to build tx for CCR of unsupported token ([a6dac7c](https://github.com/BitGo/BitGoJS/commit/a6dac7c00d47acfa3d4dd072b9cfcdf99215a743))
+
 # [21.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.3.0...@bitgo/abstract-eth@21.4.0) (2024-05-22)
 
 ### Features
