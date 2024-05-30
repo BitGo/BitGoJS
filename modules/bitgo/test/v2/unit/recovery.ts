@@ -532,7 +532,7 @@ describe('Recovery:', function () {
     });
 
     it('should successfully generate an ERC20 unsigned sweep', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('tdai');
 
@@ -567,7 +567,7 @@ describe('Recovery:', function () {
     });
 
     it('should use user provided gas params when building recovery transaction', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('tdai');
 
@@ -674,7 +674,7 @@ describe('Recovery:', function () {
     });
 
     it('should throw on invalid gasLimit', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('hteth');
       await basecoin
@@ -713,7 +713,7 @@ describe('Recovery:', function () {
           },
         },
       ];
-      recoveryNocks.nockEthRecovery(bitgo, nockUnsuccessfulEtherscanData);
+      recoveryNocks.nockEthLikeRecovery(bitgo, nockUnsuccessfulEtherscanData);
 
       const basecoin = bitgo.coin('hteth');
       await basecoin
@@ -750,7 +750,7 @@ describe('Recovery:', function () {
           },
         },
       ];
-      recoveryNocks.nockEthRecovery(bitgo, insufficientFeeData);
+      recoveryNocks.nockEthLikeRecovery(bitgo, insufficientFeeData);
 
       const basecoin = bitgo.coin('hteth');
       await basecoin
@@ -766,7 +766,7 @@ describe('Recovery:', function () {
     });
 
     it('should throw on invalid gasPrice', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('hteth');
       await basecoin
@@ -779,7 +779,7 @@ describe('Recovery:', function () {
     });
 
     it('should successfully construct a tx with custom gas price and limit', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('hteth');
       const recovery = await basecoin.recover({
@@ -794,7 +794,7 @@ describe('Recovery:', function () {
     });
 
     it('should construct a recovery transaction without BitGo', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('hteth');
       const recovery = await basecoin.recover(recoveryParams);
@@ -812,7 +812,7 @@ describe('Recovery:', function () {
           maxFeePerGas: 20,
         },
       };
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('hteth');
       const recovery = await basecoin.recover(eip1559RecoveryParams);
@@ -823,7 +823,7 @@ describe('Recovery:', function () {
     });
 
     it('should construct a recovery transaction without BitGo and with KRS', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('hteth');
       const recovery = await basecoin.recover({
@@ -840,7 +840,7 @@ describe('Recovery:', function () {
     });
 
     it('should error when the backup key is unfunded (cannot pay gas)', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('hteth');
       await basecoin
@@ -871,7 +871,7 @@ describe('Recovery:', function () {
     });
 
     it('should generate an ETH unsigned sweep', async function () {
-      recoveryNocks.nockEthRecovery(bitgo);
+      recoveryNocks.nockEthLikeRecovery(bitgo);
 
       const basecoin = bitgo.coin('hteth');
 
@@ -903,7 +903,7 @@ describe('Recovery:', function () {
     });
 
     it('should construct a recovery tx with TSS', async function () {
-      recoveryNocks.nockEthRecovery(bitgo, nockTSSData);
+      recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
 
       const basecoin = bitgo.coin('hteth');
 
@@ -957,7 +957,7 @@ describe('Recovery:', function () {
         };
       });
 
-      recoveryNocks.nockEthRecovery(bitgo, nockTSSDataWithBaseAddress);
+      recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSDataWithBaseAddress);
 
       // const { userKeyShare, backupKeyShare, bitgoKeyShare } = keyShares;
 
@@ -1004,71 +1004,76 @@ describe('Recovery:', function () {
     });
 
     it('should construct a recovery tx with MPCv2 TSS', async function () {
-      recoveryNocks.nockEthRecovery(bitgo, nockTSSData);
-      const basecoin = bitgo.coin('hteth');
-      const [userDkg, backupDkg] = await DklsUtils.generateDKGKeyShares();
+      for (const { coin, chain } of [
+        { coin: 'hteth', chain: 17000 },
+        { coin: 'tpolygon', chain: 80002 },
+        { coin: 'tbsc', chain: 97 },
+      ]) {
+        recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
+        const basecoin = bitgo.coin(coin);
+        const [userDkg, backupDkg] = await DklsUtils.generateDKGKeyShares();
 
-      const userKeyShare = userDkg.getReducedKeyShare();
-      const backupKeyShare = backupDkg.getReducedKeyShare();
-      const publicKey = Buffer.from(DklsTypes.getDecodedReducedKeyShare(userKeyShare).pub).toString('hex');
+        const userKeyShare = userDkg.getReducedKeyShare();
+        const backupKeyShare = backupDkg.getReducedKeyShare();
+        const publicKey = Buffer.from(DklsTypes.getDecodedReducedKeyShare(userKeyShare).pub).toString('hex');
 
-      const userSigningMaterial: string = userKeyShare.toString('base64');
-      const backupSigningMaterial: string = backupKeyShare.toString('base64');
+        const userSigningMaterial: string = userKeyShare.toString('base64');
+        const backupSigningMaterial: string = backupKeyShare.toString('base64');
 
-      const baseAddress = new KeyPair({
-        pub: publicKey,
-      }).getAddress();
+        const baseAddress = new KeyPair({
+          pub: publicKey,
+        }).getAddress();
 
-      const nockTSSDataWithBaseAddress = nockTSSData.map((data) => {
-        return {
-          ...data,
-          params: {
-            ...data.params,
-            address: baseAddress,
+        const nockTSSDataWithBaseAddress = nockTSSData.map((data) => {
+          return {
+            ...data,
+            params: {
+              ...data.params,
+              address: baseAddress,
+            },
+          };
+        });
+
+        recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSDataWithBaseAddress);
+
+        const encryptedBackupSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, backupSigningMaterial);
+        const encryptedUserSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, userSigningMaterial);
+
+        recoveryParams = {
+          userKey: encryptedUserSigningMaterial,
+          backupKey: encryptedBackupSigningMaterial,
+          walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+          recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+          walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+          eip1559: {
+            maxPriorityFeePerGas: 3,
+            maxFeePerGas: 20,
+          },
+          isTss: true,
+          replayProtectionOptions: {
+            chain: chain,
           },
         };
-      });
 
-      recoveryNocks.nockEthRecovery(bitgo, nockTSSDataWithBaseAddress);
+        const recovery = await basecoin.recover(recoveryParams);
 
-      const encryptedBackupSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, backupSigningMaterial);
-      const encryptedUserSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, userSigningMaterial);
+        should.exist(recovery);
+        recovery.should.have.property('id');
+        recovery.should.have.property('tx');
 
-      recoveryParams = {
-        userKey: encryptedUserSigningMaterial,
-        backupKey: encryptedBackupSigningMaterial,
-        walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
-        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
-        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-        eip1559: {
-          maxPriorityFeePerGas: 3,
-          maxFeePerGas: 20,
-        },
-        isTss: true,
-        replayProtectionOptions: {
-          chain: 5,
-          hardfork: 'london',
-        },
-      };
+        // verify data after signing is correct
+        const finalTx = TransactionFactory.fromSerializedData(Buffer.from(recovery.tx.substr(2), 'hex'));
 
-      const recovery = await basecoin.recover(recoveryParams);
-
-      should.exist(recovery);
-      recovery.should.have.property('id');
-      recovery.should.have.property('tx');
-
-      // verify data after signing is correct
-      const finalTx = TransactionFactory.fromSerializedData(Buffer.from(recovery.tx.substr(2), 'hex'));
-
-      const senderAddress = finalTx.getSenderAddress().toString();
-
-      baseAddress.should.equal(senderAddress);
-      recoveryParams.recoveryDestination.should.equal(finalTx.to?.toString());
-      Number(finalTx.value).should.equal(999999999990000000);
+        const senderAddress = finalTx.getSenderAddress().toString();
+        finalTx.common.chainIdBN().toNumber().should.equal(chain);
+        baseAddress.should.equal(senderAddress);
+        recoveryParams.recoveryDestination.should.equal(finalTx.to?.toString());
+        Number(finalTx.value).should.equal(999999999990000000);
+      }
     });
 
     it('should construct an unsigned sweep tx with TSS', async function () {
-      recoveryNocks.nockEthRecovery(bitgo, nockTSSData);
+      recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
 
       const basecoin = bitgo.coin('hteth');
 

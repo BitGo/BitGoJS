@@ -518,7 +518,7 @@ describe('Polygon', function () {
   });
 
   describe('Recover transaction:', function () {
-    const baseUrl = 'https://api-testnet.polygonscan.com';
+    const baseUrl = 'https://api-amoy.polygonscan.com';
     const userXpub =
       'xpub661MyMwAqRbcEeTc8789MK5PUGEYiPG4F4V17n2Rd2LoTATA1XoCnJT5FAYAShQxSxtFjpo5NHmcWwTp2LiWGBMwpUcAA3HywhxivgYfq7q';
     const userXprv =
@@ -769,7 +769,7 @@ describe('Polygon', function () {
   });
 
   describe('Evm Based Cross Chain Recovery transaction:', function () {
-    const baseUrl = 'https://api-testnet.polygonscan.com';
+    const baseUrl = 'https://api-amoy.polygonscan.com';
     const userXpub =
       'xpub661MyMwAqRbcEeTc8789MK5PUGEYiPG4F4V17n2Rd2LoTATA1XoCnJT5FAYAShQxSxtFjpo5NHmcWwTp2LiWGBMwpUcAA3HywhxivgYfq7q';
     const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';

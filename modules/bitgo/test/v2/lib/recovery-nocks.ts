@@ -379,7 +379,7 @@ const nockEthData: any[] = [
   },
 ];
 
-module.exports.nockEthRecovery = function (bitgo, nockData = nockEthData) {
+module.exports.nockEthLikeRecovery = function (bitgo, nockData = nockEthData) {
   let apiKey;
   if (Environments[bitgo.getEnv()].etherscanApiToken) {
     apiKey = Environments[bitgo.getEnv()].etherscanApiToken;
@@ -389,7 +389,9 @@ module.exports.nockEthRecovery = function (bitgo, nockData = nockEthData) {
     if (apiKey) {
       data.params.apiKey = apiKey;
     }
-    nock('https://api-holesky.etherscan.io').get('/api').query(data.params).reply(200, data.response);
+    nock('https://api-holesky.etherscan.io/').get('/api').query(data.params).reply(200, data.response);
+    nock('https://api-amoy.polygonscan.com').get('/api').query(data.params).reply(200, data.response);
+    nock('https://api-testnet.bscscan.com').get('/api').query(data.params).reply(200, data.response);
   });
 };
 
