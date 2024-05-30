@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, BIP32Interface, bitgo, isTestnet } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import * as assert from 'assert';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
@@ -1471,16 +1471,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     let txFormat = buildParams.txFormat as 'legacy' | 'psbt' | undefined;
     let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
 
-    const walletFlagMusigKp = buildParams.wallet.flag('musigKp') === 'true';
+    function walletTypeSupportsPsbt(wallet: Wallet): boolean {
+      // FIXME(BTC-776): eventually default to psbt for cold wallets as well
+      return wallet.subType() === 'distributedCustody' || wallet.type() === 'hot' || wallet.type() === 'custodial';
+    }
 
-    // if the txFormat is not specified, we need to default to psbt for distributed custody wallets or testnet hot wallets
-    if (
-      buildParams.txFormat === undefined &&
-      (buildParams.wallet.subType() === 'distributedCustody' ||
-        (isTestnet(this.network) && buildParams.wallet.type() === 'hot') ||
-        // FIXME(BTC-776): default to psbt for all mainnet wallets in the future
-        walletFlagMusigKp)
-    ) {
+    // if the txFormat is not specified, default to psbt supported walletTypes
+    if (buildParams.txFormat === undefined && walletTypeSupportsPsbt(buildParams.wallet)) {
       txFormat = 'psbt';
     }
 
