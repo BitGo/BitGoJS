@@ -369,7 +369,7 @@ export class BitGoAPI implements BitGoBase {
         // request ids must be set before each request instead of being kept
         // inside the bitgo object. This is to prevent reentrancy issues where
         // multiple simultaneous requests could cause incorrect reqIds to be used
-        delete this._reqId;
+        // delete this._reqId;
       }
 
       // prevent IE from caching requests
