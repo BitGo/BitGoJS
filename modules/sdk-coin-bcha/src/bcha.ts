@@ -23,4 +23,17 @@ export class Bcha extends Bch {
   getFullName(): string {
     return 'Bitcoin ABC';
   }
+
+  canonicalAddress(address: string, version: unknown = 'base58'): string {
+    if (version === 'base58') {
+      return utxolib.addressFormat.toCanonicalFormat(address, this.network);
+    }
+
+    if (version === 'cashaddr') {
+      const script = utxolib.addressFormat.toOutputScriptTryFormats(address, this.network);
+      return utxolib.addressFormat.fromOutputScriptWithFormat(script, version, this.network);
+    }
+
+    throw new Error(`invalid version ${version}`);
+  }
 }
