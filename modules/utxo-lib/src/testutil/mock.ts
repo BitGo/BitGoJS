@@ -57,7 +57,7 @@ export function mockPrevTx(
   psbtFromNetwork.signInput(0, {
     publicKey: pubkey,
     sign: (hash: Buffer, lowR?: boolean) =>
-      Buffer.from(noble.signSync(hash, keypair.privateKey as Buffer, { canonical: !lowR, der: false })),
+      Buffer.from(noble.sign(hash, keypair.privateKey as Buffer, { lowS: !lowR }).toCompactRawBytes()),
   });
   psbtFromNetwork.validateSignaturesOfAllInputs();
   psbtFromNetwork.finalizeAllInputs();

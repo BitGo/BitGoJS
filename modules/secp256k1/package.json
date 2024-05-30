@@ -32,10 +32,11 @@
   ],
   "dependencies": {
     "@brandonblack/musig": "^0.0.1-alpha.0",
-    "@noble/secp256k1": "1.6.3",
+    "@noble/curves": "1.4.0",
+    "@noble/hashes": "1.4.0",
+    "@noble/secp256k1": "2.1.0",
     "bip32": "^3.0.1",
     "create-hash": "^1.2.0",
-    "create-hmac": "^1.1.7",
     "ecpair": "npm:@bitgo/ecpair@2.1.0-rc.0"
   },
   "devDependencies": {

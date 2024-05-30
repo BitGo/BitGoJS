@@ -59,7 +59,9 @@
   },
   "resolutions": {
     "@ethereumjs/util": "8.0.3",
-    "@noble/secp256k1": "1.6.3",
+    "@noble/curves": "1.4.0",
+    "@noble/hashes": "1.4.0",
+    "@noble/secp256k1": "2.1.0",
     "@types/keyv": "3.1.4",
     "@types/react": "17.0.24",
     "@types/react-dom": "17.0.16",

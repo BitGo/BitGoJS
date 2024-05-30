@@ -43,7 +43,7 @@
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^48.14.0",
     "@bitgo/utxo-lib": "^9.37.0",
-    "@noble/secp256k1": "1.6.3",
+    "@noble/secp256k1": "2.1.0",
     "@stablelib/hex": "^1.0.0",
     "@types/elliptic": "^6.4.12",
     "@types/superagent": "4.1.15",

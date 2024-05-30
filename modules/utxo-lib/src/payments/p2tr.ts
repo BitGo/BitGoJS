@@ -24,7 +24,7 @@ const EMPTY_BUFFER = Buffer.alloc(0);
 function isPlainPubkey(pubKey: Uint8Array): boolean {
   if (pubKey.length !== 33) return false;
   try {
-    return !!necc.Point.fromHex(pubKey);
+    return !!necc.ProjectivePoint.fromHex(pubKey);
   } catch (e) {
     return false;
   }
