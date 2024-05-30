@@ -136,7 +136,7 @@ function run(
     // If the coin is bch, convert the mocked unspent address to cashaddr format since that is the format that blockchair
     // returns on the /dashboards/addresses response
     const mockedApiUnspents =
-      coin.getChain() === 'bch'
+      coin.getChain() === 'bch' || coin.getChain() === 'bcha'
         ? recoverUnspents.map((u) => ({ ...u, address: coin.canonicalAddress(u.address, 'cashaddr').split(':')[1] }))
         : recoverUnspents;
 
