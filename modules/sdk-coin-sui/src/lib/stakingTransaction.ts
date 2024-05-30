@@ -219,25 +219,29 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
    * @returns {TransactionExplanation}
    */
   explainAddDelegationTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    const amountInputIdx = (
-      (this.suiTransaction.tx.transactions[0] as SplitCoinsTransaction).amounts[0] as TransactionBlockInput
-    ).index;
-    const amount = (this.suiTransaction.tx.inputs[amountInputIdx] as TransactionBlockInput).value;
+    const outputs: TransactionRecipient[] = [];
+    this.suiTransaction.tx.transactions.forEach((transaction, txIndex) => {
+      if (SplitCoinsTransaction.is(transaction)) {
+        const amountInputIdx = (transaction.amounts[0] as TransactionBlockInput).index;
+        const amount = BigInt((this.suiTransaction.tx.inputs[amountInputIdx] as TransactionBlockInput).value);
 
-    const validatorAddressInputIdx = (
-      (this.suiTransaction.tx.transactions[1] as MoveCallTransaction).arguments[2] as TransactionBlockInput
-    ).index;
-    const validatorAddress = utils.getAddress(
-      this.suiTransaction.tx.inputs[validatorAddressInputIdx] as TransactionBlockInput
-    );
+        // For AddStake, every split is followed by a move call
+        const validatorAddressInputIdx = (
+          (this.suiTransaction.tx.transactions[txIndex + 1] as MoveCallTransaction)
+            .arguments[2] as TransactionBlockInput
+        ).index;
+        const validatorAddress = utils.getAddress(
+          this.suiTransaction.tx.inputs[validatorAddressInputIdx] as TransactionBlockInput
+        );
 
-    const outputs: TransactionRecipient[] = [
-      {
-        address: validatorAddress,
-        amount: Number(amount).toString(),
-      },
-    ];
-    const outputAmount = amount;
+        outputs.push({
+          address: validatorAddress,
+          amount: amount.toString(10),
+        });
+      }
+    });
+
+    const outputAmount = outputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0)).toString(10);
 
     return {
       ...explanationResult,

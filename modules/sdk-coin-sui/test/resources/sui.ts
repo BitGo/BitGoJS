@@ -1,6 +1,9 @@
 import { RequestAddStake, RequestWithdrawStakedSui } from '../../src/lib/iface';
 import { DUMMY_SUI_GAS_PRICE } from '../../src/lib/constants';
 import { Recipient } from '@bitgo/sdk-core';
+import { SuiObjectRef } from '../../src/lib/mystenlab/types';
+import { randomBytes, randomInt } from 'crypto';
+import base58 from 'bs58';
 
 export const AMOUNT = 100;
 
@@ -576,4 +579,14 @@ export const txBlockUnstakeWithAmount = {
       typeArguments: [],
     },
   ],
+};
+
+export const generateObjects = (count = 1): SuiObjectRef[] => {
+  return Array(count)
+    .fill({})
+    .map(() => ({
+      objectId: randomBytes(32).toString('hex'),
+      version: randomInt(1, 100),
+      digest: base58.encode(randomBytes(32)),
+    }));
 };
