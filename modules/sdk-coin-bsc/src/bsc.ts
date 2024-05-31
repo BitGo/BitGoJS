@@ -1,10 +1,10 @@
-import { BaseCoin, BitGoBase, MPCAlgorithm } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common, MPCAlgorithm } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
+import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
 import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { TransactionBuilder } from './lib';
 
-export class Bsc extends AbstractEthLikeCoin {
+export class Bsc extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }
@@ -30,5 +30,11 @@ export class Bsc extends AbstractEthLikeCoin {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
+    const apiToken = common.Environments[this.bitgo.getEnv()].bscscanApiToken;
+    const explorerUrl = common.Environments[this.bitgo.getEnv()].bscscanBaseUrl;
+    return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }
 }
