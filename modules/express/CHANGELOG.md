@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.65.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.64.0...@bitgo/express@9.65.0) (2024-05-31)
+
+### Features
+
+- add bitgo network connection schema ([2324060](https://github.com/BitGo/BitGoJS/commit/2324060a06f0441a9c8bfa848ff24158b63e097a))
+
 # [9.64.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@9.63.3...@bitgo/express@9.64.0) (2024-05-28)
 
 ### Features

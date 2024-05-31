@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.7.0...bitgo@38.8.0) (2024-05-31)
+
+### Features
+
+- **abstract-eth:** add recovery support for bsc and polygon mpcv2 ([820e7b4](https://github.com/BitGo/BitGoJS/commit/820e7b40574add1bc7a05954961c7e7473972168))
+- use cashaddr address format for ecash recovery ([072f11f](https://github.com/BitGo/BitGoJS/commit/072f11f9e2b8b10c91d9ddf4e0503dc3a1e13563))
+
 # [38.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.6.0...bitgo@38.7.0) (2024-05-28)
 
 ### Bug Fixes

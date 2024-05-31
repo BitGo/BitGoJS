@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.14.0...@bitgo/statics@48.15.0) (2024-05-31)
+
+### Bug Fixes
+
+- **statics:** fix the polygon usdc on amoy ([0b8134a](https://github.com/BitGo/BitGoJS/commit/0b8134a201e696ea2d56fa07dac7ee893c15cc18))
+
+### Features
+
+- **statics:** add new batch of tokens ([634ab67](https://github.com/BitGo/BitGoJS/commit/634ab67c2dfd500b3bda5164d6f0a89f664aa12c))
+
 # [48.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.13.0...@bitgo/statics@48.14.0) (2024-05-28)
 
 ### Features

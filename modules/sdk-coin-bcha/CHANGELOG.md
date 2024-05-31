@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bcha@2.0.15...@bitgo/sdk-coin-bcha@2.1.0) (2024-05-31)
+
+### Features
+
+- convert legacy ecash addr to cashaddr ([6f15fff](https://github.com/BitGo/BitGoJS/commit/6f15fffbbf06708e3b2d56647e36c5bf745fa824))
+
 ## [2.0.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bcha@2.0.14...@bitgo/sdk-coin-bcha@2.0.15) (2024-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bcha

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.4.0...@bitgo/abstract-utxo@8.5.0) (2024-05-31)
+
+### Features
+
+- use cashaddr address format for ecash recovery ([072f11f](https://github.com/BitGo/BitGoJS/commit/072f11f9e2b8b10c91d9ddf4e0503dc3a1e13563))
+- use psbt format for hot and custodial wallets ([7b66a58](https://github.com/BitGo/BitGoJS/commit/7b66a584ce304093e03a372dafad9152ef875e7b))
+
 # [8.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.3.1...@bitgo/abstract-utxo@8.4.0) (2024-05-28)
 
 ### Features

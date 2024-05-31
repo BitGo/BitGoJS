@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.0.15...@bitgo/sdk-coin-bsc@22.1.0) (2024-05-31)
+
+### Features
+
+- **abstract-eth:** add recovery support for bsc and polygon mpcv2 ([820e7b4](https://github.com/BitGo/BitGoJS/commit/820e7b40574add1bc7a05954961c7e7473972168))
+
 ## [22.0.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.0.14...@bitgo/sdk-coin-bsc@22.0.15) (2024-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc
