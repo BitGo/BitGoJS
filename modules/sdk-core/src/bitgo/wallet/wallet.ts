@@ -3312,8 +3312,7 @@ export class Wallet implements IWallet {
       throw new Error('txRequestId missing from signed transaction');
     }
 
-    // TODO: BG-51122 Remove conditional when moved to txRequestFull for everything
-    if (this._wallet.type === 'custodial') {
+    if (apiVersion === 'full') {
       await this.bitgo
         .post(
           this.bitgo.url(
