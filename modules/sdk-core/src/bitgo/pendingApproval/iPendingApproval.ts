@@ -60,6 +60,7 @@ export interface PendingApprovalData {
 
 export interface IPendingApproval {
   id(): string;
+  toJSON(): PendingApprovalData;
   ownerType(): OwnerType;
   walletId(): string | undefined;
   enterpriseId(): string | undefined;

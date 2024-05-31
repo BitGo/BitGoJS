@@ -255,6 +255,12 @@ export enum RequestType {
   tx,
   message,
 }
+export type SignedTx = {
+  id: string;
+  tx: string;
+  publicKey?: string;
+  signature?: string;
+};
 
 export type TxRequest = {
   txRequestId: string;
@@ -280,6 +286,7 @@ export type TxRequest = {
     state: TransactionState;
     unsignedTx: UnsignedTransactionTss; // Should override with blockchain / sig specific unsigned tx
     signatureShares: SignatureShareRecord[];
+    signedTx?: SignedTx;
     commitmentShares?: CommitmentShareRecord[];
   }[];
   messages?: {

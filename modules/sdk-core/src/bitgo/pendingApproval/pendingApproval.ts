@@ -69,6 +69,10 @@ export class PendingApproval implements IPendingApproval {
     return this._pendingApproval.id;
   }
 
+  toJSON(): PendingApprovalData {
+    return this._pendingApproval;
+  }
+
   /**
    * Get the owner type (wallet or enterprise)
    * Pending approvals can be approved or modified by different scopes (depending on how they were created)
