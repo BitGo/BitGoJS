@@ -103,6 +103,8 @@ export interface AddKeychainOptions {
   backupGPGPublicKey?: string;
   algoUsed?: string;
   isDistributedCustody?: boolean;
+  // indicates if the key is MPCv2 or not
+  isMPCv2?: boolean;
 }
 
 export interface ApiKeyShare {

@@ -360,6 +360,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       commonKeychain,
       encryptedPrv,
       originalPasscodeEncryptionCode,
+      isMPCv2: true,
     };
 
     const keychains = this.baseCoin.keychains();

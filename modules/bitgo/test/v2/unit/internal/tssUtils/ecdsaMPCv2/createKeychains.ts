@@ -430,7 +430,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
   async function nockAddKeyChain(coin: string, times = 1) {
     return nock('https://bitgo.fakeurl')
-      .post(`/api/v2/${coin}/key`, (body) => body.keyType === 'tss')
+      .post(`/api/v2/${coin}/key`, (body) => body.keyType === 'tss' && body.isMPCv2)
       .times(times)
       .reply(200, async (uri, requestBody: AddKeychainOptions) => {
         return {
