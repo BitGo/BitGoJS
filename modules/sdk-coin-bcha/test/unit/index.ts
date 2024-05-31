@@ -32,4 +32,21 @@ describe('Bcha', function () {
   it('should return full name', function () {
     basecoin.getFullName().should.equal('Testnet Bitcoin ABC');
   });
+
+  it('should convert addresses', function () {
+    const mainnetBasecoin = bitgo.coin('bcha');
+
+    mainnetBasecoin
+      .canonicalAddress('38oymyUayu35QoLLKmc8CozbcHynH6Btkn', 'cashaddr')
+      .should.equal('ecash:pp8pnl7k6y8g073cggczfh22xrprxut5hymhjkq3er');
+    mainnetBasecoin
+      .canonicalAddress('ecash:pp8pnl7k6y8g073cggczfh22xrprxut5hymhjkq3er')
+      .should.equal('38oymyUayu35QoLLKmc8CozbcHynH6Btkn');
+    basecoin
+      .canonicalAddress('mzopZJiBCjeAHXkShhgxfRsALgrYt3kxNP', 'cashaddr')
+      .should.equal('ectest:qrfekq9s0c8tcuh75wpcxqnyl5e7dhqk4gq6pjct44');
+    basecoin
+      .canonicalAddress('ectest:qrfekq9s0c8tcuh75wpcxqnyl5e7dhqk4gq6pjct44')
+      .should.equal('mzopZJiBCjeAHXkShhgxfRsALgrYt3kxNP');
+  });
 });
