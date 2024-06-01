@@ -6,10 +6,12 @@ import { Transaction } from './transaction';
 import { TransferTransaction } from './transferTransaction';
 import assert from 'assert';
 import {
+  Inputs,
   Transactions as TransactionsConstructor,
   TransactionBlock as ProgrammingTransactionBlockBuilder,
 } from './mystenlab/builder';
 import utils from './utils';
+import { MAX_COMMAND_ARGS, MAX_GAS_OBJECTS } from './constants';
 
 export class TransferBuilder extends TransactionBuilder<TransferProgrammableTransaction> {
   protected _recipients: Recipient[];
@@ -112,6 +114,26 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
   protected buildSuiTransaction(): SuiTransaction<TransferProgrammableTransaction> {
     this.validateTransactionFields();
     const programmableTxBuilder = new ProgrammingTransactionBlockBuilder();
+
+    // number of objects passed as gas payment should be strictly less than `MAX_GAS_OBJECTS`. When the transaction
+    // requires a larger number of inputs we use the merge command to merge the rest of the objects into the gasCoin
+    if (this._gasData.payment.length >= MAX_GAS_OBJECTS) {
+      const gasPaymentObjects = this._gasData.payment
+        .splice(MAX_GAS_OBJECTS - 1)
+        .map((object) => Inputs.ObjectRef(object));
+
+      // limit for total number of `args: CallArg[]` for a single command is MAX_COMMAND_ARGS so the max length of
+      // `sources[]` for a `mergeCoins(destination, sources[])` command is MAX_COMMAND_ARGS - 1 (1 used up for
+      // `destination`). We need to create a total of `gasPaymentObjects/(MAX_COMMAND_ARGS - 1)` merge commands to
+      // merge all the objects
+      while (gasPaymentObjects.length > 0) {
+        programmableTxBuilder.mergeCoins(
+          programmableTxBuilder.gas,
+          gasPaymentObjects.splice(0, MAX_COMMAND_ARGS - 1).map((object) => programmableTxBuilder.object(object))
+        );
+      }
+    }
+
     this._recipients.forEach((recipient) => {
       const coin = programmableTxBuilder.add(
         TransactionsConstructor.SplitCoins(programmableTxBuilder.gas, [

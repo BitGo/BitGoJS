@@ -39,6 +39,7 @@ import {
 } from './mystenlab/builder';
 import { SIGNATURE_SCHEME_TO_FLAG } from './keyPair';
 import blake2b from '@bitgo/blake2b';
+import { TRANSACTION_DATA_MAX_SIZE } from './mystenlab/builder/TransactionDataBlock';
 
 export function isImmOrOwnedObj(obj: ObjectCallArg['Object']): obj is { ImmOrOwned: SuiObjectRef } {
   return 'ImmOrOwned' in obj;
@@ -80,7 +81,7 @@ export class Utils implements BaseUtils {
     try {
       const data = fromB64(rawTransaction);
       const deserialized = builder.de('TransactionData', data);
-      builder.ser('TransactionData', deserialized, { maxSize: 1024 * 64 });
+      builder.ser('TransactionData', deserialized, { maxSize: TRANSACTION_DATA_MAX_SIZE });
       return true;
     } catch (e) {
       return false;

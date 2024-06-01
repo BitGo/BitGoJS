@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/sui';
 import should from 'should';
@@ -5,6 +6,7 @@ import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
 import { SuiTransactionType, TransferProgrammableTransaction } from '../../../src/lib/iface';
+import { MAX_COMMAND_ARGS, MAX_GAS_OBJECTS } from '../../../src/lib/constants';
 
 describe('Sui Transfer Builder', () => {
   const factory = getBuilderFactory('tsui');
@@ -72,6 +74,68 @@ describe('Sui Transfer Builder', () => {
           coin: 'tsui',
         })
       );
+    });
+
+    it('should build a split coin tx with more than 255 input objects', async function () {
+      const amount = 1000000000;
+      const numberOfRecipients = 10;
+      const numberOfPaymentObjects = 1000;
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+
+      const recipients = new Array(numberOfRecipients).fill({
+        address: testData.sender.address,
+        amount: amount.toString(),
+      });
+
+      const gasData = {
+        ...testData.gasData,
+        payment: testData.generateObjects(numberOfPaymentObjects),
+      };
+
+      txBuilder.send(recipients);
+      txBuilder.gasData(gasData);
+      const tx = await txBuilder.build();
+
+      assert(tx instanceof SuiTransaction);
+      tx.type.should.equal(TransactionType.Send);
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender.address,
+        value: (amount * 10).toString(),
+        coin: 'tsui',
+      });
+      tx.outputs.length.should.equal(10);
+      tx.outputs.forEach((output) =>
+        output.should.deepEqual({
+          coin: 'tsui',
+          address: testData.sender.address,
+          value: amount.toString(),
+        })
+      );
+      tx.suiTransaction.gasData.owner.should.equal(gasData.owner);
+      tx.suiTransaction.gasData.price.should.equal(gasData.price);
+      tx.suiTransaction.gasData.budget.should.equal(gasData.budget);
+      tx.suiTransaction.gasData.payment.length.should.equal(MAX_GAS_OBJECTS - 1);
+
+      const programmableTx = tx.suiTransaction.tx;
+
+      // total objects - objects sent as gas payment + no. of recipient amounts(pure)
+      // + no. of unique recipient addresses(de-duped objects)
+      programmableTx.inputs.length.should.equal(
+        numberOfPaymentObjects - (MAX_GAS_OBJECTS - 1) + numberOfRecipients + 1
+      );
+      programmableTx.transactions[0].kind.should.equal('MergeCoins');
+      programmableTx.transactions[0].sources.length.should.equal(MAX_COMMAND_ARGS - 1);
+      programmableTx.transactions[1].kind.should.equal('MergeCoins');
+      programmableTx.transactions[1].sources.length.should.equal(
+        numberOfPaymentObjects - (MAX_COMMAND_ARGS - 1) - (MAX_GAS_OBJECTS - 1)
+      );
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
     });
   });
 
