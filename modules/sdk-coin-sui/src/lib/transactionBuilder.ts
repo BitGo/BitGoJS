@@ -11,13 +11,14 @@ import {
 } from '@bitgo/sdk-core';
 import assert from 'assert';
 import { Transaction } from './transaction';
-import utils from './utils';
+import utils, { isImmOrOwnedObj } from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { StakingProgrammableTransaction, SuiTransactionType, TransferProgrammableTransaction } from './iface';
+import { StakingProgrammableTransaction, SuiTransactionType, TransferProgrammableTransaction, TxData } from './iface';
 import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';
 import { GasData, SuiObjectRef } from './mystenlab/types';
+import { MergeCoinsTransaction } from './mystenlab/builder';
 
 export abstract class TransactionBuilder<
   T = TransferProgrammableTransaction | StakingProgrammableTransaction
@@ -180,6 +181,36 @@ export abstract class TransactionBuilder<
     if (value.isLessThan(0)) {
       throw new BuildTransactionError('Value cannot be less than zero');
     }
+  }
+
+  /**
+   * When building transactions with > 255 input gas payment objects, we first use MergeCoins Tranasactions to merge the
+   * additional inputs into the gas coin & slice them from the payment in gasData. When initializing the builder using
+   * decoded tx data, we need to get these inputs from MergeCoins & add them back to the gas payment to be able to
+   * rebuild from a raw transaction.
+   */
+  protected getInputGasPaymentObjectsFromTxData(txData: TxData): SuiObjectRef[] {
+    const txInputs = txData.kind.ProgrammableTransaction.inputs;
+    const transactions = txData.kind.ProgrammableTransaction.transactions;
+    const inputGasPaymentObjects: SuiObjectRef[] = txData.gasData.payment;
+
+    transactions.forEach((transaction) => {
+      if (transaction.kind === 'MergeCoins') {
+        const { destination, sources } = transaction as MergeCoinsTransaction;
+        if (destination.kind === 'GasCoin') {
+          sources.forEach((source) => {
+            if (source.kind === 'Input') {
+              const input = txInputs[source.index];
+              if ('Object' in input && isImmOrOwnedObj(input.Object)) {
+                inputGasPaymentObjects.push(input.Object.ImmOrOwned);
+              }
+            }
+          });
+        }
+      }
+    });
+
+    return inputGasPaymentObjects;
   }
   // endregion
 }

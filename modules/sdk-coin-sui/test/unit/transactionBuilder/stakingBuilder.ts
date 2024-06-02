@@ -90,6 +90,10 @@ describe('Sui Staking Builder', () => {
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.getStakingBuilder();
+      rebuilder.from(rawTx);
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
     });
   });
 
