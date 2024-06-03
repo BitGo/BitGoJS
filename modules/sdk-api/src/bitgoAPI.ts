@@ -731,6 +731,7 @@ export class BitGoAPI implements BitGoBase {
     forceSMS,
     extensible,
     trust,
+    forReset2FA,
   }: AuthenticateOptions): ProcessedAuthenticationOptions {
     if (!_.isString(username)) {
       throw new Error('expected string username');
@@ -761,6 +762,10 @@ export class BitGoAPI implements BitGoBase {
       this._extensionKey = makeRandomKey();
       authParams.extensible = true;
       authParams.extensionAddress = getAddressP2PKH(this._extensionKey);
+    }
+
+    if (forReset2FA) {
+      authParams.forReset2FA = true;
     }
 
     return authParams;
