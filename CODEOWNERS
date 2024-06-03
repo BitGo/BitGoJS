@@ -49,6 +49,7 @@
 /modules/sdk-coin-cspr/ @BitGo/ethalt-team
 /modules/sdk-coin-dot/ @BitGo/ethalt-team
 /modules/sdk-coin-eos/ @BitGo/ethalt-team
+/modules/sdk-coin-ethlike/ @BitGo/ethalt-team
 /modules/sdk-coin-hbar/ @BitGo/ethalt-team
 /modules/sdk-coin-near/ @BitGo/ethalt-team
 /modules/sdk-coin-opeth/ @BitGo/ethalt-team
