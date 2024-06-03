@@ -92,7 +92,8 @@
     "json5": "^2.2.2",
     "ua-parser-js": ">0.7.30 <0.8.0",
     "socks": "2.7.3",
-    "web3-utils": "4.2.1"
+    "web3-utils": "4.2.1",
+    "rpc-websockets": "7.11.0"
   },
   "workspaces": [
     "modules/*"
