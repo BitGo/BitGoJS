@@ -41,6 +41,8 @@ import {
   Eth,
   Eth2,
   Ethw,
+  EthLikeCoin,
+  TethLikeCoin,
   FiatEur,
   FiatGBP,
   FiatUsd,
@@ -151,6 +153,8 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('eth', Eth.createInstance);
   globalCoinFactory.register('eth2', Eth2.createInstance);
   globalCoinFactory.register('ethw', Ethw.createInstance);
+  globalCoinFactory.register('baseeth', EthLikeCoin.createInstance);
+  globalCoinFactory.register('tbaseeth', TethLikeCoin.createInstance);
   globalCoinFactory.register('fiateur', FiatEur.createInstance);
   globalCoinFactory.register('fiatgbp', FiatGBP.createInstance);
   globalCoinFactory.register('fiatusd', FiatUsd.createInstance);

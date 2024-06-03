@@ -482,6 +482,26 @@ export const coins = CoinMap.fromCoins([
     KeyCurve.BLS
   ),
   account(
+    '2660f6f6-1980-4584-a0b3-487d4a832b9f',
+    'tbaseeth',
+    'Base Sepolia Chain',
+    Networks.test.basechain,
+    18,
+    UnderlyingAsset.BASEETH,
+    BaseUnit.ETH,
+    ETH_FEATURES
+  ),
+  account(
+    'd51fe324-1e01-4630-9b04-c724fe495a1c',
+    'baseeth',
+    'Base Chain',
+    Networks.main.basechain,
+    18,
+    UnderlyingAsset.BASEETH,
+    BaseUnit.ETH,
+    ETH_FEATURES
+  ),
+  account(
     'ffc472f5-27c6-49f8-ad9a-f57659258fb9',
     'etc',
     'Ethereum Classic',
