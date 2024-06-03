@@ -60,6 +60,8 @@ import {
 } from './types';
 
 const _5n = BigInt(5);
+// Size of alpha and mu shares in bytes expected by the implementation of the protocol
+const ALPHAMUSIZE = 768;
 
 /**
  * ECDSA TSS implementation supporting 2:n Threshold
@@ -546,7 +548,7 @@ export default class Ecdsa {
     const rb = await randomPositiveCoPrimeTo(pka.n);
     const cb = pka.encrypt(beta0, rb);
     const alpha = pka.addition(pka.multiply(k, g), cb);
-    const alphaToBeSent = bigIntToBufferBE(alpha, 32).toString('hex');
+    const alphaToBeSent = bigIntToBufferBE(alpha, ALPHAMUSIZE).toString('hex');
     // Prove $\gamma_i \in Z_{N^2}$.
     const gx = Ecdsa.curve.basePointMult(g);
     let proof = await EcdsaRangeProof.proveWithCheck(
@@ -586,7 +588,7 @@ export default class Ecdsa {
     const rn = await randomPositiveCoPrimeTo(pka.n);
     const cn = pka.encrypt(nu0, rn);
     const mu = pka.addition(pka.multiply(k, w), cn);
-    const muToBeSent = bigIntToBufferBE(mu, 32).toString('hex');
+    const muToBeSent = bigIntToBufferBE(mu, ALPHAMUSIZE).toString('hex');
     // Prove $\w_i \in Z_{N^2}$.
     const wx = Ecdsa.curve.basePointMult(w);
     proof = await EcdsaRangeProof.proveWithCheck(
@@ -798,7 +800,7 @@ export default class Ecdsa {
     const rb = await randomPositiveCoPrimeTo(pkb.n);
     const cb = pkb.encrypt(beta0, rb);
     const alpha = pkb.addition(pkb.multiply(k, g), cb);
-    const alphaToBeSent = bigIntToBufferBE(alpha, 32).toString('hex');
+    const alphaToBeSent = bigIntToBufferBE(alpha, ALPHAMUSIZE).toString('hex');
     // Prove $\gamma_i \in Z_{N^2}$.
     const gx = Ecdsa.curve.basePointMult(g);
     let proof = await EcdsaRangeProof.proveWithCheck(
@@ -838,7 +840,7 @@ export default class Ecdsa {
     const rn = await randomPositiveCoPrimeTo(pkb.n);
     const cn = pkb.encrypt(nu0, rn);
     const mu = pkb.addition(pkb.multiply(k, w), cn);
-    const muToBeSent = bigIntToBufferBE(mu, 32).toString('hex');
+    const muToBeSent = bigIntToBufferBE(mu, ALPHAMUSIZE).toString('hex');
     // Prove $\w_i \in Z_{N^2}$.
     const wx = Ecdsa.curve.basePointMult(w);
     proof = await EcdsaRangeProof.proveWithCheck(
