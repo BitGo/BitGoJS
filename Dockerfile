@@ -98,6 +98,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-btg /var/modules/sdk-coin-btg/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dash /var/modules/sdk-coin-dash/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-doge /var/modules/sdk-coin-doge/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eos /var/modules/sdk-coin-eos/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethlike /var/modules/sdk-coin-ethlike/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethw /var/modules/sdk-coin-ethw/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
@@ -164,6 +165,7 @@ cd /var/modules/sdk-coin-btg && yarn link && \
 cd /var/modules/sdk-coin-dash && yarn link && \
 cd /var/modules/sdk-coin-doge && yarn link && \
 cd /var/modules/sdk-coin-eos && yarn link && \
+cd /var/modules/sdk-coin-ethlike && yarn link && \
 cd /var/modules/sdk-coin-ethw && yarn link && \
 cd /var/modules/sdk-coin-ltc && yarn link && \
 cd /var/modules/sdk-coin-xlm && yarn link && \
@@ -233,6 +235,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-dash && \
     yarn link @bitgo/sdk-coin-doge && \
     yarn link @bitgo/sdk-coin-eos && \
+    yarn link @bitgo/sdk-coin-ethlike && \
     yarn link @bitgo/sdk-coin-ethw && \
     yarn link @bitgo/sdk-coin-ltc && \
     yarn link @bitgo/sdk-coin-xlm && \
@@ -241,9 +244,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Tue, 28 May 2024 20:31:40 GMT"
+LABEL created="Mon, 03 Jun 2024 13:04:10 GMT"
 LABEL version=9.64.0
-LABEL git_hash=5067b1531c0d866417deb09fa5975d50fbb9c36b
+LABEL git_hash=d67f2f0bce75a245980f2b29c70242924ff8fcaf
 #LABEL_END
 
 USER node

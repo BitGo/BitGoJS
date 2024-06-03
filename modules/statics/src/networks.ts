@@ -497,6 +497,33 @@ class Holesky extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = 'ETHER';
   tokenOperationHashPrefix = 'ERC20';
 }
+class BaseChainTestnet extends Testnet implements EthereumNetwork {
+  name = 'BaseChainTestnet';
+  family = CoinFamily.BASEETH;
+  explorerUrl = 'https://sepolia.basescan.org/tx/';
+  accountExplorerUrl = 'https://sepolia.basescan.org/address/';
+  chainId = 84532;
+  nativeCoinOperationHashPrefix = '84532';
+  tokenOperationHashPrefix = '84532-ERC20';
+  forwarderFactoryAddress = '0xdd498702f44c4da08eb9e08d3f015eefe5cb71fc';
+  forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
+  walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
+  walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
+}
+
+class BaseChain extends Mainnet implements EthereumNetwork {
+  name = 'BaseChain';
+  family = CoinFamily.BASEETH;
+  explorerUrl = 'https://basescan.org/tx/';
+  accountExplorerUrl = 'https://basescan.org/address/';
+  chainId = 8453;
+  nativeCoinOperationHashPrefix = '8453';
+  tokenOperationHashPrefix = '8453-ERC20';
+  forwarderFactoryAddress = '0xdd498702f44c4da08eb9e08d3f015eefe5cb71fc';
+  forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
+  walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
+  walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
+}
 
 class EthereumClassic extends Mainnet implements EthereumNetwork {
   name = 'EthereumClassic';
@@ -992,6 +1019,7 @@ export const Networks = {
     bera: Object.freeze(new Bera()),
     bld: Object.freeze(new Bld()),
     bsc: Object.freeze(new BinanceSmartChain()),
+    basechain: Object.freeze(new BaseChain()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     coreum: Object.freeze(new Coreum()),
@@ -1046,6 +1074,7 @@ export const Networks = {
     bera: Object.freeze(new BeraTestnet()),
     bld: Object.freeze(new BldTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
+    basechain: Object.freeze(new BaseChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),

@@ -39,6 +39,8 @@ import {
   Erc20Token,
   Etc,
   Eth,
+  EthLikeCoin,
+  TEthLikeCoin,
   Eth2,
   Ethw,
   FiatEur,
@@ -149,6 +151,8 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('eos', Eos.createInstance);
   globalCoinFactory.register('etc', Etc.createInstance);
   globalCoinFactory.register('eth', Eth.createInstance);
+  globalCoinFactory.register('baseeth', EthLikeCoin.createInstance);
+  globalCoinFactory.register('tbaseeth', TEthLikeCoin.createInstance);
   globalCoinFactory.register('eth2', Eth2.createInstance);
   globalCoinFactory.register('ethw', Ethw.createInstance);
   globalCoinFactory.register('fiateur', FiatEur.createInstance);

@@ -94,11 +94,13 @@ export const expectedColdFeatures = {
     'tton',
   ],
   neither: [
+    'baseeth',
     'ethw',
     'fiateur',
     'fiatgbp',
     'fiatusd',
     'susd',
+    'tbaseeth',
     'tbtg',
     'teth',
     'tfiateur',
