@@ -16,6 +16,8 @@ interface EnvironmentTemplate {
   eth2ExplorerBaseUrl: string;
   ethwFullNodeRPCBaseUrl: string;
   polygonscanBaseUrl?: string;
+  baseethExplorerUrl?: string;
+  baseethApiToken?: string;
   bscscanBaseUrl?: string;
   bscscanApiToken?: string;
   polygonscanApiToken?: string;
@@ -106,6 +108,8 @@ const mainnetBase: EnvironmentTemplate = {
   avaxcNetworkBaseUrl: 'https://api.avax.network',
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwFullNodeRPCBaseUrl: 'https://mainnet.ethereumpow.org',
+  baseethExplorerUrl: 'https://api.basescan.org',
+  baseethApiToken: process.env.BASESCAN_API_TOKEN,
   bscscanBaseUrl: 'https://api.bscscan.com',
   polygonscanBaseUrl: 'https://api.polygonscan.com',
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
@@ -151,6 +155,8 @@ const testnetBase: EnvironmentTemplate = {
   ethwFullNodeRPCBaseUrl: 'https://mainnet.ethereumpow.org',
   polygonscanBaseUrl: 'https://api-amoy.polygonscan.com',
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
+  baseethExplorerUrl: 'https://api-sepolia.basescan.org',
+  baseethApiToken: process.env.BASESCAN_API_TOKEN,
   bscscanBaseUrl: 'https://api-testnet.bscscan.com',
   arbiscanBaseUrl: 'https://api-sepolia.arbiscan.io',
   arbiscanApiToken: process.env.ARBISCAN_API_TOKEN,

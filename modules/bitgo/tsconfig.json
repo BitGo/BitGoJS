@@ -108,6 +108,9 @@
       "path": "../sdk-coin-eth2"
     },
     {
+      "path": "../sdk-coin-ethlike"
+    },
+    {
       "path": "../sdk-coin-ethw"
     },
     {
