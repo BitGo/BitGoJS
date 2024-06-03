@@ -15,6 +15,7 @@ export interface BitGoAPIOptions {
   arbiscanApiToken?: string;
   optimisticEtherscanApiToken?: string;
   zksyncExplorerApiToken?: string;
+  bscscanApiToken?: string;
   hmacVerification?: boolean;
   proxy?: string;
   refreshToken?: string;
