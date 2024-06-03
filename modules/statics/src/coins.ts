@@ -3236,6 +3236,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.EMX
   ),
   erc20(
+    '48db2e4a-f157-4b4b-8ae4-a8d65c80fef1',
+    'ena',
+    'Ethena',
+    18,
+    '0x57e114b691db790c35207b2e685d4a43181e6061',
+    UnderlyingAsset.ENA
+  ),
+  erc20(
     '44c90df7-cdb9-4a7e-a5fa-33f3e12e42d1',
     'eng',
     'Enigma',
@@ -4741,6 +4749,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x865ec58b06bf6305b886793aa20a2da31d034e68',
     UnderlyingAsset.MOC
+  ),
+  erc20(
+    'dd8a03a7-ae77-4764-9405-d7f33b6d994d',
+    'moca',
+    'Moca',
+    18,
+    '0xf944e35f95e819e752f3ccb5faf40957d311e8c5',
+    UnderlyingAsset.MOCA
   ),
   erc20(
     'f1654a22-81cc-4798-b815-c9faa5ad5cd0',
@@ -6325,6 +6341,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xbce7bd79558dda90b261506768f265c5543a9f90',
     UnderlyingAsset.TKNT
+  ),
+  erc20(
+    '8c3744b3-f435-4a6b-91a0-346139bd2b86',
+    'tko',
+    'Taiko Token',
+    18,
+    '0x10dea67478c5f8c5e2d90e5e9b26dbe60c54d800',
+    UnderlyingAsset.TKO
   ),
   erc20(
     '7416f330-7ebe-4041-ae0b-26876973b084',
@@ -12834,6 +12858,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xbd3bd9b0c96be74e006333df6d1b5d9333ae1d43',
     UnderlyingAsset['tavaxc:cop2peq']
+  ),
+  tavaxErc20(
+    '773b63cd-c7fc-4a58-befc-99db997d858c',
+    'tavaxc:xsgd',
+    'XSGD',
+    6,
+    '0xd769410dc8772695a7f55a304d2125320a65c2a5',
+    UnderlyingAsset['tavaxc:xsgd']
   ),
   solToken(
     'acc2b136-c21e-46b6-aecf-69fd3c8281db',
