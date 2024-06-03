@@ -149,7 +149,10 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
     const txData = tx.toJson();
     this.type(SuiTransactionType.AddStake);
     this.sender(txData.sender);
-    this.gasData(txData.gasData);
+    this.gasData({
+      ...txData.gasData,
+      payment: this.getInputGasPaymentObjectsFromTxData(txData),
+    });
 
     const requests = utils.getStakeRequests(tx.suiTransaction.tx);
     this.stake(requests);
@@ -185,7 +188,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
         // requires a larger number of inputs we use the merge command to merge the rest of the objects into the gasCoin
         if (this._gasData.payment.length >= MAX_GAS_OBJECTS) {
           const gasPaymentObjects = this._gasData.payment
-            .splice(MAX_GAS_OBJECTS - 1)
+            .slice(MAX_GAS_OBJECTS - 1)
             .map((object) => Inputs.ObjectRef(object));
 
           // limit for total number of `args: CallArg[]` for a single command is MAX_COMMAND_ARGS so the max length of
@@ -240,6 +243,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
       },
       gasData: {
         ...this._gasData,
+        payment: this._gasData.payment.slice(0, MAX_GAS_OBJECTS - 1),
       },
     };
   }

@@ -208,6 +208,7 @@ export class Utils implements BaseUtils {
     switch (command.kind) {
       case 'SplitCoins':
       case 'TransferObjects':
+      case 'MergeCoins':
         return SuiTransactionType.Transfer;
       case 'MoveCall':
         if (command.target.endsWith(MethodNames.RequestAddStake)) {

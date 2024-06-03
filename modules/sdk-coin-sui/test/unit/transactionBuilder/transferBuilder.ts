@@ -136,6 +136,10 @@ describe('Sui Transfer Builder', () => {
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
+      const rebuilder = factory.getTransferBuilder();
+      rebuilder.from(rawTx);
+      const rebuiltTx = await rebuilder.build();
+      rebuiltTx.toBroadcastFormat().should.equal(rawTx);
     });
   });
 
