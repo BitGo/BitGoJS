@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.14.0...@bitgo/sdk-core@26.15.0) (2024-05-31)
+
+### Features
+
+- **abstract-eth:** add recovery support for bsc and polygon mpcv2 ([820e7b4](https://github.com/BitGo/BitGoJS/commit/820e7b40574add1bc7a05954961c7e7473972168))
+- add bitgo network connection schema ([2324060](https://github.com/BitGo/BitGoJS/commit/2324060a06f0441a9c8bfa848ff24158b63e097a))
+
 # [26.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.13.0...@bitgo/sdk-core@26.14.0) (2024-05-28)
 
 ### Bug Fixes
