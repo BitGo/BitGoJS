@@ -76,7 +76,11 @@
   },
   "resolutions": {
     "@substrate/txwrapper-core": "7.0.1",
-    "@substrate/txwrapper-polkadot": "7.0.1"
+    "@substrate/txwrapper-polkadot": "7.0.1",
+    "rpc-websockets": "7.11.0"
+  },
+  "overrides": {
+    "rpc-websockets": "7.11.0"
   },
   "nyc": {
     "extension": [

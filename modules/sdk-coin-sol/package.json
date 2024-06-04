@@ -55,5 +55,11 @@
     "@bitgo/sdk-api": "^1.47.5",
     "@bitgo/sdk-test": "^8.0.21",
     "@types/lodash": "^4.14.121"
+  },
+  "resolutions": {
+    "rpc-websockets": "7.11.0"
+  },
+  "overrides": {
+    "rpc-websockets": "7.11.0"
   }
 }
