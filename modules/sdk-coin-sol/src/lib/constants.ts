@@ -22,6 +22,7 @@ export enum ValidInstructionTypesEnum {
   TokenTransfer = 'TokenTransfer',
   Memo = 'Memo',
   InitializeAssociatedTokenAccount = 'InitializeAssociatedTokenAccount',
+  CloseAssociatedTokenAccount = 'CloseAssociatedTokenAccount',
   Allocate = 'Allocate',
   Assign = 'Assign',
   Split = 'Split',
@@ -38,6 +39,7 @@ export enum InstructionBuilderTypes {
   Memo = 'Memo',
   NonceAdvance = 'NonceAdvance',
   CreateAssociatedTokenAccount = 'CreateAssociatedTokenAccount',
+  CloseAssociatedTokenAccount = 'CloseAssociatedTokenAccount',
   TokenTransfer = 'TokenTransfer',
   StakingAuthorize = 'Authorize',
   StakingDelegate = 'Delegate',
@@ -54,6 +56,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.InitializeNonceAccount,
   ValidInstructionTypesEnum.Memo,
   ValidInstructionTypesEnum.InitializeAssociatedTokenAccount,
+  ValidInstructionTypesEnum.CloseAssociatedTokenAccount,
   ValidInstructionTypesEnum.TokenTransfer,
   ValidInstructionTypesEnum.Allocate,
   ValidInstructionTypesEnum.Assign,
@@ -112,6 +115,11 @@ export const stakingWithdrawInstructionsIndexes = {
 export const ataInitInstructionIndexes = {
   InitializeAssociatedTokenAccount: 0,
   Memo: 1,
+} as const;
+
+/** Const to check the order of the ATA init instructions when decode */
+export const ataCloseInstructionIndexes = {
+  CloseAssociatedTokenAccount: 0,
 } as const;
 
 export const nonceAdvanceInstruction = 'AdvanceNonceAccount';

@@ -1,18 +1,18 @@
-import * as sinon from 'sinon';
-import assert from 'assert';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import * as testData from '../fixtures/sol';
-import * as should from 'should';
-import * as resources from '../resources/sol';
-import * as _ from 'lodash';
-import { KeyPair, Sol, Tsol } from '../../src';
-import { TssUtils, TxRequest, Wallet, MPCSweepTxs, MPCTx, MPCTxs } from '@bitgo/sdk-core';
-import { getBuilderFactory } from './getBuilderFactory';
-import { Transaction } from '../../src/lib';
+import { MPCSweepTxs, MPCTx, MPCTxs, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
+import assert from 'assert';
+import * as _ from 'lodash';
+import * as should from 'should';
+import * as sinon from 'sinon';
+import { KeyPair, Sol, Tsol } from '../../src';
+import { Transaction } from '../../src/lib';
+import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';
 import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
-import { InstructionParams, AtaInit, TokenTransfer } from '../../src/lib/iface';
+import * as testData from '../fixtures/sol';
+import * as resources from '../resources/sol';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -1517,6 +1517,26 @@ describe('SOL:', function () {
           payload: {
             id: '1',
             jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.closeATAkeys.closeAtaAddress],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseM2Derivation);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.closeATAkeys.bs58EncodedPublicKey],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponseM2Derivation);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
             method: 'getAccountInfo',
             params: [
               testData.keys.durableNoncePubKey,
@@ -1935,6 +1955,22 @@ describe('SOL:', function () {
       assert.strictEqual(tokenTxnJson.numSignatures, testData.SolInputData.unsignedSweepSignatures);
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 7);
+    });
+
+    it('should recover sol funds from ATA address for non-bitgo recoveries', async function () {
+      // close ATA address instruction type txn
+      const closeATATxn = await basecoin.recover({
+        userKey: testData.closeATAkeys.userKey,
+        backupKey: testData.closeATAkeys.backupKey,
+        bitgoKey: testData.closeATAkeys.bitgoKey,
+        recoveryDestination: testData.closeATAkeys.destinationPubKey,
+        walletPassphrase: testData.closeATAkeys.walletPassword,
+        closeAtaAddress: testData.closeATAkeys.closeAtaAddress,
+      });
+      closeATATxn.should.not.be.empty();
+      closeATATxn.should.hasOwnProperty('serializedTx');
+      closeATATxn.should.hasOwnProperty('scanIndex');
+      should.equal((closeATATxn as MPCTx).scanIndex, 0);
     });
   });
 

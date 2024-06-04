@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import {
   BaseTransaction,
   Entry,
@@ -9,7 +8,16 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Blockhash, PublicKey, Signer, SystemInstruction, Transaction as SolTransaction } from '@solana/web3.js';
+import { Blockhash, PublicKey, Signer, Transaction as SolTransaction, SystemInstruction } from '@solana/web3.js';
+import BigNumber from 'bignumber.js';
+import base58 from 'bs58';
+import { KeyPair } from '.';
+import {
+  InstructionBuilderTypes,
+  UNAVAILABLE_TEXT,
+  validInstructionData,
+  ValidInstructionTypesEnum,
+} from './constants';
 import {
   DurableNonceParams,
   Memo,
@@ -23,7 +31,7 @@ import {
   TxData,
   WalletInit,
 } from './iface';
-import base58 from 'bs58';
+import { instructionParamsFactory } from './instructionParamsFactory';
 import {
   getInstructionType,
   getTransactionType,
@@ -31,14 +39,6 @@ import {
   requiresAllSignatures,
   validateRawMsgInstruction,
 } from './utils';
-import { KeyPair } from '.';
-import { instructionParamsFactory } from './instructionParamsFactory';
-import {
-  InstructionBuilderTypes,
-  UNAVAILABLE_TEXT,
-  validInstructionData,
-  ValidInstructionTypesEnum,
-} from './constants';
 
 export class Transaction extends BaseTransaction {
   protected _solTransaction: SolTransaction;
@@ -204,6 +204,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.AssociatedTokenAccountInitialization:
           this.setTransactionType(TransactionType.AssociatedTokenAccountInitialization);
           break;
+        case TransactionType.CloseAssociatedTokenAccount:
+          this.setTransactionType(TransactionType.CloseAssociatedTokenAccount);
+          break;
         case TransactionType.StakingAuthorize:
           this.setTransactionType(TransactionType.StakingAuthorize);
           break;
@@ -355,6 +358,8 @@ export class Transaction extends BaseTransaction {
           });
           break;
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          break;
+        case InstructionBuilderTypes.CloseAssociatedTokenAccount:
           break;
         case InstructionBuilderTypes.StakingAuthorize:
           break;
