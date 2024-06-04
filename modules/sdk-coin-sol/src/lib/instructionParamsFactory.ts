@@ -1,3 +1,4 @@
+import { decodeTransferCheckedInstruction } from '@solana/spl-token';
 import {
   AllocateParams,
   AssignParams,
@@ -13,27 +14,27 @@ import {
   SystemInstruction,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { decodeTransferCheckedInstruction } from '@solana/spl-token';
 
-import { TransactionType, NotSupported } from '@bitgo/sdk-core';
+import { NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { coins, SolCoin } from '@bitgo/statics';
+import assert from 'assert';
 import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
 import {
+  AtaClose,
   AtaInit,
   InstructionParams,
-  WalletInit,
-  Transfer,
-  Nonce,
   Memo,
+  Nonce,
   StakingActivate,
+  StakingAuthorize,
   StakingDeactivate,
+  StakingDelegate,
   StakingWithdraw,
   TokenTransfer,
-  StakingAuthorize,
-  StakingDelegate,
+  Transfer,
+  WalletInit,
 } from './iface';
 import { getInstructionType } from './utils';
-import assert from 'assert';
-import { coins, SolCoin } from '@bitgo/statics';
 
 /**
  * Construct instructions params from Solana instructions
@@ -59,6 +60,8 @@ export function instructionParamsFactory(
       return parseStakingWithdrawInstructions(instructions);
     case TransactionType.AssociatedTokenAccountInitialization:
       return parseAtaInitInstructions(instructions);
+    case TransactionType.CloseAssociatedTokenAccount:
+      return parseAtaCloseInstructions(instructions);
     case TransactionType.StakingAuthorize:
       return parseStakingAuthorizeInstructions(instructions);
     case TransactionType.StakingAuthorizeRaw:
@@ -620,6 +623,35 @@ function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array
   }
   if (memo) {
     instructionData.push(memo);
+  }
+  return instructionData;
+}
+
+const ataCloseInstructionKeysIndexes = {
+  AccountAddress: 0,
+  DestinationAddress: 1,
+  AuthorityAddress: 2,
+};
+
+/**
+ * Parses Solana instructions to close associated token account tx instructions params
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for Send tx
+ */
+function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Array<AtaClose> {
+  const instructionData: Array<AtaClose> = [];
+
+  for (const instruction of instructions) {
+    const ataClose: AtaClose = {
+      type: InstructionBuilderTypes.CloseAssociatedTokenAccount,
+      params: {
+        accountAddress: instruction.keys[ataCloseInstructionKeysIndexes.AccountAddress].pubkey.toString(),
+        destinationAddress: instruction.keys[ataCloseInstructionKeysIndexes.DestinationAddress].pubkey.toString(),
+        authorityAddress: instruction.keys[ataCloseInstructionKeysIndexes.AuthorityAddress].pubkey.toString(),
+      },
+    };
+    instructionData.push(ataClose);
   }
   return instructionData;
 }

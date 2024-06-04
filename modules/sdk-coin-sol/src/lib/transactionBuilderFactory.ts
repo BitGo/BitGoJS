@@ -1,19 +1,20 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { TransferBuilder } from './transferBuilder';
-import { WalletInitializationBuilder } from './walletInitializationBuilder';
-import { TransactionBuilder } from './transactionBuilder';
-import { StakingActivateBuilder } from './stakingActivateBuilder';
-import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
-import { Transaction } from './transaction';
-import { validateRawTransaction } from './utils';
-import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
-import { TokenTransferBuilder } from './tokenTransferBuilder';
-import { TransferBuilderV2 } from './transferBuilderV2';
+import { CloseAtaBuilder } from './closeAtaBuilder';
+import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
-import { StakingRawMsgAuthorizeBuilder } from './stakingRawMsgAuthorizeBuilder';
+import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 import { StakingDelegateBuilder } from './stakingDelegateBuilder';
+import { StakingRawMsgAuthorizeBuilder } from './stakingRawMsgAuthorizeBuilder';
+import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { Transaction } from './transaction';
+import { TransactionBuilder } from './transactionBuilder';
+import { TransferBuilder } from './transferBuilder';
+import { TransferBuilderV2 } from './transferBuilderV2';
+import { validateRawTransaction } from './utils';
+import { WalletInitializationBuilder } from './walletInitializationBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -163,6 +164,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getAtaInitializationBuilder(tx?: Transaction): AtaInitializationBuilder {
     return this.initializeBuilder(tx, new AtaInitializationBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to create a close associated token account transaction.
+   */
+  getCloseAtaInitializationBuilder(tx?: Transaction): CloseAtaBuilder {
+    return this.initializeBuilder(tx, new CloseAtaBuilder(this._coinConfig));
   }
 
   /**

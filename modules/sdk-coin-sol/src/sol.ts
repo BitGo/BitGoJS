@@ -5,57 +5,56 @@
 import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, BaseNetwork } from '@bitgo/statics';
-import * as _ from 'lodash';
 import {
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
   BaseCoin,
+  ParseTransactionOptions as BaseParseTransactionOptions,
   BaseTransaction,
+  TransactionPrebuild as BaseTransactionPrebuild,
   BitGoBase,
+  EDDSAMethods,
+  EDDSAMethodTypes,
   Environments,
   KeyPair,
   Memo,
   MethodNotImplementedError,
   MPCAlgorithm,
+  MPCConsolidationRecoveryOptions,
+  MPCRecoveryOptions,
+  MPCSweepRecoveryOptions,
+  MPCSweepTxs,
+  MPCTx,
+  MPCTxs,
+  MPCUnsignedTx,
+  OvcInput,
+  OvcOutput,
   ParsedTransaction,
-  ParseTransactionOptions as BaseParseTransactionOptions,
   PresignTransactionOptions,
   PublicKey,
+  RecoveryTxRequest,
   SignedTransaction,
   SignTransactionOptions,
   TokenEnablementConfig,
   TransactionExplanation,
-  TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  EDDSAMethodTypes,
-  EDDSAMethods,
-  MPCTx,
-  MPCRecoveryOptions,
-  MPCConsolidationRecoveryOptions,
-  MPCSweepTxs,
-  RecoveryTxRequest,
-  MPCUnsignedTx,
-  MPCSweepRecoveryOptions,
-  MPCTxs,
-  OvcInput,
-  OvcOutput,
-  BaseBroadcastTransactionOptions,
-  BaseBroadcastTransactionResult,
 } from '@bitgo/sdk-core';
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { BaseNetwork, CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import * as _ from 'lodash';
+import * as request from 'superagent';
 import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
 import {
   getAssociatedTokenAccountAddress,
+  getSolTokenFromAddress,
   getSolTokenFromTokenName,
   isValidAddress,
   isValidPrivateKey,
   isValidPublicKey,
-  getSolTokenFromAddress,
   validateRawTransaction,
 } from './lib/utils';
-import * as request from 'superagent';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
-
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
 export interface TransactionFee {
@@ -149,6 +148,7 @@ export interface SolRecoveryOptions extends MPCRecoveryOptions {
     secretKey: string;
   };
   tokenContractAddress?: string;
+  closeAtaAddress?: string;
 }
 
 export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecoveryOptions {
@@ -759,7 +759,34 @@ export class Sol extends BaseCoin {
 
     let txBuilder;
     let blockhash = await this.getBlockhash();
+    let rentExemptAmount;
     let authority = '';
+
+    // if this is closeATA recovery
+    if (params.closeAtaAddress) {
+      if (!params.closeAtaAddress || !this.isValidAddress(params.closeAtaAddress)) {
+        throw new Error('invalid closeAtaAddress');
+      }
+
+      balance = await this.getAccountBalance(params.closeAtaAddress);
+      if (balance <= 0) {
+        throw Error('Did not find closeAtaAddress with sol funds to recover');
+      }
+
+      rentExemptAmount = await this.getRentExemptAmount();
+
+      const ataCloseBuilder = () => {
+        const txBuilder = factory.getCloseAtaInitializationBuilder();
+        txBuilder.nonce(blockhash);
+        txBuilder.sender(bs58EncodedPublicKey);
+        txBuilder.accountAddress(params.closeAtaAddress ?? '');
+        txBuilder.destinationAddress(params.recoveryDestination);
+        txBuilder.authorityAddress(bs58EncodedPublicKey);
+        txBuilder.associatedTokenAccountRent(rentExemptAmount.toString());
+        return txBuilder;
+      };
+      txBuilder = ataCloseBuilder();
+    }
 
     if (params.durableNonce) {
       const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
@@ -790,7 +817,7 @@ export class Sol extends BaseCoin {
         }
 
         if (recovereableTokenAccounts.length !== 0) {
-          const rentExemptAmount = await this.getRentExemptAmount();
+          rentExemptAmount = await this.getRentExemptAmount();
 
           txBuilder = factory
             .getTokenTransferBuilder()
@@ -924,6 +951,180 @@ export class Sol extends BaseCoin {
     if (params.durableNonce) {
       // add durable nonce account signature
       txBuilder.sign({ key: params.durableNonce.secretKey });
+    }
+
+    const completedTransaction = await txBuilder.build();
+    const serializedTx = completedTransaction.toBroadcastFormat();
+    const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const inputs: OvcInput[] = [];
+    for (const input of completedTransaction.inputs) {
+      inputs.push({
+        address: input.address,
+        valueString: input.value,
+        value: new BigNumber(input.value).toNumber(),
+      });
+    }
+    const outputs: OvcOutput[] = [];
+    for (const output of completedTransaction.outputs) {
+      outputs.push({
+        address: output.address,
+        valueString: output.value,
+        coinName: output.coin ? output.coin : walletCoin,
+      });
+    }
+    const spendAmount = completedTransaction.inputs.length === 1 ? completedTransaction.inputs[0].value : 0;
+    const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+    const feeInfo = { fee: totalFee.toNumber(), feeString: totalFee.toString() };
+    const coinSpecific = { commonKeychain: bitgoKey };
+    if (isUnsignedSweep) {
+      const transaction: MPCTx = {
+        serializedTx: serializedTx,
+        scanIndex: index,
+        coin: walletCoin,
+        signableHex: completedTransaction.signablePayload.toString('hex'),
+        derivationPath: derivationPath,
+        parsedTx: parsedTx,
+        feeInfo: feeInfo,
+        coinSpecific: coinSpecific,
+      };
+      const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+      const transactions: MPCUnsignedTx[] = [unsignedTx];
+      const txRequest: RecoveryTxRequest = {
+        transactions: transactions,
+        walletCoin: walletCoin,
+      };
+      const txRequests: MPCSweepTxs = { txRequests: [txRequest] };
+      return txRequests;
+    }
+    const transaction: MPCTx = {
+      serializedTx: serializedTx,
+      scanIndex: index,
+    };
+    return transaction;
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param {SolRecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {MPCTx | MPCSweepTxs} the serialized transaction hex string and index
+   * of the address being swept
+   */
+  async recoverCloseATA(params: SolRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    if (!params.closeAtaAddress || !this.isValidAddress(params.closeAtaAddress)) {
+      throw new Error('invalid closeAtaAddress');
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+
+    // Build the transaction
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    let balance = 0;
+    const feePerSignature = await this.getFees();
+    const baseFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
+    const totalFee = new BigNumber(baseFee);
+
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+    const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
+    const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+    balance = await this.getAccountBalance(bs58EncodedPublicKey);
+    if (totalFee.gt(balance)) {
+      throw Error('Did not find address with funds to recover');
+    }
+
+    balance = await this.getAccountBalance(params.closeAtaAddress);
+    if (balance <= 0) {
+      throw Error('Did not find closeAtaAddress with sol funds to recover');
+    }
+
+    const factory = this.getBuilder();
+    const walletCoin = this.getChain();
+
+    let txBuilder;
+    const blockhash = await this.getBlockhash();
+
+    const rentExemptAmount = await this.getRentExemptAmount();
+
+    // if this is closeATA recovery
+    if (params.closeAtaAddress) {
+      const ataCloseBuilder = () => {
+        const txBuilder = factory.getCloseAtaInitializationBuilder();
+        txBuilder.nonce(blockhash);
+        txBuilder.sender(bs58EncodedPublicKey);
+        txBuilder.accountAddress(params.closeAtaAddress ?? '');
+        txBuilder.destinationAddress(params.recoveryDestination);
+        txBuilder.authorityAddress(bs58EncodedPublicKey);
+        txBuilder.associatedTokenAccountRent(rentExemptAmount.toString());
+        return txBuilder;
+      };
+      txBuilder = ataCloseBuilder();
+    }
+
+    if (!isUnsignedSweep) {
+      // Sign the txn
+      if (!params.userKey) {
+        throw new Error('missing userKey');
+      }
+
+      if (!params.backupKey) {
+        throw new Error('missing backupKey');
+      }
+
+      if (!params.walletPassphrase) {
+        throw new Error('missing wallet passphrase');
+      }
+
+      const unsignedTransaction = (await txBuilder.build()) as Transaction;
+
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
+
+      // Decrypt private keys from KeyCard values
+      let userPrv;
+
+      try {
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      }
+
+      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+      let backupPrv;
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+      const signatureHex = await EDDSAMethods.getTSSSignature(
+        userSigningMaterial,
+        backupSigningMaterial,
+        currPath,
+        unsignedTransaction
+      );
+
+      const publicKeyObj = { pub: bs58EncodedPublicKey };
+      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
     }
 
     const completedTransaction = await txBuilder.build();

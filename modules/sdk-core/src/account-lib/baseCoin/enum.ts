@@ -67,6 +67,8 @@ export enum TransactionType {
   StakingRedelegate,
   AddPermissionlessDelegator,
   AddPermissionlessValidator,
+  // Closing an associated token account (e.g. SOL)
+  CloseAssociatedTokenAccount,
 }
 
 /**

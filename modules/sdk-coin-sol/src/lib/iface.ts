@@ -1,6 +1,6 @@
+import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
-import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
 export interface SolanaKeys {
@@ -33,6 +33,7 @@ export type InstructionParams =
   | StakingDeactivate
   | StakingWithdraw
   | AtaInit
+  | AtaClose
   | TokenTransfer
   | StakingAuthorize
   | StakingDelegate;
@@ -108,11 +109,17 @@ export interface AtaInit {
   params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string; tokenName: string };
 }
 
+export interface AtaClose {
+  type: InstructionBuilderTypes.CloseAssociatedTokenAccount;
+  params: { accountAddress: string; destinationAddress: string; authorityAddress: string };
+}
+
 export type ValidInstructionTypes =
   | SystemInstructionType
   | StakeInstructionType
   | 'Memo'
   | 'InitializeAssociatedTokenAccount'
+  | 'CloseAssociatedTokenAccount'
   | 'TokenTransfer';
 
 export type StakingAuthorizeParams = {
