@@ -19,10 +19,10 @@ import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
 import { AddressGenerationError, MethodNotImplementedError } from '../errors';
 import * as internal from '../internal/internal';
-import { drawKeycard } from '../internal/keycard';
+import { drawKeycard } from '../internal';
 import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv } from '../keychain';
-import { IPendingApproval, PendingApproval } from '../pendingApproval';
-import { TradingAccount } from '../trading/tradingAccount';
+import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
+import { TradingAccount } from '../trading';
 import {
   inferAddressType,
   RequestTracer,
@@ -92,7 +92,7 @@ import {
   WalletSignTypedDataOptions,
   WalletType,
 } from './iWallet';
-import { StakingWallet } from '../staking/stakingWallet';
+import { StakingWallet } from '../staking';
 import { Lightning } from '../lightning';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
@@ -3312,21 +3312,32 @@ export class Wallet implements IWallet {
       throw new Error('txRequestId missing from signed transaction');
     }
 
-    // TODO: BG-51122 Remove conditional when moved to txRequestFull for everything
-    if (this._wallet.type === 'custodial') {
-      await this.bitgo
+    if (onlySupportsTxRequestFull || apiVersion === 'full') {
+      const latestTxRequest = await getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId);
+      const transfer: { state: string; pendingApproval?: string; txid?: string } = await this.bitgo
         .post(
           this.bitgo.url(
             '/wallet/' + this._wallet.id + '/txrequests/' + signedTransaction.txRequestId + '/transfers',
             2
           )
         )
-        .send();
-    }
-
-    // ECDSA TSS uses TxRequestFull
-    if (apiVersion === 'full' || onlySupportsTxRequestFull) {
-      return getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId);
+        .send()
+        .result();
+      if (latestTxRequest.state === 'pendingApproval') {
+        const pendingApprovals = new PendingApprovals(this.bitgo, this.baseCoin);
+        const pendingApproval = await pendingApprovals.get({ id: latestTxRequest.pendingApprovalId });
+        return {
+          pendingApproval: pendingApproval.toJSON(),
+          txRequest: latestTxRequest,
+        };
+      }
+      return {
+        transfer,
+        txRequest: latestTxRequest,
+        txid: (latestTxRequest.transactions ?? [])[0]?.signedTx?.id,
+        tx: (latestTxRequest.transactions ?? [])[0]?.signedTx?.tx,
+        status: transfer.state,
+      };
     }
 
     return this.tssUtils?.sendTxRequest(signedTransaction.txRequestId);
