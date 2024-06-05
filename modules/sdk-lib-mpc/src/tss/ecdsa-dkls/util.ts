@@ -1,4 +1,4 @@
-import { Signature } from '@noble/secp256k1';
+import { secp256k1 as secp } from '@noble/curves/secp256k1';
 import { HDTree, Secp256k1Bip32HdTree, Secp256k1Curve } from '../../curves';
 import { bigIntFromBufferBE, bigIntToBufferBE } from '../../util';
 import { DeserializedDklsSignature, DeserializedMessages, RetrofitData } from './types';
@@ -27,7 +27,7 @@ export function combinePartialSignatures(round4MessagePayloads: Uint8Array[], rH
   const s0Sum = s0BigInts.slice(1).reduce((sumSoFar, s0) => secp256k1Curve.scalarAdd(sumSoFar, s0), s0BigInts[0]);
   const s1Sum = s1BigInts.slice(1).reduce((sumSoFar, s1) => secp256k1Curve.scalarAdd(sumSoFar, s1), s1BigInts[0]);
   const s = secp256k1Curve.scalarMult(s0Sum, secp256k1Curve.scalarInvert(s1Sum));
-  const sig = new Signature(r, s);
+  const sig = new secp.Signature(r, s);
   const normalizedSig = sig.normalizeS();
   return {
     R: new Uint8Array(bigIntToBufferBE(normalizedSig.r, 32)),
