@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.15.0...@bitgo/sdk-core@26.16.0) (2024-06-05)
+
+### Bug Fixes
+
+- **sdk-core:** call txRequest migration for all apiVersion=full ([53b5c2b](https://github.com/BitGo/BitGoJS/commit/53b5c2bd96fa15658ae9ce8d3e87338fc9579703))
+- **sdk-core:** pad alpha and mu shares of MPCV1 ([3235e8c](https://github.com/BitGo/BitGoJS/commit/3235e8c61a32fd3e6985a68a38d73068d43d1e67))
+
+### Features
+
+- **sdk-coin-sol:** add sol close ATA recovery support ([b1fdb64](https://github.com/BitGo/BitGoJS/commit/b1fdb6471bd1f5331e7a690056cf9380c5c2b5f1))
+- **sdk-core:** make sendManyTss backwards compatible with sendMany ([37553bd](https://github.com/BitGo/BitGoJS/commit/37553bd62854867770a22410e5d652ec7c4d06bb))
+- **sdk-core:** supply isMPCv2 for MPCv2 key creation ([64bd55a](https://github.com/BitGo/BitGoJS/commit/64bd55ac018797645b719f1bc8e4886ee7ed9443))
+
 # [26.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.14.0...@bitgo/sdk-core@26.15.0) (2024-05-31)
 
 ### Features

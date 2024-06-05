@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.48.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.47.5...@bitgo/sdk-api@1.48.0) (2024-06-05)
+
+### Features
+
+- add forReset2fa flag in authenticate options ([1f65868](https://github.com/BitGo/BitGoJS/commit/1f658684ecabef457efd51f07e321a5048eaf6e2))
+
 ## [1.47.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.47.4...@bitgo/sdk-api@1.47.5) (2024-05-31)
 
 **Note:** Version bump only for package @bitgo/sdk-api

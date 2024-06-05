@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.0.16...@bitgo/sdk-coin-sui@5.1.0) (2024-06-05)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** rebuild from raw transaction when input objects > 255 ([72b2d38](https://github.com/BitGo/BitGoJS/commit/72b2d389e40387de1eb61464638c39bbff26bf79))
+
+### Features
+
+- **sdk-coin-sui:** add support for building txns with > 255 inputs ([7be38a3](https://github.com/BitGo/BitGoJS/commit/7be38a35f2e0db50d2a0cb2bea68f1594c158587))
+
 ## [5.0.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.0.15...@bitgo/sdk-coin-sui@5.0.16) (2024-05-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui
