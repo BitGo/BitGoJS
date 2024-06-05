@@ -24,7 +24,6 @@ const possibleCoins = [
   'eos',
   'etc',
   'eth',
-  'eth2',
   'ethw',
   'hbar',
   'ltc',

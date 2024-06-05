@@ -39,7 +39,6 @@ COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
 
 #COPY_START
 COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
-COPY --from=builder /tmp/bitgo/modules/bls-dkg /var/modules/bls-dkg/
 COPY --from=builder /tmp/bitgo/modules/sdk-lib-mpc /var/modules/sdk-lib-mpc/
 COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
@@ -68,7 +67,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-coreum /var/modules/sdk-coin-cor
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dot /var/modules/sdk-coin-dot/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-etc /var/modules/sdk-coin-etc/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth2 /var/modules/sdk-coin-eth2/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hash /var/modules/sdk-coin-hash/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-injective /var/modules/sdk-coin-injective/
@@ -105,7 +103,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-xrp /var/modules/sdk-coin-xrp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
 
 RUN cd /var/modules/sdk-core && yarn link && \
-cd /var/modules/bls-dkg && yarn link && \
 cd /var/modules/sdk-lib-mpc && yarn link && \
 cd /var/modules/sjcl && yarn link && \
 cd /var/modules/statics && yarn link && \
@@ -134,7 +131,6 @@ cd /var/modules/sdk-coin-coreum && yarn link && \
 cd /var/modules/sdk-coin-cspr && yarn link && \
 cd /var/modules/sdk-coin-dot && yarn link && \
 cd /var/modules/sdk-coin-etc && yarn link && \
-cd /var/modules/sdk-coin-eth2 && yarn link && \
 cd /var/modules/sdk-coin-hash && yarn link && \
 cd /var/modules/sdk-coin-hbar && yarn link && \
 cd /var/modules/sdk-coin-injective && yarn link && \
@@ -174,7 +170,6 @@ cd /var/modules/sdk-coin-zec && yarn link
 #LINK_START
 RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-core && \
-    yarn link @bitgo/bls-dkg && \
     yarn link @bitgo/sdk-lib-mpc && \
     yarn link @bitgo/sjcl && \
     yarn link @bitgo/statics && \
@@ -203,7 +198,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \
     yarn link @bitgo/sdk-coin-etc && \
-    yarn link @bitgo/sdk-coin-eth2 && \
     yarn link @bitgo/sdk-coin-hash && \
     yarn link @bitgo/sdk-coin-hbar && \
     yarn link @bitgo/sdk-coin-injective && \

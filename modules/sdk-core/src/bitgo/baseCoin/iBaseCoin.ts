@@ -172,7 +172,7 @@ export interface SupplementGenerateWalletOptions {
   };
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
-  multisigType?: 'tss' | 'onchain' | 'blsdkg';
+  multisigType?: 'tss' | 'onchain';
   type: 'hot' | 'cold' | 'custodial';
 }
 
@@ -467,7 +467,6 @@ export interface IBaseCoin {
   supportsTss(): boolean;
   supportsDeriveKeyWithSeed(): boolean;
   isEVM(): boolean;
-  supportsBlsDkg(): boolean;
   getBaseFactor(): number | string;
   baseUnitsToBigUnits(baseUnits: string | number): string;
   bigUnitsToBaseUnits(bigUnits: string | number): string;

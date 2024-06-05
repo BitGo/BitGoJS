@@ -3,7 +3,7 @@ import { KeyPair, KeychainsTriplet } from '../baseCoin';
 import { BackupProvider, IWallet } from '../wallet';
 import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
-export type KeyType = 'tss' | 'independent' | 'blsdkg';
+export type KeyType = 'tss' | 'independent';
 
 export type SourceType = 'bitgo' | 'backup' | 'user' | 'cold';
 
@@ -141,7 +141,7 @@ export interface CreateBitGoOptions {
 }
 
 export interface CreateMpcOptions {
-  multisigType: 'onchain' | 'tss' | 'blsdkg';
+  multisigType: 'onchain' | 'tss';
   passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;

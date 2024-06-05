@@ -6,14 +6,11 @@ import { register } from '../../../src/keyPair';
 import * as coinModules from '../../../src';
 import { coins } from '@bitgo/statics';
 import { KeyPair as EthKeyPair } from '@bitgo/sdk-coin-eth';
-import { KeyPair as Eth2KeyPair } from '@bitgo/sdk-coin-eth2';
 import { Ed25519KeyPair } from '@bitgo/sdk-core';
 
 describe('Key Pair Factory', () => {
   describe('coinToKey map initialization', function () {
-    const supportedCoinsExceptTestnet = Object.keys(coinModules)
-      // TODO(BG-40990): temporarily disable eth2 from the test for bls not initialized error
-      .filter((k) => coinModules[k].KeyPair && k.trim().toLowerCase() !== 'eth2');
+    const supportedCoinsExceptTestnet = Object.keys(coinModules).filter((k) => coinModules[k].KeyPair);
 
     supportedCoinsExceptTestnet.forEach((coinName) => {
       it(`should initialize a ${coinName} keyPair map`, () => {
@@ -48,17 +45,6 @@ describe('Key Pair Factory', () => {
       (typeof keyPair.getKeys).should.equal('function');
       (typeof keyPair.getAddress).should.equal('function');
       (typeof keyPair.getPublicKey).should.equal('function');
-    });
-  });
-
-  // TODO(BG-40990): temporarily disable eth2 from the test for bls not initialized error
-  describe('blsKey generation', function () {
-    xit('should initialize eth2 keyPair map', () => {
-      const eth = coins.get('eth2');
-      const keyPair = register(eth.name) as Eth2KeyPair;
-      (typeof keyPair.getKeys).should.equal('function');
-      (typeof keyPair.getAddress).should.equal('function');
-      (typeof keyPair.sign).should.equal('function');
     });
   });
 

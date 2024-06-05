@@ -61,11 +61,6 @@ describe('EVM Wallets:', function () {
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet only supports TSS');
 
-      params = { ...params, multisigType: 'blsdkg' };
-      await evmWallets
-        .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
-        .should.be.rejectedWith('EVM wallet only supports TSS');
-
       params = { ...params, multisigType: 'tss' };
       await evmWallets
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
@@ -84,11 +79,6 @@ describe('EVM Wallets:', function () {
         .should.be.rejectedWith('missing required string' + ' parameter' + ' label');
 
       params = { label: 'test123' };
-      await evmWallets
-        .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
-        .should.be.rejectedWith('EVM wallet only supports TSS');
-
-      params = { ...params, multisigType: 'blsdkg' };
       await evmWallets
         .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet only supports TSS');

@@ -6,7 +6,6 @@ import { IDrawKeyCard } from './types';
 enum KeyCurveName {
   ed25519 = 'EDDSA',
   secp256k1 = 'ECDSA',
-  bls = 'BLS',
 }
 
 // Max for Binary/Byte Data https://github.com/soldair/node-qrcode#qr-code-capacity

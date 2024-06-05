@@ -15,7 +15,7 @@ export interface GetWalletOptions {
 }
 
 export interface GenerateBaseMpcWalletOptions {
-  multisigType: 'tss' | 'blsdkg';
+  multisigType: 'tss';
   label: string;
   enterprise: string;
   walletVersion?: number;
@@ -92,7 +92,7 @@ export interface AddWalletOptions {
   keys?: string[];
   keySignatures?: KeySignatures;
   label: string;
-  multisigType?: 'onchain' | 'tss' | 'blsdkg';
+  multisigType?: 'onchain' | 'tss';
   address?: string;
   m?: number;
   n?: number;
