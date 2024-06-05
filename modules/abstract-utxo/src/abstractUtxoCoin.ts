@@ -1124,6 +1124,18 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+   * @returns input psbt added with deterministic MuSig2 nonce for bitgo key for each MuSig2 inputs from OVC.
+   * @param ovcJson JSON object provided by OVC with fields psbtHex and walletId
+   */
+  async signPsbtFromOVC(ovcJson: Record<string, unknown>): Promise<Record<string, unknown>> {
+    assert(ovcJson['psbtHex'], 'ovcJson must contain psbtHex');
+    assert(ovcJson['walletId'], 'ovcJson must contain walletId');
+    const psbt = (await this.signPsbt(ovcJson['psbtHex'] as string, ovcJson['walletId'] as string)).psbt;
+    assert(psbt, 'psbt not found');
+    return _.extend(ovcJson, { txHex: psbt });
+  }
+
+  /**
    * Assemble keychain and half-sign prebuilt transaction
    * @param params - {@see SignTransactionOptions}
    * @returns {Promise<SignedTransaction | HalfSignedUtxoTransaction>}
