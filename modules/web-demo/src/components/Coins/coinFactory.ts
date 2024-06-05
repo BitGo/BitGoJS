@@ -116,11 +116,6 @@ class CoinFactory {
         const { register } = await import('@bitgo/sdk-coin-eth');
         return this.cacheAndRegister(name, sdk, register);
       }
-      case 'eth2':
-      case 'teth2': {
-        const { register } = await import('@bitgo/sdk-coin-eth2');
-        return this.cacheAndRegister(name, sdk, register);
-      }
       case 'ethw': {
         const { register } = await import('@bitgo/sdk-coin-ethw');
         return this.cacheAndRegister(name, sdk, register);

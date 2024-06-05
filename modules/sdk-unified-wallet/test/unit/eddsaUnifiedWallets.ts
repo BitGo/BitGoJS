@@ -53,11 +53,6 @@ describe('EDDSA Unified Wallets', function () {
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet only supports TSS');
 
-      params = { ...params, multisigType: 'blsdkg' };
-      await unifiedWallets
-        .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
-        .should.be.rejectedWith('EVM wallet only supports TSS');
-
       params = { ...params, multisigType: 'tss' };
       await unifiedWallets
         .generateUnifiedWallet(params as GenerateUnifiedWalletOptions)
@@ -76,11 +71,6 @@ describe('EDDSA Unified Wallets', function () {
         .should.be.rejectedWith('missing required string parameter label');
 
       params = { label: 'test123' };
-      await unifiedWallets
-        .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
-        .should.be.rejectedWith('EVM wallet only supports TSS');
-
-      params = { ...params, multisigType: 'blsdkg' };
       await unifiedWallets
         .generateUnifiedWalletFromKeys({} as KeychainsTriplet, params as GenerateUnifiedWalletOptions)
         .should.be.rejectedWith('EVM wallet only supports TSS');

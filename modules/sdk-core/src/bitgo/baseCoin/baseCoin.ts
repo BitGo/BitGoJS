@@ -199,14 +199,6 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
-   * Flag indicating if this coin supports BLS-DKG wallets.
-   * @returns {boolean} True if BLS-DKG Wallets can be created for this coin
-   */
-  supportsBlsDkg(): boolean {
-    return false;
-  }
-
-  /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */

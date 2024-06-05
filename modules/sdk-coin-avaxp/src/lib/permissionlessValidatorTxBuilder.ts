@@ -17,15 +17,8 @@ import {
   Utxo,
   utils as avaxUtils,
 } from '@bitgo-forks/avalanchejs';
-import {
-  BaseAddress,
-  BaseKey,
-  BuildTransactionError,
-  isValidBLSPublicKey,
-  isValidBLSSignature,
-  NotSupported,
-  TransactionType,
-} from '@bitgo/sdk-core';
+import { BaseAddress, BaseKey, BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { BLSUtils } from '@bitgo/sdk-lib-mpc';
 
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Buffer as BufferAvax } from 'avalanche';
@@ -144,7 +137,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
    * @param blsPublicKey
    */
   blsPublicKey(blsPublicKey: string): this {
-    isValidBLSPublicKey(blsPublicKey);
+    BLSUtils.isValidBLSPublicKey(blsPublicKey);
     this._blsPublicKey = blsPublicKey;
     return this;
   }
@@ -154,7 +147,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
    * @param blsSignature
    */
   blsSignature(blsSignature: string): this {
-    isValidBLSSignature(blsSignature);
+    BLSUtils.isValidBLSSignature(blsSignature);
     this._blsSignature = blsSignature;
     return this;
   }

@@ -36,6 +36,7 @@
     ]
   },
   "dependencies": {
+    "@noble/curves": "1.4.0",
     "@noble/secp256k1": "1.6.3",
     "@silencelaboratories/dkls-wasm-ll-node": "1.0.1-pre.3",
     "@silencelaboratories/dkls-wasm-ll-web": "1.0.1-pre.3",

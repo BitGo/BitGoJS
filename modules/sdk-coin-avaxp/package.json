@@ -43,6 +43,7 @@
     ]
   },
   "devDependencies": {
+    "@bitgo/sdk-lib-mpc": "^9.8.0",
     "@bitgo/sdk-api": "^1.47.5",
     "@bitgo/sdk-test": "^8.0.21",
     "@types/elliptic": "^6.4.12"

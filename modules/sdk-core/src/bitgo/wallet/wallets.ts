@@ -190,7 +190,7 @@ export class Wallets implements IWallets {
    * @param params.gasPrice
    * @param params.disableKRSEmail
    * @param params.walletVersion
-   * @param params.multisigType optional multisig type, 'onchain' or 'tss' or 'blsdkg'; if absent, we will defer to the coin's default type
+   * @param params.multisigType optional multisig type, 'onchain' or 'tss'; if absent, we will defer to the coin's default type
    * @param params.isDistributedCustody optional parameter for creating bitgo key. This is only necessary if you want to create
    *                                    a distributed custody wallet. If provided, you must have the enterprise license and pass in
    *                                    `params.enterprise` into `generateWallet` as well.
@@ -288,23 +288,8 @@ export class Wallets implements IWallets {
       });
     }
 
-    const isBlsDkg = params.multisigType ? params.multisigType === 'blsdkg' : this.baseCoin.supportsBlsDkg();
-    if (isBlsDkg) {
-      if (!this.baseCoin.supportsBlsDkg()) {
-        throw new Error(`coin ${this.baseCoin.getFamily()} does not support BLS-DKG at this time`);
-      }
-      assert(enterprise, 'enterprise is required for BLS-DKG wallet');
-
-      if (type === 'cold') {
-        throw new Error('BLS-DKG SMC wallets are not supported at this time');
-      }
-
-      if (type === 'custodial') {
-        throw new Error('BLS-DKG custodial wallets are not supported at this time');
-      }
-
-      assert(passphrase, 'cannot generate BLS-DKG keys without passphrase');
-      return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase, enterprise });
+    if (params.multisigType === 'blsdkg') {
+      throw new Error(`BLS-DKG is deprecated and not longer supported.`);
     }
 
     // Handle distributed custody
@@ -775,7 +760,7 @@ export class Wallets implements IWallets {
   }
 
   /**
-   * Generates a TSS or BLS-DKG Wallet.
+   * Generates a TSS Wallet.
    * @param params
    * @private
    */

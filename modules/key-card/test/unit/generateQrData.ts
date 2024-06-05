@@ -85,7 +85,6 @@ describe('generateQrData', function () {
     const testSets: { coinName: string; keyType: KeyType }[] = [
       { coinName: 'btc', keyType: 'independent' },
       { coinName: 'sol', keyType: 'tss' },
-      { coinName: 'eth', keyType: 'blsdkg' },
     ];
     for (const testSet of testSets) {
       it(`key type ${testSet.keyType}`, function () {
@@ -97,21 +96,21 @@ describe('generateQrData', function () {
         const qrData = generateQrData({
           backupKeychain: createKeychain({
             commonKeychain: testSet.keyType === 'tss' ? backupPub : undefined,
-            commonPub: testSet.keyType === 'blsdkg' ? backupPub : undefined,
+            commonPub: undefined,
             pub: testSet.keyType === 'independent' ? backupPub : undefined,
             type: testSet.keyType,
           }),
           backupMasterKey,
           bitgoKeychain: createKeychain({
             commonKeychain: testSet.keyType === 'tss' ? bitgoPub : undefined,
-            commonPub: testSet.keyType === 'blsdkg' ? bitgoPub : undefined,
+            commonPub: undefined,
             pub: testSet.keyType === 'independent' ? bitgoPub : undefined,
             type: testSet.keyType,
           }),
           coin: coins.get('btc'),
           userKeychain: createKeychain({
             commonKeychain: testSet.keyType === 'tss' ? userPub : undefined,
-            commonPub: testSet.keyType === 'blsdkg' ? userPub : undefined,
+            commonPub: undefined,
             pub: testSet.keyType === 'independent' ? userPub : undefined,
             type: testSet.keyType,
           }),

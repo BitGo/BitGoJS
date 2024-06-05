@@ -41,7 +41,6 @@
     "@bitgo/sdk-coin-dot": "^4.0.16",
     "@bitgo/sdk-coin-etc": "^2.0.16",
     "@bitgo/sdk-coin-eth": "^24.2.5",
-    "@bitgo/sdk-coin-eth2": "^3.0.15",
     "@bitgo/sdk-coin-hash": "^2.0.16",
     "@bitgo/sdk-coin-hbar": "^2.0.16",
     "@bitgo/sdk-coin-injective": "^2.0.16",

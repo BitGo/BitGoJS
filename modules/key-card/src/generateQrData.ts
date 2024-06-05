@@ -6,8 +6,6 @@ import { GenerateQrDataParams, MasterPublicKeyQrDataEntry, QrData, QrDataEntry }
 
 function getPubFromKey(key: Keychain): string | undefined {
   switch (key.type) {
-    case 'blsdkg':
-      return key.commonPub;
     case 'tss':
       return key.commonKeychain;
     case 'independent':
