@@ -33,6 +33,11 @@ export function getUtxoCoinScriptTypesForWalletType(
 ): utxolib.bitgo.outputScripts.ScriptType2Of3[] {
   const scriptTypes = getUtxoCoinScriptTypes2Of3(coinName);
 
-  // Only return true for p2trMusig2 if the wallet type is hot
-  return scriptTypes.filter((scriptType) => (scriptType === 'p2trMusig2' ? walletType === 'hot' : true));
+  const coin = coins.get(coinName);
+  assert(coin instanceof UtxoCoin, `coin ${coinName} is not a utxo coin`);
+  const network = utxolib.networks[coin.network.utxolibName as utxolib.NetworkName];
+  // Only return true for p2trMusig2 if the wallet type is hot or cold on testnet
+  return scriptTypes.filter((scriptType) =>
+    scriptType === 'p2trMusig2' ? walletType === 'hot' || (walletType === 'cold' && utxolib.isTestnet(network)) : true
+  );
 }
