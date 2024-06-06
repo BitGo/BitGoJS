@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [23.0.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.0.16...@bitgo/account-lib@23.0.17) (2024-06-05)
+
+### Bug Fixes
+
+- update `@solana/web3.js` to `1.92.1` ([830c728](https://github.com/BitGo/BitGoJS/commit/830c72800a8f319867563b689ea70edbca311391))
+
 ## [23.0.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.0.15...@bitgo/account-lib@23.0.16) (2024-05-31)
 
 **Note:** Version bump only for package @bitgo/account-lib

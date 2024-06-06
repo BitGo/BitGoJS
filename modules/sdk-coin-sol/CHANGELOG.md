@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.1.3...@bitgo/sdk-coin-sol@4.2.0) (2024-06-05)
+
+### Bug Fixes
+
+- update `@solana/web3.js` to `1.92.1` ([830c728](https://github.com/BitGo/BitGoJS/commit/830c72800a8f319867563b689ea70edbca311391))
+
+### Features
+
+- **sdk-coin-sol:** add sol close ATA recovery support ([b1fdb64](https://github.com/BitGo/BitGoJS/commit/b1fdb6471bd1f5331e7a690056cf9380c5c2b5f1))
+
 ## [4.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.1.2...@bitgo/sdk-coin-sol@4.1.3) (2024-05-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

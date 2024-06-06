@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.5.0...@bitgo/abstract-utxo@8.6.0) (2024-06-05)
+
+### Features
+
+- **utxo-lib:** add signPsbtFromOVC ([59db80f](https://github.com/BitGo/BitGoJS/commit/59db80fcd2d07d145049b6f2dfbdccb6c1931606))
+
+### Reverts
+
+- Revert "feat: use psbt format for hot and custodial wallets" ([4d027c8](https://github.com/BitGo/BitGoJS/commit/4d027c8c218fca8228544f22f1b413e2ba507463))
+
 # [8.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.4.0...@bitgo/abstract-utxo@8.5.0) (2024-05-31)
 
 ### Features

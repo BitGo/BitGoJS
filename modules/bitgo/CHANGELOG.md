@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.9.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.8.0...bitgo@38.9.0) (2024-06-05)
+
+### Features
+
+- **sdk-core:** supply isMPCv2 for MPCv2 key creation ([64bd55a](https://github.com/BitGo/BitGoJS/commit/64bd55ac018797645b719f1bc8e4886ee7ed9443))
+
 # [38.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.7.0...bitgo@38.8.0) (2024-05-31)
 
 ### Features
