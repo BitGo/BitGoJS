@@ -35,6 +35,7 @@ import {
   CustomSShareGeneratingFunction,
 } from './baseTypes';
 import { GShare, SignShare } from '../../../account-lib/mpc/tss';
+import { RequestTracer } from '../util';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -322,9 +323,16 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * Call delete signature shares for a txRequest, the endpoint delete the signatures and return them
    *
    * @param {string} txRequestId tx id reference to delete signature shares
+   * @param {IRequestTracer} reqId - the request tracer request id
    * @returns {SignatureShareRecord[]}
    */
-  async deleteSignatureShares(txRequestId: string): Promise<SignatureShareRecord[]> {
+  async deleteSignatureShares(txRequestId: string, reqId?: IRequestTracer): Promise<SignatureShareRecord[]> {
+    if (reqId) {
+      this.bitgo.setRequestTracer(reqId);
+    } else {
+      const reqId = new RequestTracer();
+      this.bitgo.setRequestTracer(reqId);
+    }
     return this.bitgo
       .del(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests/${txRequestId}/signatureshares`, 2))
       .send()
@@ -335,10 +343,17 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * Initialize the send procedure once Bitgo has the User To Bitgo GShare
    *
    * @param {String} txRequestId - the txRequest Id
+   * @param {IRequestTracer} reqId - the request tracer request id
    * @returns {Promise<any>}
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async sendTxRequest(txRequestId: string): Promise<any> {
+  async sendTxRequest(txRequestId: string, reqId?: IRequestTracer): Promise<any> {
+    if (reqId) {
+      this.bitgo.setRequestTracer(reqId);
+    } else {
+      const reqId = new RequestTracer();
+      this.bitgo.setRequestTracer(reqId);
+    }
     return this.bitgo
       .post(this.baseCoin.url('/wallet/' + this.wallet.id() + '/tx/send'))
       .send({ txRequestId })

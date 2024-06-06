@@ -25,6 +25,7 @@ import { BaseTransaction } from '../../../account-lib';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import _ = require('lodash');
 import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
+import { IRequestTracer } from '../../../api';
 
 export { getTxRequest, sendSignatureShare };
 
@@ -199,6 +200,7 @@ export async function createUserToBitGoGShare(
  * @param {SignShare} userSignShare - the user Sign Share
  * @param {String} encryptedSignerShare - signer share encrypted to bitgo key
  * @returns {Promise<void>}
+ * @param {IRequestTracer} reqId - the request tracer request id
  */
 export async function offerUserToBitgoRShare(
   bitgo: BitGoBase,
@@ -210,7 +212,8 @@ export async function offerUserToBitgoRShare(
   vssProof?: string,
   privateShareProof?: string,
   userPublicGpgKey?: string,
-  publicShare?: string
+  publicShare?: string,
+  reqId?: IRequestTracer
 ): Promise<void> {
   const rShare: RShare = userSignShare.rShares[ShareKeyPosition.BITGO];
   if (_.isNil(rShare)) {
@@ -238,7 +241,8 @@ export async function offerUserToBitgoRShare(
     encryptedSignerShare,
     'eddsa',
     apiMode,
-    userPublicGpgKey
+    userPublicGpgKey,
+    reqId
   );
 }
 
@@ -248,14 +252,16 @@ export async function offerUserToBitgoRShare(
  * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
+ * @param {IRequestTracer} reqId - the request tracer request id
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function getBitgoToUserRShare(
   bitgo: BitGoBase,
   walletId: string,
-  txRequestId: string
+  txRequestId: string,
+  reqId?: IRequestTracer
 ): Promise<SignatureShareRecord> {
-  const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
+  const txRequest = await getTxRequest(bitgo, walletId, txRequestId, reqId);
   let signatureShares;
   if (txRequest.apiVersion === 'full') {
     assert(txRequest.transactions, 'transactions required as part of txRequest');
@@ -283,6 +289,7 @@ export async function getBitgoToUserRShare(
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @param {GShare} userToBitgoGShare - the User to Bitgo GShare
+ * @param {IRequestTracer} reqId - the request tracer request id
  * @returns {Promise<void>}
  */
 export async function sendUserToBitgoGShare(
@@ -290,7 +297,8 @@ export async function sendUserToBitgoGShare(
   walletId: string,
   txRequestId: string,
   userToBitgoGShare: GShare,
-  apiMode: 'full' | 'lite' = 'lite'
+  apiMode: 'full' | 'lite' = 'lite',
+  reqId?: IRequestTracer
 ): Promise<void> {
   if (userToBitgoGShare.i !== ShareKeyPosition.USER) {
     throw new Error('Invalid GShare, doesnt belong to the User');
@@ -302,7 +310,18 @@ export async function sendUserToBitgoGShare(
   };
 
   // TODO (BG-57944): implement message signing for EDDSA
-  await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, RequestType.tx, undefined, 'eddsa', apiMode);
+  await sendSignatureShare(
+    bitgo,
+    walletId,
+    txRequestId,
+    signatureShare,
+    RequestType.tx,
+    undefined,
+    'eddsa',
+    apiMode,
+    undefined,
+    reqId
+  );
 }
 
 /**
