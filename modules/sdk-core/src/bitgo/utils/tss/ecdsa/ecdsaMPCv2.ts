@@ -24,7 +24,7 @@ import {
 } from '@bitgo/public-types';
 import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
 import { RequestType, TSSParams, TSSParamsForMessage, TxRequest } from '../baseTypes';
-import { getTxRequest, sendSignatureShare } from '../../../tss';
+import { getTxRequest } from '../../../tss';
 import {
   getSignatureShareRoundOne,
   getSignatureShareRoundThree,
@@ -32,6 +32,7 @@ import {
   verifyBitGoMessagesAndSignaturesRoundOne,
   verifyBitGoMessagesAndSignaturesRoundTwo,
 } from '../../../tss/ecdsa/ecdsaMPCv2';
+import { sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -559,18 +560,18 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
-    await sendSignatureShare(
+
+    let latestTxRequest = await sendSignatureShareV2(
       this.bitgo,
       txRequest.walletId,
       txRequest.txRequestId,
-      signatureShareRound1,
+      [signatureShareRound1],
       RequestType.tx,
+      this.baseCoin.getMPCAlgorithm(),
+      userGpgKey.publicKey,
       undefined,
-      'ecdsa',
-      'full',
-      userGpgKey.publicKey
+      this.wallet.multisigTypeVersion()
     );
-    let latestTxRequest = await getTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId);
     assert(latestTxRequest.transactions);
 
     const bitgoToUserMessages1And2 = latestTxRequest.transactions[0].signatureShares;
@@ -603,20 +604,19 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       userGpgKey,
       bitgoGpgPubKey
     );
-    await sendSignatureShare(
+    latestTxRequest = await sendSignatureShareV2(
       this.bitgo,
       txRequest.walletId,
       txRequest.txRequestId,
-      signatureShareRoundTwo,
+      [signatureShareRoundTwo],
       RequestType.tx,
+      this.baseCoin.getMPCAlgorithm(),
+      userGpgKey.publicKey,
       undefined,
-      'ecdsa',
-      'full',
-      userGpgKey.publicKey
+      this.wallet.multisigTypeVersion()
     );
-
-    latestTxRequest = await getTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId);
     assert(latestTxRequest.transactions);
+
     const txRequestSignatureShares = latestTxRequest.transactions[0].signatureShares;
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundTwo = JSON.parse(
@@ -647,18 +647,19 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bitgoGpgPubKey
     );
     // Submit for final signature share combine
-    await sendSignatureShare(
+    await sendSignatureShareV2(
       this.bitgo,
       txRequest.walletId,
       txRequest.txRequestId,
-      signatureShareRoundThree,
+      [signatureShareRoundThree],
       RequestType.tx,
+      this.baseCoin.getMPCAlgorithm(),
+      userGpgKey.publicKey,
       undefined,
-      'ecdsa',
-      'full',
-      userGpgKey.publicKey
+      this.wallet.multisigTypeVersion()
     );
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId);
+
+    return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, RequestType.tx);
   }
 
   // #endregion
