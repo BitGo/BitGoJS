@@ -386,4 +386,25 @@ describe('OFC:', function () {
     const signedResult = await otestusdCoin.signTransaction(inputParams);
     signedResult.should.deepEqual(expectedResult);
   });
+
+  describe('check ofc tokens for polygonErc20', function () {
+    const tokenMain = 'ofcpolygon:link';
+    const tokenTest = 'ofctpolygon:link';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('ChainLink Token');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_18);
+      });
+    });
+    describe('for test network', function () {
+      it(`should have the correct values for ${tokenTest}`, function () {
+        const ofcCoin = bitgo.coin(tokenTest);
+        ofcCoin.getChain().should.equal(tokenTest);
+        ofcCoin.getFullName().should.equal('Polygon Test LINK');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_18);
+      });
+    });
+  });
 });

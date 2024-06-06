@@ -51,6 +51,7 @@ import {
   ofcStellarToken,
   ofcArbethErc20,
   ofcAvaxErc20,
+  ofcPolygonErc20,
   tofc,
   tofcAlgoToken,
   ofcsolToken,
@@ -60,6 +61,7 @@ import {
   tofcStellarToken,
   tofcArbethErc20,
   tofcAvaxErc20,
+  tofcPolygonErc20,
 } from './ofc';
 import { utxoCoins } from './utxo';
 
@@ -10738,6 +10740,283 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset['avaxc:link']
   ),
+  ofcPolygonErc20(
+    '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
+    'ofcpolygon:sbc',
+    'Stable Coin',
+    18,
+    UnderlyingAsset['polygon:sbc']
+  ),
+  ofcPolygonErc20(
+    '413cd9b9-503a-452d-b257-95a1c82ec5e4',
+    'ofcpolygon:link',
+    'ChainLink Token',
+    18,
+    UnderlyingAsset['polygon:link']
+  ),
+  ofcPolygonErc20(
+    '42ec9712-e47b-43c2-bec3-18cbc18fd944',
+    'ofcpolygon:usdcv2',
+    'USD Coin (native)',
+    6,
+    UnderlyingAsset['polygon:usdcv2']
+  ),
+  ofcPolygonErc20(
+    'a63bf18b-3462-403c-93f5-ff1b608622c2',
+    'ofcpolygon:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset['polygon:usdc']
+  ),
+  ofcPolygonErc20(
+    '659e66ef-2265-48d4-a73c-f98e479944d1',
+    'ofcpolygon:tusd',
+    'TrueUSD',
+    18,
+    UnderlyingAsset['polygon:tusd']
+  ),
+  ofcPolygonErc20(
+    '115e52f9-91bc-4e40-b1cb-046167bb4b09',
+    'ofcpolygon:usdt',
+    'Tether USD',
+    6,
+    UnderlyingAsset['polygon:usdt']
+  ),
+  ofcPolygonErc20(
+    'c2e7a6d3-77bd-4a47-9cd5-cfa681a5bc95',
+    'ofcpolygon:1inch-wormhole',
+    '1INCH (Wormhole)',
+    18,
+    UnderlyingAsset['polygon:1inch']
+  ),
+  ofcPolygonErc20(
+    '7957de12-d928-42ca-ad0b-624057e87065',
+    'ofcpolygon:aave',
+    'Aave',
+    18,
+    UnderlyingAsset['polygon:aave']
+  ),
+  ofcPolygonErc20(
+    '7cdf8f51-1ade-434a-905f-882d8a8fc678',
+    'ofcpolygon:sand',
+    'SAND',
+    18,
+    UnderlyingAsset['polygon:sand']
+  ),
+  ofcPolygonErc20(
+    'a6b29d29-412c-4dc9-9a26-edcc1339818a',
+    'ofcpolygon:sol-wormhole',
+    'Wrapped SOL (Wormhole)',
+    9,
+    UnderlyingAsset['polygon:sol']
+  ),
+  ofcPolygonErc20(
+    '7a7e983f-44be-4692-8a94-b0c14574f96a',
+    'ofcpolygon:wbtc',
+    'Wrapped BTC',
+    8,
+    UnderlyingAsset['polygon:wbtc']
+  ),
+  ofcPolygonErc20(
+    '82855675-ecfa-4acb-a489-8d7b826d2783',
+    'ofcpolygon:weth',
+    'Wrapped Ether',
+    18,
+    UnderlyingAsset['polygon:weth']
+  ),
+  ofcPolygonErc20(
+    'ea7f06d0-32b4-4f8d-b0ab-22e447e141fa',
+    'ofcpolygon:dimo',
+    'Dimo',
+    18,
+    UnderlyingAsset['polygon:dimo']
+  ),
+  ofcPolygonErc20(
+    '16c4bfe4-5253-4491-8d7e-6d586f133443',
+    'ofcpolygon:xsgd',
+    'XSGD',
+    6,
+    UnderlyingAsset['polygon:xsgd']
+  ),
+  ofcPolygonErc20(
+    '26eda2a9-0559-4f18-9bb7-547c2682b742',
+    'ofcpolygon:treta',
+    'Treta',
+    18,
+    UnderlyingAsset['polygon:treta']
+  ),
+  ofcPolygonErc20(
+    'fb5952ae-514f-4b1b-a172-bf62d9c4dbf8',
+    'ofcpolygon:vcnt',
+    'ViciCoin',
+    18,
+    UnderlyingAsset['polygon:vcnt']
+  ),
+  ofcPolygonErc20(
+    '7874696a-e285-450e-917d-369d524e2938',
+    'ofcpolygon:vext',
+    'Veloce',
+    18,
+    UnderlyingAsset['polygon:vext']
+  ),
+  ofcPolygonErc20(
+    '62262f53-4859-427d-bcdf-62354bd1e641',
+    'ofcpolygon:zed',
+    'ZED RUN',
+    18,
+    UnderlyingAsset['polygon:zed']
+  ),
+  ofcPolygonErc20(
+    '85b4ad95-1761-482a-8a57-ab7fdd845fb1',
+    'ofcpolygon:ape',
+    'ApeCoin',
+    18,
+    UnderlyingAsset['polygon:ape']
+  ),
+  ofcPolygonErc20(
+    'd1ff60e6-cf15-4ef0-bf0b-a65313b3ac70',
+    'ofcpolygon:cel',
+    'Celsius',
+    4,
+    UnderlyingAsset['polygon:cel']
+  ),
+  ofcPolygonErc20(
+    '78cdcaea-7668-41f3-bdd8-6ce7b44ea56b',
+    'ofcpolygon:comp-wormhole',
+    'Compound (Wormhole)',
+    18,
+    UnderlyingAsset['polygon:comp']
+  ),
+  ofcPolygonErc20('b1868a45-d1ab-43fd-8d15-55c86ba34428', 'ofcpolygon:crv', 'CRV', 18, UnderlyingAsset['polygon:crv']),
+  ofcPolygonErc20(
+    '4d7c8e4c-9ba8-420c-8982-29e0eb88d1e3',
+    'ofcpolygon:dai',
+    'Dai Stablecoin',
+    18,
+    UnderlyingAsset['polygon:dai']
+  ),
+  ofcPolygonErc20(
+    'b44eba68-8c58-4323-80f0-ff699c209f3f',
+    'ofcpolygon:fcd',
+    'FreshCut Diamond',
+    18,
+    UnderlyingAsset['polygon:fcd']
+  ),
+  ofcPolygonErc20(
+    '2cbc1c1b-dd57-4efe-94f8-cc5ca3fc4acf',
+    'ofcpolygon:fly',
+    'Flycoin',
+    18,
+    UnderlyingAsset['polygon:fly']
+  ),
+  ofcPolygonErc20(
+    'b020d880-99a1-42bf-b471-ccbfd3a64b9d',
+    'ofcpolygon:frax',
+    'Frax',
+    18,
+    UnderlyingAsset['polygon:frax']
+  ),
+  ofcPolygonErc20(
+    'c7d91dc9-c1c4-4a8d-883d-e9ab70c0b8b5',
+    'ofcpolygon:gfc',
+    'Gcoin',
+    18,
+    UnderlyingAsset['polygon:gfc']
+  ),
+  ofcPolygonErc20(
+    '9d6be533-96a7-4d02-a757-4eaf38eba215',
+    'ofcpolygon:rbw',
+    'Rainbow Token',
+    18,
+    UnderlyingAsset['polygon:rbw']
+  ),
+  ofcPolygonErc20('b05a3d54-34ad-4dbd-aa9f-712da4bf0344', 'ofcpolygon:srm', 'Serum', 6, UnderlyingAsset['polygon:srm']),
+  ofcPolygonErc20(
+    '4e1f2154-cfba-4ffa-929c-aab96b9c15b6',
+    'ofcpolygon:sushi',
+    'Sushi',
+    18,
+    UnderlyingAsset['polygon:sushi']
+  ),
+  ofcPolygonErc20(
+    '7b0679e0-7f0d-4c32-858c-e67398ad1e72',
+    'ofcpolygon:wavax-wormhole',
+    'Wrapped AVAX (wormhole)',
+    18,
+    UnderlyingAsset['polygon:wavax']
+  ),
+  ofcPolygonErc20(
+    '43ae6089-cfd8-456e-9d22-56fde17bd22c',
+    'ofcpolygon:wbnb-wormhole',
+    'Wrapped BNB (Wormhole)',
+    18,
+    UnderlyingAsset['polygon:wbnb']
+  ),
+  ofcPolygonErc20(
+    '7d6bb17c-2e0d-4fd3-af16-8e7d48b82c46',
+    'ofcpolygon:wftm-wormhole',
+    'Wrapped FTM (Wormhole)',
+    18,
+    UnderlyingAsset['polygon:wftm']
+  ),
+  ofcPolygonErc20(
+    '3e68132e-ee5e-4c61-bad8-516e6a7a9d35',
+    'ofcpolygon:wmatic',
+    'Wrapped Matic',
+    18,
+    UnderlyingAsset['polygon:wmatic']
+  ),
+  ofcPolygonErc20(
+    'd20e0df0-540c-4630-9cc1-c73705ef9df6',
+    'ofcpolygon:woo',
+    'Wootrade Network',
+    18,
+    UnderlyingAsset['polygon:woo']
+  ),
+  ofcPolygonErc20(
+    '408a12d5-64ac-4bc1-8711-1c6546b8e2a7',
+    'ofcpolygon:yfi-wormhole',
+    'Wrapped YFI (Wormhole)',
+    18,
+    UnderlyingAsset['polygon:yfi']
+  ),
+  ofcPolygonErc20(
+    '13d0ed50-0d6e-45cf-a90a-542103ad39d0',
+    'ofcpolygon:moca',
+    'Moca',
+    18,
+    UnderlyingAsset['polygon:moca']
+  ),
+
+  tofcPolygonErc20(
+    '62f4329d-11cd-4875-b91b-9ceae66c9439',
+    'ofctpolygon:link',
+    'Polygon Test LINK',
+    18,
+    UnderlyingAsset['tpolygon:link']
+  ),
+  tofcPolygonErc20(
+    '47f2a012-400b-48c1-bad8-e6abfd5da568',
+    'ofctpolygon:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset['tpolygon:usdc']
+  ),
+  tofcPolygonErc20(
+    '2136098f-9949-43a9-90f2-d8e5f0855e5d',
+    'ofctpolygon:usdt',
+    'Tether USD',
+    6,
+    UnderlyingAsset['tpolygon:usdt']
+  ),
+  tofcPolygonErc20(
+    '46100d09-4f3d-4b61-8f49-99d98b8f64c0',
+    'ofctpolygon:xsgd',
+    'XSGD',
+    6,
+    UnderlyingAsset['tpolygon:xsgd']
+  ),
+
   ofcerc20(
     'baded9c2-d530-4188-b35d-2fd00cf6ee2e',
     'ofcustb',
