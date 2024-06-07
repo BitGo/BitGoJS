@@ -15,8 +15,8 @@ import {
   hederaCoin,
   hederaToken,
   nonstandardToken,
-  polygonErc20,
   opethErc20,
+  polygonErc20,
   solToken,
   stellarToken,
   talgoToken,
@@ -28,8 +28,8 @@ import {
   terc1155,
   terc20,
   terc721,
-  tpolygonErc20,
   topethErc20,
+  tpolygonErc20,
   tronToken,
   tsolToken,
   tstellarToken,
@@ -46,21 +46,21 @@ import { Networks } from './networks';
 import {
   ofc,
   ofcAlgoToken,
-  ofcerc20,
-  ofcHederaToken,
-  ofcStellarToken,
   ofcArbethErc20,
   ofcAvaxErc20,
   ofcPolygonErc20,
+  ofcerc20,
+  ofcHederaToken,
+  ofcsolToken,
+  ofcStellarToken,
   tofc,
   tofcAlgoToken,
-  ofcsolToken,
-  tofcsolToken,
-  tofcerc20,
-  tofcHederaToken,
-  tofcStellarToken,
   tofcArbethErc20,
   tofcAvaxErc20,
+  tofcerc20,
+  tofcHederaToken,
+  tofcsolToken,
+  tofcStellarToken,
   tofcPolygonErc20,
 } from './ofc';
 import { utxoCoins } from './utxo';
@@ -178,6 +178,7 @@ const POLYGON_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.MPCV2,
 ];
 const SOL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -974,7 +975,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    [...ETH_FEATURES_WITH_STAKING_AND_MMI, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.EVM_WALLET]
+    [
+      ...ETH_FEATURES_WITH_STAKING_AND_MMI,
+      CoinFeature.TSS,
+      CoinFeature.TSS_COLD,
+      CoinFeature.EVM_WALLET,
+      CoinFeature.MPCV2,
+    ]
   ),
   account(
     '0a205427-f7c9-48a4-a238-c4b33ba6384d',
@@ -1010,7 +1017,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.POLYGON,
     BaseUnit.ETH,
-    [...POLYGON_FEATURES, CoinFeature.MPCV2]
+    POLYGON_FEATURES
   ),
   account(
     'b5ba2fc6-706b-433f-9bcf-4ea4aaa09281',

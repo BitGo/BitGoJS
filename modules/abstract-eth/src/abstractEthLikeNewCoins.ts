@@ -1183,19 +1183,26 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       userSigningMaterial.bitgoNShare,
       userSigningMaterial.backupNShare,
     ]);
+    const userSigningKeyDerived = MPC.keyDerive(
+      userSigningMaterial.pShare,
+      [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare],
+      'm/0'
+    );
+    const userKeyDerivedCombined = {
+      xShare: userSigningKeyDerived.xShare,
+      yShares: userKeyCombined.yShares,
+    };
     const backupKeyCombined = MPC.keyCombine(backupSigningMaterial.pShare, [
+      userSigningKeyDerived.nShares[2],
       backupSigningMaterial.bitgoNShare,
-      backupSigningMaterial.userNShare,
     ]);
-
     if (
-      userKeyCombined.xShare.y !== backupKeyCombined.xShare.y ||
-      userKeyCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode
+      userKeyDerivedCombined.xShare.y !== backupKeyCombined.xShare.y ||
+      userKeyDerivedCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode
     ) {
       throw new Error('Common keychains do not match');
     }
-
-    return [userKeyCombined, backupKeyCombined];
+    return [userKeyDerivedCombined, backupKeyCombined];
   }
 
   /**
@@ -1929,7 +1936,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
       : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
 
-    if (getIsUnsignedSweep(params)) {
+    if (
+      getIsUnsignedSweep({
+        userKey: userPublicOrPrivateKeyShare,
+        backupKey: backupPrivateOrPublicKeyShare,
+        isTss: params.isTss,
+      })
+    ) {
       const backupKeyPair = new KeyPairLib({ pub: backupPrivateOrPublicKeyShare });
       const baseAddress = backupKeyPair.getAddress();
       const { txInfo, tx, nonce } = await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params);
@@ -1998,14 +2011,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     commonKeyChain: string
   ) {
     const messageHash = tx.getMessageToSign(true);
-    const userDsg = new DklsDsg.Dsg(userKeyShare, 0, 'm', messageHash);
-    const backupDsg = new DklsDsg.Dsg(backupKeyShare, 1, 'm', messageHash);
+    const userDsg = new DklsDsg.Dsg(userKeyShare, 0, 'm/0', messageHash);
+    const backupDsg = new DklsDsg.Dsg(backupKeyShare, 1, 'm/0', messageHash);
 
     const signatureString = DklsUtils.verifyAndConvertDklsSignature(
       messageHash,
       (await DklsUtils.executeTillRound(5, userDsg, backupDsg)) as DklsTypes.DeserializedDklsSignature,
       commonKeyChain,
-      'm',
+      'm/0',
       undefined,
       false
     );
@@ -2062,8 +2075,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const [user, backup] = await DklsUtils.generate2of2KeyShares(userKeyRetrofit, backupKeyRetrofit);
     const userKeyShare = user.getKeyShare();
     const backupKeyShare = backup.getKeyShare();
-    const commonKeyChain = DklsTypes.getCommonKeychain(userKeyShare).slice(0, 66);
-    const backupKeyPair = new KeyPairLib({ pub: commonKeyChain });
+    const commonKeyChain = DklsTypes.getCommonKeychain(userKeyShare);
+    const MPC = new Ecdsa();
+    const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm');
+    const backupKeyPair = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
     const baseAddress = backupKeyPair.getAddress();
     return { userKeyShare, backupKeyShare, commonKeyChain, baseAddress };
   }

@@ -3,12 +3,11 @@ import * as nock from 'nock';
 
 import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';
-import { Ecdsa, ECDSAMethodTypes, krsProviders } from '@bitgo/sdk-core';
-import { DklsTypes, DklsUtils, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import * as sjcl from '@bitgo/sjcl';
+import { krsProviders } from '@bitgo/sdk-core';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TransactionFactory } from '@ethereumjs/tx';
-import { KeyPair } from '@bitgo/sdk-coin-eth';
 import * as sinon from 'sinon';
+import { ethLikeDKLSKeycard, ethLikeGG18Keycard } from '../fixtures/tss/recoveryFixtures';
 
 const recoveryNocks = require('../lib/recovery-nocks');
 
@@ -904,48 +903,8 @@ describe('Recovery:', function () {
 
     it('should construct a recovery tx with TSS', async function () {
       recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
-
       const basecoin = bitgo.coin('hteth');
-
-      const mpc = new Ecdsa();
-      const [userIndex, backupIndex, bitgoIndex] = [1, 2, 3];
-      const m = 2;
-      const n = 3;
-      const userKeyShare = await mpc.keyShare(userIndex, m, n);
-      const backupKeyShare = await mpc.keyShare(backupIndex, m, n);
-      const bitgoKeyShare = await mpc.keyShare(bitgoIndex, m, n);
-
-      const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
-        pShare: userKeyShare.pShare,
-        backupNShare: backupKeyShare.nShares[1],
-        bitgoNShare: bitgoKeyShare.nShares[1],
-      };
-
-      const backupSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
-        pShare: backupKeyShare.pShare,
-        userNShare: userKeyShare.nShares[2],
-        bitgoNShare: bitgoKeyShare.nShares[2],
-      };
-
-      const userKeyCombined = mpc.keyCombine(userSigningMaterial.pShare, [
-        userSigningMaterial.backupNShare!,
-        userSigningMaterial.bitgoNShare!,
-      ]);
-
-      const backupKeyCombined = mpc.keyCombine(backupKeyShare.pShare, [
-        userKeyShare.nShares[backupIndex],
-        bitgoKeyShare.nShares[backupIndex],
-      ]);
-      if (
-        userKeyCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode ||
-        userKeyCombined.xShare.y !== backupKeyCombined.xShare.y
-      ) {
-        throw new Error('user and backup key combined are inconsistent');
-      }
-
-      const baseAddress = new KeyPair({
-        pub: userKeyCombined.xShare.y,
-      }).getAddress();
+      const baseAddress = ethLikeGG18Keycard.senderAddress;
 
       const nockTSSDataWithBaseAddress = nockTSSData.map((data) => {
         return {
@@ -958,24 +917,12 @@ describe('Recovery:', function () {
       });
 
       recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSDataWithBaseAddress);
-
-      // const { userKeyShare, backupKeyShare, bitgoKeyShare } = keyShares;
-
-      const encryptedBackupSigningMaterial = sjcl.encrypt(
-        TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-        JSON.stringify(backupSigningMaterial)
-      );
-      const encryptedUserSigningMaterial = sjcl.encrypt(
-        TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-        JSON.stringify(userSigningMaterial)
-      );
-
       recoveryParams = {
-        userKey: encryptedUserSigningMaterial,
-        backupKey: encryptedBackupSigningMaterial,
-        walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
-        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
-        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        userKey: ethLikeGG18Keycard.userKey,
+        backupKey: ethLikeGG18Keycard.backupKey,
+        walletContractAddress: ethLikeGG18Keycard.senderAddress,
+        recoveryDestination: ethLikeGG18Keycard.destinationAddress,
+        walletPassphrase: ethLikeGG18Keycard.walletPassphrase,
         eip1559: {
           maxPriorityFeePerGas: 3,
           maxFeePerGas: 20,
@@ -1011,19 +958,7 @@ describe('Recovery:', function () {
       ]) {
         recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
         const basecoin = bitgo.coin(coin);
-        const [userDkg, backupDkg] = await DklsUtils.generateDKGKeyShares();
-
-        const userKeyShare = userDkg.getReducedKeyShare();
-        const backupKeyShare = backupDkg.getReducedKeyShare();
-        const publicKey = Buffer.from(DklsTypes.getDecodedReducedKeyShare(userKeyShare).pub).toString('hex');
-
-        const userSigningMaterial: string = userKeyShare.toString('base64');
-        const backupSigningMaterial: string = backupKeyShare.toString('base64');
-
-        const baseAddress = new KeyPair({
-          pub: publicKey,
-        }).getAddress();
-
+        const baseAddress = ethLikeDKLSKeycard.senderAddress;
         const nockTSSDataWithBaseAddress = nockTSSData.map((data) => {
           return {
             ...data,
@@ -1035,16 +970,12 @@ describe('Recovery:', function () {
         });
 
         recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSDataWithBaseAddress);
-
-        const encryptedBackupSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, backupSigningMaterial);
-        const encryptedUserSigningMaterial = sjcl.encrypt(TestBitGo.V2.TEST_RECOVERY_PASSCODE, userSigningMaterial);
-
         recoveryParams = {
-          userKey: encryptedUserSigningMaterial,
-          backupKey: encryptedBackupSigningMaterial,
-          walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
-          recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
-          walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+          userKey: ethLikeDKLSKeycard.userKey,
+          backupKey: ethLikeDKLSKeycard.backupKey,
+          walletContractAddress: baseAddress,
+          recoveryDestination: ethLikeDKLSKeycard.destinationAddress,
+          walletPassphrase: ethLikeDKLSKeycard.walletPassphrase,
           eip1559: {
             maxPriorityFeePerGas: 3,
             maxFeePerGas: 20,
