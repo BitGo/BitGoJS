@@ -97,16 +97,16 @@ export class Dkg {
         break;
       default:
         this.dkgState = DkgState.InvalidState;
-        throw `Invalid State: ${round}`;
+        throw Error(`Invalid State: ${round}`);
     }
   }
 
   async initDkg(): Promise<DeserializedBroadcastMessage> {
     if (this.t > this.n || this.partyIdx >= this.n) {
-      throw 'Invalid parameters for DKG';
+      throw Error('Invalid parameters for DKG');
     }
     if (this.dkgState != DkgState.Uninitialized) {
-      throw 'DKG session already initialized';
+      throw Error('DKG session already initialized');
     }
     if (typeof window !== 'undefined') {
       const initDkls = require('@silencelaboratories/dkls-wasm-ll-web');
@@ -126,7 +126,7 @@ export class Dkg {
         from: this.partyIdx,
       };
     } catch (e) {
-      throw `Error while creating the first message from party ${this.partyIdx}: ${e}`;
+      throw Error(`Error while creating the first message from party ${this.partyIdx}: ${e}`);
     }
   }
 
@@ -188,9 +188,6 @@ export class Dkg {
       }
       if (this.dkgState === DkgState.Round4) {
         this.dkgKeyShare = this.dkgSession.keyshare();
-        if (this.dklsKeyShareRetrofitObject) {
-          this.dkgKeyShare.finishKeyRotation(this.dklsKeyShareRetrofitObject);
-        }
         this.keyShareBuff = Buffer.from(this.dkgKeyShare.toBytes());
         this.dkgKeyShare.free();
         this.dkgState = DkgState.Complete;
@@ -225,7 +222,7 @@ export class Dkg {
           }),
       };
     } catch (e) {
-      throw `Error while creating messages from party ${this.partyIdx}, round ${this.dkgState}: ${e}`;
+      throw Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dkgState}: ${e}`);
     } finally {
       nextRoundMessages.forEach((m) => m.free());
       // Session is freed when keyshare is called.
