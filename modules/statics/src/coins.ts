@@ -1443,6 +1443,14 @@ export const coins = CoinMap.fromCoins([
   ofc('8b93e788-52fa-4fd6-b499-40f13fe194fc', 'ofccoreum', 'Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
   ofc('a88adc55-c1c8-4a4e-8436-df3868a50daa', 'ofccelo', 'Celo Gold', 18, UnderlyingAsset.CELO, CoinKind.CRYPTO),
   ofc('9e2da785-8349-4153-8276-941319575833', 'ofcxtz', 'Tezos', 6, UnderlyingAsset.XTZ, CoinKind.CRYPTO),
+  ofc(
+    '283b93b5-741b-4c85-a201-097267d65097',
+    'ofcopeth',
+    'Optimism Ethereum (L2 Chain)',
+    18,
+    UnderlyingAsset.OPETH,
+    CoinKind.CRYPTO
+  ),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
@@ -1577,6 +1585,14 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   tofc('f5ad87e8-7c86-406b-9776-b7f6910b5e3b', 'ofctxtz', 'Testnet Tezos', 6, UnderlyingAsset.XTZ, CoinKind.CRYPTO),
+  tofc(
+    '3a8b240e-c8f9-48f4-9b6f-3f2ba64db07e',
+    'ofctopeth',
+    'Testnet Optimism Ethereum (L2 Chain)',
+    18,
+    UnderlyingAsset.OPETH,
+    CoinKind.CRYPTO
+  ),
   erc20(
     '919ba34e-c61e-4346-831f-87660586572a',
     '1inch',
