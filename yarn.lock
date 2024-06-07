@@ -4473,15 +4473,15 @@
     "@sigstore/protobuf-specs" "^0.2.0"
     tuf-js "^1.1.7"
 
-"@silencelaboratories/dkls-wasm-ll-node@1.0.1-pre.3":
-  version "1.0.1-pre.3"
-  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-node/-/dkls-wasm-ll-node-1.0.1-pre.3.tgz#eee0d7a61b70b9012b3ca6944c3de52e7ffd0e85"
-  integrity sha512-i/pr1vZ6Vp29fZGCsP9pIsmAqZH5p2AWNV4mxkpdjc8twSdEC/VBtpj5ayn0jeFbnjnv2yz81Q4HNhOLXVk7VQ==
+"@silencelaboratories/dkls-wasm-ll-node@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-node/-/dkls-wasm-ll-node-1.1.2.tgz#595c6da10208d0638e72db323da87a4a42dd2890"
+  integrity sha512-ZGnE0p/GQRIMHJzbPtSy/3deUmD340NbWrBwpU0NyqJW4EKvh9xxv5ZFnJApq1YboHxHTaz2aP03eu+ZPZShpQ==
 
-"@silencelaboratories/dkls-wasm-ll-web@1.0.1-pre.3":
-  version "1.0.1-pre.3"
-  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-web/-/dkls-wasm-ll-web-1.0.1-pre.3.tgz#5a64c0836eca66fed6414ac7de90266a9c98c31a"
-  integrity sha512-EP9SlqUOsjD4S8lSWUvBC1upDD3+MKAR2ejNOXXJRY7vgFhBeiRwGS1MIVSBA6Juop7umEkD/4xiWeWtrvBaFw==
+"@silencelaboratories/dkls-wasm-ll-web@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-web/-/dkls-wasm-ll-web-1.1.2.tgz#2ab1fe0bb462601886c42fd33a722f00807aa2f5"
+  integrity sha512-GFdQdeTAK5RQ6SP+RVenjm/cSAXYek8+hMOL6Uw6uqsoGhJzveJHMEKEEbitGDpBjoN/admwxIKcv0wpIo022Q==
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"

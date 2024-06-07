@@ -45,13 +45,13 @@ export class Dsg {
         break;
       default:
         this.dsgState = DsgState.InvalidState;
-        throw `Invalid State: ${round}`;
+        throw Error(`Invalid State: ${round}`);
     }
   }
 
   async init(): Promise<DeserializedBroadcastMessage> {
     if (this.dsgState !== DsgState.Uninitialized) {
-      throw 'DSG session already initialized';
+      throw Error('DSG session already initialized');
     }
     if (typeof window !== 'undefined') {
       const initDkls = require('@silencelaboratories/dkls-wasm-ll-web');
@@ -70,7 +70,7 @@ export class Dsg {
         from: this.partyIdx,
       };
     } catch (e) {
-      throw `Error while creating the first message from party ${this.partyIdx}: ${e}`;
+      throw Error(`Error while creating the first message from party ${this.partyIdx}: ${e}`);
     }
   }
 
@@ -166,7 +166,12 @@ export class Dsg {
           }),
       };
     } catch (e) {
-      throw `Error while creating messages from party ${this.partyIdx}, round ${this.dsgState}: ${e}`;
+      if (e.message.startsWith('Abort the protocol and ban')) {
+        throw Error(
+          'Signing aborted. Please stop all transaction signing from this wallet and contact support@bitgo.com.'
+        );
+      }
+      throw Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dsgState}: ${e}`);
     } finally {
       nextRoundMessages.forEach((m) => m.free());
       // Session is freed when combine is called.

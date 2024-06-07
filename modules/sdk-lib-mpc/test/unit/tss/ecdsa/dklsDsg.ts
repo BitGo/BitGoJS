@@ -253,6 +253,8 @@ describe('DKLS Dsg 2x3', function () {
     } catch (e) {
       err = e;
     }
-    err.should.equal('Error while creating messages from party 0, round 5: Error: combine error');
+    err.should.deepEqual(
+      Error('Error while creating messages from party 0, round 5: Error: k256 error: signature error')
+    );
   });
 });
