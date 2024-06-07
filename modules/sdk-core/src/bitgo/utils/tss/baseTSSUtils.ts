@@ -373,10 +373,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * Gets the latest Tx Request by id
    *
    * @param {String} txRequestId - the txRequest Id
+   * @param {IRequestTracer} reqId - request tracer request id
    * @returns {Promise<TxRequest>}
    */
-  async getTxRequest(txRequestId: string): Promise<TxRequest> {
-    return getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+  async getTxRequest(txRequestId: string, reqId?: IRequestTracer): Promise<TxRequest> {
+    return getTxRequest(this.bitgo, this.wallet.id(), txRequestId, reqId);
   }
 
   /**

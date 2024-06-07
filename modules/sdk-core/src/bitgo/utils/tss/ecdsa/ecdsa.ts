@@ -45,6 +45,7 @@ import {
   TxRequestChallengeResponse,
 } from '../../../tss/types';
 import { BaseEcdsaUtils } from './base';
+import { IRequestTracer } from '../../../../api';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -773,13 +774,14 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         'Wallet is not ready for TSS ECDSA signing. Please contact your enterprise admin to finish the enterprise TSS initialization.'
       );
     }
-    const txRequestObj: TxRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequest as string);
+    const txRequestObj: TxRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequest as string, params.reqId);
     const { userPaillierModulus } = await externalSignerPaillierModulusGetter({ txRequest: txRequestObj });
     const { enterpriseChallenge, bitgoChallenge } = await this.getEcdsaSigningChallenges(
       txRequest as string,
       requestType,
       userPaillierModulus,
-      0
+      0,
+      params.reqId
     );
     const step1SigningMaterial = await externalSignerKShareGenerator({
       tssParams: {
@@ -801,7 +803,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       step1SigningMaterial.vssProof,
       step1SigningMaterial.privateShareProof,
       step1SigningMaterial.publicShare,
-      step1SigningMaterial.userPublicGpgKey
+      step1SigningMaterial.userPublicGpgKey,
+      params.reqId
     )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
     const step2Return = await externalSignerMuDeltaShareGenerator({
       txRequest: txRequestObj,
@@ -816,7 +819,13 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       txRequestObj.txRequestId,
       requestType,
       SendShareType.MUShare,
-      step2Return.muDShare
+      step2Return.muDShare,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      params.reqId
     )) as DShare;
     const userSShare = await externalSignerSShareGenerator({
       tssParams: {
@@ -834,9 +843,15 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       txRequestObj.txRequestId,
       requestType,
       SendShareType.SShare,
-      userSShare
+      userSShare,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      params.reqId
     );
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestObj.txRequestId);
+    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestObj.txRequestId, params.reqId);
   }
 
   /**
@@ -985,12 +1000,14 @@ export class EcdsaUtils extends BaseEcdsaUtils {
    * @param {RequestType} requestType -  (0 for tx, 1 for message)
    * @param {string} walletPaillierModulus - paillier pubkey $n$
    * @param {number} index - index of the requestType
+   * @param {IRequestTracer} reqId - request tracer request id
    */
   async getEcdsaSigningChallenges(
     txRequestId: string,
     requestType: RequestType,
     walletPaillierModulus: string,
-    index = 0
+    index = 0,
+    reqId?: IRequestTracer
   ): Promise<{
     enterpriseChallenge: EcdsaTypes.SerializedEcdsaChallenges;
     bitgoChallenge: TxRequestChallengeResponse;
@@ -1007,7 +1024,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       txRequestId,
       index.toString(),
       requestType,
-      walletPaillierModulus
+      walletPaillierModulus,
+      reqId
     );
 
     const bitgoToEnterprisePaillierChallenge = { p: createBitgoChallengeResponse.p };

@@ -182,6 +182,7 @@ export async function commonVerifyWalletSignature(params: {
  * @param index
  * @param requestType
  * @param paillierModulus
+ * @param reqId
  */
 export async function getTxRequestChallenge(
   bitgo: BitGoBase,
@@ -189,7 +190,8 @@ export async function getTxRequestChallenge(
   txRequestId: string,
   index: string,
   requestType: RequestType,
-  paillierModulus: string
+  paillierModulus: string,
+  reqId?: IRequestTracer
 ): Promise<TxRequestChallengeResponse> {
   let addendum = '';
   switch (requestType) {
@@ -201,5 +203,7 @@ export async function getTxRequestChallenge(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   return await bitgo.post(bitgo.url(urlPath, 2)).send({ paillierModulus }).result();
 }

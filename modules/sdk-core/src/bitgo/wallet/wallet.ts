@@ -1982,7 +1982,7 @@ export class Wallet implements IWallet {
 
     if (signingParams.txPrebuild.txRequestId) {
       assert(this.tssUtils, 'tssUtils must be defined for TSS wallets');
-      const txRequest = await this.tssUtils.getTxRequest(signingParams.txPrebuild.txRequestId);
+      const txRequest = await this.tssUtils.getTxRequest(signingParams.txPrebuild.txRequestId, params.reqId);
       if (this.tssUtils.isPendingApprovalTxRequestFull(txRequest)) {
         return txRequest;
       }
@@ -3136,7 +3136,7 @@ export class Wallet implements IWallet {
         {
           txRequest: txRequestId,
           prv: '',
-          reqId: new RequestTracer(),
+          reqId: params.reqId || new RequestTracer(),
         },
         RequestType.tx,
         params.customPaillierModulusGeneratingFunction,
@@ -3212,7 +3212,7 @@ export class Wallet implements IWallet {
         txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
         params.message.txRequestId = txRequest.txRequestId;
       } else {
-        txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId);
+        txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId, params.reqId);
       }
 
       const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
@@ -3268,7 +3268,7 @@ export class Wallet implements IWallet {
         txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
         params.typedData.txRequestId = txRequest.txRequestId;
       } else {
-        txRequest = await getTxRequest(this.bitgo, this.id(), params.typedData.txRequestId);
+        txRequest = await getTxRequest(this.bitgo, this.id(), params.typedData.txRequestId, params.reqId);
       }
 
       const signedTypedDataRequest = await this.tssUtils!.signTxRequestForMessage({
@@ -3316,7 +3316,7 @@ export class Wallet implements IWallet {
     }
 
     if (onlySupportsTxRequestFull || apiVersion === 'full') {
-      const latestTxRequest = await getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId);
+      const latestTxRequest = await getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId, params.reqId);
       const reqId = params.reqId || new RequestTracer();
       this.bitgo.setRequestTracer(reqId);
       const transfer: { state: string; pendingApproval?: string; txid?: string } = await this.bitgo
