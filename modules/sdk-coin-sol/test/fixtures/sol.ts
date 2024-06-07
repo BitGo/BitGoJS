@@ -791,4 +791,5 @@ export const wrwUser = {
   walletAddress2: '22USpDwmubAoY5uws4hp4YhJZwt4eoumeLrGGx5z7DWV',
   walletAddress3: 'FNe4or6gc5vmmCCMASJyYu9BRoiL14fDhjC5vxoGFiW2',
   walletAddress4: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
+  walletAddress5: '8V34g2KeJXChECTWHfcJ5NeyWwyb7HvKpu66DD3YPNcf',
 };

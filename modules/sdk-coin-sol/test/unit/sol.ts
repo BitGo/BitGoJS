@@ -1977,6 +1977,7 @@ describe('SOL:', function () {
   describe('Build Consolidation Recoveries:', () => {
     const sandBox = sinon.createSandbox();
     const coin = coins.get('tsol');
+    const usdtMintAddress = '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C';
     const durableNonces = {
       publicKeys: [
         testData.keys.durableNoncePubKey,
@@ -2042,6 +2043,26 @@ describe('SOL:', function () {
           },
         })
         .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getBalance',
+            params: [testData.wrwUser.walletAddress5],
+          },
+        })
+        .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getMinimumBalanceForRentExemption',
+            params: [165],
+          },
+        })
+        .resolves(testData.SolResponses.getMinimumBalanceForRentExemptionResponse);
       callBack
         .withArgs({
           payload: {
@@ -2126,6 +2147,42 @@ describe('SOL:', function () {
           },
         })
         .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.wrwUser.walletAddress5,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.wrwUser.walletAddress0,
+              {
+                programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponse);
     });
 
     afterEach(() => {
@@ -2224,6 +2281,41 @@ describe('SOL:', function () {
       should.equal(latestBlockhashTxnJson2.nonce, nonce2);
       should.equal(latestBlockhashTxnJson2.feePayer, testData.wrwUser.walletAddress3);
       should.equal(latestBlockhashTxnJson2.numSignatures, testData.SolInputData.unsignedSweepSignatures);
+    });
+
+    it('should build unsigned token consolidation recoveries', async function () {
+      const res = (await basecoin.recoverConsolidations({
+        bitgoKey: testData.wrwUser.bitgoKey,
+        startingScanIndex: 3,
+        endingScanIndex: 5,
+        tokenContractAddress: usdtMintAddress,
+        durableNonces: durableNonces,
+      })) as MPCSweepTxs;
+      res.should.not.be.empty();
+      res.txRequests.length.should.equal(1);
+
+      const txn1 = res.txRequests[0].transactions[0].unsignedTx;
+      txn1.should.hasOwnProperty('serializedTx');
+      txn1.should.hasOwnProperty('signableHex');
+      txn1.should.hasOwnProperty('scanIndex');
+      txn1.scanIndex.should.equal(4);
+      txn1.should.hasOwnProperty('coin');
+      txn1.coin?.should.equal('tsol');
+      txn1.should.hasOwnProperty('derivationPath');
+      txn1.derivationPath?.should.equal('m/4');
+
+      txn1.should.hasOwnProperty('coinSpecific');
+      const coinSpecific1 = txn1.coinSpecific;
+      coinSpecific1?.should.hasOwnProperty('commonKeychain');
+
+      const latestBlockhashTxnDeserialize1 = new Transaction(coin);
+      latestBlockhashTxnDeserialize1.fromRawTransaction((txn1 as MPCTx).serializedTx);
+      const latestBlockhashTxnJson1 = latestBlockhashTxnDeserialize1.toJson();
+
+      const nonce1 = testData.SolResponses.getAccountInfoResponse.body.result.value.data.parsed.info.blockhash;
+      should.equal(latestBlockhashTxnJson1.nonce, nonce1);
+      should.equal(latestBlockhashTxnJson1.feePayer, testData.wrwUser.walletAddress5);
+      should.equal(latestBlockhashTxnJson1.numSignatures, testData.SolInputData.unsignedSweepSignatures);
     });
 
     it('should skip building consolidate transaction if balance is equal to zero', async function () {

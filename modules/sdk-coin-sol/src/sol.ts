@@ -156,6 +156,7 @@ export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecover
     publicKeys: string[];
     secretKey: string;
   };
+  tokenContractAddress?: string;
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -872,7 +873,7 @@ export class Sol extends BaseCoin {
         }
       } else {
         // there are no recoverable token accounts , need to check if there are tokens to recover
-        throw Error('Not found token account to recover tokens, please check token account');
+        throw Error('Did not find token account to recover tokens, please check token account');
       }
     } else {
       const netAmount = new BigNumber(balance).minus(totalFee);
@@ -1233,13 +1234,18 @@ export class Sol extends BaseCoin {
           publicKey: params.durableNonces.publicKeys[durableNoncePubKeysIndex],
           secretKey: params.durableNonces.secretKey,
         },
+        tokenContractAddress: params.tokenContractAddress,
       };
 
       let recoveryTransaction;
       try {
         recoveryTransaction = await this.recover(recoverParams);
       } catch (e) {
-        if (e.message === 'Did not find address with funds to recover') {
+        if (
+          e.message === 'Did not find address with funds to recover' ||
+          e.message === 'Did not find token account to recover tokens, please check token account' ||
+          e.message === 'Not enough token funds to recover'
+        ) {
           lastScanIndex = i;
           continue;
         }
