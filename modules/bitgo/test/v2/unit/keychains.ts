@@ -599,4 +599,31 @@ describe('V2 Keychains', function () {
       assert(decodedRes);
     });
   });
+
+  it('should generate backup without encryptedPrv when passphrase not provided', async () => {
+    const scope = nock(bgUrl)
+      .post('/api/v2/tltc/key', (body) => {
+        return body.encryptedPrv === undefined && body.prv === undefined;
+      })
+      .reply(200);
+
+    const backup = await keychains.createBackup({});
+    scope.isDone().should.be.true();
+    backup.should.not.have.property('encryptedPrv');
+    backup.should.have.property('prv');
+  });
+
+  it('should generate backup and call endpoint with encryptedPrv when passphrase is provided', async () => {
+    const scope = nock(bgUrl)
+      .post('/api/v2/tltc/key', (body) => {
+        return body.encryptedPrv !== undefined && body.prv === undefined;
+      })
+      .reply(200);
+
+    const backup = await keychains.createBackup({ passphrase: 't3stSicretly!' });
+    scope.isDone().should.be.true();
+    backup.should.have.property('encryptedPrv');
+    const decryptedPrv = bitgo.decrypt({ input: backup.encryptedPrv, password: 't3stSicretly!' });
+    decryptedPrv.should.startWith('xprv');
+  });
 });

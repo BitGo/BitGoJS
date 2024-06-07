@@ -130,6 +130,7 @@ export interface CreateBackupOptions {
   commonKeychain?: string;
   prv?: string;
   encryptedPrv?: string;
+  passphrase?: string;
 }
 
 export interface CreateBitGoOptions {
