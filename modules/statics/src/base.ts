@@ -1434,6 +1434,7 @@ export enum UnderlyingAsset {
   URHD = 'urhd',
   USDC = 'usdc',
   'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',
+  USDE = 'usde',
   USDGLO = 'usdglo',
   USDH = 'usdh',
   USDK = 'usdk',

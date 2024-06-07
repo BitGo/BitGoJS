@@ -6642,6 +6642,14 @@ export const coins = CoinMap.fromCoins([
     TOKEN_FEATURES_WITH_SWISS
   ),
   erc20(
+    '7ab504b3-eecc-45ca-8f33-7957cb9e774d',
+    'usde',
+    'USDe',
+    18,
+    '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
+    UnderlyingAsset.USDE
+  ),
+  erc20(
     'e1d609f1-eb3f-4b3f-8ef6-87f434a6de83',
     'usdt',
     'Tether',
