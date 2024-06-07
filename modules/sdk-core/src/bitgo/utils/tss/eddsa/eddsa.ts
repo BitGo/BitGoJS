@@ -609,7 +609,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       txRequestId,
       commitmentShare,
       encryptedSignerShare,
-      apiVersion
+      apiVersion,
+      params.reqId
     );
 
     await offerUserToBitgoRShare(
@@ -622,10 +623,11 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       vssProof,
       privateShareProof,
       userPublicGpgKey,
-      publicShare
+      publicShare,
+      params.reqId
     );
 
-    const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId);
+    const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId, params.reqId);
 
     const userToBitGoGShare = await createUserToBitGoGShare(
       userSignShare,
@@ -636,9 +638,9 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       bitgoToUserCommitment
     );
 
-    await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare, apiVersion);
+    await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare, apiVersion, params.reqId);
 
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+    return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId, params.reqId);
   }
 
   /**

@@ -19,6 +19,7 @@ import {
   CommitmentShareRecord,
   CommitmentType,
   SignatureShareType,
+  RequestTracer,
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
@@ -26,6 +27,7 @@ import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
+import * as sinon from 'sinon';
 import nock = require('nock');
 
 describe('test tss helper functions', function () {
@@ -536,6 +538,39 @@ describe('test tss helper functions', function () {
           'signerShare'
         ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
       });
+
+      it('should call setRequestTracer', async function () {
+        const signatureShare = {
+          from: 'user',
+          to: 'bitgo',
+          share: validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R,
+        } as SignatureShareRecord;
+        const nock = await nockSendSignatureShare({
+          walletId: wallet.id(),
+          txRequestId: txRequest.txRequestId,
+          signatureShare,
+          signerShare: 'signerShare',
+        });
+        const reqId = new RequestTracer();
+        const setRequestTracerSpy = sinon.spy(bitgo, 'setRequestTracer');
+        setRequestTracerSpy.withArgs(reqId);
+        await offerUserToBitgoRShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          validUserSignShare,
+          'signerShare',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          reqId
+        ).should.be.fulfilled();
+        nock.isDone().should.equal(true);
+        sinon.assert.calledOnce(setRequestTracerSpy);
+        setRequestTracerSpy.restore();
+      });
     });
 
     describe('getBitgoToUserRShare:', async function () {
@@ -568,6 +603,19 @@ describe('test tss helper functions', function () {
           'No signatures shares found for id: ' + txRequest.txRequestId
         );
         nock.isDone().should.equal(true);
+      });
+
+      it('should call setRequestTracer', async function () {
+        const response = { txRequests: [txRequest] };
+        const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
+        const reqId = new RequestTracer();
+        const setRequestTracerSpy = sinon.spy(bitgo, 'setRequestTracer');
+        setRequestTracerSpy.withArgs(reqId);
+        const bitgoToUserRShare = await getBitgoToUserRShare(bitgo, wallet.id(), txRequest.txRequestId, reqId);
+        bitgoToUserRShare.should.deepEqual(txRequest.signatureShares[0]);
+        nock.isDone().should.equal(true);
+        sinon.assert.calledOnce(setRequestTracerSpy);
+        setRequestTracerSpy.restore();
       });
     });
 
@@ -602,6 +650,33 @@ describe('test tss helper functions', function () {
           invalidUserToBitgoGShare
         ).should.be.rejectedWith('Invalid GShare, doesnt belong to the User');
       });
+
+      it('should call setRequestTracer', async function () {
+        const signatureShare = {
+          from: 'user',
+          to: 'bitgo',
+          share: validUserToBitgoGShare.R + validUserToBitgoGShare.gamma,
+        } as SignatureShareRecord;
+        const nock = await nockSendSignatureShare({
+          walletId: wallet.id(),
+          txRequestId: txRequest.txRequestId,
+          signatureShare,
+        });
+        const reqId = new RequestTracer();
+        const setRequestTracerSpy = sinon.spy(bitgo, 'setRequestTracer');
+        setRequestTracerSpy.withArgs(reqId);
+        await sendUserToBitgoGShare(
+          bitgo,
+          wallet.id(),
+          txRequest.txRequestId,
+          validUserToBitgoGShare,
+          undefined,
+          reqId
+        ).should.be.fulfilled();
+        nock.isDone().should.equal(true);
+        sinon.assert.calledOnce(setRequestTracerSpy);
+        setRequestTracerSpy.restore();
+      });
     });
 
     describe('getTxRequest:', async function () {
@@ -620,6 +695,19 @@ describe('test tss helper functions', function () {
           'Unable to find TxRequest with id randomId'
         );
         nock.isDone().should.equal(true);
+      });
+
+      it('should call setRequestTracer', async function () {
+        const response = { txRequests: [txRequest] };
+        const nock = await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
+        const reqId = new RequestTracer();
+        const setRequestTracerSpy = sinon.spy(bitgo, 'setRequestTracer');
+        setRequestTracerSpy.withArgs(reqId);
+        const txReq = await getTxRequest(bitgo, wallet.id(), txRequest.txRequestId, reqId);
+        txReq.should.deepEqual(txRequest);
+        nock.isDone().should.equal(true);
+        sinon.assert.calledOnce(setRequestTracerSpy);
+        setRequestTracerSpy.restore();
       });
     });
 

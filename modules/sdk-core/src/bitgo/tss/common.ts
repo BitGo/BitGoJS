@@ -30,12 +30,8 @@ export async function getTxRequest(
   txRequestId: string,
   reqId?: IRequestTracer
 ): Promise<TxRequest> {
-  if (reqId) {
-    bitgo.setRequestTracer(reqId);
-  } else {
-    const reqId = new RequestTracer();
-    bitgo.setRequestTracer(reqId);
-  }
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   const txRequestRes = await bitgo
     .get(bitgo.url('/wallet/' + walletId + '/txrequests', 2))
     .query({ txRequestIds: txRequestId, latest: 'true' })
@@ -89,12 +85,8 @@ export async function sendSignatureShare(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/signatureshares';
-  if (reqId) {
-    bitgo.setRequestTracer(reqId);
-  } else {
-    const reqId = new RequestTracer();
-    bitgo.setRequestTracer(reqId);
-  }
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   return bitgo
     .post(bitgo.url(urlPath, 2))
     .send({
@@ -130,12 +122,8 @@ export async function exchangeEddsaCommitments(
     addendum = '/transactions/0';
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/commit';
-  if (reqId) {
-    bitgo.setRequestTracer(reqId);
-  } else {
-    const reqId = new RequestTracer();
-    bitgo.setRequestTracer(reqId);
-  }
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   return await bitgo.post(bitgo.url(urlPath, 2)).send({ commitmentShare, encryptedSignerShare }).result();
 }
 

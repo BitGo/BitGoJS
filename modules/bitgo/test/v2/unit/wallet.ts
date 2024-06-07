@@ -1743,6 +1743,20 @@ describe('V2 Wallet:', function () {
       ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
     });
 
+    it('should return reqId if it was passed in the params', async function () {
+      const params = { offlineVerification: true };
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, tbtcHotWalletDefaultParams)
+        .query(params)
+        .reply(200, {});
+      const blockHeight = 100;
+      sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      const txRequest = await wallet.prebuildTransaction({ ...params, reqId: reqId });
+      txRequest.reqId?.should.containEql(reqId);
+      scope.done();
+    });
+
     it('should pass offlineVerification=true query param if passed truthy value', async function () {
       const params = { offlineVerification: true };
       const scope = nock(bgUrl)

@@ -101,7 +101,6 @@ import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
 import { TxSendBody } from '@bitgo/public-types';
 import { AddressBook, IAddressBook } from '../address-book';
-import { IRequestTracer } from '../../api';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -3080,10 +3079,7 @@ export class Wallet implements IWallet {
 
     assert(this.tssUtils, 'tssUtils must be defined');
     // adding this to rebuild the transaction just before signing for EdDSA transaction using external signer
-    let reqId: IRequestTracer | undefined;
-    if (params.reqId) {
-      reqId = params.reqId;
-    }
+    const reqId = params.reqId || undefined;
     await this.tssUtils.deleteSignatureShares(txRequestId, reqId);
 
     try {
@@ -3321,12 +3317,8 @@ export class Wallet implements IWallet {
 
     if (onlySupportsTxRequestFull || apiVersion === 'full') {
       const latestTxRequest = await getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId);
-      if (params.reqId) {
-        this.bitgo.setRequestTracer(params.reqId);
-      } else {
-        const reqId = new RequestTracer();
-        this.bitgo.setRequestTracer(reqId);
-      }
+      const reqId = params.reqId || new RequestTracer();
+      this.bitgo.setRequestTracer(reqId);
       const transfer: { state: string; pendingApproval?: string; txid?: string } = await this.bitgo
         .post(
           this.bitgo.url(
@@ -3353,11 +3345,7 @@ export class Wallet implements IWallet {
       };
     }
 
-    let reqId: IRequestTracer | undefined;
-    if (params.reqId) {
-      reqId = params.reqId;
-    }
-
+    const reqId = params.reqId || undefined;
     return this.tssUtils?.sendTxRequest(signedTransaction.txRequestId, reqId);
   }
 

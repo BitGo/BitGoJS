@@ -327,12 +327,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @returns {SignatureShareRecord[]}
    */
   async deleteSignatureShares(txRequestId: string, reqId?: IRequestTracer): Promise<SignatureShareRecord[]> {
-    if (reqId) {
-      this.bitgo.setRequestTracer(reqId);
-    } else {
-      const reqId = new RequestTracer();
-      this.bitgo.setRequestTracer(reqId);
-    }
+    const reqTracer = reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqTracer);
     return this.bitgo
       .del(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests/${txRequestId}/signatureshares`, 2))
       .send()
@@ -348,12 +344,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async sendTxRequest(txRequestId: string, reqId?: IRequestTracer): Promise<any> {
-    if (reqId) {
-      this.bitgo.setRequestTracer(reqId);
-    } else {
-      const reqId = new RequestTracer();
-      this.bitgo.setRequestTracer(reqId);
-    }
+    const reqTracer = reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqTracer);
     return this.bitgo
       .post(this.baseCoin.url('/wallet/' + this.wallet.id() + '/tx/send'))
       .send({ txRequestId })
