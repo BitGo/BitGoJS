@@ -1,6 +1,7 @@
 import { bigIntFromU8ABE, bigIntToBufferBE } from '../util';
 import { BaseCurve } from './types';
-import * as secp from '@noble/secp256k1';
+import { secp256k1 as secp } from '@noble/curves/secp256k1';
+import { mod, invert } from '@noble/curves/abstract/modular';
 
 const order = secp.CURVE.n;
 const privateKeySize = 32;
@@ -12,38 +13,38 @@ export class Secp256k1Curve implements BaseCurve {
   }
 
   scalarAdd(x: bigint, y: bigint): bigint {
-    return bigIntFromU8ABE(secp.utils.privateAdd(x, bigIntToBufferBE(y, privateKeySize)));
+    return mod(x + y, order);
   }
 
   scalarSub(x: bigint, y: bigint): bigint {
-    const negatedY = secp.utils.privateNegate(y);
-    return bigIntFromU8ABE(secp.utils.privateAdd(x, negatedY));
+    const negatedY = order - y;
+    return mod(x + negatedY, order);
   }
 
   scalarMult(x: bigint, y: bigint): bigint {
-    return secp.utils.mod(x * y, order);
+    return mod(x * y, order);
   }
 
   scalarReduce(s: bigint): bigint {
-    return secp.utils.mod(s, order);
+    return mod(s, order);
   }
 
   scalarNegate(s: bigint): bigint {
-    return bigIntFromU8ABE(secp.utils.privateNegate(s));
+    return order - s;
   }
 
   scalarInvert(s: bigint): bigint {
-    return secp.utils.invert(s, order);
+    return invert(s, order);
   }
 
   pointAdd(a: bigint, b: bigint): bigint {
-    const pointA = secp.Point.fromHex(bigIntToBufferBE(a, privateKeySize));
-    const pointB = secp.Point.fromHex(bigIntToBufferBE(b, privateKeySize));
+    const pointA = secp.ProjectivePoint.fromHex(bigIntToBufferBE(a, privateKeySize));
+    const pointB = secp.ProjectivePoint.fromHex(bigIntToBufferBE(b, privateKeySize));
     return bigIntFromU8ABE(pointA.add(pointB).toRawBytes(true));
   }
 
   pointMultiply(p: bigint, s: bigint): bigint {
-    const pointA = secp.Point.fromHex(bigIntToBufferBE(p, privateKeySize));
+    const pointA = secp.ProjectivePoint.fromHex(bigIntToBufferBE(p, privateKeySize));
     return bigIntFromU8ABE(pointA.multiply(s).toRawBytes(true));
   }
 
@@ -53,9 +54,9 @@ export class Secp256k1Curve implements BaseCurve {
   }
 
   verify(message: Buffer, signature: Buffer, publicKey: bigint): boolean {
-    return Buffer.from(secp.recoverPublicKey(message, signature.subarray(1), signature[0], true)).equals(
-      bigIntToBufferBE(publicKey, publicKeySize)
-    );
+    const sig = secp.Signature.fromCompact(Buffer.from(signature.subarray(1))).addRecoveryBit(signature[0]);
+    const pubFromSig = sig.recoverPublicKey(message).toRawBytes(true);
+    return Buffer.from(pubFromSig).equals(bigIntToBufferBE(publicKey, publicKeySize));
   }
 
   order(): bigint {
