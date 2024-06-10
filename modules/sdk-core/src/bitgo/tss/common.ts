@@ -11,17 +11,27 @@ import {
   CommitmentShareRecord,
   EncryptedSignerShareRecord,
   ExchangeCommitmentResponse,
+  RequestTracer,
 } from '../utils';
+import { IRequestTracer } from '../../api';
 
 /**
  * Gets the latest Tx Request by id
  *
  * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id
- * @param {String} txRequestId - the txRequest Id
+ * @param {String} txRequestId - the txRequest id
+ * @param {IRequestTracer} reqId - the request tracer request id
  * @returns {Promise<TxRequest>}
  */
-export async function getTxRequest(bitgo: BitGoBase, walletId: string, txRequestId: string): Promise<TxRequest> {
+export async function getTxRequest(
+  bitgo: BitGoBase,
+  walletId: string,
+  txRequestId: string,
+  reqId?: IRequestTracer
+): Promise<TxRequest> {
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   const txRequestRes = await bitgo
     .get(bitgo.url('/wallet/' + walletId + '/txrequests', 2))
     .query({ txRequestIds: txRequestId, latest: 'true' })
@@ -46,6 +56,7 @@ export async function getTxRequest(bitgo: BitGoBase, walletId: string, txRequest
  * @param signerShare
  * @param mpcAlgorithm
  * @param apiMode
+ * @param {IRequestTracer} reqId - the request tracer request id
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendSignatureShare(
@@ -57,7 +68,8 @@ export async function sendSignatureShare(
   signerShare?: string,
   mpcAlgorithm: 'eddsa' | 'ecdsa' = 'eddsa',
   apiMode: 'full' | 'lite' = 'lite',
-  userPublicGpgKey?: string
+  userPublicGpgKey?: string,
+  reqId?: IRequestTracer
 ): Promise<SignatureShareRecord> {
   let addendum = '';
   switch (requestType) {
@@ -73,6 +85,8 @@ export async function sendSignatureShare(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/signatureshares';
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   return bitgo
     .post(bitgo.url(urlPath, 2))
     .send({
@@ -153,6 +167,7 @@ export async function sendTxRequest(
  * @param {CommitmentShareRecord} commitmentShare - the client commitment share
  * @param {EncryptedSignerShareRecord} encryptedSignerShare - the client encrypted signer share
  * @param {string} [apiMode] - the txRequest api mode (full or lite) - defaults to lite
+ * @param {IRequestTracer} reqId - the request tracer request Id
  * @returns {Promise<ExchangeCommitmentResponse>} - the server commitment share
  */
 export async function exchangeEddsaCommitments(
@@ -161,13 +176,16 @@ export async function exchangeEddsaCommitments(
   txRequestId: string,
   commitmentShare: CommitmentShareRecord,
   encryptedSignerShare: EncryptedSignerShareRecord,
-  apiMode: 'full' | 'lite' = 'lite'
+  apiMode: 'full' | 'lite' = 'lite',
+  reqId?: IRequestTracer
 ): Promise<ExchangeCommitmentResponse> {
   let addendum = '';
   if (apiMode === 'full') {
     addendum = '/transactions/0';
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/commit';
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   return await bitgo.post(bitgo.url(urlPath, 2)).send({ commitmentShare, encryptedSignerShare }).result();
 }
 
@@ -226,6 +244,7 @@ export async function commonVerifyWalletSignature(params: {
  * @param index
  * @param requestType
  * @param paillierModulus
+ * @param reqId
  */
 export async function getTxRequestChallenge(
   bitgo: BitGoBase,
@@ -233,7 +252,8 @@ export async function getTxRequestChallenge(
   txRequestId: string,
   index: string,
   requestType: RequestType,
-  paillierModulus: string
+  paillierModulus: string,
+  reqId?: IRequestTracer
 ): Promise<TxRequestChallengeResponse> {
   let addendum = '';
   switch (requestType) {
@@ -245,5 +265,7 @@ export async function getTxRequestChallenge(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   return await bitgo.post(bitgo.url(urlPath, 2)).send({ paillierModulus }).result();
 }

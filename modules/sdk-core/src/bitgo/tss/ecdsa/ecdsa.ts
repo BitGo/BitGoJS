@@ -42,6 +42,7 @@ import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
 import { Hash } from 'crypto';
 import { EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
+import { IRequestTracer } from '../../../api';
 
 const MPC = new Ecdsa();
 
@@ -199,6 +200,7 @@ export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition }
  * @param privateShareProof - the uSig of the share
  * @param publicShare - the y value of the share
  * @param userPublicGpgKey - the public key of the gpg key used for creating the privateShareProof
+ * @param reqId - request tracer request id
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendShareToBitgo(
@@ -212,7 +214,8 @@ export async function sendShareToBitgo(
   vssProof?: string,
   privateShareProof?: string,
   publicShare?: string,
-  userPublicGpgKey?: string
+  userPublicGpgKey?: string,
+  reqId?: IRequestTracer
 ): Promise<SendShareToBitgoRT> {
   if (shareType !== SendShareType.SShare && share.i !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid Share, is not from User to Bitgo');
@@ -237,14 +240,16 @@ export async function sendShareToBitgo(
         signerShare,
         'ecdsa',
         'full',
-        userPublicGpgKey
+        userPublicGpgKey,
+        reqId
       );
       responseFromBitgo = await getBitgoToUserLatestShare(
         bitgo,
         walletId,
         txRequestId,
         ReceivedShareType.AShare,
-        requestType
+        requestType,
+        reqId
       );
       break;
     case SendShareType.MUShare:
@@ -256,19 +261,42 @@ export async function sendShareToBitgo(
         from: getParticipantFromIndex(shareToSend.dShare.j),
         share: `${muShareRecord.share}${secondaryDelimeter}${dShareRecord.share}`,
       };
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
+      await sendSignatureShare(
+        bitgo,
+        walletId,
+        txRequestId,
+        signatureShare,
+        requestType,
+        signerShare,
+        'ecdsa',
+        undefined,
+        undefined,
+        reqId
+      );
       responseFromBitgo = await getBitgoToUserLatestShare(
         bitgo,
         walletId,
         txRequestId,
         ReceivedShareType.DShare,
-        requestType
+        requestType,
+        reqId
       );
       break;
     case SendShareType.SShare:
       const sShare = share as SShare;
       signatureShare = convertSignatureShare(sShare, 1, 3);
-      await sendSignatureShare(bitgo, walletId, txRequestId, signatureShare, requestType, signerShare, 'ecdsa');
+      await sendSignatureShare(
+        bitgo,
+        walletId,
+        txRequestId,
+        signatureShare,
+        requestType,
+        signerShare,
+        'ecdsa',
+        undefined,
+        undefined,
+        reqId
+      );
       responseFromBitgo = sShare;
       break;
     default:
@@ -284,6 +312,7 @@ export async function sendShareToBitgo(
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param {ReceivedShareType} shareType - the excpected share type
+ * @param {IRequestTracer} reqId - request tracer request id
  * @returns {Promise<SendShareToBitgoRT>} - share from bitgo to user
  */
 export async function getBitgoToUserLatestShare(
@@ -291,10 +320,11 @@ export async function getBitgoToUserLatestShare(
   walletId: string,
   txRequestId: string,
   shareType: ReceivedShareType,
-  requestType: RequestType
+  requestType: RequestType,
+  reqId?: IRequestTracer
 ): Promise<SendShareToBitgoRT> {
   let responseFromBitgo: SendShareToBitgoRT;
-  const txRequest = await getTxRequest(bitgo, walletId, txRequestId);
+  const txRequest = await getTxRequest(bitgo, walletId, txRequestId, reqId);
   let userShares;
   switch (requestType) {
     case RequestType.tx:

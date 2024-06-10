@@ -167,6 +167,7 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
     feeString?: string;
   };
   pendingApprovalId?: string;
+  reqId?: IRequestTracer;
 }
 
 export interface CustomSigningFunction {

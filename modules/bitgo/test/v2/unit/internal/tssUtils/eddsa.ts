@@ -833,6 +833,24 @@ describe('TSS Utils:', async function () {
       response.should.length(1);
       nock.isDone().should.equal(true);
     });
+
+    it('should call setRequestTracer', async function () {
+      const signatureShare = { from: 'user', to: 'bitgo', share: '128bytestring' } as SignatureShareRecord;
+      const nock = await nockDeleteSignatureShare({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        signatureShare,
+      });
+      const reqId = new RequestTracer();
+      const setRequestTracerSpy = sinon.spy(bitgo, 'setRequestTracer');
+      setRequestTracerSpy.withArgs(reqId);
+      const response = await tssUtils.deleteSignatureShares(txRequest.txRequestId, reqId);
+      response.should.deepEqual([signatureShare]);
+      response.should.length(1);
+      nock.isDone().should.equal(true);
+      sinon.assert.calledOnce(setRequestTracerSpy);
+      setRequestTracerSpy.restore();
+    });
   });
 
   describe('sendTxRequest:', async function () {
@@ -844,6 +862,21 @@ describe('TSS Utils:', async function () {
       });
       await tssUtils.sendTxRequest(txRequest.txRequestId).should.be.fulfilled();
       nock.isDone().should.equal(true);
+    });
+
+    it('should call setRequestTracer', async function () {
+      const nock = await nockSendTxRequest({
+        coin: coinName,
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+      });
+      const reqId = new RequestTracer();
+      const setRequestTracerSpy = sinon.spy(bitgo, 'setRequestTracer');
+      setRequestTracerSpy.withArgs(reqId);
+      await tssUtils.sendTxRequest(txRequest.txRequestId, reqId).should.be.fulfilled();
+      nock.isDone().should.equal(true);
+      sinon.assert.calledOnce(setRequestTracerSpy);
+      setRequestTracerSpy.restore();
     });
   });
 
