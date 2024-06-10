@@ -594,6 +594,25 @@ export function clonePsbtWithoutNonWitnessUtxo(psbt: UtxoPsbt): UtxoPsbt {
 }
 
 /**
+ * Returns true if there are non-segwit inputs in the PSBT that do not contain the
+ * nonWitnessUtxo.
+ *
+ * isPsbtLite(clonePsbtWithoutNonWitnessUtxo(psbt)) === true
+ *
+ * @param psbt
+ */
+export function isPsbtLite(psbt: UtxoPsbt): boolean {
+  let isFull = true;
+  const nonSegwitInputTypes = ['p2shP2pk', 'p2sh'];
+  psbt.data.inputs.forEach((input) => {
+    if (isFull && nonSegwitInputTypes.includes(getPsbtInputScriptType(input))) {
+      isFull = !!input.nonWitnessUtxo;
+    }
+  });
+  return !isFull;
+}
+
+/**
  * Deletes witnessUtxo for non-segwit inputs to make the PSBT BIP-174 compliant.
  */
 export function deleteWitnessUtxoForNonSegwitInputs(psbt: UtxoPsbt): void {

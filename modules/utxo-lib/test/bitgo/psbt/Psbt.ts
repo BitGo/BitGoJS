@@ -36,6 +36,7 @@ import {
   getTransactionAmountsFromPsbt,
   WalletUnspent,
   getDefaultSigHash,
+  isPsbtLite,
 } from '../../../src/bitgo';
 import {
   createOutputScript2of3,
@@ -111,6 +112,35 @@ describe('Psbt Misc', function () {
       () => psbt.finalizeAllInputs(),
       (e: any) => e.message === 'signature sighash does not match input sighash type'
     );
+  });
+
+  describe('isPsbtLite', function () {
+    it('no inputs', function () {
+      const psbt = testutil.constructPsbt([], [], network, rootWalletKeys, 'unsigned');
+      assert.strictEqual(isPsbtLite(psbt), false);
+    });
+
+    it('all inputs are segwit', function () {
+      const psbt = testutil.constructPsbt(
+        psbtInputs.filter((s) => s.scriptType !== 'p2sh' && s.scriptType !== 'p2shP2pk'),
+        psbtOutputs,
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+      assert.strictEqual(isPsbtLite(psbt), false);
+    });
+
+    it('some inputs are non-segwit', function () {
+      const psbt = testutil.constructPsbt(psbtInputs, psbtOutputs, network, rootWalletKeys, 'unsigned');
+      assert.strictEqual(isPsbtLite(psbt), false);
+    });
+
+    it('should be true if after clonePsbtWithoutNonWitnessUtxo', function () {
+      const psbt = testutil.constructPsbt(psbtInputs, psbtOutputs, network, rootWalletKeys, 'unsigned');
+      const clonedPsbt = clonePsbtWithoutNonWitnessUtxo(psbt);
+      assert.strictEqual(isPsbtLite(clonedPsbt), true);
+    });
   });
 });
 
