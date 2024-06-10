@@ -3513,6 +3513,7 @@ describe('V2 Wallet:', function () {
             amount: '1000',
           },
         ],
+        reqId: new RequestTracer(),
       };
 
       afterEach(function () {
@@ -3536,6 +3537,28 @@ describe('V2 Wallet:', function () {
 
         const sendMany = await tssSolWallet.sendMany(sendManyInput);
         sendMany.should.deepEqual('sendTxResponse');
+      });
+
+      it('should send many and call setRequestTracer', async function () {
+        const signedTransaction = {
+          txRequestId: 'txRequestId',
+        };
+
+        const prebuildAndSignTransaction = sandbox.stub(tssSolWallet, 'prebuildAndSignTransaction');
+        prebuildAndSignTransaction.resolves(signedTransaction);
+        prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
+
+        const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
+        sendTxRequest.resolves('sendTxResponse');
+        sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
+
+        const setRequestTracerSpy = sinon.spy(bitgo, 'setRequestTracer');
+        setRequestTracerSpy.withArgs(sendManyInput.reqId);
+
+        const sendMany = await tssSolWallet.sendMany(sendManyInput);
+        sendMany.should.deepEqual('sendTxResponse');
+        sinon.assert.calledOnce(setRequestTracerSpy);
+        setRequestTracerSpy.restore();
       });
 
       it('should return transfer from sendMany for apiVersion=full', async function () {

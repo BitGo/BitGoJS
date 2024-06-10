@@ -101,6 +101,7 @@ import { buildParamKeys, BuildParams } from './BuildParams';
 import { postWithCodec } from '../utils/postWithCodec';
 import { TxSendBody } from '@bitgo/public-types';
 import { AddressBook, IAddressBook } from '../address-book';
+import { IRequestTracer } from '../../api';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -727,7 +728,7 @@ export class Wallet implements IWallet {
         const signedTransaction = await this.signTransaction({ ...transactionParams, txPrebuild });
         const finalTxParams = _.extend({}, signedTransaction, selectParams, { type: routeName });
         this.bitgo.setRequestTracer(reqId);
-        return this.sendTransaction(finalTxParams);
+        return this.sendTransaction(finalTxParams, reqId);
       })
     );
 
@@ -941,7 +942,7 @@ export class Wallet implements IWallet {
     const selectParams = _.pick(params, ['otp']);
     const finalTxParams = _.extend({}, signedTransaction, selectParams);
     this.bitgo.setRequestTracer(reqId);
-    return this.sendTransaction(finalTxParams);
+    return this.sendTransaction(finalTxParams, reqId);
   }
 
   /**
@@ -2113,8 +2114,9 @@ export class Wallet implements IWallet {
    * @param params
    * - txHex: transaction hex to submit
    * - halfSigned: object containing transaction (txHex or txBase64) to submit
+   * @param reqId - request tracer request id
    */
-  async submitTransaction(params: SubmitTransactionOptions = {}): Promise<any> {
+  async submitTransaction(params: SubmitTransactionOptions = {}, reqId?: IRequestTracer): Promise<any> {
     common.validateParams(params, [], ['otp', 'txHex', 'txRequestId']);
     const hasTxHex = !!params.txHex;
     const hasHalfSigned = !!params.halfSigned;
@@ -2124,7 +2126,7 @@ export class Wallet implements IWallet {
     } else if (!params.txRequestId && ((hasTxHex && hasHalfSigned) || (!hasTxHex && !hasHalfSigned))) {
       throw new Error('must supply either txHex or halfSigned, but not both');
     }
-    return this.sendTransaction(params);
+    return this.sendTransaction(params, reqId);
   }
 
   /**
@@ -2324,13 +2326,13 @@ export class Wallet implements IWallet {
     if (this._wallet.type === 'custodial') {
       const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
       Object.assign(selectParams, extraParams);
-      return this.initiateTransaction(selectParams);
+      return this.initiateTransaction(selectParams, reqId);
     }
 
     const halfSignedTransaction = await this.prebuildAndSignTransaction(params);
     const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams, extraParams);
-    return this.sendTransaction(finalTxParams);
+    return this.sendTransaction(finalTxParams, reqId);
   }
 
   /**
@@ -2683,7 +2685,7 @@ export class Wallet implements IWallet {
 
     if (this._wallet.type === 'custodial' && this._wallet.multisigType !== 'tss') {
       params.type = 'consolidate';
-      return this.initiateTransaction(params as TxSendBody);
+      return this.initiateTransaction(params as TxSendBody, params.reqId);
     }
 
     // one of a set of consolidation transactions
@@ -2710,7 +2712,7 @@ export class Wallet implements IWallet {
 
     delete signedPrebuild.wallet;
 
-    return await this.submitTransaction(signedPrebuild);
+    return await this.submitTransaction(signedPrebuild, params.reqId);
   }
 
   /**
@@ -2844,9 +2846,9 @@ export class Wallet implements IWallet {
         case 'hot':
         case 'cold':
           const signedPrebuild = await this.prebuildAndSignTransaction(params);
-          return await this.submitTransaction(signedPrebuild);
+          return await this.submitTransaction(signedPrebuild, params.reqId);
         case 'custodial':
-          return this.initiateTransaction(params.prebuildTx.buildParams);
+          return this.initiateTransaction(params.prebuildTx.buildParams, params.reqId);
       }
     }
   }
@@ -3400,11 +3402,13 @@ export class Wallet implements IWallet {
     return await this.bitgo.get(url).query({}).result();
   }
 
-  private sendTransaction(params: TxSendBody) {
+  private sendTransaction(params: TxSendBody, reqId?: IRequestTracer) {
     // extract the whitelisted params from the top level, in case
     // other invalid params are present that would fail encoding
     // and fall back to the body params
     const whitelistedParams = _.pick(params, whitelistedSendParams);
+    const reqTracer = reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqTracer);
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
@@ -3413,11 +3417,13 @@ export class Wallet implements IWallet {
     ).result();
   }
 
-  private initiateTransaction(params: TxSendBody) {
+  private initiateTransaction(params: TxSendBody, reqId?: IRequestTracer) {
     // extract the whitelisted params from the top level, in case
     // other invalid params are present that would fail encoding
     // and fall back to the body params
     const whitelistedParams = _.pick(params, whitelistedSendParams);
+    const reqTracer = reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqTracer);
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/initiate'),
