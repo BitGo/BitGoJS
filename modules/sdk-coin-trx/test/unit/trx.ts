@@ -421,6 +421,7 @@ describe('TRON:', function () {
         userKey: TestRecoverData.userKey,
         backupKey: TestRecoverData.backupKey,
         bitgoKey: TestRecoverData.bitgoKey,
+        tokenContractAddress: 'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
         startingScanIndex: 1,
         endingScanIndex: 3,
       });
