@@ -31,7 +31,6 @@ import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
 import { TransactionReceipt } from './lib/iface';
 import { isInteger, isUndefined } from 'lodash';
-import { tokenMainnetContractAddresses, tokenTestnetContractAddresses } from './lib/utils';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 export const SAFE_TRON_TRANSACTION_FEE = 2.1 * 1e6; // TRON foundation recommends 2.1 TRX as fees for guaranteed transaction
@@ -92,6 +91,7 @@ export interface ConsolidationRecoveryOptions {
   userKey: string;
   backupKey: string;
   bitgoKey: string;
+  tokenContractAddress?: string;
   startingScanIndex?: number; // default to 1 (inclusive)
   endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
 }
@@ -789,50 +789,51 @@ export class Trx extends BaseCoin {
         let recoveryAmount = 0;
         // Tokens must be consolidate before the native asset. First construct token txns
         let rawTokenTxn: any | undefined;
-        // token address
-        if (accountInfo.data[0].balance > SAFE_TRON_TOKEN_TRANSACTION_FEE && accountInfo.data[0].trc20[0]) {
-          const tokenDataArray = accountInfo.data[0].trc20;
-          for (const tokenData of tokenDataArray) {
-            const contractAddress = Object.keys(tokenData) as Array<string>;
-            if (
-              tokenMainnetContractAddresses.includes(contractAddress[0]) ||
-              tokenTestnetContractAddresses.includes(contractAddress[0])
-            ) {
-              const amount = tokenData[contractAddress[0]];
-              const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(contractAddress[0]);
-              rawTokenTxn = (
-                await this.getTriggerSmartContractTransaction(
-                  baseAddrHex,
-                  receiveAddressHex,
-                  amount,
-                  tokenContractAddrHex
-                )
-              ).transaction;
-              recoveryAmount = parseInt(amount, 10);
-              break;
+
+        // check for possible token recovery, recover the token provide by user
+        if (params.tokenContractAddress) {
+          if (accountInfo.data[0].balance > SAFE_TRON_TOKEN_TRANSACTION_FEE && accountInfo.data[0].trc20[0]) {
+            const tokenDataArray = accountInfo.data[0].trc20;
+            for (const tokenData of tokenDataArray) {
+              const contractAddress = Object.keys(tokenData) as Array<string>;
+              if (params.tokenContractAddress === contractAddress[0]) {
+                const amount = tokenData[contractAddress[0]];
+                const tokenContractAddrHex = Utils.getHexAddressFromBase58Address(contractAddress[0]);
+                rawTokenTxn = (
+                  await this.getTriggerSmartContractTransaction(
+                    baseAddrHex,
+                    receiveAddressHex,
+                    amount,
+                    tokenContractAddrHex
+                  )
+                ).transaction;
+                recoveryAmount = parseInt(amount, 10);
+                break;
+              }
             }
           }
-        }
-
-        // build and sign token txns
-        if (rawTokenTxn) {
-          const addressInfo = {
-            address: receiveAddress,
-            chain: 0,
-            index: i,
-          };
-          const txBuilder = getBuilder(this.getChain()).from(rawTokenTxn);
-          // Default expiry is 1 minute which is too short for recovery purposes
-          // extend the expiry to 1 day
-          txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
-          // this tx should be enough to drop into a node
-          if (!isUnsignedConsolidations) {
-            const userPrv = this.xprvToCompressedPrv(userKey.toBase58());
-            // receive address only needs to be signed by user key
-            txBuilder.sign({ key: userPrv });
+          // build and sign token txns
+          if (rawTokenTxn) {
+            const addressInfo = {
+              address: receiveAddress,
+              chain: 0,
+              index: i,
+            };
+            const txBuilder = getBuilder(this.getChain()).from(rawTokenTxn);
+            // Default expiry is 1 minute which is too short for recovery purposes
+            // extend the expiry to 1 day
+            txBuilder.extendValidTo(RECOVER_TRANSACTION_EXPIRY);
+            // this tx should be enough to drop into a node
+            if (!isUnsignedConsolidations) {
+              const userPrv = this.xprvToCompressedPrv(userKey.toBase58());
+              // receive address only needs to be signed by user key
+              txBuilder.sign({ key: userPrv });
+            }
+            const tx = await txBuilder.build();
+            txnsBatch.push(
+              this.formatForOfflineVault(tx, SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount, addressInfo)
+            );
           }
-          const tx = await txBuilder.build();
-          txnsBatch.push(this.formatForOfflineVault(tx, SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount, addressInfo));
         } else {
           const addressBalance = accountInfo.data[0].balance;
           const addressInfo = {
