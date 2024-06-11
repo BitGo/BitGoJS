@@ -2063,7 +2063,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         y: Buffer.from(userPrvJSON.pub).toString('hex'),
         chaincode: Buffer.from(userPrvJSON.rootChainCode).toString('hex'),
       },
-      bigSiList: [Buffer.from(userPrvJSON.bigSList[1]).toString('hex')],
       xiList: userPrvJSON.xList.slice(0, 2),
     };
     const backupKeyRetrofit: DklsTypes.RetrofitData = {
@@ -2072,7 +2071,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         y: Buffer.from(backupPrvJSON.pub).toString('hex'),
         chaincode: Buffer.from(backupPrvJSON.rootChainCode).toString('hex'),
       },
-      bigSiList: [Buffer.from(backupPrvJSON.bigSList[0]).toString('hex')],
       xiList: backupPrvJSON.xList.slice(0, 2),
     };
     const [user, backup] = await DklsUtils.generate2of2KeyShares(userKeyRetrofit, backupKeyRetrofit);

@@ -1,11 +1,12 @@
 import * as assert from 'assert';
 import * as nock from 'nock';
 import * as openpgp from 'openpgp';
+import * as crypto from 'crypto';
 import * as sinon from 'sinon';
 
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { AddKeychainOptions, BaseCoin, common, ECDSAUtils, Keychain, Wallet } from '@bitgo/sdk-core';
-import { DklsComms, DklsDkg, DklsTypes } from '@bitgo/sdk-lib-mpc';
+import { DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
 import {
   MPCv2KeyGenRound1Request,
   MPCv2KeyGenRound1Response,
@@ -16,6 +17,7 @@ import {
 } from '@bitgo/public-types';
 import { NonEmptyString } from 'io-ts-types';
 import { BitGo, BitgoGPGPublicKey } from '../../../../../../src';
+import * as v1Fixtures from './fixtures/mpcv1KeyShares';
 
 describe('TSS Ecdsa MPCv2 Utils:', async function () {
   const coinName = 'hteth';
@@ -90,6 +92,40 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
   after(function () {
     nock.cleanAll();
+  });
+
+  describe('Retrofit MPCv1 to MPCv2 keys', async function () {
+    it('should generate TSS MPCv2 keys from MPCv1 keys and sign a message', async function () {
+      const retrofitData = await tssUtils.getMpcV2RetrofitDataFromMpcV1Keys({
+        mpcv1UserKeyShare: JSON.stringify(v1Fixtures.mockUserSigningMaterial),
+        mpcv1BackupKeyShare: JSON.stringify(v1Fixtures.mockBackupSigningMaterial),
+      });
+      const bitgoRetrofitData: DklsTypes.RetrofitData = {
+        xiList: retrofitData.mpcv2UserKeyShare.xiList,
+        xShare: v1Fixtures.mockBitGoShareSigningMaterial.xShare,
+      };
+      const [user, backup, bitgo] = await DklsUtils.generateDKGKeyShares(
+        retrofitData.mpcv2UserKeyShare,
+        retrofitData.mpcv2BakcupKeyShare,
+        bitgoRetrofitData
+      );
+      assert.ok(bitgo.getKeyShare());
+      const messageToSign = crypto.createHash('sha256').update(Buffer.from('ffff', 'hex')).digest();
+      const derivationPath = 'm/999/988/0/0';
+      const signature = await DklsUtils.executeTillRound(
+        5,
+        new DklsDsg.Dsg(user.getKeyShare(), 0, derivationPath, messageToSign),
+        new DklsDsg.Dsg(backup.getKeyShare(), 1, derivationPath, messageToSign)
+      );
+      const convertedSignature = DklsUtils.verifyAndConvertDklsSignature(
+        Buffer.from('ffff', 'hex'),
+        signature as DklsTypes.DeserializedDklsSignature,
+        v1Fixtures.mockBitGoShareSigningMaterial.xShare.y + v1Fixtures.mockBitGoShareSigningMaterial.xShare.chaincode,
+        derivationPath
+      );
+      assert.ok(convertedSignature);
+      convertedSignature.split(':').length.should.equal(4);
+    });
   });
 
   describe('TSS key chains', async function () {

@@ -3,7 +3,7 @@ import { NonEmptyString } from 'io-ts-types';
 import { Buffer } from 'buffer';
 import { Hash } from 'crypto';
 import createKeccakHash from 'keccak';
-import { DklsDkg, DklsTypes, DklsComms, DklsDsg } from '@bitgo/sdk-lib-mpc';
+import { DklsDkg, DklsTypes, DklsComms, DklsDsg, bigIntToBufferBE } from '@bitgo/sdk-lib-mpc';
 
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { KeychainsTriplet } from '../../../baseCoin';
@@ -24,7 +24,7 @@ import {
 } from '@bitgo/public-types';
 import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
 import { RequestType, TSSParams, TSSParamsForMessage, TxRequest } from '../baseTypes';
-import { getTxRequest } from '../../../tss';
+import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
 import {
   getSignatureShareRoundOne,
   getSignatureShareRoundThree,
@@ -33,6 +33,7 @@ import {
   verifyBitGoMessagesAndSignaturesRoundTwo,
 } from '../../../tss/ecdsa/ecdsaMPCv2';
 import { sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
+import { Ecdsa } from '../../../../account-lib';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -366,6 +367,46 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     const keychains = this.baseCoin.keychains();
     return { ...(await keychains.add(recipientKeychainParams)), reducedEncryptedPrv: reducedEncryptedPrv };
+  }
+
+  /**
+   * Converts user and backup MPCv1 SigningMaterial to RetrofitData needed by MPCv2 DKG.
+   *
+   * @param {Object} params - MPCv1 decrypted signing material for user and backup as a json.stringify string and bitgo's Big Si.
+   * @returns {Promise<{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }>} - the retrofit data needed to start an MPCv2 DKG session.
+   */
+  async getMpcV2RetrofitDataFromMpcV1Keys(params: {
+    mpcv1UserKeyShare: string;
+    mpcv1BackupKeyShare: string;
+  }): Promise<{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }> {
+    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.mpcv1UserKeyShare);
+    const backupSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.mpcv1BackupKeyShare);
+    const mpc = new Ecdsa();
+    assert(userSigningMaterial.backupNShare, 'User MPCv1 key material should have backup NShare.');
+    assert(backupSigningMaterial.userNShare, 'Backup MPCv1 key material should have user NShare.');
+    const userCombined = mpc.keyCombine(userSigningMaterial.pShare, [
+      userSigningMaterial.backupNShare,
+      userSigningMaterial.bitgoNShare,
+    ]);
+    const backupCombined = mpc.keyCombine(backupSigningMaterial.pShare, [
+      backupSigningMaterial.userNShare,
+      backupSigningMaterial.bitgoNShare,
+    ]);
+    const xiList = [
+      Array.from(bigIntToBufferBE(BigInt(1), 32)),
+      Array.from(bigIntToBufferBE(BigInt(2), 32)),
+      Array.from(bigIntToBufferBE(BigInt(3), 32)),
+    ];
+    return {
+      mpcv2BakcupKeyShare: {
+        xShare: backupCombined.xShare,
+        xiList: xiList,
+      },
+      mpcv2UserKeyShare: {
+        xShare: userCombined.xShare,
+        xiList: xiList,
+      },
+    };
   }
 
   private async addUserKeychain(

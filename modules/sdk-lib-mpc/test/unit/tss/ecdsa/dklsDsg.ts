@@ -111,7 +111,6 @@ describe('DKLS Dsg 2x3', function () {
         y: Buffer.from(userPrvJSON.pub).toString('hex'),
         chaincode: Buffer.from(userPrvJSON.rootChainCode).toString('hex'),
       },
-      bigSiList: [Buffer.from(userPrvJSON.bigSList[1]).toString('hex')],
       xiList: userPrvJSON.xList.slice(0, 2),
     };
     const backupKeyRetrofit: RetrofitData = {
@@ -120,7 +119,6 @@ describe('DKLS Dsg 2x3', function () {
         y: Buffer.from(backupPrvJSON.pub).toString('hex'),
         chaincode: Buffer.from(backupPrvJSON.rootChainCode).toString('hex'),
       },
-      bigSiList: [Buffer.from(backupPrvJSON.bigSList[0]).toString('hex')],
       xiList: backupPrvJSON.xList.slice(0, 2),
     };
     const [user, backup] = await generate2of2KeyShares(userKeyRetrofit, backupKeyRetrofit);
