@@ -1702,6 +1702,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.AGI
   ),
   erc20(
+    'c66b9145-6624-45a2-aff0-3fdc49eb64d8',
+    'agix',
+    'SingularityNET Token',
+    8,
+    '0x5b7533812759b45c2b44c19e320ba2cd2681b542',
+    UnderlyingAsset.AGIX
+  ),
+  erc20(
     '82bf85dd-4e4d-4734-be42-a536ed35f811',
     'agld',
     'Adventure Gold',
@@ -3121,6 +3129,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.DXGT
   ),
   erc20(
+    '207950b2-3e52-4f74-b96a-b5b6441ffe5d',
+    'dxo',
+    'DeepSpace',
+    18,
+    '0x528b3e98c63ce21c6f680b713918e0f89dfae555',
+    UnderlyingAsset.DXO
+  ),
+  erc20(
     '70378eb7-02de-4e21-8115-474133d083fc',
     'dxpt',
     'Dacxi Platinum Token',
@@ -3263,6 +3279,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xf9986d445ced31882377b5d6a5f58eaea72288c3',
     UnderlyingAsset.ERD
+  ),
+  erc20(
+    'ff3bb4e9-66d4-4bb1-9df4-875d5d787e4a',
+    'emaid',
+    'MaidSafeCoin',
+    18,
+    '0x329c6e459ffa7475718838145e5e85802db2a303',
+    UnderlyingAsset.EMAID
   ),
   erc20(
     'b0fc73c1-bf01-4b48-9463-b08c291c5e0f',
@@ -3505,6 +3529,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.EXE
   ),
   erc20(
+    '562aee8f-e7c3-4ab1-b878-968669f2624e',
+    'farm',
+    'FARM Reward Token',
+    18,
+    '0xa0246c9032bc3a600820415ae600c6388619a14d',
+    UnderlyingAsset.FARM
+  ),
+  erc20(
     '6ab57a67-aa19-48f8-bd79-0d321e0d095c',
     'fei',
     'Fei Protocol',
@@ -3687,6 +3719,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x6bea7cfef803d1e3d5f7c0103f7ded065644e197',
     UnderlyingAsset.GAMMA
+  ),
+  erc20(
+    'c2eff11c-aa3b-4a08-9600-86e102cf1489',
+    'gas',
+    'Gas DAO',
+    18,
+    '0x6bba316c48b49bd1eac44573c5c871ff02958469',
+    UnderlyingAsset.GAS
   ),
   erc20(
     '3c5b424e-5bac-435f-a42e-4da7c8d6ecbc',
@@ -4346,6 +4386,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.KP3R
   ),
   erc20(
+    'cbcebae0-e2a8-4ebe-8da7-89983f04f917',
+    'krom',
+    'Kromatika',
+    18,
+    '0x3af33bef05c2dcb3c7288b77fe1c8d2aeba4d789',
+    UnderlyingAsset.KROM
+  ),
+  erc20(
     'd9a515fb-3c69-4633-876d-f236f36c55d4',
     'kze',
     'Almeela',
@@ -4633,6 +4681,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x2810ff4092864f4b9259d05dd6da829d61bdcdab',
     UnderlyingAsset.MDFC
+  ),
+  erc20(
+    '597b14d7-83a5-4d53-b757-f80e3e99d9a2',
+    'mdt',
+    'Measurable Data Token',
+    18,
+    '0x814e0908b12a99fecf5bc101bb5d0b8b5cdf7d26',
+    UnderlyingAsset.MDT
   ),
   erc20(
     'dd51bf63-f120-46d8-b56d-279a2c3e2651',
@@ -5916,6 +5972,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SBC
   ),
   erc20(
+    '6327036e-357e-4d15-a01e-966215fc03d2',
+    'sfi',
+    'Spice',
+    18,
+    '0xb753428af26e81097e7fd17f40c88aaa3e04902c',
+    UnderlyingAsset.SFI
+  ),
+  erc20(
     '957ee557-c800-4846-bc18-a9d483a0d784',
     'sga',
     'Saga',
@@ -6806,6 +6870,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VDX
   ),
   erc20(
+    '484816ec-2954-4c05-bd33-2ec940c08260',
+    'vec',
+    'Vector',
+    9,
+    '0x1bb9b64927e0c5e207c9db4093b3738eef5d8447',
+    UnderlyingAsset.VEC
+  ),
+  erc20(
     'c0fe9fe3-a242-452e-95e2-56ba38a40d56',
     'vega',
     'Vega Protocol',
@@ -6828,6 +6900,14 @@ export const coins = CoinMap.fromCoins([
     8,
     '0x3c4b6e6e1ea3d4863700d7f76b36b7f3d3f13e3d',
     UnderlyingAsset.VGX
+  ),
+  erc20(
+    'eb33dfaa-0dd8-45c4-91a3-5d4b16016ceb',
+    'vib',
+    'VIB',
+    18,
+    '0x2c974b2d0ba1716e644c1fc59982a89ddd2ff724',
+    UnderlyingAsset.VIB
   ),
   erc20(
     '2bea7a06-1fcb-4936-bd4c-5f175a8bf9ff',
@@ -8616,6 +8696,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.DAOLANG
   ),
   erc20(
+    '70f9acdf-324d-4b72-b249-5d01acca6a00',
+    'dar',
+    'Dalarnia',
+    6,
+    '0x081131434f93063751813c619ecca9c4dc7862a3',
+    UnderlyingAsset.DAR
+  ),
+  erc20(
     '697a74c7-5aaa-484a-b046-ddf501dba213',
     'depay',
     'DePay',
@@ -9032,6 +9120,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.HEDGESHIT
   ),
   erc20(
+    'cd51cd62-1909-49f7-9f07-9f6af36bccfc',
+    'hex',
+    'HEX',
+    8,
+    '0x2b591e99afe9f32eaa6214f7b7629768c40eeb39',
+    UnderlyingAsset.HEX
+  ),
+  erc20(
     'a4334b0a-f28c-4e7d-9f36-2c2f239ad7ac',
     'hit',
     'HitchainCoin',
@@ -9158,6 +9254,14 @@ export const coins = CoinMap.fromCoins([
     4,
     '0xdfe691f37b6264a90ff507eb359c45d55037951c',
     UnderlyingAsset.KARMA
+  ),
+  erc20(
+    '9d42fc1c-27f9-4d20-bab9-6ffdc8087fd2',
+    'kas',
+    'Kaspa',
+    8,
+    '0x112b08621e27e10773ec95d250604a041f36c582',
+    UnderlyingAsset.KAS
   ),
   erc20(
     'bf153900-e902-41c2-a774-3609172928a9',
@@ -9520,6 +9624,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.NOTE
   ),
   erc20(
+    'a39b01d9-584f-4912-9d08-32ddcc3dd9c0',
+    'nuls',
+    'Nuls',
+    8,
+    '0xa2791bdf2d5055cda4d46ec17f9f429568275047',
+    UnderlyingAsset.NULS
+  ),
+  erc20(
     'b46508f0-6b95-47f6-93d3-afc6d7fb25bf',
     'nuts',
     'NutsDAO',
@@ -9840,6 +9952,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.RND
   ),
   erc20(
+    '82982f0a-743f-40da-9f5a-c1ece6af7a4c',
+    'rune',
+    'THORChain ETH.RUNE',
+    18,
+    '0x3155ba85d5f96b2d030a4966af206230e46849cb',
+    UnderlyingAsset.RUNE
+  ),
+  erc20(
     '5e2c5e7d-ee76-4a1f-8d2f-2825c65df156',
     'ryoshi',
     'Ryoshis Vision',
@@ -10086,6 +10206,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x073af3f70516380654ba7c5812c4ab0255f081bc',
     UnderlyingAsset.TRUMPWIN
+  ),
+  erc20(
+    '84d9310d-6b1f-46ca-b6d7-7675161c5d14',
+    'trx-erc20',
+    'Tron (ERC20 token)',
+    6,
+    '0x50327c6c5a14dcade707abad2e27eb517df87ab5',
+    UnderlyingAsset['TRX-ERC20']
   ),
   erc20(
     'e399738e-6443-448c-9df7-3d136fd573d3',
@@ -11368,6 +11496,22 @@ export const coins = CoinMap.fromCoins([
     18,
     'TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9',
     UnderlyingAsset['trx:jst']
+  ),
+  tronToken(
+    'c2607e31-8da7-4b73-bbf3-f9f0209b73eb',
+    'trx:tusd',
+    'TrueUSD',
+    18,
+    'TUpMhErZL2fhh4sVNULAbNKLokS4GjC1F4',
+    UnderlyingAsset['trx:tusd']
+  ),
+  tronToken(
+    '649c3a89-6064-4131-8eb7-087d65207cdc',
+    'trx:win',
+    'WINkLink',
+    6,
+    'TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7',
+    UnderlyingAsset['trx:win']
   ),
   algoToken(
     'bf444e89-e762-48a9-a27d-8efa2aed7867',
@@ -15574,6 +15718,110 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xb0ffa8000886e57f86dd5264b9582b2ad87b2b91',
     UnderlyingAsset['arbeth:w']
+  ),
+  arbethErc20(
+    'a7137632-43d0-4bfb-a0d4-252244d00ad6',
+    'arbeth:comp',
+    'Compound',
+    18,
+    '0x354a6da3fcde098f8389cad84b0182725c6c91de',
+    UnderlyingAsset['arbeth:comp']
+  ),
+  arbethErc20(
+    '12483bbb-b76c-4e77-ba8f-2a9fcb68ddd9',
+    'arbeth:coti',
+    'COTI Token',
+    18,
+    '0x6fe14d3cc2f7bddffba5cdb3bbe7467dd81ea101',
+    UnderlyingAsset['arbeth:coti']
+  ),
+  arbethErc20(
+    'af28367c-f1e3-4b4a-84ed-a23d71e72314',
+    'arbeth:gno',
+    'Gnosis Token',
+    18,
+    '0xa0b862f60edef4452f25b4160f177db44deb6cf1',
+    UnderlyingAsset['arbeth:gno']
+  ),
+  arbethErc20(
+    '45853143-95ab-4ebf-a9f9-493625216d15',
+    'arbeth:gohm',
+    'Governance OHM',
+    18,
+    '0x8d9ba570d6cb60c7e3e0f31343efe75ab8e65fb1',
+    UnderlyingAsset['arbeth:gohm']
+  ),
+  arbethErc20(
+    'e118fa19-9f3d-4297-8983-12d1e43a14ab',
+    'arbeth:grt',
+    'Graph Token',
+    18,
+    '0x9623063377ad1b27544c965ccd7342f7ea7e88c7',
+    UnderlyingAsset['arbeth:grt']
+  ),
+  arbethErc20(
+    '77d73c2e-f9be-4c66-96e3-76c4169d55d7',
+    'arbeth:knc',
+    'Kyber Network Crystal v2',
+    18,
+    '0xe4dddfe67e7164b0fe14e218d80dc4c08edc01cb',
+    UnderlyingAsset['arbeth:knc']
+  ),
+  arbethErc20(
+    '230c1576-d591-4123-bac0-756eb9446fbd',
+    'arbeth:trb',
+    'Tellor Tributes',
+    18,
+    '0xd58d345fd9c82262e087d2d0607624b410d88242',
+    UnderlyingAsset['arbeth:trb']
+  ),
+  arbethErc20(
+    '4561ae66-de18-407b-966b-ae9681dec318',
+    'arbeth:tusd',
+    'TrueUSD',
+    18,
+    '0x4d15a3a2286d883af0aa1b3f21367843fac63e07',
+    UnderlyingAsset['arbeth:tusd']
+  ),
+  arbethErc20(
+    'eb721759-6da6-46c3-b0d2-a7e9d939c527',
+    'arbeth:uma',
+    'UMA Voting Token v1',
+    18,
+    '0xd693ec944a85eeca4247ec1c3b130dca9b0c3b22',
+    UnderlyingAsset['arbeth:uma']
+  ),
+  arbethErc20(
+    'df8223b3-f766-412a-bb59-769e4e47138d',
+    'arbeth:uni',
+    'Uniswap',
+    18,
+    '0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0',
+    UnderlyingAsset['arbeth:uni']
+  ),
+  arbethErc20(
+    'a87e11ae-51cd-406c-b87b-98abb6ae3386',
+    'arbeth:weth',
+    'Wrapped Ether',
+    18,
+    '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+    UnderlyingAsset['arbeth:weth']
+  ),
+  arbethErc20(
+    '769735f8-8788-4d11-98ef-9723e04eee85',
+    'arbeth:woo',
+    'Woo',
+    18,
+    '0xcafcd85d8ca7ad1e1c6f82f651fa15e33aefd07b',
+    UnderlyingAsset['arbeth:woo']
+  ),
+  arbethErc20(
+    'c8dbdec7-124b-41a0-98a2-88949dbefa72',
+    'arbeth:yfi',
+    'yearn.finance',
+    18,
+    '0x82e3a8f066a6989666b031d916c43672085b1582',
+    UnderlyingAsset['arbeth:yfi']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
