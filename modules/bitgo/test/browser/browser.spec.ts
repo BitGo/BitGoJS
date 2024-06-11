@@ -13,6 +13,8 @@ describe('Coins', () => {
     const excludedKeys = {
       AbstractUtxoCoin: 1,
       Erc20Token: 1,
+      EthLikeCoin: 1,
+      TethLikeCoin: 1,
       OfcToken: 1,
       StellarToken: 1,
       CeloToken: 1,

@@ -111,6 +111,9 @@
       "path": "../sdk-coin-ethw"
     },
     {
+      "path": "../sdk-coin-ethlike"
+    },
+    {
       "path": "../sdk-coin-hash"
     },
     {
