@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.37.0...@bitgo/utxo-lib@9.38.0) (2024-06-11)
+
+### Features
+
+- **utxo-lib:** is psbt-lite ([fc0642a](https://github.com/BitGo/BitGoJS/commit/fc0642a5085872514f9e6c0366a0264335afa810))
+
 # [9.37.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.36.1...@bitgo/utxo-lib@9.37.0) (2024-05-08)
 
 ### Features

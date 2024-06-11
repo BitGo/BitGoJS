@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.8.0...@bitgo/sdk-lib-mpc@9.8.1) (2024-06-11)
+
+### Bug Fixes
+
+- **sdk-lib-mpc:** improve mpcv2 error handling ([00a57ad](https://github.com/BitGo/BitGoJS/commit/00a57add1f505075d58acb13e8e10465b26b699b))
+- **sdk-lib-mpc:** replace @noble/secp256k1 with @noble/curves ([c89064d](https://github.com/BitGo/BitGoJS/commit/c89064de0ddbe097b5ccb6caba33680da75980d9))
+
 # [9.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.7.0...@bitgo/sdk-lib-mpc@9.8.0) (2024-05-22)
 
 ### Features

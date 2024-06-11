@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.16.0...@bitgo/statics@48.17.0) (2024-06-11)
+
+### Bug Fixes
+
+- **abstract-eth:** use correct derivation path in wrw recover function ([5018147](https://github.com/BitGo/BitGoJS/commit/50181478d487c8871f94da2fb92e7327098b2370))
+
+### Features
+
+- **statics:** add support for Optimism Ethereum (L2 Chain) ([866edb5](https://github.com/BitGo/BitGoJS/commit/866edb51a64dfa32011297452c39e0b163f9f665))
+- **statics:** add usde token ([dfc83c6](https://github.com/BitGo/BitGoJS/commit/dfc83c6e2826c707c6cc2fd4a29945ca367afeaa))
+- **statics:** added ofc support for Polygon tokens ([baa8fbd](https://github.com/BitGo/BitGoJS/commit/baa8fbd9d269f4eb103f746a5b7afb0402102332))
+
 # [48.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.15.0...@bitgo/statics@48.16.0) (2024-06-05)
 
 ### Features
