@@ -71,6 +71,7 @@
     "@bitgo/sdk-coin-eos": "^2.1.10",
     "@bitgo/sdk-coin-etc": "^2.0.17",
     "@bitgo/sdk-coin-eth": "^24.2.6",
+    "@bitgo/sdk-coin-ethlike": "^1.0.0",
     "@bitgo/sdk-coin-eth2": "^3.0.16",
     "@bitgo/sdk-coin-ethw": "^20.0.17",
     "@bitgo/sdk-coin-hash": "^2.0.17",

@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import EthereumCommon from '@ethereumjs/common';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
@@ -223,5 +224,5 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected abstract getTransactionBuilder(): TransactionBuilder;
+  protected abstract getTransactionBuilder(common?: EthereumCommon): TransactionBuilder;
 }

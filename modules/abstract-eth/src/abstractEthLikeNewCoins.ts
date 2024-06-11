@@ -149,6 +149,7 @@ export interface SignFinalOptions {
   walletContractAddress?: string;
   prv: string;
   recipients?: Recipient[];
+  common?: EthLikeCommon.default;
 }
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions, SignFinalOptions {
@@ -158,6 +159,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions, Sign
   gasLimit?: number;
   gasPrice?: number;
   custodianTransactionId?: string;
+  common?: EthLikeCommon.default;
 }
 
 export type SignedTransaction = HalfSignedTransaction | FullySignedTransaction;
@@ -215,6 +217,7 @@ export interface RecoverOptions {
   bitgoDestinationAddress?: string;
   tokenContractAddress?: string;
   intendedChain?: string;
+  common?: EthLikeCommon.default;
 }
 
 export type GetBatchExecutionInfoRT = {
@@ -963,7 +966,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (_.isUndefined(signingKey)) {
       throw new Error('missing private key');
     }
-    const txBuilder = this.getTransactionBuilder();
+    const txBuilder = this.getTransactionBuilder(params.common);
     try {
       txBuilder.from(params.txPrebuild.halfSigned?.txHex);
     } catch (e) {
@@ -986,7 +989,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       // In this case when we're doing the second (final) signature, the logic is different.
       return await this.signFinalEthLike(params);
     }
-    const txBuilder = this.getTransactionBuilder();
+    const txBuilder = this.getTransactionBuilder(params.common);
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder
       .transfer()
@@ -1404,7 +1407,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       gasLimit: gasLimit.toString(10),
     };
 
-    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+    const txBuilder = this.getTransactionBuilder(params.common) as TransactionBuilder;
     txBuilder.counter(backupKeyNonce);
     txBuilder.contract(params.walletContractAddress);
     let txFee;
@@ -1585,7 +1588,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const network = this.getNetwork();
     const batcherContractAddress = network?.batcherContractAddress as string;
 
-    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+    const txBuilder = this.getTransactionBuilder(params.common) as TransactionBuilder;
     txBuilder.counter(bitgoFeeAddressNonce);
     txBuilder.contract(walletContractAddress);
     let txFee;
@@ -1734,7 +1737,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       isEvmBasedCrossChainRecovery: true,
     };
 
-    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
+    const txBuilder = this.getTransactionBuilder(params.common) as TransactionBuilder;
     txBuilder.counter(bitgoFeeAddressNonce);
     txBuilder.contract(params.walletContractAddress as string);
     let txFee;
