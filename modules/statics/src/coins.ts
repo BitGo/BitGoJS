@@ -10336,6 +10336,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ZKS
   ),
   erc20(
+    '946ce16a-d989-4931-a7e2-8ef5b7578e2d',
+    'zro',
+    'LayerZero',
+    18,
+    '0x6985884c4392d348587b19cb9eaaf157f13271cd',
+    UnderlyingAsset.ZRO
+  ),
+  erc20(
     'faf84fca-7709-48e2-94c3-9d1a2b8a9893',
     'zro-0x320',
     'LayerZero',
