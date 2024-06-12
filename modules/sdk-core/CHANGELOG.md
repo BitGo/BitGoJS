@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.16.0...@bitgo/sdk-core@27.0.0) (2024-06-11)
+
+### Features
+
+- encrypt and return backup key by default ([f80d834](https://github.com/BitGo/BitGoJS/commit/f80d834984598eebfdcfa1b8252a898b30fbceec))
+- **sdk-core:** added reqId propagation to ecdsa methods ([35d6beb](https://github.com/BitGo/BitGoJS/commit/35d6beb5c1cfc678eb451dd09203d9348dfaea49))
+- **sdk-core:** added unit tests ([f77473f](https://github.com/BitGo/BitGoJS/commit/f77473fe3fb7536842df67226fbffb0d8aca1272))
+- **sdk-core:** propagate reqId for prebuildTransaction downstream methods ([789d305](https://github.com/BitGo/BitGoJS/commit/789d3057cb519198e38530e5ef15d2b55b0305da))
+- **sdk-core:** use new sign and send apis ([4bf737c](https://github.com/BitGo/BitGoJS/commit/4bf737c7cc357c9f46b655fa9f056ba7a29bfa9d))
+
+### BREAKING CHANGES
+
+- changes the default behavior of generateWallet
+
 # [26.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.15.0...@bitgo/sdk-core@26.16.0) (2024-06-05)
 
 ### Bug Fixes

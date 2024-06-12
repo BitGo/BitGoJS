@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [21.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.5.2...@bitgo/abstract-eth@21.5.3) (2024-06-11)
+
+### Bug Fixes
+
+- **abstract-eth:** use correct derivation path in wrw recover function ([5018147](https://github.com/BitGo/BitGoJS/commit/50181478d487c8871f94da2fb92e7327098b2370))
+
 ## [21.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.5.1...@bitgo/abstract-eth@21.5.2) (2024-06-05)
 
 **Note:** Version bump only for package @bitgo/abstract-eth
