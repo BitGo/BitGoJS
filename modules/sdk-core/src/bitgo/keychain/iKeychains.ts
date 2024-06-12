@@ -1,5 +1,5 @@
 import { IRequestTracer } from '../../api';
-import { KeyPair, KeychainsTriplet } from '../baseCoin';
+import { KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BackupProvider, IWallet } from '../wallet';
 import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
@@ -141,12 +141,31 @@ export interface CreateBitGoOptions {
   isDistributedCustody?: boolean;
 }
 
+export type DecryptedRetrofitPayload = {
+  decryptedUserKey: string;
+  decryptedBackupKey: string;
+  walletId: string;
+};
+
 export interface CreateMpcOptions {
   multisigType: 'onchain' | 'tss' | 'blsdkg';
   passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   backupProvider?: BackupProvider;
+  retrofit?: DecryptedRetrofitPayload;
+}
+
+export interface RecreateMpcOptions extends Omit<CreateMpcOptions, 'retrofit' | 'multisigType'> {
+  coin: string;
+  walletId: string;
+  passphrase: string;
+  otp: string;
+  encryptedMaterial: {
+    encryptedUserKey: string;
+    encryptedBackupKey: string;
+    encryptedWalletPassphrase: string;
+  };
 }
 
 export interface GetKeysForSigningOptions {
@@ -186,6 +205,7 @@ export interface IKeychains {
   createBackup(params?: CreateBackupOptions): Promise<Keychain>;
   getKeysForSigning(params?: GetKeysForSigningOptions): Promise<Keychain[]>;
   createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet>;
+  recreateMpc(params: RecreateMpcOptions): Promise<KeychainsTriplet>;
   createTssBitGoKeyFromOvcShares(ovcOutput: OvcToBitGoJSON): Promise<BitGoKeyFromOvcShares>;
   createUserKeychain(userPassword: string): Promise<Keychain>;
 }
