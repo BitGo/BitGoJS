@@ -23,8 +23,10 @@ export class MempoolApi extends BaseApi {
   async getRecoveryFeePerBytes(): Promise<number> {
     const res = await this.get<any>('/fees/recommended');
     return res.map((body) => {
-      if (body.publicFeeData && body.publicFeeData.hourFee && _.isInteger(body.publicFeeData.hourFee)) {
-        return body.publicFeeData.hourFee;
+      if (body.fastestFee && _.isInteger(body.fastestFee)) {
+        return body.fastestFee;
+      } else if (body.hourFee && _.isInteger(body.hourFee)) {
+        return body.hourFee;
       }
       throw new Error('unexpected response');
     });
