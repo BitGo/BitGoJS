@@ -814,7 +814,8 @@ describe('ALGO:', function () {
         const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
         const txBuilder = factory.from(recovery.tx);
         const tx = await txBuilder.build();
-        tx.toBroadcastFormat().should.deepEqual(recovery.tx);
+        const txBroadcastFormat = Buffer.from(tx.toBroadcastFormat()).toString('base64');
+        txBroadcastFormat.should.deepEqual(recovery.tx);
         const txJson = tx.toJson();
         txJson.amount.should.equal(expectedAmount);
         txJson.to.should.equal(recoveryDestination);
@@ -1077,7 +1078,8 @@ describe('ALGO:', function () {
         const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
         const txBuilder = factory.from(recovery.tx);
         const tx = await txBuilder.build();
-        tx.toBroadcastFormat().should.deepEqual(recovery.tx);
+        const txBroadcastFormat = Buffer.from(tx.toBroadcastFormat()).toString('base64');
+        txBroadcastFormat.should.deepEqual(recovery.tx);
         const txJson = tx.toJson();
         txJson.amount.should.equal(expectedAmount);
         txJson.to.should.equal(recoveryDestination);

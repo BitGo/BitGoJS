@@ -763,7 +763,7 @@ export class Algo extends BaseCoin {
     const txJson = tx.toJson() as TxData;
 
     return {
-      tx: tx.toBroadcastFormat(),
+      tx: Buffer.from(tx.toBroadcastFormat()).toString('base64'),
       id: txJson.id,
       coin: this.getChain(),
       fee: txJson.fee,
