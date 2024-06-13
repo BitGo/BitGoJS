@@ -1591,6 +1591,7 @@ export enum UnderlyingAsset {
   ZLW = 'zlw',
   ZMT = 'zmt',
   ZOOM = 'zoom',
+  ZRO = 'zro',
   'ZRO-0x320' = 'zro-0x320',
   'ZRO-0xFCF' = 'zro-0xfcf',
   'ZRO-0xE5C' = 'zro-0xe5c',
