@@ -12864,7 +12864,7 @@ export const coins = CoinMap.fromCoins([
     'avaxc:xsgd',
     'XSGD',
     6,
-    '0xcff17e464626adef615ffc1ecdb1661f1ed1ca16',
+    '0xb2f85b7ab3c2b6f62df06de6ae7d09c010a5096e',
     UnderlyingAsset['avaxc:xsgd']
   ),
   avaxErc20(
