@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.17.0...@bitgo/statics@48.18.0) (2024-06-14)
+
+### Bug Fixes
+
+- **statics:** decimalPlaces for XLM tokens ([405128e](https://github.com/BitGo/BitGoJS/commit/405128e804eaf8c9a079639ac81d6fafa4ae94ad))
+- **statics:** update contract address for xsgd ([4916b7f](https://github.com/BitGo/BitGoJS/commit/4916b7f28edb991bcf54058d13a59a5d3d6f57e4))
+
+### Features
+
+- **sdk-coin-ethlike:** add new eth like coin packages ([ba305cb](https://github.com/BitGo/BitGoJS/commit/ba305cb7f7b564d499d0f931f50919058e85652f))
+- **statics:** add new token zro ([7a4669a](https://github.com/BitGo/BitGoJS/commit/7a4669a302e0f608b125caa7029f9ff470f5d17b))
+- **statics:** add USMS Tokens part 1 ([24ce642](https://github.com/BitGo/BitGoJS/commit/24ce642f0fec193d3e291a963abf6c2242a7c671))
+
 # [48.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.16.0...@bitgo/statics@48.17.0) (2024-06-11)
 
 ### Bug Fixes

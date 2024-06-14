@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.0.0...@bitgo/sdk-core@27.1.0) (2024-06-14)
+
+### Features
+
+- **sdk-coin-ethlike:** add new eth like coin packages ([ba305cb](https://github.com/BitGo/BitGoJS/commit/ba305cb7f7b564d499d0f931f50919058e85652f))
+- **sdk-core:** added propagation of reqId to sendMany ([411efa7](https://github.com/BitGo/BitGoJS/commit/411efa76673fa1fb4b3e24fef4a6bf10bbd63af8))
+
 # [27.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@26.16.0...@bitgo/sdk-core@27.0.0) (2024-06-11)
 
 ### Features

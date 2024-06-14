@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.1.16...@bitgo/sdk-coin-algo@2.1.17) (2024-06-14)
+
+### Bug Fixes
+
+- **sdk-coin-algo:** return non-bitgo recovery tx in base64 ([c4df3ab](https://github.com/BitGo/BitGoJS/commit/c4df3ab0e43ec47395937161c7e65cba3c17dc3a))
+
 ## [2.1.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.1.15...@bitgo/sdk-coin-algo@2.1.16) (2024-06-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-algo

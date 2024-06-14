@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.6.1...@bitgo/abstract-utxo@8.7.0) (2024-06-14)
+
+### Bug Fixes
+
+- correctly parse the response of `/fees/recommended` from Mempool ([e7455a8](https://github.com/BitGo/BitGoJS/commit/e7455a8057a6ece91b73fe373ecd1742282a8c28))
+
+### Features
+
+- add `recover` function for v1 btc wallets ([16e3b25](https://github.com/BitGo/BitGoJS/commit/16e3b2550baab6d15795ee8314935ee3f13c5af1))
+
 ## [8.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.6.0...@bitgo/abstract-utxo@8.6.1) (2024-06-11)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo
