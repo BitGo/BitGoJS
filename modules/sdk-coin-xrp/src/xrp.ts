@@ -563,7 +563,9 @@ export class Xrp extends BaseCoin {
     }
 
     if (recoverableBalance.toNumber() <= 0) {
-      throw new Error('Quantity of XRP to recover must be greater than 0.');
+      throw new Error(
+        `Quantity of XRP to recover must be greater than 0. Current balance: ${balance.toNumber()}, blockchain reserve: ${reserve.toNumber()}, spendable balance: ${recoverableBalance.toNumber()}`
+      );
     }
 
     const transaction = {
