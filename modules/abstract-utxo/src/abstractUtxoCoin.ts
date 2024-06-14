@@ -18,6 +18,8 @@ import {
   RecoveryProvider,
   backupKeyRecovery,
   RecoverParams,
+  V1RecoverParams,
+  v1BackupKeyRecovery,
 } from './recovery';
 
 import {
@@ -1408,6 +1410,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   async recover(params: RecoverParams): ReturnType<typeof backupKeyRecovery> {
     return backupKeyRecovery(this, this.bitgo, params);
+  }
+
+  async recoverV1(params: V1RecoverParams): ReturnType<typeof v1BackupKeyRecovery> {
+    return v1BackupKeyRecovery(this, this.bitgo, params);
   }
 
   /**

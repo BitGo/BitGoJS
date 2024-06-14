@@ -61,6 +61,7 @@ interface BitGoUnspent {
 //   feeSingleKeySourceAddress: Use this single key address to pay fees
 //   feeSingleKeyWIF: Use the address based on this private key to pay fees
 //   unspentsFetchParams: Extra parameters to use for fetching unspents for this transaction
+//   unspents: array of unspent objects to use while constructing the transaction instead of fetching from the API
 exports.createTransaction = function (params) {
   const minConfirms = params.minConfirms || 0;
   const validate = params.validate === undefined ? true : params.validate;

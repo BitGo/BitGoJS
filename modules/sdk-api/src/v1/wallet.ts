@@ -12,13 +12,21 @@
 //
 
 import { VirtualSizes } from '@bitgo/unspents';
+import * as assert from 'assert';
 
 import { bip32 } from '@bitgo/utxo-lib';
 const TransactionBuilder = require('./transactionBuilder');
 import * as utxolib from '@bitgo/utxo-lib';
 const PendingApproval = require('./pendingapproval');
 
-import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
+import {
+  common,
+  ErrorNoInputToRecover,
+  getNetwork,
+  getSharedSecret,
+  makeRandomKey,
+  sanitizeLegacyPath,
+} from '@bitgo/sdk-core';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
@@ -1703,7 +1711,6 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
   }
 
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
-
   if ((params.walletPassphrase && params.xprv) || (!params.walletPassphrase && !params.xprv)) {
     throw new Error('must provide exactly one of xprv or walletPassphrase');
   }
@@ -2420,6 +2427,70 @@ Wallet.prototype.getBitGoFee = function (params, callback) {
     throw new Error('invalid instant argument');
   }
   return Bluebird.resolve(this.bitgo.get(this.url('/billing/fee')).query(params).result()).nodeify(callback);
+};
+
+/*
+ * @params
+ *  walletPassphrase: passphrase of wallet used to decrypt the encrypted keys
+ *  unspents: array of unspents to recover
+ *  recoveryDestination: destination address to recover funds to
+ *  feeRate: fee rate to use for the recovery transaction
+ *  userKey: encrypted user key
+ *  backupKey: encrypted backup key
+ * */
+Wallet.prototype.recover = async function (params) {
+  if (_.isUndefined(params.walletPassphrase)) {
+    throw new Error('missing walletPassphrase');
+  }
+  if (_.isUndefined(params.unspents)) {
+    throw new Error('missing unspents');
+  }
+  if (_.isUndefined(params.recoveryDestination)) {
+    throw new Error('invalid recoveryDestination');
+  }
+  if (_.isUndefined(params.feeRate)) {
+    throw new Error('invalid feeRate');
+  }
+  if (_.isUndefined(params.userKey)) {
+    throw new Error('invalid userKey');
+  }
+  if (_.isUndefined(params.backupKey)) {
+    throw new Error('invalid backupKey');
+  }
+
+  const totalInputAmount = BigInt(utxolib.bitgo.unspentSum(params.unspents));
+  if (totalInputAmount <= BigInt(0)) {
+    throw new ErrorNoInputToRecover();
+  }
+
+  const outputSize = VirtualSizes.txP2wshOutputSize;
+  const approximateSize =
+    VirtualSizes.txSegOverheadVSize + outputSize + VirtualSizes.txP2shInputSize * params.unspents.length;
+  const approximateTxFee = BigInt(approximateSize * params.feeRate);
+  const recoveryAmount = totalInputAmount - approximateTxFee;
+  const recipients = [{ address: params.recoveryDestination, amount: Number(recoveryAmount) }];
+
+  const unsignedTx = await this.createTransaction({
+    unspents: params.unspents,
+    recipients,
+    fee: Number(approximateTxFee),
+  });
+
+  const parsedUnsignedTx = utxolib.bitgo.createTransactionFromHex(unsignedTx.transactionHex, utxolib.networks.bitcoin);
+  assert(parsedUnsignedTx.ins.length === params.unspents.length);
+  assert(parsedUnsignedTx.outs.length === 1);
+  assert(_.sumBy(params.unspents, 'value') - _.sumBy(parsedUnsignedTx.outs, 'value') === Number(approximateTxFee));
+
+  const plainUserKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: params.userKey });
+  const halfSignedTx = await this.signTransaction({ ...unsignedTx, signingKey: plainUserKey });
+
+  const plainBackupKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: params.backupKey });
+  const fullSignedTx = await this.signTransaction({
+    ...unsignedTx,
+    transactionHex: halfSignedTx.tx,
+    signingKey: plainBackupKey,
+  });
+  return fullSignedTx.tx;
 };
 
 export = Wallet;

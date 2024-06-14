@@ -1,14 +1,26 @@
-import { BitGo } from '../../../../modules/bitgo';
+import { BitGo, BitGoAPI } from '../../../../modules/bitgo';
+import { Tbtc } from '@bitgo/sdk-coin-btc';
 
 const env = 'test';
 const bitgo = new BitGo({ env });
 
-const accessToken = '<user-access-token-here>';
-bitgo.authenticateWithAccessToken({ accessToken });
+const accessToken = '';
+const walletId = '';
+const walletPassphrase = '';
+const userKey = '';
+const backupKey = '';
+
+const sdk = new BitGoAPI({ env });
+sdk.register('tbtc', Tbtc.createInstance);
+sdk.authenticateWithAccessToken({ accessToken });
 
 export const legacySafeConfig = {
   env,
   coin: env === 'test' ? 'tbtc' : 'btc',
   bitgo,
-  userPassword: '<wallet-password-here>',
+  sdk,
+  userPassword: walletPassphrase,
+  walletId: walletId,
+  userKey,
+  backupKey,
 };
