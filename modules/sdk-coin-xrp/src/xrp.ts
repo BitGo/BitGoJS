@@ -538,7 +538,7 @@ export class Xrp extends BaseCoin {
     }
 
     // recover the funds
-    const reserve = baseReserve.plus(reserveDelta.times(5));
+    const reserve = baseReserve.plus(reserveDelta);
     const recoverableBalance = balance.minus(reserve);
 
     const rawDestination = params.recoveryDestination;
@@ -560,6 +560,12 @@ export class Xrp extends BaseCoin {
       if (Number.isInteger(parsedTag)) {
         destinationTag = parsedTag;
       }
+    }
+
+    if (recoverableBalance.toNumber() <= 0) {
+      throw new Error(
+        `Quantity of XRP to recover must be greater than 0. Current balance: ${balance.toNumber()}, blockchain reserve: ${reserve.toNumber()}, spendable balance: ${recoverableBalance.toNumber()}`
+      );
     }
 
     const transaction = {
