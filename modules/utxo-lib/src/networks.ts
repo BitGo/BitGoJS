@@ -432,6 +432,9 @@ export function getTestnet(network: Network): Network | undefined {
   if (testnets.length === 1) {
     return testnets[0];
   }
+  if (network === networks.bitcoin) {
+    return networks.testnet;
+  }
   throw new Error(`more than one testnet for ${getNetworkName(network)}`);
 }
 
