@@ -38,6 +38,7 @@ const coins = {
 export type NetworkName =
   | 'bitcoin'
   | 'testnet'
+  | 'bitcoinPublicSignet'
   | 'bitcoincash'
   | 'bitcoincashTestnet'
   | 'ecash'
@@ -108,6 +109,15 @@ export const networks: Record<NetworkName, Network> = {
     coin: coins.BTC,
   },
   testnet: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bech32: 'tb',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    wif: 0xef,
+    coin: coins.BTC,
+  },
+  bitcoinPublicSignet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bech32: 'tb',
     bip32: getDefaultBip32Testnet(),
@@ -330,6 +340,7 @@ export function getMainnet(network: Network): Network {
   switch (network) {
     case networks.bitcoin:
     case networks.testnet:
+    case networks.bitcoinPublicSignet:
       return networks.bitcoin;
 
     case networks.bitcoincash:
