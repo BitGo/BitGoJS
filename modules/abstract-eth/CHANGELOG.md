@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.5.3...@bitgo/abstract-eth@21.6.0) (2024-06-14)
+
+### Features
+
+- **sdk-coin-ethlike:** add new eth like coin packages ([ba305cb](https://github.com/BitGo/BitGoJS/commit/ba305cb7f7b564d499d0f931f50919058e85652f))
+
 ## [21.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.5.2...@bitgo/abstract-eth@21.5.3) (2024-06-11)
 
 ### Bug Fixes

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@2.0.18...@bitgo/sdk-coin-xrp@2.1.0) (2024-06-14)
+
+### Bug Fixes
+
+- **sdk-coin-xrp:** better error handling ([dcf7de4](https://github.com/BitGo/BitGoJS/commit/dcf7de4e0bfed6f3af2f87f8215e18c130cb8107))
+
+### Features
+
+- **sdk-coin-xrp:** removing padding from recovery ([ec58694](https://github.com/BitGo/BitGoJS/commit/ec58694ac5ad83de40b4d8bc1edc1dfa96434a95))
+
 ## [2.0.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@2.0.17...@bitgo/sdk-coin-xrp@2.0.18) (2024-06-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

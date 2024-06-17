@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.49.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.48.1...@bitgo/sdk-api@1.49.0) (2024-06-14)
+
+### Features
+
+- add `recover` function for v1 btc wallets ([16e3b25](https://github.com/BitGo/BitGoJS/commit/16e3b2550baab6d15795ee8314935ee3f13c5af1))
+
 ## [1.48.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.48.0...@bitgo/sdk-api@1.48.1) (2024-06-11)
 
 **Note:** Version bump only for package @bitgo/sdk-api

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.11.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.10.0...bitgo@38.11.0) (2024-06-14)
+
+### Bug Fixes
+
+- **sdk-coin-xrp:** better error handling ([dcf7de4](https://github.com/BitGo/BitGoJS/commit/dcf7de4e0bfed6f3af2f87f8215e18c130cb8107))
+
+### Features
+
+- **sdk-coin-ethlike:** add new eth like coin packages ([ba305cb](https://github.com/BitGo/BitGoJS/commit/ba305cb7f7b564d499d0f931f50919058e85652f))
+- **sdk-core:** added propagation of reqId to sendMany ([411efa7](https://github.com/BitGo/BitGoJS/commit/411efa76673fa1fb4b3e24fef4a6bf10bbd63af8))
+
 # [38.10.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.9.0...bitgo@38.10.0) (2024-06-11)
 
 ### Bug Fixes
