@@ -117,6 +117,9 @@ export const networks: Record<NetworkName, Network> = {
     wif: 0xef,
     coin: coins.BTC,
   },
+  /**
+   * Additional testnet for BTC that restricts mining to trusted entities (BIP 325)
+   */
   bitcoinPublicSignet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bech32: 'tb',
