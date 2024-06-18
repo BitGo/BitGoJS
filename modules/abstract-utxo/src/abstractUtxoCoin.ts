@@ -33,7 +33,6 @@ import {
   IBaseCoin,
   InvalidAddressDerivationPropertyError,
   InvalidAddressError,
-  InvalidAddressVerificationObjectPropertyError,
   IRequestTracer,
   isTriple,
   ITransactionExplanation as BaseTransactionExplanation,
@@ -967,7 +966,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @throws {UnexpectedAddressError}
    */
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address, addressType, keychains, coinSpecific, chain, index } = params;
+    const { address, addressType, keychains, chain, index } = params;
 
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
@@ -976,12 +975,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if ((_.isUndefined(chain) && _.isUndefined(index)) || !(_.isFinite(chain) && _.isFinite(index))) {
       throw new InvalidAddressDerivationPropertyError(
         `address validation failure: invalid chain (${chain}) or index (${index})`
-      );
-    }
-
-    if (!_.isObject(coinSpecific)) {
-      throw new InvalidAddressVerificationObjectPropertyError(
-        'address validation failure: coinSpecific field must be an object'
       );
     }
 
