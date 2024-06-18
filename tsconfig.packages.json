@@ -11,6 +11,9 @@
       "path": "./modules/abstract-utxo"
     },
     {
+      "path": "./modules/abstract-lightning"
+    },
+    {
       "path": "./modules/account-lib"
     },
     {
@@ -101,10 +104,10 @@
       "path": "./modules/sdk-coin-eth"
     },
     {
-      "path": "./modules/sdk-coin-ethlike"
+      "path": "./modules/sdk-coin-eth2"
     },
     {
-      "path": "./modules/sdk-coin-eth2"
+      "path": "./modules/sdk-coin-ethlike"
     },
     {
       "path": "./modules/sdk-coin-ethw"

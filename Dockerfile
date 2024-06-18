@@ -48,6 +48,7 @@ COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
 COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
 COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
 COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
+COPY --from=builder /tmp/bitgo/modules/abstract-lightning /var/modules/abstract-lightning/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
@@ -115,6 +116,7 @@ cd /var/modules/blake2b && yarn link && \
 cd /var/modules/blake2b-wasm && yarn link && \
 cd /var/modules/bitgo && yarn link && \
 cd /var/modules/abstract-utxo && yarn link && \
+cd /var/modules/abstract-lightning && yarn link && \
 cd /var/modules/blockapis && yarn link && \
 cd /var/modules/sdk-api && yarn link && \
 cd /var/modules/unspents && yarn link && \

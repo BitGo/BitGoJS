@@ -36,6 +36,9 @@
       "path": "../sdk-api"
     },
     {
+      "path": "../abstract-lightning"
+    },
+    {
       "path": "../sdk-coin-ada"
     },
     {
@@ -108,10 +111,10 @@
       "path": "../sdk-coin-eth2"
     },
     {
-      "path": "../sdk-coin-ethw"
+      "path": "../sdk-coin-ethlike"
     },
     {
-      "path": "../sdk-coin-ethlike"
+      "path": "../sdk-coin-ethw"
     },
     {
       "path": "../sdk-coin-hash"
