@@ -112,11 +112,24 @@ export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   index: number;
 }
 
-export interface Output {
+export interface BaseOutput {
   address: string;
   amount: string | number;
+  // Even though this external flag is redundant with the chain property, it is necessary for backwards compatibility
+  // with legacy transaction format.
   external?: boolean;
+}
+
+export interface WalletOutput extends BaseOutput {
   needsCustomChangeKeySignatureVerification?: boolean;
+  chain: number;
+  index: number;
+}
+
+export type Output = BaseOutput | WalletOutput;
+
+export function isWalletOutput(output: Output): output is WalletOutput {
+  return (output as WalletOutput).chain !== undefined && (output as WalletOutput).index !== undefined;
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation<string, string> {
@@ -148,6 +161,11 @@ export interface ExplainTransactionOptions<TNumber extends number | bigint = num
   txInfo?: TransactionInfo<TNumber>;
   feeInfo?: string;
   pubs?: Triple<string>;
+}
+
+export interface DecoratedExplainTransactionOptions<TNumber extends number | bigint = number>
+  extends ExplainTransactionOptions<TNumber> {
+  changeInfo?: { address: string; chain: number; index: number }[];
 }
 
 export type UtxoNetwork = utxolib.Network;
@@ -592,7 +610,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     );
 
     const needsCustomChangeKeySignatureVerification = allOutputDetails.some(
-      (output) => output.needsCustomChangeKeySignatureVerification
+      (output) => (output as WalletOutput)?.needsCustomChangeKeySignatureVerification
     );
 
     const changeOutputs = _.filter(allOutputDetails, { external: false });
