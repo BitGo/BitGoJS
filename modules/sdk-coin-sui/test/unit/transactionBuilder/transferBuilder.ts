@@ -138,6 +138,7 @@ describe('Sui Transfer Builder', () => {
       should.equal(utils.isValidRawTransaction(rawTx), true);
       const rebuilder = factory.getTransferBuilder();
       rebuilder.from(rawTx);
+      rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
       const rebuiltTx = await rebuilder.build();
       rebuiltTx.toBroadcastFormat().should.equal(rawTx);
     });

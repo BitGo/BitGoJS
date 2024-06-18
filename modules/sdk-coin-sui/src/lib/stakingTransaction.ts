@@ -21,7 +21,7 @@ import {
 } from './mystenlab/builder';
 import { CallArg, normalizeSuiAddress } from './mystenlab/types';
 import { BCS } from '@mysten/bcs';
-import { SUI_ADDRESS_LENGTH } from './constants';
+import { MAX_GAS_OBJECTS, SUI_ADDRESS_LENGTH } from './constants';
 
 export class StakingTransaction extends Transaction<StakingProgrammableTransaction> {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -204,7 +204,10 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
     return {
       sender: this._suiTransaction.sender,
       expiration: { None: null },
-      gasData: this._suiTransaction.gasData,
+      gasData: {
+        ...this._suiTransaction.gasData,
+        payment: this._suiTransaction.gasData.payment.slice(0, MAX_GAS_OBJECTS - 1),
+      },
       kind: {
         ProgrammableTransaction: programmableTx,
       },

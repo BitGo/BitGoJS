@@ -9,7 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import { SuiTransaction, TransactionExplanation, TransferProgrammableTransaction, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SUI_ADDRESS_LENGTH, UNAVAILABLE_TEXT } from './constants';
+import { MAX_GAS_OBJECTS, SUI_ADDRESS_LENGTH, UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
 import { CallArg, SuiObjectRef, normalizeSuiAddress } from './mystenlab/types';
@@ -193,7 +193,10 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     return {
       sender: this._suiTransaction.sender,
       expiration: { None: null },
-      gasData: this._suiTransaction.gasData,
+      gasData: {
+        ...this._suiTransaction.gasData,
+        payment: this._suiTransaction.gasData.payment.slice(0, MAX_GAS_OBJECTS - 1),
+      },
       kind: {
         ProgrammableTransaction: programmableTx,
       },
