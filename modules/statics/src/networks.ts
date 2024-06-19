@@ -486,9 +486,9 @@ class Goerli extends Testnet implements EthereumNetwork {
 class Holesky extends Testnet implements EthereumNetwork {
   name = 'Holesky';
   family = CoinFamily.ETH;
-  explorerUrl = 'https://holesky.beaconcha.in/tx/';
-  accountExplorerUrl = 'https://holesky.beaconcha.in/address/';
-  blockExplorerUrl = 'https://holesky.beaconcha.in/block/';
+  explorerUrl = 'https://holesky.etherscan.io/tx/';
+  accountExplorerUrl = 'https://holesky.etherscan.io/address/';
+  blockExplorerUrl = 'https://holesky.etherscan.io/block/';
   // https://chainlist.org/chain/17000
   chainId = 17000;
   batcherContractAddress = '0x8ae286c75a339ffabaed3a22088c52eb4f589780';
