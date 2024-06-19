@@ -81,6 +81,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     rbfTxIds?: string[];
     feeMultiplier?: number;
     selfSend?: boolean;
+    nockOutputAddresses?: boolean;
   }): nock.Scope[] {
     const nocks: nock.Scope[] = [];
 
@@ -104,11 +105,13 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     });
 
     // nock the address info fetch
-    nocks.push(
-      nock(params.bgUrl)
-        .get(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/address/${params.addressInfo.address}`)
-        .reply(200, params.addressInfo)
-    );
+    if (params.nockOutputAddresses) {
+      nocks.push(
+        nock(params.bgUrl)
+          .get(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/address/${params.addressInfo.address}`)
+          .reply(200, params.addressInfo)
+      );
+    }
 
     if (params.rbfTxIds) {
       nocks.push(
@@ -202,6 +205,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           prebuild,
           recipient,
           addressInfo,
+          nockOutputAddresses: txFormat !== 'psbt',
         });
 
         // call prebuild and sign, nocks should be consumed
@@ -238,6 +242,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           prebuild,
           recipient,
           addressInfo,
+          nockOutputAddresses: txFormat !== 'psbt',
         });
 
         await wallet
@@ -263,6 +268,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           rbfTxIds,
           feeMultiplier,
           selfSend,
+          nockOutputAddresses: txFormat !== 'psbt',
         });
 
         // call prebuild and sign, nocks should be consumed
@@ -299,18 +305,24 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
 utxoCoins
   .filter((coin) => utxolib.getMainnet(coin.network) !== utxolib.networks.bitcoinsv)
   .forEach((coin) => {
-    scriptTypes.forEach((inputScript) => {
-      const inputScriptCleaned = (
-        inputScript === 'taprootKeyPathSpend' ? 'p2trMusig2' : inputScript
-      ) as utxolib.bitgo.outputScripts.ScriptType2Of3;
+    scriptTypes
+      // Don't iterate over p2shP2pk - in no scenario would a wallet spend two p2shP2pk inputs as these
+      // are single signature inputs that are used for replay protection and are added to the transaction
+      // by our system from a separate wallet. We do run tests below where one of the inputs is a p2shP2pk and
+      // the other is an input spent by the user.
+      .filter((scriptType) => scriptType !== 'p2shP2pk')
+      .forEach((inputScript) => {
+        const inputScriptCleaned = (
+          inputScript === 'taprootKeyPathSpend' ? 'p2trMusig2' : inputScript
+        ) as utxolib.bitgo.outputScripts.ScriptType2Of3;
 
-      if (!coin.supportsAddressType(inputScriptCleaned)) {
-        return;
-      }
+        if (!coin.supportsAddressType(inputScriptCleaned)) {
+          return;
+        }
 
-      run(coin, [inputScript, inputScript], 'psbt');
-      if (getReplayProtectionAddresses(coin.network).length) {
-        run(coin, ['p2shP2pk', inputScript], 'psbt');
-      }
-    });
+        run(coin, [inputScript, inputScript], 'psbt');
+        if (getReplayProtectionAddresses(coin.network).length) {
+          run(coin, ['p2shP2pk', inputScript], 'psbt');
+        }
+      });
   });
