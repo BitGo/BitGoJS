@@ -1330,7 +1330,7 @@ export const coins = CoinMap.fromCoins([
     'Stable Coin',
     9,
     UnderlyingAsset['SBC'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
     'dfe78bd9-c67c-455b-a731-0c9dadd8078e',
@@ -1338,7 +1338,7 @@ export const coins = CoinMap.fromCoins([
     'Bonk',
     5,
     UnderlyingAsset['bonk'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
     'de579e9d-c830-491e-8d5a-760c14a0be91',
@@ -1346,7 +1346,7 @@ export const coins = CoinMap.fromCoins([
     'HONEY',
     9,
     UnderlyingAsset['honey'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
     '8a8309b4-8587-4a95-b4a8-4e46c6206b50',
@@ -14814,7 +14814,7 @@ export const coins = CoinMap.fromCoins([
     5,
     'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
     UnderlyingAsset['bonk'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '7457400a-dbce-4e33-a50a-356c9a1eca3e',
@@ -14823,7 +14823,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
     UnderlyingAsset['jto'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '407cfd7c-ff3d-4501-a0a5-4d53af00512a',
@@ -14832,7 +14832,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
     UnderlyingAsset['jup'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'c4db311f-8a4a-4821-b7b4-c4d04c4de752',
@@ -14841,7 +14841,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy',
     UnderlyingAsset['honey'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '15852e6a-342c-4e37-8745-9782ae25a476',
@@ -14850,7 +14850,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
     UnderlyingAsset['wif'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '683e5064-fff0-401d-bf62-08f49bb130fc',
@@ -14859,7 +14859,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'FRySi8LPkuByB7VPSCCggxpewFUeeJiwEGRKKuhwpKcX',
     UnderlyingAsset['natix'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '36b8ee60-47d4-47bf-9abb-40268b253f3c',
@@ -14868,7 +14868,7 @@ export const coins = CoinMap.fromCoins([
     9,
     '3swraHsc77KMg1tFvwH3tfYcd8SWr5fcUhtmRxjavG7H',
     UnderlyingAsset['sol:ks'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '2b1d83de-1cb8-4e22-bc25-8f66e758c809',
@@ -14877,7 +14877,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ',
     UnderlyingAsset['W'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '51025e9d-74b7-483e-8649-3628049258dc',
@@ -14886,7 +14886,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6',
     UnderlyingAsset['mobile'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'f63bd5b2-32e5-435b-883d-584476266d28',
@@ -14895,7 +14895,7 @@ export const coins = CoinMap.fromCoins([
     9,
     'DBAzBUXaLj1qANCseUPZz4sp9F8d2sc78C4vKjhbTGMA',
     UnderlyingAsset['SBC'],
-    AccountCoin.DEFAULT_FEATURES
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '803bb18c-b9ed-4342-aa94-985f9ab31974',
