@@ -1223,7 +1223,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:wsol',
     'Wrapped SOL',
     9,
-    UnderlyingAsset.WSOL,
+    UnderlyingAsset['sol:wsol'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1231,7 +1231,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:wec',
     'Whole Earth Coin',
     9,
-    UnderlyingAsset.WEC,
+    UnderlyingAsset['sol:wec'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1239,7 +1239,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:usdt',
     'USD Tether',
     6,
-    UnderlyingAsset.USDT,
+    UnderlyingAsset['sol:usdt'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1247,7 +1247,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:usdc',
     'USD Coin',
     6,
-    UnderlyingAsset.USDC,
+    UnderlyingAsset['sol:usdc'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1255,7 +1255,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:srm',
     'Serum',
     6,
-    UnderlyingAsset.SRM,
+    UnderlyingAsset['sol:srm'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1263,7 +1263,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:slnd',
     'SOLEND',
     6,
-    UnderlyingAsset.SLND,
+    UnderlyingAsset['sol:slnd'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1271,7 +1271,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:ray',
     'Raydium',
     6,
-    UnderlyingAsset.RAY,
+    UnderlyingAsset['sol:ray'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1279,7 +1279,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:qcad',
     'QCAD',
     2,
-    UnderlyingAsset.QCAD,
+    UnderlyingAsset['sol:qcad'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1287,7 +1287,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:pyth',
     'Pyth',
     6,
-    UnderlyingAsset['pyth'],
+    UnderlyingAsset['sol:pyth'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1295,19 +1295,33 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:orca',
     'ORCA',
     6,
-    UnderlyingAsset.ORCA,
+    UnderlyingAsset['sol:orca'],
     SOL_TOKEN_FEATURES
   ),
-  ofcsolToken('84b18d96-b8c3-4315-a500-fe624e3b5dfe', 'ofcsol:kin', 'Kin', 5, UnderlyingAsset.KIN, SOL_TOKEN_FEATURES),
+  ofcsolToken(
+    '84b18d96-b8c3-4315-a500-fe624e3b5dfe',
+    'ofcsol:kin',
+    'Kin',
+    5,
+    UnderlyingAsset['sol:kin'],
+    SOL_TOKEN_FEATURES
+  ),
   ofcsolToken(
     'ee4bcc0d-7ffd-4854-b2be-21e7efe9e7c5',
     'ofcsol:jet',
     'Jet Protocol',
     9,
-    UnderlyingAsset.JET,
+    UnderlyingAsset['sol:jet'],
     SOL_TOKEN_FEATURES
   ),
-  ofcsolToken('0f7d1c02-2f2d-4b39-b1f7-892edf9ff21a', 'ofcsol:gmt', 'GMT', 9, UnderlyingAsset.GMT, SOL_TOKEN_FEATURES),
+  ofcsolToken(
+    '0f7d1c02-2f2d-4b39-b1f7-892edf9ff21a',
+    'ofcsol:gmt',
+    'GMT',
+    9,
+    UnderlyingAsset['sol:gmt'],
+    SOL_TOKEN_FEATURES
+  ),
   ofcsolToken(
     '8e4ec661-0ebc-46c8-afcd-1a1c4d9fdf5f',
     'ofcsol:gari',
@@ -1321,7 +1335,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:crown',
     'CROWN Token',
     9,
-    UnderlyingAsset['crown'],
+    UnderlyingAsset['sol:crown'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1329,7 +1343,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:sbc',
     'Stable Coin',
     9,
-    UnderlyingAsset['SBC'],
+    UnderlyingAsset['sol:sbc'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1337,7 +1351,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:bonk',
     'Bonk',
     5,
-    UnderlyingAsset['bonk'],
+    UnderlyingAsset['sol:bonk'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1345,7 +1359,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:honey',
     'HONEY',
     9,
-    UnderlyingAsset['honey'],
+    UnderlyingAsset['sol:honey'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1353,7 +1367,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:mplx',
     'Metaplex Token',
     6,
-    UnderlyingAsset.MPLX,
+    UnderlyingAsset['sol:mplx'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1361,7 +1375,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:hnt',
     'Helium Network Token',
     8,
-    UnderlyingAsset.HNT,
+    UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -1377,7 +1391,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:hnt',
     'testnet Helium Network Token',
     8,
-    UnderlyingAsset.HNT,
+    UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
@@ -13355,7 +13369,7 @@ export const coins = CoinMap.fromCoins([
     'Serum',
     6,
     'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt', // https://explorer.solana.com/address/SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt
-    UnderlyingAsset.SRM,
+    UnderlyingAsset['sol:srm'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -13364,7 +13378,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin',
     6,
     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
-    UnderlyingAsset.USDC,
+    UnderlyingAsset['sol:usdc'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -13373,7 +13387,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped SOL',
     9,
     'So11111111111111111111111111111111111111112', // https://explorer.solana.com/address/So11111111111111111111111111111111111111112
-    UnderlyingAsset.WSOL,
+    UnderlyingAsset['sol:wsol'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -13382,7 +13396,7 @@ export const coins = CoinMap.fromCoins([
     'Raydium',
     6,
     '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R', // https://explorer.solana.com/address/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R
-    UnderlyingAsset.RAY,
+    UnderlyingAsset['sol:ray'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -13391,7 +13405,7 @@ export const coins = CoinMap.fromCoins([
     'GMT',
     9,
     '7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx', // https://explorer.solana.com/address/7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx
-    UnderlyingAsset.GMT,
+    UnderlyingAsset['sol:gmt'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -13400,7 +13414,7 @@ export const coins = CoinMap.fromCoins([
     'USD Tether',
     6,
     'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // https://explorer.solana.com/address/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
-    UnderlyingAsset.USDT,
+    UnderlyingAsset['sol:usdt'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -13418,7 +13432,7 @@ export const coins = CoinMap.fromCoins([
     'ORCA',
     6,
     'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
-    UnderlyingAsset.ORCA,
+    UnderlyingAsset['sol:orca'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -13427,7 +13441,7 @@ export const coins = CoinMap.fromCoins([
     'SOLEND',
     6,
     'SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp', // https://explorer.solana.com/address/SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp
-    UnderlyingAsset.SLND,
+    UnderlyingAsset['sol:slnd'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -13580,7 +13594,7 @@ export const coins = CoinMap.fromCoins([
     'Kin',
     5,
     'kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6',
-    UnderlyingAsset.KIN,
+    UnderlyingAsset['sol:kin'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14003,7 +14017,7 @@ export const coins = CoinMap.fromCoins([
     'Jet Protocol',
     9,
     'JET6zMJWkCN9tpRT2v2jfAmm5VnQFDpUBCyaKojmGtz',
-    UnderlyingAsset.JET,
+    UnderlyingAsset['sol:jet'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14336,7 +14350,7 @@ export const coins = CoinMap.fromCoins([
     'Metaplex Token',
     6,
     'METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m',
-    UnderlyingAsset.MPLX,
+    UnderlyingAsset['sol:mplx'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14651,7 +14665,7 @@ export const coins = CoinMap.fromCoins([
     'Helium Network Token',
     8,
     'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
-    UnderlyingAsset.HNT,
+    UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14660,7 +14674,7 @@ export const coins = CoinMap.fromCoins([
     'QCAD',
     2,
     'EeBX9JLdvsp4HnBbMgC1HnAjBkBQxgxtWxspcCLtT6ci',
-    UnderlyingAsset.QCAD,
+    UnderlyingAsset['sol:qcad'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14705,7 +14719,7 @@ export const coins = CoinMap.fromCoins([
     'CROWN Token',
     9,
     'GDfnEsia2WLAW5t8yx2X5j2mkfA74i5kwGdDuZHt7XmG',
-    UnderlyingAsset['crown'],
+    UnderlyingAsset['sol:crown'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14804,7 +14818,7 @@ export const coins = CoinMap.fromCoins([
     'Pyth',
     6,
     'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',
-    UnderlyingAsset['pyth'],
+    UnderlyingAsset['sol:pyth'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14813,7 +14827,7 @@ export const coins = CoinMap.fromCoins([
     'Bonk',
     5,
     'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
-    UnderlyingAsset['bonk'],
+    UnderlyingAsset['sol:bonk'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14840,7 +14854,7 @@ export const coins = CoinMap.fromCoins([
     'HONEY',
     9,
     '4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy',
-    UnderlyingAsset['honey'],
+    UnderlyingAsset['sol:honey'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -14894,7 +14908,7 @@ export const coins = CoinMap.fromCoins([
     'Stable Coin',
     9,
     'DBAzBUXaLj1qANCseUPZz4sp9F8d2sc78C4vKjhbTGMA',
-    UnderlyingAsset['SBC'],
+    UnderlyingAsset['sol:sbc'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -15065,7 +15079,7 @@ export const coins = CoinMap.fromCoins([
     'Whole Earth Coin',
     9,
     '6y8W5YwAuzostqrS4YDJufBvksosfSi47Pd8U4A5vrBC',
-    UnderlyingAsset.WEC,
+    UnderlyingAsset['sol:wec'],
     SOL_TOKEN_FEATURES
   ),
 
@@ -15075,7 +15089,7 @@ export const coins = CoinMap.fromCoins([
     'Serum',
     9,
     'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
-    UnderlyingAsset.SRM,
+    UnderlyingAsset['sol:srm'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -15084,7 +15098,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin',
     9,
     'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
-    UnderlyingAsset.USDC,
+    UnderlyingAsset['sol:usdc'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -15093,7 +15107,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin V2',
     6,
     '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-    UnderlyingAsset.USDC,
+    UnderlyingAsset['sol:usdc'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -15102,7 +15116,7 @@ export const coins = CoinMap.fromCoins([
     'Raydium',
     9,
     '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
-    UnderlyingAsset.RAY,
+    UnderlyingAsset['sol:ray'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -15111,7 +15125,7 @@ export const coins = CoinMap.fromCoins([
     'GMT',
     9,
     '64bco36MjrZ8K26FXZGoSrnDFDSCZhvJGfQ5ywLRFUpF',
-    UnderlyingAsset.GMT,
+    UnderlyingAsset['sol:gmt'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -15120,7 +15134,7 @@ export const coins = CoinMap.fromCoins([
     'USD Tether',
     9,
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
-    UnderlyingAsset.USDT,
+    UnderlyingAsset['sol:usdt'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -15138,7 +15152,7 @@ export const coins = CoinMap.fromCoins([
     'ORCA',
     9,
     '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h',
-    UnderlyingAsset.ORCA,
+    UnderlyingAsset['sol:orca'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -15147,7 +15161,7 @@ export const coins = CoinMap.fromCoins([
     'SOLEND',
     9,
     'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
-    UnderlyingAsset.SLND,
+    UnderlyingAsset['sol:slnd'],
     SOL_TOKEN_FEATURES
   ),
 
