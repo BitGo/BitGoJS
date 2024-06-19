@@ -177,7 +177,7 @@ export class Transaction extends BaseTransaction {
       transactionVersion: decodedTx.transactionVersion,
       eraPeriod: decodedTx.eraPeriod,
       chainName: this._chainName,
-      tip: decodedTx.tip,
+      tip: decodedTx.tip ? Number(decodedTx.tip) : 0,
     };
 
     if (this.type === TransactionType.Send) {
