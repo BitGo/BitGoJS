@@ -1,5 +1,6 @@
 import * as stellar from 'stellar-sdk';
-import { DefaultKeys, Ed25519KeyPair, KeyPairOptions, NotImplementedError } from '@bitgo/sdk-core';
+import { DefaultKeys, Ed25519KeyPair, InvalidKey, KeyPairOptions } from '@bitgo/sdk-core';
+import { decodePrivateKey, decodePublicKey, encodePrivateKey, encodePublicKey } from './utils';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -12,14 +13,14 @@ export class KeyPair extends Ed25519KeyPair {
   }
 
   getKeys(raw = false): DefaultKeys {
-    const publicKey = stellar.StrKey.encodeEd25519PublicKey(Buffer.from(this.keyPair.pub, 'hex'));
+    const publicKey = encodePublicKey(Buffer.from(this.keyPair.pub, 'hex'));
     const result: DefaultKeys = {
-      pub: raw ? stellar.StrKey.decodeEd25519PublicKey(publicKey).toString('hex') : publicKey,
+      pub: raw ? decodePublicKey(publicKey).toString('hex') : publicKey,
     };
 
     if (this.keyPair.prv) {
-      const privateKey = stellar.StrKey.encodeEd25519SecretSeed(Buffer.from(this.keyPair.prv, 'hex'));
-      result.prv = raw ? stellar.StrKey.decodeEd25519SecretSeed(privateKey).toString('hex') : privateKey;
+      const privateKey = encodePrivateKey(Buffer.from(this.keyPair.prv, 'hex'));
+      result.prv = raw ? decodePrivateKey(privateKey).toString('hex') : privateKey;
     }
 
     return result;
@@ -27,23 +28,31 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   getAddress(): string {
-    throw NotImplementedError;
+    return encodePublicKey(Buffer.from(this.keyPair.pub, 'hex'));
   }
 
   /** @inheritdoc */
   recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
-    const publicKey = stellar.StrKey.decodeEd25519PublicKey(pub);
-    return { pub: publicKey.toString('hex') };
+    try {
+      const publicKey = decodePublicKey(pub);
+      return { pub: publicKey.toString('hex') };
+    } catch (e) {
+      throw new InvalidKey('Invalid public key: ' + pub);
+    }
   }
 
   /** @inheritdoc */
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    const kp = stellar.Keypair.fromSecret(prv);
-    const publicKey = stellar.StrKey.decodeEd25519PublicKey(kp.publicKey());
-    const privateKey = stellar.StrKey.decodeEd25519SecretSeed(kp.secret());
-    return {
-      pub: publicKey.toString('hex'),
-      prv: privateKey.toString('hex'),
-    };
+    try {
+      const kp = stellar.Keypair.fromSecret(prv);
+      const publicKey = decodePublicKey(kp.publicKey());
+      const privateKey = decodePrivateKey(kp.secret());
+      return {
+        pub: publicKey.toString('hex'),
+        prv: privateKey.toString('hex'),
+      };
+    } catch (e) {
+      throw new InvalidKey('Invalid private key: ' + prv);
+    }
   }
 }

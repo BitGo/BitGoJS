@@ -5,6 +5,7 @@ import * as url from 'url';
 import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
+import * as Utils from './lib/utils';
 import { KeyPair as StellarKeyPair } from './lib/keyPair';
 
 import {
@@ -33,8 +34,6 @@ import {
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
   NotSupported,
-  isValidEd25519PublicKey,
-  isValidEd25519SecretKey,
 } from '@bitgo/sdk-core';
 import { toBitgoRequest } from '@bitgo/sdk-api';
 import { getStellarKeys } from './getStellarKeys';
@@ -233,23 +232,23 @@ export class Xlm extends BaseCoin {
   }
 
   /**
-   * Get decoded ed25519 public key from raw data
+   * Get encoded ed25519 public key from raw data
    *
    * @param pub Raw public key
    * @returns Encoded public key
    */
   getPubFromRaw(pub: string): string {
-    return stellar.StrKey.encodeEd25519PublicKey(Buffer.from(pub, 'hex'));
+    return Utils.encodePublicKey(Buffer.from(pub, 'hex'));
   }
 
   /**
-   * Get decoded ed25519 private key from raw data
+   * Get encoded ed25519 private key from raw data
    *
    * @param prv Raw private key
    * @returns Encoded private key
    */
   getPrvFromRaw(prv: string): string {
-    return stellar.StrKey.encodeEd25519SecretSeed(Buffer.from(prv, 'hex'));
+    return Utils.encodePrivateKey(Buffer.from(prv, 'hex'));
   }
 
   /**
@@ -259,7 +258,9 @@ export class Xlm extends BaseCoin {
    * @returns is it valid?
    */
   isValidPub(pub: string): boolean {
-    return stellar.StrKey.isValidEd25519PublicKey(pub) || isValidEd25519PublicKey(pub);
+    // Stellar's validation method only allows keys in Stellar-specific format, with a 'G' prefix
+    // We need to allow for both Stellar and raw root keys
+    return Utils.isValidPublicKey(pub) || Utils.isValidStellarPub(pub);
   }
 
   /**
@@ -269,7 +270,9 @@ export class Xlm extends BaseCoin {
    * @returns is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return stellar.StrKey.isValidEd25519SecretSeed(prv) || isValidEd25519SecretKey(prv);
+    // Stellar's validation method only allows keys in Stellar-specific format, with an 'S' prefix
+    // We need to allow for both Stellar and raw root private keys
+    return Utils.isValidPrivateKey(prv) || Utils.isValidStellarPrv(prv);
   }
 
   /**
@@ -771,7 +774,7 @@ export class Xlm extends BaseCoin {
     let keyPair: stellar.Keypair;
     if (!prv.startsWith('S')) {
       // Encode the raw root hex prv into a stellar S-prefixed private key
-      keyPair = stellar.Keypair.fromSecret(stellar.StrKey.encodeEd25519SecretSeed(Buffer.from(prv, 'hex')));
+      keyPair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(prv, 'hex')));
     } else {
       keyPair = stellar.Keypair.fromSecret(prv);
     }
@@ -835,7 +838,7 @@ export class Xlm extends BaseCoin {
     if (key.prv.startsWith('S')) {
       keypair = stellar.Keypair.fromSecret(key.prv);
     } else {
-      keypair = stellar.Keypair.fromSecret(stellar.StrKey.encodeEd25519SecretSeed(Buffer.from(key.prv, 'hex')));
+      keypair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(key.prv, 'hex')));
     }
 
     return keypair.sign(message);
@@ -863,7 +866,7 @@ export class Xlm extends BaseCoin {
       keyPair = stellar.Keypair.fromPublicKey(pub);
     } else {
       // Raw root key was given, need to encode to Stellar key first
-      keyPair = stellar.Keypair.fromPublicKey(stellar.StrKey.encodeEd25519PublicKey(Buffer.from(pub, 'hex')));
+      keyPair = stellar.Keypair.fromPublicKey(Utils.encodePublicKey(Buffer.from(pub, 'hex')));
     }
 
     return keyPair.verify(message, signature);
