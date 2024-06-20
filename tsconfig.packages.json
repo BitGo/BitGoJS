@@ -11,6 +11,9 @@
       "path": "./modules/abstract-utxo"
     },
     {
+      "path": "./modules/abstract-lightning"
+    },
+    {
       "path": "./modules/account-lib"
     },
     {

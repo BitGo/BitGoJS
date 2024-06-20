@@ -33,6 +33,9 @@
       "path": "../abstract-utxo"
     },
     {
+      "path": "../abstract-lightning"
+    },
+    {
       "path": "../sdk-api"
     },
     {

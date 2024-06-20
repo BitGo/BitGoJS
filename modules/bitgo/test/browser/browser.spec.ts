@@ -12,6 +12,7 @@ describe('Coins', () => {
     // these objects are defined in BitGoJS.Coin, but are not coins in the traditional sense
     const excludedKeys = {
       AbstractUtxoCoin: 1,
+      AbstractLightningCoin: 1,
       Erc20Token: 1,
       EthLikeCoin: 1,
       TethLikeCoin: 1,
