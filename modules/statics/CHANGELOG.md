@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.18.0...@bitgo/statics@48.20.0) (2024-06-21)
+
+### Bug Fixes
+
+- **statics:** fix solToken features ([776ffdd](https://github.com/BitGo/BitGoJS/commit/776ffdd0a1d831761ec380d5e4629e9a1b63efd0))
+
+### Features
+
+- **statics:** added offchain support for OCEANV2 ([76c26a7](https://github.com/BitGo/BitGoJS/commit/76c26a777b00bc665dbefde4a4ed2fcb3fbcde64))
+- **statics:** adding test token for solana tokens for go account ([dd1bf3d](https://github.com/BitGo/BitGoJS/commit/dd1bf3dde2a8d7d5e29bbdbb79acc90ccdcd115a))
+- **statics:** fixing sol tokens ([304be30](https://github.com/BitGo/BitGoJS/commit/304be30d257cf65b254a5e875a124d18a4e25961))
+- **statics:** update tia testnet explorer link ([17dc263](https://github.com/BitGo/BitGoJS/commit/17dc263cbde1627f00a8d797a023c194f27bbebc))
+
 # [48.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.18.0...@bitgo/statics@48.19.0) (2024-06-20)
 
 ### Bug Fixes
