@@ -29,10 +29,13 @@ export function getUtxoCoinScriptTypes2Of3(coinName: string): utxolib.bitgo.outp
  * @param scriptType
  */
 function isEnabledAddressType(network: utxolib.Network, walletType: WalletType, scriptType: ScriptType2Of3): boolean {
-  if (scriptType !== 'p2trMusig2') {
-    return true;
+  if (!utxolib.bitgo.outputScripts.isSupportedScriptType(network, scriptType)) {
+    return false;
   }
-  return walletType === 'hot' || (walletType === 'cold' && utxolib.isTestnet(network));
+  if (scriptType === 'p2trMusig2') {
+    return walletType === 'hot' || (walletType === 'cold' && utxolib.isTestnet(network));
+  }
+  return true;
 }
 
 /**
