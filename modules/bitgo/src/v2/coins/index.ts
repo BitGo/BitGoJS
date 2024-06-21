@@ -1,4 +1,5 @@
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+import { AbstractLightningCoin } from '@bitgo/abstract-lightning';
 import { Ada, Tada } from '@bitgo/sdk-coin-ada';
 import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
 import { Arbeth, Tarbeth, ArbethToken } from '@bitgo/sdk-coin-arbeth';
@@ -49,6 +50,7 @@ import { Tzeta, Zeta } from '@bitgo/sdk-coin-zeta';
 import { Zketh, Tzketh, ZkethToken } from '@bitgo/sdk-coin-zketh';
 
 export { AbstractUtxoCoin };
+export { AbstractLightningCoin };
 export { Algo, AlgoToken, Talgo };
 export { Arbeth, Tarbeth, ArbethToken };
 export { Ada, Tada };

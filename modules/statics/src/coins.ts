@@ -1379,6 +1379,63 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
+    '24d678cf-e0f0-4cde-a338-d754289c5b27',
+    'ofctsol:slnd',
+    'testnet SOLEND',
+    9,
+    UnderlyingAsset['sol:slnd'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    '5610a965-d046-46e2-9077-40f496be3f18',
+    'ofctsol:orca',
+    'testnet ORCA',
+    9,
+    UnderlyingAsset['sol:orca'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    '6fd31137-ab29-441e-9136-8b4bad4f0477',
+    'ofctsol:usdc',
+    'testnet USD Coin',
+    6,
+    UnderlyingAsset['sol:usdc'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    '431a593e-0396-4d68-9db6-901d312df47d',
+    'ofctsol:ray',
+    'testnet Raydium',
+    9,
+    UnderlyingAsset['sol:ray'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    'ff1955c9-988d-4c9e-86e7-cf589bb3d66f',
+    'ofctsol:gmt',
+    'testnet GMT',
+    9,
+    UnderlyingAsset['sol:gmt'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    '308d63c0-3a74-49c9-98d8-a4fe52e58226',
+    'ofctsol:usdt',
+    'testnet USD Tether',
+    9,
+    UnderlyingAsset['sol:usdt'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    '73a332da-1abf-4c4b-b5b5-f03fe36738cb',
+    'ofctsol:srm',
+    'testnet Serum',
+    9,
+    UnderlyingAsset['sol:srm'],
+    SOL_TOKEN_FEATURES
+  ),
+
+  tofcsolToken(
     '20b20bc7-86b8-4f58-a8e9-a7cedbc2a507',
     'ofctsol:gari',
     'testnet Gari Token',
