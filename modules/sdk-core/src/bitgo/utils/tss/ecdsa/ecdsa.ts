@@ -878,7 +878,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
 
     const txRequest: TxRequest =
       typeof params.txRequest === 'string'
-        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
+        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest, params.reqId)
         : params.txRequest;
 
     let signablePayload = new Buffer('');
@@ -899,7 +899,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       txRequest.txRequestId,
       requestType,
       paillierModulus.userPaillierModulus,
-      0
+      0,
+      params.reqId
     );
 
     const step1Return = await this.createTssEcdsaStep1SigningMaterial({
@@ -920,7 +921,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       step1Return.vssProof,
       step1Return.privateShareProof,
       step1Return.publicShare,
-      step1Return.userPublicGpgKey
+      step1Return.userPublicGpgKey,
+      params.reqId
     )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
 
     const step2Return = await this.createTssEcdsaStep2SigningMaterial({
@@ -936,7 +938,13 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       txRequest.txRequestId,
       requestType,
       SendShareType.MUShare,
-      step2Return.muDShare
+      step2Return.muDShare,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      params.reqId
     )) as DShare;
 
     // If only the getHashFunction() is defined for the coin use it otherwise
@@ -962,9 +970,15 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       txRequest.txRequestId,
       requestType,
       SendShareType.SShare,
-      userSShare
+      userSShare,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      params.reqId
     );
-    return await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId);
+    return await getTxRequest(this.bitgo, this.wallet.id(), txRequest.txRequestId, params.reqId);
   }
 
   /**

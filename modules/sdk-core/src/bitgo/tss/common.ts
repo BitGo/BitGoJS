@@ -109,6 +109,7 @@ export async function sendSignatureShare(
  * @param mpcAlgorithm
  * @param multisigTypeVersion
  * @param signerGpgPublicKey
+ * @param reqId
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendSignatureShareV2(
@@ -120,7 +121,8 @@ export async function sendSignatureShareV2(
   mpcAlgorithm: 'eddsa' | 'ecdsa',
   signerGpgPublicKey: string,
   signerShare?: string,
-  multisigTypeVersion?: 'MPCv2' | undefined
+  multisigTypeVersion?: 'MPCv2' | undefined,
+  reqId?: IRequestTracer
 ): Promise<TxRequest> {
   const addendum = requestType === RequestType.tx ? '/transactions/0' : '/messages/0';
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/sign';
@@ -136,6 +138,8 @@ export async function sendSignatureShareV2(
     signerShare,
     signerGpgPublicKey,
   };
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   return bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
 }
 
@@ -146,16 +150,20 @@ export async function sendSignatureShareV2(
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param requestType - The type of request being submitted (either tx or message for signing)
+ * @param {IRequestTracer} reqId - request tracer request id
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendTxRequest(
   bitgo: BitGoBase,
   walletId: string,
   txRequestId: string,
-  requestType: RequestType
+  requestType: RequestType,
+  reqId?: IRequestTracer
 ): Promise<TxRequest> {
   const addendum = requestType === RequestType.tx ? '/transactions/0' : '/messages/0';
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/send';
+  const reqTracer = reqId || new RequestTracer();
+  bitgo.setRequestTracer(reqTracer);
   return bitgo.post(bitgo.url(urlPath, 2)).send().result();
 }
 
