@@ -45,6 +45,7 @@ import {
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
+import { MPCSweepRecoveryOptions, MPCTxs } from '../utils';
 
 export abstract class BaseCoin implements IBaseCoin {
   protected readonly bitgo: BitGoBase;
@@ -536,5 +537,18 @@ export abstract class BaseCoin implements IBaseCoin {
    */
   broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
     throw new NotImplementedError('broadcastTransaction is not supported for this coin');
+  }
+
+  /**
+   * Creates funds sweep recovery transaction(s) without BitGo
+   *
+   * @param {MPCSweepRecoveryOptions} params parameters needed to combine the signatures
+   * and transactions to create broadcastable transactions
+   *
+   * @returns {MPCTxs} array of the serialized transaction hex strings and indices
+   * of the addresses being swept
+   */
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
+    throw new NotImplementedError('createBroadcastableSweepTransaction is not supported for this coin');
   }
 }

@@ -653,15 +653,7 @@ export class Sol extends BaseCoin {
     return [];
   }
 
-  /**
-   * Creates funds sweep recovery transaction(s) without BitGo
-   *
-   * @param {SweepRecoveryOptions} params parameters needed to combine the signatures
-   * and transactions to create broadcastable transactions
-   *
-   * @returns {MPCTxs} array of the serialized transaction hex strings and indices
-   * of the addresses being swept
-   */
+  /** inherited doc */
   async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
     if (!params.signatureShares) {
       ('Missing transaction(s)');

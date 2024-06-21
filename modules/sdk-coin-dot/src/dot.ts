@@ -563,15 +563,7 @@ export class Dot extends BaseCoin {
     return { transactions: consolidationTransactions, lastScanIndex };
   }
 
-  /**
-   * Creates funds sweep recovery transaction(s) without BitGo
-   *
-   * @param {MPCSweepRecoveryOptions} params parameters needed to combine the signatures
-   * and transactions to create broadcastable transactions
-   *
-   * @returns {MPCTx[]} array of the serialized transaction hex strings and indices
-   * of the addresses being swept
-   */
+  /** inherited doc */
   async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
     const req = params.signatureShares;
     const broadcastableTransactions: MPCTx[] = [];
