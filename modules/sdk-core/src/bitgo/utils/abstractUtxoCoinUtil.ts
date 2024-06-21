@@ -23,6 +23,19 @@ export function getUtxoCoinScriptTypes2Of3(coinName: string): utxolib.bitgo.outp
 }
 
 /**
+ * Check if script type is enabled for a given walletType and network
+ * @param network
+ * @param walletType
+ * @param scriptType
+ */
+function isEnabledAddressType(network: utxolib.Network, walletType: WalletType, scriptType: ScriptType2Of3): boolean {
+  if (scriptType !== 'p2trMusig2') {
+    return true;
+  }
+  return walletType === 'hot' || (walletType === 'cold' && utxolib.isTestnet(network));
+}
+
+/**
  * Get the supported 2 of 3 script types for a given utxo coin and wallet type
  * @param coinName
  * @param walletType
@@ -36,8 +49,7 @@ export function getUtxoCoinScriptTypesForWalletType(
   const coin = coins.get(coinName);
   assert(coin instanceof UtxoCoin, `coin ${coinName} is not a utxo coin`);
   const network = utxolib.networks[coin.network.utxolibName as utxolib.NetworkName];
+
   // Only return true for p2trMusig2 if the wallet type is hot or cold on testnet
-  return scriptTypes.filter((scriptType) =>
-    scriptType === 'p2trMusig2' ? walletType === 'hot' || (walletType === 'cold' && utxolib.isTestnet(network)) : true
-  );
+  return scriptTypes.filter((scriptType) => isEnabledAddressType(network, walletType, scriptType as ScriptType2Of3));
 }
