@@ -53,6 +53,5 @@ export function getUtxoCoinScriptTypesForWalletType(
   assert(coin instanceof UtxoCoin, `coin ${coinName} is not a utxo coin`);
   const network = utxolib.networks[coin.network.utxolibName as utxolib.NetworkName];
 
-  // Only return true for p2trMusig2 if the wallet type is hot or cold on testnet
   return scriptTypes.filter((scriptType) => isEnabledAddressType(network, walletType, scriptType as ScriptType2Of3));
 }
