@@ -30,10 +30,10 @@
       "path": "../abstract-eth"
     },
     {
-      "path": "../abstract-utxo"
+      "path": "../abstract-lightning"
     },
     {
-      "path": "../abstract-lightning"
+      "path": "../abstract-utxo"
     },
     {
       "path": "../sdk-api"
@@ -127,6 +127,9 @@
     },
     {
       "path": "../sdk-coin-islm"
+    },
+    {
+      "path": "../sdk-coin-lnbtc"
     },
     {
       "path": "../sdk-coin-ltc"

@@ -64,6 +64,7 @@ import {
   tofcPolygonErc20,
 } from './ofc';
 import { utxoCoins } from './utxo';
+import { lightningCoins } from './lightning';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
 const ETH_FEATURES_WITH_MMI = [...ETH_FEATURES, CoinFeature.METAMASK_INSTITUTIONAL];
@@ -272,6 +273,7 @@ const ZKETH_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
 ];
 export const coins = CoinMap.fromCoins([
+  ...lightningCoins,
   ...utxoCoins,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
