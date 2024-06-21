@@ -1534,6 +1534,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   async presignTransaction(params: PresignTransactionOptions): Promise<any> {
+    if (params.bulk && params.allowNonSegwitSigningWithoutPrevTx === undefined) {
+      return { ...params, allowNonSegwitSigningWithoutPrevTx: true };
+    }
     return params;
   }
 
