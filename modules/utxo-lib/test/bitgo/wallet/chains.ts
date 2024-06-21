@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import {
   ChainCode,
   chainCodes,
+  getChainAndIndexFromPath,
   getExternalChainCode,
   getInternalChainCode,
   isChainCode,
@@ -56,5 +57,30 @@ describe('chain codes', function () {
       assert.strictEqual(isExternalChainCode(c) && isInternalChainCode(c), false);
       assert.strictEqual(isExternalChainCode(c) ? getExternalChainCode(c) : getInternalChainCode(c), c);
     });
+  });
+});
+
+describe('getChainAndIndexFromPath', function () {
+  it('should throw if path is not the right length', function () {
+    assert.throws(() => getChainAndIndexFromPath('/'), /invalid path/);
+    assert.throws(() => getChainAndIndexFromPath('m0000ssss'), /invalid path/);
+  });
+
+  it('should throw if the path is not a number', function () {
+    assert.throws(() => getChainAndIndexFromPath('m/0/ssss'), /Could not parse chain and index into numbers from path/);
+    assert.throws(
+      () => getChainAndIndexFromPath('//d/dd/d/d/dd/dd'),
+      /Could not parse chain and index into numbers from path/
+    );
+  });
+
+  it('should throw if chain or index is negative', function () {
+    assert.throws(() => getChainAndIndexFromPath('m/-1/0'), /chain and index must be non-negative/);
+    assert.throws(() => getChainAndIndexFromPath('m/0/-1'), /chain and index must be non-negative/);
+  });
+
+  it('should set the chain and index correctly', function () {
+    assert.deepStrictEqual(getChainAndIndexFromPath('m/1/2'), { chain: 1, index: 2 });
+    assert.deepStrictEqual(getChainAndIndexFromPath('m/4/3/2'), { chain: 3, index: 2 });
   });
 });
