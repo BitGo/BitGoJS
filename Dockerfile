@@ -47,8 +47,8 @@ COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
 COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
 COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
 COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
-COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/abstract-lightning /var/modules/abstract-lightning/
+COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
@@ -115,8 +115,8 @@ cd /var/modules/utxo-lib && yarn link && \
 cd /var/modules/blake2b && yarn link && \
 cd /var/modules/blake2b-wasm && yarn link && \
 cd /var/modules/bitgo && yarn link && \
-cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/abstract-lightning && yarn link && \
+cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/blockapis && yarn link && \
 cd /var/modules/sdk-api && yarn link && \
 cd /var/modules/unspents && yarn link && \
@@ -186,8 +186,8 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/blake2b && \
     yarn link @bitgo/blake2b-wasm && \
     yarn link bitgo && \
-    yarn link @bitgo/abstract-utxo && \
     yarn link @bitgo/abstract-lightning && \
+    yarn link @bitgo/abstract-utxo && \
     yarn link @bitgo/blockapis && \
     yarn link @bitgo/sdk-api && \
     yarn link @bitgo/unspents && \
@@ -247,9 +247,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Thu, 20 Jun 2024 08:36:08 GMT"
-LABEL version=10.0.1
-LABEL git_hash=43ca8bc9facbe84d6dbf8cd6dc25da59a35aaf03
+LABEL created="Fri, 21 Jun 2024 16:12:43 GMT"
+LABEL version=10.0.3
+LABEL git_hash=3dc1c7f4259742c3a4c6ad73ace77a8e2e3db1c8
 #LABEL_END
 
 USER node
