@@ -17,6 +17,11 @@ export interface UtxoNetwork extends BaseNetwork {
   utxolibName: string;
 }
 
+export interface LightningNetwork extends BaseNetwork {
+  // Network name as defined in @bitgo/utxo-lib networks.ts
+  utxolibName: string;
+}
+
 export interface AdaNetwork extends BaseNetwork {
   // Network name as defined in @bitgo/utxo-lib networks.ts
   // maybe add network identifier / magic network number
@@ -256,6 +261,20 @@ class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://testnet.bscscan.com/tx/';
   accountExplorerUrl = 'https://testnet.bscscan.com/address/';
   chainId = 97;
+}
+
+class LightningBitcoin extends Mainnet implements LightningNetwork {
+  name = 'LightningBitcoin';
+  family = CoinFamily.LNBTC;
+  utxolibName = 'bitcoin';
+  explorerUrl = 'https://mempool.space/lightning';
+}
+
+class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
+  name = 'TestnetLightningBitcoin';
+  family = CoinFamily.LNBTC;
+  utxolibName = 'bitcoin';
+  explorerUrl = 'https://mempool.space/lightning';
 }
 
 class Bitcoin extends Mainnet implements UtxoNetwork {
@@ -1039,6 +1058,7 @@ export const Networks = {
     injective: Object.freeze(new Injective()),
     islm: Object.freeze(new Islm()),
     kava: Object.freeze(new Kava()),
+    lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
     ofc: Object.freeze(new Ofc()),
@@ -1094,6 +1114,7 @@ export const Networks = {
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),
     holesky: Object.freeze(new Holesky()),
+    lnbtc: Object.freeze(new LightningBitcoinTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
