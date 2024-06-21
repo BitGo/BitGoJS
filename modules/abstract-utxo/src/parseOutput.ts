@@ -14,7 +14,7 @@ import {
   UnexpectedAddressError,
   VerificationOptions,
 } from '@bitgo/sdk-core';
-import { AbstractUtxoCoin, Output, TransactionParams } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, Output, TransactionParams, isWalletOutput } from './abstractUtxoCoin';
 
 const debug = debugLib('bitgo:v2:parseoutput');
 
@@ -222,6 +222,32 @@ export async function parseOutput({
   let currentAddressType: string | undefined = undefined;
   const RECIPIENT_THRESHOLD = 1000;
   try {
+    // In the case of PSBTs, we can already determine the internal/external status of the output addresses
+    // based on the derivation information being included in the PSBT. We can short circuit GET v2.wallet.address
+    // and save on network requests. Since we have the derivation information already, we can still verify the address
+    if (currentOutput.external !== undefined) {
+      // In the case that we have a custom change wallet, we need to verify the address against the custom change keys
+      // and not the wallet keys. This check is done in the handleVerifyAddressError function if this error is thrown.
+      if (customChange !== undefined) {
+        throw new UnexpectedAddressError('`address validation failure');
+      }
+      // If it is an internal address, we can skip the network request and just verify the address locally with the
+      // derivation information we have. Otherwise, if the address is external, which is the only remaining case, we
+      // can just return the current output as is without contacting the server.
+      if (isWalletOutput(currentOutput)) {
+        const res = await coin.isWalletAddress({
+          addressType: AbstractUtxoCoin.inferAddressType({ chain: currentOutput.chain }) || undefined,
+          keychains: keychainArray as { pub: string; commonKeychain?: string | undefined }[],
+          address: currentAddress,
+          chain: currentOutput.chain,
+          index: currentOutput.index,
+        });
+        if (!res) {
+          throw new UnexpectedAddressError();
+        }
+      }
+      return currentOutput;
+    }
     /**
      * The only way to determine whether an address is known on the wallet is to initiate a network request and
      * fetch it. Should the request fail and return a 404, it will throw and therefore has to be caught. For that
@@ -240,7 +266,7 @@ export async function parseOutput({
       );
 
       if (isCurrentAddressInRecipients) {
-        return { ...currentOutput, external: true };
+        return { ...currentOutput };
       }
     }
 

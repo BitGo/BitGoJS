@@ -2,10 +2,12 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { BitGoBase, IRequestTracer, Triple } from '@bitgo/sdk-core';
 import {
   AbstractUtxoCoin,
+  DecoratedExplainTransactionOptions,
+  WalletOutput,
   ExplainTransactionOptions,
-  Output,
   TransactionExplanation,
   TransactionPrebuild,
+  Output,
 } from './abstractUtxoCoin';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 
@@ -91,27 +93,35 @@ export async function getTxInputs<TNumber extends number | bigint>(params: {
 
 function explainCommon<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
-  params: ExplainTransactionOptions<TNumber>,
+  params: DecoratedExplainTransactionOptions<TNumber>,
   network: utxolib.Network
 ) {
   const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'];
   let spendAmount = BigInt(0);
   let changeAmount = BigInt(0);
-  const changeOutputs: Output[] = [];
+  const changeOutputs: WalletOutput[] = [];
   const outputs: Output[] = [];
 
-  const { changeAddresses = [] } = params.txInfo ?? {};
+  const { changeInfo } = params;
+  const changeAddresses = changeInfo?.map((info) => info.address) ?? [];
 
-  tx.outs.forEach((currentOutput) => {
+  tx.outs.forEach((currentOutput, outputIndex) => {
     const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, network);
     const currentAmount = BigInt(currentOutput.value);
 
     if (changeAddresses.includes(currentAddress)) {
       // this is change
       changeAmount += currentAmount;
+      const change = changeInfo?.[outputIndex];
+      if (!change) {
+        throw new Error('changeInfo must have change information for all change outputs');
+      }
       changeOutputs.push({
         address: currentAddress,
         amount: currentAmount.toString(),
+        chain: change.chain,
+        index: change.index,
+        external: false,
       });
       return;
     }
@@ -120,6 +130,12 @@ function explainCommon<TNumber extends number | bigint>(
     outputs.push({
       address: currentAddress,
       amount: currentAmount.toString(),
+      // If changeInfo has a length greater than or equal to zero, it means that the change information
+      // was provided to the function but the output was not identified as change. In this case,
+      // the output is external, and we can set it as so. If changeInfo is undefined, it means we were
+      // given no information about change outputs, so we can't determine anything about the output,
+      // so we leave it undefined.
+      external: changeInfo ? true : undefined,
     });
   });
 
@@ -207,21 +223,53 @@ export function explainPsbt<TNumber extends number | bigint>(
     throw new Error('failed to parse psbt hex');
   }
   const txOutputs = psbt.txOutputs;
-  function getChangeAddresses() {
+
+  function getChainAndIndexFromBip32Derivations(output: bitgo.PsbtOutput) {
+    const derivations = output.bip32Derivation ?? output.tapBip32Derivation ?? undefined;
+    if (!derivations) {
+      return undefined;
+    }
+    const paths = derivations.map((d) => d.path);
+    if (!paths || paths.length !== 3) {
+      throw new Error('expected 3 paths in bip32Derivation or tapBip32Derivation');
+    }
+    if (!paths.every((p) => paths[0] === p)) {
+      throw new Error('expected all paths to be the same');
+    }
+
+    paths.forEach((path) => {
+      if (paths[0] !== path) {
+        throw new Error(
+          'Unable to get a single chain and index on the output because there are different paths for different keys'
+        );
+      }
+    });
+    return utxolib.bitgo.getChainAndIndexFromPath(paths[0]);
+  }
+
+  function getChangeInfo() {
     try {
-      return utxolib.bitgo
-        .findInternalOutputIndices(psbt)
-        .map((i) => utxolib.address.fromOutputScript(txOutputs[i].script, network));
+      return utxolib.bitgo.findInternalOutputIndices(psbt).map((i) => {
+        const derivationInformation = getChainAndIndexFromBip32Derivations(psbt.data.outputs[i]);
+        if (!derivationInformation) {
+          throw new Error('could not find derivation information on bip32Derivation or tapBip32Derivation');
+        }
+        return {
+          address: utxolib.address.fromOutputScript(txOutputs[i].script, network),
+          external: false,
+          ...derivationInformation,
+        };
+      });
     } catch (e) {
       if (e instanceof utxolib.bitgo.ErrorNoMultiSigInputFound) {
-        return [];
+        return undefined;
       }
       throw e;
     }
   }
-  const changeAddresses = getChangeAddresses();
+  const changeInfo = getChangeInfo();
   const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
-  const common = explainCommon(tx, { ...params, txInfo: { ...params.txInfo, changeAddresses } }, network);
+  const common = explainCommon(tx, { ...params, txInfo: params.txInfo, changeInfo }, network);
   const inputSignaturesCount = getPsbtInputSignaturesCount(psbt, params);
 
   // Set fee from subtracting inputs from outputs
