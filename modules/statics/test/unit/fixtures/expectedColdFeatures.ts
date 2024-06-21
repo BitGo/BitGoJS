@@ -99,7 +99,6 @@ export const expectedColdFeatures = {
     'fiateur',
     'fiatgbp',
     'fiatusd',
-    'lnbtc',
     'susd',
     'tbaseeth',
     'tbtg',
@@ -107,7 +106,6 @@ export const expectedColdFeatures = {
     'tfiateur',
     'tfiatgbp',
     'tfiatusd',
-    'tlnbtc',
     'tsusd',
   ],
 };

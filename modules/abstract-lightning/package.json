@@ -37,7 +37,6 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^27.1.0",
-    "@bitgo/utxo-lib": "^9.38.0"
+    "@bitgo/sdk-core": "^27.1.0"
   }
 }

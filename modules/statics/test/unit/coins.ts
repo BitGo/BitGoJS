@@ -333,9 +333,8 @@ coins.forEach((coin, coinName) => {
       });
     } else {
       it('should return true for CUSTODY and CUSTODY_BITGO_TRUST coin feature', () => {
-        const coinSupportsCustody = coin.family !== CoinFamily.LNBTC;
-        coin.features.includes(CoinFeature.CUSTODY).should.eql(coinSupportsCustody);
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(coinSupportsCustody);
+        coin.features.includes(CoinFeature.CUSTODY).should.eql(true);
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(true);
       });
 
       it('should return false for all non-SD coin feature', () => {

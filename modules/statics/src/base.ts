@@ -52,7 +52,6 @@ export enum CoinFamily {
   INJECTIVE = 'injective',
   ISLM = 'islm',
   KAVA = 'kava',
-  LNBTC = 'lnbtc',
   LTC = 'ltc',
   POLYGON = 'polygon',
   NEAR = 'near',
@@ -129,12 +128,6 @@ export enum CoinFeature {
    * These are typically Bitcoin and forks of it, such as Litecoin and Bitcoin Cash.
    */
   UNSPENT_MODEL = 'unspent-model',
-  /*
-   * Does this coin align with the Lightning Network model?
-   *
-   * These are typically Lightning Network on unspent model coins, such as BTC and LBTC.
-   */
-  LIGHTNING_MODEL = 'lightning-model',
   /*
    * Does this coin align with the account model?
    *
@@ -325,7 +318,6 @@ export enum UnderlyingAsset {
   INJECTIVE = 'injective',
   ISLM = 'islm',
   KAVA = 'kava',
-  LNBTC = 'lnbtc',
   LTC = 'ltc',
   NEAR = 'near',
   OPETH = 'opeth',
@@ -1970,7 +1962,6 @@ export enum BaseUnit {
   SOL = 'lamport',
   ADA = 'lovelace',
   USD = 'USD',
-  LNBTC = 'millisatoshi',
   LTC = 'microlitecoins',
   DASH = 'duff',
   ZEC = 'zatoshi',
@@ -2018,9 +2009,6 @@ export interface BaseCoinConstructorOptions {
 export abstract class BaseCoin {
   /*
     Display properties
-   */
-  /**
-   * random uuid for a coin
    */
   public readonly id: string;
   public readonly fullName: string;

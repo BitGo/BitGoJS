@@ -5,7 +5,6 @@ export * from './errors';
 export * from './tokenConfig';
 export { OfcCoin } from './ofc';
 export { UtxoCoin } from './utxo';
-export { LightningCoin } from './lightning';
 export {
   AccountCoin,
   CeloCoin,

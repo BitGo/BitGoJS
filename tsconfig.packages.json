@@ -8,10 +8,10 @@
       "path": "./modules/abstract-eth"
     },
     {
-      "path": "./modules/abstract-lightning"
+      "path": "./modules/abstract-utxo"
     },
     {
-      "path": "./modules/abstract-utxo"
+      "path": "./modules/abstract-lightning"
     },
     {
       "path": "./modules/account-lib"
@@ -123,9 +123,6 @@
     },
     {
       "path": "./modules/sdk-coin-islm"
-    },
-    {
-      "path": "./modules/sdk-coin-lnbtc"
     },
     {
       "path": "./modules/sdk-coin-ltc"

@@ -44,8 +44,8 @@
     "gen-docs": "typedoc"
   },
   "dependencies": {
-    "@bitgo/abstract-lightning": "^1.0.0",
     "@bitgo/abstract-utxo": "^8.7.0",
+    "@bitgo/abstract-lightning": "^1.0.0",
     "@bitgo/account-lib": "^23.0.19",
     "@bitgo/blockapis": "^1.9.5",
     "@bitgo/sdk-api": "^1.49.0",
@@ -79,7 +79,6 @@
     "@bitgo/sdk-coin-hbar": "^2.0.19",
     "@bitgo/sdk-coin-injective": "^2.0.19",
     "@bitgo/sdk-coin-islm": "^2.0.19",
-    "@bitgo/sdk-coin-lnbtc": "^1.0.0",
     "@bitgo/sdk-coin-ltc": "^3.0.19",
     "@bitgo/sdk-coin-near": "^2.0.19",
     "@bitgo/sdk-coin-opeth": "^18.1.4",
