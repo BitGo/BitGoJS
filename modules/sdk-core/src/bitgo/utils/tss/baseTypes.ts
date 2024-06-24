@@ -294,6 +294,9 @@ export type TxRequest = {
     signatureShares: SignatureShareRecord[];
     combineSigShare?: string;
     txHash?: string;
+    messageRaw: string;
+    derivationPath: string;
+    messageEncoded?: string;
   }[];
   apiVersion?: TxRequestVersion;
   latest: boolean;

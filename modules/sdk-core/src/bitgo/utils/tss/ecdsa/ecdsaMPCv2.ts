@@ -567,7 +567,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         : params.txRequest;
 
     let derivationPath: string;
-    let txToSign: string;
+    let txOrMessageToSign: string;
     const [userGpgKey, bitgoGpgPubKey] = await Promise.all([
       generateGPGKeyPair('secp256k1'),
       this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true, params.reqId).then(
@@ -582,10 +582,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
-      txToSign = unsignedTx.signableHex;
+      txOrMessageToSign = unsignedTx.signableHex;
       derivationPath = unsignedTx.derivationPath;
     } else if (requestType === RequestType.message) {
-      throw new Error('MPCv2 message signing not supported yet.');
+      assert(txRequest.messages, 'Unable to find messages in the txRequest');
+      txOrMessageToSign = txRequest.messages![0].messageRaw;
+      derivationPath = txRequest.messages![0].derivationPath;
     } else {
       throw new Error('Invalid request type');
     }
@@ -596,7 +598,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     } catch (err) {
       hash = createKeccakHash('keccak256') as Hash;
     }
-    const hashBuffer = hash.update(Buffer.from(txToSign, 'hex')).digest();
+    const hashBuffer = hash.update(Buffer.from(txOrMessageToSign, 'hex')).digest();
 
     const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
