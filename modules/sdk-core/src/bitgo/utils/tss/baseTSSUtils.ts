@@ -235,6 +235,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       preview,
     };
 
+    const reqTracer = params.reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqTracer);
     const unsignedTx = (await this.bitgo
       .post(this.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
       .send(whitelistedParams)
@@ -266,7 +268,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       messageEncoded: params.messageEncoded ?? '',
     };
 
-    return this.createTxRequestBase(intentOptions, apiVersion, preview);
+    return this.createTxRequestBase(intentOptions, apiVersion, preview, params.reqId);
   }
 
   /**
@@ -292,7 +294,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       messageEncoded: params.typedDataEncoded ?? '',
     };
 
-    return this.createTxRequestBase(intentOptions, apiVersion, preview);
+    return this.createTxRequestBase(intentOptions, apiVersion, preview, params.reqId);
   }
 
   /**
@@ -303,7 +305,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   private async createTxRequestBase(
     intentOptions: PopulatedIntentForTypedDataSigning | PopulatedIntentForMessageSigning,
     apiVersion: TxRequestVersion,
-    preview?: boolean
+    preview?: boolean,
+    reqId?: IRequestTracer
   ): Promise<TxRequest> {
     const whitelistedParams = {
       intent: {
@@ -313,6 +316,8 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       preview,
     };
 
+    const reqTracer = reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqTracer);
     return this.bitgo
       .post(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests`, 2))
       .send(whitelistedParams)
@@ -363,9 +368,9 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @returns {Promise<any>}
    */
   async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest> {
-    await this.deleteSignatureShares(txRequestId);
+    await this.deleteSignatureShares(txRequestId, reqId);
     // after delete signatures shares get the tx without them
-    const txRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequestId);
+    const txRequest = await getTxRequest(this.bitgo, this.wallet.id(), txRequestId, reqId);
     return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId });
   }
 
@@ -396,8 +401,15 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * combination of coin and the feature flags on the user and their enterprise if set.
    * @param enterpriseId - enterprise under which user wants to create the wallet
    * @param isMPCv2 - true to get the MPCv2 GPG public key, defaults to false
+   * @param reqId - request tracer request id
    */
-  public async getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId: string | undefined, isMPCv2 = false): Promise<Key> {
+  public async getBitgoGpgPubkeyBasedOnFeatureFlags(
+    enterpriseId: string | undefined,
+    isMPCv2 = false,
+    reqId?: IRequestTracer
+  ): Promise<Key> {
+    const reqTracer = reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqTracer);
     const response: BitgoGPGPublicKey = await this.bitgo
       .get(this.baseCoin.url('/tss/pubkey'))
       .query({ enterpriseId })

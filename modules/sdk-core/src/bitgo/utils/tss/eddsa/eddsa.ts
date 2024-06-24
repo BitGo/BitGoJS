@@ -556,7 +556,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const { txRequest, prv } = params;
 
     if (typeof txRequest === 'string') {
-      txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
+      txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest, params.reqId);
       txRequestId = txRequestResolved.txRequestId;
     } else {
       txRequestResolved = txRequest;

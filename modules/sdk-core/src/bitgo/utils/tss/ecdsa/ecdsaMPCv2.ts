@@ -522,14 +522,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const userKeyShare = Buffer.from(params.prv, 'base64');
     const txRequest: TxRequest =
       typeof params.txRequest === 'string'
-        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
+        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest, params.reqId)
         : params.txRequest;
 
     let derivationPath: string;
     let txToSign: string;
     const [userGpgKey, bitgoGpgPubKey] = await Promise.all([
       generateGPGKeyPair('secp256k1'),
-      this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true).then(
+      this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true, params.reqId).then(
         (pubKey) => pubKey ?? this.bitgoMPCv2PublicGpgKey
       ),
     ]);
@@ -570,7 +570,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
-      this.wallet.multisigTypeVersion()
+      this.wallet.multisigTypeVersion(),
+      params.reqId
     );
     assert(latestTxRequest.transactions);
 
@@ -613,7 +614,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
-      this.wallet.multisigTypeVersion()
+      this.wallet.multisigTypeVersion(),
+      params.reqId
     );
     assert(latestTxRequest.transactions);
 
@@ -656,10 +658,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
-      this.wallet.multisigTypeVersion()
+      this.wallet.multisigTypeVersion(),
+      params.reqId
     );
 
-    return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, RequestType.tx);
+    return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, RequestType.tx, params.reqId);
   }
 
   // #endregion

@@ -265,8 +265,9 @@ export class PendingApproval implements IPendingApproval {
   /**
    * Recreate a transaction for a pending approval to respond to updated network conditions
    * @param params
+   * @param reqId
    */
-  async recreateAndSignTransaction(params: any = {}): Promise<any> {
+  async recreateAndSignTransaction(params: any = {}, reqId?: IRequestTracer): Promise<any> {
     // this method only makes sense with existing transaction requests
     const transactionRequest = this.info().transactionRequest;
     if (_.isUndefined(transactionRequest)) {
@@ -280,15 +281,17 @@ export class PendingApproval implements IPendingApproval {
     const originalPrebuild = transactionRequest.coinSpecific[this.baseCoin.type];
 
     const recipients = transactionRequest.recipients;
-    const prebuildParams = _.extend({}, params, { recipients: recipients }, transactionRequest.buildParams);
+    let prebuildParams = _.extend({}, params, { recipients: recipients }, transactionRequest.buildParams);
 
     if (!_.isUndefined(originalPrebuild.hopTransaction)) {
       prebuildParams.hop = true;
     }
 
+    const reqTracer = reqId || new RequestTracer();
     if (transactionRequest.buildParams && transactionRequest.buildParams.type === 'consolidate') {
       // consolidate tag is in the build params - this is a consolidation transaction, so
       // it needs to be rebuilt using the special consolidation build route
+      this.bitgo.setRequestTracer(reqTracer);
       prebuildParams.prebuildTx = await this.bitgo
         .post(this.wallet.url(`/consolidateUnspents`))
         .send(BuildParams.encode(prebuildParams))
@@ -296,6 +299,7 @@ export class PendingApproval implements IPendingApproval {
       delete prebuildParams.recipients;
     }
 
+    prebuildParams = _.extend({}, params, { reqId: reqId });
     const signedTransaction = await this.wallet.prebuildAndSignTransaction(prebuildParams);
     // compare PAYGo fees
     const originalParsedTransaction = (await this.baseCoin.parseTransaction({
@@ -402,7 +406,7 @@ export class PendingApproval implements IPendingApproval {
       if (this._pendingApproval.txRequestId) {
         return await this.recreateAndSignTSSTransaction(params, reqId);
       }
-      return await this.recreateAndSignTransaction(params);
+      return await this.recreateAndSignTransaction(params, reqId);
     }
   }
 
