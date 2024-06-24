@@ -72,16 +72,6 @@ async function updateDockerFile(lerna) {
     .join(' && \\\n');
   const linkContent = `RUN cd /var/bitgo-express && \\\n${linkers}\n`;
 
-  // add metadata about the build to docker labels
-  let labelContent = `LABEL created="${new Date().toUTCString()}"\n`; // add created timestamp;
-  labelContent += `LABEL version=${require('../modules/express/package.json').version}\n`; // set current image version from express
-  labelContent += `LABEL git_hash=${require('child_process').execSync(`git rev-parse HEAD`).toString().trim()}\n`; // set to latest git HEAD hash
-
-  dockerContents = dockerContents
-    .replace(/#COPY_START((.|\n)*)#COPY_END/, `#COPY_START\n${copyContent}#COPY_END`)
-    .replace(/#LINK_START((.|\n)*)#LINK_END/, `#LINK_START\n${linkContent}#LINK_END`)
-    .replace(/#LABEL_START((.|\n)*)#LABEL_END/, `#LABEL_START\n${labelContent}#LABEL_END`);
-
   fs.writeFileSync('Dockerfile', dockerContents);
 }
 
