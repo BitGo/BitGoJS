@@ -3171,15 +3171,12 @@ export class Wallet implements IWallet {
     }
 
     try {
-      const signedTxRequest = await this.tssUtils!.signTxRequest({
+      return await this.tssUtils!.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,
       });
-      return {
-        txRequestId: signedTxRequest.txRequestId,
-      };
     } catch (e) {
       throw new Error('failed to sign transaction ' + e);
     }

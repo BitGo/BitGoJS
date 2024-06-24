@@ -6,6 +6,7 @@ import { Environments, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Txlm } from '../../src';
+import { KeyPair } from '../../src/lib/keyPair';
 
 import nock from 'nock';
 import * as assert from 'assert';
@@ -127,6 +128,12 @@ describe('XLM:', function () {
   it('should validate pub key', () => {
     const { pub } = basecoin.keychains().create();
     basecoin.isValidPub(pub).should.equal(true);
+  });
+
+  it('should validate root keypair', () => {
+    const { pub, prv } = basecoin.keychains().create({ isRootKey: true });
+    basecoin.isValidPub(pub).should.equal(true);
+    basecoin.isValidPrv(prv).should.equal(true);
   });
 
   it('should validate stellar username', function () {
@@ -294,6 +301,7 @@ describe('XLM:', function () {
     let basecoin;
     let wallet;
     let halfSignedTransaction;
+    let rootKeyHalfSignedTransaction;
 
     const userKeychain = {
       pub: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
@@ -303,6 +311,17 @@ describe('XLM:', function () {
       pub: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
       prv: 'SA22TDBINLZMGYUDVXGUP2JMYIQ3DTJE53PNQUVCDK73XRS6TDVYU7WW',
     };
+    // This key pair is the decoded version of the userKeychain above
+    const rootKeychain = {
+      pub: '37c6be1c677873e42a90f3d0ed3b0e4f3ba8591f285769d8c922f7024ae0c009',
+      prv: 'c034ca796a145e79acfac9bc9d97e4d3aaa42bfbe648b46bb1f3da794d7765fb',
+    };
+    // This key pair is the decoded version of the backupKeychain above
+    const backupRootKeychain = {
+      pub: 'b63de5ad57cc75b256483bc1c1de82689497eaf27a930896e7733f418acf9eca',
+      prv: '35a98c286af2c36283adcd47e92cc221b1cd24eeded852a21abfbbc65e98eb8a',
+    };
+
     const prebuild = {
       txBase64:
         'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAA==',
@@ -386,6 +405,14 @@ describe('XLM:', function () {
       halfSignedTransaction.halfSigned.txBase64.should.equal(signedTxBase64);
     });
 
+    it('should sign a prebuild with root key', async function () {
+      rootKeyHalfSignedTransaction = await wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: rootKeychain.prv,
+      });
+      rootKeyHalfSignedTransaction.halfSigned.txBase64.should.equal(signedTxBase64);
+    });
+
     it('should verify the user signature on a tx', function () {
       const userPub = userKeychain.pub;
       const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
@@ -393,9 +420,23 @@ describe('XLM:', function () {
       validSignature.should.equal(true);
     });
 
+    it('should verify the user signature on a tx given root key', function () {
+      const rootPub = rootKeychain.pub;
+      const tx = new stellar.Transaction(rootKeyHalfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
+      const validSignature = basecoin.verifySignature(rootPub, tx.hash(), tx.signatures[0].signature());
+      validSignature.should.equal(true);
+    });
+
     it('should fail to verify the wrong signature on a tx', function () {
       const keyPair = basecoin.generateKeyPair();
       const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
+      const validSignature = basecoin.verifySignature(keyPair.pub, tx.hash(), tx.signatures[0].signature());
+      validSignature.should.equal(false);
+    });
+
+    it('should fail to verify the wrong signature on a tx given root key', function () {
+      const keyPair = basecoin.generateRootKeyPair();
+      const tx = new stellar.Transaction(rootKeyHalfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
       const validSignature = basecoin.verifySignature(keyPair.pub, tx.hash(), tx.signatures[0].signature());
       validSignature.should.equal(false);
     });
@@ -474,6 +515,36 @@ describe('XLM:', function () {
         keychains: {
           user: { pub: userKeychain.pub },
           backup: { pub: backupKeychain.pub },
+        },
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('transaction signed with wrong key');
+    });
+
+    it('should fail to verify a transaction signed with the wrong root key', async function () {
+      // sign transaction
+      const tx = await wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: backupRootKeychain.prv,
+      });
+
+      const txParams = {
+        recipients: [
+          {
+            address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+            amount: '128000000',
+          },
+        ],
+      };
+      const txPrebuild = {
+        txBase64: tx.halfSigned.txBase64,
+      };
+      const verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: rootKeychain.pub },
+          backup: { pub: backupRootKeychain.pub },
         },
       };
       await basecoin
@@ -611,6 +682,29 @@ describe('XLM:', function () {
         keychains: {
           user: { pub: userKeychain.pub },
           backup: { pub: backupKeychain.pub },
+        },
+      };
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      validTransaction.should.equal(true);
+    });
+
+    it('should verify a transaction with root key', async function () {
+      const txParams = {
+        recipients: [
+          {
+            address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+            amount: '128000000',
+          },
+        ],
+      };
+      const txPrebuild = {
+        txBase64: rootKeyHalfSignedTransaction.halfSigned.txBase64,
+      };
+      const verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: rootKeychain.pub },
+          backup: { pub: backupRootKeychain.pub },
         },
       };
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
@@ -953,6 +1047,34 @@ describe('XLM:', function () {
     it('should validate pub key', () => {
       const { pub } = basecoin.keychains().create();
       basecoin.isValidPub(pub).should.equal(true);
+    });
+  });
+
+  describe('Generate wallet Root key pair: ', () => {
+    it('should generate a root keypair from random seed', function () {
+      const kp = basecoin.generateRootKeyPair();
+      basecoin.isValidPub(kp.pub).should.equal(true);
+
+      const keyPair = new KeyPair({ prv: kp.prv }).getKeys(true);
+      keyPair.should.have.property('pub');
+      keyPair.should.have.property('prv');
+      keyPair.prv?.should.equal(kp.prv.slice(0, 64));
+      keyPair.pub.should.equal(kp.pub);
+    });
+
+    it('should generate a root keypair from seed', function () {
+      const seed = Buffer.from('761de570c460792f10378a8b3c7cc2283241db37d8dac13dbdd8095a05ea00b2', 'hex');
+      const kp = basecoin.generateRootKeyPair(seed);
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      kp.pub.should.equal('7fe4254baaeebfefd5a632fdb71aa9ec63aa611bcd392b07a759a4b21307b7fc');
+      kp.prv.should.equal(
+        '761de570c460792f10378a8b3c7cc2283241db37d8dac13dbdd8095a05ea00b27fe4254baaeebfefd5a632fdb71aa9ec63aa611bcd392b07a759a4b21307b7fc'
+      );
+
+      const keyPair = new KeyPair({ prv: kp.prv }).getKeys(true);
+      keyPair.should.have.property('prv');
+      keyPair.prv?.should.equal(kp.prv.slice(0, 64));
+      keyPair.pub.should.equal(kp.pub);
     });
   });
 });

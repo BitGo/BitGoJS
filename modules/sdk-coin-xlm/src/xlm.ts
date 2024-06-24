@@ -5,6 +5,8 @@ import * as url from 'url';
 import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
+import * as Utils from './lib/utils';
+import { KeyPair as StellarKeyPair } from './lib/keyPair';
 
 import {
   BaseCoin,
@@ -212,31 +214,41 @@ export class Xlm extends BaseCoin {
 
   /** inheritdoc */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const pair = seed ? stellar.Keypair.fromRawEd25519Seed(seed) : stellar.Keypair.random();
-    return {
-      pub: pair.publicKey(),
-      prv: pair.secret(),
-    };
+    const keyPair = seed ? new StellarKeyPair({ seed }) : new StellarKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return { pub: keys.pub, prv: keys.prv };
+  }
+
+  generateRootKeyPair(seed?: Buffer): KeyPair {
+    const keyPair = seed ? new StellarKeyPair({ seed }) : new StellarKeyPair();
+    const keys = keyPair.getKeys(true);
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return { prv: keys.prv + keys.pub, pub: keys.pub };
   }
 
   /**
-   * Get decoded ed25519 public key from raw data
+   * Get encoded ed25519 public key from raw data
    *
    * @param pub Raw public key
    * @returns Encoded public key
    */
   getPubFromRaw(pub: string): string {
-    return stellar.StrKey.encodeEd25519PublicKey(Buffer.from(pub, 'hex'));
+    return Utils.encodePublicKey(Buffer.from(pub, 'hex'));
   }
 
   /**
-   * Get decoded ed25519 private key from raw data
+   * Get encoded ed25519 private key from raw data
    *
    * @param prv Raw private key
    * @returns Encoded private key
    */
   getPrvFromRaw(prv: string): string {
-    return stellar.StrKey.encodeEd25519SecretSeed(Buffer.from(prv, 'hex'));
+    return Utils.encodePrivateKey(Buffer.from(prv, 'hex'));
   }
 
   /**
@@ -246,7 +258,9 @@ export class Xlm extends BaseCoin {
    * @returns is it valid?
    */
   isValidPub(pub: string): boolean {
-    return stellar.StrKey.isValidEd25519PublicKey(pub);
+    // Stellar's validation method only allows keys in Stellar-specific format, with a 'G' prefix
+    // We need to allow for both Stellar and raw root keys
+    return Utils.isValidPublicKey(pub) || Utils.isValidStellarPub(pub);
   }
 
   /**
@@ -256,7 +270,9 @@ export class Xlm extends BaseCoin {
    * @returns is it valid?
    */
   isValidPrv(prv: string): boolean {
-    return stellar.StrKey.isValidEd25519SecretSeed(prv);
+    // Stellar's validation method only allows keys in Stellar-specific format, with an 'S' prefix
+    // We need to allow for both Stellar and raw root private keys
+    return Utils.isValidPrivateKey(prv) || Utils.isValidStellarPrv(prv);
   }
 
   /**
@@ -754,7 +770,15 @@ export class Xlm extends BaseCoin {
       throw new Error(`prv must be a string, got type ${typeof prv}`);
     }
 
-    const keyPair = stellar.Keypair.fromSecret(prv);
+    // Stellar private keys start with an S, check if a root key prv (hex string) was given
+    let keyPair: stellar.Keypair;
+    if (!prv.startsWith('S')) {
+      // Encode the raw root hex prv into a stellar S-prefixed private key
+      keyPair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(prv, 'hex')));
+    } else {
+      keyPair = stellar.Keypair.fromSecret(prv);
+    }
+
     const tx = new stellar.Transaction(txPrebuild.txBase64, this.getStellarNetwork());
     tx.sign(keyPair);
     const txBase64 = Xlm.txToString(tx);
@@ -809,7 +833,14 @@ export class Xlm extends BaseCoin {
     if (!Buffer.isBuffer(message)) {
       message = Buffer.from(message);
     }
-    const keypair = stellar.Keypair.fromSecret(key.prv);
+
+    let keypair: stellar.Keypair;
+    if (key.prv.startsWith('S')) {
+      keypair = stellar.Keypair.fromSecret(key.prv);
+    } else {
+      keypair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(key.prv, 'hex')));
+    }
+
     return keypair.sign(message);
   }
 
@@ -828,7 +859,16 @@ export class Xlm extends BaseCoin {
     if (!Buffer.isBuffer(message)) {
       message = Buffer.from(message);
     }
-    const keyPair = stellar.Keypair.fromPublicKey(pub);
+
+    let keyPair: stellar.Keypair;
+    // Stellar public key starts with 'G'
+    if (pub.startsWith('G')) {
+      keyPair = stellar.Keypair.fromPublicKey(pub);
+    } else {
+      // Raw root key was given, need to encode to Stellar key first
+      keyPair = stellar.Keypair.fromPublicKey(Utils.encodePublicKey(Buffer.from(pub, 'hex')));
+    }
+
     return keyPair.verify(message, signature);
   }
 
