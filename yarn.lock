@@ -1010,10 +1010,10 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@2.23.1":
-  version "2.23.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-2.23.1.tgz#ed4816eaacd340357a5bbbccdfae0600c3320384"
-  integrity sha512-f9bVKHMDykYNpCtgcBFV8BP1pPo5K4RtAtNiaMYam4R6TZuIt0R0gcnuMfP+ot5efRQlhURQGduoK8R0mTbfoQ==
+"@bitgo/public-types@2.25.1":
+  version "2.25.1"
+  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-2.25.1.tgz#f0cfd87195d3063ce7c06ad2f33a34e4f84459a7"
+  integrity sha512-85K8W5rXJYjd/ueqrL2sZpPLK0aMxF14Jk6CkogSBHUpFWp6ZZsylmKnRAUFuhzfM6Tf9F0Nt7MXHyrxKOjsxw==
   dependencies:
     "@api-ts/io-ts-http" "1.0.0"
     fp-ts "2.16.2"
