@@ -1564,6 +1564,7 @@ export enum UnderlyingAsset {
   XAUTBULL = 'xautbull',
   XBGOLD = 'xbgold',
   XCD = 'xcd',
+  XCHNG = 'xchng',
   XCN = 'xcn',
   XDEFI = 'xdefi',
   XDOGE = 'xdoge',
