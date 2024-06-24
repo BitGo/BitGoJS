@@ -5,6 +5,7 @@ import fixtures from '../../fixtures/staking/stakingWallet';
 import { Enterprise, Environments, StakingRequest, StakingWallet, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
+import * as sinon from 'sinon';
 
 describe('Staking Wallet Common', function () {
   const microservicesUri = Environments['mock'].uri;
@@ -27,6 +28,12 @@ describe('Staking Wallet Common', function () {
     };
     const wallet = new Wallet(bitgo, baseCoin, walletData);
     stakingWallet = wallet.toStakingWallet();
+  });
+
+  const sandbox = sinon.createSandbox();
+
+  afterEach(function () {
+    sandbox.verifyAndRestore();
   });
 
   describe('stake', function () {
@@ -297,6 +304,40 @@ describe('Staking Wallet Common', function () {
       transactionsReadyToSign.transactions.should.containEql(expectedTransaction);
 
       msScope.isDone().should.be.True();
+    });
+  });
+
+  describe('prebuildSelfManagedStakingTransaction', function () {
+    it('should prebuild self-managed staking transaction', async function () {
+      const transaction = fixtures.transaction('READY', fixtures.buildParams);
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`
+        )
+        .query({ expandBuildParams: true })
+        .reply(200, transaction);
+
+      const prebuildTransaction = sandbox.stub(Wallet.prototype, 'prebuildTransaction');
+      const txPrebuild = {
+        walletId: stakingWallet.walletId,
+        txHex: 'hex',
+        buildParams: transaction.buildParams,
+      };
+      prebuildTransaction.resolves(txPrebuild);
+      prebuildTransaction.calledOnceWithExactly(transaction.buildParams);
+
+      const formattedParams = {
+        ...fixtures.buildParams,
+        coin: stakingWallet.coin,
+        walletId: stakingWallet.walletId,
+        walletType: stakingWallet.wallet.type(),
+        preview: true,
+      };
+      const expected = await stakingWallet.wallet.prebuildTransaction(formattedParams);
+      const stakingTransaction = await stakingWallet.prebuildSelfManagedStakingTransaction(transaction);
+
+      stakingTransaction.should.deepEqual(expected);
+      should.exist(stakingTransaction);
     });
   });
 });
