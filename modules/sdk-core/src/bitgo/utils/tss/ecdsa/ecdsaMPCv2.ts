@@ -5,6 +5,7 @@ import { Hash } from 'crypto';
 import { NonEmptyString } from 'io-ts-types';
 import createKeccakHash from 'keccak';
 import * as pgp from 'openpgp';
+import { KeychainsTriplet } from '../../../baseCoin';
 import {
   KeyGenTypeEnum,
   MPCv2BroadcastMessage,
@@ -20,7 +21,6 @@ import {
 } from '@bitgo/public-types';
 
 import { Ecdsa } from '../../../../account-lib';
-import { KeychainsTriplet } from '../../../baseCoin';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
@@ -41,7 +41,7 @@ import {
   RequestType,
   SignatureShareRecord,
   TSSParams,
-  TSSParamsForMessage,
+  TSSParamsForMessage, TSSParamsForMessageWithPrv,
   TSSParamsWithPrv,
   TxRequest,
 } from '../baseTypes';
@@ -630,18 +630,26 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    * @param {string} params.reqId - request id
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
+
+  async signTxRequest(params: TSSParamsWithPrv | TSSParamsForMessageWithPrv): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
-    return this.signRequestBase(params, RequestType.tx);
+    const txRequest: TxRequest =
+      typeof params.txRequest === 'string'
+        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
+        : params.txRequest;
+    const requestType = txRequest.messages ? RequestType.message : RequestType.tx;
+    return this.signRequestBase(params, requestType);
   }
 
-  private async signRequestBase(params: TSSParamsWithPrv, requestType: RequestType): Promise<TxRequest> {
+  private async signRequestBase(params: TSSParamsWithPrv | TSSParamsForMessageWithPrv, requestType: RequestType): Promise<TxRequest> {
     const userKeyShare = Buffer.from(params.prv, 'base64');
     const txRequest: TxRequest =
       typeof params.txRequest === 'string'
         ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest, params.reqId)
         : params.txRequest;
 
+    let txOrMessageToSign;
+    let derivationPath;
     const [userGpgKey, bitgoGpgPubKey] = await Promise.all([
       generateGPGKeyPair('secp256k1'),
       this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true, params.reqId).then(
@@ -652,8 +660,28 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       throw new Error('Missing BitGo GPG key for MPCv2');
     }
 
-    const { derivationPath, hashBuffer } = this.getHashStringAndDerivationPath(txRequest, requestType);
+    if (requestType === RequestType.tx) {
+      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      const unsignedTx =
+        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      txOrMessageToSign = unsignedTx.signableHex;
+      derivationPath = unsignedTx.derivationPath;
+    } else if (requestType === RequestType.message) {
+      assert(txRequest.messages?.length, 'Unable to find messages in the txRequest');
+      txOrMessageToSign = txRequest.messages![0].messageRaw;
+      derivationPath = txRequest.messages![0].derivationPath;
+    } else {
+      throw new Error('Invalid request type');
+    }
 
+    let hash: Hash;
+    try {
+      hash = this.baseCoin.getHashFunction();
+    } catch (err) {
+      hash = createKeccakHash('keccak256') as Hash;
+    }
+    // check what the encoding is supposed to be for message
+    const hashBuffer = hash.update(Buffer.from(txOrMessageToSign, 'hex')).digest();
     const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
@@ -663,16 +691,16 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       txRequest.walletId,
       txRequest.txRequestId,
       [signatureShareRound1],
-      RequestType.tx,
+      requestType,
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-    assert(latestTxRequest.transactions);
+    assert(latestTxRequest.transactions || latestTxRequest.messages);
 
-    const bitgoToUserMessages1And2 = latestTxRequest.transactions[0].signatureShares;
+    const bitgoToUserMessages1And2 = latestTxRequest.transactions![0].signatureShares;
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundOne = JSON.parse(
       bitgoToUserMessages1And2[bitgoToUserMessages1And2.length - 1].share
@@ -707,7 +735,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       txRequest.walletId,
       txRequest.txRequestId,
       [signatureShareRoundTwo],
-      RequestType.tx,
+      requestType,
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
@@ -751,7 +779,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       txRequest.walletId,
       txRequest.txRequestId,
       [signatureShareRoundThree],
-      RequestType.tx,
+      requestType,
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
@@ -760,6 +788,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     );
 
     return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, RequestType.tx, params.reqId);
+
   }
 
   // #endregion
