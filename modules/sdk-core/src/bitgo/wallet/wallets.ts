@@ -789,7 +789,7 @@ export class Wallets implements IWallets {
     originalPasscodeEncryptionCode,
     backupProvider,
   }: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
-    if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa' && walletVersion === 3) {
+    if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       const tssSettings: TssSettings = await this.bitgo
         .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
         .result();
