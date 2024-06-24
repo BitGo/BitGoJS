@@ -21,13 +21,41 @@ import { generate2of2KeyShares, generateDKGKeyShares } from '../../../../src/tss
 describe('DKLS Dkg 2x3', function () {
   it(`should create key shares`, async function () {
     const [user, backup, bitgo] = await generateDKGKeyShares();
-
     const userKeyShare = user.getKeyShare();
     const backupKeyShare = backup.getKeyShare();
     const bitgoKeyShare = bitgo.getKeyShare();
     const userReducedKeyShare = user.getReducedKeyShare();
     const decodeReducedKeyshare = ReducedKeyShareType.decode(decode(userReducedKeyShare));
     assert(isRight(decodeReducedKeyshare));
+    assert.deepEqual(decode(userKeyShare).public_key, decode(bitgoKeyShare).public_key);
+    assert.deepEqual(decode(backupKeyShare).public_key, decode(bitgoKeyShare).public_key);
+    assert.deepEqual(DklsTypes.getCommonKeychain(userKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
+    assert.deepEqual(DklsTypes.getCommonKeychain(backupKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
+  });
+
+  it(`should create key shares with seed`, async function () {
+    const seedUser = Buffer.from('a304733c16cc821fe171d5c7dbd7276fd90deae808b7553d17a1e55e4a76b270', 'hex');
+    const seedBackup = Buffer.from('9d91c2e6353202cf61f8f275158b3468e9a00f7872fc2fd310b72cd026e2e2f9', 'hex');
+    const seedBitgo = Buffer.from('33c749b635cdba7f9fbf51ad0387431cde47e20d8dc13acd1f51a9a0ad06ebfe', 'hex');
+    const [user, backup, bitgo] = await generateDKGKeyShares(
+      undefined,
+      undefined,
+      undefined,
+      seedUser,
+      seedBackup,
+      seedBitgo
+    );
+    const userKeyShare = user.getKeyShare();
+    const backupKeyShare = backup.getKeyShare();
+    const bitgoKeyShare = bitgo.getKeyShare();
+    const userReducedKeyShare = user.getReducedKeyShare();
+    const decodeReducedKeyshare = ReducedKeyShareType.decode(decode(userReducedKeyShare));
+    assert(isRight(decodeReducedKeyshare));
+    // Seed is used so public key is the same every time.
+    assert.deepEqual(
+      Buffer.from(decode(userKeyShare).public_key).toString('hex'),
+      '0207a4047c116a239b6d354cb957f190e32ee9f899ea4e289a0317fbc54438e0a2'
+    );
     assert.deepEqual(decode(userKeyShare).public_key, decode(bitgoKeyShare).public_key);
     assert.deepEqual(decode(backupKeyShare).public_key, decode(bitgoKeyShare).public_key);
     assert.deepEqual(DklsTypes.getCommonKeychain(userKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
