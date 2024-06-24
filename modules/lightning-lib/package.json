@@ -1,0 +1,41 @@
+{
+  "name": "@bitgo/lightning-lib",
+  "description": "Utilities for lightning network",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "version": "1.0.0",
+  "files": [
+    "dist/**/*"
+  ],
+  "keywords": [
+    "bitgo",
+    "lightning",
+    "bitcoin"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "lint": "eslint --quiet .",
+    "unit-test": "mocha --recursive test",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js}'",
+    "precommit": "yarn lint-staged"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/lightning-lib"
+  },
+  "dependencies": {
+    "bitcoinjs-lib": "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.9"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

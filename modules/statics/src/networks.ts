@@ -18,8 +18,8 @@ export interface UtxoNetwork extends BaseNetwork {
 }
 
 export interface LightningNetwork extends BaseNetwork {
-  // Network name as defined in @bitgo/utxo-lib networks.ts
-  utxolibName: string;
+  // Network name as defined in @bitgo/lightning-lib networks.ts
+  lightningLibName: string;
 }
 
 export interface AdaNetwork extends BaseNetwork {
@@ -266,14 +266,14 @@ class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
 class LightningBitcoin extends Mainnet implements LightningNetwork {
   name = 'LightningBitcoin';
   family = CoinFamily.LNBTC;
-  utxolibName = 'bitcoin';
+  lightningLibName = 'bitcoin';
   explorerUrl = 'https://mempool.space/lightning';
 }
 
 class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
   name = 'TestnetLightningBitcoin';
   family = CoinFamily.LNBTC;
-  utxolibName = 'bitcoin';
+  lightningLibName = 'bitcoin';
   explorerUrl = 'https://mempool.space/lightning';
 }
 
