@@ -40,12 +40,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-lightning": "^1.0.0",
-    "@bitgo/sdk-core": "^27.1.0",
+    "@bitgo/abstract-lightning": "^1.1.0",
+    "@bitgo/sdk-core": "^27.1.2",
     "@bitgo/utxo-lib": "^9.38.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.49.0",
-    "@bitgo/sdk-test": "^8.0.24"
+    "@bitgo/sdk-api": "^1.49.2",
+    "@bitgo/sdk-test": "^8.0.26"
   }
 }
