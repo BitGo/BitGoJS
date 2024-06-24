@@ -3016,9 +3016,7 @@ describe('V2 Wallet:', function () {
           txPrebuild,
           prv: 'sercretKey',
         });
-        signedTransaction.should.deepEqual({
-          txRequestId: txRequest.txRequestId,
-        });
+        signedTransaction.should.deepEqual(txRequest);
       });
 
       it('should fail to sign transaction without txRequestId', async function () {
