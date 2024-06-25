@@ -7279,6 +7279,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.XCD
   ),
   erc20(
+    '458bbf8e-6996-4a8c-8d33-612c2b8c8abe',
+    'xchng',
+    'Chainge',
+    18,
+    '0xb712d62fe84258292d1961b5150a19bc4ab49026',
+    UnderlyingAsset.XCHNG
+  ),
+  erc20(
     '9d696529-40f9-4b59-9960-447cc85d4663',
     'xex',
     'Cross Exchange Token',
