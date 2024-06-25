@@ -19,6 +19,6 @@ export class Tlnbtc extends Lnbtc {
   }
 
   getFullName(): string {
-    return 'Testnet LightningBitcoin';
+    return 'Testnet Lightning Bitcoin';
   }
 }

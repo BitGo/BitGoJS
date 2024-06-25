@@ -1,7 +1,7 @@
 {
   "name": "@bitgo/sdk-coin-lnbtc",
   "version": "1.0.0",
-  "description": "BitGo SDK coin library for LightningBitcoin",
+  "description": "BitGo SDK coin library for Lightning Bitcoin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
