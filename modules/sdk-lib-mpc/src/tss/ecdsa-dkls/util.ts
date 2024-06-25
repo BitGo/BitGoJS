@@ -140,11 +140,14 @@ export async function executeTillRound(
 export async function generateDKGKeyShares(
   retrofitDataA?: RetrofitData,
   retrofitDataB?: RetrofitData,
-  retrofitDataC?: RetrofitData
+  retrofitDataC?: RetrofitData,
+  seedUser?: Buffer,
+  seedBackup?: Buffer,
+  seedBitgo?: Buffer
 ): Promise<[Dkg, Dkg, Dkg]> {
-  const user = new Dkg(3, 2, 0, retrofitDataA);
-  const backup = new Dkg(3, 2, 1, retrofitDataB);
-  const bitgo = new Dkg(3, 2, 2, retrofitDataC);
+  const user = new Dkg(3, 2, 0, seedUser, retrofitDataA);
+  const backup = new Dkg(3, 2, 1, seedBackup, retrofitDataB);
+  const bitgo = new Dkg(3, 2, 2, seedBitgo, retrofitDataC);
   const userRound1Message = await user.initDkg();
   const backupRound1Message = await backup.initDkg();
   const bitgoRound1Message = await bitgo.initDkg();
@@ -215,8 +218,8 @@ export async function generate2of2KeyShares(
   retrofitDataA?: RetrofitData,
   retrofitDataB?: RetrofitData
 ): Promise<[Dkg, Dkg]> {
-  const partyA = new Dkg(2, 2, 0, retrofitDataA);
-  const partyB = new Dkg(2, 2, 1, retrofitDataB);
+  const partyA = new Dkg(2, 2, 0, undefined, retrofitDataA);
+  const partyB = new Dkg(2, 2, 1, undefined, retrofitDataB);
   const partyARound1Message = await partyA.initDkg();
   const partyBRound1Message = await partyB.initDkg();
   const partyARound2Messages = partyA.handleIncomingMessages({

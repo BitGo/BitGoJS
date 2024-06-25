@@ -11,18 +11,20 @@ export class Dkg {
   protected keyShareBuff: Buffer;
   protected n: number;
   protected t: number;
+  protected seed: Buffer | undefined;
   protected chainCodeCommitment: Uint8Array | undefined;
   protected partyIdx: number;
   protected dkgState: DkgState = DkgState.Uninitialized;
   protected dklsKeyShareRetrofitObject: Keyshare | undefined;
   protected retrofitData: RetrofitData | undefined;
 
-  constructor(n: number, t: number, partyIdx: number, retrofitData?: RetrofitData) {
+  constructor(n: number, t: number, partyIdx: number, seed?: Buffer, retrofitData?: RetrofitData) {
     this.n = n;
     this.t = t;
     this.partyIdx = partyIdx;
     this.chainCodeCommitment = undefined;
     this.retrofitData = retrofitData;
+    this.seed = seed;
   }
 
   private _restoreSession() {
@@ -104,10 +106,17 @@ export class Dkg {
       await initDkls.default();
     }
     this._createDKLsRetrofitKeyShare();
+    if (this.seed && this.seed.length !== 32) {
+      throw Error(`Seed should be 32 bytes, got ${this.seed.length}.`);
+    }
     if (this.dklsKeyShareRetrofitObject) {
-      this.dkgSession = KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject);
+      this.dkgSession = this.seed
+        ? KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject, new Uint8Array(this.seed))
+        : KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject);
     } else {
-      this.dkgSession = new KeygenSession(this.n, this.t, this.partyIdx);
+      this.dkgSession = this.seed
+        ? new KeygenSession(this.n, this.t, this.partyIdx, new Uint8Array(this.seed))
+        : new KeygenSession(this.n, this.t, this.partyIdx);
     }
     try {
       const payload = this.dkgSession.createFirstMessage().payload;
