@@ -270,7 +270,7 @@ class LightningBitcoin extends Mainnet implements LightningNetwork {
 class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
   name = 'LightningBitcoinTestnet';
   family = CoinFamily.LNBTC;
-  utxolibName = 'bitcoin';
+  utxolibName = 'testnet';
   explorerUrl = 'https://mempool.space/testnet/lightning';
 }
 
