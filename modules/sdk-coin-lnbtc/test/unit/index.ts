@@ -5,7 +5,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 
 import { Tlnbtc } from '../../src/index';
 
-describe('LightningBitcoin', function () {
+describe('Lightning Bitcoin', function () {
   let bitgo: TestBitGoAPI;
   let basecoin: Tlnbtc;
 
@@ -21,6 +21,6 @@ describe('LightningBitcoin', function () {
   });
 
   it('should return full name', function () {
-    basecoin.getFullName().should.equal('Testnet LightningBitcoin');
+    basecoin.getFullName().should.equal('Testnet Lightning Bitcoin');
   });
 });

@@ -29,9 +29,6 @@
       "path": "./modules/express"
     },
     {
-      "path": "./modules/lightning-lib"
-    },
-    {
       "path": "./modules/key-card"
     },
     {

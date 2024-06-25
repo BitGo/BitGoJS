@@ -20,6 +20,6 @@ export class Lnbtc extends AbstractLightningCoin {
   }
 
   getFullName(): string {
-    return 'LightningBitcoin';
+    return 'Lightning Bitcoin';
   }
 }
