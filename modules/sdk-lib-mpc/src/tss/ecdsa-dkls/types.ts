@@ -56,7 +56,6 @@ export type DklsSignature<T> = {
   S: T;
 };
 export type RetrofitData = {
-  bigSiList: string[];
   xShare: Partial<XShare>;
   xiList?: number[][];
 };

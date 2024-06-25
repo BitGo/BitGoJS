@@ -36,24 +36,11 @@ export class Dkg {
       if (!this.retrofitData.xShare.y || !this.retrofitData.xShare.chaincode || !this.retrofitData.xShare.x) {
         throw Error('xShare must have a public key, private share value, and a chaincode.');
       }
-      if (this.retrofitData.bigSiList.length !== this.n - 1) {
-        throw Error("bigSiList should contain the other parties' Si's");
-      }
-      const bigSList: Array<Array<number>> = [];
       const xiList: Array<Array<number>> = [];
-      let j = 0;
       for (let i = 0; i < this.n; i++) {
-        if (i === this.partyIdx) {
-          const secp256k1 = new Secp256k1Curve();
-          bigSList.push(
-            Array.from(bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + this.retrofitData.xShare.x))))
-          );
-        } else {
-          bigSList.push(Array.from(Buffer.from(this.retrofitData.bigSiList[j], 'hex')));
-          j++;
-        }
         xiList.push(Array.from(bigIntToBufferBE(BigInt(i + 1), 32)));
       }
+      const secp256k1 = new Secp256k1Curve();
       const dklsKeyShare = {
         total_parties: this.n,
         threshold: this.t,
@@ -67,7 +54,11 @@ export class Dkg {
         sent_seed_list: [Array(32).fill(0)],
         rec_seed_list: [Array(32).fill(0)],
         s_i: Array.from(Buffer.from(this.retrofitData.xShare.x, 'hex')),
-        big_s_list: bigSList,
+        // big_s_list is now created internally during the protocol so isn't needed here, however a valid KeyShare object needs to have it.
+        // a dummy public key is used to fill big_s_list.
+        big_s_list: new Array(this.n).fill(
+          Array.from(bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + this.retrofitData.xShare.x))))
+        ),
         x_i_list: this.retrofitData.xiList ? this.retrofitData.xiList : xiList,
       };
       this.dklsKeyShareRetrofitObject = Keyshare.fromBytes(encode(dklsKeyShare));
@@ -190,6 +181,9 @@ export class Dkg {
         this.dkgKeyShare = this.dkgSession.keyshare();
         this.keyShareBuff = Buffer.from(this.dkgKeyShare.toBytes());
         this.dkgKeyShare.free();
+        if (this.dklsKeyShareRetrofitObject) {
+          this.dklsKeyShareRetrofitObject.free();
+        }
         this.dkgState = DkgState.Complete;
         return { broadcastMessages: [], p2pMessages: [] };
       } else {

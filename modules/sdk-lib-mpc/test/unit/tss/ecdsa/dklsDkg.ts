@@ -15,7 +15,6 @@ import {
 import * as fixtures from './fixtures/mpcv1shares';
 import * as openpgp from 'openpgp';
 import { decode } from 'cbor-x';
-import { bigIntToBufferBE, Secp256k1Curve } from '../../../../src';
 import { generate2of2KeyShares, generateDKGKeyShares } from '../../../../src/tss/ecdsa-dkls/util';
 
 describe('DKLS Dkg 2x3', function () {
@@ -35,7 +34,6 @@ describe('DKLS Dkg 2x3', function () {
   });
 
   it(`should create retrofit MPCV1 shares`, async function () {
-    const secp256k1 = new Secp256k1Curve();
     const aKeyCombine = {
       xShare: fixtures.mockDKeyShare.xShare,
     };
@@ -45,19 +43,13 @@ describe('DKLS Dkg 2x3', function () {
     const cKeyCombine = {
       xShare: fixtures.mockFKeyShare.xShare,
     };
-    const aPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + aKeyCombine.xShare.x))).toString('hex');
-    const bPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + bKeyCombine.xShare.x))).toString('hex');
-    const cPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + cKeyCombine.xShare.x))).toString('hex');
     const retrofitDataA: RetrofitData = {
-      bigSiList: [bPub, cPub],
       xShare: aKeyCombine.xShare,
     };
     const retrofitDataB: RetrofitData = {
-      bigSiList: [aPub, cPub],
       xShare: bKeyCombine.xShare,
     };
     const retrofitDataC: RetrofitData = {
-      bigSiList: [aPub, bPub],
       xShare: cKeyCombine.xShare,
     };
     const [user, backup, bitgo] = await generateDKGKeyShares(retrofitDataA, retrofitDataB, retrofitDataC);
@@ -73,21 +65,16 @@ describe('DKLS Dkg 2x3', function () {
   });
 
   it(`should create retrofit MPCV1 shares with only 2 parties`, async function () {
-    const secp256k1 = new Secp256k1Curve();
     const aKeyCombine = {
       xShare: fixtures.mockDKeyShare.xShare,
     };
     const bKeyCombine = {
       xShare: fixtures.mockEKeyShare.xShare,
     };
-    const aPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + aKeyCombine.xShare.x))).toString('hex');
-    const bPub = bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + bKeyCombine.xShare.x))).toString('hex');
     const retrofitDataA: RetrofitData = {
-      bigSiList: [bPub],
       xShare: aKeyCombine.xShare,
     };
     const retrofitDataB: RetrofitData = {
-      bigSiList: [aPub],
       xShare: bKeyCombine.xShare,
     };
     const [user, backup] = await generate2of2KeyShares(retrofitDataA, retrofitDataB);
