@@ -105,14 +105,15 @@ function explainCommon<TNumber extends number | bigint>(
   const { changeInfo } = params;
   const changeAddresses = changeInfo?.map((info) => info.address) ?? [];
 
-  tx.outs.forEach((currentOutput, outputIndex) => {
+  tx.outs.forEach((currentOutput) => {
     const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, network);
     const currentAmount = BigInt(currentOutput.value);
 
     if (changeAddresses.includes(currentAddress)) {
       // this is change
       changeAmount += currentAmount;
-      const change = changeInfo?.[outputIndex];
+      const change = changeInfo?.find((change) => change.address === currentAddress);
+
       if (!change) {
         throw new Error('changeInfo must have change information for all change outputs');
       }
