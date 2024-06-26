@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.6.2...@bitgo/abstract-eth@21.7.0) (2024-06-26)
+
+### Features
+
+- **sdk-core:** adding MPCv1 to MPCv2 retrofit helper ([8b13b16](https://github.com/BitGo/BitGoJS/commit/8b13b167463533a051143374b9fea8ccc1ad63b9))
+
 ## [21.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.6.0...@bitgo/abstract-eth@21.6.2) (2024-06-21)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

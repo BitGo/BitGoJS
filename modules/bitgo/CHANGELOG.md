@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.13.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.12.0...bitgo@38.13.0) (2024-06-26)
+
+### Bug Fixes
+
+- **sdk-core:** change signTransactionTss return output ([0462ac5](https://github.com/BitGo/BitGoJS/commit/0462ac5f6e9ed81ae5db9c6005e327488d36d19d))
+
+### Features
+
+- **root:** bumped WP public types ([41e2f87](https://github.com/BitGo/BitGoJS/commit/41e2f87921bb99b3dbaa279e16d4e50fe1de91a5))
+- **sdk-coin-lnbtc:** add new sdk coin lnbtc module ([0da600b](https://github.com/BitGo/BitGoJS/commit/0da600b44f258149d186ba3500a8359ca79b5444))
+- **sdk-core:** adding MPCv1 to MPCv2 retrofit helper ([8b13b16](https://github.com/BitGo/BitGoJS/commit/8b13b167463533a051143374b9fea8ccc1ad63b9))
+
 # [38.12.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.11.0...bitgo@38.12.0) (2024-06-21)
 
 ### Features

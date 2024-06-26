@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.38.0...@bitgo/utxo-lib@9.39.0) (2024-06-26)
+
+### Features
+
+- **utxo-lib:** get chain and index from path ([d607b95](https://github.com/BitGo/BitGoJS/commit/d607b9531657f6e327718ed80e2f1d620e786205))
+
 # [9.38.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.37.0...@bitgo/utxo-lib@9.38.0) (2024-06-11)
 
 ### Features
