@@ -299,7 +299,7 @@ export class PendingApproval implements IPendingApproval {
       delete prebuildParams.recipients;
     }
 
-    prebuildParams = _.extend({}, params, { reqId: reqId });
+    prebuildParams = _.extend({}, prebuildParams, { reqId: reqId });
     const signedTransaction = await this.wallet.prebuildAndSignTransaction(prebuildParams);
     // compare PAYGo fees
     const originalParsedTransaction = (await this.baseCoin.parseTransaction({
