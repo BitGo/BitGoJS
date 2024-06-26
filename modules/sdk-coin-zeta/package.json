@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-zeta",
-  "version": "2.0.21",
+  "version": "2.0.22",
   "description": "BitGo SDK coin library for Zeta",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,18 +40,18 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-cosmos": "^10.0.21",
-    "@bitgo/sdk-core": "^27.1.2",
-    "@bitgo/sdk-lib-mpc": "^9.8.1",
-    "@bitgo/statics": "^48.20.0",
+    "@bitgo/abstract-cosmos": "^10.0.22",
+    "@bitgo/sdk-core": "^27.2.0",
+    "@bitgo/sdk-lib-mpc": "^9.9.0",
+    "@bitgo/statics": "^48.21.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.49.2",
-    "@bitgo/sdk-test": "^8.0.26",
+    "@bitgo/sdk-api": "^1.49.3",
+    "@bitgo/sdk-test": "^8.0.27",
     "@types/lodash": "^4.14.183"
   }
 }

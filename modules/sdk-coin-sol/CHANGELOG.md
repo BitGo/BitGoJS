@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.2.4...@bitgo/sdk-coin-sol@4.3.0) (2024-06-26)
+
+### Features
+
+- **sdk-core:** add tss coins method to BaseCoin class ([65ba76e](https://github.com/BitGo/BitGoJS/commit/65ba76ef3a930eed4e111c5613ded97fede57e65))
+
 ## [4.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.2.2...@bitgo/sdk-coin-sol@4.2.4) (2024-06-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

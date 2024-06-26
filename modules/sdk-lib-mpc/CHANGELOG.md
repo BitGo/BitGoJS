@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.8.1...@bitgo/sdk-lib-mpc@9.9.0) (2024-06-26)
+
+### Features
+
+- **sdk-core:** adding MPCv1 to MPCv2 retrofit helper ([8b13b16](https://github.com/BitGo/BitGoJS/commit/8b13b167463533a051143374b9fea8ccc1ad63b9))
+- **sdk-lib-mpc:** support seeded dkg for mpcv2 ([0b29d0b](https://github.com/BitGo/BitGoJS/commit/0b29d0bc05c31fb47347daa7277b33049f2212e7))
+
 ## [9.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.8.0...@bitgo/sdk-lib-mpc@9.8.1) (2024-06-11)
 
 ### Bug Fixes

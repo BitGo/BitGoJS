@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.20.0...@bitgo/statics@48.21.0) (2024-06-26)
+
+### Bug Fixes
+
+- **statics:** fix lightning network ([ed0cf33](https://github.com/BitGo/BitGoJS/commit/ed0cf33d0a5150e21a575af68b4eff10f90719dc))
+
+### Features
+
+- **lightning-lib:** add new lightning lib module ([9ef9a34](https://github.com/BitGo/BitGoJS/commit/9ef9a34af71f090a2544ae0b20f6968358bc4b6c))
+- **sdk-coin-lnbtc:** add new sdk coin lnbtc module ([0da600b](https://github.com/BitGo/BitGoJS/commit/0da600b44f258149d186ba3500a8359ca79b5444))
+- **statics:** add XCHNG token ([a9f9110](https://github.com/BitGo/BitGoJS/commit/a9f9110f8b2d0aedf0adf4a929db6e94a573d3e7))
+- **statics:** update stx testnet explorer link ([3185520](https://github.com/BitGo/BitGoJS/commit/3185520d611b9125dfece716566d041eb36543f2))
+- **statics:** use network of utxolib for lightning coin ([4396713](https://github.com/BitGo/BitGoJS/commit/4396713d425af18d43c20550f07e04509ffa7883))
+
 # [48.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.18.0...@bitgo/statics@48.20.0) (2024-06-21)
 
 ### Bug Fixes

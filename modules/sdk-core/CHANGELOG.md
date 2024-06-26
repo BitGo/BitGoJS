@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.1.2...@bitgo/sdk-core@27.2.0) (2024-06-26)
+
+### Bug Fixes
+
+- **sdk-core:** change signTransactionTss return output ([0462ac5](https://github.com/BitGo/BitGoJS/commit/0462ac5f6e9ed81ae5db9c6005e327488d36d19d))
+- **sdk-core:** default to MPCv2 for ecdsa ([67f656f](https://github.com/BitGo/BitGoJS/commit/67f656fbc3cdad8e16da04baed6a58bc13a98a7f))
+
+### Features
+
+- also check if network supports script type ([1420565](https://github.com/BitGo/BitGoJS/commit/14205655948b67cc325638d3b0be54a772ed9122))
+- enable p2trMusig2 for testnet cold wallets ([d1bba0a](https://github.com/BitGo/BitGoJS/commit/d1bba0aad21db76dd32ec6bce8105c4f6c1ccf65))
+- **root:** bumped WP public types ([41e2f87](https://github.com/BitGo/BitGoJS/commit/41e2f87921bb99b3dbaa279e16d4e50fe1de91a5))
+- **sdk-core:** add tss coins method to BaseCoin class ([65ba76e](https://github.com/BitGo/BitGoJS/commit/65ba76ef3a930eed4e111c5613ded97fede57e65))
+- **sdk-core:** added missing request tracer propagation ([29447f9](https://github.com/BitGo/BitGoJS/commit/29447f9bb2aa26b3576210e56348b38b3d90efed))
+- **sdk-core:** adding MPCv1 to MPCv2 retrofit helper ([8b13b16](https://github.com/BitGo/BitGoJS/commit/8b13b167463533a051143374b9fea8ccc1ad63b9))
+
 ## [27.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.1.0...@bitgo/sdk-core@27.1.2) (2024-06-21)
 
 **Note:** Version bump only for package @bitgo/sdk-core

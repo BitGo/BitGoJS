@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.7.2...@bitgo/abstract-utxo@8.8.0) (2024-06-26)
+
+### Bug Fixes
+
+- **abstract-utxo:** remove unused coinSpecific in isWalletAddress ([b3e7e38](https://github.com/BitGo/BitGoJS/commit/b3e7e385ea6dc421937db875fe3c2a305285a01a))
+
+### Features
+
+- **abstract-utxo:** allow non-standard signing on bulk tx ([214342f](https://github.com/BitGo/BitGoJS/commit/214342f8a16848a7827d98ee239d72db742f84bc))
+- **abstract-utxo:** do not query wp for output addresses if psbt ([500baf6](https://github.com/BitGo/BitGoJS/commit/500baf6001cbece5caa0003139f7db654fe6f742))
+
 ## [8.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.7.0...@bitgo/abstract-utxo@8.7.2) (2024-06-21)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo
