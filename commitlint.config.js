@@ -47,6 +47,7 @@ module.exports = {
         'QA-',
         'RA-',
         'SO-',
+        'SC-',
         'ST-',
         'STLX-',
         'TRUST-',

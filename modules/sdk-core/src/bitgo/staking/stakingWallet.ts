@@ -18,7 +18,7 @@ import {
   ClaimRewardsOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
-import { IWallet } from '../wallet';
+import { IWallet, PrebuildTransactionResult } from '../wallet';
 import { ITssUtils, RequestTracer, TssUtils } from '../utils';
 
 export class StakingWallet implements IStakingWallet {
@@ -213,6 +213,23 @@ export class StakingWallet implements IStakingWallet {
     return await this.buildAndSign(signOptions, transaction).then((result: StakingSignedTransaction) => {
       return this.send(result);
     });
+  }
+
+  /**
+   * Create prebuilt staking transaction.
+   * @param transaction
+   */
+  async prebuildSelfManagedStakingTransaction(transaction: StakingTransaction): Promise<PrebuildTransactionResult> {
+    const builtStakingTransaction = await this.build(transaction);
+    const buildParams = builtStakingTransaction.transaction.buildParams;
+    const formattedParams = {
+      ...buildParams,
+      coin: this.coin,
+      walletId: this.walletId,
+      walletType: this.wallet.type(),
+      preview: true,
+    };
+    return await this.wallet.prebuildTransaction(formattedParams);
   }
 
   /**
