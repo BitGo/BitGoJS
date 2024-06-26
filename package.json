@@ -107,7 +107,7 @@
     "check-versions": "node ./check-package-versions.js",
     "dev": "tsc -b ./tsconfig.packages.json -w",
     "prepare": "husky install",
-    "sdk-coin:new": "yo ./scripts/sdk-coin-generator && yarn update-dockerfile",
+    "sdk-coin:new": "yo ./scripts/sdk-coin-generator",
     "build-docker-express": "yarn update-dockerfile && podman build --platform=linux/amd64 -t bitgo/express:latest -t bitgo/express:$(jq -r .version < modules/express/package.json) .",
     "push-docker-express": "podman push bitgo/express:latest && podman push bitgo/express:$(jq -r .version < modules/express/package.json)",
     "update-dockerfile": "ts-node scripts/update-dockerfile.ts",
