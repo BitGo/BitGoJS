@@ -377,7 +377,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   async getMpcV2RetrofitDataFromMpcV1Keys(params: {
     mpcv1UserKeyShare: string;
     mpcv1BackupKeyShare: string;
-  }): Promise<{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }> {
+  }): Promise<{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BackupKeyShare: DklsTypes.RetrofitData }> {
     const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.mpcv1UserKeyShare);
     const backupSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.mpcv1BackupKeyShare);
     const mpc = new Ecdsa();
@@ -397,7 +397,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       Array.from(bigIntToBufferBE(BigInt(3), 32)),
     ];
     return {
-      mpcv2BakcupKeyShare: {
+      mpcv2BackupKeyShare: {
         xShare: backupCombined.xShare,
         xiList: xiList,
       },
@@ -621,9 +621,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-    assert(latestTxRequest.transactions || latestTxRequest.messages);
 
-    const bitgoToUserMessages1And2 = latestTxRequest.transactions[0].signatureShares;
+    assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
+
+    let bitgoToUserMessages1And2: any;
+    if (requestType === RequestType.tx) {
+      bitgoToUserMessages1And2 = latestTxRequest.transactions![0].signatureShares;
+    } else {
+      bitgoToUserMessages1And2 = latestTxRequest.messages![0].signatureShares;
+    }
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundOne = JSON.parse(
       bitgoToUserMessages1And2[bitgoToUserMessages1And2.length - 1].share
@@ -665,9 +671,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-    assert(latestTxRequest.transactions);
+    assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
 
-    const txRequestSignatureShares = latestTxRequest.transactions[0].signatureShares;
+    const txRequestSignatureShares =
+      requestType === RequestType.tx
+        ? latestTxRequest.transactions![0].signatureShares
+        : latestTxRequest.messages![0].signatureShares;
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundTwo = JSON.parse(
       txRequestSignatureShares[txRequestSignatureShares.length - 1].share
@@ -711,7 +720,6 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     );
 
     return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, RequestType.tx, params.reqId);
-
   }
 
   // #endregion
