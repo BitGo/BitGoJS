@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.2.0...@bitgo/sdk-core@27.3.0) (2024-06-27)
+
+### Bug Fixes
+
+- add reqid to already extended prebuildParams ([90309fd](https://github.com/BitGo/BitGoJS/commit/90309fdc5a5cf26acbd769ace374b1b48ec53df7))
+
+### Features
+
+- **sdk-core:** add prebuild staking transaction function (Ticket: SC-96) ([58f6cef](https://github.com/BitGo/BitGoJS/commit/58f6cefef570a0643c39a191dcefafe408599055))
+
 # [27.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.1.2...@bitgo/sdk-core@27.2.0) (2024-06-26)
 
 ### Bug Fixes
