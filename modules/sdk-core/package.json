@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-core",
-  "version": "27.2.0",
+  "version": "27.3.0",
   "description": "core library functions for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",

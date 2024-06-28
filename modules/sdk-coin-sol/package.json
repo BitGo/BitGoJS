@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-sol",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "description": "BitGo SDK coin library for Sol",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,7 +40,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^27.2.0",
+    "@bitgo/sdk-core": "^27.3.0",
     "@bitgo/sdk-lib-mpc": "^9.9.0",
     "@bitgo/statics": "^48.21.0",
     "@solana/spl-token": "0.3.1",
@@ -52,8 +52,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.49.3",
-    "@bitgo/sdk-test": "^8.0.27",
+    "@bitgo/sdk-api": "^1.49.4",
+    "@bitgo/sdk-test": "^8.0.28",
     "@types/lodash": "^4.14.121"
   }
 }

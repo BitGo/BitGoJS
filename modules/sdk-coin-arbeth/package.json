@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-arbeth",
-  "version": "21.0.14",
+  "version": "21.0.15",
   "description": "BitGo SDK coin library for Arbitrum",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,8 +40,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^21.7.0",
-    "@bitgo/sdk-core": "^27.2.0",
+    "@bitgo/abstract-eth": "^21.7.1",
+    "@bitgo/sdk-core": "^27.3.0",
     "@bitgo/statics": "^48.21.0",
     "@bitgo/utxo-lib": "^9.39.0",
     "@ethereumjs/common": "^2.6.5",
@@ -49,8 +49,8 @@
     "ethereumjs-util": "7.1.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.49.3",
-    "@bitgo/sdk-test": "^8.0.27",
+    "@bitgo/sdk-api": "^1.49.4",
+    "@bitgo/sdk-test": "^8.0.28",
     "secp256k1": "5.0.0"
   }
 }

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.8.0...@bitgo/abstract-utxo@8.8.1) (2024-06-27)
+
+### Bug Fixes
+
+- find change address instead of using index ([81aad0c](https://github.com/BitGo/BitGoJS/commit/81aad0c7abc7e0da8f1d623f3a780dba3a67a708))
+
 # [8.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.7.2...@bitgo/abstract-utxo@8.8.0) (2024-06-26)
 
 ### Bug Fixes

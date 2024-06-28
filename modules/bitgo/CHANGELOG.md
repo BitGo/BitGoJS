@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.14.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.13.0...bitgo@38.14.0) (2024-06-27)
+
+### Features
+
+- **sdk-core:** add prebuild staking transaction function (Ticket: SC-96) ([58f6cef](https://github.com/BitGo/BitGoJS/commit/58f6cefef570a0643c39a191dcefafe408599055))
+
 # [38.13.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.12.0...bitgo@38.13.0) (2024-06-26)
 
 ### Bug Fixes
