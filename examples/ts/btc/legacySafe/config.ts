@@ -9,6 +9,7 @@ const walletId = '';
 const walletPassphrase = '';
 const userKey = '';
 const backupKey = '';
+const otp = '';
 
 const sdk = new BitGoAPI({ env });
 sdk.register('tbtc', Tbtc.createInstance);
@@ -23,4 +24,5 @@ export const legacySafeConfig = {
   walletId: walletId,
   userKey,
   backupKey,
+  otp,
 };
