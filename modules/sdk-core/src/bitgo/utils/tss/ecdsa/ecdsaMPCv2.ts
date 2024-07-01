@@ -22,7 +22,17 @@ import {
   MPCv2SignatureShareRound2Output,
   MPCv2PartyFromStringOrNumber,
 } from '@bitgo/public-types';
-import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
+import {
+  BitgoToOVC1Round1Response,
+  BitgoToOVC1Round2Response,
+  BitgoToOVC1Round3Response,
+  GenerateMPCv2KeyRequestBody,
+  GenerateMPCv2KeyRequestResponse,
+  MPCv2PartiesEnum,
+  OVC2ToBitgoRound1Payload,
+  OVC2ToBitgoRound2Payload,
+  OVC1ToBitgoRound3Payload,
+} from './typesMPCv2';
 import { RequestType, TSSParams, TSSParamsForMessage, TxRequest } from '../baseTypes';
 import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
 import {
@@ -724,5 +734,129 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       commitment,
     };
   }
+  // #endregion
+
+  // #region self-managed cold utils
+
+  public async keyGenSMCRound1(
+    enterprise: string,
+    payload: OVC2ToBitgoRound1Payload
+  ): Promise<BitgoToOVC1Round1Response> {
+    assert(payload.state === 1, 'Invalid state for round 1, got: ' + payload.state);
+    const ovc1 = payload.ovc[1];
+    const ovc2 = payload.ovc[2];
+    const userGpgPublicKey = ovc1.gpgPubKey;
+    const backupGpgPublicKey = ovc2.gpgPubKey;
+    const messages = { p2pMessages: [], broadcastMessages: [ovc1.ovcMsg1, ovc2.ovcMsg1] };
+    const result = await this.sendKeyGenerationRound1(enterprise, userGpgPublicKey, backupGpgPublicKey, messages);
+
+    return {
+      wallet: {
+        tssVersion: payload.tssVersion,
+        walletType: payload.walletType,
+        coin: payload.coin,
+        ovc: payload.ovc,
+        state: 2,
+        platform: {
+          walletGpgPubKeySigs: result.walletGpgPubKeySigs,
+          sessionId: result.sessionId,
+          bitgoMsg1: this.formatBitgoBroadcastMessage(result.bitgoMsg1),
+          ovc: {
+            1: { bitgoToOvcMsg2: this.formatP2PMessage(result.bitgoToUserMsg2) },
+            2: { bitgoToOvcMsg2: this.formatP2PMessage(result.bitgoToBackupMsg2) },
+          },
+        },
+      },
+    };
+  }
+
+  public async keyGenSMCRound2(
+    enterprise: string,
+    payload: OVC2ToBitgoRound2Payload
+  ): Promise<BitgoToOVC1Round2Response> {
+    assert(payload.state === 4, 'Invalid state for round 2, got: ' + payload.state);
+    const ovc1 = payload.ovc[1];
+    const ovc2 = payload.ovc[2];
+    const sessionId = payload.platform.sessionId;
+    const messages = { p2pMessages: [ovc1.ovcToBitgoMsg2, ovc2.ovcToBitgoMsg2], broadcastMessages: [] };
+    const result = await this.sendKeyGenerationRound2(enterprise, sessionId, messages);
+
+    return {
+      wallet: {
+        tssVersion: payload.tssVersion,
+        walletType: payload.walletType,
+        coin: payload.coin,
+        ovc: payload.ovc,
+        state: 5,
+        platform: {
+          ...payload.platform,
+          sessionId: result.sessionId,
+          bitgoCommitment2: result.bitgoCommitment2,
+          ovc: {
+            1: { ...payload.platform.ovc[1], bitgoToOvcMsg3: this.formatP2PMessage(result.bitgoToUserMsg3) },
+            2: { ...payload.platform.ovc[2], bitgoToOvcMsg3: this.formatP2PMessage(result.bitgoToBackupMsg3) },
+          },
+        },
+      },
+    };
+  }
+
+  public async keyGenSMCRound3(
+    enterprise: string,
+    payload: OVC1ToBitgoRound3Payload
+  ): Promise<BitgoToOVC1Round3Response> {
+    assert(payload.state === 8, 'Invalid state for round 3, got: ' + payload.state);
+    const ovc1 = payload.ovc[1];
+    const ovc2 = payload.ovc[2];
+    const sessionId = payload.platform.sessionId;
+    const messages = {
+      p2pMessages: [ovc1.ovcToBitgoMsg3, ovc2.ovcToBitgoMsg3],
+      broadcastMessages: [ovc1.ovcMsg4, ovc2.ovcMsg4],
+    };
+    const result = await this.sendKeyGenerationRound3(enterprise, sessionId, messages);
+
+    const keychains = this.baseCoin.keychains();
+    const bitgoKeychain = await keychains.add({
+      source: 'bitgo',
+      keyType: 'tss',
+      commonKeychain: result.commonKeychain,
+    });
+
+    return {
+      bitGoKeyId: bitgoKeychain.id,
+      wallet: {
+        tssVersion: payload.tssVersion,
+        walletType: payload.walletType,
+        coin: payload.coin,
+        ovc: payload.ovc,
+        state: 9,
+        platform: {
+          ...payload.platform,
+          commonKeychain: result.commonKeychain,
+          bitgoMsg4: this.formatBitgoBroadcastMessage(result.bitgoMsg4),
+        },
+      },
+    };
+  }
+
+  public async keyGenSMCAddOthersKeys(
+    commonKeychain: string
+  ): Promise<{ userKeychain: Keychain; backupKeychain: Keychain }> {
+    const keychains = this.baseCoin.keychains();
+    const userKeychainPromise = keychains.add({
+      source: 'user',
+      keyType: 'tss',
+      commonKeychain,
+    });
+    const backupKeychainPromise = keychains.add({
+      source: 'backup',
+      keyType: 'tss',
+      commonKeychain,
+    });
+
+    const [userKeychain, backupKeychain] = await Promise.all([userKeychainPromise, backupKeychainPromise]);
+    return { userKeychain, backupKeychain };
+  }
+
   // #endregion
 }
