@@ -253,7 +253,13 @@ const GENERIC_TOKEN_FEATURES = [
   CoinFeature.TRANSACTION_DATA,
   CoinFeature.GENERIC_TOKEN,
 ];
-const TON_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+const TON_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.STAKING,
+  CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
+];
 const ARBETH_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.MULTISIG_COLD,
