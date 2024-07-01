@@ -72,6 +72,32 @@ describe('signTxRequest:', function () {
     apiVersion: 'full',
   };
 
+  const txRequestForMessageSigning: TxRequest = {
+    txRequestId,
+    enterpriseId: '4517abfb-f567-4b7a-9f91-407509d29403',
+    messages: [
+      {
+        messageRaw: 'TOO MANY SECRETS',
+        derivationPath: 'm/0',
+        state: 'pendingSignature',
+        signatureShares: [],
+      },
+    ],
+    unsignedTxs: [],
+    date: new Date().toISOString(),
+    intent: {
+      intentType: 'payment',
+    },
+    latest: true,
+    state: 'pendingUserSignature',
+    walletType: 'hot',
+    walletId: 'walletId',
+    policiesChecked: true,
+    version: 1,
+    userId: 'userId',
+    apiVersion: 'full',
+  };
+
   const vector = {
     party1: 0,
     party2: 2,
@@ -140,6 +166,10 @@ describe('signTxRequest:', function () {
     nock.cleanAll();
   });
 
+  afterEach(function () {
+    bitgoParty.endSession();
+  });
+
   it('successfully signs a txRequest for a dkls hot wallet with WP', async function () {
     const nockPromises = [
       await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
@@ -159,6 +189,28 @@ describe('signTxRequest:', function () {
     nockPromises[0].isDone().should.be.true();
     nockPromises[1].isDone().should.be.true();
     nockPromises[2].isDone().should.be.true();
+    // bitgoParty.endSession();
+  });
+
+  it('successfully signs a txRequest with a message for a dkls hot wallet with WP', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequestForMessageSigning, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequestForMessageSigning, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequestForMessageSigning),
+      await nockSendTxRequest(txRequestForMessageSigning),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils.signTxRequest({
+      txRequest,
+      prv: userPrvBase64,
+      reqId,
+    });
+    // nockPromises[0].isDone().should.be.true();
+    // nockPromises[1].isDone().should.be.true();
+    // nockPromises[2].isDone().should.be.true();
   });
 });
 
@@ -203,6 +255,7 @@ async function nockTxRequestResponseSignatureShareRoundOne(
       });
       if (signatureShare.type === 'round1Input') {
         const bitgoToUserRound1BroadcastMsg = await bitgoSession.init();
+
         const bitgoToUserRound2Msg = bitgoSession.handleIncomingMessages({
           p2pMessages: [],
           broadcastMessages: deserializedMessages.broadcastMessages,
