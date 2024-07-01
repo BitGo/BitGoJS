@@ -6291,6 +6291,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.STRK
   ),
   erc20(
+    '19382390-e3cf-4597-9723-f7c91a22e798',
+    'strong',
+    'Strong',
+    18,
+    '0x990f341946a3fdb507ae7e52d17851b87168017c',
+    UnderlyingAsset.STRONG
+  ),
+  erc20(
     'e49ede0c-5f71-4e3e-869d-34ec64746e82',
     'stbu',
     'Stobox Token',
@@ -10687,6 +10695,174 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x71b3a0566f4bf80331d115d8026a7022bf670cce',
     UnderlyingAsset['bsc:dd']
+  ),
+  bscToken(
+    'ebfcdf18-bdad-41da-bbda-2b3a71338c1c',
+    'bsc:ltc',
+    'Binance-Peg Litecoin Token',
+    18,
+    '0x4338665cbb7b2485a8855a139b75d5e34ab0db94',
+    UnderlyingAsset['bsc:ltc']
+  ),
+  bscToken(
+    'd26cf811-cd84-4143-8fe9-5ac7e43ce6f9',
+    'bsc:mask',
+    'Mask Network',
+    18,
+    '0x2ed9a5c8c13b93955103b9a7c167b67ef4d568a3',
+    UnderlyingAsset['bsc:mask']
+  ),
+  bscToken(
+    '8d8f2923-179c-4c2e-8c55-96e5e95c9e2b',
+    'bsc:matic',
+    'Matic Token',
+    18,
+    '0xcc42724c6683b7e57334c4e856f4c9965ed682bd',
+    UnderlyingAsset['bsc:matic']
+  ),
+  bscToken(
+    '647f5a72-a90b-4df4-821b-e3647cee84a4',
+    'bsc:mbox',
+    'Mobox',
+    18,
+    '0x3203c9e46ca618c8c1ce5dc67e7e9d75f5da2377',
+    UnderlyingAsset['bsc:mbox']
+  ),
+  bscToken(
+    '1c3872f0-942f-49f3-af00-dc9c964b8813',
+    'bsc:mdt',
+    'Measurable Data Token',
+    18,
+    '0x668db7aa38eac6b40c9d13dbe61361dc4c4611d1',
+    UnderlyingAsset['bsc:mdt']
+  ),
+  bscToken(
+    '16ce15df-84c3-4be5-bd98-f09e47a882a7',
+    'bsc:nuls',
+    'Nuls',
+    8,
+    '0x8cd6e29d3686d24d3c2018cee54621ea0f89313b',
+    UnderlyingAsset['bsc:nuls']
+  ),
+  bscToken(
+    'c465ea9e-de0b-4981-8024-f4b131d3093e',
+    'bsc:ont',
+    'Binance-Peg Ontology Token',
+    18,
+    '0xfd7b3a77848f1c2d67e05e54d78d174a0c850335',
+    UnderlyingAsset['bsc:ont']
+  ),
+  bscToken(
+    'dd8137d3-28ac-4a56-a58f-7dc7c9f76be8',
+    'bsc:orn',
+    'Orion Protocol',
+    8,
+    '0xe4ca1f75eca6214393fce1c1b316c237664eaa8e',
+    UnderlyingAsset['bsc:orn']
+  ),
+  bscToken(
+    '8d3e171f-2d66-409b-8a0c-492e73b2c7e6',
+    'bsc:porto',
+    'FC Porto Fan Token',
+    8,
+    '0x49f2145d6366099e13b10fbf80646c0f377ee7f6',
+    UnderlyingAsset['bsc:porto']
+  ),
+  bscToken(
+    'd251b733-4090-47ed-b1f1-434d8e7c075f',
+    'bsc:reef',
+    'Reef.finance',
+    18,
+    '0xf21768ccbc73ea5b6fd3c687208a7c2def2d966e',
+    UnderlyingAsset['bsc:reef']
+  ),
+  bscToken(
+    '4515f909-53b2-4c4e-bf8c-f0fb1fcbf516',
+    'bsc:renbtc',
+    'renBTC',
+    8,
+    '0xfce146bf3146100cfe5db4129cf6c82b0ef4ad8c',
+    UnderlyingAsset['bsc:renbtc']
+  ),
+  bscToken(
+    'ffe9c8ee-f331-4188-932d-d348041e4f70',
+    'bsc:snx',
+    'Binance-Peg Synthetix Network Token',
+    18,
+    '0x9ac983826058b8a9c7aa1c9171441191232e8404',
+    UnderlyingAsset['bsc:snx']
+  ),
+  bscToken(
+    'b6b324c0-c8bd-422b-bf51-36ccfbef0409',
+    'bsc:tking',
+    'Tiger King',
+    18,
+    '0x9b4bdddaeb68d85b0848bab7774e6855439fd94e',
+    UnderlyingAsset['bsc:tking']
+  ),
+  bscToken(
+    'd24030d5-e0a1-4216-9b80-9582ce5e4de1',
+    'bsc:tlm',
+    'Alien Worlds Trilium',
+    4,
+    '0x2222227e22102fe3322098e4cbfe18cfebd57c95',
+    UnderlyingAsset['bsc:tlm']
+  ),
+  bscToken(
+    '593d0131-db45-4d0d-9fbb-31803f9365b6',
+    'bsc:ton',
+    'Wrapped TON Coin',
+    9,
+    '0x76a797a59ba2c17726896976b7b3747bfd1d220f',
+    UnderlyingAsset['bsc:ton']
+  ),
+  bscToken(
+    'ece5a237-5a3f-4884-beef-64936b5e51ba',
+    'bsc:trx',
+    'TRON',
+    6,
+    '0xce7de646e7208a4ef112cb6ed5038fa6cc6b12e3',
+    UnderlyingAsset['bsc:trx']
+  ),
+  bscToken(
+    '3239d21c-81fd-4fc9-86d9-6b9999d0c6d9',
+    'bsc:wbnb',
+    'Wrapped BNB',
+    18,
+    '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
+    UnderlyingAsset['bsc:wbnb']
+  ),
+  bscToken(
+    'a3cff020-44cd-4419-ab96-c5332067dc6c',
+    'bsc:win',
+    'WINk',
+    18,
+    '0xaef0d72a118ce24fee3cd1d43d383897d05b4e99',
+    UnderlyingAsset['bsc:win']
+  ),
+  bscToken(
+    'b4211998-459a-465d-9927-b762016dc211',
+    'bsc:wrx',
+    'Wazirx',
+    18,
+    '0x2a459dd33f05ed8ea9584505cf04698be5654e6d',
+    UnderlyingAsset['bsc:wrx']
+  ),
+  bscToken(
+    '1a26f668-9cde-4768-be8c-1fdcdf8e39e9',
+    'bsc:yfii',
+    'Binance-Peg YFII.finance Token',
+    18,
+    '0x7f70642d88cf1c4a3a7abb072b53b929b653eda5',
+    UnderlyingAsset['bsc:yfii']
+  ),
+  bscToken(
+    'fa4f2c50-d267-4234-92f2-1295f455ba06',
+    'bsc:zil',
+    'Zilliqa',
+    12,
+    '0xb86abcb37c3a4b64f74f59301aff131a1becc787',
+    UnderlyingAsset['bsc:zil']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
@@ -15630,6 +15806,78 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xf944e35f95e819e752f3ccb5faf40957d311e8c5',
     UnderlyingAsset['polygon:moca']
+  ),
+  polygonErc20(
+    'ab8ea009-a705-4695-b52b-c7b154a2e1f9',
+    'polygon:mask',
+    'Mask Network',
+    18,
+    '0x2b9e7ccdf0f4e5b24757c1e1a80e311e34cb10c7',
+    UnderlyingAsset['polygon:mask']
+  ),
+  polygonErc20(
+    'a5b61778-bdbb-47f8-81c2-7a22ac0bb6be',
+    'polygon:nexo',
+    'Nexo',
+    18,
+    '0x41b3966b4ff7b427969ddf5da3627d6aeae9a48e',
+    UnderlyingAsset['polygon:nexo']
+  ),
+  polygonErc20(
+    'a7cddd2c-fabc-4ad9-98d5-4f2ef6db9ce5',
+    'polygon:om',
+    'MANTRA DAO',
+    18,
+    '0xc3ec80343d2bae2f8e680fdadde7c17e71e114ea',
+    UnderlyingAsset['polygon:om']
+  ),
+  polygonErc20(
+    'e6560bbc-a35a-4c51-8ce1-62101c9dce9d',
+    'polygon:pyr',
+    'PYR Token',
+    18,
+    '0x430ef9263e76dae63c84292c3409d61c598e9682',
+    UnderlyingAsset['polygon:pyr']
+  ),
+  polygonErc20(
+    'a43ec494-4876-4957-883c-3d382cb52022',
+    'polygon:renbtc',
+    'renBTC',
+    8,
+    '0xdbf31df14b66535af65aac99c32e9ea844e14501',
+    UnderlyingAsset['polygon:renbtc']
+  ),
+  polygonErc20(
+    'e7d6568e-696c-4482-8dbf-9c0bb2364978',
+    'polygon:req',
+    'Request',
+    18,
+    '0xb25e20de2f2ebb4cffd4d16a55c7b395e8a94762',
+    UnderlyingAsset['polygon:req']
+  ),
+  polygonErc20(
+    'bce463f5-4197-405f-b837-47ffa9b61c51',
+    'polygon:rndr',
+    'Render Token',
+    18,
+    '0x61299774020da444af134c82fa83e3810b309991',
+    UnderlyingAsset['polygon:rndr']
+  ),
+  polygonErc20(
+    'dc83a3b6-a25a-47af-b2ea-9473ad9111b8',
+    'polygon:snx',
+    'Synthetix Network Token (PoS)',
+    18,
+    '0x50b728d8d964fd00c2d0aad81718b71311fef68a',
+    UnderlyingAsset['polygon:snx']
+  ),
+  polygonErc20(
+    '8bb3b0dc-c798-468d-a9ab-46f6a2b1b856',
+    'polygon:trb',
+    'Tellor Tributes',
+    18,
+    '0xe3322702bedaaed36cddab233360b939775ae5f1',
+    UnderlyingAsset['polygon:trb']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
