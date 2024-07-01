@@ -430,12 +430,16 @@ interface BitGoV1Unspent {
   tx_output_n: number;
 }
 
-export interface V1RecoverParams {
+export interface V1SweepParams {
   walletId: string;
   walletPassphrase: string;
   unspents: BitGoV1Unspent[];
   recoveryDestination: string;
   userKey: string;
+  otp: string;
+}
+
+export interface V1RecoverParams extends Omit<V1SweepParams, 'otp'> {
   backupKey: string;
 }
 
@@ -454,6 +458,34 @@ export async function v1BackupKeyRecovery(
   const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
   const v1wallet = await bitgo.wallets().get({ id: params.walletId });
   return await v1wallet.recover({
+    ...params,
+    feeRate: recoveryFeePerByte,
+  });
+}
+
+export async function v1Sweep(
+  coin: AbstractUtxoCoin,
+  bitgo: BitGoBase,
+  params: V1SweepParams
+): Promise<{
+  tx: string;
+  hash: string;
+  status: string;
+}> {
+  if (
+    _.isUndefined(params.recoveryDestination) ||
+    !coin.isValidAddress(params.recoveryDestination, { anyFormat: true })
+  ) {
+    throw new Error('invalid recoveryDestination');
+  }
+
+  let recoveryFeePerByte = 100;
+  if (bitgo.env === 'prod') {
+    recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
+  }
+
+  const v1wallet = await bitgo.wallets().get({ id: params.walletId });
+  return await v1wallet.sweep({
     ...params,
     feeRate: recoveryFeePerByte,
   });
