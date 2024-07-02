@@ -1124,6 +1124,7 @@ export enum UnderlyingAsset {
   PBTC = 'pbtc',
   PDATA = 'pdata',
   PDI = 'pdi',
+  PEAQ = 'peaq',
   PEBBLE = 'pebble',
   PEG = 'peg',
   PENDLE = 'pendle',
