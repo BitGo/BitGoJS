@@ -12,6 +12,7 @@ describe('utxoCoins', function () {
       .should.eql([
         ['btc', 'bitcoin'],
         ['tbtc', 'testnet'],
+        ['tbtcsig', 'bitcoinPublicSignet'],
         ['bch', 'bitcoincash'],
         ['tbch', 'bitcoincashTestnet'],
         ['btg', 'bitcoingold'],
@@ -44,6 +45,7 @@ describe('utxoCoins', function () {
       .should.eql([
         ['bitcoin', 'btc'],
         ['testnet', 'tbtc'],
+        ['bitcoinPublicSignet', 'tbtcsig'],
         ['bitcoincash', 'bch'],
         ['bitcoincashTestnet', 'tbch'],
         ['bitcoingold', 'btg'],

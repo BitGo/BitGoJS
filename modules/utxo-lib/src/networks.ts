@@ -38,6 +38,7 @@ const coins = {
 export type NetworkName =
   | 'bitcoin'
   | 'testnet'
+  | 'bitcoinPublicSignet'
   | 'bitcoincash'
   | 'bitcoincashTestnet'
   | 'ecash'
@@ -108,6 +109,20 @@ export const networks: Record<NetworkName, Network> = {
     coin: coins.BTC,
   },
   testnet: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bech32: 'tb',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    wif: 0xef,
+    coin: coins.BTC,
+  },
+  /**
+   * Additional testnet for BTC that restricts mining to trusted entities (BIP 325)
+   * Address encoding is the same as for testnet.
+   * Source for constants: https://github.com/bitcoin/bitcoin/blob/v27.1/src/kernel/chainparams.cpp#L287-L290
+   */
+  bitcoinPublicSignet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bech32: 'tb',
     bip32: getDefaultBip32Testnet(),
@@ -330,6 +345,7 @@ export function getMainnet(network: Network): Network {
   switch (network) {
     case networks.bitcoin:
     case networks.testnet:
+    case networks.bitcoinPublicSignet:
       return networks.bitcoin;
 
     case networks.bitcoincash:
@@ -420,6 +436,9 @@ export function getTestnet(network: Network): Network | undefined {
   }
   if (testnets.length === 1) {
     return testnets[0];
+  }
+  if (network === networks.bitcoin) {
+    return networks.testnet;
   }
   throw new Error(`more than one testnet for ${getNetworkName(network)}`);
 }

@@ -239,6 +239,7 @@ async function getFeeRateSatVB(coin: AbstractUtxoCoin): Promise<number> {
     tbsv: 20,
     btc: 80,
     tbtc: 80,
+    tbtcsig: 80,
     ltc: 100,
     tltc: 100,
     doge: 1000,
