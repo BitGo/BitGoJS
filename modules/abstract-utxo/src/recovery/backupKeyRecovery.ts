@@ -424,10 +424,10 @@ export async function backupKeyRecovery(
   return txInfo;
 }
 
-interface BitGoV1Unspent {
-  value: number;
+export interface BitGoV1Unspent {
   tx_hash: string;
   tx_output_n: number;
+  value: number;
 }
 
 export interface V1SweepParams {
