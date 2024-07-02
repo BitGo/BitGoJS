@@ -5371,6 +5371,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.PDI
   ),
   erc20(
+    'ac3efe78-4921-44e9-8766-454ce2d3b522',
+    'peaq',
+    'peaq',
+    18,
+    '0x7a03a9e96dd867da50e5f28efa38e40237a44941',
+    UnderlyingAsset.PEAQ
+  ),
+  erc20(
     '0075d312-9842-49fb-bf4f-1023fcbf870b',
     'pbtc',
     'PegBitcoin Token',
