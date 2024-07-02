@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.50.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.49.4...@bitgo/sdk-api@1.50.0) (2024-07-02)
+
+### Features
+
+- add `sweep` function for v1 wallets ([a78e2cf](https://github.com/BitGo/BitGoJS/commit/a78e2cfaec23d3a1d129b757e0bcba76ce12addf))
+- **sdk-api:** add bscscan config ([2df7f75](https://github.com/BitGo/BitGoJS/commit/2df7f75caf9ff29be9a96150933b942701091e9a))
+
 ## [1.49.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.49.3...@bitgo/sdk-api@1.49.4) (2024-06-27)
 
 **Note:** Version bump only for package @bitgo/sdk-api

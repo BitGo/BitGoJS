@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.8.1...@bitgo/abstract-utxo@8.9.0) (2024-07-02)
+
+### Features
+
+- add `sweep` function for v1 wallets ([a78e2cf](https://github.com/BitGo/BitGoJS/commit/a78e2cfaec23d3a1d129b757e0bcba76ce12addf))
+- export `BitGoV1Unspent` interface from `abstract-utxo` ([c6d9e63](https://github.com/BitGo/BitGoJS/commit/c6d9e63dde2404f6250a138a049dadc7a408328a))
+
 ## [8.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.8.0...@bitgo/abstract-utxo@8.8.1) (2024-06-27)
 
 ### Bug Fixes

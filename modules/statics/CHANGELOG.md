@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.21.0...@bitgo/statics@48.22.0) (2024-07-02)
+
+### Features
+
+- **statics:** add new USMS tokens part-2 ([fe6ed9d](https://github.com/BitGo/BitGoJS/commit/fe6ed9ded8e36469f992b8d262eff9b39f73e6d3))
+
 # [48.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.20.0...@bitgo/statics@48.21.0) (2024-06-26)
 
 ### Bug Fixes

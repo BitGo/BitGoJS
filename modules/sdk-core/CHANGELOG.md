@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.3.0...@bitgo/sdk-core@27.4.0) (2024-07-02)
+
+### Features
+
+- **sdk-api:** add bscscan config ([2df7f75](https://github.com/BitGo/BitGoJS/commit/2df7f75caf9ff29be9a96150933b942701091e9a))
+
 # [27.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.2.0...@bitgo/sdk-core@27.3.0) (2024-06-27)
 
 ### Bug Fixes
