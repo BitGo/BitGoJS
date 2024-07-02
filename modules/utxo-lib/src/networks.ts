@@ -120,6 +120,7 @@ export const networks: Record<NetworkName, Network> = {
   /**
    * Additional testnet for BTC that restricts mining to trusted entities (BIP 325)
    * Address encoding is the same as for testnet.
+   * Source for constants: https://github.com/bitcoin/bitcoin/blob/v27.1/src/kernel/chainparams.cpp#L287-L290
    */
   bitcoinPublicSignet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
