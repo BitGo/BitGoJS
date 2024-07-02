@@ -48,7 +48,7 @@ export class Utils implements BaseUtils {
     }
   }
 
-  async getAddressFromPublicKey(publicKey: string): Promise<string> {
+  async getAddressFromPublicKey(publicKey: string, bounceable = true): Promise<string> {
     const tonweb = new TonWeb(new TonWeb.HttpProvider(''));
     const WalletClass = tonweb.wallet.all['v4R2'];
     const wallet = new WalletClass(tonweb.provider, {
@@ -56,7 +56,19 @@ export class Utils implements BaseUtils {
       wc: 0,
     });
     const address = await wallet.getAddress();
-    return address.toString(true, true, true);
+    return address.toString(true, true, bounceable);
+  }
+
+  getAddress(address: string, bounceable = true): string {
+    if (bounceable) {
+      return new TonWeb.Address(address).isBounceable
+        ? address
+        : new TonWeb.Address(address).toString(true, true, bounceable);
+    } else {
+      return new TonWeb.Address(address).isBounceable
+        ? new TonWeb.Address(address).toString(true, true, bounceable)
+        : address;
+    }
   }
 
   async getMessageHashFromData(data: string): Promise<string> {

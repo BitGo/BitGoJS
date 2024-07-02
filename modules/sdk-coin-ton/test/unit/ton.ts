@@ -4,7 +4,7 @@ import { Ton, Tton } from '../../src';
 import * as sinon from 'sinon';
 import assert from 'assert';
 import * as testData from '../resources/ton';
-import { TransactionExplanation } from '@bitgo/sdk-core';
+import { EDDSAMethods, TransactionExplanation } from '@bitgo/sdk-core';
 import should from 'should';
 import utils from '../../src/lib/utils';
 import Tonweb from 'tonweb';
@@ -289,6 +289,53 @@ describe('TON:', function () {
   });
 
   describe('util class ', () => {
+    let commonKeychain;
+    let derivedPublicKey;
+    before(async function () {
+      commonKeychain =
+        '19bdfe2a4b498a05511381235a8892d54267807c4a3f654e310b938b8b424ff4adedbe92f4c146de641c67508a961324c8504cdf8e0c0acbb68d6104ccccd781';
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      derivedPublicKey = MPC.deriveUnhardened(commonKeychain, 'm/' + 0).slice(0, 64);
+    });
+
+    describe('getAddressFromPublicKey', function () {
+      it('should derive bounceable address by default', async function () {
+        (await utils.getAddressFromPublicKey(derivedPublicKey)).should.equal(
+          'EQDVeyUJOx3AnZGWLtE0l-Vxv7c7uTnD8OXtCFhaO-nvavQ5'
+        );
+        (await utils.getAddressFromPublicKey(derivedPublicKey, true)).should.equal(
+          'EQDVeyUJOx3AnZGWLtE0l-Vxv7c7uTnD8OXtCFhaO-nvavQ5'
+        );
+      });
+
+      it('should derive non-bouncable address when requested', async function () {
+        (await utils.getAddressFromPublicKey(derivedPublicKey, false)).should.equal(
+          'UQDVeyUJOx3AnZGWLtE0l-Vxv7c7uTnD8OXtCFhaO-nvaqn8'
+        );
+      });
+    });
+
+    describe('getAddress', function () {
+      it('should return address as per bounceable flag', function () {
+        should.equal(
+          utils.getAddress('UQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFOMi', false),
+          'UQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFOMi'
+        );
+        should.equal(
+          utils.getAddress('UQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFOMi', true),
+          'EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n'
+        );
+        should.equal(
+          utils.getAddress('EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n', true),
+          'EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n'
+        );
+        should.equal(
+          utils.getAddress('EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n', false),
+          'UQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFOMi'
+        );
+      });
+    });
+
     it('should validate block hash', async function () {
       should.equal(utils.isValidBlockId('MPuOvHdu/z+t2l82YpZtiJQk8+FVKmWuKxd6ubn09fI='), true);
       should.equal(utils.isValidBlockId('MPuOvHdu/z+t2l82YpZtiJQk8+FVKmWuKxd'), false);
