@@ -100,8 +100,9 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
    * @see https://wiki.polkadot.network/docs/build-protocol-info
    */
   amount(amount: string): this {
+    const amountBN = new BigNumber(amount);
     this.validateValue(new BigNumber(amount));
-    this._amount = amount;
+    this._amount = amountBN.toFixed();
     return this;
   }
 

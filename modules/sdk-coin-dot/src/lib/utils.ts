@@ -3,12 +3,18 @@ import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
 import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload } from '@polkadot/types';
+import {
+  createTypeUnsafe,
+  GenericCall,
+  GenericExtrinsic,
+  GenericExtrinsicPayload,
+  TypeRegistry,
+} from '@polkadot/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { Args, BaseTxInfo, defineMethod, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-core';
-import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { DecodedSignedTx, DecodedSigningPayload } from '@substrate/txwrapper-core/lib/types';
 import { construct } from '@substrate/txwrapper-polkadot';
 import bs58 from 'bs58';
 import base32 from 'hi-base32';
