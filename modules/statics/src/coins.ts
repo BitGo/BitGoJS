@@ -5371,6 +5371,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.PDI
   ),
   erc20(
+    'ac3efe78-4921-44e9-8766-454ce2d3b522',
+    'peaq',
+    'peaq',
+    18,
+    '0x7a03a9e96dd867da50e5f28efa38e40237a44941',
+    UnderlyingAsset.PEAQ
+  ),
+  erc20(
     '0075d312-9842-49fb-bf4f-1023fcbf870b',
     'pbtc',
     'PegBitcoin Token',
@@ -8052,6 +8060,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x9b99cca871be05119b2012fd4474731dd653febe',
     UnderlyingAsset.MATTER
+  ),
+  erc20(
+    '7525c5cc-9ad1-4e46-bb83-1aedc89e8e73',
+    'mav',
+    'Maverick Token',
+    18,
+    '0x7448c7456a97769f6cd04f1e83a4a23ccdc46abd',
+    UnderlyingAsset.MAV
   ),
   erc20(
     'd774f533-4eb0-43d8-9d0d-2beac9b045c4',
