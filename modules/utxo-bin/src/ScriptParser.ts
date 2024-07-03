@@ -2,6 +2,8 @@ import { Parser, ParserNode } from './Parser';
 import * as utxolib from '@bitgo/utxo-lib';
 import { parseUnknown } from './parseUnknown';
 
+import * as miniscript from 'wasm-miniscript';
+
 const paymentTypes = ['p2sh', 'p2pkh', 'p2wpkh', 'p2wsh', 'p2ms'] as const;
 type PaymentType = (typeof paymentTypes)[number];
 
@@ -71,6 +73,36 @@ export class ScriptParser extends Parser {
     });
   }
 
+  toMiniscript(script: Buffer, ctx?: 'legacy' | 'segwitv0' | 'tap'): ParserNode[] {
+    if (ctx === undefined) {
+      for (const ctx of ['legacy', 'segwitv0', 'tap'] as const) {
+        try {
+          return this.toMiniscript(script, ctx);
+        } catch (e) {
+          // ignore
+        }
+      }
+      return [this.node('miniscript', 'error: could not parse miniscript')];
+    }
+
+    let ms: string;
+    switch (ctx) {
+      case 'legacy':
+        ms = miniscript.miniscript_from_script_legacy(script);
+        break;
+      case 'segwitv0':
+        ms = miniscript.miniscript_from_script_segwit_v0(script);
+        break;
+      case 'tap':
+        ms = miniscript.miniscript_from_string_tap(script);
+        break;
+    }
+    if (!ms) {
+      throw new Error('could not parse miniscript');
+    }
+    return [this.node('context', ctx), this.node('miniscript', ms)];
+  }
+
   parse(script: Buffer): ParserNode {
     const classification = ScriptParser.classify(script, undefined);
     const decompiled = utxolib.script.decompile(script);
@@ -82,6 +114,7 @@ export class ScriptParser extends Parser {
       ]),
       this.node('asm', ScriptParser.toASM(script)),
       this.node('decompiled', undefined, decompiled ? decompiled.map((v, i) => this.node(i, v)) : undefined),
+      this.node('miniscript', undefined, this.toMiniscript(script)),
       ...this.parseBufferAsPayment(script),
     ]);
   }
