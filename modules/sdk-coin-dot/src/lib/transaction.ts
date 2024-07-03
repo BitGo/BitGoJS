@@ -41,6 +41,7 @@ import utils from './utils';
 import BigNumber from 'bignumber.js';
 import { Vec } from '@polkadot/types';
 import { PalletConstantMetadataV14 } from '@polkadot/types/interfaces';
+import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 
 /**
  * Use a dummy address as the destination of a bond or bondExtra because our inputs and outputs model
@@ -655,7 +656,7 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc **/
   get signablePayload(): Buffer {
     const extrinsicPayload = this._registry.createType('ExtrinsicPayload', this._dotTransaction, {
-      version: this._dotTransaction.version,
+      version: EXTRINSIC_VERSION,
     });
     return u8aToBuffer(extrinsicPayload.toU8a({ method: true }));
   }
