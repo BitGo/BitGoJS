@@ -1550,6 +1550,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.OPETH,
     CoinKind.CRYPTO
   ),
+  ofc('07083ea6-74ba-4da7-8cf3-031126a130a4', 'ofcton', 'Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
@@ -1692,6 +1693,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.OPETH,
     CoinKind.CRYPTO
   ),
+  tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
   erc20(
     '919ba34e-c61e-4346-831f-87660586572a',
     '1inch',
