@@ -250,6 +250,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         transactionVersion: this._material.txVersion,
         nonce: this._nonce,
         tip: this._tip,
+        mode: 0,
       },
       options: {
         metadataRpc: this._material.metadata,
