@@ -774,7 +774,8 @@ export class Xlm extends BaseCoin {
     let keyPair: stellar.Keypair;
     if (!prv.startsWith('S')) {
       // Encode the raw root hex prv into a stellar S-prefixed private key
-      keyPair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(prv, 'hex')));
+      // Need to slice the prv because it may have the pub appended to it as well
+      keyPair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(prv.slice(0, 64), 'hex')));
     } else {
       keyPair = stellar.Keypair.fromSecret(prv);
     }
@@ -838,7 +839,7 @@ export class Xlm extends BaseCoin {
     if (key.prv.startsWith('S')) {
       keypair = stellar.Keypair.fromSecret(key.prv);
     } else {
-      keypair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(key.prv, 'hex')));
+      keypair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(key.prv.slice(0, 64), 'hex')));
     }
 
     return keypair.sign(message);

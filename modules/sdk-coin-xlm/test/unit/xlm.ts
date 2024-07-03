@@ -413,6 +413,17 @@ describe('XLM:', function () {
       rootKeyHalfSignedTransaction.halfSigned.txBase64.should.equal(signedTxBase64);
     });
 
+    it('should sign a transaction with generated root key pair', async function () {
+      const seed = Buffer.from(rootKeychain.prv, 'hex');
+      const kp = basecoin.generateRootKeyPair(seed);
+      kp.prv.length.should.equal(128);
+      const halfSignedTx = await wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: kp.prv,
+      });
+      halfSignedTx.halfSigned.txBase64.should.equal(signedTxBase64);
+    });
+
     it('should verify the user signature on a tx', function () {
       const userPub = userKeychain.pub;
       const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64, stellar.Networks.TESTNET);
