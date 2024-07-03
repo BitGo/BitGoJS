@@ -1540,7 +1540,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   async presignTransaction(params: PresignTransactionOptions): Promise<any> {
-    if (params.bulk && params.allowNonSegwitSigningWithoutPrevTx === undefined) {
+    // In the case that we have a 'psbt-lite' transaction format, we want to indicate in signing to not fail
+    const txHex = (params.txHex ?? params.txPrebuild?.txHex) as string;
+    if (
+      txHex &&
+      utxolib.bitgo.isPsbt(txHex as string) &&
+      utxolib.bitgo.isPsbtLite(utxolib.bitgo.createPsbtFromHex(txHex, this.network)) &&
+      params.allowNonSegwitSigningWithoutPrevTx === undefined
+    ) {
       return { ...params, allowNonSegwitSigningWithoutPrevTx: true };
     }
     return params;
