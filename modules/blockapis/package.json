@@ -13,7 +13,7 @@
     "prepare": "npm run build",
     "build": "yarn tsc --build --incremental --verbose .",
     "lint": "eslint --quiet .",
-    "unit-test": "mocha",
+    "unit-test": "mocha --recursive test",
     "fmt": "prettier --write '{bin,src,test}/**/*.{ts,js}'"
   },
   "repository": {
