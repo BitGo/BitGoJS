@@ -49,6 +49,41 @@ export class Dsg {
     }
   }
 
+  /**
+   * Returns the current DSG session as a base64 string.
+   * @returns {string} - base64 string of the current DSG session
+   */
+  getSession(): string {
+    return Buffer.from(this.dsgSessionBytes).toString('base64');
+  }
+
+  /**
+   * Sets the DSG session from a base64 string.
+   * @param {string} session - base64 string of the DSG session
+   */
+  setSession(session: string): void {
+    this.dsgSession = undefined;
+    const sessionBytes = new Uint8Array(Buffer.from(session, 'base64'));
+    const round = decode(sessionBytes).round;
+    switch (true) {
+      case round === 'WaitMsg1':
+        this.dsgState = DsgState.Round1;
+        break;
+      case round === 'WaitMsg2':
+        this.dsgState = DsgState.Round2;
+        break;
+      case round === 'WaitMsg3':
+        this.dsgState = DsgState.Round3;
+        break;
+      case 'WaitMsg4' in round:
+        this.dsgState = DsgState.Round4;
+        break;
+      default:
+        throw Error(`Invalid State: ${round}`);
+    }
+    this.dsgSessionBytes = sessionBytes;
+  }
+
   async init(): Promise<DeserializedBroadcastMessage> {
     if (this.dsgState !== DsgState.Uninitialized) {
       throw Error('DSG session already initialized');
@@ -65,6 +100,8 @@ export class Dsg {
     try {
       const payload = this.dsgSession.createFirstMessage().payload;
       this._deserializeState();
+      this.dsgSessionBytes = this.dsgSession.toBytes();
+      this.dsgSession = undefined;
       return {
         payload: payload,
         from: this.partyIdx,
