@@ -786,4 +786,24 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     };
   }
   // #endregion
+
+  // #region external signer
+  /** @inheritdoc */
+  async signEcdsaTssMPCv2UsingExternalSigner(): Promise<TxRequest> {
+    throw new Error('Method not implemented');
+  }
+
+  async createOfflineRound1Share(params: Record<string, unknown>) {
+    throw new Error('Method not implemented');
+  }
+
+  async createOfflineRound2Share(params: Record<string, unknown>) {
+    throw new Error('Method not implemented');
+  }
+
+  async createOfflineRound3Share(params: Record<string, unknown>) {
+    throw new Error('Method not implemented');
+  }
+
+  // #endregion
 }

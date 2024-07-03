@@ -43,6 +43,9 @@ export enum ShareType {
   K = 'K',
   MuDelta = 'MuDelta',
   PaillierModulus = 'PaillierModulus',
+  MPCv2Round1 = 'MPCv2Round1',
+  MPCv2Round2 = 'MPCv2Round2',
+  MPCv2Round3 = 'MPCv2Round3',
 }
 
 export enum MPCType {
@@ -107,6 +110,19 @@ export interface CustomGShareGeneratingFunction {
     bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare>;
 }
+
+export interface CustomMPCv2Round1GeneratingFunction {
+  (params: { txRequest: TxRequest }): Promise<unknown>;
+}
+
+export interface CustomMPCv2Round2GeneratingFunction {
+  (params: { txRequest: TxRequest }): Promise<unknown>;
+}
+
+export interface CustomMPCv2Round3GeneratingFunction {
+  (params: { txRequest: TxRequest }): Promise<unknown>;
+}
+
 export enum TokenType {
   ERC721 = 'ERC721',
   ERC1155 = 'ERC1155',

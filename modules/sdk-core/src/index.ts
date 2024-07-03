@@ -8,6 +8,8 @@ import { EddsaUtils } from './bitgo/utils/tss/eddsa/eddsa';
 export { EddsaUtils };
 import { EcdsaUtils } from './bitgo/utils/tss/ecdsa/ecdsa';
 export { EcdsaUtils };
+import { EcdsaMPCv2Utils } from './bitgo/utils/tss/ecdsa/ecdsaMPCv2';
+export { EcdsaMPCv2Utils };
 export { GShare, SignShare, YShare } from './account-lib/mpc/tss/eddsa/types';
 export { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage } from './bitgo/tss/types';
 export { SShare } from './bitgo/tss/ecdsa/types';

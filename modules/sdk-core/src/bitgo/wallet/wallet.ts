@@ -1697,6 +1697,14 @@ export class Wallet implements IWallet {
       return this.signTransactionTssExternalSignerECDSA(this.baseCoin, params);
     }
 
+    if (
+      _.isFunction(params.customMPCv2Round1GenerationFunction) &&
+      _.isFunction(params.customMPCv2Round2GenerationFunction)
+    ) {
+      // invoke external signer TSS for ECDSA MPCv2workflow
+      return this.signTransactionTssExternalSignerECDSAMPCv2(this.baseCoin, params);
+    }
+
     if (!txPrebuild || typeof txPrebuild !== 'object') {
       if (this.multisigType() === 'onchain') {
         throw new Error('txPrebuild is required for on-chain multisig wallets');
@@ -3146,6 +3154,55 @@ export class Wallet implements IWallet {
         params.customKShareGeneratingFunction,
         params.customMuDeltaShareGeneratingFunction,
         params.customSShareGeneratingFunction
+      );
+      return signedTxRequest;
+    } catch (e) {
+      throw new Error('failed to sign transaction ' + e);
+    }
+  }
+
+  /**
+   * Signs a transaction from a TSS ECDSA wallet using external signer.
+   *
+   * @param params signing options
+   */
+  private async signTransactionTssExternalSignerECDSAMPCv2(
+    coin: IBaseCoin,
+    params: WalletSignTransactionOptions = {}
+  ): Promise<TxRequest> {
+    let txRequestId = '';
+    if (params.txRequestId) {
+      txRequestId = params.txRequestId;
+    } else if (params.txPrebuild && params.txPrebuild.txRequestId) {
+      txRequestId = params.txPrebuild.txRequestId;
+    } else {
+      throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
+    }
+
+    if (!params.customMPCv2Round1GenerationFunction) {
+      throw new Error('Generator function for MPCv2 Round 1 share required to sign transactions with External Signer.');
+    }
+
+    if (!params.customMPCv2Round2GenerationFunction) {
+      throw new Error('Generator function for MPCv2 Round 2 share required to sign transactions with External Signer.');
+    }
+
+    if (!params.customMPCv2Round3GenerationFunction) {
+      throw new Error('Generator function for MPCv2 Round 3 share required to sign transactions with External Signer.');
+    }
+
+    try {
+      assert(this.tssUtils, 'tssUtils must be defined');
+      const signedTxRequest = await this.tssUtils.signEcdsaMPCv2TssUsingExternalSigner(
+        {
+          txRequest: txRequestId,
+          prv: '',
+          reqId: params.reqId || new RequestTracer(),
+        },
+        RequestType.tx,
+        params.customMPCv2Round1GenerationFunction,
+        params.customMPCv2Round2GenerationFunction,
+        params.customMPCv2Round3GenerationFunction
       );
       return signedTxRequest;
     } catch (e) {

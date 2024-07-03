@@ -18,6 +18,9 @@ import {
   CustomCommitmentGeneratingFunction,
   CustomGShareGeneratingFunction,
   CustomKShareGeneratingFunction,
+  CustomMPCv2Round1GeneratingFunction,
+  CustomMPCv2Round2GeneratingFunction,
+  CustomMPCv2Round3GeneratingFunction,
   CustomMuDeltaShareGeneratingFunction,
   CustomPaillierModulusGetterFunction,
   CustomRShareGeneratingFunction,
@@ -198,6 +201,9 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   customKShareGeneratingFunction?: CustomKShareGeneratingFunction;
   customMuDeltaShareGeneratingFunction?: CustomMuDeltaShareGeneratingFunction;
   customSShareGeneratingFunction?: CustomSShareGeneratingFunction;
+  customMPCv2Round1GenerationFunction?: CustomMPCv2Round1GeneratingFunction;
+  customMPCv2Round2GenerationFunction?: CustomMPCv2Round2GeneratingFunction;
+  customMPCv2Round3GenerationFunction?: CustomMPCv2Round3GeneratingFunction;
   apiVersion?: ApiVersion;
   multisigTypeVersion?: 'MPCv2';
   [index: string]: unknown;
