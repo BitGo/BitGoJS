@@ -1,0 +1,8 @@
+target/
+js/wasm/
+node_modules/
+# we actually only track the .ts files
+js/*.js
+js/*.d.ts
+test/*.js
+test/*.d.ts

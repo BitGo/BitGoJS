@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "declaration": true
+  },
+  "include": ["./js/**/*"],
+  "exclude": ["node_modules", "./js/wasm/**/*"]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@bitgo/wasm-miniscript",
+  "version": "0.1.0",
+  "files": [
+    "js/wasm/wasm_miniscript_bg.wasm",
+    "js/wasm/wasm_miniscript.js",
+    "js/wasm/wasm_miniscript_bg.js",
+    "js/wasm/wasm_miniscript.d.ts",
+    "js/index.js"
+  ],
+  "main": "js/index.js",
+  "types": "js/index.d.ts",
+  "sideEffects": [
+    "./js/wasm/wasm_miniscript.js"
+  ],
+  "scripts": {
+    "test": "mocha --recursive test",
+    "build:wasm": "wasm-pack build --out-dir js/wasm --no-pack --target nodejs --weak-refs",
+    "build:ts": "tsc",
+    "build": "npm run build:wasm && npm run build:ts"
+  },
+  "devDependencies": {
+    "mocha": "^10.6.0",
+    "ts-node": "^10.9.2"
+  }
+}
