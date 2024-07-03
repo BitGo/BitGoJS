@@ -436,7 +436,7 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   blockExplorerUrl = 'https://etherscan.io/block/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 1;
-  batcherContractAddress = '0x0c9b25dfe02b2c89cce86e1a0bd6c04a7aca01b6';
+  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
   forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
   nativeCoinOperationHashPrefix = 'ETHER';
@@ -507,7 +507,7 @@ class Holesky extends Testnet implements EthereumNetwork {
   blockExplorerUrl = 'https://holesky.etherscan.io/block/';
   // https://chainlist.org/chain/17000
   chainId = 17000;
-  batcherContractAddress = '0x8ae286c75a339ffabaed3a22088c52eb4f589780';
+  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
   forwarderFactoryAddress = '0x23223fd7cfc5f34b20f38ebb9a489e1ff3c084d1';
   forwarderImplementationAddress = '0xd4c24325b5ef514fbb1ecc76a9bb4dcb57a8341e';
   nativeCoinOperationHashPrefix = 'ETHER';
