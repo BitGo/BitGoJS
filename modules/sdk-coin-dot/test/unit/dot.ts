@@ -1,11 +1,16 @@
+/* eslint-disable no-console */
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { randomBytes } from 'crypto';
 import should = require('should');
-import { Dot, Tdot, KeyPair } from '../../src';
+import { Dot, Tdot, KeyPair, TransactionBuilderFactory, Transaction } from '../../src';
 import * as testData from '../fixtures';
 import { chainName, txVersion, genesisHash, specVersion } from '../resources';
 import * as sinon from 'sinon';
+import { ApiPromise, Keyring, WsProvider } from '@polkadot/api';
+import { PolkadotSpecNameType, coins } from '@bitgo/statics';
+import { construct, createMetadata, decode, deriveAddress, getRegistry, methods } from '@substrate/txwrapper-polkadot';
+import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 
 describe('DOT:', function () {
   let bitgo: TestBitGoAPI;
@@ -82,6 +87,161 @@ describe('DOT:', function () {
       } catch (e) {
         should.equal(e.message, 'Private key cannot sign the transaction');
       }
+    });
+
+    it('example to txwrapper ', async function () {
+      const wsProvider = new WsProvider('wss://westend-rpc.polkadot.io/');
+      const api = await ApiPromise.create({ provider: wsProvider });
+
+      const keyring = new Keyring();
+      const alice = keyring.addFromMnemonic(
+        'private injury nasty asset craft high gain wrong crawl poverty oil liberty'
+      );
+      console.log("Alice's SS58-Encoded Address:", deriveAddress(alice.publicKey, 42));
+
+      const { number, hash } = await api.rpc.chain.getHeader();
+      console.log(`Chain is at block: #${number} (hash ${hash})`);
+      const material = {
+        genesisHash: api.genesisHash.toString(),
+        chainName: api.runtimeChain.toString(),
+        specName: api.runtimeVersion.specName.toString() as PolkadotSpecNameType,
+        specVersion: api.runtimeVersion.specVersion.toNumber(),
+        txVersion: api.runtimeVersion.transactionVersion.toNumber(),
+        metadata: api.runtimeMetadata.toHex(),
+      };
+
+      const registry = getRegistry({
+        chainName: 'Westend',
+        specName: 'westend',
+        specVersion: material.specVersion,
+        metadataRpc: material.metadata,
+      });
+
+      //  destination
+      const dest = '5HSvA742A9gkxtBMDQB4VzH2vCbE2CQ9MNdJrMmaap4dWpFK';
+
+      const unsigned = methods.balances.transferKeepAlive(
+        {
+          value: '1000000',
+          dest: { id: dest },
+        },
+        {
+          address: deriveAddress(alice.publicKey, 42),
+          blockHash: hash.toString(),
+          blockNumber: registry.createType('BlockNumber', number.toNumber()).toNumber(),
+          eraPeriod: 260,
+          genesisHash,
+          metadataRpc: material.metadata,
+          nonce: 6,
+          specVersion: material.specVersion,
+          tip: 0,
+          transactionVersion: material.txVersion,
+        },
+        {
+          metadataRpc: material.metadata,
+          registry: registry,
+        }
+      );
+
+      // Decode an unsigned transaction.
+      const decodedUnsigned = decode(unsigned, {
+        metadataRpc: material.metadata,
+        registry: registry,
+      });
+      console.log('decoded');
+      console.log(decodedUnsigned);
+      console.log(
+        `\nDecoded Transaction\n  To: ${(decodedUnsigned.method.args.dest as { id: string })?.id}\n` +
+          `  Amount: ${decodedUnsigned.method.args.value}`
+      );
+      // Construct the signing payload from an unsigned transaction.
+      const signingPayload = construct.signingPayload(unsigned, { registry: registry });
+      console.log(`\nPayload to Sign: ${signingPayload}`);
+
+      registry.setMetadata(createMetadata(registry, material.metadata));
+
+      const { signature } = registry
+        .createType('ExtrinsicPayload', signingPayload, {
+          version: EXTRINSIC_VERSION,
+        })
+        .sign(alice);
+
+      console.log(signature);
+
+      const txPayload = construct.signedTx(unsigned, signature, {
+        metadataRpc: material.metadata,
+        registry: registry,
+      });
+
+      console.log(`\nTxPayload: ${txPayload}`);
+
+      const txhash = await api.rpc.author.submitExtrinsic(txPayload);
+      console.log(`Transaction hash: ${txhash}`);
+    });
+
+    it('should build a signed transfer tx and submit onchain', async function () {
+      const wsProvider = new WsProvider('wss://westend-rpc.polkadot.io/');
+      const api = await ApiPromise.create({ provider: wsProvider });
+      const [chain, nodeName, nodeVersion] = await Promise.all([
+        api.rpc.system.chain(),
+        api.rpc.system.name(),
+        api.rpc.system.version(),
+      ]);
+
+      console.log(`You are connected to chain ${chain} using ${nodeName} v${nodeVersion}`);
+
+      const keyPair = new KeyPair({ prv: testData.accounts.account1.secretKey });
+      const publicKey = keyPair.getKeys().pub;
+      const senderAddr = testData.accounts.account1.address;
+
+      const coin = coins.get('tdot');
+
+      const { number, hash } = await api.rpc.chain.getHeader();
+      const material = {
+        genesisHash: api.genesisHash.toString(),
+        chainName: api.runtimeChain.toString(),
+        specName: api.runtimeVersion.specName.toString() as PolkadotSpecNameType,
+        specVersion: api.runtimeVersion.specVersion.toNumber(),
+        txVersion: api.runtimeVersion.transactionVersion.toNumber(),
+        metadata: api.runtimeMetadata.toHex(),
+      };
+      console.log('material', material);
+      const { nonce } = await api.query.system.account(senderAddr);
+
+      const validityWindow = { firstValid: number.toNumber(), maxDuration: 240 };
+
+      const txnBuilder = new TransactionBuilderFactory(coin).getTransferBuilder().material(material);
+      txnBuilder
+        .to({ address: testData.accounts.account2.address })
+        .sender({ address: senderAddr })
+        .amount('100000000')
+        .validity(validityWindow)
+        .referenceBlock(hash.toString())
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: nonce.toNumber() })
+        .fee({ amount: 0, type: 'tip' });
+      const unsignedTransaction = (await txnBuilder.build()) as Transaction;
+      //      txnBuilder.sign({ key: keyPair.getKeys().prv });
+      //      const signedTx = await txnBuilder.build();
+
+      console.log('decoded');
+      // console.log(decodedUnsigned);
+
+      const signable = unsignedTransaction.signablePayload;
+      const signature = keyPair.signMessageinUint8Array(signable);
+      txnBuilder.addSignature({ pub: publicKey }, Buffer.from(signature));
+      // const signedTx = await txnBuilder.build();
+      // console.log(signedTx.toBroadcastFormat());
+      txnBuilder.material(material).from(unsignedTransaction.toBroadcastFormat());
+      const buildTransaction = await txnBuilder.build();
+      console.log('hey');
+      console.log(buildTransaction.signablePayload.toString('hex') === signable.toString('hex'));
+      const signature2 = keyPair.signMessageinUint8Array(buildTransaction.signablePayload);
+      txnBuilder.addSignature({ pub: publicKey }, Buffer.from(signature2));
+      const signedTx2 = await txnBuilder.build();
+      console.log(signedTx2.toBroadcastFormat());
+
+      // const txhash = await api.rpc.author.submitExtrinsic(signedTx.toBroadcastFormat());
+      // console.log(`Transaction hash: ${txhash}`);
     });
 
     it('should fail to build transaction with missing params', async function () {
