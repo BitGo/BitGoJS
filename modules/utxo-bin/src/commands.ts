@@ -42,6 +42,8 @@ type ArgsParseTransaction = {
   clipboard: boolean;
   path?: string;
   txid?: string;
+  blockHeight?: number;
+  txIndex?: number;
   data?: string;
   all: boolean;
   cache: boolean;
@@ -168,6 +170,8 @@ export const cmdParseTx = {
       .option('data', { type: 'string', description: 'transaction bytes (hex or base64)', alias: 'hex' })
       .option('clipboard', { type: 'boolean', default: false })
       .option('txid', { type: 'string' })
+      .option('blockHeight', { type: 'number' })
+      .option('txIndex', { type: 'number' })
       .option('fetchAll', { type: 'boolean', default: false })
       .option('fetchStatus', { type: 'boolean', default: false })
       .option('fetchInputs', { type: 'boolean', default: false })
@@ -208,8 +212,16 @@ export const cmdParseTx = {
 
     const httpClient = await getClient({ cache: argv.cache });
 
-    if (argv.txid) {
-      data = await fetchTransactionHex(httpClient, argv.txid, network);
+    if (argv.txid || argv.blockHeight !== undefined || argv.txIndex !== undefined) {
+      data = await fetchTransactionHex(
+        httpClient,
+        {
+          txid: argv.txid,
+          blockHeight: argv.blockHeight,
+          txIndex: argv.txIndex,
+        },
+        network
+      );
     }
 
     if (argv.stdin || argv.path === '-') {

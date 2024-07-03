@@ -1,7 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as blockapis from '@bitgo/blockapis';
 import { coins, UtxoCoin } from '@bitgo/statics';
-import { HttpClient } from '@bitgo/blockapis';
+import { getTransactionIdsAtHeight, HttpClient } from '@bitgo/blockapis';
 import { ParserTx } from './ParserTx';
 
 function getTxOutPoints(tx: ParserTx): utxolib.bitgo.TxOutPoint[] {
@@ -49,10 +49,36 @@ function getApi(httpClient: HttpClient, network: utxolib.Network): blockapis.Utx
 
 export async function fetchTransactionHex(
   httpClient: HttpClient,
-  txid: string,
+  location: {
+    txid?: string;
+    blockHeight?: number;
+    txIndex?: number;
+  },
   network: utxolib.Network
 ): Promise<string> {
-  return await getApi(httpClient, network).getTransactionHex(txid);
+  location = Object.fromEntries(Object.entries(location).filter(([k, v]) => v !== undefined));
+
+  if (location.blockHeight !== undefined && location.txIndex !== undefined) {
+    const api = getApi(httpClient, network);
+    if (api instanceof blockapis.BlockstreamApi) {
+      const txids = await getTransactionIdsAtHeight(api, location.blockHeight);
+      const txid = txids[location.txIndex];
+      if (!txid) {
+        throw new Error(`no tx at height ${location.blockHeight} position ${location.txIndex}`);
+      }
+      return fetchTransactionHex(httpClient, { txid }, network);
+    }
+    throw new Error(`cannot use api ${api.constructor.name} to fetch tx by height`);
+  }
+
+  if (location.txid) {
+    if (Object.keys(location).length > 1) {
+      throw new Error(`cannot specify both txid and ${Object.keys(location)}`);
+    }
+    return await getApi(httpClient, network).getTransactionHex(location.txid);
+  }
+
+  throw new Error(`invalid location: ${JSON.stringify(location)}`);
 }
 
 export async function fetchTransactionStatus(

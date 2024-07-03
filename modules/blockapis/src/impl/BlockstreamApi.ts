@@ -3,7 +3,7 @@ import { AddressApi, AddressInfo } from '../AddressApi';
 import { OutputSpend, TransactionIO, UtxoApi } from '../UtxoApi';
 import { ApiRequestError, BaseHttpClient, HttpClient, mapSeries } from '../BaseHttpClient';
 import { ApiNotImplementedError } from '../ApiBuilder';
-import { TransactionStatus } from '../TransactionApi';
+import { BlockApi, TransactionStatus } from '../TransactionApi';
 
 type Unspent = bitgo.Unspent;
 const formatOutputId = bitgo.formatOutputId;
@@ -71,7 +71,7 @@ type EsploraTransaction = {
   status: EsploraStatus;
 };
 
-export class BlockstreamApi implements AddressApi, UtxoApi {
+export class BlockstreamApi implements AddressApi, BlockApi, UtxoApi {
   static forCoin(coinName: string, params: { httpClient?: HttpClient } = {}): BlockstreamApi {
     const { httpClient = new BaseHttpClient() } = params;
     switch (coinName) {
@@ -85,6 +85,16 @@ export class BlockstreamApi implements AddressApi, UtxoApi {
   }
 
   constructor(public client: HttpClient) {}
+
+  async getBlockIdAtHeight(height: number): Promise<string> {
+    // https://github.com/Blockstream/esplora/blob/master/API.md#get-block-heightheight
+    return (await this.client.get<string>(`/block-height/${height}`)).map((body) => body);
+  }
+
+  async getTransactionIds(hash: string): Promise<string[]> {
+    // https://github.com/Blockstream/esplora/blob/master/API.md#get-blockhashtxids
+    return (await this.client.get<string[]>(`/block/${hash}/txids`)).map((body) => body);
+  }
 
   async getAddressInfo(address: string): Promise<AddressInfo> {
     const response = await this.client.get<EsploraAddress>(`/address/${address}`);

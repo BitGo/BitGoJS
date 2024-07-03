@@ -8,12 +8,9 @@
 
 import 'mocha';
 import * as assert from 'assert';
-import { BlockchairApi, BlockstreamApi, UtxoApi, CachingHttpClient } from '../src';
+import { BlockchairApi, BlockstreamApi, UtxoApi } from '../src';
 import { deepStrictEqualJSON, getFixture } from './fixtures';
-
-function isHttpEnabled(): boolean {
-  return process.env.BITGO_BLOCKAPIS_TEST_ENABLE_HTTP === '1';
-}
+import { getHttpClient, isHttpEnabled } from './http.util';
 
 function getTestAddresses(coinName: string): string[] {
   switch (coinName) {
@@ -116,14 +113,6 @@ class TestCase<T> {
     }
     return `${this.methodName}(${this.args.map((v) => elide(String(v), 4))})`;
   }
-}
-
-/**
- * @param name
- * @return a new CachingHttpClient that reads from the given fixture directory.
- */
-function getHttpClient(name: string): CachingHttpClient {
-  return new CachingHttpClient(`${__dirname}/fixtures/responses/` + name, { isHttpEnabled: isHttpEnabled() });
 }
 
 /**
