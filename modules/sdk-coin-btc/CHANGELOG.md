@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.0.24...@bitgo/sdk-coin-btc@2.1.0) (2024-07-04)
+
+### Bug Fixes
+
+- make public signet tests work with bitgo module ([fe32ae3](https://github.com/BitGo/BitGoJS/commit/fe32ae31241176762e608f1b43b0ab54976efe1c))
+
+### Features
+
+- add btc public signet network and coin ([c26cc8d](https://github.com/BitGo/BitGoJS/commit/c26cc8d11c1e14777dd54dcb61b7af8ee2d5a4c6))
+
 ## [2.0.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.0.23...@bitgo/sdk-coin-btc@2.0.24) (2024-07-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-btc

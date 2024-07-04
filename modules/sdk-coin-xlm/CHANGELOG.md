@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.1.2...@bitgo/sdk-coin-xlm@3.1.3) (2024-07-04)
+
+### Bug Fixes
+
+- **sdk-coin-xlm:** fix xlm root key tx signing ([f0cb64e](https://github.com/BitGo/BitGoJS/commit/f0cb64e92ea59ec437270947688c5b00bc036f00))
+
 ## [3.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.1.1...@bitgo/sdk-coin-xlm@3.1.2) (2024-07-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

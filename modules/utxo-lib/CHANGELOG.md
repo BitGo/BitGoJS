@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.39.0...@bitgo/utxo-lib@9.40.0) (2024-07-04)
+
+### Features
+
+- add btc public signet network and coin ([c26cc8d](https://github.com/BitGo/BitGoJS/commit/c26cc8d11c1e14777dd54dcb61b7af8ee2d5a4c6))
+- make testnet3 the canonical btc testnet ([6a05cef](https://github.com/BitGo/BitGoJS/commit/6a05cef0a02d189b0b7c568f84bb8afc01e3d179))
+
 # [9.39.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.38.0...@bitgo/utxo-lib@9.39.0) (2024-06-26)
 
 ### Features

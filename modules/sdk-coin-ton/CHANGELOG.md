@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@2.0.24...@bitgo/sdk-coin-ton@3.0.0) (2024-07-04)
+
+### Features
+
+- **sdk-coin-ton:** migrate to non bounceable addresses ([79c048d](https://github.com/BitGo/BitGoJS/commit/79c048dbe75c62e64f1260df03fe8ccbadbd4399))
+
+### BREAKING CHANGES
+
+- **sdk-coin-ton:** All new wallets will generate UQ addresses for ton.
+  External applications and clients depending on these kind of addresses should migrate.
+  No change is being done to existing EQ address wallets.
+
 ## [2.0.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@2.0.23...@bitgo/sdk-coin-ton@2.0.24) (2024-07-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

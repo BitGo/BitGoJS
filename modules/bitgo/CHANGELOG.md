@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [38.14.2](https://github.com/BitGo/BitGoJS/compare/bitgo@38.14.1...bitgo@38.14.2) (2024-07-04)
+
+### Bug Fixes
+
+- make public signet tests work with bitgo module ([fe32ae3](https://github.com/BitGo/BitGoJS/commit/fe32ae31241176762e608f1b43b0ab54976efe1c))
+
 ## [38.14.1](https://github.com/BitGo/BitGoJS/compare/bitgo@38.14.0...bitgo@38.14.1) (2024-07-02)
 
 **Note:** Version bump only for package bitgo

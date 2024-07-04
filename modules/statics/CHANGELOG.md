@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.22.0...@bitgo/statics@48.23.0) (2024-07-04)
+
+### Features
+
+- add btc public signet network and coin ([c26cc8d](https://github.com/BitGo/BitGoJS/commit/c26cc8d11c1e14777dd54dcb61b7af8ee2d5a4c6))
+- **statics:** add peaq token ([88af43e](https://github.com/BitGo/BitGoJS/commit/88af43e2cdce19ea8f80dd5d2834b65065a35dff))
+- **statics:** add TON coin support to Go Accounts ([5f4f1a9](https://github.com/BitGo/BitGoJS/commit/5f4f1a97c739a0cc778fcff45dfa6dd4267736b8))
+
 # [48.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.21.0...@bitgo/statics@48.22.0) (2024-07-02)
 
 ### Features
