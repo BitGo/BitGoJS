@@ -78,13 +78,8 @@ export class Transaction extends BaseTransaction {
   private createSigningMessage(walletId, seqno, expireAt) {
     const message = new TonWeb.boc.Cell();
     message.bits.writeUint(walletId, 32);
-    if (seqno === 0) {
-      for (let i = 0; i < 32; i++) {
-        message.bits.writeBit(1);
-      }
-    } else {
-      message.bits.writeUint(expireAt, 32);
-    }
+    // expireAt should be set as per the provided arg value, regardless of the seqno
+    message.bits.writeUint(expireAt, 32);
     message.bits.writeUint(seqno, 32);
     message.bits.writeUint(0, 8); // op
     return message;
