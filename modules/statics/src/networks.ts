@@ -943,7 +943,7 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd4c24325b5ef514fbb1ecc76a9bb4dcb57a8341e';
   walletFactoryAddress = '0xe9c16033e01bf9f94bf9f99fc0fefcfb8b124992';
   walletImplementationAddress = '0xf8360c213e4f44cce03e48cb9281254de2a7a566';
-  batcherContractAddress = '0xcdf01a31ea2a1d62951aac3a5743c4416f9da3fb';
+  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
   nativeCoinOperationHashPrefix = 'POLYGON';
   tokenOperationHashPrefix = 'POLYGON-ERC20';
 }
