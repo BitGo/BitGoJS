@@ -178,6 +178,7 @@ export interface TransactionPrebuild<TNumber extends number | bigint = number> e
 
 export interface TransactionParams extends BaseTransactionParams {
   walletPassphrase?: string;
+  allowExternalChangeAddress?: boolean;
   changeAddress?: string;
   rbfTxIds?: string[];
 }
@@ -324,6 +325,7 @@ export interface VerifyUserPublicKeyOptions {
 export interface VerifyTransactionOptions<TNumber extends number | bigint = number>
   extends BaseVerifyTransactionOptions {
   txPrebuild: TransactionPrebuild<TNumber>;
+  txParams: TransactionParams;
   wallet: AbstractUtxoCoinWallet;
 }
 
@@ -554,6 +556,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).map((output) => {
         return { ...output, address: this.canonicalAddress(output.address) };
       });
+      if (params.txParams.allowExternalChangeAddress && params.txParams.changeAddress) {
+        expectedOutputs.push(
+          ...allOutputs
+            .map((output) => {
+              return { ...output, address: this.canonicalAddress(output.address) };
+            })
+            .filter((output) => output.address === this.canonicalAddress(params.txParams.changeAddress as string))
+        );
+      }
     }
 
     const missingOutputs = AbstractUtxoCoin.outputDifference(expectedOutputs, allOutputs);
