@@ -178,6 +178,7 @@ export interface TransactionPrebuild<TNumber extends number | bigint = number> e
 
 export interface TransactionParams extends BaseTransactionParams {
   walletPassphrase?: string;
+  allowExternalChangeAddress?: boolean;
   changeAddress?: string;
   rbfTxIds?: string[];
 }
@@ -324,6 +325,7 @@ export interface VerifyUserPublicKeyOptions {
 export interface VerifyTransactionOptions<TNumber extends number | bigint = number>
   extends BaseVerifyTransactionOptions {
   txPrebuild: TransactionPrebuild<TNumber>;
+  txParams: TransactionParams;
   wallet: AbstractUtxoCoinWallet;
 }
 
@@ -923,7 +925,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       payAsYouGoLimit.toString()
     );
     // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
-    if (nonChangeAmount.gt(payAsYouGoLimit)) {
+    // If allowExternalChangeAddress is set to true then allow the additional external outputs to be more than
+    // something other than BitGo's pay-as-you-go fee
+    if (nonChangeAmount.gt(payAsYouGoLimit) && !params.txParams.allowExternalChangeAddress) {
       // there are some addresses that are outside the scope of intended recipients that are not change addresses
       throw new Error('prebuild attempts to spend to unintended external recipients');
     }
