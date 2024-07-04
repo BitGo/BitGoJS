@@ -250,6 +250,7 @@ class BinanceSmartChain extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://www.bscscan.com/tx/';
   accountExplorerUrl = 'https://www.bscscan.com/address/';
   chainId = 56;
+  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
 }
 
 class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
@@ -258,6 +259,7 @@ class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://testnet.bscscan.com/tx/';
   accountExplorerUrl = 'https://testnet.bscscan.com/address/';
   chainId = 97;
+  batcherContractAddress = '0x6faf4b6bae3d4bf20c5d866c938f51992c63e825';
 }
 
 class LightningBitcoin extends Mainnet implements LightningNetwork {
@@ -928,7 +930,7 @@ class Polygon extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0x5397d0869aba0d55e96d5716d383f6e1d8695ed7';
   walletFactoryAddress = '0xa7198f48c58e91f01317e70cd24c5cce475c1555';
   walletImplementationAddress = '0xe5dcdc13b628c2df813db1080367e929c1507ca0';
-  batcherContractAddress = '0x7adc9b3d7521710321bec7dd6897d337e53c2493';
+  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
   nativeCoinOperationHashPrefix = 'POLYGON';
   tokenOperationHashPrefix = 'POLYGON-ERC20';
 }
