@@ -29,7 +29,7 @@ import {
   getOutputIdForInput,
 } from '../Unspent';
 import { ChainCode, isSegwit } from './chains';
-import { UtxoPsbt } from '../UtxoPsbt';
+import type { UtxoPsbt } from '../UtxoPsbt';
 import { encodePsbtMusig2Participants } from '../Musig2';
 import { createTransactionFromBuffer } from '../transaction';
 import { parseSignatureScript } from '../parseInput';

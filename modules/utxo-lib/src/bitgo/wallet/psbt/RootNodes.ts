@@ -5,7 +5,7 @@
 import * as assert from 'assert';
 import * as bs58check from 'bs58check';
 
-import { UtxoPsbt } from '../../UtxoPsbt';
+import type { UtxoPsbt } from '../../UtxoPsbt';
 import { isTriple, Triple } from '../../types';
 import { BIP32Factory, BIP32Interface } from 'bip32';
 import { ecc as eccLib } from '../../../noble_ecc';
@@ -13,8 +13,7 @@ import { ParsedScriptType2Of3 } from '../../parseInput';
 import { Network } from '../../../networks';
 import { createOutputScript2of3 } from '../../outputScripts';
 import { PsbtInput } from 'bip174/src/lib/interfaces';
-import { createTransactionFromBuffer } from '../../transaction';
-import { getPsbtInputScriptType, toScriptType2Of3s } from '../Psbt';
+import { clonePsbtWithoutNonWitnessUtxo, getPsbtInputScriptType, toScriptType2Of3s } from '../Psbt';
 
 /**
  * Error thrown when no multi-sig input is found in a PSBT.
@@ -101,15 +100,9 @@ function getFirstMultiSigInputData(psbt: UtxoPsbt): {
   scriptPubKey: Buffer;
   derivationPath: string;
 } {
-  function getScriptPubKey(input: PsbtInput, prevOutIndex: number) {
-    const scriptPubKey =
-      input.witnessUtxo?.script ??
-      (input.nonWitnessUtxo
-        ? createTransactionFromBuffer(input.nonWitnessUtxo, psbt.network, { amountType: 'bigint' }).outs[prevOutIndex]
-            .script
-        : undefined);
-    assert(scriptPubKey, 'Input scriptPubKey can not be found');
-    return scriptPubKey;
+  function getScriptPubKey(input: PsbtInput) {
+    assert(input.witnessUtxo, 'Input witnessUtxo can not be found');
+    return input.witnessUtxo.script;
   }
 
   function getDerivationPath(input: PsbtInput) {
@@ -118,7 +111,7 @@ function getFirstMultiSigInputData(psbt: UtxoPsbt): {
     return bip32Dv[0].path;
   }
 
-  const txInputs = psbt.txInputs;
+  psbt = clonePsbtWithoutNonWitnessUtxo(psbt);
 
   for (let i = 0; i < psbt.data.inputs.length; i++) {
     const input = psbt.data.inputs[i];
@@ -126,7 +119,7 @@ function getFirstMultiSigInputData(psbt: UtxoPsbt): {
     if (parsedScriptType === 'p2shP2pk') {
       continue;
     }
-    const scriptPubKey = getScriptPubKey(input, txInputs[i].index);
+    const scriptPubKey = getScriptPubKey(input);
     const derivationPath = getDerivationPath(input);
     return { parsedScriptType, scriptPubKey, derivationPath };
   }

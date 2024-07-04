@@ -4,8 +4,8 @@ import { GlobalXpub, PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/
 import { checkForInput } from 'bip174/src/lib/utils';
 import { BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
-import { UtxoPsbt } from '../UtxoPsbt';
-import { UtxoTransaction } from '../UtxoTransaction';
+import type { UtxoPsbt } from '../UtxoPsbt';
+import type { UtxoTransaction } from '../UtxoTransaction';
 import {
   createOutputScript2of3,
   getLeafHash,
@@ -445,7 +445,7 @@ export function getStrictSignatureCount(input: TxInput | PsbtInput): 0 | 1 | 2 {
 export function getStrictSignatureCounts(
   tx: UtxoPsbt | UtxoTransaction<number | bigint> | PsbtInput[] | TxInput[]
 ): (0 | 1 | 2)[] {
-  const inputs = tx instanceof UtxoPsbt ? tx.data.inputs : tx instanceof UtxoTransaction ? tx.ins : tx;
+  const inputs = 'data' in tx ? tx.data.inputs : 'ins' in tx ? tx.ins : tx;
   return inputs.map((input, _) => getStrictSignatureCount(input));
 }
 
@@ -470,7 +470,7 @@ export function isTxInputArray(inputs: PsbtInput[] | TxInput[]): inputs is TxInp
 export function isTransactionWithKeyPathSpendInput(
   data: UtxoPsbt | UtxoTransaction<bigint | number> | PsbtInput[] | TxInput[]
 ): boolean {
-  const inputs = data instanceof UtxoPsbt ? data.data.inputs : data instanceof UtxoTransaction ? data.ins : data;
+  const inputs = 'data' in data ? data.data.inputs : 'ins' in data ? data.ins : data;
   if (!inputs.length) {
     return false;
   }

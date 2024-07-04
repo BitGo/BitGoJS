@@ -10,8 +10,7 @@ import {
 import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 import { SessionKey } from '@brandonblack/musig';
-import { BIP32Factory, BIP32Interface } from 'bip32';
-import * as bs58check from 'bs58check';
+import { BIP32Interface } from 'bip32';
 import { decodeProprietaryKey, encodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 
 import {
@@ -52,7 +51,7 @@ import {
   musig2DeterministicSign,
   createMusig2DeterministicNonce,
 } from './Musig2';
-import { isTriple, isTuple, Triple, Tuple } from './types';
+import { isTuple, Triple, Tuple } from './types';
 import { getTaprootOutputKey } from '../taproot';
 import {
   getPsbtInputProprietaryKeyVals,
@@ -62,6 +61,7 @@ import {
   ProprietaryKeyValue,
   PSBT_PROPRIETARY_IDENTIFIER,
 } from './PsbtUtil';
+import { getSortedRootNodes } from './wallet/psbt/RootNodes';
 
 type SignatureParams = {
   /** When true, and add the second (last) nonce and signature for a taproot key
@@ -706,15 +706,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     inputIndex: number,
     { rootNodes }: { rootNodes?: Triple<BIP32Interface> } = {}
   ): Triple<boolean> {
-    if (!rootNodes && (!this.data.globalMap.globalXpub?.length || !isTriple(this.data.globalMap.globalXpub))) {
-      throw new Error('Cannot get signature validation array without 3 global xpubs');
-    }
-
-    const bip32s = rootNodes
-      ? rootNodes
-      : this.data.globalMap.globalXpub?.map((xpub) =>
-          BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey))
-        );
+    const bip32s = rootNodes ? rootNodes : getSortedRootNodes(this);
 
     if (!bip32s) {
       throw new Error('either globalMap or rootNodes is required');
