@@ -925,11 +925,20 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       payAsYouGoLimit.toString()
     );
     // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
-    // If allowExternalChangeAddress is set to true then allow the additional external outputs to be more than
-    // something other than BitGo's pay-as-you-go fee
-    if (nonChangeAmount.gt(payAsYouGoLimit) && !params.txParams.allowExternalChangeAddress) {
-      // there are some addresses that are outside the scope of intended recipients that are not change addresses
-      throw new Error('prebuild attempts to spend to unintended external recipients');
+    if (!params.txParams.allowExternalChangeAddress) {
+      if (nonChangeAmount.gt(payAsYouGoLimit)) {
+        // there are some addresses that are outside the scope of intended recipients that are not change addresses
+        throw new Error('prebuild attempts to spend to unintended external recipients');
+      }
+    } else {
+      // If allowExternalChangeAddress is set to true then allow the additional external outputs to be more than
+      // something other than BitGo's pay-as-you-go fee
+      const isExternalChangeAddressPresentInOutputs = parsedTransaction.implicitExternalOutputs.some((output) => {
+        return output.address === params.txParams.changeAddress;
+      });
+      if (!isExternalChangeAddressPresentInOutputs) {
+        throw new Error('prebuild attempts to spend to unintended external recipients');
+      }
     }
 
     const allOutputs = parsedTransaction.outputs;
