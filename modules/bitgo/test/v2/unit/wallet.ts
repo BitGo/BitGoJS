@@ -4229,4 +4229,104 @@ describe('V2 Wallet:', function () {
       getTokenBalanceNock.isDone().should.be.true();
     });
   });
+
+  describe('Ada tests: ', () => {
+    let adaWallet: Wallet;
+    const adaBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    adaBitgo.initializeTestVars();
+    const walletData = {
+      id: '598f606cd8fc24710d2ebadb1d9459bb',
+      coinSpecific: {
+        baseAddress:
+          'addr_test1q9faa5q3zr38wkd4kd3u8jfshx97jxvwsyvjg3tac826502nmmgpzy8zwavmtvmrc0ynpwvtayvcaqgey3zhmsw44g7shrfrh9',
+        pendingChainInitialization: false,
+        minimumFunding: 1000000,
+        lastChainIndex: { 0: 0 },
+      },
+      coin: 'tada',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+      multisigType: 'tss',
+    };
+
+    before(async function () {
+      adaWallet = new Wallet(bitgo, bitgo.coin('tada'), walletData);
+      nock(bgUrl).get(`/api/v2/${adaWallet.coin()}/key/${adaWallet.keyIds()[0]}`).times(3).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+        source: 'user',
+        encryptedPrv:
+          '{"iv":"hNK3rg82P1T94MaueXFAbA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cV4wU4EzPjs=","ct":"9VZX99Ztsb6p75Cxl2lrcXBplmssIAQ9k7ZA81vdDYG4N5dZ36BQNWVfDoelj9O31XyJ+Xri0XKIWUzl0KKLfUERplmtNoOCn5ifJcZwCrOxpHZQe3AJ700o8Wmsrk5H"}',
+        coinSpecific: {},
+      });
+
+      nock(bgUrl).get(`/api/v2/${adaWallet.coin()}/key/${adaWallet.keyIds()[1]}`).times(2).reply(200, {
+        id: '598f606cc8e43aef09fcb785221d9dd2',
+        pub: 'G1s43JTzNZzqhUn4aNpwgcc6wb9FUsZQD5JjffG6isyd',
+        encryptedPrv:
+          '{"iv":"UFrt/QlIUR1XeQafPBaAlw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"7VPBYaJXPm8=","ct":"ajFKv2y8yaIBXQ39sAbBWcnbiEEzbjS4AoQtp5cXYqjeDRxt3aCxemPm22pnkJaCijFjJrMHbkmsNhNYzHg5aHFukN+nEAVssyNwHbzlhSnm8/BVN50yAdAAtWreh8cp"}',
+        source: 'backup',
+        coinSpecific: {},
+      });
+
+      nock(bgUrl).get(`/api/v2/${adaWallet.coin()}/key/${adaWallet.keyIds()[2]}`).times(2).reply(200, {
+        id: '5935d59cf660764331bafcade1855fd7',
+        pub: 'GH1LV1e9FdqGe8U2c8PMEcma3fDeh1ktcGVBrD3AuFqx',
+        encryptedPrv:
+          '{"iv":"iIuWOHIOErEDdiJn6g46mg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"Rzh7RRJksj0=","ct":"rcNICUfp9FakT53l+adB6XKzS1vNTc0Qq9jAtqnxA+ScssiS4Q0l3sgG/0gDy5DaZKtXryKBDUvGsi7b/fYaFCUpAoZn/VZTOhOUN/mo7ZHb4OhOXL29YPPkiryAq9Cr"}',
+        source: 'bitgo',
+        coinSpecific: {},
+      });
+    });
+
+    after(async function () {
+      sinon.restore();
+      nock.cleanAll();
+    });
+
+    it('Should send unspents in payment intent when using sendmany', async function () {
+      const sendManyParams = {
+        type: 'transfer',
+        recipients: [
+          {
+            address: 'address',
+            amount: '1000',
+          },
+        ],
+        unspents: ['unspent1', 'unspent2'],
+      };
+
+      nock(bgUrl)
+        .post(`/api/v2/wallet/${adaWallet.id()}/txrequests`)
+        .reply((url, body: any) => {
+          // validate that the populated intent has unspents
+          body.intent.intentType.should.equal('payment');
+          body.intent.unspents.should.deepEqual(['unspent1', 'unspent2']);
+
+          return [
+            200,
+            {
+              apiVersion: 'lite',
+              unsignedTxs: [
+                {
+                  unsignedTx: {
+                    serializedTxHex: 'serializedTxHex',
+                    feeInfo: 'fee info',
+                  },
+                },
+              ],
+            },
+          ];
+        });
+
+      // stub all steps after txrequest creation
+      sinon.stub(adaWallet.baseCoin, 'verifyTransaction').resolves(true);
+      sinon.stub(adaWallet, 'signTransaction').resolves({ txRequestId: 'txRequestId' });
+      sinon.stub(BaseTssUtils.default.prototype, 'sendTxRequest').resolves('sendTxResponse');
+      await adaWallet.sendMany(sendManyParams);
+    });
+  });
 });

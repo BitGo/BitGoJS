@@ -134,7 +134,7 @@ export abstract class MpcUtils {
       return formattedRecipient;
     });
 
-    const baseIntent = {
+    const baseIntent: PopulatedIntent = {
       intentType: params.intentType,
       sequenceId: params.sequenceId,
       comment: params.comment,
@@ -167,6 +167,10 @@ export abstract class MpcUtils {
         default:
           throw new Error(`Unsupported intent type ${params.intentType}`);
       }
+    }
+
+    if (baseCoin.getFamily() === 'ada' && params.unspents) {
+      baseIntent.unspents = params.unspents;
     }
 
     if (params.feeOptions !== undefined) {
