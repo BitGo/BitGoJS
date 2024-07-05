@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.9.6...@bitgo/blockapis@1.10.0) (2024-07-04)
+
+### Bug Fixes
+
+- **blockapis:** unit test target ([8ac97d1](https://github.com/BitGo/BitGoJS/commit/8ac97d100e51a8211a8f2143457cc592464fd0e9))
+
+### Features
+
+- **blockapis:** add BlockApi interface ([618f65a](https://github.com/BitGo/BitGoJS/commit/618f65a5c263ae5e913a71a7e2c614d3cad378e9))
+
 ## [1.9.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.9.5...@bitgo/blockapis@1.9.6) (2024-06-26)
 
 **Note:** Version bump only for package @bitgo/blockapis

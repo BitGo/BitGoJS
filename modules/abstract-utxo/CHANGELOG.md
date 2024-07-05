@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.9.0...@bitgo/abstract-utxo@8.10.0) (2024-07-04)
+
+### Bug Fixes
+
+- make public signet tests work with bitgo module ([fe32ae3](https://github.com/BitGo/BitGoJS/commit/fe32ae31241176762e608f1b43b0ab54976efe1c))
+
+### Features
+
+- **abstract-utxo:** allow non-segwit signing by looking at txHex ([09e355a](https://github.com/BitGo/BitGoJS/commit/09e355a73c28dd807893c0e027b4c723a42d003d))
+
 # [8.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.8.1...@bitgo/abstract-utxo@8.9.0) (2024-07-02)
 
 ### Features
