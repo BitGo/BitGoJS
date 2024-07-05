@@ -200,6 +200,51 @@ describe('Recovery:', function () {
       await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
     });
 
+    it('should generate XLM recovery tx with unencrypted root private keys', async function () {
+      recoveryNocks.nockXlmRecovery();
+
+      // userKey and backupKey are in prv + pub representation
+      // first 64 characters (32 bytes) are the private key, the rest is the public key
+      const recoveryParams = {
+        userKey: `185ede5f7742be39d30fb5d19162ab6dd4b0e5d0c6cfb648abdb08114f52c3025aae152ef1470686aba3fec40889a550d7b53910c739e25b5d4a2f27eb512eb7`,
+        backupKey: `af9fd0b5920a8c26af5d880c6b53ca5d1e2f59e1c9e0b326c9c214f2800066568200a5e4dd279da5f422324b8210e898dbf68fc29c1f9cf791c224187fad7dc3`,
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
+      };
+      const recoveryAmount = 74999500;
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = await basecoin.recover(recoveryParams);
+
+      recovery.should.have.property('txBase64');
+      recovery.should.have.property('recoveryAmount', recoveryAmount);
+
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
+    });
+
+    it('should generate XLM recovery tx with encrypted root keys', async function () {
+      recoveryNocks.nockXlmRecovery();
+
+      // userKey and backupKey are in encrypted prv + pub representation
+      const recoveryParams = {
+        userKey: `{"iv":"bUHw53Oa8tSrFRzidPi8ag==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"QHNZFlDnCW0=","ct":"AQSABvUmCMsD3rJQzyg29TnLPnDVCZFXZkg9hJ2ReYaXWWkSb8Bw0nn3LW/GIGi3ZbOgPivJ4LhCbO9A2pp4aVOhbsbqCNBWxpmHzneVS3FPrLebQixH1Rn0X+ft2I9XcNNEklEw5cH3pf9I1vqLmwEHpF8DWx0OgGnlh/Qq0r5ZaEt5tbTDPA=="}`,
+        backupKey: `{"iv":"19SQ3SlLzuTbEfU7s8lTHQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"jLM2oWyO8Wg=","ct":"iXUdNcqhsbykfyLKYrcEegSHooAJt82krdSWhQhs/cUAoA6tX4j+HfOutQhSPDtJkIpbz19ynoTo8VVpxp/Ga+ubQVlClbZPyhC8YkCRvJBvWKg41EEGlyduK7esVrnnv1c4Xk4a4BaXszOEdGw/1aQB9AOQMMVsv6z8Yhu55QqVz6zN49PmaQ=="}`,
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
+      };
+
+      const recoveryAmount = 74999500;
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = await basecoin.recover(recoveryParams);
+
+      recovery.should.have.property('txBase64');
+      recovery.should.have.property('recoveryAmount', recoveryAmount);
+
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
+    });
+
     it('should generate XLM recovery tx with KRS', async function () {
       recoveryNocks.nockXlmRecovery();
 
@@ -222,12 +267,57 @@ describe('Recovery:', function () {
       await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
     });
 
+    it('should generate XLM recovery tx with KRS using root keys', async function () {
+      recoveryNocks.nockXlmRecovery();
+
+      // userKey is in encrypted prv + pub representation
+      const recoveryParams = {
+        userKey: `{"iv":"bUHw53Oa8tSrFRzidPi8ag==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"QHNZFlDnCW0=","ct":"AQSABvUmCMsD3rJQzyg29TnLPnDVCZFXZkg9hJ2ReYaXWWkSb8Bw0nn3LW/GIGi3ZbOgPivJ4LhCbO9A2pp4aVOhbsbqCNBWxpmHzneVS3FPrLebQixH1Rn0X+ft2I9XcNNEklEw5cH3pf9I1vqLmwEHpF8DWx0OgGnlh/Qq0r5ZaEt5tbTDPA=="}`,
+        backupKey: '8200a5e4dd279da5f422324b8210e898dbf68fc29c1f9cf791c224187fad7dc3', // this is a pub root key, note it is 32 bytes
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
+        krsProvider: 'keyternal',
+      };
+      const recoveryAmount = 74999500;
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = await basecoin.recover(recoveryParams);
+
+      recovery.should.have.property('txBase64');
+      recovery.should.have.property('recoveryAmount', 74999500);
+
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
+    });
+
     it('should generate an XLM unsigned sweep', async function () {
       recoveryNocks.nockXlmRecovery();
 
       const recoveryParams = {
         userKey: 'GBNK4FJO6FDQNBVLUP7MICEJUVINPNJZCDDTTYS3LVFC6J7LKEXLOBKM',
         backupKey: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
+        krsProvider: 'keyternal',
+      };
+      const recoveryAmount = 74999500;
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = await basecoin.recover(recoveryParams);
+
+      recovery.should.have.property('txBase64');
+      recovery.should.have.property('recoveryAmount', 74999500);
+
+      await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
+    });
+
+    it('should generate an XLM unsigned sweep with KRS using root keys', async function () {
+      recoveryNocks.nockXlmRecovery();
+
+      const recoveryParams = {
+        userKey: '5aae152ef1470686aba3fec40889a550d7b53910c739e25b5d4a2f27eb512eb7', // this is a pub key, note it is 32 bytes
+        backupKey: '8200a5e4dd279da5f422324b8210e898dbf68fc29c1f9cf791c224187fad7dc3', // this is a pub root key, note it is 32 bytes
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
