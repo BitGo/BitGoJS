@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-dash",
-  "version": "2.0.24",
+  "version": "2.0.25",
   "description": "BitGo SDK coin library for Dash",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,12 +40,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^8.9.0",
-    "@bitgo/sdk-core": "^27.4.0",
-    "@bitgo/utxo-lib": "^9.39.0"
+    "@bitgo/abstract-utxo": "^8.10.0",
+    "@bitgo/sdk-core": "^27.4.1",
+    "@bitgo/utxo-lib": "^9.40.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.50.0",
-    "@bitgo/sdk-test": "^8.0.29"
+    "@bitgo/sdk-api": "^1.50.1",
+    "@bitgo/sdk-test": "^8.0.30"
   }
 }
