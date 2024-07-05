@@ -43,6 +43,7 @@
     "@bitgo/sdk-core": "^27.4.0",
     "@bitgo/statics": "^48.22.0",
     "@bitgo/utxo-lib": "^9.39.0",
+    "@stacks/encryption": "^6.16.0",
     "@stacks/network": "^4.3.0",
     "@stacks/transactions": "2.0.1",
     "bignumber.js": "^9.0.0",
