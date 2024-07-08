@@ -312,7 +312,7 @@ describe('Recovery:', function () {
       await checkRecoveryTxExplanation(basecoin, recovery.txBase64, recoveryAmount, recoveryParams.recoveryDestination);
     });
 
-    it('should generate an XLM unsigned sweep with KRS using root keys', async function () {
+    it('should generate an XLM unsigned sweep using root keys', async function () {
       recoveryNocks.nockXlmRecovery();
 
       const recoveryParams = {
