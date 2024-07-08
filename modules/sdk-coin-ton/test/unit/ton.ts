@@ -253,6 +253,18 @@ describe('TON:', function () {
       basecoin.isValidAddress(address).should.equal(false);
     });
 
+    it('should return true when validating a non-bounceable address format', async function () {
+      const address = 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD';
+      basecoin.isValidAddress(address).should.equal(true);
+    });
+
+    it('should return true when validating addresses with memoIds', async function () {
+      const address1 = 'EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n?memoId=123';
+      const address2 = 'UQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFOMi?memoId=123';
+      basecoin.isValidAddress(address1).should.equal(true);
+      basecoin.isValidAddress(address2).should.equal(true);
+    });
+
     it('should return true for isWalletAddress with valid address for index 4', async function () {
       const newAddress = 'EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n';
       const index = 4;
