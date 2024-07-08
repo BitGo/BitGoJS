@@ -2,11 +2,10 @@ import * as assert from 'assert';
 import * as nock from 'nock';
 import * as openpgp from 'openpgp';
 import * as crypto from 'crypto';
-import * as sinon from 'sinon';
 
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { AddKeychainOptions, BaseCoin, common, ECDSAUtils, Keychain, Wallet } from '@bitgo/sdk-core';
-import { DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
+import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
 import {
   MPCv2KeyGenRound1Request,
   MPCv2KeyGenRound1Response,
@@ -18,6 +17,7 @@ import {
 import { NonEmptyString } from 'io-ts-types';
 import { BitGo, BitgoGPGPublicKey } from '../../../../../../src';
 import * as v1Fixtures from './fixtures/mpcv1KeyShares';
+import { beforeEach } from 'mocha';
 
 describe('TSS Ecdsa MPCv2 Utils:', async function () {
   const coinName = 'hteth';
@@ -27,7 +27,6 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
   let storedBackupCommitment2: string;
   let storedBitgoCommitment2: string;
 
-  let sandbox: sinon.SinonSandbox;
   let bgUrl: string;
   let tssUtils: ECDSAUtils.EcdsaMPCv2Utils;
   let wallet: Wallet;
@@ -36,18 +35,18 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
   let bitGoGgpKey: openpgp.SerializedKeyPair<string> & {
     revocationCertificate: string;
   };
-  let bitgoGpgPrvKey, userGpgPubKey, backupGpgPubKey: { partyId: number; gpgKey: string };
+  let constants: { mpc: { bitgoPublicKey: string; bitgoMPCv2PublicKey: string } };
+  let bitgoGpgPrvKey: { partyId: number; gpgKey: string };
+  let userGpgPubKey: { partyId: number; gpgKey: string };
+  let backupGpgPubKey: { partyId: number; gpgKey: string };
 
   beforeEach(async function () {
-    sandbox = sinon.createSandbox();
-  });
-
-  afterEach(function () {
-    sandbox.restore();
+    nock.cleanAll();
+    await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, enterpriseId, bitGoGgpKey);
+    nock(bgUrl).get('/api/v1/client/constants').times(16).reply(200, { ttl: 3600, constants });
   });
 
   before(async function () {
-    nock.cleanAll();
     bitGoGgpKey = await openpgp.generateKey({
       userIDs: [
         {
@@ -57,7 +56,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       ],
       curve: 'secp256k1',
     });
-    const constants = {
+    constants = {
       mpc: {
         bitgoPublicKey: bitGoGgpKey.publicKey,
         bitgoMPCv2PublicKey: bitGoGgpKey.publicKey,
@@ -76,9 +75,6 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
     bgUrl = common.Environments[bitgo.getEnv()].uri;
 
-    await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, enterpriseId, bitGoGgpKey);
-    nock(bgUrl).get('/api/v1/client/constants').times(16).reply(200, { ttl: 3600, constants });
-
     const walletData = {
       id: walletId,
       enterprise: enterpriseId,
@@ -96,7 +92,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
   describe('Retrofit MPCv1 to MPCv2 keys', async function () {
     it('should generate TSS MPCv2 keys from MPCv1 keys and sign a message', async function () {
-      const retrofitData = await tssUtils.getMpcV2RetrofitDataFromMpcV1Keys({
+      const retrofitData = tssUtils.getMpcV2RetrofitDataFromMpcV1Keys({
         mpcv1UserKeyShare: JSON.stringify(v1Fixtures.mockUserSigningMaterial),
         mpcv1BackupKeyShare: JSON.stringify(v1Fixtures.mockBackupSigningMaterial),
       });
@@ -140,6 +136,56 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         passphrase: 'test',
         enterprise: enterpriseId,
         originalPasscodeEncryptionCode: '123456',
+      };
+      const { userKeychain, backupKeychain, bitgoKeychain } = await tssUtils.createKeychains(params);
+      assert.ok(round1Nock.isDone());
+      assert.ok(round2Nock.isDone());
+      assert.ok(round3Nock.isDone());
+      assert.ok(addKeyNock.isDone());
+
+      assert.ok(userKeychain);
+      assert.equal(userKeychain.source, 'user');
+      assert.ok(userKeychain.commonKeychain);
+      assert.ok(ECDSAUtils.EcdsaMPCv2Utils.validateCommonKeychainPublicKey(userKeychain.commonKeychain));
+      assert.ok(userKeychain.encryptedPrv);
+      assert.ok(bitgo.decrypt({ input: userKeychain.encryptedPrv, password: params.passphrase }));
+
+      assert.ok(backupKeychain);
+      assert.equal(backupKeychain.source, 'backup');
+      assert.ok(backupKeychain.commonKeychain);
+      assert.ok(ECDSAUtils.EcdsaMPCv2Utils.validateCommonKeychainPublicKey(backupKeychain.commonKeychain));
+      assert.ok(backupKeychain.encryptedPrv);
+      assert.ok(bitgo.decrypt({ input: backupKeychain.encryptedPrv, password: params.passphrase }));
+
+      assert.ok(bitgoKeychain);
+      assert.equal(bitgoKeychain.source, 'bitgo');
+    });
+
+    it('should generate TSS MPCv2 keys for retrofit', async function () {
+      const xiList = [
+        Array.from(bigIntToBufferBE(BigInt(1), 32)),
+        Array.from(bigIntToBufferBE(BigInt(2), 32)),
+        Array.from(bigIntToBufferBE(BigInt(3), 32)),
+      ];
+      const bitgoRetrofitData: DklsTypes.RetrofitData = {
+        xiList,
+        xShare: v1Fixtures.mockBitGoShareSigningMaterial.xShare,
+      };
+      const bitgoSession = new DklsDkg.Dkg(3, 2, ECDSAUtils.MPCv2PartiesEnum.BITGO, undefined, bitgoRetrofitData);
+
+      const round1Nock = await nockKeyGenRound1(bitgoSession, 1);
+      const round2Nock = await nockKeyGenRound2(bitgoSession, 1);
+      const round3Nock = await nockKeyGenRound3(bitgoSession, 1);
+      const addKeyNock = await nockAddKeyChain(coinName, 3);
+      const params: Parameters<typeof tssUtils.createKeychains>[0] = {
+        passphrase: 'test',
+        enterprise: enterpriseId,
+        originalPasscodeEncryptionCode: '123456',
+        retrofit: {
+          decryptedUserKey: JSON.stringify(v1Fixtures.mockUserSigningMaterial),
+          decryptedBackupKey: JSON.stringify(v1Fixtures.mockBackupSigningMaterial),
+          walletId: '123',
+        },
       };
       const { userKeychain, backupKeychain, bitgoKeychain } = await tssUtils.createKeychains(params);
       assert.ok(round1Nock.isDone());
@@ -305,7 +351,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
           storedBitgoCommitment2 = bitgoToUserMsg2?.commitment;
           return {
-            sessionId: 'testid' as any, // NonEmptyString,
+            sessionId: 'testid' as NonEmptyString,
             bitgoMsg1: { from: 2, ...bitgoMsg1.payload },
             bitgoToBackupMsg2: {
               from: 2,
@@ -372,7 +418,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
           return {
             sessionId,
-            bitgoCommitment2: storedBitgoCommitment2 as any, // NonEmptyString,
+            bitgoCommitment2: storedBitgoCommitment2 as NonEmptyString,
             bitgoToUserMsg3: {
               from: 2,
               to: 0,
@@ -457,7 +503,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
           return {
             sessionId,
-            commonKeychain: commonKeychain as any, // NonEmptyString
+            commonKeychain: commonKeychain as NonEmptyString,
             bitgoMsg4: { from: 2, ...bitgoMsg4.payload },
           };
         }
