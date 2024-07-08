@@ -273,6 +273,14 @@ describe('TON:', function () {
       (await basecoin.isWalletAddress(params)).should.equal(true);
     });
 
+    it('should return true for isWalletAddress with valid addressand index', async function () {
+      const newAddress = 'EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n?memoId=4';
+      const index = 4;
+
+      const params = { commonKeychain, address: newAddress, index, keychains };
+      (await basecoin.isWalletAddress(params)).should.equal(true);
+    });
+
     it('should return false for isWalletAddress with valid address for index 5 and address is for a different index', async function () {
       const wrongAddressForIndex5 = 'EQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFL7n';
       const index = 5;
