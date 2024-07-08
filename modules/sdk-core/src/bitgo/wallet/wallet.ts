@@ -1698,8 +1698,9 @@ export class Wallet implements IWallet {
     }
 
     if (
-      _.isFunction(params.customMPCv2Round1GenerationFunction) &&
-      _.isFunction(params.customMPCv2Round2GenerationFunction)
+      _.isFunction(params.customMPCv2SigningRound1GenerationFunction) &&
+      _.isFunction(params.customMPCv2SigningRound2GenerationFunction) &&
+      _.isFunction(params.customMPCv2SigningRound3GenerationFunction)
     ) {
       // invoke external signer TSS for ECDSA MPCv2workflow
       return this.signTransactionTssExternalSignerECDSAMPCv2(this.baseCoin, params);
@@ -3146,7 +3147,6 @@ export class Wallet implements IWallet {
       const signedTxRequest = await this.tssUtils.signEcdsaTssUsingExternalSigner(
         {
           txRequest: txRequestId,
-          prv: '',
           reqId: params.reqId || new RequestTracer(),
         },
         RequestType.tx,
@@ -3179,15 +3179,15 @@ export class Wallet implements IWallet {
       throw new Error('TxRequestId required to sign TSS transactions with External Signer.');
     }
 
-    if (!params.customMPCv2Round1GenerationFunction) {
+    if (!params.customMPCv2SigningRound1GenerationFunction) {
       throw new Error('Generator function for MPCv2 Round 1 share required to sign transactions with External Signer.');
     }
 
-    if (!params.customMPCv2Round2GenerationFunction) {
+    if (!params.customMPCv2SigningRound2GenerationFunction) {
       throw new Error('Generator function for MPCv2 Round 2 share required to sign transactions with External Signer.');
     }
 
-    if (!params.customMPCv2Round3GenerationFunction) {
+    if (!params.customMPCv2SigningRound3GenerationFunction) {
       throw new Error('Generator function for MPCv2 Round 3 share required to sign transactions with External Signer.');
     }
 
@@ -3196,13 +3196,11 @@ export class Wallet implements IWallet {
       const signedTxRequest = await this.tssUtils.signEcdsaMPCv2TssUsingExternalSigner(
         {
           txRequest: txRequestId,
-          prv: '',
           reqId: params.reqId || new RequestTracer(),
         },
-        RequestType.tx,
-        params.customMPCv2Round1GenerationFunction,
-        params.customMPCv2Round2GenerationFunction,
-        params.customMPCv2Round3GenerationFunction
+        params.customMPCv2SigningRound1GenerationFunction,
+        params.customMPCv2SigningRound2GenerationFunction,
+        params.customMPCv2SigningRound3GenerationFunction
       );
       return signedTxRequest;
     } catch (e) {

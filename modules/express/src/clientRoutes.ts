@@ -26,9 +26,9 @@ import {
   GetNetworkPartnersResponse,
   encryptRsaWithAesGcm,
   Wallet,
-  CustomMPCv2Round1GeneratingFunction,
-  CustomMPCv2Round2GeneratingFunction,
-  CustomMPCv2Round3GeneratingFunction,
+  CustomMPCv2SigningRound1GeneratingFunction,
+  CustomMPCv2SigningRound2GeneratingFunction,
+  CustomMPCv2SigningRound3GeneratingFunction,
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
@@ -855,7 +855,7 @@ function createSendParams(req: express.Request) {
   }
 }
 
-function createTSSSendParams(req: express.Request, wallet?: Wallet) {
+function createTSSSendParams(req: express.Request, wallet: Wallet) {
   if (req.config?.externalSignerUrl !== undefined) {
     const coin = req.bitgo.coin(req.params.coin);
     if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
@@ -869,18 +869,18 @@ function createTSSSendParams(req: express.Request, wallet?: Wallet) {
         customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
       };
     } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
-      if (wallet?._wallet.multisigTypeVersion === 'MPCv2') {
+      if (wallet._wallet.multisigTypeVersion === 'MPCv2') {
         return {
           ...req.body,
-          customMPCv2Round1GenerationFunction: createCustomMPCv2Round1Generator(
+          customMPCv2SigningRound1GenerationFunction: createCustomMPCv2SigningRound1Generator(
             req.config.externalSignerUrl,
             req.params.coin
           ),
-          customMPCv2Round2GenerationFunction: createCustomMPCv2Round2Generator(
+          customMPCv2SigningRound2GenerationFunction: createCustomMPCv2SigningRound2Generator(
             req.config.externalSignerUrl,
             req.params.coin
           ),
-          customMPCv2Round3GenerationFunction: createCustomMPCv2Round3Generator(
+          customMPCv2SigningRound3GenerationFunction: createCustomMPCv2SigningRound3Generator(
             req.config.externalSignerUrl,
             req.params.coin
           ),
@@ -1387,10 +1387,10 @@ export function createCustomGShareGenerator(externalSignerUrl: string, coin: str
   };
 }
 
-export function createCustomMPCv2Round1Generator(
+export function createCustomMPCv2SigningRound1Generator(
   externalSignerUrl: string,
   coin: string
-): CustomMPCv2Round1GeneratingFunction {
+): CustomMPCv2SigningRound1GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
       () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round1`).type('json').send(params),
@@ -1402,10 +1402,10 @@ export function createCustomMPCv2Round1Generator(
   };
 }
 
-export function createCustomMPCv2Round2Generator(
+export function createCustomMPCv2SigningRound2Generator(
   externalSignerUrl: string,
   coin: string
-): CustomMPCv2Round2GeneratingFunction {
+): CustomMPCv2SigningRound2GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
       () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round2`).type('json').send(params),
@@ -1417,10 +1417,10 @@ export function createCustomMPCv2Round2Generator(
   };
 }
 
-export function createCustomMPCv2Round3Generator(
+export function createCustomMPCv2SigningRound3Generator(
   externalSignerUrl: string,
   coin: string
-): CustomMPCv2Round3GeneratingFunction {
+): CustomMPCv2SigningRound3GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
       () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round3`).type('json').send(params),

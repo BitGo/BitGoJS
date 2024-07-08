@@ -33,8 +33,10 @@ import {
   CustomKShareGeneratingFunction,
   CustomMuDeltaShareGeneratingFunction,
   CustomSShareGeneratingFunction,
-  CustomMPCv2Round1GeneratingFunction,
-  CustomMPCv2Round3GeneratingFunction,
+  CustomMPCv2SigningRound1GeneratingFunction,
+  CustomMPCv2SigningRound2GeneratingFunction,
+  CustomMPCv2SigningRound3GeneratingFunction,
+  TSSParamsWithPrv,
 } from './baseTypes';
 import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { RequestTracer } from '../util';
@@ -110,11 +112,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     throw new Error('Method not implemented.');
   }
 
-  signTxRequest(params: TSSParams): Promise<TxRequest> {
+  signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
     throw new Error('Method not implemented.');
   }
 
-  signTxRequestForMessage(params: TSSParams): Promise<TxRequest> {
+  signTxRequestForMessage(params: TSSParamsForMessage): Promise<TxRequest> {
     throw new Error('Method not implemented.');
   }
 
@@ -159,18 +161,19 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   /**
    * Signs a transaction using TSS MPCv2 for ECDSA and through utilization of custom share generators
    *
-   * @param {params: TSSParams | TSSParamsForMessage} params - params object that represents parameters to sign a transaction or a message.
+   * @param {TSSParams | TSSParamsForMessage} params - params object that represents parameters to sign a transaction or a message.
+   * @param {CustomMPCv2SigningRound1GeneratingFunction} externalSignerMPCv2SigningRound1Generator - a function that creates MPCv2 Round 1 shares in the ECDSA TSS MPCv2 flow.
+   * @param {CustomMPCv2SigningRound2GeneratingFunction} externalSignerMPCv2SigningRound2Generator - a function that creates MPCv2 Round 2 shares in the ECDSA TSS MPCv2 flow.
+   * @param {CustomMPCv2SigningRound3GeneratingFunction} externalSignerMPCv2SigningRound3Generator - a function that creates MPCv2 Round 3 shares in the ECDSA TSS MPCv2 flow.
    * @param {RequestType} requestType - the type of the request to sign (transaction or message).
-   * @param {CustomMPCv2Round1GeneratingFunction} externalSignerMPCv2Round1Generator add description.
-   * @param {CustomMPCv2Round2GeneratingFunction} externalSignerMPCv2Round3Generator add description.
-   * @param {CustomMPCv2Round3GeneratingFunction} externalSignerMPCv2Round3Generator add description.
+   * @returns {Promise<TxRequest>} - a signed tx request
    */
   signEcdsaMPCv2TssUsingExternalSigner(
     params: TSSParams | TSSParamsForMessage,
-    requestType: RequestType,
-    externalSignerMPCv2Round1Generator: CustomMPCv2Round1GeneratingFunction,
-    externalSignerMPCv2Round2Generator: CustomMPCv2Round3GeneratingFunction,
-    externalSignerMPCv2Round3Generator: CustomMPCv2Round3GeneratingFunction
+    externalSignerMPCv2SigningRound1Generator: CustomMPCv2SigningRound1GeneratingFunction,
+    externalSignerMPCv2SigningRound2Generator: CustomMPCv2SigningRound2GeneratingFunction,
+    externalSignerMPCv2SigningRound3Generator: CustomMPCv2SigningRound3GeneratingFunction,
+    requestType?: RequestType
   ): Promise<TxRequest> {
     throw new Error('Method not implemented.');
   }

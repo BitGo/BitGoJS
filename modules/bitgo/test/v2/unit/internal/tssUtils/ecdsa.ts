@@ -943,7 +943,6 @@ describe('TSS Ecdsa Utils:', async function () {
       const step1SigningMaterial = await tssUtils.createOfflineKShare({
         tssParams: {
           txRequest,
-          prv: '',
           reqId: reqId,
         },
         challenges: {
@@ -975,7 +974,6 @@ describe('TSS Ecdsa Utils:', async function () {
         .createOfflineKShare({
           tssParams: {
             txRequest: txRequest.txRequestId,
-            prv: '',
             reqId: reqId,
           },
           challenges: {
@@ -1031,7 +1029,6 @@ describe('TSS Ecdsa Utils:', async function () {
       const step3SigningMaterial = await tssUtils.createOfflineSShare({
         tssParams: {
           txRequest: txRequest,
-          prv: '',
           reqId: reqId,
         },
         dShareFromBitgo: dShare,
@@ -1051,7 +1048,6 @@ describe('TSS Ecdsa Utils:', async function () {
         .createOfflineSShare({
           tssParams: {
             txRequest: txRequest.txRequestId,
-            prv: '',
             reqId: reqId,
           },
           dShareFromBitgo: dShare,
