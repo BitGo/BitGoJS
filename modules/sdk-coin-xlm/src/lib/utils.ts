@@ -28,6 +28,18 @@ export function createStellarKeypairFromPrv(prv: string): stellar.Keypair {
 }
 
 /**
+ * @deprecated Use isValidStellarPublicKey instead
+ *
+ * Validates a Stellar public key
+ * Stellar public keys are prefixed with 'G'
+ * @param pub A Stellar public key to validate
+ * @returns Whether the input is a valid Stellar public key
+ */
+export function isValidStellarPub(pub: string): boolean {
+  return stellar.StrKey.isValidEd25519PublicKey(pub);
+}
+
+/**
  * Validates a Stellar public key
  * Stellar public keys are prefixed with 'G'
  * @param pub A Stellar public key to validate
@@ -35,6 +47,17 @@ export function createStellarKeypairFromPrv(prv: string): stellar.Keypair {
  */
 export function isValidStellarPublicKey(pub: string): boolean {
   return stellar.StrKey.isValidEd25519PublicKey(pub);
+}
+
+/**
+ * @deprecated Use isValidRootPublicKey instead
+ *
+ * Validates a ed25519 root public key
+ * @param pub A hexadecimal public key to validate
+ * @returns Whether the input is a valid public key
+ */
+export function isValidPublicKey(pub: string): boolean {
+  return isValidEd25519PublicKey(pub);
 }
 
 /**
@@ -47,6 +70,18 @@ export function isValidRootPublicKey(pub: string): boolean {
 }
 
 /**
+ * @deprecated Use isValidStellarPrivateKey instead
+ *
+ * Validates a Stellar private key
+ * Stellar private keys are prefixed with 'S'
+ * @param seed A Stellar private key to validate
+ * @returns Whether the input is a valid Stellar private key
+ */
+export function isValidStellarPrv(seed: string): boolean {
+  return stellar.StrKey.isValidEd25519SecretSeed(seed);
+}
+
+/**
  * Validates a Stellar private key
  * Stellar private keys are prefixed with 'S'
  * @param seed A Stellar private key to validate
@@ -54,6 +89,17 @@ export function isValidRootPublicKey(pub: string): boolean {
  */
 export function isValidStellarPrivateKey(seed: string): boolean {
   return stellar.StrKey.isValidEd25519SecretSeed(seed);
+}
+
+/**
+ * @deprecated Use isValidRootPrivateKey instead
+ *
+ * Validates a ed25519 root private key
+ * @param prv A hexadecimal private key to validate
+ * @returns Whether the input is a valid private key
+ */
+export function isValidPrivateKey(prv: string): boolean {
+  return isValidEd25519SecretKey(prv);
 }
 
 /**
