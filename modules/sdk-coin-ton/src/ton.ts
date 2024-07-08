@@ -122,6 +122,7 @@ export class Ton extends BaseCoin {
     }
 
     for (const keychain of keychains) {
+      const [address, memoId] = newAddress.split('?memoId=');
       const MPC = await EDDSAMethods.getInitializedMpcInstance();
       const commonKeychain = keychain.commonKeychain as string;
 
@@ -129,7 +130,11 @@ export class Ton extends BaseCoin {
       const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
       const expectedAddress = await Utils.default.getAddressFromPublicKey(derivedPublicKey);
 
-      if (newAddress !== expectedAddress) {
+      if (memoId) {
+        return memoId === `${index}`;
+      }
+
+      if (address !== expectedAddress) {
         return false;
       }
     }
