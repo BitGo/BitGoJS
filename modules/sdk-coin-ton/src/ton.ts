@@ -177,7 +177,7 @@ export class Ton extends BaseCoin {
   isValidAddress(address: string): boolean {
     try {
       const addressBase64 = address.replace(/\+/g, '-').replace(/\//g, '_');
-      const buf = Buffer.from(addressBase64, 'base64');
+      const buf = Buffer.from(addressBase64.split('?memoId=')[0], 'base64');
       return buf.length === 36;
     } catch {
       return false;
