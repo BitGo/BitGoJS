@@ -35,6 +35,7 @@ import { generateGPGKeyPair } from '../../opengpgUtils';
 import { RequestType, TSSParams, TSSParamsForMessage, TxRequest } from '../baseTypes';
 import { BaseEcdsaUtils } from './base';
 import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
+import { KeyCombined } from '../../../tss/ecdsa/types';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -44,7 +45,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     originalPasscodeEncryptionCode?: string;
     retrofit?: DecryptedRetrofitPayload;
   }): Promise<KeychainsTriplet> {
-    const { userSession, backupSession } = await this.getUserAndBackupSession(2, 3, params.retrofit);
+    const { userSession, backupSession } = this.getUserAndBackupSession(2, 3, params.retrofit);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const backupGpgKey = await generateGPGKeyPair('secp256k1');
 
@@ -88,7 +89,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       params.retrofit?.walletId
         ? {
             ...round1Messages,
-            walletId: params.retrofit?.walletId,
+            walletId: params.retrofit.walletId,
           }
         : round1Messages
     );
@@ -378,39 +379,75 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    * Converts user and backup MPCv1 SigningMaterial to RetrofitData needed by MPCv2 DKG.
    *
    * @param {Object} params - MPCv1 decrypted signing material for user and backup as a json.stringify string and bitgo's Big Si.
-   * @returns {Promise<{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }>} - the retrofit data needed to start an MPCv2 DKG session.
+   * @returns {{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }} - the retrofit data needed to start an MPCv2 DKG session.
    */
-  async getMpcV2RetrofitDataFromMpcV1Keys(params: {
-    mpcv1UserKeyShare: string;
-    mpcv1BackupKeyShare: string;
-  }): Promise<{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }> {
-    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.mpcv1UserKeyShare);
-    const backupSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.mpcv1BackupKeyShare);
+  getMpcV2RetrofitDataFromMpcV1Keys(params: { mpcv1UserKeyShare: string; mpcv1BackupKeyShare: string }): {
+    mpcv2UserKeyShare: DklsTypes.RetrofitData;
+    mpcv2BakcupKeyShare: DklsTypes.RetrofitData;
+  } {
     const mpc = new Ecdsa();
-    assert(userSigningMaterial.backupNShare, 'User MPCv1 key material should have backup NShare.');
-    assert(backupSigningMaterial.userNShare, 'Backup MPCv1 key material should have user NShare.');
-    const userCombined = mpc.keyCombine(userSigningMaterial.pShare, [
-      userSigningMaterial.backupNShare,
-      userSigningMaterial.bitgoNShare,
-    ]);
-    const backupCombined = mpc.keyCombine(backupSigningMaterial.pShare, [
-      backupSigningMaterial.userNShare,
-      backupSigningMaterial.bitgoNShare,
-    ]);
     const xiList = [
       Array.from(bigIntToBufferBE(BigInt(1), 32)),
       Array.from(bigIntToBufferBE(BigInt(2), 32)),
       Array.from(bigIntToBufferBE(BigInt(3), 32)),
     ];
     return {
-      mpcv2BakcupKeyShare: {
-        xShare: backupCombined.xShare,
-        xiList: xiList,
-      },
-      mpcv2UserKeyShare: {
-        xShare: userCombined.xShare,
-        xiList: xiList,
-      },
+      mpcv2UserKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
+        mpcv1PartyKeyShare: params.mpcv1UserKeyShare,
+        mpcv1PartyIndex: 1,
+        xiList,
+        mpc,
+      }),
+      mpcv2BakcupKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
+        mpcv1PartyKeyShare: params.mpcv1BackupKeyShare,
+        mpcv1PartyIndex: 2,
+        xiList,
+        mpc,
+      }),
+    };
+  }
+
+  getMpcV2RetrofitDataFromMpcV1Key({
+    mpcv1PartyKeyShare,
+    mpcv1PartyIndex,
+    xiList,
+    mpc,
+  }: {
+    mpcv1PartyKeyShare: string;
+    mpcv1PartyIndex: number;
+    xiList: number[][];
+    mpc: Ecdsa;
+  }): DklsTypes.RetrofitData {
+    const signingMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(mpcv1PartyKeyShare);
+    let keyCombined: KeyCombined | undefined = undefined;
+    switch (mpcv1PartyIndex) {
+      case 1:
+        assert(signingMaterial.backupNShare, 'User MPCv1 key material should have backup NShare.');
+        assert(signingMaterial.bitgoNShare, 'BitGo MPCv1 key material should have user NShare.');
+        keyCombined = mpc.keyCombine(signingMaterial.pShare, [
+          signingMaterial.backupNShare,
+          signingMaterial.bitgoNShare,
+        ]);
+        break;
+      case 2:
+        assert(signingMaterial.userNShare, 'User MPCv1 key material should have backup NShare.');
+        assert(signingMaterial.bitgoNShare, 'BitGo MPCv1 key material should have user NShare.');
+        keyCombined = mpc.keyCombine(signingMaterial.pShare, [signingMaterial.userNShare, signingMaterial.bitgoNShare]);
+        break;
+      case 3:
+        assert(signingMaterial.userNShare, 'User MPCv1 key material should have backup NShare.');
+        assert(signingMaterial.backupNShare, 'Backup MPCv1 key material should have user NShare.');
+        keyCombined = mpc.keyCombine(signingMaterial.pShare, [
+          signingMaterial.userNShare,
+          signingMaterial.backupNShare,
+        ]);
+        break;
+      default:
+        throw new Error('Invalid participant index');
+    }
+    return {
+      xShare: keyCombined.xShare,
+      xiList: xiList,
     };
   }
 
@@ -448,9 +485,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     );
   }
 
-  private async getUserAndBackupSession(m: number, n: number, retrofit?: DecryptedRetrofitPayload) {
+  private getUserAndBackupSession(m: number, n: number, retrofit?: DecryptedRetrofitPayload) {
     if (retrofit) {
-      const retrofitData = await this.getMpcV2RetrofitDataFromMpcV1Keys({
+      const retrofitData = this.getMpcV2RetrofitDataFromMpcV1Keys({
         mpcv1UserKeyShare: retrofit.decryptedUserKey,
         mpcv1BackupKeyShare: retrofit.decryptedBackupKey,
       });
