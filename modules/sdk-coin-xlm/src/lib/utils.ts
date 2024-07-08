@@ -9,9 +9,17 @@ import * as stellar from 'stellar-sdk';
  */
 export function createStellarKeypairFromPub(pub: string): stellar.Keypair {
   if (pub.startsWith('G')) {
+    if (!isValidStellarPublicKey(pub)) {
+      throw new Error('Invalid Stellar public key');
+    }
     return stellar.Keypair.fromPublicKey(pub);
   }
-  return stellar.Keypair.fromPublicKey(encodePublicKey(Buffer.from(pub, 'hex')));
+
+  const encodedPub = encodePublicKey(Buffer.from(pub, 'hex'));
+  if (!isValidStellarPublicKey(encodedPub)) {
+    throw new Error('Invalid root public key');
+  }
+  return stellar.Keypair.fromPublicKey(encodedPub);
 }
 
 /**
@@ -22,9 +30,17 @@ export function createStellarKeypairFromPub(pub: string): stellar.Keypair {
  */
 export function createStellarKeypairFromPrv(prv: string): stellar.Keypair {
   if (prv.startsWith('S')) {
+    if (!isValidStellarPrivateKey(prv)) {
+      throw new Error('Invalid Stellar private key');
+    }
     return stellar.Keypair.fromSecret(prv);
   }
-  return stellar.Keypair.fromSecret(encodePrivateKey(Buffer.from(prv.slice(0, 64), 'hex')));
+
+  const encodedPrv = encodePrivateKey(Buffer.from(prv.slice(0, 64), 'hex'));
+  if (!isValidStellarPrivateKey(encodedPrv)) {
+    throw new Error('Invalid root private key');
+  }
+  return stellar.Keypair.fromSecret(encodedPrv);
 }
 
 /**

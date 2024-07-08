@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as Utils from '../../src/lib/utils';
 
 describe('Stellar Utils', () => {
@@ -131,6 +132,24 @@ describe('Stellar Utils', () => {
       backupKeypair.publicKey().should.equal(backupKeychain.pub);
       keypair.secret().should.equal(userKeychain.prv);
       backupKeypair.secret().should.equal(backupKeychain.prv);
+    });
+
+    it('should fail to create a Stellar keypair given an invalid public key', () => {
+      // non G-prefixed, so this should fail with invalid root key
+      assert.throws(() => Utils.createStellarKeypairFromPub('invalid'), /Error: Invalid root public key/);
+    });
+
+    it('should fail to create a Stellar keypair given an invalid G-prefixed public key', () => {
+      assert.throws(() => Utils.createStellarKeypairFromPub('GINVALID'), /Error: Invalid Stellar public key/);
+    });
+
+    it('should fail to create a Stellar keypair given an invalid private key', () => {
+      // non S-prefixed, so this should fail with invalid root key
+      assert.throws(() => Utils.createStellarKeypairFromPrv('invalid'), /Error: Invalid root private key/);
+    });
+
+    it('should fail to create a Stellar keypair given an invalid S-prefixed private key', () => {
+      assert.throws(() => Utils.createStellarKeypairFromPrv('SINVALID'), /Error: Invalid Stellar private key/);
     });
   });
 });
