@@ -2958,6 +2958,7 @@ export class Wallet implements IWallet {
             nonce: params.nonce,
             feeOptions,
             custodianTransactionId: params.custodianTransactionId,
+            unspents: params.unspents,
           },
           apiVersion,
           params.preview

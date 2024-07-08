@@ -158,6 +158,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   lowFeeTxid?: string;
   custodianTransactionId?: string;
   receiveAddress?: string;
+  unspents?: string[];
 }
 export interface IntentRecipient {
   address: {
@@ -195,6 +196,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   nonce?: string;
   token?: string;
   enableTokens?: TokenEnablement[];
+  unspents?: string[];
   // ETH & ETH-like params
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;
