@@ -148,9 +148,17 @@ export async function generateDKGKeyShares(
   const user = new Dkg(3, 2, 0, seedUser, retrofitDataA);
   const backup = new Dkg(3, 2, 1, seedBackup, retrofitDataB);
   const bitgo = new Dkg(3, 2, 2, seedBitgo, retrofitDataC);
+  // #region round 1
   const userRound1Message = await user.initDkg();
   const backupRound1Message = await backup.initDkg();
   const bitgoRound1Message = await bitgo.initDkg();
+  const bitgoRound2Messages = bitgo.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: [userRound1Message, backupRound1Message],
+  });
+  // #endregion
+
+  // #region round 2
   const userRound2Messages = user.handleIncomingMessages({
     p2pMessages: [],
     broadcastMessages: [bitgoRound1Message, backupRound1Message],
@@ -159,10 +167,15 @@ export async function generateDKGKeyShares(
     p2pMessages: [],
     broadcastMessages: [userRound1Message, bitgoRound1Message],
   });
-  const bitgoRound2Messages = bitgo.handleIncomingMessages({
-    p2pMessages: [],
-    broadcastMessages: [userRound1Message, backupRound1Message],
+  const bitgoRound3Messages = bitgo.handleIncomingMessages({
+    p2pMessages: backupRound2Messages.p2pMessages
+      .filter((m) => m.to === 2)
+      .concat(userRound2Messages.p2pMessages.filter((m) => m.to === 2)),
+    broadcastMessages: [],
   });
+  // #endregion
+
+  // #region round 3
   const userRound3Messages = user.handleIncomingMessages({
     p2pMessages: backupRound2Messages.p2pMessages
       .filter((m) => m.to === 0)
@@ -173,12 +186,6 @@ export async function generateDKGKeyShares(
     p2pMessages: bitgoRound2Messages.p2pMessages
       .filter((m) => m.to === 1)
       .concat(userRound2Messages.p2pMessages.filter((m) => m.to === 1)),
-    broadcastMessages: [],
-  });
-  const bitgoRound3Messages = bitgo.handleIncomingMessages({
-    p2pMessages: backupRound2Messages.p2pMessages
-      .filter((m) => m.to === 2)
-      .concat(userRound2Messages.p2pMessages.filter((m) => m.to === 2)),
     broadcastMessages: [],
   });
   const userRound4Messages = user.handleIncomingMessages({
@@ -199,6 +206,8 @@ export async function generateDKGKeyShares(
       .concat(userRound3Messages.p2pMessages.filter((m) => m.to === 2)),
     broadcastMessages: [],
   });
+  // #endregion
+
   user.handleIncomingMessages({
     p2pMessages: [],
     broadcastMessages: bitgoRound4Messages.broadcastMessages.concat(backupRound4Messages.broadcastMessages),
