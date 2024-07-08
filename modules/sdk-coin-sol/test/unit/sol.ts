@@ -1539,6 +1539,21 @@ describe('SOL:', function () {
             jsonrpc: '2.0',
             method: 'getAccountInfo',
             params: [
+              testData.closeATAkeys.closeAtaAddress,
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenInfoResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getAccountInfo',
+            params: [
               testData.keys.durableNoncePubKey,
               {
                 encoding: 'jsonParsed',
@@ -1647,6 +1662,19 @@ describe('SOL:', function () {
           },
         })
         .resolves(testData.SolResponses.getAccountBalanceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'sendTransaction',
+            params: sinon.match.array,
+          },
+        })
+        .onCall(0)
+        .resolves(testData.SolResponses.broadcastTransactionResponse)
+        .onCall(1)
+        .resolves(testData.SolResponses.broadcastTransactionResponse1);
     });
 
     afterEach(() => {
@@ -1959,18 +1987,24 @@ describe('SOL:', function () {
 
     it('should recover sol funds from ATA address for non-bitgo recoveries', async function () {
       // close ATA address instruction type txn
-      const closeATATxn = await basecoin.recover({
+      const closeATATxns = await basecoin.recoverCloseATA({
         userKey: testData.closeATAkeys.userKey,
         backupKey: testData.closeATAkeys.backupKey,
         bitgoKey: testData.closeATAkeys.bitgoKey,
         recoveryDestination: testData.closeATAkeys.destinationPubKey,
         walletPassphrase: testData.closeATAkeys.walletPassword,
         closeAtaAddress: testData.closeATAkeys.closeAtaAddress,
+        recoveryDestinationAtaAddress: testData.closeATAkeys.recoveryDestinationAtaAddress,
       });
-      closeATATxn.should.not.be.empty();
-      closeATATxn.should.hasOwnProperty('serializedTx');
-      closeATATxn.should.hasOwnProperty('scanIndex');
-      should.equal((closeATATxn as MPCTx).scanIndex, 0);
+      closeATATxns.should.not.be.empty();
+      should.equal(
+        closeATATxns[0].txId,
+        '2id3YC2jK9G5Wo2phDx4gJVAew8DcY5NAojnVuao8rkxwPYPe8cSwE5GzhEgJA2y8fVjDEo6iR6ykBvDxrTQrtpb'
+      );
+      should.equal(
+        closeATATxns[1].txId,
+        '5oUBgXX4enGmFEspG64goy3PRysjfrekZGg3rZNkBHUCQFd482vrVWbfDcRYMBEJt65JXymfEPm8M6d89X4xV79n'
+      );
     });
   });
 
