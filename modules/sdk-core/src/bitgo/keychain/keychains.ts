@@ -1,9 +1,10 @@
-import * as _ from 'lodash';
+import { TssSettings } from '@bitgo/public-types';
 import assert from 'assert';
+import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { BlsUtils, RequestTracer, EDDSAUtils, ECDSAUtils, decodeOrElse, generateRandomPassword } from '../utils';
+import { BlsUtils, decodeOrElse, ECDSAUtils, EDDSAUtils, generateRandomPassword, RequestTracer } from '../utils';
 import {
   AddKeychainOptions,
   ApiKeyShare,
@@ -17,11 +18,11 @@ import {
   Keychain,
   ListKeychainOptions,
   ListKeychainsResult,
+  RecreateMpcOptions,
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
-import { TssSettings } from '@bitgo/public-types';
 
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
@@ -331,6 +332,55 @@ export class Keychains implements IKeychains {
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
       backupProvider: params.backupProvider,
+      retrofit: params.retrofit,
+    });
+  }
+
+  async recreateMpc(params: RecreateMpcOptions): Promise<KeychainsTriplet> {
+    assert(params.coin, new Error('missing required param coin'));
+    assert(params.walletId, new Error('missing required param walletId'));
+    assert(params.otp, new Error('missing required param otp'));
+    assert(params.passphrase, new Error('missing required param passphrase'));
+
+    assert(
+      params.encryptedMaterial.encryptedWalletPassphrase,
+      new Error('missing required param encryptedWalletPassphrase')
+    );
+    assert(params.encryptedMaterial.encryptedUserKey, new Error('missing required param encryptedUserKey'));
+    assert(params.encryptedMaterial.encryptedBackupKey, new Error('missing required param encryptedBackupKey'));
+
+    await this.bitgo.post(this.bitgo.microservicesUrl('/api/v1/user/unlock')).send({ otp: params.otp }).result();
+    const { recoveryInfo } = await this.bitgo
+      .post(this.bitgo.microservicesUrl(`/api/v2/${params.coin}/wallet/${params.walletId}/passcoderecovery`))
+      .result();
+
+    if (!recoveryInfo || !('passcodeEncryptionCode' in recoveryInfo)) {
+      throw new Error('failed to get recovery info');
+    }
+
+    const decryptedWalletPassphrase = this.bitgo.decrypt({
+      input: params.encryptedMaterial.encryptedWalletPassphrase,
+      password: recoveryInfo.passcodeEncryptionCode,
+    });
+
+    const decryptedUserKey = this.bitgo.decrypt({
+      input: params.encryptedMaterial.encryptedUserKey,
+      password: decryptedWalletPassphrase,
+    });
+
+    const decryptedBackupKey = this.bitgo.decrypt({
+      input: params.encryptedMaterial.encryptedBackupKey,
+      password: decryptedWalletPassphrase,
+    });
+
+    return this.createMpc({
+      ...params,
+      multisigType: 'tss',
+      retrofit: {
+        decryptedUserKey,
+        decryptedBackupKey,
+        walletId: params.walletId,
+      },
     });
   }
 

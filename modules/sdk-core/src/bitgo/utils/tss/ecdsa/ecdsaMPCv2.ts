@@ -1,30 +1,29 @@
+import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes } from '@bitgo/sdk-lib-mpc';
 import assert from 'assert';
-import { NonEmptyString } from 'io-ts-types';
 import { Buffer } from 'buffer';
 import { Hash } from 'crypto';
+import { NonEmptyString } from 'io-ts-types';
 import createKeccakHash from 'keccak';
-import { DklsDkg, DklsTypes, DklsComms, DklsDsg, bigIntToBufferBE } from '@bitgo/sdk-lib-mpc';
 
-import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
-import { KeychainsTriplet } from '../../../baseCoin';
-import { generateGPGKeyPair } from '../../opengpgUtils';
-import { BaseEcdsaUtils } from './base';
 import {
-  MPCv2KeyGenState,
+  KeyGenTypeEnum,
   MPCv2BroadcastMessage,
   MPCv2KeyGenRound1Response,
   MPCv2KeyGenRound2Response,
   MPCv2KeyGenRound3Response,
-  MPCv2P2PMessage,
-  KeyGenTypeEnum,
+  MPCv2KeyGenState,
   MPCv2KeyGenStateEnum,
+  MPCv2P2PMessage,
+  MPCv2PartyFromStringOrNumber,
   MPCv2SignatureShareRound1Output,
   MPCv2SignatureShareRound2Output,
-  MPCv2PartyFromStringOrNumber,
 } from '@bitgo/public-types';
-import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
-import { RequestType, TSSParams, TSSParamsForMessage, TxRequest } from '../baseTypes';
+import { Ecdsa } from '../../../../account-lib';
+import { KeychainsTriplet } from '../../../baseCoin';
+import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
+import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
+import { sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
 import {
   getSignatureShareRoundOne,
   getSignatureShareRoundThree,
@@ -32,8 +31,11 @@ import {
   verifyBitGoMessagesAndSignaturesRoundOne,
   verifyBitGoMessagesAndSignaturesRoundTwo,
 } from '../../../tss/ecdsa/ecdsaMPCv2';
-import { sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
-import { Ecdsa } from '../../../../account-lib';
+import { KeyCombined } from '../../../tss/ecdsa/types';
+import { generateGPGKeyPair } from '../../opengpgUtils';
+import { RequestType, TSSParams, TSSParamsForMessage, TxRequest } from '../baseTypes';
+import { BaseEcdsaUtils } from './base';
+import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -41,11 +43,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     passphrase: string;
     enterprise: string;
     originalPasscodeEncryptionCode?: string;
+    retrofit?: DecryptedRetrofitPayload;
   }): Promise<KeychainsTriplet> {
-    const m = 2;
-    const n = 3;
-    const userSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.USER);
-    const backupSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.BACKUP);
+    const { userSession, backupSession } = this.getUserAndBackupSession(2, 3, params.retrofit);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const backupGpgKey = await generateGPGKeyPair('secp256k1');
 
@@ -86,7 +86,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       params.enterprise,
       userGpgKey.publicKey,
       backupGpgKey.publicKey,
-      round1Messages
+      params.retrofit?.walletId
+        ? {
+            ...round1Messages,
+            walletId: params.retrofit.walletId,
+          }
+        : round1Messages
     );
     // #endregion
 
@@ -373,39 +378,75 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    * Converts user and backup MPCv1 SigningMaterial to RetrofitData needed by MPCv2 DKG.
    *
    * @param {Object} params - MPCv1 decrypted signing material for user and backup as a json.stringify string and bitgo's Big Si.
-   * @returns {Promise<{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }>} - the retrofit data needed to start an MPCv2 DKG session.
+   * @returns {{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }} - the retrofit data needed to start an MPCv2 DKG session.
    */
-  async getMpcV2RetrofitDataFromMpcV1Keys(params: {
-    mpcv1UserKeyShare: string;
-    mpcv1BackupKeyShare: string;
-  }): Promise<{ mpcv2UserKeyShare: DklsTypes.RetrofitData; mpcv2BakcupKeyShare: DklsTypes.RetrofitData }> {
-    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.mpcv1UserKeyShare);
-    const backupSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.mpcv1BackupKeyShare);
+  getMpcV2RetrofitDataFromMpcV1Keys(params: { mpcv1UserKeyShare: string; mpcv1BackupKeyShare: string }): {
+    mpcv2UserKeyShare: DklsTypes.RetrofitData;
+    mpcv2BakcupKeyShare: DklsTypes.RetrofitData;
+  } {
     const mpc = new Ecdsa();
-    assert(userSigningMaterial.backupNShare, 'User MPCv1 key material should have backup NShare.');
-    assert(backupSigningMaterial.userNShare, 'Backup MPCv1 key material should have user NShare.');
-    const userCombined = mpc.keyCombine(userSigningMaterial.pShare, [
-      userSigningMaterial.backupNShare,
-      userSigningMaterial.bitgoNShare,
-    ]);
-    const backupCombined = mpc.keyCombine(backupSigningMaterial.pShare, [
-      backupSigningMaterial.userNShare,
-      backupSigningMaterial.bitgoNShare,
-    ]);
     const xiList = [
       Array.from(bigIntToBufferBE(BigInt(1), 32)),
       Array.from(bigIntToBufferBE(BigInt(2), 32)),
       Array.from(bigIntToBufferBE(BigInt(3), 32)),
     ];
     return {
-      mpcv2BakcupKeyShare: {
-        xShare: backupCombined.xShare,
-        xiList: xiList,
-      },
-      mpcv2UserKeyShare: {
-        xShare: userCombined.xShare,
-        xiList: xiList,
-      },
+      mpcv2UserKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
+        mpcv1PartyKeyShare: params.mpcv1UserKeyShare,
+        mpcv1PartyIndex: 1,
+        xiList,
+        mpc,
+      }),
+      mpcv2BakcupKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
+        mpcv1PartyKeyShare: params.mpcv1BackupKeyShare,
+        mpcv1PartyIndex: 2,
+        xiList,
+        mpc,
+      }),
+    };
+  }
+
+  getMpcV2RetrofitDataFromMpcV1Key({
+    mpcv1PartyKeyShare,
+    mpcv1PartyIndex,
+    xiList,
+    mpc,
+  }: {
+    mpcv1PartyKeyShare: string;
+    mpcv1PartyIndex: number;
+    xiList: number[][];
+    mpc: Ecdsa;
+  }): DklsTypes.RetrofitData {
+    const signingMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(mpcv1PartyKeyShare);
+    let keyCombined: KeyCombined | undefined = undefined;
+    switch (mpcv1PartyIndex) {
+      case 1:
+        assert(signingMaterial.backupNShare, 'User MPCv1 key material should have backup NShare.');
+        assert(signingMaterial.bitgoNShare, 'BitGo MPCv1 key material should have user NShare.');
+        keyCombined = mpc.keyCombine(signingMaterial.pShare, [
+          signingMaterial.backupNShare,
+          signingMaterial.bitgoNShare,
+        ]);
+        break;
+      case 2:
+        assert(signingMaterial.userNShare, 'User MPCv1 key material should have backup NShare.');
+        assert(signingMaterial.bitgoNShare, 'BitGo MPCv1 key material should have user NShare.');
+        keyCombined = mpc.keyCombine(signingMaterial.pShare, [signingMaterial.userNShare, signingMaterial.bitgoNShare]);
+        break;
+      case 3:
+        assert(signingMaterial.userNShare, 'User MPCv1 key material should have backup NShare.');
+        assert(signingMaterial.backupNShare, 'Backup MPCv1 key material should have user NShare.');
+        keyCombined = mpc.keyCombine(signingMaterial.pShare, [
+          signingMaterial.userNShare,
+          signingMaterial.backupNShare,
+        ]);
+        break;
+      default:
+        throw new Error('Invalid participant index');
+    }
+    return {
+      xShare: keyCombined.xShare,
+      xiList: xiList,
     };
   }
 
@@ -443,6 +484,25 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     );
   }
 
+  private getUserAndBackupSession(m: number, n: number, retrofit?: DecryptedRetrofitPayload) {
+    if (retrofit) {
+      const retrofitData = this.getMpcV2RetrofitDataFromMpcV1Keys({
+        mpcv1UserKeyShare: retrofit.decryptedUserKey,
+        mpcv1BackupKeyShare: retrofit.decryptedBackupKey,
+      });
+
+      const userSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.USER, undefined, retrofitData.mpcv2UserKeyShare);
+      const backupSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.BACKUP, undefined, retrofitData.mpcv2BakcupKeyShare);
+
+      return { userSession, backupSession };
+    }
+
+    const userSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.USER);
+    const backupSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.BACKUP);
+
+    return { userSession, backupSession };
+  }
+
   private async addBitgoKeychain(commonKeychain: string): Promise<Keychain> {
     return this.createParticipantKeychain(MPCv2PartiesEnum.BITGO, commonKeychain);
   }
@@ -452,7 +512,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   private async sendKeyGenerationRequest<T extends GenerateMPCv2KeyRequestResponse>(
     enterprise: string,
     round: MPCv2KeyGenState,
-    payload: GenerateMPCv2KeyRequestBody
+    payload: GenerateMPCv2KeyRequestBody & { walletId?: string }
   ): Promise<T> {
     return this.bitgo
       .post(this.bitgo.url('/mpc/generatekey', 2))
@@ -464,7 +524,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     enterprise: string,
     userGpgPublicKey: string,
     backupGpgPublicKey: string,
-    payload: DklsTypes.AuthEncMessages
+    payload: DklsTypes.AuthEncMessages & { walletId?: string }
   ): Promise<MPCv2KeyGenRound1Response> {
     assert(NonEmptyString.is(userGpgPublicKey), 'User GPG public key is required');
     assert(NonEmptyString.is(backupGpgPublicKey), 'Backup GPG public key is required');
@@ -478,6 +538,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       backupGpgPublicKey,
       userMsg1: { from: 0, ...userMsg1 },
       backupMsg1: { from: 1, ...backupMsg1 },
+      walletId: payload.walletId,
     });
   }
 
