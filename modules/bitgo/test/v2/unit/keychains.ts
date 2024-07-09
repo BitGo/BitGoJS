@@ -2,14 +2,23 @@
 // Test for Keychains
 //
 
-import { CoinKind, coins, KeyCurve, CoinFamily, UnderlyingAsset } from '@bitgo/statics';
+import { CoinFamily, CoinKind, coins, KeyCurve, UnderlyingAsset } from '@bitgo/statics';
 import * as assert from 'assert';
 import * as _ from 'lodash';
 import * as nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { BlsUtils, common, ECDSAUtils, EDDSAUtils, KeychainsTriplet, OvcShare, decodeOrElse } from '@bitgo/sdk-core';
+import {
+  BlsUtils,
+  common,
+  decodeOrElse,
+  ECDSAUtils,
+  EDDSAUtils,
+  Keychains,
+  KeychainsTriplet,
+  OvcShare,
+} from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
@@ -354,6 +363,183 @@ describe('V2 Keychains', function () {
           });
           keychains.should.deepEqual(stubbedKeychainsTriplet);
         });
+      });
+    });
+
+    describe('Recreate Keychains from MPCV1 to MPCV2', async function () {
+      const coin = 'hteth';
+      const walletId = 'walletId';
+      const otp = '000000';
+      const sandbox = sinon.createSandbox();
+
+      const decryptResult = JSON.stringify({ key: 'decrypted' });
+
+      beforeEach(function () {
+        nock(bgUrl)
+          .get('/api/v2/tss/settings')
+          .reply(200, {
+            coinSettings: {
+              eth: {
+                walletCreationSettings: {
+                  multiSigTypeVersion: 'MPCv2',
+                },
+              },
+            },
+          });
+
+        sandbox.stub(BitGo.prototype, 'decrypt').returns(decryptResult);
+      });
+
+      afterEach(function () {
+        sandbox.restore();
+        nock.cleanAll();
+      });
+
+      it('should fail if empty strings are provided', async function () {
+        const params: Parameters<Keychains['recreateMpc']>[0] = {
+          coin,
+          walletId,
+          otp,
+          passphrase: 'password',
+          enterprise: 'enterprise',
+          encryptedMaterial: {
+            encryptedUserKey: 'encrypted',
+            encryptedBackupKey: 'encrypted',
+            encryptedWalletPassphrase: 'passphrase',
+          },
+        };
+
+        await keychains.recreateMpc({ ...params, coin: '' }).should.be.rejectedWith('missing required param coin');
+
+        await keychains
+          .recreateMpc({ ...params, walletId: '' })
+          .should.be.rejectedWith('missing required param walletId');
+
+        await keychains.recreateMpc({ ...params, otp: '' }).should.be.rejectedWith('missing required param otp');
+
+        await keychains
+          .recreateMpc({ ...params, passphrase: '' })
+          .should.be.rejectedWith('missing required param passphrase');
+
+        await keychains
+          .recreateMpc({
+            ...params,
+            encryptedMaterial: {
+              ...params.encryptedMaterial,
+              encryptedWalletPassphrase: '',
+            },
+          })
+          .should.be.rejectedWith('missing required param encryptedWalletPassphrase');
+        await keychains
+          .recreateMpc({
+            ...params,
+            encryptedMaterial: {
+              ...params.encryptedMaterial,
+              encryptedUserKey: '',
+            },
+          })
+          .should.be.rejectedWith('missing required param encryptedUserKey');
+        await keychains
+          .recreateMpc({
+            ...params,
+            encryptedMaterial: {
+              ...params.encryptedMaterial,
+              encryptedBackupKey: '',
+            },
+          })
+          .should.be.rejectedWith('missing required param encryptedBackupKey');
+      });
+
+      it('should fail if otp unlock fails', async function () {
+        nock(bgUrl).post('/api/v1/user/unlock').replyWithError('otp error');
+        const params = {
+          coin,
+          walletId,
+          otp,
+          passphrase: 'password',
+          encryptedMaterial: {
+            encryptedUserKey: 'encryptedUserKey',
+            encryptedBackupKey: 'encryptedBackupKey',
+            encryptedWalletPassphrase: 'encryptedWalletPassphrase',
+          },
+        };
+
+        await keychains.recreateMpc(params).should.be.rejectedWith('otp error');
+      });
+
+      it('should fail if passcode recovery api call fails', async function () {
+        nock(bgUrl).post('/api/v1/user/unlock').reply(200, { otp });
+        nock(bgUrl)
+          .post(`/api/v2/${coin}/wallet/${walletId}/passcoderecovery`)
+          .replyWithError('passcode recovery error');
+
+        const params = {
+          coin,
+          walletId,
+          otp,
+          passphrase: 'password',
+          encryptedMaterial: {
+            encryptedUserKey: 'encryptedUserKey',
+            encryptedBackupKey: 'encryptedBackupKey',
+            encryptedWalletPassphrase: 'encryptedWalletPassphrase',
+          },
+        };
+
+        await keychains.recreateMpc(params).should.be.rejectedWith('passcode recovery error');
+      });
+
+      it('should fail if passcode recovery api call returns invalid recovery info', async function () {
+        nock(bgUrl).post('/api/v1/user/unlock').reply(200, { otp });
+        nock(bgUrl).post(`/api/v2/${coin}/wallet/${walletId}/passcoderecovery`).reply(200, { recoveryInfo: {} });
+
+        const params = {
+          coin,
+          walletId,
+          otp,
+          passphrase: 'password',
+          encryptedMaterial: {
+            encryptedUserKey: 'encryptedUserKey',
+            encryptedBackupKey: 'encryptedBackupKey',
+            encryptedWalletPassphrase: 'encryptedWalletPassphrase',
+          },
+        };
+
+        await keychains.recreateMpc(params).should.be.rejectedWith('failed to get recovery info');
+      });
+
+      it('should call createMpc with the correct parameters', async function () {
+        nock(bgUrl).post('/api/v1/user/unlock').reply(200, { otp });
+        nock(bgUrl)
+          .post(`/api/v2/${coin}/wallet/${walletId}/passcoderecovery`)
+          .reply(200, { recoveryInfo: { passcodeEncryptionCode: '123' } });
+
+        const params = {
+          coin,
+          walletId: 'walletId',
+          otp,
+          passphrase: 'password',
+          enterprise: 'enterprise',
+          originalPasscodeEncryptionCode: 'originalPasscodeEncryptionCode',
+          encryptedMaterial: {
+            encryptedUserKey: 'encryptedUserKey',
+            encryptedBackupKey: 'encryptedBackupKey',
+            encryptedWalletPassphrase: 'encryptedWalletPassphrase',
+          },
+        };
+        const createMpcStub = sinon.stub(keychains, 'createMpc').resolves();
+        await keychains.recreateMpc(params);
+
+        assert.ok(
+          createMpcStub.calledOnceWith({
+            ...params,
+            multisigType: 'tss',
+            retrofit: {
+              decryptedUserKey: decryptResult,
+              decryptedBackupKey: decryptResult,
+              walletId: params.walletId,
+            },
+          })
+        );
       });
     });
 

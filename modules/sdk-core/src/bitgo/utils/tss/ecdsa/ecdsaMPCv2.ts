@@ -31,11 +31,11 @@ import {
   verifyBitGoMessagesAndSignaturesRoundOne,
   verifyBitGoMessagesAndSignaturesRoundTwo,
 } from '../../../tss/ecdsa/ecdsaMPCv2';
+import { KeyCombined } from '../../../tss/ecdsa/types';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { RequestType, TSSParams, TSSParamsForMessage, TxRequest } from '../baseTypes';
 import { BaseEcdsaUtils } from './base';
 import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
-import { KeyCombined } from '../../../tss/ecdsa/types';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -289,7 +289,6 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const backupReducedPrivateMaterial = backupSession.getReducedKeyShare();
 
     const userCommonKeychain = DklsTypes.getCommonKeychain(userPrivateMaterial);
-    // on test compare this to common keychain tot he common keychain from the retrofit function
     const backupCommonKeychain = DklsTypes.getCommonKeychain(backupPrivateMaterial);
 
     assert.equal(bitgoCommonKeychain, userCommonKeychain, 'User and Bitgo Common keychains do not match');

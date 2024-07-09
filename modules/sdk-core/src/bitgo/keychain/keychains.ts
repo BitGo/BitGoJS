@@ -340,9 +340,16 @@ export class Keychains implements IKeychains {
     assert(params.coin, new Error('missing required param coin'));
     assert(params.walletId, new Error('missing required param walletId'));
     assert(params.otp, new Error('missing required param otp'));
-    assert(params.encryptedMaterial, new Error('missing required param encryptedMaterial'));
+    assert(params.passphrase, new Error('missing required param passphrase'));
 
-    await this.bitgo.post(this.bitgo.microservicesUrl('/api/v1/user/unlock')).send({ otp: params.otp }); // Yago: is there a better way to get this done?
+    assert(
+      params.encryptedMaterial.encryptedWalletPassphrase,
+      new Error('missing required param encryptedWalletPassphrase')
+    );
+    assert(params.encryptedMaterial.encryptedUserKey, new Error('missing required param encryptedUserKey'));
+    assert(params.encryptedMaterial.encryptedBackupKey, new Error('missing required param encryptedBackupKey'));
+
+    await this.bitgo.post(this.bitgo.microservicesUrl('/api/v1/user/unlock')).send({ otp: params.otp }).result();
     const { recoveryInfo } = await this.bitgo
       .post(this.bitgo.microservicesUrl(`/api/v2/${params.coin}/wallet/${params.walletId}/passcoderecovery`))
       .result();
