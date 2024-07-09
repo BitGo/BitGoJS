@@ -23,11 +23,12 @@ function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean 
       return ['btc', 'bsv', 'bch', 'bcha'].includes(b.getChain());
     case 'tbtc':
     case 'tbtcsig':
+    case 'tbtc4':
     case 'tbsv':
     case 'tbch':
     case 'tdoge':
     case 'tbcha':
-      return ['tbtc', 'tbtcsig', 'tbsv', 'tbch', 'tbcha', 'tdoge'].includes(b.getChain());
+      return ['tbtc', 'tbtcsig', 'tbtc4', 'tbsv', 'tbch', 'tbcha', 'tdoge'].includes(b.getChain());
     default:
       return false;
   }
@@ -49,6 +50,7 @@ function run(coin: AbstractUtxoCoin) {
         case 'btc':
         case 'tbtc':
         case 'tbtcsig':
+        case 'tbtc4':
           supportedAddressTypes.should.eql(['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2']);
           break;
         case 'btg':

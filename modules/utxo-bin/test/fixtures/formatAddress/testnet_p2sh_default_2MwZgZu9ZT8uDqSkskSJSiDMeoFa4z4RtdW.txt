@@ -11,4 +11,4 @@ address: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
 │   ├── type: scripthash
 │   ├── hex: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
 │   └── asm: OP_HASH160 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b OP_EQUAL
-└── network: testnet, bitcoinPublicSignet, bitcoincashTestnet, bitcoingoldTestnet, bitcoinsvTestnet, dogecoinTest, ecashTest
+└── network: testnet, bitcoinPublicSignet, bitcoinTestnet4, bitcoincashTestnet, bitcoingoldTestnet, bitcoinsvTestnet, dogecoinTest, ecashTest

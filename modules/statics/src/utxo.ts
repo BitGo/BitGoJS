@@ -209,6 +209,15 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     BTC_FEATURES
   ),
   utxo(
+    'f76cec3f-7aef-473d-af5d-4c47dd40dfa8',
+    'tbtc4',
+    'Testnet4 Bitcoin',
+    Networks.test.bitcoinTestnet4,
+    UnderlyingAsset.BTC,
+    BaseUnit.BTC,
+    BTC_FEATURES
+  ),
+  utxo(
     '8feb110d-0d68-44ce-ae97-b8c30ec870a9',
     'btg',
     'Bitcoin Gold',

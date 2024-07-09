@@ -9,4 +9,4 @@ address: tb1qeu6xmet5wqslj2w0wac0hx5gj6dupmp869cajrkt3kw6ud3kkecs62l3du
 │   ├── type: witnessscripthash
 │   ├── hex: 0020cf346de5747021f929cf7770fb9a88969bc0ec27d171d90ecb8d9dae3636b671
 │   └── asm: OP_0 cf346de5747021f929cf7770fb9a88969bc0ec27d171d90ecb8d9dae3636b671
-└── network: testnet, bitcoinPublicSignet
+└── network: testnet, bitcoinPublicSignet, bitcoinTestnet4

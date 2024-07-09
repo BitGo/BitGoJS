@@ -39,6 +39,7 @@ export type NetworkName =
   | 'bitcoin'
   | 'testnet'
   | 'bitcoinPublicSignet'
+  | 'bitcoinTestnet4'
   | 'bitcoincash'
   | 'bitcoincashTestnet'
   | 'ecash'
@@ -123,6 +124,16 @@ export const networks: Record<NetworkName, Network> = {
    * Source for constants: https://github.com/bitcoin/bitcoin/blob/v27.1/src/kernel/chainparams.cpp#L287-L290
    */
   bitcoinPublicSignet: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bech32: 'tb',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    wif: 0xef,
+    coin: coins.BTC,
+  },
+  // TODO: change constants when finalized
+  bitcoinTestnet4: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bech32: 'tb',
     bip32: getDefaultBip32Testnet(),
@@ -346,6 +357,7 @@ export function getMainnet(network: Network): Network {
     case networks.bitcoin:
     case networks.testnet:
     case networks.bitcoinPublicSignet:
+    case networks.bitcoinTestnet4:
       return networks.bitcoin;
 
     case networks.bitcoincash:
