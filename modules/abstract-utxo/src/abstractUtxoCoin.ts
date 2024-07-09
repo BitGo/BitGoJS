@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, BIP32Interface, bitgo, isTestnet } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface, bitgo, getMainnet, isTestnet } from '@bitgo/utxo-lib';
 import * as assert from 'assert';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
@@ -1525,7 +1525,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (
       buildParams.txFormat === undefined &&
       (buildParams.wallet.subType() === 'distributedCustody' ||
-        (isTestnet(this.network) && buildParams.wallet.type() === 'hot') ||
+        (isTestnet(this.network) &&
+          // FIXME(BTC-1322): fix zcash PSBT support
+          getMainnet(this.network) !== utxolib.networks.zcash &&
+          buildParams.wallet.type() === 'hot') ||
         // FIXME(BTC-776): default to psbt for all mainnet wallets in the future
         walletFlagMusigKp)
     ) {
