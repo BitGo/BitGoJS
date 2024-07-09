@@ -1,5 +1,6 @@
 import { BitGoBase, InitiateRecoveryOptions } from '@bitgo/sdk-core';
 import * as stellar from 'stellar-sdk';
+import { Utils } from './lib';
 
 export function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions): stellar.Keypair[] {
   const keys: stellar.Keypair[] = [];
@@ -16,6 +17,13 @@ export function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions
         input: userKey,
         password: params.walletPassphrase,
       });
+
+      // After decryption, we could have a root key, so we need to encode it to a Stellar format key
+      if (Utils.isValidRootPrivateKey(userKey)) {
+        userKey = Utils.encodePrivateKey(Buffer.from(userKey.slice(0, 64), 'hex'));
+      } else if (Utils.isValidRootPublicKey(userKey)) {
+        userKey = Utils.encodePublicKey(Buffer.from(userKey, 'hex'));
+      }
     }
 
     const userKeyPair = isUnsignedSweep ? stellar.Keypair.fromPublicKey(userKey) : stellar.Keypair.fromSecret(userKey);
@@ -30,6 +38,13 @@ export function getStellarKeys(bitgo: BitGoBase, params: InitiateRecoveryOptions
         input: backupKey,
         password: params.walletPassphrase,
       });
+
+      // After decryption we could have a root key, so we need to encode it to a Stellar format key
+      if (Utils.isValidRootPrivateKey(backupKey)) {
+        backupKey = Utils.encodePrivateKey(Buffer.from(backupKey.slice(0, 64), 'hex'));
+      } else if (Utils.isValidRootPublicKey(backupKey)) {
+        backupKey = Utils.encodePublicKey(Buffer.from(backupKey, 'hex'));
+      }
     }
 
     if (isKrsRecovery || isUnsignedSweep) {

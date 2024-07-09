@@ -260,7 +260,7 @@ export class Xlm extends BaseCoin {
   isValidPub(pub: string): boolean {
     // Stellar's validation method only allows keys in Stellar-specific format, with a 'G' prefix
     // We need to allow for both Stellar and raw root keys
-    return Utils.isValidPublicKey(pub) || Utils.isValidStellarPub(pub);
+    return Utils.isValidRootPublicKey(pub) || Utils.isValidStellarPublicKey(pub);
   }
 
   /**
@@ -272,7 +272,7 @@ export class Xlm extends BaseCoin {
   isValidPrv(prv: string): boolean {
     // Stellar's validation method only allows keys in Stellar-specific format, with an 'S' prefix
     // We need to allow for both Stellar and raw root private keys
-    return Utils.isValidPrivateKey(prv) || Utils.isValidStellarPrv(prv);
+    return Utils.isValidRootPrivateKey(prv) || Utils.isValidStellarPrivateKey(prv);
   }
 
   /**
@@ -641,6 +641,19 @@ export class Xlm extends BaseCoin {
    * - recoveryDestination: target address to send recovered funds to
    */
   async recover(params: RecoveryOptions): Promise<RecoveryTransaction> {
+    // Check if unencrypted root keys were provided, convert to Stellar format if necessary
+    if (Utils.isValidRootPrivateKey(params.userKey)) {
+      params.userKey = Utils.encodePrivateKey(Buffer.from(params.userKey.slice(0, 64), 'hex'));
+    } else if (Utils.isValidRootPublicKey(params.userKey)) {
+      params.userKey = Utils.encodePublicKey(Buffer.from(params.userKey, 'hex'));
+    }
+
+    if (Utils.isValidRootPrivateKey(params.backupKey)) {
+      params.backupKey = Utils.encodePrivateKey(Buffer.from(params.backupKey.slice(0, 64), 'hex'));
+    } else if (Utils.isValidRootPublicKey(params.backupKey)) {
+      params.backupKey = Utils.encodePublicKey(Buffer.from(params.backupKey, 'hex'));
+    }
+
     // Stellar's Ed25519 public keys start with a G, while private keys start with an S
     const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
     const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
@@ -770,16 +783,7 @@ export class Xlm extends BaseCoin {
       throw new Error(`prv must be a string, got type ${typeof prv}`);
     }
 
-    // Stellar private keys start with an S, check if a root key prv (hex string) was given
-    let keyPair: stellar.Keypair;
-    if (!prv.startsWith('S')) {
-      // Encode the raw root hex prv into a stellar S-prefixed private key
-      // Need to slice the prv because it may have the pub appended to it as well
-      keyPair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(prv.slice(0, 64), 'hex')));
-    } else {
-      keyPair = stellar.Keypair.fromSecret(prv);
-    }
-
+    const keyPair = Utils.createStellarKeypairFromPrv(prv);
     const tx = new stellar.Transaction(txPrebuild.txBase64, this.getStellarNetwork());
     tx.sign(keyPair);
     const txBase64 = Xlm.txToString(tx);
@@ -835,13 +839,7 @@ export class Xlm extends BaseCoin {
       message = Buffer.from(message);
     }
 
-    let keypair: stellar.Keypair;
-    if (key.prv.startsWith('S')) {
-      keypair = stellar.Keypair.fromSecret(key.prv);
-    } else {
-      keypair = stellar.Keypair.fromSecret(Utils.encodePrivateKey(Buffer.from(key.prv.slice(0, 64), 'hex')));
-    }
-
+    const keypair = Utils.createStellarKeypairFromPrv(key.prv);
     return keypair.sign(message);
   }
 
@@ -861,15 +859,7 @@ export class Xlm extends BaseCoin {
       message = Buffer.from(message);
     }
 
-    let keyPair: stellar.Keypair;
-    // Stellar public key starts with 'G'
-    if (pub.startsWith('G')) {
-      keyPair = stellar.Keypair.fromPublicKey(pub);
-    } else {
-      // Raw root key was given, need to encode to Stellar key first
-      keyPair = stellar.Keypair.fromPublicKey(Utils.encodePublicKey(Buffer.from(pub, 'hex')));
-    }
-
+    const keyPair = Utils.createStellarKeypairFromPub(pub);
     return keyPair.verify(message, signature);
   }
 

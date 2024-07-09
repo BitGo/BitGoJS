@@ -314,12 +314,12 @@ describe('XLM:', function () {
     // This key pair is the decoded version of the userKeychain above
     const rootKeychain = {
       pub: '37c6be1c677873e42a90f3d0ed3b0e4f3ba8591f285769d8c922f7024ae0c009',
-      prv: 'c034ca796a145e79acfac9bc9d97e4d3aaa42bfbe648b46bb1f3da794d7765fb',
+      prv: 'c034ca796a145e79acfac9bc9d97e4d3aaa42bfbe648b46bb1f3da794d7765fb37c6be1c677873e42a90f3d0ed3b0e4f3ba8591f285769d8c922f7024ae0c009',
     };
     // This key pair is the decoded version of the backupKeychain above
     const backupRootKeychain = {
       pub: 'b63de5ad57cc75b256483bc1c1de82689497eaf27a930896e7733f418acf9eca',
-      prv: '35a98c286af2c36283adcd47e92cc221b1cd24eeded852a21abfbbc65e98eb8a',
+      prv: '35a98c286af2c36283adcd47e92cc221b1cd24eeded852a21abfbbc65e98eb8ab63de5ad57cc75b256483bc1c1de82689497eaf27a930896e7733f418acf9eca',
     };
 
     const prebuild = {
@@ -414,7 +414,7 @@ describe('XLM:', function () {
     });
 
     it('should sign a transaction with generated root key pair', async function () {
-      const seed = Buffer.from(rootKeychain.prv, 'hex');
+      const seed = Buffer.from(rootKeychain.prv.slice(0, 64), 'hex');
       const kp = basecoin.generateRootKeyPair(seed);
       kp.prv.length.should.equal(128);
       const halfSignedTx = await wallet.signTransaction({
