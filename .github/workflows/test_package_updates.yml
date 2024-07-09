@@ -38,6 +38,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          override: true
+
+      - name: Install wasm-pack
+        run: |
+          cargo install wasm-pack
+
       - name: Fetch Base Ref
         run: git fetch origin $GITHUB_BASE_REF
 

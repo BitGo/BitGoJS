@@ -29,6 +29,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          override: true
+
+      - name: Install wasm-pack
+        run: |
+          cargo install wasm-pack
+
       - name: Build Info
         run: |
           echo "node $(node --version)"
@@ -155,7 +166,9 @@ jobs:
             libnss3 \
             lsb-release \
             xdg-utils \
-            wget
+            wget \
+            cargo
+          cargo install wasm-pack
 
       - name: restore lerna dependencies
         id: lerna-cache

@@ -13,7 +13,14 @@ COPY modules ./modules
 RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs rm -rf
 
 FROM node:20-bookworm-slim@sha256:6935e0e66fcf7ee4c33e9877364b6865365e94f9583d20d41fbfbf5d158ccd93 AS builder
-RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake
+RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake curl clang
+
+# Install rustup and the nightly toolchain
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain nightly
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup target add wasm32-unknown-unknown --toolchain nightly
+RUN cargo install wasm-pack
+
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
 # (skip postinstall) https://github.com/yarnpkg/yarn/issues/4100#issuecomment-388944260
