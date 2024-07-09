@@ -80,7 +80,7 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
         psbt.setAllInputsMusig2NonceHD(signer);
         psbt.setAllInputsMusig2NonceHD(cosigner);
       }
-      assert.ok(psbt.getSignatureValidationArray(0).every((res) => !res));
+      assert.ok(psbt.getSignatureValidationArray(0, { rootNodes: walletKeys.triple }).every((res) => !res));
       if (scriptType === 'p2shP2pk') {
         psbt.signAllInputs(signer);
       } else {
@@ -88,7 +88,7 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
         psbt.signAllInputsHD(cosigner);
       }
       assert(psbt.validateSignaturesOfAllInputs());
-      assert.deepStrictEqual(psbt.getSignatureValidationArray(0), signingKeys);
+      assert.deepStrictEqual(psbt.getSignatureValidationArray(0, { rootNodes: walletKeys.triple }), signingKeys);
       psbt.finalizeAllInputs();
       const tx = psbt.extractTransaction();
       assert(tx);

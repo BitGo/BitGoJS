@@ -701,10 +701,12 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * @param rootNodes optional input root bip32 nodes to verify with. If it is not provided, globalXpub will be used.
    * @return array of boolean values. True when corresponding index in `publicKeys` has signed the transaction.
    * If no signature in the tx or no public key matching signature, the validation is considered as false.
+   * If rootNodes are not explicitly passed in, the return array will be unordered.
+   * Use getSortedRootNodes() instead if ordering is important.
    */
   getSignatureValidationArray(
     inputIndex: number,
-    { rootNodes }: { rootNodes?: Triple<BIP32Interface> } = {}
+    { rootNodes }: { rootNodes: Triple<BIP32Interface> | undefined }
   ): Triple<boolean> {
     if (!rootNodes && (!this.data.globalMap.globalXpub?.length || !isTriple(this.data.globalMap.globalXpub))) {
       throw new Error('Cannot get signature validation array without 3 global xpubs');

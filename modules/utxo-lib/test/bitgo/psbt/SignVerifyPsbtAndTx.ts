@@ -68,7 +68,7 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: Input[], o
       psbt.data.inputs.forEach((input, inputIndex) => {
         const isP2shP2pk = inputs[inputIndex].scriptType === 'p2shP2pk';
         const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
-        psbt.getSignatureValidationArray(inputIndex).forEach((sv, i) => {
+        psbt.getSignatureValidationArray(inputIndex, { rootNodes: rootWalletKeys.triple }).forEach((sv, i) => {
           if (isP2shP2pk && sign !== 'unsigned' && i === 0) {
             assert.strictEqual(sv, true);
           } else {
