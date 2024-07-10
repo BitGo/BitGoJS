@@ -18,15 +18,27 @@ export function bytesToWord(bytes?: Uint8Array | number[]): number {
 export function encrypt(
   password: string,
   plaintext: string,
-  { salt = randomBytes(8), iv = randomBytes(16) } = {}
+  options?: {
+    salt?: Buffer;
+    iv?: Buffer;
+    adata?: string;
+  }
 ): string {
+  const salt = options?.salt || randomBytes(8);
   if (salt.length !== 8) {
     throw new Error(`salt must be 8 bytes`);
   }
+  const iv = options?.iv || randomBytes(16);
   if (iv.length !== 16) {
     throw new Error(`iv must be 16 bytes`);
   }
-  const encryptOptions = {
+  const encryptOptions: {
+    iter: number;
+    ks: number;
+    salt: number[];
+    iv: number[];
+    adata?: string;
+  } = {
     iter: 10000,
     ks: 256,
     salt: [bytesToWord(salt.slice(0, 4)), bytesToWord(salt.slice(4))],
@@ -37,6 +49,10 @@ export function encrypt(
       bytesToWord(iv.slice(12, 16)),
     ],
   };
+
+  if (options?.adata) {
+    encryptOptions.adata = options.adata;
+  }
 
   return sjcl.encrypt(password, plaintext, encryptOptions);
 }
