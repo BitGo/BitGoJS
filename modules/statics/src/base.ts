@@ -684,6 +684,7 @@ export enum UnderlyingAsset {
   EGL = 'egl',
   EGLD = 'egld',
   EGOLD = 'egold',
+  EIGEN = 'eigen',
   ELF = 'elf',
   ELU = 'elu',
   EMAID = 'emaid',
@@ -1808,6 +1809,8 @@ export enum UnderlyingAsset {
   'polygon:rndr' = 'polygon:rndr',
   'polygon:snx' = 'polygon:snx',
   'polygon:trb' = 'polygon:trb',
+  'polygon:ali' = 'polygon:ali',
+  'polygon:bal' = 'polygon:bal',
 
   // Polygon NFTs
   // generic NFTs
@@ -1848,6 +1851,12 @@ export enum UnderlyingAsset {
   'bsc:wrx' = 'bsc:wrx',
   'bsc:yfii' = 'bsc:yfii',
   'bsc:zil' = 'bsc:zil',
+  'bsc:1inch' = 'bsc:1inch',
+  'bsc:ada' = 'bsc:ada',
+  'bsc:alice' = 'bsc:alice',
+  'bsc:ankr' = 'bsc:ankr',
+  'bsc:avax' = 'bsc:avax',
+  'bsc:beta' = 'bsc:beta',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs

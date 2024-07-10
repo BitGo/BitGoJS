@@ -3346,6 +3346,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.EGLD
   ),
   erc20(
+    '43d681ad-0191-45f0-800e-b027f277e7d4',
+    'eigen',
+    'Eigen',
+    18,
+    '0xec53bf9167f50cdeb3ae105f56099aaab9061f83',
+    UnderlyingAsset.EIGEN
+  ),
+  erc20(
     'e7d90271-7d08-443a-9feb-37c83086d39c',
     'elf',
     'Aelf',
@@ -10882,6 +10890,54 @@ export const coins = CoinMap.fromCoins([
     '0xb86abcb37c3a4b64f74f59301aff131a1becc787',
     UnderlyingAsset['bsc:zil']
   ),
+  bscToken(
+    '63ada13a-7941-4aff-8a4e-88f994b2f409',
+    'bsc:1inch',
+    '1INCH Token',
+    18,
+    '0x111111111117dc0aa78b770fa6a738034120c302',
+    UnderlyingAsset['bsc:1inch']
+  ),
+  bscToken(
+    '19f2fc01-5aa0-409a-8345-c5283f35fb73',
+    'bsc:ada',
+    'Binance-Peg Cardano Token',
+    18,
+    '0x3ee2200efb3400fabb9aacf31297cbdd1d435d47',
+    UnderlyingAsset['bsc:ada']
+  ),
+  bscToken(
+    'b487bac5-8320-4f27-841b-1fb21ac3ce7a',
+    'bsc:alice',
+    'ALICE',
+    6,
+    '0xac51066d7bec65dc4589368da368b212745d63e8',
+    UnderlyingAsset['bsc:alice']
+  ),
+  bscToken(
+    '9a37ed39-f9d5-4d99-98ac-3d694ef29aaa',
+    'bsc:ankr',
+    'Ankr',
+    18,
+    '0xf307910a4c7bbc79691fd374889b36d8531b08e3',
+    UnderlyingAsset['bsc:ankr']
+  ),
+  bscToken(
+    'b090a811-ecf0-4be1-9679-ecb72fe5fec9',
+    'bsc:beta',
+    'Beta Token',
+    18,
+    '0xbe1a001fe942f96eea22ba08783140b9dcc09d28',
+    UnderlyingAsset['bsc:beta']
+  ),
+  bscToken(
+    'f634a5ff-cb5d-45cc-8314-746b43d1c360',
+    'bsc:avax',
+    'Binance-Peg Avalanche Token',
+    18,
+    '0x1ce0c2827e2ef14d5c4f29a091d735a204794041',
+    UnderlyingAsset['bsc:avax']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -15914,6 +15970,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xe3322702bedaaed36cddab233360b939775ae5f1',
     UnderlyingAsset['polygon:trb']
+  ),
+  polygonErc20(
+    'ba371fdd-ee5c-48e1-bee5-8dcc485b3d35',
+    'polygon:ali',
+    'Artificial Liquid Intelligence Token',
+    18,
+    '0xbfc70507384047aa74c29cdc8c5cb88d0f7213ac',
+    UnderlyingAsset['polygon:ali']
+  ),
+  polygonErc20(
+    'ce76663a-0d44-42b6-a2c2-c265adae38ad',
+    'polygon:bal',
+    'Balancer',
+    18,
+    '0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3',
+    UnderlyingAsset['polygon:bal']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
