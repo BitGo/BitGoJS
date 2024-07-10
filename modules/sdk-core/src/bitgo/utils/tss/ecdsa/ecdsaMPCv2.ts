@@ -844,6 +844,25 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     };
   }
 
+  /**
+   * Validates the adata and cyphertext.
+   * @param adata string
+   * @param cyphertext string
+   * @returns void
+   * @throws {Error} if the adata or cyphertext is invalid
+   */
+  private validateAdata(adata: string, cyphertext: string): void {
+    let cypherJson;
+    try {
+      cypherJson = JSON.parse(cyphertext);
+    } catch (e) {
+      throw new Error('Failed to parse cyphertext to JSON, got: ' + cyphertext);
+    }
+    if (cypherJson.adata !== adata) {
+      throw new Error('Adata does not match cyphertext adata');
+    }
+  }
+
   // #endregion
 
   // #region external signer
@@ -948,6 +967,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   }> {
     const { prv, walletPassphrase, txRequest } = params;
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
+    const adata = hashBuffer.toString('hex');
 
     const userKeyShare = Buffer.from(prv, 'base64');
     const userGpgKey = await generateGPGKeyPair('secp256k1');
@@ -956,10 +976,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const userSignerBroadcastMsg1 = await userSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
     const session = userSigner.getSession();
-    const encryptedRound1Session = this.bitgo.encrypt({ input: session, password: walletPassphrase });
+    const encryptedRound1Session = this.bitgo.encrypt({ input: session, password: walletPassphrase, adata });
 
     const userGpgPubKey = userGpgKey.publicKey;
-    const encryptedUserGpgPrvKey = this.bitgo.encrypt({ input: userGpgKey.privateKey, password: walletPassphrase });
+    const encryptedUserGpgPrvKey = this.bitgo.encrypt({
+      input: userGpgKey.privateKey,
+      password: walletPassphrase,
+      adata,
+    });
 
     return { signatureShareRound1, userGpgPubKey, encryptedRound1Session, encryptedUserGpgPrvKey };
   }
@@ -979,6 +1003,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       params;
 
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
+    const adata = hashBuffer.toString('hex');
     const { bitgoGpgKey, userGpgKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
       encryptedUserGpgPrvKey,
@@ -999,9 +1024,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bitgoGpgKey
     );
 
+    const round1Session = this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
+
+    this.validateAdata(adata, encryptedRound1Session);
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
-    const round1Session = this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
     userSigner.setSession(round1Session);
 
     const deserializedMessages = DklsTypes.deserializeMessages(serializedBitGoToUserMessagesRound1);
@@ -1020,7 +1047,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bitgoGpgKey
     );
     const session = userSigner.getSession();
-    const encryptedRound2Session = this.bitgo.encrypt({ input: session, password: walletPassphrase });
+    const encryptedRound2Session = this.bitgo.encrypt({ input: session, password: walletPassphrase, adata });
 
     return {
       signatureShareRound2,
@@ -1043,6 +1070,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     assert(txRequest.transactions && txRequest.transactions.length === 1, 'Unable to find transactions in txRequest');
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
+    const adata = hashBuffer.toString('hex');
 
     const { bitgoGpgKey, userGpgKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
@@ -1069,9 +1097,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       broadcastMessages: [],
     });
 
+    const round2Session = this.bitgo.decrypt({ input: encryptedRound2Session, password: walletPassphrase });
+    this.validateAdata(adata, encryptedRound2Session);
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
-    const round2Session = this.bitgo.decrypt({ input: encryptedRound2Session, password: walletPassphrase });
     userSigner.setSession(round2Session);
 
     const userToBitGoMessagesRound4 = userSigner.handleIncomingMessages({
