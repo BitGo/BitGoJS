@@ -12316,6 +12316,18 @@ export const coins = CoinMap.fromCoins([
     Networks.test.holesky
   ),
   terc20(
+    '346e3e87-1ac6-45fd-afa6-cad66872ebc1',
+    'tweth',
+    'Wrapped Ether',
+    18,
+    '0x94373a4919b3240d86ea41593d5eba789fef3848',
+    UnderlyingAsset.TWETH,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
     '95f5bf48-f2bb-4c64-a851-4f95ddce2fcf',
     'hterc18dp',
     'TERC18DP',
