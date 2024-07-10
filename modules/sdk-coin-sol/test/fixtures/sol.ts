@@ -66,6 +66,15 @@ const broadcastTransactionResponse = {
   },
 };
 
+const broadcastTransactionResponse1 = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: '5oUBgXX4enGmFEspG64goy3PRysjfrekZGg3rZNkBHUCQFd482vrVWbfDcRYMBEJt65JXymfEPm8M6d89X4xV79n',
+    id: 1,
+  },
+};
+
 const broadcastTransactionResponseError = {
   status: 200,
   body: {
@@ -106,6 +115,43 @@ const getMinimumBalanceForRentExemptionResponse = {
     result: 2039280,
     id: 1,
   },
+};
+
+const getTokenInfoResponse = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: { apiVersion: '1.10.39', slot: 163846900 },
+      value: {
+        data: {
+          parsed: {
+            info: {
+              isNative: false,
+              mint: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+              owner: 'Em74QaaUvHNSURych2r5mRRK7o5ih5DURhfQiMArhfFp',
+              state: 'initialized',
+              tokenAmount: {
+                amount: '52000000000',
+                decimals: 9,
+                uiAmount: 52.0,
+                uiAmountString: '52',
+              },
+            },
+          },
+          type: 'account',
+        },
+        program: 'spl-token',
+        space: 165,
+      },
+      executable: false,
+      lamports: 1447680,
+      owner: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+      rentEpoch: 18446744073709551615,
+      space: 165,
+    },
+  },
+  id: 1,
 };
 
 const getAccountInfoResponse = {
@@ -430,6 +476,7 @@ export const SolResponses = {
   getBlockhashResponse,
   getFeesResponse,
   getAccountBalanceResponse,
+  getTokenInfoResponse,
   getAccountInfoResponse,
   getAccountInfoResponse2,
   getAccountBalanceResponseNoFunds,
@@ -441,6 +488,7 @@ export const SolResponses = {
   getTokenAccountsByOwnerResponseNoAccounts,
   getMinimumBalanceForRentExemptionResponse,
   broadcastTransactionResponse,
+  broadcastTransactionResponse1,
   broadcastTransactionResponseError,
 } as const;
 
@@ -507,49 +555,50 @@ export const keys = {
 
 export const closeATAkeys = {
   userKey:
-    '{"iv":"tdxJRqIZeAmwW7/DWfslCw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-    ':"ccm","adata":"","cipher":"aes","salt":"f1pErh1sAJ4=","ct":"mCGBRKlQNXRz+N\n' +
-    'N7Ji3Ee2lHT8HD0ce353sZBe32xrnzClTZasI9BqEI6H9TycnkEtI1guN8utmVD3Hkyd24k89Xg\n' +
-    '0Wm85NFR/I4li6lAEPFNSajRUTgUxaHLEP/yNFxjE1y+N247H9jgKRJG8IYAsQE+p8kYTPkv637\n' +
-    'crpdz2uv0bw4duD4lzyfAi6WZ6DArAOJu1Oisq7uJg7YTc4MV33SUHx9E8PQJ8PJiugeCgNYNCQ\n' +
-    'XoUPxRcR4Q5vtrQ+58F7sFs4KxDmTZUVHHQw6PRLkfseZUYL58/hr/XB2Y+i2bp2tdqEDbxO+Nn\n' +
-    '+cZcTWAGlZWcJy6Lhf5GO4OriOBST2UyqwvPifIbI4FC0OR1bD5g3f8C/iUtXz0MsHnfEWM+SlG\n' +
-    'PsbzLRoEjGn55gSYWTSY+bgNqMYIAHgOwEtdD4wNJYRuMOXq7HepD4U2CWTj1Plz9zkkBEMspzV\n' +
-    'ycWQpEKY4FTfPXQ7KPQFbcLkVuMlnXGAU4F69Xs7sDp1vdE9lhvAp1UStd6VJNkaAVaK7DWxNke\n' +
-    'uXad5T2sLIjHZ6xatVqvFeg3RSjPOKron6SOZBHmmMvhMsJLQAk91AVKGCoHQSvcEQQv9j4aA54\n' +
-    '7Vr74aK8205Fyl14iDMen7Mxwd832wRxV331gAgzkNfNtzkI5X89BYe09fEZUxaAnZ41Q50c9tm\n' +
-    'qWybmbenaY1jvbJM8Hb3s/HrStY5rbEEfs9uEOuvHgjFH3x9z7dyX6FwQQX9eGq2bhsaGWnH2OJ\n' +
-    '93Qd+HSYMMMx7WQdoR6Q1RO+wOUCO8SNKrl7JB3/Q0PNkG4/NNPSHMrmz/cLhtS6gWoEDOH4sFq\n' +
-    'PnFKPuDSgAj5bCGLphFvCmkKpzzAe09ankgtvcHnApOgIyxsFAWSIsnAZZPQS27+BBWUEC1/zn6\n' +
-    'bZsp4Tb3bAERLBRD0fnKWzBqc0mKRkhlAiG5+PXLkEWZb7AWdHkKEXUHK3PySQBESpmuDCkmLVh\n' +
-    '041t+7u7ww20yvOAwFPpGX/VQe9XW9m2Qg+iggGZP+yGukCJKlI+ctXgE/BcMWXbiO2Ndhc01wE\n' +
-    'HLaKfqw/Etjt7BZEW6aqCEjZ5/EBD4zCY6RNuPpjroTu5EWissCT5DagAyMWt7GagKGuKo1YNWp\n' +
-    'dFRX/mhxg8tw7IJz3JnmcPI6IqzPtFjTVi88/qnFguuIkcyMQPkSmHq7r06iSCDwl"}',
+    '{"iv":"tjNp5U3pZs3bJPRYF2zKKA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+    ':"ccm","adata":"","cipher":"aes","salt":"6osfpp5K4mo=","ct":"mnjouojR2U3xME\n' +
+    'NBJYiMM/CC0hvnZqyBlXi6eI4rm6Y7thuWfM6NwcUCAvS8+gsXdtSioQKR2lV2fWEnVPiTAhdeL\n' +
+    'pYzy4cRd4khpuh9aGmN8aBHmyntYYZDIgUjfUt6aozh8pBk+H41Ki6+AQlod7SQeVnaqIAmQAly\n' +
+    'LStORYLnBYcaiMVi579bLyKbD7XHRr+dyyLq0GPMlPda4EjTXw2KF5wGseQloQVREksRoiqTrQf\n' +
+    '5UNT8MZO7HgdEkunUqzqcSaf5aYET3dxXUxtZ/56lYB0heXTFk4MALhTU2ohbaKqcqX+wqdbPAP\n' +
+    'jzwrt3uKsyGRy3TohpJZtepmSpRf2BuGae4ugMzGxnyj0mkt6OIxBTqHH371/Fq0D0cKlnNU/XI\n' +
+    'OapMs4JxAsMrV19BGXnYm6ratThjeHO0YpIf+G2KTx3Hq7XpEPU1q3JtLhD0WKxGCitWUPpJO/c\n' +
+    'JqYaF8tULDh/PE9mNb6w8VNEGT8Ur8WNif6uAuqXrruNtcZ3JpEeIRJ0/dWo62ycqtHCDX6ho7l\n' +
+    'jlut0fo6Pg1SSM+0aFBc+yYx08dL5X6Ce0nj6RlayvsXRP9o/ga3yg7pjnrpp5sOmIss7Y0zZGc\n' +
+    'eulkwPP2/9eJoTfoVASH9/ePcMCjGYtGBV0VVWSjT3EhjViJND6wcRJ3F7CJpgvUX9n6NTC/CLX\n' +
+    'oLJMDJSs0CVT7o4uY5p5xPZhk6KNCOqJxncjGtfHTeJjh9IJxVtfpmSo1UKqxXJmSBnms1Nijp5\n' +
+    'o5BCVjeRnY3LHboGStVXRxbgo12kzYVA2qlsbnqmaZNoHXzvInml1PLtvGBQZ3Wy0oQxQbyG/M7\n' +
+    '/X65iPmHxWQZbDERLokQ2WmSPgjxXc3w1mxUykFH0y3ny6+iE9fXhfTfRpY6sEcb6lAfImcNr/Q\n' +
+    'GXtgL1VvtGlAzrBfRr8ruj8DD9Pq8tiobOQ3zwgqWsR8dM3iFZSAUjyA9I684Xnl0XYR7VjWZHO\n' +
+    'EH88iBMAW+YgiC8+fOqAclCSPxis82qbrVpRLM1mu5+I1NjDQExlD5Uq/jjHRtOXtPhqL99o0oS\n' +
+    'BEiui2nN8fNABx0pnDJ3PxZYV9cE54uUiEu0nbEUW4IYEheMtfKdatGcqYVlCUVItKkzi6AqION\n' +
+    'qrJlEs+T3pNZqenCDmJG1zvmCd9cZqqEErAIQ5922EXOpt3W2rJ2mT0cmFm6nJEp8"}',
   backupKey:
-    '{"iv":"+zCbKLiK3DF63dlFem5++w==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-    ':"ccm","adata":"","cipher":"aes","salt":"DyYbR+D2OqM=","ct":"zQDYsLpMr6YmKi\n' +
-    '6vtQN6KCvTk9JQUj95Qnxb9nfla2cx8vttXMp/OK8+U4wn0M9yaCA4fznThPTyaQgZ5x2/nf2Vi\n' +
-    '7dz/IX+HkeR8Vz01QKVWKgqFidrVMVlgKi5wFLcAecC5XQ4T82XcfnlWEp+Z/gjj9MygcUBVedW\n' +
-    'jqhLmnaqJUZDDo8UChj4VC0tBPHyPiQIOtbqTiHlWyeqwAEjg4WzwPI71KvPBBqGy7lqhRFKeg3\n' +
-    'j5Z5qAj/cxdiL9MmKYtdkVQO1xIylrqiuqPg/WATeJ+zWyDy7WuNNI88Hh8690utqNV0FPnp6su\n' +
-    'MaPmhA+0au6ACBtqnaBrK+3LM26MSavkmFPl6kt5fpMVDpm0uAw3FdO2srPKkEC9JXhcdcTn3QQ\n' +
-    'uET9vvB5g24ZgtvFT0R1R6V+yG+2bs3PNEEMwDnl0TFuEIxsGbXVYmAoKiIzPomX7bN162mpZw9\n' +
-    '6dlg/ooZ1J6HqaDzKB/ruRi+pC0lBxoq+mn5UfXXGKjyLzmW+w/R96m53YuBbuwbOTP8fNQQrFX\n' +
-    'Ukryq6NvWXgXiIpGw6pyYfTYQT/Q9lxP7oIlu2m46vvMszp+P1aQMbyfiMaxU7MxYa9QJRiiThN\n' +
-    'mGf4i7CDZsNqcoVCkTCLQfDJHl9FvAxsu1sqlzq/6GZyPrl9QshkB/GVzieNk5cuQQiV/mITiWG\n' +
-    '8UpF/BGBVsIlJtny8u28DlSy+vhegizhV8MRAwZSzhiMe7jwWw1AM8YTiUaK0hbJGt0cJauZhUu\n' +
-    'wXr8/queFn+i+cG5/Gpwr0sQizLzf4hzggFDGUaITcJlfd0Y1S9p9IfSxhieKA3MGOEvVRtOpxa\n' +
-    'RgS8EtIeWEJlYmVQ2nh4jiP0TGni5KI8xe9eB+U849Jf+qL0DRFyf6tq5Jy2sSEmpFbQlLy/QM0\n' +
-    'oKTTsFclqgtnWP7fmBfMQXZCRqHgnucAvTom5UtyfrIsU1TjHwHbx0mQLMHZKGj/ZyM4GSPiSsr\n' +
-    '54q3jGalxuSlQOlYPcAOaGm1sSl3VyaYmTmY5JZZKkmM2cvqLG/WqZaF65gVgaom3ZrWQdy7/Oz\n' +
-    'RnEX1VTkP1cSeqdSs5HuiXZ1dQ0bXsFel7HgAAAllkSkv1rkc3ncujMJCeIRlMm2v9xjBtdBITy\n' +
-    'w+P6nc73r8HBH+qsyuZJ9lfC0nYFr2KIgFFrdELIzE6do2JMZtdPHPbxeHvwmFg=="}',
+    '{"iv":"ON67DMuAPLDa8q8YrXdlRw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+    ':"ccm","adata":"","cipher":"aes","salt":"o4F4G9rfuF4=","ct":"y/ZrNbAXgJC4Yb\n' +
+    'vKzF4PI0Y2CmDiA3Y/SeXdSsYMm/b1nG3gWmsQaMbdDavrApG8XNG2n1r+LpfPEkpfq0rZ+xiph\n' +
+    'F0MEEyuT1jxBN4DN4qz6K3w+3iYafPn7CVylIWuKfzsWX9mwMrKj6TDMHYF/9aMXh1RYVUUTRe4\n' +
+    'RVn8MkIi68+/A32EGNwIqDbeLoU1LfadVHiZiNGwHIb2qT7nNRi1AKdRsxC/szZ9v6pAS5fcbZ6\n' +
+    '6hKnuM0cKFIMRjjwSIVDW+SP/1jgoBiJKPyOEA/j1Qhbs0HVWo15QkgsRki62ZoiXhx9q3zMDWU\n' +
+    'WLPGEPUo7oVhVNJffKy3vanFe2KXv7wvRvxH8w6YAxHbjIahR9f9r4dYWm8N4b0AF+YRn/Dae6U\n' +
+    'y1TT+5DaVVdew7w4sYH5HnWS/2WyPK07CImIVC65W4VQXk1gdPAN5Q+h5eRZy9kSZup2YDktR3t\n' +
+    'fp1V1SOlLpAxkn1qqgZ/eJgyeU9iQAnMu9EaY46AStBESahVRQNvD5q9ZJhNOdN0HowjD4WQ4NR\n' +
+    'chkE1IFNYqGt/PrMsMY6L6dnUVNlWAMj2VqDb1vVjzx87LOo/trcn+qCyYepuqIkDXP57TE4nB2\n' +
+    'bC6JzE/ZVrp9U61cihJWycXwVexlKm9F4S6NAQgQDFIAj3lBJG+OUdJBGpzsX5UYS1gOk0RksmF\n' +
+    'zhY+TWOsEeXRlr36EDxbduzY1MkhY7lDnOD+SjdBTimXzRDpdMRBXsqxZlguHfKENGpiFPeJVnl\n' +
+    'qjGzzdAtFtLWlTxb/WBc9MLW+oYFgkan8DdfvI4ohFoyfw0e5oz5eSJCGfwlx0iWAsqwyngEnXt\n' +
+    '/qBTECxm52oZbSfdkXFP1ksqt0Jsu/D5PxlqvB2n8UXdvjMY0tXEEZl0z4/jX/xOjv5JVUNFye1\n' +
+    'PNX09Bflf8PoyxyH5Uc82z8fSnnCb+kdLeVh9SVED9/A0kg7TlFRyF+Q2cR/r7hqDMQ0MCW4pJS\n' +
+    'KNN+V/rzW/o1p5bORcI5slBR5h8MManmNkXkS+TnNsMFwBgjFsfGh81xoKUauJURPeJPXIbabHM\n' +
+    'glI5ZQvRs8qBuEZE/MaeK+U89yvB8Brao0LBZrwuxEYQkVB0+6ErG2ux1mL1T/cOdiT50wyflLn\n' +
+    'KRMGOKT8cZiPvmytCRhBD1GvWkkKgxTK1uWx/emaBgB3BTmtnHo/V7ibhulkckw=="}',
   bitgoKey:
-    'c6fb4543578d4a326d71ee8aeddf3ed24e2b2f2930e013ad518bd7795ab17d330e4891e8a3c\n' +
-    'c2c83b1434424dfb66756fd6eb166ad10f667e351ebfe686978bd',
-  closeAtaAddress: 'ESj8juGxsWFKKfqDUEbPLGgJ2ZTzKXZm7WVqGGkJKSTs',
-  bs58EncodedPublicKey: 'GuYaM6jMbkdzSwgkTUvcjSZe9j95hShWAMEAge1Xnq3u',
-  destinationPubKey: 'DTn5zvSLiHJ4fApHobgkzcHzSdgM4Hc9Enkfy2UCC8oo',
+    '3e7d84d26f567a46da5cbd283e948e66a48a010c28edc6b012bd61211077d596a152d43cb65\n' +
+    '3fb382b62c93bdb8537c28b6a4fcfc93ae1ad0f4ad8dae84b7929',
+  closeAtaAddress: 'CKWfQ2m8MKapmBcsAvxVUPn5u9pc7AqqFj8i1Razqsos',
+  recoveryDestinationAtaAddress: '72rBaNrUdAchUZSutb6Ze1gksd3iCyLq53P48d2tvL1a',
+  bs58EncodedPublicKey: 'Em74QaaUvHNSURych2r5mRRK7o5ih5DURhfQiMArhfFp',
+  destinationPubKey: 'EZpyxDHbVdX7GxdY6fv6du98yAw1WtNBEnnWhJpUsM8N',
   walletPassword: 'bitgo_test@123',
 };
 

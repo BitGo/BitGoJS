@@ -149,6 +149,8 @@ export interface SolRecoveryOptions extends MPCRecoveryOptions {
   };
   tokenContractAddress?: string;
   closeAtaAddress?: string;
+  // destination address where token should be sent before closing the ATA address
+  recoveryDestinationAtaAddress?: string;
 }
 
 export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecoveryOptions {
@@ -653,6 +655,29 @@ export class Sol extends BaseCoin {
     return [];
   }
 
+  protected async getTokenAccountInfo(pubKey: string): Promise<TokenAccount> {
+    const response = await this.getDataFromNode({
+      payload: {
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'getAccountInfo',
+        params: [
+          pubKey,
+          {
+            encoding: 'jsonParsed',
+          },
+        ],
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Account not found');
+    }
+    return {
+      pubKey: pubKey,
+      info: response.body.result.value.data.parsed.info,
+    };
+  }
+
   /** inherited doc */
   async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
     if (!params.signatureShares) {
@@ -754,32 +779,6 @@ export class Sol extends BaseCoin {
     let blockhash = await this.getBlockhash();
     let rentExemptAmount;
     let authority = '';
-
-    // if this is closeATA recovery
-    if (params.closeAtaAddress) {
-      if (!params.closeAtaAddress || !this.isValidAddress(params.closeAtaAddress)) {
-        throw new Error('invalid closeAtaAddress');
-      }
-
-      balance = await this.getAccountBalance(params.closeAtaAddress);
-      if (balance <= 0) {
-        throw Error('Did not find closeAtaAddress with sol funds to recover');
-      }
-
-      rentExemptAmount = await this.getRentExemptAmount();
-
-      const ataCloseBuilder = () => {
-        const txBuilder = factory.getCloseAtaInitializationBuilder();
-        txBuilder.nonce(blockhash);
-        txBuilder.sender(bs58EncodedPublicKey);
-        txBuilder.accountAddress(params.closeAtaAddress ?? '');
-        txBuilder.destinationAddress(params.recoveryDestination);
-        txBuilder.authorityAddress(bs58EncodedPublicKey);
-        txBuilder.associatedTokenAccountRent(rentExemptAmount.toString());
-        return txBuilder;
-      };
-      txBuilder = ataCloseBuilder();
-    }
 
     if (params.durableNonce) {
       const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
@@ -1001,10 +1000,10 @@ export class Sol extends BaseCoin {
    * @param {SolRecoveryOptions} params parameters needed to construct and
    * (maybe) sign the transaction
    *
-   * @returns {MPCTx | MPCSweepTxs} the serialized transaction hex string and index
+   * @returns {BaseBroadcastTransactionResult[]} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recoverCloseATA(params: SolRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
+  async recoverCloseATA(params: SolRecoveryOptions): Promise<BaseBroadcastTransactionResult[]> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -1018,7 +1017,6 @@ export class Sol extends BaseCoin {
     }
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
@@ -1043,15 +1041,63 @@ export class Sol extends BaseCoin {
     }
 
     const factory = this.getBuilder();
-    const walletCoin = this.getChain();
 
     let txBuilder;
-    const blockhash = await this.getBlockhash();
+    let blockhash;
+    const recovertTxns: BaseBroadcastTransactionResult[] = [];
 
     const rentExemptAmount = await this.getRentExemptAmount();
 
-    // if this is closeATA recovery
+    // do token recovery before closing ATA address
+    // check if any token is present on the closeAtaAddress
+    const tokenInfo = await this.getTokenAccountInfo(params.closeAtaAddress);
+    const tokenBalance = Number(tokenInfo.info.tokenAmount.amount);
+
+    if (tokenBalance > 0) {
+      // closeATA address has some token balance, it needs to be withdrawn before closing ATA
+      console.log(
+        `closeATA address ${params.closeAtaAddress} has token balance ${tokenBalance}, it needs to be withdrawn before closing ATA address`
+      );
+
+      if (!params.recoveryDestinationAtaAddress || !this.isValidAddress(params.recoveryDestinationAtaAddress)) {
+        throw new Error('invalid recoveryDestinationAtaAddress');
+      }
+
+      blockhash = await this.getBlockhash();
+
+      txBuilder = factory
+        .getTokenTransferBuilder()
+        .nonce(blockhash)
+        .sender(bs58EncodedPublicKey)
+        .fee({ amount: feePerSignature })
+        .associatedTokenAccountRent(rentExemptAmount.toString())
+        .feePayer(bs58EncodedPublicKey);
+
+      const network = this.getNetwork();
+      const token = getSolTokenFromAddress(tokenInfo.info.mint, network);
+      txBuilder.send({
+        address: params.recoveryDestinationAtaAddress,
+        amount: tokenBalance,
+        tokenName: token?.name,
+      });
+
+      const tokenRecoveryTxn = await this.signAndGenerateBroadcastableTransaction(
+        params,
+        txBuilder,
+        bs58EncodedPublicKey
+      );
+      const serializedTokenRecoveryTxn = (await tokenRecoveryTxn).serializedTx;
+      const broadcastTokenRecoveryTxn = await this.broadcastTransaction({
+        serializedSignedTransaction: serializedTokenRecoveryTxn,
+      });
+      console.log(broadcastTokenRecoveryTxn);
+      recovertTxns.push(broadcastTokenRecoveryTxn);
+    }
+
+    // after recovering the token amount, attempting to close the ATA address
     if (params.closeAtaAddress) {
+      blockhash = await this.getBlockhash();
+
       const ataCloseBuilder = () => {
         const txBuilder = factory.getCloseAtaInitializationBuilder();
         txBuilder.nonce(blockhash);
@@ -1064,105 +1110,84 @@ export class Sol extends BaseCoin {
       };
       txBuilder = ataCloseBuilder();
     }
+    const closeATARecoveryTxn = await this.signAndGenerateBroadcastableTransaction(
+      params,
+      txBuilder,
+      bs58EncodedPublicKey
+    );
+    const serializedCloseATARecoveryTxn = (await closeATARecoveryTxn).serializedTx;
+    const broadcastCloseATARecoveryTxn = await this.broadcastTransaction({
+      serializedSignedTransaction: serializedCloseATARecoveryTxn,
+    });
+    console.log(broadcastCloseATARecoveryTxn);
+    recovertTxns.push(broadcastCloseATARecoveryTxn);
 
-    if (!isUnsignedSweep) {
-      // Sign the txn
-      if (!params.userKey) {
-        throw new Error('missing userKey');
-      }
+    return recovertTxns;
+  }
 
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
-      }
-
-      if (!params.walletPassphrase) {
-        throw new Error('missing wallet passphrase');
-      }
-
-      const unsignedTransaction = (await txBuilder.build()) as Transaction;
-
-      const userKey = params.userKey.replace(/\s/g, '');
-      const backupKey = params.backupKey.replace(/\s/g, '');
-
-      // Decrypt private keys from KeyCard values
-      let userPrv;
-
-      try {
-        userPrv = this.bitgo.decrypt({
-          input: userKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
-      }
-
-      const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-      let backupPrv;
-      try {
-        backupPrv = this.bitgo.decrypt({
-          input: backupKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
-      const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-
-      const signatureHex = await EDDSAMethods.getTSSSignature(
-        userSigningMaterial,
-        backupSigningMaterial,
-        currPath,
-        unsignedTransaction
-      );
-
-      const publicKeyObj = { pub: bs58EncodedPublicKey };
-      txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+  async signAndGenerateBroadcastableTransaction(
+    params: SolRecoveryOptions,
+    txBuilder: any,
+    bs58EncodedPublicKey: string
+  ): Promise<MPCTx> {
+    // Sign the txn
+    if (!params.userKey) {
+      throw new Error('missing userKey');
     }
+
+    if (!params.backupKey) {
+      throw new Error('missing backupKey');
+    }
+
+    if (!params.walletPassphrase) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    const unsignedTransaction = (await txBuilder.build()) as Transaction;
+
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    // Decrypt private keys from KeyCard values
+    let userPrv;
+
+    try {
+      userPrv = this.bitgo.decrypt({
+        input: userKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e.message}`);
+    }
+
+    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+    let backupPrv;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+
+    const index = params.index || 0;
+    const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
+
+    const signatureHex = await EDDSAMethods.getTSSSignature(
+      userSigningMaterial,
+      backupSigningMaterial,
+      currPath,
+      unsignedTransaction
+    );
+
+    const publicKeyObj = { pub: bs58EncodedPublicKey };
+    txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
 
     const completedTransaction = await txBuilder.build();
     const serializedTx = completedTransaction.toBroadcastFormat();
-    const derivationPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
-    const inputs: OvcInput[] = [];
-    for (const input of completedTransaction.inputs) {
-      inputs.push({
-        address: input.address,
-        valueString: input.value,
-        value: new BigNumber(input.value).toNumber(),
-      });
-    }
-    const outputs: OvcOutput[] = [];
-    for (const output of completedTransaction.outputs) {
-      outputs.push({
-        address: output.address,
-        valueString: output.value,
-        coinName: output.coin ? output.coin : walletCoin,
-      });
-    }
-    const spendAmount = completedTransaction.inputs.length === 1 ? completedTransaction.inputs[0].value : 0;
-    const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
-    const feeInfo = { fee: totalFee.toNumber(), feeString: totalFee.toString() };
-    const coinSpecific = { commonKeychain: bitgoKey };
-    if (isUnsignedSweep) {
-      const transaction: MPCTx = {
-        serializedTx: serializedTx,
-        scanIndex: index,
-        coin: walletCoin,
-        signableHex: completedTransaction.signablePayload.toString('hex'),
-        derivationPath: derivationPath,
-        parsedTx: parsedTx,
-        feeInfo: feeInfo,
-        coinSpecific: coinSpecific,
-      };
-      const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
-      const transactions: MPCUnsignedTx[] = [unsignedTx];
-      const txRequest: RecoveryTxRequest = {
-        transactions: transactions,
-        walletCoin: walletCoin,
-      };
-      const txRequests: MPCSweepTxs = { txRequests: [txRequest] };
-      return txRequests;
-    }
     const transaction: MPCTx = {
       serializedTx: serializedTx,
       scanIndex: index,
