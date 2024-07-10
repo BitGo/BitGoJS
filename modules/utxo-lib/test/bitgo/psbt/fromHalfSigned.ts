@@ -127,7 +127,7 @@ function runTest(
           psbt.signAllInputs(s);
         }
       });
-      assert.deepStrictEqual(psbt.getSignatureValidationArray(0), signingKeys);
+      assert.deepStrictEqual(psbt.getSignatureValidationArray(0, { rootNodes: walletKeys.triple }), signingKeys);
       psbt.finalizeAllInputs();
       return psbt.extractTransaction();
     }
