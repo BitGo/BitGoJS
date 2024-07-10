@@ -1811,6 +1811,9 @@ export enum UnderlyingAsset {
   'polygon:trb' = 'polygon:trb',
   'polygon:ali' = 'polygon:ali',
   'polygon:bal' = 'polygon:bal',
+  'polygon:elon' = 'polygon:elon',
+  'polygon:hex' = 'polygon:hex',
+  'polygon:iotx' = 'polygon:iotx',
 
   // Polygon NFTs
   // generic NFTs
@@ -1857,6 +1860,21 @@ export enum UnderlyingAsset {
   'bsc:ankr' = 'bsc:ankr',
   'bsc:avax' = 'bsc:avax',
   'bsc:beta' = 'bsc:beta',
+  'bsc:btt' = 'bsc:btt',
+  'bsc:celr' = 'bsc:celr',
+  'bsc:chr' = 'bsc:chr',
+  'bsc:coti' = 'bsc:coti',
+  'bsc:cream' = 'bsc:cream',
+  'bsc:dar' = 'bsc:dar',
+  'bsc:degov2' = 'bsc:degov2',
+  'bsc:dodo' = 'bsc:dodo',
+  'bsc:elon' = 'bsc:elon',
+  'bsc:etc' = 'bsc:etc',
+  'bsc:front' = 'bsc:front',
+  'bsc:hft' = 'bsc:hft',
+  'bsc:high' = 'bsc:high',
+  'bsc:inj' = 'bsc:inj',
+  'bsc:iotx' = 'bsc:iotx',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs
@@ -1980,6 +1998,7 @@ export enum UnderlyingAsset {
   'sol:ks' = 'sol:ks',
   'sol:apusdt' = 'sol:apusdt',
   'sol:acusd' = 'sol:acusd',
+  'sol:solink' = 'sol:solink',
 
   // TRX tokens
   'trx:jst' = 'trx:jst',
