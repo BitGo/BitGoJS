@@ -1969,6 +1969,8 @@ export enum UnderlyingAsset {
   'wif' = 'wif',
   'natix' = 'natix',
   'sol:ks' = 'sol:ks',
+  'sol:apusdt' = 'sol:apusdt',
+  'sol:acusd' = 'sol:acusd',
 
   // TRX tokens
   'trx:jst' = 'trx:jst',

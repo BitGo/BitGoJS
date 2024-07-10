@@ -15153,6 +15153,24 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '92bfdced-9b06-47ce-968c-a41e83f787df',
+    'sol:apusdt',
+    'Wrapped USDT (Allbridge from Polygon)',
+    6,
+    'DNhZkUaxHXYvpxZ7LNnHtss8sQgdAfd1ZYS1fB7LKWUZ',
+    UnderlyingAsset['sol:apusdt'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'c0dab533-6101-4b9f-9802-f82bacd05d48',
+    'sol:acusd',
+    'Wrapped CUSD (Allbridge from Celo)',
+    9,
+    'EwxNF8g9UfmsJVcZFTpL9Hx5MCkoQFoJi6XNWzKf1j8e',
+    UnderlyingAsset['sol:acusd'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '2b1d83de-1cb8-4e22-bc25-8f66e758c809',
     'sol:w',
     'Wormhole Token',
