@@ -3346,6 +3346,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.EGLD
   ),
   erc20(
+    '43d681ad-0191-45f0-800e-b027f277e7d4',
+    'eigen',
+    'Eigen',
+    18,
+    '0xec53bf9167f50cdeb3ae105f56099aaab9061f83',
+    UnderlyingAsset.EIGEN
+  ),
+  erc20(
     'e7d90271-7d08-443a-9feb-37c83086d39c',
     'elf',
     'Aelf',
@@ -10882,6 +10890,174 @@ export const coins = CoinMap.fromCoins([
     '0xb86abcb37c3a4b64f74f59301aff131a1becc787',
     UnderlyingAsset['bsc:zil']
   ),
+  bscToken(
+    '63ada13a-7941-4aff-8a4e-88f994b2f409',
+    'bsc:1inch',
+    '1INCH Token',
+    18,
+    '0x111111111117dc0aa78b770fa6a738034120c302',
+    UnderlyingAsset['bsc:1inch']
+  ),
+  bscToken(
+    '19f2fc01-5aa0-409a-8345-c5283f35fb73',
+    'bsc:ada',
+    'Binance-Peg Cardano Token',
+    18,
+    '0x3ee2200efb3400fabb9aacf31297cbdd1d435d47',
+    UnderlyingAsset['bsc:ada']
+  ),
+  bscToken(
+    'b487bac5-8320-4f27-841b-1fb21ac3ce7a',
+    'bsc:alice',
+    'ALICE',
+    6,
+    '0xac51066d7bec65dc4589368da368b212745d63e8',
+    UnderlyingAsset['bsc:alice']
+  ),
+  bscToken(
+    '9a37ed39-f9d5-4d99-98ac-3d694ef29aaa',
+    'bsc:ankr',
+    'Ankr',
+    18,
+    '0xf307910a4c7bbc79691fd374889b36d8531b08e3',
+    UnderlyingAsset['bsc:ankr']
+  ),
+  bscToken(
+    'b090a811-ecf0-4be1-9679-ecb72fe5fec9',
+    'bsc:beta',
+    'Beta Token',
+    18,
+    '0xbe1a001fe942f96eea22ba08783140b9dcc09d28',
+    UnderlyingAsset['bsc:beta']
+  ),
+  bscToken(
+    'f634a5ff-cb5d-45cc-8314-746b43d1c360',
+    'bsc:avax',
+    'Binance-Peg Avalanche Token',
+    18,
+    '0x1ce0c2827e2ef14d5c4f29a091d735a204794041',
+    UnderlyingAsset['bsc:avax']
+  ),
+  bscToken(
+    '630f9bd2-d602-417c-8dde-6cb8fa06df8e',
+    'bsc:btt',
+    'BitTorrent',
+    18,
+    '0x352cb5e19b12fc216548a2677bd0fce83bae434b',
+    UnderlyingAsset['bsc:btt']
+  ),
+  bscToken(
+    'cff753dd-bb25-49b8-93c8-6f7010dd98e7',
+    'bsc:celr',
+    'Binance-Peg Celer Token',
+    18,
+    '0x1f9f6a696c6fd109cd3956f45dc709d2b3902163',
+    UnderlyingAsset['bsc:celr']
+  ),
+  bscToken(
+    'c430d292-4cfc-4e8a-90aa-2ff08ebb13a0',
+    'bsc:chr',
+    'Chroma',
+    6,
+    '0xf9cec8d50f6c8ad3fb6dccec577e05aa32b224fe',
+    UnderlyingAsset['bsc:chr']
+  ),
+  bscToken(
+    'fcc0ca5c-2eb0-4ac2-8f09-1a5637e2f2df',
+    'bsc:coti',
+    'Binance-Peg COTI Token',
+    18,
+    '0xadbaf88b39d37dc68775ed1541f1bf83a5a45feb',
+    UnderlyingAsset['bsc:coti']
+  ),
+  bscToken(
+    'c224474b-d111-4eb7-bb15-2b2afbaacf2a',
+    'bsc:cream',
+    'Cream',
+    18,
+    '0xd4cb328a82bdf5f03eb737f37fa6b370aef3e888',
+    UnderlyingAsset['bsc:cream']
+  ),
+  bscToken(
+    '3a23eabe-2078-43ad-977c-f23704b71dff',
+    'bsc:dar',
+    'Dalarnia',
+    6,
+    '0x23ce9e926048273ef83be0a3a8ba9cb6d45cd978',
+    UnderlyingAsset['bsc:dar']
+  ),
+  bscToken(
+    '0031de63-845f-4b09-8e41-361b26c9bfd9',
+    'bsc:degov2',
+    'dego.finance',
+    18,
+    '0x3da932456d082cba208feb0b096d49b202bf89c8',
+    UnderlyingAsset['bsc:degov2']
+  ),
+  bscToken(
+    '5d0c2d01-1d41-45f3-a979-d726b73563fe',
+    'bsc:dodo',
+    'DODO bird',
+    18,
+    '0x67ee3cb086f8a16f34bee3ca72fad36f7db929e2',
+    UnderlyingAsset['bsc:dodo']
+  ),
+  bscToken(
+    '0d6041b1-a74b-467c-abb4-13ffb8030178',
+    'bsc:elon',
+    'Dogelon Mars',
+    18,
+    '0x7bd6fabd64813c48545c9c0e312a0099d9be2540',
+    UnderlyingAsset['bsc:elon']
+  ),
+  bscToken(
+    '227264f5-3bed-4b94-a83d-3febef58dd20',
+    'bsc:etc',
+    'Binance-Peg Ethereum Classic',
+    18,
+    '0x3d6545b08693dae087e957cb1180ee38b9e3c25e',
+    UnderlyingAsset['bsc:etc']
+  ),
+  bscToken(
+    'b2dd88f3-ab7f-4999-9aac-15e2559e4ffb',
+    'bsc:front',
+    'Frontier Token',
+    18,
+    '0x928e55dab735aa8260af3cedada18b5f70c72f1b',
+    UnderlyingAsset['bsc:front']
+  ),
+  bscToken(
+    '05fea72c-091f-41f4-981c-bfe802c87791',
+    'bsc:hft',
+    'Hashflow',
+    18,
+    '0x44ec807ce2f4a6f2737a92e985f318d035883e47',
+    UnderlyingAsset['bsc:hft']
+  ),
+  bscToken(
+    'fe9738e5-b97f-4636-8f3d-d635cbf4c0e3',
+    'bsc:high',
+    'Highstreet Token',
+    18,
+    '0x5f4bde007dc06b867f86ebfe4802e34a1ffeed63',
+    UnderlyingAsset['bsc:high']
+  ),
+  bscToken(
+    'be1e64ad-189e-4885-b7f0-2c661ffba041',
+    'bsc:inj',
+    'Injective Protocol',
+    18,
+    '0xa2b726b1145a4773f68593cf171187d8ebe4d495',
+    UnderlyingAsset['bsc:inj']
+  ),
+  bscToken(
+    'b141222f-fdf1-40a4-91fb-57bb40bc595c',
+    'bsc:iotx',
+    'Binance-Peg IoTeX Network',
+    18,
+    '0x9678e42cebeb63f23197d726b29b1cb20d0064e5',
+    UnderlyingAsset['bsc:iotx']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -15183,6 +15359,15 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '10588bb1-dcc3-4c5f-a813-8a5b4c342bee',
+    'sol:solink',
+    'Wrapped Chainlink (Sollet)',
+    6,
+    'CWE8jPTUYhdCTZYWPTe1o5DFqfdjzWKc9WKz6rSjQUdG',
+    UnderlyingAsset['sol:solink'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '2b1d83de-1cb8-4e22-bc25-8f66e758c809',
     'sol:w',
     'Wormhole Token',
@@ -15926,6 +16111,46 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xe3322702bedaaed36cddab233360b939775ae5f1',
     UnderlyingAsset['polygon:trb']
+  ),
+  polygonErc20(
+    'ba371fdd-ee5c-48e1-bee5-8dcc485b3d35',
+    'polygon:ali',
+    'Artificial Liquid Intelligence Token',
+    18,
+    '0xbfc70507384047aa74c29cdc8c5cb88d0f7213ac',
+    UnderlyingAsset['polygon:ali']
+  ),
+  polygonErc20(
+    'ce76663a-0d44-42b6-a2c2-c265adae38ad',
+    'polygon:bal',
+    'Balancer',
+    18,
+    '0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3',
+    UnderlyingAsset['polygon:bal']
+  ),
+  polygonErc20(
+    '15618ee0-be3d-4ae3-9ce7-7dff7aa624b1',
+    'polygon:elon',
+    'Dogelon',
+    18,
+    '0xe0339c80ffde91f3e20494df88d4206d86024cdf',
+    UnderlyingAsset['polygon:elon']
+  ),
+  polygonErc20(
+    '537bfc3a-161f-47c7-bd11-faf3449ff840',
+    'polygon:hex',
+    'HEX',
+    8,
+    '0x23d29d30e35c5e8d321e1dc9a8a61bfd846d4c5c',
+    UnderlyingAsset['polygon:hex']
+  ),
+  polygonErc20(
+    'dd4a7160-9dd1-4216-a272-10e88f27266a',
+    'polygon:iotx',
+    'IoTeX Network',
+    18,
+    '0xf6372cdb9c1d3674e83842e3800f2a62ac9f3c66',
+    UnderlyingAsset['polygon:iotx']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',

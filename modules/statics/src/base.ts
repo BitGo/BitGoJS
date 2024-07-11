@@ -684,6 +684,7 @@ export enum UnderlyingAsset {
   EGL = 'egl',
   EGLD = 'egld',
   EGOLD = 'egold',
+  EIGEN = 'eigen',
   ELF = 'elf',
   ELU = 'elu',
   EMAID = 'emaid',
@@ -1809,6 +1810,11 @@ export enum UnderlyingAsset {
   'polygon:rndr' = 'polygon:rndr',
   'polygon:snx' = 'polygon:snx',
   'polygon:trb' = 'polygon:trb',
+  'polygon:ali' = 'polygon:ali',
+  'polygon:bal' = 'polygon:bal',
+  'polygon:elon' = 'polygon:elon',
+  'polygon:hex' = 'polygon:hex',
+  'polygon:iotx' = 'polygon:iotx',
 
   // Polygon NFTs
   // generic NFTs
@@ -1849,6 +1855,27 @@ export enum UnderlyingAsset {
   'bsc:wrx' = 'bsc:wrx',
   'bsc:yfii' = 'bsc:yfii',
   'bsc:zil' = 'bsc:zil',
+  'bsc:1inch' = 'bsc:1inch',
+  'bsc:ada' = 'bsc:ada',
+  'bsc:alice' = 'bsc:alice',
+  'bsc:ankr' = 'bsc:ankr',
+  'bsc:avax' = 'bsc:avax',
+  'bsc:beta' = 'bsc:beta',
+  'bsc:btt' = 'bsc:btt',
+  'bsc:celr' = 'bsc:celr',
+  'bsc:chr' = 'bsc:chr',
+  'bsc:coti' = 'bsc:coti',
+  'bsc:cream' = 'bsc:cream',
+  'bsc:dar' = 'bsc:dar',
+  'bsc:degov2' = 'bsc:degov2',
+  'bsc:dodo' = 'bsc:dodo',
+  'bsc:elon' = 'bsc:elon',
+  'bsc:etc' = 'bsc:etc',
+  'bsc:front' = 'bsc:front',
+  'bsc:hft' = 'bsc:hft',
+  'bsc:high' = 'bsc:high',
+  'bsc:inj' = 'bsc:inj',
+  'bsc:iotx' = 'bsc:iotx',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs
@@ -1972,6 +1999,7 @@ export enum UnderlyingAsset {
   'sol:ks' = 'sol:ks',
   'sol:apusdt' = 'sol:apusdt',
   'sol:acusd' = 'sol:acusd',
+  'sol:solink' = 'sol:solink',
 
   // TRX tokens
   'trx:jst' = 'trx:jst',
