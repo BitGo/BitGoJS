@@ -1446,6 +1446,7 @@ export enum UnderlyingAsset {
   TUSDT = 'tusdt',
   TUSRM = 'tusrm',
   TWDOGE = 'twdoge',
+  TWETH = 'tweth',
   TXL = 'txl',
   TXSGD = 'txsgd',
   TXUSD = 'txusd',
