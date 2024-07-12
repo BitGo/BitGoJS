@@ -60,6 +60,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  /**
+   * Sets the transaction to be bounceable or not.
+   *
+   * @param {string} bounceable whether the transaction can be bounced
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  bounceable(bounceable: boolean): this {
+    this.transaction.bounceable = bounceable;
+    return this;
+  }
+
   fee(feeOptions: FeeOptions): this {
     throw new Error('Method not implemented.');
   }

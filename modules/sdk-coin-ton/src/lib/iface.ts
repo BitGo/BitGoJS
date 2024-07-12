@@ -11,4 +11,5 @@ export interface TxData {
   expirationTime: number;
   publicKey: string;
   signature: string;
+  bounceable: boolean;
 }

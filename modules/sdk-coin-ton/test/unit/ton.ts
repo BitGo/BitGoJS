@@ -135,7 +135,7 @@ describe('TON:', function () {
       })) as TransactionExplanation;
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee'],
-        id: '9gEyvIsHrA79g8pmEP1EBtO8GlpZ98QnUveSYmEx6fc=',
+        id: 'tuyOkyFUMv_neV_FeNBH24Nd4cML2jUgDP4zjGkuOFI=',
         outputs: [
           {
             address: testData.signedTransaction.recipient.address,
@@ -171,14 +171,14 @@ describe('TON:', function () {
 
     const transferInputsResponse = [
       {
-        address: 'EQAhNl4b31yOQ5YFIJiCxSVY_L2Wpcuwt2Zerzu70JUtQCRu',
+        address: 'UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg',
         amount: '10000000',
       },
     ];
 
     const transferOutputsResponse = [
       {
-        address: 'EQD6Tm5rybJHqMflQkjpCRB7Lm5QpGqFoYwiLqMjPtaqPSdZ',
+        address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
         amount: '10000000',
       },
     ];
@@ -244,7 +244,7 @@ describe('TON:', function () {
     });
 
     it('should return true when validating a well formatted address', async function () {
-      const address = 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG';
+      const address = 'UQB0Hyt1bTRfI0WK_ULZyKvrvP0PPtpTQFi_jKXVXX6KFOMi';
       basecoin.isValidAddress(address).should.equal(true);
     });
 

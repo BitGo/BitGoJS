@@ -12,7 +12,7 @@ export const privateKeys = {
 
 export const addresses = {
   validAddresses: [
-    'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+    'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
     'EQBuEuh47sv0NSCjRsQukMu1jKi9QUspsQGeYL4LWtrU81Cb',
   ],
   invalidAddresses: [
@@ -23,7 +23,7 @@ export const addresses = {
 };
 
 export const sender = {
-  address: 'EQC7YVwYHggAw51s8wxryeS8gNdcsMro-u24sE727ymJySAJ',
+  address: 'UQAbJug-k-tufWMjEC1RKSM0iiJTDUcYkC7zWANHrkT55Afg',
   publicKey: 'c0c3b9dc09932121ee351b2448c50a3ae2571b12951245c85f3bd95d5e7a06f8',
 };
 
@@ -35,11 +35,11 @@ export const recipients: Recipient[] = [
 ];
 
 export const signedTransaction = {
-  tx: 'te6cckEBAgEAsQAB4YgAQmy8N765HIcsCkExBYpKsfl7LUuXYW7MvV53d6EqWoADFgjyqp/3qccthFjfvskQ1XUeecHe8JVQ9DFGSmpwRovdPiRamZZ3PR2isMd1i5k+MdQCc9TCP/E5+rfkvMbYQU1NGLsruXHwAAAAgAAcAQB2QgB9Jzc15Nkj1GPyoSR0hIg9lzcoUjVC0MYRF1GRn2tVHpzEtAAAAAAAAAAAAAAAAAAAAAAAAHRlc3SUlVNc',
-  txId: '9gEyvIsHrA79g8pmEP1EBtO8GlpZ98QnUveSYmEx6fc=',
-  signable: 'q28coBQ7sbBBAR/hG4eUdDayLDsPC9FKQtA/lSYYaSQ=',
+  tx: 'te6cckEBAgEAqQAB4YgBJAxo7vqHF++LJ4bC/kJ8A1uVRskrKlrKJZ8rIB0tF+gCadlSX+hPo2mmhZyi0p3zTVUYVRkcmrCm97cSUFSa2vzvCArM3APg+ww92r3IcklNjnzfKOgysJVQXiCvj9SAaU1NGLsotvRwAAAAMAAcAQBmQgAaRefBOjTi/hwqDjv+7I6nGj9WEAe3ls/rFuBEQvggr5zEtAAAAAAAAAAAAAAAAAAAdfZO7w==',
+  txId: 'tuyOkyFUMv_neV_FeNBH24Nd4cML2jUgDP4zjGkuOFI=',
+  signable: 'k4XUmjB65j3klMXCXdh5Vs3bJZzo3NSfnXK8NIYFayI=',
   recipient: {
-    address: 'EQD6Tm5rybJHqMflQkjpCRB7Lm5QpGqFoYwiLqMjPtaqPSdZ',
+    address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
     amount: '10000000',
   },
 };
