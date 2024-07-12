@@ -28,7 +28,7 @@ import {
   EncryptedSignerShareType,
   SignatureShareRecord,
   SignatureShareType,
-  TSSParams,
+  TSSParamsWithPrv,
   TxRequest,
 } from '../baseTypes';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
@@ -548,7 +548,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    * @param reqId - request id
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequest(params: TSSParams): Promise<TxRequest> {
+  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
     let txRequestResolved: TxRequest;
     let txRequestId: string;

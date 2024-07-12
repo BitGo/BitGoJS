@@ -28,6 +28,8 @@ import {
   RequestType,
   TSSParams,
   TSSParamsForMessage,
+  TSSParamsForMessageWithPrv,
+  TSSParamsWithPrv,
   TxRequest,
 } from '../baseTypes';
 import { getTxRequest } from '../../../tss';
@@ -861,7 +863,10 @@ export class EcdsaUtils extends BaseEcdsaUtils {
    * @param { string} params.reqId - request id
    * @returns {Promise<TxRequest>}
    */
-  private async signRequestBase(params: TSSParams | TSSParamsForMessage, requestType: RequestType): Promise<TxRequest> {
+  private async signRequestBase(
+    params: TSSParamsWithPrv | TSSParamsForMessageWithPrv,
+    requestType: RequestType
+  ): Promise<TxRequest> {
     const pendingEcdsaTssInitialization = this.wallet.coinSpecific()?.pendingEcdsaTssInitialization;
     if (pendingEcdsaTssInitialization) {
       throw new Error(
@@ -988,7 +993,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
    * @param {string} params.reqId - request id
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequest(params: TSSParams): Promise<TxRequest> {
+  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
     return this.signRequestBase(params, RequestType.tx);
   }
@@ -1000,7 +1005,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
    * @param {string} params.reqId - request id
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequestForMessage(params: TSSParamsForMessage): Promise<TxRequest> {
+  async signTxRequestForMessage(params: TSSParamsForMessageWithPrv): Promise<TxRequest> {
     if (!params.messageRaw) {
       throw new Error('Raw message required to sign message');
     }

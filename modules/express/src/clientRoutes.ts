@@ -4,6 +4,7 @@
 import {
   EddsaUtils,
   EcdsaUtils,
+  EcdsaMPCv2Utils,
   CustomGShareGeneratingFunction,
   CustomRShareGeneratingFunction,
   UnsupportedCoinError,
@@ -24,6 +25,10 @@ import {
   CreateNetworkConnectionParams,
   GetNetworkPartnersResponse,
   encryptRsaWithAesGcm,
+  Wallet,
+  CustomMPCv2SigningRound1GeneratingFunction,
+  CustomMPCv2SigningRound2GeneratingFunction,
+  CustomMPCv2SigningRound3GeneratingFunction,
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
@@ -440,20 +445,42 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
           );
       }
     } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
-      const ecdsaUtils = new EcdsaUtils(bitgo, coin);
-      switch (req.params.sharetype) {
-        case ShareType.PaillierModulus:
-          return ecdsaUtils.getOfflineSignerPaillierModulus(req.body);
-        case ShareType.K:
-          return await ecdsaUtils.createOfflineKShare(req.body);
-        case ShareType.MuDelta:
-          return await ecdsaUtils.createOfflineMuDeltaShare(req.body);
-        case ShareType.S:
-          return await ecdsaUtils.createOfflineSShare(req.body);
-        default:
-          throw new Error(
-            `Share type ${req.params.sharetype} not supported, only PaillierModulus, K, MUDelta, and S share generation is supported.`
-          );
+      const isMPCv2 = [
+        ShareType.MPCv2Round1.toString(),
+        ShareType.MPCv2Round2.toString(),
+        ShareType.MPCv2Round3.toString(),
+      ].includes(req.params.sharetype);
+
+      if (isMPCv2) {
+        const ecdsaMPCv2Utils = new EcdsaMPCv2Utils(bitgo, coin);
+        switch (req.params.sharetype) {
+          case ShareType.MPCv2Round1:
+            return await ecdsaMPCv2Utils.createOfflineRound1Share(req.body);
+          case ShareType.MPCv2Round2:
+            return await ecdsaMPCv2Utils.createOfflineRound2Share(req.body);
+          case ShareType.MPCv2Round3:
+            return await ecdsaMPCv2Utils.createOfflineRound3Share(req.body);
+          default:
+            throw new Error(
+              `Share type ${req.params.sharetype} not supported for MPCv2, only MPCv2Round1, MPCv2Round2 and MPCv2Round3 is supported.`
+            );
+        }
+      } else {
+        const ecdsaUtils = new EcdsaUtils(bitgo, coin);
+        switch (req.params.sharetype) {
+          case ShareType.PaillierModulus:
+            return ecdsaUtils.getOfflineSignerPaillierModulus(req.body);
+          case ShareType.K:
+            return await ecdsaUtils.createOfflineKShare(req.body);
+          case ShareType.MuDelta:
+            return await ecdsaUtils.createOfflineMuDeltaShare(req.body);
+          case ShareType.S:
+            return await ecdsaUtils.createOfflineSShare(req.body);
+          default:
+            throw new Error(
+              `Share type ${req.params.sharetype} not supported, only PaillierModulus, K, MUDelta, and S share generation is supported.`
+            );
+        }
       }
     } else {
       throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
@@ -469,7 +496,7 @@ export async function handleV2SignTSSWalletTx(req: express.Request) {
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
   try {
-    return await wallet.signTransaction(createTSSSendParams(req));
+    return await wallet.signTransaction(createTSSSendParams(req, wallet));
   } catch (error) {
     console.error('error while signing wallet transaction ', error);
     throw error;
@@ -755,7 +782,7 @@ export async function handleV2ConsolidateAccount(req: express.Request) {
   let result: any;
   try {
     if (coin.supportsTss()) {
-      result = await wallet.sendAccountConsolidations(createTSSSendParams(req));
+      result = await wallet.sendAccountConsolidations(createTSSSendParams(req, wallet));
     } else {
       result = await wallet.sendAccountConsolidations(createSendParams(req));
     }
@@ -828,7 +855,7 @@ function createSendParams(req: express.Request) {
   }
 }
 
-function createTSSSendParams(req: express.Request) {
+function createTSSSendParams(req: express.Request, wallet: Wallet) {
   if (req.config?.externalSignerUrl !== undefined) {
     const coin = req.bitgo.coin(req.params.coin);
     if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
@@ -842,19 +869,37 @@ function createTSSSendParams(req: express.Request) {
         customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
       };
     } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
-      return {
-        ...req.body,
-        customPaillierModulusGeneratingFunction: createCustomPaillierModulusGetter(
-          req.config.externalSignerUrl,
-          req.params.coin
-        ),
-        customKShareGeneratingFunction: createCustomKShareGenerator(req.config.externalSignerUrl, req.params.coin),
-        customMuDeltaShareGeneratingFunction: createCustomMuDeltaShareGenerator(
-          req.config.externalSignerUrl,
-          req.params.coin
-        ),
-        customSShareGeneratingFunction: createCustomSShareGenerator(req.config.externalSignerUrl, req.params.coin),
-      };
+      if (wallet._wallet.multisigTypeVersion === 'MPCv2') {
+        return {
+          ...req.body,
+          customMPCv2SigningRound1GenerationFunction: createCustomMPCv2SigningRound1Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customMPCv2SigningRound2GenerationFunction: createCustomMPCv2SigningRound2Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customMPCv2SigningRound3GenerationFunction: createCustomMPCv2SigningRound3Generator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+        };
+      } else {
+        return {
+          ...req.body,
+          customPaillierModulusGeneratingFunction: createCustomPaillierModulusGetter(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customKShareGeneratingFunction: createCustomKShareGenerator(req.config.externalSignerUrl, req.params.coin),
+          customMuDeltaShareGeneratingFunction: createCustomMuDeltaShareGenerator(
+            req.config.externalSignerUrl,
+            req.params.coin
+          ),
+          customSShareGeneratingFunction: createCustomSShareGenerator(req.config.externalSignerUrl, req.params.coin),
+        };
+      }
     } else {
       throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
     }
@@ -900,7 +945,7 @@ async function handleV2SendMany(req: express.Request) {
   let result;
   try {
     if (wallet._wallet.multisigType === 'tss') {
-      result = await wallet.sendMany(createTSSSendParams(req));
+      result = await wallet.sendMany(createTSSSendParams(req, wallet));
     } else {
       result = await wallet.sendMany(createSendParams(req));
     }
@@ -1339,6 +1384,51 @@ export function createCustomGShareGenerator(externalSignerUrl: string, coin: str
       }
     );
     return signedTx;
+  };
+}
+
+export function createCustomMPCv2SigningRound1Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomMPCv2SigningRound1GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round1`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomMPCv2SigningRound2Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomMPCv2SigningRound2GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round2`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
+  };
+}
+
+export function createCustomMPCv2SigningRound3Generator(
+  externalSignerUrl: string,
+  coin: string
+): CustomMPCv2SigningRound3GeneratingFunction {
+  return async function (params) {
+    const { body: result } = await retryPromise(
+      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round3`).type('json').send(params),
+      (err, tryCount) => {
+        debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+      }
+    );
+    return result;
   };
 }
 

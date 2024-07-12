@@ -43,6 +43,9 @@ export enum ShareType {
   K = 'K',
   MuDelta = 'MuDelta',
   PaillierModulus = 'PaillierModulus',
+  MPCv2Round1 = 'MPCv2Round1',
+  MPCv2Round2 = 'MPCv2Round2',
+  MPCv2Round3 = 'MPCv2Round3',
 }
 
 export enum MPCType {
@@ -107,6 +110,39 @@ export interface CustomGShareGeneratingFunction {
     bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare>;
 }
+
+export interface CustomMPCv2SigningRound1GeneratingFunction {
+  (params: { txRequest: TxRequest }): Promise<{
+    signatureShareRound1: SignatureShareRecord;
+    encryptedRound1Session: string;
+    userGpgPubKey: string;
+    encryptedUserGpgPrvKey: string;
+  }>;
+}
+
+export interface CustomMPCv2SigningRound2GeneratingFunction {
+  (params: {
+    txRequest: TxRequest;
+    bitgoPublicGpgKey: string;
+    encryptedUserGpgPrvKey: string;
+    encryptedRound1Session: string;
+  }): Promise<{
+    signatureShareRound2: SignatureShareRecord;
+    encryptedRound2Session: string;
+  }>;
+}
+
+export interface CustomMPCv2SigningRound3GeneratingFunction {
+  (params: {
+    txRequest: TxRequest;
+    bitgoPublicGpgKey: string;
+    encryptedUserGpgPrvKey: string;
+    encryptedRound2Session: string;
+  }): Promise<{
+    signatureShareRound3: SignatureShareRecord;
+  }>;
+}
+
 export enum TokenType {
   ERC721 = 'ERC721',
   ERC1155 = 'ERC1155',
@@ -349,9 +385,16 @@ export interface EncryptedSignerShareRecord extends ShareBaseRecord {
   type: EncryptedSignerShareType;
 }
 
+export type TSSParamsWithPrv = TSSParams & {
+  prv: string;
+};
+
+export type TSSParamsForMessageWithPrv = TSSParamsForMessage & {
+  prv: string;
+};
+
 export type TSSParams = {
   txRequest: string | TxRequest; // can be either a string or TxRequest
-  prv: string;
   reqId: IRequestTracer;
   apiVersion?: ApiVersion;
 };

@@ -12,6 +12,7 @@ export interface DecryptOptions {
 export interface EncryptOptions {
   input: string;
   password?: string;
+  adata?: string;
 }
 
 export interface GetSharingKeyOptions {

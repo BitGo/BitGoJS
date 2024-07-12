@@ -1017,6 +1017,18 @@
     monocle-ts "2.3.13"
     newtype-ts "0.3.5"
 
+"@bitgo/public-types@2.29.0":
+  version "2.29.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/public-types/-/public-types-2.29.0.tgz#ebf8bf64baee70d00066df7374bbe7662f38565d"
+  integrity sha512-Vk2FOxiAYD5SuwiQsdnGFtQKfrnr0ZvJky/g5nrUyjRoFwZTfcLUH49HusVzLt3+1oQlXkcikZEkQsVMZJo8IQ==
+  dependencies:
+    "@api-ts/io-ts-http" "1.0.0"
+    fp-ts "2.16.2"
+    io-ts "2.1.3"
+    io-ts-types "0.5.16"
+    monocle-ts "2.3.13"
+    newtype-ts "0.3.5"
+
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
   resolved "https://registry.yarnpkg.com/@brandonblack/musig/-/musig-0.0.1-alpha.1.tgz#0895f59977bedf519099ff6e2fcbcbced30bc761"

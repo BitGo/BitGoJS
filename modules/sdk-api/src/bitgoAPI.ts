@@ -653,11 +653,11 @@ export class BitGoAPI implements BitGoBase {
    * Utility function to encrypt locally.
    */
   encrypt(params: EncryptOptions): string {
-    common.validateParams(params, ['input', 'password'], []);
+    common.validateParams(params, ['input', 'password'], ['adata']);
     if (!params.password) {
       throw new Error(`cannot encrypt without password`);
     }
-    return encrypt(params.password, params.input);
+    return encrypt(params.password, params.input, { adata: params.adata });
   }
 
   /**
