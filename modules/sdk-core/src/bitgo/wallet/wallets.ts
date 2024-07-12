@@ -795,7 +795,7 @@ export class Wallets implements IWallets {
         .result();
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
-      if (multisigTypeVersion === 'MPCv2') {
+      if (this.baseCoin.isEVM() && multisigTypeVersion === 'MPCv2') {
         walletVersion = 5;
       }
     }
