@@ -17,6 +17,7 @@ const WALLET_ID = 698983191;
 
 export class Transaction extends BaseTransaction {
   public recipient: Recipient;
+  public bounceable: boolean;
   public message: string;
   seqno: number;
   expireTime: number;
@@ -27,6 +28,7 @@ export class Transaction extends BaseTransaction {
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
+    this.bounceable = false;
   }
 
   canSign(key: BaseKey): boolean {
@@ -38,17 +40,22 @@ export class Transaction extends BaseTransaction {
   }
 
   toJson(): TxData {
-    const non_bouncable = new TonWeb.Address(this.recipient.address).toString(true, true, false);
+    const otherFormat = new TonWeb.Address(this.recipient.address).toString(
+      true,
+      true,
+      !new TonWeb.Address(this.recipient.address).isBounceable
+    );
     return {
       id: this._id as string,
       sender: this.sender,
       destination: this.recipient.address,
-      destinationAlias: non_bouncable,
+      destinationAlias: otherFormat,
       amount: this.recipient.amount,
       seqno: this.seqno,
       expirationTime: this.expireTime,
       publicKey: this.publicKey,
       signature: this._signatures[0],
+      bounceable: this.bounceable,
     };
   }
 
@@ -105,7 +112,7 @@ export class Transaction extends BaseTransaction {
       new TonWeb.Address(address),
       new BN(amount),
       true,
-      false
+      this.bounceable
     );
     return TonWeb.Contract.createCommonMsgInfo(orderHeader, undefined, payloadCell);
   }
@@ -155,8 +162,8 @@ export class Transaction extends BaseTransaction {
 
       const parsed = this.parseTransfer(cell);
       parsed.value = parsed.value.toString();
-      parsed.fromAddress = parsed.fromAddress.toString(true, true, true);
-      parsed.toAddress = parsed.toAddress.toString(true, true, true);
+      parsed.fromAddress = parsed.fromAddress.toString(true, true);
+      parsed.toAddress = parsed.toAddress.toString(true, true, this.bounceable);
       this.sender = parsed.fromAddress;
       this.recipient = { address: parsed.toAddress, amount: parsed.value };
       this.seqno = parsed.seqno;

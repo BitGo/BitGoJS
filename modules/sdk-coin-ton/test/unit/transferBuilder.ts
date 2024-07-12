@@ -10,7 +10,7 @@ import TonWeb from 'tonweb';
 describe('Ton Transfer Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tton'));
   it('should build a unsigned transfer tx', async function () {
-    const txId = 'jW8_S7Cu9Xed5SniogjsskOy5vSBKz2qWRdgEw3VQwM='.replace(/\//g, '_').replace(/\+/g, '-');
+    const txId = 'jQhv4EPr4l-nZ8AfzSdVUSftfX2B8Qo0TwMBstsdpcs='.replace(/\//g, '_').replace(/\+/g, '-');
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sender(testData.sender.address);
     txBuilder.sequenceNumber(0);
@@ -20,6 +20,7 @@ describe('Ton Transfer Builder', () => {
     txBuilder.setMessage('test');
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.Send);
+    should.equal(tx.toJson().bounceable, false);
     tx.inputs.length.should.equal(1);
     tx.inputs[0].should.deepEqual({
       address: testData.sender.address,
@@ -36,7 +37,40 @@ describe('Ton Transfer Builder', () => {
     const rawTx = tx.toBroadcastFormat();
     console.log(rawTx);
     rawTx.should.equal(
-      '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'
+      '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'
+    );
+  });
+
+  it('should build a unsigned transfer tx with bounceable flag', async function () {
+    const txId = 'gMLc2d3RLcR-oLQLx_16Z1a2oyepCd4EJ10E33VunZw='.replace(/\//g, '_').replace(/\+/g, '-');
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.sender.address);
+    txBuilder.sequenceNumber(0);
+    txBuilder.publicKey(testData.sender.publicKey);
+    txBuilder.expireTime(1234567890);
+    txBuilder.send(testData.recipients[0]);
+    txBuilder.setMessage('test');
+    txBuilder.bounceable(true);
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.Send);
+    should.equal(tx.toJson().bounceable, true);
+    tx.inputs.length.should.equal(1);
+    tx.inputs[0].should.deepEqual({
+      address: testData.sender.address,
+      value: testData.recipients[0].amount,
+      coin: 'tton',
+    });
+    tx.outputs.length.should.equal(1);
+    tx.outputs[0].should.deepEqual({
+      address: testData.recipients[0].address,
+      value: testData.recipients[0].amount,
+      coin: 'tton',
+    });
+    tx.id.should.equal(txId);
+    const rawTx = tx.toBroadcastFormat();
+    console.log(rawTx);
+    rawTx.should.equal(
+      'te6cckECGAEAA7cAAuGIADZN0H0n1tz6xkYgWqJSRmkURKYajjEgXeawBo9cifPIGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACmpoxdJlgLSAAAAAAADgEXAgE0AhYBFP8A9KQT9LzyyAsDAgEgBBECAUgFCALm0AHQ0wMhcbCSXwTgItdJwSCSXwTgAtMfIYIQcGx1Z70ighBkc3RyvbCSXwXgA/pAMCD6RAHIygfL/8nQ7UTQgQFA1yH0BDBcgQEI9ApvoTGzkl8H4AXTP8glghBwbHVnupI4MOMNA4IQZHN0crqSXwbjDQYHAHgB+gD0BDD4J28iMFAKoSG+8uBQghBwbHVngx6xcIAYUATLBSbPFlj6Ahn0AMtpF8sfUmDLPyDJgED7AAYAilAEgQEI9Fkw7UTQgQFA1yDIAc8W9ADJ7VQBcrCOI4IQZHN0coMesXCAGFAFywVQA88WI/oCE8tqyx/LP8mAQPsAkl8D4gIBIAkQAgEgCg8CAVgLDAA9sp37UTQgQFA1yH0BDACyMoHy//J0AGBAQj0Cm+hMYAIBIA0OABmtznaiaEAga5Drhf/AABmvHfaiaEAQa5DrhY/AABG4yX7UTQ1wsfgAWb0kK29qJoQICga5D6AhhHDUCAhHpJN9KZEM5pA+n/mDeBKAG3gQFImHFZ8xhAT48oMI1xgg0x/TH9MfAvgju/Jk7UTQ0x/TH9P/9ATRUUO68qFRUbryogX5AVQQZPkQ8qP4ACSkyMsfUkDLH1Iwy/9SEPQAye1U+A8B0wchwACfbFGTINdKltMH1AL7AOgw4CHAAeMAIcAC4wABwAORMOMNA6TIyx8Syx/L/xITFBUAbtIH+gDU1CL5AAXIygcVy//J0Hd0gBjIywXLAiLPFlAF+gIUy2sSzMzJc/sAyEAUgQEI9FHypwIAcIEBCNcY+gDTP8hUIEeBAQj0UfKnghBub3RlcHSAGMjLBcsCUAbPFlAE+gIUy2oSyx/LP8lz+wACAGyBAQjXGPoA0z8wUiSBAQj0WfKnghBkc3RycHSAGMjLBcsCUAXPFlAD+gITy2rLHxLLP8lz+wAACvQAye1UAFEAAAAAKamjF8DDudwJkyEh7jUbJEjFCjriVxsSlRJFyF872V1eegb4QAB4YgAaRefBOjTi/hwqDjv+7I6nGj9WEAe3ls/rFuBEQvggr6A613oAAAAAAAAAAAAAAAAAAAAAAAB0ZXN0mIHxPg=='
     );
   });
 
@@ -53,11 +87,11 @@ describe('Ton Transfer Builder', () => {
     should.equal(builtTx.toBroadcastFormat(), testData.signedTransaction.tx);
     builtTx.inputs.length.should.equal(1);
     builtTx.outputs.length.should.equal(1);
-    jsonTx.sender.should.equal('EQAhNl4b31yOQ5YFIJiCxSVY_L2Wpcuwt2Zerzu70JUtQCRu');
-    jsonTx.destination.should.equal('EQD6Tm5rybJHqMflQkjpCRB7Lm5QpGqFoYwiLqMjPtaqPSdZ');
+    jsonTx.sender.should.equal('UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg');
+    jsonTx.destination.should.equal('UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD');
     jsonTx.amount.should.equal('10000000');
-    jsonTx.seqno.should.equal(16);
-    jsonTx.expirationTime.should.equal(1702309438);
+    jsonTx.seqno.should.equal(6);
+    jsonTx.expirationTime.should.equal(1695997582);
   });
 
   xit('should build a signed transfer tx and submit onchain', async function () {
@@ -123,13 +157,14 @@ describe('Ton Transfer Builder', () => {
     should.equal(tx.toBroadcastFormat(), tx2.toBroadcastFormat());
   });
 
-  it('should build transfer tx for non-bouncable address', async function () {
+  it('should build transfer tx for non-bounceable address', async function () {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sender(testData.sender.address);
     txBuilder.sequenceNumber(0);
     txBuilder.publicKey(testData.sender.publicKey);
     txBuilder.expireTime(1234567890);
     const address = 'UQAWzEKcdnykvXfUNouqdS62tvrp32bCxuKS6eQrS6ISgZ8t';
+    const otherFormat = 'EQAWzEKcdnykvXfUNouqdS62tvrp32bCxuKS6eQrS6ISgcLo';
     const amount = '10000000';
     txBuilder.send({ address, amount });
     txBuilder.setMessage('test');
@@ -152,6 +187,6 @@ describe('Ton Transfer Builder', () => {
     const builder2 = factory.from(tx.toBroadcastFormat());
     const tx2 = await builder2.build();
     const txJson2 = tx2.toJson();
-    txJson2.destinationAlias.should.equal(address);
+    txJson2.destinationAlias.should.equal(otherFormat);
   });
 });
