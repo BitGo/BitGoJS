@@ -86,7 +86,7 @@ export class Ton extends BaseCoin {
     if (txParams.recipients !== undefined) {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
         return {
-          address: new TonWeb.Address(recipient.address).toString(true, true, transaction.bounceable),
+          address: new TonWeb.Address(recipient.address).toString(true, true),
           amount: BigInt(recipient.amount),
         };
       });
