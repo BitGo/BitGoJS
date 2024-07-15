@@ -11059,6 +11059,62 @@ export const coins = CoinMap.fromCoins([
     '0x9678e42cebeb63f23197d726b29b1cb20d0064e5',
     UnderlyingAsset['bsc:iotx']
   ),
+  bscToken(
+    'bf315ef3-f981-46df-a23f-edd985c8aa24',
+    'bsc:auto',
+    'AUTOv2',
+    18,
+    '0xa184088a740c695e156f91f5cc086a06bb78b827',
+    UnderlyingAsset['bsc:auto']
+  ),
+  bscToken(
+    '67cbca2d-d38c-4b1b-9db7-9f77e418b4ef',
+    'bsc:fet',
+    'Fetch',
+    18,
+    '0x031b41e504677879370e9dbcf937283a8691fa7f',
+    UnderlyingAsset['bsc:fet']
+  ),
+  bscToken(
+    '5bc5ce03-b173-4e77-a862-1142c997d184',
+    'bsc:kas',
+    'Kaspa',
+    18,
+    '0x51e72dd1f2628295cc2ef931cb64fdbdc3a0c599',
+    UnderlyingAsset['bsc:kas']
+  ),
+  bscToken(
+    '084ea788-8e0a-43b0-b8a5-c45c92853235',
+    'bsc:lit',
+    'Litentry',
+    18,
+    '0xb59490ab09a0f526cc7305822ac65f2ab12f9723',
+    UnderlyingAsset['bsc:lit']
+  ),
+  bscToken(
+    'cd17858d-0316-4be8-b81b-06226c78b291',
+    'bsc:mana',
+    'Decentraland',
+    18,
+    '0x26433c8127d9b4e9b71eaa15111df99ea2eeb2f8',
+    UnderlyingAsset['bsc:mana']
+  ),
+  bscToken(
+    'b1c4b480-6399-4d61-a170-a5e9dfd37355',
+    'bsc:shib',
+    'Binance-Peg SHIBA INU Token',
+    18,
+    '0x2859e4544c4bb03966803b044a93563bd2d0dd4d',
+    UnderlyingAsset['bsc:shib']
+  ),
+  bscToken(
+    '6d6b134b-6482-4b41-9d7f-027619395d69',
+    'bsc:sxp',
+    'Swipe',
+    18,
+    '0x47bead2563dcbf3bf2c9407fea4dc236faba485a',
+    UnderlyingAsset['bsc:sxp']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -16152,6 +16208,182 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xf6372cdb9c1d3674e83842e3800f2a62ac9f3c66',
     UnderlyingAsset['polygon:iotx']
+  ),
+  polygonErc20(
+    '354c16d3-964e-4bc7-beb8-a3124e2d924a',
+    'polygon:agix',
+    'SingularityNET Token',
+    18,
+    '0x190eb8a183d22a4bdf278c6791b152228857c033',
+    UnderlyingAsset['polygon:agix']
+  ),
+  polygonErc20(
+    'd04c6fdb-9963-423a-ada1-5d8ce9074c16',
+    'polygon:avax',
+    'Avalanche Token',
+    18,
+    '0x2c89bbc92bd86f8075d1decc58c7f4e0107f286b',
+    UnderlyingAsset['polygon:avax']
+  ),
+  polygonErc20(
+    '236cbc31-69fc-4ac6-875f-465cba0525d1',
+    'polygon:band',
+    'BandToken',
+    18,
+    '0xa8b1e0764f85f53dfe21760e8afe5446d82606ac',
+    UnderlyingAsset['polygon:band']
+  ),
+  polygonErc20(
+    '7d6d316a-acd0-4c06-84eb-7a9baeee26e0',
+    'polygon:blz',
+    'Bluzelle',
+    18,
+    '0x438b28c5aa5f00a817b7def7ce2fb3d5d1970974',
+    UnderlyingAsset['polygon:blz']
+  ),
+  polygonErc20(
+    '166becd4-c81d-44c9-8803-9741eb5ea73d',
+    'polygon:bnb',
+    'BNB',
+    18,
+    '0x3ba4c387f786bfee076a58914f5bd38d668b42c3',
+    UnderlyingAsset['polygon:bnb']
+  ),
+  polygonErc20(
+    '23aa9547-505f-4031-a411-77f0b16a33ba',
+    'polygon:bnt',
+    'Bancor',
+    18,
+    '0xc26d47d5c33ac71ac5cf9f776d63ba292a4f7842',
+    UnderlyingAsset['polygon:bnt']
+  ),
+  polygonErc20(
+    '859b986a-87e0-40a4-95ab-776a9b12e7a4',
+    'polygon:chz',
+    'chiliZ',
+    18,
+    '0xf1938ce12400f9a761084e7a80d37e732a4da056',
+    UnderlyingAsset['polygon:chz']
+  ),
+  polygonErc20(
+    'fae58013-619f-42f1-ba1a-3f9c42f9446f',
+    'polygon:enj',
+    'EnjinCoin',
+    18,
+    '0x7ec26842f195c852fa843bb9f6d8b583a274a157',
+    UnderlyingAsset['polygon:enj']
+  ),
+  polygonErc20(
+    '8177a473-e9d5-42a6-bd6e-4618e60635aa',
+    'polygon:fet',
+    'Fetch',
+    18,
+    '0x7583feddbcefa813dc18259940f76a02710a8905',
+    UnderlyingAsset['polygon:fet']
+  ),
+  polygonErc20(
+    '83b325c1-3c0d-4bdd-a484-fce000669275',
+    'polygon:forth',
+    'Ampleforth Governance',
+    18,
+    '0x5ecba59dacc1adc5bdea35f38a732823fc3de977',
+    UnderlyingAsset['polygon:forth']
+  ),
+  polygonErc20(
+    'ccc56956-2b75-4f81-b66c-85675a9ff8c8',
+    'polygon:glm',
+    'Golem Network Token',
+    18,
+    '0x0b220b82f3ea3b7f6d9a1d8ab58930c064a2b5bf',
+    UnderlyingAsset['polygon:glm']
+  ),
+  polygonErc20(
+    '07b3747b-5a16-4cbc-95c6-47c636c62cc8',
+    'polygon:gno',
+    'Gnosis',
+    18,
+    '0x5ffd62d3c3ee2e81c00a7b9079fb248e7df024a8',
+    UnderlyingAsset['polygon:gno']
+  ),
+  polygonErc20(
+    '828af6bd-3837-444b-8c99-931ec3c543be',
+    'polygon:gohm',
+    'Governance OHM',
+    18,
+    '0xd8ca34fd379d9ca3c6ee3b3905678320f5b45195',
+    UnderlyingAsset['polygon:gohm']
+  ),
+  polygonErc20(
+    '255126e3-d3bf-4000-9aa7-21c91dca5618',
+    'polygon:gtc',
+    'Gitcoin (PoS)',
+    18,
+    '0xdb95f9188479575f3f718a245eca1b3bf74567ec',
+    UnderlyingAsset['polygon:gtc']
+  ),
+  polygonErc20(
+    '0bddadf3-9817-416b-848c-3d8a08ecc151',
+    'polygon:gusd',
+    'Gemini dollar',
+    2,
+    '0xc8a94a3d3d2dabc3c1caffffdca6a7543c3e3e65',
+    UnderlyingAsset['polygon:gusd']
+  ),
+  polygonErc20(
+    '0942e4bb-540a-4fe9-a5ff-d5783fa773c9',
+    'polygon:hot',
+    'HoloToken',
+    18,
+    '0x0c51f415cf478f8d08c246a6c6ee180c5dc3a012',
+    UnderlyingAsset['polygon:hot']
+  ),
+  polygonErc20(
+    '0f874c14-89d7-4245-9caf-efbdd8c54e6f',
+    'polygon:inj',
+    'Injective Token',
+    18,
+    '0x4e8dc2149eac3f3def36b1c281ea466338249371',
+    UnderlyingAsset['polygon:inj']
+  ),
+  polygonErc20(
+    '02481e9a-f70b-47aa-9bfd-2bbaf5494a04',
+    'polygon:lit',
+    'Litentry',
+    18,
+    '0xe6e320b7bb22018d6ca1f4d8cea1365ef5d25ced',
+    UnderlyingAsset['polygon:lit']
+  ),
+  polygonErc20(
+    'f5547131-3a1c-4894-a47c-0d326241cfa6',
+    'polygon:lrc',
+    'LoopringCoin V2',
+    18,
+    '0x84e1670f61347cdaed56dcc736fb990fbb47ddc1',
+    UnderlyingAsset['polygon:lrc']
+  ),
+  polygonErc20(
+    '5d78d4ee-aca2-4dff-ab61-b6e2a1bacb6d',
+    'polygon:mana',
+    'Decentraland',
+    18,
+    '0xa1c57f48f0deb89f569dfbe6e2b7f46d33606fd4',
+    UnderlyingAsset['polygon:mana']
+  ),
+  polygonErc20(
+    '56a8d850-e0b4-4bbf-961a-83325897d1df',
+    'polygon:shib',
+    'SHIBA INU (PoS)',
+    18,
+    '0x6f8a06447ff6fcf75d803135a7de15ce88c1d4ec',
+    UnderlyingAsset['polygon:shib']
+  ),
+  polygonErc20(
+    '78a87c7d-4737-43a4-8e37-8f07c8cdea66',
+    'polygon:sxp',
+    'Swipe',
+    18,
+    '0x6abb753c1893194de4a83c6e8b4eadfc105fd5f5',
+    UnderlyingAsset['polygon:sxp']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
