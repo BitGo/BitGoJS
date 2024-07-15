@@ -18,5 +18,6 @@ export {
   SolCoin,
   HederaToken,
   TronErc20Coin,
+  SuiCoin,
 } from './account';
 export { CoinMap } from './map';
