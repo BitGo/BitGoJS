@@ -161,6 +161,7 @@ export interface RecreateMpcOptions extends Omit<CreateMpcOptions, 'retrofit' | 
   walletId: string;
   passphrase: string;
   otp: string;
+  enterprise: string;
   encryptedMaterial: {
     encryptedUserKey: string;
     encryptedBackupKey: string;
