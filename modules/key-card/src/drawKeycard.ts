@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import * as QRCode from 'qrcode';
-import { splitKeys } from './utils';
 import { IDrawKeyCard } from './types';
+import { splitKeys } from './utils';
 
 enum KeyCurveName {
   ed25519 = 'EDDSA',
@@ -68,6 +68,27 @@ function drawOnePageOfQrCodes(
   return qrIndex + 1;
 }
 
+function computeKeyCardImageDimensions(keyCardImage: HTMLImageElement) {
+  // Max dimensions stablished by fixed available PDF space
+  const KEY_CARD_IMAGE_MAX_DIMENSIONS = {
+    width: 303,
+    height: 40,
+  };
+
+  const { width: imgWidth, height: imgHeight } = keyCardImage;
+  const { width: maxWidth, height: maxHeight } = KEY_CARD_IMAGE_MAX_DIMENSIONS;
+
+  // Try scaling ratio based on width
+  const wRatio = imgWidth / maxWidth;
+  let finalRatio = wRatio;
+
+  // If resized height exceeds the available height space, base ratio also on height
+  if (imgHeight / finalRatio > maxHeight) {
+    finalRatio = imgHeight / maxHeight;
+  }
+  return [imgWidth / finalRatio, imgHeight / finalRatio];
+}
+
 export async function drawKeycard({
   activationCode,
   questions,
@@ -89,7 +110,8 @@ export async function drawKeycard({
   y = moveDown(y, 30);
 
   if (keyCardImage) {
-    doc.addImage(keyCardImage, left(0), y, 303, 40);
+    const [imgWidth, imgHeight] = computeKeyCardImageDimensions(keyCardImage);
+    doc.addImage(keyCardImage, left(0), y, imgWidth, imgHeight);
   }
 
   // Activation Code
