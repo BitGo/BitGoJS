@@ -96,6 +96,12 @@ export interface XrpCoinConstructorOptions extends AccountConstructorOptions {
   domain: string;
 }
 
+export interface SuiCoinConstructorOptions extends AccountConstructorOptions {
+  packageId: string;
+  module: string;
+  symbol: string;
+}
+
 type FiatCoinName = `fiat${string}` | `tfiat${string}`;
 export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
   name: FiatCoinName;
@@ -411,6 +417,22 @@ export class XrpCoin extends AccountCoinToken {
     this.domain = options.domain as string;
     this.currencyCode = options.currencyCode;
     this.issuerAddress = options.issuerAddress;
+  }
+}
+
+export class SuiCoin extends AccountCoinToken {
+  public packageId: string;
+  public module: string;
+  public symbol: string;
+
+  constructor(options: SuiCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.packageId = options.packageId;
+    this.module = options.module;
+    this.symbol = options.symbol;
   }
 }
 
@@ -2072,6 +2094,109 @@ export function txrpToken(
     prefix,
     suffix,
     network
+  );
+}
+
+/**
+ * Factory function for sui token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param packageId PackageId of this token
+ * @param module The module of the package with id `packageId`
+ * @param symbol Identifies the coin defined in the module `module` of the package with id `packageId`
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to SUI main network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function suiToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  packageId: string,
+  module: string,
+  symbol: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.sui,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+): Readonly<SuiCoin> {
+  return Object.freeze(
+    new SuiCoin({
+      id,
+      name,
+      fullName,
+      network,
+      packageId,
+      module,
+      symbol,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.SUI,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet sui token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param packageId PackageId of this token
+ * @param module The module of the package with id `packageId`
+ * @param symbol Identifies the coin defined in the module `module` of the package with id `packageId`
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to SUI test network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+
+export function tsuiToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  packageId: string,
+  module: string,
+  symbol: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.sui,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+): Readonly<SuiCoin> {
+  return suiToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    packageId,
+    module,
+    symbol,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
   );
 }
 

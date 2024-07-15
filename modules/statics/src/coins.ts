@@ -222,6 +222,7 @@ const SUI_FEATURES = [
   CoinFeature.STAKING,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
+  CoinFeature.SUPPORTS_TOKENS,
 ];
 const TRX_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
