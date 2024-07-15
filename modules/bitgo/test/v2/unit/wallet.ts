@@ -3138,6 +3138,8 @@ describe('V2 Wallet:', function () {
         messages: [
           {
             state: 'signed',
+            messageRaw: 'hello world',
+            derivationPath: 'm/0',
             signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
             combineSigShare: '0:rrr:sss:3',
             txHash,
@@ -3268,6 +3270,8 @@ describe('V2 Wallet:', function () {
         messages: [
           {
             state: 'signed',
+            messageRaw: 'hello world',
+            derivationPath: 'm/0',
             signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
             combineSigShare: '0:rrr:sss:3',
             txHash,

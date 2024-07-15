@@ -30,7 +30,7 @@ export enum DkgState {
 }
 
 export enum DsgState {
-  Uninitialized = 0,
+  Uninitialized,
   Round1,
   Round2,
   Round3,

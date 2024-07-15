@@ -41,7 +41,8 @@ import {
   RequestType,
   SignatureShareRecord,
   TSSParams,
-  TSSParamsForMessage, TSSParamsForMessageWithPrv,
+  TSSParamsForMessage,
+  TSSParamsForMessageWithPrv,
   TSSParamsWithPrv,
   TxRequest,
 } from '../baseTypes';
@@ -393,7 +394,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    */
   getMpcV2RetrofitDataFromMpcV1Keys(params: { mpcv1UserKeyShare: string; mpcv1BackupKeyShare: string }): {
     mpcv2UserKeyShare: DklsTypes.RetrofitData;
-    mpcv2BakcupKeyShare: DklsTypes.RetrofitData;
+    mpcv2BackupKeyShare: DklsTypes.RetrofitData;
   } {
     const mpc = new Ecdsa();
     const xiList = [
@@ -408,7 +409,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         xiList,
         mpc,
       }),
-      mpcv2BakcupKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
+      mpcv2BackupKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
         mpcv1PartyKeyShare: params.mpcv1BackupKeyShare,
         mpcv1PartyIndex: 2,
         xiList,
@@ -503,7 +504,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       });
 
       const userSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.USER, undefined, retrofitData.mpcv2UserKeyShare);
-      const backupSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.BACKUP, undefined, retrofitData.mpcv2BakcupKeyShare);
+      const backupSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.BACKUP, undefined, retrofitData.mpcv2BackupKeyShare);
 
       return { userSession, backupSession };
     }
@@ -641,7 +642,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     return this.signRequestBase(params, requestType);
   }
 
-  private async signRequestBase(params: TSSParamsWithPrv | TSSParamsForMessageWithPrv, requestType: RequestType): Promise<TxRequest> {
+  private async signRequestBase(
+    params: TSSParamsWithPrv | TSSParamsForMessageWithPrv,
+    requestType: RequestType
+  ): Promise<TxRequest> {
     const userKeyShare = Buffer.from(params.prv, 'base64');
     const txRequest: TxRequest =
       typeof params.txRequest === 'string'
@@ -650,6 +654,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     let txOrMessageToSign;
     let derivationPath;
+    let bufferContent;
     const [userGpgKey, bitgoGpgPubKey] = await Promise.all([
       generateGPGKeyPair('secp256k1'),
       this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true, params.reqId).then(
@@ -666,10 +671,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
       txOrMessageToSign = unsignedTx.signableHex;
       derivationPath = unsignedTx.derivationPath;
+      bufferContent = Buffer.from(txOrMessageToSign, 'hex');
     } else if (requestType === RequestType.message) {
-      assert(txRequest.messages?.length, 'Unable to find messages in the txRequest');
       txOrMessageToSign = txRequest.messages![0].messageRaw;
       derivationPath = txRequest.messages![0].derivationPath;
+      bufferContent = Buffer.from(txOrMessageToSign);
     } else {
       throw new Error('Invalid request type');
     }
@@ -681,7 +687,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       hash = createKeccakHash('keccak256') as Hash;
     }
     // check what the encoding is supposed to be for message
-    const hashBuffer = hash.update(Buffer.from(txOrMessageToSign, 'hex')).digest();
+    const hashBuffer = hash.update(bufferContent).digest();
     const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
@@ -698,9 +704,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-    assert(latestTxRequest.transactions || latestTxRequest.messages);
 
-    const bitgoToUserMessages1And2 = latestTxRequest.transactions![0].signatureShares;
+    assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
+
+    let bitgoToUserMessages1And2: any;
+    if (requestType === RequestType.tx) {
+      bitgoToUserMessages1And2 = latestTxRequest.transactions![0].signatureShares;
+    } else {
+      bitgoToUserMessages1And2 = latestTxRequest.messages![0].signatureShares;
+    }
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundOne = JSON.parse(
       bitgoToUserMessages1And2[bitgoToUserMessages1And2.length - 1].share
@@ -742,9 +754,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-    assert(latestTxRequest.transactions);
+    assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
 
-    const txRequestSignatureShares = latestTxRequest.transactions[0].signatureShares;
+    const txRequestSignatureShares =
+      requestType === RequestType.tx
+        ? latestTxRequest.transactions![0].signatureShares
+        : latestTxRequest.messages![0].signatureShares;
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundTwo = JSON.parse(
       txRequestSignatureShares[txRequestSignatureShares.length - 1].share
@@ -788,7 +803,6 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     );
 
     return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, RequestType.tx, params.reqId);
-
   }
 
   // #endregion
