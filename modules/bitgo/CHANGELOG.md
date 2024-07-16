@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.15.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.14.2...bitgo@38.15.0) (2024-07-16)
+
+### Bug Fixes
+
+- register sui tokens in coinFactory ([8780211](https://github.com/BitGo/BitGoJS/commit/8780211db29df408057a821a1116a90eedcedb71))
+- **sdk-coin-xlm:** rename test ([54b8fa7](https://github.com/BitGo/BitGoJS/commit/54b8fa713a6c3a62d8471121d439eaa28d77f8fd))
+
+### Features
+
+- **sdk-coin-xlm:** recover root key support and refactor utils ([6bf1367](https://github.com/BitGo/BitGoJS/commit/6bf136744b1477b1fa92e0e53cec7ad0233a6d2f))
+- **sdk-core:** implemented signing with external signer for MPCv2 ([b6cb2b0](https://github.com/BitGo/BitGoJS/commit/b6cb2b021bc64efc34dca5b97a0156719c804283))
+- support specifying unspents in Ada sendmany calls ([2bb92dd](https://github.com/BitGo/BitGoJS/commit/2bb92dde3b967d69461678aa7b04029fd89dd7c8))
+
 ## [38.14.2](https://github.com/BitGo/BitGoJS/compare/bitgo@38.14.1...bitgo@38.14.2) (2024-07-04)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.3.3...@bitgo/sdk-coin-sol@4.4.0) (2024-07-16)
+
+### Features
+
+- **sdk-coin-sol:** add sol close ATA recovery support along with token recovery ([76c76b7](https://github.com/BitGo/BitGoJS/commit/76c76b7a11c0a9fd2a252c0931ef757960b72122))
+
 ## [4.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.3.2...@bitgo/sdk-coin-sol@4.3.3) (2024-07-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

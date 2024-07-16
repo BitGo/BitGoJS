@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.0.7...@bitgo/express@10.1.0) (2024-07-16)
+
+### Features
+
+- **express:** add external signer base code for MPCv2 ([8fe9ce0](https://github.com/BitGo/BitGoJS/commit/8fe9ce03cf385d781941c55eb1055d496928da1e))
+- **sdk-core:** implemented signing with external signer for MPCv2 ([b6cb2b0](https://github.com/BitGo/BitGoJS/commit/b6cb2b021bc64efc34dca5b97a0156719c804283))
+
 ## [10.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.0.6...@bitgo/express@10.0.7) (2024-07-04)
 
 **Note:** Version bump only for package @bitgo/express

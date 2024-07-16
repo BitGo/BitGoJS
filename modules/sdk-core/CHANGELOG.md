@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.4.1...@bitgo/sdk-core@27.5.0) (2024-07-16)
+
+### Bug Fixes
+
+- **sdk-core:** enterprise id is required for recraete mpc ([0c693f3](https://github.com/BitGo/BitGoJS/commit/0c693f37e1d12de5e334b18368f80382d8fbd4ec))
+
+### Features
+
+- **root:** add Adata validation for DSG session validation ([2f01009](https://github.com/BitGo/BitGoJS/commit/2f0100912f7258625228ee058092900be8693d55))
+- sdk recreate keychain for mpc v1 to v2 ([eded21f](https://github.com/BitGo/BitGoJS/commit/eded21f92210599b69f273f32512e3f974cec3c4))
+- **sdk-core:** add base utils for MPCv2 external signer ([3928f9b](https://github.com/BitGo/BitGoJS/commit/3928f9bb3b271bc6020824fb554a013663c521b9))
+- **sdk-core:** implemented signing with external signer for MPCv2 ([b6cb2b0](https://github.com/BitGo/BitGoJS/commit/b6cb2b021bc64efc34dca5b97a0156719c804283))
+- support specifying unspents in Ada sendmany calls ([2bb92dd](https://github.com/BitGo/BitGoJS/commit/2bb92dde3b967d69461678aa7b04029fd89dd7c8))
+
 ## [27.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.4.0...@bitgo/sdk-core@27.4.1) (2024-07-04)
 
 **Note:** Version bump only for package @bitgo/sdk-core

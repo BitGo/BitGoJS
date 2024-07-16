@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.10.0...@bitgo/abstract-utxo@8.11.0) (2024-07-16)
+
+### Bug Fixes
+
+- disable PSBT for zcash ([f7c79ca](https://github.com/BitGo/BitGoJS/commit/f7c79ca7491cf34746b78b8aa4bc74e4305c7dfd))
+
+### Features
+
+- put `changeAddress` in `expectedOutputs` if ([70f3cbf](https://github.com/BitGo/BitGoJS/commit/70f3cbfbdc03e61ecaf1e329beeb7f70170dc683))
+
 # [8.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.9.0...@bitgo/abstract-utxo@8.10.0) (2024-07-04)
 
 ### Bug Fixes
