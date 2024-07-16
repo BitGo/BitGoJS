@@ -19,6 +19,7 @@ import {
   polygonErc20,
   solToken,
   stellarToken,
+  suiToken,
   talgoToken,
   tarbethErc20,
   tavaxErc20,
@@ -33,6 +34,7 @@ import {
   tronToken,
   tsolToken,
   tstellarToken,
+  tsuiToken,
   ttronToken,
   txrpToken,
   tzkethErc20,
@@ -16522,6 +16524,26 @@ export const coins = CoinMap.fromCoins([
     'TST',
     'xrpl.org',
     UnderlyingAsset['txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd']
+  ),
+  suiToken(
+    'f26941b7-1110-4aa7-a2bc-29807297a51c',
+    'sui:deep',
+    'Deepbook',
+    6,
+    '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270',
+    'deep',
+    'DEEP',
+    UnderlyingAsset['sui:deep']
+  ),
+  tsuiToken(
+    '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
+    'tsui:deep',
+    'Deepbook',
+    6,
+    '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8',
+    'deep',
+    'DEEP',
+    UnderlyingAsset['tsui:deep']
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(
