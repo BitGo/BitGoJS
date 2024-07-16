@@ -93,6 +93,7 @@ export function utxo(
 
 const BCH_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
+  CoinFeature.BULK_TRANSACTION,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
