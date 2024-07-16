@@ -2042,6 +2042,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ATRI
   ),
   erc20(
+    '0d0e43eb-2bf0-474c-baf9-97dd9d05d383',
+    'audd',
+    'AUDD',
+    6,
+    '0x4cce605ed955295432958d8951d0b176c10720d5',
+    UnderlyingAsset.AUDD
+  ),
+  erc20(
     '20d977ec-b8a3-49e4-9491-2780ee028342',
     'audf',
     'Forte AUD',
@@ -2954,6 +2962,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.CVX
   ),
   erc20(
+    '70d71dca-8065-4240-85d1-678c4902d972',
+    'cxt',
+    'Covalent X Token',
+    18,
+    '0x7abc8a5768e6be61a6c693a6e4eacb5b60602c4d',
+    UnderlyingAsset.CXT
+  ),
+  erc20(
     '10aff04d-e6b5-4120-b714-8a36a86092ea',
     'czrx',
     'Compound ZRX',
@@ -3299,6 +3315,14 @@ export const coins = CoinMap.fromCoins([
     8,
     '0xed58569d516a5bd37427ebd592a6619c0c581953',
     UnderlyingAsset.EDISON
+  ),
+  erc20(
+    '10c38f26-de82-4662-884e-7f8b0834ef0a',
+    'edlc',
+    'Edelcoin',
+    6,
+    '0xc47ef9b19c3e29317a50f5fbe594eba361dada4a',
+    UnderlyingAsset.EDLC
   ),
   erc20(
     'cb3673da-ef47-4773-867d-77de362590fa',
@@ -5262,6 +5286,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x1b19c19393e2d034d8ff31ff34c81252fcbbee92',
     UnderlyingAsset.OUSG
+  ),
+  erc20(
+    'ddeee3d2-e34e-4bac-9587-77e4295c6fde',
+    'own',
+    'OwnFund DAO',
+    18,
+    '0x3230eddcac29248ec4e0c37975937fe591532675',
+    UnderlyingAsset.OWN
   ),
   erc20(
     '6d8d74dc-087c-499f-b7a8-c04645bef6f8',
@@ -8113,6 +8145,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x57ab1ec28d129707052df4df418d58a2d46d5f51',
     UnderlyingAsset['SYNTH-SUSD']
+  ),
+  erc20(
+    '55110305-8a28-4b0b-9f93-191902a22080',
+    'susde',
+    'Staked USDe',
+    18,
+    '0x9d39a5de30e57443bff2a8307a4256c8797a3497',
+    UnderlyingAsset.SUSDE
   ),
   erc20(
     'fd4d284b-f3eb-4890-ad1f-2d698979b291',
