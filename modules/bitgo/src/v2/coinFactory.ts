@@ -128,6 +128,7 @@ import {
   ZkethToken,
   Lnbtc,
   Tlnbtc,
+  SuiToken,
 } from './coins';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
@@ -304,6 +305,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   });
 
   AdaToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
+    globalCoinFactory.register(name, coinConstructor)
+  );
+
+  SuiToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
     globalCoinFactory.register(name, coinConstructor)
   );
 }

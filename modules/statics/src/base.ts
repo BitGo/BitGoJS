@@ -2008,6 +2008,12 @@ export enum UnderlyingAsset {
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
+
+  // Sui tokens
+  'sui:deep' = 'sui:deep',
+
+  // Sui testnet tokens
+  'tsui:deep' = 'tsui:deep',
 }
 
 /**
