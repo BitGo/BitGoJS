@@ -171,14 +171,14 @@ describe('TON:', function () {
 
     const transferInputsResponse = [
       {
-        address: 'UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg',
+        address: 'EQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Jpl',
         amount: '10000000',
       },
     ];
 
     const transferOutputsResponse = [
       {
-        address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
+        address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
         amount: '10000000',
       },
     ];
