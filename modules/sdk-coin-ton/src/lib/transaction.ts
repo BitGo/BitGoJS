@@ -162,8 +162,8 @@ export class Transaction extends BaseTransaction {
 
       const parsed = this.parseTransfer(cell);
       parsed.value = parsed.value.toString();
-      parsed.fromAddress = parsed.fromAddress.toString(true, true);
-      parsed.toAddress = parsed.toAddress.toString(true, true);
+      parsed.fromAddress = parsed.fromAddress.toString(true, true, true);
+      parsed.toAddress = parsed.toAddress.toString(true, true, true);
       this.sender = parsed.fromAddress;
       this.recipient = { address: parsed.toAddress, amount: parsed.value };
       this.seqno = parsed.seqno;

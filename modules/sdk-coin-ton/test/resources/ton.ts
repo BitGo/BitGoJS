@@ -39,7 +39,7 @@ export const signedTransaction = {
   txId: 'tuyOkyFUMv_neV_FeNBH24Nd4cML2jUgDP4zjGkuOFI=',
   signable: 'k4XUmjB65j3klMXCXdh5Vs3bJZzo3NSfnXK8NIYFayI=',
   recipient: {
-    address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
+    address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
     amount: '10000000',
   },
 };

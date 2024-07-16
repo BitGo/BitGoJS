@@ -87,8 +87,8 @@ describe('Ton Transfer Builder', () => {
     should.equal(builtTx.toBroadcastFormat(), testData.signedTransaction.tx);
     builtTx.inputs.length.should.equal(1);
     builtTx.outputs.length.should.equal(1);
-    jsonTx.sender.should.equal('UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg');
-    jsonTx.destination.should.equal('UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD');
+    jsonTx.sender.should.equal('EQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Jpl');
+    jsonTx.destination.should.equal('EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG');
     jsonTx.amount.should.equal('10000000');
     jsonTx.seqno.should.equal(6);
     jsonTx.expirationTime.should.equal(1695997582);
@@ -163,8 +163,8 @@ describe('Ton Transfer Builder', () => {
     txBuilder.sequenceNumber(0);
     txBuilder.publicKey(testData.sender.publicKey);
     txBuilder.expireTime(1234567890);
-    const address = 'UQAWzEKcdnykvXfUNouqdS62tvrp32bCxuKS6eQrS6ISgZ8t';
-    const otherFormat = 'EQAWzEKcdnykvXfUNouqdS62tvrp32bCxuKS6eQrS6ISgcLo';
+    const address = 'EQAWzEKcdnykvXfUNouqdS62tvrp32bCxuKS6eQrS6ISgcLo';
+    const otherFormat = 'UQAWzEKcdnykvXfUNouqdS62tvrp32bCxuKS6eQrS6ISgZ8t';
     const amount = '10000000';
     txBuilder.send({ address, amount });
     txBuilder.setMessage('test');
