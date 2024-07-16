@@ -17,6 +17,7 @@ import {
   ArbethERC20Token,
   OpethERC20Token,
   ZkethERC20Token,
+  SuiCoin,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -72,6 +73,12 @@ export type XrpTokenConfig = BaseNetworkConfig & {
   domain?: string;
 };
 
+export type SuiTokenConfig = BaseNetworkConfig & {
+  packageId: string;
+  module: string;
+  symbol: string;
+};
+
 export interface Tokens {
   bitcoin: {
     eth: {
@@ -125,6 +132,9 @@ export interface Tokens {
     zketh: {
       tokens: EthLikeTokenConfig[];
     };
+    sui: {
+      tokens: SuiTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -177,6 +187,9 @@ export interface Tokens {
     };
     zketh: {
       tokens: EthLikeTokenConfig[];
+    };
+    sui: {
+      tokens: SuiTokenConfig[];
     };
   };
 }
@@ -455,6 +468,22 @@ const formattedXrpTokens = coins.reduce((acc: XrpTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedSuiTokens = coins.reduce((acc: SuiTokenConfig[], coin) => {
+  if (coin instanceof SuiCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'sui' : 'tsui',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      decimalPlaces: coin.decimalPlaces,
+      packageId: coin.packageId,
+      module: coin.module,
+      symbol: coin.symbol,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -509,6 +538,9 @@ export const tokens: Tokens = {
     xrp: {
       tokens: formattedXrpTokens.filter((token) => token.network === 'Mainnet'),
     },
+    sui: {
+      tokens: formattedSuiTokens.filter((token) => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -562,6 +594,9 @@ export const tokens: Tokens = {
     },
     xrp: {
       tokens: formattedXrpTokens.filter((token) => token.network === 'Testnet'),
+    },
+    sui: {
+      tokens: formattedSuiTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };
