@@ -36,7 +36,7 @@ export class SuiToken extends Sui {
     return this.tokenConfig.network;
   }
 
-  get pacakgeId(): string {
+  get packageId(): string {
     return this.tokenConfig.packageId;
   }
 

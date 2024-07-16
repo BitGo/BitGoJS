@@ -14,15 +14,13 @@ import { Transaction } from './transaction';
 import utils, { isImmOrOwnedObj } from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { StakingProgrammableTransaction, SuiTransactionType, TransferProgrammableTransaction, TxData } from './iface';
+import { SuiProgrammableTransaction, SuiTransactionType, TxData } from './iface';
 import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';
 import { GasData, SuiObjectRef } from './mystenlab/types';
 import { MergeCoinsTransaction } from './mystenlab/builder';
 
-export abstract class TransactionBuilder<
-  T = TransferProgrammableTransaction | StakingProgrammableTransaction
-> extends BaseTransactionBuilder {
+export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends BaseTransactionBuilder {
   protected _transaction: Transaction<T>;
   protected _signatures: Signature[] = [];
   protected _signer: KeyPair;

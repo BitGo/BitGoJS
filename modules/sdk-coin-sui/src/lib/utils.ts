@@ -12,14 +12,12 @@ import { SUI_ADDRESS_LENGTH } from './constants';
 import { isPureArg } from './mystenlab/types/sui-bcs';
 import { BCS, fromB64 } from '@mysten/bcs';
 import {
-  CustomProgrammableTransaction,
   MethodNames,
   RequestAddStake,
   StakingProgrammableTransaction,
+  SuiProgrammableTransaction,
   SuiTransaction,
   SuiTransactionType,
-  TransferProgrammableTransaction,
-  UnstakingProgrammableTransaction,
 } from './iface';
 import { Buffer } from 'buffer';
 import {
@@ -31,6 +29,7 @@ import {
 } from './mystenlab/types';
 import {
   builder,
+  MergeCoinsTransaction,
   MoveCallTransaction,
   ObjectCallArg,
   SplitCoinsTransaction,
@@ -188,6 +187,7 @@ export class Utils implements BaseUtils {
   getTransactionType(suiTransactionType: SuiTransactionType): TransactionType {
     switch (suiTransactionType) {
       case SuiTransactionType.Transfer:
+      case SuiTransactionType.TokenTransfer:
         return TransactionType.Send;
       case SuiTransactionType.AddStake:
         return TransactionType.StakingAdd;
@@ -207,9 +207,17 @@ export class Utils implements BaseUtils {
   getSuiTransactionType(command: TransactionCommandType): SuiTransactionType {
     switch (command.kind) {
       case 'SplitCoins':
+        if ((command as SplitCoinsTransaction).coin.kind === 'GasCoin') {
+          return SuiTransactionType.Transfer;
+        }
+        return SuiTransactionType.TokenTransfer;
       case 'TransferObjects':
-      case 'MergeCoins':
         return SuiTransactionType.Transfer;
+      case 'MergeCoins':
+        if ((command as MergeCoinsTransaction).destination.kind === 'GasCoin') {
+          return SuiTransactionType.Transfer;
+        }
+        return SuiTransactionType.TokenTransfer;
       case 'MoveCall':
         if (command.target.endsWith(MethodNames.RequestAddStake)) {
           return SuiTransactionType.AddStake;
@@ -228,14 +236,7 @@ export class Utils implements BaseUtils {
     }
   }
 
-  getRecipients(
-    tx: SuiTransaction<
-      | TransferProgrammableTransaction
-      | StakingProgrammableTransaction
-      | UnstakingProgrammableTransaction
-      | CustomProgrammableTransaction
-    >
-  ): Recipient[] {
+  getRecipients(tx: SuiTransaction<SuiProgrammableTransaction>): Recipient[] {
     const receipts: Recipient[] = [];
     const splitResults: number[] = [];
     tx.tx.transactions.forEach((transaction) => {

@@ -12,5 +12,7 @@ export { Transaction } from './transaction';
 export { TransferTransaction } from './transferTransaction';
 export { TransactionBuilder } from './transactionBuilder';
 export { TransferBuilder } from './transferBuilder';
+export { TokenTransferTransaction } from './tokenTransferTransaction';
+export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Interface, Utils };

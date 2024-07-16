@@ -10,6 +10,8 @@ import {
   SuiTransactionType,
   TransferProgrammableTransaction,
   UnstakingProgrammableTransaction,
+  SuiProgrammableTransaction,
+  TokenTransferProgrammableTransaction,
 } from './iface';
 import { StakingTransaction } from './stakingTransaction';
 import { TransferTransaction } from './transferTransaction';
@@ -19,6 +21,7 @@ import { UnstakingBuilder } from './unstakingBuilder';
 import { UnstakingTransaction } from './unstakingTransaction';
 import { CustomTransaction } from './customTransaction';
 import { CustomTransactionBuilder } from './customTransactionBuilder';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -26,7 +29,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): TransactionBuilder<TransferProgrammableTransaction | StakingProgrammableTransaction> {
+  from(raw: string): TransactionBuilder<SuiProgrammableTransaction> {
     utils.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
     try {
@@ -76,6 +79,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
+  getTokenTransferBuilder(tx?: Transaction<TokenTransferProgrammableTransaction>): TokenTransferBuilder {
+    return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
   getWalletInitializationBuilder(): void {
     throw new Error('Method not implemented.');
   }
@@ -87,9 +95,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {TransactionBuilder} builder - the builder to be initialized
    * @returns {TransactionBuilder} the builder initialized
    */
-  private initializeBuilder<
-    T extends TransactionBuilder<TransferProgrammableTransaction | StakingProgrammableTransaction>
-  >(tx: Transaction<TransferProgrammableTransaction | StakingProgrammableTransaction> | undefined, builder: T): T {
+  private initializeBuilder<T extends TransactionBuilder<SuiProgrammableTransaction>>(
+    tx: Transaction<SuiProgrammableTransaction> | undefined,
+    builder: T
+  ): T {
     if (tx) {
       builder.initBuilder(tx);
     }
@@ -101,9 +110,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {string} rawTransaction - the raw tx
    * @returns {Transaction} parsedtransaction
    */
-  private parseTransaction(
-    rawTransaction: string
-  ): SuiTransaction<TransferProgrammableTransaction | StakingProgrammableTransaction> {
+  private parseTransaction(rawTransaction: string): SuiTransaction<SuiProgrammableTransaction> {
     return Transaction.deserializeSuiTransaction(rawTransaction);
   }
 }

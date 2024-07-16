@@ -17,11 +17,19 @@ export enum SuiTransactionType {
   AddStake = 'AddStake',
   WithdrawStake = 'WithdrawStake',
   CustomTx = 'CustomTx',
+  TokenTransfer = 'TokenTransfer',
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: BitGoTransactionType;
 }
+
+export type SuiProgrammableTransaction =
+  | TransferProgrammableTransaction
+  | StakingProgrammableTransaction
+  | UnstakingProgrammableTransaction
+  | CustomProgrammableTransaction
+  | TokenTransferProgrammableTransaction;
 
 export interface TxData {
   id?: string;
@@ -29,10 +37,7 @@ export interface TxData {
   expiration: TransactionExpiration;
   gasData: GasData;
   kind: {
-    ProgrammableTransaction:
-      | TransferProgrammableTransaction
-      | StakingProgrammableTransaction
-      | CustomProgrammableTransaction;
+    ProgrammableTransaction: SuiProgrammableTransaction;
   };
 }
 
@@ -64,9 +69,14 @@ export type CustomProgrammableTransaction =
       transactions: TransactionType[];
     };
 
-export interface SuiTransaction<
-  T = TransferProgrammableTransaction | StakingProgrammableTransaction | CustomProgrammableTransaction
-> {
+export type TokenTransferProgrammableTransaction =
+  | ProgrammableTransaction
+  | {
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
+    };
+
+export interface SuiTransaction<T = SuiProgrammableTransaction> {
   id?: string;
   type: SuiTransactionType;
   sender: string;

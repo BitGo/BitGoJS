@@ -6,13 +6,7 @@ import {
   Signature,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
-import {
-  StakingProgrammableTransaction,
-  SuiTransaction,
-  SuiTransactionType,
-  TransferProgrammableTransaction,
-  TxData,
-} from './iface';
+import { SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils, { AppId, Intent, IntentScope, IntentVersion } from './utils';
 import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
@@ -165,9 +159,7 @@ export abstract class Transaction<T> extends BaseTransaction {
     return toB64(dataBytes);
   }
 
-  static deserializeSuiTransaction(
-    serializedTx: string
-  ): SuiTransaction<TransferProgrammableTransaction | StakingProgrammableTransaction> {
+  static deserializeSuiTransaction(serializedTx: string): SuiTransaction<SuiProgrammableTransaction> {
     const data = fromB64(serializedTx);
     const transactionBlock = TransactionBlockDataBuilder.fromBytes(data);
     const inputs = transactionBlock.inputs.map((txInput) => txInput.value);
@@ -200,6 +192,9 @@ export abstract class Transaction<T> extends BaseTransaction {
     }
     if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.WithdrawStake)) {
       return SuiTransactionType.WithdrawStake;
+    }
+    if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.TokenTransfer)) {
+      return SuiTransactionType.TokenTransfer;
     }
     if (transactions.every((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.Transfer)) {
       return SuiTransactionType.Transfer;
