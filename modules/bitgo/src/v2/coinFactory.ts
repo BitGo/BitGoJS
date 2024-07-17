@@ -52,6 +52,7 @@ import {
   Hteth,
   Injective,
   Islm,
+  Lnbtc,
   Ltc,
   Ofc,
   OfcToken,
@@ -66,6 +67,7 @@ import {
   StellarToken,
   Stx,
   Sui,
+  SuiToken,
   Susd,
   Ton,
   Tada,
@@ -99,6 +101,7 @@ import {
   Tia,
   Tinjective,
   Tislm,
+  Tlnbtc,
   Tltc,
   Tosmo,
   Topeth,
@@ -126,9 +129,6 @@ import {
   Zeta,
   Zketh,
   ZkethToken,
-  Lnbtc,
-  Tlnbtc,
-  SuiToken,
 } from './coins';
 
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
