@@ -16,6 +16,7 @@ import {
   KeychainsTriplet,
   GenerateWalletOptions,
   Wallet,
+  isWalletWithKeychains,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
 import { afterEach } from 'mocha';
@@ -604,7 +605,9 @@ describe('V2 Wallets:', function () {
       const wallets = new Wallets(bitgo, tsol);
 
       const res = await wallets.generateWallet(walletParams);
-
+      if (!isWalletWithKeychains(res)) {
+        throw new Error('wallet missing required keychains');
+      }
       res.wallet.label().should.equal(walletParams.label);
       should.equal(res.wallet.type(), walletParams.type);
       res.wallet.toJSON().enterprise.should.equal(walletParams.enterprise);
@@ -685,12 +688,15 @@ describe('V2 Wallets:', function () {
 
       const walletNock = nock('https://bitgo.fakeurl')
         .post('/api/v2/tsol/wallet', walletNockExpected)
-        .reply(200, walletNockExpected);
+        .reply(200, { ...walletNockExpected, responseType: 'WalletWithKeychains' });
 
       const wallets = new Wallets(bitgo, tsol);
 
       const res = await wallets.generateWallet(walletParams);
-
+      if (!isWalletWithKeychains(res)) {
+        throw new Error('wallet missing required keychains');
+      }
+      res.responseType.should.equal('WalletWithKeychains');
       res.wallet.label().should.equal(walletParams.label);
       should.equal(res.wallet.type(), walletParams.type);
       res.wallet.toJSON().enterprise.should.equal(walletParams.enterprise);

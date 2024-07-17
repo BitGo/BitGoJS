@@ -9,27 +9,39 @@ import { CoinFeature } from '@bitgo/statics';
 
 import { sanitizeLegacyPath } from '../../api';
 import * as common from '../../common';
-import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
+import { IBaseCoin, KeychainsTriplet, KeyPair, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
 import { AddKeychainOptions, Keychain } from '../keychain';
-import { promiseProps, RequestTracer } from '../utils';
+import { decodeOrElse, promiseProps, RequestTracer } from '../utils';
 import {
   AcceptShareOptions,
   AddWalletOptions,
   GenerateBaseMpcWalletOptions,
+  GenerateLightningWalletOptions,
+  GenerateLightningWalletOptionsCodec,
   GenerateMpcWalletOptions,
   GenerateSMCMpcWalletOptions,
   GenerateWalletOptions,
   GetWalletByAddressOptions,
   GetWalletOptions,
   IWallets,
+  LightningWalletWithKeychains,
   ListWalletOptions,
   UpdateShareOptions,
   WalletWithKeychains,
 } from './iWallets';
 import { Wallet } from './wallet';
 import { TssSettings } from '@bitgo/public-types';
+
+/**
+ * Check if a wallet is a WalletWithKeychains
+ */
+export function isWalletWithKeychains(
+  wallet: WalletWithKeychains | LightningWalletWithKeychains
+): wallet is WalletWithKeychains {
+  return wallet.responseType === 'WalletWithKeychains';
+}
 
 export class Wallets implements IWallets {
   private readonly bitgo: BitGoBase;
@@ -168,6 +180,58 @@ export class Wallets implements IWallets {
     };
   }
 
+  private async generateLightningWallet(params: GenerateLightningWalletOptions): Promise<LightningWalletWithKeychains> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    const { label, passphrase, enterprise, passcodeEncryptionCode } = params;
+
+    const keychainPromises = ([undefined, 'userAuth', 'nodeAuth'] as const).map((purpose) => {
+      return async (): Promise<Keychain> => {
+        let keychain: KeyPair | null = this.baseCoin.keychains().create();
+        const pub = keychain.pub;
+        const encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: keychain.prv });
+        delete (keychain as any).prv;
+        keychain = null;
+        const keychainParams: AddKeychainOptions = {
+          pub,
+          encryptedPrv,
+          originalPasscodeEncryptionCode: purpose === undefined ? passcodeEncryptionCode : undefined,
+          coinSpecific: purpose === undefined ? undefined : { [this.baseCoin.getChain()]: { purpose } },
+          keyType: 'independent',
+          source: 'user',
+        };
+        return await this.baseCoin.keychains().add(keychainParams);
+      };
+    });
+
+    const { userKeychain, userAuthKeychain, nodeAuthKeychain } = await promiseProps({
+      userKeychain: keychainPromises[0](),
+      userAuthKeychain: keychainPromises[1](),
+      nodeAuthKeychain: keychainPromises[2](),
+    });
+
+    const walletParams: SupplementGenerateWalletOptions = {
+      label,
+      m: 1,
+      n: 1,
+      type: 'hot',
+      enterprise,
+      keys: [userKeychain.id],
+      coinSpecific: { [this.baseCoin.getChain()]: { keys: [userAuthKeychain.id, nodeAuthKeychain.id] } },
+    };
+
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(walletParams).result();
+    const wallet = new Wallet(this.bitgo, this.baseCoin, newWallet);
+    return {
+      wallet,
+      userKeychain,
+      userAuthKeychain,
+      nodeAuthKeychain,
+      responseType: 'LightningWalletWithKeychains',
+    };
+  }
+
   /**
    * Generate a new wallet
    * 1. Creates the user keychain locally on the client, and encrypts it with the provided passphrase
@@ -200,7 +264,21 @@ export class Wallets implements IWallets {
    *
    * @returns {*}
    */
-  async generateWallet(params: GenerateWalletOptions = {}): Promise<WalletWithKeychains> {
+  async generateWallet(
+    params: GenerateWalletOptions = {}
+  ): Promise<WalletWithKeychains | LightningWalletWithKeychains> {
+    if (this.baseCoin.getFamily() === 'lnbtc') {
+      const options = decodeOrElse(
+        GenerateLightningWalletOptionsCodec.name,
+        GenerateLightningWalletOptionsCodec,
+        params,
+        (errors) => {
+          throw new Error(`error(s) parsing generate lightning wallet request params: ${errors}`);
+        }
+      );
+      return this.generateLightningWallet(options);
+    }
+
     common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub']);
     if (typeof params.label !== 'string') {
       throw new Error('missing required string parameter label');
@@ -499,6 +577,7 @@ export class Wallets implements IWallets {
       userKeychain: userKeychain,
       backupKeychain: backupKeychain,
       bitgoKeychain: bitgoKeychain,
+      responseType: 'WalletWithKeychains',
     };
 
     if (!_.isUndefined(backupKeychain.prv)) {
@@ -832,6 +911,7 @@ export class Wallets implements IWallets {
       userKeychain,
       backupKeychain,
       bitgoKeychain,
+      responseType: 'WalletWithKeychains',
     };
 
     if (!_.isUndefined(backupKeychain.prv) && !_.isUndefined(backupProvider)) {
@@ -915,6 +995,7 @@ export class Wallets implements IWallets {
       userKeychain,
       backupKeychain,
       bitgoKeychain,
+      responseType: 'WalletWithKeychains',
     };
 
     return result;
@@ -951,6 +1032,7 @@ export class Wallets implements IWallets {
       userKeychain: { id: keychains[0], type: multisigType, source: 'user' },
       backupKeychain: { id: keychains[1], type: multisigType, source: 'backup' },
       bitgoKeychain: { id: keychains[2], type: multisigType, source: 'bitgo' },
+      responseType: 'WalletWithKeychains',
     };
 
     return result;

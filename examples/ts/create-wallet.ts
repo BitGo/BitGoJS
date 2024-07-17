@@ -44,9 +44,11 @@ async function main() {
   const response = await bitgo.coin(coin).wallets().generateWallet({
     label,
     passphrase,
-    enterprise
+    enterprise,
   });
-
+  if (!('backupKeychain' in response)) {
+    throw new Error('wallet missing required keychains');
+  }
   const { wallet } = response;
 
   console.log(`Wallet ID: ${wallet.id()}`);

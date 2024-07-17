@@ -24,6 +24,10 @@ export interface KeychainWebauthnDevice {
   encryptedPrv: string;
 }
 
+export interface KeychainCoinSpecific {
+  purpose?: 'userAuth' | 'nodeAuth';
+}
+
 export interface Keychain {
   id: string;
   pub?: string;
@@ -41,6 +45,7 @@ export interface Keychain {
   walletHSMGPGPublicKeySigs?: string;
   type: KeyType;
   source?: SourceType;
+  coinSpecific?: KeychainCoinSpecific;
   // Alternative encryptedPrv using webauthn and the prf extension
   webauthnDevices?: KeychainWebauthnDevice[];
 }
@@ -105,6 +110,7 @@ export interface AddKeychainOptions {
   isDistributedCustody?: boolean;
   // indicates if the key is MPCv2 or not
   isMPCv2?: boolean;
+  coinSpecific?: { [coinName: string]: unknown };
 }
 
 export interface ApiKeyShare {

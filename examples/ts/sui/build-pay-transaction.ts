@@ -37,7 +37,9 @@ async function buildPayTx() {
   };
 
   const wallet = await bitgo.coin(coin).wallets().generateWallet(walletOptions);
-
+  if (!('backupKeychain' in wallet)) {
+    throw new Error('wallet missing required keychains');
+  }
   const walletInstance = wallet.wallet;
 
   console.log(`Wallet ID: ${walletInstance.id()}`);

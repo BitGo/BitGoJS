@@ -1,9 +1,18 @@
+import * as t from 'io-ts';
+
 import { IRequestTracer } from '../../api';
-import { KeychainsTriplet } from '../baseCoin';
+import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
 import { IWallet, PaginationOptions } from './iWallet';
 import { Wallet } from './wallet';
 
 export interface WalletWithKeychains extends KeychainsTriplet {
+  responseType: 'WalletWithKeychains';
+  wallet: IWallet;
+  warning?: string;
+}
+
+export interface LightningWalletWithKeychains extends LightningKeychainsTriplet {
+  responseType: 'LightningWalletWithKeychains';
   wallet: IWallet;
   warning?: string;
 }
@@ -62,6 +71,18 @@ export interface GenerateWalletOptions {
   commonKeychain?: string;
   type?: 'hot' | 'cold' | 'custodial';
 }
+
+export const GenerateLightningWalletOptionsCodec = t.strict(
+  {
+    label: t.string,
+    passphrase: t.string,
+    enterprise: t.string,
+    passcodeEncryptionCode: t.string,
+  },
+  'GenerateLightningWalletOptions'
+);
+
+export type GenerateLightningWalletOptions = t.TypeOf<typeof GenerateLightningWalletOptionsCodec>;
 
 export interface GetWalletByAddressOptions {
   address?: string;
@@ -138,7 +159,7 @@ export interface IWallets {
   get(params?: GetWalletOptions): Promise<Wallet>;
   list(params?: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
   add(params?: AddWalletOptions): Promise<any>;
-  generateWallet(params?: GenerateWalletOptions): Promise<WalletWithKeychains>;
+  generateWallet(params?: GenerateWalletOptions): Promise<WalletWithKeychains | LightningWalletWithKeychains>;
   listShares(params?: Record<string, unknown>): Promise<any>;
   getShare(params?: { walletShareId?: string }): Promise<any>;
   updateShare(params?: UpdateShareOptions): Promise<any>;

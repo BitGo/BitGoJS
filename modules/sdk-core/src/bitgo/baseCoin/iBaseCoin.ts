@@ -174,6 +174,7 @@ export interface SupplementGenerateWalletOptions {
   disableKRSEmail?: boolean;
   multisigType?: 'tss' | 'onchain' | 'blsdkg';
   type: 'hot' | 'cold' | 'custodial';
+  coinSpecific?: { [coinName: string]: unknown };
 }
 
 export interface FeeEstimateOptions {
@@ -240,6 +241,12 @@ export interface KeychainsTriplet {
   userKeychain: Keychain;
   backupKeychain: Keychain;
   bitgoKeychain: Keychain;
+}
+
+export interface LightningKeychainsTriplet {
+  userKeychain: Keychain;
+  userAuthKeychain: Keychain;
+  nodeAuthKeychain: Keychain;
 }
 
 interface BuildParams {
