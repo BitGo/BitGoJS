@@ -31,8 +31,8 @@ type WalletWithPrv = Array<{
 }>;
 
 const esAccessToken = process.env.BITGO_EXTERNAL_SIGNER_ACCESS_TOKEN;
-const esWalletIDs = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS; // example: {"tbtc":[{"walletId":"xxx","walletPassword":"xxx","secret":"xxx"}]}
-const esWalletWithPrv = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS_WITH_PRV; // example: [{"walletId":"xxx","encryptedPrv":"xxx"}]
+const esWalletIDs = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS; // example: "{"tbtc":[{"walletId":"xxx","walletPassword":"xxx","secret":"xxx"}],"hteth":["walletId":"xxx","walletPassword":"xxx"]}"
+const esWalletWithPrv = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS_WITH_PRV; // example: "[{"walletId":"xxx","encryptedPrv":"xxx"}]"
 
 // TODO: set env to 'test' or 'prod'
 const bg = new BitGo({ env: (process.env.BITGO_EXTERNAL_SIGNER_ENV as EnvironmentName) ?? 'test' });
