@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.0.0...@bitgo/sdk-coin-ton@3.1.0) (2024-07-16)
+
+### Bug Fixes
+
+- **sdk-coin-ton:** address flags ([a6f7f00](https://github.com/BitGo/BitGoJS/commit/a6f7f0026d071b4386360bed164e72416d5e260d))
+- **sdk-coin-ton:** fix address validation ([8d0c4bf](https://github.com/BitGo/BitGoJS/commit/8d0c4bf4c24abf536286f727909c217074fd5559))
+- **sdk-coin-ton:** fix isWalletAddress validation ([7b6420e](https://github.com/BitGo/BitGoJS/commit/7b6420efca0284f44f12bd05f08dda1420b10634))
+
+### Features
+
+- remove bounceable address as default for ton ([a6a4993](https://github.com/BitGo/BitGoJS/commit/a6a49931e338e29b342f76d7087e0500640c1b5c))
+- remove bounceable address as default for ton ([1138ed7](https://github.com/BitGo/BitGoJS/commit/1138ed765893cce5a6cd4db2da5939ed4296a881))
+- **sdk-coin-ton:** set expireAt for TON txs ([eaf7e56](https://github.com/BitGo/BitGoJS/commit/eaf7e56a8f669229997d17ba3b7c5b6f94d54224))
+
 # [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@2.0.24...@bitgo/sdk-coin-ton@3.0.0) (2024-07-04)
 
 ### Features

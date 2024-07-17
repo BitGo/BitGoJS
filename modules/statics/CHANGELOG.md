@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.23.0...@bitgo/statics@48.24.0) (2024-07-16)
+
+### Features
+
+- enable bulk transactions for bch ([72f6b5f](https://github.com/BitGo/BitGoJS/commit/72f6b5f9d02d72412b40b63db3de67434ae2e2b6))
+- **sdk-coin-sui:** add SuiToken skeleton ([5695078](https://github.com/BitGo/BitGoJS/commit/5695078081842b5bfc06f6b01c1d057042d688da))
+- **statics:** add deep token ([de39797](https://github.com/BitGo/BitGoJS/commit/de39797c7134c5c8bea254ec705f2a7f63710281))
+- **statics:** add ftx missing tokens ([a6318e3](https://github.com/BitGo/BitGoJS/commit/a6318e324427360219e235fd96dff1c91f31de3f))
+- **statics:** add holesky wrapped ether ([c0dc27b](https://github.com/BitGo/BitGoJS/commit/c0dc27b19946a51ab13b0389aa95967bafe49d44))
+- **statics:** add new batch of tokens ([f6af6b3](https://github.com/BitGo/BitGoJS/commit/f6af6b364eebdb7741b0ccf076a96bc8ae0c7b4a))
+- **statics:** add Sui token support ([8ca9656](https://github.com/BitGo/BitGoJS/commit/8ca96564e467c15bc80e0932ca22fa98686b99a8))
+- **statics:** onboard batch USMS tokens part-3-1 ([87b3a0d](https://github.com/BitGo/BitGoJS/commit/87b3a0dacc16236daec93115650112af316df87d))
+- **statics:** uSMS Token Batch - 4 ([2af8294](https://github.com/BitGo/BitGoJS/commit/2af82946c0898c88d3d9857b63fad89331df0ca5))
+- **statics:** uSMS Token batch part-3 ([37a22de](https://github.com/BitGo/BitGoJS/commit/37a22dea1918d8222a38d566159b2a93a528c2ea))
+
 # [48.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.22.0...@bitgo/statics@48.23.0) (2024-07-04)
 
 ### Features

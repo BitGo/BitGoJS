@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.51.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.50.1...@bitgo/sdk-api@1.51.0) (2024-07-16)
+
+### Features
+
+- **root:** add Adata validation for DSG session validation ([2f01009](https://github.com/BitGo/BitGoJS/commit/2f0100912f7258625228ee058092900be8693d55))
+- **sdk-api:** add adata param to encryption methods ([61e7be9](https://github.com/BitGo/BitGoJS/commit/61e7be99cbb99a03a4f6e50af82f6d95acd45785))
+
 ## [1.50.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.50.0...@bitgo/sdk-api@1.50.1) (2024-07-04)
 
 **Note:** Version bump only for package @bitgo/sdk-api

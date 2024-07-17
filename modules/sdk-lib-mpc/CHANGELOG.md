@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.9.0...@bitgo/sdk-lib-mpc@9.10.0) (2024-07-16)
+
+### Features
+
+- **sdk-lib-mpc:** implement session get and restore for dsg ([19a41ce](https://github.com/BitGo/BitGoJS/commit/19a41ceaae2c5117648260d192e9b41c5fcd12a7))
+
 # [9.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.8.1...@bitgo/sdk-lib-mpc@9.9.0) (2024-06-26)
 
 ### Features

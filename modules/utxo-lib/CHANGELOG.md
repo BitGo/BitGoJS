@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.40.0...@bitgo/utxo-lib@10.0.0) (2024-07-16)
+
+### Code Refactoring
+
+- **utxo-lib:** require rootNodes to be passed into getSigValidArr ([77efe2e](https://github.com/BitGo/BitGoJS/commit/77efe2ef78cbfbca17f277bf32f61eed2dbaf801))
+
+### BREAKING CHANGES
+
+- **utxo-lib:** require rootNodes in getSigValidArray
+
+TICKET: BTC-1303
+
 # [9.40.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.39.0...@bitgo/utxo-lib@9.40.0) (2024-07-04)
 
 ### Features
