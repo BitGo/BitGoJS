@@ -8166,7 +8166,7 @@ export const coins = CoinMap.fromCoins([
     '232f1a4c-1e4c-4122-bb44-d5dd39389650',
     'uos',
     'Ultra Token',
-    18,
+    4,
     '0xd13c7342e1ef687c5ad21b27c2b65d772cab5c8c',
     UnderlyingAsset.UOS
   ),
@@ -15464,6 +15464,15 @@ export const coins = CoinMap.fromCoins([
     6,
     'CWE8jPTUYhdCTZYWPTe1o5DFqfdjzWKc9WKz6rSjQUdG',
     UnderlyingAsset['sol:solink'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '5f22f687-f90c-488f-bfe0-a669231a3ceb',
+    'sol:block',
+    'Blockasset',
+    6,
+    'NFTUkR4u7wKxy9QLaX2TGvd9oZSWoMo4jqSJqdMb7Nk',
+    UnderlyingAsset['sol:block'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
