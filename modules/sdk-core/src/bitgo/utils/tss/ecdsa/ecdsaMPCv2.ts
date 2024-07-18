@@ -5,6 +5,7 @@ import { Hash } from 'crypto';
 import { NonEmptyString } from 'io-ts-types';
 import createKeccakHash from 'keccak';
 import * as pgp from 'openpgp';
+import { KeychainsTriplet } from '../../../baseCoin';
 import {
   KeyGenTypeEnum,
   MPCv2BroadcastMessage,
@@ -20,7 +21,6 @@ import {
 } from '@bitgo/public-types';
 
 import { Ecdsa } from '../../../../account-lib';
-import { KeychainsTriplet } from '../../../baseCoin';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
@@ -42,6 +42,7 @@ import {
   SignatureShareRecord,
   TSSParams,
   TSSParamsForMessage,
+  TSSParamsForMessageWithPrv,
   TSSParamsWithPrv,
   TxRequest,
 } from '../baseTypes';
@@ -393,7 +394,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    */
   getMpcV2RetrofitDataFromMpcV1Keys(params: { mpcv1UserKeyShare: string; mpcv1BackupKeyShare: string }): {
     mpcv2UserKeyShare: DklsTypes.RetrofitData;
-    mpcv2BakcupKeyShare: DklsTypes.RetrofitData;
+    mpcv2BackupKeyShare: DklsTypes.RetrofitData;
   } {
     const mpc = new Ecdsa();
     const xiList = [
@@ -408,7 +409,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         xiList,
         mpc,
       }),
-      mpcv2BakcupKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
+      mpcv2BackupKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
         mpcv1PartyKeyShare: params.mpcv1BackupKeyShare,
         mpcv1PartyIndex: 2,
         xiList,
@@ -503,7 +504,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       });
 
       const userSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.USER, undefined, retrofitData.mpcv2UserKeyShare);
-      const backupSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.BACKUP, undefined, retrofitData.mpcv2BakcupKeyShare);
+      const backupSession = new DklsDkg.Dkg(n, m, MPCv2PartiesEnum.BACKUP, undefined, retrofitData.mpcv2BackupKeyShare);
 
       return { userSession, backupSession };
     }
@@ -630,18 +631,42 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    * @param {string} params.reqId - request id
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
-  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
+
+  async signTxRequest(params: TSSParamsWithPrv | TSSParamsForMessageWithPrv): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
-    return this.signRequestBase(params, RequestType.tx);
+    const txRequest: TxRequest =
+      typeof params.txRequest === 'string'
+        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
+        : params.txRequest;
+    const requestType = txRequest.messages ? RequestType.message : RequestType.tx;
+    return this.signRequestBase(params, requestType);
   }
 
-  private async signRequestBase(params: TSSParamsWithPrv, requestType: RequestType): Promise<TxRequest> {
+  /**
+   * Signs the message associated to the transaction request.
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - decrypted private key
+   * @param {string} params.reqId - request id
+   * @returns {Promise<TxRequest>} fully signed TxRequest object
+   */
+  async signTxRequestForMessage(params: TSSParamsForMessageWithPrv): Promise<TxRequest> {
+    this.bitgo.setRequestTracer(params.reqId);
+    return this.signRequestBase(params, RequestType.message);
+  }
+
+  private async signRequestBase(
+    params: TSSParamsWithPrv | TSSParamsForMessageWithPrv,
+    requestType: RequestType
+  ): Promise<TxRequest> {
     const userKeyShare = Buffer.from(params.prv, 'base64');
     const txRequest: TxRequest =
       typeof params.txRequest === 'string'
         ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest, params.reqId)
         : params.txRequest;
 
+    let txOrMessageToSign;
+    let derivationPath;
+    let bufferContent;
     const [userGpgKey, bitgoGpgPubKey] = await Promise.all([
       generateGPGKeyPair('secp256k1'),
       this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true, params.reqId).then(
@@ -652,8 +677,29 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       throw new Error('Missing BitGo GPG key for MPCv2');
     }
 
-    const { derivationPath, hashBuffer } = this.getHashStringAndDerivationPath(txRequest, requestType);
+    if (requestType === RequestType.tx) {
+      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      const unsignedTx =
+        txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      txOrMessageToSign = unsignedTx.signableHex;
+      derivationPath = unsignedTx.derivationPath;
+      bufferContent = Buffer.from(txOrMessageToSign, 'hex');
+    } else if (requestType === RequestType.message) {
+      txOrMessageToSign = txRequest.messages![0].messageEncoded;
+      derivationPath = txRequest.messages![0].derivationPath || 'm/0';
+      bufferContent = Buffer.from(txOrMessageToSign);
+    } else {
+      throw new Error('Invalid request type');
+    }
 
+    let hash: Hash;
+    try {
+      hash = this.baseCoin.getHashFunction();
+    } catch (err) {
+      hash = createKeccakHash('keccak256') as Hash;
+    }
+    // check what the encoding is supposed to be for message
+    const hashBuffer = hash.update(bufferContent).digest();
     const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
     const userSignerBroadcastMsg1 = await otherSigner.init();
     const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
@@ -663,16 +709,22 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       txRequest.walletId,
       txRequest.txRequestId,
       [signatureShareRound1],
-      RequestType.tx,
+      requestType,
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-    assert(latestTxRequest.transactions);
 
-    const bitgoToUserMessages1And2 = latestTxRequest.transactions[0].signatureShares;
+    assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
+
+    let bitgoToUserMessages1And2: any;
+    if (requestType === RequestType.tx) {
+      bitgoToUserMessages1And2 = latestTxRequest.transactions![0].signatureShares;
+    } else {
+      bitgoToUserMessages1And2 = latestTxRequest.messages![0].signatureShares;
+    }
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundOne = JSON.parse(
       bitgoToUserMessages1And2[bitgoToUserMessages1And2.length - 1].share
@@ -707,16 +759,19 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       txRequest.walletId,
       txRequest.txRequestId,
       [signatureShareRoundTwo],
-      RequestType.tx,
+      requestType,
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-    assert(latestTxRequest.transactions);
+    assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
 
-    const txRequestSignatureShares = latestTxRequest.transactions[0].signatureShares;
+    const txRequestSignatureShares =
+      requestType === RequestType.tx
+        ? latestTxRequest.transactions![0].signatureShares
+        : latestTxRequest.messages![0].signatureShares;
     // TODO: Use codec for parsing
     const parsedBitGoToUserSigShareRoundTwo = JSON.parse(
       txRequestSignatureShares[txRequestSignatureShares.length - 1].share
@@ -751,7 +806,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       txRequest.walletId,
       txRequest.txRequestId,
       [signatureShareRoundThree],
-      RequestType.tx,
+      requestType,
       this.baseCoin.getMPCAlgorithm(),
       userGpgKey.publicKey,
       undefined,
@@ -759,7 +814,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       params.reqId
     );
 
-    return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, RequestType.tx, params.reqId);
+    return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, requestType, params.reqId);
   }
 
   // #endregion

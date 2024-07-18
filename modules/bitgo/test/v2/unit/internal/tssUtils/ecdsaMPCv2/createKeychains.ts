@@ -102,7 +102,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       };
       const [user, backup, bitgo] = await DklsUtils.generateDKGKeyShares(
         retrofitData.mpcv2UserKeyShare,
-        retrofitData.mpcv2BakcupKeyShare,
+        retrofitData.mpcv2BackupKeyShare,
         bitgoRetrofitData
       );
       assert.ok(bitgo.getKeyShare());

@@ -1,4 +1,4 @@
-import { SignSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
+import { Keyshare, Message, SignSession } from '@silencelaboratories/dkls-wasm-ll-node';
 import { DeserializedBroadcastMessage, DeserializedDklsSignature, DeserializedMessages, DsgState } from './types';
 import { decode } from 'cbor-x';
 
@@ -122,12 +122,13 @@ export class Dsg {
    * Ends the DSG session by freeing any heap allocations from wasm. Note that the session is freed if a signature is produced.
    */
   endSession(): void {
-    if (this.signature) {
+    if (this._signature) {
       new Error('Session already ended because combined signature was produced.');
     }
     if (this.dsgSession) {
       this.dsgSession.free();
     }
+    this.dsgState = DsgState.Uninitialized;
   }
 
   /**

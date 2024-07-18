@@ -330,6 +330,9 @@ export type TxRequest = {
   messages?: {
     state: TransactionState;
     signatureShares: SignatureShareRecord[];
+    messageRaw: string;
+    messageEncoded?: string;
+    derivationPath: string;
     combineSigShare?: string;
     txHash?: string;
   }[];
