@@ -12555,6 +12555,18 @@ export const coins = CoinMap.fromCoins([
     Networks.test.goerli
   ),
   terc20(
+    '5e4f0e5e-b8ce-431c-8a62-62e54e32bb82',
+    'tgousd',
+    'Holesky Testnet GO USD',
+    6,
+    '0x2d416976f396bcd2e9b32401269fdfea638e82bc',
+    UnderlyingAsset.TGOUSD,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
     '30179af0-ca75-4cb1-99d9-028bc56bf10e',
     'tmsn',
     'meson.network-testnet',
