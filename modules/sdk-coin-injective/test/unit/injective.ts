@@ -355,7 +355,7 @@ describe('INJ', function () {
     const testChainId = 'test-chain';
 
     beforeEach(() => {
-      nock('https://k8s.testnet.lcd.injective.network')
+      nock('https://testnet.sentry.lcd.injective.network')
         .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
         .reply(200, mockAccountDetailsResponse);
 
@@ -406,7 +406,7 @@ describe('INJ', function () {
     const testChainId = 'test-chain';
 
     beforeEach(() => {
-      nock('https://k8s.testnet.lcd.injective.network')
+      nock('https://testnet.sentry.lcd.injective.network')
         .get('/cosmos/auth/v1beta1/accounts/' + wrwUser.senderAddress)
         .reply(200, mockAccountDetailsResponse);
 
