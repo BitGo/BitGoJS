@@ -3262,7 +3262,7 @@ export class Wallet implements IWallet {
           intentType: 'signMessage',
           isTss: true,
           messageRaw: params.message.messageRaw,
-          messageEncoded: Buffer.from(params.message?.messageEncoded ?? '').toString('hex'),
+          messageEncoded: params.message.messageEncoded,
         };
         txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
         params.message.txRequestId = txRequest.txRequestId;

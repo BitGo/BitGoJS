@@ -642,6 +642,18 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     return this.signRequestBase(params, requestType);
   }
 
+  /**
+   * Signs the message associated to the transaction request.
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - decrypted private key
+   * @param {string} params.reqId - request id
+   * @returns {Promise<TxRequest>} fully signed TxRequest object
+   */
+  async signTxRequestForMessage(params: TSSParamsForMessageWithPrv): Promise<TxRequest> {
+    this.bitgo.setRequestTracer(params.reqId);
+    return this.signRequestBase(params, RequestType.message);
+  }
+
   private async signRequestBase(
     params: TSSParamsWithPrv | TSSParamsForMessageWithPrv,
     requestType: RequestType
@@ -673,8 +685,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       derivationPath = unsignedTx.derivationPath;
       bufferContent = Buffer.from(txOrMessageToSign, 'hex');
     } else if (requestType === RequestType.message) {
-      txOrMessageToSign = txRequest.messages![0].messageRaw;
-      derivationPath = txRequest.messages![0].derivationPath;
+      txOrMessageToSign = txRequest.messages![0].messageEncoded;
+      derivationPath = txRequest.messages![0].derivationPath || 'm/0';
       bufferContent = Buffer.from(txOrMessageToSign);
     } else {
       throw new Error('Invalid request type');
@@ -802,7 +814,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       params.reqId
     );
 
-    return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, RequestType.tx, params.reqId);
+    return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, requestType, params.reqId);
   }
 
   // #endregion
