@@ -12,6 +12,7 @@ import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import TonWeb from 'tonweb';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -68,6 +69,34 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   bounceable(bounceable: boolean): this {
     this.transaction.bounceable = bounceable;
+    return this;
+  }
+
+  /**
+   * Sets the fromAddress to be in bounceable format or not.
+   *
+   * @param {string} bounceable whether the address format is bounceable
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  fromAddressBounceable(bounceable: boolean): this {
+    this.transaction.fromAddressBounceable = bounceable;
+    this.sender(new TonWeb.Address(this.transaction.sender).toString(true, true, bounceable));
+    return this;
+  }
+
+  /**
+   * Sets the toAddress to be in bounceable format or not.
+   *
+   * @param {string} bounceable whether the address format is bounceable
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  toAddressBounceable(bounceable: boolean): this {
+    this.transaction.toAddressBounceable = bounceable;
+    this.transaction.recipient.address = new TonWeb.Address(this.transaction.recipient.address).toString(
+      true,
+      true,
+      bounceable
+    );
     return this;
   }
 

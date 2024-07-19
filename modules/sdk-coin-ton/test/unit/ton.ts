@@ -1,6 +1,6 @@
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Ton, Tton } from '../../src';
+import { Ton, TonParseTransactionOptions, Tton } from '../../src';
 import * as sinon from 'sinon';
 import assert from 'assert';
 import * as testData from '../resources/ton';
@@ -18,9 +18,17 @@ describe('TON:', function () {
     txHex: Buffer.from(testData.signedTransaction.tx, 'base64').toString('hex'),
     txInfo: {},
   };
+  const txPrebuildBounceable = {
+    txHex: Buffer.from(testData.signedTransaction.txBounceable, 'base64').toString('hex'),
+    txInfo: {},
+  };
 
   const txParams = {
     recipients: [testData.signedTransaction.recipient],
+  };
+
+  const txParamsBounceable = {
+    recipients: [testData.signedTransaction.recipientBounceable],
   };
 
   it('should retun the right info', function () {
@@ -48,6 +56,13 @@ describe('TON:', function () {
         verification,
       } as any);
       isTransactionVerified.should.equal(true);
+
+      const isBounceableTransactionVerified = await basecoin.verifyTransaction({
+        txParams: txParamsBounceable,
+        txPrebuild: txPrebuildBounceable,
+        verification: {},
+      } as any);
+      isBounceableTransactionVerified.should.equal(true);
     });
 
     it('should succeed to verify transaction when recipients amount are numbers', async function () {
@@ -149,6 +164,28 @@ describe('TON:', function () {
       });
     });
 
+    it('should explain a non-bounceable transfer transaction', async function () {
+      const explainedTransaction = (await basecoin.explainTransaction({
+        txHex: Buffer.from(testData.signedTransaction.txBounceable, 'base64').toString('hex'),
+        toAddressBounceable: false,
+        fromAddressBounceable: false,
+      })) as TransactionExplanation;
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee'],
+        id: 'tuyOkyFUMv_neV_FeNBH24Nd4cML2jUgDP4zjGkuOFI=',
+        outputs: [
+          {
+            address: testData.signedTransaction.recipientBounceable.address,
+            amount: testData.signedTransaction.recipientBounceable.amount,
+          },
+        ],
+        outputAmount: testData.signedTransaction.recipientBounceable.amount,
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: 'UNKNOWN' },
+      });
+    });
+
     it('should fail to explain transaction with missing params', async function () {
       try {
         await basecoin.explainTransaction({});
@@ -176,9 +213,23 @@ describe('TON:', function () {
       },
     ];
 
+    const transferInputsResponseBounceable = [
+      {
+        address: 'UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg',
+        amount: '10000000',
+      },
+    ];
+
     const transferOutputsResponse = [
       {
         address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+        amount: '10000000',
+      },
+    ];
+
+    const transferOutputsResponseBounceable = [
+      {
+        address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
         amount: '10000000',
       },
     ];
@@ -191,6 +242,19 @@ describe('TON:', function () {
       parsedTransaction.should.deepEqual({
         inputs: transferInputsResponse,
         outputs: transferOutputsResponse,
+      });
+    });
+
+    it('should parse a non-bounceable transfer transaction', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({
+        txHex: Buffer.from(testData.signedTransaction.tx, 'base64').toString('hex'),
+        toAddressBounceable: false,
+        fromAddressBounceable: false,
+      } as TonParseTransactionOptions);
+
+      parsedTransaction.should.deepEqual({
+        inputs: transferInputsResponseBounceable,
+        outputs: transferOutputsResponseBounceable,
       });
     });
 

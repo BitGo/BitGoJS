@@ -22,6 +22,8 @@ import TonWeb from 'tonweb';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
+  fromAddressBounceable?: boolean;
+  toAddressBounceable?: boolean;
 }
 
 export class Ton extends BaseCoin {
@@ -92,7 +94,7 @@ export class Ton extends BaseCoin {
       });
       const filteredOutputs = explainedTx.outputs.map((output) => {
         return {
-          address: output.address,
+          address: new TonWeb.Address(output.address).toString(true, true, true),
           amount: BigInt(output.amount),
         };
       });
@@ -145,6 +147,15 @@ export class Ton extends BaseCoin {
   async parseTransaction(params: TonParseTransactionOptions): Promise<ParsedTransaction> {
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
     const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
+
+    if (typeof params.toAddressBounceable === 'boolean') {
+      transactionBuilder.toAddressBounceable(params.toAddressBounceable);
+    }
+
+    if (typeof params.fromAddressBounceable === 'boolean') {
+      transactionBuilder.fromAddressBounceable(params.fromAddressBounceable);
+    }
+
     const rebuiltTransaction = await transactionBuilder.build();
     const parsedTransaction = rebuiltTransaction.toJson();
     return {
@@ -205,6 +216,17 @@ export class Ton extends BaseCoin {
     try {
       const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
       const transactionBuilder = factory.from(Buffer.from(params.txHex, 'hex').toString('base64'));
+
+      const { toAddressBounceable, fromAddressBounceable } = params;
+
+      if (typeof toAddressBounceable === 'boolean') {
+        transactionBuilder.toAddressBounceable(toAddressBounceable);
+      }
+
+      if (typeof fromAddressBounceable === 'boolean') {
+        transactionBuilder.fromAddressBounceable(fromAddressBounceable);
+      }
+
       const rebuiltTransaction = await transactionBuilder.build();
       return rebuiltTransaction.explainTransaction();
     } catch {
