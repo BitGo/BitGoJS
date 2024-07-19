@@ -374,8 +374,7 @@ describe('INJ', function () {
       sinon.restore();
     });
 
-    // TODO: COIN-1219
-    it.skip('should recover funds for non-bitgo recoveries', async function () {
+    it('should recover funds for non-bitgo recoveries', async function () {
       const res = await basecoin.recover({
         userKey: wrwUser.userPrivateKey,
         backupKey: wrwUser.backupPrivateKey,
@@ -458,8 +457,8 @@ describe('INJ', function () {
         })
         .should.rejectedWith('missing wallet passphrase');
     });
-    // TODO: COIN-1219
-    it.skip('should throw error if there is no balance', async function () {
+
+    it('should throw error if there is no balance', async function () {
       await basecoin
         .recover({
           userKey: wrwUser.userPrivateKey,
