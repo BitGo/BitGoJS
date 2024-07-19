@@ -243,6 +243,7 @@ export interface WalletCoinSpecific {
   walletVersion?: number;
   hashAlgorithm?: string;
   pendingEcdsaTssInitialization?: boolean;
+  keys?: string[];
 }
 
 export interface PaginationOptions {
