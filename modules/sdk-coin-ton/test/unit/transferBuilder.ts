@@ -92,6 +92,19 @@ describe('Ton Transfer Builder', () => {
     jsonTx.amount.should.equal('10000000');
     jsonTx.seqno.should.equal(6);
     jsonTx.expirationTime.should.equal(1695997582);
+
+    const builtTx3 = await txBuilder.bounceable(false).fromAddressBounceable(false).toAddressBounceable(false).build();
+    txBuilder.from(testData.signedTransaction.tx);
+    const jsonTx3 = builtTx3.toJson();
+    should.equal(jsonTx3.bounceable, false);
+    should.equal(builtTx3.signablePayload.toString('base64'), testData.signedTransaction.bounceableSignable);
+    should.equal(builtTx3.id, testData.signedTransaction.txIdBounceable);
+    should.equal(builtTx3.toBroadcastFormat(), testData.signedTransaction.txBounceable);
+    jsonTx3.sender.should.equal('UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg');
+    jsonTx3.destination.should.equal('UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD');
+    jsonTx3.amount.should.equal('10000000');
+    jsonTx3.seqno.should.equal(6);
+    jsonTx3.expirationTime.should.equal(1695997582);
   });
 
   xit('should build a signed transfer tx and submit onchain', async function () {

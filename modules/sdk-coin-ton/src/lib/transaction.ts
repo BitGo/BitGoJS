@@ -18,6 +18,8 @@ const WALLET_ID = 698983191;
 export class Transaction extends BaseTransaction {
   public recipient: Recipient;
   public bounceable: boolean;
+  public fromAddressBounceable: boolean;
+  public toAddressBounceable: boolean;
   public message: string;
   seqno: number;
   expireTime: number;
@@ -29,6 +31,8 @@ export class Transaction extends BaseTransaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this.bounceable = false;
+    this.fromAddressBounceable = true;
+    this.toAddressBounceable = true;
   }
 
   canSign(key: BaseKey): boolean {
@@ -162,8 +166,8 @@ export class Transaction extends BaseTransaction {
 
       const parsed = this.parseTransfer(cell);
       parsed.value = parsed.value.toString();
-      parsed.fromAddress = parsed.fromAddress.toString(true, true, true);
-      parsed.toAddress = parsed.toAddress.toString(true, true, true);
+      parsed.fromAddress = parsed.fromAddress.toString(true, true, this.fromAddressBounceable);
+      parsed.toAddress = parsed.toAddress.toString(true, true, this.toAddressBounceable);
       this.sender = parsed.fromAddress;
       this.recipient = { address: parsed.toAddress, amount: parsed.value };
       this.seqno = parsed.seqno;
