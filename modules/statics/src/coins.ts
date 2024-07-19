@@ -2250,6 +2250,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BDXN
   ),
   erc20(
+    '67ecdcd6-2b5d-4be4-9173-ee92eb8f4e0c',
+    'beam',
+    'Beam',
+    18,
+    '0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce',
+    UnderlyingAsset.BEAM
+  ),
+  erc20(
     '04c44584-c417-4fce-883f-8f316854c63e',
     'bed',
     'Bankless BED Index',
@@ -4992,6 +5000,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.MOF
   ),
   erc20(
+    'a692ffeb-4628-4014-adc9-7fb6c4b2ef65',
+    'mog',
+    'Mog Coin',
+    18,
+    '0xaaee1a9723aadb7afa2810263653a34ba2c21c7a',
+    UnderlyingAsset.MOG
+  ),
+  erc20(
     '199e23f6-a1be-40c8-ab93-9df2d0c5f6c2',
     'mpay',
     'MenaPay',
@@ -5358,6 +5374,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x0ab87046fbb341d058f17cbc4c1133f25a20a52f',
     UnderlyingAsset.GOHM
+  ),
+  erc20(
+    'c798900d-9f86-42ef-8329-63e68bdd4c63',
+    'pact',
+    'PACT community token',
+    18,
+    '0x66e7ce35578a37209d01f99f3d2ff271f981f581',
+    UnderlyingAsset.PACT
   ),
   erc20(
     'dfc25625-418c-4958-89d6-aa8a96437f0c',
@@ -9738,6 +9762,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xf5312da58ab6c1706d651ed9fcd3ca000c3a25b7',
     UnderlyingAsset.MOONSHIT
+  ),
+  erc20(
+    '7bc4cf02-2f5c-46d0-a985-576063747b4b',
+    'mother',
+    'MOTHER IGGY',
+    9,
+    '0x5c927767264cf7ee038ed5b84ef760b96c7843a6',
+    UnderlyingAsset.MOTHER
   ),
   erc20(
     '280e08c8-616e-4b57-8ebc-d012142be0ae',
