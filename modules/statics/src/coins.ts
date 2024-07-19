@@ -2930,6 +2930,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.CTSI
   ),
   erc20(
+    '82ddcc28-b8d3-46c7-8a0b-b738a224009e',
+    'ctx',
+    'Cryptex',
+    18,
+    '0x321c2fe4446c7c963dc41dd58879af648838f98d',
+    UnderlyingAsset.CTX
+  ),
+  erc20(
     'e7550f73-fedd-4eb3-9838-d8b4f63c9a9f',
     'cusdc',
     'Compound USDC',
@@ -5144,6 +5152,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.NMR
   ),
   erc20(
+    '6da6a769-38cd-42fb-b8ae-30aa44ac3565',
+    'nosana',
+    'Nosana',
+    18,
+    '0x7e079adaf785da025192e707b81c88980ca01f67',
+    UnderlyingAsset.NOSANA
+  ),
+  erc20(
     '716a1eea-d9d4-41f6-a15f-76f00b210c9f',
     'nu',
     'NuCypher',
@@ -5534,6 +5550,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x846c66cf71c43f80403b51fe3906b3599d63336f',
     UnderlyingAsset.PMA
+  ),
+  erc20(
+    'a10eb871-eecd-4c63-ae23-ee1cd1098b62',
+    'pol',
+    'Polygon Ecosystem Token',
+    18,
+    '0x455e53cbb86018ac2b8092fdcd39d8444affc3f6',
+    UnderlyingAsset.POL
   ),
   erc20(
     'c49d4a7f-17ff-424a-8c6b-18ed6b265af6',
@@ -8121,6 +8145,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x9e32b13ce7f2e80a01932b42553652e053d6ed8e',
     UnderlyingAsset.METIS
+  ),
+  erc20(
+    '477dbd05-a976-410b-93ce-971c8663975e',
+    'mew',
+    'MEW coin',
+    18,
+    '0xfa61f23943dad7d3ad69c0fa80e3c47f110778e9',
+    UnderlyingAsset.MEW
   ),
   erc20(
     'c641f0b2-359d-4ea4-afd7-0e959d4dd7f8',
@@ -11156,6 +11188,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x47bead2563dcbf3bf2c9407fea4dc236faba485a',
     UnderlyingAsset['bsc:sxp']
+  ),
+  bscToken(
+    '7cc0b178-18cb-49f1-bf16-3cdd860e5d90',
+    'bsc:nnn',
+    'Novem Gold Token',
+    18,
+    '0x5d5c5c1d14faf8ff704295b2f502daa9d06799a0',
+    UnderlyingAsset['bsc:nnn']
+  ),
+  bscToken(
+    '9b2925ed-7e66-4f60-b1bb-edae3931e9cd',
+    'bsc:nvm',
+    'Novem Pro Token',
+    18,
+    '0xbe2d8ac2a370972c4328bed520b224c3903a4941',
+    UnderlyingAsset['bsc:nvm']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
