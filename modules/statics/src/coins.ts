@@ -2250,6 +2250,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BDXN
   ),
   erc20(
+    '67ecdcd6-2b5d-4be4-9173-ee92eb8f4e0c',
+    'beam',
+    'Beam',
+    18,
+    '0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce',
+    UnderlyingAsset.BEAM
+  ),
+  erc20(
     '04c44584-c417-4fce-883f-8f316854c63e',
     'bed',
     'Bankless BED Index',
@@ -2928,6 +2936,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x491604c0fdf08347dd1fa4ee062a822a5dd06b5d',
     UnderlyingAsset.CTSI
+  ),
+  erc20(
+    '82ddcc28-b8d3-46c7-8a0b-b738a224009e',
+    'ctx',
+    'Cryptex',
+    18,
+    '0x321c2fe4446c7c963dc41dd58879af648838f98d',
+    UnderlyingAsset.CTX
   ),
   erc20(
     'e7550f73-fedd-4eb3-9838-d8b4f63c9a9f',
@@ -4984,6 +5000,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.MOF
   ),
   erc20(
+    'a692ffeb-4628-4014-adc9-7fb6c4b2ef65',
+    'mog',
+    'Mog Coin',
+    18,
+    '0xaaee1a9723aadb7afa2810263653a34ba2c21c7a',
+    UnderlyingAsset.MOG
+  ),
+  erc20(
     '199e23f6-a1be-40c8-ab93-9df2d0c5f6c2',
     'mpay',
     'MenaPay',
@@ -5142,6 +5166,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x1776e1f26f98b1a5df9cd347953a26dd3cb46671',
     UnderlyingAsset.NMR
+  ),
+  erc20(
+    '6da6a769-38cd-42fb-b8ae-30aa44ac3565',
+    'nosana',
+    'Nosana',
+    18,
+    '0x7e079adaf785da025192e707b81c88980ca01f67',
+    UnderlyingAsset.NOSANA
   ),
   erc20(
     '716a1eea-d9d4-41f6-a15f-76f00b210c9f',
@@ -5344,6 +5376,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.GOHM
   ),
   erc20(
+    'c798900d-9f86-42ef-8329-63e68bdd4c63',
+    'pact',
+    'PACT community token',
+    18,
+    '0x66e7ce35578a37209d01f99f3d2ff271f981f581',
+    UnderlyingAsset.PACT
+  ),
+  erc20(
     'dfc25625-418c-4958-89d6-aa8a96437f0c',
     'par',
     'PAR Stable Coin',
@@ -5534,6 +5574,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x846c66cf71c43f80403b51fe3906b3599d63336f',
     UnderlyingAsset.PMA
+  ),
+  erc20(
+    'a10eb871-eecd-4c63-ae23-ee1cd1098b62',
+    'pol',
+    'Polygon Ecosystem Token',
+    18,
+    '0x455e53cbb86018ac2b8092fdcd39d8444affc3f6',
+    UnderlyingAsset.POL
   ),
   erc20(
     'c49d4a7f-17ff-424a-8c6b-18ed6b265af6',
@@ -8123,6 +8171,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.METIS
   ),
   erc20(
+    '477dbd05-a976-410b-93ce-971c8663975e',
+    'mew',
+    'MEW coin',
+    18,
+    '0xfa61f23943dad7d3ad69c0fa80e3c47f110778e9',
+    UnderlyingAsset.MEW
+  ),
+  erc20(
     'c641f0b2-359d-4ea4-afd7-0e959d4dd7f8',
     'mim',
     'Magic Internet Money',
@@ -9708,6 +9764,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.MOONSHIT
   ),
   erc20(
+    '7bc4cf02-2f5c-46d0-a985-576063747b4b',
+    'mother',
+    'MOTHER IGGY',
+    9,
+    '0x5c927767264cf7ee038ed5b84ef760b96c7843a6',
+    UnderlyingAsset.MOTHER
+  ),
+  erc20(
     '280e08c8-616e-4b57-8ebc-d012142be0ae',
     'mrtweet',
     'Mr. Tweet',
@@ -11156,6 +11220,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x47bead2563dcbf3bf2c9407fea4dc236faba485a',
     UnderlyingAsset['bsc:sxp']
+  ),
+  bscToken(
+    '7cc0b178-18cb-49f1-bf16-3cdd860e5d90',
+    'bsc:nnn',
+    'Novem Gold Token',
+    18,
+    '0x5d5c5c1d14faf8ff704295b2f502daa9d06799a0',
+    UnderlyingAsset['bsc:nnn']
+  ),
+  bscToken(
+    '9b2925ed-7e66-4f60-b1bb-edae3931e9cd',
+    'bsc:nvm',
+    'Novem Pro Token',
+    18,
+    '0xbe2d8ac2a370972c4328bed520b224c3903a4941',
+    UnderlyingAsset['bsc:nvm']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
