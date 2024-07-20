@@ -166,7 +166,7 @@ describe('TON:', function () {
 
     it('should explain a non-bounceable transfer transaction', async function () {
       const explainedTransaction = (await basecoin.explainTransaction({
-        txHex: Buffer.from(testData.signedTransaction.txBounceable, 'base64').toString('hex'),
+        txHex: Buffer.from(testData.signedTransaction.tx, 'base64').toString('hex'),
         toAddressBounceable: false,
         fromAddressBounceable: false,
       })) as TransactionExplanation;
