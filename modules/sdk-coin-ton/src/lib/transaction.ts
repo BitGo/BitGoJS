@@ -175,6 +175,7 @@ export class Transaction extends BaseTransaction {
       this.expireTime = parsed.expireAt;
       this.message = parsed.payload;
       this._signatures.push(parsed.signature);
+      this.bounceable = parsed.bounce;
     } catch (e) {
       throw new Error('invalid raw transaction');
     }
