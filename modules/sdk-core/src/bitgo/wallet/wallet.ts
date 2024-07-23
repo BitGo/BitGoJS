@@ -3287,7 +3287,9 @@ export class Wallet implements IWallet {
       return {
         coin: this.coin(),
         txHash: signedMessageRequest.messages[0].txHash,
+        signature: signedMessageRequest.messages[0].txHash,
         messageRaw: params.message?.messageRaw,
+        messageEncoded: params.message?.messageEncoded,
         txRequestId: signedMessageRequest.txRequestId,
       };
     } catch (e) {
@@ -3343,7 +3345,9 @@ export class Wallet implements IWallet {
       return {
         coin: this.coin(),
         txHash: signedTypedDataRequest.messages[0].txHash,
+        signature: signedTypedDataRequest.messages[0].txHash,
         messageRaw: params.typedData.typedDataRaw,
+        messageEncoded: params.typedData.typedDataEncoded!.toString('hex'),
         txRequestId: signedTypedDataRequest.txRequestId,
       };
     } catch (e) {
