@@ -3149,7 +3149,14 @@ describe('V2 Wallet:', function () {
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
       const messageRaw = 'test';
-      const expected: SignedMessage = { txRequestId: reqId.toString(), txHash, messageRaw, coin: 'teth' };
+      const expected: SignedMessage = {
+        txRequestId: reqId.toString(),
+        txHash,
+        signature: txHash,
+        messageRaw,
+        coin: 'teth',
+        messageEncoded: '\u0019Ethereum Signed Message:\n4test',
+      };
 
       beforeEach(async function () {
         signTxRequestForMessage = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
@@ -3364,7 +3371,14 @@ describe('V2 Wallet:', function () {
         tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
         const txRequestId = txRequestForTypedDataSigning.txRequestId;
         typedDataBase.txRequestId = txRequestId;
-        const expected: SignedMessage = { txRequestId, messageRaw: JSON.stringify(typedMessage), txHash, coin: 'teth' };
+        const expected: SignedMessage = {
+          txRequestId,
+          messageRaw: JSON.stringify(typedMessage),
+          signature: txHash,
+          txHash,
+          coin: 'teth',
+          messageEncoded: txHash,
+        };
 
         describe(`sign typed data V3 for ${coinName}`, async function () {
           const typedData = { ...typedDataBase };

@@ -381,8 +381,11 @@ export type SignedTransaction =
 
 export interface SignedMessage {
   coin?: string;
+  // @deprecated - use `signature` instead
   txHash: string;
+  signature: string;
   messageRaw: string;
+  messageEncoded?: string;
   txRequestId: string;
 }
 
