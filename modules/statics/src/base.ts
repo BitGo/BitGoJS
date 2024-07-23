@@ -2046,6 +2046,7 @@ export enum UnderlyingAsset {
   'sol:acusd' = 'sol:acusd',
   'sol:solink' = 'sol:solink',
   'sol:block' = 'sol:block',
+  'sol:render' = 'sol:render',
 
   // TRX tokens
   'trx:jst' = 'trx:jst',
