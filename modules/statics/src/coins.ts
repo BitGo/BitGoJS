@@ -217,6 +217,22 @@ const MATIC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
 ];
+const WETH_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.STAKING,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.METAMASK_INSTITUTIONAL,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
+];
+const EIGEN_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.STAKING,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.METAMASK_INSTITUTIONAL,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
+];
 const SUI_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
@@ -3394,7 +3410,8 @@ export const coins = CoinMap.fromCoins([
     'Eigen',
     18,
     '0xec53bf9167f50cdeb3ae105f56099aaab9061f83',
-    UnderlyingAsset.EIGEN
+    UnderlyingAsset.EIGEN,
+    EIGEN_FEATURES
   ),
   erc20(
     'e7d90271-7d08-443a-9feb-37c83086d39c',
@@ -7231,7 +7248,8 @@ export const coins = CoinMap.fromCoins([
     'Wrapped Ether',
     18,
     '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    UnderlyingAsset.WETH
+    UnderlyingAsset.WETH,
+    WETH_FEATURES
   ),
   erc20(
     'e59ca3be-86ac-4aa5-8732-c9a3adb3219f',
@@ -12689,7 +12707,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x94373a4919b3240d86ea41593d5eba789fef3848',
     UnderlyingAsset.TWETH,
-    undefined,
+    WETH_FEATURES,
     undefined,
     undefined,
     Networks.test.holesky
