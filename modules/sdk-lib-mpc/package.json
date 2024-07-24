@@ -39,6 +39,7 @@
     "@noble/curves": "1.4.0",
     "@silencelaboratories/dkls-wasm-ll-node": "1.1.2",
     "@silencelaboratories/dkls-wasm-ll-web": "1.1.2",
+    "@silencelaboratories/dkls-wasm-ll-bundler": "1.1.2",
     "@types/superagent": "4.1.15",
     "@wasmer/wasi": "^1.2.2",
     "bigint-crypto-utils": "3.1.4",

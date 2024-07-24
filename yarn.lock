@@ -4487,6 +4487,11 @@
     "@sigstore/protobuf-specs" "^0.2.0"
     tuf-js "^1.1.7"
 
+"@silencelaboratories/dkls-wasm-ll-bundler@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-bundler/-/dkls-wasm-ll-bundler-1.1.2.tgz#caf33be078a75e0400dedfd7da60eafac1838047"
+  integrity sha512-Z1AovxUDJf0tuTH56UTrj+RZJ4CEkTae/Oe+klGZJxykUfJ/tpmGVyuuA8WAgbYCdkgAe3rBRu9OsBKOYCfx2Q==
+
 "@silencelaboratories/dkls-wasm-ll-node@1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@silencelaboratories/dkls-wasm-ll-node/-/dkls-wasm-ll-node-1.1.2.tgz#595c6da10208d0638e72db323da87a4a42dd2890"
