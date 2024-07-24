@@ -6,6 +6,7 @@ import * as assert from 'assert';
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
+import { promises as fs } from 'fs';
 
 type ChainCode = utxolib.bitgo.ChainCode;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
@@ -139,7 +140,8 @@ async function queryBlockchainUnspentsPath(
   coin: AbstractUtxoCoin,
   params: RecoverParams,
   walletKeys: RootWalletKeys,
-  chain: ChainCode
+  chain: ChainCode,
+  index?: number
 ): Promise<WalletUnspent<bigint>[]> {
   const scriptType = scriptTypeForChain(chain);
   const fetchPrevTx =
@@ -164,15 +166,17 @@ async function queryBlockchainUnspentsPath(
 
     const formattedAddress = getFormattedAddress(coin, address);
     const addrInfo = await recoveryProvider.getAddressInfo(formattedAddress);
+    // console.log(`address info for ${address.address} [${formattedAddress}]`, JSON.stringify(addrInfo, null, 2));
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
       numSequentialAddressesWithoutTxs++;
     } else {
       numSequentialAddressesWithoutTxs = 0;
 
+      // console.log(`checking if address ${address.address} [${formattedAddress}] has balance`);
       if (addrInfo.balance > 0) {
         console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.balance}`);
-        const addressUnspents = await recoveryProvider.getUnspentsForAddresses([formattedAddress]);
+        const addressUnspents = await recoveryProvider.getUnspentsForAddresses([`ecash:${formattedAddress}`]);
         const processedUnspents = await Promise.all(
           addressUnspents.map(async (u): Promise<WalletUnspent<bigint>> => {
             const { txid, vout } = utxolib.bitgo.parseOutputId(u.id);
@@ -203,6 +207,12 @@ async function queryBlockchainUnspentsPath(
       }
     }
 
+    // Don't recurse if index is defined, we know exactly which chain/index to search
+    // for and don't need to keep trying
+    if (index !== undefined) {
+      return;
+    }
+
     if (numSequentialAddressesWithoutTxs >= MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS) {
       // stop searching for addresses with unspents in them, we've found ${MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS} in a row with none
       // we are done
@@ -216,7 +226,7 @@ async function queryBlockchainUnspentsPath(
 
   const walletUnspents: WalletUnspent<bigint>[] = [];
   // This will populate walletAddresses
-  await gatherUnspents(0);
+  await gatherUnspents(index ? index : 0);
 
   if (walletUnspents.length === 0) {
     // Couldn't find any addresses with funds
@@ -309,23 +319,43 @@ export async function backupKeyRecovery(
     utxolib.bitgo.RootWalletKeys.defaultPrefix,
     utxolib.bitgo.RootWalletKeys.defaultPrefix,
   ]);
+  const data = await fs.readFile(
+    '/Users/luiscovarrubias/BitGoJS/modules/abstract-utxo/src/recovery/bch_handler.json',
+    'utf8'
+  );
+  const addresses: { address: string; chain: ChainCode; index: number }[] = JSON.parse(data);
 
-  const unspents: WalletUnspent<bigint>[] = (
-    await Promise.all(
-      outputScripts.scriptTypes2Of3
-        .filter(
-          (addressType) => coin.supportsAddressType(addressType) && !params.ignoreAddressTypes?.includes(addressType)
-        )
-        .reduce(
-          (queries, addressType) => [
-            ...queries,
-            queryBlockchainUnspentsPath(coin, params, walletKeys, getExternalChainCode(addressType)),
-            queryBlockchainUnspentsPath(coin, params, walletKeys, getInternalChainCode(addressType)),
-          ],
-          [] as Promise<WalletUnspent<bigint>[]>[]
-        )
-    )
-  ).flat();
+  let unspents: WalletUnspent<bigint>[] = [];
+
+  if (addresses && addresses.length > 0) {
+    unspents = (
+      await Promise.all(
+        addresses.map((address) => queryBlockchainUnspentsPath(coin, params, walletKeys, address.chain, address.index))
+      )
+    ).flat();
+    // unspents = [];
+    // for (const address of addresses) {
+    //   const result = await queryBlockchainUnspentsPath(coin, params, walletKeys, address.chain, address.index);
+    //   unspents.push(...result);
+    // }
+  } else {
+    unspents = (
+      await Promise.all(
+        outputScripts.scriptTypes2Of3
+          .filter(
+            (addressType) => coin.supportsAddressType(addressType) && !params.ignoreAddressTypes?.includes(addressType)
+          )
+          .reduce(
+            (queries, addressType) => [
+              ...queries,
+              queryBlockchainUnspentsPath(coin, params, walletKeys, getExternalChainCode(addressType)),
+              queryBlockchainUnspentsPath(coin, params, walletKeys, getInternalChainCode(addressType)),
+            ],
+            [] as Promise<WalletUnspent<bigint>[]>[]
+          )
+      )
+    ).flat();
+  }
 
   // Execute the queries and gather the unspents
   const totalInputAmount = utxolib.bitgo.unspentSum(unspents, 'bigint');
@@ -366,6 +396,7 @@ export async function backupKeyRecovery(
     }
   }
 
+  console.log(`approximate fee: ${approximateFee.toString()}, krs fee: ${krsFee.toString()}`);
   const recoveryAmount = totalInputAmount - approximateFee - krsFee;
 
   if (recoveryAmount < BigInt(0)) {

@@ -126,44 +126,74 @@ export class BlockchairApi implements AddressApi, UtxoApi {
     return this.client.get(path + (this.apiToken ? `?key=${this.apiToken}` : ''));
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   async getAddressInfo(address: string): Promise<AddressInfo> {
     if (!address || address.length === 0) {
       throw new Error('invalid address');
     }
-    // https://blockchair.com/api/docs#link_300
-    return (await this.get<BlockchairRecordResponse<BlockchairAddress>>(`/dashboards/address/${address}`)).map(
-      (body) => {
-        return {
-          txCount: body.data[address].address.transaction_count,
-          balance: body.data[address].address.balance,
-        };
+
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    while (attempts < maxAttempts) {
+      try {
+        // https://blockchair.com/api/docs#link_300
+        const response = await this.get<BlockchairRecordResponse<BlockchairAddress>>(`/dashboards/address/${address}`);
+        return response.map((body) => {
+          return {
+            txCount: body.data[address].address.transaction_count,
+            balance: body.data[address].address.balance,
+          };
+        });
+      } catch (error) {
+        console.log(`failed to get info for address ${address}...trying again`);
+        attempts++;
+        if (attempts === maxAttempts) {
+          throw error; // rethrow the last error if all attempts fail
+        }
       }
-    );
+    }
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   async getUnspentsForAddresses(addr: string[]): Promise<Unspent[]> {
     if (addr.length > 100) {
       throw new Error(`invalid size`);
     }
 
-    const response = await this.get<BlockchairResponse<{ utxo: BlockchairUnspent[] }>>(
-      `/dashboards/addresses/${addr.join(',')}`
-    );
+    let attempts = 0;
+    const maxAttempts = 20;
 
-    return response.map((body) => {
-      return body.data.utxo
-        .flatMap((unspent): Unspent | undefined => {
-          if (addr.includes(unspent.address)) {
-            return {
-              id: formatOutputId({ txid: unspent.transaction_hash, vout: unspent.index }),
-              address: unspent.address,
-              value: unspent.value,
-            };
-          }
-          return undefined;
-        })
-        .filter((unspent): unspent is Unspent => unspent !== undefined);
-    });
+    while (attempts < maxAttempts) {
+      try {
+        const response = await this.get<BlockchairResponse<{ utxo: BlockchairUnspent[] }>>(
+          `/dashboards/addresses/${addr.join(',')}`
+        );
+
+        return response.map((body) => {
+          return body.data.utxo
+            .flatMap((unspent): Unspent | undefined => {
+              if (addr.includes(unspent.address)) {
+                return {
+                  id: formatOutputId({ txid: unspent.transaction_hash, vout: unspent.index }),
+                  address: unspent.address,
+                  value: unspent.value,
+                };
+              }
+              return undefined;
+            })
+            .filter((unspent): unspent is Unspent => unspent !== undefined);
+        });
+      } catch (error) {
+        console.log(`failed to get unspents for addresses ${addr.join(', ')}...trying again`);
+        attempts++;
+        if (attempts === maxAttempts) {
+          throw error; // rethrow the last error if all attempts fail
+        }
+      }
+    }
   }
 
   async getTransaction(txid: string): Promise<BlockchairTransaction> {
