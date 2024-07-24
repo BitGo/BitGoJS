@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.10.0...@bitgo/sdk-lib-mpc@9.10.1) (2024-07-24)
+
+### Bug Fixes
+
+- **sdk-core:** fixing nocks for tests ([4d66d5d](https://github.com/BitGo/BitGoJS/commit/4d66d5dfd4a6b1362bc50265f997faa11594ba65))
+
 # [9.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.9.0...@bitgo/sdk-lib-mpc@9.10.0) (2024-07-16)
 
 ### Features

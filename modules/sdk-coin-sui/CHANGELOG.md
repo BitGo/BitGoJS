@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.2.0...@bitgo/sdk-coin-sui@5.3.0) (2024-07-24)
+
+### Features
+
+- **sdk-coin-sui:** add token transfer builder ([7909d47](https://github.com/BitGo/BitGoJS/commit/7909d47b2f30fa764ee19839954554eb2fbd8002))
+
 # [5.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.1.8...@bitgo/sdk-coin-sui@5.2.0) (2024-07-16)
 
 ### Bug Fixes
