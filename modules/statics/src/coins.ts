@@ -15765,6 +15765,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:wec'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '24a7c99d-4848-45d7-9dcc-01023915c298',
+    'sol:render',
+    'Render Token',
+    8,
+    'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
+    UnderlyingAsset['sol:render'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
