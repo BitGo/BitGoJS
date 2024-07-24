@@ -632,14 +632,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
 
-  async signTxRequest(params: TSSParamsWithPrv | TSSParamsForMessageWithPrv): Promise<TxRequest> {
+  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
-    const txRequest: TxRequest =
-      typeof params.txRequest === 'string'
-        ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest)
-        : params.txRequest;
-    const requestType = txRequest.messages ? RequestType.message : RequestType.tx;
-    return this.signRequestBase(params, requestType);
+    return this.signRequestBase(params, RequestType.tx);
   }
 
   /**
