@@ -6,7 +6,7 @@ import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { EnterpriseData, EnterpriseFeatureFlag, IEnterprise } from '../enterprise';
 import { getFirstPendingTransaction } from '../internal';
-import { Wallet } from '../wallet';
+import { ListWalletOptions, Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { verifyEcdhSignature } from '../ecdh';
@@ -57,12 +57,18 @@ export class Enterprise implements IEnterprise {
    * Get the wallets associated with this Enterprise
    * @param params
    */
-  async coinWallets(params: Record<string, never> = {}): Promise<Wallet[]> {
-    const walletData = (await this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result()) as any;
-    walletData.wallets = walletData.wallets.map((w) => {
+  async coinWallets(params: ListWalletOptions = {}): Promise<Wallet[]> {
+    if (params.skip && params.prevId) {
+      throw new Error('cannot specify both skip and prevId');
+    }
+
+    const walletData = (await this.bitgo
+      .get(this.baseCoin.url('/wallet/enterprise/' + this.id))
+      .query(params)
+      .result()) as any;
+    return walletData.wallets.map((w) => {
       return new Wallet(this.bitgo, this.baseCoin, w);
     });
-    return walletData;
   }
 
   /**

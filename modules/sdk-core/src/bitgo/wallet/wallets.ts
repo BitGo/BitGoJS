@@ -65,40 +65,11 @@ export class Wallets implements IWallets {
    * @param params
    * @returns {*}
    */
-  async list(params: ListWalletOptions = {}): Promise<{ wallets: Wallet[] }> {
-    const queryObject: ListWalletOptions = {};
-
+  async list(params: ListWalletOptions & { enterprise?: string } = {}): Promise<{ wallets: Wallet[] }> {
     if (params.skip && params.prevId) {
       throw new Error('cannot specify both skip and prevId');
     }
-
-    if (params.getbalances) {
-      if (!_.isBoolean(params.getbalances)) {
-        throw new Error('invalid getbalances argument, expecting boolean');
-      }
-      queryObject.getbalances = params.getbalances;
-    }
-    if (params.prevId) {
-      if (!_.isString(params.prevId)) {
-        throw new Error('invalid prevId argument, expecting string');
-      }
-      queryObject.prevId = params.prevId;
-    }
-    if (params.limit) {
-      if (!_.isNumber(params.limit)) {
-        throw new Error('invalid limit argument, expecting number');
-      }
-      queryObject.limit = params.limit;
-    }
-
-    if (params.allTokens) {
-      if (!_.isBoolean(params.allTokens)) {
-        throw new Error('invalid allTokens argument, expecting boolean');
-      }
-      queryObject.allTokens = params.allTokens;
-    }
-
-    const body = (await this.bitgo.get(this.baseCoin.url('/wallet')).query(queryObject).result()) as any;
+    const body = (await this.bitgo.get(this.baseCoin.url('/wallet')).query(params).result()) as any;
     body.wallets = body.wallets.map((w) => new Wallet(this.bitgo, this.baseCoin, w));
     return body;
   }
