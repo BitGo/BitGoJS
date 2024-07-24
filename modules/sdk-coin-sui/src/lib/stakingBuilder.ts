@@ -149,10 +149,7 @@ export class StakingBuilder extends TransactionBuilder<StakingProgrammableTransa
     const txData = tx.toJson();
     this.type(SuiTransactionType.AddStake);
     this.sender(txData.sender);
-    this.gasData({
-      ...txData.gasData,
-      payment: this.getInputGasPaymentObjectsFromTxData(txData),
-    });
+    this.gasData(txData.gasData);
 
     const requests = utils.getStakeRequests(tx.suiTransaction.tx);
     this.stake(requests);

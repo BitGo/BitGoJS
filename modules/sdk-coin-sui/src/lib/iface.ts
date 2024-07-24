@@ -39,6 +39,7 @@ export interface TxData {
   kind: {
     ProgrammableTransaction: SuiProgrammableTransaction;
   };
+  inputObjects?: SuiObjectRef[];
 }
 
 export type TransferProgrammableTransaction =

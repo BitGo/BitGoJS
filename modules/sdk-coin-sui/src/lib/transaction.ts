@@ -8,7 +8,7 @@ import {
 } from '@bitgo/sdk-core';
 import { SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import utils, { AppId, Intent, IntentScope, IntentVersion } from './utils';
+import utils, { AppId, Intent, IntentScope, IntentVersion, isImmOrOwnedObj } from './utils';
 import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
 import { SIGNATURE_SCHEME_BYTES } from './constants';
 import { Buffer } from 'buffer';
@@ -16,7 +16,7 @@ import { fromB64, toB64 } from '@mysten/bcs';
 import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
 import { TRANSACTION_DATA_MAX_SIZE, TransactionBlockDataBuilder } from './mystenlab/builder/TransactionDataBlock';
-import { builder, TransactionType } from './mystenlab/builder';
+import { builder, MergeCoinsTransaction, TransactionType } from './mystenlab/builder';
 import blake2b from '@bitgo/blake2b';
 import { hashTypedData } from './mystenlab/cryptography/hash';
 
@@ -224,5 +224,38 @@ export abstract class Transaction<T> extends BaseTransaction {
       version: Number(obj.version),
       digest: obj.digest,
     };
+  }
+
+  /**
+   * When building transactions with > 255 input gas payment objects, we first use MergeCoins Tranasactions to merge the
+   * additional inputs into the gas coin & slice them from the payment in gasData. When initializing the builder using
+   * decoded tx data, we need to get these inputs from MergeCoins & add them back to the gas payment to be able to
+   * rebuild from a raw transaction.
+   */
+  protected getInputGasPaymentObjectsFromTx(tx: SuiProgrammableTransaction): SuiObjectRef[] {
+    const txInputs = tx.inputs;
+    const transactions = tx.transactions;
+    const inputGasPaymentObjects: SuiObjectRef[] = [];
+
+    transactions.forEach((transaction) => {
+      if (transaction.kind === 'MergeCoins') {
+        const { destination, sources } = transaction as MergeCoinsTransaction;
+        if (destination.kind === 'GasCoin') {
+          sources.forEach((source) => {
+            if (source.kind === 'Input') {
+              let input = txInputs[source.index];
+              if ('value' in input) {
+                input = input.value;
+              }
+              if ('Object' in input && isImmOrOwnedObj(input.Object)) {
+                inputGasPaymentObjects.push(input.Object.ImmOrOwned);
+              }
+            }
+          });
+        }
+      }
+    });
+
+    return inputGasPaymentObjects;
   }
 }

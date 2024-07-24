@@ -6,10 +6,9 @@ import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { TokenTransferTransaction } from './tokenTransferTransaction';
 import { SuiObjectRef } from './mystenlab/types';
-import utils, { isImmOrOwnedObj } from './utils';
+import utils from './utils';
 import {
   Inputs,
-  TransactionType as SuiTransactionBlockType,
   TransactionBlock as ProgrammingTransactionBlockBuilder,
   TransactionArgument,
 } from './mystenlab/builder';
@@ -79,8 +78,8 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
     this.gasData(txData.gasData);
     const recipients = utils.getRecipients(tx.suiTransaction);
     this.send(recipients);
-    const inputObjects = this.getInputObjectsFromTx(tx.suiTransaction.tx);
-    this.inputObjects(inputObjects);
+    assert(txData.inputObjects);
+    this.inputObjects(txData.inputObjects);
   }
 
   send(recipients: Recipient[]): this {
@@ -157,35 +156,5 @@ export class TokenTransferBuilder extends TransactionBuilder<TokenTransferProgra
         ...this._gasData,
       },
     };
-  }
-
-  /**
-   * Extracts the objects that were provided as inputs while building the transaction
-   * @param txData
-   * @returns {SuiObjectRef[]} Objects that are inputs for the transaction
-   */
-  private getInputObjectsFromTx(tx: TokenTransferProgrammableTransaction): SuiObjectRef[] {
-    const inputs = tx.inputs;
-    const transaction = tx.transactions[0] as SuiTransactionBlockType;
-
-    let args: TransactionArgument[] = [];
-    if (transaction.kind === 'MergeCoins') {
-      const { destination, sources } = transaction;
-      args = [destination, ...sources];
-    } else if (transaction.kind === 'SplitCoins') {
-      args = [transaction.coin];
-    }
-
-    const inputObjects: SuiObjectRef[] = [];
-    args.forEach((arg) => {
-      if (arg.kind === 'Input') {
-        const input = inputs[arg.index];
-        if ('Object' in input && isImmOrOwnedObj(input.Object)) {
-          inputObjects.push(input.Object.ImmOrOwned);
-        }
-      }
-    });
-
-    return inputObjects;
   }
 }

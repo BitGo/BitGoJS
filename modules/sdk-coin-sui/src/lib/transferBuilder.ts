@@ -86,10 +86,7 @@ export class TransferBuilder extends TransactionBuilder<TransferProgrammableTran
     const txData = tx.toJson();
     this.type(SuiTransactionType.Transfer);
     this.sender(txData.sender);
-    this.gasData({
-      ...txData.gasData,
-      payment: this.getInputGasPaymentObjectsFromTxData(txData),
-    });
+    this.gasData(txData.gasData);
 
     const recipients = utils.getRecipients(tx.suiTransaction);
     this.send(recipients);
