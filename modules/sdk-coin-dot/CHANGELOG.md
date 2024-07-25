@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.1.4...@bitgo/sdk-coin-dot@4.1.5) (2024-07-24)
+
+### Reverts
+
+- Revert "chore: update polkadot metadata" ([2b07199](https://github.com/BitGo/BitGoJS/commit/2b0719998742f133da70b7592eee7af5b905deaa))
+- Revert "chore: disable tests for dot" ([e4cc415](https://github.com/BitGo/BitGoJS/commit/e4cc415b7d507ee6f5f04322ba5f8cbf08f08ac1))
+
 ## [4.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.1.3...@bitgo/sdk-coin-dot@4.1.4) (2024-07-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

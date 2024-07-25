@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.16.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.15.0...bitgo@38.16.0) (2024-07-24)
+
+### Bug Fixes
+
+- **sdk-core:** fixing nocks for tests ([4d66d5d](https://github.com/BitGo/BitGoJS/commit/4d66d5dfd4a6b1362bc50265f997faa11594ba65))
+
+### Features
+
+- **sdk-coin-sui:** add token transfer builder ([7909d47](https://github.com/BitGo/BitGoJS/commit/7909d47b2f30fa764ee19839954554eb2fbd8002))
+- **sdk-core:** create lightning wallet document ([6519f8f](https://github.com/BitGo/BitGoJS/commit/6519f8f167df38003b7fbf8c2f8a2e0186546c20))
+- **sdk-core:** tweaking message signing response type ([4e0041e](https://github.com/BitGo/BitGoJS/commit/4e0041e8f28f8b824072ac87e9b47c3f746f7fc0))
+
 # [38.15.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.14.2...bitgo@38.15.0) (2024-07-16)
 
 ### Bug Fixes

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.24.0...@bitgo/statics@48.25.0) (2024-07-24)
+
+### Features
+
+- **statics:** add new batch of tokens ([3b88e7d](https://github.com/BitGo/BitGoJS/commit/3b88e7db26e1b2e64d37da36312a0f65a734aadd))
+- **statics:** add new batch of tokens COIN-1245 ([0adda85](https://github.com/BitGo/BitGoJS/commit/0adda8542483fb41f2961c50f6c62053b392b15d))
+- **statics:** add render spl token ([8b02f86](https://github.com/BitGo/BitGoJS/commit/8b02f866c6a5767e256dd41605fe1d73083e5cef))
+- **statics:** onboard ftx token ([a118714](https://github.com/BitGo/BitGoJS/commit/a118714334ebb5d75634682f2fdad433459a2cc6))
+- **statics:** update near prod explorer link ([38ce454](https://github.com/BitGo/BitGoJS/commit/38ce45428135b1c1c32eb8795bce411447dbbda3))
+
 # [48.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.23.0...@bitgo/statics@48.24.0) (2024-07-16)
 
 ### Features

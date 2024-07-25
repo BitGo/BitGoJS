@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.1.0...@bitgo/sdk-coin-ton@3.2.0) (2024-07-24)
+
+### Features
+
+- add bounce versions of to and from address ([009b6ef](https://github.com/BitGo/BitGoJS/commit/009b6ef527fd357c72b50a00433e4c4f1c86330a))
+- add bounce versions of to and from address ([50858e3](https://github.com/BitGo/BitGoJS/commit/50858e353d09a9f58a94e55ddafa8ce998d4dbe0))
+- set bounce flag in from method ([2b2126c](https://github.com/BitGo/BitGoJS/commit/2b2126c0fa80de45fdc99ca4c5f43ff477c8c466))
+
 # [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.0.0...@bitgo/sdk-coin-ton@3.1.0) (2024-07-16)
 
 ### Bug Fixes

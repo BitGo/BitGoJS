@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.5.0...@bitgo/sdk-core@27.6.0) (2024-07-24)
+
+### Bug Fixes
+
+- **sdk-core:** fixing nocks for tests ([4d66d5d](https://github.com/BitGo/BitGoJS/commit/4d66d5dfd4a6b1362bc50265f997faa11594ba65))
+- **sdk-core:** removing message signing logic in signTxRequest ([a41d38d](https://github.com/BitGo/BitGoJS/commit/a41d38dae03a61b409becc2d0af6c5e340242c60))
+
+### Features
+
+- **sdk-core:** create lightning wallet document ([6519f8f](https://github.com/BitGo/BitGoJS/commit/6519f8f167df38003b7fbf8c2f8a2e0186546c20))
+- **sdk-core:** list wallet accepting enterprise id ([f012e7c](https://github.com/BitGo/BitGoJS/commit/f012e7c37655a802c1cf74759fa1b0fad90d3e76))
+- **sdk-core:** logic for which requesttype ([e6ebd94](https://github.com/BitGo/BitGoJS/commit/e6ebd94b6f77e2c89e8605a7c1f56c4013650be2))
+- **sdk-core:** script for message signing test ([404eb80](https://github.com/BitGo/BitGoJS/commit/404eb80d913b9d59048da86e6ffa2a3996d8f7f0))
+- **sdk-core:** tweaking message signing response type ([4e0041e](https://github.com/BitGo/BitGoJS/commit/4e0041e8f28f8b824072ac87e9b47c3f746f7fc0))
+
 # [27.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.4.1...@bitgo/sdk-core@27.5.0) (2024-07-16)
 
 ### Bug Fixes
