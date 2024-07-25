@@ -101,6 +101,7 @@ describe('signTxRequest:', function () {
   const vector = {
     party1: 0,
     party2: 2,
+    party3: 1,
   };
   // To generate the fixtures, run DKG as in the dklsDkg.ts tests and save the resulting party.getKeyShare in a file by doing fs.writeSync(party.getKeyShare()).
   const shareFiles = [
@@ -174,7 +175,7 @@ describe('signTxRequest:', function () {
     nock.cleanAll();
   });
 
-  it('successfully signs a txRequest for a dkls hot wallet with WP', async function () {
+  it('successfully signs a txRequest with user key for a dkls hot wallet with WP', async function () {
     const nockPromises = [
       await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
       await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey),
@@ -188,6 +189,28 @@ describe('signTxRequest:', function () {
     await tssUtils.signTxRequest({
       txRequest,
       prv: userPrvBase64,
+      reqId,
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
+  });
+
+  it('successfully signs a txRequest with backup key for a dkls hot wallet with WP', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey, 1),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey, 1),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequest),
+      await nockSendTxRequest(txRequest),
+    ];
+    await Promise.all(nockPromises);
+
+    const backupShare = fs.readFileSync(shareFiles[vector.party3]);
+    const backupPrvBase64 = Buffer.from(backupShare).toString('base64');
+    await tssUtils.signTxRequest({
+      txRequest,
+      prv: backupPrvBase64,
+      mpcv2PartyId: 1,
       reqId,
     });
     nockPromises[0].isDone().should.be.true();
@@ -224,9 +247,9 @@ export function getBitGoPartyGpgKeyPrv(key: openpgp.SerializedKeyPair<string>): 
   };
 }
 
-export function getUserPartyGpgKeyPublic(userPubKey: string): DklsTypes.PartyGpgKey {
+export function getUserPartyGpgKeyPublic(userPubKey: string, partyId: 0 | 1 = 0): DklsTypes.PartyGpgKey {
   return {
-    partyId: 0,
+    partyId: partyId,
     gpgKey: userPubKey,
   };
 }
@@ -234,7 +257,8 @@ export function getUserPartyGpgKeyPublic(userPubKey: string): DklsTypes.PartyGpg
 async function nockTxRequestResponseSignatureShareRoundOne(
   bitgoSession: DklsDsg.Dsg,
   txRequest: TxRequest,
-  bitgoGpgKey: openpgp.SerializedKeyPair<string>
+  bitgoGpgKey: openpgp.SerializedKeyPair<string>,
+  partyId: 0 | 1 = 0
 ): Promise<nock.Scope> {
   const transactions = getRoute('ecdsa');
   return nock('https://bitgo.fakeurl')
@@ -270,7 +294,7 @@ async function nockTxRequestResponseSignatureShareRoundOne(
 
         const authEncMessages = await DklsComms.encryptAndAuthOutgoingMessages(
           serializedBitGoToUserRound1And2Msgs,
-          [getUserPartyGpgKeyPublic(body.signerGpgPublicKey)],
+          [getUserPartyGpgKeyPublic(body.signerGpgPublicKey, partyId)],
           [getBitGoPartyGpgKeyPrv(bitgoGpgKey)]
         );
 
@@ -297,7 +321,7 @@ async function nockTxRequestResponseSignatureShareRoundOne(
               signatureShares: [
                 {
                   from: SignatureShareType.BITGO,
-                  to: SignatureShareType.USER,
+                  to: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
                   share: JSON.stringify(bitgoToUserSignatureShare),
                 },
               ],
@@ -311,7 +335,8 @@ async function nockTxRequestResponseSignatureShareRoundOne(
 async function nockTxRequestResponseSignatureShareRoundTwo(
   bitgoSession: DklsDsg.Dsg,
   txRequest: TxRequest,
-  bitgoGpgKey: openpgp.SerializedKeyPair<string>
+  bitgoGpgKey: openpgp.SerializedKeyPair<string>,
+  partyId: 0 | 1 = 0
 ): Promise<nock.Scope> {
   const transactions = getRoute('ecdsa');
   return nock('https://bitgo.fakeurl')
@@ -346,7 +371,7 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
           ],
           broadcastMessages: [],
         },
-        [getUserPartyGpgKeyPublic(body.signerGpgPublicKey)],
+        [getUserPartyGpgKeyPublic(body.signerGpgPublicKey, partyId)],
         [getBitGoPartyGpgKeyPrv(bitgoGpgKey)]
       );
       const deserializedMessages = DklsTypes.deserializeMessages({
@@ -359,7 +384,7 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
 
         const authEncMessages = await DklsComms.encryptAndAuthOutgoingMessages(
           serializedBitGoToUserRound3Msgs,
-          [getUserPartyGpgKeyPublic(body.signerGpgPublicKey)],
+          [getUserPartyGpgKeyPublic(body.signerGpgPublicKey, partyId)],
           [getBitGoPartyGpgKeyPrv(bitgoGpgKey)]
         );
 
@@ -380,13 +405,13 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
             {
               signatureShares: [
                 {
-                  from: SignatureShareType.USER,
+                  from: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
                   to: SignatureShareType.BITGO,
                   share: 'some old share we dont care about',
                 },
                 {
                   from: SignatureShareType.BITGO,
-                  to: SignatureShareType.USER,
+                  to: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
                   share: JSON.stringify(bitgoToUserSignatureShare),
                 },
               ],
