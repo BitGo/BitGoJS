@@ -73,7 +73,10 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
       id: this._id,
       sender: tx.sender,
       kind: { ProgrammableTransaction: tx.tx },
-      gasData: tx.gasData,
+      gasData: {
+        ...tx.gasData,
+        payment: [...tx.gasData.payment, ...this.getInputGasPaymentObjectsFromTx(tx.tx)],
+      },
       expiration: { None: null },
     };
   }

@@ -95,6 +95,7 @@ describe('Sui Staking Builder', () => {
       rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
       const rebuiltTx = await rebuilder.build();
       rebuiltTx.toBroadcastFormat().should.equal(rawTx);
+      rebuiltTx.toJson().gasData.payment.length.should.equal(numberOfPaymentObjects);
     });
   });
 

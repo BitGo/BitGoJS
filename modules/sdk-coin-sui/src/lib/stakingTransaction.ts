@@ -70,7 +70,10 @@ export class StakingTransaction extends Transaction<StakingProgrammableTransacti
       id: this._id,
       sender: tx.sender,
       kind: { ProgrammableTransaction: tx.tx },
-      gasData: tx.gasData,
+      gasData: {
+        ...tx.gasData,
+        payment: [...tx.gasData.payment, ...this.getInputGasPaymentObjectsFromTx(tx.tx)],
+      },
       expiration: { None: null },
     };
   }
