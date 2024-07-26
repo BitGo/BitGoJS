@@ -17,7 +17,8 @@ import assert from 'assert';
 
 export async function getSignatureShareRoundOne(
   round1Message: DklsTypes.DeserializedBroadcastMessage,
-  userGpgKey: openpgp.SerializedKeyPair<string>
+  userGpgKey: openpgp.SerializedKeyPair<string>,
+  partyId: 0 | 1 = 0
 ): Promise<SignatureShareRecord> {
   const serializedMessages = DklsTypes.serializeMessages({
     broadcastMessages: [round1Message],
@@ -27,7 +28,7 @@ export async function getSignatureShareRoundOne(
     await DklsComms.encryptAndAuthOutgoingMessages(
       serializedMessages,
       [], // Broadcast message so doesn't need to encrypt to BitGo's GPG key
-      [getUserPartyGpgKey(userGpgKey)]
+      [getUserPartyGpgKey(userGpgKey, partyId)]
     )
   ).broadcastMessages[0];
   // Share type expected by Wallet Platform's API
@@ -44,7 +45,7 @@ export async function getSignatureShareRoundOne(
   };
   const serializedShare = JSON.stringify(share);
   return {
-    from: SignatureShareType.USER,
+    from: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
     to: SignatureShareType.BITGO,
     share: serializedShare,
   };
@@ -54,18 +55,19 @@ export async function getSignatureShareRoundTwo(
   userToBitGoMessages2: DklsTypes.DeserializedMessages,
   userToBitGoMessages3: DklsTypes.DeserializedMessages,
   userGpgKey: openpgp.SerializedKeyPair<string>,
-  bitgoGpgKey: openpgp.Key
+  bitgoGpgKey: openpgp.Key,
+  partyId: 0 | 1 = 0
 ): Promise<SignatureShareRecord> {
   const userToBitGoEncryptedMsg2 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages2),
     [getBitGoPartyGpgKey(bitgoGpgKey)],
-    [getUserPartyGpgKey(userGpgKey)]
+    [getUserPartyGpgKey(userGpgKey, partyId)]
   );
 
   const userToBitGoEncryptedMsg3 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages3),
     [getBitGoPartyGpgKey(bitgoGpgKey)],
-    [getUserPartyGpgKey(userGpgKey)]
+    [getUserPartyGpgKey(userGpgKey, partyId)]
   );
   assert(userToBitGoEncryptedMsg2.p2pMessages.length, 'User to BitGo messages 2 not present.');
   assert(userToBitGoEncryptedMsg3.p2pMessages.length, 'User to BitGo messages 3 not present.');
@@ -91,7 +93,7 @@ export async function getSignatureShareRoundTwo(
     },
   };
   return {
-    from: SignatureShareType.USER,
+    from: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
     to: SignatureShareType.BITGO,
     share: JSON.stringify(share),
   };
@@ -100,12 +102,13 @@ export async function getSignatureShareRoundTwo(
 export async function getSignatureShareRoundThree(
   userToBitGoMessages4: DklsTypes.DeserializedMessages,
   userGpgKey: openpgp.SerializedKeyPair<string>,
-  bitgoGpgKey: openpgp.Key
+  bitgoGpgKey: openpgp.Key,
+  partyId: 0 | 1 = 0
 ): Promise<SignatureShareRecord> {
   const userToBitGoEncryptedMsg4 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages4),
     [getBitGoPartyGpgKey(bitgoGpgKey)],
-    [getUserPartyGpgKey(userGpgKey)]
+    [getUserPartyGpgKey(userGpgKey, partyId)]
   );
   assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg4.broadcastMessages[0].from));
   if (!userToBitGoEncryptedMsg4.broadcastMessages[0].signatureR?.message) {
@@ -123,7 +126,7 @@ export async function getSignatureShareRoundThree(
     },
   };
   return {
-    from: SignatureShareType.USER,
+    from: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
     to: SignatureShareType.BITGO,
     share: JSON.stringify(share),
   };
@@ -132,7 +135,8 @@ export async function getSignatureShareRoundThree(
 export async function verifyBitGoMessagesAndSignaturesRoundOne(
   parsedSignatureShare: MPCv2SignatureShareRound1Output,
   userGpgKey: openpgp.SerializedKeyPair<string>,
-  bitgoGpgKey: openpgp.Key
+  bitgoGpgKey: openpgp.Key,
+  partyId: 0 | 1 = 0
 ): Promise<DklsTypes.SerializedMessages> {
   return await DklsComms.decryptAndVerifyIncomingMessages(
     {
@@ -157,14 +161,15 @@ export async function verifyBitGoMessagesAndSignaturesRoundOne(
       ],
     },
     [getBitGoPartyGpgKey(bitgoGpgKey)],
-    [getUserPartyGpgKey(userGpgKey)]
+    [getUserPartyGpgKey(userGpgKey, partyId)]
   );
 }
 
 export async function verifyBitGoMessagesAndSignaturesRoundTwo(
   parsedSignatureShare: MPCv2SignatureShareRound2Output,
   userGpgKey: openpgp.SerializedKeyPair<string>,
-  bitgoGpgKey: openpgp.Key
+  bitgoGpgKey: openpgp.Key,
+  partyId: 0 | 1 = 0
 ): Promise<DklsTypes.SerializedMessages> {
   return await DklsComms.decryptAndVerifyIncomingMessages(
     {
@@ -181,7 +186,7 @@ export async function verifyBitGoMessagesAndSignaturesRoundTwo(
       broadcastMessages: [],
     },
     [getBitGoPartyGpgKey(bitgoGpgKey)],
-    [getUserPartyGpgKey(userGpgKey)]
+    [getUserPartyGpgKey(userGpgKey, partyId)]
   );
 }
 
@@ -192,9 +197,9 @@ export function getBitGoPartyGpgKey(key: openpgp.Key): DklsTypes.PartyGpgKey {
   };
 }
 
-export function getUserPartyGpgKey(key: openpgp.SerializedKeyPair<string>): DklsTypes.PartyGpgKey {
+export function getUserPartyGpgKey(key: openpgp.SerializedKeyPair<string>, partyId: 0 | 1 = 0): DklsTypes.PartyGpgKey {
   return {
-    partyId: 0,
+    partyId: partyId,
     gpgKey: key.privateKey,
   };
 }

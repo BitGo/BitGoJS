@@ -629,6 +629,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    * @param {string | TxRequest} params.txRequest - transaction request object or id
    * @param {string} params.prv - decrypted private key
    * @param {string} params.reqId - request id
+   * @param {string} params.mpcv2PartyId - party id for the signer involved in this mpcv2 request (either 0 for user or 1 for backup)
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
 
@@ -695,9 +696,18 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     }
     // check what the encoding is supposed to be for message
     const hashBuffer = hash.update(bufferContent).digest();
-    const otherSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
+    const otherSigner = new DklsDsg.Dsg(
+      userKeyShare,
+      params.mpcv2PartyId ? params.mpcv2PartyId : 0,
+      derivationPath,
+      hashBuffer
+    );
     const userSignerBroadcastMsg1 = await otherSigner.init();
-    const signatureShareRound1 = await getSignatureShareRoundOne(userSignerBroadcastMsg1, userGpgKey);
+    const signatureShareRound1 = await getSignatureShareRoundOne(
+      userSignerBroadcastMsg1,
+      userGpgKey,
+      params.mpcv2PartyId
+    );
 
     let latestTxRequest = await sendSignatureShareV2(
       this.bitgo,
@@ -730,7 +740,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const serializedBitGoToUserMessagesRound1And2 = await verifyBitGoMessagesAndSignaturesRoundOne(
       parsedBitGoToUserSigShareRoundOne,
       userGpgKey,
-      bitgoGpgPubKey
+      bitgoGpgPubKey,
+      params.mpcv2PartyId
     );
 
     /** Round 2 **/
@@ -747,7 +758,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       userToBitGoMessagesRound2,
       userToBitGoMessagesRound3,
       userGpgKey,
-      bitgoGpgPubKey
+      bitgoGpgPubKey,
+      params.mpcv2PartyId
     );
     latestTxRequest = await sendSignatureShareV2(
       this.bitgo,
@@ -777,7 +789,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const serializedBitGoToUserMessagesRound3 = await verifyBitGoMessagesAndSignaturesRoundTwo(
       parsedBitGoToUserSigShareRoundTwo,
       userGpgKey,
-      bitgoGpgPubKey
+      bitgoGpgPubKey,
+      params.mpcv2PartyId
     );
 
     /** Round 3 **/
@@ -793,7 +806,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const signatureShareRoundThree = await getSignatureShareRoundThree(
       userToBitGoMessagesRound4,
       userGpgKey,
-      bitgoGpgPubKey
+      bitgoGpgPubKey,
+      params.mpcv2PartyId
     );
     // Submit for final signature share combine
     await sendSignatureShareV2(

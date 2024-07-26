@@ -390,10 +390,12 @@ export interface EncryptedSignerShareRecord extends ShareBaseRecord {
 
 export type TSSParamsWithPrv = TSSParams & {
   prv: string;
+  mpcv2PartyId?: 0 | 1;
 };
 
 export type TSSParamsForMessageWithPrv = TSSParamsForMessage & {
   prv: string;
+  mpcv2PartyId?: 0 | 1;
 };
 
 export type TSSParams = {
