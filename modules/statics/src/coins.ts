@@ -8558,6 +8558,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ATF
   ),
   erc20(
+    'db883e8c-37e3-4a26-b736-b1fb4769d01b',
+    'ath',
+    'Aethir Token',
+    18,
+    '0xbe0ed4138121ecfc5c0e56b40517da27e6c5226b',
+    UnderlyingAsset.ATH
+  ),
+  erc20(
     '46756498-7522-4f13-9444-bcd15fa284ac',
     'atl',
     'ATLANT',
@@ -10510,6 +10518,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['USDC-POS-WORMHOLE']
   ),
   erc20(
+    'f44d9e6d-1c64-429a-8e45-7f973b5bff5f',
+    'uscc',
+    'USCC',
+    8,
+    '0x7b13abb88eb01aa0cd9739b91d4d4f273262eacf',
+    UnderlyingAsset.USCC
+  ),
+  erc20(
     'efae2e71-10b8-4461-8e84-51390f6e77df',
     'usdglo',
     'Glo Dollar',
@@ -12103,6 +12119,17 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES,
     '',
     'VCHF'
+  ),
+  stellarToken(
+    'ea901538-9adf-485f-82d1-3a80b94359aa',
+    'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU',
+    'AUDD',
+    7,
+    UnderlyingAsset['xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU'],
+    'audd.digital',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'AUDD'
   ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
@@ -15790,6 +15817,24 @@ export const coins = CoinMap.fromCoins([
     8,
     'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
     UnderlyingAsset['sol:render'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '76d493a6-d674-4987-85ae-5a9dca0711b1',
+    'sol:wen',
+    'Wen',
+    5,
+    'WENWENvqqNya429ubCdR81ZmD69brwQaaBYY6p3LCpk',
+    UnderlyingAsset['sol:wen'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'fe471409-0687-4920-a70d-7db46b08e4f2',
+    'sol:mew',
+    'cat in a dogs world',
+    5,
+    'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5',
+    UnderlyingAsset['sol:mew'],
     SOL_TOKEN_FEATURES
   ),
 
