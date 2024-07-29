@@ -449,3 +449,48 @@ export const wrwUser = {
     '417d0ea08450247ac837681487d21769e243246e3e07470eb20fcce',
   walletPassphrase: '6PZKSm$oIFa%s1fy',
 };
+
+export const wrwUserDkls = {
+  senderAddress: 'cosmos1yn3pyc8au9tvj97ldspthl56lx5ef60lzvv25w',
+  destinationAddress: 'cosmos1wp8t9k99mu7njykmuvtcnt4maqjv9uasa5p3f8',
+  userKey:
+    '{"iv":"7jG8LCyg8j1c65Q26oDeaw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+    ':"ccm","adata":"","cipher":"aes","salt":"VNr8cbcNIOY=","ct":"FX3DQEPiq3evPo\n' +
+    'QSj+veGg/j5I3Sa+5fapK4i+9VNC91DcLEWjHV7FVAA1Eti+mUhezpMkZu6L9BPEod3a+DkO6Vx\n' +
+    'XfMM24TrdbT/wgkBXCebRPYOZn8R5Job2PMKNi2ZT3kH8xkpfkIpaCbYEwT7tYPOPwChH3nOzC8\n' +
+    'YiuszPQKXxOUTFCnXdUAOCiwOt9ZYXVQO/sZJON0LHRHYw02Gks1zzd6wRBMmCO0noRnY064mpZ\n' +
+    'IX/7MdShG0jDb5LM+VrKCzWbkzlGhvh0IgKdIOS2XSiYfFqm5p8I6Gkb14vltIhaDA0+PLBw1Kl\n' +
+    '+ko+cUhtsQJH14hcCKJxtQD1j47zDuntVtibbE+FvkMhShcx0LEigEHbiCXF2gWKFWisW7/vKZP\n' +
+    'ZjNl57t4c5XWyOsquTsAo0gCYETFM2UIH/DB99RcbYLO6RwU6UE5ageWkQNQlwBy4+u8ffHKNvQ\n' +
+    'byJKH/RZAVDb+av5oE9daWFIKNsZWl/urXajX5DPdECnutCzpSbHP+feT4an/pzDwrQN+Z6CF9l\n' +
+    'YPU2RQty85SZGz9qecKdlY+Ey0GJWJipKdEAabQ0WwU8fnWDqf/vXDuUgBkwVX6MBN9wpBOBCuI\n' +
+    'hFSpvXfcYPRQOfq7ePkH5lRG51K4U1usgQygf9YZkyUH26Wf5A5nD7pt0b8kl4gd74DkuZB7u1S\n' +
+    'nOJo3bW9FSyfJnnIZRZQTiWUDSZN7OmSI1+xUiaevBr+urDqL17USEVa8/toUsFiZxfRuaaGdVj\n' +
+    'FhIjX8XthIQg03y4fA/tSXhR5ORKLt2mLqHQLPFqMey8PGfpdr1RPduTz/FQeDrUe6yF3B5c7ej\n' +
+    '1oAyNM3h7LonP6StafnvVR1UthiuIeK/brBkvyBc4B/HU46WGF+JyYhLJVGouuM845XCDOmqGrl\n' +
+    'g7+bjUDQFMAvnudWNVUseoxICS9veJwaTEmUe3UcNuhiJbY5tP4VtuugfYKneXKkBSo7Wrnvo1a\n' +
+    'JN04EFsuclDMqzbMjk2+EAkxcuO2EJiXcKfDU3IcZ/Mr8XGNfmDQ6Wdnaw4CdrTcAEUqQdQXMJC\n' +
+    'XhRuS/Nn6JxyE42IvxoAmixb1RshzfnC2ici2fzO"}',
+  backupKey:
+    '{"iv":"gMeUl2b+DatK/1cPj14VoA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+    ':"ccm","adata":"","cipher":"aes","salt":"OTLxp8l5iGU=","ct":"R4jUY9HnSRLDTQ\n' +
+    'BVSVuS+swt9Cl2UtN3MeeZugu16ZQYY7ZQa1w/qetnnJlCRw80GyR5eat5g9Ca9rcK6hkdEFixW\n' +
+    'wwZTzgZo504QYKjbgjUnnOoHGEOHvhrM/IHo640jL/vP/aKNPp/TyYqK2meOtfjDNvBePfJlTfO\n' +
+    'XVO+nwAfSJaS7oT7bUP+K1ioDAnjOd7oMT+eEFuGTXyfszg2lTfmkGVlvBcgu3fdr4bNkxdFyRX\n' +
+    'IqUda33yqnb2H6a7w7z1XRzENAxnUUUhFj0Xkpmgo80x/B/OzlJIelyMsOibSMcU3p0JrOeXMW7\n' +
+    'ugR4V6as/Uc/lF25KkBlfOGbG29MYypt0nUjobNHRL9McrfxnmbaRapmvSGVSVp7cW0b6hZ0GDz\n' +
+    '6AZc2hQisihEYXalln/7BPXDJEx7hNxsdGtnUvZCBe0LdeevXTPNHSCRhvpeA3LbGaYmZ0lxa1l\n' +
+    '7lcUgrccyACTFz4N8BPesr/K4T8YgEMbvk2PBID+c8UzwPN8/tzOo3mZMRssg1dtCrCqARGa3ye\n' +
+    '03bDvKWA0AXekEgczMY5CfvGrIocVWrxs4OfOS+cdPeM5OdP6HNZCLqMWbRfX9ryPVrW8R8Uz40\n' +
+    'tmlaB3c0K1sksi7cBDiPXckDGYQdFGc50jfOo5gQ10Ee5KPVqf9fvFczAFC3jcOiyhLePMCyRFD\n' +
+    'UlaCHKVNqqCijzfvthM1GX8GA+2jCJ33+tAF9hi+VtYWcn7KinTiXvxB9AaGBsR157iFVT4RHpp\n' +
+    'wIxDB6QZDS1BksWIzIpb2mbQEMIjJ33OZ1kgqB5LLKpeydwF+G8liH1Fgog4d/8zwvlRWxfzYCb\n' +
+    'yz11eZMOylkkqzdVgsRRqGfoTV/VQts1JWDQNaGWCYRpf2RlVN5gtJRTdzj/1Yfm4EoEKrFvtQK\n' +
+    'Euxq9c1Yq8JtAGKo8iPETSw1Zrcdifb6amjWmhLByozP8xgD0SYlXGDFDqd/laWBGnNiaRb4Rtc\n' +
+    'Xyb9sUE+N3lCBt2zyaZLOIAAbUhebtEYTV+vEqNBa9A42i5iP2zGJ7AuUUox/tassShuYKL2M6q\n' +
+    'oX7R8JnTv9TSRBGjRGVXzfjiyB8v2jjM1OGyFaqO"}',
+  bitgoKey:
+    '035883099e872bcf2d9339ae3fe8f2c97cc25e30c0713cc6e405ba301cd40e754262f07ddd2\n' +
+    '7a24333f8383c158b2e5fc9882e5acf0bb2a85a481cf150a5e94b6a',
+  walletPassphrase: '#Bondiola1234',
+};

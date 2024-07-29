@@ -39,6 +39,7 @@
 /modules/bitgo/test/v2/unit/coins/token.ts @BitGo/ethalt-team
 
 # All other coins
+/modules/abstract-cosmos/ @BitGo/ethalt-team
 /modules/sdk-coin-ada/ @BitGo/ethalt-team
 /modules/sdk-coin-algo/ @BitGo/ethalt-team
 /modules/sdk-coin-arbeth/ @BitGo/ethalt-team

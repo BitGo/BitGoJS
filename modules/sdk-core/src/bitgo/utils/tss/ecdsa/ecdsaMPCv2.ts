@@ -1,4 +1,5 @@
-import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes } from '@bitgo/sdk-lib-mpc';
+import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
+import * as sjcl from '@bitgo/sjcl';
 import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Hash } from 'crypto';
@@ -1177,4 +1178,106 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     return { signatureShareRound3 };
   }
   // #endregion
+}
+
+/**
+ * Checks if the given key share, when decrypted, contains valid GG18 signing material.
+ *
+ * @param {string} keyShare - The encrypted key share string.
+ * @param {string|undefined} walletPassphrase - The passphrase used to decrypt the key share
+ * @returns {boolean} - Returns `true` if the decrypted data contains valid signing material, otherwise `false`.
+ */
+export function isGG18SigningMaterial(keyShare: string, walletPassphrase: string | undefined): boolean {
+  const prv = sjcl.decrypt(walletPassphrase, keyShare);
+  try {
+    const signingMaterial = JSON.parse(prv);
+    return (
+      signingMaterial.pShare &&
+      signingMaterial.bitgoNShare &&
+      (signingMaterial.userNShare || signingMaterial.backupNShare)
+    );
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Retrieves the MPC v2 recovery key shares from the provided user and backup key shares.
+ *
+ * @param {string} userPublicOrPrivateKeyShare
+ * @param {string} backupPrivateOrPublicKeyShare
+ * @param {string} [walletPassphrase] - The passphrase used to decrypt the key shares
+ * @returns {Promise<{ userKeyShare: KeyShare, backupKeyShare: KeyShare, commonKeyChain: string }>}
+ *
+ * @async
+ */
+export async function getMpcV2RecoveryKeyShares(
+  userPublicOrPrivateKeyShare: string,
+  backupPrivateOrPublicKeyShare: string,
+  walletPassphrase?: string
+) {
+  const userCompressedPrv = Buffer.from(sjcl.decrypt(walletPassphrase, userPublicOrPrivateKeyShare), 'base64');
+  const bakcupCompressedPrv = Buffer.from(sjcl.decrypt(walletPassphrase, backupPrivateOrPublicKeyShare), 'base64');
+
+  const userPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(userCompressedPrv);
+  const backupPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(bakcupCompressedPrv);
+  const userKeyRetrofit: DklsTypes.RetrofitData = {
+    xShare: {
+      x: Buffer.from(userPrvJSON.prv).toString('hex'),
+      y: Buffer.from(userPrvJSON.pub).toString('hex'),
+      chaincode: Buffer.from(userPrvJSON.rootChainCode).toString('hex'),
+    },
+    xiList: userPrvJSON.xList.slice(0, 2),
+  };
+  const backupKeyRetrofit: DklsTypes.RetrofitData = {
+    xShare: {
+      x: Buffer.from(backupPrvJSON.prv).toString('hex'),
+      y: Buffer.from(backupPrvJSON.pub).toString('hex'),
+      chaincode: Buffer.from(backupPrvJSON.rootChainCode).toString('hex'),
+    },
+    xiList: backupPrvJSON.xList.slice(0, 2),
+  };
+  const [user, backup] = await DklsUtils.generate2of2KeyShares(userKeyRetrofit, backupKeyRetrofit);
+  const userKeyShare = user.getKeyShare();
+  const backupKeyShare = backup.getKeyShare();
+  const commonKeyChain = DklsTypes.getCommonKeychain(userKeyShare);
+  return { userKeyShare, backupKeyShare, commonKeyChain };
+}
+
+/**
+ * Signs a message hash using MPC v2 recovery key shares.
+ *
+ * @param {Buffer} messageHash
+ * @param {Buffer} userKeyShare
+ * @param {Buffer} backupKeyShare
+ * @param {string} commonKeyChain
+ * @returns {Promise<{ recid: number, r: string, s: string, y: string }>}
+ *
+ * @async
+ */
+export async function signRecoveryMpcV2(
+  messageHash: Buffer,
+  userKeyShare: Buffer,
+  backupKeyShare: Buffer,
+  commonKeyChain: string
+) {
+  const userDsg = new DklsDsg.Dsg(userKeyShare, 0, 'm/0', messageHash);
+  const backupDsg = new DklsDsg.Dsg(backupKeyShare, 1, 'm/0', messageHash);
+
+  const signatureString = DklsUtils.verifyAndConvertDklsSignature(
+    messageHash,
+    (await DklsUtils.executeTillRound(5, userDsg, backupDsg)) as DklsTypes.DeserializedDklsSignature,
+    commonKeyChain,
+    'm/0',
+    undefined,
+    false
+  );
+  const sigParts = signatureString.split(':');
+
+  return {
+    recid: parseInt(sigParts[0], 10),
+    r: sigParts[1],
+    s: sigParts[2],
+    y: sigParts[3],
+  };
 }
