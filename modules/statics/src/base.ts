@@ -417,6 +417,7 @@ export enum UnderlyingAsset {
   AST = 'ast',
   ATA = 'ata',
   ATF = 'atf',
+  ATH = 'ath',
   ATL = 'atl',
   ATLAS = 'atlas',
   ATOMBEAR = 'atombear',
@@ -1483,6 +1484,7 @@ export enum UnderlyingAsset {
   URHD = 'urhd',
   'sol:usdt' = 'sol:usdt',
   'sol:usdc' = 'sol:usdc',
+  USCC = 'uscc',
   USDC = 'usdc',
   'USDC-POS-WORMHOLE' = 'usdc-pos-wormhole',
   USDE = 'usde',
@@ -1651,6 +1653,7 @@ export enum UnderlyingAsset {
   'xlm:EURS-GC5FGCDEOGOGSNWCCNKS3OMEVDHTE3Q5A5FEQWQKV3AXA7N6KDQ2CUZJ' = 'xlm:EURS-GC5FGCDEOGOGSNWCCNKS3OMEVDHTE3Q5A5FEQWQKV3AXA7N6KDQ2CUZJ',
   'xlm:VEUR-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN' = 'xlm:VEUR-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN',
   'xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN' = 'xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN',
+  'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU' = 'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU',
 
   // Eth NFTs
   // generic NFTs
@@ -2047,6 +2050,8 @@ export enum UnderlyingAsset {
   'sol:solink' = 'sol:solink',
   'sol:block' = 'sol:block',
   'sol:render' = 'sol:render',
+  'sol:wen' = 'sol:wen',
+  'sol:mew' = 'sol:mew',
 
   // TRX tokens
   'trx:jst' = 'trx:jst',
