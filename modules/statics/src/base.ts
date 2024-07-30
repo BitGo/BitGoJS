@@ -427,6 +427,7 @@ export enum UnderlyingAsset {
   AUDF = 'audf',
   AUDIO = 'audio',
   AUDX = 'audx',
+  AUSD = 'ausd',
   AUSDT = 'ausdt',
   AUST = 'aust',
   AVT = 'avt',

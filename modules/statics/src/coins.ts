@@ -8574,6 +8574,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ATL
   ),
   erc20(
+    '92de2240-586a-4208-a646-9c5aba262ab4',
+    'ausd',
+    'Token aUSD₮',
+    6,
+    '0x9eead9ce15383caeed975427340b3a369410cfbf',
+    UnderlyingAsset.AUSD
+  ),
+  erc20(
     'e26974ca-1494-4c13-8b8d-ce155d246253',
     'ausdt',
     'Aave Interest bearing USDT',
