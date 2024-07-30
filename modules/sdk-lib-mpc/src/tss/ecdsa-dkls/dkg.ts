@@ -1,8 +1,14 @@
-import { KeygenSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
-import { DeserializedBroadcastMessage, DeserializedMessages, DkgState, ReducedKeyShare, RetrofitData } from './types';
+import type { KeygenSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode, encode } from 'cbor-x';
-import { bigIntToBufferBE } from '../../util';
 import { Secp256k1Curve } from '../../curves';
+import { bigIntToBufferBE } from '../../util';
+import { DeserializedBroadcastMessage, DeserializedMessages, DkgState, ReducedKeyShare, RetrofitData } from './types';
+
+type NodeWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-node');
+type WebWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-web');
+type BundlerWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-bundler');
+
+type DklsWasm = NodeWasmer | WebWasmer | BundlerWasmer;
 
 export class Dkg {
   protected dkgSession: KeygenSession | undefined;
@@ -17,19 +23,42 @@ export class Dkg {
   protected dkgState: DkgState = DkgState.Uninitialized;
   protected dklsKeyShareRetrofitObject: Keyshare | undefined;
   protected retrofitData: RetrofitData | undefined;
+  protected dklsWasm: DklsWasm | null;
 
-  constructor(n: number, t: number, partyIdx: number, seed?: Buffer, retrofitData?: RetrofitData) {
+  constructor(
+    n: number,
+    t: number,
+    partyIdx: number,
+    seed?: Buffer,
+    retrofitData?: RetrofitData,
+    dklsWasm?: BundlerWasmer
+  ) {
     this.n = n;
     this.t = t;
     this.partyIdx = partyIdx;
     this.chainCodeCommitment = undefined;
     this.retrofitData = retrofitData;
     this.seed = seed;
+    this.dklsWasm = dklsWasm ?? null;
+  }
+
+  private async loadDklsWasm(): Promise<void> {
+    if (!this.dklsWasm) {
+      this.dklsWasm = await import('@silencelaboratories/dkls-wasm-ll-node');
+    }
+  }
+
+  private getDklsWasm() {
+    if (!this.dklsWasm) {
+      throw Error('DKLS wasm not loaded');
+    }
+
+    return this.dklsWasm;
   }
 
   private _restoreSession() {
     if (!this.dkgSession) {
-      this.dkgSession = KeygenSession.fromBytes(this.dkgSessionBytes);
+      this.dkgSession = this.getDklsWasm().KeygenSession.fromBytes(this.dkgSessionBytes);
     }
   }
 
@@ -63,7 +92,7 @@ export class Dkg {
         ),
         x_i_list: this.retrofitData.xiList ? this.retrofitData.xiList : xiList,
       };
-      this.dklsKeyShareRetrofitObject = Keyshare.fromBytes(encode(dklsKeyShare));
+      this.dklsKeyShareRetrofitObject = this.getDklsWasm().Keyshare.fromBytes(encode(dklsKeyShare));
     }
   }
 
@@ -95,20 +124,30 @@ export class Dkg {
   }
 
   async initDkg(): Promise<DeserializedBroadcastMessage> {
+    if (!this.dklsWasm) {
+      await this.loadDklsWasm();
+    }
     if (this.t > this.n || this.partyIdx >= this.n) {
       throw Error('Invalid parameters for DKG');
     }
     if (this.dkgState != DkgState.Uninitialized) {
       throw Error('DKG session already initialized');
     }
-    if (typeof window !== 'undefined') {
-      const initDkls = require('@silencelaboratories/dkls-wasm-ll-web');
+    if (
+      typeof window !== 'undefined' &&
+      /* checks for electron processes */
+      !window.process &&
+      !window.process?.['type']
+    ) {
+      /* This is only needed for browsers/web because it uses fetch to resolve the wasm asset for the web */
+      const initDkls = await import('@silencelaboratories/dkls-wasm-ll-web');
       await initDkls.default();
     }
     this._createDKLsRetrofitKeyShare();
     if (this.seed && this.seed.length !== 32) {
       throw Error(`Seed should be 32 bytes, got ${this.seed.length}.`);
     }
+    const { KeygenSession } = this.getDklsWasm();
     if (this.dklsKeyShareRetrofitObject) {
       this.dkgSession = this.seed
         ? KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject, new Uint8Array(this.seed))
@@ -160,6 +199,7 @@ export class Dkg {
     if (!this.dkgSession) {
       throw Error('Session not initialized');
     }
+    const { Message } = this.getDklsWasm();
     try {
       if (this.dkgState === DkgState.Round3) {
         const commitmentsUnsorted = messagesForIthRound.p2pMessages
