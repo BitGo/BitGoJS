@@ -41,8 +41,7 @@ describe('Sui unstaking Builder', () => {
         ]);
 
         if (rebuild) {
-          const txBuilder = factory.getUnstakingBuilder();
-          txBuilder.from(rawTx);
+          const txBuilder = factory.from(rawTx) as UnstakingBuilder;
           await assertMatchesFixture(txBuilder, false);
         }
       }
