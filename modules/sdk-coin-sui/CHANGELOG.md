@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.3.0...@bitgo/sdk-coin-sui@5.3.1) (2024-07-30)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** return all input objects in `toJson` result ([10ea422](https://github.com/BitGo/BitGoJS/commit/10ea42250e3f48de8387ef2f1f5a25e0056241c6))
+- **sdk-coin-sui:** support TokenTransfer in TransactionBuilderFactory ([5d96cb4](https://github.com/BitGo/BitGoJS/commit/5d96cb44f493f7df26ddec4db630290daf83980e))
+
 # [5.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.2.0...@bitgo/sdk-coin-sui@5.3.0) (2024-07-24)
 
 ### Features
