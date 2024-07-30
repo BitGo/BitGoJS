@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.25.0...@bitgo/statics@48.26.0) (2024-07-30)
+
+### Features
+
+- **statics:** add ausd token ([0991335](https://github.com/BitGo/BitGoJS/commit/0991335090e85b9b0e749e60b9b51b66bd87bfab))
+- **statics:** add new batch of tokens EA-4045 ([99353f5](https://github.com/BitGo/BitGoJS/commit/99353f53ffe379c5e4f923d6ea9a1683275e544a))
+- **statics:** add STAKING feature to WETH and EIGEN tokens ([fbecb1b](https://github.com/BitGo/BitGoJS/commit/fbecb1bdef3285caf42d0aa00524858725ed3c07))
+
 # [48.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.24.0...@bitgo/statics@48.25.0) (2024-07-24)
 
 ### Features
