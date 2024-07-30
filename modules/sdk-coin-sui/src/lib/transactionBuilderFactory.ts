@@ -22,6 +22,7 @@ import { UnstakingTransaction } from './unstakingTransaction';
 import { CustomTransaction } from './customTransaction';
 import { CustomTransactionBuilder } from './customTransactionBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { TokenTransferTransaction } from './tokenTransferTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -50,6 +51,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const customTransaction = new CustomTransaction(this._coinConfig);
           customTransaction.fromRawTransaction(raw);
           return this.getCustomTransactionBuilder(customTransaction);
+        case SuiTransactionType.TokenTransfer:
+          const tokenTransferTx = new TokenTransferTransaction(this._coinConfig);
+          tokenTransferTx.fromRawTransaction(raw);
+          return this.getTokenTransferBuilder(tokenTransferTx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }

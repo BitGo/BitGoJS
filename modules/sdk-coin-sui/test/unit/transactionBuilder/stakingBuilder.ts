@@ -90,8 +90,7 @@ describe('Sui Staking Builder', () => {
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
-      const rebuilder = factory.getStakingBuilder();
-      rebuilder.from(rawTx);
+      const rebuilder = factory.from(rawTx);
       rebuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
       const rebuiltTx = await rebuilder.build();
       rebuiltTx.toBroadcastFormat().should.equal(rawTx);
