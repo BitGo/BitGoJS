@@ -1095,7 +1095,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     this.validateAdata(adata, encryptedRound1Session);
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
-    userSigner.setSession(round1Session);
+    await userSigner.setSession(round1Session);
 
     const deserializedMessages = DklsTypes.deserializeMessages(serializedBitGoToUserMessagesRound1);
     const userToBitGoMessagesRound2 = userSigner.handleIncomingMessages({
@@ -1167,7 +1167,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     this.validateAdata(adata, encryptedRound2Session);
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
-    userSigner.setSession(round2Session);
+    await userSigner.setSession(round2Session);
 
     const userToBitGoMessagesRound4 = userSigner.handleIncomingMessages({
       p2pMessages: deserializedBitGoToUserMessagesRound3.p2pMessages,
