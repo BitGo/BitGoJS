@@ -297,6 +297,13 @@ class BitcoinPublicSignet extends Testnet implements UtxoNetwork {
   explorerUrl = 'https://mempool.space/signet/tx/';
 }
 
+class BitcoinBitGoSignet extends Testnet implements UtxoNetwork {
+  name = 'BitcoinBitGoSignet';
+  family = CoinFamily.BTC;
+  utxolibName = 'bitcoinBitGoSignet';
+  explorerUrl = 'https://mempool.space/notanetwork/tx/';
+}
+
 class BitcoinCash extends Mainnet implements UtxoNetwork {
   name = 'BitcoinCash';
   family = CoinFamily.BCH;
@@ -1097,6 +1104,7 @@ export const Networks = {
     basechain: Object.freeze(new BaseChainTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinPublicSignet: Object.freeze(new BitcoinPublicSignet()),
+    bitcoinBitGoSignet: Object.freeze(new BitcoinBitGoSignet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),

@@ -164,6 +164,16 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
     ],
   },
+  tbgbtc: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+    ],
+  },
   tbch: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
