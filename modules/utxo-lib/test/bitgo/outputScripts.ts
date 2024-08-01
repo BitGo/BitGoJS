@@ -22,6 +22,7 @@ describe('output script support', function () {
         ['bitcoin', ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2']],
         ['testnet', ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2']],
         ['bitcoinPublicSignet', ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2']],
+        ['bitcoinTestnet4', ['p2sh', 'p2shP2wsh', 'p2wsh', 'p2tr', 'p2trMusig2']],
         ['bitcoincash', ['p2sh']],
         ['bitcoincashTestnet', ['p2sh']],
         ['bitcoingold', ['p2sh', 'p2shP2wsh', 'p2wsh']],

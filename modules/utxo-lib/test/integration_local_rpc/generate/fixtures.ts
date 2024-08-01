@@ -25,8 +25,12 @@ export function getProtocolVersions(network: Network): number[] {
 }
 
 export function getFixtureDir(protocol: Protocol): string {
-  const networkName = getNetworkName(protocol.network);
+  let networkName = getNetworkName(protocol.network);
   assert(networkName);
+  // TODO: generate testnet4 fixtures when constants are finalized
+  if (networkName === 'bitcoinTestnet4') {
+    networkName = 'bitcoinPublicSignet';
+  }
   return path.join(__dirname, '..', 'fixtures', networkName, `v${protocol.version}`);
 }
 

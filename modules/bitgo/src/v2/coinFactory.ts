@@ -83,6 +83,7 @@ import {
   Tbsv,
   Tbtc,
   Tbtcsig,
+  Tbtc4,
   Tcelo,
   Tcoreum,
   Tcspr,
@@ -197,6 +198,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tbsv', Tbsv.createInstance);
   globalCoinFactory.register('tbtc', Tbtc.createInstance);
   globalCoinFactory.register('tbtcsig', Tbtcsig.createInstance);
+  globalCoinFactory.register('tbtc4', Tbtc4.createInstance);
   globalCoinFactory.register('tcelo', Tcelo.createInstance);
   globalCoinFactory.register('tcoreum', Tcoreum.createInstance);
   globalCoinFactory.register('tcspr', Tcspr.createInstance);

@@ -1,0 +1,176 @@
+[
+  [
+    {
+      "chain": "default"
+    },
+    {
+      "address": "2Mv1fGp8gHSqsiXYG7WqcYmHZdurDGVtUbn",
+      "chain": 0,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "a9141e57a925dd863a86af341037e700862bf66bf7b687",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      },
+      "addressType": "p2sh"
+    }
+  ],
+  [
+    {
+      "chain": 0
+    },
+    {
+      "address": "2Mv1fGp8gHSqsiXYG7WqcYmHZdurDGVtUbn",
+      "chain": 0,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "a9141e57a925dd863a86af341037e700862bf66bf7b687",
+        "redeemScript": "5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae"
+      },
+      "addressType": "p2sh"
+    }
+  ],
+  [
+    {
+      "chain": 1
+    },
+    {
+      "address": "2MyPbR4VrC98jCfnfhu9ir4zsuNxZiPS85K",
+      "chain": 1,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "a9144365f80ae9830dab1d9124be68c74c2fa23bbc1287",
+        "redeemScript": "522102d06c08ccf0fddefff881e869b951d4b92e936118b3360182c5b8c55f4c40bc6121030795af84ecc10252d8a894f54845beeb5624a1c24c3747cc654bd430539dee3521029b30ebe8eb23f8cec82f25a80e3b423979ec3ba1fe07d9d4ed9f6361258bc31d53ae"
+      },
+      "addressType": "p2sh"
+    }
+  ],
+  [
+    {
+      "chain": 10
+    },
+    {
+      "address": "2N4uionZeh2p88wf2B6MCEr8ar2NHWEnQeQ",
+      "chain": 10,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "a9147ff13f3faeba4d439ef40604f7c127951e77eb6a87",
+        "redeemScript": "00207aad7d57b238a09b5daa10ff47c54483b7f2ad47f3f0c0aa230958b9df334260",
+        "witnessScript": "52210304fcea3fb05f6e8a8fe91db2087bdd13b18102a0b10a77c1fdbb326b0ce7cec421028242a3ea9e20d4e6b78e3f0dde21aff86a623d48322681b203b6827e22d04a9d2102ceec88b222a55ec67d1414b523bcfc0f53eb6ac012ba91744a4ed8eb448d55f753ae"
+      },
+      "addressType": "p2shP2wsh"
+    }
+  ],
+  [
+    {
+      "chain": 11
+    },
+    {
+      "address": "2NFCjioQkatHzS9wxXiURfvsQrHfWqT3yZj",
+      "chain": 11,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "a914f0da56d9bb06310289d808a22ad68457a760ac0387",
+        "redeemScript": "00202ce48eb68ff4a96f2742cfbdd90210ae30bc7cdbafd63fbbe368802e3c0ae800",
+        "witnessScript": "52210386b73c1c9e0d5c3370496426cdb6593bd69bb93743e135860aa5797cd04353c521022e79cdb1ee0b8cad6c9667fedafa92f8472f731f627dc8e0018571e4de9dfda42102f6d5e998e5b41e7e783c7c5c8a633cf333b86200aab31676ab07ed336e22700353ae"
+      },
+      "addressType": "p2shP2wsh"
+    }
+  ],
+  [
+    {
+      "chain": 20
+    },
+    {
+      "address": "tb1qjpzgkka9lhs5l39shlr4d394tljw8p2v35sl88h82djvqp3mculq283u4j",
+      "chain": 20,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "002090448b5ba5fde14fc4b0bfc756c4b55fe4e3854c8d21f39ee75364c0063bc73e",
+        "witnessScript": "522103cf858f42c759d590d80f3715ce59be999089e6b1f381d0f4338276546fd3a04e2102dca1ab8670d45f5213c7c9d66b2f89b50a4cbd33fd72db89ba18d3e82d3dd5ee210294b6dab0dc112831a0dc1e219769bd81d13eb38a8bdb938103f919d8dd7e004353ae"
+      },
+      "addressType": "p2wsh"
+    }
+  ],
+  [
+    {
+      "chain": 21
+    },
+    {
+      "address": "tb1q5e7nvvypt2qpjxq74zwtry9klsqkcyvcee85anaa3pax7ae207gs37spuh",
+      "chain": 21,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "0020a67d3630815a8019181ea89cb190b6fc016c1198ce4f4ecfbd887a6f772a7f91",
+        "witnessScript": "52210391e76285ad55895309f6fa7db9fb359489daaf235bb4cb50608f9562122af1ab210285ddd6b1e84e37a9f222737d8b80a8a980a193a783b75b9e82d6e239eb52818c2103a13ee160d79d43201ef5e65b6df4e0842de3b640904d049e64daaaa84a306bb853ae"
+      },
+      "addressType": "p2wsh"
+    }
+  ],
+  [
+    {
+      "chain": 30
+    },
+    {
+      "address": "tb1p0sm0je6mv9zrzyguquzh24svlz6sgcct3qckp34nc09vj6wedn0shlq9un",
+      "chain": 30,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "51207c36f9675b614431111c070575560cf8b504630b883160c6b3c3cac969d96cdf"
+      },
+      "addressType": "p2tr"
+    }
+  ],
+  [
+    {
+      "chain": 31
+    },
+    {
+      "address": "tb1phk6lhy2tka2kxsx6hjd3c0z2h2e0rcrere9lr3kqsg0p6xxqe2pqa44eqg",
+      "chain": 31,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "5120bdb5fb914bb7556340dabc9b1c3c4abab2f1e0791e4bf1c6c0821e1d18c0ca82"
+      },
+      "addressType": "p2tr"
+    }
+  ],
+  [
+    {
+      "chain": 40
+    },
+    {
+      "address": "tb1pxgs4mpuymvtr7hsx3u0efx5yvjd2nark5qgsg89s8p0jcdzvukgq35t4u7",
+      "chain": 40,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "512032215d8784db163f5e068f1f949a84649aa9f476a011041cb0385f2c344ce590"
+      },
+      "addressType": "p2trMusig2"
+    }
+  ],
+  [
+    {
+      "chain": 41
+    },
+    {
+      "address": "tb1p8qdlmtsw6ehy9u4w8lpw4xw6shg7jknu7fhrlaclpdaqtfp0puesgpm4xs",
+      "chain": 41,
+      "index": 0,
+      "coin": "tbtc4",
+      "coinSpecific": {
+        "outputScript": "5120381bfdae0ed66e42f2ae3fc2ea99da85d1e95a7cf26e3ff71f0b7a05a42f0f33"
+      },
+      "addressType": "p2trMusig2"
+    }
+  ]
+]

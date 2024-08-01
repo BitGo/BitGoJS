@@ -1,0 +1,34 @@
+{
+  "txHex": "01000000033ffd4858f59961926baab9309a2f9666cbcbfa9c2fa7a9e5ba5194a368baa87c0000000000ffffffff2e1a662d437209c3b24a1160937801e509767cf9abc8a3c21189de33c5602d950200000000ffffffff06f0792bfe9fabcbe95554764bca522edd4c3ccf29e22ce216b832fbd5f860350300000000ffffffff01b0d3c1230000000017a91439c65a0d0072a140694d6b13ec5f5f2437de99ff8700000000",
+  "txInfo": {
+    "unspents": [
+      {
+        "id": "7ca8ba68a39451bae5a9a72f9cfacbcb66962f9a30b9aa6b926199f55848fd3f:0",
+        "address": "tb1phk6lhy2tka2kxsx6hjd3c0z2h2e0rcrere9lr3kqsg0p6xxqe2pqa44eqg",
+        "value": 100000000,
+        "chain": 31,
+        "index": 0,
+        "valueString": "100000000"
+      },
+      {
+        "id": "952d60c533de8911c2a3c8abf97c7609e501789360114ab2c30972432d661a2e:2",
+        "address": "tb1punyhjurx29e2577msed4mzlu5py2snp6s2zwf2uux2ek5xk2ps6s3vkh6a",
+        "value": 200000000,
+        "chain": 31,
+        "index": 2,
+        "valueString": "200000000"
+      },
+      {
+        "id": "3560f8d5fb32b816e22ce229cf3c4cdd2e52ca4b765455e9cbab9ffe2b79f006:3",
+        "address": "tb1pgrsntg8rd9qdjf06demu0423ysxftqddx9twyqy38fsg9qyj82xsxvny7v",
+        "value": 300000000,
+        "chain": 31,
+        "index": 3,
+        "valueString": "300000000"
+      }
+    ]
+  },
+  "feeInfo": {},
+  "coin": "tbtc4",
+  "txid": "7e2eb66172a9206d5fab6bde3b645506c7619de018956b1f7501bd50923917cc"
+}
