@@ -3840,6 +3840,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.FXS
   ),
   erc20(
+    'e1b8ce03-459c-4e4e-805f-414f4a48f78a',
+    'g',
+    'Token Gravity',
+    18,
+    '0x9c7beba8f6ef6643abd725e45a4e8387ef260649',
+    UnderlyingAsset.G
+  ),
+  erc20(
     '78151ad3-fe9e-4511-88f7-6a6e2348631c',
     'gal',
     'Project Galaxy',
@@ -10224,6 +10232,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.RUNE
   ),
   erc20(
+    '7bab731c-ba74-4d03-9eb3-d74db3148cfe',
+    'rvr',
+    'Token River',
+    18,
+    '0x53319181e003e7f86fb79f794649a2ab680db244',
+    UnderlyingAsset.RVR
+  ),
+  erc20(
     '5e2c5e7d-ee76-4a1f-8d2f-2825c65df156',
     'ryoshi',
     'Ryoshis Vision',
@@ -10414,6 +10430,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x07e5580ab895022e004b039941b9e775ea631d95',
     UnderlyingAsset.TELEGRAMDAO
+  ),
+  erc20(
+    '1dc901bc-9146-418e-ba18-8f9f84e33859',
+    'term',
+    'Token Term Finance',
+    18,
+    '0xc3d21f79c3120a4ffda7a535f8005a7c297799bf',
+    UnderlyingAsset.TERM
   ),
   erc20(
     '2e9e9cf0-b33b-4929-8016-172329bb4a99',
