@@ -1,15 +1,16 @@
-import should = require('should');
+import should from 'should';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Sui, Tsui } from '../../src';
+import { Sui, TransferTransaction, Tsui } from '../../src';
 import * as testData from '../resources/sui';
-import * as _ from 'lodash';
-import * as sinon from 'sinon';
+import _ from 'lodash';
+import sinon from 'sinon';
 import BigNumber from 'bignumber.js';
 import assert from 'assert';
 import { SuiTransactionType } from '../../src/lib/iface';
 import { getBuilderFactory } from './getBuilderFactory';
+import { keys } from '../resources/sui';
 
 describe('SUI:', function () {
   let bitgo: TestBitGoAPI;
@@ -40,7 +41,7 @@ describe('SUI:', function () {
     };
   });
 
-  it('should retun the right info', function () {
+  it('should return the right info', function () {
     const sui = bitgo.coin('sui');
     const tsui = bitgo.coin('tsui');
 
@@ -328,6 +329,248 @@ describe('SUI:', function () {
       await assert.rejects(async () => basecoin.isWalletAddress(params), {
         message: `invalid address: ${wrongAddress}`,
       });
+    });
+  });
+
+  describe('Recover Transactions:', () => {
+    const sandBox = sinon.createSandbox();
+    const senderAddress0 = '0x91f25e237b83a00a62724fdc4a81e43f494dc6b41a1241492826d36e4d131da3';
+    const recoveryDestination = '0x00e4eaa6a291fe02918452e645b5653cd260a5fc0fb35f6193d580916aa9e389';
+    const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+
+    beforeEach(() => {
+      let callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      callBack.withArgs(senderAddress0).resolves('1900000000');
+
+      callBack = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
+      callBack.withArgs(senderAddress0).resolves([
+        {
+          coinType: '0x2::sui::SUI',
+          coinObjectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          version: '195',
+          digest: '7BJLb32LKN7wt5uv4xgXW4AbFKoMNcPE76o41TQEvUZb',
+          balance: '1900000000',
+          previousTransaction: 'CvuU6waRYHDBnRsmEj5dqXpyT5TJmdxYAXTW2JoRuvCA',
+        },
+      ]);
+
+      callBack = sandBox.stub(Sui.prototype, 'getFeeEstimate' as keyof Sui);
+      callBack
+        .withArgs(
+          'AAACAAgA0klrAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQCR8l4je4OgCmJyT9xKgeQ/SU3GtBoSQUkoJtNuTRMdowHAXHZeJuauhMePokXziiP7IEBqXPP2G1e9MjoN+dmAA8MAAAAAAAAAIFvJiJBdEAhi14cxcSr/HUIhBZMbLMd4rczUTCMIb3UmkfJeI3uDoApick/cSoHkP0lNxrQaEkFJKCbTbk0THaPoAwAAAAAAAADh9QUAAAAAAA=='
+        )
+        .resolves(new BigNumber(1997880));
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recovery', async function () {
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination,
+        walletPassphrase,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.should.hasOwnProperty('recoveryAmount');
+      res.should.hasOwnProperty('signature');
+
+      res.serializedTx.should.equal(
+        'AAACAAgA0klrAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQCR8l4je4OgCmJyT9xKgeQ/SU3GtBoSQUkoJtNuTRMdowHAXHZeJuauhMePokXziiP7IEBqXPP2G1e9MjoN+dmAA8MAAAAAAAAAIFvJiJBdEAhi14cxcSr/HUIhBZMbLMd4rczUTCMIb3UmkfJeI3uDoApick/cSoHkP0lNxrQaEkFJKCbTbk0THaPoAwAAAAAAAKSIIQAAAAAAAA=='
+      );
+      res.scanIndex.should.equal(0);
+      res.recoveryAmount.should.equal('1800000000');
+
+      const NonBitGoTxnDeserialize = new TransferTransaction(basecoin);
+      NonBitGoTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const NonBitGoTxnJson = NonBitGoTxnDeserialize.toJson();
+
+      should.equal(NonBitGoTxnJson.id, '3xexf67vjACcvsd3XCR5XWNm1cDeGCbcnJ5NhAHBmdBc');
+      should.equal(NonBitGoTxnJson.sender, senderAddress0);
+      sandBox.assert.callCount(basecoin.getBalance, 1);
+      sandBox.assert.callCount(basecoin.getInputCoins, 1);
+      sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
+    });
+
+    it('should recover a txn for unsigned sweep recovery', async function () {
+      const res = await basecoin.recover({
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.should.hasOwnProperty('recoveryAmount');
+      res.should.not.hasOwnProperty('signature');
+
+      res.serializedTx.should.equal(
+        'AAACAAgA0klrAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQCR8l4je4OgCmJyT9xKgeQ/SU3GtBoSQUkoJtNuTRMdowHAXHZeJuauhMePokXziiP7IEBqXPP2G1e9MjoN+dmAA8MAAAAAAAAAIFvJiJBdEAhi14cxcSr/HUIhBZMbLMd4rczUTCMIb3UmkfJeI3uDoApick/cSoHkP0lNxrQaEkFJKCbTbk0THaPoAwAAAAAAAKSIIQAAAAAAAA=='
+      );
+      res.scanIndex.should.equal(0);
+      res.recoveryAmount.should.equal('1800000000');
+
+      const UnsignedSweepTxnDeserialize = new TransferTransaction(basecoin);
+      UnsignedSweepTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const UnsignedSweepTxnJson = UnsignedSweepTxnDeserialize.toJson();
+
+      should.equal(UnsignedSweepTxnJson.id, '3xexf67vjACcvsd3XCR5XWNm1cDeGCbcnJ5NhAHBmdBc');
+      should.equal(UnsignedSweepTxnJson.sender, senderAddress0);
+      sandBox.assert.callCount(basecoin.getBalance, 1);
+      sandBox.assert.callCount(basecoin.getInputCoins, 1);
+      sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
+    });
+  });
+
+  describe('Recover Transactions for wallet with multiple addresses:', () => {
+    const sandBox = sinon.createSandbox();
+    const senderAddress0 = '0x91f25e237b83a00a62724fdc4a81e43f494dc6b41a1241492826d36e4d131da3';
+    const senderAddress1 = '0x32d8e57ee6d91e5558da0677154c2f085795348e317f95acc9efade1b4112fcc';
+    const recoveryDestination = '0x00e4eaa6a291fe02918452e645b5653cd260a5fc0fb35f6193d580916aa9e389';
+    const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+
+    beforeEach(function () {
+      let callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      callBack.withArgs(senderAddress0).resolves('0').withArgs(senderAddress1).resolves('1800000000');
+
+      callBack = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
+      callBack.withArgs(senderAddress1).resolves([
+        {
+          coinType: '0x2::sui::SUI',
+          coinObjectId: '0xff93adc2f516fcaa0c6040e01f50027a23f9b1767f5040eb2282790a6900ce7f',
+          version: '196',
+          digest: 'XrjRM9ZM98xdNWigHYQjCpGoWt6aZLpqXdSEixnhb4p',
+          balance: '1800000000',
+        },
+      ]);
+
+      callBack = sandBox.stub(Sui.prototype, 'getFeeEstimate' as keyof Sui);
+      callBack
+        .withArgs(
+          'AAACAAgA8VNlAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQAy2OV+5tkeVVjaBncVTC8IV5U0jjF/lazJ763htBEvzAH/k63C9Rb8qgxgQOAfUAJ6I/mxdn9QQOsignkKaQDOf8QAAAAAAAAAIAfnp90gMsdBGGz1tW/sFQlArhkRmYjdiXTXx+CvxHjVMtjlfubZHlVY2gZ3FUwvCFeVNI4xf5Wsye+t4bQRL8zoAwAAAAAAAADh9QUAAAAAAA=='
+        )
+        .resolves(new BigNumber(1997880));
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 0', async function () {
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination,
+        walletPassphrase,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.should.hasOwnProperty('recoveryAmount');
+      res.should.hasOwnProperty('signature');
+
+      res.serializedTx.should.equal(
+        'AAACAAgA8VNlAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQAy2OV+5tkeVVjaBncVTC8IV5U0jjF/lazJ763htBEvzAH/k63C9Rb8qgxgQOAfUAJ6I/mxdn9QQOsignkKaQDOf8QAAAAAAAAAIAfnp90gMsdBGGz1tW/sFQlArhkRmYjdiXTXx+CvxHjVMtjlfubZHlVY2gZ3FUwvCFeVNI4xf5Wsye+t4bQRL8zoAwAAAAAAAKSIIQAAAAAAAA=='
+      );
+      res.scanIndex.should.equal(1);
+      res.recoveryAmount.should.equal('1700000000');
+
+      const UnsignedSweepTxnDeserialize = new TransferTransaction(basecoin);
+      UnsignedSweepTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const UnsignedSweepTxnJson = UnsignedSweepTxnDeserialize.toJson();
+
+      should.equal(UnsignedSweepTxnJson.id, '4XxsV2ktbcG3gF3Zj46EL9irJd9KgKoKPQYEDtPiQs21');
+      should.equal(UnsignedSweepTxnJson.sender, senderAddress1);
+      sandBox.assert.callCount(basecoin.getBalance, 2);
+      sandBox.assert.callCount(basecoin.getInputCoins, 1);
+      sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
+    });
+
+    it('should recover a txn for non-bitgo recoveries at address 1 but search from address 1', async function () {
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination,
+        walletPassphrase,
+        startingScanIndex: 1,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.should.hasOwnProperty('recoveryAmount');
+      res.should.hasOwnProperty('signature');
+
+      res.serializedTx.should.equal(
+        'AAACAAgA8VNlAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQAy2OV+5tkeVVjaBncVTC8IV5U0jjF/lazJ763htBEvzAH/k63C9Rb8qgxgQOAfUAJ6I/mxdn9QQOsignkKaQDOf8QAAAAAAAAAIAfnp90gMsdBGGz1tW/sFQlArhkRmYjdiXTXx+CvxHjVMtjlfubZHlVY2gZ3FUwvCFeVNI4xf5Wsye+t4bQRL8zoAwAAAAAAAKSIIQAAAAAAAA=='
+      );
+      res.scanIndex.should.equal(1);
+      res.recoveryAmount.should.equal('1700000000');
+
+      const UnsignedSweepTxnDeserialize = new TransferTransaction(basecoin);
+      UnsignedSweepTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const UnsignedSweepTxnJson = UnsignedSweepTxnDeserialize.toJson();
+
+      should.equal(UnsignedSweepTxnJson.id, '4XxsV2ktbcG3gF3Zj46EL9irJd9KgKoKPQYEDtPiQs21');
+      should.equal(UnsignedSweepTxnJson.sender, senderAddress1);
+      sandBox.assert.callCount(basecoin.getBalance, 1);
+      sandBox.assert.callCount(basecoin.getInputCoins, 1);
+      sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
+    });
+  });
+
+  describe('Recover Transaction Failures:', () => {
+    const sandBox = sinon.createSandbox();
+    const senderAddress0 = '0x91f25e237b83a00a62724fdc4a81e43f494dc6b41a1241492826d36e4d131da3';
+    const recoveryDestination = '0x00e4eaa6a291fe02918452e645b5653cd260a5fc0fb35f6193d580916aa9e389';
+    const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should fail to recover due to non-zero fund but insufficient funds address', async function () {
+      const callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      callBack.withArgs(senderAddress0).resolves('9800212');
+
+      await basecoin
+        .recover({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          recoveryDestination,
+          walletPassphrase,
+        })
+        .should.rejectedWith(
+          `Found address ${senderAddress0} with non-zero fund but fund is insufficient to support a recovery ` +
+            `transaction. Please start the next scan at address index 1.`
+        );
+
+      sandBox.assert.callCount(basecoin.getBalance, 1);
+    });
+
+    it('should fail to recover due to not finding an address with funds', async function () {
+      const callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      callBack.resolves('0');
+
+      const numIterations = 10;
+      await basecoin
+        .recover({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          recoveryDestination,
+          walletPassphrase,
+          scan: numIterations,
+        })
+        .should.rejectedWith('Did not find an address with funds to recover');
+
+      sandBox.assert.callCount(basecoin.getBalance, numIterations);
     });
   });
 });

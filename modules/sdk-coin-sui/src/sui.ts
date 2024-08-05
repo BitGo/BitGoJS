@@ -3,9 +3,12 @@ import {
   BaseTransaction,
   BitGoBase,
   EDDSAMethods,
+  EDDSAMethodTypes,
+  Environments,
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
+  MPCRecoveryOptions,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
@@ -16,10 +19,11 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { TransactionBuilderFactory, KeyPair as SuiKeyPair } from './lib';
+import { TransactionBuilderFactory, KeyPair as SuiKeyPair, TransferTransaction, TransferBuilder } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import { TransferTransaction } from './lib/transferTransaction';
+import { SuiObjectInfo, SuiRecoveryTx, SuiTransactionType } from './lib/iface';
+import { DEFAULT_GAS_OVERHEAD, DEFAULT_GAS_PRICE, MAX_GAS_BUDGET, MAX_OBJECT_LIMIT } from './lib/constants';
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -45,6 +49,11 @@ export interface SuiParsedTransaction extends ParsedTransaction {
 }
 
 export type SuiTransactionExplanation = TransactionExplanation;
+
+export interface SuiRecoveryOptions extends MPCRecoveryOptions {
+  startingScanIndex?: number;
+  scan?: number;
+}
 
 export class Sui extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -210,11 +219,11 @@ export class Sui extends BaseCoin {
     };
   }
 
-  isValidPub(pub: string): boolean {
+  isValidPub(_: string): boolean {
     throw new Error('Method not implemented.');
   }
 
-  isValidPrv(prv: string): boolean {
+  isValidPrv(_: string): boolean {
     throw new Error('Method not implemented.');
   }
 
@@ -222,7 +231,7 @@ export class Sui extends BaseCoin {
     return utils.isValidAddress(address);
   }
 
-  signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+  signTransaction(_: SignTransactionOptions): Promise<SignedTransaction> {
     throw new Error('Method not implemented.');
   }
 
@@ -258,5 +267,198 @@ export class Sui extends BaseCoin {
     const factory = this.getBuilder();
     const rebuiltTransaction = await factory.from(serializedTx).build();
     return rebuiltTransaction.signablePayload;
+  }
+
+  protected getPublicNodeUrl(): string {
+    return Environments[this.bitgo.getEnv()].suiNodeUrl;
+  }
+
+  protected async getBalance(owner: string, coinType?: string): Promise<string> {
+    const url = this.getPublicNodeUrl();
+    return await utils.getBalance(url, owner, coinType);
+  }
+
+  protected async getInputCoins(owner: string, coinType?: string): Promise<SuiObjectInfo[]> {
+    const url = this.getPublicNodeUrl();
+    return await utils.getInputCoins(url, owner, coinType);
+  }
+
+  protected async getFeeEstimate(txHex: string): Promise<BigNumber> {
+    const url = this.getPublicNodeUrl();
+    return await utils.getFeeEstimate(url, txHex);
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param params
+   */
+  async recover(params: SuiRecoveryOptions): Promise<SuiRecoveryTx> {
+    if (!params.bitgoKey) {
+      throw new Error('missing bitgoKey');
+    }
+    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    const startIdx = utils.validateNonNegativeNumber(
+      0,
+      'Invalid starting index to scan for addresses',
+      params.startingScanIndex
+    );
+    const numIterations = utils.validateNonNegativeNumber(20, 'Invalid scanning factor', params.scan);
+    const endIdx = startIdx + numIterations;
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+
+    for (let idx = startIdx; idx < endIdx; idx++) {
+      const derivationPath = `m/${idx}`;
+      const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
+      const senderAddress = this.getAddressFromPublicKey(derivedPublicKey);
+      let availableBalance = new BigNumber(0);
+      try {
+        availableBalance = new BigNumber(await this.getBalance(senderAddress));
+      } catch (e) {
+        continue;
+      }
+      if (availableBalance.toNumber() <= 0) {
+        continue;
+      }
+      let netAmount = availableBalance.minus(MAX_GAS_BUDGET);
+      if (netAmount.toNumber() <= 0) {
+        throw new Error(
+          `Found address ${senderAddress} with non-zero fund but fund is insufficient to support a recovery ` +
+            `transaction. Please start the next scan at address index ${idx + 1}.`
+        );
+      }
+
+      let inputCoins = await this.getInputCoins(senderAddress);
+      inputCoins
+        .filter((coin) => coin.balance !== undefined)
+        .sort((a, b) => {
+          return b.balance.minus(a.balance).toNumber();
+        });
+      if (inputCoins.length > MAX_OBJECT_LIMIT) {
+        inputCoins = inputCoins.slice(0, MAX_OBJECT_LIMIT);
+        netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
+        netAmount = netAmount.minus(MAX_GAS_BUDGET);
+      }
+      inputCoins = inputCoins.map((object: any) => {
+        return {
+          coinType: object.coinType,
+          objectId: object.coinObjectId,
+          version: object.version,
+          digest: object.digest,
+          balance: object.balance,
+        };
+      });
+
+      const recipients = [
+        {
+          address: params.recoveryDestination,
+          amount: netAmount.toString(),
+        },
+      ];
+
+      // first build the unsigned txn
+      const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
+      const txBuilder = factory
+        .getTransferBuilder()
+        .type(SuiTransactionType.Transfer)
+        .sender(senderAddress)
+        .send(recipients)
+        .gasData({
+          owner: senderAddress,
+          price: DEFAULT_GAS_PRICE,
+          budget: MAX_GAS_BUDGET,
+          payment: inputCoins,
+        });
+
+      const tempTx = (await txBuilder.build()) as TransferTransaction;
+      const feeEstimate = await this.getFeeEstimate(tempTx.toBroadcastFormat());
+      const gasBudget = Math.trunc(feeEstimate.toNumber() * DEFAULT_GAS_OVERHEAD);
+      txBuilder.gasData({
+        owner: senderAddress,
+        price: DEFAULT_GAS_PRICE,
+        budget: gasBudget,
+        payment: inputCoins,
+      });
+
+      const suiRecoveryTx: SuiRecoveryTx = {
+        scanIndex: idx,
+        recoveryAmount: netAmount.toString(),
+        serializedTx: '',
+      };
+      let tx: TransferTransaction;
+      if (isUnsignedSweep) {
+        tx = (await txBuilder.build()) as TransferTransaction;
+      } else {
+        await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey);
+        tx = (await txBuilder.build()) as TransferTransaction;
+        suiRecoveryTx.signature = Buffer.from(tx.serializedSig).toString('base64');
+      }
+
+      suiRecoveryTx.serializedTx = tx.toBroadcastFormat();
+      return suiRecoveryTx;
+    }
+
+    throw new Error('Did not find an address with funds to recover');
+  }
+
+  private async signRecoveryTransaction(
+    txBuilder: TransferBuilder,
+    params: SuiRecoveryOptions,
+    derivationPath: string,
+    derivedPublicKey: string
+  ) {
+    // TODO(BG-51092): This looks like a common part which can be extracted out too
+    const unsignedTx = (await txBuilder.build()) as TransferTransaction;
+    if (!params.userKey) {
+      throw new Error('missing userKey');
+    }
+    if (!params.backupKey) {
+      throw new Error('missing backupKey');
+    }
+    if (!params.walletPassphrase) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    // Clean up whitespace from entered values
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    // Decrypt private keys from KeyCard values
+    let userPrv: string;
+    try {
+      userPrv = this.bitgo.decrypt({
+        input: userKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e.message}`);
+    }
+    /** TODO BG-52419 Implement Codec for parsing */
+    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+    let backupPrv: string;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+    /* ********************** END ***********************************/
+
+    // add signature
+    const signatureHex = await EDDSAMethods.getTSSSignature(
+      userSigningMaterial,
+      backupSigningMaterial,
+      derivationPath,
+      unsignedTx
+    );
+    txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
   }
 }
