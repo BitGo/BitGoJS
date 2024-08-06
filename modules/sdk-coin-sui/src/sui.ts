@@ -333,25 +333,14 @@ export class Sui extends BaseCoin {
       }
 
       let inputCoins = await this.getInputCoins(senderAddress);
-      inputCoins
-        .filter((coin) => coin.balance !== undefined)
-        .sort((a, b) => {
-          return b.balance.minus(a.balance).toNumber();
-        });
+      inputCoins = inputCoins.sort((a, b) => {
+        return b.balance.minus(a.balance).toNumber();
+      });
       if (inputCoins.length > MAX_OBJECT_LIMIT) {
         inputCoins = inputCoins.slice(0, MAX_OBJECT_LIMIT);
-        netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
-        netAmount = netAmount.minus(MAX_GAS_BUDGET);
       }
-      inputCoins = inputCoins.map((object: any) => {
-        return {
-          coinType: object.coinType,
-          objectId: object.coinObjectId,
-          version: object.version,
-          digest: object.digest,
-          balance: object.balance,
-        };
-      });
+      netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance!), new BigNumber(0));
+      netAmount = netAmount.minus(MAX_GAS_BUDGET);
 
       const recipients = [
         {
