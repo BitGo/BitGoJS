@@ -3842,7 +3842,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     'e1b8ce03-459c-4e4e-805f-414f4a48f78a',
     'g',
-    'Token Gravity',
+    'Gravity',
     18,
     '0x9c7beba8f6ef6643abd725e45a4e8387ef260649',
     UnderlyingAsset.G
@@ -6053,7 +6053,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '61c4e736-08a9-431c-82f5-d62447e0ed78',
     'rndr',
-    'Render Token',
+    'Render',
     18,
     '0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',
     UnderlyingAsset.RNDR
@@ -8586,7 +8586,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '92de2240-586a-4208-a646-9c5aba262ab4',
     'ausd',
-    'Token aUSD₮',
+    'AUSD₮',
     6,
     '0x9eead9ce15383caeed975427340b3a369410cfbf',
     UnderlyingAsset.AUSD
@@ -10234,7 +10234,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '7bab731c-ba74-4d03-9eb3-d74db3148cfe',
     'rvr',
-    'Token River',
+    'River',
     18,
     '0x53319181e003e7f86fb79f794649a2ab680db244',
     UnderlyingAsset.RVR
@@ -10434,7 +10434,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '1dc901bc-9146-418e-ba18-8f9f84e33859',
     'term',
-    'Token Term Finance',
+    'Term Finance',
     18,
     '0xc3d21f79c3120a4ffda7a535f8005a7c297799bf',
     UnderlyingAsset.TERM
