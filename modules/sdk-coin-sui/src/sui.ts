@@ -1,4 +1,5 @@
 import {
+  BaseBroadcastTransactionResult,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -22,7 +23,7 @@ import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory, KeyPair as SuiKeyPair, TransferTransaction, TransferBuilder } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import { SuiObjectInfo, SuiRecoveryTx, SuiTransactionType } from './lib/iface';
+import { BroadcastTransactionOptions, SuiObjectInfo, SuiRecoveryTx, SuiTransactionType } from './lib/iface';
 import { DEFAULT_GAS_OVERHEAD, DEFAULT_GAS_PRICE, MAX_GAS_BUDGET, MAX_OBJECT_LIMIT } from './lib/constants';
 
 export interface ExplainTransactionOptions {
@@ -339,7 +340,7 @@ export class Sui extends BaseCoin {
       if (inputCoins.length > MAX_OBJECT_LIMIT) {
         inputCoins = inputCoins.slice(0, MAX_OBJECT_LIMIT);
       }
-      netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance!), new BigNumber(0));
+      netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
       netAmount = netAmount.minus(MAX_GAS_BUDGET);
 
       const recipients = [
@@ -449,5 +450,17 @@ export class Sui extends BaseCoin {
       unsignedTx
     );
     txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
+  }
+
+  async broadcastTransaction({
+    serializedSignedTransaction,
+    signature,
+  }: BroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    try {
+      const url = this.getPublicNodeUrl();
+      return await utils.executeTransactionBlock(url, serializedSignedTransaction, [signature]);
+    } catch (e) {
+      throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+    }
   }
 }
