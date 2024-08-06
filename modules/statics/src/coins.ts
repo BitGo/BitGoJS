@@ -265,6 +265,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
 ];
 const INJECTIVE_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
 const TOKEN_FEATURES_WITH_SWISS = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
+const TOKEN_FEATURES_WITH_NY = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_NEW_YORK];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -6240,7 +6241,8 @@ export const coins = CoinMap.fromCoins([
     'Shiba Inu',
     18,
     '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
-    UnderlyingAsset.SHIB
+    UnderlyingAsset.SHIB,
+    TOKEN_FEATURES_WITH_NY
   ),
   erc20(
     'e25ca1cf-b0f4-42a0-9d7f-42b94a1e9738',
@@ -6961,7 +6963,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     UnderlyingAsset.USDC,
-    TOKEN_FEATURES_WITH_SWISS
+    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_NEW_YORK]
   ),
   erc20(
     '7ab504b3-eecc-45ca-8f33-7957cb9e774d',
