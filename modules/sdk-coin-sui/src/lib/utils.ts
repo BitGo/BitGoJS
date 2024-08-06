@@ -15,6 +15,7 @@ import {
   MethodNames,
   RequestAddStake,
   StakingProgrammableTransaction,
+  SuiObjectInfo,
   SuiProgrammableTransaction,
   SuiTransaction,
   SuiTransactionType,
@@ -24,6 +25,7 @@ import {
   isValidSuiAddress,
   normalizeSuiAddress,
   normalizeSuiObjectId,
+  SUI_TYPE_ARG,
   SuiJsonValue,
   SuiObjectRef,
 } from './mystenlab/types';
@@ -39,6 +41,8 @@ import {
 import { SIGNATURE_SCHEME_TO_FLAG } from './keyPair';
 import blake2b from '@bitgo/blake2b';
 import { TRANSACTION_DATA_MAX_SIZE } from './mystenlab/builder/TransactionDataBlock';
+import { makeRPC } from './rpcClient';
+import assert from 'assert';
 
 export function isImmOrOwnedObj(obj: ObjectCallArg['Object']): obj is { ImmOrOwned: SuiObjectRef } {
   return 'ImmOrOwned' in obj;
@@ -379,6 +383,84 @@ export class Utils implements BaseUtils {
         .digest('hex')
         .slice(0, SUI_ADDRESS_LENGTH * 2)
     );
+  }
+
+  async getFeeEstimate(url: string, txHex: string): Promise<BigNumber> {
+    const result = await makeRPC(url, 'sui_dryRunTransactionBlock', [txHex]);
+    assert(result.effects);
+    assert(result.effects.gasUsed);
+
+    if (result.effects.status.status !== 'success') {
+      console.error(`Dry run failed, could not automatically determine a budget for txHex ${txHex}`);
+      throw new Error(`Failed to get fee estimate`);
+    }
+
+    const gasObject = result.effects.gasUsed;
+
+    const storageCost = new BigNumber(gasObject.storageCost);
+    const computationCost = new BigNumber(gasObject.computationCost);
+    const storageRebate = new BigNumber(gasObject.storageRebate);
+    const netCost = computationCost.plus(storageCost).minus(storageRebate);
+
+    return netCost.comparedTo(computationCost) > 0 ? netCost : computationCost;
+  }
+
+  async getBalance(url: string, owner: string, coinType?: string): Promise<string> {
+    if (coinType === undefined) {
+      coinType = SUI_TYPE_ARG;
+    }
+    const result = await makeRPC(url, 'suix_getBalance', [owner, coinType]);
+    return result.totalBalance;
+  }
+
+  async getInputCoins(url: string, owner: string, coinType?: string): Promise<SuiObjectInfo[]> {
+    if (coinType === undefined) {
+      coinType = SUI_TYPE_ARG;
+    }
+    let hasNextPage = true;
+    let cursor = undefined;
+    let params = [owner, coinType];
+    let data = [];
+    while (hasNextPage) {
+      if (cursor !== undefined) {
+        params = [owner, coinType, cursor];
+      }
+      try {
+        const result = await makeRPC(url, 'suix_getCoins', params);
+        data = data.concat(result.data);
+        hasNextPage = result.hasNextPage;
+        cursor = result.nextCursor;
+      } catch (e) {
+        console.error(`Failed to get input coins from the node ${e}`);
+        throw new Error(`Failed to get input coins from the node.`);
+      }
+    }
+    return data;
+  }
+
+  async executeTransactionBlock(url: string, serializedTx: string, signatures: string[]) {
+    const reqType = 'WaitForEffectsCert';
+    const options = {
+      showEffects: true,
+    };
+    const params = [serializedTx, signatures, options, reqType];
+    try {
+      const result = await makeRPC(url, 'sui_executeTransactionBlock', params);
+      console.log(result);
+    } catch (e) {
+      console.error(`Failed to execute transaction: ${e}`);
+      throw new Error(`Failed to execute transaction.`);
+    }
+  }
+
+  validateNonNegativeNumber(defaultVal: number, errorMsg: string, inputVal?: number): number {
+    if (inputVal === undefined) {
+      return defaultVal;
+    }
+    if (!Number.isInteger(inputVal) || inputVal < 0) {
+      throw new Error(errorMsg);
+    }
+    return inputVal;
   }
 }
 

@@ -2,6 +2,7 @@ import {
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
+import BigNumber from 'bignumber.js';
 import {
   GasData,
   ProgrammableTransaction,
@@ -123,4 +124,16 @@ export enum MethodNames {
    * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/transfer.md#function-public_transfer
    */
   PublicTransfer = '::transfer::public_transfer',
+}
+
+export interface SuiObjectInfo extends SuiObjectRef {
+  /** balance */
+  balance: BigNumber;
+}
+
+export interface SuiRecoveryTx {
+  serializedTx: string;
+  scanIndex: number;
+  recoveryAmount: string;
+  signature?: string;
 }

@@ -49,6 +49,7 @@ interface EnvironmentTemplate {
     solidity: string;
   };
   hmacVerificationEnforced: boolean;
+  suiNodeUrl: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -141,6 +142,7 @@ const mainnetBase: EnvironmentTemplate = {
     solidity: 'https://api.trongrid.io',
   },
   hmacVerificationEnforced: true,
+  suiNodeUrl: 'https://fullnode.mainnet.sui.io',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -190,6 +192,7 @@ const testnetBase: EnvironmentTemplate = {
     solidity: 'https://api.shasta.trongrid.io',
   },
   hmacVerificationEnforced: false,
+  suiNodeUrl: 'https://fullnode.testnet.sui.io',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
