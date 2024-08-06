@@ -3,6 +3,8 @@ import { isNil, isNumber } from 'lodash';
 import 'dotenv/config';
 
 import { args } from './args';
+import { getLightningSignerUrls } from './lightning/lightningUtils';
+import { LightningSignerUrls } from './lightning/codecs';
 
 function readEnvVar(name, ...deprecatedAliases): string | undefined {
   if (process.env[name] !== undefined && process.env[name] !== '') {
@@ -38,6 +40,8 @@ export interface Config {
   externalSignerUrl?: string;
   signerMode?: boolean;
   signerFileSystemPath?: string;
+  lightningSignerFileSystemPath?: string;
+  lightningSignerUrls?: LightningSignerUrls;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -59,6 +63,7 @@ export const ArgConfig = (args): Partial<Config> => ({
   externalSignerUrl: args.externalSignerUrl,
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
+  lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
 });
 
 export const EnvConfig = (): Partial<Config> => ({
@@ -80,6 +85,7 @@ export const EnvConfig = (): Partial<Config> => ({
   externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
+  lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
 });
 
 export const DefaultConfig: Config = {
@@ -102,7 +108,7 @@ export const DefaultConfig: Config = {
  * @param url
  * @return {string}
  */
-function _forceSecureUrl(url: string): string {
+export function _forceSecureUrl(url: string): string {
   const regex = new RegExp(/(^\w+:|^)\/\//);
   if (regex.test(url)) {
     return url.replace(/(^\w+:|^)\/\//, 'https://');
@@ -115,7 +121,7 @@ function _forceSecureUrl(url: string): string {
  *
  * Later configs have higher precedence over earlier configs.
  */
-function mergeConfigs(...configs: Partial<Config>[]): Config {
+async function mergeConfigs(...configs: Partial<Config>[]): Promise<Config> {
   function isNilOrNaN(val: unknown): val is null | undefined | number {
     return isNil(val) || (isNumber(val) && isNaN(val));
   }
@@ -142,6 +148,12 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     }
   }
 
+  const lightningSignerFileSystemPath = get('lightningSignerFileSystemPath');
+  let lightningSignerUrls: LightningSignerUrls | undefined;
+  if (lightningSignerFileSystemPath) {
+    lightningSignerUrls = await getLightningSignerUrls(lightningSignerFileSystemPath);
+  }
+
   return {
     port: get('port'),
     bind: get('bind'),
@@ -161,11 +173,13 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     externalSignerUrl,
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
+    lightningSignerFileSystemPath,
+    lightningSignerUrls,
   };
 }
 
-export const config = () => {
+export const config = async () => {
   const arg = ArgConfig(args());
   const env = EnvConfig();
-  return mergeConfigs(env, arg);
+  return await mergeConfigs(env, arg);
 };

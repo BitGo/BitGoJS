@@ -104,7 +104,7 @@ function createHttpServer(app: express.Application): http.Server {
  */
 export function startup(config: Config, baseUri: string): () => void {
   return function () {
-    const { env, ipc, customRootUri, customBitcoinNetwork, signerMode } = config;
+    const { env, ipc, customRootUri, customBitcoinNetwork, signerMode, lightningSignerFileSystemPath } = config;
     /* eslint-disable no-console */
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
@@ -121,6 +121,9 @@ export function startup(config: Config, baseUri: string): () => void {
     }
     if (signerMode) {
       console.log(`External signer mode: ${signerMode}`);
+    }
+    if (lightningSignerFileSystemPath) {
+      console.log(`Lightning signer file system path: ${lightningSignerFileSystemPath}`);
     }
     /* eslint-enable no-console */
   };
@@ -308,7 +311,7 @@ export async function prepareIpc(ipcSocketFilePath: string) {
 }
 
 export async function init(): Promise<void> {
-  const cfg = config();
+  const cfg = await config();
   const expressApp = app(cfg);
 
   const server = await createServer(cfg, expressApp);

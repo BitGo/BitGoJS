@@ -47,6 +47,7 @@ import { Config } from './config';
 import { ApiResponseError } from './errors';
 import { promises as fs } from 'fs';
 import { retryPromise } from './retryPromise';
+import { handleInitLightningWallet } from './lightning/lightningRoutes';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -1657,4 +1658,8 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
     prepareBitGo(config),
     promiseWrapper(handleV2OFCSignPayloadInExtSigningMode)
   );
+}
+
+export function setupLightningRoutes(app: express.Application, config: Config): void {
+  app.post('/api/v2/:coin/initwallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleInitLightningWallet));
 }
