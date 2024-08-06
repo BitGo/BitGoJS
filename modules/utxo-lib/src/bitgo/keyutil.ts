@@ -1,6 +1,7 @@
 import { ECPairInterface } from 'ecpair';
+import * as bs58check from 'bs58check';
 import { Network } from '../networks';
-import { ECPair } from '../noble_ecc';
+import { bip32, ECPair } from '../noble_ecc';
 
 /**
  * Create an ECPair from the raw private key bytes
@@ -35,4 +36,17 @@ export function privateKeyBufferFromECPair(ecPair: ECPairInterface): Buffer {
   }
 
   return privkey;
+}
+
+export function changeExtendedKeyNetwork(extendedKey: string, fromNetwork: Network, targetNetwork: Network): string {
+  if (fromNetwork === targetNetwork) {
+    return extendedKey;
+  }
+
+  const hdNode = bip32.fromBase58(extendedKey, fromNetwork);
+  const data = bs58check.decode(extendedKey);
+  const targetVersionBytes = Buffer.alloc(4);
+  targetVersionBytes.writeUInt32BE(hdNode.isNeutered() ? targetNetwork.bip32.public : targetNetwork.bip32.private, 0);
+  targetVersionBytes.copy(data, 0, 0, 4);
+  return bs58check.encode(data);
 }
