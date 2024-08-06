@@ -273,6 +273,11 @@ export enum CoinFeature {
    * This coins supports MPCv2 for key creation and signing
    */
   MPCV2 = 'mpcv2',
+
+  /**
+   * This coin supports acceleration or nonce filling txn for stuck transactions
+   */
+  STUCK_TRANSACTION_MANAGEMENT = 'stuck-transaction-management',
 }
 
 /**
