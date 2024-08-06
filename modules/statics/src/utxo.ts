@@ -211,7 +211,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
   ),
   utxo(
     '722522dc-a613-4bff-a1d1-183ebe5138ae',
-    'tbgbtc',
+    'tbtcbgsig',
     'BitGo Signet Bitcoin',
     Networks.test.bitcoinBitGoSignet,
     UnderlyingAsset.BTC,

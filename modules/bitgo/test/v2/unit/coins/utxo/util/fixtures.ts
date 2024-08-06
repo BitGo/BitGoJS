@@ -28,8 +28,8 @@ async function getFixtureWithName<T>(name: string, defaultValue: T, rawCoinName:
   }
   try {
     let textContent = await fs.readFile(path, 'utf8');
-    if (rawCoinName === 'tbgbtc') {
-      textContent = textContent.replace(/tbtcsig/g, 'tbgbtc');
+    if (rawCoinName === 'tbtcbgsig') {
+      textContent = textContent.replace(/tbtcsig/g, 'tbtcbgsig');
     }
     return JSON.parse(textContent);
   } catch (e) {
@@ -41,7 +41,7 @@ async function getFixtureWithName<T>(name: string, defaultValue: T, rawCoinName:
 }
 
 export async function getFixture<T>(coin: AbstractUtxoCoin, name: string, defaultValue: T): Promise<T> {
-  const coinChain = coin.getChain() === 'tbgbtc' ? 'tbtcsig' : coin.getChain();
+  const coinChain = coin.getChain() === 'tbtcbgsig' ? 'tbtcsig' : coin.getChain();
   return await getFixtureWithName(`${coinChain}/${name}`, defaultValue, coin.getChain());
 }
 

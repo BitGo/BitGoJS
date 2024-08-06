@@ -5,17 +5,17 @@ import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { Btc } from './btc';
 import * as utxolib from '@bitgo/utxo-lib';
 
-export class Tbgbtc extends Btc {
+export class Tbtcbgsig extends Btc {
   constructor(bitgo: BitGoBase) {
     super(bitgo, utxolib.networks.bitcoinBitGoSignet);
   }
 
   static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new Tbgbtc(bitgo);
+    return new Tbtcbgsig(bitgo);
   }
 
   getChain(): string {
-    return 'tbgbtc';
+    return 'tbtcbgsig';
   }
 
   getFullName(): string {
