@@ -26,6 +26,7 @@ describe('Bitgo Express', function () {
   describe('server initialization', function () {
     const validPrvJSON =
       '{"61f039aad587c2000745c687373e0fa9":"xprv9s21ZrQH143K3EuPWCBuqnWxydaQV6et9htQige4EswvcHKEzNmkVmwTwKoadyHzJYppuADB7Us7AbaNLToNvoFoSxuWqndQRYtnNy5DUY2"}';
+    const validLightningSignerConfigJSON = '{"fakeid":{"url": "https://127.0.0.1:8080","tlsCert":"dummy"}}';
 
     it('should require NODE_ENV to be production when running against prod env', function () {
       const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
@@ -230,6 +231,25 @@ describe('Bitgo Express', function () {
       logStub.restore();
     });
 
+    it('should output lightning signer file system path upon server startup', () => {
+      const logStub = sinon.stub(console, 'log');
+
+      const args: any = {
+        env: 'test',
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      };
+
+      startup(args, 'base')();
+
+      logStub.should.have.callCount(4);
+      logStub.should.have.been.calledWith('BitGo-Express running');
+      logStub.should.have.been.calledWith(`Environment: ${args.env}`);
+      logStub.should.have.been.calledWith('Base URI: base');
+      logStub.should.have.been.calledWith(`Lightning signer file system path: ${args.lightningSignerFileSystemPath}`);
+
+      logStub.restore();
+    });
+
     it('should create http base URIs', () => {
       const args: any = {
         bind: '1',
@@ -388,6 +408,26 @@ describe('Bitgo Express', function () {
       signerStub.restore();
     });
 
+    it('should only call setupLightningRoutes when running with lightningSignerFileSystemPath', () => {
+      const args: any = {
+        env: 'test',
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      };
+
+      const readValidStub = sinon.stub(fs, 'readFileSync').returns(validLightningSignerConfigJSON);
+      const lightningSignerStub = sinon.stub(clientRoutes, 'setupLightningRoutes');
+      const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
+      const signerStub = sinon.stub(clientRoutes, 'setupSigningRoutes');
+
+      expressApp(args);
+      lightningSignerStub.should.have.been.calledOnce();
+      apiStub.should.have.been.calledOnce();
+      signerStub.called.should.be.false();
+      apiStub.restore();
+      signerStub.restore();
+      readValidStub.restore();
+    });
+
     it('should only call setupSigningRoutes when running in signer mode', () => {
       const args: any = {
         env: 'test',
@@ -448,6 +488,25 @@ describe('Bitgo Express', function () {
       (() => expressApp(args)).should.not.throw();
     });
 
+    it('should require that signerMode and lightningSignerFileSystemPath not coexist', function () {
+      const args: any = {
+        env: 'test',
+        signerMode: 'signerMode',
+        signerFileSystemPath: 'signerFileSystemPath',
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      };
+      (() => expressApp(args)).should.throw({
+        name: 'LightningSignerConfigError',
+        message: 'signerMode and lightningSignerFileSystemPath cannot be set at the same time.',
+      });
+
+      const readFileStub = sinon.stub(fs, 'readFileSync').returns(validLightningSignerConfigJSON);
+      args.signerMode = undefined;
+      args.signerFileSystemPath = undefined;
+      (() => expressApp(args)).should.not.throw();
+      readFileStub.restore();
+    });
+
     it('should require that an signerFileSystemPath contains a parsable json', function () {
       const args: any = {
         env: 'test',
@@ -462,6 +521,23 @@ describe('Bitgo Express', function () {
       readInvalidStub.restore();
 
       const readValidStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
+      (() => expressApp(args)).should.not.throw();
+      readValidStub.restore();
+    });
+
+    it('should require that an lightningSignerFileSystemPath contains a parsable json', function () {
+      const args: any = {
+        env: 'test',
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      };
+      (() => expressApp(args)).should.throw();
+
+      const invalidPrv = '{"invalid json"}';
+      const readInvalidStub = sinon.stub(fs, 'readFileSync').returns(invalidPrv);
+      (() => expressApp(args)).should.throw();
+      readInvalidStub.restore();
+
+      const readValidStub = sinon.stub(fs, 'readFileSync').returns(validLightningSignerConfigJSON);
       (() => expressApp(args)).should.not.throw();
       readValidStub.restore();
     });

@@ -38,6 +38,7 @@ export interface Config {
   externalSignerUrl?: string;
   signerMode?: boolean;
   signerFileSystemPath?: string;
+  lightningSignerFileSystemPath?: string;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -59,6 +60,7 @@ export const ArgConfig = (args): Partial<Config> => ({
   externalSignerUrl: args.externalSignerUrl,
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
+  lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
 });
 
 export const EnvConfig = (): Partial<Config> => ({
@@ -80,6 +82,7 @@ export const EnvConfig = (): Partial<Config> => ({
   externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
+  lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
 });
 
 export const DefaultConfig: Config = {
@@ -102,7 +105,7 @@ export const DefaultConfig: Config = {
  * @param url
  * @return {string}
  */
-function _forceSecureUrl(url: string): string {
+export function _forceSecureUrl(url: string): string {
   const regex = new RegExp(/(^\w+:|^)\/\//);
   if (regex.test(url)) {
     return url.replace(/(^\w+:|^)\/\//, 'https://');
@@ -161,6 +164,7 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     externalSignerUrl,
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
+    lightningSignerFileSystemPath: get('lightningSignerFileSystemPath'),
   };
 }
 

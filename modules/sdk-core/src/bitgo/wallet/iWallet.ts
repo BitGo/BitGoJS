@@ -245,6 +245,7 @@ export interface WalletCoinSpecific {
   hashAlgorithm?: string;
   pendingEcdsaTssInitialization?: boolean;
   keys?: string[];
+  encryptedAdminMacaroon?: string;
 }
 
 export interface PaginationOptions {
