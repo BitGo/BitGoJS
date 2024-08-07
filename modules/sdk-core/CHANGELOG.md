@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.7.0...@bitgo/sdk-core@27.8.0) (2024-08-07)
+
+### Bug Fixes
+
+- **root:** replace MPCv2 SMC types for public-types ([cb4c68f](https://github.com/BitGo/BitGoJS/commit/cb4c68f08035da7742a740ee7e220117a2143805))
+
+### Features
+
+- **abstract-cosmos:** add dkls support for cosmos hot wallet recovery ([da24a55](https://github.com/BitGo/BitGoJS/commit/da24a559d42ac0f2975fd03ec335f5e72bcd8f49))
+- **sdk-coin-sui:** non-bitgo recovery ([a60531a](https://github.com/BitGo/BitGoJS/commit/a60531aabd0708d7f67226a0c5a4a4ea84f83d66))
+- **sdk-lib-mpc:** support dep injection of dkls wasm in dsg ([a8c09ab](https://github.com/BitGo/BitGoJS/commit/a8c09abbe4feef656d80187969121e845f0c6656))
+
 # [27.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.6.0...@bitgo/sdk-core@27.7.0) (2024-07-30)
 
 ### Bug Fixes
