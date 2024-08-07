@@ -1,4 +1,5 @@
 import {
+  BaseBroadcastTransactionResult,
   BaseUtils,
   BuildTransactionError,
   InvalidTransactionError,
@@ -448,19 +449,21 @@ export class Utils implements BaseUtils {
       });
   }
 
-  async executeTransactionBlock(url: string, serializedTx: string, signatures: string[]) {
+  async executeTransactionBlock(
+    url: string,
+    serializedTx: string,
+    signatures: string[]
+  ): Promise<BaseBroadcastTransactionResult> {
     const reqType = 'WaitForEffectsCert';
-    const options = {
-      showEffects: true,
-    };
+    const options = { showEffects: true };
     const params = [serializedTx, signatures, options, reqType];
+    let result: Record<string, any>;
     try {
-      const result = await makeRPC(url, 'sui_executeTransactionBlock', params);
-      console.log(result);
+      result = await makeRPC(url, 'sui_executeTransactionBlock', params);
     } catch (e) {
-      console.error(`Failed to execute transaction: ${e}`);
-      throw new Error(`Failed to execute transaction.`);
+      throw new Error(`${e.message}`);
     }
+    return { txId: result.digest };
   }
 
   validateNonNegativeNumber(defaultVal: number, errorMsg: string, inputVal?: number): number {

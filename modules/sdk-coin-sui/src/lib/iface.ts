@@ -1,4 +1,5 @@
 import {
+  BaseBroadcastTransactionOptions,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
@@ -136,4 +137,8 @@ export interface SuiRecoveryTx {
   scanIndex: number;
   recoveryAmount: string;
   signature?: string;
+}
+
+export interface BroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
+  signature: string;
 }

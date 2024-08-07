@@ -29,9 +29,12 @@ export async function makeRPC(url: string, method: string, params: Params): Prom
     timeoutMs: 3000,
     params: { jsonrpc: '2.0', id: 1, method: method, params: params },
   });
-  if (res.body.error || res.statusCode !== 200) {
-    console.error(`Request to the node failed. Got: ${res.body}`);
-    throw new Error(`Request to the node failed. Got: ${res.body}`);
+  if (res.body.error) {
+    const error = res.body.error;
+    throw new Error(`Request to the node failed. Error code: ${error.code}, message: ${error.message}`);
+  }
+  if (res.statusCode !== 200) {
+    throw new Error(`Request to the node failed, Status code: ${res.statusCode}`);
   }
   return res.body.result;
 }
