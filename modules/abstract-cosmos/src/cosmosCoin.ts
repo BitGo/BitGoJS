@@ -5,6 +5,7 @@ import {
   ECDSA,
   Ecdsa,
   ECDSAMethodTypes,
+  ECDSAUtils,
   ExplanationResult,
   hexToBigInt,
   InvalidAddressError,
@@ -27,7 +28,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';
 import { Buffer } from 'buffer';
-import { Hash, randomBytes } from 'crypto';
+import { createHash, Hash, randomBytes } from 'crypto';
 import * as _ from 'lodash';
 import * as querystring from 'querystring';
 import * as request from 'superagent';
@@ -158,6 +159,8 @@ export class CosmosCoin extends BaseCoin {
     }
 
     // Step 2: Fetch the bitgo key from params
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
     // Step 3: Instantiate the ECDSA signer and fetch the address details
@@ -207,26 +210,49 @@ export class CosmosCoin extends BaseCoin {
     const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction;
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     const signableHex = unsignedTransaction.signablePayload.toString('hex');
-    const userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
-    const [userKeyCombined, backupKeyCombined] = ((): [
-      ECDSAMethodTypes.KeyCombined | undefined,
-      ECDSAMethodTypes.KeyCombined | undefined
-    ] => {
-      const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
+
+    const isGG18SigningMaterial = ECDSAUtils.isGG18SigningMaterial(userKey, params.walletPassphrase);
+    let signature: ECDSA.Signature;
+
+    if (isGG18SigningMaterial) {
+      // GG18
+      const [userKeyCombined, backupKeyCombined] = ((): [
+        ECDSAMethodTypes.KeyCombined | undefined,
+        ECDSAMethodTypes.KeyCombined | undefined
+      ] => {
+        const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
+          userKey,
+          backupKey,
+          params.walletPassphrase
+        );
+        return [userKeyCombined, backupKeyCombined];
+      })();
+
+      if (!userKeyCombined || !backupKeyCombined) {
+        throw new Error('Missing combined key shares for user or backup');
+      }
+
+      // Step 7: Sign the tx
+      signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+    } else {
+      // DKLS
+      const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
         userKey,
         backupKey,
         params.walletPassphrase
-      );
-      return [userKeyCombined, backupKeyCombined];
-    })();
+      ); // baseAddress is not extracted
 
-    if (!userKeyCombined || !backupKeyCombined) {
-      throw new Error('Missing combined key shares for user or backup');
+      if (!userKeyShare || !backupKeyShare || !commonKeyChain) {
+        throw new Error('Missing combined key shares for user or backup or common');
+      }
+
+      // Step 7: Sign the tx
+      const message = unsignedTransaction.signablePayload;
+      const messageHash = (utils.getHashFunction() || createHash('sha256')).update(message).digest();
+
+      signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
     }
 
-    // Step 7: Sign the tx
-    const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
     const signableBuffer = Buffer.from(signableHex, 'hex');
     MPC.verify(signableBuffer, signature, this.getHashFunction());
     const cosmosKeyPair = this.getKeyPair(publicKey);
