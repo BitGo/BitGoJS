@@ -102,6 +102,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   matic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   weth: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   eigen: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  'reth-rocket': { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   injective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   polygon: {
     features: [
