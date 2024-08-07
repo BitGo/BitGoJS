@@ -182,6 +182,7 @@ const POLYGON_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.MPCV2,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
 ];
 const SOL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -262,9 +263,11 @@ const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.INCREASED_TX_REQUEST_REBUILD_LIMIT,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
 ];
 const INJECTIVE_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
 const TOKEN_FEATURES_WITH_SWISS = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
+const TOKEN_FEATURES_WITH_NY = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_NEW_YORK];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -421,6 +424,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.BULK_TRANSACTION,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
     ]
   ), // we should probably refactor this into a eth() method
   account(
@@ -474,6 +478,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
     ]
   ),
   account(
@@ -1028,6 +1033,8 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.TSS_COLD,
       CoinFeature.EVM_WALLET,
       CoinFeature.MPCV2,
+      CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
     ]
   ),
   account(
@@ -1044,6 +1051,8 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.TSS_COLD,
       CoinFeature.EVM_WALLET,
       CoinFeature.MPCV2,
+      CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
     ]
   ),
   account(
@@ -3838,6 +3847,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.FXS
   ),
   erc20(
+    'e1b8ce03-459c-4e4e-805f-414f4a48f78a',
+    'g',
+    'Gravity',
+    18,
+    '0x9c7beba8f6ef6643abd725e45a4e8387ef260649',
+    UnderlyingAsset.G
+  ),
+  erc20(
     '78151ad3-fe9e-4511-88f7-6a6e2348631c',
     'gal',
     'Project Galaxy',
@@ -6043,7 +6060,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '61c4e736-08a9-431c-82f5-d62447e0ed78',
     'rndr',
-    'Render Token',
+    'Render',
     18,
     '0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24',
     UnderlyingAsset.RNDR
@@ -6230,7 +6247,8 @@ export const coins = CoinMap.fromCoins([
     'Shiba Inu',
     18,
     '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
-    UnderlyingAsset.SHIB
+    UnderlyingAsset.SHIB,
+    TOKEN_FEATURES_WITH_NY
   ),
   erc20(
     'e25ca1cf-b0f4-42a0-9d7f-42b94a1e9738',
@@ -6951,7 +6969,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     UnderlyingAsset.USDC,
-    TOKEN_FEATURES_WITH_SWISS
+    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_NEW_YORK]
   ),
   erc20(
     '7ab504b3-eecc-45ca-8f33-7957cb9e774d',
@@ -8576,7 +8594,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '92de2240-586a-4208-a646-9c5aba262ab4',
     'ausd',
-    'Token aUSD₮',
+    'AUSD₮',
     6,
     '0x9eead9ce15383caeed975427340b3a369410cfbf',
     UnderlyingAsset.AUSD
@@ -10222,6 +10240,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.RUNE
   ),
   erc20(
+    '7bab731c-ba74-4d03-9eb3-d74db3148cfe',
+    'rvr',
+    'River',
+    18,
+    '0x53319181e003e7f86fb79f794649a2ab680db244',
+    UnderlyingAsset.RVR
+  ),
+  erc20(
     '5e2c5e7d-ee76-4a1f-8d2f-2825c65df156',
     'ryoshi',
     'Ryoshis Vision',
@@ -10412,6 +10438,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x07e5580ab895022e004b039941b9e775ea631d95',
     UnderlyingAsset.TELEGRAMDAO
+  ),
+  erc20(
+    '1dc901bc-9146-418e-ba18-8f9f84e33859',
+    'term',
+    'Term Finance',
+    18,
+    '0xc3d21f79c3120a4ffda7a535f8005a7c297799bf',
+    UnderlyingAsset.TERM
   ),
   erc20(
     '2e9e9cf0-b33b-4929-8016-172329bb4a99',
@@ -12227,7 +12261,7 @@ export const coins = CoinMap.fromCoins([
     '4d9eee7f-68ac-4ce4-8c83-e673f996215d',
     'algo:USDt-312769',
     undefined,
-    'Tether USDt',
+    'Algorand USDT',
     6,
     UnderlyingAsset['algo:USDt-312769'],
     'https://allo.info/asset/312769/token',
@@ -13301,7 +13335,7 @@ export const coins = CoinMap.fromCoins([
     'dd48a295-4f59-4a36-bc40-801998b9ff90',
     'talgo:USDt-180447',
     undefined,
-    'USDt',
+    'Testnet Algorand USDT',
     6,
     UnderlyingAsset['talgo:USDt-180447'],
     'https://someurl.com/',
@@ -13393,7 +13427,7 @@ export const coins = CoinMap.fromCoins([
   eosToken(
     'b91390e4-f297-4d03-8bc8-5703184419dc',
     'eos:USDT',
-    'Tether',
+    'EOS USDT',
     4,
     'tethertether',
     UnderlyingAsset.USDT,
@@ -13437,7 +13471,7 @@ export const coins = CoinMap.fromCoins([
   teosToken(
     '7c420890-c271-49ef-b3a3-73893bffcc55',
     'teos:USDT',
-    'Tether',
+    'Testnet EOS USDT',
     4,
     'lionteste212',
     UnderlyingAsset.USDT,

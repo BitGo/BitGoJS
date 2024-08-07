@@ -78,7 +78,7 @@ describe('Algo USDt Token:', function () {
     algoTokenCoin.getFullName().should.equal('Algo Token');
     algoTokenCoin.getBaseFactor().should.equal(1e6);
     algoTokenCoin.type.should.equal(USDTtokenName);
-    algoTokenCoin.name.should.equal('USDt');
+    algoTokenCoin.name.should.equal('Testnet Algorand USDT');
     algoTokenCoin.coin.should.equal('talgo');
     algoTokenCoin.network.should.equal('Testnet');
     algoTokenCoin.decimalPlaces.should.equal(6);

@@ -30,6 +30,7 @@ export const expectedColdFeatures = {
     'tbsv',
     'tbtc',
     'tbtcsig',
+    'tbtcbgsig',
     'tcelo',
     'tcspr',
     'tdash',

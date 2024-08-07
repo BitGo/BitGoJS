@@ -21,29 +21,32 @@ const accessToken = '';
 // TODO: set a walletId
 const walletId = '';
 
-// TODO: set your passphrase for your wallet here
-const passphrase = '';
-
 async function buildPayTx() {
-  bitgo.authenticateWithAccessToken({ accessToken });
-  const newWallet = await bitgo.coin(coin).wallets().getWallet({ id: walletId });
-  const recipients = [
-    {
-      address: 'tsui-address', // TODO: set a tsui receive address
-      amount: '10000', // TODO: set an amount for the transaction
-    },
-  ];
+  try {
+    bitgo.authenticateWithAccessToken({ accessToken });
+    const wallet = await bitgo.coin(coin).wallets().getWallet({ id: walletId });
+    const recipients = [
+      {
+        address: 'tsui-address', // TODO: set a tsui receive address
+        amount: '10000', // TODO: set an amount for the transaction
+      },
+    ];
 
-  const response = await newWallet.sendMany({
-    recipients,
-    type: 'transfer',
-    walletPassphrase: passphrase,
-  });
-  const tx = response.tx;
-  const requiredTx = tx.replace(/\+/g, '%2B').replace(/\//g, '%2F').replace(/=/g, '%3D');
+    const transaction = await wallet.prebuildTransaction({
+      recipients,
+      type: 'transfer',
+      preview: true,
+    });
+    const txHex: string =
+      transaction.txHex ||
+      '0000020008809698000000000000205a2f1af37d565419096136eb7952b7340206648fa1402b9fb50238771d434a27020200010100000101020000010100cdf4888a104e340b80b01ce5b447fe71c3a40a8218191fb32e33eb2a51c3d862012755a02a57a51ed12cbdc637a930110295010dd99987215c94d931ecca856fb345e0c0000000000020527858e2e3629e1c77cb666cbee77afb9764a0754093522b3f8342ea7c0433d5cdf4888a104e340b80b01ce5b447fe71c3a40a8218191fb32e33eb2a51c3d862e803000000000000a48821000000000000';
 
-  console.log('Required tx param :');
-  console.log(requiredTx);
+    const tx: string = Buffer.from(txHex, 'hex').toString('base64');
+    const requiredTx: string = tx.replace(/\+/g, '%2B').replace(/\//g, '%2F').replace(/=/g, '%3D');
+    console.log('Required tx param :');
+    console.log(requiredTx);
+  } catch (error) {
+    console.error('Error in buildPayTx:', error);
+  }
 }
-
 buildPayTx().catch((e) => console.error(e));

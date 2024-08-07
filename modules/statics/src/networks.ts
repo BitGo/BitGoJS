@@ -250,6 +250,8 @@ class BinanceSmartChain extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://www.bscscan.com/tx/';
   accountExplorerUrl = 'https://www.bscscan.com/address/';
   chainId = 56;
+  nativeCoinOperationHashPrefix = '56';
+  tokenOperationHashPrefix = '56-ERC20';
   batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
 }
 
@@ -259,6 +261,8 @@ class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://testnet.bscscan.com/tx/';
   accountExplorerUrl = 'https://testnet.bscscan.com/address/';
   chainId = 97;
+  nativeCoinOperationHashPrefix = '97';
+  tokenOperationHashPrefix = '97-ERC20';
   batcherContractAddress = '0x6faf4b6bae3d4bf20c5d866c938f51992c63e825';
 }
 
@@ -295,6 +299,13 @@ class BitcoinPublicSignet extends Testnet implements UtxoNetwork {
   family = CoinFamily.BTC;
   utxolibName = 'bitcoinPublicSignet';
   explorerUrl = 'https://mempool.space/signet/tx/';
+}
+
+class BitcoinBitGoSignet extends Testnet implements UtxoNetwork {
+  name = 'BitcoinBitGoSignet';
+  family = CoinFamily.BTC;
+  utxolibName = 'bitcoinBitGoSignet';
+  explorerUrl = 'https://mempool.space/notanetwork/tx/';
 }
 
 class BitcoinCash extends Mainnet implements UtxoNetwork {
@@ -1097,6 +1108,7 @@ export const Networks = {
     basechain: Object.freeze(new BaseChainTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinPublicSignet: Object.freeze(new BitcoinPublicSignet()),
+    bitcoinBitGoSignet: Object.freeze(new BitcoinBitGoSignet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
