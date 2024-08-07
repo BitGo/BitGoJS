@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as StaticsBaseCoin, BaseTokenConfig } from '@bitgo/statics';
 import { IRequestTracer } from '../../api';
 import { IEnterprises } from '../enterprise';
-import { Keychain, IKeychains } from '../keychain';
+import { IKeychains, Keychain } from '../keychain';
 import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
@@ -14,6 +14,7 @@ import { IWebhooks } from '../webhook/iWebhooks';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
+import { MPCTx } from '../utils';
 
 export interface Output extends ITransactionRecipient {
   address: string;
@@ -449,10 +450,12 @@ export type BuildNftTransferDataOptions = NFTTransferOptions & {
 
 export interface BaseBroadcastTransactionOptions {
   serializedSignedTransaction: string;
+  transactions?: MPCTx[];
 }
 
 export interface BaseBroadcastTransactionResult {
-  txId: string;
+  txId?: string;
+  txIds?: string[];
 }
 
 export interface IBaseCoin {

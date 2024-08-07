@@ -3,7 +3,7 @@ import { IRequestTracer } from '../../../api';
 import { KeychainsTriplet, ParsedTransaction } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
-import { EDDSA, GShare, SignShare, Signature } from '../../../account-lib/mpc/tss';
+import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
 import { KeyShare } from './ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
@@ -445,6 +445,10 @@ export interface MPCTx {
     commonKeychain?: string;
     lastScanIndex?: number;
   };
+  // the amount recovered using WRW
+  recoveryAmount?: string;
+  // the transaction signature used for broadcasting the transaction
+  signature?: string;
 }
 
 export interface MPCRecoveryOptions {
@@ -455,6 +459,10 @@ export interface MPCRecoveryOptions {
   walletPassphrase?: string;
   seed?: string;
   index?: number;
+  // the starting receive address index to scan from for WRW recovery
+  startingScanIndex?: number;
+  // the number of addresses to scan from the starting index
+  scan?: number;
 }
 
 export interface MPCConsolidationRecoveryOptions {
