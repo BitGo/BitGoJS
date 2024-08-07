@@ -17,6 +17,7 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   address,
   wrwUser,
+  wrwUserDkls,
 } from '../resources/atom';
 import should = require('should');
 
@@ -397,16 +398,23 @@ describe('ATOM', function () {
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('tatom');
     const testBalance = '150000';
-    const testAccountNumber = '123';
-    const testSequenceNumber = '0';
-    const testChainId = 'test-chain';
+    const testAccountNumber = '725163';
+    const testSequenceNumber = '8';
+
+    const testBalanceDkls = '150000';
+    const testAccountNumberDkls = '755440';
+    const testSequenceNumberDkls = '2';
+
+    const testChainId = 'theta-testnet-001';
 
     beforeEach(() => {
       const accountBalance = sandBox.stub(Atom.prototype, 'getAccountBalance' as keyof Atom);
       accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
+      accountBalance.withArgs(wrwUserDkls.senderAddress).resolves(testBalanceDkls);
 
       const accountDetails = sandBox.stub(Atom.prototype, 'getAccountDetails' as keyof Atom);
       accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+      accountDetails.withArgs(wrwUserDkls.senderAddress).resolves([testAccountNumberDkls, testSequenceNumberDkls]);
 
       const chainId = sandBox.stub(Atom.prototype, 'getChainId' as keyof Atom);
       chainId.withArgs().resolves(testChainId);
@@ -439,6 +447,30 @@ describe('ATOM', function () {
       const atomTxnJson = atomTxn.toJson();
       const sendMessage = atomTxnJson.sendMessages[0].value as SendMessage;
       const balance = new BigNumber(testBalance);
+      const gasAmount = new BigNumber(GAS_AMOUNT);
+      const actualBalance = balance.minus(gasAmount);
+      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+    });
+
+    it('should recover funds for non-bitgo recoveries - DKLS type', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUserDkls.userKey,
+        backupKey: wrwUserDkls.backupKey,
+        bitgoKey: wrwUserDkls.bitgoKey,
+        walletPassphrase: wrwUserDkls.walletPassphrase,
+        recoveryDestination: wrwUserDkls.destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(basecoin.getAccountBalance);
+      sandBox.assert.calledOnce(basecoin.getAccountDetails);
+      sandBox.assert.calledOnce(basecoin.getChainId);
+
+      const atomTxn = new CosmosTransaction(coin, utils);
+      atomTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const atomTxnJson = atomTxn.toJson();
+      const sendMessage = atomTxnJson.sendMessages[0].value as SendMessage;
+      const balance = new BigNumber(testBalanceDkls);
       const gasAmount = new BigNumber(GAS_AMOUNT);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());

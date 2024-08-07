@@ -127,6 +127,7 @@ const DOGE_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
 ];
 
 export const utxoCoins: Readonly<BaseCoin>[] = [

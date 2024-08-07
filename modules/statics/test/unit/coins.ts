@@ -66,7 +66,13 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   celo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  doge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  doge: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+    ],
+  },
   eos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   eth: {
     features: [
@@ -124,7 +130,8 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   },
   trx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   usdt: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
-  usdc: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  usdc: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_NEW_YORK] },
+  shib: { features: [CoinFeature.CUSTODY_BITGO_NEW_YORK] },
   injv2: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   // Test Coins
   talgo: {

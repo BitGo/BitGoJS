@@ -1,20 +1,18 @@
 import assert from 'assert';
-import { IBaseCoin } from '../../../../baseCoin';
-import { BitGoBase } from '../../../../bitgoBase';
-import { EcdsaMPCv2Utils } from '../ecdsaMPCv2';
 import {
   BitgoToOVC1Round1Response,
   BitgoToOVC1Round2Response,
   BitgoToOVC1Round3Response,
-  KeyCreationMPCv2States,
+  KeyCreationMPCv2StateEnum,
   OVC1ToBitgoRound3Payload,
   OVC2ToBitgoRound1Payload,
   OVC2ToBitgoRound2Payload,
-  OVC_ONE,
-  OVC_TWO,
-} from './types';
-
-import { Keychain } from '../../../..';
+  OVCIndexEnum,
+} from '@bitgo/public-types';
+import { IBaseCoin } from '../../../../baseCoin';
+import { BitGoBase } from '../../../../bitgoBase';
+import { EcdsaMPCv2Utils } from '../ecdsaMPCv2';
+import { decodeOrElse, Keychain } from '../../../..';
 
 export class MPCv2SMCUtils {
   private MPCv2Utils: EcdsaMPCv2Utils;
@@ -24,12 +22,11 @@ export class MPCv2SMCUtils {
   }
 
   public async keyGenRound1(enterprise: string, payload: OVC2ToBitgoRound1Payload): Promise<BitgoToOVC1Round1Response> {
-    assert(
-      payload.state === KeyCreationMPCv2States.WaitingForBitgoRound1Data,
-      `Invalid state for round 1, got: ${payload.state}`
-    );
-    const ovc1 = payload.ovc[OVC_ONE];
-    const ovc2 = payload.ovc[OVC_TWO];
+    decodeOrElse(OVC2ToBitgoRound1Payload.name, OVC2ToBitgoRound1Payload, payload, (errors) => {
+      throw new Error(`error(s) parsing payload: ${errors}`);
+    });
+    const ovc1 = payload.ovc[OVCIndexEnum.ONE];
+    const ovc2 = payload.ovc[OVCIndexEnum.TWO];
     const userGpgPublicKey = ovc1.gpgPubKey;
     const backupGpgPublicKey = ovc2.gpgPubKey;
     const messages = { p2pMessages: [], broadcastMessages: [ovc1.ovcMsg1, ovc2.ovcMsg1] };
@@ -40,70 +37,76 @@ export class MPCv2SMCUtils {
       messages
     );
 
-    return {
+    const response = {
       wallet: {
         tssVersion: payload.tssVersion,
         walletType: payload.walletType,
         coin: payload.coin,
         ovc: payload.ovc,
-        state: KeyCreationMPCv2States.WaitingForOVC1Round2Data,
+        state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round2Data,
         platform: {
           walletGpgPubKeySigs: result.walletGpgPubKeySigs,
           sessionId: result.sessionId,
           bitgoMsg1: this.MPCv2Utils.formatBitgoBroadcastMessage(result.bitgoMsg1),
           ovc: {
-            [OVC_ONE]: { bitgoToOvcMsg2: this.MPCv2Utils.formatP2PMessage(result.bitgoToUserMsg2) },
-            [OVC_TWO]: { bitgoToOvcMsg2: this.MPCv2Utils.formatP2PMessage(result.bitgoToBackupMsg2) },
+            [OVCIndexEnum.ONE]: { bitgoToOvcMsg2: this.MPCv2Utils.formatP2PMessage(result.bitgoToUserMsg2) },
+            [OVCIndexEnum.TWO]: { bitgoToOvcMsg2: this.MPCv2Utils.formatP2PMessage(result.bitgoToBackupMsg2) },
           },
         },
       },
     };
+
+    return decodeOrElse(BitgoToOVC1Round1Response.name, BitgoToOVC1Round1Response, response, (errors) => {
+      throw new Error(`error(s) parsing response: ${errors}`);
+    });
   }
 
   public async keyGenRound2(enterprise: string, payload: OVC2ToBitgoRound2Payload): Promise<BitgoToOVC1Round2Response> {
-    assert(
-      payload.state === KeyCreationMPCv2States.WaitingForBitgoRound2Data,
-      `Invalid state for round 2, got: ${payload.state}`
-    );
-    const ovc1 = payload.ovc[OVC_ONE];
-    const ovc2 = payload.ovc[OVC_TWO];
+    decodeOrElse(OVC2ToBitgoRound2Payload.name, OVC2ToBitgoRound2Payload, payload, (errors) => {
+      throw new Error(`error(s) parsing payload: ${errors}`);
+    });
+    const ovc1 = payload.ovc[OVCIndexEnum.ONE];
+    const ovc2 = payload.ovc[OVCIndexEnum.TWO];
     const sessionId = payload.platform.sessionId;
     const messages = { p2pMessages: [ovc1.ovcToBitgoMsg2, ovc2.ovcToBitgoMsg2], broadcastMessages: [] };
     const result = await this.MPCv2Utils.sendKeyGenerationRound2(enterprise, sessionId, messages);
 
-    return {
+    const response = {
       wallet: {
         tssVersion: payload.tssVersion,
         walletType: payload.walletType,
         coin: payload.coin,
         ovc: payload.ovc,
-        state: KeyCreationMPCv2States.WaitingForOVC1Round3aData,
+        state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round3aData,
         platform: {
           ...payload.platform,
           sessionId: result.sessionId,
           bitgoCommitment2: result.bitgoCommitment2,
           ovc: {
-            [OVC_ONE]: {
-              ...payload.platform.ovc[OVC_ONE],
+            [OVCIndexEnum.ONE]: {
+              ...payload.platform.ovc[OVCIndexEnum.ONE],
               bitgoToOvcMsg3: this.MPCv2Utils.formatP2PMessage(result.bitgoToUserMsg3),
             },
-            [OVC_TWO]: {
-              ...payload.platform.ovc[2],
+            [OVCIndexEnum.TWO]: {
+              ...payload.platform.ovc[OVCIndexEnum.TWO],
               bitgoToOvcMsg3: this.MPCv2Utils.formatP2PMessage(result.bitgoToBackupMsg3),
             },
           },
         },
       },
     };
+
+    return decodeOrElse(BitgoToOVC1Round2Response.name, BitgoToOVC1Round2Response, response, (errors) => {
+      throw new Error(`error(s) parsing response: ${errors}`);
+    });
   }
 
   public async keyGenRound3(enterprise: string, payload: OVC1ToBitgoRound3Payload): Promise<BitgoToOVC1Round3Response> {
-    assert(
-      payload.state === KeyCreationMPCv2States.WaitingForBitgoRound3Data,
-      `Invalid state for round 3, got: ${payload.state}`
-    );
-    const ovc1 = payload.ovc[OVC_ONE];
-    const ovc2 = payload.ovc[OVC_TWO];
+    decodeOrElse(OVC1ToBitgoRound3Payload.name, OVC1ToBitgoRound3Payload, payload, (errors) => {
+      throw new Error(`error(s) parsing payload: ${errors}`);
+    });
+    const ovc1 = payload.ovc[OVCIndexEnum.ONE];
+    const ovc2 = payload.ovc[OVCIndexEnum.TWO];
     const sessionId = payload.platform.sessionId;
     const messages = {
       p2pMessages: [ovc1.ovcToBitgoMsg3, ovc2.ovcToBitgoMsg3],
@@ -119,14 +122,14 @@ export class MPCv2SMCUtils {
       isMPCv2: true,
     });
 
-    return {
+    const response = {
       bitGoKeyId: bitgoKeychain.id,
       wallet: {
         tssVersion: payload.tssVersion,
         walletType: payload.walletType,
         coin: payload.coin,
         ovc: payload.ovc,
-        state: KeyCreationMPCv2States.WaitingForOVC1GenerateKey,
+        state: KeyCreationMPCv2StateEnum.WaitingForOVC1GenerateKey,
         platform: {
           ...payload.platform,
           commonKeychain: result.commonKeychain,
@@ -134,6 +137,10 @@ export class MPCv2SMCUtils {
         },
       },
     };
+
+    return decodeOrElse(BitgoToOVC1Round3Response.name, BitgoToOVC1Round3Response, response, (errors) => {
+      throw new Error(`error(s) parsing response: ${errors}`);
+    });
   }
 
   public async uploadClientKeys(
