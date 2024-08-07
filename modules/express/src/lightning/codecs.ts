@@ -5,13 +5,14 @@ function getCodecPair<C extends t.Mixed>(innerCodec: C): t.UnionC<[t.TypeC<{ lnb
   return t.union([t.type({ lnbtc: innerCodec }), t.type({ tlnbtc: innerCodec })]);
 }
 
-export const LightningSignerConnectionsCodec = t.record(
-  t.string,
-  t.type({
-    url: t.string,
-    tlsCert: t.string,
-  })
-);
+export const LightningSignerDetailsCodec = t.type({
+  url: t.string,
+  tlsCert: t.string,
+});
+
+export type LightningSignerDetails = t.TypeOf<typeof LightningSignerDetailsCodec>;
+
+export const LightningSignerConnectionsCodec = t.record(t.string, LightningSignerDetailsCodec);
 
 export type LightningSignerConnections = t.TypeOf<typeof LightningSignerConnectionsCodec>;
 

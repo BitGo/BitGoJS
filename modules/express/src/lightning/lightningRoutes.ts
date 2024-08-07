@@ -1,50 +1,41 @@
 import * as express from 'express';
-// import * as superagent from 'superagent';
-import { decodeOrElse } from '@bitgo/sdk-core';
+import * as https from 'https';
+import * as superagent from 'superagent';
+import { BaseCoin, decodeOrElse, Wallet } from '@bitgo/sdk-core';
+import { bip32 } from '@bitgo/utxo-lib';
+
 import {
   InitLightningWalletRequest,
   InitLightningWalletRequestCodec,
+  LightningAuthKeychain,
   LightningAuthKeychainCodec,
+  LightningKeychain,
   LightningKeychainCodec,
+  LightningSignerConnections,
+  LightningSignerDetails,
 } from './codecs';
 import { unwrapLightningCoinSpecific } from './lightningUtils';
-// import { retryPromise } from '../retryPromise';
+import { retryPromise } from '../retryPromise';
 
-export async function handleInitLightningWallet(req: express.Request) {
-  const { lightningSignerConnections } = req.config;
-  if (!lightningSignerConnections) {
+function getLightningWalletSignerDetails(
+  walletId: string,
+  config: { lightningSignerConnections?: LightningSignerConnections }
+): LightningSignerDetails {
+  if (!config.lightningSignerConnections) {
     throw new Error('Missing required configuration: lightningSignerConnections');
   }
 
-  const walletId = req.params.id;
-  if (!walletId) {
-    throw new Error('Missing required param: walletId');
-  }
-
-  const lightningSignerDetails = lightningSignerConnections[walletId];
+  const lightningSignerDetails = config.lightningSignerConnections[walletId];
   if (!lightningSignerDetails) {
     throw new Error(`Missing required configuration for walletId: ${walletId}`);
   }
+  return lightningSignerDetails;
+}
 
-  const body: InitLightningWalletRequest = decodeOrElse(
-    InitLightningWalletRequestCodec.name,
-    InitLightningWalletRequestCodec,
-    req.body,
-    (_) => {
-      throw new Error('Invalid request body for initLightningWallet.');
-    }
-  );
-
-  const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  if (coin.getFamily() !== 'lnbtc') {
-    throw new Error('Invalid coin');
-  }
-
-  const wallet = await coin.wallets().get({ id: walletId });
-
-  // TODO: check if wallet is ready for initialization
-
+async function getLightningWalletKeychains(
+  coin: BaseCoin,
+  wallet: Wallet
+): Promise<{ userKey: LightningKeychain; userAuthKey: LightningAuthKeychain; nodeAuthKey: LightningAuthKeychain }> {
   if (wallet.keyIds().length !== 1) {
     throw new Error('Invalid number of keys in wallet');
   }
@@ -76,23 +67,77 @@ export async function handleInitLightningWallet(req: express.Request) {
     return key;
   });
 
-  const [userPrv, userAuthPrv, nodeAuthPrv] = [userKey, userAuthKey, nodeAuthKey].map((key) =>
-    bitgo.decrypt({ password: body.passphrase, input: key.encryptedPrv })
-  );
+  return { userKey, userAuthKey, nodeAuthKey };
+}
 
-  if (userPrv === null || userAuthPrv === null || nodeAuthPrv === null) {
-    throw new Error('Dummy');
+function createHttpAgent(tlsCert: string) {
+  return new https.Agent({
+    ca: Buffer.from(tlsCert, 'base64').toString('utf-8'),
+  });
+}
+
+async function initWallet(
+  config: { url: string; httpsAgent: https.Agent },
+  data: { wallet_password: string; extended_master_key: string; macaroon_root_key: string }
+) {
+  return retryPromise(
+    () => superagent.post(`${config.url}/v1/initwallet`).agent(config.httpsAgent).type('json').send(data),
+    (err, tryCount) => {
+      console.log(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+    }
+  );
+}
+
+export async function handleInitLightningWallet(req: express.Request) {
+  const walletId = req.params.id;
+  if (!walletId) {
+    throw new Error('Missing required param: walletId');
   }
 
-  // const { url, tlsCert } = lightningSignerDetails;
-  // const { body: payloadWithSignature } = await retryPromise(
-  //   () =>
-  //     superagent
-  //       .post(`${url}/v1/initwallet`)
-  //       .type('json')
-  //       .send({ wallet_password: body.passphrase, extended_master_key: userPrv, macaroon_root_key: }),
-  //   (err, tryCount) => {
-  //     debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
-  //   }
-  // );
+  const lightningSignerDetails = getLightningWalletSignerDetails(walletId, req.config);
+
+  const reqBody: InitLightningWalletRequest = decodeOrElse(
+    InitLightningWalletRequestCodec.name,
+    InitLightningWalletRequestCodec,
+    req.body,
+    (_) => {
+      throw new Error('Invalid request body for initLightningWallet.');
+    }
+  );
+
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  if (coin.getFamily() !== 'lnbtc') {
+    throw new Error('Invalid coin');
+  }
+
+  const wallet = await coin.wallets().get({ id: walletId });
+
+  // TODO: check if wallet is ready for initialization
+
+  const { userKey, nodeAuthKey } = await getLightningWalletKeychains(coin, wallet);
+
+  const macaroon_root_key = bip32
+    .fromBase58(bitgo.decrypt({ password: reqBody.passphrase, input: nodeAuthKey.encryptedPrv }))
+    .privateKey?.toString('base64');
+
+  if (!macaroon_root_key) {
+    throw new Error('Invalid nodeAuthPrv');
+  }
+
+  const { url, tlsCert } = lightningSignerDetails;
+  const httpsAgent = createHttpAgent(tlsCert);
+
+  const initWalletRes = await initWallet(
+    { url, httpsAgent },
+    {
+      wallet_password: reqBody.passphrase,
+      extended_master_key: bitgo.decrypt({ password: reqBody.passphrase, input: userKey.encryptedPrv }),
+      macaroon_root_key,
+    }
+  );
+
+  if (initWalletRes.status !== 200) {
+    throw new Error(`Failed to initialize wallet: ${initWalletRes.text}`);
+  }
 }
