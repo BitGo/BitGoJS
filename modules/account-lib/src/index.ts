@@ -180,8 +180,6 @@ const coinBuilderMap = {
   tsei: Sei.TransactionBuilderFactory,
   injective: Injective.TransactionBuilderFactory,
   tinjective: Injective.TransactionBuilderFactory,
-  bera: Bera.TransactionBuilderFactory,
-  tbera: Bera.TransactionBuilderFactory,
   zeta: Zeta.TransactionBuilderFactory,
   tzeta: Zeta.TransactionBuilderFactory,
   islm: Islm.TransactionBuilderFactory,
@@ -196,6 +194,8 @@ const coinBuilderMap = {
   tton: Ton.TransactionBuilder,
   zketh: zkEth.TransactionBuilder,
   tzketh: zkEth.TransactionBuilder,
+  bera: Bera.TransactionBuilder,
+  tbera: Bera.TransactionBuilder,
 };
 
 /**

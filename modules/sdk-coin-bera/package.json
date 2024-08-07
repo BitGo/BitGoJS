@@ -40,15 +40,17 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-cosmos": "^10.0.28",
-    "@bitgo/sdk-core": "^27.7.0",
-    "@bitgo/statics": "^48.26.0",
-    "@cosmjs/amino": "^0.29.5",
-    "@cosmjs/stargate": "^0.29.5",
-    "bignumber.js": "^9.1.1"
+    "@bitgo/abstract-eth": "^21.0.0",
+    "@bitgo/sdk-core": "^26.8.2",
+    "@bitgo/statics": "^48.8.0",
+    "@bitgo/utxo-lib": "^9.36.0",
+    "@ethereumjs/common": "^2.6.5",
+    "ethereumjs-abi": "^0.6.5",
+    "ethereumjs-util": "7.1.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.51.2",
-    "@bitgo/sdk-test": "^8.0.33"
+   "@bitgo/sdk-api": "^1.45.3",
+    "@bitgo/sdk-test": "^8.0.13",
+    "secp256k1": "5.0.0"
   }
 }

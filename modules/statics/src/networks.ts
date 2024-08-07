@@ -795,18 +795,6 @@ class CoreumTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.testnet-1.coreum.dev/coreum/transactions/';
 }
 
-class Bera extends Mainnet implements AccountNetwork {
-  name = 'Berachain';
-  family = CoinFamily.BERA;
-  explorerUrl = undefined;
-}
-
-class BeraTestnet extends Testnet implements AccountNetwork {
-  name = 'BerachainTestnet';
-  family = CoinFamily.BERA;
-  explorerUrl = undefined;
-}
-
 class Islm extends Mainnet implements AccountNetwork {
   name = 'Haqq';
   family = CoinFamily.ISLM;
@@ -1011,6 +999,30 @@ class ZkSyncTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
   walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
+}
+
+class Bera extends Mainnet implements EthereumNetwork {
+  name = 'Bera';
+  family = CoinFamily.BERA;
+  explorerUrl = '';
+  accountExplorerUrl = '';
+  chainId = 0;
+  nativeCoinOperationHashPrefix = '';
+  tokenOperationHashPrefix = '';
+}
+
+class BeraTestnet extends Testnet implements EthereumNetwork {
+  name = 'BeraTestnet';
+  family = CoinFamily.BERA;
+  explorerUrl = 'https://bartio.beratrail.io/tx/';
+  accountExplorerUrl = 'https://bartio.beratrail.io/address/';
+  chainId = 80084;
+  nativeCoinOperationHashPrefix = '80084';
+  tokenOperationHashPrefix = '80084-ERC20';
+  forwarderFactoryAddress = '0xe0fce739287037751555011785c369fb1bdfe9c8';
+  forwarderImplementationAddress = '0x49307e47f160829e2f37873ef9e79132b218cac7';
+  walletFactoryAddress = '0x252a69d9a2be99aae36a80ed92d311cf38ec89ce';
+  walletImplementationAddress = '0xe5301a9c2131d4A9b137a1fa8eee9436dda74f5d';
 }
 
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
