@@ -10,6 +10,7 @@ import {
   KeyPair,
   MPCAlgorithm,
   MPCRecoveryOptions,
+  MPCSweepRecoveryOptions,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   SignedTransaction,
@@ -23,7 +24,7 @@ import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory, KeyPair as SuiKeyPair, TransferTransaction, TransferBuilder } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import { BroadcastTransactionOptions, SuiObjectInfo, SuiRecoveryTx, SuiTransactionType } from './lib/iface';
+import { BroadcastTransactionOptions, SuiObjectInfo, SuiMPCTx, SuiTransactionType, SuiMPCTxs } from './lib/iface';
 import { DEFAULT_GAS_OVERHEAD, DEFAULT_GAS_PRICE, MAX_GAS_BUDGET, MAX_OBJECT_LIMIT } from './lib/constants';
 
 export interface ExplainTransactionOptions {
@@ -293,7 +294,7 @@ export class Sui extends BaseCoin {
    * Builds a funds recovery transaction without BitGo
    * @param params
    */
-  async recover(params: SuiRecoveryOptions): Promise<SuiRecoveryTx> {
+  async recover(params: SuiRecoveryOptions): Promise<SuiMPCTx> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -374,7 +375,7 @@ export class Sui extends BaseCoin {
         payment: inputCoins,
       });
 
-      const suiRecoveryTx: SuiRecoveryTx = {
+      const suiMpcTx: SuiMPCTx = {
         scanIndex: idx,
         recoveryAmount: netAmount.toString(),
         serializedTx: '',
@@ -385,11 +386,11 @@ export class Sui extends BaseCoin {
       } else {
         await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey);
         tx = (await txBuilder.build()) as TransferTransaction;
-        suiRecoveryTx.signature = Buffer.from(tx.serializedSig).toString('base64');
+        suiMpcTx.signature = Buffer.from(tx.serializedSig).toString('base64');
       }
 
-      suiRecoveryTx.serializedTx = tx.toBroadcastFormat();
-      return suiRecoveryTx;
+      suiMpcTx.serializedTx = tx.toBroadcastFormat();
+      return suiMpcTx;
     }
 
     throw new Error('Did not find an address with funds to recover');
@@ -462,5 +463,57 @@ export class Sui extends BaseCoin {
     } catch (e) {
       throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
     }
+  }
+
+  /** inherited doc */
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<SuiMPCTxs> {
+    const req = params.signatureShares;
+    const broadcastableTransactions: SuiMPCTx[] = [];
+    let lastScanIndex = 0;
+
+    for (let i = 0; i < req.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+        throw new Error('Missing signature(s)');
+      }
+      const signature = req[i].ovc[0].eddsaSignature;
+      if (!transaction.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, signature);
+      if (!result) {
+        throw new Error('Invalid signature');
+      }
+      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+      const txBuilder = this.getBuilder().from(transaction.serializedTx as string);
+      if (!transaction.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+      if (!transaction.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = transaction.derivationPath as string;
+      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+
+      // add combined signature from ovc
+      txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
+      const signedTransaction = (await txBuilder.build()) as TransferTransaction;
+      const serializedTx = signedTransaction.toBroadcastFormat();
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: transaction.scanIndex,
+        signature: Buffer.from(signedTransaction.serializedSig).toString('base64'),
+      });
+
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
+    }
+
+    return { transactions: broadcastableTransactions, lastScanIndex };
   }
 }
