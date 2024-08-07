@@ -1,19 +1,19 @@
 import * as express from 'express';
+// import * as superagent from 'superagent';
 import { decodeOrElse } from '@bitgo/sdk-core';
 import {
   InitLightningWalletRequest,
   InitLightningWalletRequestCodec,
-  LightningAuthKeychain,
   LightningAuthKeychainCodec,
-  LightningKeychain,
   LightningKeychainCodec,
 } from './codecs';
 import { unwrapLightningCoinSpecific } from './lightningUtils';
+// import { retryPromise } from '../retryPromise';
 
 export async function handleInitLightningWallet(req: express.Request) {
-  const { lightningSignerUrls } = req.config;
-  if (!lightningSignerUrls) {
-    throw new Error('Missing required configuration: lightningSignerUrls');
+  const { lightningSignerConnections } = req.config;
+  if (!lightningSignerConnections) {
+    throw new Error('Missing required configuration: lightningSignerConnections');
   }
 
   const walletId = req.params.id;
@@ -21,9 +21,9 @@ export async function handleInitLightningWallet(req: express.Request) {
     throw new Error('Missing required param: walletId');
   }
 
-  const lightningSignerUrl = lightningSignerUrls[walletId];
-  if (!lightningSignerUrl) {
-    throw new Error('Missing required configuration: lightningSignerUrl');
+  const lightningSignerDetails = lightningSignerConnections[walletId];
+  if (!lightningSignerDetails) {
+    throw new Error(`Missing required configuration for walletId: ${walletId}`);
   }
 
   const body: InitLightningWalletRequest = decodeOrElse(
@@ -57,33 +57,24 @@ export async function handleInitLightningWallet(req: express.Request) {
   const keychains = await Promise.all(allKeyIds.map((id) => coin.keychains().get({ id })));
   const userKeychain = keychains.find((keychain) => keychain.id === userKeyId);
 
-  const userKey: LightningKeychain = decodeOrElse(
-    LightningKeychainCodec.name,
-    LightningKeychainCodec,
-    userKeychain,
-    (_) => {
-      throw new Error(`Invalid user key`);
-    }
-  );
+  const userKey = decodeOrElse(LightningKeychainCodec.name, LightningKeychainCodec, userKeychain, (_) => {
+    throw new Error(`Invalid user key`);
+  });
 
-  const authKeys: LightningAuthKeychain[] = authKeysIds.map((keyId) => {
+  const authKeys = authKeysIds.map((keyId) => {
     const authKeychain = keychains.find((keychain) => keychain.id === keyId);
     return decodeOrElse(LightningAuthKeychainCodec.name, LightningAuthKeychainCodec, authKeychain, (_) => {
       throw new Error(`Invalid auth key`);
     });
   });
 
-  (['userAuth', 'nodeAuth'] as const).map((purpose) => {
-    const key = authKeys.find((k) => unwrapLightningCoinSpecific(k, coin.getChain()).purpose === purpose);
+  const [userAuthKey, nodeAuthKey] = (['userAuth', 'nodeAuth'] as const).map((purpose) => {
+    const key = authKeys.find((k) => unwrapLightningCoinSpecific(k.coinSpecific, coin.getChain()).purpose === purpose);
     if (!key) {
       throw new Error(`Missing ${purpose} key`);
     }
+    return key;
   });
-  const userAuthKey = authKeys.find((key) => unwrapLightningCoinSpecific(key, coin.getChain()).purpose === 'userAuth');
-  const nodeAuthKey = authKeys.find((key) => unwrapLightningCoinSpecific(key, coin.getChain()).purpose === 'nodeAuth');
-  if (!userAuthKey || !nodeAuthKey) {
-    throw new Error('Invalid auth keys');
-  }
 
   const [userPrv, userAuthPrv, nodeAuthPrv] = [userKey, userAuthKey, nodeAuthKey].map((key) =>
     bitgo.decrypt({ password: body.passphrase, input: key.encryptedPrv })
@@ -92,4 +83,16 @@ export async function handleInitLightningWallet(req: express.Request) {
   if (userPrv === null || userAuthPrv === null || nodeAuthPrv === null) {
     throw new Error('Dummy');
   }
+
+  // const { url, tlsCert } = lightningSignerDetails;
+  // const { body: payloadWithSignature } = await retryPromise(
+  //   () =>
+  //     superagent
+  //       .post(`${url}/v1/initwallet`)
+  //       .type('json')
+  //       .send({ wallet_password: body.passphrase, extended_master_key: userPrv, macaroon_root_key: }),
+  //   (err, tryCount) => {
+  //     debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
+  //   }
+  // );
 }

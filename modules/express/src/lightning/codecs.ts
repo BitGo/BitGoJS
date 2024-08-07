@@ -5,9 +5,15 @@ function getCodecPair<C extends t.Mixed>(innerCodec: C): t.UnionC<[t.TypeC<{ lnb
   return t.union([t.type({ lnbtc: innerCodec }), t.type({ tlnbtc: innerCodec })]);
 }
 
-export const LightningSignerUrlsCodec = t.record(t.string, t.string);
+export const LightningSignerConnectionsCodec = t.record(
+  t.string,
+  t.type({
+    url: t.string,
+    tlsCert: t.string,
+  })
+);
 
-export type LightningSignerUrls = t.TypeOf<typeof LightningSignerUrlsCodec>;
+export type LightningSignerConnections = t.TypeOf<typeof LightningSignerConnectionsCodec>;
 
 export const KeyPurposeCodec = t.union([t.literal('userAuth'), t.literal('nodeAuth')], 'KeyPurpose');
 

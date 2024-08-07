@@ -4,7 +4,7 @@ import 'dotenv/config';
 
 import { args } from './args';
 import { getLightningSignerUrls } from './lightning/lightningUtils';
-import { LightningSignerUrls } from './lightning/codecs';
+import { LightningSignerConnections } from './lightning/codecs';
 
 function readEnvVar(name, ...deprecatedAliases): string | undefined {
   if (process.env[name] !== undefined && process.env[name] !== '') {
@@ -41,7 +41,7 @@ export interface Config {
   signerMode?: boolean;
   signerFileSystemPath?: string;
   lightningSignerFileSystemPath?: string;
-  lightningSignerUrls?: LightningSignerUrls;
+  lightningSignerConnections?: LightningSignerConnections;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -149,9 +149,9 @@ async function mergeConfigs(...configs: Partial<Config>[]): Promise<Config> {
   }
 
   const lightningSignerFileSystemPath = get('lightningSignerFileSystemPath');
-  let lightningSignerUrls: LightningSignerUrls | undefined;
+  let lightningSignerConnections: LightningSignerConnections | undefined;
   if (lightningSignerFileSystemPath) {
-    lightningSignerUrls = await getLightningSignerUrls(lightningSignerFileSystemPath);
+    lightningSignerConnections = await getLightningSignerUrls(lightningSignerFileSystemPath);
   }
 
   return {
@@ -174,7 +174,7 @@ async function mergeConfigs(...configs: Partial<Config>[]): Promise<Config> {
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
     lightningSignerFileSystemPath,
-    lightningSignerUrls,
+    lightningSignerConnections,
   };
 }
 

@@ -1,17 +1,22 @@
 import { promises as fs } from 'fs';
 import { decodeOrElse } from '@bitgo/sdk-core';
-import { LightningSignerUrls, LightningSignerUrlsCodec } from './codecs';
+import { LightningSignerConnections, LightningSignerConnectionsCodec } from './codecs';
 import { _forceSecureUrl } from '../config';
 
-export async function getLightningSignerUrls(path: string): Promise<LightningSignerUrls> {
+export async function getLightningSignerUrls(path: string): Promise<LightningSignerConnections> {
   const urlFile = await fs.readFile(path, { encoding: 'utf8' });
   const urls: unknown = JSON.parse(urlFile);
-  const decoded = decodeOrElse(LightningSignerUrlsCodec.name, LightningSignerUrlsCodec, urls, (errors) => {
-    throw new Error(`Invalid lightning signer URL file: ${errors}`);
-  });
-  const secureUrls: LightningSignerUrls = {};
-  for (const [walletId, url] of Object.entries(decoded)) {
-    secureUrls[walletId] = _forceSecureUrl(url);
+  const decoded = decodeOrElse(
+    LightningSignerConnectionsCodec.name,
+    LightningSignerConnectionsCodec,
+    urls,
+    (errors) => {
+      throw new Error(`Invalid lightning signer URL file: ${errors}`);
+    }
+  );
+  const secureUrls: LightningSignerConnections = {};
+  for (const [walletId, { url, tlsCert }] of Object.entries(decoded)) {
+    secureUrls[walletId] = { url: _forceSecureUrl(url), tlsCert };
   }
   return secureUrls;
 }
