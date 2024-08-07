@@ -450,7 +450,7 @@ exports.createTransaction = function (params) {
               inputSize: currentInputSize,
               unspent: unspent,
             };
-            console.log(`pruning unspent: ${JSON.stringify(pruneDetails, null, 4)}`);
+            debug(`pruning unspent: ${JSON.stringify(pruneDetails, null, 4)}`);
             prunedUnspentCount++;
             return false;
           }
@@ -458,7 +458,7 @@ exports.createTransaction = function (params) {
         });
 
         if (prunedUnspentCount > 0) {
-          console.log(`pruned ${prunedUnspentCount} out of ${originalUnspentCount} unspents`);
+          debug(`pruned ${prunedUnspentCount} out of ${originalUnspentCount} unspents`);
         }
 
         if (unspents.length === 0) {
@@ -986,6 +986,7 @@ exports.signTransaction = function (params) {
       const witnessScript = currentUnspent.witnessScript ? Buffer.from(currentUnspent.witnessScript, 'hex') : undefined;
       const sigHash = utxolib.bitgo.getDefaultSigHash(network);
       txb.sign(index, privKey, subscript, sigHash, currentUnspent.value, witnessScript);
+      debug(`Signed transaction input ${index}`);
     } catch (e) {
       // try fallback derivation path (see BG-46497)
       let fallbackSigningSuccessful = false;
@@ -1028,6 +1029,7 @@ exports.signTransaction = function (params) {
       const signatureCount = utxolib.bitgo
         .getSignatureVerifications(partialTransaction, index, params.unspents[index].value)
         .filter((v) => v.signedBy !== undefined).length;
+      debug(`Signature count for input ${index}: ${signatureCount}`);
       if (signatureCount < 1) {
         throw new Error('expected at least one valid signature');
       }
