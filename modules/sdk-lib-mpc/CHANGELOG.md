@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.10.1...@bitgo/sdk-lib-mpc@9.10.2) (2024-07-30)
+
+### Bug Fixes
+
+- **sdk-lib-mpc:** lazy import dkls wasm ([3b8056c](https://github.com/BitGo/BitGoJS/commit/3b8056c0f6a9393b6cc3c701d041c89ee51e0d9e))
+
 ## [9.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.10.0...@bitgo/sdk-lib-mpc@9.10.1) (2024-07-24)
 
 ### Bug Fixes

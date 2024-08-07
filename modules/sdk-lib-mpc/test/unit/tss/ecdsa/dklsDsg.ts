@@ -303,7 +303,7 @@ describe('DKLS Dsg 2x3', function () {
         vector.derivationPath,
         crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
       );
-      party1Round2DSG.setSession(party1Round1Session);
+      await party1Round2DSG.setSession(party1Round1Session);
       party1Round2Messages = party1Round2DSG.handleIncomingMessages({
         p2pMessages: [],
         broadcastMessages: [party2Round1Message],
@@ -327,7 +327,7 @@ describe('DKLS Dsg 2x3', function () {
         vector.derivationPath,
         crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
       );
-      party1Round3DSG.setSession(party1Round2Session);
+      await party1Round3DSG.setSession(party1Round2Session);
       party1Round3Messages = party1Round3DSG.handleIncomingMessages({
         p2pMessages: party2Round2Messages.p2pMessages,
         broadcastMessages: [],
@@ -351,7 +351,7 @@ describe('DKLS Dsg 2x3', function () {
         vector.derivationPath,
         crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
       );
-      party1Round4DSG.setSession(party1Round3Session);
+      await party1Round4DSG.setSession(party1Round3Session);
       party1Round4Messages = party1Round4DSG.handleIncomingMessages({
         p2pMessages: party2Round3Messages.p2pMessages,
         broadcastMessages: [],
@@ -373,7 +373,7 @@ describe('DKLS Dsg 2x3', function () {
         vector.derivationPath,
         crypto.createHash('sha256').update(Buffer.from(vector.msgToSign, 'hex')).digest()
       );
-      party1Round5DSG.setSession(party1Round4Session);
+      await party1Round5DSG.setSession(party1Round4Session);
       party1Round5DSG.handleIncomingMessages({
         p2pMessages: [],
         broadcastMessages: party2Round4Messages.broadcastMessages,

@@ -7,17 +7,26 @@ import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { AddKeychainOptions, BaseCoin, common, ECDSAUtils, Keychain, Wallet } from '@bitgo/sdk-core';
 import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
 import {
+  KeyCreationMPCv2StateEnum,
   MPCv2KeyGenRound1Request,
   MPCv2KeyGenRound1Response,
   MPCv2KeyGenRound2Request,
   MPCv2KeyGenRound2Response,
   MPCv2KeyGenRound3Request,
   MPCv2KeyGenRound3Response,
+  OVC1ToBitgoRound3Payload,
+  OVC1ToOVC2Round1Payload,
+  OVC1ToOVC2Round2Payload,
+  OVC1ToOVC2Round3Payload,
+  OVC2ToBitgoRound1Payload,
+  OVC2ToBitgoRound2Payload,
+  OVC2ToOVC1Round3Payload,
+  OVCIndexEnum,
+  WalletTypeEnum,
 } from '@bitgo/public-types';
 import { NonEmptyString } from 'io-ts-types';
 import { BitGo, BitgoGPGPublicKey } from '../../../../../../src';
 import * as v1Fixtures from './fixtures/mpcv1KeyShares';
-import { beforeEach } from 'mocha';
 
 describe('TSS Ecdsa MPCv2 Utils:', async function () {
   const coinName = 'hteth';
@@ -268,8 +277,6 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
     it('should create TSS MPCv2 key chains with OVCs', async function () {
       const MPCv2SMCUtils = new ECDSAUtils.MPCv2SMCUtils(bitgo, baseCoin);
-      const OVC1_INDEX = 1;
-      const OVC2_INDEX = 2;
       const bitgoSession = new DklsDkg.Dkg(3, 2, 2);
 
       const round1Nock = await nockKeyGenRound1(bitgoSession, 1);
@@ -294,7 +301,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
       // Round 1 User
       const userSession = new DklsDkg.Dkg(3, 2, 0);
-      let OVC1ToOVC2Round1Payload: ECDSAUtils.OVC1ToOVC2Round1Payload;
+      let OVC1ToOVC2Round1Payload: OVC1ToOVC2Round1Payload;
       {
         const userBroadcastMsg1Unsigned = await userSession.initDkg();
         const userMsgs1Signed = await DklsComms.encryptAndAuthOutgoingMessages(
@@ -306,14 +313,14 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         assert(userMsg1, 'userMsg1 not found');
 
         OVC1ToOVC2Round1Payload = {
-          tssVersion: '0.0.1',
-          walletType: 'tss',
-          coin: 'eth',
-          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC2Round1Data,
+          tssVersion: '0.0.1' as NonEmptyString,
+          walletType: WalletTypeEnum.tss,
+          coin: 'eth' as NonEmptyString,
+          state: KeyCreationMPCv2StateEnum.WaitingForOVC2Round1Data,
           ovc: {
-            [OVC1_INDEX]: {
-              gpgPubKey: userGgpKey.publicKey,
-              ovcMsg1: userMsg1,
+            [OVCIndexEnum.ONE]: {
+              gpgPubKey: userGgpKey.publicKey as NonEmptyString,
+              ovcMsg1: userMsg1 as any,
             },
           },
         };
@@ -336,7 +343,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       };
       // Round 1 Backup
       const backupSession = new DklsDkg.Dkg(3, 2, 1);
-      let OVC2ToBitgoRound1Payload: ECDSAUtils.OVC2ToBitgoRound1Payload;
+      let OVC2ToBitgoRound1Payload: OVC2ToBitgoRound1Payload;
       {
         assert(OVC1ToOVC2Round1Payload.state === 0, 'OVC1ToOVC2Round1Payload.state should be 0');
         const backupBroadcastMsg1Unsigned = await backupSession.initDkg();
@@ -350,12 +357,12 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
         OVC2ToBitgoRound1Payload = {
           ...OVC1ToOVC2Round1Payload,
-          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForBitgoRound1Data,
+          state: KeyCreationMPCv2StateEnum.WaitingForBitgoRound1Data,
           ovc: {
             ...OVC1ToOVC2Round1Payload.ovc,
-            [OVC2_INDEX]: {
-              gpgPubKey: backupGgpKey.publicKey,
-              ovcMsg1: backupMsg1,
+            [OVCIndexEnum.TWO]: {
+              gpgPubKey: backupGgpKey.publicKey as NonEmptyString,
+              ovcMsg1: backupMsg1 as any,
             },
           },
         };
@@ -365,18 +372,18 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       const bitgoToOVC1Round1Payload = await MPCv2SMCUtils.keyGenRound1('testId', OVC2ToBitgoRound1Payload);
 
       // Round 2 User
-      let OVC1ToOVC2Round2Payload: ECDSAUtils.OVC1ToOVC2Round2Payload;
+      let OVC1ToOVC2Round2Payload: OVC1ToOVC2Round2Payload;
       {
         assert(bitgoToOVC1Round1Payload.wallet.state === 2, 'bitgoToOVC1Round1Payload.wallet.state should be 2');
         const toUserRound1BroadcastMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [],
             broadcastMessages: [
-              bitgoToOVC1Round1Payload.wallet.ovc[OVC2_INDEX].ovcMsg1,
+              bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.TWO].ovcMsg1,
               bitgoToOVC1Round1Payload.wallet.platform.bitgoMsg1,
             ],
           },
-          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }],
           [userGpgPrvKey]
         );
 
@@ -386,7 +393,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         });
         const userRound2Messages = await DklsComms.encryptAndAuthOutgoingMessages(
           DklsTypes.serializeMessages(userRound2P2PMessages),
-          [{ partyId: 1, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }, bitgoGpgPubKey],
+          [{ partyId: 1, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }, bitgoGpgPubKey],
           [userGpgPrvKey]
         );
         const userToBackupMsg2 = userRound2Messages.p2pMessages.find(
@@ -400,19 +407,19 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
         OVC1ToOVC2Round2Payload = {
           ...bitgoToOVC1Round1Payload.wallet,
-          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC2Round2Data,
+          state: KeyCreationMPCv2StateEnum.WaitingForOVC2Round2Data,
           ovc: {
             ...bitgoToOVC1Round1Payload.wallet.ovc,
-            [OVC1_INDEX]: Object.assign(bitgoToOVC1Round1Payload.wallet.ovc[OVC1_INDEX], {
+            [OVCIndexEnum.ONE]: Object.assign(bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.ONE], {
               ovcToBitgoMsg2: userToBitgoMsg2,
               ovcToOvcMsg2: userToBackupMsg2,
-            }),
+            }) as any,
           },
         };
       }
 
       // Round 2 Backup
-      let OVC2ToBitgoRound2Payload: ECDSAUtils.OVC2ToBitgoRound2Payload;
+      let OVC2ToBitgoRound2Payload: OVC2ToBitgoRound2Payload;
 
       {
         assert(OVC1ToOVC2Round2Payload.state === 3, 'bitgoToOVC1Round1Payload.wallet.state should be 3');
@@ -420,11 +427,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           {
             p2pMessages: [],
             broadcastMessages: [
-              bitgoToOVC1Round1Payload.wallet.ovc[OVC1_INDEX].ovcMsg1,
+              bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.ONE].ovcMsg1,
               bitgoToOVC1Round1Payload.wallet.platform.bitgoMsg1,
             ],
           },
-          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round2Payload.ovc[OVC1_INDEX].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round2Payload.ovc[OVCIndexEnum.ONE].gpgPubKey }],
           [backupGpgPrvKey]
         );
 
@@ -436,7 +443,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         });
         const backupRound2Messages = await DklsComms.encryptAndAuthOutgoingMessages(
           DklsTypes.serializeMessages(backupRound2P2PMessages),
-          [{ partyId: 0, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVC1_INDEX].gpgPubKey }, bitgoGpgPubKey],
+          [{ partyId: 0, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.ONE].gpgPubKey }, bitgoGpgPubKey],
           [backupGpgPrvKey]
         );
         const backupToUserMsg2 = backupRound2Messages.p2pMessages.find(
@@ -450,13 +457,13 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
         OVC2ToBitgoRound2Payload = {
           ...OVC1ToOVC2Round2Payload,
-          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForBitgoRound2Data,
+          state: KeyCreationMPCv2StateEnum.WaitingForBitgoRound2Data,
           ovc: {
             ...OVC1ToOVC2Round2Payload.ovc,
-            [OVC2_INDEX]: Object.assign(OVC1ToOVC2Round2Payload.ovc[OVC2_INDEX], {
+            [OVCIndexEnum.TWO]: Object.assign(OVC1ToOVC2Round2Payload.ovc[OVCIndexEnum.TWO], {
               ovcToBitgoMsg2: backupToBitgoMsg2,
               ovcToOvcMsg2: backupToUserMsg2,
-            }),
+            }) as any,
           },
         };
       }
@@ -466,18 +473,18 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       const bitgoToOVC1Round2Payload = await MPCv2SMCUtils.keyGenRound2('testId', OVC2ToBitgoRound2Payload);
 
       // Round 3A User
-      let OVC1ToOVC2Round3Payload: ECDSAUtils.OVC1ToOVC2Round3Payload;
+      let OVC1ToOVC2Round3Payload: OVC1ToOVC2Round3Payload;
       {
         assert(bitgoToOVC1Round2Payload.wallet.state === 5, 'bitgoToOVC1Round2Payload.wallet.state should be 5');
         const toUserRound2P2PMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [
-              bitgoToOVC1Round2Payload.wallet.ovc[OVC2_INDEX].ovcToOvcMsg2,
-              bitgoToOVC1Round2Payload.wallet.platform.ovc[OVC1_INDEX].bitgoToOvcMsg2,
+              bitgoToOVC1Round2Payload.wallet.ovc[OVCIndexEnum.TWO].ovcToOvcMsg2,
+              bitgoToOVC1Round2Payload.wallet.platform.ovc[OVCIndexEnum.ONE].bitgoToOvcMsg2,
             ],
             broadcastMessages: [],
           },
-          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round2Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round2Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }],
           [userGpgPrvKey]
         );
         const userRound3AP2PMessages = userSession.handleIncomingMessages({
@@ -490,7 +497,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
             p2pMessages: userRound3AP2PMessages,
             broadcastMessages: [],
           }),
-          [{ partyId: 1, gpgKey: bitgoToOVC1Round2Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }, bitgoGpgPubKey],
+          [{ partyId: 1, gpgKey: bitgoToOVC1Round2Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }, bitgoGpgPubKey],
           [userGpgPrvKey]
         );
 
@@ -505,30 +512,30 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
         OVC1ToOVC2Round3Payload = {
           ...bitgoToOVC1Round2Payload.wallet,
-          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC2Round3Data,
+          state: KeyCreationMPCv2StateEnum.WaitingForOVC2Round3Data,
           ovc: {
             ...bitgoToOVC1Round2Payload.wallet.ovc,
-            [OVC1_INDEX]: Object.assign(bitgoToOVC1Round2Payload.wallet.ovc[OVC1_INDEX], {
+            [OVCIndexEnum.ONE]: Object.assign(bitgoToOVC1Round2Payload.wallet.ovc[OVCIndexEnum.ONE], {
               ovcToBitgoMsg3: userToBitgoMsg3,
               ovcToOvcMsg3: userToBackupMsg3,
-            }),
+            }) as any,
           },
         };
       }
 
       // Round 3 Backup
-      let OVC2ToOVC1Round3Payload: ECDSAUtils.OVC2ToOVC1Round3Payload;
+      let OVC2ToOVC1Round3Payload: OVC2ToOVC1Round3Payload;
       {
         assert(OVC1ToOVC2Round3Payload.state === 6, 'OVC1ToOVC2Round3Payload.state should be 6');
         const toBackupRound3P2PMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [
-              OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].ovcToOvcMsg2,
-              OVC1ToOVC2Round3Payload.platform.ovc[OVC2_INDEX].bitgoToOvcMsg2,
+              OVC1ToOVC2Round3Payload.ovc[OVCIndexEnum.ONE].ovcToOvcMsg2,
+              OVC1ToOVC2Round3Payload.platform.ovc[OVCIndexEnum.TWO].bitgoToOvcMsg2,
             ],
             broadcastMessages: [],
           },
-          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVCIndexEnum.ONE].gpgPubKey }],
           [backupGpgPrvKey]
         );
 
@@ -539,7 +546,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
         const backupRound3Messages = await DklsComms.encryptAndAuthOutgoingMessages(
           DklsTypes.serializeMessages(backupRound3P2PMessages),
-          [{ partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].gpgPubKey }, bitgoGpgPubKey],
+          [{ partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVCIndexEnum.ONE].gpgPubKey }, bitgoGpgPubKey],
           [backupGpgPrvKey]
         );
 
@@ -556,17 +563,17 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           {
             p2pMessages: [
               {
-                ...OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].ovcToOvcMsg3,
-                commitment: OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].ovcToOvcMsg2.commitment,
+                ...OVC1ToOVC2Round3Payload.ovc[OVCIndexEnum.ONE].ovcToOvcMsg3,
+                commitment: OVC1ToOVC2Round3Payload.ovc[OVCIndexEnum.ONE].ovcToOvcMsg2.commitment,
               },
               {
-                ...OVC1ToOVC2Round3Payload.platform.ovc[OVC2_INDEX].bitgoToOvcMsg3,
+                ...OVC1ToOVC2Round3Payload.platform.ovc[OVCIndexEnum.TWO].bitgoToOvcMsg3,
                 commitment: OVC1ToOVC2Round3Payload.platform.bitgoCommitment2,
               },
             ],
             broadcastMessages: [],
           },
-          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVC1_INDEX].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round3Payload.ovc[OVCIndexEnum.ONE].gpgPubKey }],
           [backupGpgPrvKey]
         );
 
@@ -591,37 +598,37 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
         OVC2ToOVC1Round3Payload = {
           ...OVC1ToOVC2Round3Payload,
-          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC1Round3bData,
+          state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round3bData,
           ovc: {
             ...OVC1ToOVC2Round3Payload.ovc,
-            [OVC2_INDEX]: Object.assign(OVC1ToOVC2Round3Payload.ovc[OVC2_INDEX], {
+            [OVCIndexEnum.TWO]: Object.assign(OVC1ToOVC2Round3Payload.ovc[OVCIndexEnum.TWO], {
               ovcToOvcMsg3: backupToUserMsg3,
               ovcToBitgoMsg3: backupToBitgoMsg3,
               ovcMsg4: backupMsg4,
-            }),
+            }) as any,
           },
         };
       }
 
       // Round 3B User
-      let OVC1ToBitgoRound3BPayload: ECDSAUtils.OVC1ToBitgoRound3Payload;
+      let OVC1ToBitgoRound3BPayload: OVC1ToBitgoRound3Payload;
       {
         assert(OVC2ToOVC1Round3Payload.state === 7, 'OVC2ToOVC1Round3Payload.state should be 7');
         const toUserRound4Messages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [
               {
-                ...OVC2ToOVC1Round3Payload.ovc[OVC2_INDEX].ovcToOvcMsg3,
-                commitment: OVC2ToOVC1Round3Payload.ovc[OVC2_INDEX].ovcToOvcMsg2.commitment,
+                ...OVC2ToOVC1Round3Payload.ovc[OVCIndexEnum.TWO].ovcToOvcMsg3,
+                commitment: OVC2ToOVC1Round3Payload.ovc[OVCIndexEnum.TWO].ovcToOvcMsg2.commitment,
               },
               {
-                ...OVC2ToOVC1Round3Payload.platform.ovc[OVC1_INDEX].bitgoToOvcMsg3,
+                ...OVC2ToOVC1Round3Payload.platform.ovc[OVCIndexEnum.ONE].bitgoToOvcMsg3,
                 commitment: OVC2ToOVC1Round3Payload.platform.bitgoCommitment2,
               },
             ],
             broadcastMessages: [],
           },
-          [bitgoGpgPubKey, { partyId: 1, gpgKey: OVC2ToOVC1Round3Payload.ovc[OVC2_INDEX].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: OVC2ToOVC1Round3Payload.ovc[OVCIndexEnum.TWO].gpgPubKey }],
           [userGpgPrvKey]
         );
 
@@ -645,12 +652,12 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
         OVC1ToBitgoRound3BPayload = {
           ...OVC2ToOVC1Round3Payload,
-          state: ECDSAUtils.KeyCreationMPCv2States.WaitingForBitgoRound3Data,
+          state: KeyCreationMPCv2StateEnum.WaitingForBitgoRound3Data,
           ovc: {
             ...OVC2ToOVC1Round3Payload.ovc,
-            [OVC1_INDEX]: Object.assign(OVC2ToOVC1Round3Payload.ovc[OVC1_INDEX], {
+            [OVCIndexEnum.ONE]: Object.assign(OVC2ToOVC1Round3Payload.ovc[OVCIndexEnum.ONE], {
               ovcMsg4: userMsg4,
-            }),
+            }) as any,
           },
         };
       }
@@ -669,11 +676,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           {
             p2pMessages: [],
             broadcastMessages: [
-              bitgoToOVC1Round3Payload.wallet.ovc[OVC2_INDEX].ovcMsg4,
+              bitgoToOVC1Round3Payload.wallet.ovc[OVCIndexEnum.TWO].ovcMsg4,
               bitgoToOVC1Round3Payload.wallet.platform.bitgoMsg4,
             ],
           },
-          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round3Payload.wallet.ovc[OVC2_INDEX].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round3Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }],
           [userGpgPrvKey]
         );
 
@@ -696,7 +703,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           bitgoKeyId: bitgoToOVC1Round3Payload.bitGoKeyId,
           wallet: {
             ...bitgoToOVC1Round3Payload.wallet,
-            state: ECDSAUtils.KeyCreationMPCv2States.WaitingForOVC2GenerateKey,
+            state: KeyCreationMPCv2StateEnum.WaitingForOVC2GenerateKey,
           },
         };
       }
@@ -711,11 +718,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           {
             p2pMessages: [],
             broadcastMessages: [
-              OVC1ToOVC2Round4Payload.wallet.ovc[OVC1_INDEX].ovcMsg4,
+              OVC1ToOVC2Round4Payload.wallet.ovc[OVCIndexEnum.ONE].ovcMsg4,
               OVC1ToOVC2Round4Payload.wallet.platform.bitgoMsg4,
             ],
           },
-          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round4Payload.wallet.ovc[OVC1_INDEX].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round4Payload.wallet.ovc[OVCIndexEnum.ONE].gpgPubKey }],
           [backupGpgPrvKey]
         );
 

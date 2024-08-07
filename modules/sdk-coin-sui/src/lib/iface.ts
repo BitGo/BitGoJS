@@ -1,5 +1,6 @@
 import {
   BaseBroadcastTransactionOptions,
+  MPCRecoveryOptions,
   MPCTx,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
@@ -131,6 +132,11 @@ export enum MethodNames {
 export interface SuiObjectInfo extends SuiObjectRef {
   /** balance */
   balance: BigNumber;
+}
+
+export interface SuiMPCRecoveryOptions extends MPCRecoveryOptions {
+  startingScanIndex?: number;
+  scan?: number;
 }
 
 export interface SuiMPCTx extends MPCTx {

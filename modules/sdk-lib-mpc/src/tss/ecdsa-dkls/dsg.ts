@@ -1,6 +1,12 @@
-import { Keyshare, Message, SignSession } from '@silencelaboratories/dkls-wasm-ll-node';
+import { Message, SignSession } from '@silencelaboratories/dkls-wasm-ll-node';
 import { DeserializedBroadcastMessage, DeserializedDklsSignature, DeserializedMessages, DsgState } from './types';
 import { decode } from 'cbor-x';
+
+type NodeWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-node');
+type WebWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-web');
+type BundlerWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-bundler');
+
+type DklsWasm = NodeWasmer | WebWasmer | BundlerWasmer;
 
 export class Dsg {
   protected dsgSession: SignSession | undefined;
@@ -11,17 +17,25 @@ export class Dsg {
   protected derivationPath: string;
   protected partyIdx: number;
   protected dsgState: DsgState = DsgState.Uninitialized;
+  protected dklsWasm: DklsWasm | null;
 
-  constructor(keyShare: Buffer, partyIdx: number, derivationPath: string, messageHash: Buffer) {
+  constructor(
+    keyShare: Buffer,
+    partyIdx: number,
+    derivationPath: string,
+    messageHash: Buffer,
+    dklsWasm?: BundlerWasmer
+  ) {
     this.partyIdx = partyIdx;
     this.keyShareBytes = keyShare;
     this.derivationPath = derivationPath;
     this.messageHash = messageHash;
+    this.dklsWasm = dklsWasm ?? null;
   }
 
   private _restoreSession() {
     if (!this.dsgSession) {
-      this.dsgSession = SignSession.fromBytes(this.dsgSessionBytes);
+      this.dsgSession = this.getDklsWasm().SignSession.fromBytes(this.dsgSessionBytes);
     }
   }
 
@@ -49,6 +63,20 @@ export class Dsg {
     }
   }
 
+  private async loadDklsWasm(): Promise<void> {
+    if (!this.dklsWasm) {
+      this.dklsWasm = await import('@silencelaboratories/dkls-wasm-ll-node');
+    }
+  }
+
+  private getDklsWasm() {
+    if (!this.dklsWasm) {
+      throw Error('DKLS wasm not loaded');
+    }
+
+    return this.dklsWasm;
+  }
+
   /**
    * Returns the current DSG session as a base64 string.
    * @returns {string} - base64 string of the current DSG session
@@ -61,8 +89,11 @@ export class Dsg {
    * Sets the DSG session from a base64 string.
    * @param {string} session - base64 string of the DSG session
    */
-  setSession(session: string): void {
+  async setSession(session: string): Promise<void> {
     this.dsgSession = undefined;
+    if (!this.dklsWasm) {
+      await this.loadDklsWasm();
+    }
     const sessionBytes = new Uint8Array(Buffer.from(session, 'base64'));
     const round = decode(sessionBytes).round;
     switch (true) {
@@ -88,10 +119,20 @@ export class Dsg {
     if (this.dsgState !== DsgState.Uninitialized) {
       throw Error('DSG session already initialized');
     }
-    if (typeof window !== 'undefined') {
-      const initDkls = require('@silencelaboratories/dkls-wasm-ll-web');
+    if (!this.dklsWasm) {
+      await this.loadDklsWasm();
+    }
+    if (
+      typeof window !== 'undefined' &&
+      /* checks for electron processes */
+      !window.process &&
+      !window.process?.['type']
+    ) {
+      /* This is only needed for browsers/web because it uses fetch to resolve the wasm asset for the web */
+      const initDkls = await import('@silencelaboratories/dkls-wasm-ll-web');
       await initDkls.default();
     }
+    const { Keyshare, SignSession } = this.getDklsWasm();
     const keyShare = Keyshare.fromBytes(this.keyShareBytes);
     if (keyShare.partyId !== this.partyIdx) {
       throw Error(`Party index: ${this.partyIdx} does not match key share partyId: ${keyShare.partyId} `);
@@ -144,6 +185,7 @@ export class Dsg {
     if (!this.dsgSession) {
       throw Error('Session not initialized');
     }
+    const { Message } = this.getDklsWasm();
     try {
       if (this.dsgState === DsgState.Round4) {
         this.dsgState = DsgState.Complete;

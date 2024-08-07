@@ -94,6 +94,7 @@ export async function decryptAndVerifySignedData(
     message: await pgp.createMessage({ binary: decryptedMessage.data }),
     signature: await pgp.readSignature({ armoredSignature: encryptedAndSignedMessage.signature }),
     verificationKeys: publicKey,
+    date: null as unknown as undefined,
   });
   await verificationResult.signatures[0].verified;
   return Buffer.from(decryptedMessage.data).toString('base64');
@@ -110,6 +111,7 @@ export async function verifySignedData(signedMessage: AuthMessage, publicArmor: 
     message: await pgp.createMessage({ binary: Buffer.from(signedMessage.message, 'base64') }),
     signature: await pgp.readSignature({ armoredSignature: signedMessage.signature }),
     verificationKeys: publicKey,
+    date: null as unknown as undefined,
   });
   try {
     await verificationResult.signatures[0].verified;

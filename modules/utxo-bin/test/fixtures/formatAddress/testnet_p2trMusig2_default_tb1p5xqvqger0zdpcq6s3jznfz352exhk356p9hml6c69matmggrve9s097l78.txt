@@ -9,4 +9,4 @@ address: tb1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9s097l78
 │   ├── type: taproot
 │   ├── hex: 5120a180c02323789a1c03508c85348a34564d7b469a096fbfeb1a2efabda103664b
 │   └── asm: OP_1 a180c02323789a1c03508c85348a34564d7b469a096fbfeb1a2efabda103664b
-└── network: testnet, bitcoinPublicSignet
+└── network: testnet, bitcoinPublicSignet, bitcoinBitGoSignet

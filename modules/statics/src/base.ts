@@ -273,6 +273,11 @@ export enum CoinFeature {
    * This coins supports MPCv2 for key creation and signing
    */
   MPCV2 = 'mpcv2',
+
+  /**
+   * This coin supports acceleration or nonce filling txn for stuck transactions
+   */
+  STUCK_TRANSACTION_MANAGEMENT = 'stuck-transaction-management',
 }
 
 /**
@@ -781,6 +786,7 @@ export enum UnderlyingAsset {
   FX = 'fx',
   FXRT = 'fxrt',
   FXS = 'fxs',
+  G = 'g',
   GAL = 'gal',
   GALA = 'gala',
   GALAV2 = 'galav2',
@@ -1257,6 +1263,7 @@ export enum UnderlyingAsset {
   RUEDATK = 'ruedatk',
   RUN = 'run',
   RUNE = 'rune',
+  RVR = 'rvr',
   RYOSHI = 'ryoshi',
   SAIL = 'sail',
   SAITABIT = 'saitabit',
@@ -1407,6 +1414,7 @@ export enum UnderlyingAsset {
   TERC18DP14 = 'terc18dp14',
   TERC18DP15 = 'terc18dp15',
   BGERCH = 'bgerch',
+  TERM = 'term',
   TGBP = 'tgbp',
   TGOUSD = 'tgousd',
   THKD = 'thkd',
