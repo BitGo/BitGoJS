@@ -127,6 +127,7 @@ const DOGE_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
 ];
 
 export const utxoCoins: Readonly<BaseCoin>[] = [
@@ -205,6 +206,15 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tbtcsig',
     'Public Signet Bitcoin',
     Networks.test.bitcoinPublicSignet,
+    UnderlyingAsset.BTC,
+    BaseUnit.BTC,
+    BTC_FEATURES
+  ),
+  utxo(
+    '722522dc-a613-4bff-a1d1-183ebe5138ae',
+    'tbtcbgsig',
+    'BitGo Signet Bitcoin',
+    Networks.test.bitcoinBitGoSignet,
     UnderlyingAsset.BTC,
     BaseUnit.BTC,
     BTC_FEATURES

@@ -9,10 +9,13 @@ import {
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
-  MPCRecoveryOptions,
   MPCSweepRecoveryOptions,
+  MPCSweepTxs,
+  MPCTx,
+  MPCUnsignedTx,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
+  RecoveryTxRequest,
   SignedTransaction,
   SignTransactionOptions,
   TransactionExplanation,
@@ -21,11 +24,19 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { TransactionBuilderFactory, KeyPair as SuiKeyPair, TransferTransaction, TransferBuilder } from './lib';
+import { KeyPair as SuiKeyPair, TransactionBuilderFactory, TransferBuilder, TransferTransaction } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import { BroadcastTransactionOptions, SuiObjectInfo, SuiMPCTx, SuiTransactionType, SuiMPCTxs } from './lib/iface';
+import {
+  BroadcastTransactionOptions,
+  SuiMPCRecoveryOptions,
+  SuiMPCTx,
+  SuiMPCTxs,
+  SuiObjectInfo,
+  SuiTransactionType,
+} from './lib/iface';
 import { DEFAULT_GAS_OVERHEAD, DEFAULT_GAS_PRICE, MAX_GAS_BUDGET, MAX_OBJECT_LIMIT } from './lib/constants';
+import { Buffer } from 'buffer';
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -48,14 +59,11 @@ export interface SuiParsedTransaction extends ParsedTransaction {
 
   // where assets are moved to
   outputs: TransactionOutput[];
+
+  fee: BigNumber;
 }
 
 export type SuiTransactionExplanation = TransactionExplanation;
-
-export interface SuiRecoveryOptions extends MPCRecoveryOptions {
-  startingScanIndex?: number;
-  scan?: number;
-}
 
 export class Sui extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -177,22 +185,27 @@ export class Sui extends BaseCoin {
       throw new Error('Invalid transaction');
     }
 
+    let fee = new BigNumber(0);
+
     const suiTransaction = transactionExplanation as SuiTransactionExplanation;
     if (suiTransaction.outputs.length <= 0) {
       return {
         inputs: [],
         outputs: [],
+        fee,
       };
     }
 
     const senderAddress = suiTransaction.outputs[0].address;
-    const feeAmount = new BigNumber(suiTransaction.fee.fee === '' ? '0' : suiTransaction.fee.fee);
+    if (suiTransaction.fee.fee !== '') {
+      fee = new BigNumber(suiTransaction.fee.fee);
+    }
 
     // assume 1 sender, who is also the fee payer
     const inputs = [
       {
         address: senderAddress,
-        amount: new BigNumber(suiTransaction.outputAmount).plus(feeAmount).toFixed(),
+        amount: new BigNumber(suiTransaction.outputAmount).plus(fee).toFixed(),
       },
     ];
 
@@ -206,6 +219,7 @@ export class Sui extends BaseCoin {
     return {
       inputs,
       outputs,
+      fee,
     };
   }
 
@@ -291,10 +305,15 @@ export class Sui extends BaseCoin {
   }
 
   /**
-   * Builds a funds recovery transaction without BitGo
-   * @param params
+   * Builds funds recovery transaction(s) without BitGo
+   *
+   * @param {MPCRecoveryOptions} params parameters needed to construct and
+   * (maybe) sign the transaction
+   *
+   * @returns {MPCTx | MPCSweepTxs} array of the serialized transaction hex strings and indices
+   * of the addresses being swept
    */
-  async recover(params: SuiRecoveryOptions): Promise<SuiMPCTx> {
+  async recover(params: SuiMPCRecoveryOptions): Promise<SuiMPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -375,30 +394,82 @@ export class Sui extends BaseCoin {
         payment: inputCoins,
       });
 
-      const suiMpcTx: SuiMPCTx = {
-        scanIndex: idx,
-        recoveryAmount: netAmount.toString(),
-        serializedTx: '',
-      };
-      let tx: TransferTransaction;
       if (isUnsignedSweep) {
-        tx = (await txBuilder.build()) as TransferTransaction;
-      } else {
-        await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey);
-        tx = (await txBuilder.build()) as TransferTransaction;
-        suiMpcTx.signature = Buffer.from(tx.serializedSig).toString('base64');
+        return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath);
       }
 
-      suiMpcTx.serializedTx = tx.toBroadcastFormat();
-      return suiMpcTx;
+      await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey);
+      const tx = (await txBuilder.build()) as TransferTransaction;
+      return {
+        scanIndex: idx,
+        recoveryAmount: netAmount.toString(),
+        serializedTx: tx.toBroadcastFormat(),
+        signature: Buffer.from(tx.serializedSig).toString('base64'),
+      };
     }
 
     throw new Error('Did not find an address with funds to recover');
   }
 
+  private async buildUnsignedSweepTransaction(
+    txBuilder: TransferBuilder,
+    senderAddress: string,
+    bitgoKey: string,
+    index: number,
+    derivationPath: string
+  ): Promise<MPCSweepTxs> {
+    const unsignedTransaction = (await txBuilder.build()) as TransferTransaction;
+    const serializedTx = unsignedTransaction.toBroadcastFormat();
+    const serializedTxHex = Buffer.from(serializedTx, 'base64').toString('hex');
+    const parsedTx = await this.parseTransaction({ txHex: serializedTxHex });
+    const walletCoin = this.getChain();
+    const output = parsedTx.outputs[0];
+    const inputs = [
+      {
+        address: senderAddress,
+        valueString: output.amount,
+        value: new BigNumber(output.amount),
+      },
+    ];
+    const outputs = [
+      {
+        address: output.address,
+        valueString: output.amount,
+        coinName: walletCoin,
+      },
+    ];
+    const spendAmount = output.amount;
+    const completedParsedTx = {
+      inputs: inputs,
+      outputs: outputs,
+      spendAmount: spendAmount,
+      type: SuiTransactionType.Transfer,
+    };
+    const fee = parsedTx.fee;
+    const feeInfo = { fee: fee.toNumber(), feeString: fee.toString() };
+    const coinSpecific = { commonKeychain: bitgoKey };
+    const transaction: MPCTx = {
+      serializedTx: serializedTxHex,
+      scanIndex: index,
+      coin: walletCoin,
+      signableHex: unsignedTransaction.signablePayload.toString('hex'),
+      derivationPath,
+      parsedTx: completedParsedTx,
+      feeInfo: feeInfo,
+      coinSpecific: coinSpecific,
+    };
+    const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
+    const transactions: MPCUnsignedTx[] = [unsignedTx];
+    const txRequest: RecoveryTxRequest = {
+      transactions: transactions,
+      walletCoin: walletCoin,
+    };
+    return { txRequests: [txRequest] };
+  }
+
   private async signRecoveryTransaction(
     txBuilder: TransferBuilder,
-    params: SuiRecoveryOptions,
+    params: SuiMPCRecoveryOptions,
     derivationPath: string,
     derivedPublicKey: string
   ) {
@@ -487,7 +558,8 @@ export class Sui extends BaseCoin {
         throw new Error('Invalid signature');
       }
       const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
-      const txBuilder = this.getBuilder().from(transaction.serializedTx as string);
+      const serializedTxBase64 = Buffer.from(transaction.serializedTx, 'hex').toString('base64');
+      const txBuilder = this.getBuilder().from(serializedTxBase64);
       if (!transaction.coinSpecific?.commonKeychain) {
         throw new Error('Missing common keychain');
       }

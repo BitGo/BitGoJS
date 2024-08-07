@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.17.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.16.0...bitgo@38.17.0) (2024-07-30)
+
+### Bug Fixes
+
+- **sdk-core:** support backup party id in mpcv2 signing utils ([de20f6d](https://github.com/BitGo/BitGoJS/commit/de20f6d505262f645a27ef1fdb5f0f35a855ca60))
+
+### Features
+
+- **root:** implement MPCv2 SMC wallet creation utils ([8c91b19](https://github.com/BitGo/BitGoJS/commit/8c91b19d969ca07f153f458fa398e2cd58a14841))
+
 # [38.16.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.15.0...bitgo@38.16.0) (2024-07-24)
 
 ### Bug Fixes

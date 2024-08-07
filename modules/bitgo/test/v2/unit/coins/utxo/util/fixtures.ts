@@ -15,7 +15,7 @@ function serializeBigInt(k: string, v: any): string | number {
   }
 }
 
-async function getFixtureWithName<T>(name: string, defaultValue: T): Promise<T> {
+async function getFixtureWithName<T>(name: string, defaultValue: T, rawCoinName: string): Promise<T> {
   const path = `${__dirname}/../fixtures/${name}.json`;
   const dirname = mpath.dirname(path);
   try {
@@ -27,10 +27,13 @@ async function getFixtureWithName<T>(name: string, defaultValue: T): Promise<T> 
     await fs.mkdirp(dirname);
   }
   try {
-    return JSON.parse(await fs.readFile(path, 'utf8'));
+    let textContent = await fs.readFile(path, 'utf8');
+    if (rawCoinName === 'tbtcbgsig') {
+      textContent = textContent.replace(/tbtcsig/g, 'tbtcbgsig');
+    }
+    return JSON.parse(textContent);
   } catch (e) {
     if (e.code === 'ENOENT') {
-      await fs.writeFile(path, JSON.stringify(defaultValue, serializeBigInt, 2));
       throw new Error(`Wrote defaultValue to ${path}. Inspect output and rerun tests.`);
     }
     throw e;
@@ -38,7 +41,8 @@ async function getFixtureWithName<T>(name: string, defaultValue: T): Promise<T> 
 }
 
 export async function getFixture<T>(coin: AbstractUtxoCoin, name: string, defaultValue: T): Promise<T> {
-  return await getFixtureWithName(`${coin.getChain()}/${name}`, defaultValue);
+  const coinChain = coin.getChain() === 'tbtcbgsig' ? 'tbtcsig' : coin.getChain();
+  return await getFixtureWithName(`${coinChain}/${name}`, defaultValue, coin.getChain());
 }
 
 /**
