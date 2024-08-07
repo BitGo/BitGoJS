@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs';
+import { importMacaroon } from 'macaroon';
 import { decodeOrElse } from '@bitgo/sdk-core';
 import { LightningSignerConnections, LightningSignerConnectionsCodec, LightningSignerDetails } from './codecs';
 import { _forceSecureUrl } from '../config';
@@ -50,4 +51,10 @@ export function unwrapLightningCoinSpecific<V>(obj: { lnbtc: V } | { tlnbtc: V }
     return obj.tlnbtc;
   }
   throw new Error('invalid lightning coin specific');
+}
+
+export function addIPCaveatToMacaroon(macaroonBase64: string, ip: string): string {
+  const macaroon = importMacaroon(macaroonBase64);
+  macaroon.addFirstPartyCaveat(`ipaddr ${ip}`);
+  return macaroon.exportBinary().toString('base64');
 }

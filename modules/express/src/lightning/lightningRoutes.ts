@@ -13,7 +13,7 @@ import {
   LightningKeychain,
   LightningKeychainCodec,
 } from './codecs';
-import { getLightningWalletSignerDetails, unwrapLightningCoinSpecific } from './lightningUtils';
+import { addIPCaveatToMacaroon, getLightningWalletSignerDetails, unwrapLightningCoinSpecific } from './lightningUtils';
 import { retryPromise } from '../retryPromise';
 
 async function getLightningWalletKeychains(
@@ -122,9 +122,14 @@ export async function handleInitLightningWallet(req: express.Request) {
 
   const { url, tlsCert } = getLightningWalletSignerDetails(walletId, req.config);
 
-  const reqBody = decodeOrElse(InitLightningWalletRequestCodec.name, InitLightningWalletRequestCodec, req.body, (_) => {
-    throw new Error('Invalid request body for initLightningWallet.');
-  });
+  const { passphrase, watchOnlyIP } = decodeOrElse(
+    InitLightningWalletRequestCodec.name,
+    InitLightningWalletRequestCodec,
+    req.body,
+    (_) => {
+      throw new Error('Invalid request body for initLightningWallet.');
+    }
+  );
 
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
@@ -139,7 +144,7 @@ export async function handleInitLightningWallet(req: express.Request) {
   const { userKey, nodeAuthKey } = await getLightningWalletKeychains(coin, wallet);
 
   const macaroon_root_key = bip32
-    .fromBase58(bitgo.decrypt({ password: reqBody.passphrase, input: nodeAuthKey.encryptedPrv }))
+    .fromBase58(bitgo.decrypt({ password: passphrase, input: nodeAuthKey.encryptedPrv }))
     .privateKey?.toString('base64');
 
   if (!macaroon_root_key) {
@@ -148,23 +153,25 @@ export async function handleInitLightningWallet(req: express.Request) {
 
   const httpsAgent = createHttpAgent(tlsCert);
 
-  const { admin_macaroon: adminMacaroon } = await initWallet(
+  const { admin_macaroon: adminMacaroonBase64 } = await initWallet(
     { url, httpsAgent },
     {
-      wallet_password: reqBody.passphrase,
-      extended_master_key: bitgo.decrypt({ password: reqBody.passphrase, input: userKey.encryptedPrv }),
+      wallet_password: passphrase,
+      extended_master_key: bitgo.decrypt({ password: passphrase, input: userKey.encryptedPrv }),
       macaroon_root_key,
     }
   );
 
-  const admin_macaroon_hex = Buffer.from(adminMacaroon, 'base64').toString('hex');
+  const adminMacaroonHex = Buffer.from(adminMacaroonBase64, 'base64').toString('hex');
 
-  const { macaroon: signerMacaroon } = await bakeMacaroon({ url, httpsAgent, macaroon: admin_macaroon_hex }, [
+  const { macaroon: signerMacaroonBase64 } = await bakeMacaroon({ url, httpsAgent, macaroon: adminMacaroonHex }, [
     {
       entity: 'signer',
       action: 'generate',
     },
   ]);
+
+  const signerMacaroon = addIPCaveatToMacaroon(signerMacaroonBase64, watchOnlyIP);
 
   if (!signerMacaroon) {
     throw new Error('Failed to bake macaroon');
