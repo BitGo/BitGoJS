@@ -3,7 +3,7 @@ import { isNil, isNumber } from 'lodash';
 import 'dotenv/config';
 
 import { args } from './args';
-import { getLightningSignerUrls } from './lightning/lightningUtils';
+import { getLightningSignerConnections } from './lightning/lightningUtils';
 import { LightningSignerConnections } from './lightning/codecs';
 
 function readEnvVar(name, ...deprecatedAliases): string | undefined {
@@ -151,7 +151,7 @@ async function mergeConfigs(...configs: Partial<Config>[]): Promise<Config> {
   const lightningSignerFileSystemPath = get('lightningSignerFileSystemPath');
   let lightningSignerConnections: LightningSignerConnections | undefined;
   if (lightningSignerFileSystemPath) {
-    lightningSignerConnections = await getLightningSignerUrls(lightningSignerFileSystemPath);
+    lightningSignerConnections = await getLightningSignerConnections(lightningSignerFileSystemPath);
   }
 
   return {

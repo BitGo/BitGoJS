@@ -1,9 +1,19 @@
 import * as t from 'io-ts';
+import { isIP } from 'net';
 import { NonEmptyString } from 'io-ts-types';
 
 function getCodecPair<C extends t.Mixed>(innerCodec: C): t.UnionC<[t.TypeC<{ lnbtc: C }>, t.TypeC<{ tlnbtc: C }>]> {
   return t.union([t.type({ lnbtc: innerCodec }), t.type({ tlnbtc: innerCodec })]);
 }
+
+export const IPCustomCodec = new t.Type<string, string, unknown>(
+  'IPAddress',
+  t.string.is,
+  (input, context) => (typeof input === 'string' && isIP(input) ? t.success(input) : t.failure(input, context)),
+  t.identity
+);
+
+export type IPAddress = t.TypeOf<typeof IPCustomCodec>;
 
 export const LightningSignerDetailsCodec = t.type({
   url: t.string,
@@ -51,8 +61,30 @@ export type LightningAuthKeychain = t.TypeOf<typeof LightningAuthKeychainCodec>;
 export const InitLightningWalletRequestCodec = t.strict(
   {
     passphrase: NonEmptyString,
+    signerIP: IPCustomCodec,
+    signerTlsCert: NonEmptyString,
+    signerTlsKey: NonEmptyString,
+    watchOnlyIP: IPCustomCodec,
   },
   'InitLightningWalletRequest'
 );
 
 export type InitLightningWalletRequest = t.TypeOf<typeof InitLightningWalletRequestCodec>;
+
+export const InitWalletResponseCodec = t.type(
+  {
+    admin_macaroon: t.string,
+  },
+  'InitWalletResponse'
+);
+
+export type InitWalletResponse = t.TypeOf<typeof InitWalletResponseCodec>;
+
+export const BakeMacaroonResponseCodec = t.type(
+  {
+    macaroon: t.string,
+  },
+  'BakeMacaroonResponse'
+);
+
+export type BakeMacaroonResponse = t.TypeOf<typeof BakeMacaroonResponseCodec>;

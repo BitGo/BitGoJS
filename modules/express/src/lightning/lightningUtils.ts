@@ -1,9 +1,9 @@
 import { promises as fs } from 'fs';
 import { decodeOrElse } from '@bitgo/sdk-core';
-import { LightningSignerConnections, LightningSignerConnectionsCodec } from './codecs';
+import { LightningSignerConnections, LightningSignerConnectionsCodec, LightningSignerDetails } from './codecs';
 import { _forceSecureUrl } from '../config';
 
-export async function getLightningSignerUrls(path: string): Promise<LightningSignerConnections> {
+export async function getLightningSignerConnections(path: string): Promise<LightningSignerConnections> {
   const urlFile = await fs.readFile(path, { encoding: 'utf8' });
   const urls: unknown = JSON.parse(urlFile);
   const decoded = decodeOrElse(
@@ -19,6 +19,21 @@ export async function getLightningSignerUrls(path: string): Promise<LightningSig
     secureUrls[walletId] = { url: _forceSecureUrl(url), tlsCert };
   }
   return secureUrls;
+}
+
+export function getLightningWalletSignerDetails(
+  walletId: string,
+  config: { lightningSignerConnections?: LightningSignerConnections }
+): LightningSignerDetails {
+  if (!config.lightningSignerConnections) {
+    throw new Error('Missing required configuration: lightningSignerConnections');
+  }
+
+  const lightningSignerDetails = config.lightningSignerConnections[walletId];
+  if (!lightningSignerDetails) {
+    throw new Error(`Missing required configuration for walletId: ${walletId}`);
+  }
+  return lightningSignerDetails;
 }
 
 /**
