@@ -337,25 +337,27 @@ describe('SUI:', function () {
     const senderAddress0 = '0x91f25e237b83a00a62724fdc4a81e43f494dc6b41a1241492826d36e4d131da3';
     const recoveryDestination = '0x00e4eaa6a291fe02918452e645b5653cd260a5fc0fb35f6193d580916aa9e389';
     const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+    let getBalanceStub: sinon.SinonStub;
+    let getInputCoinsStub: sinon.SinonStub;
+    let getFeeEstimateStub: sinon.SinonStub;
 
     beforeEach(() => {
-      let callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
-      callBack.withArgs(senderAddress0).resolves('1900000000');
+      getBalanceStub = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      getBalanceStub.withArgs(senderAddress0).resolves('1900000000');
 
-      callBack = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
-      callBack.withArgs(senderAddress0).resolves([
+      getInputCoinsStub = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
+      getInputCoinsStub.withArgs(senderAddress0).resolves([
         {
           coinType: '0x2::sui::SUI',
-          coinObjectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
+          objectId: '0xc05c765e26e6ae84c78fa245f38a23fb20406a5cf3f61b57bd323a0df9d98003',
           version: '195',
           digest: '7BJLb32LKN7wt5uv4xgXW4AbFKoMNcPE76o41TQEvUZb',
-          balance: '1900000000',
-          previousTransaction: 'CvuU6waRYHDBnRsmEj5dqXpyT5TJmdxYAXTW2JoRuvCA',
+          balance: new BigNumber('1900000000'),
         },
       ]);
 
-      callBack = sandBox.stub(Sui.prototype, 'getFeeEstimate' as keyof Sui);
-      callBack
+      getFeeEstimateStub = sandBox.stub(Sui.prototype, 'getFeeEstimate' as keyof Sui);
+      getFeeEstimateStub
         .withArgs(
           'AAACAAgA0klrAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQCR8l4je4OgCmJyT9xKgeQ/SU3GtBoSQUkoJtNuTRMdowHAXHZeJuauhMePokXziiP7IEBqXPP2G1e9MjoN+dmAA8MAAAAAAAAAIFvJiJBdEAhi14cxcSr/HUIhBZMbLMd4rczUTCMIb3UmkfJeI3uDoApick/cSoHkP0lNxrQaEkFJKCbTbk0THaPoAwAAAAAAAADh9QUAAAAAAA=='
         )
@@ -424,6 +426,58 @@ describe('SUI:', function () {
       sandBox.assert.callCount(basecoin.getInputCoins, 1);
       sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
     });
+
+    it('should recover a txn for unsigned sweep recovery with multiple input coins', async function () {
+      const senderAddress = '0x00e4eaa6a291fe02918452e645b5653cd260a5fc0fb35f6193d580916aa9e389';
+      getBalanceStub.withArgs(senderAddress).resolves('1798002120');
+      getInputCoinsStub.withArgs(senderAddress).resolves([
+        {
+          coinType: '0x2::sui::SUI',
+          objectId: '0x60aefaffa35daa32a1e561f2ba9c18753057d2feb502f32804e573ea2875a39c',
+          version: '195',
+          digest: 'jKjduy8gHDE244ZJWcP3JXfXPKjqY67avMqhzHw98CL',
+          balance: new BigNumber('98002120'),
+        },
+        {
+          coinType: '0x2::sui::SUI',
+          objectId: '0x9a363c91d29b50832ab98094b6c1933941280fc298a2ec232739f14ce31e2582',
+          version: '197',
+          digest: 'ELnbgmW7crPYr3B9pWVqfg9uLeJt43KPofkfdR6LWftu',
+          balance: new BigNumber('1700000000'),
+        },
+      ]);
+      getFeeEstimateStub
+        .withArgs(
+          'AAACAAjIdDVlAAAAAAAgMtjlfubZHlVY2gZ3FUwvCFeVNI4xf5Wsye+t4bQRL8wCAgABAQAAAQECAAABAQAA5OqmopH+ApGEUuZFtWU80mCl/A+zX2GT1YCRaqnjiQKaNjyR0ptQgyq5gJS2wZM5QSgPwpii7CMnOfFM4x4lgsUAAAAAAAAAIMY5hfUFzuMVaY3+LwmZTvypRSAJRLNXocRYR9yKalXyYK76/6NdqjKh5WHyupwYdTBX0v61AvMoBOVz6ih1o5zDAAAAAAAAACAK15PtO6gwSNx0bHksVJOcN96AYyc+3YVpJzaYMMhHbQDk6qaikf4CkYRS5kW1ZTzSYKX8D7NfYZPVgJFqqeOJ6AMAAAAAAAAA4fUFAAAAAAA='
+        )
+        .resolves(new BigNumber(1997880));
+      const res = await basecoin.recover({
+        bitgoKey:
+          '7d91f69c285c0b3b0a0d6371020f194d45956ee556289e7854f6d114e07805720eec673c6a2\n72b7da4137db7b1289f38af4f4b824ef0de65c5f53e3e66617617',
+        recoveryDestination: '0x32d8e57ee6d91e5558da0677154c2f085795348e317f95acc9efade1b4112fcc',
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      res.should.hasOwnProperty('scanIndex');
+      res.should.hasOwnProperty('recoveryAmount');
+      res.should.not.hasOwnProperty('signature');
+
+      res.serializedTx.should.equal(
+        'AAACAAjIdDVlAAAAAAAgMtjlfubZHlVY2gZ3FUwvCFeVNI4xf5Wsye+t4bQRL8wCAgABAQAAAQECAAABAQAA5OqmopH+ApGEUuZFtWU80mCl/A+zX2GT1YCRaqnjiQKaNjyR0ptQgyq5gJS2wZM5QSgPwpii7CMnOfFM4x4lgsUAAAAAAAAAIMY5hfUFzuMVaY3+LwmZTvypRSAJRLNXocRYR9yKalXyYK76/6NdqjKh5WHyupwYdTBX0v61AvMoBOVz6ih1o5zDAAAAAAAAACAK15PtO6gwSNx0bHksVJOcN96AYyc+3YVpJzaYMMhHbQDk6qaikf4CkYRS5kW1ZTzSYKX8D7NfYZPVgJFqqeOJ6AMAAAAAAACkiCEAAAAAAAA='
+      );
+      res.scanIndex.should.equal(0);
+      res.recoveryAmount.should.equal('1698002120');
+
+      const UnsignedSweepTxnDeserialize = new TransferTransaction(basecoin);
+      UnsignedSweepTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const UnsignedSweepTxnJson = UnsignedSweepTxnDeserialize.toJson();
+
+      should.equal(UnsignedSweepTxnJson.id, '8sgAijM73Qu11V7kjqJwFEshtbVustTKJDhFHUgoVdkz');
+      should.equal(UnsignedSweepTxnJson.sender, senderAddress);
+      sandBox.assert.callCount(basecoin.getBalance, 1);
+      sandBox.assert.callCount(basecoin.getInputCoins, 1);
+      sandBox.assert.callCount(basecoin.getFeeEstimate, 1);
+    });
   });
 
   describe('Recover Transactions for wallet with multiple addresses:', () => {
@@ -441,10 +495,10 @@ describe('SUI:', function () {
       callBack.withArgs(senderAddress1).resolves([
         {
           coinType: '0x2::sui::SUI',
-          coinObjectId: '0xff93adc2f516fcaa0c6040e01f50027a23f9b1767f5040eb2282790a6900ce7f',
+          objectId: '0xff93adc2f516fcaa0c6040e01f50027a23f9b1767f5040eb2282790a6900ce7f',
           version: '196',
           digest: 'XrjRM9ZM98xdNWigHYQjCpGoWt6aZLpqXdSEixnhb4p',
-          balance: '1800000000',
+          balance: new BigNumber('1800000000'),
         },
       ]);
 

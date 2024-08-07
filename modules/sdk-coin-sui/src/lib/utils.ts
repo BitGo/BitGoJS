@@ -435,7 +435,17 @@ export class Utils implements BaseUtils {
         throw new Error(`Failed to get input coins from the node.`);
       }
     }
-    return data;
+    return data
+      .filter((object: any) => object.balance !== undefined)
+      .map((object: any) => {
+        return {
+          coinType: object.coinType,
+          objectId: object.coinObjectId,
+          version: object.version,
+          digest: object.digest,
+          balance: new BigNumber(object.balance),
+        };
+      });
   }
 
   async executeTransactionBlock(url: string, serializedTx: string, signatures: string[]) {
