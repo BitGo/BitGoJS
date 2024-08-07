@@ -1,5 +1,7 @@
 import {
   BaseBroadcastTransactionOptions,
+  MPCRecoveryOptions,
+  MPCTx,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
@@ -132,10 +134,13 @@ export interface SuiObjectInfo extends SuiObjectRef {
   balance: BigNumber;
 }
 
-export interface SuiRecoveryTx {
-  serializedTx: string;
-  scanIndex: number;
-  recoveryAmount: string;
+export interface SuiMPCRecoveryOptions extends MPCRecoveryOptions {
+  startingScanIndex?: number;
+  scan?: number;
+}
+
+export interface SuiMPCTx extends MPCTx {
+  recoveryAmount?: string;
   signature?: string;
 }
 
