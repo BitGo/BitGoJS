@@ -18,6 +18,25 @@ export interface WatchOnly {
   accounts: WatchOnlyAccount[];
 }
 
+export const signerMacaroonPermissions = [
+  {
+    entity: 'message',
+    action: 'write',
+  },
+  {
+    entity: 'signer',
+    action: 'generate',
+  },
+  {
+    entity: 'address',
+    action: 'read',
+  },
+  {
+    entity: 'onchain',
+    action: 'write',
+  },
+];
+
 export async function getLightningSignerConnections(path: string): Promise<LightningSignerConnections> {
   const urlFile = await fs.readFile(path, { encoding: 'utf8' });
   const urls: unknown = JSON.parse(urlFile);
@@ -51,9 +70,6 @@ export function getLightningWalletSignerDetails(
   return lightningSignerDetails;
 }
 
-/**
- * Returns coin specific data for a lightning coin.
- */
 export function unwrapLightningCoinSpecific<V>(obj: { lnbtc: V } | { tlnbtc: V }, coinSpecificPath: string): V {
   if (coinSpecificPath !== 'lnbtc' && coinSpecificPath !== 'tlnbtc') {
     throw new Error(`invalid coinSpecificPath ${coinSpecificPath} for lightning coin`);
@@ -107,7 +123,7 @@ export function deriveWatchOnlyAccounts(masterHDNode: BIP32Interface, isMainnet:
   return accounts;
 }
 
-export function createWatchOnlyInitWalletData(masterHDNode: BIP32Interface, isMainnet: boolean): WatchOnly {
+export function createWatchOnly(masterHDNode: BIP32Interface, isMainnet: boolean): WatchOnly {
   const getCurrentUnixTimestamp = () => {
     return Math.floor(Date.now() / 1000);
   };

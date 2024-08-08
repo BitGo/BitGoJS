@@ -13,8 +13,9 @@ import {
 } from './codecs';
 import {
   addIPCaveatToMacaroon,
-  createWatchOnlyInitWalletData,
+  createWatchOnly,
   getLightningWalletSignerDetails,
+  signerMacaroonPermissions,
   unwrapLightningCoinSpecific,
 } from './lightningUtils';
 import { bakeMacaroon, createHttpAgent, initWallet } from './signerClient';
@@ -57,18 +58,12 @@ async function getLightningWalletKeychains(
   return { userKey, userAuthKey, nodeAuthKey };
 }
 
-async function createSignerMacaroonHex(
+async function createSignerMacaroon(
   httpConfig: { url: string; httpsAgent: https.Agent; adminMacaroonHex: string },
   watchOnlyIP: string
 ) {
-  const { macaroon: signerMacaroonBase64 } = await bakeMacaroon(httpConfig, [
-    {
-      entity: 'signer',
-      action: 'generate',
-    },
-  ]);
-
-  return Buffer.from(addIPCaveatToMacaroon(signerMacaroonBase64, watchOnlyIP), 'base64').toString('hex');
+  const { macaroon: signerMacaroonBase64 } = await bakeMacaroon(httpConfig, signerMacaroonPermissions);
+  return addIPCaveatToMacaroon(signerMacaroonBase64, watchOnlyIP);
 }
 
 function getMacaroonRootKeyBase64(
@@ -83,21 +78,6 @@ function getMacaroonRootKeyBase64(
   return hdNode.privateKey.toString('base64');
 }
 
-async function initSignerWallet(
-  httpConfig: { url: string; httpsAgent: https.Agent },
-  passphrase: string,
-  extendedMasterPrvKey: string,
-  macaroonRootKeyBase64: string
-) {
-  const { admin_macaroon: adminMacaroonBase64 } = await initWallet(httpConfig, {
-    wallet_password: passphrase,
-    extended_master_key: extendedMasterPrvKey,
-    macaroon_root_key: macaroonRootKeyBase64,
-  });
-
-  return Buffer.from(adminMacaroonBase64, 'base64').toString('hex');
-}
-
 export async function handleInitLightningWallet(req: express.Request) {
   const walletId = req.params.id;
   if (!walletId) {
@@ -106,7 +86,7 @@ export async function handleInitLightningWallet(req: express.Request) {
 
   const { url, tlsCert } = getLightningWalletSignerDetails(walletId, req.config);
 
-  const { passphrase, watchOnlyIP } = decodeOrElse(
+  const { passphrase, watchOnlyIP, signerTlsKey, signerTlsCert, signerIP } = decodeOrElse(
     InitLightningWalletRequestCodec.name,
     InitLightningWalletRequestCodec,
     req.body,
@@ -120,6 +100,7 @@ export async function handleInitLightningWallet(req: express.Request) {
   if (coin.getFamily() !== 'lnbtc') {
     throw new Error('Invalid coin');
   }
+  const isMainnet = coin.getChain() === 'lnbtc';
 
   const wallet = await coin.wallets().get({ id: walletId });
 
@@ -132,21 +113,40 @@ export async function handleInitLightningWallet(req: express.Request) {
 
   const httpsAgent = createHttpAgent(tlsCert);
 
-  const adminMacaroonHex = await initSignerWallet(
+  const { admin_macaroon: adminMacaroon } = await initWallet(
     { url, httpsAgent },
-    passphrase,
-    extendedMasterPrvKey,
-    macaroonRootKeyBase64
-  );
-  const signerMacaroonHex = await createSignerMacaroonHex({ url, httpsAgent, adminMacaroonHex }, watchOnlyIP);
-
-  const encryptedAdminMacaroonHex = bitgo.encrypt({ password: passphrase, input: adminMacaroonHex });
-  const watchOnlyInitWalletData = createWatchOnlyInitWalletData(
-    bip32.fromBase58(extendedMasterPrvKey),
-    coin.getChain() === 'lnbtc'
+    {
+      wallet_password: passphrase,
+      extended_master_key: extendedMasterPrvKey,
+      macaroon_root_key: macaroonRootKeyBase64,
+    }
   );
 
-  if (signerMacaroonHex === null || encryptedAdminMacaroonHex === null || watchOnlyInitWalletData === null) {
-    throw new Error('dummy');
+  const signerMacaroon = await createSignerMacaroon(
+    { url, httpsAgent, adminMacaroonHex: Buffer.from(adminMacaroon, 'base64').toString('hex') },
+    watchOnlyIP
+  );
+
+  const encryptedAdminMacaroon = bitgo.encrypt({ password: passphrase, input: adminMacaroon });
+  const encryptedSignerTlsKey = bitgo.encrypt({ password: passphrase, input: signerTlsKey });
+  const watchOnly = createWatchOnly(bip32.fromBase58(extendedMasterPrvKey), isMainnet);
+
+  const coinSpecific = {
+    [coin.getChain()]: {
+      signerMacaroon,
+      encryptedAdminMacaroon,
+      signerIP,
+      signerTlsCert,
+      encryptedSignerTlsKey,
+      watchOnly,
+    },
+  };
+
+  if (coinSpecific === undefined) {
+    throw new Error('coinSpecific is undefined');
   }
+  // bitgo
+  //   .put(wallet.url())
+  //   .send({ coinSpecific })
+  //   .result();
 }
