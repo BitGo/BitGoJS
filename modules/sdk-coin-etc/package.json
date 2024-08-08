@@ -45,7 +45,12 @@
     "@bitgo/sdk-core": "^27.9.0",
     "@bitgo/statics": "^48.28.0",
     "@ethereumjs/common": "^2.6.5",
-    "ethereumjs-abi": "^0.6.5"
+    "ethereumjs-abi": "^0.6.5",
+    "ethereumjs-util": "7.1.5",
+    "lodash": "^4.17.14",
+    "superagent": "^9.0.1",
+    "bignumber.js": "^9.1.1",
+    "@bitgo/utxo-lib": "^10.1.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.52.0",
