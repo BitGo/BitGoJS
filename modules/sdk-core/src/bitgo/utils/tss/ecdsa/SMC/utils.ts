@@ -38,20 +38,18 @@ export class MPCv2SMCUtils {
     );
 
     const response = {
-      wallet: {
-        tssVersion: payload.tssVersion,
-        walletType: payload.walletType,
-        coin: payload.coin,
-        ovc: payload.ovc,
-        state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round2Data,
-        platform: {
-          walletGpgPubKeySigs: result.walletGpgPubKeySigs,
-          sessionId: result.sessionId,
-          bitgoMsg1: this.MPCv2Utils.formatBitgoBroadcastMessage(result.bitgoMsg1),
-          ovc: {
-            [OVCIndexEnum.ONE]: { bitgoToOvcMsg2: this.MPCv2Utils.formatP2PMessage(result.bitgoToUserMsg2) },
-            [OVCIndexEnum.TWO]: { bitgoToOvcMsg2: this.MPCv2Utils.formatP2PMessage(result.bitgoToBackupMsg2) },
-          },
+      state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round2Data,
+      tssVersion: payload.tssVersion,
+      walletType: payload.walletType,
+      coin: payload.coin,
+      ovc: payload.ovc,
+      platform: {
+        walletGpgPubKeySigs: result.walletGpgPubKeySigs,
+        sessionId: result.sessionId,
+        bitgoMsg1: this.MPCv2Utils.formatBitgoBroadcastMessage(result.bitgoMsg1),
+        ovc: {
+          [OVCIndexEnum.ONE]: { bitgoToOvcMsg2: this.MPCv2Utils.formatP2PMessage(result.bitgoToUserMsg2) },
+          [OVCIndexEnum.TWO]: { bitgoToOvcMsg2: this.MPCv2Utils.formatP2PMessage(result.bitgoToBackupMsg2) },
         },
       },
     };
@@ -72,25 +70,23 @@ export class MPCv2SMCUtils {
     const result = await this.MPCv2Utils.sendKeyGenerationRound2(enterprise, sessionId, messages);
 
     const response = {
-      wallet: {
-        tssVersion: payload.tssVersion,
-        walletType: payload.walletType,
-        coin: payload.coin,
-        ovc: payload.ovc,
-        state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round3aData,
-        platform: {
-          ...payload.platform,
-          sessionId: result.sessionId,
-          bitgoCommitment2: result.bitgoCommitment2,
-          ovc: {
-            [OVCIndexEnum.ONE]: {
-              ...payload.platform.ovc[OVCIndexEnum.ONE],
-              bitgoToOvcMsg3: this.MPCv2Utils.formatP2PMessage(result.bitgoToUserMsg3),
-            },
-            [OVCIndexEnum.TWO]: {
-              ...payload.platform.ovc[OVCIndexEnum.TWO],
-              bitgoToOvcMsg3: this.MPCv2Utils.formatP2PMessage(result.bitgoToBackupMsg3),
-            },
+      state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round3aData,
+      tssVersion: payload.tssVersion,
+      walletType: payload.walletType,
+      coin: payload.coin,
+      ovc: payload.ovc,
+      platform: {
+        ...payload.platform,
+        sessionId: result.sessionId,
+        bitgoCommitment2: result.bitgoCommitment2,
+        ovc: {
+          [OVCIndexEnum.ONE]: {
+            ...payload.platform.ovc[OVCIndexEnum.ONE],
+            bitgoToOvcMsg3: this.MPCv2Utils.formatP2PMessage(result.bitgoToUserMsg3),
+          },
+          [OVCIndexEnum.TWO]: {
+            ...payload.platform.ovc[OVCIndexEnum.TWO],
+            bitgoToOvcMsg3: this.MPCv2Utils.formatP2PMessage(result.bitgoToBackupMsg3),
           },
         },
       },
@@ -123,18 +119,16 @@ export class MPCv2SMCUtils {
     });
 
     const response = {
+      state: KeyCreationMPCv2StateEnum.WaitingForOVC1GenerateKey,
       bitGoKeyId: bitgoKeychain.id,
-      wallet: {
-        tssVersion: payload.tssVersion,
-        walletType: payload.walletType,
-        coin: payload.coin,
-        ovc: payload.ovc,
-        state: KeyCreationMPCv2StateEnum.WaitingForOVC1GenerateKey,
-        platform: {
-          ...payload.platform,
-          commonKeychain: result.commonKeychain,
-          bitgoMsg4: this.MPCv2Utils.formatBitgoBroadcastMessage(result.bitgoMsg4),
-        },
+      tssVersion: payload.tssVersion,
+      walletType: payload.walletType,
+      coin: payload.coin,
+      ovc: payload.ovc,
+      platform: {
+        ...payload.platform,
+        commonKeychain: result.commonKeychain,
+        bitgoMsg4: this.MPCv2Utils.formatBitgoBroadcastMessage(result.bitgoMsg4),
       },
     };
 
