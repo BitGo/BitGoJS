@@ -234,6 +234,14 @@ const EIGEN_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
 ];
+const RETH_ROCKET_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.STAKING,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.METAMASK_INSTITUTIONAL,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
+];
 const SUI_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
@@ -10197,7 +10205,8 @@ export const coins = CoinMap.fromCoins([
     'Rocket Pool ETH',
     18,
     '0xae78736cd615f374d3085123a210448e74fc6393',
-    UnderlyingAsset['RETH-ROCKET']
+    UnderlyingAsset['RETH-ROCKET'],
+    RETH_ROCKET_FEATURES
   ),
   erc20(
     '588c7eb4-02fa-4a80-9a0d-158e53d10320',
