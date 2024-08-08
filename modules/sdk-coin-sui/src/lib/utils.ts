@@ -465,7 +465,13 @@ export class Utils implements BaseUtils {
     if (inputVal === undefined) {
       return defaultVal;
     }
-    if (!Number.isInteger(inputVal) || inputVal < 0) {
+    let val: number;
+    try {
+      val = Number(inputVal);
+    } catch (e) {
+      throw new Error(errorMsg);
+    }
+    if (isNaN(val.valueOf()) || val < 0) {
       throw new Error(errorMsg);
     }
     return inputVal;
