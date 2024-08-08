@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.1.3...@bitgo/sdk-coin-btc@2.2.0) (2024-08-07)
+
+### Features
+
+- add bitgo signet for btc ([a1912b9](https://github.com/BitGo/BitGoJS/commit/a1912b9478211568b29b2ea8986dc62db435f6ab))
+
 ## [2.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.1.2...@bitgo/sdk-coin-btc@2.1.3) (2024-07-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-btc

@@ -150,15 +150,10 @@ export interface SuiMPCTxs {
   lastScanIndex: number;
 }
 
-export interface SuiBroadcastTransaction {
-  serializedSignedTransaction: string;
-  signature: string;
-}
-
 export interface SuiBroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
-  broadcastTransactions: SuiBroadcastTransaction[];
+  transactions: SuiMPCTx[];
 }
 
 export interface SuiBroadcastTransactionResult extends BaseBroadcastTransactionResult {
-  broadcastedTxnIds?: string[];
+  txIds?: string[];
 }

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.3.1...@bitgo/sdk-coin-sui@5.4.0) (2024-08-07)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** big-number data type of input coins balance ([6deb0c0](https://github.com/BitGo/BitGoJS/commit/6deb0c06ef0ea14311e8caea2e2e90c1ad08e750))
+- **sdk-coin-sui:** unsigned sweep transaction output ([8cc0966](https://github.com/BitGo/BitGoJS/commit/8cc0966d13170e245c05f4f22cbcebfe81a69d77))
+
+### Features
+
+- **sdk-coin-sui:** broadcast transaction using serialized signed tx and signature ([3d57dd5](https://github.com/BitGo/BitGoJS/commit/3d57dd5cc6458075aeb19572386c02d6960dbd6f))
+- **sdk-coin-sui:** non-bitgo recovery ([a60531a](https://github.com/BitGo/BitGoJS/commit/a60531aabd0708d7f67226a0c5a4a4ea84f83d66))
+
 ## [5.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.3.0...@bitgo/sdk-coin-sui@5.3.1) (2024-07-30)
 
 ### Bug Fixes

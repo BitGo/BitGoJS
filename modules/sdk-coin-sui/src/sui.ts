@@ -536,20 +536,18 @@ export class Sui extends BaseCoin {
     txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
   }
 
-  async broadcastTransaction({
-    broadcastTransactions,
-  }: SuiBroadcastTransactionOptions): Promise<SuiBroadcastTransactionResult> {
-    const broadcastedTxnIds: string[] = [];
-    for (const txn of broadcastTransactions) {
+  async broadcastTransaction({ transactions }: SuiBroadcastTransactionOptions): Promise<SuiBroadcastTransactionResult> {
+    const txIds: string[] = [];
+    for (const txn of transactions) {
       try {
         const url = this.getPublicNodeUrl();
-        const txId = await utils.executeTransactionBlock(url, txn.serializedSignedTransaction, [txn.signature]);
-        broadcastedTxnIds.push(txId);
+        const digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+        txIds.push(digest);
       } catch (e) {
         throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
       }
     }
-    return { broadcastedTxnIds };
+    return { txIds };
   }
 
   /** inherited doc */
