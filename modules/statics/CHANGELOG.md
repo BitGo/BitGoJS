@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.26.0...@bitgo/statics@48.27.0) (2024-08-07)
+
+### Bug Fixes
+
+- **statics:** rename token names ([71d8619](https://github.com/BitGo/BitGoJS/commit/71d861989a683ea3e603241e5f3bf3b70e948d36))
+
+### Features
+
+- add bitgo signet for btc ([a1912b9](https://github.com/BitGo/BitGoJS/commit/a1912b9478211568b29b2ea8986dc62db435f6ab))
+- **statics:** add feature flag for stuck transaction management ([1a7815a](https://github.com/BitGo/BitGoJS/commit/1a7815a3e28c2fa14fa91a7e0ad3667d93733cdd))
+- **statics:** add new batch of tokens COIN-1390 ([9b2c897](https://github.com/BitGo/BitGoJS/commit/9b2c897b5691a3d7f761e026bfb36b8daaddda14))
+- **statics:** add token as available for NY ([9bf1c73](https://github.com/BitGo/BitGoJS/commit/9bf1c73ef34c3f04c2d92235a91ea957fdda4e3e))
+
 # [48.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.25.0...@bitgo/statics@48.26.0) (2024-07-30)
 
 ### Features

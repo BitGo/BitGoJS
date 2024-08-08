@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.7.6...@bitgo/abstract-eth@21.8.0) (2024-08-07)
+
+### Features
+
+- **abstract-cosmos:** add dkls support for cosmos hot wallet recovery ([da24a55](https://github.com/BitGo/BitGoJS/commit/da24a559d42ac0f2975fd03ec335f5e72bcd8f49))
+
 ## [21.7.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.7.5...@bitgo/abstract-eth@21.7.6) (2024-07-30)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

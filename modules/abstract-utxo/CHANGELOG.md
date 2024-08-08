@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.11.2...@bitgo/abstract-utxo@8.12.0) (2024-08-07)
+
+### Features
+
+- add bitgo signet for btc ([a1912b9](https://github.com/BitGo/BitGoJS/commit/a1912b9478211568b29b2ea8986dc62db435f6ab))
+
 ## [8.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.11.1...@bitgo/abstract-utxo@8.11.2) (2024-07-30)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

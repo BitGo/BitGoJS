@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.18.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.17.0...bitgo@38.18.0) (2024-08-07)
+
+### Bug Fixes
+
+- **root:** replace MPCv2 SMC types for public-types ([cb4c68f](https://github.com/BitGo/BitGoJS/commit/cb4c68f08035da7742a740ee7e220117a2143805))
+
+### Features
+
+- add bitgo signet for btc ([a1912b9](https://github.com/BitGo/BitGoJS/commit/a1912b9478211568b29b2ea8986dc62db435f6ab))
+
 # [38.17.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.16.0...bitgo@38.17.0) (2024-07-30)
 
 ### Bug Fixes
