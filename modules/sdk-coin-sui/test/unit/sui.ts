@@ -137,7 +137,7 @@ describe('SUI:', function () {
             amount: testData.recipients[1].amount,
           },
         ],
-        outputAmount: testData.AMOUNT * 2,
+        outputAmount: `${testData.AMOUNT * 2}`,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.gasData.budget.toString() },
@@ -379,19 +379,16 @@ describe('SUI:', function () {
         walletPassphrase,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
-      res.should.hasOwnProperty('recoveryAmount');
-      res.should.hasOwnProperty('signature');
-
-      res.serializedTx.should.equal(
+      res.should.hasOwnProperty('transactions');
+      const tx = res.transactions[0];
+      tx.scanIndex.should.equal(0);
+      tx.recoveryAmount.should.equal('1800000000');
+      tx.serializedTx.should.equal(
         'AAACAAgA0klrAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQCR8l4je4OgCmJyT9xKgeQ/SU3GtBoSQUkoJtNuTRMdowHAXHZeJuauhMePokXziiP7IEBqXPP2G1e9MjoN+dmAA8MAAAAAAAAAIFvJiJBdEAhi14cxcSr/HUIhBZMbLMd4rczUTCMIb3UmkfJeI3uDoApick/cSoHkP0lNxrQaEkFJKCbTbk0THaPoAwAAAAAAAKSIIQAAAAAAAA=='
       );
-      res.scanIndex.should.equal(0);
-      res.recoveryAmount.should.equal('1800000000');
 
       const NonBitGoTxnDeserialize = new TransferTransaction(basecoin);
-      NonBitGoTxnDeserialize.fromRawTransaction(res.serializedTx);
+      NonBitGoTxnDeserialize.fromRawTransaction(tx.serializedTx);
       const NonBitGoTxnJson = NonBitGoTxnDeserialize.toJson();
 
       should.equal(NonBitGoTxnJson.id, '3xexf67vjACcvsd3XCR5XWNm1cDeGCbcnJ5NhAHBmdBc');
@@ -595,19 +592,16 @@ describe('SUI:', function () {
         walletPassphrase,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
-      res.should.hasOwnProperty('recoveryAmount');
-      res.should.hasOwnProperty('signature');
-
-      res.serializedTx.should.equal(
+      res.should.hasOwnProperty('transactions');
+      const tx = res.transactions[0];
+      tx.scanIndex.should.equal(1);
+      tx.recoveryAmount.should.equal('1700000000');
+      tx.serializedTx.should.equal(
         'AAACAAgA8VNlAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQAy2OV+5tkeVVjaBncVTC8IV5U0jjF/lazJ763htBEvzAH/k63C9Rb8qgxgQOAfUAJ6I/mxdn9QQOsignkKaQDOf8QAAAAAAAAAIAfnp90gMsdBGGz1tW/sFQlArhkRmYjdiXTXx+CvxHjVMtjlfubZHlVY2gZ3FUwvCFeVNI4xf5Wsye+t4bQRL8zoAwAAAAAAAKSIIQAAAAAAAA=='
       );
-      res.scanIndex.should.equal(1);
-      res.recoveryAmount.should.equal('1700000000');
 
       const UnsignedSweepTxnDeserialize = new TransferTransaction(basecoin);
-      UnsignedSweepTxnDeserialize.fromRawTransaction(res.serializedTx);
+      UnsignedSweepTxnDeserialize.fromRawTransaction(tx.serializedTx);
       const UnsignedSweepTxnJson = UnsignedSweepTxnDeserialize.toJson();
 
       should.equal(UnsignedSweepTxnJson.id, '4XxsV2ktbcG3gF3Zj46EL9irJd9KgKoKPQYEDtPiQs21');
@@ -627,19 +621,16 @@ describe('SUI:', function () {
         startingScanIndex: 1,
       });
       res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      res.should.hasOwnProperty('scanIndex');
-      res.should.hasOwnProperty('recoveryAmount');
-      res.should.hasOwnProperty('signature');
-
-      res.serializedTx.should.equal(
+      res.should.hasOwnProperty('transactions');
+      const tx = res.transactions[0];
+      tx.scanIndex.should.equal(1);
+      tx.recoveryAmount.should.equal('1700000000');
+      tx.serializedTx.should.equal(
         'AAACAAgA8VNlAAAAAAAgAOTqpqKR/gKRhFLmRbVlPNJgpfwPs19hk9WAkWqp44kCAgABAQAAAQECAAABAQAy2OV+5tkeVVjaBncVTC8IV5U0jjF/lazJ763htBEvzAH/k63C9Rb8qgxgQOAfUAJ6I/mxdn9QQOsignkKaQDOf8QAAAAAAAAAIAfnp90gMsdBGGz1tW/sFQlArhkRmYjdiXTXx+CvxHjVMtjlfubZHlVY2gZ3FUwvCFeVNI4xf5Wsye+t4bQRL8zoAwAAAAAAAKSIIQAAAAAAAA=='
       );
-      res.scanIndex.should.equal(1);
-      res.recoveryAmount.should.equal('1700000000');
 
       const UnsignedSweepTxnDeserialize = new TransferTransaction(basecoin);
-      UnsignedSweepTxnDeserialize.fromRawTransaction(res.serializedTx);
+      UnsignedSweepTxnDeserialize.fromRawTransaction(tx.serializedTx);
       const UnsignedSweepTxnJson = UnsignedSweepTxnDeserialize.toJson();
 
       should.equal(UnsignedSweepTxnJson.id, '4XxsV2ktbcG3gF3Zj46EL9irJd9KgKoKPQYEDtPiQs21');
@@ -923,6 +914,7 @@ describe('SUI:', function () {
             scanIndex: 0,
             signature:
               'AG9HCQbfiMM7J8jRE+2UTtCk/Embpsx28AuJJJQoEteDXCOoxyzhknMecC2kYK6nntZjNLSng9z23SdYNH1snw0oRJbKBMxgOCP3mTrvE/cvMx2XCFshhNempGOpCqkn0A==',
+            recoveryAmount: '798002120',
           },
         ],
         lastScanIndex: 0,
@@ -1076,6 +1068,7 @@ describe('SUI:', function () {
             scanIndex: 1,
             signature:
               'AM3+FdfA+A+KrYnYeHBmc84kKUexJoUsAO4wnvBfeoMBKjEymy5e+MPyIuuRzZ1w5xbyKe4Z08qUF8iswWsdoQDkRb0JKkZ99XcAHPvWCBsURcoPdRRyM1Ye0vU/ajDkWg==',
+            recoveryAmount: '97960480',
           },
           {
             serializedTx:
@@ -1083,6 +1076,7 @@ describe('SUI:', function () {
             scanIndex: 2,
             signature:
               'ADUYYT6lzvo2zSLhsJJ0LY0FJ0QYhRgEA5fxplp1T56VLfSO1g/2Kw6GicXr5XMY89rXYohkdSS0IKz3sahMwABLFDoSg1vdoEgxqe2FH56t17pbRunAf9CHt1H0aj82TQ==',
+            recoveryAmount: '200000000',
           },
         ],
         lastScanIndex: 20,

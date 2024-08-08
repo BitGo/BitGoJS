@@ -1,5 +1,4 @@
 import {
-  BaseBroadcastTransactionResult,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -29,7 +28,8 @@ import { KeyPair as SuiKeyPair, TransactionBuilderFactory, TransferBuilder, Tran
 import utils from './lib/utils';
 import * as _ from 'lodash';
 import {
-  BroadcastTransactionOptions,
+  SuiBroadcastTransactionOptions,
+  SuiBroadcastTransactionResult,
   SuiMPCRecoveryOptions,
   SuiMPCTx,
   SuiMPCTxs,
@@ -320,7 +320,7 @@ export class Sui extends BaseCoin {
    * @returns {MPCTx | MPCSweepTxs} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async recover(params: SuiMPCRecoveryOptions): Promise<SuiMPCTx | MPCSweepTxs> {
+  async recover(params: SuiMPCRecoveryOptions): Promise<SuiMPCTxs | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -408,10 +408,15 @@ export class Sui extends BaseCoin {
       await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey);
       const tx = (await txBuilder.build()) as TransferTransaction;
       return {
-        scanIndex: idx,
-        recoveryAmount: netAmount.toString(),
-        serializedTx: tx.toBroadcastFormat(),
-        signature: Buffer.from(tx.serializedSig).toString('base64'),
+        transactions: [
+          {
+            scanIndex: idx,
+            recoveryAmount: netAmount.toString(),
+            serializedTx: tx.toBroadcastFormat(),
+            signature: Buffer.from(tx.serializedSig).toString('base64'),
+          },
+        ],
+        lastScanIndex: idx,
       };
     }
 
@@ -532,15 +537,19 @@ export class Sui extends BaseCoin {
   }
 
   async broadcastTransaction({
-    serializedSignedTransaction,
-    signature,
-  }: BroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
-    try {
-      const url = this.getPublicNodeUrl();
-      return await utils.executeTransactionBlock(url, serializedSignedTransaction, [signature]);
-    } catch (e) {
-      throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+    broadcastTransactions,
+  }: SuiBroadcastTransactionOptions): Promise<SuiBroadcastTransactionResult> {
+    const broadcastedTxnIds: string[] = [];
+    for (const txn of broadcastTransactions) {
+      try {
+        const url = this.getPublicNodeUrl();
+        const txId = await utils.executeTransactionBlock(url, txn.serializedSignedTransaction, [txn.signature]);
+        broadcastedTxnIds.push(txId);
+      } catch (e) {
+        throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+      }
     }
+    return { broadcastedTxnIds };
   }
 
   /** inherited doc */
@@ -581,11 +590,13 @@ export class Sui extends BaseCoin {
       txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
       const signedTransaction = (await txBuilder.build()) as TransferTransaction;
       const serializedTx = signedTransaction.toBroadcastFormat();
+      const outputAmount = signedTransaction.explainTransaction().outputAmount;
 
       broadcastableTransactions.push({
         serializedTx: serializedTx,
         scanIndex: transaction.scanIndex,
         signature: Buffer.from(signedTransaction.serializedSig).toString('base64'),
+        recoveryAmount: outputAmount.toString(),
       });
 
       if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
@@ -634,7 +645,7 @@ export class Sui extends BaseCoin {
         scan: 1,
       };
 
-      let recoveryTransaction: SuiMPCTx | MPCSweepTxs;
+      let recoveryTransaction: SuiMPCTxs | MPCSweepTxs;
       try {
         recoveryTransaction = await this.recover(recoverParams);
       } catch (e) {
@@ -648,12 +659,12 @@ export class Sui extends BaseCoin {
       if (isUnsignedSweep) {
         consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
       } else {
-        consolidationTransactions.push(recoveryTransaction);
+        consolidationTransactions.push((recoveryTransaction as SuiMPCTxs).transactions[0]);
       }
       lastScanIndex = idx;
     }
 
-    if (consolidationTransactions.length == 0) {
+    if (consolidationTransactions.length === 0) {
       throw new Error('Did not find an address with funds to recover');
     }
 

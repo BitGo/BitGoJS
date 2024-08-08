@@ -1,5 +1,4 @@
 import {
-  BaseBroadcastTransactionResult,
   BaseUtils,
   BuildTransactionError,
   InvalidTransactionError,
@@ -449,11 +448,7 @@ export class Utils implements BaseUtils {
       });
   }
 
-  async executeTransactionBlock(
-    url: string,
-    serializedTx: string,
-    signatures: string[]
-  ): Promise<BaseBroadcastTransactionResult> {
+  async executeTransactionBlock(url: string, serializedTx: string, signatures: string[]): Promise<string> {
     const reqType = 'WaitForEffectsCert';
     const options = { showEffects: true };
     const params = [serializedTx, signatures, options, reqType];
@@ -463,7 +458,7 @@ export class Utils implements BaseUtils {
     } catch (e) {
       throw new Error(`${e.message}`);
     }
-    return { txId: result.digest };
+    return result.digest;
   }
 
   validateNonNegativeNumber(defaultVal: number, errorMsg: string, inputVal?: number): number {
