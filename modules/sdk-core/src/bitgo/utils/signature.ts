@@ -11,7 +11,7 @@ import { signMessage, verifyMessage } from '../bip32util';
  * @param {utxolib.Network} network - The network to use for verification.
  * @returns {boolean} - Returns true if the signature is valid, false otherwise.
  */
-export function verifySignature(
+export function verifyMessageSignature(
   message: Signable,
   signature: string,
   pub: string,
@@ -31,7 +31,7 @@ export function verifySignature(
  * @param {utxolib.Network} network - The network to use for signing.
  * @returns {string} - Returns the signature in hexadecimal format.
  */
-export function createSignature(
+export function createMessageSignature(
   message: Signable,
   prv: string,
   network: utxolib.Network = utxolib.networks.bitcoin

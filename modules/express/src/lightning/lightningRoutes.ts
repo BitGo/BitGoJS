@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { BaseCoin, decodeOrElse, Wallet } from '@bitgo/sdk-core';
+import { BaseCoin, decodeOrElse, Wallet, createMessageSignature } from '@bitgo/sdk-core';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as https from 'https';
 import { Buffer } from 'buffer';
@@ -106,7 +106,7 @@ export async function handleInitLightningWallet(req: express.Request) {
 
   // TODO: check if wallet is ready for initialization
 
-  const { userKey, nodeAuthKey } = await getLightningWalletKeychains(coin, wallet);
+  const { userKey, userAuthKey, nodeAuthKey } = await getLightningWalletKeychains(coin, wallet);
 
   const macaroonRootKeyBase64 = getMacaroonRootKeyBase64(passphrase, nodeAuthKey.encryptedPrv, bitgo.decrypt);
   const extendedMasterPrvKey = bitgo.decrypt({ password: passphrase, input: userKey.encryptedPrv });
@@ -142,11 +142,18 @@ export async function handleInitLightningWallet(req: express.Request) {
     },
   };
 
-  if (coinSpecific === undefined) {
-    throw new Error('coinSpecific is undefined');
+  const signature = createMessageSignature(
+    coinSpecific,
+    bitgo.decrypt({ password: passphrase, input: userAuthKey.encryptedPrv })
+  );
+
+  async function updateWallet() {
+    const res = await bitgo.put(wallet.url()).send({ coinSpecific, signature }).result();
+    if (res.status !== 200) {
+      throw new Error('Failed to update wallet');
+    }
+    return res;
   }
-  // bitgo
-  //   .put(wallet.url())
-  //   .send({ coinSpecific })
-  //   .result();
+
+  return await updateWallet();
 }
