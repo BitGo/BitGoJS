@@ -43,6 +43,7 @@ import {
   MAX_GAS_BUDGET,
   MAX_OBJECT_LIMIT,
 } from './lib/constants';
+import { Buffer } from 'buffer';
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -564,7 +565,8 @@ export class Sui extends BaseCoin {
         throw new Error('Invalid signature');
       }
       const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
-      const txBuilder = this.getBuilder().from(transaction.serializedTx as string);
+      const serializedTxBase64 = Buffer.from(transaction.serializedTx, 'hex').toString('base64');
+      const txBuilder = this.getBuilder().from(serializedTxBase64);
       if (!transaction.coinSpecific?.commonKeychain) {
         throw new Error('Missing common keychain');
       }

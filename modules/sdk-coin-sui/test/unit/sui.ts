@@ -841,6 +841,255 @@ describe('SUI:', function () {
     });
   });
 
+  describe('Create Broadcastable MPC Transaction', () => {
+    it('should create broadcastable MPC transaction', async function () {
+      const signatureShares = {
+        signatureShares: [
+          {
+            txRequest: {
+              transactions: [
+                {
+                  unsignedTx: {
+                    serializedTx:
+                      '0000020008c88b902f000000000020df407e3e25e9400f9779ac7571537c2361684194f1aa5db126a8f574b5ed851c020200010100000101020000010100016495ddda748c116a218242835d364709d6c5ee5c8a1ed684c4ef433d314421014553b0f6f79ed95942141835de3ab086bf38d1f1d96272981e1390b84fb86b36c900000000000000200b1de8fdfbbb8a6fa2c65ec79a55703c9a9f0c2685a768f2b81a0426bc932ec3016495ddda748c116a218242835d364709d6c5ee5c8a1ed684c4ef433d314421e803000000000000a48821000000000000',
+                    scanIndex: 0,
+                    coin: 'tsui',
+                    signableHex: 'a4ce8eb11362cd45c09936e745044dc78b2689e5d8147b9ea9a7de43ee43923a',
+                    derivationPath: 'm/0',
+                    parsedTx: {
+                      inputs: [
+                        {
+                          address: '0x016495ddda748c116a218242835d364709d6c5ee5c8a1ed684c4ef433d314421',
+                          valueString: '798002120',
+                          value: {
+                            s: 1,
+                            e: 8,
+                            c: [798002120],
+                          },
+                        },
+                      ],
+                      outputs: [
+                        {
+                          address: '0xdf407e3e25e9400f9779ac7571537c2361684194f1aa5db126a8f574b5ed851c',
+                          valueString: '798002120',
+                          coinName: 'tsui',
+                        },
+                      ],
+                      spendAmount: '798002120',
+                      type: 'Transfer',
+                    },
+                    feeInfo: {
+                      fee: 2197668,
+                      feeString: '2197668',
+                    },
+                    coinSpecific: {
+                      commonKeychain:
+                        '79d4b9b594df028fee3725a6af51ae3ab6a3519e9d2c322f2c8fd815b96496323c5aba7ea874c102f966f1a61d3c9a42b5f3177c6a85712cf313715afddf83d8',
+                    },
+                  },
+                  signatureShares: [],
+                  signatureShare: {
+                    from: 'backup',
+                    to: 'user',
+                    share:
+                      '6f470906df88c33b27c8d113ed944ed0a4fc499ba6cc76f00b8924942812d7835792ee455cbc8941faba7bcc93b15a9cd198a20dc3f0b629f5fdceab34e66100',
+                    publicShare: '284496ca04cc603823f7993aef13f72f331d97085b2184d7a6a463a90aa927d0',
+                  },
+                },
+              ],
+              walletCoin: 'tsui',
+            },
+            tssVersion: '0.0.1',
+            ovc: [
+              {
+                eddsaSignature: {
+                  y: '284496ca04cc603823f7993aef13f72f331d97085b2184d7a6a463a90aa927d0',
+                  R: '6f470906df88c33b27c8d113ed944ed0a4fc499ba6cc76f00b8924942812d783',
+                  sigma: '5c23a8c72ce192731e702da460aea79ed66334b4a783dcf6dd2758347d6c9f0d',
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const res = await basecoin.createBroadcastableSweepTransaction(signatureShares);
+
+      res.should.deepEqual({
+        transactions: [
+          {
+            serializedTx:
+              'AAACAAjIi5AvAAAAAAAg30B+PiXpQA+Xeax1cVN8I2FoQZTxql2xJqj1dLXthRwCAgABAQAAAQECAAABAQABZJXd2nSMEWohgkKDXTZHCdbF7lyKHtaExO9DPTFEIQFFU7D2957ZWUIUGDXeOrCGvzjR8dlicpgeE5C4T7hrNskAAAAAAAAAIAsd6P37u4pvosZex5pVcDyanwwmhado8rgaBCa8ky7DAWSV3dp0jBFqIYJCg102RwnWxe5cih7WhMTvQz0xRCHoAwAAAAAAAKSIIQAAAAAAAA==',
+            scanIndex: 0,
+            signature:
+              'AG9HCQbfiMM7J8jRE+2UTtCk/Embpsx28AuJJJQoEteDXCOoxyzhknMecC2kYK6nntZjNLSng9z23SdYNH1snw0oRJbKBMxgOCP3mTrvE/cvMx2XCFshhNempGOpCqkn0A==',
+          },
+        ],
+        lastScanIndex: 0,
+      });
+    });
+
+    it('for OVC signed consolidation transactions', async function () {
+      const signatureShares = {
+        signatureShares: [
+          {
+            txRequest: {
+              transactions: [
+                {
+                  unsignedTx: {
+                    serializedTx:
+                      '000002000820c2d605000000000020016495ddda748c116a218242835d364709d6c5ee5c8a1ed684c4ef433d314421020200010100000101020000010100a992709591deb7471fb30dda0f339db7ab548d3391a89d3f1fa0c72d2092675f01568beffe7651033a081a7375a3bb43d4d2a8e290a396e826236e73d0973b49b5d000000000000000208bc0764a454de7538b5ecea6fd0bd221c9c85207af297612944a967d43e8dd3ba992709591deb7471fb30dda0f339db7ab548d3391a89d3f1fa0c72d2092675fe803000000000000a48821000000000000',
+                    scanIndex: 1,
+                    coin: 'tsui',
+                    signableHex: '857a2f26687c011a61a060a41d4c80c10b2fd31e98fe6704d6bcda26f57b03bb',
+                    derivationPath: 'm/1',
+                    parsedTx: {
+                      inputs: [
+                        {
+                          address: '0xa992709591deb7471fb30dda0f339db7ab548d3391a89d3f1fa0c72d2092675f',
+                          valueString: '97960480',
+                          value: {
+                            s: 1,
+                            e: 7,
+                            c: [97960480],
+                          },
+                        },
+                      ],
+                      outputs: [
+                        {
+                          address: '0x016495ddda748c116a218242835d364709d6c5ee5c8a1ed684c4ef433d314421',
+                          valueString: '97960480',
+                          coinName: 'tsui',
+                        },
+                      ],
+                      spendAmount: '97960480',
+                      type: 'Transfer',
+                    },
+                    feeInfo: {
+                      fee: 2197668,
+                      feeString: '2197668',
+                    },
+                    coinSpecific: {
+                      commonKeychain:
+                        '79d4b9b594df028fee3725a6af51ae3ab6a3519e9d2c322f2c8fd815b96496323c5aba7ea874c102f966f1a61d3c9a42b5f3177c6a85712cf313715afddf83d8',
+                    },
+                  },
+                  signatureShares: [],
+                  signatureShare: {
+                    from: 'backup',
+                    to: 'user',
+                    share:
+                      'cdfe15d7c0f80f8aad89d878706673ce242947b126852c00ee309ef05f7a8301b2e902b90d37ea7dfe86ce79c7a99b2b27a175c3f714c310fd9e10ea877cc60f',
+                    publicShare: 'e445bd092a467df577001cfbd6081b1445ca0f75147233561ed2f53f6a30e45a',
+                  },
+                },
+              ],
+              walletCoin: 'tsui',
+            },
+            tssVersion: '0.0.1',
+            ovc: [
+              {
+                eddsaSignature: {
+                  y: 'e445bd092a467df577001cfbd6081b1445ca0f75147233561ed2f53f6a30e45a',
+                  R: 'cdfe15d7c0f80f8aad89d878706673ce242947b126852c00ee309ef05f7a8301',
+                  sigma: '2a31329b2e5ef8c3f222eb91cd9d70e716f229ee19d3ca9417c8acc16b1da100',
+                },
+              },
+            ],
+          },
+          {
+            txRequest: {
+              transactions: [
+                {
+                  unsignedTx: {
+                    serializedTx:
+                      '000002000800c2eb0b000000000020016495ddda748c116a218242835d364709d6c5ee5c8a1ed684c4ef433d314421020200010100000101020000010100c3ac2a86e35b62bfada83f6388ff27c7dda7092cf0b829d2d1f4c2813e28ae3901d68feb4780886ccfa81a37036958ec9c8bfabfe75a0bb7c4d1a4587992343f5bcf00000000000000205ad4f631a378f8b09542d4df66942b6dabb2f65cb20cf8f628c91c64f9352e4ec3ac2a86e35b62bfada83f6388ff27c7dda7092cf0b829d2d1f4c2813e28ae39e803000000000000a48821000000000000',
+                    scanIndex: 2,
+                    coin: 'tsui',
+                    signableHex: 'f2b56a74e787b2a98decf189e71b1e0c5d4ccee88697b3991a48de2910676020',
+                    derivationPath: 'm/2',
+                    parsedTx: {
+                      inputs: [
+                        {
+                          address: '0xc3ac2a86e35b62bfada83f6388ff27c7dda7092cf0b829d2d1f4c2813e28ae39',
+                          valueString: '200000000',
+                          value: {
+                            s: 1,
+                            e: 8,
+                            c: [200000000],
+                          },
+                        },
+                      ],
+                      outputs: [
+                        {
+                          address: '0x016495ddda748c116a218242835d364709d6c5ee5c8a1ed684c4ef433d314421',
+                          valueString: '200000000',
+                          coinName: 'tsui',
+                        },
+                      ],
+                      spendAmount: '200000000',
+                      type: 'Transfer',
+                    },
+                    feeInfo: {
+                      fee: 2197668,
+                      feeString: '2197668',
+                    },
+                    coinSpecific: {
+                      commonKeychain:
+                        '79d4b9b594df028fee3725a6af51ae3ab6a3519e9d2c322f2c8fd815b96496323c5aba7ea874c102f966f1a61d3c9a42b5f3177c6a85712cf313715afddf83d8',
+                      lastScanIndex: 20,
+                    },
+                  },
+                  signatureShares: [],
+                  signatureShare: {
+                    from: 'backup',
+                    to: 'user',
+                    share:
+                      '3518613ea5cefa36cd22e1b092742d8d052744188518040397f1a65a754f9e95324889312d70146811dbdc2a96245c518e16fc61bd1a5a2b53b53ebcec5d4a03',
+                    publicShare: '4b143a12835bdda04831a9ed851f9eadd7ba5b46e9c07fd087b751f46a3f364d',
+                  },
+                },
+              ],
+              walletCoin: 'tsui',
+            },
+            tssVersion: '0.0.1',
+            ovc: [
+              {
+                eddsaSignature: {
+                  y: '4b143a12835bdda04831a9ed851f9eadd7ba5b46e9c07fd087b751f46a3f364d',
+                  R: '3518613ea5cefa36cd22e1b092742d8d052744188518040397f1a65a754f9e95',
+                  sigma: '2df48ed60ff62b0e8689c5ebe57318f3dad76288647524b420acf7b1a84cc000',
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const res = await basecoin.createBroadcastableSweepTransaction(signatureShares);
+
+      res.should.deepEqual({
+        transactions: [
+          {
+            serializedTx:
+              'AAACAAggwtYFAAAAAAAgAWSV3dp0jBFqIYJCg102RwnWxe5cih7WhMTvQz0xRCECAgABAQAAAQECAAABAQCpknCVkd63Rx+zDdoPM523q1SNM5GonT8foMctIJJnXwFWi+/+dlEDOggac3Wju0PU0qjikKOW6CYjbnPQlztJtdAAAAAAAAAAIIvAdkpFTedTi17Opv0L0iHJyFIHryl2EpRKln1D6N07qZJwlZHet0cfsw3aDzOdt6tUjTORqJ0/H6DHLSCSZ1/oAwAAAAAAAKSIIQAAAAAAAA==',
+            scanIndex: 1,
+            signature:
+              'AM3+FdfA+A+KrYnYeHBmc84kKUexJoUsAO4wnvBfeoMBKjEymy5e+MPyIuuRzZ1w5xbyKe4Z08qUF8iswWsdoQDkRb0JKkZ99XcAHPvWCBsURcoPdRRyM1Ye0vU/ajDkWg==',
+          },
+          {
+            serializedTx:
+              'AAACAAgAwusLAAAAAAAgAWSV3dp0jBFqIYJCg102RwnWxe5cih7WhMTvQz0xRCECAgABAQAAAQECAAABAQDDrCqG41tiv62oP2OI/yfH3acJLPC4KdLR9MKBPiiuOQHWj+tHgIhsz6gaNwNpWOyci/q/51oLt8TRpFh5kjQ/W88AAAAAAAAAIFrU9jGjePiwlULU32aUK22rsvZcsgz49ijJHGT5NS5Ow6wqhuNbYr+tqD9jiP8nx92nCSzwuCnS0fTCgT4orjnoAwAAAAAAAKSIIQAAAAAAAA==',
+            scanIndex: 2,
+            signature:
+              'ADUYYT6lzvo2zSLhsJJ0LY0FJ0QYhRgEA5fxplp1T56VLfSO1g/2Kw6GicXr5XMY89rXYohkdSS0IKz3sahMwABLFDoSg1vdoEgxqe2FH56t17pbRunAf9CHt1H0aj82TQ==',
+          },
+        ],
+        lastScanIndex: 20,
+      });
+    });
+  });
+
   describe('Recover Transaction Failures:', () => {
     const sandBox = sinon.createSandbox();
     const senderAddress0 = '0x91f25e237b83a00a62724fdc4a81e43f494dc6b41a1241492826d36e4d131da3';
