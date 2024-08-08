@@ -842,7 +842,7 @@ describe('SUI:', function () {
   });
 
   describe('Create Broadcastable MPC Transaction', () => {
-    it('should create broadcastable MPC transaction', async function () {
+    it('for OVC signed sweep transaction', async function () {
       const signatureShares = {
         signatureShares: [
           {
