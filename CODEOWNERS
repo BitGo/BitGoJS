@@ -101,3 +101,4 @@
 /package.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 /tsconfig.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
 /tsconfig.packages.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+/.iyarc @BitGo/wallet-platform @BitGo/hsm @BitGo/velocity
