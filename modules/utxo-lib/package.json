@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-lib",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./dist/src/index.js",
   "engines": {

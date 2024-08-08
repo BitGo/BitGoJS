@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@10.0.0...@bitgo/utxo-lib@10.1.0) (2024-08-07)
+
+### Features
+
+- add bitgo signet for btc ([a1912b9](https://github.com/BitGo/BitGoJS/commit/a1912b9478211568b29b2ea8986dc62db435f6ab))
+
 # [10.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@9.40.0...@bitgo/utxo-lib@10.0.0) (2024-07-16)
 
 ### Code Refactoring

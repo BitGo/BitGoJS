@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@12.0.28...@bitgo/sdk-coin-atom@12.1.0) (2024-08-07)
+
+### Features
+
+- **abstract-cosmos:** add dkls support for cosmos hot wallet recovery ([da24a55](https://github.com/BitGo/BitGoJS/commit/da24a559d42ac0f2975fd03ec335f5e72bcd8f49))
+
 ## [12.0.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@12.0.27...@bitgo/sdk-coin-atom@12.0.28) (2024-07-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-atom

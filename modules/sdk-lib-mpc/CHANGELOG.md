@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.10.2...@bitgo/sdk-lib-mpc@9.11.0) (2024-08-07)
+
+### Bug Fixes
+
+- **sdk-lib-mpc:** fix time warp issues with pgp verifications ([18eda4a](https://github.com/BitGo/BitGoJS/commit/18eda4af32e704d9d900c6b00e2bf34be0271a64))
+
+### Features
+
+- **sdk-lib-mpc:** support dep injection of dkls wasm in dsg ([a8c09ab](https://github.com/BitGo/BitGoJS/commit/a8c09abbe4feef656d80187969121e845f0c6656))
+
 ## [9.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@9.10.1...@bitgo/sdk-lib-mpc@9.10.2) (2024-07-30)
 
 ### Bug Fixes
