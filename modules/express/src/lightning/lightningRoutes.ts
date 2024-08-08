@@ -1,20 +1,23 @@
 import * as express from 'express';
-import * as https from 'https';
-import * as superagent from 'superagent';
 import { BaseCoin, decodeOrElse, Wallet } from '@bitgo/sdk-core';
 import { bip32 } from '@bitgo/utxo-lib';
+import * as https from 'https';
+import { Buffer } from 'buffer';
 
 import {
-  BakeMacaroonResponseCodec,
   InitLightningWalletRequestCodec,
-  InitWalletResponseCodec,
   LightningAuthKeychain,
   LightningAuthKeychainCodec,
   LightningKeychain,
   LightningKeychainCodec,
 } from './codecs';
-import { addIPCaveatToMacaroon, getLightningWalletSignerDetails, unwrapLightningCoinSpecific } from './lightningUtils';
-import { retryPromise } from '../retryPromise';
+import {
+  addIPCaveatToMacaroon,
+  createWatchOnlyInitWalletData,
+  getLightningWalletSignerDetails,
+  unwrapLightningCoinSpecific,
+} from './lightningUtils';
+import { bakeMacaroon, createHttpAgent, initWallet } from './signerClient';
 
 async function getLightningWalletKeychains(
   coin: BaseCoin,
@@ -54,64 +57,45 @@ async function getLightningWalletKeychains(
   return { userKey, userAuthKey, nodeAuthKey };
 }
 
-function createHttpAgent(tlsCert: string) {
-  return new https.Agent({
-    ca: Buffer.from(tlsCert, 'base64').toString('utf-8'),
-  });
+async function createSignerMacaroonHex(
+  httpConfig: { url: string; httpsAgent: https.Agent; adminMacaroonHex: string },
+  watchOnlyIP: string
+) {
+  const { macaroon: signerMacaroonBase64 } = await bakeMacaroon(httpConfig, [
+    {
+      entity: 'signer',
+      action: 'generate',
+    },
+  ]);
+
+  return Buffer.from(addIPCaveatToMacaroon(signerMacaroonBase64, watchOnlyIP), 'base64').toString('hex');
 }
 
-async function initWallet(
-  config: { url: string; httpsAgent: https.Agent },
-  data: { wallet_password: string; extended_master_key: string; macaroon_root_key: string }
+function getMacaroonRootKeyBase64(
+  passphrase: string,
+  nodeAuthEncryptedPrv: string,
+  decrypt: (params: { input: string; password: string }) => string
 ) {
-  const res = await retryPromise(
-    () =>
-      superagent
-        .post(`${config.url}/v1/initwallet`)
-        .agent(config.httpsAgent)
-        .type('json')
-        .send({ ...data, stateless_init: true }),
-    (err, tryCount) => {
-      console.log(`failed to connect to lightning signer (attempt ${tryCount}, error: ${err.message})`);
-    }
-  );
-
-  if (res.status !== 200) {
-    throw new Error(`Failed to initialize wallet: ${res.text}`);
+  const hdNode = bip32.fromBase58(decrypt({ password: passphrase, input: nodeAuthEncryptedPrv }));
+  if (!hdNode.privateKey) {
+    throw new Error('nodeAuthEncryptedPrv is not a private key');
   }
-
-  return decodeOrElse(InitWalletResponseCodec.name, InitWalletResponseCodec, res.body, (errors) => {
-    throw new Error(`Invalid response from lightning signer for init wallet: ${errors}`);
-  });
+  return hdNode.privateKey.toString('base64');
 }
 
-async function bakeMacaroon(
-  config: { url: string; httpsAgent: https.Agent; macaroon: string },
-  data: {
-    entity: string;
-    action: string;
-  }[]
+async function initSignerWallet(
+  httpConfig: { url: string; httpsAgent: https.Agent },
+  passphrase: string,
+  extendedMasterPrvKey: string,
+  macaroonRootKeyBase64: string
 ) {
-  const res = await retryPromise(
-    () =>
-      superagent
-        .post(`${config.url}/v1/initwallet`)
-        .agent(config.httpsAgent)
-        .set('Grpc-Metadata-macaroon', config.macaroon)
-        .type('json')
-        .send(data),
-    (err, tryCount) => {
-      console.log(`failed to connect to lightning signer (attempt ${tryCount}, error: ${err.message})`);
-    }
-  );
-
-  if (res.status !== 200) {
-    throw new Error(`Failed to bake macaroon: ${res.text}`);
-  }
-
-  return decodeOrElse(BakeMacaroonResponseCodec.name, BakeMacaroonResponseCodec, res.body, (errors) => {
-    throw new Error(`Invalid response from lightning signer for bake macaroon: ${errors}`);
+  const { admin_macaroon: adminMacaroonBase64 } = await initWallet(httpConfig, {
+    wallet_password: passphrase,
+    extended_master_key: extendedMasterPrvKey,
+    macaroon_root_key: macaroonRootKeyBase64,
   });
+
+  return Buffer.from(adminMacaroonBase64, 'base64').toString('hex');
 }
 
 export async function handleInitLightningWallet(req: express.Request) {
@@ -143,37 +127,26 @@ export async function handleInitLightningWallet(req: express.Request) {
 
   const { userKey, nodeAuthKey } = await getLightningWalletKeychains(coin, wallet);
 
-  const macaroon_root_key = bip32
-    .fromBase58(bitgo.decrypt({ password: passphrase, input: nodeAuthKey.encryptedPrv }))
-    .privateKey?.toString('base64');
-
-  if (!macaroon_root_key) {
-    throw new Error('Invalid nodeAuthPrv');
-  }
+  const macaroonRootKeyBase64 = getMacaroonRootKeyBase64(passphrase, nodeAuthKey.encryptedPrv, bitgo.decrypt);
+  const extendedMasterPrvKey = bitgo.decrypt({ password: passphrase, input: userKey.encryptedPrv });
 
   const httpsAgent = createHttpAgent(tlsCert);
 
-  const { admin_macaroon: adminMacaroonBase64 } = await initWallet(
+  const adminMacaroonHex = await initSignerWallet(
     { url, httpsAgent },
-    {
-      wallet_password: passphrase,
-      extended_master_key: bitgo.decrypt({ password: passphrase, input: userKey.encryptedPrv }),
-      macaroon_root_key,
-    }
+    passphrase,
+    extendedMasterPrvKey,
+    macaroonRootKeyBase64
+  );
+  const signerMacaroonHex = await createSignerMacaroonHex({ url, httpsAgent, adminMacaroonHex }, watchOnlyIP);
+
+  const encryptedAdminMacaroonHex = bitgo.encrypt({ password: passphrase, input: adminMacaroonHex });
+  const watchOnlyInitWalletData = createWatchOnlyInitWalletData(
+    bip32.fromBase58(extendedMasterPrvKey),
+    coin.getChain() === 'lnbtc'
   );
 
-  const adminMacaroonHex = Buffer.from(adminMacaroonBase64, 'base64').toString('hex');
-
-  const { macaroon: signerMacaroonBase64 } = await bakeMacaroon({ url, httpsAgent, macaroon: adminMacaroonHex }, [
-    {
-      entity: 'signer',
-      action: 'generate',
-    },
-  ]);
-
-  const signerMacaroon = addIPCaveatToMacaroon(signerMacaroonBase64, watchOnlyIP);
-
-  if (!signerMacaroon) {
-    throw new Error('Failed to bake macaroon');
+  if (signerMacaroonHex === null || encryptedAdminMacaroonHex === null || watchOnlyInitWalletData === null) {
+    throw new Error('dummy');
   }
 }
