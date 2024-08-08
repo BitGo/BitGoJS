@@ -925,7 +925,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     } catch (e) {
       throw new Error('Failed to parse cyphertext to JSON, got: ' + cyphertext);
     }
-    if (cypherJson.adata !== adata) {
+    // using decodeURIComponent to handle special characters
+    if (decodeURIComponent(cypherJson.adata) !== decodeURIComponent(adata)) {
       throw new Error('Adata does not match cyphertext adata');
     }
   }
@@ -1034,7 +1035,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   }> {
     const { prv, walletPassphrase, txRequest } = params;
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
-    const adata = hashBuffer.toString('hex');
+    const adata = `${hashBuffer.toString('hex')}:${derivationPath}`;
 
     const userKeyShare = Buffer.from(prv, 'base64');
     const userGpgKey = await generateGPGKeyPair('secp256k1');
@@ -1070,7 +1071,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       params;
 
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
-    const adata = hashBuffer.toString('hex');
+    const adata = `${hashBuffer.toString('hex')}:${derivationPath}`;
     const { bitgoGpgKey, userGpgKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
       encryptedUserGpgPrvKey,
@@ -1137,7 +1138,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     assert(txRequest.transactions && txRequest.transactions.length === 1, 'Unable to find transactions in txRequest');
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
-    const adata = hashBuffer.toString('hex');
+    const adata = `${hashBuffer.toString('hex')}:${derivationPath}`;
 
     const { bitgoGpgKey, userGpgKey } = await this.getBitgoAndUserGpgKeys(
       bitgoPublicGpgKey,
