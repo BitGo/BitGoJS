@@ -217,6 +217,7 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     const recipients = utils.getRecipients(this.suiTransaction);
     const outputs: TransactionRecipient[] = recipients.map((recipient) => recipient);
     const outputAmountBN = recipients.reduce(
+      // amount can be greater than number range for SUI
       (accumulator, current) => accumulator.plus(current.amount),
       new BigNumber(0)
     );
