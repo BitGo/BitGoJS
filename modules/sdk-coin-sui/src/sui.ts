@@ -1,5 +1,4 @@
 import {
-  BaseBroadcastTransactionResult,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -28,7 +27,8 @@ import { KeyPair as SuiKeyPair, TransactionBuilderFactory, TransferBuilder, Tran
 import utils from './lib/utils';
 import * as _ from 'lodash';
 import {
-  BroadcastTransactionOptions,
+  SuiBroadcastTransactionOptions,
+  SuiBroadcastTransactionResult,
   SuiMPCRecoveryOptions,
   SuiMPCTx,
   SuiMPCTxs,
@@ -313,7 +313,7 @@ export class Sui extends BaseCoin {
    * @returns {MPCTx | MPCSweepTxs} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async recover(params: SuiMPCRecoveryOptions): Promise<SuiMPCTx | MPCSweepTxs> {
+  async recover(params: SuiMPCRecoveryOptions): Promise<SuiMPCTxs | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -401,10 +401,15 @@ export class Sui extends BaseCoin {
       await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey);
       const tx = (await txBuilder.build()) as TransferTransaction;
       return {
-        scanIndex: idx,
-        recoveryAmount: netAmount.toString(),
-        serializedTx: tx.toBroadcastFormat(),
-        signature: Buffer.from(tx.serializedSig).toString('base64'),
+        transactions: [
+          {
+            scanIndex: idx,
+            recoveryAmount: netAmount.toString(),
+            serializedTx: tx.toBroadcastFormat(),
+            signature: Buffer.from(tx.serializedSig).toString('base64'),
+          },
+        ],
+        lastScanIndex: idx,
       };
     }
 
@@ -524,16 +529,18 @@ export class Sui extends BaseCoin {
     txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
   }
 
-  async broadcastTransaction({
-    serializedSignedTransaction,
-    signature,
-  }: BroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
-    try {
-      const url = this.getPublicNodeUrl();
-      return await utils.executeTransactionBlock(url, serializedSignedTransaction, [signature]);
-    } catch (e) {
-      throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+  async broadcastTransaction({ transactions }: SuiBroadcastTransactionOptions): Promise<SuiBroadcastTransactionResult> {
+    const txIds: string[] = [];
+    for (const txn of transactions) {
+      try {
+        const url = this.getPublicNodeUrl();
+        const digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+        txIds.push(digest);
+      } catch (e) {
+        throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+      }
     }
+    return { txIds };
   }
 
   /** inherited doc */
@@ -574,11 +581,13 @@ export class Sui extends BaseCoin {
       txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
       const signedTransaction = (await txBuilder.build()) as TransferTransaction;
       const serializedTx = signedTransaction.toBroadcastFormat();
+      const outputAmount = signedTransaction.explainTransaction().outputAmount;
 
       broadcastableTransactions.push({
         serializedTx: serializedTx,
         scanIndex: transaction.scanIndex,
         signature: Buffer.from(signedTransaction.serializedSig).toString('base64'),
+        recoveryAmount: outputAmount.toString(),
       });
 
       if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
