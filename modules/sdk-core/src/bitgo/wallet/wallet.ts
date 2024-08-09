@@ -93,7 +93,7 @@ import {
   WalletType,
 } from './iWallet';
 import { StakingWallet } from '../staking';
-import { Lightning } from '../lightning';
+import { Lightning } from '../lightning/custodial';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';

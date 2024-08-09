@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import * as request from 'superagent';
 import { DecodedLnurlPayRequest, LnurlPayParams, LnurlPayResponse } from './iLightning';
 import { decodeLnurl } from './lnurlCodec';
-import { decodeOrElse } from '../utils/decode';
+import { decodeOrElse } from '../../utils/decode';
 
 export type ParsedLightningInvoice = {
   /**
