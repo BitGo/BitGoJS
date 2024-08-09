@@ -16,6 +16,7 @@ export * from './internal';
 export * from './keychain';
 export * as bitcoin from './legacyBitcoin';
 export * from './lightning';
+export * from './lightning/custodial';
 export * from './market';
 export * from './pendingApproval';
 export * from './recovery';

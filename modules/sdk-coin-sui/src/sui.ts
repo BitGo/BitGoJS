@@ -1,4 +1,5 @@
 import {
+  BaseBroadcastTransactionResult,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -28,7 +29,6 @@ import utils from './lib/utils';
 import * as _ from 'lodash';
 import {
   SuiBroadcastTransactionOptions,
-  SuiBroadcastTransactionResult,
   SuiMPCRecoveryOptions,
   SuiMPCTx,
   SuiMPCTxs,
@@ -529,7 +529,9 @@ export class Sui extends BaseCoin {
     txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
   }
 
-  async broadcastTransaction({ transactions }: SuiBroadcastTransactionOptions): Promise<SuiBroadcastTransactionResult> {
+  async broadcastTransaction({
+    transactions,
+  }: SuiBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
     const txIds: string[] = [];
     for (const txn of transactions) {
       try {

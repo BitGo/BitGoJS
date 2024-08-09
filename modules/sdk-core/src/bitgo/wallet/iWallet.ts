@@ -28,7 +28,7 @@ import {
   TokenEnablement,
   TokenTransferRecipientParams,
 } from '../utils';
-import { ILightning } from '../lightning';
+import { ILightning } from '../lightning/custodial';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IAddressBook } from '../address-book';
 import { WalletUser } from '@bitgo/public-types';

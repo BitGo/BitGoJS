@@ -15,7 +15,7 @@ export function verifyMessageSignature(
   message: Signable,
   signature: string,
   pub: string,
-  network: utxolib.Network = utxolib.networks.bitcoin
+  network: utxolib.Network
 ): boolean {
   const messageString = JSON.stringify(canonicalizeObject(message));
   const pubKey = utxolib.bip32.fromBase58(pub, network).publicKey;
@@ -31,11 +31,7 @@ export function verifyMessageSignature(
  * @param {utxolib.Network} network - The network to use for signing.
  * @returns {string} - Returns the signature in hexadecimal format.
  */
-export function createMessageSignature(
-  message: Signable,
-  prv: string,
-  network: utxolib.Network = utxolib.networks.bitcoin
-): string {
+export function createMessageSignature(message: Signable, prv: string, network: utxolib.Network): string {
   const requestString = JSON.stringify(canonicalizeObject(message));
   const prvKey = utxolib.bip32.fromBase58(prv, network);
   return signMessage(requestString, prvKey, network).toString('hex');
