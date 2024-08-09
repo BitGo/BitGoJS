@@ -349,11 +349,7 @@ export class Sui extends BaseCoin {
       } catch (e) {
         continue;
       }
-      if (availableBalance.toNumber() <= 0) {
-        continue;
-      }
-      let netAmount = availableBalance.minus(MAX_GAS_BUDGET);
-      if (netAmount.toNumber() <= 0) {
+      if (availableBalance.minus(MAX_GAS_BUDGET).toNumber() <= 0) {
         continue;
       }
 
@@ -364,7 +360,7 @@ export class Sui extends BaseCoin {
       if (inputCoins.length > MAX_OBJECT_LIMIT) {
         inputCoins = inputCoins.slice(0, MAX_OBJECT_LIMIT);
       }
-      netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
+      let netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
       netAmount = netAmount.minus(MAX_GAS_BUDGET);
 
       const recipients = [
@@ -391,6 +387,13 @@ export class Sui extends BaseCoin {
       const tempTx = (await txBuilder.build()) as TransferTransaction;
       const feeEstimate = await this.getFeeEstimate(tempTx.toBroadcastFormat());
       const gasBudget = Math.trunc(feeEstimate.toNumber() * DEFAULT_GAS_OVERHEAD);
+
+      netAmount = netAmount.plus(MAX_GAS_BUDGET).minus(gasBudget);
+      if (netAmount.toNumber() <= 0) {
+        continue;
+      }
+      recipients[0].amount = netAmount.toString();
+      txBuilder.send(recipients);
       txBuilder.gasData({
         owner: senderAddress,
         price: DEFAULT_GAS_PRICE,
