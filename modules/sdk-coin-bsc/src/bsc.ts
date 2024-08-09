@@ -1,7 +1,6 @@
 import { BaseCoin, BitGoBase, common, MPCAlgorithm } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
-import { TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
 import { TransactionBuilder } from './lib';
 
 export class Bsc extends AbstractEthLikeNewCoins {
@@ -13,7 +12,7 @@ export class Bsc extends AbstractEthLikeNewCoins {
     return new Bsc(bitgo, staticsCoin);
   }
 
-  protected getTransactionBuilder(): EthTransactionBuilder {
+  protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 

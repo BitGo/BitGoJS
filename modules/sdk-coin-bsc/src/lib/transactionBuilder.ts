@@ -1,10 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { KeyPair, Transaction, TransactionBuilder as EthTransactionBuilder } from '@bitgo/sdk-coin-eth';
+import { TransactionBuilder as AbstractTransactionBuilder, Transaction } from '@bitgo/abstract-eth';
 import { getCommon } from './utils';
 import { TransferBuilder } from './transferBuilder';
 
-export class TransactionBuilder extends EthTransactionBuilder {
+export class TransactionBuilder extends AbstractTransactionBuilder {
   protected _transfer: TransferBuilder;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -22,10 +22,6 @@ export class TransactionBuilder extends EthTransactionBuilder {
       this._transfer = new TransferBuilder(data);
     }
     return this._transfer;
-  }
-
-  publicKey(key: string): void {
-    this._sourceKeyPair = new KeyPair({ pub: key });
   }
 
   protected getContractData(addresses: string[]): string {

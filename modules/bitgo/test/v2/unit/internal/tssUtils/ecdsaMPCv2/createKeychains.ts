@@ -374,16 +374,16 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       // Round 2 User
       let OVC1ToOVC2Round2Payload: OVC1ToOVC2Round2Payload;
       {
-        assert(bitgoToOVC1Round1Payload.wallet.state === 2, 'bitgoToOVC1Round1Payload.wallet.state should be 2');
+        assert(bitgoToOVC1Round1Payload.state === 2, 'bitgoToOVC1Round1Payload.state should be 2');
         const toUserRound1BroadcastMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [],
             broadcastMessages: [
-              bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.TWO].ovcMsg1,
-              bitgoToOVC1Round1Payload.wallet.platform.bitgoMsg1,
+              bitgoToOVC1Round1Payload.ovc[OVCIndexEnum.TWO].ovcMsg1,
+              bitgoToOVC1Round1Payload.platform.bitgoMsg1,
             ],
           },
-          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round1Payload.ovc[OVCIndexEnum.TWO].gpgPubKey }],
           [userGpgPrvKey]
         );
 
@@ -393,7 +393,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         });
         const userRound2Messages = await DklsComms.encryptAndAuthOutgoingMessages(
           DklsTypes.serializeMessages(userRound2P2PMessages),
-          [{ partyId: 1, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }, bitgoGpgPubKey],
+          [{ partyId: 1, gpgKey: bitgoToOVC1Round1Payload.ovc[OVCIndexEnum.TWO].gpgPubKey }, bitgoGpgPubKey],
           [userGpgPrvKey]
         );
         const userToBackupMsg2 = userRound2Messages.p2pMessages.find(
@@ -406,11 +406,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         assert(userToBitgoMsg2, 'userToBitgoMsg2 not found');
 
         OVC1ToOVC2Round2Payload = {
-          ...bitgoToOVC1Round1Payload.wallet,
+          ...bitgoToOVC1Round1Payload,
           state: KeyCreationMPCv2StateEnum.WaitingForOVC2Round2Data,
           ovc: {
-            ...bitgoToOVC1Round1Payload.wallet.ovc,
-            [OVCIndexEnum.ONE]: Object.assign(bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.ONE], {
+            ...bitgoToOVC1Round1Payload.ovc,
+            [OVCIndexEnum.ONE]: Object.assign(bitgoToOVC1Round1Payload.ovc[OVCIndexEnum.ONE], {
               ovcToBitgoMsg2: userToBitgoMsg2,
               ovcToOvcMsg2: userToBackupMsg2,
             }) as any,
@@ -422,13 +422,13 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       let OVC2ToBitgoRound2Payload: OVC2ToBitgoRound2Payload;
 
       {
-        assert(OVC1ToOVC2Round2Payload.state === 3, 'bitgoToOVC1Round1Payload.wallet.state should be 3');
+        assert(OVC1ToOVC2Round2Payload.state === 3, 'bitgoToOVC1Round1Payload.state should be 3');
         const toBackupRound1BroadcastMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [],
             broadcastMessages: [
-              bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.ONE].ovcMsg1,
-              bitgoToOVC1Round1Payload.wallet.platform.bitgoMsg1,
+              bitgoToOVC1Round1Payload.ovc[OVCIndexEnum.ONE].ovcMsg1,
+              bitgoToOVC1Round1Payload.platform.bitgoMsg1,
             ],
           },
           [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round2Payload.ovc[OVCIndexEnum.ONE].gpgPubKey }],
@@ -443,7 +443,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         });
         const backupRound2Messages = await DklsComms.encryptAndAuthOutgoingMessages(
           DklsTypes.serializeMessages(backupRound2P2PMessages),
-          [{ partyId: 0, gpgKey: bitgoToOVC1Round1Payload.wallet.ovc[OVCIndexEnum.ONE].gpgPubKey }, bitgoGpgPubKey],
+          [{ partyId: 0, gpgKey: bitgoToOVC1Round1Payload.ovc[OVCIndexEnum.ONE].gpgPubKey }, bitgoGpgPubKey],
           [backupGpgPrvKey]
         );
         const backupToUserMsg2 = backupRound2Messages.p2pMessages.find(
@@ -475,16 +475,16 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       // Round 3A User
       let OVC1ToOVC2Round3Payload: OVC1ToOVC2Round3Payload;
       {
-        assert(bitgoToOVC1Round2Payload.wallet.state === 5, 'bitgoToOVC1Round2Payload.wallet.state should be 5');
+        assert(bitgoToOVC1Round2Payload.state === 5, 'bitgoToOVC1Round2Payload.state should be 5');
         const toUserRound2P2PMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [
-              bitgoToOVC1Round2Payload.wallet.ovc[OVCIndexEnum.TWO].ovcToOvcMsg2,
-              bitgoToOVC1Round2Payload.wallet.platform.ovc[OVCIndexEnum.ONE].bitgoToOvcMsg2,
+              bitgoToOVC1Round2Payload.ovc[OVCIndexEnum.TWO].ovcToOvcMsg2,
+              bitgoToOVC1Round2Payload.platform.ovc[OVCIndexEnum.ONE].bitgoToOvcMsg2,
             ],
             broadcastMessages: [],
           },
-          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round2Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round2Payload.ovc[OVCIndexEnum.TWO].gpgPubKey }],
           [userGpgPrvKey]
         );
         const userRound3AP2PMessages = userSession.handleIncomingMessages({
@@ -497,7 +497,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
             p2pMessages: userRound3AP2PMessages,
             broadcastMessages: [],
           }),
-          [{ partyId: 1, gpgKey: bitgoToOVC1Round2Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }, bitgoGpgPubKey],
+          [{ partyId: 1, gpgKey: bitgoToOVC1Round2Payload.ovc[OVCIndexEnum.TWO].gpgPubKey }, bitgoGpgPubKey],
           [userGpgPrvKey]
         );
 
@@ -511,11 +511,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         assert(userToBackupMsg3, 'userToBackupMsg3 not found');
 
         OVC1ToOVC2Round3Payload = {
-          ...bitgoToOVC1Round2Payload.wallet,
+          ...bitgoToOVC1Round2Payload,
           state: KeyCreationMPCv2StateEnum.WaitingForOVC2Round3Data,
           ovc: {
-            ...bitgoToOVC1Round2Payload.wallet.ovc,
-            [OVCIndexEnum.ONE]: Object.assign(bitgoToOVC1Round2Payload.wallet.ovc[OVCIndexEnum.ONE], {
+            ...bitgoToOVC1Round2Payload.ovc,
+            [OVCIndexEnum.ONE]: Object.assign(bitgoToOVC1Round2Payload.ovc[OVCIndexEnum.ONE], {
               ovcToBitgoMsg3: userToBitgoMsg3,
               ovcToOvcMsg3: userToBackupMsg3,
             }) as any,
@@ -670,17 +670,17 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       let userCommonKeychain: string;
       let OVC1ToOVC2Round4Payload;
       {
-        assert(bitgoToOVC1Round3Payload.wallet.state === 9, 'bitgoToOVC1Round3Payload.wallet.state should be 9');
+        assert(bitgoToOVC1Round3Payload.state === 9, 'bitgoToOVC1Round3Payload.state should be 9');
         assert(bitgoToOVC1Round3Payload.bitGoKeyId, 'bitgoToOVC1Round3Payload.bitGoKeyId not found');
         const toUserBitgoRound3Msg = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [],
             broadcastMessages: [
-              bitgoToOVC1Round3Payload.wallet.ovc[OVCIndexEnum.TWO].ovcMsg4,
-              bitgoToOVC1Round3Payload.wallet.platform.bitgoMsg4,
+              bitgoToOVC1Round3Payload.ovc[OVCIndexEnum.TWO].ovcMsg4,
+              bitgoToOVC1Round3Payload.platform.bitgoMsg4,
             ],
           },
-          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round3Payload.wallet.ovc[OVCIndexEnum.TWO].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 1, gpgKey: bitgoToOVC1Round3Payload.ovc[OVCIndexEnum.TWO].gpgPubKey }],
           [userGpgPrvKey]
         );
 
@@ -692,7 +692,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         const userPrivateMaterial = userSession.getKeyShare();
         userCommonKeychain = DklsTypes.getCommonKeychain(userPrivateMaterial);
         assert.equal(
-          bitgoToOVC1Round3Payload.wallet.platform.commonKeychain,
+          bitgoToOVC1Round3Payload.platform.commonKeychain,
           userCommonKeychain,
           'User and Bitgo Common keychains do not match'
         );
@@ -701,28 +701,26 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
         OVC1ToOVC2Round4Payload = {
           bitgoKeyId: bitgoToOVC1Round3Payload.bitGoKeyId,
-          wallet: {
-            ...bitgoToOVC1Round3Payload.wallet,
-            state: KeyCreationMPCv2StateEnum.WaitingForOVC2GenerateKey,
-          },
+          ...bitgoToOVC1Round3Payload,
+          state: KeyCreationMPCv2StateEnum.WaitingForOVC2GenerateKey,
         };
       }
 
       // Round 4 Backup
       let backupCommonKeychain: string;
       {
-        assert(OVC1ToOVC2Round4Payload.wallet.state === 10, 'OVC1ToOVC2Round4Payload.wallet.state should be 10');
+        assert(OVC1ToOVC2Round4Payload.state === 10, 'OVC1ToOVC2Round4Payload.state should be 10');
         assert(OVC1ToOVC2Round4Payload.bitgoKeyId, 'OVC1ToOVC2Round4Payload.bitGoKeyId not found');
 
         const toBackupBitgoRound3Msg = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [],
             broadcastMessages: [
-              OVC1ToOVC2Round4Payload.wallet.ovc[OVCIndexEnum.ONE].ovcMsg4,
-              OVC1ToOVC2Round4Payload.wallet.platform.bitgoMsg4,
+              OVC1ToOVC2Round4Payload.ovc[OVCIndexEnum.ONE].ovcMsg4,
+              OVC1ToOVC2Round4Payload.platform.bitgoMsg4,
             ],
           },
-          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round4Payload.wallet.ovc[OVCIndexEnum.ONE].gpgPubKey }],
+          [bitgoGpgPubKey, { partyId: 0, gpgKey: OVC1ToOVC2Round4Payload.ovc[OVCIndexEnum.ONE].gpgPubKey }],
           [backupGpgPrvKey]
         );
 
@@ -734,7 +732,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         const backupPrivateMaterial = backupSession.getKeyShare();
         backupCommonKeychain = DklsTypes.getCommonKeychain(backupPrivateMaterial);
         assert.equal(
-          OVC1ToOVC2Round4Payload.wallet.platform.commonKeychain,
+          OVC1ToOVC2Round4Payload.platform.commonKeychain,
           backupCommonKeychain,
           'Backup and Bitgo Common keychains do not match'
         );

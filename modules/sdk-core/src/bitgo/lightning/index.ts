@@ -1,6 +1,3 @@
-export * from './iLightning';
-export * from './lightning';
-export * from './lnurlCodec';
-export * from './lightningUtils';
 export * from './signableJson';
 export * from './signature';
+export * from './lightningUtils';

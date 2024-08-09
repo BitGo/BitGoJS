@@ -453,6 +453,7 @@ export interface BaseBroadcastTransactionOptions {
 
 export interface BaseBroadcastTransactionResult {
   txId?: string;
+  txIds?: string[];
 }
 
 export interface IBaseCoin {
