@@ -12191,6 +12191,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BTT
   ),
   tronToken(
+    'd8d505d2-f525-4922-b538-317b879bd316',
+    'trx:btc',
+    'Bitcoin',
+    8,
+    'TN3W4H6rK2ce4vX9YnFQHwKENnHjoxb3m9',
+    UnderlyingAsset.BTC
+  ),
+  tronToken(
     '85d99eb6-84a1-4525-a9df-db82bcc21568',
     'trx:wbtc',
     'Tron Wrapped Bitcoin',
