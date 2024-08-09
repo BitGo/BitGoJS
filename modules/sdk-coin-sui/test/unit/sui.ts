@@ -643,17 +643,17 @@ describe('SUI:', function () {
 
   describe('Recover Consolidation Transactions', () => {
     const sandBox = sinon.createSandbox();
-    const senderAddress1 = '0x32d8e57ee6d91e5558da0677154c2f085795348e317f95acc9efade1b4112fcc';
-    const senderAddress2 = '0xdf407e3e25e9400f9779ac7571537c2361684194f1aa5db126a8f574b5ed851c';
+    const receiveAddress1 = '0x32d8e57ee6d91e5558da0677154c2f085795348e317f95acc9efade1b4112fcc';
+    const receiveAddress2 = '0xdf407e3e25e9400f9779ac7571537c2361684194f1aa5db126a8f574b5ed851c';
     const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
 
     beforeEach(function () {
       let callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
-      callBack.withArgs(senderAddress1).resolves('200101976').withArgs(senderAddress2).resolves('200000000');
+      callBack.withArgs(receiveAddress1).resolves('200101976').withArgs(receiveAddress2).resolves('200000000');
 
       callBack = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
       callBack
-        .withArgs(senderAddress1)
+        .withArgs(receiveAddress1)
         .resolves([
           {
             coinType: '0x2::sui::SUI',
@@ -670,7 +670,7 @@ describe('SUI:', function () {
             balance: new BigNumber('101976'),
           },
         ])
-        .withArgs(senderAddress2)
+        .withArgs(receiveAddress2)
         .resolves([
           {
             coinType: '0x2::sui::SUI',
@@ -1105,10 +1105,11 @@ describe('SUI:', function () {
           bitgoKey: keys.bitgoKey,
           recoveryDestination,
           walletPassphrase,
+          startingScanIndex: '0',
+          scan: '1',
         })
         .should.rejectedWith(
-          `Found address ${senderAddress0} with non-zero fund but fund is insufficient to support a recovery ` +
-            `transaction. Please start the next scan at address index 1.`
+          'Did not find an address with sufficient funds to recover. Please start the next scan at address index 1.'
         );
 
       sandBox.assert.callCount(basecoin.getBalance, 1);
@@ -1118,7 +1119,7 @@ describe('SUI:', function () {
       const callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
       callBack.resolves('0');
 
-      const numIterations = 10;
+      const numIterations = '10';
       await basecoin
         .recover({
           userKey: keys.userKey,
@@ -1128,9 +1129,37 @@ describe('SUI:', function () {
           walletPassphrase,
           scan: numIterations,
         })
-        .should.rejectedWith('Did not find an address with funds to recover');
+        .should.rejectedWith(
+          'Did not find an address with sufficient funds to recover. Please start the next scan at address index 10.'
+        );
 
-      sandBox.assert.callCount(basecoin.getBalance, numIterations);
+      sandBox.assert.callCount(basecoin.getBalance, 10);
+    });
+  });
+
+  describe('Consolidation Transaction Failures:', () => {
+    it('should fail due to insufficient funds in receive address', async function () {
+      const sandBox = sinon.createSandbox();
+      const receiveAddress1 = '0x32d8e57ee6d91e5558da0677154c2f085795348e317f95acc9efade1b4112fcc';
+      const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
+
+      const callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
+      callBack.withArgs(receiveAddress1).resolves('1');
+
+      await basecoin
+        .recoverConsolidations({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          walletPassphrase,
+          startingScanIndex: '1',
+          endingScanIndex: '2',
+        })
+        .should.rejectedWith(
+          'Did not find an address with sufficient funds to recover. Please start the next scan at address index 2.'
+        );
+
+      sandBox.assert.callCount(basecoin.getBalance, 1);
     });
   });
 });

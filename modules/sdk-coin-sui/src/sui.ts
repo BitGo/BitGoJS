@@ -354,10 +354,7 @@ export class Sui extends BaseCoin {
       }
       let netAmount = availableBalance.minus(MAX_GAS_BUDGET);
       if (netAmount.toNumber() <= 0) {
-        throw new Error(
-          `Found address ${senderAddress} with non-zero fund but fund is insufficient to support a recovery ` +
-            `transaction. Please start the next scan at address index ${idx + 1}.`
-        );
+        continue;
       }
 
       let inputCoins = await this.getInputCoins(senderAddress);
@@ -420,7 +417,9 @@ export class Sui extends BaseCoin {
       };
     }
 
-    throw new Error('Did not find an address with funds to recover');
+    throw new Error(
+      `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${endIdx}.`
+    );
   }
 
   private async buildUnsignedSweepTransaction(
@@ -615,8 +614,16 @@ export class Sui extends BaseCoin {
    */
   async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<SuiMPCTxs | MPCSweepTxs> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
-    const startIdx = params.startingScanIndex || 1;
-    const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
+    const startIdx = utils.validateNonNegativeNumber(
+      1,
+      'Invalid starting index to scan for addresses',
+      params.startingScanIndex
+    );
+    const endIdx = utils.validateNonNegativeNumber(
+      startIdx + DEFAULT_SCAN_FACTOR,
+      'Invalid ending index to scan for addresses',
+      params.endingScanIndex
+    );
 
     if (startIdx < 1 || endIdx <= startIdx || endIdx - startIdx > 10 * DEFAULT_SCAN_FACTOR) {
       throw new Error(
@@ -647,7 +654,7 @@ export class Sui extends BaseCoin {
       try {
         recoveryTransaction = await this.recover(recoverParams);
       } catch (e) {
-        if (e.message === 'Did not find an address with funds to recover') {
+        if (e.message.startsWith('Did not find an address with sufficient funds to recover.')) {
           lastScanIndex = idx;
           continue;
         }
@@ -663,7 +670,11 @@ export class Sui extends BaseCoin {
     }
 
     if (consolidationTransactions.length === 0) {
-      throw new Error('Did not find an address with funds to recover');
+      throw new Error(
+        `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${
+          lastScanIndex + 1
+        }.`
+      );
     }
 
     if (isUnsignedSweep) {

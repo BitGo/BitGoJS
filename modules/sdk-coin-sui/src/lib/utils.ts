@@ -465,16 +465,16 @@ export class Utils implements BaseUtils {
     if (inputVal === undefined) {
       return defaultVal;
     }
-    let val: number;
+    let nonNegativeNum: number;
     try {
-      val = Number(inputVal);
+      nonNegativeNum = Number(inputVal);
     } catch (e) {
       throw new Error(errorMsg);
     }
-    if (isNaN(val.valueOf()) || val < 0) {
+    if (isNaN(nonNegativeNum.valueOf()) || nonNegativeNum < 0) {
       throw new Error(errorMsg);
     }
-    return inputVal;
+    return nonNegativeNum;
   }
 }
 
