@@ -1,5 +1,6 @@
 import {
   BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
   MPCRecoveryOptions,
   MPCTx,
   TransactionExplanation as BaseTransactionExplanation,
@@ -144,6 +145,15 @@ export interface SuiMPCTx extends MPCTx {
   signature?: string;
 }
 
-export interface BroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
-  signature: string;
+export interface SuiMPCTxs {
+  transactions: SuiMPCTx[];
+  lastScanIndex: number;
+}
+
+export interface SuiBroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
+  transactions: SuiMPCTx[];
+}
+
+export interface SuiBroadcastTransactionResult extends BaseBroadcastTransactionResult {
+  txIds?: string[];
 }

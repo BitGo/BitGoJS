@@ -47,7 +47,7 @@ describe('Sui Transfer Transaction', () => {
             amount: testData.recipients[1].amount,
           },
         ],
-        outputAmount: testData.AMOUNT * 2,
+        outputAmount: `${testData.AMOUNT * 2}`,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: testData.gasData.budget.toString() },

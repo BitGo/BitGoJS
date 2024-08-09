@@ -16,6 +16,7 @@ import { CallArg, SuiObjectRef, normalizeSuiAddress } from './mystenlab/types';
 import utils from './utils';
 import { builder, Inputs, TransactionBlockInput } from './mystenlab/builder';
 import { BCS } from '@mysten/bcs';
+import BigNumber from 'bignumber.js';
 
 export class TransferTransaction extends Transaction<TransferProgrammableTransaction> {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -215,7 +216,12 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
   explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
     const recipients = utils.getRecipients(this.suiTransaction);
     const outputs: TransactionRecipient[] = recipients.map((recipient) => recipient);
-    const outputAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    const outputAmountBN = recipients.reduce(
+      // amount can be greater than number range for SUI
+      (accumulator, current) => accumulator.plus(current.amount),
+      new BigNumber(0)
+    );
+    const outputAmount = outputAmountBN.toString();
 
     return {
       ...explanationResult,
