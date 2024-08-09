@@ -18,9 +18,9 @@ import {
   GetPaymentsResponse,
 } from './iLightning';
 import { decodeLnurlPay, fetchLnurlPayInvoice } from './lightningUtils';
-import { BitGoBase } from '../bitgoBase';
-import { IWallet } from '../wallet';
-import { decodeOrElse } from '../utils/decode';
+import { BitGoBase } from '../../bitgoBase';
+import { IWallet } from '../../wallet';
+import { decodeOrElse } from '../../utils/decode';
 import { randomBytes } from 'crypto';
 
 export class Lightning implements ILightning {
