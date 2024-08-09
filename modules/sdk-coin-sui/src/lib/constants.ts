@@ -28,3 +28,5 @@ export const DEFAULT_GAS_OVERHEAD = 1.1;
  * we chose 1280 as the object limit, keeping in mind other things like multiple recipients etc.
  */
 export const MAX_OBJECT_LIMIT = 1280;
+
+export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
