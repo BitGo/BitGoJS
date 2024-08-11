@@ -1,37 +1,15 @@
 import 'should';
-
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { ZkethToken } from '../../src';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import * as testData from '../resources';
+import { runTokenTestInitialization } from '@bitgo/abstract-eth';
 
-describe('Zketh Token:', function () {
-  let bitgo: TestBitGoAPI;
-  let zkethTokenCoin;
-  const tokenName = 'tzketh:link';
+describe('Zketh Token Tests', () => {
+  const coinName = 'Zketh';
+  const tokenNetworkName = 'zkSync Test LINK';
 
-  before(function () {
-    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
-    ZkethToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
-      bitgo.safeRegister(name, coinConstructor);
+  describe('Zketh tokens in test env:', () => {
+    it('Zketh run token tests', () => {
+      runTokenTestInitialization(ZkethToken, coinName, tokenNetworkName, testData);
     });
-    bitgo.initializeTestVars();
-    zkethTokenCoin = bitgo.coin(tokenName);
-  });
-
-  it('should return constants', function () {
-    zkethTokenCoin.getChain().should.equal('tzketh:link');
-    zkethTokenCoin.getBaseChain().should.equal('tzketh');
-    zkethTokenCoin.getFullName().should.equal('Zketh Token');
-    zkethTokenCoin.getBaseFactor().should.equal(1e18);
-    zkethTokenCoin.type.should.equal(tokenName);
-    zkethTokenCoin.name.should.equal('zkSync Test LINK');
-    zkethTokenCoin.coin.should.equal('tzketh');
-    zkethTokenCoin.network.should.equal('Testnet');
-    zkethTokenCoin.decimalPlaces.should.equal(18);
-  });
-
-  it('should return same token by contract address', function () {
-    const tokencoinBycontractAddress = bitgo.coin(zkethTokenCoin.tokenContractAddress);
-    zkethTokenCoin.should.deepEqual(tokencoinBycontractAddress);
   });
 });

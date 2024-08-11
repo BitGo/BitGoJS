@@ -1,14 +1,24 @@
-import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from '../../../src';
 import * as testData from '../../resources';
 import { getBuilder } from '../../getBuilder';
 import { coins } from '@bitgo/statics';
+import {
+  testInitTransaction,
+  testSignedInitTransaction,
+  testWalletInitTransaction,
+  testUnsignedInitTransaction,
+  testUnsignedInitTransactionFromSerialized,
+  testFinalVCheck,
+  testRecoveryWalletDeployment,
+  testRecoveryTransactionWithoutData,
+} from '@bitgo/abstract-eth';
 
 describe('Polygon wallet initialization', function () {
   let txBuilder: TransactionBuilder;
+  const coin = testData.COIN;
   const initTxBuilder = (): void => {
-    txBuilder = new TransactionBuilder(coins.get('tpolygon'));
+    txBuilder = new TransactionBuilder(coins.get(coin));
     txBuilder.fee({
       fee: '10000000000',
       gasLimit: '6800000',
@@ -23,123 +33,44 @@ describe('Polygon wallet initialization', function () {
   describe('should build', () => {
     it('an init transaction', async () => {
       initTxBuilder();
-
-      txBuilder.owner('0xe6c43626f11312de29b0011fa9da71ea3bba0e9f');
-      txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
-      txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
-      txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
-
-      const tx = await txBuilder.build();
-
-      tx.type.should.equal(TransactionType.WalletInitialization);
-      const txJson = tx.toJson();
-      txJson.gasLimit.should.equal('6800000');
-      txJson.gasPrice.should.equal('10000000000');
-      should.equal(txJson.nonce, 1);
-      should.equal(txJson.chainId, '0x13882');
-      should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
+      await testInitTransaction(txBuilder, testData);
     });
 
     it('a signed init transaction from serialized', async () => {
-      const newTxBuilder = new TransactionBuilder(coins.get('tpolygon'));
-      newTxBuilder.from(testData.TX_BROADCAST);
-      const newTx = await newTxBuilder.build();
-      should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0x9c955e671f05f8e4e909757675f535bdbcdb95cc66fbb4e897146dec20383303');
-      const txJson = newTx.toJson();
-      should.exist(txJson.v);
-      should.exist(txJson.r);
-      should.exist(txJson.s);
-      should.exist(txJson.from);
+      const newTxBuilder = new TransactionBuilder(coins.get(coin));
+      await testSignedInitTransaction(newTxBuilder, testData);
     });
 
     it('a wallet initialization transaction with nonce 0', async () => {
       initTxBuilder();
-      txBuilder.counter(0);
-      txBuilder.owner('0xe6c43626f11312de29b0011fa9da71ea3bba0e9f');
-      txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
-      txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
-      txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
-      const tx = await txBuilder.build();
-
-      tx.type.should.equal(TransactionType.WalletInitialization);
-      const txJson = tx.toJson();
-      txJson.gasLimit.should.equal('6800000');
-      txJson.gasPrice.should.equal('10000000000');
-      should.equal(txJson.nonce, 0);
-      should.equal(txJson.chainId, '0x13882');
+      await testWalletInitTransaction(txBuilder, testData);
     });
 
     it('an unsigned init transaction from serialized with 0-prefixed address', async () => {
       initTxBuilder();
-      txBuilder.owner('0xe6c43626f11312de29b0011fa9da71ea3bba0e9f');
-      txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
-      txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
-      const tx = await txBuilder.build();
-      const serialized = tx.toBroadcastFormat();
-
-      const newTxBuilder = new TransactionBuilder(coins.get('tpolygon'));
-      newTxBuilder.from(serialized);
-      const newTx = await newTxBuilder.build();
-      should.equal(newTx.toBroadcastFormat(), serialized);
+      const newTxBuilder = new TransactionBuilder(coins.get(coin));
+      await testUnsignedInitTransaction(txBuilder, newTxBuilder, testData);
     });
 
     it('an unsigned init transaction from serialized', async () => {
       initTxBuilder();
-      txBuilder.owner('0xe6c43626f11312de29b0011fa9da71ea3bba0e9f');
-      txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
-      txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
-      const tx = await txBuilder.build();
-      const serialized = tx.toBroadcastFormat();
-
-      const newTxBuilder = new TransactionBuilder(coins.get('tpolygon'));
-      newTxBuilder.from(serialized);
-      const newTx = await newTxBuilder.build();
-      should.equal(newTx.toBroadcastFormat(), serialized);
+      const newTxBuilder = new TransactionBuilder(coins.get(coin));
+      await testUnsignedInitTransactionFromSerialized(txBuilder, newTxBuilder, testData);
     });
 
     it('an unsigned transaction with final v check', async () => {
       initTxBuilder();
-      txBuilder.owner('0xe6c43626f11312de29b0011fa9da71ea3bba0e9f');
-      txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
-      txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
-      const tx = await txBuilder.build();
-      should.equal(tx.toJson().v, '0x027127');
+      await testFinalVCheck(txBuilder, testData);
     });
 
     it('wallet deployment transaction for recovery', async () => {
-      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
-      txBuilder.type(TransactionType.RecoveryWalletDeployment);
-      txBuilder.data(testData.RECOVERY_WALLET_BYTE_CODE);
-      txBuilder.fee({
-        eip1559: {
-          maxFeePerGas: '100',
-          maxPriorityFeePerGas: '10',
-        },
-        fee: '100',
-        gasLimit: '10000',
-      });
-      txBuilder.counter(1);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      should.equal(txJson._type, 'EIP1559');
-      should.equal(txJson.gasLimit, '10000');
-      should.exists(tx.toBroadcastFormat());
+      const txBuilder = getBuilder(coin) as TransactionBuilder;
+      await testRecoveryWalletDeployment(txBuilder, testData);
     });
 
     it('fail when data is not passed recovery', async () => {
-      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
-      txBuilder.type(TransactionType.RecoveryWalletDeployment);
-      txBuilder.fee({
-        eip1559: {
-          maxFeePerGas: '100',
-          maxPriorityFeePerGas: '10',
-        },
-        fee: '100',
-        gasLimit: '10000',
-      });
-      txBuilder.counter(1);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract call data field');
+      const txBuilder = getBuilder(coin) as TransactionBuilder;
+      await testRecoveryTransactionWithoutData(txBuilder);
     });
   });
 });

@@ -33,6 +33,7 @@ module.exports = {
       url: require.resolve('url/'),
       vm: false,
       zlib: false,
+      timers: false,
       async: require.resolve('async'),
     },
   },
