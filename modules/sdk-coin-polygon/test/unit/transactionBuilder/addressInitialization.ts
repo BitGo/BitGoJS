@@ -3,21 +3,28 @@ import { TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from '../../../src';
 import * as testData from '../../resources';
 import { getBuilder } from '../../getBuilder';
+import {
+  testAddressInitializationBuildsFromSerializedData,
+  testAddressInitializationBuildsFromSignedSerializedData,
+  testAddressInitializationWithoutContractAddress,
+  testContractCallForCreateForwarder,
+  testFailsWithInvalidForwarderVersion,
+} from '@bitgo/abstract-eth';
 
-describe('Eth address initialization', () => {
+describe('Polygon address initialization', () => {
+  const coin = testData.COIN;
   it('should fail if there is no contract address', async () => {
-    const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
-    txBuilder.type(TransactionType.AddressInitialization);
-    txBuilder.fee({
-      fee: '10',
-      gasLimit: '1000',
-    });
-    txBuilder.counter(1);
-    await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
+    const txBuilder = getBuilder(coin) as TransactionBuilder;
+    await testAddressInitializationWithoutContractAddress(txBuilder);
+  });
+
+  it('should fail if forwarder version is invalid', async () => {
+    const txBuilder = getBuilder(coin) as TransactionBuilder;
+    await testFailsWithInvalidForwarderVersion(txBuilder, testData);
   });
 
   it('should build properly and return a correct address', async () => {
-    const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
+    const txBuilder = getBuilder(coin) as TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.fee({
       fee: '10',
@@ -32,40 +39,22 @@ describe('Eth address initialization', () => {
     txBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
-    should.equal(txJson.deployedAddress, '0xde4133877caa961ff30caf3373c5a2f9e9cd31b2');
+    should.equal(txJson.deployedAddress, testData.DEPLOYED_ADDRESS);
     should.equal(txJson.to, testData.FORWARDER_FACTORY_ADDRESS);
   });
 
   it('should build properly from serialized', async () => {
-    const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
-    txBuilder.type(TransactionType.AddressInitialization);
-    txBuilder.from(testData.UNSIGNED_ADDRESS_INIT);
-    const tx = await txBuilder.build();
-    const txJson = tx.toJson();
-    should.equal(txJson.to, testData.FORWARDER_FACTORY_ADDRESS);
+    const txBuilder = getBuilder(coin) as TransactionBuilder;
+    await testAddressInitializationBuildsFromSerializedData(txBuilder, testData);
   });
 
   it('should build properly from signed serialized', async () => {
-    const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
-    txBuilder.type(TransactionType.AddressInitialization);
-    txBuilder.from(testData.SIGNED_ADDRESS_INIT);
-    const tx = await txBuilder.build();
-    const txJson = tx.toJson();
-    should.equal(txJson.to, testData.FORWARDER_FACTORY_ADDRESS);
-    should.equal(txJson.from, '0xe6c43626f11312de29b0011fa9da71ea3bba0e9f');
+    const txBuilder = getBuilder(coin) as TransactionBuilder;
+    await testAddressInitializationBuildsFromSignedSerializedData(txBuilder, testData);
   });
 
   it('should build properly createForwarder call for recovery', async () => {
-    const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
-    txBuilder.type(TransactionType.ContractCall);
-    txBuilder.contract(testData.BASE_ADDRESS);
-    txBuilder.data(testData.CREATE_FORWARDER_METHOD);
-    txBuilder.fee({
-      fee: '10',
-      gasLimit: '1000',
-    });
-    const tx = await txBuilder.build();
-    const txJson = tx.toJson();
-    should.equal(txJson.to, testData.BASE_ADDRESS);
+    const txBuilder = getBuilder(coin) as TransactionBuilder;
+    await testContractCallForCreateForwarder(txBuilder, testData);
   });
 });

@@ -1,9 +1,8 @@
 import { TransactionType, BaseTransaction } from '@bitgo/sdk-core';
 import * as ethUtil from 'ethereumjs-util';
-import should from 'should';
-import { decodeTransferData } from '@bitgo/abstract-eth';
+import { decodeTransferData, testSendFundsTransaction } from '@bitgo/abstract-eth';
 import { getBuilder } from '../../getBuilder';
-import { TransactionBuilder, KeyPair } from '../../../src';
+import { TransactionBuilder } from '../../../src';
 import * as testData from '../../resources';
 import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils';
 
@@ -12,6 +11,7 @@ describe('Polygon transaction builder send', () => {
     let txBuilder;
     let key;
     let contractAddress;
+    const coin = testData.COIN;
 
     const getOperationHash = function (tx: BaseTransaction): string {
       const { data } = tx.toJson();
@@ -30,7 +30,7 @@ describe('Polygon transaction builder send', () => {
 
     beforeEach(() => {
       contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
-      txBuilder = getBuilder('tpolygon') as TransactionBuilder;
+      txBuilder = getBuilder(coin) as TransactionBuilder;
       key = testData.KEYPAIR_PRV.getKeys().prv as string;
       txBuilder.fee({
         fee: '1000000000',
@@ -55,36 +55,15 @@ describe('Polygon transaction builder send', () => {
         .key(key);
       txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
       const tx = await txBuilder.build();
-      should.equal(tx.toJson().chainId, 80002);
-      should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST_LEGACY);
-      should.equal(tx.signature.length, 2);
-      should.equal(tx.inputs.length, 1);
-      should.equal(tx.inputs[0].address, contractAddress);
-      should.equal(tx.inputs[0].value, amount);
-
-      should.equal(tx.outputs.length, 1);
-      should.equal(tx.outputs[0].address, recipient);
-      should.equal(tx.outputs[0].value, amount);
-
-      const data = tx.toJson().data;
-      const {
-        to,
-        amount: parsedAmount,
-        expireTime: parsedExpireTime,
-        sequenceId: parsedSequenceId,
-        signature,
-      } = decodeTransferData(data);
-
-      should.equal(to, recipient);
-      should.equal(parsedAmount, amount);
-      should.equal(parsedExpireTime, expireTime);
-      should.equal(parsedSequenceId, sequenceId);
       const operationHash = getOperationHash(tx);
-      const { v, r, s } = ethUtil.fromRpcSig(signature);
-      const senderPubKey = ethUtil.ecrecover(Buffer.from(ethUtil.stripHexPrefix(operationHash), 'hex'), v, r, s);
-      const senderAddress = ethUtil.pubToAddress(senderPubKey);
-      const senderKey = new KeyPair({ prv: testData.PRIVATE_KEY_1 });
-      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+      const txParams = {
+        recipient,
+        amount,
+        contractAddress,
+        expireTime,
+        sequenceId,
+      };
+      await testSendFundsTransaction(tx, operationHash, txParams, testData);
     });
   });
 });

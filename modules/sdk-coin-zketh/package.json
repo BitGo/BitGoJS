@@ -48,7 +48,6 @@
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.51.3",
-    "@bitgo/sdk-test": "^8.0.34",
-    "secp256k1": "5.0.0"
+    "@bitgo/sdk-test": "^8.0.34"
   }
 }

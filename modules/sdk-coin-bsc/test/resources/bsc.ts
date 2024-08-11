@@ -10,3 +10,9 @@ export const TEST_ACCOUNT = {
     'xprv9s21ZrQH143K2MJE1yvV8UhjfLQcaDPPipMYvfYjrPbHLptLsnt1FbbCrCT9E5LCmRrS593YZ1CKgf3rf3C2hYTynZN5au3VvBvLcWh8sV2',
   ethAddress: '0x1374a2046661f914d1687d85dbbceb9ac7910a29',
 };
+
+export const COIN = 'tbsc';
+
+export const CHAIN_FULL_NAME = 'Binance Smart Chain';
+
+export const NETWORK_TOKEN_IDENTIFIER = 'tbsc:busd';

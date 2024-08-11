@@ -10,11 +10,13 @@ describe('Zketh send multi sig builder', function () {
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
   const key = new KeyPair({ prv: xprv }).getKeys().prv as string;
   const amount = '100000000000000000'; // equivalent to 0.1 ether
-  const coin = coins.get('tzketh') as unknown as EthLikeNetwork;
+  const coinName = testData.COIN;
+  const networkTokenIdentifier = testData.NETWORK_TOKEN_IDENTIFIER;
+  const coin = coins.get(coinName) as unknown as EthLikeNetwork;
   describe('should build', () => {
     it('native coin transfer should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tzketh')
+        .coin(coinName)
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -27,7 +29,7 @@ describe('Zketh send multi sig builder', function () {
 
     it('native coin transfer with sequenceId zero should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tzketh')
+        .coin(coinName)
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -40,7 +42,7 @@ describe('Zketh send multi sig builder', function () {
 
     it('native coin transfer with amount 0 should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tzketh')
+        .coin(coinName)
         .expirationTime(1590078260)
         .amount('0')
         .to(toAddress)
@@ -53,7 +55,7 @@ describe('Zketh send multi sig builder', function () {
 
     it('ERC20 token transfer should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tzketh:link')
+        .coin(networkTokenIdentifier)
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -65,7 +67,7 @@ describe('Zketh send multi sig builder', function () {
 
     it('erc20 transfer should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tzketh:link')
+        .coin(networkTokenIdentifier)
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -77,7 +79,7 @@ describe('Zketh send multi sig builder', function () {
 
     it('erc20 transfer with amount 0 should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('tzketh:link')
+        .coin(networkTokenIdentifier)
         .expirationTime(1590078260)
         .amount('0')
         .to(toAddress)
@@ -100,7 +102,7 @@ describe('Zketh send multi sig builder', function () {
 
     it('should build from a non signed serialized data', () => {
       const builder = new TransferBuilder(testData.SEND_FUNDS_NO_KEY_DATA);
-      builder.coin('tzketh').key(key);
+      builder.coin(coinName).key(key);
       const result = builder.signAndBuild(`${coin.chainId}`);
       should.equal(result, testData.SEND_FUNDS_DATA);
     });

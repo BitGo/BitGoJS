@@ -34,6 +34,7 @@ module.exports = {
       vm: false,
       zlib: false,
       async: require.resolve('async'),
+      timers: require.resolve('timers-browserify'),
     },
   },
   externals: ['morgan', 'proxy-agent', 'wasmer_wasi_js_bg.wasm'],
