@@ -47,6 +47,12 @@ export interface StakeOptions {
   clientId?: string;
   validator?: string;
   /**
+   * flag to indicate if the staking request is for restaking
+   *
+   * i.e: ETH restaking flow
+   */
+  isRestaking?: boolean;
+  /**
    * delegation duration: a numeric string, in days or cycles
    */
   duration?: string;
