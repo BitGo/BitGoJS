@@ -764,6 +764,23 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       assert.ok(round3Nock.isDone());
       assert.ok(addKeyNock.isDone());
     });
+
+    it('should throw for MPCv2 SMC utils if the state is invalid', async function () {
+      const MPCv2SMCUtils = new ECDSAUtils.MPCv2SMCUtils(bitgo, baseCoin);
+      const invalidPayload = {
+        state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round2Data,
+      } as any;
+
+      await assert.rejects(async () => await MPCv2SMCUtils.keyGenRound1('testId', invalidPayload), {
+        message: `Invalid state for round 1, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound1Data}, got: ${KeyCreationMPCv2StateEnum.WaitingForOVC1Round2Data}`,
+      });
+      await assert.rejects(async () => await MPCv2SMCUtils.keyGenRound2('testId', invalidPayload), {
+        message: `Invalid state for round 2, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound2Data}, got: ${KeyCreationMPCv2StateEnum.WaitingForOVC1Round2Data}`,
+      });
+      await assert.rejects(async () => await MPCv2SMCUtils.keyGenRound3('testId', invalidPayload), {
+        message: `Invalid state for round 3, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound3Data}, got: ${KeyCreationMPCv2StateEnum.WaitingForOVC1Round2Data}`,
+      });
+    });
   });
 
   async function nockKeychain(
