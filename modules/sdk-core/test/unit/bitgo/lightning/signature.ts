@@ -11,7 +11,7 @@ type Request = {
 };
 
 function getKey(seed: string): utxolib.BIP32Interface {
-  return utxolib.bip32.fromSeed(crypto.createHash('sha256').update(seed).digest(), utxolib.networks.testnet);
+  return utxolib.bip32.fromSeed(crypto.createHash('sha256').update(seed).digest());
 }
 
 describe('verifySignature', function () {
@@ -23,8 +23,8 @@ describe('verifySignature', function () {
     const request: Request = {
       invoice: 'some data',
     };
-    const signature = createMessageSignature(request, key.toBase58(), utxolib.networks.testnet);
-    const result = verifyMessageSignature(request, signature, keyPub.toBase58(), utxolib.networks.testnet);
+    const signature = createMessageSignature(request, key.toBase58());
+    const result = verifyMessageSignature(request, signature, keyPub.toBase58());
     assert(result);
   });
 
@@ -37,8 +37,8 @@ describe('verifySignature', function () {
       fee: 123,
       invoice: 'some data',
     };
-    const signature = createMessageSignature(request, key.toBase58(), utxolib.networks.testnet);
-    const result = verifyMessageSignature(otherRequest, signature, keyPub.toBase58(), utxolib.networks.testnet);
+    const signature = createMessageSignature(request, key.toBase58());
+    const result = verifyMessageSignature(otherRequest, signature, keyPub.toBase58());
     assert(result);
   });
 
@@ -49,8 +49,8 @@ describe('verifySignature', function () {
     const wrongRequest: Request = {
       invoice: 'some other data',
     };
-    const signature = createMessageSignature(request, key.toBase58(), utxolib.networks.testnet);
-    const result = verifyMessageSignature(wrongRequest, signature, keyPub.toBase58(), utxolib.networks.testnet);
+    const signature = createMessageSignature(request, key.toBase58());
+    const result = verifyMessageSignature(wrongRequest, signature, keyPub.toBase58());
     assert(!result);
   });
 
@@ -58,8 +58,8 @@ describe('verifySignature', function () {
     const request: Request = {
       invoice: 'some data',
     };
-    const signature = createMessageSignature(request, wrongKey.toBase58(), utxolib.networks.testnet);
-    const result = verifyMessageSignature(request, signature, keyPub.toBase58(), utxolib.networks.testnet);
+    const signature = createMessageSignature(request, wrongKey.toBase58());
+    const result = verifyMessageSignature(request, signature, keyPub.toBase58());
     assert(!result);
   });
 });
