@@ -1326,13 +1326,15 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
+    openSSLBytes: Uint8Array,
     challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void> {
     // Fetch user's ecdh public keychain needed for signing the challenges
     const ecdhKeypair = await bitgo.getEcdhKeypairPrivate(userPassword, entId);
 
     // Generate and sign enterprise challenge
-    const entChallengeWithProof = challenge ?? (await EcdsaRangeProof.generateNtilde(minModulusBitLength));
+    const entChallengeWithProof =
+      challenge ?? (await EcdsaRangeProof.generateNtilde(openSSLBytes, minModulusBitLength));
     const serializedEntChallengeWithProof = EcdsaTypes.serializeNtildeWithProofs(entChallengeWithProof);
     const signedEnterpriseChallenge = EcdsaUtils.signChallenge(
       serializedEntChallengeWithProof,

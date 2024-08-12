@@ -20,6 +20,10 @@ import {
 } from '../resources/osmo';
 import should = require('should');
 
+import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+
+const openSSLBytes = loadWebAssembly().buffer;
+
 describe('OSMO', function () {
   let bitgo: TestBitGoAPI;
   let basecoin;
@@ -432,13 +436,16 @@ describe('OSMO', function () {
     });
 
     it('should recover funds for non-bitgo recoveries', async function () {
-      const res = await basecoin.recover({
-        userKey: wrwUser.userPrivateKey,
-        backupKey: wrwUser.backupPrivateKey,
-        bitgoKey: wrwUser.bitgoPublicKey,
-        walletPassphrase: wrwUser.walletPassphrase,
-        recoveryDestination: destinationAddress,
-      });
+      const res = await basecoin.recover(
+        {
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        },
+        openSSLBytes
+      );
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(basecoin.getAccountBalance);
@@ -485,12 +492,15 @@ describe('OSMO', function () {
 
     it('should throw error if backupkey is not present', async function () {
       await basecoin
-        .recover({
-          userKey: wrwUser.userPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          recoveryDestination: destinationAddress,
-        })
+        .recover(
+          {
+            userKey: wrwUser.userPrivateKey,
+            bitgoKey: wrwUser.bitgoPublicKey,
+            walletPassphrase: wrwUser.walletPassphrase,
+            recoveryDestination: destinationAddress,
+          },
+          openSSLBytes
+        )
         .should.rejectedWith('missing backupKey');
     });
 
@@ -507,24 +517,30 @@ describe('OSMO', function () {
 
     it('should throw error if wallet passphrase is not present', async function () {
       await basecoin
-        .recover({
-          userKey: wrwUser.userPrivateKey,
-          backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
-          recoveryDestination: destinationAddress,
-        })
+        .recover(
+          {
+            userKey: wrwUser.userPrivateKey,
+            backupKey: wrwUser.backupPrivateKey,
+            bitgoKey: wrwUser.bitgoPublicKey,
+            recoveryDestination: destinationAddress,
+          },
+          openSSLBytes
+        )
         .should.rejectedWith('missing wallet passphrase');
     });
 
     it('should throw error if there is no balance', async function () {
       await basecoin
-        .recover({
-          userKey: wrwUser.userPrivateKey,
-          backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          recoveryDestination: destinationAddress,
-        })
+        .recover(
+          {
+            userKey: wrwUser.userPrivateKey,
+            backupKey: wrwUser.backupPrivateKey,
+            bitgoKey: wrwUser.bitgoPublicKey,
+            walletPassphrase: wrwUser.walletPassphrase,
+            recoveryDestination: destinationAddress,
+          },
+          openSSLBytes
+        )
         .should.rejectedWith('Did not have enough funds to recover');
     });
   });

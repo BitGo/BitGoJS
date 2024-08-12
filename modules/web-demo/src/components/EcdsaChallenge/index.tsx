@@ -12,8 +12,10 @@ const EcdsaChallenge = () => {
 
   const generateChallenge = async () => {
     setLoading(true);
+    const { loadWebAssembly } = await import('@bitgo/sdk-opensslbytes');
+    const openSSLBytes = loadWebAssembly().buffer;
     const start = new Date().getTime() / 1000;
-    const challenge = await EcdsaRangeProof.generateNtilde(3072);
+    const challenge = await EcdsaRangeProof.generateNtilde(openSSLBytes, 3072);
     const end = new Date().getTime() / 1000;
     setChallenge(EcdsaTypes.serializeNtildeWithProofs(challenge));
     setTotalTime(end - start);

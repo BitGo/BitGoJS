@@ -2,6 +2,10 @@ import sinon from 'sinon';
 import { generateNtilde, generateNtildeProof, verifyNtildeProof } from '../../../../src/tss/ecdsa/rangeproof';
 import * as safePrimes from '../../../../src/safePrime';
 
+import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+
+const openSSLBytes = loadWebAssembly().buffer;
+
 describe('h1H2DiscreteLogProofs', function () {
   let switchPrime = false;
   let safePrimeMock: sinon.SinonStub;
@@ -23,7 +27,7 @@ describe('h1H2DiscreteLogProofs', function () {
   });
   it('should generate valid ntilde proofs', async function () {
     // 512 bits is not secure for generating an Ntilde, this is for testing purposes ONLY.
-    const ntilde = await generateNtilde(512);
+    const ntilde = await generateNtilde(openSSLBytes, 512);
     (
       await verifyNtildeProof(
         {
@@ -39,7 +43,10 @@ describe('h1H2DiscreteLogProofs', function () {
     ).should.be.true();
   });
   it('catch h1 and h2 not being in the same group', async function () {
-    const [p, q] = [await safePrimes.generateSafePrime(257), await safePrimes.generateSafePrime(257)];
+    const [p, q] = [
+      await safePrimes.generateSafePrime(257, openSSLBytes),
+      await safePrimes.generateSafePrime(257, openSSLBytes),
+    ];
     const ntilde = p * q;
     const ntildeObj = {
       ntilde: ntilde,

@@ -23,6 +23,10 @@ import {
 import should = require('should');
 import nock = require('nock');
 
+import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+
+const openSSLBytes = loadWebAssembly().buffer;
+
 describe('Zeta', function () {
   let bitgo: TestBitGoAPI;
   let basecoin;
@@ -377,13 +381,16 @@ describe('Zeta', function () {
     });
 
     it('should recover funds for non-bitgo recoveries', async function () {
-      const res = await basecoin.recover({
-        userKey: wrwUser.userPrivateKey,
-        backupKey: wrwUser.backupPrivateKey,
-        bitgoKey: wrwUser.bitgoPublicKey,
-        walletPassphrase: wrwUser.walletPassphrase,
-        recoveryDestination: destinationAddress,
-      });
+      const res = await basecoin.recover(
+        {
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        },
+        openSSLBytes
+      );
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(basecoin.getAccountBalance);
@@ -401,15 +408,18 @@ describe('Zeta', function () {
     });
 
     it('should redelegate funds to new validator', async function () {
-      const res = await basecoin.redelegate({
-        userKey: wrwUser.userPrivateKey,
-        backupKey: wrwUser.backupPrivateKey,
-        bitgoKey: wrwUser.bitgoPublicKey,
-        walletPassphrase: wrwUser.walletPassphrase,
-        amountToRedelegate: '10000000000000000',
-        validatorSrcAddress: 'zetavaloper1dhsk5v53h3xwg42pdg3r0w7zl83yxgyhs68v7l',
-        validatorDstAddress: 'zetavaloper19v07wvwm3zux9pawcmccr7c4hfezah0r8whsc6',
-      });
+      const res = await basecoin.redelegate(
+        {
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          amountToRedelegate: '10000000000000000',
+          validatorSrcAddress: 'zetavaloper1dhsk5v53h3xwg42pdg3r0w7zl83yxgyhs68v7l',
+          validatorDstAddress: 'zetavaloper19v07wvwm3zux9pawcmccr7c4hfezah0r8whsc6',
+        },
+        openSSLBytes
+      );
 
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
@@ -453,46 +463,58 @@ describe('Zeta', function () {
 
     it('should throw error if backupkey is not present', async function () {
       await basecoin
-        .recover({
-          userKey: wrwUser.userPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          recoveryDestination: destinationAddress,
-        })
+        .recover(
+          {
+            userKey: wrwUser.userPrivateKey,
+            bitgoKey: wrwUser.bitgoPublicKey,
+            walletPassphrase: wrwUser.walletPassphrase,
+            recoveryDestination: destinationAddress,
+          },
+          openSSLBytes
+        )
         .should.rejectedWith('missing backupKey');
     });
 
     it('should throw error if userkey is not present', async function () {
       await basecoin
-        .recover({
-          backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          recoveryDestination: destinationAddress,
-        })
+        .recover(
+          {
+            backupKey: wrwUser.backupPrivateKey,
+            bitgoKey: wrwUser.bitgoPublicKey,
+            walletPassphrase: wrwUser.walletPassphrase,
+            recoveryDestination: destinationAddress,
+          },
+          openSSLBytes
+        )
         .should.rejectedWith('missing userKey');
     });
 
     it('should throw error if wallet passphrase is not present', async function () {
       await basecoin
-        .recover({
-          userKey: wrwUser.userPrivateKey,
-          backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
-          recoveryDestination: destinationAddress,
-        })
+        .recover(
+          {
+            userKey: wrwUser.userPrivateKey,
+            backupKey: wrwUser.backupPrivateKey,
+            bitgoKey: wrwUser.bitgoPublicKey,
+            recoveryDestination: destinationAddress,
+          },
+          openSSLBytes
+        )
         .should.rejectedWith('missing wallet passphrase');
     });
 
     it('should throw error if there is no balance', async function () {
       await basecoin
-        .recover({
-          userKey: wrwUser.userPrivateKey,
-          backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          recoveryDestination: destinationAddress,
-        })
+        .recover(
+          {
+            userKey: wrwUser.userPrivateKey,
+            backupKey: wrwUser.backupPrivateKey,
+            bitgoKey: wrwUser.bitgoPublicKey,
+            walletPassphrase: wrwUser.walletPassphrase,
+            recoveryDestination: destinationAddress,
+          },
+          openSSLBytes
+        )
         .should.rejectedWith('Did not have enough funds to recover');
     });
   });
