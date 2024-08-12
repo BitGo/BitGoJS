@@ -747,11 +747,18 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     } else if (requestType === RequestType.message) {
       signablePayload = (params.tssParams as TSSParamsForMessage).bufferToSign;
     }
+    let hash: Hash | undefined;
+    try {
+      hash = this.baseCoin.getHashFunction();
+    } catch (err) {
+      hash = undefined;
+    }
     const decryptedOShare = this.bitgo.decrypt({ input: encryptedOShare, password: walletPassphrase });
     const { i, R, s, y } = await ECDSAMethods.createUserSignatureShare(
       JSON.parse(decryptedOShare),
       dShareFromBitgo,
-      signablePayload
+      signablePayload,
+      hash
     );
     // return only required SShare without bigints from VAShare
     return {
