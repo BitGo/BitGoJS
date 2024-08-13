@@ -4,6 +4,9 @@
  *
  * The script authenticates with BitGo, creates a transaction, and logs the URL-safe transaction hex.
  *
+ * It provides a tx hex which can be used in the BitGo fee estimate endpoint for sui which provides the
+ * fee estimate for a transaction.
+ *
  * To run this script, ensure you provide the appropriate access token, wallet ID, passphrase,
  * and recipient details.
  *
@@ -45,6 +48,16 @@ async function buildPayTx() {
     const requiredTx: string = tx.replace(/\+/g, '%2B').replace(/\//g, '%2F').replace(/=/g, '%3D');
     console.log('Required tx param :');
     console.log(requiredTx);
+    /*
+      Use this tx hex in the fee estimate api: https://app.bitgo-test.com/api/v2/tsui/tx/fee?tx=<requiredTx>
+      Provides the fee estimate like below:
+        {
+          "feeEstimate": "3954120",
+          "computationCost": "1000000",
+          "storageCost": "1976000",
+          "storageRebate": "978120"
+        }
+     */
   } catch (error) {
     console.error('Error in buildPayTx:', error);
   }
