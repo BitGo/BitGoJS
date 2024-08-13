@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.8.0...@bitgo/sdk-core@27.9.0) (2024-08-13)
+
+### Bug Fixes
+
+- **root:** bump public-types and fix SMC MPCv2 format ([c739aa8](https://github.com/BitGo/BitGoJS/commit/c739aa8fef418276d0a5c812010153b770eac5e7))
+- **sdk-core:** add back state checks for MPCv2 SMC utils ([c6f673d](https://github.com/BitGo/BitGoJS/commit/c6f673d8fe810e586a99df5be3e8f7a1c1977816))
+- **sdk-core:** add hash for external signer for ecdsa gg18 ([bc5e4d6](https://github.com/BitGo/BitGoJS/commit/bc5e4d6193b18528d4f78802f0386f69c8b605c8))
+- **sdk-core:** update ADATA to include the derivationPath ([b4c9d8d](https://github.com/BitGo/BitGoJS/commit/b4c9d8d5d2e0efff8cf9e1338bdbe91715776c64))
+
+### Features
+
+- **sdk-core:** add create and verify message signature ([9275d11](https://github.com/BitGo/BitGoJS/commit/9275d11f8fd4f21a712b94b937fdbb28f8b0a98a))
+- **sdk-core:** add lightning utils ([08ef8ac](https://github.com/BitGo/BitGoJS/commit/08ef8accc3137dbdb074b31c81722b4bf34ac2b3))
+- **sdk-core:** add new field to stake request ([6a5b9c9](https://github.com/BitGo/BitGoJS/commit/6a5b9c987e57821ab6f4e5a3a583bbe23540f343))
+- **sdk-core:** add new lightning to index ([20b1b7b](https://github.com/BitGo/BitGoJS/commit/20b1b7bc52da7a89c27cdf66870949f54b614e28))
+- **sdk-core:** add Signable type and canonicalizeObject ([aacc76a](https://github.com/BitGo/BitGoJS/commit/aacc76a608d2bef0ada4a8eebeea0f5dd9e991f5))
+- **sdk-core:** add tests for canonicalizeObject ([c4cc112](https://github.com/BitGo/BitGoJS/commit/c4cc1122f4bdbb62bba263c2e86bc31fac34c895))
+- **sdk-core:** add tests for signatures ([edefc9e](https://github.com/BitGo/BitGoJS/commit/edefc9eb836845077f948f96722597600f61bb1c))
+- **sdk-core:** lightning signature use mainnet ([84bce9e](https://github.com/BitGo/BitGoJS/commit/84bce9efb45fa38220448fe26b43780c55a88011))
+- **sdk-core:** use testnet for lightning signature ([34c7e04](https://github.com/BitGo/BitGoJS/commit/34c7e04f206e9edba547843185c6affc63a22c8c))
+
 # [27.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.7.0...@bitgo/sdk-core@27.8.0) (2024-08-07)
 
 ### Bug Fixes

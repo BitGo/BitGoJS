@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-core",
-  "version": "27.8.0",
+  "version": "27.9.0",
   "description": "core library functions for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,7 +41,7 @@
     "@bitgo/public-types": "2.33.4",
     "@bitgo/sdk-lib-mpc": "^9.11.0",
     "@bitgo/sjcl": "^1.0.1",
-    "@bitgo/statics": "^48.27.0",
+    "@bitgo/statics": "^48.28.0",
     "@bitgo/utxo-lib": "^10.1.0",
     "@noble/secp256k1": "1.6.3",
     "@stablelib/hex": "^1.0.0",
