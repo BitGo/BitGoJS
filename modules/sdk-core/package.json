@@ -76,6 +76,7 @@
   "devDependencies": {
     "@openpgp/web-stream-tools": "0.0.14",
     "@types/lodash": "^4.14.151",
+    "@bitgo/sdk-opensslbytes": "^1.0.0",
     "nyc": "^15.0.0"
   }
 }

@@ -46,6 +46,10 @@ import { bip32, ecc } from '@bitgo/utxo-lib';
 import { Hash } from 'crypto';
 import { mockChallengeA, mockChallengeB, mockChallengeC } from './mocks/ecdsaNtilde';
 
+import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+
+const openSSLBytes = loadWebAssembly().buffer;
+
 const createKeccakHash = require('keccak');
 
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -1590,6 +1594,7 @@ describe('TSS Ecdsa Utils:', async function () {
         userPassword,
         signedInstChallenge,
         signedNitroChallenge,
+        openSSLBytes,
         deserializedEntChallenge
       ).should.not.be.rejected();
       stubUploadChallenge.should.be.calledWith(
@@ -1628,7 +1633,8 @@ describe('TSS Ecdsa Utils:', async function () {
         'ent_id',
         userPassword,
         signedInstChallenge,
-        signedNitroChallenge
+        signedNitroChallenge,
+        openSSLBytes
       ).should.not.be.rejected();
       stubUploadChallenge.should.be.calledWith(
         bitgo,

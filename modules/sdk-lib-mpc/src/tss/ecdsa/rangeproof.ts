@@ -22,7 +22,11 @@ import { generateSafePrimes } from '../../safePrime';
 // 128 as recommend by https://blog.verichains.io/p/vsa-2022-120-multichain-key-extraction.
 const ITERATIONS = 128;
 
-async function generateModulus(bitlength = minModulusBitLength, retry = 10): Promise<RSAModulus> {
+async function generateModulus(
+  openSSLBytes: Uint8Array,
+  bitlength = minModulusBitLength,
+  retry = 10
+): Promise<RSAModulus> {
   if (bitlength < minModulusBitLength) {
     // https://www.keylength.com/en/6/
     // eslint-disable-next-line no-console
@@ -31,7 +35,7 @@ async function generateModulus(bitlength = minModulusBitLength, retry = 10): Pro
   const bitlengthP = Math.floor(bitlength / 2);
   const bitlengthQ = bitlength - bitlengthP;
   for (let i = 0; i < retry; i++) {
-    const [p, q] = await generateSafePrimes([bitlengthP, bitlengthQ]);
+    const [p, q] = await generateSafePrimes([bitlengthP, bitlengthQ], openSSLBytes);
     const n = p * q;
     // For large bit lengths, the probability of generating a modulus with the wrong bit length is very low.
     if (bitLength(n) !== bitlength) {
@@ -50,8 +54,11 @@ async function generateModulus(bitlength = minModulusBitLength, retry = 10): Pro
  * be the same as the bit length of the paillier public keys used for MtA.
  * @returns {DeserializedNtilde} The generated Ntilde values.
  */
-export async function generateNtilde(bitlength = minModulusBitLength): Promise<DeserializedNtildeWithProofs> {
-  const { n: ntilde, q1, q2 } = await generateModulus(bitlength);
+export async function generateNtilde(
+  openSSLBytes: Uint8Array,
+  bitlength = minModulusBitLength
+): Promise<DeserializedNtildeWithProofs> {
+  const { n: ntilde, q1, q2 } = await generateModulus(openSSLBytes, bitlength);
   const [f1, f2] = await Promise.all([randomPositiveCoPrimeTo(ntilde), randomPositiveCoPrimeTo(ntilde)]);
   const h1 = modPow(f1, BigInt(2), ntilde);
   const h2 = modPow(h1, f2, ntilde);
