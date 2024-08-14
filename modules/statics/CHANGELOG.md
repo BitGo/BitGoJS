@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.27.0...@bitgo/statics@48.28.0) (2024-08-13)
+
+### Features
+
+- **statics:** add btc trc20 token ([cccf5df](https://github.com/BitGo/BitGoJS/commit/cccf5dfe16233c51790cf4be0b2fc78d8e5a8d03))
+- **statics:** add STAKING feature to RETH-ROCKET token ([0049cb2](https://github.com/BitGo/BitGoJS/commit/0049cb2573c835d8b73473997fe7c4552b877ab8))
+- **statics:** enable stuck transaction management coin feature for btc ([58ceeae](https://github.com/BitGo/BitGoJS/commit/58ceeae4873f4940b7b1f449b2a846549a0de6b2))
+
 # [48.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.26.0...@bitgo/statics@48.27.0) (2024-08-07)
 
 ### Bug Fixes
