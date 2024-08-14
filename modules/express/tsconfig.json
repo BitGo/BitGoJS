@@ -5,7 +5,7 @@
     "rootDir": ".",
     "typeRoots": ["./types", "../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*", "package.json"],
+  "include": ["src/**/*", "test/**/*", "package.json"],
   "exclude": ["node_modules"],
   "references": [
     {
