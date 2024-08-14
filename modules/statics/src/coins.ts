@@ -220,12 +220,12 @@ const MATIC_FEATURES = [
 ];
 const WETH_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
-  CoinFeature.STAKING,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.METAMASK_INSTITUTIONAL,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
 ];
+const TWETH_FEATURES = [...WETH_FEATURES, CoinFeature.STAKING];
 const EIGEN_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.STAKING,
@@ -12793,7 +12793,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x94373a4919b3240d86ea41593d5eba789fef3848',
     UnderlyingAsset.TWETH,
-    WETH_FEATURES,
+    TWETH_FEATURES,
     undefined,
     undefined,
     Networks.test.holesky
