@@ -57,5 +57,10 @@
     "lodash": "4.17.21",
     "secp256k1": "5.0.0",
     "superagent": "^9.0.1"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.52.0",
+    "@bitgo/sdk-test": "^8.0.35",
+    "secp256k1": "5.0.0"
   }
 }
