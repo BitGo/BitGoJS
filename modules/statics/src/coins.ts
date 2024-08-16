@@ -12193,7 +12193,7 @@ export const coins = CoinMap.fromCoins([
   tronToken(
     'd8d505d2-f525-4922-b538-317b879bd316',
     'trx:btc',
-    'Bitcoin',
+    'Bitcoin (TRC20)',
     8,
     'TN3W4H6rK2ce4vX9YnFQHwKENnHjoxb3m9',
     UnderlyingAsset.BTC
