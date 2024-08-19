@@ -5502,7 +5502,7 @@ export const coins = CoinMap.fromCoins([
     'peaq',
     'peaq',
     18,
-    '0x7a03a9e96dd867da50e5f28efa38e40237a44941',
+    '0x1eef208926667594e5136e89d0e9dd6907959197',
     UnderlyingAsset.PEAQ
   ),
   erc20(
@@ -15894,6 +15894,24 @@ export const coins = CoinMap.fromCoins([
     5,
     'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5',
     UnderlyingAsset['sol:mew'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'cbb767c5-cd24-4ed9-a5f3-85ab661d4896',
+    'sol:moveusd',
+    'MoveMoney USD',
+    5,
+    '3AdhVEX6k85yNivHVXDEiY3WyP2WgFQTUZCahGaeC2qm',
+    UnderlyingAsset['sol:moveusd'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '2ac447ce-0fa2-4f66-9fcf-d84405ad3db1',
+    'sol:pyusd',
+    'PayPal USD',
+    5,
+    '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
+    UnderlyingAsset['sol:pyusd'],
     SOL_TOKEN_FEATURES
   ),
 
