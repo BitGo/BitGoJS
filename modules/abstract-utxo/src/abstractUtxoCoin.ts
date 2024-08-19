@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, BIP32Interface, bitgo, getMainnet, isTestnet } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface, bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
 import * as assert from 'assert';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { randomBytes } from 'crypto';
@@ -1512,6 +1512,26 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     };
   }
 
+  private shouldDefaultToPsbtTxFormat(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }) {
+    const walletFlagMusigKp = buildParams.wallet.flag('musigKp') === 'true';
+    const isHotWallet = buildParams.wallet.type() === 'hot';
+
+    // if not txFormat is already specified figure out if we should default to psbt format
+    return (
+      buildParams.txFormat === undefined &&
+      (buildParams.wallet.subType() === 'distributedCustody' ||
+        // default to testnet for all utxo coins except zcash
+        (isTestnet(this.network) &&
+          // FIXME(BTC-1322): fix zcash PSBT support
+          getMainnet(this.network) !== utxolib.networks.zcash &&
+          isHotWallet) ||
+        // if mainnet, only default to psbt for btc hot wallets
+        (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
+        // default to psbt if it has the wallet flag
+        walletFlagMusigKp)
+    );
+  }
+
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
     txFormat?: 'legacy' | 'psbt';
     changeAddressType?: ScriptType2Of3[] | ScriptType2Of3;
@@ -1519,19 +1539,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     let txFormat = buildParams.txFormat as 'legacy' | 'psbt' | undefined;
     let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
 
-    const walletFlagMusigKp = buildParams.wallet.flag('musigKp') === 'true';
-
-    // if the txFormat is not specified, we need to default to psbt for distributed custody wallets or testnet hot wallets
-    if (
-      buildParams.txFormat === undefined &&
-      (buildParams.wallet.subType() === 'distributedCustody' ||
-        (isTestnet(this.network) &&
-          // FIXME(BTC-1322): fix zcash PSBT support
-          getMainnet(this.network) !== utxolib.networks.zcash &&
-          buildParams.wallet.type() === 'hot') ||
-        // FIXME(BTC-776): default to psbt for all mainnet wallets in the future
-        walletFlagMusigKp)
-    ) {
+    if (this.shouldDefaultToPsbtTxFormat(buildParams)) {
       txFormat = 'psbt';
     }
 
