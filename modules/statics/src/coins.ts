@@ -182,7 +182,7 @@ const POLYGON_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.MPCV2,
-  CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 const SOL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -271,7 +271,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.INCREASED_TX_REQUEST_REBUILD_LIMIT,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
-  CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 const INJECTIVE_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
 const TOKEN_FEATURES_WITH_SWISS = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
@@ -432,7 +432,8 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.BULK_TRANSACTION,
-      CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
     ]
   ), // we should probably refactor this into a eth() method
   account(
@@ -486,7 +487,8 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
-      CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
     ]
   ),
   account(
@@ -1042,7 +1044,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.EVM_WALLET,
       CoinFeature.MPCV2,
       CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
-      CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
     ]
   ),
   account(
@@ -1060,7 +1062,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.EVM_WALLET,
       CoinFeature.MPCV2,
       CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
-      CoinFeature.STUCK_TRANSACTION_MANAGEMENT,
+      CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
     ]
   ),
   account(

@@ -275,9 +275,14 @@ export enum CoinFeature {
   MPCV2 = 'mpcv2',
 
   /**
-   * This coin supports acceleration or nonce filling txn for stuck transactions
+   * This coin supports acceleration or nonce filling txn for stuck transactions for tss wallet
    */
-  STUCK_TRANSACTION_MANAGEMENT = 'stuck-transaction-management',
+  STUCK_TRANSACTION_MANAGEMENT_TSS = 'stuck-transaction-management-tss',
+
+  /**
+   * This coin supports acceleration or nonce filling txn for stuck transactions for onchain wallet
+   */
+  STUCK_TRANSACTION_MANAGEMENT_ONCHAIN = 'stuck-transaction-management-onchain',
 }
 
 /**
