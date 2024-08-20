@@ -11,6 +11,7 @@ import {
   KeyPair,
   MPCAlgorithm,
   MPCRecoveryOptions,
+  MPCConsolidationRecoveryOptions,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCTx,
@@ -31,7 +32,13 @@ import { KeyPair as SuiKeyPair, TransactionBuilderFactory, TransferBuilder, Tran
 import utils from './lib/utils';
 import * as _ from 'lodash';
 import { SuiObjectInfo, SuiTransactionType } from './lib/iface';
-import { DEFAULT_GAS_OVERHEAD, DEFAULT_GAS_PRICE, MAX_GAS_BUDGET, MAX_OBJECT_LIMIT } from './lib/constants';
+import {
+  DEFAULT_GAS_OVERHEAD,
+  DEFAULT_GAS_PRICE,
+  DEFAULT_SCAN_FACTOR,
+  MAX_GAS_BUDGET,
+  MAX_OBJECT_LIMIT,
+} from './lib/constants';
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -595,5 +602,91 @@ export class Sui extends BaseCoin {
     }
 
     return { transactions: broadcastableTransactions, lastScanIndex };
+  }
+
+  /**
+   * Builds native SUI recoveries of receive addresses in batch without BitGo.
+   * Funds will be recovered to base address first. You need to initiate another sweep txn after that.
+   *
+   * @param {MPCConsolidationRecoveryOptions} params - options for consolidation recovery.
+   * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
+   * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
+   */
+  async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const startIdx = utils.validateNonNegativeNumber(
+      1,
+      'Invalid starting index to scan for addresses',
+      params.startingScanIndex
+    );
+    const endIdx = utils.validateNonNegativeNumber(
+      startIdx + DEFAULT_SCAN_FACTOR,
+      'Invalid ending index to scan for addresses',
+      params.endingScanIndex
+    );
+
+    if (startIdx < 1 || endIdx <= startIdx || endIdx - startIdx > 10 * DEFAULT_SCAN_FACTOR) {
+      throw new Error(
+        `Invalid starting or ending index to scan for addresses. startingScanIndex: ${startIdx}, endingScanIndex: ${endIdx}.`
+      );
+    }
+
+    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const derivationPath = `m/0`;
+    const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
+    const baseAddress = this.getAddressFromPublicKey(derivedPublicKey);
+
+    const consolidationTransactions: any[] = [];
+    let lastScanIndex = startIdx;
+    for (let idx = startIdx; idx < endIdx; idx++) {
+      const recoverParams = {
+        userKey: params.userKey,
+        backupKey: params.backupKey,
+        bitgoKey: params.bitgoKey,
+        walletPassphrase: params.walletPassphrase,
+        recoveryDestination: baseAddress,
+        startingScanIndex: idx,
+        scan: 1,
+      };
+
+      let recoveryTransaction: MPCTxs | MPCSweepTxs;
+      try {
+        recoveryTransaction = await this.recover(recoverParams);
+      } catch (e) {
+        if (e.message.startsWith('Did not find an address with sufficient funds to recover.')) {
+          lastScanIndex = idx;
+          continue;
+        }
+        throw e;
+      }
+
+      if (isUnsignedSweep) {
+        consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
+      } else {
+        consolidationTransactions.push((recoveryTransaction as MPCTxs).transactions[0]);
+      }
+      lastScanIndex = idx;
+    }
+
+    if (consolidationTransactions.length === 0) {
+      throw new Error(
+        `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${
+          lastScanIndex + 1
+        }.`
+      );
+    }
+
+    if (isUnsignedSweep) {
+      // lastScanIndex will be used to inform user the last address index scanned for available funds (so they can
+      // appropriately adjust the scan range on the next iteration of consolidation recoveries). In the case of unsigned
+      // sweep consolidations, this lastScanIndex will be provided in the coinSpecific of the last txn made.
+      consolidationTransactions[
+        consolidationTransactions.length - 1
+      ].transactions[0].unsignedTx.coinSpecific.lastScanIndex = lastScanIndex;
+      return { txRequests: consolidationTransactions };
+    }
+
+    return { transactions: consolidationTransactions, lastScanIndex };
   }
 }
