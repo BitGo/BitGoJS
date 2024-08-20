@@ -1,4 +1,5 @@
 import {
+  BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
   BaseCoin,
   BaseTransaction,
@@ -9,8 +10,11 @@ import {
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
+  MPCRecoveryOptions,
+  MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCTx,
+  MPCTxs,
   MPCUnsignedTx,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
@@ -26,13 +30,7 @@ import BigNumber from 'bignumber.js';
 import { KeyPair as SuiKeyPair, TransactionBuilderFactory, TransferBuilder, TransferTransaction } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import {
-  BroadcastTransactionOptions,
-  SuiMPCRecoveryOptions,
-  SuiMPCTx,
-  SuiObjectInfo,
-  SuiTransactionType,
-} from './lib/iface';
+import { SuiObjectInfo, SuiTransactionType } from './lib/iface';
 import { DEFAULT_GAS_OVERHEAD, DEFAULT_GAS_PRICE, MAX_GAS_BUDGET, MAX_OBJECT_LIMIT } from './lib/constants';
 
 export interface ExplainTransactionOptions {
@@ -310,7 +308,7 @@ export class Sui extends BaseCoin {
    * @returns {MPCTx | MPCSweepTxs} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async recover(params: SuiMPCRecoveryOptions): Promise<SuiMPCTx | MPCSweepTxs> {
+  async recover(params: MPCRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -339,15 +337,8 @@ export class Sui extends BaseCoin {
       } catch (e) {
         continue;
       }
-      if (availableBalance.toNumber() <= 0) {
+      if (availableBalance.minus(MAX_GAS_BUDGET).toNumber() <= 0) {
         continue;
-      }
-      let netAmount = availableBalance.minus(MAX_GAS_BUDGET);
-      if (netAmount.toNumber() <= 0) {
-        throw new Error(
-          `Found address ${senderAddress} with non-zero fund but fund is insufficient to support a recovery ` +
-            `transaction. Please start the next scan at address index ${idx + 1}.`
-        );
       }
 
       let inputCoins = await this.getInputCoins(senderAddress);
@@ -357,7 +348,7 @@ export class Sui extends BaseCoin {
       if (inputCoins.length > MAX_OBJECT_LIMIT) {
         inputCoins = inputCoins.slice(0, MAX_OBJECT_LIMIT);
       }
-      netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
+      let netAmount = inputCoins.reduce((acc, obj) => acc.plus(obj.balance), new BigNumber(0));
       netAmount = netAmount.minus(MAX_GAS_BUDGET);
 
       const recipients = [
@@ -384,6 +375,10 @@ export class Sui extends BaseCoin {
       const tempTx = (await txBuilder.build()) as TransferTransaction;
       const feeEstimate = await this.getFeeEstimate(tempTx.toBroadcastFormat());
       const gasBudget = Math.trunc(feeEstimate.toNumber() * DEFAULT_GAS_OVERHEAD);
+
+      netAmount = netAmount.plus(MAX_GAS_BUDGET).minus(gasBudget);
+      recipients[0].amount = netAmount.toString();
+      txBuilder.send(recipients);
       txBuilder.gasData({
         owner: senderAddress,
         price: DEFAULT_GAS_PRICE,
@@ -398,14 +393,21 @@ export class Sui extends BaseCoin {
       await this.signRecoveryTransaction(txBuilder, params, derivationPath, derivedPublicKey);
       const tx = (await txBuilder.build()) as TransferTransaction;
       return {
-        scanIndex: idx,
-        recoveryAmount: netAmount.toString(),
-        serializedTx: tx.toBroadcastFormat(),
-        signature: Buffer.from(tx.serializedSig).toString('base64'),
+        transactions: [
+          {
+            scanIndex: idx,
+            recoveryAmount: netAmount.toString(),
+            serializedTx: tx.toBroadcastFormat(),
+            signature: Buffer.from(tx.serializedSig).toString('base64'),
+          },
+        ],
+        lastScanIndex: idx,
       };
     }
 
-    throw new Error('Did not find an address with funds to recover');
+    throw new Error(
+      `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${endIdx}.`
+    );
   }
 
   private async buildUnsignedSweepTransaction(
@@ -466,7 +468,7 @@ export class Sui extends BaseCoin {
 
   private async signRecoveryTransaction(
     txBuilder: TransferBuilder,
-    params: SuiMPCRecoveryOptions,
+    params: MPCRecoveryOptions,
     derivationPath: string,
     derivedPublicKey: string
   ) {
@@ -522,14 +524,76 @@ export class Sui extends BaseCoin {
   }
 
   async broadcastTransaction({
-    serializedSignedTransaction,
-    signature,
-  }: BroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
-    try {
-      const url = this.getPublicNodeUrl();
-      return await utils.executeTransactionBlock(url, serializedSignedTransaction, [signature]);
-    } catch (e) {
-      throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+    transactions,
+  }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    const txIds: string[] = [];
+    const url = this.getPublicNodeUrl();
+    let digest = '';
+    if (!!transactions) {
+      for (const txn of transactions) {
+        try {
+          digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+        } catch (e) {
+          throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+        }
+        txIds.push(digest);
+      }
     }
+    return { txIds };
+  }
+
+  /** inherited doc */
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
+    const req = params.signatureShares;
+    const broadcastableTransactions: MPCTx[] = [];
+    let lastScanIndex = 0;
+
+    for (let i = 0; i < req.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+        throw new Error('Missing signature(s)');
+      }
+      const signature = req[i].ovc[0].eddsaSignature;
+      if (!transaction.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, signature);
+      if (!result) {
+        throw new Error('Invalid signature');
+      }
+      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+      const serializedTxBase64 = Buffer.from(transaction.serializedTx, 'hex').toString('base64');
+      const txBuilder = this.getBuilder().from(serializedTxBase64);
+      if (!transaction.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+      if (!transaction.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = transaction.derivationPath as string;
+      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+
+      // add combined signature from ovc
+      txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
+      const signedTransaction = (await txBuilder.build()) as TransferTransaction;
+      const serializedTx = signedTransaction.toBroadcastFormat();
+      const outputAmount = signedTransaction.explainTransaction().outputAmount;
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: transaction.scanIndex,
+        signature: Buffer.from(signedTransaction.serializedSig).toString('base64'),
+        recoveryAmount: outputAmount.toString(),
+      });
+
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
+    }
+
+    return { transactions: broadcastableTransactions, lastScanIndex };
   }
 }

@@ -1,20 +1,17 @@
 import {
-  BaseBroadcastTransactionOptions,
-  MPCRecoveryOptions,
-  MPCTx,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import {
+  CallArg,
   GasData,
   ProgrammableTransaction,
-  CallArg,
   SuiAddress,
   SuiObjectRef,
   TransactionExpiration,
 } from './mystenlab/types';
-import { TransactionType, TransactionBlockInput } from './mystenlab/builder';
+import { TransactionBlockInput, TransactionType } from './mystenlab/builder';
 
 export enum SuiTransactionType {
   Transfer = 'Transfer',
@@ -132,18 +129,4 @@ export enum MethodNames {
 export interface SuiObjectInfo extends SuiObjectRef {
   /** balance */
   balance: BigNumber;
-}
-
-export interface SuiMPCRecoveryOptions extends MPCRecoveryOptions {
-  startingScanIndex?: number;
-  scan?: number;
-}
-
-export interface SuiMPCTx extends MPCTx {
-  recoveryAmount?: string;
-  signature?: string;
-}
-
-export interface BroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
-  signature: string;
 }
