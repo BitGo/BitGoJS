@@ -1,4 +1,5 @@
 import {
+  BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
   BaseCoin,
   BaseTransaction,
@@ -10,9 +11,11 @@ import {
   KeyPair,
   MPCAlgorithm,
   MPCConsolidationRecoveryOptions,
+  MPCRecoveryOptions,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCTx,
+  MPCTxs,
   MPCUnsignedTx,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
@@ -28,14 +31,7 @@ import BigNumber from 'bignumber.js';
 import { KeyPair as SuiKeyPair, TransactionBuilderFactory, TransferBuilder, TransferTransaction } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import {
-  SuiBroadcastTransactionOptions,
-  SuiMPCRecoveryOptions,
-  SuiMPCTx,
-  SuiMPCTxs,
-  SuiObjectInfo,
-  SuiTransactionType,
-} from './lib/iface';
+import { SuiObjectInfo, SuiTransactionType } from './lib/iface';
 import {
   DEFAULT_GAS_OVERHEAD,
   DEFAULT_GAS_PRICE,
@@ -320,7 +316,7 @@ export class Sui extends BaseCoin {
    * @returns {MPCTx | MPCSweepTxs} array of the serialized transaction hex strings and indices
    * of the addresses being swept
    */
-  async recover(params: SuiMPCRecoveryOptions): Promise<SuiMPCTxs | MPCSweepTxs> {
+  async recover(params: MPCRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -480,7 +476,7 @@ export class Sui extends BaseCoin {
 
   private async signRecoveryTransaction(
     txBuilder: TransferBuilder,
-    params: SuiMPCRecoveryOptions,
+    params: MPCRecoveryOptions,
     derivationPath: string,
     derivedPublicKey: string
   ) {
@@ -537,24 +533,27 @@ export class Sui extends BaseCoin {
 
   async broadcastTransaction({
     transactions,
-  }: SuiBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+  }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
     const txIds: string[] = [];
-    for (const txn of transactions) {
-      try {
-        const url = this.getPublicNodeUrl();
-        const digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+    const url = this.getPublicNodeUrl();
+    let digest = '';
+    if (!!transactions) {
+      for (const txn of transactions) {
+        try {
+          digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+        } catch (e) {
+          throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
+        }
         txIds.push(digest);
-      } catch (e) {
-        throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
       }
     }
     return { txIds };
   }
 
   /** inherited doc */
-  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<SuiMPCTxs> {
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
     const req = params.signatureShares;
-    const broadcastableTransactions: SuiMPCTx[] = [];
+    const broadcastableTransactions: MPCTx[] = [];
     let lastScanIndex = 0;
 
     for (let i = 0; i < req.length; i++) {
@@ -614,7 +613,7 @@ export class Sui extends BaseCoin {
    * @param {string} [params.startingScanIndex] - receive address index to start scanning from. default to 1 (inclusive).
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
-  async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<SuiMPCTxs | MPCSweepTxs> {
+  async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const startIdx = utils.validateNonNegativeNumber(
       1,
@@ -652,7 +651,7 @@ export class Sui extends BaseCoin {
         scan: 1,
       };
 
-      let recoveryTransaction: SuiMPCTxs | MPCSweepTxs;
+      let recoveryTransaction: MPCTxs | MPCSweepTxs;
       try {
         recoveryTransaction = await this.recover(recoverParams);
       } catch (e) {
@@ -666,7 +665,7 @@ export class Sui extends BaseCoin {
       if (isUnsignedSweep) {
         consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
       } else {
-        consolidationTransactions.push((recoveryTransaction as SuiMPCTxs).transactions[0]);
+        consolidationTransactions.push((recoveryTransaction as MPCTxs).transactions[0]);
       }
       lastScanIndex = idx;
     }

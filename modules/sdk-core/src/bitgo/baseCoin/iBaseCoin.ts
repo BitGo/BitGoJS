@@ -14,6 +14,7 @@ import { IWebhooks } from '../webhook/iWebhooks';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
+import { MPCTx } from '../utils';
 
 export interface Output extends ITransactionRecipient {
   address: string;
@@ -449,6 +450,7 @@ export type BuildNftTransferDataOptions = NFTTransferOptions & {
 
 export interface BaseBroadcastTransactionOptions {
   serializedSignedTransaction: string;
+  transactions?: MPCTx[];
 }
 
 export interface BaseBroadcastTransactionResult {

@@ -1,7 +1,4 @@
 import {
-  BaseBroadcastTransactionOptions,
-  MPCRecoveryOptions,
-  MPCTx,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
@@ -132,23 +129,4 @@ export enum MethodNames {
 export interface SuiObjectInfo extends SuiObjectRef {
   /** balance */
   balance: BigNumber;
-}
-
-export interface SuiMPCRecoveryOptions extends MPCRecoveryOptions {
-  startingScanIndex?: number;
-  scan?: number;
-}
-
-export interface SuiMPCTx extends MPCTx {
-  recoveryAmount?: string;
-  signature?: string;
-}
-
-export interface SuiMPCTxs {
-  transactions: SuiMPCTx[];
-  lastScanIndex: number;
-}
-
-export interface SuiBroadcastTransactionOptions extends BaseBroadcastTransactionOptions {
-  transactions: SuiMPCTx[];
 }

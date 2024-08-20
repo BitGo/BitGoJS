@@ -445,6 +445,8 @@ export interface MPCTx {
     commonKeychain?: string;
     lastScanIndex?: number;
   };
+  recoveryAmount?: string;
+  signature?: string;
 }
 
 export interface MPCRecoveryOptions {
@@ -455,6 +457,8 @@ export interface MPCRecoveryOptions {
   walletPassphrase?: string;
   seed?: string;
   index?: number;
+  startingScanIndex?: number;
+  scan?: number;
 }
 
 export interface MPCConsolidationRecoveryOptions {
