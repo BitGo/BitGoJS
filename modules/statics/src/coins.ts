@@ -220,12 +220,12 @@ const MATIC_FEATURES = [
 ];
 const WETH_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
-  CoinFeature.STAKING,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.METAMASK_INSTITUTIONAL,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
 ];
+const TWETH_FEATURES = [...WETH_FEATURES, CoinFeature.STAKING];
 const EIGEN_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.STAKING,
@@ -5502,7 +5502,7 @@ export const coins = CoinMap.fromCoins([
     'peaq',
     'peaq',
     18,
-    '0x7a03a9e96dd867da50e5f28efa38e40237a44941',
+    '0x1eef208926667594e5136e89d0e9dd6907959197',
     UnderlyingAsset.PEAQ
   ),
   erc20(
@@ -12191,6 +12191,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BTT
   ),
   tronToken(
+    'd8d505d2-f525-4922-b538-317b879bd316',
+    'trx:btc',
+    'Bitcoin (TRC20)',
+    8,
+    'TN3W4H6rK2ce4vX9YnFQHwKENnHjoxb3m9',
+    UnderlyingAsset.BTC
+  ),
+  tronToken(
     '85d99eb6-84a1-4525-a9df-db82bcc21568',
     'trx:wbtc',
     'Tron Wrapped Bitcoin',
@@ -12785,7 +12793,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x94373a4919b3240d86ea41593d5eba789fef3848',
     UnderlyingAsset.TWETH,
-    WETH_FEATURES,
+    TWETH_FEATURES,
     undefined,
     undefined,
     Networks.test.holesky
@@ -15886,6 +15894,24 @@ export const coins = CoinMap.fromCoins([
     5,
     'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5',
     UnderlyingAsset['sol:mew'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'cbb767c5-cd24-4ed9-a5f3-85ab661d4896',
+    'sol:moveusd',
+    'MoveMoney USD',
+    5,
+    '3AdhVEX6k85yNivHVXDEiY3WyP2WgFQTUZCahGaeC2qm',
+    UnderlyingAsset['sol:moveusd'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '2ac447ce-0fa2-4f66-9fcf-d84405ad3db1',
+    'sol:pyusd',
+    'PayPal USD',
+    5,
+    '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
+    UnderlyingAsset['sol:pyusd'],
     SOL_TOKEN_FEATURES
   ),
 

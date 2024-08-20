@@ -17,6 +17,9 @@ import {
   SignCombineRT,
 } from '../../../../../../src/account-lib/mpc/tss/ecdsa/types';
 import { paillierKeyPairs } from './fixtures';
+import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+
+const openSSLBytes = loadWebAssembly().buffer;
 
 describe('ecdsa tss', function () {
   const ecdsa = new Ecdsa();
@@ -81,8 +84,8 @@ describe('ecdsa tss', function () {
       .should.be.true();
 
     const [ntilde1, ntilde2] = await Promise.all([
-      EcdsaRangeProof.generateNtilde(512),
-      EcdsaRangeProof.generateNtilde(512),
+      EcdsaRangeProof.generateNtilde(openSSLBytes, 512),
+      EcdsaRangeProof.generateNtilde(openSSLBytes, 512),
     ]);
 
     const [serializeNtilde1, serializeNtilde2] = [

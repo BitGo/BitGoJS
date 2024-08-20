@@ -27,6 +27,7 @@ export interface IEnterprise {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
+    openSSLBytes: Uint8Array,
     challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void>;
   getExistingTssEcdsaChallenge(): Promise<EcdsaTypes.DeserializedNtildeWithProofs>;

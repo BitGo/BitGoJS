@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [10.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.1.3...@bitgo/express@10.1.4) (2024-08-13)
+
+### Bug Fixes
+
+- **root:** bump public-types and fix SMC MPCv2 format ([c739aa8](https://github.com/BitGo/BitGoJS/commit/c739aa8fef418276d0a5c812010153b770eac5e7))
+
 ## [10.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.1.2...@bitgo/express@10.1.3) (2024-08-07)
 
 ### Bug Fixes

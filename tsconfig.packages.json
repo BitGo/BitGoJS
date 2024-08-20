@@ -191,6 +191,9 @@
       "path": "./modules/sdk-lib-mpc"
     },
     {
+      "path": "./modules/sdk-opensslbytes"
+    },
+    {
       "path": "./modules/sdk-rpc-wrapper"
     },
     {

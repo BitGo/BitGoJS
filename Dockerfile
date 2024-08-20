@@ -2,7 +2,7 @@
 # An elaborated scheme to build all the dependencies of all packages first in a cached layer
 # https://stackoverflow.com/a/63142468/134409
 # https://medium.com/@emilefugulin/building-a-sane-docker-image-for-typescript-lerna-and-prisma-2-76d8ff9926e4
-FROM node:20-bookworm-slim@sha256:6935e0e66fcf7ee4c33e9877364b6865365e94f9583d20d41fbfbf5d158ccd93 AS filter-packages-json
+FROM node:20-bookworm-slim@sha256:21de73d5da2d7df0261d1889d74f0e8052997ee67d5fcfb49c32c86cf7d0dd50 AS filter-packages-json
 LABEL maintainer="Developer Relations <developer-relations-team@bitgo.com>"
 
 COPY package.json yarn.lock lerna.json ./
@@ -12,7 +12,7 @@ COPY modules ./modules
 # delete all the non package.json files under `./modules/`
 RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs rm -rf
 
-FROM node:20-bookworm-slim@sha256:6935e0e66fcf7ee4c33e9877364b6865365e94f9583d20d41fbfbf5d158ccd93 AS builder
+FROM node:20-bookworm-slim@sha256:21de73d5da2d7df0261d1889d74f0e8052997ee67d5fcfb49c32c86cf7d0dd50 AS builder
 RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
@@ -31,7 +31,7 @@ RUN \
     rm -r modules/*/src
 
 
-FROM node:20-bookworm-slim@sha256:6935e0e66fcf7ee4c33e9877364b6865365e94f9583d20d41fbfbf5d158ccd93
+FROM node:20-bookworm-slim@sha256:21de73d5da2d7df0261d1889d74f0e8052997ee67d5fcfb49c32c86cf7d0dd50
 RUN apt-get update && apt-get install -y tini
 # copy the root node_modules to the bitgo-express parent node_modules
 COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
@@ -250,9 +250,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 07 Aug 2024 21:25:07 GMT"
-LABEL version=10.1.3
-LABEL git_hash=653d427b18243535fea0e8b21b948fa70892fafd
+LABEL created="Tue, 13 Aug 2024 18:30:09 GMT"
+LABEL version=10.1.4
+LABEL git_hash=97ba9b20f6c3c654c1067b5070be43e190a87af4
 #LABEL_END
 
 USER node

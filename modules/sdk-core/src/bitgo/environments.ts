@@ -50,6 +50,7 @@ interface EnvironmentTemplate {
   };
   hmacVerificationEnforced: boolean;
   suiNodeUrl: string;
+  etcNodeUrl: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -143,6 +144,7 @@ const mainnetBase: EnvironmentTemplate = {
   },
   hmacVerificationEnforced: true,
   suiNodeUrl: 'https://fullnode.mainnet.sui.io',
+  etcNodeUrl: 'https://etc.blockscout.com',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -193,6 +195,7 @@ const testnetBase: EnvironmentTemplate = {
   },
   hmacVerificationEnforced: false,
   suiNodeUrl: 'https://fullnode.testnet.sui.io',
+  etcNodeUrl: 'https://etc-mordor.blockscout.com',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

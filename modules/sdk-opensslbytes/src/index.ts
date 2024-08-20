@@ -1,0 +1,1 @@
+export { loadWebAssembly } from './opensslbytes';

@@ -1,13 +1,11 @@
 import { init, WASI } from '@wasmer/wasi';
-import { loadWebAssembly } from './opensslbytes';
-
 export class OpenSSL {
   private waModule: WebAssembly.Module;
   private isInitialized = false;
 
-  async init(): Promise<void> {
+  async init(openSSLBytes: Uint8Array): Promise<void> {
     await init();
-    this.waModule = await WebAssembly.compile(await this.getWasmBytes());
+    this.waModule = await WebAssembly.compile(openSSLBytes);
     this.isInitialized = true;
   }
 
@@ -32,13 +30,5 @@ export class OpenSSL {
     // Run the start function
     wasi.start(instance);
     return wasi.getStdoutString();
-  }
-
-  private async getWasmBytes(): Promise<Uint8Array> {
-    const waBuffer = loadWebAssembly();
-    if (!waBuffer) {
-      throw new Error('Cannot load openssl web-assembly!');
-    }
-    return waBuffer.buffer;
   }
 }

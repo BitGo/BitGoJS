@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.0.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@11.0.29...@bitgo/sdk-unified-wallet@11.0.30) (2024-08-13)
+
+**Note:** Version bump only for package @bitgo/sdk-unified-wallet
+
 ## [11.0.29](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-unified-wallet@11.0.28...@bitgo/sdk-unified-wallet@11.0.29) (2024-08-07)
 
 **Note:** Version bump only for package @bitgo/sdk-unified-wallet

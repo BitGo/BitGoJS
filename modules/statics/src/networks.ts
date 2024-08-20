@@ -528,8 +528,8 @@ class Holesky extends Testnet implements EthereumNetwork {
   // https://chainlist.org/chain/17000
   chainId = 17000;
   batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
-  forwarderFactoryAddress = '0x23223fd7cfc5f34b20f38ebb9a489e1ff3c084d1';
-  forwarderImplementationAddress = '0xd4c24325b5ef514fbb1ecc76a9bb4dcb57a8341e';
+  forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
+  forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
   nativeCoinOperationHashPrefix = 'ETHER';
   tokenOperationHashPrefix = 'ERC20';
 }

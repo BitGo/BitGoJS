@@ -202,7 +202,17 @@ interface UnformattedTxInfo {
   recipient: Recipient;
 }
 
-export interface RecoverOptions {
+export type RecoverOptionsWithBytes = {
+  isTss: true;
+  openSSLBytes: Uint8Array;
+};
+export type NonTSSRecoverOptions = {
+  isTss?: false | undefined;
+};
+
+export type TSSRecoverOptions = RecoverOptionsWithBytes | NonTSSRecoverOptions;
+
+export type RecoverOptions = {
   userKey: string;
   backupKey: string;
   walletPassphrase?: string;
@@ -213,13 +223,12 @@ export interface RecoverOptions {
   gasLimit?: number;
   eip1559?: EIP1559;
   replayProtectionOptions?: ReplayProtectionOptions;
-  isTss?: boolean;
   bitgoFeeAddress?: string;
   bitgoDestinationAddress?: string;
   tokenContractAddress?: string;
   intendedChain?: string;
   common?: EthLikeCommon.default;
-}
+} & TSSRecoverOptions;
 
 export type GetBatchExecutionInfoRT = {
   values: [string[], string[]];
@@ -1055,6 +1064,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,
     txHex: string,
+    openSSLBytes: Uint8Array,
     {
       rangeProofChallenge,
     }: {
@@ -1070,7 +1080,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const signerTwoIndex = backupKeyCombined.xShare.i;
 
     rangeProofChallenge =
-      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
+      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde(openSSLBytes));
 
     const userToBackupPaillierChallenge = await EcdsaPaillierProof.generateP(
       hexToBigInt(userKeyCombined.yShares[signerTwoIndex].n)
@@ -1273,8 +1283,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {string} params.bitgoDestinationAddress - target bitgo address where fee will be sent for evm based cross chain recovery txn
    */
   async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
-    if (params.isTss) {
-      return this.recoverTSS(params);
+    if (params.isTss === true) {
+      return this.recoverTSS(params, params.openSSLBytes);
     }
     return this.recoverEthLike(params);
   }
@@ -1929,7 +1939,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * Recovers a tx with TSS key shares
    * same expected arguments as recover method, but with TSS key shares
    */
-  protected async recoverTSS(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  protected async recoverTSS(
+    params: RecoverOptions,
+    openSSLBytes: Uint8Array
+  ): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     this.validateRecoveryParams(params);
     // Clean up whitespace from entered values
     const userPublicOrPrivateKeyShare = params.userKey.replace(/\s/g, '');
@@ -1982,7 +1995,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         signature = await this.signRecoveryTSS(
           userKeyCombined,
           backupKeyCombined,
-          unsignedTx.getMessageToSign(false).toString('hex')
+          unsignedTx.getMessageToSign(false).toString('hex'),
+          openSSLBytes
         );
       } else {
         const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
