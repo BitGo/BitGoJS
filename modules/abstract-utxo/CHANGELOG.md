@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.12.0...@bitgo/abstract-utxo@8.13.0) (2024-08-20)
+
+### Features
+
+- default to psbt format for btc hot wallets ([0e12c94](https://github.com/BitGo/BitGoJS/commit/0e12c9466c89281fbeb1035e48d7abea96ccdebe))
+
 ## [8.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.12.0...@bitgo/abstract-utxo@8.12.1) (2024-08-13)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

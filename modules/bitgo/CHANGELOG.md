@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.18.0...bitgo@39.0.0) (2024-08-20)
+
+### Bug Fixes
+
+- **root:** bump public-types and fix SMC MPCv2 format ([c739aa8](https://github.com/BitGo/BitGoJS/commit/c739aa8fef418276d0a5c812010153b770eac5e7))
+- **sdk-core:** add back state checks for MPCv2 SMC utils ([c6f673d](https://github.com/BitGo/BitGoJS/commit/c6f673d8fe810e586a99df5be3e8f7a1c1977816))
+
+### Features
+
+- move opensslbytes to own package ([e23c562](https://github.com/BitGo/BitGoJS/commit/e23c5627957916055e68329541dd1eb775704ca5))
+
+### BREAKING CHANGES
+
+- clients using challenge
+  generation & TSS Recovery functions must now
+  install @bitgo/sdk-opensslbytes separately &
+  provide the openSSLBytes WASM themselves.
+
+Ticket: CE-4329
+
 ## [38.18.1](https://github.com/BitGo/BitGoJS/compare/bitgo@38.18.0...bitgo@38.18.1) (2024-08-13)
 
 ### Bug Fixes

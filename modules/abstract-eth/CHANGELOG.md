@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.8.0...@bitgo/abstract-eth@22.0.0) (2024-08-20)
+
+### Features
+
+- move opensslbytes to own package ([e23c562](https://github.com/BitGo/BitGoJS/commit/e23c5627957916055e68329541dd1eb775704ca5))
+- **sdk-coin-etc:** non-bitgo recovery support for wrw ([017155b](https://github.com/BitGo/BitGoJS/commit/017155b5a9b008377189bc94b69ed4b45d8004fe))
+
+### BREAKING CHANGES
+
+- clients using challenge
+  generation & TSS Recovery functions must now
+  install @bitgo/sdk-opensslbytes separately &
+  provide the openSSLBytes WASM themselves.
+
+Ticket: CE-4329
+
 ## [21.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@21.8.0...@bitgo/abstract-eth@21.8.1) (2024-08-13)
 
 **Note:** Version bump only for package @bitgo/abstract-eth
