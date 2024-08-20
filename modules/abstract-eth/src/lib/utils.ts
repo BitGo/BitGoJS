@@ -849,3 +849,11 @@ export async function recoveryBlockchainExplorerQuery(
   }
   return response.body;
 }
+
+/**
+ * Default expire time for a contract call (1 week)
+ * @returns {number} Time in seconds
+ */
+export function getDefaultExpireTime(): number {
+  return Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 7;
+}
