@@ -2,6 +2,7 @@
 
 ## `ts` directory (TypeScript)
 
+
 In this directory, you can find examples on how to use the BitGoJS SDK with TypeScript. These examples use modern TypeScript/ES6 syntax with `async`/`await`. This is the recommended way to use the BitGoJS SDK for new projects.
 
 ### Wallet
