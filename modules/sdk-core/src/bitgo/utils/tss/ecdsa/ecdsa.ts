@@ -747,11 +747,18 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     } else if (requestType === RequestType.message) {
       signablePayload = (params.tssParams as TSSParamsForMessage).bufferToSign;
     }
+    let hash: Hash | undefined;
+    try {
+      hash = this.baseCoin.getHashFunction();
+    } catch (err) {
+      hash = undefined;
+    }
     const decryptedOShare = this.bitgo.decrypt({ input: encryptedOShare, password: walletPassphrase });
     const { i, R, s, y } = await ECDSAMethods.createUserSignatureShare(
       JSON.parse(decryptedOShare),
       dShareFromBitgo,
-      signablePayload
+      signablePayload,
+      hash
     );
     // return only required SShare without bigints from VAShare
     return {
@@ -1326,13 +1333,15 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
+    openSSLBytes: Uint8Array,
     challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void> {
     // Fetch user's ecdh public keychain needed for signing the challenges
     const ecdhKeypair = await bitgo.getEcdhKeypairPrivate(userPassword, entId);
 
     // Generate and sign enterprise challenge
-    const entChallengeWithProof = challenge ?? (await EcdsaRangeProof.generateNtilde(minModulusBitLength));
+    const entChallengeWithProof =
+      challenge ?? (await EcdsaRangeProof.generateNtilde(openSSLBytes, minModulusBitLength));
     const serializedEntChallengeWithProof = EcdsaTypes.serializeNtildeWithProofs(entChallengeWithProof);
     const signedEnterpriseChallenge = EcdsaUtils.signChallenge(
       serializedEntChallengeWithProof,

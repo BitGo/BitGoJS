@@ -13,6 +13,10 @@ import { DeserializedNtilde, RangeProof } from '../../../../src/tss/ecdsa/types'
 import { modPow, randBetween } from 'bigint-crypto-utils';
 import { createHash } from 'crypto';
 
+import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+
+const openSSLBytes = loadWebAssembly().buffer;
+
 describe('MtA range proof', function () {
   const curve = new Secp256k1Curve();
   let switchPrime = false;
@@ -34,7 +38,7 @@ describe('MtA range proof', function () {
     });
 
     paillierKeyPair = await paillierBigint.generateRandomKeys(2048, true);
-    ntilde = await EcdsaRangeProof.generateNtilde(512);
+    ntilde = await EcdsaRangeProof.generateNtilde(openSSLBytes, 512);
   });
 
   after(function () {

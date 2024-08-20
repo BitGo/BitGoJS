@@ -132,6 +132,7 @@ export class Enterprise implements IEnterprise {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
+    openSSLBytes: Uint8Array,
     challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void> {
     await EcdsaUtils.initiateChallengesForEnterprise(
@@ -140,6 +141,7 @@ export class Enterprise implements IEnterprise {
       userPassword,
       bitgoInstChallengeProofSignature,
       bitgoNitroChallengeProofSignature,
+      openSSLBytes,
       challenge
     );
   }

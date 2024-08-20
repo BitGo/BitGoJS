@@ -169,7 +169,7 @@ export abstract class MpcUtils {
       }
     }
 
-    if (baseCoin.getFamily() === 'ada' && params.unspents) {
+    if (['ada', 'sui'].includes(baseCoin.getFamily()) && params.unspents) {
       baseIntent.unspents = params.unspents;
     }
 

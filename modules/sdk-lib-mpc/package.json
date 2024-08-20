@@ -52,6 +52,7 @@
     "secp256k1": "5.0.0"
   },
   "devDependencies": {
+    "@bitgo/sdk-opensslbytes": "^1.0.0",
     "@silencelaboratories/dkls-wasm-ll-bundler": "1.1.2",
     "@types/lodash": "^4.14.151",
     "@types/node": "^20.11.19",

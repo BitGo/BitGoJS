@@ -22,9 +22,14 @@ export class MPCv2SMCUtils {
   }
 
   public async keyGenRound1(enterprise: string, payload: OVC2ToBitgoRound1Payload): Promise<BitgoToOVC1Round1Response> {
+    assert(
+      payload.state === KeyCreationMPCv2StateEnum.WaitingForBitgoRound1Data,
+      `Invalid state for round 1, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound1Data}, got: ${payload.state}`
+    );
     decodeOrElse(OVC2ToBitgoRound1Payload.name, OVC2ToBitgoRound1Payload, payload, (errors) => {
       throw new Error(`error(s) parsing payload: ${errors}`);
     });
+
     const ovc1 = payload.ovc[OVCIndexEnum.ONE];
     const ovc2 = payload.ovc[OVCIndexEnum.TWO];
     const userGpgPublicKey = ovc1.gpgPubKey;
@@ -60,6 +65,10 @@ export class MPCv2SMCUtils {
   }
 
   public async keyGenRound2(enterprise: string, payload: OVC2ToBitgoRound2Payload): Promise<BitgoToOVC1Round2Response> {
+    assert(
+      payload.state === KeyCreationMPCv2StateEnum.WaitingForBitgoRound2Data,
+      `Invalid state for round 2, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound2Data}, got: ${payload.state}`
+    );
     decodeOrElse(OVC2ToBitgoRound2Payload.name, OVC2ToBitgoRound2Payload, payload, (errors) => {
       throw new Error(`error(s) parsing payload: ${errors}`);
     });
@@ -98,6 +107,10 @@ export class MPCv2SMCUtils {
   }
 
   public async keyGenRound3(enterprise: string, payload: OVC1ToBitgoRound3Payload): Promise<BitgoToOVC1Round3Response> {
+    assert(
+      payload.state === KeyCreationMPCv2StateEnum.WaitingForBitgoRound3Data,
+      `Invalid state for round 3, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound3Data}, got: ${payload.state}`
+    );
     decodeOrElse(OVC1ToBitgoRound3Payload.name, OVC1ToBitgoRound3Payload, payload, (errors) => {
       throw new Error(`error(s) parsing payload: ${errors}`);
     });

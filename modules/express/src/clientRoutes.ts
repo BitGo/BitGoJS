@@ -54,13 +54,6 @@ const debug = debugLib('bitgo:express');
 
 const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 
-declare module 'express-serve-static-core' {
-  export interface Request {
-    bitgo: BitGo;
-    config: Config;
-  }
-}
-
 function handlePing(req: express.Request, res: express.Response, next: express.NextFunction) {
   return req.bitgo.ping();
 }

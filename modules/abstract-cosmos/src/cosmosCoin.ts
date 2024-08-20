@@ -136,7 +136,7 @@ export class CosmosCoin extends BaseCoin {
    * @returns {CosmosLikeCoinRecoveryOutput} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions): Promise<CosmosLikeCoinRecoveryOutput> {
+  async recover(params: RecoveryOptions, openSSLBytes: Uint8Array): Promise<CosmosLikeCoinRecoveryOutput> {
     // Step 1: Check if params contains the required parameters
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
@@ -156,6 +156,9 @@ export class CosmosCoin extends BaseCoin {
 
     if (!params.walletPassphrase) {
       throw new Error('missing wallet passphrase');
+    }
+    if (!openSSLBytes) {
+      throw new Error('missing openSSLBytes');
     }
 
     // Step 2: Fetch the bitgo key from params
@@ -233,7 +236,7 @@ export class CosmosCoin extends BaseCoin {
       }
 
       // Step 7: Sign the tx
-      signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+      signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex, openSSLBytes);
     } else {
       // DKLS
       const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
@@ -275,7 +278,8 @@ export class CosmosCoin extends BaseCoin {
       validatorSrcAddress: string;
       validatorDstAddress: string;
       amountToRedelegate: string;
-    }
+    },
+    openSSLBytes: Uint8Array
   ): Promise<CosmosLikeCoinRecoveryOutput> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
@@ -304,7 +308,9 @@ export class CosmosCoin extends BaseCoin {
     if (!params.amountToRedelegate) {
       throw new Error('missing amountToRedelegate');
     }
-
+    if (!openSSLBytes) {
+      throw new Error('missing openSSLBytes');
+    }
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
     const MPC = new Ecdsa();
@@ -362,7 +368,7 @@ export class CosmosCoin extends BaseCoin {
       throw new Error('Missing combined key shares for user or backup');
     }
 
-    const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex);
+    const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex, openSSLBytes);
     const signableBuffer = Buffer.from(signableHex, 'hex');
     MPC.verify(signableBuffer, signature, this.getHashFunction());
     const cosmosKeyPair = this.getKeyPair(publicKey);
@@ -442,6 +448,7 @@ export class CosmosCoin extends BaseCoin {
     userKeyCombined: ECDSA.KeyCombined,
     backupKeyCombined: ECDSA.KeyCombined,
     txHex: string,
+    openSSLBytes: Uint8Array,
     {
       rangeProofChallenge,
     }: {
@@ -454,7 +461,7 @@ export class CosmosCoin extends BaseCoin {
 
     // Since this is a user <> backup signing, we will reuse the same range proof challenge
     rangeProofChallenge =
-      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde());
+      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde(openSSLBytes));
 
     const userToBackupPaillierChallenge = await EcdsaPaillierProof.generateP(
       hexToBigInt(userKeyCombined.yShares[signerTwoIndex].n)
