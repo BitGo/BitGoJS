@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.0.29...@bitgo/sdk-coin-etc@2.1.0) (2024-08-20)
+
+### Features
+
+- **sdk-coin-etc:** non-bitgo recovery support for wrw ([017155b](https://github.com/BitGo/BitGoJS/commit/017155b5a9b008377189bc94b69ed4b45d8004fe))
+
 ## [2.0.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.0.29...@bitgo/sdk-coin-etc@2.0.30) (2024-08-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-etc

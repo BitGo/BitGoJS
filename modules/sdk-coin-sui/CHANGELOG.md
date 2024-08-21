@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.4.0...@bitgo/sdk-coin-sui@5.5.0) (2024-08-20)
+
+### Features
+
+- **sdk-coin-sui:** build unsigned consolidation ([2ceadd5](https://github.com/BitGo/BitGoJS/commit/2ceadd5aef744abd11f99a0e01b9c9031ffbdd9a))
+- **sdk-coin-sui:** create broadcastable MPC transaction ([9b69f25](https://github.com/BitGo/BitGoJS/commit/9b69f257abff7f01dae5f0feb4ec7ee89e0a91cc))
+
 ## [5.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.4.0...@bitgo/sdk-coin-sui@5.4.1) (2024-08-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.53.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.51.3...@bitgo/sdk-api@1.53.0) (2024-08-20)
+
+### Features
+
+- add debug logs to transactionBuilder ([f8764dd](https://github.com/BitGo/BitGoJS/commit/f8764dddd44785a38d97788bcde0b5e0deeaae70))
+
 # [1.52.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.51.3...@bitgo/sdk-api@1.52.0) (2024-08-13)
 
 ### Features

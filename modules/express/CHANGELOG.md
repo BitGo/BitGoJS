@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.1.3...@bitgo/express@10.2.0) (2024-08-20)
+
+### Bug Fixes
+
+- **express:** remove unused files ([3c575ee](https://github.com/BitGo/BitGoJS/commit/3c575eee023686e4390642ef22d8dcdbb2c6e22e))
+- **root:** bump public-types and fix SMC MPCv2 format ([c739aa8](https://github.com/BitGo/BitGoJS/commit/c739aa8fef418276d0a5c812010153b770eac5e7))
+
+### Features
+
+- **express:** include test directory in build ([c3dcd21](https://github.com/BitGo/BitGoJS/commit/c3dcd2145f8e62214478a4fb616e62f34270cc78))
+- **express:** move magic express Request type in types folder ([dddcf76](https://github.com/BitGo/BitGoJS/commit/dddcf76f9a79600dbfefb78bf6518ad74ab16de2))
+
 ## [10.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.1.3...@bitgo/express@10.1.4) (2024-08-13)
 
 ### Bug Fixes

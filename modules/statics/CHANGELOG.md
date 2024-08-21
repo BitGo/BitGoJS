@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.27.0...@bitgo/statics@49.0.0) (2024-08-20)
+
+### Bug Fixes
+
+- **statics:** rename Bitcoin TRC20 token ([a1ed064](https://github.com/BitGo/BitGoJS/commit/a1ed064aef255da53f01f4c0e0ad8af78f86f11b))
+
+### Features
+
+- **statics:** add btc trc20 token ([cccf5df](https://github.com/BitGo/BitGoJS/commit/cccf5dfe16233c51790cf4be0b2fc78d8e5a8d03))
+- **statics:** add paypal usd and moveusd spl tokens and update peaq ([b014e33](https://github.com/BitGo/BitGoJS/commit/b014e332f5527d407411d93bd2b67b82bbe21323))
+- **statics:** add separate coinfeature for tss stuck txn management ([8322090](https://github.com/BitGo/BitGoJS/commit/8322090b4d6868248a8ab381bfcfd9d35d3dc285))
+- **statics:** add STAKING feature to RETH-ROCKET token ([0049cb2](https://github.com/BitGo/BitGoJS/commit/0049cb2573c835d8b73473997fe7c4552b877ab8))
+- **statics:** enable stuck transaction management coin feature for btc ([58ceeae](https://github.com/BitGo/BitGoJS/commit/58ceeae4873f4940b7b1f449b2a846549a0de6b2))
+- **statics:** only weth in testnet can be staked ([339275a](https://github.com/BitGo/BitGoJS/commit/339275a82d17d7d07dbb7952fdcd8c5476b5af42))
+
+### BREAKING CHANGES
+
+- **statics:** Coinfeature STUCK_TRANSACTION_MANAGEMENT is removed and
+  STUCK_TRANSACTION_MANAGEMENT_TSS or STUCK_TRANSACTION_MANAGEMENT_ONCHAIN
+  should be used instead
+
+Ticket: WP-2155
+
 # [48.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.27.0...@bitgo/statics@48.28.0) (2024-08-13)
 
 ### Features

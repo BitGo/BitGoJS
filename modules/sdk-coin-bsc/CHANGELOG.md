@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.1.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.1.13...@bitgo/sdk-coin-bsc@22.1.15) (2024-08-20)
+
+### Bug Fixes
+
+- **sdk-coin-bsc:** use prefix for bsc ([e9019a4](https://github.com/BitGo/BitGoJS/commit/e9019a4ab59b22a385985a78732e863dc124c8a1))
+
 ## [22.1.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.1.13...@bitgo/sdk-coin-bsc@22.1.14) (2024-08-13)
 
 ### Bug Fixes
