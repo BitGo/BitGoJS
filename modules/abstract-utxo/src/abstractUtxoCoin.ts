@@ -935,10 +935,20 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       nonChangeAmount.toString(),
       payAsYouGoLimit.toString()
     );
-    // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
+
+    // There are two instances where we will get into this point here
     if (nonChangeAmount.gt(payAsYouGoLimit)) {
-      // there are some addresses that are outside the scope of intended recipients that are not change addresses
-      throw new Error('prebuild attempts to spend to unintended external recipients');
+      if (isPsbt && parsedTransaction.needsCustomChangeKeySignatureVerification) {
+        // In the case that we have a custom change address on a wallet and we are building the transaction
+        // with a PSBT, we do not have the metadata to verify the address from the custom change wallet, nor
+        // can we fetch that information from the other wallet because we may not have the credentials. Therefore,
+        // we will not throw an error here, but we will log a warning.
+        debug(`cannot verify some of the addresses because it belongs to a separate wallet`);
+      } else {
+        // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
+        // there are some addresses that are outside the scope of intended recipients that are not change addresses
+        throw new Error('prebuild attempts to spend to unintended external recipients');
+      }
     }
 
     const allOutputs = parsedTransaction.outputs;
