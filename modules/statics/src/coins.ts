@@ -15897,19 +15897,10 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   solToken(
-    'cbb767c5-cd24-4ed9-a5f3-85ab661d4896',
-    'sol:moveusd',
-    'MoveMoney USD',
-    5,
-    '3AdhVEX6k85yNivHVXDEiY3WyP2WgFQTUZCahGaeC2qm',
-    UnderlyingAsset['sol:moveusd'],
-    SOL_TOKEN_FEATURES
-  ),
-  solToken(
     '2ac447ce-0fa2-4f66-9fcf-d84405ad3db1',
     'sol:pyusd',
     'PayPal USD',
-    5,
+    6,
     '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
     UnderlyingAsset['sol:pyusd'],
     SOL_TOKEN_FEATURES
