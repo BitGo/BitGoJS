@@ -429,9 +429,47 @@ describe('V2 Wallets:', function () {
         .post('/api/v2/tbtc/key', _.matches({ source: 'backup' }))
         .reply(200, { pub: 'backupPub' });
 
-      await wallets.generateWallet(params);
+      const response = await wallets.generateWallet(params);
 
       walletNock.isDone().should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase === undefined);
+      assert.ok(response.wallet);
+    });
+
+    it('should generate hot onchain wallet', async () => {
+      const params: GenerateWalletOptions = {
+        label: 'test wallet',
+        passphrase: 'multisig password',
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+      };
+
+      const walletNock = nock(bgUrl)
+        .post('/api/v2/tbtc/wallet', function (body) {
+          body.type.should.equal('hot');
+          return true;
+        })
+        .reply(200);
+
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+        .reply(200, { pub: 'bitgoPub' });
+      nock(bgUrl).post('/api/v2/tbtc/key', _.matches({})).reply(200);
+      nock(bgUrl)
+        .post('/api/v2/tbtc/key', _.matches({ source: 'backup' }))
+        .reply(200, { pub: 'backupPub' });
+
+      const response = await wallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.ok(response.wallet);
+      assert.equal(
+        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        params.passphrase
+      );
     });
   });
 
@@ -490,15 +528,64 @@ describe('V2 Wallets:', function () {
 
       const wallets = new Wallets(bitgo, tsol);
 
-      await wallets.generateWallet({
+      const params = {
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss' as any,
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+      };
+
+      const response = await wallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.ok(response.wallet);
+      assert.equal(
+        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        params.passphrase
+      );
+    });
+
+    it('should create a new TSS wallet without providing passcodeEncryptionCode', async function () {
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          pub: 'userPub',
+          type: 'independent',
+          source: 'user',
+        },
+        backupKeychain: {
+          id: '2',
+          pub: 'userPub',
+          type: 'independent',
+          source: 'backup',
+        },
+        bitgoKeychain: {
+          id: '3',
+          pub: 'userPub',
+          type: 'independent',
+          source: 'bitgo',
+        },
+      };
+      sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet').reply(200);
+
+      const wallets = new Wallets(bitgo, tsol);
+
+      const response = await wallets.generateWallet({
         label: 'tss wallet',
         passphrase: 'tss password',
         multisigType: 'tss',
         enterprise: 'enterprise',
-        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
       });
 
       walletNock.isDone().should.be.true();
+
+      assert.ok(response.wallet);
+      assert.ok(response.encryptedWalletPassphrase === undefined);
     });
 
     it('should create a new ECDSA TSS wallet with BitGoTrustAsKrs as backup provider', async function () {
@@ -831,17 +918,26 @@ describe('V2 Wallets:', function () {
 
         const wallets = new Wallets(bitgo, testCoin);
 
-        await wallets.generateWallet({
+        const params = {
           label: 'tss wallet',
           passphrase: 'tss password',
-          multisigType: 'tss',
+          multisigType: 'tss' as const,
           enterprise: 'enterprise',
           passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
           walletVersion: 3,
-        });
+        };
+
+        const response = await wallets.generateWallet(params);
 
         walletNock.isDone().should.be.true();
         stubCreateKeychains.calledOnce.should.be.true();
+
+        assert.ok(response.encryptedWalletPassphrase);
+        assert.ok(response.wallet);
+        assert.equal(
+          bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+          params.passphrase
+        );
       });
     });
 

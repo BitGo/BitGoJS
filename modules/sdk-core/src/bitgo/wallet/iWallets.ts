@@ -9,12 +9,14 @@ export interface WalletWithKeychains extends KeychainsTriplet {
   responseType: 'WalletWithKeychains';
   wallet: IWallet;
   warning?: string;
+  encryptedWalletPassphrase?: string;
 }
 
 export interface LightningWalletWithKeychains extends LightningKeychainsTriplet {
   responseType: 'LightningWalletWithKeychains';
   wallet: IWallet;
   warning?: string;
+  encryptedWalletPassphrase?: string;
 }
 
 export interface GetWalletOptions {

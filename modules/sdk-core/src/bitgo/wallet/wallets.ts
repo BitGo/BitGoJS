@@ -247,7 +247,13 @@ export class Wallets implements IWallets {
           throw new Error(`error(s) parsing generate lightning wallet request params: ${errors}`);
         }
       );
-      return this.generateLightningWallet(options);
+
+      const walletData = await this.generateLightningWallet(options);
+      walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
+        input: options.passphrase,
+        password: options.passcodeEncryptionCode,
+      });
+      return walletData;
     }
 
     common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub']);
@@ -325,8 +331,7 @@ export class Wallets implements IWallets {
       }
 
       assert(passphrase, 'cannot generate TSS keys without passphrase');
-
-      return this.generateMpcWallet({
+      const walletData = await this.generateMpcWallet({
         multisigType: 'tss',
         label,
         passphrase,
@@ -335,6 +340,13 @@ export class Wallets implements IWallets {
         walletVersion: params.walletVersion,
         backupProvider: params.backupProvider,
       });
+      if (params.passcodeEncryptionCode) {
+        walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
+          input: passphrase,
+          password: params.passcodeEncryptionCode,
+        });
+      }
+      return walletData;
     }
 
     const isBlsDkg = params.multisigType ? params.multisigType === 'blsdkg' : this.baseCoin.supportsBlsDkg();
@@ -557,6 +569,13 @@ export class Wallets implements IWallets {
 
     if (!_.isUndefined(derivationPath)) {
       userKeychain.derivationPath = derivationPath;
+    }
+
+    if (canEncrypt && params.passcodeEncryptionCode) {
+      result.encryptedWalletPassphrase = this.bitgo.encrypt({
+        input: passphrase,
+        password: params.passcodeEncryptionCode,
+      });
     }
 
     return result;
