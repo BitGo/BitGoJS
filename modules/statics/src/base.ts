@@ -2066,7 +2066,6 @@ export enum UnderlyingAsset {
   'sol:render' = 'sol:render',
   'sol:wen' = 'sol:wen',
   'sol:mew' = 'sol:mew',
-  'sol:moveusd' = 'sol:moveusd',
   'sol:pyusd' = 'sol:pyusd',
 
   // TRX tokens
