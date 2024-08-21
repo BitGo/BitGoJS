@@ -938,7 +938,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     // There are two instances where we will get into this point here
     if (nonChangeAmount.gt(payAsYouGoLimit)) {
-      if (isPsbt && parsedTransaction.needsCustomChangeKeySignatureVerification) {
+      if (isPsbt && parsedTransaction.customChange) {
         // In the case that we have a custom change address on a wallet and we are building the transaction
         // with a PSBT, we do not have the metadata to verify the address from the custom change wallet, nor
         // can we fetch that information from the other wallet because we may not have the credentials. Therefore,
