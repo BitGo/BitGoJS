@@ -11,16 +11,19 @@
   "exclude": ["node_modules"],
   "references": [
     {
+      "path": "../abstract-eth"
+    },
+    {
       "path": "../sdk-api"
     },
     {
       "path": "../sdk-core"
     },
     {
-      "path": "../sdk-test"
+      "path": "../statics"
     },
     {
-      "path": "../abstract-cosmos"
+      "path": "../sdk-test"
     }
   ]
 }

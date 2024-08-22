@@ -1,33 +1,21 @@
+import { NetworkType } from '@bitgo/statics';
+import EthereumCommon from '@ethereumjs/common';
 import { InvalidTransactionError } from '@bitgo/sdk-core';
-import { Coin } from '@cosmjs/stargate';
-import BigNumber from 'bignumber.js';
+import { testnetCommon, mainnetCommon } from './resources';
 
-import { CosmosUtils } from '@bitgo/abstract-cosmos';
-import * as constants from './constants';
+const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumCommon>([
+  [NetworkType.MAINNET, mainnetCommon],
+  [NetworkType.TESTNET, testnetCommon],
+]);
 
-export class BeraUtils extends CosmosUtils {
-  /** @inheritdoc */
-  isValidAddress(address: string): boolean {
-    return this.isValidCosmosLikeAddressWithMemoId(address, constants.accountAddressRegex);
+/**
+ * @param {NetworkType} network either mainnet or testnet
+ * @returns {EthereumCommon} Ethereum common configuration object
+ */
+export function getCommon(network: NetworkType): EthereumCommon {
+  const common = commons.get(network);
+  if (!common) {
+    throw new InvalidTransactionError('Missing network common configuration');
   }
-
-  /** @inheritdoc */
-  isValidValidatorAddress(address: string): boolean {
-    return this.isValidBech32AddressMatchingRegex(address, constants.validatorAddressRegex);
-  }
-
-  /** @inheritdoc */
-  validateAmount(amount: Coin): void {
-    const amountBig = BigNumber(amount.amount);
-    if (amountBig.isLessThanOrEqualTo(0)) {
-      throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid amount: ' + amount.amount);
-    }
-    if (!constants.validDenoms.find((denom) => denom === amount.denom)) {
-      throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid denom: ' + amount.denom);
-    }
-  }
+  return common;
 }
-
-const beraUtils: CosmosUtils = new BeraUtils();
-
-export default beraUtils;

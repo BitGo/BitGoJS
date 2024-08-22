@@ -308,6 +308,12 @@ const ZKETH_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
 ];
+const BERA_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+];
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
   ...utxoCoins,
@@ -968,26 +974,6 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
-    'd367b226-5b38-4aa4-918c-df1859647d6d',
-    'bera',
-    'Bera',
-    Networks.main.bera,
-    18,
-    UnderlyingAsset.BERA,
-    BaseUnit.BERA,
-    COSMOS_SIDECHAIN_FEATURES
-  ),
-  account(
-    '6d262f34-b21b-4b35-9a5d-94103ff1f168',
-    'tbera',
-    'Testnet Bera',
-    Networks.test.bera,
-    18,
-    UnderlyingAsset.BERA,
-    BaseUnit.BERA,
-    COSMOS_SIDECHAIN_FEATURES
-  ),
-  account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
     'islm',
     'Islamic Coin',
@@ -1166,6 +1152,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ZKETH,
     BaseUnit.ETH,
     ZKETH_FEATURES
+  ),
+  account(
+    'ac3c225e-55a9-4236-b907-a4cccc30a2fd',
+    'bera',
+    'berachain',
+    Networks.main.bera,
+    18,
+    UnderlyingAsset.BERA,
+    BaseUnit.ETH,
+    BERA_FEATURES
+  ),
+  account(
+    '038522b7-9ebf-492f-9e51-81756f8a354a',
+    'tbera',
+    'Testnet Berachain',
+    Networks.test.bera,
+    18,
+    UnderlyingAsset.BERA,
+    BaseUnit.ETH,
+    BERA_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',

@@ -795,18 +795,6 @@ class CoreumTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.testnet-1.coreum.dev/coreum/transactions/';
 }
 
-class Bera extends Mainnet implements AccountNetwork {
-  name = 'Berachain';
-  family = CoinFamily.BERA;
-  explorerUrl = undefined;
-}
-
-class BeraTestnet extends Testnet implements AccountNetwork {
-  name = 'BerachainTestnet';
-  family = CoinFamily.BERA;
-  explorerUrl = undefined;
-}
-
 class Islm extends Mainnet implements AccountNetwork {
   name = 'Haqq';
   family = CoinFamily.ISLM;
@@ -1013,6 +1001,30 @@ class ZkSyncTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
 }
 
+class Berachain extends Mainnet implements EthereumNetwork {
+  name = 'Berachain';
+  family = CoinFamily.BERA;
+  explorerUrl = '';
+  accountExplorerUrl = '';
+  chainId = 0;
+  nativeCoinOperationHashPrefix = '';
+  tokenOperationHashPrefix = '';
+}
+
+class BerachainTestnet extends Testnet implements EthereumNetwork {
+  name = 'BerachainTestnet';
+  family = CoinFamily.BERA;
+  explorerUrl = 'https://bartio.beratrail.io/tx/';
+  accountExplorerUrl = 'https://bartio.beratrail.io/address/';
+  chainId = 80084;
+  nativeCoinOperationHashPrefix = '80084';
+  tokenOperationHashPrefix = '80084-ERC20';
+  forwarderFactoryAddress = '0xccadf4198de4957d07d80673684ed19310579fc4';
+  forwarderImplementationAddress = '0xc75fb848eb0bb04e3faedbee0fc8144e8d62b83d';
+  walletFactoryAddress = '0x6e4a83086c6dd9fbce203c1ebb69eda1aba872d7';
+  walletImplementationAddress = '0xb8d48d310818b15a6960f9afbef49dc96d2bd2d3';
+}
+
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
   name = 'BaseChainTestnet';
   family = CoinFamily.BASEETH;
@@ -1054,7 +1066,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
-    bera: Object.freeze(new Bera()),
+    bera: Object.freeze(new Berachain()),
     bld: Object.freeze(new Bld()),
     bsc: Object.freeze(new BinanceSmartChain()),
     casper: Object.freeze(new Casper()),
@@ -1112,7 +1124,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
-    bera: Object.freeze(new BeraTestnet()),
+    bera: Object.freeze(new BerachainTestnet()),
     bld: Object.freeze(new BldTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
