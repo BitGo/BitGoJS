@@ -37,10 +37,6 @@ describe('Wallet Recovery Wizard', function () {
 
   beforeEach(function () {
     sandbox = sinon.createSandbox();
-    const callBack = sandbox.stub(Etc.prototype, 'queryAddressBalance' as keyof Etc);
-    callBack.withArgs(sourceRootAddress).resolves(new BN('2190000000000000000'));
-    callBack.withArgs(backupKeyAddress).resolves(new BN('190000000000000000'));
-    callBack.withArgs('0x5273e0d869226ccf579a81b6d291fb3702ba9dec').resolves(new BN('0'));
   });
 
   afterEach(function () {
@@ -56,6 +52,10 @@ describe('Wallet Recovery Wizard', function () {
   describe('Non-BitGo Recovery', function () {
     beforeEach(function () {
       tetcCoin = bitgo.coin('tetc') as Tetc;
+      const callBack = sandbox.stub(Etc.prototype, 'queryAddressBalance' as keyof Etc);
+      callBack.withArgs(sourceRootAddress).resolves(new BN('2190000000000000000'));
+      callBack.withArgs(backupKeyAddress).resolves(new BN('190000000000000000'));
+      callBack.withArgs('0x5273e0d869226ccf579a81b6d291fb3702ba9dec').resolves(new BN('0'));
     });
 
     it('should build a recovery transaction for non-bitgo recovery', async function () {
@@ -92,7 +92,7 @@ describe('Wallet Recovery Wizard', function () {
           recoveryDestination: sourceRootAddress,
         })
         .should.be.rejectedWith(
-          'Backup key address 0x5273e0d869226ccf579a81b6d291fb3702ba9dec has balance  0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some funds to this address then retry.'
+          'Backup key address 0x5273e0d869226ccf579a81b6d291fb3702ba9dec has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some funds to this address then retry.'
         );
     });
 
@@ -105,9 +105,107 @@ describe('Wallet Recovery Wizard', function () {
   });
 
   // Add tests related to unsigned sweep here if any
-  describe('Unsigned sweep', function () {
-    beforeEach(function () {
-      tetcCoin = bitgo.coin('tetc') as Tetc;
-    });
+  describe('Unsigned Sweep', function () {
+    // const userXprv =
+    //   'xpub661MyMwAqRbcFQJReFreyrt9aVUCxedV9z7amMs5p7uvHxeiJyQ3Z1KweeWRQSYHgQs1j9X77Ajs1ABqdMWZV2fLxYtJQNY72CwwQwixfNE';
+    // const userXpub =
+    //   'xpub661MyMwAqRbcFQJReFreyrt9aVUCxedV9z7amMs5p7uvHxeiJyQ3Z1KweeWRQSYHgQs1j9X\n' +
+    //   '77Ajs1ABqdMWZV2fLxYtJQNY72CwwQwixfNE';
+    // const backupXprv =
+    //   'xpub661MyMwAqRbcGYaF52itktGhGDfiL9CBBTh4TSXV6QqGgXRbhSS5DAaTbdCPJA425XwkvwyCKtTmoxcUTAUgKUf7Qr5Ks9gJP9DTfiV2PhU';
+    // const backupXpub =
+    //   'xpub661MyMwAqRbcGYaF52itktGhGDfiL9CBBTh4TSXV6QqGgXRbhSS5DAaTbdCPJA425Xwkvwy\n' +
+    //   'CKtTmoxcUTAUgKUf7Qr5Ks9gJP9DTfiV2PhU';
+    // const walletContractAddress = '0x7fcf95a9106a0ed3bd09e653c8ea3d5e489bfb23';
+    // // tetc wallet 1 receiveAddress 4
+    // const recoveryDestination = '0x321cbe223ff1c3d0c03b73b8c648ef2d91e4aaa1';
+    // const gasPrice = 25000000000;
+    //
+    // const backupKeyAddress = '0x1b9af47cc3048fe1d31ad72299611d3df3926755';
+    //
+    // beforeEach(function () {
+    //   tetcCoin = bitgo.coin('tetc') as Tetc;
+    //   const callBack = sandbox.stub(Etc.prototype, 'queryAddressBalance' as keyof Etc);
+    //   callBack.withArgs(backupKeyAddress).resolves(new BN('2190000000000000000'));
+    //   callBack.withArgs(walletContractAddress).resolves(new BN('567190000000000000000'));
+    // });
+    // it('should build unsigned sweep tx', async function () {
+    //   const recovery: OfflineVaultTxInfo | RecoveryInfo = await tetcCoin.recover({
+    //     userKey: userXpub,
+    //     backupKey: backupXpub,
+    //     walletContractAddress,
+    //     recoveryDestination,
+    //     gasPrice,
+    //   });
+    //   let parsedTx;
+    //   if ('tx' in recovery) {
+    //     parsedTx = parseTransaction(recovery.tx ?? '');
+    //   }
+    //   const decodedSendMultisigCallData = decodeTransaction(JSON.stringify(walletSimpleABI), parsedTx.data);
+    //
+    //   const safeTransferFromCallData = decodedSendMultisigCallData.args[2];
+    //   const safeTransferFromDestination = decodedSendMultisigCallData.args[0];
+    //   safeTransferFromDestination.toLowerCase().should.equal(recoveryDestination);
+    //   safeTransferFromCallData.should.be.equal('0x');
+    //   recovery.should.not.be.undefined();
+    //   recovery.should.have.properties('txHex', 'userKey', 'backupKey', 'recipients', 'walletContractAddress');
+    //   if ('recipients' in recovery) {
+    //     recovery.recipients.length.should.equal(1);
+    //     recovery.recipients[0].address.should.equal(recoveryDestination);
+    //   }
+    //   if ('walletContractAddress' in recovery) {
+    //     recovery.walletContractAddress.should.equal(walletContractAddress);
+    //   }
+    // });
+    // it('should add a second signature', async function () {
+    //   const recovery = await tetcCoin.recover({
+    //     userKey: userXpub,
+    //     backupKey: backupXpub,
+    //     walletContractAddress,
+    //     recoveryDestination,
+    //     gasPrice,
+    //   });
+    //
+    //   const txPrebuild = {
+    //     txHex: recovery.txHex,
+    //     userKey: userXpub,
+    //     backupKey: backupXpub,
+    //     coin: recovery.coin,
+    //     gasPrice: recovery.gasPrice,
+    //     gasLimit: recovery.gasLimit,
+    //     recipients: recovery.recipients,
+    //     walletContractAddress: recovery.walletContractAddress,
+    //     amount: recovery.amount,
+    //     backupKeyNonce: recovery.backupKeyNonce,
+    //     recipient: recovery.recipient,
+    //     expireTime: recovery.expireTime,
+    //     contractSequenceId: recovery.contractSequenceId,
+    //     nextContractSequenceId: recovery.nextContractSequenceId,
+    //   };
+    //
+    //   const params = {
+    //     txPrebuild,
+    //     prv: userXprv,
+    //   };
+    //   // sign transaction once
+    //   const halfSigned = await tetcCoin.signTransaction(params);
+    //
+    //   const wrapper = {} as AvaxSignTransactionOptions;
+    //   wrapper.txPrebuild = halfSigned;
+    //   wrapper.isLastSignature = true;
+    //   wrapper.walletContractAddress = walletContractAddress;
+    //   wrapper.prv = backupXprv;
+    //
+    //   // sign transaction twice with the "isLastSignature" flag
+    //   const finalSignedTx = await tetcCoin.signTransaction(wrapper);
+    //   finalSignedTx.should.have.property('txHex');
+    //   const txBuilder = tetcCoin.getTransactionBuilder() as TransactionBuilder;
+    //   txBuilder.from(finalSignedTx.txHex);
+    //   const rebuiltTx = await txBuilder.build();
+    //   rebuiltTx.signature.length.should.equal(2);
+    //   rebuiltTx.outputs.length.should.equal(1);
+    //   rebuiltTx.outputs[0].address.should.equal(txPrebuild.recipient.address);
+    //   rebuiltTx.outputs[0].value.should.equal(txPrebuild.recipient.amount);
+    // });
   });
 });

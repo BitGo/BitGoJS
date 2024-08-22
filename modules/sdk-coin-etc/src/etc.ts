@@ -3,21 +3,31 @@
  */
 import {
   AbstractEthLikeCoin,
+  BuildTransactionParams,
+  EIP1559,
   getDefaultExpireTime,
+  GetSendMethodArgsOptions,
   OfflineVaultTxInfo,
   optionalDeps,
   RecoverOptions,
   RecoveryInfo,
+  ReplayProtectionOptions,
+  SendMethodArgs,
 } from '@bitgo/abstract-eth';
 import { BaseCoin, BitGoBase, common, getIsUnsignedSweep, Util, Recipient } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork as EthLikeNetwork, ethGasConfigs } from '@bitgo/statics';
-import { TransactionBuilder, KeyPair as KeyPairLib, TransferBuilder } from './lib';
+import { TransactionBuilder, TransferBuilder, KeyPair as KeyPairLib } from './lib';
 import * as _ from 'lodash';
-import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
 import { Buffer } from 'buffer';
 import request from 'superagent';
 import { BN } from 'ethereumjs-util';
+import { bip32 } from '@bitgo/utxo-lib';
+import type * as EthTxLib from '@ethereumjs/tx';
+
+interface UnformattedTxInfo {
+  recipient: Recipient;
+}
 
 export class Etc extends AbstractEthLikeCoin {
   readonly staticsCoin?: Readonly<StaticsBaseCoin>;
@@ -111,12 +121,18 @@ export class Etc extends AbstractEthLikeCoin {
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
     // get balance of backupKey to ensure funds are available to pay fees
     const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
-    const totalGasNeeded = gasPrice.mul(gasLimit);
+    let totalGasNeeded = gasPrice.mul(gasLimit);
+
+    // On optimism chain, L1 fees is to be paid as well apart from L2 fees
+    // So we are adding the amount that can be used up as l1 fees
+    if (this.staticsCoin?.family === 'opeth') {
+      totalGasNeeded = totalGasNeeded.add(new optionalDeps.ethUtil.BN(ethGasConfigs.opethGasL1Fees));
+    }
 
     const weiToGwei = 10 ** 9;
     if (backupKeyBalance.lt(totalGasNeeded)) {
       throw new Error(
-        `Backup key address ${backupKeyAddress} has balance  ${backupKeyBalance
+        `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance
           .div(new BN(weiToGwei))
           .toString()} Gwei.` +
           `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
@@ -169,7 +185,17 @@ export class Etc extends AbstractEthLikeCoin {
     const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
     txBuilder.counter(backupKeyNonce);
     txBuilder.contract(params.walletContractAddress);
-    const txFee = { fee: gasPrice.toString() };
+    let txFee;
+    if (params.eip1559) {
+      txFee = {
+        eip1559: {
+          maxPriorityFeePerGas: params.eip1559.maxPriorityFeePerGas,
+          maxFeePerGas: params.eip1559.maxFeePerGas,
+        },
+      };
+    } else {
+      txFee = { fee: gasPrice.toString() };
+    }
     txBuilder.fee({
       ...txFee,
       gasLimit: gasLimit.toString(),
@@ -182,24 +208,37 @@ export class Etc extends AbstractEthLikeCoin {
       .expirationTime(getDefaultExpireTime())
       .to(params.recoveryDestination);
 
-    const tx = await txBuilder.build();
+    // let tx = await txBuilder.build();
     if (isUnsignedSweep) {
-      const response: OfflineVaultTxInfo = {
-        txHex: tx.toBroadcastFormat(),
+      // calculate send data
+      const sendMethodArgs = this.getSendMethodArgs(txInfo);
+      const methodSignature = optionalDeps.ethAbi.methodID(this.sendMethodName, _.map(sendMethodArgs, 'type'));
+      const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+      const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+      const txParams = {
+        to: params.walletContractAddress,
+        nonce: backupKeyNonce,
+        value: 0,
+        gasPrice: gasPrice,
+        gasLimit: gasLimit,
+        data: sendData,
+        eip1559: params.eip1559,
+        replayProtectionOptions: params.replayProtectionOptions,
+      };
+
+      // Build contract call and sign it
+      const tx = Etc.buildTransaction(txParams);
+      return this.formatForOfflineVault(
+        txInfo,
+        tx,
         userKey,
         backupKey,
-        coin: this.getChain(),
-        gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasPrice,
         gasLimit,
-        recipients: [txInfo.recipient],
-        walletContractAddress: tx.toJson().to,
-        amount: txInfo.recipient.amount,
-        backupKeyNonce,
-        eip1559: params.eip1559,
-      };
-      _.extend(response, txInfo);
-      response.nextContractSequenceId = response.contractSequenceId;
-      return response;
+        params.eip1559,
+        params.replayProtectionOptions
+      );
     }
 
     // sign the transaction
@@ -221,6 +260,126 @@ export class Etc extends AbstractEthLikeCoin {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
+  static buildTransaction(params: BuildTransactionParams): EthTxLib.FeeMarketEIP1559Transaction | EthTxLib.Transaction {
+    // if eip1559 params are specified, default to london hardfork, otherwise,
+    // default to tangerine whistle to avoid replay protection issues
+    const ethCommon = Etc.getEthCommon(params.eip1559, params.replayProtectionOptions);
+
+    const baseParams = {
+      to: params.to,
+      nonce: params.nonce,
+      value: params.value,
+      data: params.data,
+      gasLimit: new optionalDeps.ethUtil.BN(params.gasLimit),
+    };
+
+    const unsignedEthTx = !!params.eip1559
+      ? optionalDeps.EthTx.FeeMarketEIP1559Transaction.fromTxData(
+          {
+            ...baseParams,
+            maxFeePerGas: new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas),
+            maxPriorityFeePerGas: new optionalDeps.ethUtil.BN(params.eip1559.maxPriorityFeePerGas),
+          },
+          { common: ethCommon }
+        )
+      : optionalDeps.EthTx.Transaction.fromTxData(
+          {
+            ...baseParams,
+            gasPrice: new optionalDeps.ethUtil.BN(params.gasPrice),
+          },
+          { common: ethCommon }
+        );
+
+    return unsignedEthTx;
+  }
+
+  /**
+   * Gets correct Eth Common object based on params from either recovery or tx building
+   * @param eip1559 {EIP1559} configs that specify whether we should construct an eip1559 tx
+   * @param replayProtectionOptions {ReplayProtectionOptions} check if chain id supports replay protection
+   */
+  private static getEthCommon(eip1559?: EIP1559, replayProtectionOptions?: ReplayProtectionOptions) {
+    // if eip1559 params are specified, default to london hardfork, otherwise,
+    // default to tangerine whistle to avoid replay protection issues
+    const defaultHardfork = !!eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
+    const defaultCommon = new optionalDeps.EthCommon.default({
+      chain: optionalDeps.EthCommon.Chain.Mainnet,
+      hardfork: defaultHardfork,
+    });
+
+    // if replay protection options are set, override the default common setting
+    const ethCommon = replayProtectionOptions
+      ? optionalDeps.EthCommon.default.isSupportedChainId(new optionalDeps.ethUtil.BN(replayProtectionOptions.chain))
+        ? new optionalDeps.EthCommon.default({
+            chain: replayProtectionOptions.chain,
+            hardfork: replayProtectionOptions.hardfork,
+          })
+        : optionalDeps.EthCommon.default.custom({
+            chainId: new optionalDeps.ethUtil.BN(replayProtectionOptions.chain),
+            defaultHardfork: replayProtectionOptions.hardfork,
+          })
+      : defaultCommon;
+    return ethCommon;
+  }
+
+  /**
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    // Normally the SDK provides the first signature for an EthLike tx, but occasionally it provides the second and final one.
+    if (params.isLastSignature) {
+      // In this case when we're doing the second (final) signature, the logic is different.
+      return await this.signFinalEthLike(params);
+    }
+    const txBuilder = this.getTransactionBuilder(params.common);
+    txBuilder.from(params.txPrebuild.txHex);
+    txBuilder
+      .transfer()
+      .coin(this.staticsCoin?.name as string)
+      .key(new KeyPairLib({ prv: params.prv }).getKeys().prv!);
+    const transaction = await txBuilder.build();
+
+    const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
+
+    const txParams = {
+      eip1559: params.txPrebuild.eip1559,
+      txHex: transaction.toBroadcastFormat(),
+      recipients: recipients,
+      expiration: params.txPrebuild.expireTime,
+      hopTransaction: params.txPrebuild.hopTransaction,
+      custodianTransactionId: params.custodianTransactionId,
+      expireTime: params.expireTime,
+      contractSequenceId: params.txPrebuild.nextContractSequenceId as number,
+      sequenceId: params.sequenceId,
+    };
+
+    return { halfSigned: txParams };
+  }``
+
+  /**
+   * Helper function for signTransaction for the rare case that SDK is doing the second signature
+   * Note: we are expecting this to be called from the offline vault
+   * @param {SignFinalOptions.txPrebuild} params.txPrebuild
+   * @param {string} params.prv
+   * @returns {{txHex: string}}
+   */
+  /*
+  async signFinalEthLike(params: SignFinalOptions): Promise<FullySignedTransaction> {
+    const signingKey = new KeyPairLib({ prv: params.prv }).getKeys().prv;
+    if (_.isUndefined(signingKey)) {
+      throw new Error('missing private key');
+    }
+    const txBuilder = this.getTransactionBuilder(params.common);
+    try {
+      txBuilder.from(params.txPrebuild.halfSigned?.txHex);
+    } catch (e) {
+      throw new Error('invalid half-signed transaction');
+    }
+    txBuilder.sign({ key: signingKey });
+    const tx = await txBuilder.build();
+    return {
+      txHex: tx.toBroadcastFormat(),
+    };
+  }
+  */
   /**
    * Make a query to etc.network for information such as balance, token balance, solidity calls
    * @param {Object} query — key-value pairs of parameters to append after /api
@@ -451,5 +610,95 @@ export class Etc extends AbstractEthLikeCoin {
    */
   getNetwork(): EthLikeNetwork | undefined {
     return this.staticsCoin?.network as EthLikeNetwork;
+  }
+
+  /**
+   * Helper function for recover()
+   * This transforms the unsigned transaction information into a format the BitGo offline vault expects
+   * @param {UnformattedTxInfo} txInfo - tx info
+   * @param {EthLikeTxLib.Transaction | EthLikeTxLib.FeeMarketEIP1559Transaction} ethTx - the ethereumjs tx object
+   * @param {string} userKey - the user's key
+   * @param {string} backupKey - the backup key
+   * @param {Buffer} gasPrice - gas price for the tx
+   * @param {number} gasLimit - gas limit for the tx
+   * @param {EIP1559} eip1559 - eip1559 params
+   * @param {ReplayProtectionOptions} replayProtectionOptions - replay protection options
+   * @returns {Promise<OfflineVaultTxInfo>}
+   */
+  async formatForOfflineVault(
+    txInfo: UnformattedTxInfo,
+    ethTx: EthTxLib.Transaction | EthTxLib.FeeMarketEIP1559Transaction,
+    userKey: string,
+    backupKey: string,
+    gasPrice: Buffer,
+    gasLimit: number,
+    eip1559?: EIP1559,
+    replayProtectionOptions?: ReplayProtectionOptions
+  ): Promise<OfflineVaultTxInfo> {
+    if (!ethTx.to) {
+      throw new Error('Eth tx must have a `to` address');
+    }
+    const backupHDNode = bip32.fromBase58(backupKey);
+    const backupSigningKey = backupHDNode.publicKey;
+    const response: OfflineVaultTxInfo = {
+      tx: ethTx.serialize().toString('hex'),
+      userKey,
+      backupKey,
+      coin: this.getChain(),
+      gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
+      gasLimit,
+      recipients: [txInfo.recipient],
+      walletContractAddress: ethTx.to.toString(),
+      amount: txInfo.recipient.amount as string,
+      backupKeyNonce: await this.getAddressNonce(
+        `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`
+      ),
+      eip1559,
+      replayProtectionOptions,
+    };
+    _.extend(response, txInfo);
+    response.nextContractSequenceId = response.contractSequenceId;
+    return response;
+  }
+
+  /**
+   * Build arguments to call the send method on the wallet contract
+   * @param txInfo
+   */
+  getSendMethodArgs(txInfo: GetSendMethodArgsOptions): SendMethodArgs[] {
+    // Method signature is
+    // sendMultiSig(address toAddress, uint value, bytes data, uint expireTime, uint sequenceId, bytes signature)
+    return [
+      {
+        name: 'toAddress',
+        type: 'address',
+        value: txInfo.recipient.address,
+      },
+      {
+        name: 'value',
+        type: 'uint',
+        value: txInfo.recipient.amount,
+      },
+      {
+        name: 'data',
+        type: 'bytes',
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.recipient.data || '')),
+      },
+      {
+        name: 'expireTime',
+        type: 'uint',
+        value: txInfo.expireTime,
+      },
+      {
+        name: 'sequenceId',
+        type: 'uint',
+        value: txInfo.contractSequenceId,
+      },
+      {
+        name: 'signature',
+        type: 'bytes',
+        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
+      },
+    ];
   }
 }
