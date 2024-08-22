@@ -24,13 +24,13 @@ export class Bera extends AbstractEthLikeNewCoins {
   }
 
   /**
-   * Make a query to Berascan for information such as balance, token balance, solidity calls
+   * Make a query to Berachain explorer for information such as balance, token balance, solidity calls
    * @param {Object} query key-value pairs of parameters to append after /api
-   * @returns {Promise<Object>} response from Berascan
+   * @returns {Promise<Object>} response Berachain explorer
    */
   async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
     const apiToken = common.Environments[this.bitgo.getEnv()].beraExplorerApiToken;
-    const explorerUrl = common.Environments[this.bitgo.getEnv()].berascanBaseUrl;
+    const explorerUrl = common.Environments[this.bitgo.getEnv()].beraExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }
 }

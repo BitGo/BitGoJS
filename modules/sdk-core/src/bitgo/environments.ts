@@ -25,7 +25,7 @@ interface EnvironmentTemplate {
   optimisticEtherscanApiToken?: string;
   zksyncExplorerBaseUrl?: string;
   zksyncExplorerApiToken?: string;
-  berascanBaseUrl?: string;
+  beraExplorerBaseUrl?: string;
   beraExplorerApiToken?: string;
   baseethExplorerUrl?: string;
   baseethApiToken?: string;
