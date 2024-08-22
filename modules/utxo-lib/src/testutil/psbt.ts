@@ -41,21 +41,18 @@ export type OutputScriptType = ScriptType2Of3;
 /**
  * input script type and value
  */
-export interface Input {
+export type Input = {
   scriptType: InputScriptType;
   value: bigint;
-}
+};
 
 /**
- * should set either address or scriptType, never both.
- * set isInternalAddress=true for internal output address
+ * Set isInternalAddress=true for internal output address
  */
-export interface Output {
-  address?: string;
-  scriptType?: OutputScriptType;
+export type Output = {
   value: bigint;
   isInternalAddress?: boolean;
-}
+} & ({ scriptType: OutputScriptType } | { address: string });
 
 /**
  * array of supported input script types.
@@ -186,10 +183,6 @@ export function constructPsbt(
   const totalInputAmount = inputs.reduce((sum, input) => sum + input.value, BigInt(0));
   const outputInputAmount = outputs.reduce((sum, output) => sum + output.value, BigInt(0));
   assert(totalInputAmount >= outputInputAmount, 'total output can not exceed total input');
-  assert(
-    !outputs.some((o) => (o.scriptType && o.address) || (!o.scriptType && !o.address)),
-    'only either output script type or address should be provided'
-  );
 
   const psbt = createPsbtForNetwork({ network });
   const unspents = inputs.map((input, i) => toUnspent(input, i, network, rootWalletKeys));
@@ -206,7 +199,7 @@ export function constructPsbt(
   });
 
   outputs.forEach((output, i) => {
-    if (output.scriptType) {
+    if ('scriptType' in output) {
       addWalletOutputToPsbt(
         psbt,
         rootWalletKeys,
