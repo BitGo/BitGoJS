@@ -25,6 +25,8 @@ interface EnvironmentTemplate {
   optimisticEtherscanApiToken?: string;
   zksyncExplorerBaseUrl?: string;
   zksyncExplorerApiToken?: string;
+  beraExplorerBaseUrl?: string;
+  beraExplorerApiToken?: string;
   baseethExplorerUrl?: string;
   baseethApiToken?: string;
   stellarFederationServerUrl?: string;

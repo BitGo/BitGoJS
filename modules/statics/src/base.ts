@@ -2133,7 +2133,6 @@ export enum BaseUnit {
   KAVA = 'ukava',
   COREUM = 'ucore',
   TCOREUM = 'utestcore', // Coreum testnet uses different name for native coin
-  BERA = 'abera',
   ISLM = 'aISLM',
 }
 

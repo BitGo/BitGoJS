@@ -1,66 +1,36 @@
-import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
-import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo/statics';
-import { KeyPair, TransactionBuilderFactory } from './lib';
-import { GAS_AMOUNT, GAS_LIMIT } from './lib/constants';
-import utils from './lib/utils';
+/**
+ * @prettier
+ */
+import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import {
+  AbstractEthLikeNewCoins,
+  recoveryBlockchainExplorerQuery,
+  TransactionBuilder as EthLikeTransactionBuilder,
+} from '@bitgo/abstract-eth';
+import { TransactionBuilder } from './lib';
 
-export class Bera extends CosmosCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+export class Bera extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Bera(bitgo, staticsCoin);
   }
 
-  /** @inheritDoc **/
-  getBuilder(): TransactionBuilderFactory {
-    return new TransactionBuilderFactory(coins.get(this.getChain()));
+  protected getTransactionBuilder(): EthLikeTransactionBuilder {
+    return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
-  /** @inheritDoc **/
-  getBaseFactor(): string | number {
-    return 1e18;
-  }
-
-  /** @inheritDoc **/
-  isValidAddress(address: string): boolean {
-    return utils.isValidAddress(address) || utils.isValidValidatorAddress(address);
-  }
-
-  /** @inheritDoc **/
-  protected getPublicNodeUrl(): string {
-    return Environments[this.bitgo.getEnv()].beraNodeUrl;
-  }
-
-  /** @inheritDoc **/
-  getDenomination(): string {
-    return BaseUnit.BERA;
-  }
-
-  /** @inheritDoc **/
-  getGasAmountDetails(): GasAmountDetails {
-    return {
-      gasAmount: GAS_AMOUNT,
-      gasLimit: GAS_LIMIT,
-    };
-  }
-
-  /** @inheritDoc **/
-  getKeyPair(publicKey: string): CosmosKeyPair {
-    return new KeyPair({ pub: publicKey });
-  }
-
-  /** @inheritDoc **/
-  getAddressFromPublicKey(publicKey: string): string {
-    return new KeyPair({ pub: publicKey }).getAddress();
+  /**
+   * Make a query to Berachain explorer for information such as balance, token balance, solidity calls
+   * @param {Object} query key-value pairs of parameters to append after /api
+   * @returns {Promise<Object>} response Berachain explorer
+   */
+  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
+    const apiToken = common.Environments[this.bitgo.getEnv()].beraExplorerApiToken;
+    const explorerUrl = common.Environments[this.bitgo.getEnv()].beraExplorerBaseUrl;
+    return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }
 }
