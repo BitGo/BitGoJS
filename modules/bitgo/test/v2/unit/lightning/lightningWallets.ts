@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import * as nock from 'nock';
 
@@ -164,7 +165,14 @@ describe('Lightning wallets', function () {
         .post('/api/v2/tlnbtc/wallet', (body) => validateWalletRequest(body))
         .reply(200, { id: 'walletId' });
 
-      await wallets.generateWallet(params);
+      const response = await wallets.generateWallet(params);
+
+      assert.ok(response.wallet);
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.equal(
+        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        params.passphrase
+      );
     });
   });
 });
