@@ -15907,6 +15907,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:pyusd'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '213c84a8-9114-46fb-b159-fafe8d30de9e',
+    'sol:moveusd',
+    'MoveMoney USD',
+    6,
+    '3AdhVEX6k85yNivHVXDEiY3WyP2WgFQTUZCahGaeC2qm',
+    UnderlyingAsset['sol:moveusd'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
