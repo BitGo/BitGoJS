@@ -1717,6 +1717,21 @@ export class Wallet implements IWallet {
       params.txPrebuild = { txRequestId };
     }
 
+    if (params.walletPassphrase && !(params.keychain || params.key)) {
+      if (!_.isString(params.walletPassphrase)) {
+        throw new Error('walletPassphrase must be a string');
+      }
+      const keychains = await this.getKeychainsAndValidatePassphrase({
+        reqId: params.reqId,
+        walletPassphrase: params.walletPassphrase,
+      });
+      const userKeychain = keychains[0];
+      if (!userKeychain || !userKeychain.encryptedPrv) {
+        throw new Error('the user keychain does not have property encryptedPrv');
+      }
+      params.keychain = userKeychain;
+    }
+
     const presign = await this.baseCoin.presignTransaction({
       ...params,
       walletData: this._wallet,
