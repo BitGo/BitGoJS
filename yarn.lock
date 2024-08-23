@@ -1017,6 +1017,11 @@
     monocle-ts "2.3.13"
     newtype-ts "0.3.5"
 
+"@bitgo/wasm-miniscript@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/wasm-miniscript/-/wasm-miniscript-1.3.0.tgz#ecd2e74fe0bddb5eaec594e45a253a0108855f51"
+  integrity sha512-TEoN7Wrofp56e4aeoyWicWmWCuGIsklKhqVcZcVGbgx6yFDGCMRX0mJ5ry2NCDZly/tPUre4sXYdJskNT/Ch4A==
+
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
   resolved "https://registry.yarnpkg.com/@brandonblack/musig/-/musig-0.0.1-alpha.1.tgz#0895f59977bedf519099ff6e2fcbcbced30bc761"
@@ -19825,9 +19830,9 @@ web3-core@1.3.6:
     web3-utils "1.3.6"
 
 web3-errors@^1.1.4, web3-errors@^1.2.0:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/web3-errors/-/web3-errors-1.2.1.tgz#2f31cb814bd262a45b65f7701f56a0167d697ec2"
-  integrity sha512-dIsi8SFC9TCAWpPmacXeVMk/F8tDNa1Bvg8/Cc2cvJo8LRSWd099szEyb+/SiMYcLlEbwftiT9Rpukz7ql4hBg==
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/web3-errors/-/web3-errors-1.3.0.tgz#504e4d3218899df108856940087a8022d6688d74"
+  integrity sha512-j5JkAKCtuVMbY3F5PYXBqg1vWrtF4jcyyMY1rlw8a4PV67AkqlepjGgpzWJZd56Mt+TvHy6DA1F/3Id8LatDSQ==
   dependencies:
     web3-types "^1.7.0"
 
