@@ -39,6 +39,7 @@ import {
   MAX_GAS_BUDGET,
   MAX_OBJECT_LIMIT,
 } from './lib/constants';
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -335,7 +336,7 @@ export class Sui extends BaseCoin {
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
 
     for (let idx = startIdx; idx < endIdx; idx++) {
-      const derivationPath = `m/${idx}`;
+      const derivationPath = (params.seed ? getDerivationPath(params.seed) : 'm') + `/${idx}`;
       const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
       const senderAddress = this.getAddressFromPublicKey(derivedPublicKey);
       let availableBalance = new BigNumber(0);
@@ -633,7 +634,7 @@ export class Sui extends BaseCoin {
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
-    const derivationPath = `m/0`;
+    const derivationPath = (params.seed ? getDerivationPath(params.seed) : 'm') + '/0';
     const derivedPublicKey = MPC.deriveUnhardened(bitgoKey, derivationPath).slice(0, 64);
     const baseAddress = this.getAddressFromPublicKey(derivedPublicKey);
 
@@ -645,6 +646,7 @@ export class Sui extends BaseCoin {
         backupKey: params.backupKey,
         bitgoKey: params.bitgoKey,
         walletPassphrase: params.walletPassphrase,
+        seed: params.seed,
         recoveryDestination: baseAddress,
         startingScanIndex: idx,
         scan: 1,

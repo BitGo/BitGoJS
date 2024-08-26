@@ -647,9 +647,20 @@ describe('SUI:', function () {
     const receiveAddress2 = '0xdf407e3e25e9400f9779ac7571537c2361684194f1aa5db126a8f574b5ed851c';
     const walletPassphrase = 'p$Sw<RjvAgf{nYAYI2xM';
 
+    const seedReceiveAddress1 = '0xd201566e6a0bc020fd2e6f72e9bde2223f550d64daa61398cd917c2f7501324a';
+    const seedReceiveAddress2 = '0x2fa5d8394bd6bec5525b9550bf43be075b83422d0107c05c700944e3eaec26f9';
+
     beforeEach(function () {
       let callBack = sandBox.stub(Sui.prototype, 'getBalance' as keyof Sui);
-      callBack.withArgs(receiveAddress1).resolves('200101976').withArgs(receiveAddress2).resolves('200000000');
+      callBack
+        .withArgs(receiveAddress1)
+        .resolves('200101976')
+        .withArgs(receiveAddress2)
+        .resolves('200000000')
+        .withArgs(seedReceiveAddress1)
+        .resolves('500000000')
+        .withArgs(seedReceiveAddress2)
+        .resolves('200000000');
 
       callBack = sandBox.stub(Sui.prototype, 'getInputCoins' as keyof Sui);
       callBack
@@ -679,6 +690,26 @@ describe('SUI:', function () {
             digest: 'DeApRVSrTa9ttXvNyLexT4PJcAkyyxSpi3JQeUg4ua8Q',
             balance: new BigNumber('200000000'),
           },
+        ])
+        .withArgs(seedReceiveAddress1)
+        .resolves([
+          {
+            coinType: '0x2::sui::SUI',
+            objectId: '0x86e728fd7242b3be60e9c1941add2c47fb655779108c3500a216310218748e2d',
+            version: '147',
+            digest: '6PJeyEX4L8RkjsNaF5GSMCwRjmFGYrQB7fbmJPFMMPHL',
+            balance: '500000000',
+          },
+        ])
+        .withArgs(seedReceiveAddress2)
+        .resolves([
+          {
+            coinType: '0x2::sui::SUI',
+            objectId: '0xfd66dbfe7a1497f210747b0532f62e6926cb144c75e519f2dfff17a4f6e515fc',
+            version: '148',
+            digest: 'PJ3jfS1ERShSMtFWZgma4h6duWX8nm5Bei1z3BszyBk',
+            balance: '200000000',
+          },
         ]);
 
       callBack = sandBox.stub(Sui.prototype, 'getFeeEstimate' as keyof Sui);
@@ -689,6 +720,14 @@ describe('SUI:', function () {
         .resolves(new BigNumber('1019760'))
         .withArgs(
           'AAACAAgA4fUFAAAAAAAgkfJeI3uDoApick/cSoHkP0lNxrQaEkFJKCbTbk0THaMCAgABAQAAAQECAAABAQDfQH4+JelAD5d5rHVxU3wjYWhBlPGqXbEmqPV0te2FHAH6BBBe7evav3KdzOzwHQz18bdwiS+sLtjx5p1xoyotJMoAAAAAAAAAILvR1XjlKKylRGh9pX4UpBFBsCv5At6RBn+XXDAbnfRB30B+PiXpQA+Xeax1cVN8I2FoQZTxql2xJqj1dLXthRzoAwAAAAAAAADh9QUAAAAAAA=='
+        )
+        .resolves(new BigNumber('1997880'))
+        .withArgs(
+          'AAACAAgAhNcXAAAAAAAgiMmeDbicuh25fLrdfzeypLKitAIllKDASyvMg35LJAQCAgABAQAAAQECAAABAQDSAVZuagvAIP0ub3LpveIiP1UNZNqmE5jNkXwvdQEySgGG5yj9ckKzvmDpwZQa3SxH+2VXeRCMNQCiFjECGHSOLZMAAAAAAAAAIFABLLLjMJc51R0P8DHy0PbXwsYUD0b5gvVmiZsupafr0gFWbmoLwCD9Lm9y6b3iIj9VDWTaphOYzZF8L3UBMkroAwAAAAAAAADh9QUAAAAAAA=='
+        )
+        .resolves(new BigNumber('1997880'))
+        .withArgs(
+          'AAACAAgA4fUFAAAAAAAgiMmeDbicuh25fLrdfzeypLKitAIllKDASyvMg35LJAQCAgABAQAAAQECAAABAQAvpdg5S9a+xVJblVC/Q74HW4NCLQEHwFxwCUTj6uwm+QH9Ztv+ehSX8hB0ewUy9i5pJssUTHXlGfLf/xek9uUV/JQAAAAAAAAAIAW2DZdVWJ9ENnvL4Z2POOHfK2Z74DgSgDQci60MdQuXL6XYOUvWvsVSW5VQv0O+B1uDQi0BB8BccAlE4+rsJvnoAwAAAAAAAADh9QUAAAAAAA=='
         )
         .resolves(new BigNumber('1997880'));
     });
@@ -815,6 +854,108 @@ describe('SUI:', function () {
                   coinSpecific: {
                     commonKeychain:
                       '3b89eec9d2d2f3b049ecda2e7b5f47827f7927fe6618d6e8b13f64e7c95f4b00b9577ab01395ecf8eeb804b590cedae14ff5fd3947bf3b7a95b9327c49e27c54',
+                    lastScanIndex: 2,
+                  },
+                },
+                signatureShares: [],
+              },
+            ],
+            walletCoin: 'tsui',
+          },
+        ],
+      });
+
+      sandBox.assert.callCount(basecoin.getBalance, 2);
+      sandBox.assert.callCount(basecoin.getInputCoins, 2);
+      sandBox.assert.callCount(basecoin.getFeeEstimate, 2);
+    });
+
+    it('should build unsigned consolidation transactions for cold wallet with seed', async function () {
+      const res = await basecoin.recoverConsolidations({
+        bitgoKey: keys.bitgoKeyWithSeed,
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+        seed: '123',
+      });
+      res.should.deepEqual({
+        txRequests: [
+          {
+            transactions: [
+              {
+                unsignedTx: {
+                  serializedTx:
+                    '00000200085cdcab1d00000000002088c99e0db89cba1db97cbadd7f37b2a4b2a2b4022594a0c04b2bcc837e4b2404020200010100000101020000010100d201566e6a0bc020fd2e6f72e9bde2223f550d64daa61398cd917c2f7501324a0186e728fd7242b3be60e9c1941add2c47fb655779108c3500a216310218748e2d93000000000000002050012cb2e3309739d51d0ff031f2d0f6d7c2c6140f46f982f566899b2ea5a7ebd201566e6a0bc020fd2e6f72e9bde2223f550d64daa61398cd917c2f7501324ae803000000000000a48821000000000000',
+                  scanIndex: 1,
+                  coin: 'tsui',
+                  signableHex: '6d7a4c4882745707c2cd40b0c57566601a2a4d269f5cb0a692828551212cf452',
+                  derivationPath: 'm/999999/94862622/157363509/1',
+                  parsedTx: {
+                    inputs: [
+                      {
+                        address: '0xd201566e6a0bc020fd2e6f72e9bde2223f550d64daa61398cd917c2f7501324a',
+                        valueString: '497802332',
+                        value: new BigNumber(497802332),
+                      },
+                    ],
+                    outputs: [
+                      {
+                        address: '0x88c99e0db89cba1db97cbadd7f37b2a4b2a2b4022594a0c04b2bcc837e4b2404',
+                        valueString: '497802332',
+                        coinName: 'tsui',
+                      },
+                    ],
+                    spendAmount: '497802332',
+                    type: 'Transfer',
+                  },
+                  feeInfo: {
+                    fee: 2197668,
+                    feeString: '2197668',
+                  },
+                  coinSpecific: {
+                    commonKeychain:
+                      'ca0a014ba6f11106a155ef8e2cab2f76d277e4f01cffa591a9b40848343823b3d910752a49c96bf5813985206e23c9f9cd3a78f1cccf5cf88def52b573cedc93',
+                  },
+                },
+                signatureShares: [],
+              },
+            ],
+            walletCoin: 'tsui',
+          },
+          {
+            transactions: [
+              {
+                unsignedTx: {
+                  serializedTx:
+                    '00000200085c39ca0b00000000002088c99e0db89cba1db97cbadd7f37b2a4b2a2b4022594a0c04b2bcc837e4b24040202000101000001010200000101002fa5d8394bd6bec5525b9550bf43be075b83422d0107c05c700944e3eaec26f901fd66dbfe7a1497f210747b0532f62e6926cb144c75e519f2dfff17a4f6e515fc94000000000000002005b60d9755589f44367bcbe19d8f38e1df2b667be0381280341c8bad0c750b972fa5d8394bd6bec5525b9550bf43be075b83422d0107c05c700944e3eaec26f9e803000000000000a48821000000000000',
+                  scanIndex: 2,
+                  coin: 'tsui',
+                  signableHex: '32a00a6d892630467c7d0666390d3b27caaf4aefee3dda9e0c97c3f8bc06bcea',
+                  derivationPath: 'm/999999/94862622/157363509/2',
+                  parsedTx: {
+                    inputs: [
+                      {
+                        address: '0x2fa5d8394bd6bec5525b9550bf43be075b83422d0107c05c700944e3eaec26f9',
+                        valueString: '197802332',
+                        value: new BigNumber(197802332),
+                      },
+                    ],
+                    outputs: [
+                      {
+                        address: '0x88c99e0db89cba1db97cbadd7f37b2a4b2a2b4022594a0c04b2bcc837e4b2404',
+                        valueString: '197802332',
+                        coinName: 'tsui',
+                      },
+                    ],
+                    spendAmount: '197802332',
+                    type: 'Transfer',
+                  },
+                  feeInfo: {
+                    fee: 2197668,
+                    feeString: '2197668',
+                  },
+                  coinSpecific: {
+                    commonKeychain:
+                      'ca0a014ba6f11106a155ef8e2cab2f76d277e4f01cffa591a9b40848343823b3d910752a49c96bf5813985206e23c9f9cd3a78f1cccf5cf88def52b573cedc93',
                     lastScanIndex: 2,
                   },
                 },
