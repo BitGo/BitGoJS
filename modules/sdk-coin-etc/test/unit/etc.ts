@@ -2,9 +2,12 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Etc, Tetc, TransactionBuilder } from '../../src';
 import sinon from 'sinon';
-import { OfflineVaultTxInfo } from '@bitgo/abstract-eth';
+import { OfflineVaultTxInfo, SignTransactionOptions } from '@bitgo/abstract-eth';
 
 import { BN } from 'ethereumjs-util';
+import { getBuilder } from './getBuilder';
+import { FullySignedTransaction } from '@bitgo/sdk-core';
+import * as should from 'should';
 
 describe('Ethereum Classic', function () {
   let bitgo: TestBitGoAPI;
@@ -41,6 +44,8 @@ describe('Wallet Recovery Wizard', function () {
     callBack.withArgs(sourceRootAddress).resolves(new BN('2190000000000000000'));
     callBack.withArgs(backupKeyAddress).resolves(new BN('190000000000000000'));
     callBack.withArgs('0x5273e0d869226ccf579a81b6d291fb3702ba9dec').resolves(new BN('0'));
+    callBack.withArgs('0x1b9af47cc3048fe1d31ad72299611d3df3926755').resolves(new BN('190000000000000000'));
+    callBack.withArgs('0x7fcf95a9106a0ed3bd09e653c8ea3d5e489bfb23').resolves(new BN('2190000000000000000'));
   });
 
   afterEach(function () {
@@ -74,7 +79,7 @@ describe('Wallet Recovery Wizard', function () {
       recovery.should.have.property('id');
       recovery.should.have.property('tx');
 
-      const txBuilder = tetcCoin.getTransactionBuilder() as TransactionBuilder;
+      const txBuilder = getBuilder('tetc') as TransactionBuilder;
       txBuilder.from(recovery.tx);
       const tx = await txBuilder.build();
       tx.toBroadcastFormat().should.not.be.empty();
@@ -104,10 +109,85 @@ describe('Wallet Recovery Wizard', function () {
     });
   });
 
-  // Add tests related to unsigned sweep here if any
-  describe('Unsigned sweep', function () {
+  describe('Unsigned sweep for cold wallet', function () {
+    const userXprv =
+      'xprv9s21ZrQH143K38Cfd5PyKGajVbA1sZYwAKQif8qvJMfMmSY85spqTnd4taexRHc9F92QCgBzHosCauYcnJWT9eWxfFKvSjAKoSgQkf74DoM';
+    const userXpub =
+      'xpub661MyMwAqRbcFcH8j6vygQXU3czWH2GnXYLKTXFXrhCLeEsGdR961awYjr3yC8eUj9rqhgFWHVbQJWqZS7kXpLBDzvoCKDLaBujsCH12Zfj';
+    const backupXprv =
+      'xprv9s21ZrQH143K3WkGc7rUw4NU5ZZTPczbMk9GajGxpJYhJXtfnYUL4j1x6vAGcxUg9XFzEHpQWPy3aYyJZcuGnYbc2eNzrsyNn3SRNdQa1PC';
+    const backupXpub =
+      'xpub661MyMwAqRbcGYaF52itktGhGDfiL9CBBTh4TSXV6QqGgXRbhSS5DAaTbdCPJA425XwkvwyCKtTmoxcUTAUgKUf7Qr5Ks9gJP9DTfiV2PhU';
+
+    const walletContractAddress = '0x7fcf95a9106a0ed3bd09e653c8ea3d5e489bfb23';
+    // tetc wallet 1 receiveAddress 4
+    const recoveryDestination = '0x321cbe223ff1c3d0c03b73b8c648ef2d91e4aaa1';
+    const gasPrice = 25000000000;
+
     beforeEach(function () {
       tetcCoin = bitgo.coin('tetc') as Tetc;
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it('should generate an ETH unsigned sweep', async function () {
+      const transaction: OfflineVaultTxInfo = (await tetcCoin.recover({
+        userKey: userXpub,
+        backupKey: backupXpub,
+        walletContractAddress,
+        recoveryDestination,
+        gasPrice,
+      })) as OfflineVaultTxInfo;
+      should.exist(transaction);
+      transaction.should.have.property('txHex');
+      transaction.should.have.property('userKey');
+      transaction.should.have.property('backupKey');
+      transaction.should.have.property('gasLimit');
+      transaction.gasLimit.should.equal('500000');
+      transaction.should.have.property('gasPrice');
+      transaction.gasPrice.should.equal('25000000000');
+      transaction.should.have.property('walletContractAddress');
+      transaction.walletContractAddress.should.equal('0x7fcf95a9106a0ed3bd09e653c8ea3d5e489bfb23');
+      transaction.should.have.property('recipient');
+    });
+
+    it('should add a second signature', async function () {
+      const transaction = (await tetcCoin.recover({
+        userKey: userXpub,
+        backupKey: backupXpub,
+        walletContractAddress,
+        recoveryDestination,
+        gasPrice,
+      })) as OfflineVaultTxInfo;
+
+      const txPrebuild = {
+        txHex: transaction.txHex,
+      };
+
+      const params = {
+        txPrebuild,
+        prv: userXprv,
+      };
+      // sign transaction once
+      const halfSigned = await tetcCoin.signTransaction(params as SignTransactionOptions);
+      const halfSignedParams = {
+        txPrebuild: halfSigned,
+        isLastSignature: true,
+        walletContractAddress: walletContractAddress,
+        prv: backupXprv,
+      };
+      // sign transaction twice with the "isLastSignature" flag
+      const finalSignedTx = (await tetcCoin.signTransaction(
+        halfSignedParams as SignTransactionOptions
+      )) as FullySignedTransaction;
+      finalSignedTx.should.have.property('txHex');
+      const txBuilder = tetcCoin.getTransactionBuilder() as TransactionBuilder;
+      txBuilder.from(finalSignedTx.txHex);
+      const rebuiltTx = await txBuilder.build();
+      rebuiltTx.signature.length.should.equal(2);
+      rebuiltTx.outputs.length.should.equal(1);
     });
   });
 });

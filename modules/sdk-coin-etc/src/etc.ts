@@ -8,6 +8,8 @@ import {
   optionalDeps,
   RecoverOptions,
   RecoveryInfo,
+  SignedTransaction,
+  SignTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { BaseCoin, BitGoBase, common, getIsUnsignedSweep, Util, Recipient } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork as EthLikeNetwork, ethGasConfigs } from '@bitgo/statics';
@@ -451,5 +453,66 @@ export class Etc extends AbstractEthLikeCoin {
    */
   getNetwork(): EthLikeNetwork | undefined {
     return this.staticsCoin?.network as EthLikeNetwork;
+  }
+
+  /**
+   * Assemble half-sign prebuilt transaction
+   * @param {SignTransactionOptions} params
+   */
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    // Normally the SDK provides the first signature for an EthLike tx, but occasionally it provides the second and final one.
+    if (params.isLastSignature) {
+      // In this case when we're doing the second (final) signature, the logic is different.
+      return await this.signFinal(params);
+    }
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(params.txPrebuild.txHex);
+    txBuilder
+      .transfer()
+      .coin(this.staticsCoin?.name as string)
+      .key(new KeyPairLib({ prv: params.prv }).getKeys().prv!);
+    const transaction = await txBuilder.build();
+
+    const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
+
+    const txParams = {
+      eip1559: params.txPrebuild.eip1559,
+      txHex: transaction.toBroadcastFormat(),
+      recipients: recipients,
+      expiration: params.txPrebuild.expireTime,
+      hopTransaction: params.txPrebuild.hopTransaction,
+      custodianTransactionId: params.custodianTransactionId,
+      expireTime: params.expireTime,
+      contractSequenceId: params.txPrebuild.nextContractSequenceId as number,
+      sequenceId: params.sequenceId,
+    };
+
+    return { halfSigned: txParams };
+  }
+
+  /**
+   * Helper function for signTransaction for the rare case that SDK is doing the second signature
+   * Note: we are expecting this to be called from the offline vault
+   * @param params.txPrebuild
+   * @param params.prv
+   * @returns {{txHex: string}}
+   */
+  async signFinal(params) {
+    const keyPair = new KeyPairLib({ prv: params.prv });
+    const signingKey = keyPair.getKeys().prv;
+    if (_.isUndefined(signingKey)) {
+      throw new Error('missing private key');
+    }
+    const txBuilder = this.getTransactionBuilder();
+    try {
+      txBuilder.from(params.txPrebuild.halfSigned.txHex);
+    } catch (e) {
+      throw new Error('invalid half-signed transaction');
+    }
+    txBuilder.sign({ key: signingKey });
+    const tx = await txBuilder.build();
+    return {
+      txHex: tx.toBroadcastFormat(),
+    };
   }
 }
