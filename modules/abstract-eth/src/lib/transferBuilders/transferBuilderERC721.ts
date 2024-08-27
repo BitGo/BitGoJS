@@ -1,5 +1,4 @@
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
-import { hexlify, hexZeroPad } from 'ethers/lib/utils';
 
 import { ContractCall } from '../contractCall';
 import { decodeERC721TransferData, isValidEthAddress, sendMultiSigData } from '../utils';
@@ -9,11 +8,9 @@ import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 
 export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
   private _tokenId: string;
-  private _bytes: string;
 
   constructor(serializedData?: string) {
     super(serializedData);
-    this.bytes(0);
     if (serializedData) {
       this.decodeTransferData(serializedData);
     }
@@ -38,14 +35,9 @@ export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
     return this;
   }
 
-  bytes(bytesInNumber: number): ERC721TransferBuilder {
-    this._bytes = hexZeroPad(hexlify(bytesInNumber), 32);
-    return this;
-  }
-
   build(): string {
     const types = ERC721SafeTransferTypes;
-    const values = [this._fromAddress, this._toAddress, this._tokenId, this._bytes];
+    const values = [this._fromAddress, this._toAddress, this._tokenId];
     const contractCall = new ContractCall(ERC721SafeTransferTypeMethodId, types, values);
     return contractCall.serialize();
   }
