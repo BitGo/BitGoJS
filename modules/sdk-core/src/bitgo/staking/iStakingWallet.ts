@@ -47,6 +47,10 @@ export interface StakeOptions {
   clientId?: string;
   validator?: string;
   /**
+   * used to select a provider instead of a validator address (i.e for ETH flow)
+   */
+  provider?: string;
+  /**
    * flag to indicate if the staking request is for restaking
    *
    * i.e: ETH restaking flow
