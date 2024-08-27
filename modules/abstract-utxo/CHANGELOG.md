@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.13.0...@bitgo/abstract-utxo@8.13.1) (2024-08-27)
+
+### Bug Fixes
+
+- **abstract-utxo:** do not throw error when cannot verify psbt ccw ([0fadd86](https://github.com/BitGo/BitGoJS/commit/0fadd86ad4e7a6b6a79f5c919f8bbc36f9fa23a5))
+- **abstract-utxo:** fix change wallet verification ([1d27e87](https://github.com/BitGo/BitGoJS/commit/1d27e87bd053733b7970ed749de12fda506826a3))
+
 # [8.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.12.0...@bitgo/abstract-utxo@8.13.0) (2024-08-20)
 
 ### Features

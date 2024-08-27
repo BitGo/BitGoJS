@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.5.0...@bitgo/sdk-coin-sui@5.6.0) (2024-08-27)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** remove keychain check from isWalletAddress() ([1e95878](https://github.com/BitGo/BitGoJS/commit/1e958786d63bef94bdc3f964b91b6cf76d33beda))
+
+### Features
+
+- **sdk-coin-sui:** support seed based MPC addresses ([9e1830a](https://github.com/BitGo/BitGoJS/commit/9e1830a6cbebf16b781b4c8e6f5f905b2b9b75fe))
+
 # [5.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.4.0...@bitgo/sdk-coin-sui@5.5.0) (2024-08-20)
 
 ### Features
