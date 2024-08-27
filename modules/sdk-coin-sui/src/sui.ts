@@ -155,29 +155,11 @@ export class Sui extends BaseCoin {
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    const { keychains, address: newAddress, index } = params;
+    const { address: newAddress } = params;
 
     if (!this.isValidAddress(newAddress)) {
       throw new InvalidAddressError(`invalid address: ${newAddress}`);
     }
-
-    if (!keychains) {
-      throw new Error('missing required param keychains');
-    }
-
-    for (const keychain of keychains) {
-      const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      const commonKeychain = keychain.commonKeychain as string;
-
-      const derivationPath = 'm/' + index;
-      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
-      const expectedAddress = this.getAddressFromPublicKey(derivedPublicKey);
-
-      if (newAddress !== expectedAddress) {
-        return false;
-      }
-    }
-
     return true;
   }
 

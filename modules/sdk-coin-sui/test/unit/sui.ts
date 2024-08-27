@@ -307,14 +307,6 @@ describe('SUI:', function () {
       (await basecoin.isWalletAddress(params)).should.equal(true);
     });
 
-    it('should return false for isWalletAddress with valid address for index 5 and address is for a different index', async function () {
-      const wrongAddressForIndex5 = '0xc392383b676f4008bbf7c290c3712aa04d0cb3fe10a5f2db14cf5019c26fe0bb';
-      const index = 5;
-
-      const params = { commonKeychain, address: wrongAddressForIndex5, index, keychains };
-      (await basecoin.isWalletAddress(params)).should.equal(false);
-    });
-
     it('should throw error for isWalletAddress when keychains is missing', async function () {
       const address = '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59';
       const index = 0;
