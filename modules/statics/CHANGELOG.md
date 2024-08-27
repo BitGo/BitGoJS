@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.0.0...@bitgo/statics@49.1.0) (2024-08-27)
+
+### Bug Fixes
+
+- **statics:** remove moveusd spl token ([ec68ca4](https://github.com/BitGo/BitGoJS/commit/ec68ca4fd033cd8de097838dde8cb355e671da81))
+
+### Features
+
+- **sdk-coin-bera:** add bera sdk skeleton ([db64fa8](https://github.com/BitGo/BitGoJS/commit/db64fa81cd46d6c5ff6505c30173223a817e2540))
+- **statics:** add moveusd spl token ([7124677](https://github.com/BitGo/BitGoJS/commit/7124677a3669b9e9b35d608f433949b58205581e))
+
 # [49.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@48.27.0...@bitgo/statics@49.0.0) (2024-08-20)
 
 ### Bug Fixes

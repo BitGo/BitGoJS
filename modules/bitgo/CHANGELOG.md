@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.0.0...bitgo@39.1.0) (2024-08-27)
+
+### Features
+
+- **sdk-core:** add encryptedWalletPassphrase to generateWallet method ([bce6011](https://github.com/BitGo/BitGoJS/commit/bce6011bec5567fec84645bfd3fe26f77397f916))
+
 # [39.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@38.18.0...bitgo@39.0.0) (2024-08-20)
 
 ### Bug Fixes

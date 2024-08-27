@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [23.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.0.31...@bitgo/account-lib@23.1.0) (2024-08-27)
+
+### Features
+
+- **sdk-coin-bera:** add bera sdk skeleton ([db64fa8](https://github.com/BitGo/BitGoJS/commit/db64fa81cd46d6c5ff6505c30173223a817e2540))
+
 ## [23.0.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.0.29...@bitgo/account-lib@23.0.31) (2024-08-20)
 
 **Note:** Version bump only for package @bitgo/account-lib

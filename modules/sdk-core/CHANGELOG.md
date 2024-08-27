@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.0.0...@bitgo/sdk-core@28.1.0) (2024-08-27)
+
+### Features
+
+- **sdk-coin-bera:** add bera sdk skeleton ([94f1338](https://github.com/BitGo/BitGoJS/commit/94f133878b49eee3a52caae07091a449b53e0950))
+- **sdk-coin-bera:** add bera sdk skeleton ([db64fa8](https://github.com/BitGo/BitGoJS/commit/db64fa81cd46d6c5ff6505c30173223a817e2540))
+- **sdk-core:** add encryptedWalletPassphrase to generateWallet method ([bce6011](https://github.com/BitGo/BitGoJS/commit/bce6011bec5567fec84645bfd3fe26f77397f916))
+
 # [28.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@27.8.0...@bitgo/sdk-core@28.0.0) (2024-08-20)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@10.1.0...@bitgo/utxo-lib@10.2.0) (2024-08-27)
+
+### Features
+
+- **utxo-lib:** improve types Output and Input in testutil ([1e9d366](https://github.com/BitGo/BitGoJS/commit/1e9d366212cfed4406307c6529475620efc89f20))
+
 # [10.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@10.0.0...@bitgo/utxo-lib@10.1.0) (2024-08-07)
 
 ### Features
