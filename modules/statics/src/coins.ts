@@ -9208,6 +9208,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ETHOPT
   ),
   erc20(
+    'cee3c700-5770-4161-bfe9-52b0bb7de833',
+    'ethton',
+    'TON Token',
+    18,
+    '0x6a6c2ada3ce053561c2fbc3ee211f23d9b8c520a',
+    UnderlyingAsset.ETHTON
+  ),
+  erc20(
     '008145a9-f2d1-44d1-9eec-758d64b6b353',
     'etx',
     'Ethereum Dex',
@@ -15920,6 +15928,15 @@ export const coins = CoinMap.fromCoins([
     6,
     '3AdhVEX6k85yNivHVXDEiY3WyP2WgFQTUZCahGaeC2qm',
     UnderlyingAsset['sol:moveusd'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'a5beabb1-bd50-43e3-8f69-a4622c43ac63',
+    'sol:dxl',
+    'Dexlab',
+    6,
+    'GsNzxJfFn6zQdJGeYsupJWzUAm57Ba7335mfhWvFiE9Z',
+    UnderlyingAsset['sol:dxl'],
     SOL_TOKEN_FEATURES
   ),
 

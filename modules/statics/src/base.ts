@@ -732,6 +732,7 @@ export enum UnderlyingAsset {
   ETHMOON = 'ethmoon',
   ETHOPT = 'ethopt',
   ETHOS = 'ethos',
+  ETHTON = 'ethton',
   ETHX = 'ethx',
   ETV = 'etv',
   ETX = 'etx',
@@ -2068,6 +2069,7 @@ export enum UnderlyingAsset {
   'sol:mew' = 'sol:mew',
   'sol:pyusd' = 'sol:pyusd',
   'sol:moveusd' = 'sol:moveusd',
+  'sol:dxl' = 'sol:dxl',
 
   // TRX tokens
   'trx:jst' = 'trx:jst',
