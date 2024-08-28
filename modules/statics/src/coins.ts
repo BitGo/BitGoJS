@@ -15939,6 +15939,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:dxl'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '52adeafb-ba97-46a5-bc25-e79d0a3e544d',
+    'sol:mother',
+    'Mother Iggy',
+    6,
+    '3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN',
+    UnderlyingAsset['sol:mother'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
