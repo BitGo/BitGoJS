@@ -2070,6 +2070,7 @@ export enum UnderlyingAsset {
   'sol:pyusd' = 'sol:pyusd',
   'sol:moveusd' = 'sol:moveusd',
   'sol:dxl' = 'sol:dxl',
+  'sol:mother' = 'sol:mother',
 
   // TRX tokens
   'trx:jst' = 'trx:jst',
