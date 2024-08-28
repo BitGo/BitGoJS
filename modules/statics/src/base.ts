@@ -2082,6 +2082,7 @@ export enum UnderlyingAsset {
 
   // Sui tokens
   'sui:deep' = 'sui:deep',
+  'sui:suins' = 'sui:suins',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',

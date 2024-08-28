@@ -17091,6 +17091,16 @@ export const coins = CoinMap.fromCoins([
     'DEEP',
     UnderlyingAsset['sui:deep']
   ),
+  suiToken(
+    'd868246d-a0e4-4ed3-ac9b-54ff45cf49c1',
+    'sui:suins',
+    'SuiNS',
+    6,
+    '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178',
+    'ns',
+    'NS',
+    UnderlyingAsset['sui:suins']
+  ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
     'tsui:deep',
