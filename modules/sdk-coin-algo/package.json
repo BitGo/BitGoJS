@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-algo",
-  "version": "2.1.30",
+  "version": "2.1.31",
   "description": "BitGo SDK coin library for Algorand",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,8 +40,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^28.1.0",
-    "@bitgo/statics": "^49.1.0",
+    "@bitgo/sdk-core": "^28.2.0",
+    "@bitgo/statics": "^49.2.0",
     "@hashgraph/cryptography": "1.1.2",
     "@stablelib/hex": "^1.0.0",
     "algosdk": "1.23.1",
@@ -54,8 +54,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.53.1",
-    "@bitgo/sdk-test": "^8.0.37",
+    "@bitgo/sdk-api": "^1.53.2",
+    "@bitgo/sdk-test": "^8.0.38",
     "should": "^13.1.3",
     "sinon": "^7.5.0"
   }

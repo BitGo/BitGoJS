@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.1.0...@bitgo/sdk-core@28.2.0) (2024-08-29)
+
+### Features
+
+- **sdk-core:** add provider as stake options ([7e57620](https://github.com/BitGo/BitGoJS/commit/7e576201e5130579e62ea00387f35ee76a5dd6e1))
+- **sdk-core:** improve wallet.signTransaction to get the user key ([c52a484](https://github.com/BitGo/BitGoJS/commit/c52a4846504eedd3e3c70f5824aca8f0c202a067))
+
 # [28.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.0.0...@bitgo/sdk-core@28.1.0) (2024-08-27)
 
 ### Features
