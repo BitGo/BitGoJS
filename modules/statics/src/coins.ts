@@ -184,6 +184,11 @@ const POLYGON_FEATURES = [
   CoinFeature.MPCV2,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
+const POL_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+];
 const SOL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
@@ -5631,7 +5636,8 @@ export const coins = CoinMap.fromCoins([
     'Polygon Ecosystem Token',
     18,
     '0x455e53cbb86018ac2b8092fdcd39d8444affc3f6',
-    UnderlyingAsset.POL
+    UnderlyingAsset.POL,
+    POL_FEATURES
   ),
   erc20(
     'c49d4a7f-17ff-424a-8c6b-18ed6b265af6',
