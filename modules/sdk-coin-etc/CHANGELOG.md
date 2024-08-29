@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.1.1...@bitgo/sdk-coin-etc@2.2.0) (2024-08-29)
+
+### Features
+
+- **sdk-coin-etc:** unsigned sweep support and fullsign support for etc via ovc ([206cd9b](https://github.com/BitGo/BitGoJS/commit/206cd9b8b438b911a9c24b4559d01372030c5950))
+
 ## [2.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.1.0...@bitgo/sdk-coin-etc@2.1.1) (2024-08-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-etc

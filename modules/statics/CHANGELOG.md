@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.1.0...@bitgo/statics@49.2.0) (2024-08-29)
+
+### Features
+
+- **statics:** add 'pol' token as available for Germany and Frankfurt ([c55f6a8](https://github.com/BitGo/BitGoJS/commit/c55f6a8ab32590d7a63d735b6a525fb26c30d734))
+- **statics:** add mother spl token ([d240d13](https://github.com/BitGo/BitGoJS/commit/d240d13c95e73bf727b708258ec2159a702484cc))
+- **statics:** add new batch of tokens ([c770f42](https://github.com/BitGo/BitGoJS/commit/c770f42ffe2a13296ad9f569fdd588c19f0868da))
+
 # [49.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.0.0...@bitgo/statics@49.1.0) (2024-08-27)
 
 ### Bug Fixes
