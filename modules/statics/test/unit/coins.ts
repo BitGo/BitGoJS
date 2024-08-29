@@ -111,6 +111,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
+  pol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   xrp: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
