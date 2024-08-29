@@ -22,7 +22,7 @@ const accessToken = '';
 const walletId = '';
 
 // TODO: set your passphrase for your wallet here
-const passphrase = '';
+const walletPassphrase = '';
 
 // TODO: set the recipients here, each recipient is an object with address and amount.
 const recipients = [
@@ -44,7 +44,7 @@ async function buildPayTx() {
 
   const response = await wallet.sendMany({
     recipients,
-    passphrase,
+    walletPassphrase,
     type: 'transfer',
   });
   console.log(util.inspect(response, { showHidden: false, depth: 5, colors: true }));
