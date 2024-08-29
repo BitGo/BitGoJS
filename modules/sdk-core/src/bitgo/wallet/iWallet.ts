@@ -206,6 +206,7 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   customMPCv2SigningRound3GenerationFunction?: CustomMPCv2SigningRound3GeneratingFunction;
   apiVersion?: ApiVersion;
   multisigTypeVersion?: 'MPCv2';
+  walletPassphrase?: string;
   [index: string]: unknown;
 }
 
