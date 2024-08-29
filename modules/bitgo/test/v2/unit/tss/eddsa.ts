@@ -718,53 +718,6 @@ describe('test tss helper functions', function () {
           txRequest.signatureShares[0] as SignatureShareRecord,
           validUserSigningMaterial.backupYShare,
           validUserSigningMaterial.bitgoYShare,
-          signablePayload
-        );
-        userToBitgoGShare.should.deepEqual(validUserToBitgoGShare);
-      });
-
-      it('should fail when XShare doesnt belong to the user', async function () {
-        const invalidUserSignShare = _.cloneDeep(validUserSignShare);
-        invalidUserSignShare.xShare.i = 3;
-        await createUserToBitGoGShare(
-          invalidUserSignShare,
-          txRequest.signatureShares[0] as SignatureShareRecord,
-          validUserSigningMaterial.backupYShare,
-          validUserSigningMaterial.bitgoYShare,
-          signablePayload
-        ).should.be.rejectedWith('Invalid XShare, doesnt belong to the User');
-      });
-
-      it('should fail when RShare doesnt belong to Bitgo', async function () {
-        const invalidBitgoRShare = _.cloneDeep(txRequest.signatureShares[0]);
-        invalidBitgoRShare.from = 'user';
-        await createUserToBitGoGShare(
-          validUserSignShare,
-          invalidBitgoRShare as SignatureShareRecord,
-          validUserSigningMaterial.backupYShare,
-          validUserSigningMaterial.bitgoYShare,
-          signablePayload
-        ).should.be.rejectedWith('Invalid RShare, is not from Bitgo to User');
-
-        const invalidBitgoRShare2 = _.cloneDeep(txRequest.signatureShares[0]);
-        invalidBitgoRShare2.to = 'bitgo';
-        await createUserToBitGoGShare(
-          validUserSignShare,
-          invalidBitgoRShare2 as SignatureShareRecord,
-          validUserSigningMaterial.backupYShare,
-          validUserSigningMaterial.bitgoYShare,
-          signablePayload
-        ).should.be.rejectedWith('Invalid RShare, is not from Bitgo to User');
-      });
-    });
-
-    describe('createUserToBitGoGShare with commitment:', async function () {
-      it('should succeed to create a UserToBitGo GShare', async function () {
-        const userToBitgoGShare = await createUserToBitGoGShare(
-          validUserSignShare,
-          txRequest.signatureShares[0] as SignatureShareRecord,
-          validUserSigningMaterial.backupYShare,
-          validUserSigningMaterial.bitgoYShare,
           signablePayload,
           bitgoToUserCommitment
         );
