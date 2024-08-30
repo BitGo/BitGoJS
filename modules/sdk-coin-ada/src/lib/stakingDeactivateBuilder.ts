@@ -21,7 +21,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
    *
    */
   stakingCredential(stakingPublicKey: string): this {
-    const stakeCredential = CardanoWasm.StakeCredential.from_keyhash(
+    const stakeCredential = CardanoWasm.Credential.from_keyhash(
       CardanoWasm.PublicKey.from_bytes(Buffer.from(stakingPublicKey, 'hex')).hash()
     );
     const stakeKeyDeregistrationCert = CardanoWasm.Certificate.new_stake_deregistration(

@@ -26,7 +26,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
    * @param poolHash Pool ID Hash of the pool we are going to delegate to
    */
   stakingCredential(stakingPublicKey: string, poolHash: string): this {
-    const stakeCredential = CardanoWasm.StakeCredential.from_keyhash(
+    const stakeCredential = CardanoWasm.Credential.from_keyhash(
       CardanoWasm.PublicKey.from_bytes(Buffer.from(stakingPublicKey, 'hex')).hash()
     );
     const stakeKeyRegistrationCert = CardanoWasm.Certificate.new_stake_registration(
