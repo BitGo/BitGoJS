@@ -4,7 +4,7 @@ import {
   PublicKey,
   Ed25519Signature,
   NetworkInfo,
-  StakeCredential,
+  Credential,
   RewardAddress,
   Transaction as CardanoTransaction,
 } from '@emurgo/cardano-serialization-lib-nodejs';
@@ -30,8 +30,8 @@ export class Utils implements BaseUtils {
       // 3. create full base address for staking
       baseAddr = BaseAddress.new(
         NetworkInfo.mainnet().network_id(),
-        StakeCredential.from_keyhash(paymentPub.hash()),
-        StakeCredential.from_keyhash(stakePub.hash())
+        Credential.from_keyhash(paymentPub.hash()),
+        Credential.from_keyhash(stakePub.hash())
       );
       return baseAddr.to_address().to_bech32();
     } else if (network === AddressFormat.testnet) {
@@ -41,9 +41,9 @@ export class Utils implements BaseUtils {
       const paymentPub = PublicKey.from_bytes(Buffer.from(paymentKeyPair.getKeys().pub, 'hex'));
       // 3. create full base address for staking
       const baseAddr = BaseAddress.new(
-        NetworkInfo.testnet().network_id(),
-        StakeCredential.from_keyhash(paymentPub.hash()),
-        StakeCredential.from_keyhash(stakePub.hash())
+        NetworkInfo.testnet_preprod().network_id(),
+        Credential.from_keyhash(paymentPub.hash()),
+        Credential.from_keyhash(stakePub.hash())
       );
       return baseAddr.to_address().to_bech32();
     } else {
@@ -65,14 +65,11 @@ export class Utils implements BaseUtils {
     const stakePub = PublicKey.from_bytes(Buffer.from(stakingPubKey, 'hex'));
     let rewardAddress;
     if (coinName === 'ada') {
-      rewardAddress = RewardAddress.new(
-        NetworkInfo.mainnet().network_id(),
-        StakeCredential.from_keyhash(stakePub.hash())
-      );
+      rewardAddress = RewardAddress.new(NetworkInfo.mainnet().network_id(), Credential.from_keyhash(stakePub.hash()));
     } else {
       rewardAddress = RewardAddress.new(
-        NetworkInfo.testnet().network_id(),
-        StakeCredential.from_keyhash(stakePub.hash())
+        NetworkInfo.testnet_preprod().network_id(),
+        Credential.from_keyhash(stakePub.hash())
       );
     }
     return rewardAddress.to_address().to_bech32();

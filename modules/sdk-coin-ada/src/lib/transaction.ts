@@ -340,7 +340,7 @@ export class Transaction extends BaseTransaction {
     const owners: string[] = [];
     for (let i = 0; i < poolRegistration!.pool_params().pool_owners().len(); i++) {
       const poolOwner = poolRegistration!.pool_params().pool_owners().get(i);
-      const ownerStakeKey = CardanoWasm.StakeCredential.from_keyhash(poolOwner);
+      const ownerStakeKey = CardanoWasm.Credential.from_keyhash(poolOwner);
       owners.push(CardanoWasm.RewardAddress.new(networkId, ownerStakeKey).to_address().to_bech32());
     }
     return {

@@ -126,15 +126,18 @@ describe('ADA Staking Pledge Transaction Builder', async () => {
     txData.witnesses[0].publicKey.should.equal(rawTx.pledgeNodeKeyPubkey);
     txData.witnesses[0].signature.should.equal(rawTx.pledgeNodeWitnessSignature);
 
-    txnBuilder.addSignature({ pub: rawTx.pledgeNodeKeyPubkey }, Buffer.from(rawTx.pledgeNodeWitnessSignature, 'hex'));
+    txnBuilder.addSignature(
+      { pub: rawTx.pledgeWalletKeyPubkey },
+      Buffer.from(rawTx.pledgeWalletWitnessSignature, 'hex')
+    );
     tx = (await txnBuilder.build()) as Transaction;
     tx.type.should.equal(TransactionType.StakingPledge);
     txData = tx.toJson();
     txData.witnesses.length.should.equal(2);
     txData.witnesses[0].publicKey.should.equal(rawTx.pledgeNodeKeyPubkey);
     txData.witnesses[0].signature.should.equal(rawTx.pledgeNodeWitnessSignature);
-    txData.witnesses[1].publicKey.should.equal(rawTx.pledgeNodeKeyPubkey);
-    txData.witnesses[1].signature.should.equal(rawTx.pledgeNodeWitnessSignature);
+    txData.witnesses[1].publicKey.should.equal(rawTx.pledgeWalletKeyPubkey);
+    txData.witnesses[1].signature.should.equal(rawTx.pledgeWalletWitnessSignature);
   });
 
   it('should init from partially signed txn object and preserve the signature', async () => {

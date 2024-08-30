@@ -4,7 +4,7 @@ import {
   PrivateKey,
   EnterpriseAddress,
   NetworkInfo,
-  StakeCredential,
+  Credential,
 } from '@emurgo/cardano-serialization-lib-nodejs';
 import * as nacl from 'tweetnacl';
 
@@ -28,13 +28,13 @@ export class KeyPair extends Ed25519KeyPair {
     let enterpriseAddress;
     if (format === AddressFormat.testnet) {
       enterpriseAddress = EnterpriseAddress.new(
-        NetworkInfo.testnet().network_id(),
-        StakeCredential.from_keyhash(pubKey.hash())
+        NetworkInfo.testnet_preprod().network_id(),
+        Credential.from_keyhash(pubKey.hash())
       );
     } else if (format === AddressFormat.mainnet) {
       enterpriseAddress = EnterpriseAddress.new(
         NetworkInfo.mainnet().network_id(),
-        StakeCredential.from_keyhash(pubKey.hash())
+        Credential.from_keyhash(pubKey.hash())
       );
     }
     return enterpriseAddress.to_address().to_bech32();
