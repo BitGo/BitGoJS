@@ -64,7 +64,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
-  private _walletVersion: number;
+  protected _walletVersion: number;
 
   // flush tokens parameters
   private _forwarderAddress: string;
