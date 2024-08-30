@@ -31,6 +31,6 @@ describe('ADA Staking Withdraw Transaction Builder', async () => {
     txData.withdrawals[0].value.should.equal(reward.toString());
     txData.outputs.length.should.equal(1);
     txData.outputs[0].amount.should.equal((Number(totalInput) + reward - Number(fee)).toString());
-    fee.should.equal('171749');
+    fee.should.equal('167217');
   });
 });

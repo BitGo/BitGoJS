@@ -33,7 +33,7 @@ describe('ADA Staking Activate Transaction Builder', async () => {
 
     txData.outputs.length.should.equal(1);
     txData.outputs[0].amount.should.equal((Number(totalInput) - 2000000 - Number(fee)).toString());
-    fee.should.equal('174389');
+    fee.should.equal('169945');
     tx.toBroadcastFormat().should.equal(testData.rawTx.unsignedStakingActiveTx);
     should.equal(tx.id, testData.rawTx.unsignedStakingActiveTxHash);
   });

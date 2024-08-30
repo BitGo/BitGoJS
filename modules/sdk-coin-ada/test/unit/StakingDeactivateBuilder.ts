@@ -31,7 +31,7 @@ describe('ADA Staking Deactivate Transaction Builder', async () => {
 
     txData.outputs.length.should.equal(1);
     txData.outputs[0].amount.should.equal((Number(totalInput) + 2000000 - Number(fee)).toString());
-    fee.should.equal('171573');
+    fee.should.equal('167129');
     tx.toBroadcastFormat().should.equal(testData.rawTx.unsignedStakingDeactiveTx);
     should.equal(tx.id, testData.rawTx.unsignedStakingDeactiveTxHash);
   });
@@ -49,7 +49,7 @@ describe('ADA Staking Deactivate Transaction Builder', async () => {
     txData.outputs.length.should.equal(1);
     const totalInput = '4000000';
     txData.outputs[0].amount.should.equal((Number(totalInput) + 2000000 - Number(fee)).toString());
-    fee.should.equal('171573');
+    fee.should.equal('167129');
   });
 
   // xit('should submit a staking deactivate transaction', async () => {

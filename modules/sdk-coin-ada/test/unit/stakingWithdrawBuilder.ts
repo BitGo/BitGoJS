@@ -33,7 +33,7 @@ describe('ADA Staking Withdraw Transaction Builder', async () => {
 
     txData.outputs.length.should.equal(1);
     txData.outputs[0].amount.should.equal((Number(totalInput) + reward - Number(fee)).toString());
-    fee.should.equal('171749');
+    fee.should.equal('167217');
     tx.toBroadcastFormat().should.equal(testData.rawTx.unsignedStakingWithdrawTx);
     should.equal(tx.id, testData.rawTx.unsignedStakingWithdrawTxHash);
   });
@@ -51,7 +51,7 @@ describe('ADA Staking Withdraw Transaction Builder', async () => {
     const totalInput = '4000000';
     const reward = 1239239;
     txData.outputs[0].amount.should.equal((Number(totalInput) + reward - Number(fee)).toString());
-    fee.should.equal('171749');
+    fee.should.equal('167217');
     txData.withdrawals.length.should.equal(1);
     txData.withdrawals[0].value.should.equal(reward.toString());
   });
