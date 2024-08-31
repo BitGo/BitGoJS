@@ -1869,6 +1869,15 @@ export enum UnderlyingAsset {
   'polygon:mana' = 'polygon:mana',
   'polygon:shib' = 'polygon:shib',
   'polygon:sxp' = 'polygon:sxp',
+  'polygon:grt' = 'polygon:grt',
+  'polygon:mkr' = 'polygon:mkr',
+  'polygon:oxt' = 'polygon:oxt',
+  'polygon:pax' = 'polygon:pax',
+  'polygon:paxg' = 'polygon:paxg',
+  'polygon:powr' = 'polygon:powr',
+  'polygon:super' = 'polygon:super',
+  'polygon:uma' = 'polygon:uma',
+  'polygon:zrx' = 'polygon:zrx',
 
   // Polygon NFTs
   // generic NFTs
@@ -1939,6 +1948,11 @@ export enum UnderlyingAsset {
   'bsc:sxp' = 'bsc:sxp',
   'bsc:nnn' = 'bsc:nnn',
   'bsc:nvm' = 'bsc:nvm',
+  'bsc:jasmy' = 'bsc:jasmy',
+  'bsc:near' = 'bsc:near',
+  'bsc:ocean' = 'bsc:ocean',
+  'bsc:sand' = 'bsc:sand',
+  'bsc:tusd' = 'bsc:tusd',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs

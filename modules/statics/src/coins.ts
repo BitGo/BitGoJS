@@ -11344,6 +11344,46 @@ export const coins = CoinMap.fromCoins([
     '0xbe2d8ac2a370972c4328bed520b224c3903a4941',
     UnderlyingAsset['bsc:nvm']
   ),
+  bscToken(
+    '3610aa96-9011-4b65-8b90-4ffd71cf6ee3',
+    'bsc:jasmy',
+    'Jasmy Coin',
+    18,
+    '0x15669cf161946c09a8b207650bfbb00e3d8a2e3e',
+    UnderlyingAsset['bsc:jasmy']
+  ),
+  bscToken(
+    'dd4e9b9c-0af7-49c2-bfc4-86ea6334bfd1',
+    'bsc:near',
+    'NEAR Token',
+    18,
+    '0x1fa4a73a3f0133f0025378af00236f3abdee5d63',
+    UnderlyingAsset['bsc:near']
+  ),
+  bscToken(
+    'f2da5cb6-b806-4838-a1de-13d73079d35f',
+    'bsc:ocean',
+    'Ocean Protocol',
+    18,
+    '0xdce07662ca8ebc241316a15b611c89711414dd1a',
+    UnderlyingAsset['bsc:ocean']
+  ),
+  bscToken(
+    '69c3ec6e-ac5f-422e-9d36-09942547af94',
+    'bsc:sand',
+    'The Sandbox',
+    18,
+    '0x67b725d7e342d7b611fa85e859df9697d9378b2e',
+    UnderlyingAsset['bsc:sand']
+  ),
+  bscToken(
+    'e0d3937d-0b39-4e87-ade1-44ef120803c5',
+    'bsc:tusd',
+    'TrueUSD',
+    18,
+    '0x40af3827f39d0eacbf4a168f8d4ee67c121d11c9',
+    UnderlyingAsset['bsc:tusd']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -16716,6 +16756,78 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x6abb753c1893194de4a83c6e8b4eadfc105fd5f5',
     UnderlyingAsset['polygon:sxp']
+  ),
+  polygonErc20(
+    '3a2da3aa-4a98-44c0-868a-97ca83524bb3',
+    'polygon:grt',
+    'Graph',
+    18,
+    '0x5fe2b58c013d7601147dcdd68c143a77499f5531',
+    UnderlyingAsset['polygon:grt']
+  ),
+  polygonErc20(
+    'c8e2bd73-9626-4b5e-90e5-4e306856143a',
+    'polygon:mkr',
+    'Maker',
+    18,
+    '0x6f7c932e7684666c9fd1d44527765433e01ff61d',
+    UnderlyingAsset['polygon:mkr']
+  ),
+  polygonErc20(
+    'b8c4076a-c515-468b-bb85-ed58c9de8a95',
+    'polygon:oxt',
+    'Orchid',
+    18,
+    '0x9880e3dda13c8e7d4804691a45160102d31f6060',
+    UnderlyingAsset['polygon:oxt']
+  ),
+  polygonErc20(
+    '7792ccb8-7b2e-4d43-ae61-56d1ff1269d9',
+    'polygon:pax',
+    'Paxos Standard',
+    18,
+    '0x6f3b3286fd86d8b47ec737ceb3d0d354cc657b3e',
+    UnderlyingAsset['polygon:pax']
+  ),
+  polygonErc20(
+    '6e6267d3-1d2a-4706-a4ee-bff08beb68fa',
+    'polygon:paxg',
+    'Paxos Gold',
+    18,
+    '0x553d3d295e0f695b9228246232edf400ed3560b5',
+    UnderlyingAsset['polygon:paxg']
+  ),
+  polygonErc20(
+    '73ee12ec-dfde-4518-8cce-50e723c3f6c2',
+    'polygon:powr',
+    'PowerLedger',
+    18,
+    '0x0aab8dc887d34f00d50e19aee48371a941390d14',
+    UnderlyingAsset['polygon:powr']
+  ),
+  polygonErc20(
+    'a582610a-38f2-43dd-a6ab-f3aa07ae9539',
+    'polygon:super',
+    'SuperFarm',
+    18,
+    '0xa1428174f516f527fafdd146b883bb4428682737',
+    UnderlyingAsset['polygon:super']
+  ),
+  polygonErc20(
+    'f3c94882-3e72-486c-85ec-18de010ce640',
+    'polygon:uma',
+    'UMA Voting Token (v1)',
+    18,
+    '0x3066818837c5e6ed6601bd5a91b0762877a6b731',
+    UnderlyingAsset['polygon:uma']
+  ),
+  polygonErc20(
+    'b0d13482-44ad-4e19-b2b1-2b60eb14feef',
+    'polygon:zrx',
+    'ZRX',
+    18,
+    '0x5559edb74751a0ede9dea4dc23aee72cca6be3d5',
+    UnderlyingAsset['polygon:zrx']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
