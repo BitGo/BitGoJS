@@ -109,10 +109,12 @@ type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
 type RootWalletKeys = bitgo.RootWalletKeys;
 
-export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
+type UtxoCoinSpecific = AddressCoinSpecific | DescriptorAddressCoinSpecific;
+
+export interface VerifyAddressOptions<TCoinSpecific extends UtxoCoinSpecific> extends BaseVerifyAddressOptions {
   chain?: number;
   index: number;
-  coinSpecific?: AddressCoinSpecific | DescriptorAddressCoinSpecific;
+  coinSpecific?: TCoinSpecific;
 }
 
 export interface BaseOutput {
@@ -240,7 +242,7 @@ export interface GenerateAddressOptions {
   bech32?: boolean;
 }
 
-export interface GenerateFixedAddressOptions extends GenerateAddressOptions {
+export interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
   keychains: {
     pub: string;
     aspKeyId?: string;
@@ -1014,7 +1016,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @throws {InvalidAddressDerivationPropertyError}
    * @throws {UnexpectedAddressError}
    */
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
+  async isWalletAddress(params: VerifyAddressOptions<UtxoCoinSpecific>): Promise<boolean> {
     const { address, addressType, keychains, chain, index } = params;
 
     if (!this.isValidAddress(address)) {
@@ -1084,8 +1086,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO];
   }
 
-  isDescriptorWallet(
-    params: GenerateFixedAddressOptions | GenerateDescriptorAddressOptions | VerifyAddressOptions
+  static isDescriptorWallet(
+    params:
+      | GenerateFixedScriptAddressOptions
+      | GenerateDescriptorAddressOptions
+      | VerifyAddressOptions<UtxoCoinSpecific>
   ): params is GenerateDescriptorAddressOptions {
     return 'descriptor' in params;
   }
@@ -1103,13 +1108,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.bech32      {boolean}  Deprecated
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
-  generateAddress(params: GenerateFixedAddressOptions | GenerateDescriptorAddressOptions): AddressDetails {
+  generateAddress(params: GenerateFixedScriptAddressOptions | GenerateDescriptorAddressOptions): AddressDetails {
     let derivationIndex = 0;
     if (_.isInteger(params.index) && (params.index as number) > 0) {
       derivationIndex = params.index as number;
     }
 
-    if (this.isDescriptorWallet(params)) {
+    if (AbstractUtxoCoin.isDescriptorWallet(params)) {
       const descriptor = Descriptor.fromString(params.descriptor.value, 'derivable');
       const scriptPubkey = Buffer.from(descriptor.atDerivationIndex(derivationIndex).scriptPubkey());
       const address = utxolib.address.fromOutputScript(scriptPubkey, this.network);
@@ -1125,7 +1130,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       };
     }
 
-    const { keychains, threshold, chain, segwit = false, bech32 = false } = params as GenerateFixedAddressOptions;
+    const { keychains, threshold, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
 
     let derivationChain = getExternalChainCode('p2sh');
     if (_.isNumber(chain) && _.isInteger(chain) && isChainCode(chain)) {
