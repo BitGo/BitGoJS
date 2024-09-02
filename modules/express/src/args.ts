@@ -97,4 +97,8 @@ parser.addArgument(['--signerMode'], {
 parser.addArgument(['--signerFileSystemPath'], {
   help: 'Local path specifying where an Express signer machine keeps encrypted user private keys.',
 });
+
+parser.addArgument(['--lightningSignerFileSystemPath'], {
+  help: 'Local path specifying where an Express machine keeps lightning signer urls.',
+});
 export const args = () => parser.parseArgs();

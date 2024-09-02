@@ -47,6 +47,11 @@ import { Config } from './config';
 import { ApiResponseError } from './errors';
 import { promises as fs } from 'fs';
 import { retryPromise } from './retryPromise';
+import {
+  handleCreateSignerMacaroon,
+  handleGetLightningWalletState,
+  handleInitLightningWallet,
+} from './lightning/lightningRoutes';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -1650,4 +1655,10 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
     prepareBitGo(config),
     promiseWrapper(handleV2OFCSignPayloadInExtSigningMode)
   );
+}
+
+export function setupLightningRoutes(app: express.Application, config: Config): void {
+  app.post('/api/v2/:coin/initwallet', parseBody, prepareBitGo(config), promiseWrapper(handleInitLightningWallet));
+  app.post('/api/v2/:coin/signermacaroon', parseBody, prepareBitGo(config), promiseWrapper(handleCreateSignerMacaroon));
+  app.get('/api/v2/:coin/wallet/:id/state', prepareBitGo(config), promiseWrapper(handleGetLightningWalletState));
 }
