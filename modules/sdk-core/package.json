@@ -71,7 +71,9 @@
     "strip-hex-prefix": "^1.0.0",
     "superagent": "^9.0.1",
     "tweetnacl": "^1.0.3",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "macaroon": "^3.0.4",
+    "bs58check": "^2.1.2"
   },
   "devDependencies": {
     "@bitgo/sdk-opensslbytes": "^2.0.0",
