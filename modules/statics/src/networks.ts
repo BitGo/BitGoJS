@@ -126,7 +126,7 @@ class Ada extends Mainnet implements AdaNetwork {
   utxolibName = 'cardano';
   poolDeposit = 500000000;
   stakeKeyDeposit = 2000000;
-  explorerUrl = 'https://beta.explorer.cardano.org/en/transactions/';
+  explorerUrl = 'https://beta.explorer.cardano.org/en/transaction/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
