@@ -1,6 +1,7 @@
 import { ECPairInterface } from 'ecpair';
+import * as bs58check from 'bs58check';
 import { Network } from '../networks';
-import { ECPair } from '../noble_ecc';
+import { bip32, ECPair } from '../noble_ecc';
 
 /**
  * Create an ECPair from the raw private key bytes
@@ -35,4 +36,25 @@ export function privateKeyBufferFromECPair(ecPair: ECPairInterface): Buffer {
   }
 
   return privkey;
+}
+
+/**
+ * Converts an extended key from one network to another by updating its version bytes.
+ *
+ * Handles both public and private keys, allowing conversion between networks like
+ * Bitcoin Mainnet and Testnet.
+ *
+ * @returns The extended key with the updated network version.
+ */
+export function convertExtendedKeyNetwork(extendedKey: string, fromNetwork: Network, targetNetwork: Network): string {
+  if (fromNetwork === targetNetwork) {
+    return extendedKey;
+  }
+  const decodedData = bs58check.decode(extendedKey);
+  const hdNode = bip32.fromBase58(extendedKey, fromNetwork);
+  const targetVersionBytes = hdNode.isNeutered() ? targetNetwork.bip32.public : targetNetwork.bip32.private;
+  const versionBuffer = Buffer.alloc(4);
+  versionBuffer.writeUInt32BE(targetVersionBytes, 0);
+  versionBuffer.copy(decodedData, 0, 0, 4);
+  return bs58check.encode(decodedData);
 }
