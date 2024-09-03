@@ -1,18 +1,21 @@
 import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import * as nock from 'nock';
+import { BaseCoin, getLightningAuthKeychains, getLightningKeychain } from '@bitgo/sdk-core';
 
-import { BitGo, common, GenerateLightningWalletOptions, Wallets } from '../../../../src';
+import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
 
 describe('Lightning wallets', function () {
+  const coinName = 'tlnbtc';
   const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+  let basecoin: BaseCoin;
   let wallets: Wallets;
   let bgUrl: string;
 
   before(function () {
     bitgo.initializeTestVars();
 
-    const basecoin = bitgo.coin('tlnbtc');
+    basecoin = bitgo.coin(coinName);
     wallets = basecoin.wallets();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   });
@@ -152,17 +155,17 @@ describe('Lightning wallets', function () {
       };
 
       nock(bgUrl)
-        .post('/api/v2/tlnbtc/key', (body) => validateKeyRequest(body))
+        .post('/api/v2/' + coinName + '/key', (body) => validateKeyRequest(body))
         .reply(200, { id: 'keyId1' });
       nock(bgUrl)
-        .post('/api/v2/tlnbtc/key', (body) => validateKeyRequest(body))
+        .post('/api/v2/' + coinName + '/key', (body) => validateKeyRequest(body))
         .reply(200, { id: 'keyId2' });
       nock(bgUrl)
-        .post('/api/v2/tlnbtc/key', (body) => validateKeyRequest(body))
+        .post('/api/v2/' + coinName + '/key', (body) => validateKeyRequest(body))
         .reply(200, { id: 'keyId3' });
 
       nock(bgUrl)
-        .post('/api/v2/tlnbtc/wallet', (body) => validateWalletRequest(body))
+        .post('/api/v2/' + coinName + '/wallet', (body) => validateWalletRequest(body))
         .reply(200, { id: 'walletId' });
 
       const response = await wallets.generateWallet(params);
@@ -173,6 +176,121 @@ describe('Lightning wallets', function () {
         bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
+    });
+  });
+
+  describe('Get lightning key(s)', function () {
+    const walletData = {
+      id: 'fakeid',
+      coin: coinName,
+      keys: ['abc'],
+      coinSpecific: { keys: ['def', 'ghi'] },
+    };
+
+    const userKeyData = {
+      id: 'abc',
+      pub: 'xpub1',
+      encryptedPrv: 'encryptedPrv1',
+      source: 'user',
+    };
+
+    const userAuthKeyData = {
+      id: 'def',
+      pub: 'xpub2',
+      encryptedPrv: 'encryptedPrv2',
+      source: 'user',
+      coinSpecific: {
+        tlnbtc: {
+          purpose: 'userAuth',
+        },
+      },
+    };
+
+    const nodeAuthKeyData = {
+      id: 'ghi',
+      pub: 'xpub3',
+      encryptedPrv: 'encryptedPrv3',
+      source: 'user',
+      coinSpecific: {
+        tlnbtc: {
+          purpose: 'nodeAuth',
+        },
+      },
+    };
+
+    it('should get lightning key', async function () {
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      const keyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/abc')
+        .reply(200, userKeyData);
+
+      const key = await getLightningKeychain(wallet);
+      assert.deepStrictEqual(key, userKeyData);
+      keyNock.done();
+    });
+
+    it('should get lightning auth keys', async function () {
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(200, userAuthKeyData);
+      const nodeAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKeyData);
+
+      const { userAuthKey, nodeAuthKey } = await getLightningAuthKeychains(wallet);
+      assert.deepStrictEqual(userAuthKey, userAuthKeyData);
+      assert.deepStrictEqual(nodeAuthKey, nodeAuthKeyData);
+      userAuthKeyNock.done();
+      nodeAuthKeyNock.done();
+    });
+
+    it('should fail to get lightning key for invalid coin', async function () {
+      const wallet = new Wallet(bitgo, bitgo.coin('tltc'), walletData);
+      assert.rejects(async () => await getLightningKeychain(wallet), /Invalid coin to get lightning Keychain: tltc/);
+    });
+
+    it('should fail to get lightning auth keys for invalid coin', function () {
+      const wallet = new Wallet(bitgo, bitgo.coin('tltc'), walletData);
+      assert.rejects(
+        async () => await getLightningAuthKeychains(wallet),
+        /Invalid coin to get lightning auth keychains: tltc/
+      );
+    });
+
+    it('should fail to get lightning key for invalid number of keys', async function () {
+      const wallet = new Wallet(bitgo, basecoin, { ...walletData, keys: [] });
+      assert.rejects(async () => await getLightningKeychain(wallet), /Invalid number of key in lightning wallet: 0/);
+    });
+
+    it('should fail to get lightning auth keys for invalid number of keys', async function () {
+      const wallet = new Wallet(bitgo, basecoin, { ...walletData, coinSpecific: { keys: ['def'] } });
+      assert.rejects(
+        async () => await getLightningAuthKeychains(wallet),
+        /Invalid number of auth keys in lightning wallet: 1/
+      );
+    });
+
+    it('should fail to get lightning key for invalid response', async function () {
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/abc')
+        .reply(200, { ...userKeyData, source: 'backup' });
+
+      assert.rejects(async () => await getLightningKeychain(wallet), /Invalid user key/);
+    });
+
+    it('should fail to get lightning auth keys for invalid response', async function () {
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/abc')
+        .reply(200, { ...userAuthKeyData, source: 'backup' });
+
+      assert.rejects(async () => await getLightningAuthKeychains(wallet), /Invalid lightning auth key: def/);
     });
   });
 });
