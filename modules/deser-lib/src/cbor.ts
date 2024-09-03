@@ -27,7 +27,7 @@ function getType(value: unknown): string {
     );
   }
   if (typeof value === 'string') {
-    if (value.startsWith('0x')) {
+    if ((value as string).startsWith('0x')) {
       return 'bytes';
     }
     return 'string';
