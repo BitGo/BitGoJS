@@ -542,7 +542,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BASEETH,
     BaseUnit.ETH,
-    ETH_FEATURES
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA]
   ),
   account(
     'd51fe324-1e01-4630-9b04-c724fe495a1c',
@@ -552,7 +552,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BASEETH,
     BaseUnit.ETH,
-    ETH_FEATURES
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA]
   ),
   account(
     'ffc472f5-27c6-49f8-ad9a-f57659258fb9',
