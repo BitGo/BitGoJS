@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.13.2...@bitgo/abstract-utxo@8.14.0) (2024-09-03)
+
+### Features
+
+- **abstract-utxo:** add address creation for descriptor wallets ([a5b3a71](https://github.com/BitGo/BitGoJS/commit/a5b3a71132f588c61033e44cd7a5ab0be54f0722))
+
 ## [8.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.13.1...@bitgo/abstract-utxo@8.13.2) (2024-08-29)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

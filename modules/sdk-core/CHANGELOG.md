@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.2.0...@bitgo/sdk-core@28.3.0) (2024-09-03)
+
+### Features
+
+- **sdk-core:** add lightning wallet functions ([7b48023](https://github.com/BitGo/BitGoJS/commit/7b48023cc5f59cbc8f07befeb43b49479a7a5c74))
+- **sdk-core:** add utils for signer lnd init ([719135d](https://github.com/BitGo/BitGoJS/commit/719135d6493dd17e338007c3b2e28391302a27de))
+- **sdk-core:** enforce eddsa commitment validation ([dccc590](https://github.com/BitGo/BitGoJS/commit/dccc5907a465ebe3e9e617b86060632ab81dabbd))
+
 # [28.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.1.0...@bitgo/sdk-core@28.2.0) (2024-08-29)
 
 ### Features

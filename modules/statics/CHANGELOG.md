@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.2.0...@bitgo/statics@49.3.0) (2024-09-03)
+
+### Bug Fixes
+
+- **statics:** fix cardano explorer url/ ([c72ad38](https://github.com/BitGo/BitGoJS/commit/c72ad38985ca48ff57599e8ac950ac4391f40622))
+
+### Features
+
+- **statics:** add new tokens as part of USMS Token Batch 5 ([ac0cd25](https://github.com/BitGo/BitGoJS/commit/ac0cd255d0cf106e3ab03fc13a44e193969e35bf))
+
 # [49.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.1.0...@bitgo/statics@49.2.0) (2024-08-29)
 
 ### Features

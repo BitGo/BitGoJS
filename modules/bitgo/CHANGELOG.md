@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.1.1...bitgo@39.2.0) (2024-09-03)
+
+### Features
+
+- **abstract-utxo:** add address creation for descriptor wallets ([a5b3a71](https://github.com/BitGo/BitGoJS/commit/a5b3a71132f588c61033e44cd7a5ab0be54f0722))
+- **sdk-core:** add lightning wallet functions ([7b48023](https://github.com/BitGo/BitGoJS/commit/7b48023cc5f59cbc8f07befeb43b49479a7a5c74))
+- **sdk-core:** enforce eddsa commitment validation ([dccc590](https://github.com/BitGo/BitGoJS/commit/dccc5907a465ebe3e9e617b86060632ab81dabbd))
+
 ## [39.1.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.1.0...bitgo@39.1.1) (2024-08-29)
 
 **Note:** Version bump only for package bitgo

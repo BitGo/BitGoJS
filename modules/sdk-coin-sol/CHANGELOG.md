@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.4.7...@bitgo/sdk-coin-sol@4.5.0) (2024-09-03)
+
+### Features
+
+- **sdk-coin-sol:** automatic ata creation during consolidation ([50c5e0b](https://github.com/BitGo/BitGoJS/commit/50c5e0b3832127917fe143e2d4ee3a109ccb9bd0))
+
 ## [4.4.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.4.6...@bitgo/sdk-coin-sol@4.4.7) (2024-08-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
