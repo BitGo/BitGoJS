@@ -54,7 +54,6 @@
     "no-path-concat": "off",
     "no-process-env": "off",
     "no-process-exit": "off",
-    "no-redeclare": ["error", { "builtinGlobals": true }],
     "no-sync": "warn",
     "no-trailing-spaces": ["warn", { "skipBlankLines": true, "ignoreComments": true }],
     "no-undef": "error",
