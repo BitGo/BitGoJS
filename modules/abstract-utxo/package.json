@@ -42,6 +42,7 @@
     "@bitgo/sdk-core": "^28.2.0",
     "@bitgo/unspents": "^0.47.9",
     "@bitgo/utxo-lib": "^10.2.0",
+    "@bitgo/wasm-miniscript": "^1.3.0",
     "@types/bluebird": "^3.5.25",
     "@types/lodash": "^4.14.121",
     "@types/superagent": "4.1.15",

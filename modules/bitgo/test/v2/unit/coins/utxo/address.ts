@@ -6,7 +6,7 @@ import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 const { chainCodes } = utxolib.bitgo;
 
-import { AbstractUtxoCoin, GenerateAddressOptions } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, GenerateFixedScriptAddressOptions } from '@bitgo/abstract-utxo';
 
 import { utxoCoins, keychains as keychainsBip32, getFixture, shouldEqualJSON } from './util';
 
@@ -37,7 +37,7 @@ function isCompatibleAddress(a: AbstractUtxoCoin, b: AbstractUtxoCoin): boolean 
 function run(coin: AbstractUtxoCoin) {
   const keychains = keychainsBip32.map((k) => ({ pub: k.neutered().toBase58() }));
 
-  function getParameters(): GenerateAddressOptions[] {
+  function getParameters(): GenerateFixedScriptAddressOptions[] {
     return [undefined, ...chainCodes].map((chain) => ({ keychains, chain }));
   }
 
