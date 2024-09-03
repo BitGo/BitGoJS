@@ -51,7 +51,6 @@
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.53.2",
-    "@bitgo/sdk-opensslbytes": "^2.0.0",
     "@bitgo/sdk-test": "^8.0.38"
   }
 }

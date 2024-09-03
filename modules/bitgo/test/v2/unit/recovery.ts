@@ -2,12 +2,13 @@ import * as should from 'should';
 import * as nock from 'nock';
 
 import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../src';
-import { krsProviders } from '@bitgo/sdk-core';
+import { BitGo, decrypt } from '../../../src';
+import { Ecdsa, ECDSAMethodTypes, ECDSAUtils, krsProviders } from '@bitgo/sdk-core';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TransactionFactory } from '@ethereumjs/tx';
 import * as sinon from 'sinon';
 import { ethLikeDKLSKeycard, ethLikeGG18Keycard } from '../fixtures/tss/recoveryFixtures';
+import { KeyPair } from '@bitgo/sdk-coin-eth';
 
 const recoveryNocks = require('../lib/recovery-nocks');
 
@@ -994,7 +995,22 @@ describe('Recovery:', function () {
     it('should construct a recovery tx with TSS', async function () {
       recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
       const basecoin = bitgo.coin('hteth');
-      const baseAddress = ethLikeGG18Keycard.senderAddress;
+      const MPC = new Ecdsa();
+
+      const userSigningMaterial = JSON.parse(
+        decrypt(ethLikeGG18Keycard.walletPassphrase, ethLikeGG18Keycard.userKey.replace(/\s/g, ''))
+      ) as ECDSAMethodTypes.SigningMaterial;
+
+      const userSigningKeyDerived = MPC.keyDerive(
+        userSigningMaterial.pShare,
+        [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare!],
+        'm/0'
+      );
+
+      const commonKeychain = userSigningKeyDerived.xShare.y + userSigningKeyDerived.xShare.chaincode;
+      const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeychain, 'm/0');
+      const keyPair = new KeyPair({ pub: derivedCommonKeyChain.slice(0, 66) });
+      const baseAddress = keyPair.getAddress();
 
       const nockTSSDataWithBaseAddress = nockTSSData.map((data) => {
         return {
@@ -1010,7 +1026,7 @@ describe('Recovery:', function () {
       recoveryParams = {
         userKey: ethLikeGG18Keycard.userKey,
         backupKey: ethLikeGG18Keycard.backupKey,
-        walletContractAddress: ethLikeGG18Keycard.senderAddress,
+        walletContractAddress: baseAddress,
         recoveryDestination: ethLikeGG18Keycard.destinationAddress,
         walletPassphrase: ethLikeGG18Keycard.walletPassphrase,
         eip1559: {
@@ -1048,7 +1064,16 @@ describe('Recovery:', function () {
       ]) {
         recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
         const basecoin = bitgo.coin(coin);
-        const baseAddress = ethLikeDKLSKeycard.senderAddress;
+        const mpcv2KeyShares = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+          ethLikeDKLSKeycard.userKey.replace(/\s/g, ''),
+          ethLikeDKLSKeycard.backupKey.replace(/\s/g, ''),
+          ethLikeDKLSKeycard.walletPassphrase
+        );
+        const MPC = new Ecdsa();
+        const derivedCommonKeyChain = MPC.deriveUnhardened(mpcv2KeyShares.commonKeyChain, 'm/0');
+        const keyPair = new KeyPair({ pub: derivedCommonKeyChain.slice(0, 66) });
+        const baseAddress = keyPair.getAddress();
+
         const nockTSSDataWithBaseAddress = nockTSSData.map((data) => {
           return {
             ...data,
