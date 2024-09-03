@@ -244,7 +244,14 @@ export interface WalletCoinSpecific {
   walletVersion?: number;
   hashAlgorithm?: string;
   pendingEcdsaTssInitialization?: boolean;
+  /**
+   * Lightning coin specific data starts
+   */
   keys?: string[];
+  encryptedAdminMacaroon?: string;
+  /**
+   * Lightning coin specific data ends
+   */
 }
 
 export interface PaginationOptions {

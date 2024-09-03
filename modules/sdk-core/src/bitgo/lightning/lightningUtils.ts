@@ -2,6 +2,7 @@ import * as statics from '@bitgo/statics';
 import * as utxolib from '@bitgo/utxo-lib';
 import { importMacaroon, bytesToBase64 } from 'macaroon';
 import * as bs58check from 'bs58check';
+import { WatchOnly, WatchOnlyAccount } from './codecs';
 
 // https://github.com/lightningnetwork/lnd/blob/master/docs/remote-signing.md#the-signer-node
 export const signerMacaroonPermissions = [
@@ -22,19 +23,6 @@ export const signerMacaroonPermissions = [
     action: 'write',
   },
 ];
-
-export interface WatchOnlyAccount {
-  purpose: number;
-  coin_type: number;
-  account: number;
-  xpub: string;
-}
-
-export interface WatchOnly {
-  master_key_birthday_timestamp: string;
-  master_key_fingerprint: string;
-  accounts: WatchOnlyAccount[];
-}
 
 export const lightningNetworkName = ['bitcoin', 'testnet'] as const;
 export type LightningNetworkName = (typeof lightningNetworkName)[number];
@@ -111,11 +99,22 @@ export function addIPCaveatToMacaroon(macaroonBase64: string, ip: string): strin
   return bytesToBase64(macaroon.exportBinary());
 }
 
+const PURPOSE_WRAPPED_P2WKH = 49;
+const PURPOSE_P2WKH = 84;
+const PURPOSE_P2TR = 86;
+const PURPOSE_ALL_OTHERS = 1017;
+
+type ExtendedKeyPurpose =
+  | typeof PURPOSE_WRAPPED_P2WKH
+  | typeof PURPOSE_P2WKH
+  | typeof PURPOSE_P2TR
+  | typeof PURPOSE_ALL_OTHERS;
+
 /**
  * Converts an extended public key (xpub) to the appropriate prefix (ypub, vpub, etc.) based on its purpose and network.
  */
-function convertXpubPrefix(xpub: string, purpose: 49 | 84 | 86 | 1017, isMainnet: boolean): string {
-  if (purpose === 1017 || purpose === 86) {
+function convertXpubPrefix(xpub: string, purpose: ExtendedKeyPurpose, isMainnet: boolean): string {
+  if (purpose === PURPOSE_P2TR || purpose === PURPOSE_ALL_OTHERS) {
     return xpub;
   }
   const data = bs58check.decode(xpub);
@@ -123,10 +122,10 @@ function convertXpubPrefix(xpub: string, purpose: 49 | 84 | 86 | 1017, isMainnet
   let versionBytes: Buffer;
 
   switch (purpose) {
-    case 49:
-      versionBytes = isMainnet ? Buffer.from([0x04, 0x9d, 0x7c, 0xb2]) : Buffer.from([0x04, 0x4a, 0x52, 0x62]); // ypub/upub for p2wpkh-p2sh
+    case PURPOSE_WRAPPED_P2WKH:
+      versionBytes = isMainnet ? Buffer.from([0x04, 0x9d, 0x7c, 0xb2]) : Buffer.from([0x04, 0x4a, 0x52, 0x62]); // ypub/upub for p2sh-p2wpkh
       break;
-    case 84:
+    case PURPOSE_P2WKH:
       versionBytes = isMainnet ? Buffer.from([0x04, 0xb2, 0x47, 0x46]) : Buffer.from([0x04, 0x5f, 0x1c, 0xf6]); // zpub/vpub for p2wpkh
       break;
     default:
@@ -140,21 +139,19 @@ function convertXpubPrefix(xpub: string, purpose: 49 | 84 | 86 | 1017, isMainnet
 /**
  * Derives watch-only accounts from the master HD node for the given purposes and network.
  */
-// https://github.com/lightningnetwork/lnd/blob/master/docs/remote-signing.md#required-accounts
 function deriveWatchOnlyAccounts(masterHDNode: utxolib.BIP32Interface, isMainnet: boolean): WatchOnlyAccount[] {
+  // https://github.com/lightningnetwork/lnd/blob/master/docs/remote-signing.md#required-accounts
   if (masterHDNode.isNeutered()) {
     throw new Error('masterHDNode must not be neutered');
   }
 
-  const accounts: WatchOnlyAccount[] = [];
+  const purposes = [PURPOSE_WRAPPED_P2WKH, PURPOSE_P2WKH, PURPOSE_P2TR, PURPOSE_ALL_OTHERS] as const;
 
-  const purposes = [49, 84, 86, 1017] as const;
+  return purposes.flatMap((purpose) => {
+    const maxAccount = purpose === PURPOSE_ALL_OTHERS ? 255 : 0;
+    const coinType = purpose !== PURPOSE_ALL_OTHERS || isMainnet ? 0 : 1;
 
-  purposes.forEach((purpose) => {
-    const maxAccount = purpose === 1017 ? 255 : 0;
-    const coinType = purpose !== 1017 || isMainnet ? 0 : 1;
-
-    for (let account = 0; account <= maxAccount; account++) {
+    return Array.from({ length: maxAccount + 1 }, (_, account) => {
       const path = `m/${purpose}'/${coinType}'/${account}'`;
       const derivedNode = masterHDNode.derivePath(path);
 
@@ -162,16 +159,14 @@ function deriveWatchOnlyAccounts(masterHDNode: utxolib.BIP32Interface, isMainnet
       const neuteredNode = derivedNode.neutered();
       const xpub = convertXpubPrefix(neuteredNode.toBase58(), purpose, isMainnet);
 
-      accounts.push({
+      return {
         purpose,
         coin_type: coinType,
         account,
         xpub,
-      });
-    }
+      };
+    });
   });
-
-  return accounts;
 }
 
 /**
