@@ -62,7 +62,7 @@ Promise.coroutine(function* () {
 })();
 
 function parseWitnessCborHex(witnessCborHex) {
-  const regexPattern = /^825820([a-z0-9]{64})5840([a-z0-9]{128})$/;
+  const regexPattern = /^(8200)?825820([a-z0-9]{64})5840([a-z0-9]{128})$/;
   const regex = new RegExp(regexPattern);
   const result = regex.exec(witnessCborHex);
 
