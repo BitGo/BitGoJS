@@ -140,7 +140,7 @@ export async function createUserToBitGoGShare(
   backupToUserYShare: YShare,
   bitgoToUserYShare: YShare,
   signablePayload: Buffer,
-  bitgoToUserCommitment?: CommitmentShareRecord
+  bitgoToUserCommitment: CommitmentShareRecord
 ): Promise<GShare> {
   if (userSignShare.xShare.i !== ShareKeyPosition.USER) {
     throw new Error('Invalid XShare, doesnt belong to the User');
@@ -154,6 +154,12 @@ export async function createUserToBitGoGShare(
   if (backupToUserYShare.j !== ShareKeyPosition.BACKUP) {
     throw new Error('Invalid YShare, is not backup key');
   }
+  if (bitgoToUserCommitment.from !== SignatureShareType.BITGO || bitgoToUserCommitment.to !== SignatureShareType.USER) {
+    throw new Error('Invalid Commitment, is not from Bitgo to User');
+  }
+  if (bitgoToUserCommitment.type !== CommitmentType.COMMITMENT) {
+    throw new Error('Invalid Commitment type, got: ' + bitgoToUserCommitment.type + ' expected: commitment');
+  }
 
   let v, r, R;
   if (bitgoToUserRShare.share.length > 128) {
@@ -165,6 +171,8 @@ export async function createUserToBitGoGShare(
     R = bitgoToUserRShare.share.substring(64, 128);
   }
 
+  const MPC = await Eddsa.initialize();
+
   const updatedBitgoToUserRShare: RShare = {
     i: ShareKeyPosition.USER,
     j: ShareKeyPosition.BITGO,
@@ -172,22 +180,8 @@ export async function createUserToBitGoGShare(
     v,
     r,
     R,
+    commitment: bitgoToUserCommitment.share,
   };
-
-  const MPC = await Eddsa.initialize();
-
-  if (bitgoToUserCommitment) {
-    if (
-      bitgoToUserCommitment.from !== SignatureShareType.BITGO ||
-      bitgoToUserCommitment.to !== SignatureShareType.USER
-    ) {
-      throw new Error('Invalid Commitment, is not from Bitgo to User');
-    }
-    if (bitgoToUserCommitment.type !== CommitmentType.COMMITMENT) {
-      throw new Error('Invalid Commitment type, got: ' + bitgoToUserCommitment.type + ' expected: commitment');
-    }
-    updatedBitgoToUserRShare.commitment = bitgoToUserCommitment.share;
-  }
 
   return MPC.sign(signablePayload, userSignShare.xShare, [updatedBitgoToUserRShare], [backupToUserYShare]);
 }

@@ -306,9 +306,7 @@ export default class Eddsa {
 
   sign(message: Buffer, playerShare: XShare, rShares: RShare[], yShares: YShare[] = []): GShare {
     for (const rShare of rShares) {
-      if (rShare.commitment) {
-        this.validateCommitment(rShare);
-      }
+      this.validateCommitment(rShare);
     }
 
     const S_i = playerShare;

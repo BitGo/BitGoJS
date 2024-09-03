@@ -61,7 +61,7 @@ export interface RShare {
   v?: string;
   r: string;
   R: string;
-  commitment?: string;
+  commitment: string;
 }
 
 export interface SignShare {
