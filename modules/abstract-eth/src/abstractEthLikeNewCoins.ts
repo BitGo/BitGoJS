@@ -6,7 +6,6 @@ import {
   BitGoBase,
   BuildNftTransferDataOptions,
   common,
-  ECDSA,
   Ecdsa,
   ECDSAMethodTypes,
   EthereumLibraryUnavailableError,
@@ -14,7 +13,6 @@ import {
   FullySignedTransaction,
   getIsUnsignedSweep,
   HalfSignedTransaction,
-  hexToBigInt,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   IWallet,
@@ -36,7 +34,7 @@ import {
   Wallet,
   ECDSAUtils,
 } from '@bitgo/sdk-core';
-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
 import {
   BaseCoin as StaticsBaseCoin,
   CoinMap,
@@ -202,15 +200,19 @@ interface UnformattedTxInfo {
   recipient: Recipient;
 }
 
+/**
+ * @deprecated: this type is no longer used and will be removed in future versions
+ */
 export type RecoverOptionsWithBytes = {
   isTss: true;
   openSSLBytes: Uint8Array;
 };
+
 export type NonTSSRecoverOptions = {
-  isTss?: false | undefined;
+  isTss?: boolean;
 };
 
-export type TSSRecoverOptions = RecoverOptionsWithBytes | NonTSSRecoverOptions;
+export type TSSRecoverOptions = NonTSSRecoverOptions;
 
 export type RecoverOptions = {
   userKey: string;
@@ -1052,108 +1054,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   }
 
   /**
-   * Method to sign tss recovery transaction
-   * @param {ECDSA.KeyCombined} userKeyCombined
-   * @param {ECDSA.KeyCombined} backupKeyCombined
-   * @param {string} txHex
-   * @param {Object} options
-   * @param {EcdsaTypes.SerializedNtilde} options.rangeProofChallenge
-   * @returns {Promise<ECDSAMethodTypes.Signature>}
-   */
-  private async signRecoveryTSS(
-    userKeyCombined: ECDSA.KeyCombined,
-    backupKeyCombined: ECDSA.KeyCombined,
-    txHex: string,
-    openSSLBytes: Uint8Array,
-    {
-      rangeProofChallenge,
-    }: {
-      rangeProofChallenge?: EcdsaTypes.SerializedNtilde;
-    } = {}
-  ): Promise<ECDSAMethodTypes.Signature> {
-    if (!userKeyCombined || !backupKeyCombined) {
-      throw new Error('Missing key combined shares for user or backup');
-    }
-
-    const MPC = new Ecdsa();
-    const signerOneIndex = userKeyCombined.xShare.i;
-    const signerTwoIndex = backupKeyCombined.xShare.i;
-
-    rangeProofChallenge =
-      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde(openSSLBytes));
-
-    const userToBackupPaillierChallenge = await EcdsaPaillierProof.generateP(
-      hexToBigInt(userKeyCombined.yShares[signerTwoIndex].n)
-    );
-    const backupToUserPaillierChallenge = await EcdsaPaillierProof.generateP(
-      hexToBigInt(backupKeyCombined.yShares[signerOneIndex].n)
-    );
-
-    const userXShare = MPC.appendChallenge(
-      userKeyCombined.xShare,
-      rangeProofChallenge,
-      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
-    );
-    const userYShare = MPC.appendChallenge(
-      userKeyCombined.yShares[signerTwoIndex],
-      rangeProofChallenge,
-      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
-    );
-    const backupXShare = MPC.appendChallenge(
-      backupKeyCombined.xShare,
-      rangeProofChallenge,
-      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
-    );
-    const backupYShare = MPC.appendChallenge(
-      backupKeyCombined.yShares[signerOneIndex],
-      rangeProofChallenge,
-      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
-    );
-
-    const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
-
-    const signConvertS21 = await MPC.signConvertStep1({
-      xShare: backupXShare,
-      yShare: backupYShare, // YShare corresponding to the other participant signerOne
-      kShare: signShares.kShare,
-    });
-    const signConvertS12 = await MPC.signConvertStep2({
-      aShare: signConvertS21.aShare,
-      wShare: signShares.wShare,
-    });
-    const signConvertS21_2 = await MPC.signConvertStep3({
-      muShare: signConvertS12.muShare,
-      bShare: signConvertS21.bShare,
-    });
-
-    const [signCombineOne, signCombineTwo] = [
-      MPC.signCombine({
-        gShare: signConvertS12.gShare,
-        signIndex: {
-          i: signConvertS12.muShare.i,
-          j: signConvertS12.muShare.j,
-        },
-      }),
-      MPC.signCombine({
-        gShare: signConvertS21_2.gShare,
-        signIndex: {
-          i: signConvertS21_2.signIndex.i,
-          j: signConvertS21_2.signIndex.j,
-        },
-      }),
-    ];
-
-    const MESSAGE = Buffer.from(txHex, 'hex');
-
-    const [signA, signB] = [
-      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, Keccak('keccak256')),
-      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, Keccak('keccak256')),
-    ];
-
-    return MPC.constructSignature([signA, signB]);
-  }
-
-  /**
    * Helper which combines key shares of user and backup
    * @param {string} userPublicOrPrivateKeyShare
    * @param {string} backupPrivateOrPublicKeyShare
@@ -1284,7 +1184,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    */
   async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     if (params.isTss === true) {
-      return this.recoverTSS(params, params.openSSLBytes);
+      return this.recoverTSS(params);
     }
     return this.recoverEthLike(params);
   }
@@ -1939,10 +1839,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * Recovers a tx with TSS key shares
    * same expected arguments as recover method, but with TSS key shares
    */
-  protected async recoverTSS(
-    params: RecoverOptions,
-    openSSLBytes: Uint8Array
-  ): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  protected async recoverTSS(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     this.validateRecoveryParams(params);
     // Clean up whitespace from entered values
     const userPublicOrPrivateKeyShare = params.userKey.replace(/\s/g, '');
@@ -1979,43 +1876,67 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         userPublicOrPrivateKeyShare,
         params.walletPassphrase
       );
-      let signature: ECDSAMethodTypes.Signature;
-      let unsignedTx: EthLikeTxLib.Transaction | EthLikeTxLib.FeeMarketEIP1559Transaction;
+      /**
+       * MPCv2 Signing Params
+       */
+      let userKeyShare: Buffer;
+      let backupKeyShare: Buffer;
+      let commonKeyChain: string;
+
+      // Prepare the key shares for signing
       if (isGG18SigningMaterial) {
+        // Retrofit the GG18 keys to DKLS
         const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
           userPublicOrPrivateKeyShare,
           backupPrivateOrPublicKeyShare,
           params.walletPassphrase
         );
-        const backupKeyPair = new KeyPairLib({ pub: backupKeyCombined.xShare.y });
-        const baseAddress = backupKeyPair.getAddress();
 
-        unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
+        const aKeyCombine = {
+          xShare: userKeyCombined.xShare,
+        };
+        const bKeyCombine = {
+          xShare: backupKeyCombined.xShare,
+        };
+        const retrofitDataA: DklsTypes.RetrofitData = {
+          xShare: aKeyCombine.xShare,
+        };
+        const retrofitDataB: DklsTypes.RetrofitData = {
+          xShare: bKeyCombine.xShare,
+        };
+        const [user, backup] = await DklsUtils.generate2of2KeyShares(retrofitDataA, retrofitDataB);
 
-        signature = await this.signRecoveryTSS(
-          userKeyCombined,
-          backupKeyCombined,
-          unsignedTx.getMessageToSign(false).toString('hex'),
-          openSSLBytes
-        );
+        userKeyShare = user.getKeyShare();
+        backupKeyShare = backup.getKeyShare();
+        if (DklsTypes.getCommonKeychain(userKeyShare) !== DklsTypes.getCommonKeychain(backupKeyShare)) {
+          throw new Error('Common keychain mismatch! Ensure the correct user and backup keys where provided!');
+        }
+        commonKeyChain = DklsTypes.getCommonKeychain(userKeyShare);
       } else {
-        const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+        // DKLS
+        const mpcv2KeyShares = await ECDSAUtils.getMpcV2RecoveryKeyShares(
           userPublicOrPrivateKeyShare,
           backupPrivateOrPublicKeyShare,
           params.walletPassphrase
         );
 
-        const MPC = new Ecdsa();
-        const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm');
-        const backupKeyPair = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
-        const baseAddress = backupKeyPair.getAddress();
+        userKeyShare = mpcv2KeyShares.userKeyShare;
+        backupKeyShare = mpcv2KeyShares.backupKeyShare;
+        commonKeyChain = mpcv2KeyShares.commonKeyChain;
 
-        unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
-
-        const messageHash = unsignedTx.getMessageToSign(true);
-
-        signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
+        if (!userKeyShare || !backupKeyShare || !commonKeyChain) {
+          throw new Error('Missing combined key shares for user or backup or common');
+        }
       }
+
+      const MPC = new Ecdsa();
+      const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm/0');
+      const keyPair = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
+      const baseAddress = keyPair.getAddress();
+
+      const unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
+      const messageHash = unsignedTx.getMessageToSign(true);
+      const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
 
       const ethCommmon = AbstractEthLikeNewCoins.getEthLikeCommon(params.eip1559, params.replayProtectionOptions);
       const signedTx = this.getSignedTxFromSignature(ethCommmon, unsignedTx, signature);

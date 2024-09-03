@@ -1,5 +1,4 @@
 export const ethLikeGG18Keycard = {
-  senderAddress: '0xf3243334a491b6558f3f2c791afecc6a5eb955fa',
   destinationAddress: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
   userKey:
     '{"iv":"bn1gTo9+ycrgiqtm0fkHlg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
@@ -159,7 +158,6 @@ export const ethLikeGG18Keycard = {
   walletPassphrase: 'Ghghjkg!455544llll',
 };
 export const ethLikeDKLSKeycard = {
-  senderAddress: '0x88c2ab227908d39f6afdb85203dca3e937bb77af',
   destinationAddress: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
   userKey:
     '{"iv":"82EY6GQ62/d9EzrkcIcqfA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
