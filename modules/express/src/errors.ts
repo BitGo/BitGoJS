@@ -46,3 +46,9 @@ export class ExternalSignerConfigError extends BitGoJsError {
     super(message || 'External signer configuration is invalid');
   }
 }
+
+export class LightningSignerConfigError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'Lightning signer configuration is invalid');
+  }
+}

@@ -249,27 +249,33 @@ describe('Lightning wallets', function () {
 
     it('should fail to get lightning key for invalid coin', async function () {
       const wallet = new Wallet(bitgo, bitgo.coin('tltc'), walletData);
-      assert.rejects(async () => await getLightningKeychain(wallet), /Invalid coin to get lightning Keychain: tltc/);
+      await assert.rejects(
+        async () => await getLightningKeychain(wallet),
+        /Error: Invalid coin to get lightning Keychain: ltc/
+      );
     });
 
-    it('should fail to get lightning auth keys for invalid coin', function () {
+    it('should fail to get lightning auth keys for invalid coin', async function () {
       const wallet = new Wallet(bitgo, bitgo.coin('tltc'), walletData);
-      assert.rejects(
+      await assert.rejects(
         async () => await getLightningAuthKeychains(wallet),
-        /Invalid coin to get lightning auth keychains: tltc/
+        /Error: Invalid coin to get lightning auth keychains: ltc/
       );
     });
 
     it('should fail to get lightning key for invalid number of keys', async function () {
       const wallet = new Wallet(bitgo, basecoin, { ...walletData, keys: [] });
-      assert.rejects(async () => await getLightningKeychain(wallet), /Invalid number of key in lightning wallet: 0/);
+      await assert.rejects(
+        async () => await getLightningKeychain(wallet),
+        /Error: Invalid number of key in lightning wallet: 0/
+      );
     });
 
     it('should fail to get lightning auth keys for invalid number of keys', async function () {
       const wallet = new Wallet(bitgo, basecoin, { ...walletData, coinSpecific: { keys: ['def'] } });
-      assert.rejects(
+      await assert.rejects(
         async () => await getLightningAuthKeychains(wallet),
-        /Invalid number of auth keys in lightning wallet: 1/
+        /Error: Invalid number of auth keys in lightning wallet: 1/
       );
     });
 
@@ -280,17 +286,24 @@ describe('Lightning wallets', function () {
         .get('/api/v2/' + coinName + '/key/abc')
         .reply(200, { ...userKeyData, source: 'backup' });
 
-      assert.rejects(async () => await getLightningKeychain(wallet), /Invalid user key/);
+      await assert.rejects(async () => await getLightningKeychain(wallet), /Error: Invalid user key/);
     });
 
     it('should fail to get lightning auth keys for invalid response', async function () {
       const wallet = new Wallet(bitgo, basecoin, walletData);
 
       nock(bgUrl)
-        .get('/api/v2/' + coinName + '/key/abc')
+        .get('/api/v2/' + coinName + '/key/def')
         .reply(200, { ...userAuthKeyData, source: 'backup' });
 
-      assert.rejects(async () => await getLightningAuthKeychains(wallet), /Invalid lightning auth key: def/);
+      nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKeyData);
+
+      await assert.rejects(
+        async () => await getLightningAuthKeychains(wallet),
+        /Error: Invalid lightning auth key: def/
+      );
     });
   });
 });

@@ -17,7 +17,13 @@ import { Config, config } from './config';
 const debug = debugLib('bitgo:express');
 
 import { SSL_OP_NO_TLSv1 } from 'constants';
-import { IpcError, NodeEnvironmentError, TlsConfigurationError, ExternalSignerConfigError } from './errors';
+import {
+  IpcError,
+  NodeEnvironmentError,
+  TlsConfigurationError,
+  ExternalSignerConfigError,
+  LightningSignerConfigError,
+} from './errors';
 
 import { Environments } from 'bitgo';
 import * as clientRoutes from './clientRoutes';
@@ -104,7 +110,7 @@ function createHttpServer(app: express.Application): http.Server {
  */
 export function startup(config: Config, baseUri: string): () => void {
   return function () {
-    const { env, ipc, customRootUri, customBitcoinNetwork, signerMode } = config;
+    const { env, ipc, customRootUri, customBitcoinNetwork, signerMode, lightningSignerFileSystemPath } = config;
     /* eslint-disable no-console */
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
@@ -122,6 +128,9 @@ export function startup(config: Config, baseUri: string): () => void {
     if (signerMode) {
       console.log(`External signer mode: ${signerMode}`);
     }
+    if (lightningSignerFileSystemPath) {
+      console.log(`Lightning signer file system path: ${lightningSignerFileSystemPath}`);
+    }
     /* eslint-enable no-console */
   };
 }
@@ -136,11 +145,8 @@ function isTLS(config: Config): config is Config & { keyPath: string; crtPath: s
 
 /**
  * Create either a HTTP or HTTPS server
- * @param config
- * @param app
- * @return {Server}
  */
-export async function createServer(config: Config, app: express.Application) {
+export async function createServer(config: Config, app: express.Application): Promise<https.Server | http.Server> {
   return isTLS(config) ? await createHttpsServer(app, config) : createHttpServer(app);
 }
 
@@ -156,13 +162,13 @@ export function createBaseUri(config: Config): string {
 }
 
 /**
- * Check the that the json file containing the external signer private key exists
+ * Check the that the json file exists
  * @param path
  */
-function checkSignerPrvPath(path: string) {
+function checkJsonFilePath(path: string) {
   try {
-    const privKeyFile = fs.readFileSync(path, { encoding: 'utf8' });
-    JSON.parse(privKeyFile);
+    const jsonFile = fs.readFileSync(path, { encoding: 'utf8' });
+    JSON.parse(jsonFile);
   } catch (e) {
     throw new Error(`Failed to parse ${path} - ${e.message}`);
   }
@@ -186,6 +192,7 @@ function checkPreconditions(config: Config) {
     externalSignerUrl,
     signerMode,
     signerFileSystemPath,
+    lightningSignerFileSystemPath,
   } = config;
 
   // warn or throw if the NODE_ENV is not production when BITGO_ENV is production - this can leak system info from express
@@ -229,8 +236,18 @@ function checkPreconditions(config: Config) {
     );
   }
 
+  if (signerMode !== undefined && lightningSignerFileSystemPath !== undefined) {
+    throw new LightningSignerConfigError(
+      'signerMode and lightningSignerFileSystemPath cannot be set at the same time.'
+    );
+  }
+
   if (signerFileSystemPath !== undefined) {
-    checkSignerPrvPath(signerFileSystemPath);
+    checkJsonFilePath(signerFileSystemPath);
+  }
+
+  if (lightningSignerFileSystemPath !== undefined) {
+    checkJsonFilePath(lightningSignerFileSystemPath);
   }
 }
 
