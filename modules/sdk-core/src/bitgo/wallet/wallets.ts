@@ -12,7 +12,7 @@ import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
-import { AddKeychainOptions, Keychain } from '../keychain';
+import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
 import { decodeOrElse, promiseProps, RequestTracer } from '../utils';
 import {
   AcceptShareOptions,
@@ -447,138 +447,156 @@ export class Wallets implements IWallets {
 
     const reqId = new RequestTracer();
 
-    // Add the user keychain
-    const userKeychainPromise = async (): Promise<Keychain> => {
-      let userKeychainParams;
-      let userKeychain;
-      // User provided user key
-      if (params.userKey) {
-        userKeychain = { pub: params.userKey };
-        userKeychainParams = userKeychain;
-        if (params.coldDerivationSeed) {
-          // the derivation only makes sense when a key already exists
-          const derivation = this.baseCoin.deriveKeyWithSeed({
-            key: params.userKey,
-            seed: params.coldDerivationSeed,
-          });
-          derivationPath = derivation.derivationPath;
-          userKeychain.pub = derivation.key;
-          userKeychain.derivedFromParentWithSeed = params.coldDerivationSeed;
-        }
-      } else {
-        if (!canEncrypt) {
-          throw new Error('cannot generate user keypair without passphrase');
-        }
-        // Create the user key.
-        userKeychain = this.baseCoin.keychains().create();
-        userKeychain.encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: userKeychain.prv });
-        userKeychainParams = {
-          pub: userKeychain.pub,
-          encryptedPrv: userKeychain.encryptedPrv,
-          originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
-        };
-      }
-
-      userKeychainParams.reqId = reqId;
-      const newUserKeychain = await this.baseCoin.keychains().add(userKeychainParams);
-      return _.extend({}, newUserKeychain, userKeychain);
-    };
-
-    const backupKeychainPromise = async (): Promise<Keychain> => {
-      if (params.backupXpubProvider) {
-        // If requested, use a KRS or backup key provider
-        return this.baseCoin.keychains().createBackup({
-          provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
-          disableKRSEmail: params.disableKRSEmail,
-          krsSpecific: params.krsSpecific,
-          type: this.baseCoin.getChain(),
-          passphrase: params.passphrase,
-          reqId,
-        });
-      }
-
-      // User provided backup xpub
-      if (params.backupXpub) {
-        // user provided backup ethereum address
-        return this.baseCoin.keychains().add({
-          pub: params.backupXpub,
-          source: 'backup',
-          reqId,
-        });
-      } else {
-        if (!canEncrypt) {
-          throw new Error('cannot generate backup keypair without passphrase');
-        }
-        // No provided backup xpub or address, so default to creating one here
-        return this.baseCoin.keychains().createBackup({ reqId, passphrase: params.passphrase });
-      }
-    };
-
-    const { userKeychain, backupKeychain, bitgoKeychain }: KeychainsTriplet = await promiseProps({
-      userKeychain: userKeychainPromise(),
-      backupKeychain: backupKeychainPromise(),
-      bitgoKeychain: this.baseCoin
-        .keychains()
-        .createBitGo({ enterprise: params.enterprise, reqId, isDistributedCustody: params.isDistributedCustody }),
-    });
-
-    walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
-
-    const { prv } = userKeychain;
-    if (_.isString(prv)) {
-      assert(backupKeychain.pub);
-      assert(bitgoKeychain.pub);
-      walletParams.keySignatures = {
-        backup: (await this.baseCoin.signMessage({ prv }, backupKeychain.pub)).toString('hex'),
-        bitgo: (await this.baseCoin.signMessage({ prv }, bitgoKeychain.pub)).toString('hex'),
-      };
-    }
-
-    if (_.includes(['xrp', 'xlm', 'cspr'], this.baseCoin.getFamily()) && !_.isUndefined(params.rootPrivateKey)) {
-      walletParams.rootPrivateKey = params.rootPrivateKey;
-    }
-
-    // Custodial onchain wallets do not need m, n, keys, or keySignatures
     if (params.type === 'custodial' && (params.multisigType ?? 'onchain') === 'onchain') {
+      // for custodial multisig, when the wallet is created on the platfor side, the keys are not needed
       walletParams.n = undefined;
       walletParams.m = undefined;
       walletParams.keys = undefined;
       walletParams.keySignatures = undefined;
-    }
 
-    const keychains = {
-      userKeychain,
-      backupKeychain,
-      bitgoKeychain,
-    };
-    const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
-    this.bitgo.setRequestTracer(reqId);
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(walletParams).result(); // returns the ids
 
-    const result: WalletWithKeychains = {
-      wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
-      userKeychain: userKeychain,
-      backupKeychain: backupKeychain,
-      bitgoKeychain: bitgoKeychain,
-      responseType: 'WalletWithKeychains',
-    };
+      const userKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.USER], reqId });
+      const backupKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.BACKUP], reqId });
+      const bitgoKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.BITGO], reqId });
 
-    if (!_.isUndefined(backupKeychain.prv)) {
-      result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
-    }
+      const [userKey, bitgoKey, backupKey] = await Promise.all([userKeychain, bitgoKeychain, backupKeychain]);
 
-    if (!_.isUndefined(derivationPath)) {
-      userKeychain.derivationPath = derivationPath;
-    }
+      const result: WalletWithKeychains = {
+        wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
+        userKeychain: userKey,
+        backupKeychain: bitgoKey,
+        bitgoKeychain: backupKey,
+        responseType: 'WalletWithKeychains',
+      };
 
-    if (canEncrypt && params.passcodeEncryptionCode) {
-      result.encryptedWalletPassphrase = this.bitgo.encrypt({
-        input: passphrase,
-        password: params.passcodeEncryptionCode,
+      return result;
+    } else {
+      const userKeychainPromise = async (): Promise<Keychain> => {
+        let userKeychainParams;
+        let userKeychain;
+        // User provided user key
+        if (params.userKey) {
+          userKeychain = { pub: params.userKey };
+          userKeychainParams = userKeychain;
+          if (params.coldDerivationSeed) {
+            // the derivation only makes sense when a key already exists
+            const derivation = this.baseCoin.deriveKeyWithSeed({
+              key: params.userKey,
+              seed: params.coldDerivationSeed,
+            });
+            derivationPath = derivation.derivationPath;
+            userKeychain.pub = derivation.key;
+            userKeychain.derivedFromParentWithSeed = params.coldDerivationSeed;
+          }
+        } else {
+          if (!canEncrypt) {
+            throw new Error('cannot generate user keypair without passphrase');
+          }
+          // Create the user key.
+          userKeychain = this.baseCoin.keychains().create();
+          userKeychain.encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: userKeychain.prv });
+          userKeychainParams = {
+            pub: userKeychain.pub,
+            encryptedPrv: userKeychain.encryptedPrv,
+            originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
+          };
+        }
+
+        userKeychainParams.reqId = reqId;
+        const newUserKeychain = await this.baseCoin.keychains().add(userKeychainParams);
+        return _.extend({}, newUserKeychain, userKeychain);
+      };
+
+      const backupKeychainPromise = async (): Promise<Keychain> => {
+        if (params.backupXpubProvider) {
+          // If requested, use a KRS or backup key provider
+          return this.baseCoin.keychains().createBackup({
+            provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
+            disableKRSEmail: params.disableKRSEmail,
+            krsSpecific: params.krsSpecific,
+            type: this.baseCoin.getChain(),
+            passphrase: params.passphrase,
+            reqId,
+          });
+        }
+
+        // User provided backup xpub
+        if (params.backupXpub) {
+          // user provided backup ethereum address
+          return this.baseCoin.keychains().add({
+            pub: params.backupXpub,
+            source: 'backup',
+            reqId,
+          });
+        } else {
+          if (!canEncrypt) {
+            throw new Error('cannot generate backup keypair without passphrase');
+          }
+          // No provided backup xpub or address, so default to creating one here
+          return this.baseCoin.keychains().createBackup({ reqId, passphrase: params.passphrase });
+        }
+      };
+      const { userKeychain, backupKeychain, bitgoKeychain }: KeychainsTriplet = await promiseProps({
+        userKeychain: userKeychainPromise(),
+        backupKeychain: backupKeychainPromise(),
+        bitgoKeychain: this.baseCoin
+          .keychains()
+          .createBitGo({ enterprise: params.enterprise, reqId, isDistributedCustody: params.isDistributedCustody }),
       });
-    }
 
-    return result;
+      walletParams.keys = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
+
+      const { prv } = userKeychain;
+      if (_.isString(prv)) {
+        assert(backupKeychain.pub);
+        assert(bitgoKeychain.pub);
+        walletParams.keySignatures = {
+          backup: (await this.baseCoin.signMessage({ prv }, backupKeychain.pub)).toString('hex'),
+          bitgo: (await this.baseCoin.signMessage({ prv }, bitgoKeychain.pub)).toString('hex'),
+        };
+      }
+
+      const keychains = {
+        userKeychain,
+        backupKeychain,
+        bitgoKeychain,
+      };
+
+      const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
+
+      if (_.includes(['xrp', 'xlm', 'cspr'], this.baseCoin.getFamily()) && !_.isUndefined(params.rootPrivateKey)) {
+        walletParams.rootPrivateKey = params.rootPrivateKey;
+      }
+
+      this.bitgo.setRequestTracer(reqId);
+      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+
+      const result: WalletWithKeychains = {
+        wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
+        userKeychain: userKeychain,
+        backupKeychain: backupKeychain,
+        bitgoKeychain: bitgoKeychain,
+        responseType: 'WalletWithKeychains',
+      };
+
+      if (!_.isUndefined(backupKeychain.prv)) {
+        result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
+      }
+
+      if (!_.isUndefined(derivationPath)) {
+        userKeychain.derivationPath = derivationPath;
+      }
+
+      if (canEncrypt && params.passcodeEncryptionCode) {
+        result.encryptedWalletPassphrase = this.bitgo.encrypt({
+          input: passphrase,
+          password: params.passcodeEncryptionCode,
+        });
+      }
+
+      return result;
+    }
   }
 
   /**

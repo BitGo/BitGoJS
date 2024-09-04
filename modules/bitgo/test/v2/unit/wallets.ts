@@ -407,7 +407,6 @@ describe('V2 Wallets:', function () {
         label: 'test wallet',
         enterprise: 'myenterprise',
         type: 'custodial',
-        passphrase: 'secret',
       };
 
       const walletNock = nock(bgUrl)
@@ -419,15 +418,11 @@ describe('V2 Wallets:', function () {
           should.not.exist(body.keySignatures);
           return true;
         })
-        .reply(200);
+        .reply(200, { id: '123', baseCoin: bitgo.coin('tbtc'), keys: ['123', '456', '789'] });
 
-      nock(bgUrl)
-        .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
-        .reply(200, { pub: 'bitgoPub' });
-      nock(bgUrl).post('/api/v2/tbtc/key', _.matches({})).reply(200);
-      nock(bgUrl)
-        .post('/api/v2/tbtc/key', _.matches({ source: 'backup' }))
-        .reply(200, { pub: 'backupPub' });
+      nock(bgUrl).get('/api/v2/tbtc/key/123').reply(200, { pub: 'bitgoPub', id: '789' });
+      nock(bgUrl).get('/api/v2/tbtc/key/456', _.matches({})).reply(200);
+      nock(bgUrl).get('/api/v2/tbtc/key/789').reply(200, { pub: 'backupPub', id: '789' });
 
       const response = await wallets.generateWallet(params);
 
