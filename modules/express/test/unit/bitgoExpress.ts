@@ -408,6 +408,26 @@ describe('Bitgo Express', function () {
       signerStub.restore();
     });
 
+    it('should only call setupLightningRoutes when running with lightningSignerFileSystemPath', () => {
+      const args: any = {
+        env: 'test',
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      };
+
+      const readValidStub = sinon.stub(fs, 'readFileSync').returns(validLightningSignerConfigJSON);
+      const lightningSignerStub = sinon.stub(clientRoutes, 'setupLightningRoutes');
+      const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
+      const signerStub = sinon.stub(clientRoutes, 'setupSigningRoutes');
+
+      expressApp(args);
+      lightningSignerStub.should.have.been.calledOnce();
+      apiStub.should.have.been.calledOnce();
+      signerStub.called.should.be.false();
+      apiStub.restore();
+      signerStub.restore();
+      readValidStub.restore();
+    });
+
     it('should only call setupSigningRoutes when running in signer mode', () => {
       const args: any = {
         env: 'test',

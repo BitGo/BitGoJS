@@ -101,7 +101,7 @@ describe('Codecs', function () {
       {
         coinSpecific: {
           lnbtc: {
-            encryptedAdminMacaroon: 'encryptedAdminMacaroon',
+            encryptedSignerAdminMacaroon: 'encryptedSignerAdminMacaroon',
             signerIP: '127.0.0.1',
             signerTlsCert: 'signerTlsCert',
             encryptedSignerTlsKey: 'encryptedSignerTlsKey',
@@ -117,7 +117,7 @@ describe('Codecs', function () {
       {
         coinSpecific: {
           tlnbtc: {
-            encryptedAdminMacaroon: 'encryptedAdminMacaroon',
+            encryptedSignerAdminMacaroon: 'encryptedSignerAdminMacaroon',
           },
         },
       },

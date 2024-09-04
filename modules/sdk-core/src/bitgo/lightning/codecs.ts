@@ -9,7 +9,7 @@ export function getCodecPair<C extends t.Mixed>(
   return t.union([t.type({ lnbtc: innerCodec }), t.type({ tlnbtc: innerCodec })]);
 }
 
-interface IPAddressBrand {
+export interface IPAddressBrand {
   readonly IPAddress: unique symbol; // Ensures uniqueness across modules
 }
 
@@ -71,7 +71,7 @@ export type WatchOnly = t.TypeOf<typeof WatchOnly>;
 
 export const LightningWalletCoinSpecific = getCodecPair(
   t.partial({
-    encryptedAdminMacaroon: t.string,
+    encryptedSignerAdminMacaroon: t.string,
     signerIP: IPAddress,
     signerTlsCert: t.string,
     encryptedSignerTlsKey: t.string,

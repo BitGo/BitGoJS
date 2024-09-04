@@ -1,6 +1,5 @@
 import { promises as fs } from 'fs';
 import { decodeOrElse } from '@bitgo/sdk-core';
-import { NonEmptyString } from 'io-ts-types';
 import { LightningSignerConfigs, LightningSignerConfig } from './codecs';
 import { forceSecureUrl } from '../config';
 
@@ -16,9 +15,6 @@ export async function getLightningSignerConfigs(path: string): Promise<Lightning
   const lightningSignerConfigs: LightningSignerConfigs = {};
   for (const [walletId, { url, tlsCert }] of Object.entries(decoded)) {
     const secureUrl = forceSecureUrl(url);
-    if (!NonEmptyString.is(secureUrl)) {
-      throw new Error(`Invalid secure URL: ${secureUrl}`);
-    }
     lightningSignerConfigs[walletId] = { url: secureUrl, tlsCert };
   }
   return lightningSignerConfigs;

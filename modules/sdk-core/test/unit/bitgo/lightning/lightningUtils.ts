@@ -8,9 +8,10 @@ import {
   getLightningNetwork,
   getUtxolibNetwork,
   getUtxolibNetworkName,
+  isLightningCoinName,
   isValidLightningNetwork,
   isValidLightningNetworkName,
-} from '../../../../src/bitgo/lightning';
+} from '../../../../src';
 import { accounts, signerRootKey } from './createWatchOnlyFixture';
 import { networks } from '@bitgo/utxo-lib';
 
@@ -40,6 +41,11 @@ describe('lightning utils', function () {
           getUtxolibNetwork(name),
           networkName === 'bitcoin' ? utxolib.networks.bitcoin : utxolib.networks.testnet
         );
+      });
+
+      it(`isLightningCoinName`, function () {
+        assert.strictEqual(isLightningCoinName(name), true);
+        assert.strictEqual(isLightningCoinName('ltc'), false);
       });
     });
   });

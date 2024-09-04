@@ -248,7 +248,7 @@ export interface WalletCoinSpecific {
    * Lightning coin specific data starts
    */
   keys?: string[];
-  encryptedAdminMacaroon?: string;
+  encryptedSignerAdminMacaroon?: string;
   /**
    * Lightning coin specific data ends
    */

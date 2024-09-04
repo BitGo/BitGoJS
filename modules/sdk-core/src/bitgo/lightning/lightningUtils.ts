@@ -28,6 +28,13 @@ export const lightningNetworkName = ['bitcoin', 'testnet'] as const;
 export type LightningNetworkName = (typeof lightningNetworkName)[number];
 
 /**
+ * Checks if the coin name is a lightning coin name.
+ */
+export function isLightningCoinName(coinName: unknown): coinName is 'lnbtc' | 'tlnbtc' {
+  return coinName === 'lnbtc' || coinName === 'tlnbtc';
+}
+
+/**
  * Get the utxolib network for a lightning network.
  */
 export function getLightningNetwork(networkName: LightningNetworkName): utxolib.Network {
