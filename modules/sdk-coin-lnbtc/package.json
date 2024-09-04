@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-lnbtc",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "description": "BitGo SDK coin library for Lightning Bitcoin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,12 +40,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-lightning": "^1.2.11",
-    "@bitgo/sdk-core": "^28.2.0",
-    "@bitgo/utxo-lib": "^10.2.0"
+    "@bitgo/abstract-lightning": "^1.2.12",
+    "@bitgo/sdk-core": "^28.3.0",
+    "@bitgo/utxo-lib": "^10.3.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.53.2",
-    "@bitgo/sdk-test": "^8.0.38"
+    "@bitgo/sdk-api": "^1.53.3",
+    "@bitgo/sdk-test": "^8.0.39"
   }
 }

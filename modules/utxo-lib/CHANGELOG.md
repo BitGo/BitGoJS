@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@10.2.0...@bitgo/utxo-lib@10.3.0) (2024-09-03)
+
+### Features
+
+- **utxo-lib:** add convertExtendedKeyNetwork function ([38fff9d](https://github.com/BitGo/BitGoJS/commit/38fff9dee1d95a73e42a23f788c53eee507c747a))
+
 # [10.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@10.1.0...@bitgo/utxo-lib@10.2.0) (2024-08-27)
 
 ### Features
