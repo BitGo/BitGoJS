@@ -4276,6 +4276,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ICETH
   ),
   erc20(
+    '85100681-2a5c-4a36-81fa-34361c284a52',
+    'id',
+    'SPACE ID',
+    18,
+    '0x2dff88a56767223a5529ea5960da7a3f5f766406',
+    UnderlyingAsset.ID
+  ),
+  erc20(
     '45e05a1d-5cc2-48f6-abd1-ce9fce33a9cc',
     'idex',
     'IDEX',
@@ -5327,6 +5335,22 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ONL
   ),
   erc20(
+    'b77f65d7-2ce1-497d-bf40-3f2ac936916b',
+    'ont',
+    'Ontology Token',
+    9,
+    '0xcb46c550539ac3db72dc7af7c89b11c306c727c2',
+    UnderlyingAsset.ONT
+  ),
+  erc20(
+    '6d5d9000-0fd2-4c10-b4e6-15044c327ea0',
+    'ooki',
+    'Ooki Protocol',
+    18,
+    '0x0de05f6447ab4d22c8827449ee4ba2d5c288379b',
+    UnderlyingAsset.OOKI
+  ),
+  erc20(
     'b308e6cc-52ff-421b-a3df-da70dac6a6a4',
     'op',
     'Optimism',
@@ -5525,6 +5549,14 @@ export const coins = CoinMap.fromCoins([
     8,
     '0x6a7041ff8cb4da0253a00bb1e548caf77c238bda',
     UnderlyingAsset.PBTC
+  ),
+  erc20(
+    '2b800928-2341-4481-8634-629b24d9c5e4',
+    'pda',
+    'PlayDapp',
+    18,
+    '0x0d3cbed3f69ee050668adf3d9ea57241cba33a2b',
+    UnderlyingAsset.PDA
   ),
   erc20(
     '184a5102-2bee-4ad3-bb19-091bf6291243',
@@ -5744,6 +5776,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.PUSD
   ),
   erc20(
+    'ebdc8de1-7b95-40d6-b16e-87298258b6de',
+    'pv01',
+    'PV01',
+    18,
+    '0x24969d2306d91144496636c1775e45bec39c55b8',
+    UnderlyingAsset.PV01
+  ),
+  erc20(
     '33d9d059-10ba-4368-8d90-f86343b32dba',
     'pxp',
     'PointPay Crypto Banking Token V2',
@@ -5944,6 +5984,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.RDN
   ),
   erc20(
+    'f215c41b-75af-4843-8b37-3f2aa602e0c6',
+    'rdnt',
+    'Radiant Capital',
+    18,
+    '0x137ddb47ee24eaa998a535ab00378d6bfa84f893',
+    UnderlyingAsset.RDNT
+  ),
+  erc20(
     'f692c9be-ca7d-4e27-a554-2f0316789f0b',
     'reb',
     'Regblo',
@@ -6070,6 +6118,14 @@ export const coins = CoinMap.fromCoins([
     9,
     '0x607f4c5bb672230e8672085532f7e901544a7375',
     UnderlyingAsset.RLC
+  ),
+  erc20(
+    '38b0c82b-bded-432f-a447-26200f06c694',
+    'rlusd',
+    'Ripple USD',
+    18,
+    '0xcfd748b9de538c9f5b1805e8db9e1d4671f7f2ec',
+    UnderlyingAsset.RLUSD
   ),
   erc20(
     '65e2f11f-77af-4c2e-9ecb-43962793adfc',
@@ -6433,6 +6489,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SRM
   ),
   erc20(
+    '7c786a41-3527-4e87-8b7a-addfe4f4e02a',
+    'ssv',
+    'SSV Network',
+    18,
+    '0x9d65ff81a3c488d585bbfb0bfe3c7707c7917f54',
+    UnderlyingAsset.SSV
+  ),
+  erc20(
     'cfff10ae-b9db-47e1-a340-e5c5b0629d33',
     'srnt',
     'Serenity',
@@ -6535,6 +6599,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd0a4b8946cb52f0661273bfbc6fd0e0c75fc6433',
     UnderlyingAsset.STORM
+  ),
+  erc20(
+    'aa30de06-fe52-41f0-bb5e-c332a00a7ef1',
+    'stpt',
+    'STPT',
+    18,
+    '0xde7d85157d9714eadf595045cc12ca4a5f3e2adb',
+    UnderlyingAsset.STPT
   ),
   erc20(
     '97163260-0336-40d3-a2ad-6f458f76f037',
@@ -6681,6 +6753,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.THKD
   ),
   erc20(
+    'afa4feca-c6bb-4c5b-b33f-9e5a068e9103',
+    'thunder',
+    'ETH-Peg Thunder Token',
+    18,
+    '0x1e053d89e08c24aa2ce5c5b4206744dc2d7bd8f5',
+    UnderlyingAsset.THUNDER
+  ),
+  erc20(
     '7839585b-0bd8-4419-867f-b4cc44e7a9eb',
     'tiox',
     'Trade Token X',
@@ -6801,6 +6881,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TRL
   ),
   erc20(
+    'fac46d15-780b-4dbd-b04e-07f34570584f',
+    'troy',
+    'TROY',
+    18,
+    '0x4574562e9310a94f9ca962bd23168d8a06875b1a',
+    UnderlyingAsset.TROY
+  ),
+  erc20(
     '2ade9e63-63bc-45cd-b824-7c91a559ed55',
     'trst',
     'WeTrust',
@@ -6887,6 +6975,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x8a3d77e9d6968b780564936d15b09805827c21fa',
     UnderlyingAsset.UCO
+  ),
+  erc20(
+    '2cf7089d-ff32-4489-8a86-b48e0b7e4f1b',
+    'uft',
+    'UniLend Finance Token',
+    18,
+    '0x0202be363b8a4820f3f4de7faf5224ff05943ab1',
+    UnderlyingAsset.UFT
   ),
   erc20(
     '74304d72-9239-4f35-8b88-cd3d265c7516',
@@ -7155,6 +7251,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VIB
   ),
   erc20(
+    'd97452e6-3fcb-45ea-8301-e71f795d2667',
+    'vidt',
+    'VIDT DAO',
+    18,
+    '0x3be7bf1a5f23bd8336787d0289b70602f1940875',
+    UnderlyingAsset.VIDT
+  ),
+  erc20(
     '2bea7a06-1fcb-4936-bd4c-5f175a8bf9ff',
     'visr',
     'Visor.Finance',
@@ -7332,6 +7436,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.WILD
   ),
   erc20(
+    'b385c519-0625-4ea8-9cb1-88413720cc41',
+    'wing',
+    'Wing Finance',
+    9,
+    '0xdb0f18081b505a7de20b18ac41856bcb4ba86a1a',
+    UnderlyingAsset.WING
+  ),
+  erc20(
     '75d07bfd-5d77-47df-a151-d2ee8dddb170',
     'wnxm',
     'Wrapped NXM',
@@ -7362,6 +7474,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x1fd389ac8e6c958b0f01067540fdff8a11488201',
     UnderlyingAsset.WLXT
+  ),
+  erc20(
+    '383ecdfb-4098-44f0-8485-d67aa9ad1d24',
+    'wrose',
+    'Wrapped ROSE (Wormhole)',
+    18,
+    '0x26b80fbfc01b71495f477d5237071242e0d959d7',
+    UnderlyingAsset.WROSE
   ),
   erc20(
     '0886bf8b-507e-459f-a38c-bdcd3f492190',
@@ -8132,6 +8252,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.XUSD
   ),
   erc20(
+    '42010c6a-380b-4b11-983d-4b736172340d',
+    'xvs',
+    'Venus XVS',
+    18,
+    '0xd3cc9d8f3689b83c91b7b59cab4946b063eb894a',
+    UnderlyingAsset.XVS
+  ),
+  erc20(
     '2b9ec367-e156-4431-ba24-ba2b9ef670d8',
     'xzk',
     'Mystiko Token',
@@ -8275,6 +8403,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x87edffde3e14c7a66c9b9724747a1c5696b742e6',
     UnderlyingAsset.SWAG
+  ),
+  erc20(
+    'd6933358-6f99-48d0-9776-73c38917daec',
+    'swap',
+    'TrustSwap Token',
+    18,
+    '0xcc4304a31d09258b0029ea7fe63d032f52e44efe',
+    UnderlyingAsset.SWAP
   ),
   erc20(
     '232f1a4c-1e4c-4122-bb44-d5dd39389650',
@@ -8612,6 +8748,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x78b7fada55a64dd895d8c8c35779dd8b67fa8a05',
     UnderlyingAsset.ATL
+  ),
+  erc20(
+    '70a215f6-355a-44bc-b27b-6644c062496b',
+    'atlas',
+    'Star Atlas',
+    8,
+    '0xb9f747162ab1e95d07361f9048bcdf6edda9eea7',
+    UnderlyingAsset.ATLAS
   ),
   erc20(
     '92de2240-586a-4208-a646-9c5aba262ab4',
@@ -9300,6 +9444,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xaf30d2a7e90d7dc361c8c4585e9bb7d2f6f15bc7',
     UnderlyingAsset.FIRSTBLOOD
+  ),
+  erc20(
+    '94c8346a-d212-475a-b646-3770ab0996f0',
+    'fis',
+    'StaFi',
+    18,
+    '0xef3a930e1ffffacd2fc13434ac81bd278b0ecc8d',
+    UnderlyingAsset.FIS
   ),
   erc20(
     '951f8e8f-b0c6-46b5-8268-56e89d01786a',
@@ -10022,6 +10174,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ORC
   ),
   erc20(
+    '9d8e758e-2812-4471-956e-510579d9c9c6',
+    'orn',
+    'Orion Protocol',
+    8,
+    '0x0258f474786ddfd37abce6df6bbb1dd5dfc4434a',
+    UnderlyingAsset.ORN
+  ),
+  erc20(
     'd9aab455-040e-4032-b9bb-1d2b0d0aa1e2',
     'os',
     'OpenSea',
@@ -10116,6 +10276,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x83e6f1e41cdd28eaceb20cb649155049fac3d5aa',
     UnderlyingAsset.POLS
+  ),
+  erc20(
+    '4121e2f0-b112-4edb-a451-71960e234b4a',
+    'pond',
+    'Marlin POND',
+    18,
+    '0x57b946008913b82e4df85f501cbaed910e58d26c',
+    UnderlyingAsset.POND
   ),
   erc20(
     '7735bd50-ad70-4413-ad6a-d69ea3d66d10',
@@ -11384,6 +11552,199 @@ export const coins = CoinMap.fromCoins([
     '0x40af3827f39d0eacbf4a168f8d4ee67c121d11c9',
     UnderlyingAsset['bsc:tusd']
   ),
+  bscToken(
+    '75d857f8-577a-4daa-becc-32be8c2f9366',
+    'bsc:wrose',
+    'Wrapped ROSE',
+    18,
+    '0xf00600ebc7633462bc4f9c61ea2ce99f5aaebd4a',
+    UnderlyingAsset['bsc:wrose']
+  ),
+  bscToken(
+    '7c86c5bf-7952-4e25-a54b-d91f6d06782f',
+    'bsc:twt',
+    'Trust Wallet Token',
+    18,
+    '0x4b0f1812e5df2a09796481ff14017e6005508003',
+    UnderlyingAsset['bsc:twt']
+  ),
+  bscToken(
+    'e703a395-1c49-47c1-b37a-76f8ae80dda8',
+    'bsc:sfp',
+    'SafePal Token',
+    18,
+    '0xd41fdb03ba84762dd66a0af1a6c8540ff1ba5dfb',
+    UnderlyingAsset['bsc:sfp']
+  ),
+  bscToken(
+    '95d911d1-94a8-4227-afbf-a8b7e78b63a8',
+    'bsc:edu',
+    'Open Campus EDU Coin',
+    18,
+    '0xbdeae1ca48894a1759a8374d63925f21f2ee2639',
+    UnderlyingAsset['bsc:edu']
+  ),
+  bscToken(
+    'dcbd000e-0aa5-4814-9979-111e48ed1321',
+    'bsc:mrs',
+    'Metars Genesis',
+    18,
+    '0x238d02ee3f80fbf5e381f049616025c186889b68',
+    UnderlyingAsset['bsc:mrs']
+  ),
+  bscToken(
+    'bcf567ae-0b2a-4506-874b-1e1c4a20522c',
+    'bsc:ong',
+    'Ontology Gas Token',
+    9,
+    '0x308bfaeaac8bdab6e9fc5ead8edcb5f95b0599d9',
+    UnderlyingAsset['bsc:ong']
+  ),
+  bscToken(
+    '39d6827f-d3a3-4edd-b15e-feb031477773',
+    'bsc:ctk',
+    'Shentu CertiK Token',
+    6,
+    '0xa8c2b8eec3d368c0253ad3dae65a5f2bbb89c929',
+    UnderlyingAsset['bsc:ctk']
+  ),
+  bscToken(
+    'f39c2545-d500-453c-912a-a5b6930e2882',
+    'bsc:rdnt',
+    'Radiant Capital',
+    18,
+    '0xf7de7e8a6bd59ed41a4b5fe50278b3b7f31384df',
+    UnderlyingAsset['bsc:rdnt']
+  ),
+  bscToken(
+    'cb77a41a-ed97-48de-940a-32ec58a30064',
+    'bsc:mbx',
+    'MARBLEX',
+    18,
+    '0xf95a5532d67c944dfa7eddd2f8c358fe0dc7fac2',
+    UnderlyingAsset['bsc:mbx']
+  ),
+  bscToken(
+    'e8b3cf34-b2b3-4352-8fa6-c9aee76fe0d1',
+    'bsc:mav',
+    'Maverick Token',
+    18,
+    '0xd691d9a68c887bdf34da8c36f63487333acfd103',
+    UnderlyingAsset['bsc:mav']
+  ),
+  bscToken(
+    'b47ffd02-b2c3-4fff-b71f-3f5e5a9f24aa',
+    'bsc:mct',
+    'MetaCraftToken',
+    18,
+    '0xdf677713a2c661ecd0b2bd4d7485170aa8c1eceb',
+    UnderlyingAsset['bsc:mct']
+  ),
+  bscToken(
+    '75f44792-006c-41ba-abb0-8e1f52a87aa4',
+    'bsc:thunder',
+    'BSC-Peg Thunder Token',
+    18,
+    '0x990e7154bb999faa9b2fa5ed29e822703311ea85',
+    UnderlyingAsset['bsc:thunder']
+  ),
+  bscToken(
+    'd8f45e1e-a6de-4e2f-90a6-8cb2c176955b',
+    'bsc:atlas',
+    'Star Atlas',
+    8,
+    '0x83850d97018f665eb746fbb8f18351e977d1b0d6',
+    UnderlyingAsset['bsc:atlas']
+  ),
+  bscToken(
+    '4be63483-8507-4bac-bcff-402d3a77fbe1',
+    'bsc:vidt',
+    'VIDT DAO',
+    18,
+    '0x9c4a515cd72d27a4710571aca94858a53d9278d5',
+    UnderlyingAsset['bsc:vidt']
+  ),
+  bscToken(
+    'f7ed114e-529c-4612-9202-bb797f0bdfe3',
+    'bsc:pax',
+    'Binance-Peg Paxos Standard',
+    18,
+    '0xb7f8cd00c5a06c0537e2abff0b58033d02e5e094',
+    UnderlyingAsset['bsc:pax']
+  ),
+  bscToken(
+    'ec176176-36c1-41ab-9b03-0b77a3b80003',
+    'bsc:unfi',
+    'Unifi Protocol DAO',
+    18,
+    '0x728c5bac3c3e370e372fc4671f9ef6916b814d8b',
+    UnderlyingAsset['bsc:unfi']
+  ),
+  bscToken(
+    '7effea14-eb15-4cd6-9030-2c78a8e40836',
+    'bsc:chess',
+    'Tranchess',
+    18,
+    '0x20de22029ab63cf9a7cf5feb2b737ca1ee4c82a6',
+    UnderlyingAsset['bsc:chess']
+  ),
+  bscToken(
+    'f6be6fd9-02f7-44db-9160-77329db0bd7a',
+    'bsc:pols',
+    'PolkastarterToken',
+    18,
+    '0x7e624fa0e1c4abfd309cc15719b7e2580887f570',
+    UnderlyingAsset['bsc:pols']
+  ),
+  bscToken(
+    '616e786f-0c17-4ccf-9eba-00ee2af30323',
+    'bsc:uft',
+    'UniLend Finance Token',
+    18,
+    '0x2645d5f59d952ef2317c8e0aaa5a61c392ccd44d',
+    UnderlyingAsset['bsc:uft']
+  ),
+  bscToken(
+    'f60e2988-083b-4f4e-902d-a5d40fd910ba',
+    'bsc:wing',
+    'Wing Finance',
+    9,
+    '0x3cb7378565718c64ab86970802140cc48ef1f969',
+    UnderlyingAsset['bsc:wing']
+  ),
+  bscToken(
+    '487c8a51-1188-416f-a835-44b79598f80b',
+    'bsc:santos',
+    'FC Santos Fan Token',
+    8,
+    '0xa64455a4553c9034236734faddaddbb64ace4cc7',
+    UnderlyingAsset['bsc:santos']
+  ),
+  bscToken(
+    '26026249-1549-4d0b-b9dc-c095b2cafbf4',
+    'bsc:lazio',
+    'FC Lazio Fan Token',
+    8,
+    '0x77d547256a2cd95f32f67ae0313e450ac200648d',
+    UnderlyingAsset['bsc:lazio']
+  ),
+  bscToken(
+    '0606bb12-22cc-4648-a633-d305871e45f7',
+    'bsc:swap',
+    'TrustSwap Token',
+    18,
+    '0x94eafeeef7ffa66203fdc9349c54d601472a79dc',
+    UnderlyingAsset['bsc:swap']
+  ),
+  bscToken(
+    '3ce0f495-2dbe-4598-a167-a7a16a615485',
+    'bsc:troy',
+    'TROY',
+    18,
+    '0x6d41f64c567acbf36f88763306ff6fb50ff61458',
+    UnderlyingAsset['bsc:troy']
+  ),
+
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -14143,6 +14504,22 @@ export const coins = CoinMap.fromCoins([
     '0x7c6a937943f135283a2561938de2200994a8f7a7',
     UnderlyingAsset['avaxc:note']
   ),
+  avaxErc20(
+    '929c8d8c-fff3-4702-9dc1-477c70400024',
+    'avaxc:wrose',
+    'Wrapped ROSE',
+    18,
+    '0x12af5c1a232675f62f405b5812a80e7a6f75d746',
+    UnderlyingAsset['avaxc:wrose']
+  ),
+  avaxErc20(
+    '2511b910-85fb-4660-a8a5-bb137b237054',
+    'avaxc:swap',
+    'TrustSwap Token',
+    18,
+    '0xc7b5d72c836e718cda8888eaf03707faef675079',
+    UnderlyingAsset['avaxc:swap']
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',
@@ -14281,7 +14658,7 @@ export const coins = CoinMap.fromCoins([
     'Star Atlas',
     8,
     'ATLASXmbPQxBUYbxPsV97usA3fPQYEqzQBUHgiFCUsXx',
-    UnderlyingAsset.ATLAS,
+    UnderlyingAsset['sol:atlas'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -15994,6 +16371,24 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:mother'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '1653a37c-b9c4-46f9-b55a-db5be9ad7943',
+    'sol:wrose',
+    'Wrapped ROSE',
+    8,
+    'S3SQfD6RheMXQ3EEYn1Z5sJsbtwfXdt7tSAVXPQFtYo',
+    UnderlyingAsset['sol:wrose'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f092f18a-ac79-4f07-b7f9-72df55e08306',
+    'sol:mdt',
+    'Measurable Data Token',
+    8,
+    '8Wqbst4qAN2FqBCCh5gdXq2WJ7vTNWEY4oNLrpUg7Tya',
+    UnderlyingAsset['sol:mdt'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -16829,6 +17224,54 @@ export const coins = CoinMap.fromCoins([
     '0x5559edb74751a0ede9dea4dc23aee72cca6be3d5',
     UnderlyingAsset['polygon:zrx']
   ),
+  polygonErc20(
+    '8e4930ba-9e32-44bc-8a64-a7dd3e5011e8',
+    'polygon:ont',
+    'Poly-Peg Ontology Token',
+    9,
+    '0xd4814770065f634003a8d8d70b4743e0c3f334ad',
+    UnderlyingAsset['polygon:ont']
+  ),
+  polygonErc20(
+    '0041071a-9ca3-44d5-b155-5b1d3b0e3f2a',
+    'polygon:wrx',
+    'Wazirx (PoS)',
+    8,
+    '0x72d6066f486bd0052eefb9114b66ae40e0a6031a',
+    UnderlyingAsset['polygon:wrx']
+  ),
+  polygonErc20(
+    '8c61bb88-f103-4d42-bf5e-26826d4b7712',
+    'polygon:voxel',
+    'VOXEL Token',
+    18,
+    '0xd0258a3fd00f38aa8090dfee343f10a9d4d30d3f',
+    UnderlyingAsset['polygon:voxel']
+  ),
+  polygonErc20(
+    'a50af4dd-dd29-4ce7-8917-0136444be9f9',
+    'polygon:uft',
+    'UniLend Finance Token',
+    18,
+    '0x5b4cf2c120a9702225814e18543ee658c5f8631e',
+    UnderlyingAsset['polygon:uft']
+  ),
+  polygonErc20(
+    '1dedcd57-0934-41b4-b3f1-5c35450bb7be',
+    'polygon:ooki',
+    'Ooki Protocol',
+    18,
+    '0xcd150b1f528f326f5194c012f32eb30135c7c2c9',
+    UnderlyingAsset['polygon:ooki']
+  ),
+  polygonErc20(
+    'b99c9850-2c2d-425a-b630-654e1072acc3',
+    'polygon:swap',
+    'TrustSwap Token',
+    18,
+    '0x3809dcdd5dde24b37abe64a5a339784c3323c44f',
+    UnderlyingAsset['polygon:swap']
+  ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
     'erc721:polygontoken',
@@ -17116,6 +17559,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x82e3a8f066a6989666b031d916c43672085b1582',
     UnderlyingAsset['arbeth:yfi']
+  ),
+  arbethErc20(
+    '5846be2e-06c5-4ce9-a630-f67a60cbc019',
+    'arbeth:xsgd',
+    'XSGD',
+    6,
+    '0xb9f5fc449ddd21302ab52af1ffea8d7a49614d3b',
+    UnderlyingAsset['arbeth:xsgd']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
