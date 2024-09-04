@@ -6,6 +6,7 @@ import * as nock from 'nock';
 import * as sinon from 'sinon';
 import * as should from 'should';
 import * as _ from 'lodash';
+
 import { TestBitGo } from '@bitgo/sdk-test';
 import {
   BlsUtils,
@@ -17,10 +18,14 @@ import {
   GenerateWalletOptions,
   Wallet,
   isWalletWithKeychains,
+  BulkWalletShareOptions,
+  OptionalKeychainEncryptedKey,
+  KeychainWithEncryptedPrv,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
 import { afterEach } from 'mocha';
 import { TssSettings } from '@bitgo/public-types';
+import * as moduleBitgo from '@bitgo/sdk-core';
 
 describe('V2 Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
@@ -1424,6 +1429,250 @@ describe('V2 Wallets:', function () {
 
       await wallets.acceptShare({ walletShareId: shareId });
       acceptShareNock.done();
+    });
+  });
+
+  describe('createBulkKeyShares tests', () => {
+    const walletData = {
+      id: '5b34252f1bf349930e34020a00000000',
+      coin: 'tbtc',
+      keys: [
+        '5b3424f91bf349930e34017500000000',
+        '5b3424f91bf349930e34017600000000',
+        '5b3424f91bf349930e34017700000000',
+      ],
+      coinSpecific: {},
+      multisigType: 'onchain',
+      type: 'hot',
+    };
+    const tsol = bitgo.coin('tsol');
+    const wallet = new Wallet(bitgo, tsol, walletData);
+    before(function () {
+      nock('https://bitgo.fakeurl').persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
+      bitgo.initializeTestVars();
+    });
+    beforeEach(() => {
+      sinon.createSandbox();
+    });
+    after(function () {
+      nock.cleanAll();
+      nock.pendingMocks().length.should.equal(0);
+    });
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should throw an error if shareOptions is empty', async () => {
+      try {
+        await wallet.createBulkKeyShares([]);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.strictEqual(error.message, 'shareOptions cannot be empty');
+      }
+    });
+
+    it('should skip shareoption if keychain parameters are missing', async () => {
+      const params = [
+        {
+          user: 'testuser@example.com',
+          permissions: ['spend'],
+          keychain: { pub: 'pubkey', encryptedPrv: '', fromPubKey: '', toPubKey: '', path: '' },
+        },
+      ];
+
+      try {
+        await wallet.createBulkKeyShares(params);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        // Shareoptions with invalid keychains are skipped
+        assert.strictEqual(error.message, 'shareOptions cannot be empty');
+      }
+    });
+
+    it('should send the correct data to BitGo API if shareOptions are valid', async () => {
+      const params = {
+        shareOptions: [
+          {
+            user: 'testuser@example.com',
+            permissions: ['spend'],
+            keychain: {
+              pub: 'pubkey',
+              encryptedPrv: 'encryptedPrv',
+              fromPubKey: 'fromPubKey',
+              toPubKey: 'toPubKey',
+              path: 'm/0/0',
+            },
+          },
+        ],
+      };
+      const paramsToSend = [
+        {
+          user: 'testuser@example.com',
+          permissions: ['spend'],
+          keychain: {
+            pub: 'pubkey',
+            encryptedPrv: 'encryptedPrv',
+            fromPubKey: 'fromPubKey',
+            toPubKey: 'toPubKey',
+            path: 'm/0/0',
+          },
+        },
+      ];
+      nock(bgUrl)
+        .post(`/api/v2/wallet/${walletData.id}/walletshares`, params)
+        .reply(200, {
+          shares: [
+            {
+              id: 'userId',
+              coin: walletData.coin,
+              wallet: walletData.id,
+              fromUser: 'fromUserId',
+              toUser: 'toUserId',
+              permissions: ['view', 'spend'],
+              keychain: {
+                pub: 'dummyPub',
+                encryptedPrv: 'dummyEncryptedPrv',
+                fromPubKey: 'dummyFromPubKey',
+                toPubKey: 'dummyToPubKey',
+                path: 'dummyPath',
+              },
+            },
+          ],
+        });
+      const result = await wallet.createBulkKeyShares(paramsToSend);
+      assert.strictEqual(result.shares[0].id, 'userId', 'The share ID should match');
+      assert.strictEqual(result.shares[0].coin, walletData.coin, 'The coin should match');
+      assert.strictEqual(result.shares[0].wallet, walletData.id, 'The wallet ID should match');
+      assert(result.shares[0].keychain);
+      assert.strictEqual(result.shares[0].keychain.pub, 'dummyPub', 'The keychain pub should match');
+      assert.strictEqual(result.shares[0].permissions.includes('view'), true, 'The permissions should include "view"');
+      assert.strictEqual(
+        result.shares[0].permissions.includes('spend'),
+        true,
+        'The permissions should include "spend"'
+      );
+    });
+  });
+
+  describe('createBulkWalletShare tests', () => {
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+
+    const walletData = {
+      id: '5b34252f1bf349930e34020a00000000',
+      coin: 'tbtc',
+      keys: [
+        '5b3424f91bf349930e34017500000000',
+        '5b3424f91bf349930e34017600000000',
+        '5b3424f91bf349930e34017700000000',
+      ],
+      coinSpecific: {},
+      multisigType: 'onchain',
+      type: 'hot',
+    };
+    const tsol = bitgo.coin('tsol');
+    const wallet = new Wallet(bitgo, tsol, walletData);
+    before(function () {
+      nock('https://bitgo.fakeurl').persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
+      bitgo.initializeTestVars();
+    });
+
+    after(function () {
+      nock.cleanAll();
+      nock.pendingMocks().length.should.equal(0);
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should throw an error if no share options are provided', async () => {
+      try {
+        await wallet.createBulkWalletShare({ walletPassphrase: 'Test', keyShareOptions: [] });
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.strictEqual(error.message, 'shareOptions cannot be empty');
+      }
+    });
+
+    it('should correctly process share options and call createBulkKeyShares', async () => {
+      const userId = 'user@example.com';
+      const permissions = ['view', 'spend'];
+      const path = 'm/999999/1/1';
+      const walletPassphrase = 'bitgo1234';
+      const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
+      nock(bgUrl)
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
+        .reply(200, {
+          id: wallet.keyIds()[0],
+          pub,
+          source: 'user',
+          encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+          coinSpecific: {},
+        });
+      const params: BulkWalletShareOptions = {
+        walletPassphrase,
+        keyShareOptions: [
+          {
+            userId: userId,
+            permissions: permissions,
+            pubKey: '02705a6d33a2459feb537e7abe36aaad8c11532cdbffa3a2e4e58868467d51f532',
+            path: path,
+          },
+        ],
+      };
+
+      const prv1 = Math.random().toString();
+      const keychainTest: OptionalKeychainEncryptedKey = {
+        encryptedPrv: bitgo.encrypt({ input: prv1, password: walletPassphrase }),
+      };
+
+      sinon.stub(wallet, 'getEncryptedUserKeychain').resolves({
+        encryptedPrv: keychainTest.encryptedPrv,
+      } as KeychainWithEncryptedPrv);
+
+      sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+      sinon.stub(wallet, 'createBulkKeyShares').resolves({
+        shares: [
+          {
+            id: userId,
+            coin: walletData.coin,
+            wallet: walletData.id,
+            fromUser: userId,
+            toUser: userId,
+            permissions: ['view', 'spend'],
+            keychain: {
+              pub: 'dummyPub',
+              encryptedPrv: 'dummyEncryptedPrv',
+              fromPubKey: 'dummyFromPubKey',
+              toPubKey: 'dummyToPubKey',
+              path: 'dummyPath',
+            },
+          },
+        ],
+      });
+
+      const result = await wallet.createBulkWalletShare(params);
+
+      assert.deepStrictEqual(result, {
+        shares: [
+          {
+            id: userId,
+            coin: walletData.coin,
+            wallet: walletData.id,
+            fromUser: userId,
+            toUser: userId,
+            permissions: ['view', 'spend'],
+            keychain: {
+              pub: 'dummyPub',
+              encryptedPrv: 'dummyEncryptedPrv',
+              fromPubKey: 'dummyFromPubKey',
+              toPubKey: 'dummyToPubKey',
+              path: 'dummyPath',
+            },
+          },
+        ],
+      });
     });
   });
 });

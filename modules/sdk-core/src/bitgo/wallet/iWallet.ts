@@ -485,6 +485,52 @@ export interface ShareWalletOptions {
   disableEmail?: boolean;
 }
 
+export interface BulkCreateShareOption {
+  user: string;
+  permissions: string[];
+  keychain: BulkWalletShareKeychain;
+}
+
+export interface BulkWalletShareOptions {
+  walletPassphrase: string;
+  keyShareOptions: Array<{
+    userId: string;
+    pubKey: string;
+    path: string;
+    permissions: string[];
+  }>;
+}
+
+export type WalletShareState = 'active' | 'accepted' | 'canceled' | 'rejected' | 'pendingapproval';
+
+export interface BulkWalletShareKeychain {
+  pub: string;
+  encryptedPrv: string;
+  fromPubKey: string;
+  toPubKey: string;
+  path: string;
+}
+
+export interface WalletShare {
+  id: string;
+  coin: string;
+  wallet: string;
+  walletLabel?: string;
+  fromUser: string;
+  toUser: string;
+  permissions: string[];
+  state?: WalletShareState;
+  enterprise?: string;
+  message?: string;
+  pendingApprovalId?: string;
+  keychainOverrideRequired?: boolean;
+  isUMSInitiated?: boolean;
+  keychain?: BulkWalletShareKeychain;
+}
+
+export interface CreateBulkWalletShareListResponse {
+  shares: WalletShare[];
+}
 export interface RemoveUserOptions {
   userId?: string;
 }
@@ -753,6 +799,8 @@ export interface IWallet {
   getPrv(params?: GetPrvOptions): Promise<any>;
   createShare(params?: CreateShareOptions): Promise<any>;
   shareWallet(params?: ShareWalletOptions): Promise<any>;
+  createBulkKeyShares(params?: BulkCreateShareOption[]): Promise<CreateBulkWalletShareListResponse>;
+  createBulkWalletShare(params?: BulkWalletShareOptions): Promise<CreateBulkWalletShareListResponse>;
   removeUser(params?: RemoveUserOptions): Promise<any>;
   prebuildTransaction(params?: PrebuildTransactionOptions): Promise<PrebuildTransactionResult>;
   signTransaction(params?: WalletSignTransactionOptions): Promise<SignedTransaction>;
