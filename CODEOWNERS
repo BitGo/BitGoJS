@@ -27,6 +27,16 @@
 /modules/utxo-lib/ @BitGo/btc-team
 /modules/utxo-ord/ @BitGo/btc-team
 
+# Lightning coin modules
+/modules/abstract-lightning/ @BitGo/btc-team
+/modules/sdk-coin-lnbtc/ @BitGo/btc-team
+/modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
+/modules/sdk-core/test/unit/bitgo/lightning/ @BitGo/btc-team
+/modules/express/src/lightning/ @BitGo/btc-team
+/modules/express/test/unit/lightning/ @BitGo/btc-team
+/modules/express/test/unit/clientRoutes/lightning/ @BitGo/btc-team
+/modules/bitgo/test/v2/unit/lightning/ @BitGo/btc-team
+
 # Eth
 /modules/account-lib/ @BitGo/ethalt-team
 /modules/sdk-coin-celo/ @BitGo/ethalt-team
