@@ -1100,6 +1100,7 @@ export enum UnderlyingAsset {
   NOSANA = 'nosana',
   NOTE = 'note',
   NOVA = 'nova',
+  NPT = 'npt',
   NPXS = 'npxs',
   NS2DRP = 'ns2drp',
   NU = 'nu',
@@ -1544,6 +1545,7 @@ export enum UnderlyingAsset {
   UXB = 'uxb',
   UXP = 'uxp',
   VALOR = 'valor',
+  VANRY = 'vanry',
   VBNT = 'vbnt',
   VCORE = 'vcore',
   VDX = 'vdx',
@@ -1557,6 +1559,7 @@ export enum UnderlyingAsset {
   VIDT = 'vidt',
   VISR = 'visr',
   VIU = 'viu',
+  VOLT = 'volt',
   VRA = 'vra',
   VRGX = 'vrgx',
   VSP = 'vsp',
@@ -1908,6 +1911,9 @@ export enum UnderlyingAsset {
   'polygon:uft' = 'polygon:uft',
   'polygon:ooki' = 'polygon:ooki',
   'polygon:swap' = 'polygon:swap',
+  'polygon:vanry' = 'polygon:vanry',
+  'polygon:npt' = 'polygon:npt',
+  'polygon:volt' = 'polygon:volt',
 
   // Polygon NFTs
   // generic NFTs
@@ -2008,6 +2014,7 @@ export enum UnderlyingAsset {
   'bsc:troy' = 'bsc:troy',
   'bsc:rdnt' = 'bsc:rdnt',
   'bsc:pax' = 'bsc:pax',
+  'bsc:volt' = 'bsc:volt',
   'tbsc:busd' = 'tbsc:busd',
   // BSC NFTs
   // generic NFTs
