@@ -202,6 +202,7 @@ export class StakingWallet implements IStakingWallet {
   }
 
   /**
+   * @Deprecated use buildAndSign
    * Build, sign and send the transaction.
    * @param signOptions
    * @param transaction
@@ -237,7 +238,7 @@ export class StakingWallet implements IStakingWallet {
    * @param signOptions
    * @param transaction
    */
-  private async buildAndSign(
+  async buildAndSign(
     signOptions: StakingSignOptions,
     transaction: StakingTransaction
   ): Promise<StakingSignedTransaction> {
