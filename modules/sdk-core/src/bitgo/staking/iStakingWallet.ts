@@ -221,6 +221,7 @@ export interface IStakingWallet {
   ): Promise<StakingSignedTransaction>;
   send(signedTransaction: StakingSignedTransaction): Promise<StakingTransaction>;
   buildSignAndSend(signOptions: StakingSignOptions, transaction: StakingTransaction);
+  buildAndSign(signOptions: StakingSignOptions, transaction: StakingTransaction);
   cancelStakingRequest(stakingRequestId: string): Promise<StakingRequest>;
   prebuildSelfManagedStakingTransaction(transaction: StakingTransaction): Promise<PrebuildTransactionResult>;
 }
