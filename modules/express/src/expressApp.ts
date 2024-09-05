@@ -255,6 +255,9 @@ export function setupRoutes(app: express.Application, config: Config): void {
   if (config.signerMode) {
     clientRoutes.setupSigningRoutes(app, config);
   } else {
+    if (config.lightningSignerFileSystemPath) {
+      clientRoutes.setupLightningRoutes(app, config);
+    }
     clientRoutes.setupAPIRoutes(app, config);
   }
 }
