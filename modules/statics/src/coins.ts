@@ -17340,7 +17340,7 @@ export const coins = CoinMap.fromCoins([
     'tpolygon:xsgd',
     'XSGD',
     6,
-    '0x16e28369bc318636abbf6cb1035da77ffbf4a3bc',
+    '0xd769410dc8772695a7f55a304d2125320a65c2a5',
     UnderlyingAsset['tpolygon:xsgd']
   ),
   tpolygonErc20(
