@@ -20,6 +20,12 @@ export interface SimulateOptions {
   blockId: string;
 }
 
+export interface VerifyWebhookNotificationParams {
+  webhookId: string;
+  signature: string;
+  notificationPayload: string;
+}
+
 export interface IWebhooks {
   list(): Promise<any>;
   add(params: AddOptions): Promise<any>;

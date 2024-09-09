@@ -7,7 +7,14 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { AddOptions, IWebhooks, ListNotificationsOptions, RemoveOptions, SimulateOptions } from './iWebhooks';
+import {
+  AddOptions,
+  IWebhooks,
+  ListNotificationsOptions,
+  RemoveOptions,
+  SimulateOptions,
+  VerifyWebhookNotificationParams,
+} from './iWebhooks';
 
 export class Webhooks implements IWebhooks {
   private bitgo: BitGoBase;
@@ -88,6 +95,15 @@ export class Webhooks implements IWebhooks {
     return this.bitgo
       .post(this.baseCoin.url('/webhooks/' + webhookId + '/simulate'))
       .send(params)
+      .result();
+  }
+
+  async verifyWebhookNotification(params: VerifyWebhookNotificationParams): Promise<any> {
+    const webhookId = params.webhookId;
+
+    return this.bitgo
+      .post('/webhooks/' + webhookId + '/verify')
+      .send({ signature: params.signature, notificationPayload: params.notificationPayload })
       .result();
   }
 }
