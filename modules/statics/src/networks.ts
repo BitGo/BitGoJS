@@ -17,7 +17,14 @@ export interface UtxoNetwork extends BaseNetwork {
   utxolibName: string;
 }
 
-export type LightningNetwork = UtxoNetwork;
+export interface LightningNetwork extends UtxoNetwork {
+  /**
+   * The public key of the Lightning service, used for deriving the shared Elliptic Curve Diffie-Hellman (ECDH) secret
+   * between the user's extended private key and the Lightning service. This key facilitates secure communication
+   * by enabling the creation of a shared secret for encryption and decryption of data.
+   */
+  lightningServicePubKey: string;
+}
 
 export interface AdaNetwork extends BaseNetwork {
   // Network name as defined in @bitgo/utxo-lib networks.ts
@@ -271,6 +278,8 @@ class LightningBitcoin extends Mainnet implements LightningNetwork {
   family = CoinFamily.LNBTC;
   utxolibName = 'bitcoin';
   explorerUrl = 'https://mempool.space/lightning';
+  // TODO BTC-1423 - Currently dummy key is used here to unblock development. Replace with the actual public key once the ticket is done.
+  lightningServicePubKey = '039c67c461dc751b32b983075210875c388bbb918d7b88c31e1a5a3164d693cf41';
 }
 
 class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
@@ -278,6 +287,8 @@ class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
   family = CoinFamily.LNBTC;
   utxolibName = 'testnet';
   explorerUrl = 'https://mempool.space/testnet/lightning';
+  // TODO BTC-1423 - Currently dummy key is used here to unblock development. Replace with the actual public key once the ticket is done.
+  lightningServicePubKey = '03b6fe266b3f8ae110b877d942765e9cea9e82faf03cdbb6d0effe980b6371b9c2';
 }
 
 class Bitcoin extends Mainnet implements UtxoNetwork {
