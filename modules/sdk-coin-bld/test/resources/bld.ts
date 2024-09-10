@@ -257,7 +257,6 @@ export const coinAmounts = {
 };
 
 export const wrwUser = {
-  senderAddress: 'agoric1enx2gvcpmf4fw7vnngj2qjw2x4270vhwev49ra',
   destinationAddress: 'agoric1tkfnp4khzd0f7mgtznwrvr0lv2at3p8c8sz89p',
   userPrivateKey:
     '{"iv":"P1169+ix5MxunnuGnImS1A==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +

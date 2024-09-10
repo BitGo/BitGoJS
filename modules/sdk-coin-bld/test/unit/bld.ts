@@ -18,16 +18,29 @@ import {
   wrwUser,
 } from '../resources/bld';
 import should = require('should');
+import { Ecdsa, ECDSAUtils, VerifyTransactionOptions } from '@bitgo/sdk-core';
 
 describe('BLD', function () {
   let bitgo: TestBitGoAPI;
-  let basecoin;
-  before(function () {
+  let basecoin: Tbld;
+
+  let wrwUserSenderAddress: string;
+
+  before(async function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('bld', Bld.createInstance);
     bitgo.safeRegister('tbld', Tbld.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tbld');
+    basecoin = bitgo.coin('tbld') as unknown as Tbld;
+
+    const { commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+      wrwUser.userPrivateKey,
+      wrwUser.backupPrivateKey,
+      wrwUser.walletPassphrase
+    );
+    const MPC = new Ecdsa();
+    const publicKey = MPC.deriveUnhardened(commonKeyChain, 'm/0').slice(0, 66);
+    wrwUserSenderAddress = basecoin.getAddressFromPublicKey(publicKey);
   });
 
   it('should return the right info', function () {
@@ -55,7 +68,7 @@ describe('BLD', function () {
     it('should get address details with memoId', function () {
       const addressDetails = basecoin.getAddressDetails(address.validMemoIdAddress);
       addressDetails.address.should.equal(address.validMemoIdAddress.split('?')[0]);
-      addressDetails.memoId.should.equal('2');
+      addressDetails.memoId!.should.equal('2');
     });
 
     it('should throw on invalid memo id address', () => {
@@ -78,7 +91,7 @@ describe('BLD', function () {
           memoID: '7',
         },
       };
-      const isValid = await basecoin.isWalletAddress(receiveAddress);
+      const isValid = await basecoin.isWalletAddress(receiveAddress as any);
       isValid.should.equal(true);
     });
 
@@ -121,7 +134,11 @@ describe('BLD', function () {
         ],
       };
       const verification = {};
-      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        verification,
+      } as unknown as VerifyTransactionOptions);
       isTransactionVerified.should.equal(true);
     });
 
@@ -139,7 +156,11 @@ describe('BLD', function () {
         ],
       };
       const verification = {};
-      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        verification,
+      } as unknown as VerifyTransactionOptions);
       isTransactionVerified.should.equal(true);
     });
 
@@ -157,7 +178,11 @@ describe('BLD', function () {
         ],
       };
       const verification = {};
-      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        verification,
+      } as unknown as VerifyTransactionOptions);
       isTransactionVerified.should.equal(true);
     });
 
@@ -175,7 +200,11 @@ describe('BLD', function () {
         ],
       };
       const verification = {};
-      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        verification,
+      } as unknown as VerifyTransactionOptions);
       isTransactionVerified.should.equal(true);
     });
 
@@ -186,7 +215,7 @@ describe('BLD', function () {
         .verifyTransaction({
           txParams,
           txPrebuild,
-        })
+        } as unknown as VerifyTransactionOptions)
         .should.rejectedWith('missing required tx prebuild property txHex');
     });
   });
@@ -298,14 +327,6 @@ describe('BLD', function () {
       });
     });
 
-    it('should fail to explain transaction with missing params', async function () {
-      try {
-        await basecoin.explainTransaction({});
-      } catch (error) {
-        should.equal(error.message, 'missing required txHex parameter');
-      }
-    });
-
     it('should fail to explain transaction with invalid params', async function () {
       try {
         await basecoin.explainTransaction({ txHex: 'randomString' });
@@ -354,12 +375,12 @@ describe('BLD', function () {
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';
 
-    beforeEach(() => {
+    beforeEach(async () => {
       const accountBalance = sandBox.stub(Bld.prototype, 'getAccountBalance' as keyof Bld);
-      accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
+      accountBalance.withArgs(wrwUserSenderAddress).resolves(testBalance);
 
       const accountDetails = sandBox.stub(Bld.prototype, 'getAccountDetails' as keyof Bld);
-      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+      accountDetails.withArgs(wrwUserSenderAddress).resolves([testAccountNumber, testSequenceNumber]);
 
       const chainId = sandBox.stub(Bld.prototype, 'getChainId' as keyof Bld);
       chainId.withArgs().resolves(testChainId);
@@ -377,14 +398,20 @@ describe('BLD', function () {
       const res = await basecoin.recover({
         userKey: wrwUser.userPrivateKey,
         backupKey: wrwUser.backupPrivateKey,
-        bitgoKey: wrwUser.bitgoPublicKey,
         walletPassphrase: wrwUser.walletPassphrase,
         recoveryDestination: destinationAddress,
       });
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       sandBox.assert.calledOnce(basecoin.getAccountBalance);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       sandBox.assert.calledOnce(basecoin.getAccountDetails);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       sandBox.assert.calledOnce(basecoin.getChainId);
 
       const txn = new CosmosTransaction(coin, utils);
@@ -402,7 +429,7 @@ describe('BLD', function () {
       const res = await basecoin.redelegate({
         userKey: wrwUser.userPrivateKey,
         backupKey: wrwUser.backupPrivateKey,
-        bitgoKey: wrwUser.bitgoPublicKey,
+        recoveryDestination: wrwUserSenderAddress,
         walletPassphrase: wrwUser.walletPassphrase,
         amountToRedelegate: '10000000000000000',
         validatorSrcAddress: 'agoricvaloper1wy3h3gne94xpmnjwfwd3eyaytv9g4nj6yykkkj',
@@ -411,6 +438,8 @@ describe('BLD', function () {
 
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       sandBox.assert.calledOnce(basecoin.getChainId);
 
       const txn = new CosmosTransaction(coin, utils);
@@ -433,10 +462,10 @@ describe('BLD', function () {
 
     beforeEach(() => {
       const accountBalance = sandBox.stub(Bld.prototype, 'getAccountBalance' as keyof Bld);
-      accountBalance.withArgs(wrwUser.senderAddress).resolves(testZeroBalance);
+      accountBalance.withArgs(wrwUserSenderAddress).resolves(testZeroBalance);
 
       const accountDetails = sandBox.stub(Bld.prototype, 'getAccountDetails' as keyof Bld);
-      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+      accountDetails.withArgs(wrwUserSenderAddress).resolves([testAccountNumber, testSequenceNumber]);
 
       const chainId = sandBox.stub(Bld.prototype, 'getChainId' as keyof Bld);
       chainId.withArgs().resolves(testChainId);
@@ -454,7 +483,6 @@ describe('BLD', function () {
       await basecoin
         .recover({
           userKey: wrwUser.userPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destinationAddress,
         })
@@ -465,7 +493,6 @@ describe('BLD', function () {
       await basecoin
         .recover({
           backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destinationAddress,
         })
@@ -477,7 +504,6 @@ describe('BLD', function () {
         .recover({
           userKey: wrwUser.userPrivateKey,
           backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
           recoveryDestination: destinationAddress,
         })
         .should.rejectedWith('missing wallet passphrase');
@@ -488,7 +514,6 @@ describe('BLD', function () {
         .recover({
           userKey: wrwUser.userPrivateKey,
           backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destinationAddress,
         })

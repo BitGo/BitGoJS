@@ -34,7 +34,6 @@ import {
   Wallet,
   ECDSAUtils,
 } from '@bitgo/sdk-core';
-import { DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
 import {
   BaseCoin as StaticsBaseCoin,
   CoinMap,
@@ -1054,72 +1053,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   }
 
   /**
-   * Helper which combines key shares of user and backup
-   * @param {string} userPublicOrPrivateKeyShare
-   * @param {string} backupPrivateOrPublicKeyShare
-   * @param {string} walletPassphrase
-   * @returns {[ECDSAMethodTypes.KeyCombined, ECDSAMethodTypes.KeyCombined]}
-   */
-  private getKeyCombinedFromTssKeyShares(
-    userPublicOrPrivateKeyShare: string,
-    backupPrivateOrPublicKeyShare: string,
-    walletPassphrase?: string
-  ): [ECDSAMethodTypes.KeyCombined, ECDSAMethodTypes.KeyCombined] {
-    let backupPrv;
-    let userPrv;
-    try {
-      backupPrv = this.bitgo.decrypt({
-        input: backupPrivateOrPublicKeyShare,
-        password: walletPassphrase,
-      });
-      userPrv = this.bitgo.decrypt({
-        input: userPublicOrPrivateKeyShare,
-        password: walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
-    }
-
-    const userSigningMaterial = JSON.parse(userPrv) as ECDSAMethodTypes.SigningMaterial;
-    const backupSigningMaterial = JSON.parse(backupPrv) as ECDSAMethodTypes.SigningMaterial;
-
-    if (!userSigningMaterial.backupNShare) {
-      throw new Error('Invalid user key - missing backupNShare');
-    }
-
-    if (!backupSigningMaterial.userNShare) {
-      throw new Error('Invalid backup key - missing userNShare');
-    }
-
-    const MPC = new Ecdsa();
-
-    const userKeyCombined = MPC.keyCombine(userSigningMaterial.pShare, [
-      userSigningMaterial.bitgoNShare,
-      userSigningMaterial.backupNShare,
-    ]);
-    const userSigningKeyDerived = MPC.keyDerive(
-      userSigningMaterial.pShare,
-      [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare],
-      'm/0'
-    );
-    const userKeyDerivedCombined = {
-      xShare: userSigningKeyDerived.xShare,
-      yShares: userKeyCombined.yShares,
-    };
-    const backupKeyCombined = MPC.keyCombine(backupSigningMaterial.pShare, [
-      userSigningKeyDerived.nShares[2],
-      backupSigningMaterial.bitgoNShare,
-    ]);
-    if (
-      userKeyDerivedCombined.xShare.y !== backupKeyCombined.xShare.y ||
-      userKeyDerivedCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode
-    ) {
-      throw new Error('Common keychains do not match');
-    }
-    return [userKeyDerivedCombined, backupKeyCombined];
-  }
-
-  /**
    * Helper which Adds signatures to tx object and re-serializes tx
    * @param {EthLikeCommon.default} ethCommon
    * @param {EthLikeTxLib.FeeMarketEIP1559Transaction | EthLikeTxLib.Transaction} tx
@@ -1872,62 +1805,16 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         params.replayProtectionOptions
       );
     } else {
-      const isGG18SigningMaterial = ECDSAUtils.isGG18SigningMaterial(
-        userPublicOrPrivateKeyShare,
+      const { userEncryptedPrv, backupEncryptedPrv } = {
+        userEncryptedPrv: userPublicOrPrivateKeyShare,
+        backupEncryptedPrv: backupPrivateOrPublicKeyShare,
+      };
+
+      const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+        userEncryptedPrv,
+        backupEncryptedPrv,
         params.walletPassphrase
       );
-      /**
-       * MPCv2 Signing Params
-       */
-      let userKeyShare: Buffer;
-      let backupKeyShare: Buffer;
-      let commonKeyChain: string;
-
-      // Prepare the key shares for signing
-      if (isGG18SigningMaterial) {
-        // Retrofit the GG18 keys to DKLS
-        const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
-          userPublicOrPrivateKeyShare,
-          backupPrivateOrPublicKeyShare,
-          params.walletPassphrase
-        );
-
-        const aKeyCombine = {
-          xShare: userKeyCombined.xShare,
-        };
-        const bKeyCombine = {
-          xShare: backupKeyCombined.xShare,
-        };
-        const retrofitDataA: DklsTypes.RetrofitData = {
-          xShare: aKeyCombine.xShare,
-        };
-        const retrofitDataB: DklsTypes.RetrofitData = {
-          xShare: bKeyCombine.xShare,
-        };
-        const [user, backup] = await DklsUtils.generate2of2KeyShares(retrofitDataA, retrofitDataB);
-
-        userKeyShare = user.getKeyShare();
-        backupKeyShare = backup.getKeyShare();
-        if (DklsTypes.getCommonKeychain(userKeyShare) !== DklsTypes.getCommonKeychain(backupKeyShare)) {
-          throw new Error('Common keychain mismatch! Ensure the correct user and backup keys where provided!');
-        }
-        commonKeyChain = DklsTypes.getCommonKeychain(userKeyShare);
-      } else {
-        // DKLS
-        const mpcv2KeyShares = await ECDSAUtils.getMpcV2RecoveryKeyShares(
-          userPublicOrPrivateKeyShare,
-          backupPrivateOrPublicKeyShare,
-          params.walletPassphrase
-        );
-
-        userKeyShare = mpcv2KeyShares.userKeyShare;
-        backupKeyShare = mpcv2KeyShares.backupKeyShare;
-        commonKeyChain = mpcv2KeyShares.commonKeyChain;
-
-        if (!userKeyShare || !backupKeyShare || !commonKeyChain) {
-          throw new Error('Missing combined key shares for user or backup or common');
-        }
-      }
 
       const MPC = new Ecdsa();
       const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm/0');
