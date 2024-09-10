@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.2.0...bitgo@39.3.0) (2024-09-10)
+
+### Bug Fixes
+
+- **sdk-core:** generate wallet cleanup ([9cb02bd](https://github.com/BitGo/BitGoJS/commit/9cb02bd60f775da5332fa0fd142db87d2415a2a4))
+
+### Features
+
+- **express:** add config for lightning signer at express ([6ff3e0b](https://github.com/BitGo/BitGoJS/commit/6ff3e0b010110778935c7545508bcf092f837c70))
+
 # [39.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.1.1...bitgo@39.2.0) (2024-09-03)
 
 ### Features

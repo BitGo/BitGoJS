@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.54.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.53.3...@bitgo/sdk-api@1.54.0) (2024-09-10)
+
+### Features
+
+- bump typescript to 4.9 ([6675058](https://github.com/BitGo/BitGoJS/commit/667505862b79d24e3f625e7306d949acf07691bf))
+
 ## [1.53.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.53.2...@bitgo/sdk-api@1.53.3) (2024-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-api

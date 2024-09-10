@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.3.0...@bitgo/statics@49.4.0) (2024-09-10)
+
+### Bug Fixes
+
+- coinfeatures for sui tokens ([96d8c6d](https://github.com/BitGo/BitGoJS/commit/96d8c6d3087df253fdac09bf9bb34a3b1f7a5a88))
+
+### Features
+
+- **statics:** add new tokens for Indonesia Batch 1 ([faed2be](https://github.com/BitGo/BitGoJS/commit/faed2bed05fc3a06e7bb7edec24a3d26bce953a7))
+- **statics:** add STAKING feature to POL token (Ticket: SC-343) ([3e4ef5b](https://github.com/BitGo/BitGoJS/commit/3e4ef5b83aef47d0fb15a0105bf0d28000ecfa4e))
+- **statics:** add tokens having similar contract address ([2a4b9bc](https://github.com/BitGo/BitGoJS/commit/2a4b9bcdf34918cc1d9b03a31d4b14080f9ececa))
+
 # [49.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.2.0...@bitgo/statics@49.3.0) (2024-09-03)
 
 ### Bug Fixes

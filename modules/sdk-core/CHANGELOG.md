@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.3.0...@bitgo/sdk-core@28.4.0) (2024-09-10)
+
+### Bug Fixes
+
+- **sdk-core:** generate wallet cleanup ([9cb02bd](https://github.com/BitGo/BitGoJS/commit/9cb02bd60f775da5332fa0fd142db87d2415a2a4))
+
+### Features
+
+- **express:** add apis to init lnd signer at express ([5c84196](https://github.com/BitGo/BitGoJS/commit/5c84196856194390bfda98cec64058915903da82))
+- **sdk-core:** mark buildSignAndSend and expose buildAndSign ([2ef604d](https://github.com/BitGo/BitGoJS/commit/2ef604df7b337455bd7530575cf089a0eb510301))
+
 # [28.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.2.0...@bitgo/sdk-core@28.3.0) (2024-09-03)
 
 ### Features

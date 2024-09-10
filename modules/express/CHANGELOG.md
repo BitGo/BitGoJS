@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.2.3...@bitgo/express@10.3.0) (2024-09-10)
+
+### Features
+
+- **express:** add apis to init lnd signer at express ([5c84196](https://github.com/BitGo/BitGoJS/commit/5c84196856194390bfda98cec64058915903da82))
+- **express:** add config for lightning signer at express ([6ff3e0b](https://github.com/BitGo/BitGoJS/commit/6ff3e0b010110778935c7545508bcf092f837c70))
+
 ## [10.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.2.2...@bitgo/express@10.2.3) (2024-09-03)
 
 **Note:** Version bump only for package @bitgo/express
