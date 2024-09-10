@@ -421,6 +421,7 @@ export enum UnderlyingAsset {
   AQT = 'aqt',
   ARCT = 'arct',
   ARCX = 'arcx',
+  ARKM = 'arkm',
   ARMOR = 'armor',
   ARTEQ = 'arteq',
   ASD = 'asd',
@@ -547,6 +548,7 @@ export enum UnderlyingAsset {
   CAG = 'cag',
   CANTO = 'canto',
   CAPS = 'caps',
+  CARV = 'carv',
   CASH = 'cash',
   CBAT = 'cbat',
   CBC = 'cbc',
@@ -1465,6 +1467,7 @@ export enum UnderlyingAsset {
   TRAC = 'trac',
   TRAXX = 'traxx',
   TRIBE = 'tribe',
+  TRIBL = 'tribl',
   TRL = 'trl',
   TROY = 'troy',
   TRST = 'trst',
@@ -1914,6 +1917,7 @@ export enum UnderlyingAsset {
   'polygon:vanry' = 'polygon:vanry',
   'polygon:npt' = 'polygon:npt',
   'polygon:volt' = 'polygon:volt',
+  'polygon:euroe' = 'polygon:euroe',
 
   // Polygon NFTs
   // generic NFTs

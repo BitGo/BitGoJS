@@ -2074,6 +2074,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ARCX
   ),
   erc20(
+    'c80bf331-1cf5-4076-b0e3-6497efe0c313',
+    'arkm',
+    'Arkham',
+    18,
+    '0x6e2a43be0b1d33b726f0ca3b8de60b3482b8b050',
+    UnderlyingAsset.ARKM
+  ),
+  erc20(
     '67af7aee-a78a-4c3a-a24c-b3ef21ea9f3c',
     'arteq',
     'arteQ NFT Investment Fund',
@@ -6883,6 +6891,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TRIBE
   ),
   erc20(
+    '5a182906-c091-411f-aa39-c707c5214338',
+    'tribl',
+    'Tribal Finance',
+    18,
+    '0x6988a804c74fd04f37da1ea4781cea68c9c00f86',
+    UnderlyingAsset.TRIBL
+  ),
+  erc20(
     '459b364d-d2c2-4df1-a1d5-0bbb63eb75b7',
     'trl',
     'Triall Token',
@@ -9038,6 +9054,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x03be5c903c727ee2c8c4e9bc0acc860cca4715e2',
     UnderlyingAsset.CAPS
+  ),
+  erc20(
+    '71a358ae-77c2-4f9c-bdcb-b8a5487169d8',
+    'carv',
+    'CARV',
+    18,
+    '0xc08cd26474722ce93f4d0c34d16201461c10aa8c',
+    UnderlyingAsset.CARV
   ),
   erc20(
     '758dd66e-dfe4-4eb2-ab83-c7784f4c9392',
@@ -17336,6 +17360,14 @@ export const coins = CoinMap.fromCoins([
     9,
     '0x7f792db54b0e580cdc755178443f0430cf799aca',
     UnderlyingAsset['polygon:volt']
+  ),
+  polygonErc20(
+    '1fa10ba5-72b3-4a6c-bc4f-3035494b5ee5',
+    'polygon:euroe',
+    'EUROe Stablecoin',
+    6,
+    '0x820802fa8a99901f52e39acd21177b0be6ee2974',
+    UnderlyingAsset['polygon:euroe']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
