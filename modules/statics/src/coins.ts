@@ -256,6 +256,12 @@ const SUI_FEATURES = [
   CoinFeature.BULK_STAKING_TRANSACTION,
   CoinFeature.SUPPORTS_TOKENS,
 ];
+const SUI_TOKEN_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.BULK_TRANSACTION,
+];
 const TRX_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
@@ -17658,7 +17664,8 @@ export const coins = CoinMap.fromCoins([
     '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270',
     'deep',
     'DEEP',
-    UnderlyingAsset['sui:deep']
+    UnderlyingAsset['sui:deep'],
+    SUI_TOKEN_FEATURES
   ),
   suiToken(
     'd868246d-a0e4-4ed3-ac9b-54ff45cf49c1',
@@ -17668,7 +17675,8 @@ export const coins = CoinMap.fromCoins([
     '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178',
     'ns',
     'NS',
-    UnderlyingAsset['sui:suins']
+    UnderlyingAsset['sui:suins'],
+    SUI_TOKEN_FEATURES
   ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
@@ -17678,7 +17686,8 @@ export const coins = CoinMap.fromCoins([
     '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8',
     'deep',
     'DEEP',
-    UnderlyingAsset['tsui:deep']
+    UnderlyingAsset['tsui:deep'],
+    SUI_TOKEN_FEATURES
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(
