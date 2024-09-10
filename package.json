@@ -67,6 +67,7 @@
     "**/nise/**/path-to-regexp": "8.0.0",
     "**/express/**/path-to-regexp": "0.1.10",
     "buffer": "^6.0.3",
+    "body-parser": "1.20.3",
     "degenerator": "5.0.0",
     "eventsource": "2.0.2",
     "follow-redirects": "1.15.4",
