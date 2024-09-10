@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 
 import { IRequestTracer } from '../../api';
 import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
-import { IWallet, PaginationOptions } from './iWallet';
+import { IWallet, PaginationOptions, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 
 export interface WalletWithKeychains extends KeychainsTriplet {
@@ -107,6 +107,17 @@ export interface AcceptShareOptions {
   newWalletPassphrase?: string;
 }
 
+export interface BulkAcceptShareOptions {
+  walletShareIds: string[];
+  userLoginPassword: string;
+  newWalletPassphrase?: string;
+}
+
+export interface AcceptShareOptionsRequest {
+  walletShareId: string;
+  encryptedPrv: string;
+}
+
 export interface AddWalletOptions {
   coinSpecific?: any;
   enterprise?: string;
@@ -157,6 +168,15 @@ export interface ListWalletOptions extends PaginationOptions {
   allTokens?: boolean;
 }
 
+export interface WalletShares {
+  incoming: WalletShare[]; // WalletShares that the user has to accept
+  outgoing: WalletShare[]; // WalletShares that the user has created
+}
+
+export interface AcceptShareResponse {
+  walletShareId: string;
+}
+
 export interface IWallets {
   get(params?: GetWalletOptions): Promise<Wallet>;
   list(params?: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
@@ -171,4 +191,6 @@ export interface IWallets {
   getWallet(params?: GetWalletOptions): Promise<IWallet>;
   getWalletByAddress(params?: GetWalletByAddressOptions): Promise<IWallet>;
   getTotalBalances(params?: Record<string, never>): Promise<any>;
+  bulkAcceptShare(params: BulkAcceptShareOptions): Promise<AcceptShareResponse[]>;
+  listSharesV2(): Promise<WalletShares>;
 }
