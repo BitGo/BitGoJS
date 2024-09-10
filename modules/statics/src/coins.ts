@@ -7203,6 +7203,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VALOR
   ),
   erc20(
+    '6ea2a622-6a9e-4d85-a22b-c2d6878661e5',
+    'vanry',
+    'Vanar Chain Token',
+    18,
+    '0x8de5b80a0c1b02fe4976851d030b36122dbb8624',
+    UnderlyingAsset.VANRY
+  ),
+  erc20(
     'aa407842-9b87-4589-b96d-be3872c59b98',
     'vdx',
     'Vodi X',
@@ -10086,6 +10094,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.NOTE
   ),
   erc20(
+    '79296e45-2a32-4115-a24b-a3666572630b',
+    'npt',
+    'NEOPIN Token',
+    18,
+    '0x306ee01a6ba3b4a8e993fa2c1adc7ea24462000c',
+    UnderlyingAsset.NPT
+  ),
+  erc20(
     'a39b01d9-584f-4912-9d08-32ddcc3dd9c0',
     'nuls',
     'Nuls',
@@ -10855,6 +10871,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VIU
   ),
   erc20(
+    'a7766e88-63d8-4aae-a819-b1c5cf56b4ce',
+    'volt',
+    'Volt Inu',
+    9,
+    '0x7f792db54b0e580cdc755178443f0430cf799aca',
+    UnderlyingAsset.VOLT
+  ),
+  erc20(
     '30a19a96-87c5-494c-bda6-ff98b065f35b',
     'vra',
     'VERA',
@@ -11251,9 +11275,9 @@ export const coins = CoinMap.fromCoins([
   bscToken(
     'b4211998-459a-465d-9927-b762016dc211',
     'bsc:wrx',
-    'Wazirx',
-    18,
-    '0x2a459dd33f05ed8ea9584505cf04698be5654e6d',
+    'Binance-Peg Wazirx Token',
+    8,
+    '0x8e17ed70334c87ece574c9d537bc153d8609e2a3',
     UnderlyingAsset['bsc:wrx']
   ),
   bscToken(
@@ -11744,7 +11768,14 @@ export const coins = CoinMap.fromCoins([
     '0x6d41f64c567acbf36f88763306ff6fb50ff61458',
     UnderlyingAsset['bsc:troy']
   ),
-
+  bscToken(
+    'f6de7a18-dae1-4892-9122-28d796c635a5',
+    'bsc:volt',
+    'Volt Inu',
+    9,
+    '0x7f792db54b0e580cdc755178443f0430cf799aca',
+    UnderlyingAsset['bsc:volt']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -17271,6 +17302,30 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x3809dcdd5dde24b37abe64a5a339784c3323c44f',
     UnderlyingAsset['polygon:swap']
+  ),
+  polygonErc20(
+    'eac8b635-e692-40f7-bf22-0197ae5e11f8',
+    'polygon:vanry',
+    'Vanar Chain Token',
+    18,
+    '0x8de5b80a0c1b02fe4976851d030b36122dbb8624',
+    UnderlyingAsset['polygon:vanry']
+  ),
+  polygonErc20(
+    'c78deaf2-08f3-4931-b833-c3d7a0b66b11',
+    'polygon:npt',
+    'NEOPIN Token',
+    18,
+    '0x306ee01a6ba3b4a8e993fa2c1adc7ea24462000c',
+    UnderlyingAsset['polygon:npt']
+  ),
+  polygonErc20(
+    '10945fbd-71b8-49de-867a-1dcfed041755',
+    'polygon:volt',
+    'Volt Inu',
+    9,
+    '0x7f792db54b0e580cdc755178443f0430cf799aca',
+    UnderlyingAsset['polygon:volt']
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
