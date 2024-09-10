@@ -184,6 +184,7 @@ const POLYGON_FEATURES = [
   CoinFeature.MPCV2,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
+// adding a comment
 const POL_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.CUSTODY_BITGO_GERMANY,
