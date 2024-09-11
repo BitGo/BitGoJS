@@ -1,19 +1,24 @@
 import assert from 'assert';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as sinon from 'sinon';
 import { importMacaroon } from 'macaroon';
+import * as statics from '@bitgo/statics';
+import * as utxolib from '@bitgo/utxo-lib';
 
-import {
-  addIPCaveatToMacaroon,
-  createWatchOnly,
-  getLightningNetwork,
-  getUtxolibNetwork,
-  getUtxolibNetworkName,
-  isLightningCoinName,
-  isValidLightningNetwork,
-  isValidLightningNetworkName,
-} from '../../../../src';
 import { accounts, signerRootKey } from './createWatchOnlyFixture';
-import { networks } from '@bitgo/utxo-lib';
+import {
+  isValidLightningNetworkName,
+  getLightningNetwork,
+  isValidLightningNetwork,
+  getStaticsLightningNetwork,
+  getUtxolibNetwork,
+  isLightningCoinName,
+  createWatchOnly,
+  addIPCaveatToMacaroon,
+  deriveLightningServiceSharedSecret,
+} from './../../../../src/bitgo/lightning/lightningUtils';
+
+import * as lightningUtils from '../../../../src/bitgo/lightning/lightningUtils';
+import { getSharedSecret } from '../../../../src';
 
 describe('lightning utils', function () {
   [
@@ -32,8 +37,8 @@ describe('lightning utils', function () {
         assert(isValidLightningNetwork(utxolib.networks[networkName]));
       });
 
-      it(`getUtxolibNetworkName`, function () {
-        assert.strictEqual(getUtxolibNetworkName(name), networkName);
+      it(`getStaticsLightningNetwork`, function () {
+        assert.strictEqual(getStaticsLightningNetwork(name).family, 'lnbtc');
       });
 
       it(`getUtxolibNetwork`, function () {
@@ -58,22 +63,18 @@ describe('lightning utils', function () {
     assert.strictEqual(isValidLightningNetwork(utxolib.networks['litecoin']), false);
   });
 
-  it(`getUtxolibNetworkName should return undefined for non lightning coin`, function () {
-    assert.strictEqual(getUtxolibNetworkName('ltc'), undefined);
-  });
-
   it(`getUtxolibNetwork should return fail for invalid lightning coin`, function () {
     assert.throws(() => {
       getUtxolibNetwork('ltc');
-    }, /invalid lightning network/);
+    }, /ltc is not a lightning coin/);
   });
 
   it(`createWatchOnly`, function () {
-    const watchOnly = createWatchOnly(signerRootKey, networks.testnet);
+    const watchOnly = createWatchOnly(signerRootKey, utxolib.networks.testnet);
     assert.deepStrictEqual(watchOnly.accounts, accounts);
     assert.strictEqual(
       watchOnly.master_key_fingerprint,
-      utxolib.bip32.fromBase58(signerRootKey, networks.testnet).fingerprint.toString('hex')
+      utxolib.bip32.fromBase58(signerRootKey, utxolib.networks.testnet).fingerprint.toString('hex')
     );
   });
 
@@ -85,5 +86,30 @@ describe('lightning utils', function () {
     const macaroonWithCaveat = addIPCaveatToMacaroon(macaroon, '127.0.0.1');
     const macaroonObjWithCaveat = importMacaroon(macaroonWithCaveat).exportJSON();
     assert.strictEqual(macaroonObjWithCaveat.c[0].i, 'ipaddr 127.0.0.1');
+  });
+
+  it(`deriveLightningServiceSharedSecret`, function () {
+    const userAuthXprv =
+      'xprv9s21ZrQH143K4NPkV8riiTnFf72MRyQDVHMmmpekGF1w5QkS2MfTei9KXYvrZVMop4zQ4arnzSF7TRp3Cy73AWaDdADiYMCi5qpYW1bUa5m';
+    const lightningServicePubKey = '03b6fe266b3f8ae110b877d942765e9cea9e82faf03cdbb6d0effe980b6371b9c2';
+    const lightningServicePrvKey = '8b95613f4341e347743bd2625728d87bc6f0a119acb6ae9121afeee2b2a650f7';
+
+    const coin = statics.coins.get('tlnbtc');
+    assert(coin instanceof statics.LightningCoin);
+
+    const getStaticsLightningNetworkStub = sinon.stub(lightningUtils, 'getStaticsLightningNetwork').returns({
+      ...coin.network,
+      lightningServicePubKey,
+    });
+
+    const secret = deriveLightningServiceSharedSecret('tlnbtc', userAuthXprv);
+    getStaticsLightningNetworkStub.restore();
+
+    const expectedSecret = getSharedSecret(
+      Buffer.from(lightningServicePrvKey, 'hex'),
+      utxolib.bip32.fromBase58(userAuthXprv).neutered()
+    );
+
+    assert.deepStrictEqual(secret, expectedSecret);
   });
 });

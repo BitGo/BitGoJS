@@ -11,6 +11,7 @@ import {
   updateLightningWallet,
   LightningWalletCoinSpecific,
   isLightningCoinName,
+  deriveLightningServiceSharedSecret,
 } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Buffer } from 'buffer';
@@ -32,7 +33,6 @@ async function createSignerMacaroon(
 ) {
   const { macaroon } = await lndSignerClient.bakeMacaroon({ permissions: signerMacaroonPermissions }, header);
   const macaroonBase64 = addIPCaveatToMacaroon(Buffer.from(macaroon, 'hex').toString('base64'), watchOnlyIP);
-  // TODO BTC-1465 - Encrypt the signer macaroon using ECDH with the user and LS key pairs
   return Buffer.from(macaroonBase64, 'base64').toString('hex');
 }
 
@@ -154,11 +154,18 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
 
   const { userAuthKey } = await getLightningAuthKeychains(wallet);
 
-  const encryptedSignerMacaroon = await createSignerMacaroon(
+  const signerMacaroon = await createSignerMacaroon(
     watchOnlyIP,
     { adminMacaroonHex: Buffer.from(adminMacaroon, 'base64').toString('hex') },
     lndSignerClient
   );
+
+  const userAuthXprv = bitgo.decrypt({ password: passphrase, input: userAuthKey.encryptedPrv });
+
+  const encryptedSignerMacaroon = bitgo.encrypt({
+    password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
+    input: signerMacaroon,
+  });
 
   const coinSpecific = {
     [coin.getChain()]: {
@@ -170,10 +177,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
     throw new Error('Invalid lightning wallet coin specific data');
   }
 
-  const signature = createMessageSignature(
-    coinSpecific,
-    bitgo.decrypt({ password: passphrase, input: userAuthKey.encryptedPrv })
-  );
+  const signature = createMessageSignature(coinSpecific, userAuthXprv);
 
   return await updateLightningWallet(wallet, { coinSpecific, signature });
 }

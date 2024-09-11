@@ -3,6 +3,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { importMacaroon, bytesToBase64 } from 'macaroon';
 import * as bs58check from 'bs58check';
 import { WatchOnly, WatchOnlyAccount } from './codecs';
+import { getSharedSecret } from '../ecdh';
 
 // https://github.com/lightningnetwork/lnd/blob/master/docs/remote-signing.md#the-signer-node
 export const signerMacaroonPermissions = [
@@ -63,18 +64,24 @@ export function isValidLightningNetwork(network: unknown): network is utxolib.Ne
 }
 
 /**
- * Returns the utxolib network name for a lightning coin.
+ * Returns the statics network data for a lightning coin.
  */
-export function getUtxolibNetworkName(coinName: string): string | undefined {
+export function getStaticsLightningNetwork(coinName: string): statics.LightningNetwork {
+  if (!isLightningCoinName(coinName)) {
+    throw new Error(`${coinName} is not a lightning coin`);
+  }
   const coin = statics.coins.get(coinName);
-  return coin instanceof statics.LightningCoin ? coin.network.utxolibName : undefined;
+  if (!(coin instanceof statics.LightningCoin)) {
+    throw new Error('coin is not a lightning coin');
+  }
+  return coin.network;
 }
 
 /**
  * Returns the utxolib network for a lightning coin.
  */
 export function getUtxolibNetwork(coinName: string): utxolib.Network {
-  const networkName = getUtxolibNetworkName(coinName);
+  const networkName = getStaticsLightningNetwork(coinName).utxolibName;
   if (!isValidLightningNetworkName(networkName)) {
     throw new Error('invalid lightning network');
   }
@@ -188,4 +195,14 @@ export function createWatchOnly(signerRootKey: string, network: utxolib.Network)
   const master_key_fingerprint = masterHDNode.fingerprint.toString('hex');
   const accounts = deriveWatchOnlyAccounts(masterHDNode, utxolib.isMainnet(network));
   return { master_key_birthday_timestamp, master_key_fingerprint, accounts };
+}
+
+/**
+ * Derives the shared Elliptic Curve Diffie-Hellman (ECDH) secret between the user's auth extended private key
+ * and the Lightning service's public key for secure communication.
+ */
+export function deriveLightningServiceSharedSecret(coinName: 'lnbtc' | 'tlnbtc', userAuthXprv: string): Buffer {
+  const publicKey = Buffer.from(getStaticsLightningNetwork(coinName).lightningServicePubKey, 'hex');
+  const userAuthHdNode = utxolib.bip32.fromBase58(userAuthXprv);
+  return getSharedSecret(userAuthHdNode, publicKey);
 }
