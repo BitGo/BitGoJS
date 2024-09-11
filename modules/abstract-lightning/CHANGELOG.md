@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@1.2.12...@bitgo/abstract-lightning@1.2.13) (2024-09-10)
+
+**Note:** Version bump only for package @bitgo/abstract-lightning
+
 ## [1.2.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@1.2.11...@bitgo/abstract-lightning@1.2.12) (2024-09-03)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

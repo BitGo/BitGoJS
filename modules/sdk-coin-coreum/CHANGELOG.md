@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [21.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.0.3...@bitgo/sdk-coin-coreum@21.0.4) (2024-09-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-coreum
+
 ## [21.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.0.2...@bitgo/sdk-coin-coreum@21.0.3) (2024-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coreum
