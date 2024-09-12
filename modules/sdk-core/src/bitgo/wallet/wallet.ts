@@ -42,6 +42,8 @@ import {
   CreateAddressOptions,
   CreatePolicyRuleOptions,
   CreateShareOptions,
+  BulkCreateShareOption,
+  BulkWalletShareOptions,
   CrossChainUTXO,
   DeployForwardersOptions,
   DownloadKeycardOptions,
@@ -91,6 +93,7 @@ import {
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
   WalletType,
+  CreateBulkWalletShareListResponse,
 } from './iWallet';
 import { StakingWallet } from '../staking';
 import { Lightning } from '../lightning/custodial';
@@ -1464,13 +1467,124 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Shares a wallet with multiple users by creating bulk wallet shares.
+   *
+   * @async
+   * @param {BulkWalletShareOptions} params - The options for sharing wallets in bulk.
+   * @param {Array<ShareOption>} params.shareOptions - An array of share option objects containing user and permissions information.
+   * @param {Object} [params.shareOptions[].keychain] - The keychain object used to share the wallet.
+   * @param {string} [params.shareOptions[].keychain.toPubKey] - The recipient's public key.
+   * @param {string} [params.shareOptions[].keychain.path] - The derivation path of the keychain.
+   * @param {string} params.shareOptions[].user - The user to share the wallet with.
+   * @param {string} params.shareOptions[].permissions - The permissions granted to the user.
+   * @param {string} [params.walletPassphrase] - The wallet passphrase used to decrypt the keychain.
+   * @throws {Error} If `shareOptions` is empty, or if required keychain parameters (`toPubKey` and `path`) are missing when needed.
+   * @throws {Error} If unable to decrypt the user keychain.
+   * @returns {Promise<CreateBulkWalletShareListResponse>} A promise that resolves with the response of the bulk wallet share creation.
+   */
+  async createBulkWalletShare(params: BulkWalletShareOptions): Promise<CreateBulkWalletShareListResponse> {
+    if (!params.keyShareOptions || Object.keys(params.keyShareOptions).length === 0) {
+      throw new Error('shareOptions cannot be empty');
+    }
+    const bulkCreateShareOptions: BulkCreateShareOption[] = [];
+
+    for (const shareOption of params.keyShareOptions) {
+      common.validateParams(shareOption, ['userId', 'pubKey', 'path'], []);
+
+      const needsKeychain = shareOption.permissions && shareOption.permissions.includes('spend');
+      let sharedKeychain;
+
+      if (needsKeychain) {
+        try {
+          const keychain = await this.getEncryptedUserKeychain();
+
+          if (keychain.encryptedPrv) {
+            const userPrv = decryptKeychainPrivateKey(this.bitgo, keychain, params.walletPassphrase);
+            if (!userPrv) {
+              throw new Error('Unable to decrypt user keychain.');
+            }
+
+            const ecdhkey = makeRandomKey();
+            assert(shareOption.pubKey, 'pubKey must be defined for sharing');
+
+            const secret = getSharedSecret(ecdhkey, Buffer.from(shareOption.pubKey, 'hex')).toString('hex');
+            const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: userPrv });
+
+            let pub = keychain.pub ?? keychain.commonPub;
+            if (keychain.commonKeychain) {
+              pub =
+                this.baseCoin.getMPCAlgorithm() === 'eddsa'
+                  ? EddsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain)
+                  : EcdsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain);
+            }
+
+            sharedKeychain = {
+              pub,
+              encryptedPrv: newEncryptedPrv,
+              fromPubKey: ecdhkey.publicKey.toString('hex'),
+              toPubKey: shareOption.pubKey,
+              path: shareOption.path,
+            };
+          }
+        } catch (e) {
+          if (e.message === 'No encrypted keychains on this wallet.') {
+            sharedKeychain = {};
+            // ignore this error because this looks like a cold wallet
+          } else {
+            throw e;
+          }
+        }
+        const keychain = Object.keys(sharedKeychain ?? {}).length === 0 ? undefined : sharedKeychain;
+        if (keychain) {
+          bulkCreateShareOptions.push({
+            user: shareOption.userId,
+            permissions: shareOption.permissions,
+            keychain: keychain,
+          });
+        }
+      }
+    }
+    return await this.createBulkKeyShares(bulkCreateShareOptions);
+  }
+
+  /**
+   * Creates bulk wallet share entries for specified share options.
+   * Filters out share options that do not contain valid keychain information or have missing keychain fields.
+   * If all share options are invalid or empty, it throws an error.
+   * Sends a POST request to create the wallet shares for valid share options.
+   *
+   * @async
+   * @param {BulkCreateShareOption[]} [params=[]] - The array of share options to process.
+   *   Keychain entries must include the following fields: `pub`, `encryptedPrv`, `fromPubKey`, `toPubKey`, and `path`.
+   * @returns {Promise<CreateBulkWalletShareListResponse>} A promise resolving to the result of the wallet shares creation.
+   * @throws {Error} Throws an error if no valid share options are provided.
+   */
+  async createBulkKeyShares(params: BulkCreateShareOption[] = []): Promise<CreateBulkWalletShareListResponse> {
+    params = params.filter((shareOption) => {
+      try {
+        common.validateParams(shareOption.keychain, ['pub', 'encryptedPrv', 'fromPubKey', 'toPubKey', 'path'], []);
+        return true;
+      } catch (e) {
+        // Exclude share options with invalid keychain
+        return false;
+      }
+    });
+
+    if (!params || Object.keys(params).length === 0) {
+      throw new Error('shareOptions cannot be empty');
+    }
+
+    const url = this.bitgo.url(`/wallet/${this._wallet.id}/walletshares`, 2);
+    return this.bitgo.post(url).send({ shareOptions: params }).result();
+  }
+
+  /**
    * Share this wallet with another BitGo user.
    * @param params
    * @returns {*}
    */
   async shareWallet(params: ShareWalletOptions = {}): Promise<any> {
     common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message']);
-
     if (params.reshare !== undefined && !_.isBoolean(params.reshare)) {
       throw new Error('Expected reshare to be a boolean.');
     }
