@@ -212,10 +212,16 @@ export enum CoinFeature {
    * This coin supports custody in BitGo Singapore entities
    */
   CUSTODY_BITGO_SINGAPORE = 'custody-bitgo-singapore',
-  /*
-   * This coin supports custody in BitGo Sister Trust 1 entities
+  /**
+   * @deprecated
+   * This coin - which supported custody in BitGo Sister Trust 1 entities - used to represent BitGo Korea previously.
+   * Going forward, use `CUSTODY_BITGO_KOREA` instead.
    */
   CUSTODY_BITGO_SISTER_TRUST_ONE = 'custody-bitgo-sister-trust-one',
+  /**
+   * This coin supports custody in BitGo Korea entities
+   */
+  CUSTODY_BITGO_KOREA = 'custody-bitgo-korea',
   /*
    * This coin has transactions that expire after a certain amount of time.
    */
