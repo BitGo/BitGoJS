@@ -621,7 +621,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @returns {string} serialized sendMultiSig data
    */
-  private getSendData(): string {
+  public getSendData(): string {
     if (!this._transfer) {
       throw new BuildTransactionError('Missing transfer information');
     }
