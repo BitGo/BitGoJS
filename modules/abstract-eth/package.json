@@ -2,8 +2,8 @@
   "name": "@bitgo/abstract-eth",
   "version": "22.0.4",
   "description": "BitGo SDK coin library for ETH base implementation",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
