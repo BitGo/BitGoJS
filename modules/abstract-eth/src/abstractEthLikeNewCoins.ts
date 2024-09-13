@@ -1520,24 +1520,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       }
     }
 
-    const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
+    // Use default gasLimit for cold and custody wallets
+    let gasLimit =
+      params.gasLimit || userKey.startsWith('xpub') || !userKey
+        ? new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit))
+        : new optionalDeps.ethUtil.BN(0);
+
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
-      : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
+      : params.gasPrice
+      ? new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice))
+      : await this.getGasPriceFromExternalAPI();
 
     const bitgoFeeAddressNonce = await this.getAddressNonce(bitgoFeeAddress);
-
-    // get balance of bitgoFeeAddress to ensure funds are available to pay fees
-    const bitgoFeeAddressBalance = await this.queryAddressBalance(bitgoFeeAddress);
-    const totalGasNeeded = gasPrice.mul(gasLimit);
-    const weiToGwei = 10 ** 9;
-    if (bitgoFeeAddressBalance.lt(totalGasNeeded)) {
-      throw new Error(
-        `Fee address ${bitgoFeeAddress} has balance ${(bitgoFeeAddressBalance / weiToGwei).toString()} Gwei.` +
-          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
-          ` Gwei to perform recoveries. Try sending some ${this.getChain()} to this address then retry.`
-      );
-    }
 
     if (tokenContractAddress) {
       return this.recoverEthLikeTokenforEvmBasedRecovery(
@@ -1587,14 +1582,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     // we need to wait between making two explorer api calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const sequenceId = await this.querySequenceId(walletContractAddress);
-
-    const txInfo = {
-      recipients: recipients,
-      expireTime: this.getDefaultExpireTime(),
-      contractSequenceId: sequenceId,
-      gasLimit: gasLimit.toString(10),
-      isEvmBasedCrossChainRecovery: true,
-    };
 
     const network = this.getNetwork();
     const batcherContractAddress = network?.batcherContractAddress as string;
@@ -1646,7 +1633,32 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       txBuilder.walletVersion(4);
     }
 
+    // If gasLimit was not passed as a param, then fetch the gasLimit from Explorer
+    if (!params.gasLimit && !userKey.startsWith('xpub')) {
+      const sendData = txBuilder.getSendData();
+      gasLimit = await this.getGasLimitFromExternalAPI(
+        params.bitgoFeeAddress as string,
+        params.walletContractAddress,
+        sendData
+      );
+      txBuilder.fee({
+        ...txFee,
+        gasLimit: gasLimit.toString(),
+      });
+    }
+
+    // Get the balance of bitgoFeeAddress to ensure funds are available to pay fees
+    await this.ensureSufficientBalance(bitgoFeeAddress, gasPrice, gasLimit);
+
     const tx = await txBuilder.build();
+
+    const txInfo = {
+      recipients: recipients,
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      gasLimit: gasLimit.toString(10),
+      isEvmBasedCrossChainRecovery: true,
+    };
 
     const response: OfflineVaultTxInfo = {
       txHex: tx.toBroadcastFormat(),
@@ -1740,14 +1752,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const sequenceId = await this.querySequenceId(params.walletContractAddress);
 
-    const txInfo = {
-      recipients: recipients,
-      expireTime: this.getDefaultExpireTime(),
-      contractSequenceId: sequenceId,
-      gasLimit: gasLimit.toString(10),
-      isEvmBasedCrossChainRecovery: true,
-    };
-
     const txBuilder = this.getTransactionBuilder(params.common) as TransactionBuilder;
     txBuilder.counter(bitgoFeeAddressNonce);
     txBuilder.contract(params.walletContractAddress as string);
@@ -1799,7 +1803,31 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       txBuilder.walletVersion(4);
     }
 
+    if (!params.gasLimit && !userKey.startsWith('xpub')) {
+      const sendData = txBuilder.getSendData();
+      gasLimit = await this.getGasLimitFromExternalAPI(
+        params.bitgoFeeAddress as string,
+        params.walletContractAddress,
+        sendData
+      );
+      txBuilder.fee({
+        ...txFee,
+        gasLimit: gasLimit.toString(),
+      });
+    }
+
+    // Get the balance of bitgoFeeAddress to ensure funds are available to pay fees
+    await this.ensureSufficientBalance(params.bitgoFeeAddress as string, gasPrice, gasLimit);
+
     const tx = await txBuilder.build();
+
+    const txInfo = {
+      recipients: recipients,
+      expireTime: this.getDefaultExpireTime(),
+      contractSequenceId: sequenceId,
+      gasLimit: gasLimit.toString(10),
+      isEvmBasedCrossChainRecovery: true,
+    };
 
     const response: OfflineVaultTxInfo = {
       txHex: tx.toBroadcastFormat(),
@@ -2597,6 +2625,65 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
         return transferBuilder.build();
       }
+    }
+  }
+
+  /**
+   * Fetch the gas price from the explorer
+   */
+  async getGasPriceFromExternalAPI(): Promise<BN> {
+    try {
+      const res = await this.recoveryBlockchainExplorerQuery({
+        module: 'proxy',
+        action: 'eth_gasPrice',
+      });
+      const gasPrice = new BN(res.result.slice(2), 16);
+      console.log(` Got gas price: ${gasPrice}`);
+      return gasPrice;
+    } catch (e) {
+      throw new Error('Failed to get gas price');
+    }
+  }
+
+  /**
+   * Fetch the gas limit from the explorer
+   * @param from
+   * @param to
+   * @param data
+   */
+  async getGasLimitFromExternalAPI(from: string, to: string, data: string): Promise<BN> {
+    try {
+      const res = await this.recoveryBlockchainExplorerQuery({
+        module: 'proxy',
+        action: 'eth_estimateGas',
+        from,
+        to,
+        data,
+      });
+      const gasLimit = new BN(res.result.slice(2), 16);
+      console.log(`Got gas limit: ${gasLimit}`);
+      return gasLimit;
+    } catch (e) {
+      throw new Error('Failed to get gas limit: ');
+    }
+  }
+
+  /**
+   * Get the balance of bitgoFeeAddress to ensure funds are available to pay fees
+   * @param bitgoFeeAddress
+   * @param gasPrice
+   * @param gasLimit
+   */
+  async ensureSufficientBalance(bitgoFeeAddress: string, gasPrice: BN, gasLimit: BN): Promise<void> {
+    const bitgoFeeAddressBalance = await this.queryAddressBalance(bitgoFeeAddress);
+    const totalGasNeeded = Number(gasPrice.mul(gasLimit));
+    const weiToGwei = 10 ** 9;
+    if (bitgoFeeAddressBalance.lt(totalGasNeeded)) {
+      throw new Error(
+        `Fee address ${bitgoFeeAddress} has balance ${(bitgoFeeAddressBalance / weiToGwei).toString()} Gwei.` +
+          `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+          ` Gwei to perform recoveries. Try sending some ${this.getChain()} to this address then retry.`
+      );
     }
   }
 }
