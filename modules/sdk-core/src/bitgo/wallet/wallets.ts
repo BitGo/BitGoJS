@@ -16,7 +16,10 @@ import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
 import { decodeOrElse, promiseProps, RequestTracer } from '../utils';
 import {
   AcceptShareOptions,
+  AcceptShareOptionsRequest,
+  AcceptShareResponse,
   AddWalletOptions,
+  BulkAcceptShareOptions,
   GenerateBaseMpcWalletOptions,
   GenerateLightningWalletOptions,
   GenerateLightningWalletOptionsCodec,
@@ -29,8 +32,10 @@ import {
   LightningWalletWithKeychains,
   ListWalletOptions,
   UpdateShareOptions,
+  WalletShares,
   WalletWithKeychains,
 } from './iWallets';
+import { WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 import { TssSettings } from '@bitgo/public-types';
 
@@ -608,6 +613,14 @@ export class Wallets implements IWallets {
   }
 
   /**
+   * List the user's wallet shares v2
+   * @returns {Promise<WalletShares>}
+   */
+  async listSharesV2(): Promise<WalletShares> {
+    return await this.bitgo.get(this.bitgo.url('/walletshares', 2)).result();
+  }
+
+  /**
    * Gets a wallet share information, including the encrypted sharing keychain. requires unlock if keychain is present.
    * @param params
    * @param params.walletShareId - the wallet share to get information on
@@ -630,6 +643,20 @@ export class Wallets implements IWallets {
     return await this.bitgo
       .post(this.baseCoin.url('/walletshare/' + params.walletShareId))
       .send(params)
+      .result();
+  }
+
+  /**
+   * Bulk accept wallet shares
+   * @param params AcceptShareOptionsRequest[]
+   * @returns {Promise<AcceptShareResponse[]>}
+   */
+  async bulkAcceptShareRequest(params: AcceptShareOptionsRequest[]): Promise<AcceptShareResponse[]> {
+    return await this.bitgo
+      .put(this.bitgo.url('/walletshares/accept', 2))
+      .send({
+        keysForWalletShares: params,
+      })
       .result();
   }
 
@@ -809,6 +836,72 @@ export class Wallets implements IWallets {
       updateParams.encryptedPrv = encryptedPrv;
     }
     return this.updateShare(updateParams);
+  }
+
+  /**
+   * Bulk Accept wallet shares, adding the wallets to the user's list
+   * Needs a user's password to decrypt the shared key
+   *
+   * @param params BulkAcceptShareOptions
+   * @param params.walletShareId - array of the wallet shares to accept
+   * @param params.userPassword - user's password to decrypt the shared wallet key
+   * @param params.newWalletPassphrase - new wallet passphrase for saving the shared wallet prv.
+   *                                     If left blank then the user's login password is used.
+   *
+   *@returns {Promise<AcceptShareResponse[]>}
+   */
+  async bulkAcceptShare(params: BulkAcceptShareOptions): Promise<AcceptShareResponse[]> {
+    common.validateParams(params, ['userLoginPassword'], ['newWalletPassphrase']);
+    assert(params.walletShareIds.length > 0, 'no walletShareIds are passed');
+
+    const allWalletShares = await this.listSharesV2();
+    const walletShareMap = allWalletShares.incoming.reduce(
+      (map: { [key: string]: WalletShare }, share) => ({ ...map, [share.id]: share }),
+      {}
+    );
+
+    const walletShares = params.walletShareIds
+      .map((walletShareId) => walletShareMap[walletShareId])
+      .filter((walletShare) => walletShare && walletShare.keychain);
+    if (!walletShares.length) {
+      throw new Error('invalid wallet shares provided');
+    }
+    const sharingKeychain = await this.bitgo.getECDHKeychain();
+    if (_.isUndefined(sharingKeychain.encryptedXprv)) {
+      throw new Error('encryptedXprv was not found on sharing keychain');
+    }
+
+    sharingKeychain.prv = this.bitgo.decrypt({
+      password: params.userLoginPassword,
+      input: sharingKeychain.encryptedXprv,
+    });
+    const newWalletPassphrase = params.newWalletPassphrase || params.userLoginPassword;
+    const keysForWalletShares = walletShares.flatMap((walletShare) => {
+      if (!walletShare.keychain) {
+        return [];
+      }
+      const secret = getSharedSecret(
+        bip32.fromBase58(sharingKeychain.prv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
+        Buffer.from(walletShare.keychain.fromPubKey, 'hex')
+      ).toString('hex');
+
+      const decryptedSharedWalletPrv = this.bitgo.decrypt({
+        password: secret,
+        input: walletShare.keychain.encryptedPrv,
+      });
+      const newEncryptedPrv = this.bitgo.encrypt({
+        password: newWalletPassphrase,
+        input: decryptedSharedWalletPrv,
+      });
+      return [
+        {
+          walletShareId: walletShare.id,
+          encryptedPrv: newEncryptedPrv,
+        },
+      ];
+    });
+
+    return this.bulkAcceptShareRequest(keysForWalletShares);
   }
 
   /**

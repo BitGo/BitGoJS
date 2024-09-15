@@ -6,7 +6,7 @@ import * as nock from 'nock';
 import * as sinon from 'sinon';
 import * as should from 'should';
 import * as _ from 'lodash';
-
+import * as utxoLib from '@bitgo/utxo-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
 import {
   BlsUtils,
@@ -18,8 +18,11 @@ import {
   GenerateWalletOptions,
   Wallet,
   isWalletWithKeychains,
-  BulkWalletShareOptions,
   OptionalKeychainEncryptedKey,
+  decryptKeychainPrivateKey,
+  makeRandomKey,
+  getSharedSecret,
+  BulkWalletShareOptions,
   KeychainWithEncryptedPrv,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
@@ -1429,6 +1432,180 @@ describe('V2 Wallets:', function () {
 
       await wallets.acceptShare({ walletShareId: shareId });
       acceptShareNock.done();
+    });
+
+    describe('bulkAcceptShare', function () {
+      afterEach(function () {
+        nock.cleanAll();
+        nock.pendingMocks().length.should.equal(0);
+        sinon.restore();
+      });
+
+      it('should throw validation error for userPassword empty string', async () => {
+        await wallets
+          .bulkAcceptShare({ walletShareIds: [], userLoginPassword: '' })
+          .should.rejectedWith('Missing parameter: userLoginPassword');
+      });
+
+      it('should throw assertion error for empty walletShareIds', async () => {
+        await wallets
+          .bulkAcceptShare({ walletShareIds: [], userLoginPassword: 'dummy@123' })
+          .should.rejectedWith('no walletShareIds are passed');
+      });
+
+      it('should throw error for no valid wallet shares', async () => {
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: '66a229dbdccdcfb95b44fc2745a60bd4',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'dummyWalletId',
+              permissions: ['spend'],
+              state: 'active',
+            },
+          ],
+          outgoing: [],
+        });
+        await wallets
+          .bulkAcceptShare({
+            walletShareIds: ['66a229dbdccdcfb95b44fc2745a60bd1'],
+            userLoginPassword: 'dummy@123',
+          })
+          .should.rejectedWith('invalid wallet shares provided');
+      });
+
+      it('should throw error for no valid walletShares with keychain', async () => {
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: '66a229dbdccdcfb95b44fc2745a60bd4',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'dummyWalletId',
+              permissions: ['spend'],
+              state: 'active',
+            },
+          ],
+          outgoing: [],
+        });
+
+        await wallets
+          .bulkAcceptShare({
+            walletShareIds: ['66a229dbdccdcfb95b44fc2745a60bd4'],
+            userLoginPassword: 'dummy@123',
+          })
+          .should.rejectedWith('invalid wallet shares provided');
+      });
+
+      it('should throw error for ecdh keychain undefined', async () => {
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: '66a229dbdccdcfb95b44fc2745a60bd4',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'dummyWalletId',
+              permissions: ['spend'],
+              state: 'active',
+              keychain: {
+                pub: 'pub',
+                toPubKey: 'toPubKey',
+                fromPubKey: 'fromPubKey',
+                encryptedPrv: 'encryptedPrv',
+                path: 'path',
+              },
+            },
+          ],
+          outgoing: [],
+        });
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          prv: 'private key',
+        });
+
+        await wallets
+          .bulkAcceptShare({
+            walletShareIds: ['66a229dbdccdcfb95b44fc2745a60bd4'],
+            userLoginPassword: 'dummy@123',
+          })
+          .should.rejectedWith('encryptedXprv was not found on sharing keychain');
+      });
+
+      it('should successfully accept share', async () => {
+        const fromUserPrv = Math.random();
+        const walletPassphrase = 'bitgo1234';
+        const keychainTest: OptionalKeychainEncryptedKey = {
+          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+        };
+        const userPrv = decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        if (!userPrv) {
+          throw new Error('Unable to decrypt user keychain');
+        }
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        nock(bgUrl)
+          .get('/api/v2/walletshares')
+          .reply(200, {
+            incoming: [
+              {
+                id: '66a229dbdccdcfb95b44fc2745a60bd4',
+                isUMSInitiated: true,
+                keychain: {
+                  path: path,
+                  fromPubKey: eckey.publicKey.toString('hex'),
+                  encryptedPrv: newEncryptedPrv,
+                  toPubKey: pubkey,
+                  pub: pubkey,
+                },
+              },
+            ],
+          });
+        nock(bgUrl)
+          .put('/api/v2/walletshares/accept')
+          .reply(200, {
+            acceptedWalletShares: [
+              {
+                walletShareId: '66a229dbdccdcfb95b44fc2745a60bd4',
+              },
+            ],
+          });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+
+        const prvKey = bitgo.decrypt({
+          password: walletPassphrase,
+          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+        const share = await wallets.bulkAcceptShare({
+          walletShareIds: ['66a229dbdccdcfb95b44fc2745a60bd4'],
+          userLoginPassword: walletPassphrase,
+        });
+        assert.deepEqual(share, {
+          acceptedWalletShares: [
+            {
+              walletShareId: '66a229dbdccdcfb95b44fc2745a60bd4',
+            },
+          ],
+        });
+      });
     });
   });
 
