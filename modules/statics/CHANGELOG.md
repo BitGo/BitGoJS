@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.4.0...@bitgo/statics@49.5.0) (2024-09-16)
+
+### Features
+
+- **bitgo:** add BitGo Korea entity ([1f6c201](https://github.com/BitGo/BitGoJS/commit/1f6c2017bee24d7681c99f2abf0f31628d5a9ac6))
+- **express:** encrypt signer macaroon using ecdh ([62cbd00](https://github.com/BitGo/BitGoJS/commit/62cbd0090748a697017e9adcb49bb0cf34d044b8))
+- **statics:** add new batch of tokens COIN-1669 ([60533dc](https://github.com/BitGo/BitGoJS/commit/60533dc51dd6ee54dfc11ccb3ac41b13b21bad21))
+
 # [49.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.3.0...@bitgo/statics@49.4.0) (2024-09-10)
 
 ### Bug Fixes
