@@ -388,6 +388,31 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   }
 
   /**
+   * Converts a User or Backup MPCv1 SigningMaterial to RetrofitData needed by MPCv2 DKG.
+   *
+   * @param decryptedKeyshare - MPCv1 decrypted signing material for user or backup as a json.stringify string and bitgo's Big Si.
+   * @param partyId - The party ID of the MPCv1 keyshare.
+   * @returns The retrofit data needed to start an MPCv2 DKG session.
+   */
+  getKeyDataForRetrofit(
+    decryptedKeyshare: string,
+    partyId: MPCv2PartiesEnum.BACKUP | MPCv2PartiesEnum.USER
+  ): DklsTypes.RetrofitData {
+    const mpc = new Ecdsa();
+    const xiList = [
+      Array.from(bigIntToBufferBE(BigInt(1), 32)),
+      Array.from(bigIntToBufferBE(BigInt(2), 32)),
+      Array.from(bigIntToBufferBE(BigInt(3), 32)),
+    ];
+    return this.getMpcV2RetrofitDataFromMpcV1Key({
+      mpcv1PartyKeyShare: decryptedKeyshare,
+      mpcv1PartyIndex: partyId === MPCv2PartiesEnum.USER ? 1 : 2,
+      xiList,
+      mpc,
+    });
+  }
+
+  /**
    * Converts user and backup MPCv1 SigningMaterial to RetrofitData needed by MPCv2 DKG.
    *
    * @param {Object} params - MPCv1 decrypted signing material for user and backup as a json.stringify string and bitgo's Big Si.
