@@ -157,6 +157,12 @@ export class InvalidTransactionError extends BitGoJsError {
   }
 }
 
+export class MissingEncryptedKeychainError extends Error {
+  public constructor(message?: string) {
+    super(message || 'No encrypted keychains on this wallet.');
+  }
+}
+
 export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
   message: string;
   status: number;

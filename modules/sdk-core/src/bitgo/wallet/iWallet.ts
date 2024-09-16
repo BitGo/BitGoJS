@@ -450,6 +450,14 @@ export interface GetPrvOptions {
   walletPassphrase?: string;
 }
 
+export interface SharedKeyChain {
+  pub?: string;
+  encryptedPrv?: string;
+  fromPubKey?: string;
+  toPubKey?: string;
+  path?: string;
+}
+
 export interface CreateShareOptions {
   user?: string;
   permissions?: string;

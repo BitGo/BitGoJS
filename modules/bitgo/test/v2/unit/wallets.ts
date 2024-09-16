@@ -1805,6 +1805,7 @@ describe('V2 Wallets:', function () {
 
       sinon.stub(wallet, 'getEncryptedUserKeychain').resolves({
         encryptedPrv: keychainTest.encryptedPrv,
+        pub,
       } as KeychainWithEncryptedPrv);
 
       sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
