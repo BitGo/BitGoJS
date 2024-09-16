@@ -1831,7 +1831,12 @@ export class Wallet implements IWallet {
       params.txPrebuild = { txRequestId };
     }
 
-    if (params.walletPassphrase && !(params.keychain || params.key)) {
+    if (
+      params.walletPassphrase &&
+      !(params.keychain || params.key) &&
+      (this.type() === 'hot' || this.type() === undefined)
+    ) {
+      // this logic should only apply to hot wallets
       if (!_.isString(params.walletPassphrase)) {
         throw new Error('walletPassphrase must be a string');
       }
