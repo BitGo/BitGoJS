@@ -958,6 +958,7 @@ export enum UnderlyingAsset {
   KROM = 'krom',
   KTRC = 'ktrc',
   KZE = 'kze',
+  L3 = 'l3',
   L3USD = 'l3usd',
   LA = 'la',
   LADYS = 'ladys',
@@ -1264,6 +1265,7 @@ export enum UnderlyingAsset {
   'RETH-H' = 'reth-h',
   RETH2 = 'reth2',
   REVV = 'revv',
+  REZ = 'rez',
   RFOX = 'rfox',
   RFR = 'rfr',
   RFUEL = 'rfuel',
@@ -1282,6 +1284,7 @@ export enum UnderlyingAsset {
   RON = 'ron',
   RONC = 'ronc',
   ROOBEE = 'roobee',
+  RPK = 'rpk',
   RPL = 'rpl',
   RSR = 'rsr',
   RSWETH = 'rsweth',
@@ -2072,9 +2075,11 @@ export enum UnderlyingAsset {
   'arbeth:woo' = 'arbeth:woo',
   'arbeth:yfi' = 'arbeth:yfi',
   'arbeth:xsgd' = 'arbeth:xsgd',
+  'arbeth:ztx' = 'arbeth:ztx',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
+  'tarbeth:xsgd' = 'tarbeth:xsgd',
 
   // Optimism mainnet tokens
   'opeth:link' = 'opeth:link',
@@ -2091,6 +2096,9 @@ export enum UnderlyingAsset {
 
   // zkSync testnet tokens
   'tzketh:link' = 'tzketh:link',
+
+  // Celo mainnet tokens
+  'celo:pact' = 'celo:pact',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
@@ -2161,6 +2169,7 @@ export enum UnderlyingAsset {
   'sol:wrose' = 'sol:wrose',
   'sol:atlas' = 'sol:atlas',
   'sol:mdt' = 'sol:mdt',
+  'sol:io' = 'sol:io',
 
   // TRX tokens
   'trx:jst' = 'trx:jst',
