@@ -4615,6 +4615,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.KZE
   ),
   erc20(
+    'fb3e5591-afb8-4849-b902-c8d70afd2542',
+    'l3',
+    'Layer3',
+    18,
+    '0x88909d489678dd17aa6d9609f89b0419bf78fd9a',
+    UnderlyingAsset.L3
+  ),
+  erc20(
     'c269386c-d531-4c0b-b2fd-995e21ce8d2e',
     'layer',
     'Unilayer',
@@ -6192,6 +6200,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xa31b1767e09f842ecfd4bc471fe44f830e3891aa',
     UnderlyingAsset.ROOBEE
+  ),
+  erc20(
+    '740e1b33-3dbc-4a09-b5fe-12ae230e06f1',
+    'rpk',
+    'RepubliK',
+    18,
+    '0x313cae7ad4454aac7b208c1f089da2b0e5825e46',
+    UnderlyingAsset.RPK
   ),
   erc20(
     'a72f89b9-7c43-4547-8d4e-9f6d10867347',
@@ -10465,6 +10481,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.REVV
   ),
   erc20(
+    '9f545c6f-8d3e-4eef-876d-e08dad944a28',
+    'rez',
+    'Renzo',
+    18,
+    '0x3b50805453023a91a8bf641e279401a0b23fa6f9',
+    UnderlyingAsset.REZ
+  ),
+  erc20(
     'f596f1a4-530c-46fe-9021-f401655dd870',
     'rn',
     'Rio Network',
@@ -11065,6 +11089,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x765de816845861e75a25fca122bb6898b8b1282a',
     UnderlyingAsset.CUSD
+  ),
+  celoToken(
+    '8aaeda16-50fa-49cf-beb8-80077b408eb0',
+    'celo:pact',
+    'ImpactMarket',
+    18,
+    '0x2b9018ceb303d540bbf08de8e7de64fddd63396c',
+    UnderlyingAsset['celo:pact']
   ),
   bscToken(
     '9ea65fe0-f7e2-44a5-abec-ef663e74a883',
@@ -13605,6 +13637,14 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xc2c527c0cacf457746bd31b2a698fe89de2b6d49',
     UnderlyingAsset.TUSDT
+  ),
+  terc20(
+    '6b43e702-d0ba-44c8-af93-c10cd9c2e730',
+    'trlusd',
+    'Test Ripple USD',
+    18,
+    '0xe101fb315a64cda9944e570a7bffafe60b994b1d',
+    UnderlyingAsset.RLUSD
   ),
   terc20(
     '031e6052-ed7a-42cf-a6e6-2107d8e448ed',
@@ -16454,6 +16494,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:mdt'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '10aed18e-75bc-4dac-8acb-c5d7c3ab6279',
+    'sol:io',
+    'IONET',
+    8,
+    'BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K',
+    UnderlyingAsset['sol:io'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -17665,6 +17714,14 @@ export const coins = CoinMap.fromCoins([
     '0xb9f5fc449ddd21302ab52af1ffea8d7a49614d3b',
     UnderlyingAsset['arbeth:xsgd']
   ),
+  arbethErc20(
+    '32210989-1ce4-4175-b3ca-2acd95ba58ea',
+    'arbeth:ztx',
+    'ZepetoX',
+    18,
+    '0x1c43d05be7e5b54d506e3ddb6f0305e8a66cd04e',
+    UnderlyingAsset['arbeth:ztx']
+  ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
     'tarbeth:link',
@@ -17672,6 +17729,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x143e1dae4f018ff86051a01d44a1b49b13704056',
     UnderlyingAsset['tarbeth:link']
+  ),
+  tarbethErc20(
+    '64477af2-65cb-44d2-a3fd-aed07cfe6bfd',
+    'tarbeth:xsgd',
+    'XSGD',
+    6,
+    '0x200898584f14c4213787556d40693c163cc677af',
+    UnderlyingAsset['tarbeth:xsgd']
   ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
