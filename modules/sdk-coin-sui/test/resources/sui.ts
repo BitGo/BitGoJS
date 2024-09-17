@@ -633,6 +633,9 @@ export const keys = {
   bitgoKey:
     '3b89eec9d2d2f3b049ecda2e7b5f47827f7927fe6618d6e8b13f64e7c95f4b00b9577ab0139\n' +
     '5ecf8eeb804b590cedae14ff5fd3947bf3b7a95b9327c49e27c54',
+  bitgoKeyColdWallet:
+    '79d4b9b594df028fee3725a6af51ae3ab6a3519e9d2c322f2c8fd815b96496323c5aba7ea87\n' +
+    '4c102f966f1a61d3c9a42b5f3177c6a85712cf313715afddf83d8',
   bitgoKeyWithSeed:
     'ca0a014ba6f11106a155ef8e2cab2f76d277e4f01cffa591a9b40848343823b3d910752a49c96bf5813985206e23c9f9cd3a78f1cccf5cf88def52b573cedc93',
 };
