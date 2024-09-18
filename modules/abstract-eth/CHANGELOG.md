@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.0.4...@bitgo/abstract-eth@22.1.0) (2024-09-16)
+
+### Features
+
+- **abstract-eth:** fetch gasPrice and gasLimit from explorer ([2a8f36e](https://github.com/BitGo/BitGoJS/commit/2a8f36e19956904e7f3c7d0a2b3be4159da38f73))
+
 ## [22.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.0.3...@bitgo/abstract-eth@22.0.4) (2024-09-10)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.3.0...bitgo@39.4.0) (2024-09-16)
+
+### Features
+
+- **sdk-core:** add bulkAcceptShare function ([fac2743](https://github.com/BitGo/BitGoJS/commit/fac27439fb9fd84fa3001443e28831fced58dabc))
+- **sdk-core:** add bulkShareWallet method ([577d631](https://github.com/BitGo/BitGoJS/commit/577d631889e89571444b7b3e6613bce0110b8c6e))
+
 # [39.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.2.0...bitgo@39.3.0) (2024-09-10)
 
 ### Bug Fixes

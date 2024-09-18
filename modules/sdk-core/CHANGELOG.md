@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.4.0...@bitgo/sdk-core@28.5.0) (2024-09-16)
+
+### Bug Fixes
+
+- add wallet type check for sign transaction ([ddc04f5](https://github.com/BitGo/BitGoJS/commit/ddc04f5569f9e636d44faa502bc0af7b07e07116))
+
+### Features
+
+- **express:** encrypt signer macaroon using ecdh ([62cbd00](https://github.com/BitGo/BitGoJS/commit/62cbd0090748a697017e9adcb49bb0cf34d044b8))
+- **sdk-core:** add bulkAcceptShare function ([fac2743](https://github.com/BitGo/BitGoJS/commit/fac27439fb9fd84fa3001443e28831fced58dabc))
+- **sdk-core:** add bulkShareWallet method ([577d631](https://github.com/BitGo/BitGoJS/commit/577d631889e89571444b7b3e6613bce0110b8c6e))
+
 # [28.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.3.0...@bitgo/sdk-core@28.4.0) (2024-09-10)
 
 ### Bug Fixes
