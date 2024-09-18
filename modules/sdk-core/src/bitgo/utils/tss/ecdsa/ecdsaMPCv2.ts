@@ -8,12 +8,10 @@ import createKeccakHash from 'keccak';
 import * as pgp from 'openpgp';
 import { KeychainsTriplet } from '../../../baseCoin';
 import {
-  KeyGenTypeEnum,
   MPCv2BroadcastMessage,
   MPCv2KeyGenRound1Response,
   MPCv2KeyGenRound2Response,
   MPCv2KeyGenRound3Response,
-  MPCv2KeyGenState,
   MPCv2KeyGenStateEnum,
   MPCv2P2PMessage,
   MPCv2PartyFromStringOrNumber,
@@ -26,7 +24,7 @@ import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
 import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { ECDSAMethodTypes, getTxRequest } from '../../../tss';
 import { sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
-import { GenerateMPCv2KeyRequestBody, GenerateMPCv2KeyRequestResponse, MPCv2PartiesEnum } from './typesMPCv2';
+import { MPCv2PartiesEnum } from './typesMPCv2';
 import {
   getSignatureShareRoundOne,
   getSignatureShareRoundThree,
@@ -49,6 +47,7 @@ import {
   TxRequest,
 } from '../baseTypes';
 import { BaseEcdsaUtils } from './base';
+import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -546,20 +545,38 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   }
   // #endregion
 
-  // #region generate key request utils
-  private async sendKeyGenerationRequest<T extends GenerateMPCv2KeyRequestResponse>(
-    enterprise: string,
-    round: MPCv2KeyGenState,
-    payload: GenerateMPCv2KeyRequestBody & { walletId?: string }
-  ): Promise<T> {
-    return this.bitgo
-      .post(this.bitgo.url('/mpc/generatekey', 2))
-      .send({ enterprise, type: KeyGenTypeEnum.MPCv2, round, payload })
-      .result();
-  }
-
   async sendKeyGenerationRound1(
     enterprise: string,
+    userGpgPublicKey: string,
+    backupGpgPublicKey: string,
+    payload: DklsTypes.AuthEncMessages & { walletId?: string }
+  ): Promise<MPCv2KeyGenRound1Response> {
+    return this.sendKeyGenerationRound1BySender(
+      KeyGenSenderForEnterprise(this.bitgo, enterprise),
+      userGpgPublicKey,
+      backupGpgPublicKey,
+      payload
+    );
+  }
+
+  async sendKeyGenerationRound2(
+    enterprise: string,
+    sessionId: string,
+    payload: DklsTypes.AuthEncMessages
+  ): Promise<MPCv2KeyGenRound2Response> {
+    return this.sendKeyGenerationRound2BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), sessionId, payload);
+  }
+
+  async sendKeyGenerationRound3(
+    enterprise: string,
+    sessionId: string,
+    payload: DklsTypes.AuthEncMessages
+  ): Promise<MPCv2KeyGenRound3Response> {
+    return this.sendKeyGenerationRound3BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), sessionId, payload);
+  }
+
+  async sendKeyGenerationRound1BySender(
+    senderFn: EcdsaMPCv2KeyGenSendFn<MPCv2KeyGenRound1Response>,
     userGpgPublicKey: string,
     backupGpgPublicKey: string,
     payload: DklsTypes.AuthEncMessages & { walletId?: string }
@@ -571,7 +588,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const backupMsg1 = payload.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.BACKUP)?.payload;
     assert(backupMsg1, 'Backup message 1 not found in broadcast messages');
 
-    return this.sendKeyGenerationRequest<MPCv2KeyGenRound1Response>(enterprise, MPCv2KeyGenStateEnum['MPCv2-R1'], {
+    return senderFn(MPCv2KeyGenStateEnum['MPCv2-R1'], {
       userGpgPublicKey,
       backupGpgPublicKey,
       userMsg1: { from: 0, ...userMsg1 },
@@ -580,8 +597,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     });
   }
 
-  async sendKeyGenerationRound2(
-    enterprise: string,
+  async sendKeyGenerationRound2BySender(
+    senderFn: EcdsaMPCv2KeyGenSendFn<MPCv2KeyGenRound2Response>,
     sessionId: string,
     payload: DklsTypes.AuthEncMessages
   ): Promise<MPCv2KeyGenRound2Response> {
@@ -599,7 +616,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     assert(backupMsg2.commitment, 'Backup to Bitgo commitment not found in P2P messages');
     assert(NonEmptyString.is(backupMsg2.commitment), 'Backup to Bitgo commitment is required');
 
-    return this.sendKeyGenerationRequest<MPCv2KeyGenRound2Response>(enterprise, MPCv2KeyGenStateEnum['MPCv2-R2'], {
+    return senderFn(MPCv2KeyGenStateEnum['MPCv2-R2'], {
       sessionId,
       userMsg2: {
         from: MPCv2PartiesEnum.USER,
@@ -618,8 +635,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     });
   }
 
-  async sendKeyGenerationRound3(
-    enterprise: string,
+  async sendKeyGenerationRound3BySender(
+    senderFn: EcdsaMPCv2KeyGenSendFn<MPCv2KeyGenRound3Response>,
     sessionId: string,
     payload: DklsTypes.AuthEncMessages
   ): Promise<MPCv2KeyGenRound3Response> {
@@ -637,7 +654,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const backupMsg4 = payload.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.BACKUP)?.payload;
     assert(backupMsg4, 'Backup message 1 not found in broadcast messages');
 
-    return this.sendKeyGenerationRequest<MPCv2KeyGenRound3Response>(enterprise, MPCv2KeyGenStateEnum['MPCv2-R3'], {
+    return senderFn(MPCv2KeyGenStateEnum['MPCv2-R3'], {
       sessionId,
       userMsg3: { from: 0, to: 2, ...userMsg3 },
       backupMsg3: { from: 1, to: 2, ...backupMsg3 },
