@@ -30,3 +30,5 @@ export const DEFAULT_GAS_OVERHEAD = 1.1;
 export const MAX_OBJECT_LIMIT = 1280;
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
+
+export const TOKEN_OBJECT_LIMIT = 512;

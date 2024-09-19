@@ -463,6 +463,8 @@ export interface MPCRecoveryOptions {
   startingScanIndex?: number;
   // the number of addresses to scan from the starting index
   scan?: number;
+  // token contract address of the token to recover
+  tokenContractAddress?: string;
 }
 
 export interface MPCConsolidationRecoveryOptions {
@@ -473,6 +475,7 @@ export interface MPCConsolidationRecoveryOptions {
   startingScanIndex?: number; // default to 1 (inclusive)
   endingScanIndex?: number; // default to startingScanIndex + 20 (exclusive)
   seed?: string;
+  tokenContractAddress?: string;
 }
 
 export interface MPCSweepTxs {

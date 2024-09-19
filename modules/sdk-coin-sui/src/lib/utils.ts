@@ -43,6 +43,7 @@ import blake2b from '@bitgo/blake2b';
 import { TRANSACTION_DATA_MAX_SIZE } from './mystenlab/builder/TransactionDataBlock';
 import { makeRPC } from './rpcClient';
 import assert from 'assert';
+import { BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
 
 export function isImmOrOwnedObj(obj: ObjectCallArg['Object']): obj is { ImmOrOwned: SuiObjectRef } {
   return 'ImmOrOwned' in obj;
@@ -475,6 +476,36 @@ export class Utils implements BaseUtils {
       throw new Error(errorMsg);
     }
     return nonNegativeNum;
+  }
+
+  getSuiTokenFromAddress(packageId: string, network: BaseNetwork) {
+    const tokens = coins.filter((coin) => {
+      return (
+        coin instanceof SuiCoin &&
+        coin.network.type === network.type &&
+        coin.packageId.toLowerCase() === packageId.toLowerCase()
+      );
+    });
+    const tokensArray = tokens.map((token) => token);
+    if (tokensArray.length >= 1) {
+      // there should never be two tokens with the same contract address, so we assert that here
+      assert(tokensArray.length === 1);
+      return tokensArray[0];
+    }
+    return undefined;
+  }
+
+  selectObjectsInDescOrderOfBalance(objs: SuiObjectInfo[], limit: BigNumber): SuiObjectInfo[] {
+    objs = objs.sort((a, b) => {
+      return b.balance.minus(a.balance).toNumber();
+    });
+    return objs.reduce((acc, obj) => {
+      if (limit.gt(0)) {
+        acc.push(obj);
+        limit = limit.minus(obj.balance);
+      }
+      return acc;
+    }, [] as SuiObjectInfo[]);
   }
 }
 
