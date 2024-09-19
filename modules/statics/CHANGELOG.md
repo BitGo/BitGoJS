@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.5.0...@bitgo/statics@49.6.0) (2024-09-19)
+
+### Features
+
+- **statics:** add new tokens COIN-1726 ([5e6b310](https://github.com/BitGo/BitGoJS/commit/5e6b310131398972a4a996b852e0e845af7b6ba3))
+- **statics:** enable Injective Native for Frankfurt Trust ([371c28c](https://github.com/BitGo/BitGoJS/commit/371c28cdb81c9a9a1d4ad118efe7a22fe14c662f))
+
 # [49.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.4.0...@bitgo/statics@49.5.0) (2024-09-16)
 
 ### Features
