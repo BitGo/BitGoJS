@@ -1486,6 +1486,8 @@ export class Wallet implements IWallet {
     if (!params.keyShareOptions || Object.keys(params.keyShareOptions).length === 0) {
       throw new Error('shareOptions cannot be empty');
     }
+    console.log('Break1');
+    console.log(params);
     const bulkCreateShareOptions: BulkCreateShareOption[] = [];
 
     for (const shareOption of params.keyShareOptions) {
@@ -1536,6 +1538,8 @@ export class Wallet implements IWallet {
         }
         const keychain = Object.keys(sharedKeychain ?? {}).length === 0 ? undefined : sharedKeychain;
         if (keychain) {
+          console.log('Break2');
+          console.log('UID', shareOption.userId);
           bulkCreateShareOptions.push({
             user: shareOption.userId,
             permissions: shareOption.permissions,
@@ -1569,11 +1573,12 @@ export class Wallet implements IWallet {
         return false;
       }
     });
+    console.log('Break3', params);
 
     if (!params || Object.keys(params).length === 0) {
       throw new Error('shareOptions cannot be empty');
     }
-
+    console.log('Break4');
     const url = this.bitgo.url(`/wallet/${this._wallet.id}/walletshares`, 2);
     return this.bitgo.post(url).send({ shareOptions: params }).result();
   }
