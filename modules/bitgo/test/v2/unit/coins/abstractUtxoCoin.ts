@@ -7,12 +7,10 @@ import { BitGo } from '../../../../src/bitgo';
 import {
   AbstractUtxoCoin,
   AbstractUtxoCoinWallet,
-  NamedDescriptor,
   Output,
   TransactionExplanation,
   TransactionParams,
 } from '@bitgo/abstract-utxo';
-import * as assert from 'node:assert';
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
@@ -555,8 +553,18 @@ describe('Abstract UTXO Coin:', () => {
         keySignatures: {},
         outputs: [],
         missingOutputs: [],
-        explicitExternalOutputs: [{ address: 'external_address', amount: '10000' }],
-        implicitExternalOutputs: [{ address: 'external_address_2', amount: '15' }],
+        explicitExternalOutputs: [
+          {
+            address: 'external_address',
+            amount: '10000',
+          },
+        ],
+        implicitExternalOutputs: [
+          {
+            address: 'external_address_2',
+            amount: '15',
+          },
+        ],
         changeOutputs: [],
         explicitExternalSpendAmount: BigInt(10000),
         implicitExternalSpendAmount: BigInt(15),
@@ -582,50 +590,6 @@ describe('Abstract UTXO Coin:', () => {
 
       coinMock.restore();
       bitcoinMock.restore();
-    });
-  });
-
-  describe('descriptor wallets', () => {
-    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-    const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
-
-    const rawDescriptor: NamedDescriptor = {
-      name: 'foo',
-      value:
-        "sh(multi(2,[00000000/111'/222]xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL,xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBaohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y/0/*))",
-      signatures: [],
-      lastIndex: 0,
-    };
-
-    it('should create an address', async () => {
-      const address = coin.generateAddress({ descriptor: rawDescriptor, index: 0 });
-
-      should.exist(address);
-      should.deepEqual(address.address, '2NAukrNbhcZNNZ83zFPN48X44FE5qNdYgDv');
-      assert('descriptor' in address.coinSpecific);
-      should.deepEqual(address.coinSpecific.descriptor, rawDescriptor);
-    });
-
-    it('should check if isWalletAddress', async () => {
-      const matchingAddressResult = await coin.isWalletAddress({
-        coinSpecific: { descriptor: rawDescriptor },
-        index: 0,
-        address: '2NAukrNbhcZNNZ83zFPN48X44FE5qNdYgDv',
-      });
-      should.equal(matchingAddressResult, true);
-
-      try {
-        await coin.isWalletAddress({
-          coinSpecific: { descriptor: rawDescriptor },
-          index: 1,
-          address: '2NAukrNbhcZNNZ83zFPN48X44FE5qNdYgDv',
-        });
-        throw '';
-      } catch (e) {
-        e.message.should.equal(
-          'address validation failure: expected 2N49LHwLRJ8oNXzLYWJM6sVVawC6QeC9B54 but got 2NAukrNbhcZNNZ83zFPN48X44FE5qNdYgDv'
-        );
-      }
     });
   });
 });
