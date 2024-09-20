@@ -4,6 +4,9 @@ import {
   BitgoToOVC1Round2Response,
   BitgoToOVC1Round3Response,
   KeyCreationMPCv2StateEnum,
+  MPCv2KeyGenRound1Response,
+  MPCv2KeyGenRound2Response,
+  MPCv2KeyGenRound3Response,
   OVC1ToBitgoRound3Payload,
   OVC2ToBitgoRound1Payload,
   OVC2ToBitgoRound2Payload,
@@ -13,15 +16,31 @@ import { IBaseCoin } from '../../../../baseCoin';
 import { BitGoBase } from '../../../../bitgoBase';
 import { EcdsaMPCv2Utils } from '../ecdsaMPCv2';
 import { decodeOrElse, Keychain } from '../../../..';
+import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from '../ecdsaMPCv2KeyGenSender';
 
 export class MPCv2SMCUtils {
   private MPCv2Utils: EcdsaMPCv2Utils;
 
-  constructor(bitgo: BitGoBase, private baseCoin: IBaseCoin) {
+  constructor(private bitgo: BitGoBase, private baseCoin: IBaseCoin) {
     this.MPCv2Utils = new EcdsaMPCv2Utils(bitgo, baseCoin);
   }
 
   public async keyGenRound1(enterprise: string, payload: OVC2ToBitgoRound1Payload): Promise<BitgoToOVC1Round1Response> {
+    return this.keyGenRound1BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), payload);
+  }
+
+  public async keyGenRound2(enterprise: string, payload: OVC2ToBitgoRound2Payload): Promise<BitgoToOVC1Round2Response> {
+    return this.keyGenRound2BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), payload);
+  }
+
+  public async keyGenRound3(enterprise: string, payload: OVC1ToBitgoRound3Payload): Promise<BitgoToOVC1Round3Response> {
+    return this.keyGenRound3BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), payload);
+  }
+
+  public async keyGenRound1BySender(
+    senderFn: EcdsaMPCv2KeyGenSendFn<MPCv2KeyGenRound1Response>,
+    payload: OVC2ToBitgoRound1Payload
+  ): Promise<BitgoToOVC1Round1Response> {
     assert(
       payload.state === KeyCreationMPCv2StateEnum.WaitingForBitgoRound1Data,
       `Invalid state for round 1, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound1Data}, got: ${payload.state}`
@@ -35,8 +54,8 @@ export class MPCv2SMCUtils {
     const userGpgPublicKey = ovc1.gpgPubKey;
     const backupGpgPublicKey = ovc2.gpgPubKey;
     const messages = { p2pMessages: [], broadcastMessages: [ovc1.ovcMsg1, ovc2.ovcMsg1] };
-    const result = await this.MPCv2Utils.sendKeyGenerationRound1(
-      enterprise,
+    const result = await this.MPCv2Utils.sendKeyGenerationRound1BySender(
+      senderFn,
       userGpgPublicKey,
       backupGpgPublicKey,
       messages
@@ -64,7 +83,10 @@ export class MPCv2SMCUtils {
     });
   }
 
-  public async keyGenRound2(enterprise: string, payload: OVC2ToBitgoRound2Payload): Promise<BitgoToOVC1Round2Response> {
+  public async keyGenRound2BySender(
+    senderFn: EcdsaMPCv2KeyGenSendFn<MPCv2KeyGenRound2Response>,
+    payload: OVC2ToBitgoRound2Payload
+  ): Promise<BitgoToOVC1Round2Response> {
     assert(
       payload.state === KeyCreationMPCv2StateEnum.WaitingForBitgoRound2Data,
       `Invalid state for round 2, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound2Data}, got: ${payload.state}`
@@ -76,7 +98,7 @@ export class MPCv2SMCUtils {
     const ovc2 = payload.ovc[OVCIndexEnum.TWO];
     const sessionId = payload.platform.sessionId;
     const messages = { p2pMessages: [ovc1.ovcToBitgoMsg2, ovc2.ovcToBitgoMsg2], broadcastMessages: [] };
-    const result = await this.MPCv2Utils.sendKeyGenerationRound2(enterprise, sessionId, messages);
+    const result = await this.MPCv2Utils.sendKeyGenerationRound2BySender(senderFn, sessionId, messages);
 
     const response = {
       state: KeyCreationMPCv2StateEnum.WaitingForOVC1Round3aData,
@@ -106,7 +128,10 @@ export class MPCv2SMCUtils {
     });
   }
 
-  public async keyGenRound3(enterprise: string, payload: OVC1ToBitgoRound3Payload): Promise<BitgoToOVC1Round3Response> {
+  public async keyGenRound3BySender(
+    senderFn: EcdsaMPCv2KeyGenSendFn<MPCv2KeyGenRound3Response>,
+    payload: OVC1ToBitgoRound3Payload
+  ): Promise<BitgoToOVC1Round3Response> {
     assert(
       payload.state === KeyCreationMPCv2StateEnum.WaitingForBitgoRound3Data,
       `Invalid state for round 3, expected: ${KeyCreationMPCv2StateEnum.WaitingForBitgoRound3Data}, got: ${payload.state}`
@@ -121,7 +146,7 @@ export class MPCv2SMCUtils {
       p2pMessages: [ovc1.ovcToBitgoMsg3, ovc2.ovcToBitgoMsg3],
       broadcastMessages: [ovc1.ovcMsg4, ovc2.ovcMsg4],
     };
-    const result = await this.MPCv2Utils.sendKeyGenerationRound3(enterprise, sessionId, messages);
+    const result = await this.MPCv2Utils.sendKeyGenerationRound3BySender(senderFn, sessionId, messages);
 
     const keychains = this.baseCoin.keychains();
     const bitgoKeychain = await keychains.add({
