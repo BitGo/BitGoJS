@@ -179,6 +179,7 @@ export interface CustomSigningFunction {
     txPrebuild: TransactionPrebuild;
     pubs?: string[];
     derivationSeed?: string;
+    signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
   }): Promise<SignedTransaction>;
 }
 
