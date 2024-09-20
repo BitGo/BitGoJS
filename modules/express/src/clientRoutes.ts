@@ -1276,10 +1276,12 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
   return async function (params): Promise<SignedTransaction> {
     const { body: signedTx } = await retryPromise(
       () =>
-        superagent
-          .post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`)
-          .type('json')
-          .send({ txPrebuild: params.txPrebuild, pubs: params.pubs, derivationSeed: params.derivationSeed }),
+        superagent.post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`).type('json').send({
+          txPrebuild: params.txPrebuild,
+          pubs: params.pubs,
+          derivationSeed: params.derivationSeed,
+          signingStep: params.signingStep,
+        }),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
