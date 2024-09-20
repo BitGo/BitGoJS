@@ -14,24 +14,46 @@ describe('TON:', function () {
   bitgo.safeRegister('ton', Ton.createInstance);
   bitgo.safeRegister('tton', Tton.createInstance);
   bitgo.initializeTestVars();
-  const txPrebuild = {
-    txHex: Buffer.from(testData.signedTransaction.tx, 'base64').toString('hex'),
-    txInfo: {},
-  };
-  const txPrebuildBounceable = {
-    txHex: Buffer.from(testData.signedTransaction.txBounceable, 'base64').toString('hex'),
-    txInfo: {},
-  };
+  const txPrebuildList = [
+    {
+      txHex: Buffer.from(testData.signedSendTransaction.tx, 'base64').toString('hex'),
+      txInfo: {},
+    },
+    {
+      txHex: Buffer.from(testData.signedTransferTransaction.tx, 'base64').toString('hex'),
+      txInfo: {},
+    },
+  ];
+  const txPrebuildBounceableList = [
+    {
+      txHex: Buffer.from(testData.signedSendTransaction.txBounceable, 'base64').toString('hex'),
+      txInfo: {},
+    },
+    {
+      txHex: Buffer.from(testData.signedTransferTransaction.txBounceable, 'base64').toString('hex'),
+      txInfo: {},
+    },
+  ];
 
-  const txParams = {
-    recipients: [testData.signedTransaction.recipient],
-  };
+  const txParamsList = [
+    {
+      recipients: [testData.signedSendTransaction.recipient],
+    },
+    {
+      recipients: [testData.signedTransferTransaction.recipient],
+    },
+  ];
 
-  const txParamsBounceable = {
-    recipients: [testData.signedTransaction.recipientBounceable],
-  };
+  const txParamsBounceableList = [
+    {
+      recipients: [testData.signedSendTransaction.recipientBounceable],
+    },
+    {
+      recipients: [testData.signedTransferTransaction.recipientBounceable],
+    },
+  ];
 
-  it('should retun the right info', function () {
+  it('should return the right info', function () {
     const ton = bitgo.coin('ton');
     const tton = bitgo.coin('tton');
 
@@ -48,97 +70,104 @@ describe('TON:', function () {
 
   describe('Verify transaction: ', () => {
     const basecoin = bitgo.coin('tton');
-    it('should succeed to verify transaction', async function () {
-      const verification = {};
-      const isTransactionVerified = await basecoin.verifyTransaction({
-        txParams,
-        txPrebuild,
-        verification,
-      } as any);
-      isTransactionVerified.should.equal(true);
+    txParamsList.forEach((_, index) => {
+      const txParams = txParamsList[index];
+      const txPrebuild = txPrebuildList[index];
+      const txParamsBounceable = txParamsBounceableList[index];
+      const txPrebuildBounceable = txPrebuildBounceableList[index];
 
-      const isBounceableTransactionVerified = await basecoin.verifyTransaction({
-        txParams: txParamsBounceable,
-        txPrebuild: txPrebuildBounceable,
-        verification: {},
-      } as any);
-      isBounceableTransactionVerified.should.equal(true);
-    });
-
-    it('should succeed to verify transaction when recipients amount are numbers', async function () {
-      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
-      txParamsWithNumberAmounts.recipients[0].amount = 20000000;
-      const verification = {};
-      await basecoin
-        .verifyTransaction({
-          txParams: txParamsWithNumberAmounts,
-          txPrebuild,
-          verification,
-        } as any)
-        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
-    });
-
-    it('should succeed to verify transaction when recipients amount are strings', async function () {
-      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
-      txParamsWithNumberAmounts.recipients[0].amount = '20000000';
-      const verification = {};
-      await basecoin
-        .verifyTransaction({
-          txParams: txParamsWithNumberAmounts,
-          txPrebuild,
-          verification,
-        } as any)
-        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
-    });
-
-    it('should succeed to verify transaction when recipients amounts are number and amount is same', async function () {
-      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
-      txParamsWithNumberAmounts.recipients[0].amount = 10000000;
-      const verification = {};
-      await basecoin
-        .verifyTransaction({
-          txParams: txParamsWithNumberAmounts,
-          txPrebuild,
-          verification,
-        } as any)
-        .should.resolvedWith(true);
-    });
-
-    it('should succeed to verify transaction when recipients amounts are string and amount is same', async function () {
-      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
-      txParamsWithNumberAmounts.recipients[0].amount = '10000000';
-      const verification = {};
-      await basecoin
-        .verifyTransaction({
-          txParams: txParamsWithNumberAmounts,
-          txPrebuild,
-          verification,
-        } as any)
-        .should.resolvedWith(true);
-    });
-
-    it('should succeed to verify transaction when recipient address are non bouncable', async function () {
-      const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
-      txParamsWithNumberAmounts.recipients[0].address = new Tonweb.Address(
-        txParamsWithNumberAmounts.recipients[0].address
-      ).toString(true, true, false);
-      const verification = {};
-      const isVerified = await basecoin.verifyTransaction({
-        txParams: txParamsWithNumberAmounts,
-        txPrebuild,
-        verification,
-      } as any);
-      isVerified.should.equal(true);
-    });
-
-    it('should fail to verify transaction with invalid param', async function () {
-      const txPrebuild = {};
-      await basecoin
-        .verifyTransaction({
+      it('should succeed to verify transaction', async function () {
+        const verification = {};
+        const isTransactionVerified = await basecoin.verifyTransaction({
           txParams,
           txPrebuild,
-        } as any)
-        .should.rejectedWith('missing required tx prebuild property txHex');
+          verification,
+        } as any);
+        isTransactionVerified.should.equal(true);
+
+        const isBounceableTransactionVerified = await basecoin.verifyTransaction({
+          txParams: txParamsBounceable,
+          txPrebuild: txPrebuildBounceable,
+          verification: {},
+        } as any);
+        isBounceableTransactionVerified.should.equal(true);
+      });
+
+      it('should succeed to verify transaction when recipients amount are numbers', async function () {
+        const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+        txParamsWithNumberAmounts.recipients[0].amount = 20000000;
+        const verification = {};
+        await basecoin
+          .verifyTransaction({
+            txParams: txParamsWithNumberAmounts,
+            txPrebuild,
+            verification,
+          } as any)
+          .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+      });
+
+      it('should succeed to verify transaction when recipients amount are strings', async function () {
+        const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+        txParamsWithNumberAmounts.recipients[0].amount = '20000000';
+        const verification = {};
+        await basecoin
+          .verifyTransaction({
+            txParams: txParamsWithNumberAmounts,
+            txPrebuild,
+            verification,
+          } as any)
+          .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+      });
+
+      it('should succeed to verify transaction when recipients amounts are number and amount is same', async function () {
+        const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+        txParamsWithNumberAmounts.recipients[0].amount = 10000000;
+        const verification = {};
+        await basecoin
+          .verifyTransaction({
+            txParams: txParamsWithNumberAmounts,
+            txPrebuild,
+            verification,
+          } as any)
+          .should.resolvedWith(true);
+      });
+
+      it('should succeed to verify transaction when recipients amounts are string and amount is same', async function () {
+        const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+        txParamsWithNumberAmounts.recipients[0].amount = '10000000';
+        const verification = {};
+        await basecoin
+          .verifyTransaction({
+            txParams: txParamsWithNumberAmounts,
+            txPrebuild,
+            verification,
+          } as any)
+          .should.resolvedWith(true);
+      });
+
+      it('should succeed to verify transaction when recipient address are non bounceable', async function () {
+        const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
+        txParamsWithNumberAmounts.recipients[0].address = new Tonweb.Address(
+          txParamsWithNumberAmounts.recipients[0].address
+        ).toString(true, true, false);
+        const verification = {};
+        const isVerified = await basecoin.verifyTransaction({
+          txParams: txParamsWithNumberAmounts,
+          txPrebuild,
+          verification,
+        } as any);
+        isVerified.should.equal(true);
+      });
+
+      it('should fail to verify transaction with invalid param', async function () {
+        const txPrebuild = {};
+        await basecoin
+          .verifyTransaction({
+            txParams,
+            txPrebuild,
+          } as any)
+          .should.rejectedWith('missing required tx prebuild property txHex');
+      });
     });
   });
 
@@ -146,43 +175,89 @@ describe('TON:', function () {
     const basecoin = bitgo.coin('tton');
     it('should explain a transfer transaction', async function () {
       const explainedTransaction = (await basecoin.explainTransaction({
-        txHex: Buffer.from(testData.signedTransaction.tx, 'base64').toString('hex'),
+        txHex: Buffer.from(testData.signedSendTransaction.tx, 'base64').toString('hex'),
       })) as TransactionExplanation;
       explainedTransaction.should.deepEqual({
-        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee'],
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'],
         id: 'tuyOkyFUMv_neV_FeNBH24Nd4cML2jUgDP4zjGkuOFI=',
         outputs: [
           {
-            address: testData.signedTransaction.recipient.address,
-            amount: testData.signedTransaction.recipient.amount,
+            address: testData.signedSendTransaction.recipient.address,
+            amount: testData.signedSendTransaction.recipient.amount,
           },
         ],
-        outputAmount: testData.signedTransaction.recipient.amount,
+        outputAmount: testData.signedSendTransaction.recipient.amount,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: 'UNKNOWN' },
+        withdrawAmount: undefined,
       });
     });
 
     it('should explain a non-bounceable transfer transaction', async function () {
       const explainedTransaction = (await basecoin.explainTransaction({
-        txHex: Buffer.from(testData.signedTransaction.tx, 'base64').toString('hex'),
+        txHex: Buffer.from(testData.signedSendTransaction.tx, 'base64').toString('hex'),
         toAddressBounceable: false,
         fromAddressBounceable: false,
       })) as TransactionExplanation;
       explainedTransaction.should.deepEqual({
-        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee'],
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'],
         id: 'tuyOkyFUMv_neV_FeNBH24Nd4cML2jUgDP4zjGkuOFI=',
         outputs: [
           {
-            address: testData.signedTransaction.recipientBounceable.address,
-            amount: testData.signedTransaction.recipientBounceable.amount,
+            address: testData.signedSendTransaction.recipientBounceable.address,
+            amount: testData.signedSendTransaction.recipientBounceable.amount,
           },
         ],
-        outputAmount: testData.signedTransaction.recipientBounceable.amount,
+        outputAmount: testData.signedSendTransaction.recipientBounceable.amount,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: 'UNKNOWN' },
+        withdrawAmount: undefined,
+      });
+    });
+
+    it('should explain a single nominator withdraw transaction', async function () {
+      const explainedTransaction = (await basecoin.explainTransaction({
+        txHex: Buffer.from(testData.signedTransferTransaction.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'],
+        id: 'GUD-auBCZ3PJFfAPkSfeqe8rj2OiHMTXudH4IEWdDgo=',
+        outputs: [
+          {
+            address: testData.signedTransferTransaction.recipient.address,
+            amount: testData.signedTransferTransaction.recipient.amount,
+          },
+        ],
+        outputAmount: testData.signedTransferTransaction.recipient.amount,
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: 'UNKNOWN' },
+        withdrawAmount: '1',
+      });
+    });
+
+    it('should explain a non-bounceable single nominator withdraw transaction', async function () {
+      const explainedTransaction = (await basecoin.explainTransaction({
+        txHex: Buffer.from(testData.signedTransferTransaction.tx, 'base64').toString('hex'),
+        toAddressBounceable: false,
+        fromAddressBounceable: false,
+      })) as TransactionExplanation;
+      explainedTransaction.should.deepEqual({
+        displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'],
+        id: 'GUD-auBCZ3PJFfAPkSfeqe8rj2OiHMTXudH4IEWdDgo=',
+        outputs: [
+          {
+            address: testData.signedTransferTransaction.recipientBounceable.address,
+            amount: testData.signedTransferTransaction.recipientBounceable.amount,
+          },
+        ],
+        outputAmount: testData.signedTransferTransaction.recipientBounceable.amount,
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: 'UNKNOWN' },
+        withdrawAmount: '1',
       });
     });
 
@@ -206,65 +281,87 @@ describe('TON:', function () {
   describe('Parse Transactions: ', () => {
     const basecoin = bitgo.coin('tton');
 
-    const transferInputsResponse = [
-      {
-        address: 'EQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Jpl',
-        amount: '10000000',
-      },
+    const transactionsList = [testData.signedSendTransaction.tx, testData.signedTransferTransaction.tx];
+
+    const transactionInputsResponseList = [
+      [
+        {
+          address: 'EQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Jpl',
+          amount: '10000000',
+        },
+      ],
+      [
+        {
+          address: 'EQAbJug-k-tufWMjEC1RKSM0iiJTDUcYkC7zWANHrkT55Fol',
+          amount: '10000000',
+        },
+      ],
     ];
 
-    const transferInputsResponseBounceable = [
-      {
-        address: 'UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg',
-        amount: '10000000',
-      },
+    const transactionInputsResponseBounceableList = [
+      [
+        {
+          address: 'UQCSBjR3fUOL98WTw2F_IT4BrcqjZJWVLWUSz5WQDpaL9Meg',
+          amount: '10000000',
+        },
+      ],
+      [
+        {
+          address: 'UQAbJug-k-tufWMjEC1RKSM0iiJTDUcYkC7zWANHrkT55Afg',
+          amount: '10000000',
+        },
+      ],
     ];
 
-    const transferOutputsResponse = [
+    const transactionOutputsResponse = [
       {
         address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
         amount: '10000000',
       },
     ];
 
-    const transferOutputsResponseBounceable = [
+    const transactionOutputsResponseBounceable = [
       {
         address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
         amount: '10000000',
       },
     ];
 
-    it('should parse a transfer transaction', async function () {
-      const parsedTransaction = await basecoin.parseTransaction({
-        txHex: Buffer.from(testData.signedTransaction.tx, 'base64').toString('hex'),
+    transactionsList.forEach((_, index) => {
+      const transaction = transactionsList[index];
+      const transactionInputsResponse = transactionInputsResponseList[index];
+      const transactionInputsResponseBounceable = transactionInputsResponseBounceableList[index];
+
+      it('should parse a TON transaction', async function () {
+        const parsedTransaction = await basecoin.parseTransaction({
+          txHex: Buffer.from(transaction, 'base64').toString('hex'),
+        });
+
+        parsedTransaction.should.deepEqual({
+          inputs: transactionInputsResponse,
+          outputs: transactionOutputsResponse,
+        });
       });
 
-      parsedTransaction.should.deepEqual({
-        inputs: transferInputsResponse,
-        outputs: transferOutputsResponse,
+      it('should parse a non-bounceable TON transaction', async function () {
+        const parsedTransaction = await basecoin.parseTransaction({
+          txHex: Buffer.from(transaction, 'base64').toString('hex'),
+          toAddressBounceable: false,
+          fromAddressBounceable: false,
+        } as TonParseTransactionOptions);
+
+        parsedTransaction.should.deepEqual({
+          inputs: transactionInputsResponseBounceable,
+          outputs: transactionOutputsResponseBounceable,
+        });
       });
-    });
 
-    it('should parse a non-bounceable transfer transaction', async function () {
-      const parsedTransaction = await basecoin.parseTransaction({
-        txHex: Buffer.from(testData.signedTransaction.tx, 'base64').toString('hex'),
-        toAddressBounceable: false,
-        fromAddressBounceable: false,
-      } as TonParseTransactionOptions);
-
-      parsedTransaction.should.deepEqual({
-        inputs: transferInputsResponseBounceable,
-        outputs: transferOutputsResponseBounceable,
+      it('should fail to parse a TON transaction when explainTransaction response is undefined', async function () {
+        const stub = sinon.stub(Ton.prototype, 'explainTransaction');
+        stub.resolves(undefined);
+        await basecoin.parseTransaction({ txHex: transaction }).should.be.rejectedWith('invalid raw transaction');
+        stub.restore();
       });
-    });
-
-    it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
-      const stub = sinon.stub(Ton.prototype, 'explainTransaction');
-      stub.resolves(undefined);
-      await basecoin
-        .parseTransaction({ txHex: testData.signedTransaction.tx })
-        .should.be.rejectedWith('invalid raw transaction');
-      stub.restore();
     });
   });
 
@@ -392,7 +489,7 @@ describe('TON:', function () {
         );
       });
 
-      it('should derive non-bouncable address when requested', async function () {
+      it('should derive non-bounceable address when requested', async function () {
         (await utils.getAddressFromPublicKey(derivedPublicKey, false)).should.equal(
           'UQDVeyUJOx3AnZGWLtE0l-Vxv7c7uTnD8OXtCFhaO-nvaqn8'
         );

@@ -69,6 +69,7 @@ export enum TransactionType {
   AddPermissionlessValidator,
   // Closing an associated token account (e.g. SOL)
   CloseAssociatedTokenAccount,
+  SingleNominatorWithdraw,
 }
 
 /**

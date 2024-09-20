@@ -1,13 +1,5 @@
-import {
-  BaseKey,
-  BaseTransaction,
-  Entry,
-  Recipient,
-  TransactionRecipient,
-  TransactionType,
-  TransactionExplanation,
-} from '@bitgo/sdk-core';
-import { TxData } from './iface';
+import { BaseKey, BaseTransaction, Entry, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import { TxData, TransactionExplanation } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import TonWeb from 'tonweb';
 import { BN } from 'bn.js';
@@ -20,7 +12,8 @@ export class Transaction extends BaseTransaction {
   public bounceable: boolean;
   public fromAddressBounceable: boolean;
   public toAddressBounceable: boolean;
-  public message: string;
+  public message: string | Cell;
+  public withdrawAmount: string;
   seqno: number;
   expireTime: number;
   sender: string;
@@ -55,6 +48,7 @@ export class Transaction extends BaseTransaction {
       destination: this.recipient.address,
       destinationAlias: otherFormat,
       amount: this.recipient.amount,
+      withdrawAmount: this.withdrawAmount,
       seqno: this.seqno,
       expirationTime: this.expireTime,
       publicKey: this.publicKey,
@@ -67,8 +61,15 @@ export class Transaction extends BaseTransaction {
     return Buffer.from(this.unsignedMessage, 'hex');
   }
 
+  /**
+   * Set the transaction type.
+   * @param {TransactionType} transactionType The transaction type to be set.
+   */
+  set transactionType(transactionType: TransactionType) {
+    this._type = transactionType;
+  }
+
   async build(): Promise<void> {
-    this._type = TransactionType.Send;
     const signingMessage = this.createSigningMessage(WALLET_ID, this.seqno, this.expireTime);
     const sendMode = 3;
     signingMessage.bits.writeUint8(sendMode);
@@ -118,7 +119,7 @@ export class Transaction extends BaseTransaction {
       true,
       this.bounceable
     );
-    return TonWeb.Contract.createCommonMsgInfo(orderHeader, undefined, payloadCell);
+    return TonWeb.Contract.createCommonMsgInfo(orderHeader, undefined, payloadCell); // compare with commonmsg tonweb and ton
   }
 
   async createExternalMessage(signingMessage: Cell, seqno: number, signature: string): Promise<Cell> {
@@ -164,12 +165,13 @@ export class Transaction extends BaseTransaction {
     try {
       const cell = TonWeb.boc.Cell.oneFromBoc(TonWeb.utils.base64ToBytes(rawTransaction));
 
-      const parsed = this.parseTransfer(cell);
+      const parsed = this.parseTransaction(cell);
       parsed.value = parsed.value.toString();
       parsed.fromAddress = parsed.fromAddress.toString(true, true, this.fromAddressBounceable);
       parsed.toAddress = parsed.toAddress.toString(true, true, this.toAddressBounceable);
       this.sender = parsed.fromAddress;
       this.recipient = { address: parsed.toAddress, amount: parsed.value };
+      this.withdrawAmount = parsed.withdrawAmount;
       this.seqno = parsed.seqno;
       this.publicKey = parsed.publicKey as string;
       this.expireTime = parsed.expireAt;
@@ -183,10 +185,11 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritDoc */
   explainTransaction(): TransactionExplanation {
-    const displayOrder = ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee'];
+    const displayOrder = ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'];
 
     const outputs: TransactionRecipient[] = [this.recipient];
     const outputAmount = this.recipient.amount;
+    const withdrawAmount = this.withdrawAmount;
     return {
       displayOrder,
       id: this.id,
@@ -195,10 +198,11 @@ export class Transaction extends BaseTransaction {
       changeOutputs: [],
       changeAmount: '0',
       fee: { fee: 'UNKNOWN' },
+      withdrawAmount,
     };
   }
 
-  private parseTransfer(cell: Cell): any {
+  private parseTransaction(cell: Cell): any {
     const slice = (cell as any).beginParse();
 
     // header
@@ -239,11 +243,11 @@ export class Transaction extends BaseTransaction {
     return {
       fromAddress: externalDestAddress,
       publicKey,
-      ...this.parseTransferBody(bodySlice),
+      ...this.parseTransactionBody(bodySlice),
     };
   }
 
-  private parseTransferBody(slice: any): any {
+  private parseTransactionBody(slice: any): any {
     const signature = Buffer.from(slice.loadBits(512)).toString('hex');
     // signing message
 
@@ -288,16 +292,29 @@ export class Transaction extends BaseTransaction {
 
     // order body
     let payload;
-
+    let withdrawAmount;
+    this.transactionType = TransactionType.Send;
     if (order.getFreeBits() > 0) {
       if (order.loadBit()) {
         order = order.loadRef();
       }
 
       if (order.getFreeBits() > 32) {
-        const op = order.loadUint(32);
-        const payloadBytes = order.loadBits(order.getFreeBits());
-        payload = op.eq(new BN(0)) ? new TextDecoder().decode(payloadBytes) : '';
+        const opcode = order.loadUint(32).toNumber();
+        if (opcode === 0) {
+          const payloadBytes = order.loadBits(order.getFreeBits());
+          payload = new TextDecoder().decode(payloadBytes);
+        } else if (opcode === 4096) {
+          const queryId = order.loadUint(64).toNumber();
+          withdrawAmount = (order.loadCoins().toNumber() / 1e9).toString();
+          payload = new TonWeb.boc.Cell();
+          payload.bits.writeUint(opcode, 32);
+          payload.bits.writeUint(queryId, 64);
+          payload.bits.writeCoins(TonWeb.utils.toNano(withdrawAmount));
+          this.transactionType = TransactionType.SingleNominatorWithdraw;
+        } else {
+          payload = '';
+        }
       }
     }
     return {
@@ -305,6 +322,7 @@ export class Transaction extends BaseTransaction {
       value,
       bounce,
       seqno,
+      withdrawAmount,
       expireAt,
       payload,
       signature,
