@@ -5,4 +5,3 @@ reporter-option:
   - 'cdn=true'
   - 'json=false'
 exit: true
-spec: ['test/v2/unit/**/*.ts', test/unit/**/*.ts]

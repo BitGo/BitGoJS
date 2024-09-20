@@ -496,7 +496,7 @@ export interface IBaseCoin {
   explainTransaction(options: Record<string, any>): Promise<ITransactionExplanation<any, string | number> | undefined>;
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
   verifyAddress(params: VerifyAddressOptions): Promise<boolean>;
-  isWalletAddress(params: VerifyAddressOptions): Promise<boolean>;
+  isWalletAddress(params: VerifyAddressOptions, wallet?: IWallet): Promise<boolean>;
   canonicalAddress(address: string, format: unknown): string;
   supportsBlockTarget(): boolean;
   supportsLightning(): boolean;
