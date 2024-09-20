@@ -1280,7 +1280,7 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
           txPrebuild: params.txPrebuild,
           pubs: params.pubs,
           derivationSeed: params.derivationSeed,
-          signingSteps: params.signingStep,
+          signingStep: params.signingStep,
         }),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
