@@ -133,10 +133,10 @@ export class Wallet implements IWallet {
   private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | undefined;
   private readonly _permissions?: string[];
 
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: Partial<WalletData>) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
-    this._wallet = walletData;
+    this._wallet = walletData as WalletData;
     const userId = _.get(bitgo, '_user.id');
     if (_.isString(userId)) {
       const userDetails = _.find(walletData.users, { user: userId });
