@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.5.0...@bitgo/sdk-core@28.6.0) (2024-09-19)
+
+### Features
+
+- **sdk-coin-sui:** recover tokens ([218b1af](https://github.com/BitGo/BitGoJS/commit/218b1af7b100930976171dfc601b600f847877a0))
+
 # [28.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.4.0...@bitgo/sdk-core@28.5.0) (2024-09-16)
 
 ### Bug Fixes

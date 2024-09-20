@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.6.4...@bitgo/sdk-coin-sui@5.7.0) (2024-09-19)
+
+### Features
+
+- **sdk-coin-sui:** recover tokens ([218b1af](https://github.com/BitGo/BitGoJS/commit/218b1af7b100930976171dfc601b600f847877a0))
+
 ## [5.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.6.3...@bitgo/sdk-coin-sui@5.6.4) (2024-09-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui
