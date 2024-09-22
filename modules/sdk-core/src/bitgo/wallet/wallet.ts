@@ -1483,12 +1483,15 @@ export class Wallet implements IWallet {
    * @returns {Promise<CreateBulkWalletShareListResponse>} A promise that resolves with the response of the bulk wallet share creation.
    */
   async createBulkWalletShare(params: BulkWalletShareOptions): Promise<CreateBulkWalletShareListResponse> {
-    if (!params.keyShareOptions || Object.keys(params.keyShareOptions).length === 0) {
-      throw new Error('shareOptions cannot be empty');
-    }
+    // if (!params.keyShareOptions || Object.keys(params.keyShareOptions).length === 0) {
+    //   throw new Error('shareOptions cannot be empty');
+    // }
+    console.log('Break1');
+    console.log(params);
     const bulkCreateShareOptions: BulkCreateShareOption[] = [];
-
+    console.log('Shareoptions');
     for (const shareOption of params.keyShareOptions) {
+      console.log(shareOption);
       common.validateParams(shareOption, ['userId', 'pubKey', 'path'], []);
 
       const needsKeychain = shareOption.permissions && shareOption.permissions.includes('spend');
@@ -1536,6 +1539,8 @@ export class Wallet implements IWallet {
         }
         const keychain = Object.keys(sharedKeychain ?? {}).length === 0 ? undefined : sharedKeychain;
         if (keychain) {
+          console.log('Break2');
+          console.log('UID', shareOption.userId);
           bulkCreateShareOptions.push({
             user: shareOption.userId,
             permissions: shareOption.permissions,
@@ -1560,6 +1565,7 @@ export class Wallet implements IWallet {
    * @throws {Error} Throws an error if no valid share options are provided.
    */
   async createBulkKeyShares(params: BulkCreateShareOption[] = []): Promise<CreateBulkWalletShareListResponse> {
+    console.log('createBulkKeyShares', params);
     params = params.filter((shareOption) => {
       try {
         common.validateParams(shareOption.keychain, ['pub', 'encryptedPrv', 'fromPubKey', 'toPubKey', 'path'], []);
@@ -1569,11 +1575,12 @@ export class Wallet implements IWallet {
         return false;
       }
     });
+    console.log('Break3', params);
 
     if (!params || Object.keys(params).length === 0) {
       throw new Error('shareOptions cannot be empty');
     }
-
+    console.log('Break4');
     const url = this.bitgo.url(`/wallet/${this._wallet.id}/walletshares`, 2);
     return this.bitgo.post(url).send({ shareOptions: params }).result();
   }
