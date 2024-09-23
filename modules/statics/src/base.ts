@@ -1446,7 +1446,7 @@ export enum UnderlyingAsset {
   BGERCH = 'bgerch',
   TERM = 'term',
   TGBP = 'tgbp',
-  TGOUSD = 'tgousd',
+  TUSDS = 'tusds',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
