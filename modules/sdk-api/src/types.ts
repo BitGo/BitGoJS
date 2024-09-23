@@ -104,6 +104,22 @@ export interface AuthenticateOptions {
   forReset2FA?: boolean;
 }
 
+export interface AuthenticateWithPasskeyData {
+  authenticatorData: string,
+  signature: string,
+  clientDataJSON: string,
+  userHandle?: string
+}
+
+export interface AuthenticateWithPasskeyOptions {
+  username: string,
+  credId: string,
+  response: AuthenticateWithPasskeyData,
+  otp?: string,
+  extensible?: boolean;
+  forReset2FA?: boolean;
+}
+
 export interface ProcessedAuthenticationOptions {
   email: string;
   password: string;
@@ -113,6 +129,16 @@ export interface ProcessedAuthenticationOptions {
   extensible?: boolean;
   extensionAddress?: string;
   forceV1Auth?: boolean;
+  forReset2FA?: boolean;
+}
+
+export interface ProcessedAuthenticationPasskeyOptions {
+  username: string,
+  credId: string,
+  response: AuthenticateWithPasskeyData,
+  otp?: string,
+  extensible?: boolean;
+  extensionAddress?: boolean;
   forReset2FA?: boolean;
 }
 

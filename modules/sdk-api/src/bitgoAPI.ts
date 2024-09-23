@@ -47,6 +47,7 @@ import {
   AddAccessTokenOptions,
   AddAccessTokenResponse,
   AuthenticateOptions,
+  AuthenticateWithPasskeyOptions,
   AuthenticateWithAuthCodeOptions,
   BitGoAPIOptions,
   BitGoJson,
@@ -64,6 +65,7 @@ import {
   LoginResponse,
   PingOptions,
   ProcessedAuthenticationOptions,
+  ProcessedAuthenticationPasskeyOptions,
   ReconstitutedSecret,
   ReconstituteSecretOptions,
   RegisterPushTokenOptions,
@@ -427,16 +429,16 @@ export class BitGoAPI implements BitGoBase {
        */
       const newOnFulfilled = onfulfilled
         ? (response: superagent.Response) => {
-            // HMAC verification is only allowed to be skipped in certain environments.
-            // This is checked in the constructor, but checking it again at request time
-            // will help prevent against tampering of this property after the object is created
-            if (!this._hmacVerification && !common.Environments[this.getEnv()].hmacVerificationEnforced) {
-              return onfulfilled(response);
-            }
-
-            const verifiedResponse = verifyResponse(this, this._token, method, req, response);
-            return onfulfilled(verifiedResponse);
+          // HMAC verification is only allowed to be skipped in certain environments.
+          // This is checked in the constructor, but checking it again at request time
+          // will help prevent against tampering of this property after the object is created
+          if (!this._hmacVerification && !common.Environments[this.getEnv()].hmacVerificationEnforced) {
+            return onfulfilled(response);
           }
+
+          const verifiedResponse = verifyResponse(this, this._token, method, req, response);
+          return onfulfilled(verifiedResponse);
+        }
         : null;
       return originalThen(newOnFulfilled).catch(onrejected);
     };
@@ -773,6 +775,58 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Process auth passkey options into an object for bitgo authentication.
+   */
+  preprocessAuthenticationPasskeyParams(params: AuthenticateWithPasskeyOptions): ProcessedAuthenticationPasskeyOptions {
+    if (!_.isString(params.username)) {
+      throw new Error('expected string username');
+    }
+
+    if (!_.isString(params.credId)) {
+      throw new Error('expected string credId');
+    }
+
+    if (!_.isObject(params.response)) {
+      throw new Error('required object params.response');
+    }
+
+    if (!_.isString(params.response.authenticatorData)) {
+      throw new Error('required object params.response.authenticatorData');
+    }
+
+    if (!_.isString(params.response.signature)) {
+      throw new Error('required object params.response.signature');
+    }
+
+    if (!_.isString(params.response.clientDataJSON)) {
+      throw new Error('required object params.response.clientDataJSON');
+    }
+
+    const processedParams: ProcessedAuthenticationPasskeyOptions = {
+      username: params.username,
+      credId: params.credId,
+      response: params.response,
+    }
+
+    if (params.otp) {
+      processedParams.otp = params.otp;
+    }
+
+    if (params.extensible) {
+      this._extensionKey = makeRandomKey();
+      processedParams.extensible = true;
+      processedParams.extensionAddress = getAddressP2PKH(this._extensionKey);
+    }
+
+    if (params.forReset2FA) {
+      processedParams.forReset2FA = true;
+    }
+
+    return params;
+  }
+
+
+  /**
    * Synchronous method for activating an access token.
    */
   authenticateWithAccessToken({ accessToken }: AccessTokenOptions): void {
@@ -914,6 +968,51 @@ export class BitGoAPI implements BitGoBase {
       handleResponseError(e);
     }
   }
+
+  /**
+   * Login to the bitgo platform with passkey.
+   */
+  async authenticateWithPasskey(params: AuthenticateWithPasskeyOptions): Promise<LoginResponse | any> {
+    try {
+      if (!_.isObject(params)) {
+        throw new Error('required object params');
+      }
+
+      if (this._token) {
+        return new Error('already logged in');
+      }
+
+      const authUrl = this.microservicesUrl('/api/auth/v1/session');
+      const authParams = this.preprocessAuthenticationPasskeyParams(params);
+      const request = this.post(authUrl);
+
+      const response: superagent.Response = await request.send(authParams);
+      // extract body and user information
+      const body = response.body;
+      this._user = body.user;
+
+      if (body.access_token) {
+        this._token = body.access_token;
+      } else {
+        //TODO: Issue token
+
+        // const responseDetails = this.handleTokenIssuance(response.body, password);
+        // this._token = responseDetails.token;
+        // this._ecdhXprv = responseDetails.ecdhXprv;
+
+        // // verify the response's authenticity
+        // verifyResponse(this, responseDetails.token, 'post', request, response);
+
+        // // add the remaining component for easier access
+        // response.body.access_token = this._token;
+      }
+
+      return handleResponseResult<LoginResponse>()(response);
+    } catch (e) {
+      handleResponseError(e);
+    }
+  }
+
 
   /**
    *
