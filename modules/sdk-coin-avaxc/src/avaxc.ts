@@ -6,14 +6,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
-import {
-  AvalancheNetwork,
-  BaseCoin as StaticsBaseCoin,
-  CoinFamily,
-  coins,
-  ethGasConfigs,
-  BaseNetwork,
-} from '@bitgo/statics';
+import { AvalancheNetwork, BaseCoin as StaticsBaseCoin, CoinFamily, coins, ethGasConfigs } from '@bitgo/statics';
 import {
   BaseCoin,
   BaseTransaction,
@@ -33,10 +26,12 @@ import {
   VerifyAddressOptions,
 } from '@bitgo/sdk-core';
 import {
+  AbstractEthLikeNewCoins,
   GetSendMethodArgsOptions,
   optionalDeps,
   RecoverOptions,
   RecoveryInfo,
+  OfflineVaultTxInfo as EthLikeOfflineVaultTxInfo,
   SendMethodArgs,
   TransactionBuilder as EthTransactionBuilder,
   TransactionPrebuild,
@@ -47,7 +42,6 @@ import request from 'superagent';
 import { BN, pubToAddress } from 'ethereumjs-util';
 import { Buffer } from 'buffer';
 import {
-  AvaxSignTransactionOptions,
   BuildOptions,
   ExplainTransactionOptions,
   FeeEstimate,
@@ -57,13 +51,12 @@ import {
   OfflineVaultTxInfo,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
-  SignedTransaction,
   SignFinalOptions,
   VerifyAvaxcTransactionOptions,
 } from './iface';
 import { AvaxpLib } from '@bitgo/sdk-coin-avaxp';
 
-export class AvaxC extends BaseCoin {
+export class AvaxC extends AbstractEthLikeNewCoins {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -88,14 +81,6 @@ export class AvaxC extends BaseCoin {
 
   getChain(): string {
     return this._staticsCoin.name;
-  }
-
-  /**
-   * Method to return the coin's network object
-   * @returns {BaseNetwork}
-   */
-  getNetwork(): BaseNetwork {
-    return this._staticsCoin.network;
   }
 
   /**
@@ -544,7 +529,7 @@ export class AvaxC extends BaseCoin {
    * @param {string} params.recoveryDestination - target address to send recovered funds to
    * @returns {Promise<RecoveryInfo>} - recovery tx info
    */
-  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo | EthLikeOfflineVaultTxInfo> {
     if (_.isUndefined(params.userKey)) {
       throw new Error('missing userKey');
     }
@@ -576,6 +561,10 @@ export class AvaxC extends BaseCoin {
 
     if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
+    }
+
+    if (params.bitgoFeeAddress) {
+      return this.recoverEthLikeforEvmBasedRecovery(params);
     }
 
     // TODO (BG-56531): add support for krs
@@ -987,37 +976,6 @@ export class AvaxC extends BaseCoin {
   }
 
   /**
-   * Assemble half-sign prebuilt transaction
-   * @param params
-   */
-  async signTransaction(params: AvaxSignTransactionOptions): Promise<SignedTransaction> {
-    // Normally the SDK provides the first signature for an AVAXC tx,
-    // but for unsigned sweep recoveries it can provide the second and final one.
-    if (params.isLastSignature) {
-      // In this case when we're doing the second (final) signature, the logic is different.
-      return await this.signFinal(params as unknown as SignFinalOptions);
-    }
-
-    const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
-    txBuilder.from(params.txPrebuild.txHex);
-    txBuilder.transfer().key(new AvaxcKeyPair({ prv: params.prv }).getKeys().prv!);
-    const transaction = await txBuilder.build();
-
-    const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
-
-    const txParams = {
-      eip1559: params.txPrebuild.eip1559,
-      txHex: transaction.toBroadcastFormat(),
-      recipients: recipients,
-      expireTime: params.txPrebuild.expireTime,
-      hopTransaction: params.txPrebuild.hopTransaction,
-      custodianTransactionId: params.custodianTransactionId,
-    };
-
-    return { halfSigned: txParams };
-  }
-
-  /**
    * Modify prebuild before sending it to the server. Add things like hop transaction params
    * @param buildParams The whitelisted parameters for this prebuild
    * @param buildParams.hop True if this should prebuild a hop tx, else false
@@ -1115,16 +1073,6 @@ export class AvaxC extends BaseCoin {
     }
 
     return await this.bitgo.get(this.url('/tx/fee')).query(query).result();
-  }
-
-  /**
-   * Gets the hop digest for the user to sign. This is validated in the HSM to prove that the user requested this tx
-   * @param paramsArr The parameters to hash together for the digest
-   */
-  static getHopDigest(paramsArr: string[]): Buffer {
-    const hash = Keccak('keccak256');
-    hash.update([AvaxC.hopTransactionSalt, ...paramsArr].join('$'));
-    return hash.digest();
   }
 
   /**

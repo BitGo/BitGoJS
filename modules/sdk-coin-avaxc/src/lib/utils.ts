@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { AvaxERC20Token, BaseCoin, BaseNetwork, NetworkType, coins } from '@bitgo/statics';
+import { AvaxERC20Token, BaseCoin, BaseNetwork, NetworkType, coins, EthereumNetwork } from '@bitgo/statics';
 import { isValidAddress, isValidPrivate, isValidPublic } from 'ethereumjs-util';
 import EthereumCommon from '@ethereumjs/common';
 import { Utils, KeyPair, TxData } from '@bitgo/sdk-coin-eth';
@@ -76,11 +76,14 @@ export function isValidEthPublicKey(publicKey: string): boolean {
   return isValidPublic(publicKeyBuffer);
 }
 
-export function getToken(tokenContractAddress: string, network: BaseNetwork): Readonly<BaseCoin> | undefined {
+export function getToken(
+  tokenContractAddress: string,
+  network: BaseNetwork | EthereumNetwork | undefined
+): Readonly<BaseCoin> | undefined {
   const tokens = coins.filter((coin) => {
     if (coin instanceof AvaxERC20Token) {
       return (
-        coin.network.type === network.type && coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase()
+        coin.network.type === network?.type && coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase()
       );
     }
     return false;
