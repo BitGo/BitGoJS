@@ -11,4 +11,4 @@ address: mziT9FmaG3XjV7tbaGYekqvBcVDvGnY3EZ
 │   ├── type: pubkeyhash
 │   ├── hex: 76a914d2970bfc64117e397dc5cb7a9afe9f8b22dca1f188ac
 │   └── asm: OP_DUP OP_HASH160 d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 OP_EQUALVERIFY OP_CHECKSIG
-└── network: testnet, bitcoinPublicSignet, bitcoinBitGoSignet, bitcoincashTestnet, bitcoingoldTestnet, bitcoinsvTestnet, ecashTest, litecoinTest
+└── network: testnet, bitcoinPublicSignet, bitcoinTestnet4, bitcoinBitGoSignet, bitcoincashTestnet, bitcoingoldTestnet, bitcoinsvTestnet, ecashTest, litecoinTest

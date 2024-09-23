@@ -18,6 +18,7 @@ function toPrettyJSON(v: unknown): string {
 
 export async function readFixture<T>(path: string, defaultValue: T): Promise<T> {
   path = path.replace('bitcoinBitGoSignet', 'bitcoinPublicSignet');
+  path = path.replace('bitcoinTestnet4', 'bitcoinPublicSignet');
 
   try {
     await fs.access(mpath.dirname(path));
