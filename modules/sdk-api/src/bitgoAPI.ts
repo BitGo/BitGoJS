@@ -429,16 +429,16 @@ export class BitGoAPI implements BitGoBase {
        */
       const newOnFulfilled = onfulfilled
         ? (response: superagent.Response) => {
-          // HMAC verification is only allowed to be skipped in certain environments.
-          // This is checked in the constructor, but checking it again at request time
-          // will help prevent against tampering of this property after the object is created
-          if (!this._hmacVerification && !common.Environments[this.getEnv()].hmacVerificationEnforced) {
-            return onfulfilled(response);
-          }
+            // HMAC verification is only allowed to be skipped in certain environments.
+            // This is checked in the constructor, but checking it again at request time
+            // will help prevent against tampering of this property after the object is created
+            if (!this._hmacVerification && !common.Environments[this.getEnv()].hmacVerificationEnforced) {
+              return onfulfilled(response);
+            }
 
-          const verifiedResponse = verifyResponse(this, this._token, method, req, response);
-          return onfulfilled(verifiedResponse);
-        }
+            const verifiedResponse = verifyResponse(this, this._token, method, req, response);
+            return onfulfilled(verifiedResponse);
+          }
         : null;
       return originalThen(newOnFulfilled).catch(onrejected);
     };
@@ -791,22 +791,22 @@ export class BitGoAPI implements BitGoBase {
     }
 
     if (!_.isString(params.response.authenticatorData)) {
-      throw new Error('required object params.response.authenticatorData');
+      throw new Error('required string params.response.authenticatorData');
     }
 
     if (!_.isString(params.response.signature)) {
-      throw new Error('required object params.response.signature');
+      throw new Error('required string params.response.signature');
     }
 
     if (!_.isString(params.response.clientDataJSON)) {
-      throw new Error('required object params.response.clientDataJSON');
+      throw new Error('required string params.response.clientDataJSON');
     }
 
     const processedParams: ProcessedAuthenticationPasskeyOptions = {
       username: params.username,
       credId: params.credId,
       response: params.response,
-    }
+    };
 
     if (params.otp) {
       processedParams.otp = params.otp;
@@ -991,20 +991,11 @@ export class BitGoAPI implements BitGoBase {
       const body = response.body;
       this._user = body.user;
 
+      //Expecting unencrypted access token in response for now
       if (body.access_token) {
         this._token = body.access_token;
       } else {
-        //TODO: Issue token
-
-        // const responseDetails = this.handleTokenIssuance(response.body, password);
-        // this._token = responseDetails.token;
-        // this._ecdhXprv = responseDetails.ecdhXprv;
-
-        // // verify the response's authenticity
-        // verifyResponse(this, responseDetails.token, 'post', request, response);
-
-        // // add the remaining component for easier access
-        // response.body.access_token = this._token;
+        throw new Error("failed to create access token");
       }
 
       return handleResponseResult<LoginResponse>()(response);

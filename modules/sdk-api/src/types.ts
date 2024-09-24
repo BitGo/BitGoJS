@@ -138,7 +138,7 @@ export interface ProcessedAuthenticationPasskeyOptions {
   response: AuthenticateWithPasskeyData,
   otp?: string,
   extensible?: boolean;
-  extensionAddress?: boolean;
+  extensionAddress?: string;
   forReset2FA?: boolean;
 }
 
