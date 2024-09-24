@@ -26,6 +26,7 @@ import {
 } from '@bitgo/sdk-core';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import { signPsbtRequest } from './signPsbt';
 
 const TransactionBuilder = require('./transactionBuilder');
 const PendingApproval = require('./pendingapproval');
@@ -896,6 +897,15 @@ Wallet.prototype.createTransaction = function (params, callback) {
 //   callback(err, transaction)
 Wallet.prototype.signTransaction = function (params, callback) {
   params = _.extend({}, params);
+
+  if (params.psbt) {
+    try {
+      return callback(null, signPsbtRequest(params));
+    } catch (e) {
+      return callback(e);
+    }
+  }
+
   common.validateParams(params, ['transactionHex'], [], callback);
 
   if (!Array.isArray(params.unspents)) {
