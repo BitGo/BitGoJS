@@ -54,6 +54,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       signer,
       cosigner,
       inscriptionConstraints,
+      txFormat,
     }: {
       signer: utxolib.bitgo.KeyName;
       cosigner: utxolib.bitgo.KeyName;
@@ -62,6 +63,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
         minInscriptionOutput?: bigint;
         maxInscriptionOutput?: bigint;
       };
+      txFormat?: 'psbt' | 'legacy';
     },
     rootWalletKeys: RootWalletKeys,
     outputs: InscriptionOutputs,
@@ -112,7 +114,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     }
     return {
       walletId: this.wallet.id(),
-      txHex: psbt.getUnsignedTx().toHex(),
+      txHex: txFormat === 'psbt' ? psbt.toHex() : psbt.getUnsignedTx().toHex(),
       txInfo: { unspents: allUnspents },
       feeInfo: { fee: Number(outputLayout.layout.feeOutput), feeString: outputLayout.layout.feeOutput.toString() },
     };
@@ -139,6 +141,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       cosigner = 'bitgo',
       inscriptionConstraints = DefaultInscriptionConstraints,
       changeAddressType = 'p2wsh',
+      txFormat = 'psbt',
     }: {
       signer?: utxolib.bitgo.KeyName;
       cosigner?: utxolib.bitgo.KeyName;
@@ -148,6 +151,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
         maxInscriptionOutput?: bigint;
       };
       changeAddressType?: utxolib.bitgo.outputScripts.ScriptType2Of3;
+      txFormat?: 'psbt' | 'legacy';
     }
   ): Promise<PrebuildTransactionResult> {
     assert(isSatPoint(satPoint));
@@ -174,7 +178,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
         return await this.prepareTransferWithExtraInputs(
           satPoint,
           feeRateSatKB,
-          { signer, cosigner, inscriptionConstraints },
+          { signer, cosigner, inscriptionConstraints, txFormat },
           rootWalletKeys,
           outputs,
           unspents,
