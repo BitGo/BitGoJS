@@ -96,6 +96,7 @@ import {
   CreateBulkWalletShareListResponse,
   SharedKeyChain,
   BulkWalletShareKeychain,
+  ManageUnspentReservationOptions,
 } from './iWallet';
 import { StakingWallet } from '../staking';
 import { Lightning } from '../lightning/custodial';
@@ -738,6 +739,34 @@ export class Wallet implements IWallet {
     );
 
     return Array.isArray(buildResponse) ? response : response[0];
+  }
+
+  /**
+   * Manage the unspent reservations on the wallet
+   *
+   * @param params.create - create a new reservation
+   * @param params.modify - modify an existing reservation
+   * @param params.delete - delete an existing reservation
+   */
+  async manageUnspentReservations(
+    params: ManageUnspentReservationOptions
+  ): Promise<{ unspents: { id: string; walletId: string; expireTime: string; userId?: string }[] }> {
+    const filteredParams = _.pick(params, ['create', 'modify', 'delete']);
+    this.bitgo.setRequestTracer(new RequestTracer());
+    // The URL cannot contain the coinName, so we remove it from the URL
+    const url = this.url(`/reservedunspents`).replace(`/${this.baseCoin.getChain()}`, '');
+    if (filteredParams.create) {
+      const filteredCreateParams = _.pick(params.create, ['unspentIds', 'expireTime']);
+      return this.bitgo.post(url).send(filteredCreateParams).result();
+    } else if (filteredParams.modify) {
+      const filteredModifyParams = _.pick(params.modify, ['unspentIds', 'changes']);
+      return this.bitgo.put(url).send(filteredModifyParams).result();
+    } else if (filteredParams.delete) {
+      const filteredDeleteParams = _.pick(params.delete, ['id']);
+      return this.bitgo.del(url).query(filteredDeleteParams).result();
+    } else {
+      throw new Error('Did not detect a creation, modification, or deletion request.');
+    }
   }
 
   /**
