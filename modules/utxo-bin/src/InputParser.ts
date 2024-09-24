@@ -137,6 +137,10 @@ export class InputParser extends Parser {
       return [this.node('type', 'placeholder (0)')];
     }
 
+    if (buf.length === 0) {
+      return [this.node('type', 'placeholder (empty Buffer)')];
+    }
+
     const nodes = [this.node('bytes', buf)];
     if (signerIndex !== undefined) {
       nodes.push(this.node('valid', 0 <= signerIndex));
@@ -182,13 +186,17 @@ export class InputParser extends Parser {
     const nodes = signedByLabels ? [this.node('signed by', `[${signedByLabels.join(', ')}]`)] : [];
     if (this.params.parseSignatureData.ecdsa || this.params.parseSignatureData.schnorr) {
       nodes.push(
-        ...parsed.signatures.map((s: Buffer | 0, i: number) =>
-          this.node(
-            i,
-            undefined,
-            this.parseSignatureBuffer(parsed.scriptType, s, signerIndex ? signerIndex[i] : undefined)
-          )
-        )
+        ...parsed.signatures.map((s: Buffer | 0, i: number) => {
+          try {
+            return this.node(
+              i,
+              undefined,
+              this.parseSignatureBuffer(parsed.scriptType, s, signerIndex ? signerIndex[i] : undefined)
+            );
+          } catch (e) {
+            return this.node(i, undefined, [this.node('buf', s), this.handleParseError(e)]);
+          }
+        })
       );
     }
     return nodes;
@@ -210,13 +218,17 @@ export class InputParser extends Parser {
           this.chainInfo.prevOutputs,
           parsed.publicKeys
         );
-        nodes.push(
-          ...this.parseSignaturesWithSigners(
-            parsed,
-            signedBy.flatMap((v, i) => (v ? [i.toString()] : [])),
-            parsed.signatures.map((k: Buffer | 0) => (k === 0 ? -1 : signedBy.indexOf(k)))
-          )
-        );
+        try {
+          nodes.push(
+            ...this.parseSignaturesWithSigners(
+              parsed,
+              signedBy.flatMap((v, i) => (v ? [i.toString()] : [])),
+              parsed.signatures.map((k: Buffer | 0) => (k === 0 ? -1 : signedBy.indexOf(k)))
+            )
+          );
+        } catch (e) {
+          nodes.push(this.node('parseSignaturesWithSigners', undefined, [this.handleParseError(e)]));
+        }
       }
       if (this.tx instanceof utxolib.bitgo.UtxoPsbt) {
         let signedByLabels: string[] | undefined;
@@ -271,7 +283,7 @@ export class InputParser extends Parser {
     try {
       return this.parseSigScriptWithType(parseSignatureScript(this.tx, this.inputIndex, this.tx.network));
     } catch (e) {
-      return this.handleParseError(e);
+      return this.node('sigScript', undefined, [this.handleParseError(e)]);
     }
   }
 
