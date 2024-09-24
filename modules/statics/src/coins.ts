@@ -2014,6 +2014,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ANA
   ),
   erc20(
+    'a8ffb3b2-c53f-4579-ac54-74b6511e334f',
+    'anc',
+    'Anchor Protocol',
+    18,
+    '0x0f3adc247e91c3c50bc08721355a41037e89bc20',
+    UnderlyingAsset.ANC
+  ),
+  erc20(
     '06a93c2a-c7d2-4a7d-b07d-4ac0414be6eb',
     'ankreth',
     'Ankr Staked ETH',
@@ -2436,6 +2444,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd2d6158683aee4cc838067727209a0aaf4359de3',
     UnderlyingAsset.BNTY
+  ),
+  erc20(
+    'f2e76bc9-b1e6-45ac-9779-26fe217edb2e',
+    'bob',
+    'Bob',
+    18,
+    '0x7d8146cf21e8d7cbe46054e01588207b51198729',
+    UnderlyingAsset.BOB
   ),
   erc20(
     'aa42023c-f2b8-4717-adec-9e8e8322a6c7',
@@ -3129,6 +3145,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.DEC
   ),
   erc20(
+    '4d749bdf-3d28-42f4-b348-447564be1d1c',
+    'dego',
+    'Dego Finance',
+    18,
+    '0x3da932456d082cba208feb0b096d49b202bf89c8',
+    UnderlyingAsset.DEGO
+  ),
+  erc20(
     '97281c81-79a9-4d6f-a9d9-a0665c683792',
     'dent',
     'Dent',
@@ -3151,6 +3175,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x725440512cb7b78bf56b334e50e31707418231cb',
     UnderlyingAsset.DEXA
+  ),
+  erc20(
+    '0d67fc72-9f97-4ddd-8c45-75745411c9ab',
+    'dexe',
+    'DeXe',
+    18,
+    '0xde4ee8057785a7e8e800db58f9784845a5c2cbd6',
+    UnderlyingAsset.DEXE
   ),
   erc20(
     '13e14a91-cdff-435d-b6a9-7bbf0b79e51c',
@@ -9140,12 +9172,28 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.COLLAR
   ),
   erc20(
+    'd09bb715-35f0-4df5-a92e-2201263568d0',
+    'combo',
+    'Combo',
+    18,
+    '0xffffffff2ba8f66d4e51811c5190992176930278',
+    UnderlyingAsset.COMBO
+  ),
+  erc20(
     'e015ea18-e731-4148-adc1-ab9443459c82',
     'core',
     'cVault.finance',
     18,
     '0x62359ed7505efc61ff1d56fef82158ccaffa23d7',
     UnderlyingAsset.CORE
+  ),
+  erc20(
+    '2352b468-b85b-4c09-b0b6-8f27e0e8b789',
+    'cos',
+    'Contentos',
+    18,
+    '0x589891a198195061cb8ad1a75357a3b7dbadd7bc',
+    UnderlyingAsset.COS
   ),
   erc20(
     '6645f7fc-34a3-4ea2-8931-de96f69b5e01',
@@ -9314,6 +9362,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x5bc25f649fc4e26069ddf4cf4010f9f706c23831',
     UnderlyingAsset.DUSD
+  ),
+  erc20(
+    '51750f69-0e78-4954-996c-bd9da846f759',
+    'dusk',
+    'Dusk Network',
+    18,
+    '0x940a2db1b7008b6c776d4faaca729d6d4a4aa551',
+    UnderlyingAsset.DUSK
   ),
   erc20(
     'd657ed48-ccc5-4cc8-ad36-4a3b331a139b',
@@ -11845,6 +11901,14 @@ export const coins = CoinMap.fromCoins([
     9,
     '0x7f792db54b0e580cdc755178443f0430cf799aca',
     UnderlyingAsset['bsc:volt']
+  ),
+  bscToken(
+    '9a32dfd0-343f-4890-98e0-767a87090203',
+    'bsc:city',
+    'Manchester City Fan Token',
+    2,
+    '0x4e7e8579a9edc6283011be942537baf9284bebe1',
+    UnderlyingAsset['bsc:city']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
