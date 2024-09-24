@@ -9,16 +9,27 @@ describe('HBAR util library', function () {
   describe('address', function () {
     it('should validate addresses', function () {
       const validAddresses = ['0', '0.0.0', '99.99.99', '0.0.41098'];
+      const validAddressesWithMemo = ['0.0.41098?memoId=4'];
 
       for (const address of validAddresses) {
+        Utils.isValidAddress(address).should.be.true();
+      }
+
+      for (const address of validAddressesWithMemo) {
         Utils.isValidAddress(address).should.be.true();
       }
     });
 
     it('should fail to validate invalid addresses', function () {
       const invalidAddresses = ['0.0', '0.0.0.0', 'abc', 'a.b.c', '', '0x23C3E227BE97281A70A549c7dDB8d5Caad3E7C84'];
+      const invalidAddressesWithMemo = ['0.0.41098?memoId=m?memoId=4'];
 
       for (const address of invalidAddresses) {
+        should.doesNotThrow(() => Utils.isValidAddress(address));
+        Utils.isValidAddress(address).should.be.false();
+      }
+
+      for (const address of invalidAddressesWithMemo) {
         should.doesNotThrow(() => Utils.isValidAddress(address));
         Utils.isValidAddress(address).should.be.false();
       }
