@@ -297,6 +297,22 @@ export interface UnspentsOptions extends PaginationOptions {
   chains?: number[];
 }
 
+export interface ManageUnspentReservationOptions {
+  create?: {
+    unspentIds: string[];
+    expireTime: string;
+  };
+  modify?: {
+    unspentIds: string[];
+    changes: {
+      expireTime: string;
+    };
+  };
+  delete?: {
+    id: string;
+  };
+}
+
 export interface ConsolidateUnspentsOptions extends WalletSignTransactionOptions {
   walletPassphrase?: string;
   xprv?: string;

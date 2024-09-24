@@ -157,4 +157,47 @@ describe('Verify string type is used for value of unspent', function () {
       buildScope.done();
     });
   });
+
+  describe('Unspent Reservations', function () {
+    after(nock.cleanAll);
+
+    it('should only pass through the whitelisted properties', async function () {
+      const unspentIds = ['test-test'];
+      const expireTime = 'boogie';
+
+      // Create
+      const createScope = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.id()}/reservedunspents`, { unspentIds, expireTime })
+        .reply(200, {});
+      await wallet.manageUnspentReservations({
+        create: { unspentIds, expireTime, dontIncludeThis: 'this' } as unknown as {
+          unspentIds: string[];
+          expireTime: string;
+        },
+      });
+
+      // Modify
+      const modifyScope = nock(bgUrl)
+        .put(`/api/v2/wallet/${wallet.id()}/reservedunspents`, { unspentIds, changes: { expireTime } })
+        .reply(200, {});
+      await wallet.manageUnspentReservations({
+        modify: { unspentIds, changes: { expireTime }, dontIncludeThis: 'this' } as unknown as {
+          unspentIds: string[];
+          changes: { expireTime: string };
+        },
+      });
+
+      // Delete
+      const deleteScope = nock(bgUrl)
+        .delete(`/api/v2/wallet/${wallet.id()}/reservedunspents?id=test-test`)
+        .reply(200, {});
+      await wallet.manageUnspentReservations({
+        delete: { id: unspentIds[0], dontIncludeThis: 'this' } as unknown as { id: string },
+      });
+
+      createScope.done();
+      modifyScope.done();
+      deleteScope.done();
+    });
+  });
 });
