@@ -3514,6 +3514,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ERD
   ),
   erc20(
+    'a5bd0bb2-d226-4974-b4fe-e086a8e28ae8',
+    'ese',
+    'Eesee',
+    18,
+    '0x908ddb096bfb3acb19e2280aad858186ea4935c4',
+    UnderlyingAsset.ESE
+  ),
+  erc20(
     'ff3bb4e9-66d4-4bb1-9df4-875d5d787e4a',
     'emaid',
     'MaidSafeCoin',
@@ -3834,6 +3842,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.FIRE
   ),
   erc20(
+    '3953a61e-05ec-4424-aaf0-69003bd10a7b',
+    'flux',
+    'Flux',
+    8,
+    '0x720cd16b011b987da3518fbf38c3071d4f0d1495',
+    UnderlyingAsset.FLUX
+  ),
+  erc20(
     'a872494f-02d8-4cbc-87fa-8956413a5d4f',
     'fly',
     'FlyCoin',
@@ -3848,6 +3864,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc',
     UnderlyingAsset.FMF
+  ),
+  erc20(
+    '55f7bcc9-89db-42fc-a726-dc7233ae8388',
+    'for',
+    'ForTube',
+    18,
+    '0x1fcdce58959f536621d76f5b7ffb955baa5a672f',
+    UnderlyingAsset.FOR
   ),
   erc20(
     'ef679437-3512-4cdf-8454-dfbed7ec1b50',
@@ -11909,6 +11933,14 @@ export const coins = CoinMap.fromCoins([
     2,
     '0x4e7e8579a9edc6283011be942537baf9284bebe1',
     UnderlyingAsset['bsc:city']
+  ),
+  bscToken(
+    '290801fc-fc48-4b5d-b5e7-abbc2101de13',
+    'bsc:firo',
+    'Firo',
+    8,
+    '0xd5d0322b6bab6a762c79f8c81a0b674778e13aed',
+    UnderlyingAsset['bsc:firo']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
