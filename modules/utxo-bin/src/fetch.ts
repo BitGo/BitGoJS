@@ -1,8 +1,13 @@
+import * as fs from 'fs';
+import * as process from 'process';
+
 import * as utxolib from '@bitgo/utxo-lib';
 import * as blockapis from '@bitgo/blockapis';
+import { BaseHttpClient, CachingHttpClient, getTransactionIdsAtHeight, HttpClient } from '@bitgo/blockapis';
 import { coins, UtxoCoin } from '@bitgo/statics';
-import { getTransactionIdsAtHeight, HttpClient } from '@bitgo/blockapis';
+
 import { ParserTx } from './ParserTx';
+import { promisify } from 'util';
 
 function getTxOutPoints(tx: ParserTx): utxolib.bitgo.TxOutPoint[] {
   if (tx instanceof utxolib.bitgo.UtxoTransaction) {
@@ -113,4 +118,14 @@ export async function fetchOutputSpends(
     console.error(`error fetching spends for tx ${tx.getId()}: ${e}`);
     return [];
   }
+}
+
+export async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
+  if (cache) {
+    const mkdir = promisify(fs.mkdir);
+    const dir = `${process.env.HOME}/.cache/utxo-bin/`;
+    await mkdir(dir, { recursive: true });
+    return new CachingHttpClient(dir);
+  }
+  return new BaseHttpClient();
 }
