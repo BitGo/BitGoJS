@@ -62,11 +62,12 @@ import {
   VerifyAvaxcTransactionOptions,
 } from './iface';
 import { AvaxpLib } from '@bitgo/sdk-coin-avaxp';
+import { EthLikeAvaxc } from './EthLikeAvaxc';
 
 export class AvaxC extends BaseCoin {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
-
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  private ethLikeAvaxc: any;
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
@@ -74,8 +75,8 @@ export class AvaxC extends BaseCoin {
     if (!staticsCoin) {
       throw new Error('missing required constructor parameter staticsCoin');
     }
-
     this._staticsCoin = staticsCoin;
+    this.ethLikeAvaxc = EthLikeAvaxc.createInstance(bitgo, staticsCoin);
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
@@ -577,6 +578,9 @@ export class AvaxC extends BaseCoin {
     if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
+
+    // COIN-1708 : Recover method to be invoked from WRW
+    if (params.bitgoFeeAddress) return this.ethLikeAvaxc.recover(params);
 
     // TODO (BG-56531): add support for krs
     const isUnsignedSweep = getIsUnsignedSweep(params);
