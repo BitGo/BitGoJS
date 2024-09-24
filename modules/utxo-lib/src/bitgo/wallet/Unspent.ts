@@ -238,7 +238,7 @@ export function addReplayProtectionUnspentToPsbt(
 export function updateWalletUnspentForPsbt(
   psbt: UtxoPsbt,
   inputIndex: number,
-  u: WalletUnspent<bigint>,
+  u: Omit<WalletUnspent<bigint>, 'address'>,
   rootWalletKeys: RootWalletKeys,
   signer: KeyName,
   cosigner: KeyName,

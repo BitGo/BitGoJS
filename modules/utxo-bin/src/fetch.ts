@@ -1,8 +1,13 @@
+import * as fs from 'fs';
+import * as process from 'process';
+
 import * as utxolib from '@bitgo/utxo-lib';
 import * as blockapis from '@bitgo/blockapis';
+import { BaseHttpClient, CachingHttpClient, getTransactionIdsAtHeight, HttpClient } from '@bitgo/blockapis';
 import { coins, UtxoCoin } from '@bitgo/statics';
-import { getTransactionIdsAtHeight, HttpClient } from '@bitgo/blockapis';
+
 import { ParserTx } from './ParserTx';
+import { promisify } from 'util';
 
 function getTxOutPoints(tx: ParserTx): utxolib.bitgo.TxOutPoint[] {
   if (tx instanceof utxolib.bitgo.UtxoTransaction) {
@@ -89,8 +94,25 @@ export async function fetchTransactionStatus(
   return await getApi(httpClient, network).getTransactionStatus(txid);
 }
 
-export async function fetchPrevOutputs(httpClient: HttpClient, tx: ParserTx): Promise<utxolib.TxOutput<bigint>[]> {
-  return (await blockapis.fetchInputs(getTxOutPoints(tx), getApi(httpClient, tx.network), tx.network)).map((v) => ({
+export async function fetchPrevOutputs(httpClient: HttpClient, tx: ParserTx): Promise<utxolib.TxOutput<bigint>[]>;
+export async function fetchPrevOutputs(
+  httpClient: HttpClient,
+  outpoints: utxolib.bitgo.TxOutPoint[],
+  network: utxolib.Network
+): Promise<utxolib.TxOutput<bigint>[]>;
+export async function fetchPrevOutputs(
+  httpClient: HttpClient,
+  arg: utxolib.bitgo.TxOutPoint[] | ParserTx,
+  network?: utxolib.Network
+): Promise<utxolib.TxOutput<bigint>[]> {
+  if (!Array.isArray(arg)) {
+    network = arg.network;
+    arg = getTxOutPoints(arg);
+  }
+  if (!network) {
+    throw new Error('network is required');
+  }
+  return (await blockapis.fetchInputs(arg, getApi(httpClient, network), network)).map((v) => ({
     ...v,
     value: BigInt(v.value),
   }));
@@ -113,4 +135,14 @@ export async function fetchOutputSpends(
     console.error(`error fetching spends for tx ${tx.getId()}: ${e}`);
     return [];
   }
+}
+
+export async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
+  if (cache) {
+    const mkdir = promisify(fs.mkdir);
+    const dir = `${process.env.HOME}/.cache/utxo-bin/`;
+    await mkdir(dir, { recursive: true });
+    return new CachingHttpClient(dir);
+  }
+  return new BaseHttpClient();
 }
