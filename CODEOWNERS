@@ -86,6 +86,8 @@
 /modules/express/ @BitGo/wallet-platform
 /modules/key-card/ @BitGo/wallet-platform
 /modules/sdk-api/ @BitGo/custody-experience @BitGo/wallet-platform
+/modules/sdk-api/src/v1 @BitGo/btc-team
+/modules/sdk-api/test/unit/v1 @BitGo/btc-team
 /modules/sdk-core/ @BitGo/wallet-platform @BitGo/hsm @BitGo/coins
 /modules/sdk-lib-mpc/ @BitGo/wallet-platform @BitGo/hsm
 /modules/deser-lib/ @BitGo/wallet-platform @BitGo/hsm
