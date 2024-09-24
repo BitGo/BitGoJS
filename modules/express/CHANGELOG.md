@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [10.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.4.1...@bitgo/express@10.4.2) (2024-09-24)
+
+### Bug Fixes
+
+- **express:** adding missing external signer mode sig param ([6a69aef](https://github.com/BitGo/BitGoJS/commit/6a69aef6af99bacfa887e96a01df3574ec1017e2))
+- **express:** typo in express signer param name for musig2 sign ([71e5190](https://github.com/BitGo/BitGoJS/commit/71e5190e909829e87a932f27277c9c15636b37a1))
+
 ## [10.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.4.0...@bitgo/express@10.4.1) (2024-09-19)
 
 **Note:** Version bump only for package @bitgo/express
