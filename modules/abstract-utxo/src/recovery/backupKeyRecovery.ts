@@ -36,7 +36,7 @@ import { signAndVerifyPsbt } from '../sign';
 import { getMainnet, networks } from '@bitgo/utxo-lib';
 
 export interface OfflineVaultTxInfo {
-  inputs: WalletUnspent<number>[];
+  inputs: WalletUnspentJSON[];
 }
 
 export interface FormattedOfflineVaultTxInfo {
@@ -239,7 +239,7 @@ async function getRecoveryFeePerBytes(
 }
 
 export type BackupKeyRecoveryTransansaction = {
-  inputs?: WalletUnspent<number>[];
+  inputs?: WalletUnspentJSON[];
   transactionHex: string;
   coin: string;
   backupKey: string;
