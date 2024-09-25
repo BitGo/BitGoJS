@@ -8,7 +8,7 @@ const exec = promisify(childProcess.exec);
 // ex WP-1234
 const branchRegex = /([A-Z]+-)(\d+)/;
 // ex TICKET: WP-1234
-const commitRegex = /ticket:\s(\S+)/gim;
+const commitRegex = /(ticket|issue):\s(\S+)/gim;
 
 async function main() {
   const commitMsgFilepath = process.argv[2];
