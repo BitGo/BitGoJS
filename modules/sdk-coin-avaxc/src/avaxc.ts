@@ -580,7 +580,7 @@ export class AvaxC extends BaseCoin {
     }
 
     // COIN-1708 : Recover method to be invoked from WRW
-    if (params.bitgoFeeAddress) return this.ethLikeAvaxc.recover(params);
+    if (params.bitgoFeeAddress) return this.ethLikeAvaxc.recoverEthLikeforEvmBasedRecovery(params);
 
     // TODO (BG-56531): add support for krs
     const isUnsignedSweep = getIsUnsignedSweep(params);
