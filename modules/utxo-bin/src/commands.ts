@@ -141,6 +141,57 @@ export function getScriptParser(argv: ArgsParseScript): ScriptParser {
   return new ScriptParser(resolveNetwork(argv));
 }
 
+/**
+ * @param argv
+ * @param input - optional input data. If set, this function just ensures that nothing else is set.
+ * @return string from specified source
+ */
+async function argToString(
+  argv: {
+    clipboard?: boolean;
+    path?: string;
+    data?: string;
+    stdin: boolean;
+  },
+  input?: string
+): Promise<string | undefined> {
+  if (argv.stdin || argv.path === '-') {
+    if (input) {
+      throw new Error(`conflicting arguments`);
+    }
+    console.log('Reading from stdin. Please paste hex-encoded transaction data.');
+    console.log('After inserting data, press Ctrl-D to finish. Press Ctrl-C to cancel.');
+    if (process.stdin.isTTY) {
+      input = await readStdin();
+    } else {
+      input = await fs.promises.readFile('/dev/stdin', 'utf8');
+    }
+  }
+
+  if (argv.clipboard) {
+    if (input) {
+      throw new Error(`conflicting arguments`);
+    }
+    input = await clipboardy.read();
+  }
+
+  if (argv.path) {
+    if (input) {
+      throw new Error(`conflicting arguments`);
+    }
+    input = (await fs.promises.readFile(argv.path, 'utf8')).toString();
+  }
+
+  if (argv.data) {
+    if (input) {
+      throw new Error(`conflicting arguments`);
+    }
+    input = argv.data;
+  }
+
+  return input;
+}
+
 export const cmdParseTx = {
   command: 'parseTx [path]',
   aliases: ['parse', 'tx'],
@@ -215,46 +266,12 @@ export const cmdParseTx = {
       );
     }
 
-    if (argv.stdin || argv.path === '-') {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      console.log('Reading from stdin. Please paste hex-encoded transaction data.');
-      console.log('After inserting data, press Ctrl-D to finish. Press Ctrl-C to cancel.');
-      if (process.stdin.isTTY) {
-        data = await readStdin();
-      } else {
-        data = await fs.promises.readFile('/dev/stdin', 'utf8');
-      }
-    }
-
-    if (argv.clipboard) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = await clipboardy.read();
-    }
-
-    if (argv.path) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
-    }
-
-    if (argv.data) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = argv.data;
-    }
-
-    // strip whitespace
-    if (!data) {
+    const string = await argToString(argv, data);
+    if (!string) {
       throw new Error(`no txdata`);
     }
 
-    const bytes = stringToBuffer(data, ['hex', 'base64']);
+    const bytes = stringToBuffer(string, 'hex');
 
     let tx = utxolib.bitgo.isPsbt(bytes)
       ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
