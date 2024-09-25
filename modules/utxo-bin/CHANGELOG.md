@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.49.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.49.8...@bitgo/utxo-bin@2.49.9) (2024-09-24)
+
+### Bug Fixes
+
+- handle signature parsing errors more gracefully ([0e73cd5](https://github.com/BitGo/BitGoJS/commit/0e73cd589613cf2f11e84f6d1e0c0a94237726b1))
+
 ## [2.49.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.49.7...@bitgo/utxo-bin@2.49.8) (2024-09-19)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

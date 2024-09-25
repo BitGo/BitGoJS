@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.6.0...@bitgo/statics@50.0.0) (2024-09-24)
+
+### Bug Fixes
+
+- **bitgo:** remove deprecation comment ([c14de49](https://github.com/BitGo/BitGoJS/commit/c14de49d9e048162ec19b65e9621aac29b2fff6a))
+- **statics:** rename tgousd to tusds ([c1d6d84](https://github.com/BitGo/BitGoJS/commit/c1d6d840634c026167e89691978e874755058a79))
+
+### Features
+
+- **statics:** add new batch of tokens COIN-1827, COIN-1828 ([6e02248](https://github.com/BitGo/BitGoJS/commit/6e022480738fca49f68b0417ac6906205e198885))
+- **statics:** add new batch of tokens ESE,FIRO,FLUX,FOR - COIN-1829 - (Doddanna17) ([c4862a2](https://github.com/BitGo/BitGoJS/commit/c4862a288cafbc588e803aef3baafea91a878462))
+
+### BREAKING CHANGES
+
+- **statics:** Modifies the symbol of this token
+  Need to update this in indexer & wp to avoid inconsistencies
+  This is behind gatekeep, so not a breaking change for clients
+
 # [49.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.5.0...@bitgo/statics@49.6.0) (2024-09-19)
 
 ### Features

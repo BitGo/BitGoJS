@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.14.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.14.3...@bitgo/abstract-utxo@8.14.4) (2024-09-24)
+
+### Bug Fixes
+
+- **abstract-utxo:** address verification ([7d67509](https://github.com/BitGo/BitGoJS/commit/7d67509cbdbf2595d3298ea4609d6b2ed6efcada))
+
 ## [8.14.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.14.2...@bitgo/abstract-utxo@8.14.3) (2024-09-19)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.6.0...@bitgo/sdk-core@28.7.0) (2024-09-24)
+
+### Bug Fixes
+
+- **express:** adding missing external signer mode sig param ([6a69aef](https://github.com/BitGo/BitGoJS/commit/6a69aef6af99bacfa887e96a01df3574ec1017e2))
+
+### Features
+
+- **sdk-core:** add utility function for get sharing keys API ([c2234f2](https://github.com/BitGo/BitGoJS/commit/c2234f2cc7e96eaf6d03a92811ae70887829bafc))
+
 # [28.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.5.0...@bitgo/sdk-core@28.6.0) (2024-09-19)
 
 ### Features
