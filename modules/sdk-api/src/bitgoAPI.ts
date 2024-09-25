@@ -786,31 +786,25 @@ export class BitGoAPI implements BitGoBase {
       throw new Error('expected string credId');
     }
 
-    if (!_.isObject(params.response)) {
-      throw new Error('required object params.response');
+    if (!_.isString(params.authenticatorData)) {
+      throw new Error('required string authenticatorData');
     }
 
-    if (!_.isString(params.response.authenticatorData)) {
-      throw new Error('required string params.response.authenticatorData');
+    if (!_.isString(params.signature)) {
+      throw new Error('required string signature');
     }
 
-    if (!_.isString(params.response.signature)) {
-      throw new Error('required string params.response.signature');
-    }
-
-    if (!_.isString(params.response.clientDataJSON)) {
-      throw new Error('required string params.response.clientDataJSON');
+    if (!_.isString(params.clientDataJSON)) {
+      throw new Error('required string clientDataJSON');
     }
 
     const processedParams: ProcessedAuthenticationPasskeyOptions = {
       username: params.username,
       credId: params.credId,
-      response: params.response,
+      authenticatorData: params.authenticatorData,
+      signature: params.signature,
+      clientDataJSON: params.clientDataJSON,
     };
-
-    if (params.otp) {
-      processedParams.otp = params.otp;
-    }
 
     if (params.extensible) {
       this._extensionKey = makeRandomKey();
@@ -824,7 +818,6 @@ export class BitGoAPI implements BitGoBase {
 
     return params;
   }
-
 
   /**
    * Synchronous method for activating an access token.
@@ -991,11 +984,11 @@ export class BitGoAPI implements BitGoBase {
       const body = response.body;
       this._user = body.user;
 
-      //Expecting unencrypted access token in response for now
+      // Expecting unencrypted access token in response for now
       if (body.access_token) {
         this._token = body.access_token;
       } else {
-        throw new Error("failed to create access token");
+        throw new Error('failed to create access token');
       }
 
       return handleResponseResult<LoginResponse>()(response);
@@ -1003,7 +996,6 @@ export class BitGoAPI implements BitGoBase {
       handleResponseError(e);
     }
   }
-
 
   /**
    *

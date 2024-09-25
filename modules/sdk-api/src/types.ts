@@ -104,18 +104,12 @@ export interface AuthenticateOptions {
   forReset2FA?: boolean;
 }
 
-export interface AuthenticateWithPasskeyData {
-  authenticatorData: string,
-  signature: string,
-  clientDataJSON: string,
-  userHandle?: string
-}
-
 export interface AuthenticateWithPasskeyOptions {
-  username: string,
-  credId: string,
-  response: AuthenticateWithPasskeyData,
-  otp?: string,
+  username: string;
+  credId: string;
+  authenticatorData: string;
+  signature: string;
+  clientDataJSON: string;
   extensible?: boolean;
   forReset2FA?: boolean;
 }
@@ -133,10 +127,11 @@ export interface ProcessedAuthenticationOptions {
 }
 
 export interface ProcessedAuthenticationPasskeyOptions {
-  username: string,
-  credId: string,
-  response: AuthenticateWithPasskeyData,
-  otp?: string,
+  username: string;
+  credId: string;
+  authenticatorData: string;
+  signature: string;
+  clientDataJSON: string;
   extensible?: boolean;
   extensionAddress?: string;
   forReset2FA?: boolean;
