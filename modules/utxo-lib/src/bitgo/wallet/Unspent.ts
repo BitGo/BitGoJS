@@ -47,8 +47,6 @@ export const MAX_BIP125_RBF_SEQUENCE = 0xffffffff - 2;
 export interface WalletUnspent<TNumber extends number | bigint = number> extends Unspent<TNumber> {
   chain: ChainCode;
   index: number;
-  witnessScript?: string;
-  valueString?: string;
 }
 
 export interface NonWitnessWalletUnspent<TNumber extends number | bigint = number>
