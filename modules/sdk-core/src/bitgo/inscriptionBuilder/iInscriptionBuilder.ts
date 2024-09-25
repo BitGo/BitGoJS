@@ -56,6 +56,7 @@ export interface IInscriptionBuilder {
       cosigner,
       inscriptionConstraints,
       changeAddressType,
+      txFormat,
     }: {
       signer: utxolib.bitgo.KeyName;
       cosigner: utxolib.bitgo.KeyName;
@@ -65,6 +66,7 @@ export interface IInscriptionBuilder {
         maxInscriptionOutput?: bigint;
       };
       changeAddressType: utxolib.bitgo.outputScripts.ScriptType2Of3;
+      txFormat?: 'psbt' | 'legacy';
     }
   ): Promise<PrebuildTransactionResult>;
 
