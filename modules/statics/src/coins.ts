@@ -2606,6 +2606,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BPT
   ),
   erc20(
+    '985807cc-6c4e-4d1e-83c5-b65d559d9ae5',
+    'bNVDA',
+    'Backed NVIDIA Corp',
+    18,
+    '0xa34c5e0abe843e10461e2c9586ea03e55dbcc495',
+    UnderlyingAsset.BNVDA
+  ),
+  erc20(
     '44fefbae-d835-4fb2-931a-22167f9f4894',
     'bxx',
     'Baanx',
