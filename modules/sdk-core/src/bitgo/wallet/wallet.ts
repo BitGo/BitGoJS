@@ -12,6 +12,7 @@ import {
   SignedTransaction,
   SignedTransactionRequest,
   TransactionPrebuild,
+  UrlOptions,
   VerifyAddressOptions,
 } from '../baseCoin';
 import { makeRandomKey } from '../bitcoin';
@@ -166,9 +167,10 @@ export class Wallet implements IWallet {
   /**
    * Build a URL using this wallet's id which can be used for BitGo API operations
    * @param extra API specific string to append to the wallet id
+   * @param options Options on how to build the URL
    */
-  url(extra = ''): string {
-    return this.baseCoin.url('/wallet/' + this.id() + extra);
+  url(extra = '', options?: UrlOptions): string {
+    return this.baseCoin.url('wallet/' + this.id() + extra, options);
   }
 
   /**
@@ -753,8 +755,7 @@ export class Wallet implements IWallet {
   ): Promise<{ unspents: { id: string; walletId: string; expireTime: string; userId?: string }[] }> {
     const filteredParams = _.pick(params, ['create', 'modify', 'delete']);
     this.bitgo.setRequestTracer(new RequestTracer());
-    // The URL cannot contain the coinName, so we remove it from the URL
-    const url = this.url(`/reservedunspents`).replace(`/${this.baseCoin.getChain()}`, '');
+    const url = this.url(`/reservedunspents`, { removeChain: true });
     if (filteredParams.create) {
       const filteredCreateParams = _.pick(params.create, ['unspentIds', 'expireTime']);
       return this.bitgo.post(url).send(filteredCreateParams).result();

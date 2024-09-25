@@ -8,6 +8,7 @@ import {
   VerificationOptions,
   TypedData,
   NFTTransferOptions,
+  UrlOptions,
 } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain, KeychainWithEncryptedPrv } from '../keychain';
@@ -770,7 +771,7 @@ export type SendNFTResult = {
 export interface IWallet {
   bitgo: BitGoBase;
   baseCoin: IBaseCoin;
-  url(extra?: string): string;
+  url(extra?: string, options?: UrlOptions): string;
   id(): string;
   approvalsRequired(): number;
   balance(): number;

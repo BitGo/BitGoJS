@@ -458,11 +458,15 @@ export interface BaseBroadcastTransactionResult {
   txIds?: string[];
 }
 
+export interface UrlOptions {
+  removeChain?: boolean;
+}
+
 export interface IBaseCoin {
   type: string;
   tokenConfig?: BaseTokenConfig;
   getConfig(): Readonly<StaticsBaseCoin>;
-  url(suffix: string): string;
+  url(suffix: string, options?: UrlOptions): string;
   wallets(): IWallets;
   enterprises(): IEnterprises;
   keychains(): IKeychains;

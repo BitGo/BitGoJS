@@ -42,6 +42,7 @@ import {
   BuildNftTransferDataOptions,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
+  UrlOptions,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
@@ -70,8 +71,14 @@ export abstract class BaseCoin implements IBaseCoin {
     this._markets = new Markets(this.bitgo, this);
   }
 
-  public url(suffix: string): string {
-    return this._url + this.getChain() + suffix;
+  /**
+   *
+   * @param suffix Path for the specific URL
+   * @param options Additional options for building the URL
+   * @param options.removeChain If true, the chain will not be added into the URL
+   */
+  public url(suffix: string, options?: UrlOptions): string {
+    return `${this._url}${options?.removeChain ? '' : `${this.getChain()}/`}${suffix}`;
   }
 
   public wallets(): Wallets {
