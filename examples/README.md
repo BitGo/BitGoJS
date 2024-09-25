@@ -41,15 +41,6 @@ In this directory, you can find examples on how to use the BitGoJS SDK with Type
 - [Enable Token](./ts/algo/enable-token.ts)
 - [Transaction with emergency param](./ts/algo/transaction-with-emergency-param.ts)
 
-### Bitcoin Lightning (BTC)
-
-- [Check Lightning Balance](./ts/btc/check-lightning-balance.ts)
-- [Create Lightning Invoice](./ts/btc/create-lightning-invoice.ts)
-- [Withdraw Lightning Balance](./ts/btc/withdraw-lightning-balance.ts)
-- [Make Lightning Deposit](./ts/btc/make-lightning-deposit.ts)
-- [Make Lightning Payment](./ts/btc/make-lightning-payment.ts)
-- [Pay LNURL Request](./ts/btc/pay-lnurl-request.ts)
-
 ### Ethereum (ETH)
 
 - [Create Wallet Address](./ts/eth/create-wallet-address.ts)
