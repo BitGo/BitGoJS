@@ -20,11 +20,19 @@ const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
  * @returns {boolean} - The validation result
  */
 export function isValidAddress(address: string): boolean {
-  if (_.isEmpty(address) || !address.match(/^\d+(?:(?=\.)(\.\d+){2}|(?!\.))$/)) {
+  const addressArray = address.split('?memoId=');
+
+  if (
+    _.isEmpty(address) ||
+    ![1, 2].includes(addressArray.length) ||
+    !addressArray[0].match(/^\d+(?:(?=\.)(\.\d+){2}|(?!\.))$/) ||
+    (addressArray[1] && !isValidMemo(addressArray[1]))
+  ) {
     return false;
   }
+
   try {
-    const acc = AccountId.fromString(address);
+    const acc = AccountId.fromString(addressArray[0]);
     return !_.isNaN(acc.num);
   } catch (e) {
     return false;
