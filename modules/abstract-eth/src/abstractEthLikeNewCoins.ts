@@ -2236,7 +2236,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {string[]} paramsArr - The parameters to hash together for the digest
    * @returns {Buffer}
    */
-  private static getHopDigest(paramsArr: string[]): Buffer {
+  static getHopDigest(paramsArr: string[]): Buffer {
     const hash = Keccak('keccak256');
     hash.update([AbstractEthLikeNewCoins.hopTransactionSalt, ...paramsArr].join('$'));
     return hash.digest();
