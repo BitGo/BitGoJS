@@ -1,9 +1,5 @@
 /* eslint-disable no-console */
 import * as yargs from 'yargs';
-import * as fs from 'fs';
-import * as process from 'process';
-
-import clipboardy from 'clipboardy-cjs';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { Parser, ParserNode } from './Parser';
@@ -18,11 +14,10 @@ import {
 } from './fetch';
 import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
-import { readStdin } from './readStdin';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
-import { stringToBuffer } from './parseString';
+import { argToString, stringToBuffer } from './parseString';
 import {
   formatAddressTree,
   formatAddressWithFormatString,
@@ -139,57 +134,6 @@ export function getAddressParser(argv: ArgsParseAddress): AddressParser {
 
 export function getScriptParser(argv: ArgsParseScript): ScriptParser {
   return new ScriptParser(resolveNetwork(argv));
-}
-
-/**
- * @param argv
- * @param input - optional input data. If set, this function just ensures that nothing else is set.
- * @return string from specified source
- */
-async function argToString(
-  argv: {
-    clipboard?: boolean;
-    path?: string;
-    data?: string;
-    stdin: boolean;
-  },
-  input?: string
-): Promise<string | undefined> {
-  if (argv.stdin || argv.path === '-') {
-    if (input) {
-      throw new Error(`conflicting arguments`);
-    }
-    console.log('Reading from stdin. Please paste hex-encoded transaction data.');
-    console.log('After inserting data, press Ctrl-D to finish. Press Ctrl-C to cancel.');
-    if (process.stdin.isTTY) {
-      input = await readStdin();
-    } else {
-      input = await fs.promises.readFile('/dev/stdin', 'utf8');
-    }
-  }
-
-  if (argv.clipboard) {
-    if (input) {
-      throw new Error(`conflicting arguments`);
-    }
-    input = await clipboardy.read();
-  }
-
-  if (argv.path) {
-    if (input) {
-      throw new Error(`conflicting arguments`);
-    }
-    input = (await fs.promises.readFile(argv.path, 'utf8')).toString();
-  }
-
-  if (argv.data) {
-    if (input) {
-      throw new Error(`conflicting arguments`);
-    }
-    input = argv.data;
-  }
-
-  return input;
 }
 
 export const cmdParseTx = {
