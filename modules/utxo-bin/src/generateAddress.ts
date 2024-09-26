@@ -3,6 +3,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { Parser } from './Parser';
 import { parseUnknown } from './parseUnknown';
 import { formatTree } from './format';
+import { KeyOptions, getRootWalletKeys } from './args';
 
 function getDefaultChainCodes(): number[] {
   return utxolib.bitgo.chainCodes.filter(
@@ -108,25 +109,15 @@ export function parseIndexRange(ranges: string[]): number[] {
   });
 }
 
-export function* generateAddress(argv: {
-  network?: utxolib.Network;
-  userKey: string;
-  userKeyPrefix?: string;
-  backupKey: string;
-  backupKeyPrefix?: string;
-  bitgoKey: string;
-  bitgoKeyPrefix?: string;
-  chain?: number[];
-  format: string;
-  index: number[];
-}): Generator<AddressProperties> {
-  const xpubs = [argv.userKey, argv.backupKey, argv.bitgoKey].map((k) => utxolib.bip32.fromBase58(k));
-  assert(utxolib.bitgo.isTriple(xpubs));
-  const rootXpubs = new utxolib.bitgo.RootWalletKeys(xpubs, [
-    argv.userKeyPrefix ?? utxolib.bitgo.RootWalletKeys.defaultPrefix,
-    argv.backupKeyPrefix ?? utxolib.bitgo.RootWalletKeys.defaultPrefix,
-    argv.bitgoKeyPrefix ?? utxolib.bitgo.RootWalletKeys.defaultPrefix,
-  ]);
+export function* generateAddress(
+  argv: KeyOptions & {
+    network?: utxolib.Network;
+    chain?: number[];
+    format: string;
+    index: number[];
+  }
+): Generator<AddressProperties> {
+  const rootXpubs = getRootWalletKeys(argv);
   const chains = argv.chain ?? getDefaultChainCodes();
   for (const i of argv.index) {
     for (const chain of chains) {

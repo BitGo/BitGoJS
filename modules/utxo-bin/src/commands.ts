@@ -1,10 +1,5 @@
 /* eslint-disable no-console */
 import * as yargs from 'yargs';
-import * as fs from 'fs';
-import * as process from 'process';
-import { promisify } from 'util';
-
-import clipboardy from 'clipboardy-cjs';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { Parser, ParserNode } from './Parser';
@@ -15,15 +10,23 @@ import {
   fetchPrevOutputSpends,
   fetchTransactionHex,
   fetchTransactionStatus,
+  getClient,
 } from './fetch';
 import { TxParser, TxParserArgs } from './TxParser';
 import { AddressParser } from './AddressParser';
-import { BaseHttpClient, CachingHttpClient, HttpClient } from '@bitgo/blockapis';
-import { readStdin } from './readStdin';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
-import { stringToBuffer } from './parseString';
+import {
+  argToString,
+  stringToBuffer,
+  readStringOptions,
+  ReadStringOptions,
+  KeyOptions,
+  keyOptions,
+  getNetworkOptions,
+  getNetworkOptionsDemand,
+} from './args';
 import {
   formatAddressTree,
   formatAddressWithFormatString,
@@ -36,15 +39,11 @@ import { parseXpub } from './bip32';
 
 type OutputFormat = 'tree' | 'json';
 
-type ArgsParseTransaction = {
-  network: string;
-  stdin: boolean;
-  clipboard: boolean;
-  path?: string;
+type ArgsParseTransaction = ReadStringOptions & {
+  network: utxolib.Network;
   txid?: string;
   blockHeight?: number;
   txIndex?: number;
-  data?: string;
   all: boolean;
   cache: boolean;
   format: OutputFormat;
@@ -59,7 +58,7 @@ type ArgsParseTransaction = {
 } & Omit<TxParserArgs, 'parseSignatureData'>;
 
 type ArgsParseAddress = {
-  network?: string;
+  network?: utxolib.Network;
   all: boolean;
   format: OutputFormat;
   convert: boolean;
@@ -67,44 +66,19 @@ type ArgsParseAddress = {
 };
 
 type ArgsParseScript = {
-  network?: string;
+  network?: utxolib.Network;
   format: OutputFormat;
   all: boolean;
   script: string;
 };
 
-export type ArgsGenerateAddress = {
-  network?: string;
-  userKey: string;
-  backupKey: string;
-  bitgoKey: string;
+export type ArgsGenerateAddress = KeyOptions & {
+  network: utxolib.Network;
   chain?: number[];
   format: string;
   index?: string[];
   limit?: number;
 };
-
-async function getClient({ cache }: { cache: boolean }): Promise<HttpClient> {
-  if (cache) {
-    const mkdir = promisify(fs.mkdir);
-    const dir = `${process.env.HOME}/.cache/utxo-bin/`;
-    await mkdir(dir, { recursive: true });
-    return new CachingHttpClient(dir);
-  }
-  return new BaseHttpClient();
-}
-
-function getNetworkForName(name: string) {
-  const network = utxolib.networks[name as utxolib.NetworkName];
-  if (!network) {
-    throw new Error(`invalid network ${name}`);
-  }
-  return network;
-}
-
-function getNetwork(argv: yargs.Arguments<{ network: string }>): utxolib.Network {
-  return getNetworkForName(argv.network);
-}
 
 type FormatStringArgs = {
   format: OutputFormat;
@@ -119,17 +93,6 @@ function formatString(parsed: ParserNode, argv: yargs.Arguments<FormatStringArgs
       return formatTree(parsed, { hide: argv.all ? [] : undefined });
   }
   throw new Error(`invalid format ${argv.format}`);
-}
-
-function resolveNetwork<T extends { network?: string }>(
-  args: T
-): T & {
-  network?: utxolib.Network;
-} {
-  if (args.network) {
-    return { ...args, network: getNetworkForName(args.network) };
-  }
-  return { ...args, network: undefined };
 }
 
 export function getTxParser(argv: yargs.Arguments<ArgsParseTransaction>): TxParser {
@@ -147,11 +110,11 @@ export function getTxParser(argv: yargs.Arguments<ArgsParseTransaction>): TxPars
 }
 
 export function getAddressParser(argv: ArgsParseAddress): AddressParser {
-  return new AddressParser(resolveNetwork(argv));
+  return new AddressParser(argv);
 }
 
 export function getScriptParser(argv: ArgsParseScript): ScriptParser {
-  return new ScriptParser(resolveNetwork(argv));
+  return new ScriptParser(argv);
 }
 
 export const cmdParseTx = {
@@ -165,10 +128,8 @@ export const cmdParseTx = {
 
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseTransaction> {
     return b
-      .option('path', { type: 'string', nargs: 1, default: '' })
-      .option('stdin', { type: 'boolean', default: false })
-      .option('data', { type: 'string', description: 'transaction bytes (hex or base64)', alias: 'hex' })
-      .option('clipboard', { type: 'boolean', default: false })
+      .options(readStringOptions)
+      .options(getNetworkOptionsDemand())
       .option('txid', { type: 'string' })
       .option('blockHeight', { type: 'number' })
       .option('txIndex', { type: 'number' })
@@ -176,7 +137,6 @@ export const cmdParseTx = {
       .option('fetchStatus', { type: 'boolean', default: false })
       .option('fetchInputs', { type: 'boolean', default: false })
       .option('fetchSpends', { type: 'boolean', default: false })
-      .option('network', { alias: 'n', type: 'string', demandOption: true })
       .option('parseScriptAsm', { alias: 'scriptasm', type: 'boolean', default: false })
       .option('parseScriptData', { alias: 'scriptdata', type: 'boolean', default: false })
       .option('parseSignatureData', { alias: 'sigdata', type: 'boolean', default: false })
@@ -207,7 +167,6 @@ export const cmdParseTx = {
   },
 
   async handler(argv: yargs.Arguments<ArgsParseTransaction>): Promise<void> {
-    const network = getNetwork(argv);
     let data;
 
     const httpClient = await getClient({ cache: argv.cache });
@@ -220,54 +179,20 @@ export const cmdParseTx = {
           blockHeight: argv.blockHeight,
           txIndex: argv.txIndex,
         },
-        network
+        argv.network
       );
     }
 
-    if (argv.stdin || argv.path === '-') {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      console.log('Reading from stdin. Please paste hex-encoded transaction data.');
-      console.log('After inserting data, press Ctrl-D to finish. Press Ctrl-C to cancel.');
-      if (process.stdin.isTTY) {
-        data = await readStdin();
-      } else {
-        data = await fs.promises.readFile('/dev/stdin', 'utf8');
-      }
-    }
-
-    if (argv.clipboard) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = await clipboardy.read();
-    }
-
-    if (argv.path) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = (await fs.promises.readFile(argv.path, 'utf8')).toString();
-    }
-
-    if (argv.data) {
-      if (data) {
-        throw new Error(`conflicting arguments`);
-      }
-      data = argv.data;
-    }
-
-    // strip whitespace
-    if (!data) {
+    const string = await argToString(argv, data);
+    if (!string) {
       throw new Error(`no txdata`);
     }
 
-    const bytes = stringToBuffer(data, ['hex', 'base64']);
+    const bytes = stringToBuffer(string, 'hex');
 
     let tx = utxolib.bitgo.isPsbt(bytes)
-      ? utxolib.bitgo.createPsbtFromBuffer(bytes, network)
-      : utxolib.bitgo.createTransactionFromBuffer(bytes, network, { amountType: 'bigint' });
+      ? utxolib.bitgo.createPsbtFromBuffer(bytes, argv.network)
+      : utxolib.bitgo.createTransactionFromBuffer(bytes, argv.network, { amountType: 'bigint' });
 
     const { id: txid } = getParserTxProperties(tx, undefined);
     if (tx instanceof utxolib.bitgo.UtxoTransaction) {
@@ -291,7 +216,7 @@ export const cmdParseTx = {
     }
 
     const parsed = getTxParser(argv).parse(tx, {
-      status: argv.fetchStatus && txid ? await fetchTransactionStatus(httpClient, txid, network) : undefined,
+      status: argv.fetchStatus && txid ? await fetchTransactionStatus(httpClient, txid, argv.network) : undefined,
       prevOutputs: argv.fetchInputs ? await fetchPrevOutputs(httpClient, tx) : undefined,
       prevOutputSpends: argv.fetchSpends ? await fetchPrevOutputSpends(httpClient, tx) : undefined,
       outputSpends:
@@ -310,7 +235,7 @@ export const cmdParseAddress = {
   describe: 'parse address',
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseAddress> {
     return b
-      .option('network', { alias: 'n', type: 'string' })
+      .options(getNetworkOptions())
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
       .option('convert', { type: 'boolean', default: false })
       .option('all', { type: 'boolean', default: false })
@@ -328,7 +253,7 @@ export const cmdParseScript = {
   describe: 'parse script',
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseScript> {
     return b
-      .option('network', { alias: 'n', type: 'string' })
+      .options(getNetworkOptions())
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
       .option('all', { type: 'boolean', default: false })
       .positional('script', { type: 'string', demandOption: true });
@@ -345,13 +270,8 @@ export const cmdGenerateAddress = {
   describe: 'generate addresses',
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsGenerateAddress> {
     return b
-      .option('network', { alias: 'n', type: 'string' })
-      .option('userKey', { type: 'string', demandOption: true })
-      .option('userKeyPrefix', { type: 'string', default: '0/0' })
-      .option('backupKey', { type: 'string', demandOption: true })
-      .option('backupKeyPrefix', { type: 'string', default: '0/0' })
-      .option('bitgoKey', { type: 'string', demandOption: true })
-      .option('bitgoKeyPrefix', { type: 'string', default: '0/0' })
+      .options(getNetworkOptionsDemand('bitcoin'))
+      .options(keyOptions)
       .option('format', {
         type: 'string',
         default: '%p0\t%a',
@@ -382,7 +302,6 @@ export const cmdGenerateAddress = {
     for (const address of generateAddress({
       ...argv,
       index: indexRange,
-      network: getNetworkForName(argv.network ?? 'bitcoin'),
     })) {
       if (argv.format === 'tree') {
         console.log(formatAddressTree(address));
@@ -396,14 +315,26 @@ export const cmdGenerateAddress = {
 export const cmdParseXpub = {
   command: 'parseXpub [xpub]',
   describe: 'show xpub info',
-  builder(b: yargs.Argv<unknown>): yargs.Argv<{ xpub: string; derive?: string } & FormatStringArgs> {
+  builder(b: yargs.Argv<unknown>): yargs.Argv<
+    {
+      xpub: string;
+      derive?: string;
+    } & FormatStringArgs
+  > {
     return b
       .positional('xpub', { type: 'string', demandOption: true })
       .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
       .option('all', { type: 'boolean', default: false })
       .option('derive', { type: 'string', description: 'show xpub derived with path' });
   },
-  handler(argv: yargs.Arguments<{ xpub: string; derive?: string } & FormatStringArgs>): void {
+  handler(
+    argv: yargs.Arguments<
+      {
+        xpub: string;
+        derive?: string;
+      } & FormatStringArgs
+    >
+  ): void {
     console.log(formatString(parseXpub(argv.xpub, { derive: argv.derive }), argv));
   },
 };
