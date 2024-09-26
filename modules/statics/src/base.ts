@@ -287,6 +287,11 @@ export enum CoinFeature {
    * This coin supports acceleration or nonce filling txn for stuck transactions for onchain wallet
    */
   STUCK_TRANSACTION_MANAGEMENT_ONCHAIN = 'stuck-transaction-management-onchain',
+
+  /**
+   * This coin is onboarded on etheruem rollup chain
+   */
+  ETH_ROLLUP_CHAIN = 'eth-rollup-chain',
 }
 
 /**

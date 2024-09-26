@@ -1130,7 +1130,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ARBETH,
     BaseUnit.ETH,
-    ARBETH_FEATURES
+    [...ARBETH_FEATURES, CoinFeature.ETH_ROLLUP_CHAIN]
   ),
   account(
     '1d1cd251-88e1-4d0a-81a9-3e080de8757b',
@@ -1150,7 +1150,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.OPETH,
     BaseUnit.ETH,
-    OPETH_FEATURES
+    [...OPETH_FEATURES, CoinFeature.ETH_ROLLUP_CHAIN]
   ),
   account(
     '53b1e350-f907-45ec-abf7-11d132547055',
@@ -1170,7 +1170,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ZKETH,
     BaseUnit.ETH,
-    ZKETH_FEATURES
+    [...ZKETH_FEATURES, CoinFeature.ETH_ROLLUP_CHAIN]
   ),
   account(
     'ac3c225e-55a9-4236-b907-a4cccc30a2fd',
