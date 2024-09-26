@@ -17,7 +17,7 @@ import { AddressParser } from './AddressParser';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
-import { argToString, stringToBuffer } from './parseString';
+import { readStringOptions, argToString, stringToBuffer } from './parseString';
 import {
   formatAddressTree,
   formatAddressWithFormatString,
@@ -147,14 +147,7 @@ export const cmdParseTx = {
 
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseTransaction> {
     return b
-      .option('path', { type: 'string', nargs: 1, default: '' })
-      .option('stdin', { type: 'boolean', default: false })
-      .option('data', {
-        type: 'string',
-        description: 'transaction bytes (hex or base64)',
-        alias: 'hex',
-      })
-      .option('clipboard', { type: 'boolean', default: false })
+      .options(readStringOptions)
       .option('txid', { type: 'string' })
       .option('blockHeight', { type: 'number' })
       .option('txIndex', { type: 'number' })
