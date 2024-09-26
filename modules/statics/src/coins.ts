@@ -11084,6 +11084,38 @@ export const coins = CoinMap.fromCoins([
     '0xe5c5ae39b98efd9d3c9e0f2a5457d98ffa4b0b46',
     UnderlyingAsset['ZRO-0xE5C']
   ),
+  erc20(
+    'd5c9b134-1b24-4f0b-b93e-079b79ee90ef',
+    'auction',
+    'Bounce Token',
+    18,
+    '0xa9b1eb5908cfc3cdf91f9b8b3a74108598009096',
+    UnderlyingAsset.AUCTION
+  ),
+  erc20(
+    '921a26e2-d8b9-43b8-84d5-ebfef8a543c9',
+    'ava',
+    'AVA',
+    18,
+    '0xa6c0c097741d55ecd9a3a7def3a8253fd022ceb9',
+    UnderlyingAsset.AVA
+  ),
+  erc20(
+    '33d10d7a-1495-4e64-b724-88f34e93c383',
+    'beta',
+    'Beta Token',
+    18,
+    '0xbe1a001fe942f96eea22ba08783140b9dcc09d28',
+    UnderlyingAsset.BETA
+  ),
+  erc20(
+    '4cd37e4b-bb0f-449f-84d7-7c6dd4031dc3',
+    'bigtime',
+    'Big Time',
+    18,
+    '0x64bc2ca1be492be7185faa2c8835d9b824c8a194',
+    UnderlyingAsset.BIGTIME
+  ),
 
   // End FTX missing ERC20 tokens
   celoToken(
@@ -11101,6 +11133,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x2b9018ceb303d540bbf08de8e7de64fddd63396c',
     UnderlyingAsset['celo:pact']
+  ),
+  bscToken(
+    '05d6b52a-21cb-4170-946f-8e7933d8562a',
+    'bsc:bnx',
+    'BinaryX',
+    18,
+    '0x5b1f874d0b0c5ee17a495cbb70ab8bf64107a3bd',
+    UnderlyingAsset['bsc:bnx']
+  ),
+  bscToken(
+    '36cc97a4-250f-4762-8f4a-648bd20e6949',
+    'bsc:bake',
+    'BakeryToken',
+    18,
+    '0xe02df9e3e622debdd69fb838bb799e3f168902c5',
+    UnderlyingAsset['bsc:bake']
   ),
   bscToken(
     '9ea65fe0-f7e2-44a5-abec-ef663e74a883',
