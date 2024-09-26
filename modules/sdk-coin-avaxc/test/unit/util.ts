@@ -7,7 +7,7 @@ import { isValidEthAddress, isValidEthPrivateKey, isValidEthPublicKey, sign, get
 import { getBuilder } from './getBuilder';
 import { TransactionType } from '@bitgo/sdk-core';
 import { KeyPair, TransactionBuilder } from '../../src';
-import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
+import { ETHTransactionType, TxData } from '@bitgo/abstract-eth';
 
 describe('AVAX util library', () => {
   describe('keys validations success cases', () => {

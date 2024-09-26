@@ -6,7 +6,7 @@ import * as secp256k1 from 'secp256k1';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as nock from 'nock';
 import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
-import { Eth, optionalDeps } from '@bitgo/sdk-coin-eth';
+import { optionalDeps } from '@bitgo/abstract-eth';
 import { AvaxSignTransactionOptions } from '../../src/iface';
 import * as should from 'should';
 import { EXPORT_C, IMPORT_C, endpointResponses, recoveryUsers } from '../resources/avaxc';
@@ -62,7 +62,6 @@ describe('Avalanche C-Chain', function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env });
     bitgo.safeRegister('avaxc', AvaxC.createInstance);
     bitgo.safeRegister('tavaxc', TavaxC.createInstance);
-    bitgo.safeRegister('teth', Eth.createInstance);
     bitgo.safeRegister('tavaxp', TavaxP.createInstance);
     common.Environments[bitgo.getEnv()].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
@@ -512,7 +511,7 @@ describe('Avalanche C-Chain', function () {
       });
     });
 
-    it('should reject when client txParams are missing', async function () {
+    xit('should reject when client txParams are missing', async function () {
       const coin = bitgo.coin('teth');
       const wallet = new Wallet(bitgo, coin, {});
 

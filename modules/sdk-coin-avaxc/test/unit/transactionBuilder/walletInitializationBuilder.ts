@@ -3,7 +3,7 @@ import should from 'should';
 
 import { TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../resources/avaxc';
-import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
+import { ETHTransactionType, TxData } from '@bitgo/abstract-eth';
 import { getBuilder } from '../getBuilder';
 import { TransactionBuilder } from '../../../src';
 

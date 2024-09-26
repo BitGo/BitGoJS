@@ -2,7 +2,7 @@ import assert from 'assert';
 import should from 'should';
 
 import { TransactionBuilder } from '../../../src';
-import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
+import { ETHTransactionType, TxData } from '@bitgo/abstract-eth';
 import * as testData from '../../resources/avaxc';
 import { TransactionType } from '@bitgo/sdk-core';
 import { getBuilder } from '../getBuilder';

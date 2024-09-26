@@ -1,4 +1,4 @@
-import { TransferBuilder as EthTransferBuilder } from '@bitgo/sdk-coin-eth';
+import { TransferBuilder as EthTransferBuilder } from '@bitgo/abstract-eth';
 
 /** AVAXC transfer builder */
 export class TransferBuilder extends EthTransferBuilder {
