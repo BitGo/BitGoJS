@@ -39,6 +39,7 @@ export type NetworkName =
   | 'bitcoin'
   | 'testnet'
   | 'bitcoinPublicSignet'
+  | 'bitcoinTestnet4'
   | 'bitcoinBitGoSignet'
   | 'bitcoincash'
   | 'bitcoincashTestnet'
@@ -133,7 +134,21 @@ export const networks: Record<NetworkName, Network> = {
     coin: coins.BTC,
   },
   /**
-   * Same as above, except only BitGo can mine blocks
+   * Proof-of-work testnet for BTC that replaces the deprecated Testnet3
+   * Address encoding is the same as for testnet3
+   * Source for constants: https://github.com/bitcoin/bitcoin/blob/v28.0rc2/src/kernel/chainparams.cpp#L372-L374
+   */
+  bitcoinTestnet4: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bech32: 'tb',
+    bip32: getDefaultBip32Testnet(),
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
+    wif: 0xef,
+    coin: coins.BTC,
+  },
+  /**
+   * Same as public signet, except only BitGo can mine blocks
    */
   bitcoinBitGoSignet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -359,6 +374,7 @@ export function getMainnet(network: Network): Network {
     case networks.bitcoin:
     case networks.testnet:
     case networks.bitcoinPublicSignet:
+    case networks.bitcoinTestnet4:
     case networks.bitcoinBitGoSignet:
       return networks.bitcoin;
 

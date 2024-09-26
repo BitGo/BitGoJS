@@ -213,6 +213,15 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     BTC_FEATURES
   ),
   utxo(
+    'f76cec3f-7aef-473d-af5d-4c47dd40dfa8',
+    'tbtc4',
+    'Testnet4 Bitcoin',
+    Networks.test.bitcoinTestnet4,
+    UnderlyingAsset.BTC,
+    BaseUnit.BTC,
+    BTC_FEATURES
+  ),
+  utxo(
     '722522dc-a613-4bff-a1d1-183ebe5138ae',
     'tbtcbgsig',
     'BitGo Signet Bitcoin',

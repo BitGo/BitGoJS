@@ -101,6 +101,7 @@ describe('networks', function () {
           ['bitcoin', true, true],
           ['testnet', true, true],
           ['bitcoinPublicSignet', true, true],
+          ['bitcoinTestnet4', true, true],
           ['bitcoinBitGoSignet', true, true],
           ['bitcoincash', false, false],
           ['bitcoincashTestnet', false, false],
@@ -170,7 +171,7 @@ describe('networks', function () {
       for (const otherName in networks) {
         const otherNetwork = networks[otherName];
 
-        const alternateBtcTestnets = ['bitcoinPublicSignet', 'bitcoinBitGoSignet'];
+        const alternateBtcTestnets = ['bitcoinPublicSignet', 'bitcoinTestnet4', 'bitcoinBitGoSignet'];
         if (
           (alternateBtcTestnets.includes(name) && otherName === 'testnet') ||
           alternateBtcTestnets.includes(otherName)

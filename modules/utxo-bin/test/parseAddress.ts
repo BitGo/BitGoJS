@@ -81,6 +81,7 @@ function testParseAddress(
       const formatted = formatTreeNoColor(parse(address, args), { showAll: true });
       const addrNoColon = address.replace(':', '_');
       const filename = [utxolib.getNetworkName(network), type, addressFormat, addrNoColon + suffix].join('_');
+      console.log(filename);
       assert.strictEqual(await getFixtureString(`test/fixtures/formatAddress/${filename}.txt`, formatted), formatted);
     });
   });
