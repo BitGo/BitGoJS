@@ -17,7 +17,7 @@ import { AddressParser } from './AddressParser';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
-import { readStringOptions, argToString, stringToBuffer } from './args';
+import { readStringOptions, argToString, stringToBuffer, getNetwork, getNetworkForName } from './args';
 import {
   formatAddressTree,
   formatAddressWithFormatString,
@@ -27,7 +27,6 @@ import {
   parseIndexRange,
 } from './generateAddress';
 import { parseXpub } from './bip32';
-import { getNetwork, getNetworkForName } from './getNetworkForName';
 
 type OutputFormat = 'tree' | 'json';
 
