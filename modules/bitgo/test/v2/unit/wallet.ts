@@ -1505,11 +1505,8 @@ describe('V2 Wallet:', function () {
         .reply(200);
 
       try {
-        console.log('try fanout');
         await wallet.fanoutUnspents({ address, unspents });
-        console.log(response);
       } catch (e) {
-        console.log(e);
         // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
         // we only care about /fanoutUnspents and whether unspents is an allowed parameter
       }
