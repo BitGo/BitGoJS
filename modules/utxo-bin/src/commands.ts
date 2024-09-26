@@ -17,7 +17,7 @@ import { AddressParser } from './AddressParser';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
-import { readStringOptions, argToString, stringToBuffer } from './parseString';
+import { argToString, stringToBuffer, readStringOptions, ReadStringOptions } from './args';
 import {
   formatAddressTree,
   formatAddressWithFormatString,
@@ -31,15 +31,11 @@ import { getNetwork, getNetworkForName } from './getNetworkForName';
 
 type OutputFormat = 'tree' | 'json';
 
-type ArgsParseTransaction = {
+type ArgsParseTransaction = ReadStringOptions & {
   network: string;
-  stdin: boolean;
-  clipboard: boolean;
-  path?: string;
   txid?: string;
   blockHeight?: number;
   txIndex?: number;
-  data?: string;
   all: boolean;
   cache: boolean;
   format: OutputFormat;

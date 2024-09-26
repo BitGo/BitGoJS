@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { stringToBuffer } from '../src/parseString';
+import { stringToBuffer } from '../../src/args/parseString';
 
 describe('stringToBuffer', function () {
   const bytes = Buffer.alloc(32, 42);

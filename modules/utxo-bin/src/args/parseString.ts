@@ -42,6 +42,13 @@ export const readStringOptions = {
   clipboard: { type: 'boolean', default: false },
 } as const;
 
+export type ReadStringOptions = {
+  clipboard?: boolean;
+  path?: string;
+  data?: string;
+  stdin: boolean;
+};
+
 /**
  * Reads from stdin until Ctrl-D is pressed.
  */
@@ -88,15 +95,7 @@ export async function readStdin(): Promise<string> {
  * @param input - optional input data. If set, this function just ensures that nothing else is set.
  * @return string from specified source
  */
-export async function argToString(
-  argv: {
-    clipboard?: boolean;
-    path?: string;
-    data?: string;
-    stdin: boolean;
-  },
-  input?: string
-): Promise<string | undefined> {
+export async function argToString(argv: ReadStringOptions, input?: string): Promise<string | undefined> {
   if (argv.stdin || argv.path === '-') {
     if (input) {
       throw new Error(`conflicting arguments`);
