@@ -44,7 +44,8 @@
   "devDependencies": {
     "@types/archy": "^0.0.32",
     "@types/yargs": "17.0.19",
-    "bip32": "^3.1.0"
+    "bip32": "^3.1.0",
+    "eslint-plugin-import": "^2.30.0"
   },
   "lint-staged": {
     "*.{js,ts}": [
