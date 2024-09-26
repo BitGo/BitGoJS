@@ -1461,9 +1461,13 @@ describe('V2 Wallet:', function () {
     });
   });
 
-  describe('maxNumInputsToUse verification', function () {
+  describe('fanout input maxNumInputsToUse and unspents verification', function () {
     const address = '5b34252f1bf349930e34020a';
     const maxNumInputsToUse = 2;
+    const unspents = [
+      'cc30565750e2aeb818625aaedaf89db5c614e5977b9645cee1d7289f616fb1d8:0',
+      '8c45164787a954ab07864af9b05b34fbde3a8e430a8c65b0e60e4e543d8e1b6c:2',
+    ];
     let basecoin;
     let wallet;
 
@@ -1488,6 +1492,22 @@ describe('V2 Wallet:', function () {
       } catch (e) {
         // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
         // we only care about /fanoutUnspents and whether maxNumInputsToUse is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    });
+
+    it('should pass unspents parameter when calling fanout unspents', async function () {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
+      const response = nock(bgUrl)
+        .post(path, _.matches({ unspents })) // use _.matches to do a partial match on request body object instead of strict matching
+        .reply(200);
+
+      try {
+        await wallet.fanoutUnspents({ address, unspents });
+      } catch (e) {
+        // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
+        // we only care about /fanoutUnspents and whether unspents is an allowed parameter
       }
 
       response.isDone().should.be.true();
