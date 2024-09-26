@@ -1500,12 +1500,16 @@ describe('V2 Wallet:', function () {
     it('should pass unspents parameter when calling fanout unspents', async function () {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
       const response = nock(bgUrl)
+        .persist()
         .post(path, _.matches({ unspents })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
 
       try {
+        console.log('try fanout');
         await wallet.fanoutUnspents({ address, unspents });
+        console.log(response);
       } catch (e) {
+        console.log(e);
         // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
         // we only care about /fanoutUnspents and whether unspents is an allowed parameter
       }
