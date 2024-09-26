@@ -3,7 +3,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { Parser } from './Parser';
 import { parseUnknown } from './parseUnknown';
 import { formatTree } from './format';
-import { KeyOptions, getRootWalletKeys } from './walletKeys';
+import { KeyOptions, getRootWalletKeys } from './args';
 
 function getDefaultChainCodes(): number[] {
   return utxolib.bitgo.chainCodes.filter(

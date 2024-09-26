@@ -5,6 +5,15 @@ export function isWalletKeyName(name: string): name is utxolib.bitgo.KeyName {
   return name === 'user' || name === 'backup' || name === 'bitgo';
 }
 
+export const keyOptions = {
+  userKey: { type: 'string', demandOption: true },
+  userKeyPrefix: { type: 'string', default: '0/0' },
+  backupKey: { type: 'string', demandOption: true },
+  backupKeyPrefix: { type: 'string', default: '0/0' },
+  bitgoKey: { type: 'string', demandOption: true },
+  bitgoKeyPrefix: { type: 'string', default: '0/0' },
+} as const;
+
 export type KeyOptions = {
   userKey: string;
   userKeyPrefix?: string;

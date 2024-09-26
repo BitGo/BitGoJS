@@ -17,7 +17,7 @@ import { AddressParser } from './AddressParser';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
-import { argToString, stringToBuffer, readStringOptions, ReadStringOptions } from './args';
+import { argToString, KeyOptions, keyOptions, readStringOptions, ReadStringOptions, stringToBuffer } from './args';
 import {
   formatAddressTree,
   formatAddressWithFormatString,
@@ -64,25 +64,13 @@ type ArgsParseScript = {
   script: string;
 };
 
-export type ArgsGenerateAddress = {
+export type ArgsGenerateAddress = KeyOptions & {
   network?: string;
-  userKey: string;
-  backupKey: string;
-  bitgoKey: string;
   chain?: number[];
   format: string;
   index?: string[];
   limit?: number;
 };
-
-const keyOptions = {
-  userKey: { type: 'string', demandOption: true },
-  userKeyPrefix: { type: 'string', default: '0/0' },
-  backupKey: { type: 'string', demandOption: true },
-  backupKeyPrefix: { type: 'string', default: '0/0' },
-  bitgoKey: { type: 'string', demandOption: true },
-  bitgoKeyPrefix: { type: 'string', default: '0/0' },
-} as const;
 
 type FormatStringArgs = {
   format: OutputFormat;
