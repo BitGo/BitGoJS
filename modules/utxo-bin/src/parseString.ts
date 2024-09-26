@@ -33,6 +33,17 @@ export function stringToBuffer(data: string, format: Format | Format[]): Buffer 
   return buf;
 }
 
+export const readStringOptions = {
+  path: { type: 'string', nargs: 1, default: '' },
+  stdin: { type: 'boolean', default: false },
+  data: {
+    type: 'string',
+    description: 'hex or base64',
+    alias: 'hex',
+  },
+  clipboard: { type: 'boolean', default: false },
+} as const;
+
 /**
  * @param argv
  * @param input - optional input data. If set, this function just ensures that nothing else is set.
