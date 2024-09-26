@@ -17,7 +17,7 @@ import { AddressParser } from './AddressParser';
 import { parseUnknown } from './parseUnknown';
 import { getParserTxProperties } from './ParserTx';
 import { ScriptParser } from './ScriptParser';
-import { readStringOptions, argToString, stringToBuffer } from './parseString';
+import { readStringOptions, argToString, stringToBuffer } from './args';
 import {
   formatAddressTree,
   formatAddressWithFormatString,
