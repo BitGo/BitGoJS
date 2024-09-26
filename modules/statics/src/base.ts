@@ -180,6 +180,10 @@ export enum CoinFeature {
    * This coin supports staking
    */
   STAKING = 'staking',
+  /*
+   * This coin supports liquid staking
+   */
+  LIQUID_STAKING = 'liquid-staking',
   /**
    * This coin is deprecated
    */
