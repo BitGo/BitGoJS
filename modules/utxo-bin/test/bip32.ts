@@ -1,6 +1,8 @@
-import { formatTreeNoColor, getFixtureString } from './fixtures';
-import { parseXpub } from '../src/bip32';
 import * as assert from 'assert';
+
+import { parseXpub } from '../src/bip32';
+
+import { formatTreeNoColor, getFixtureString } from './fixtures';
 import { getKey } from './bip32.util';
 
 function runTest(xpub: string, args: { derive?: string }) {

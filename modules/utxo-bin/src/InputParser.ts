@@ -1,8 +1,9 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { script, ScriptSignature } from 'bitcoinjs-lib';
+
 import { Parser, ParserNode } from './Parser';
 import { getParserTxInputProperties, getPrevOut, ParserTx, ParserTxInput } from './ParserTx';
 import { getHollowSpendMessage, HollowSegwitSpend, parseHollowSegwitSpend } from './hollowSegwitSpend';
-import { script, ScriptSignature } from 'bitcoinjs-lib';
 import { isHighS } from './ecdsa';
 import { ChainInfo } from './TxParser';
 import { OutputParser } from './OutputParser';

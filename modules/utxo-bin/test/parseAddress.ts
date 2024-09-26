@@ -1,8 +1,10 @@
 import * as assert from 'assert';
+
 import * as yargs from 'yargs';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { cmdParseAddress, getAddressParser } from '../src/commands';
+
 import { formatTreeNoColor, getFixtureString } from './fixtures';
 import { getKeyTriple, KeyTriple } from './bip32.util';
 

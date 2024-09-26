@@ -1,11 +1,14 @@
-import * as mocha from 'mocha';
-import * as yargs from 'yargs';
 import * as assert from 'assert';
+
+import * as yargs from 'yargs';
+import * as mocha from 'mocha';
 import * as utxolib from '@bitgo/utxo-lib';
-import { formatTreeNoColor, getFixtureString, getTransactionWithSpendType, ParsedFixture } from './fixtures';
+
 import { ParserNode } from '../src/Parser';
-import { cmdParseTx, getTxParser } from '../src/commands';
 import { ParserTx } from '../src/ParserTx';
+import { cmdParseTx, getTxParser } from '../src/commands';
+
+import { formatTreeNoColor, getFixtureString, getTransactionWithSpendType, ParsedFixture } from './fixtures';
 
 type TestParams = {
   scriptType: utxolib.bitgo.outputScripts.ScriptType2Of3;
