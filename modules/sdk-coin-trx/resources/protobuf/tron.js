@@ -1,7 +1,3 @@
-// bitgoAloe 5/12/22 - this file causes name collisions with other protobufs
-// when generated at build time. The solution is to not inherit $root from
-// $protobuf.roots["default"], and instead just assign $root to its own object.
-// https://github.com/protobufjs/protobuf.js/issues/1477
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
 'use strict';
 
@@ -13,7 +9,7 @@ var $Reader = $protobuf.Reader,
   $util = $protobuf.util;
 
 // Exported root namespace
-var $root = {};
+var $root = $protobuf.roots['default'] || ($protobuf.roots['default'] = {});
 
 $root.protocol = (function () {
   /**
@@ -134,15 +130,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.address = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.port = reader.int32();
             break;
-          case 3:
+          }
+          case 3: {
             message.nodeId = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -205,12 +204,12 @@ $root.protocol = (function () {
             (message.address = $util.newBuffer($util.base64.length(object.address))),
             0
           );
-        else if (object.address.length) message.address = object.address;
+        else if (object.address.length >= 0) message.address = object.address;
       if (object.port != null) message.port = object.port | 0;
       if (object.nodeId != null)
         if (typeof object.nodeId === 'string')
           $util.base64.decode(object.nodeId, (message.nodeId = $util.newBuffer($util.base64.length(object.nodeId))), 0);
-        else if (object.nodeId.length) message.nodeId = object.nodeId;
+        else if (object.nodeId.length >= 0) message.nodeId = object.nodeId;
       return message;
     };
 
@@ -266,6 +265,21 @@ $root.protocol = (function () {
      */
     Endpoint.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Endpoint
+     * @function getTypeUrl
+     * @memberof protocol.Endpoint
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Endpoint.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Endpoint';
     };
 
     return Endpoint;
@@ -393,18 +407,22 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.from = $root.protocol.Endpoint.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             message.to = $root.protocol.Endpoint.decode(reader, reader.uint32());
             break;
-          case 3:
+          }
+          case 3: {
             message.version = reader.int32();
             break;
-          case 4:
+          }
+          case 4: {
             message.timestamp = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -537,6 +555,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for PingMessage
+     * @function getTypeUrl
+     * @memberof protocol.PingMessage
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    PingMessage.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.PingMessage';
+    };
+
     return PingMessage;
   })();
 
@@ -651,15 +684,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.from = $root.protocol.Endpoint.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             message.echo = reader.int32();
             break;
-          case 3:
+          }
+          case 3: {
             message.timestamp = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -781,6 +817,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for PongMessage
+     * @function getTypeUrl
+     * @memberof protocol.PongMessage
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    PongMessage.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.PongMessage';
+    };
+
     return PongMessage;
   })();
 
@@ -895,15 +946,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.from = $root.protocol.Endpoint.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             message.targetId = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.timestamp = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -975,7 +1029,7 @@ $root.protocol = (function () {
             (message.targetId = $util.newBuffer($util.base64.length(object.targetId))),
             0
           );
-        else if (object.targetId.length) message.targetId = object.targetId;
+        else if (object.targetId.length >= 0) message.targetId = object.targetId;
       if (object.timestamp != null)
         if ($util.Long) (message.timestamp = $util.Long.fromValue(object.timestamp)).unsigned = false;
         else if (typeof object.timestamp === 'string') message.timestamp = parseInt(object.timestamp, 10);
@@ -1041,6 +1095,21 @@ $root.protocol = (function () {
      */
     FindNeighbours.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for FindNeighbours
+     * @function getTypeUrl
+     * @memberof protocol.FindNeighbours
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    FindNeighbours.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.FindNeighbours';
     };
 
     return FindNeighbours;
@@ -1162,16 +1231,19 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.from = $root.protocol.Endpoint.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             if (!(message.neighbours && message.neighbours.length)) message.neighbours = [];
             message.neighbours.push($root.protocol.Endpoint.decode(reader, reader.uint32()));
             break;
-          case 3:
+          }
+          case 3: {
             message.timestamp = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -1310,6 +1382,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for Neighbours
+     * @function getTypeUrl
+     * @memberof protocol.Neighbours
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Neighbours.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Neighbours';
+    };
+
     return Neighbours;
   })();
 
@@ -1413,12 +1500,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.flag = reader.bool();
             break;
-          case 2:
+          }
+          case 2: {
             message.priority = reader.int32();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -1505,6 +1594,21 @@ $root.protocol = (function () {
      */
     BackupMessage.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for BackupMessage
+     * @function getTypeUrl
+     * @memberof protocol.BackupMessage
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    BackupMessage.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.BackupMessage';
     };
 
     return BackupMessage;
@@ -1621,15 +1725,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.accountAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.type = reader.int32();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -1709,7 +1816,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.accountAddress != null)
         if (typeof object.accountAddress === 'string')
           $util.base64.decode(
@@ -1717,8 +1824,14 @@ $root.protocol = (function () {
             (message.accountAddress = $util.newBuffer($util.base64.length(object.accountAddress))),
             0
           );
-        else if (object.accountAddress.length) message.accountAddress = object.accountAddress;
+        else if (object.accountAddress.length >= 0) message.accountAddress = object.accountAddress;
       switch (object.type) {
+        default:
+          if (typeof object.type === 'number') {
+            message.type = object.type;
+            break;
+          }
+          break;
         case 'Normal':
         case 0:
           message.type = 0;
@@ -1775,7 +1888,12 @@ $root.protocol = (function () {
             ? Array.prototype.slice.call(message.accountAddress)
             : message.accountAddress;
       if (message.type != null && message.hasOwnProperty('type'))
-        object.type = options.enums === String ? $root.protocol.AccountType[message.type] : message.type;
+        object.type =
+          options.enums === String
+            ? $root.protocol.AccountType[message.type] === undefined
+              ? message.type
+              : $root.protocol.AccountType[message.type]
+            : message.type;
       return object;
     };
 
@@ -1788,6 +1906,21 @@ $root.protocol = (function () {
      */
     AccountCreateContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for AccountCreateContract
+     * @function getTypeUrl
+     * @memberof protocol.AccountCreateContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    AccountCreateContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.AccountCreateContract';
     };
 
     return AccountCreateContract;
@@ -1893,12 +2026,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.accountName = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.ownerAddress = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -1969,7 +2104,7 @@ $root.protocol = (function () {
             (message.accountName = $util.newBuffer($util.base64.length(object.accountName))),
             0
           );
-        else if (object.accountName.length) message.accountName = object.accountName;
+        else if (object.accountName.length >= 0) message.accountName = object.accountName;
       if (object.ownerAddress != null)
         if (typeof object.ownerAddress === 'string')
           $util.base64.decode(
@@ -1977,7 +2112,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       return message;
     };
 
@@ -2031,6 +2166,21 @@ $root.protocol = (function () {
      */
     AccountUpdateContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for AccountUpdateContract
+     * @function getTypeUrl
+     * @memberof protocol.AccountUpdateContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    AccountUpdateContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.AccountUpdateContract';
     };
 
     return AccountUpdateContract;
@@ -2136,12 +2286,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.accountId = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.ownerAddress = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -2207,7 +2359,7 @@ $root.protocol = (function () {
             (message.accountId = $util.newBuffer($util.base64.length(object.accountId))),
             0
           );
-        else if (object.accountId.length) message.accountId = object.accountId;
+        else if (object.accountId.length >= 0) message.accountId = object.accountId;
       if (object.ownerAddress != null)
         if (typeof object.ownerAddress === 'string')
           $util.base64.decode(
@@ -2215,7 +2367,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       return message;
     };
 
@@ -2269,6 +2421,21 @@ $root.protocol = (function () {
      */
     SetAccountIdContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for SetAccountIdContract
+     * @function getTypeUrl
+     * @memberof protocol.SetAccountIdContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    SetAccountIdContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.SetAccountIdContract';
     };
 
     return SetAccountIdContract;
@@ -2385,15 +2552,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.toAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.amount = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -2465,7 +2635,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.toAddress != null)
         if (typeof object.toAddress === 'string')
           $util.base64.decode(
@@ -2473,7 +2643,7 @@ $root.protocol = (function () {
             (message.toAddress = $util.newBuffer($util.base64.length(object.toAddress))),
             0
           );
-        else if (object.toAddress.length) message.toAddress = object.toAddress;
+        else if (object.toAddress.length >= 0) message.toAddress = object.toAddress;
       if (object.amount != null)
         if ($util.Long) (message.amount = $util.Long.fromValue(object.amount)).unsigned = false;
         else if (typeof object.amount === 'string') message.amount = parseInt(object.amount, 10);
@@ -2548,6 +2718,21 @@ $root.protocol = (function () {
      */
     TransferContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TransferContract
+     * @function getTypeUrl
+     * @memberof protocol.TransferContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TransferContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TransferContract';
     };
 
     return TransferContract;
@@ -2675,18 +2860,22 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.assetName = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.ownerAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.toAddress = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.amount = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -2761,7 +2950,7 @@ $root.protocol = (function () {
             (message.assetName = $util.newBuffer($util.base64.length(object.assetName))),
             0
           );
-        else if (object.assetName.length) message.assetName = object.assetName;
+        else if (object.assetName.length >= 0) message.assetName = object.assetName;
       if (object.ownerAddress != null)
         if (typeof object.ownerAddress === 'string')
           $util.base64.decode(
@@ -2769,7 +2958,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.toAddress != null)
         if (typeof object.toAddress === 'string')
           $util.base64.decode(
@@ -2777,7 +2966,7 @@ $root.protocol = (function () {
             (message.toAddress = $util.newBuffer($util.base64.length(object.toAddress))),
             0
           );
-        else if (object.toAddress.length) message.toAddress = object.toAddress;
+        else if (object.toAddress.length >= 0) message.toAddress = object.toAddress;
       if (object.amount != null)
         if ($util.Long) (message.amount = $util.Long.fromValue(object.amount)).unsigned = false;
         else if (typeof object.amount === 'string') message.amount = parseInt(object.amount, 10);
@@ -2864,6 +3053,21 @@ $root.protocol = (function () {
      */
     TransferAssetContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TransferAssetContract
+     * @function getTypeUrl
+     * @memberof protocol.TransferAssetContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TransferAssetContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TransferAssetContract';
     };
 
     return TransferAssetContract;
@@ -2993,19 +3197,23 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             if (!(message.voteAddress && message.voteAddress.length)) message.voteAddress = [];
             message.voteAddress.push(reader.bytes());
             break;
-          case 3:
+          }
+          case 3: {
             message.support = reader.bool();
             break;
-          case 5:
+          }
+          case 5: {
             message.count = reader.int32();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -3083,7 +3291,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.voteAddress) {
         if (!Array.isArray(object.voteAddress))
           throw TypeError('.protocol.VoteAssetContract.voteAddress: array expected');
@@ -3095,7 +3303,7 @@ $root.protocol = (function () {
               (message.voteAddress[i] = $util.newBuffer($util.base64.length(object.voteAddress[i]))),
               0
             );
-          else if (object.voteAddress[i].length) message.voteAddress[i] = object.voteAddress[i];
+          else if (object.voteAddress[i].length >= 0) message.voteAddress[i] = object.voteAddress[i];
       }
       if (object.support != null) message.support = Boolean(object.support);
       if (object.count != null) message.count = object.count | 0;
@@ -3155,6 +3363,21 @@ $root.protocol = (function () {
      */
     VoteAssetContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for VoteAssetContract
+     * @function getTypeUrl
+     * @memberof protocol.VoteAssetContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    VoteAssetContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.VoteAssetContract';
     };
 
     return VoteAssetContract;
@@ -3276,16 +3499,19 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             if (!(message.votes && message.votes.length)) message.votes = [];
             message.votes.push($root.protocol.VoteWitnessContract.Vote.decode(reader, reader.uint32()));
             break;
-          case 3:
+          }
+          case 3: {
             message.support = reader.bool();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -3357,7 +3583,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.votes) {
         if (!Array.isArray(object.votes)) throw TypeError('.protocol.VoteWitnessContract.votes: array expected');
         message.votes = [];
@@ -3417,6 +3643,21 @@ $root.protocol = (function () {
      */
     VoteWitnessContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for VoteWitnessContract
+     * @function getTypeUrl
+     * @memberof protocol.VoteWitnessContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    VoteWitnessContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.VoteWitnessContract';
     };
 
     VoteWitnessContract.Vote = (function () {
@@ -3519,12 +3760,14 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.voteAddress = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               message.voteCount = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -3593,7 +3836,7 @@ $root.protocol = (function () {
               (message.voteAddress = $util.newBuffer($util.base64.length(object.voteAddress))),
               0
             );
-          else if (object.voteAddress.length) message.voteAddress = object.voteAddress;
+          else if (object.voteAddress.length >= 0) message.voteAddress = object.voteAddress;
         if (object.voteCount != null)
           if ($util.Long) (message.voteCount = $util.Long.fromValue(object.voteCount)).unsigned = false;
           else if (typeof object.voteCount === 'string') message.voteCount = parseInt(object.voteCount, 10);
@@ -3656,6 +3899,21 @@ $root.protocol = (function () {
        */
       Vote.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for Vote
+       * @function getTypeUrl
+       * @memberof protocol.VoteWitnessContract.Vote
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      Vote.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.VoteWitnessContract.Vote';
       };
 
       return Vote;
@@ -3778,15 +4036,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.contractAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.consumeUserResourcePercent = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -3867,7 +4128,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.contractAddress != null)
         if (typeof object.contractAddress === 'string')
           $util.base64.decode(
@@ -3875,7 +4136,7 @@ $root.protocol = (function () {
             (message.contractAddress = $util.newBuffer($util.base64.length(object.contractAddress))),
             0
           );
-        else if (object.contractAddress.length) message.contractAddress = object.contractAddress;
+        else if (object.contractAddress.length >= 0) message.contractAddress = object.contractAddress;
       if (object.consumeUserResourcePercent != null)
         if ($util.Long)
           (message.consumeUserResourcePercent = $util.Long.fromValue(
@@ -3962,6 +4223,21 @@ $root.protocol = (function () {
      */
     UpdateSettingContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for UpdateSettingContract
+     * @function getTypeUrl
+     * @memberof protocol.UpdateSettingContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    UpdateSettingContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.UpdateSettingContract';
     };
 
     return UpdateSettingContract;
@@ -4078,15 +4354,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.contractAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.originEnergyLimit = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -4167,7 +4446,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.contractAddress != null)
         if (typeof object.contractAddress === 'string')
           $util.base64.decode(
@@ -4175,7 +4454,7 @@ $root.protocol = (function () {
             (message.contractAddress = $util.newBuffer($util.base64.length(object.contractAddress))),
             0
           );
-        else if (object.contractAddress.length) message.contractAddress = object.contractAddress;
+        else if (object.contractAddress.length >= 0) message.contractAddress = object.contractAddress;
       if (object.originEnergyLimit != null)
         if ($util.Long) (message.originEnergyLimit = $util.Long.fromValue(object.originEnergyLimit)).unsigned = false;
         else if (typeof object.originEnergyLimit === 'string')
@@ -4255,6 +4534,21 @@ $root.protocol = (function () {
      */
     UpdateEnergyLimitContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for UpdateEnergyLimitContract
+     * @function getTypeUrl
+     * @memberof protocol.UpdateEnergyLimitContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    UpdateEnergyLimitContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.UpdateEnergyLimitContract';
     };
 
     return UpdateEnergyLimitContract;
@@ -4360,12 +4654,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.contractAddress = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -4436,7 +4732,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.contractAddress != null)
         if (typeof object.contractAddress === 'string')
           $util.base64.decode(
@@ -4444,7 +4740,7 @@ $root.protocol = (function () {
             (message.contractAddress = $util.newBuffer($util.base64.length(object.contractAddress))),
             0
           );
-        else if (object.contractAddress.length) message.contractAddress = object.contractAddress;
+        else if (object.contractAddress.length >= 0) message.contractAddress = object.contractAddress;
       return message;
     };
 
@@ -4498,6 +4794,21 @@ $root.protocol = (function () {
      */
     ClearABIContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ClearABIContract
+     * @function getTypeUrl
+     * @memberof protocol.ClearABIContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ClearABIContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ClearABIContract';
     };
 
     return ClearABIContract;
@@ -4603,12 +4914,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.url = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -4674,11 +4987,11 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.url != null)
         if (typeof object.url === 'string')
           $util.base64.decode(object.url, (message.url = $util.newBuffer($util.base64.length(object.url))), 0);
-        else if (object.url.length) message.url = object.url;
+        else if (object.url.length >= 0) message.url = object.url;
       return message;
     };
 
@@ -4732,6 +5045,21 @@ $root.protocol = (function () {
      */
     WitnessCreateContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for WitnessCreateContract
+     * @function getTypeUrl
+     * @memberof protocol.WitnessCreateContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    WitnessCreateContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.WitnessCreateContract';
     };
 
     return WitnessCreateContract;
@@ -4837,12 +5165,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 12:
+          }
+          case 12: {
             message.updateUrl = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -4908,7 +5238,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.updateUrl != null)
         if (typeof object.updateUrl === 'string')
           $util.base64.decode(
@@ -4916,7 +5246,7 @@ $root.protocol = (function () {
             (message.updateUrl = $util.newBuffer($util.base64.length(object.updateUrl))),
             0
           );
-        else if (object.updateUrl.length) message.updateUrl = object.updateUrl;
+        else if (object.updateUrl.length >= 0) message.updateUrl = object.updateUrl;
       return message;
     };
 
@@ -4970,6 +5300,21 @@ $root.protocol = (function () {
      */
     WitnessUpdateContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for WitnessUpdateContract
+     * @function getTypeUrl
+     * @memberof protocol.WitnessUpdateContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    WitnessUpdateContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.WitnessUpdateContract';
     };
 
     return WitnessUpdateContract;
@@ -5267,64 +5612,83 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 41:
+          case 41: {
             message.id = reader.string();
             break;
-          case 1:
+          }
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.name = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.abbr = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.totalSupply = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             if (!(message.frozenSupply && message.frozenSupply.length)) message.frozenSupply = [];
             message.frozenSupply.push($root.protocol.AssetIssueContract.FrozenSupply.decode(reader, reader.uint32()));
             break;
-          case 6:
+          }
+          case 6: {
             message.trxNum = reader.int32();
             break;
-          case 7:
+          }
+          case 7: {
             message.precision = reader.int32();
             break;
-          case 8:
+          }
+          case 8: {
             message.num = reader.int32();
             break;
-          case 9:
+          }
+          case 9: {
             message.startTime = reader.int64();
             break;
-          case 10:
+          }
+          case 10: {
             message.endTime = reader.int64();
             break;
-          case 11:
+          }
+          case 11: {
             message.order = reader.int64();
             break;
-          case 16:
+          }
+          case 16: {
             message.voteScore = reader.int32();
             break;
-          case 20:
+          }
+          case 20: {
             message.description = reader.bytes();
             break;
-          case 21:
+          }
+          case 21: {
             message.url = reader.bytes();
             break;
-          case 22:
+          }
+          case 22: {
             message.freeAssetNetLimit = reader.int64();
             break;
-          case 23:
+          }
+          case 23: {
             message.publicFreeAssetNetLimit = reader.int64();
             break;
-          case 24:
+          }
+          case 24: {
             message.publicFreeAssetNetUsage = reader.int64();
             break;
-          case 25:
+          }
+          case 25: {
             message.publicLatestFreeNetTime = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -5490,15 +5854,15 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.name != null)
         if (typeof object.name === 'string')
           $util.base64.decode(object.name, (message.name = $util.newBuffer($util.base64.length(object.name))), 0);
-        else if (object.name.length) message.name = object.name;
+        else if (object.name.length >= 0) message.name = object.name;
       if (object.abbr != null)
         if (typeof object.abbr === 'string')
           $util.base64.decode(object.abbr, (message.abbr = $util.newBuffer($util.base64.length(object.abbr))), 0);
-        else if (object.abbr.length) message.abbr = object.abbr;
+        else if (object.abbr.length >= 0) message.abbr = object.abbr;
       if (object.totalSupply != null)
         if ($util.Long) (message.totalSupply = $util.Long.fromValue(object.totalSupply)).unsigned = false;
         else if (typeof object.totalSupply === 'string') message.totalSupply = parseInt(object.totalSupply, 10);
@@ -5547,11 +5911,11 @@ $root.protocol = (function () {
             (message.description = $util.newBuffer($util.base64.length(object.description))),
             0
           );
-        else if (object.description.length) message.description = object.description;
+        else if (object.description.length >= 0) message.description = object.description;
       if (object.url != null)
         if (typeof object.url === 'string')
           $util.base64.decode(object.url, (message.url = $util.newBuffer($util.base64.length(object.url))), 0);
-        else if (object.url.length) message.url = object.url;
+        else if (object.url.length >= 0) message.url = object.url;
       if (object.freeAssetNetLimit != null)
         if ($util.Long) (message.freeAssetNetLimit = $util.Long.fromValue(object.freeAssetNetLimit)).unsigned = false;
         else if (typeof object.freeAssetNetLimit === 'string')
@@ -5840,6 +6204,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for AssetIssueContract
+     * @function getTypeUrl
+     * @memberof protocol.AssetIssueContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    AssetIssueContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.AssetIssueContract';
+    };
+
     AssetIssueContract.FrozenSupply = (function () {
       /**
        * Properties of a FrozenSupply.
@@ -5940,12 +6319,14 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.frozenAmount = reader.int64();
               break;
-            case 2:
+            }
+            case 2: {
               message.frozenDays = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -6088,6 +6469,21 @@ $root.protocol = (function () {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
       };
 
+      /**
+       * Gets the default type url for FrozenSupply
+       * @function getTypeUrl
+       * @memberof protocol.AssetIssueContract.FrozenSupply
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      FrozenSupply.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.AssetIssueContract.FrozenSupply';
+      };
+
       return FrozenSupply;
     })();
 
@@ -6216,18 +6612,22 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.toAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.assetName = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.amount = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -6302,7 +6702,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.toAddress != null)
         if (typeof object.toAddress === 'string')
           $util.base64.decode(
@@ -6310,7 +6710,7 @@ $root.protocol = (function () {
             (message.toAddress = $util.newBuffer($util.base64.length(object.toAddress))),
             0
           );
-        else if (object.toAddress.length) message.toAddress = object.toAddress;
+        else if (object.toAddress.length >= 0) message.toAddress = object.toAddress;
       if (object.assetName != null)
         if (typeof object.assetName === 'string')
           $util.base64.decode(
@@ -6318,7 +6718,7 @@ $root.protocol = (function () {
             (message.assetName = $util.newBuffer($util.base64.length(object.assetName))),
             0
           );
-        else if (object.assetName.length) message.assetName = object.assetName;
+        else if (object.assetName.length >= 0) message.assetName = object.assetName;
       if (object.amount != null)
         if ($util.Long) (message.amount = $util.Long.fromValue(object.amount)).unsigned = false;
         else if (typeof object.amount === 'string') message.amount = parseInt(object.amount, 10);
@@ -6405,6 +6805,21 @@ $root.protocol = (function () {
      */
     ParticipateAssetIssueContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ParticipateAssetIssueContract
+     * @function getTypeUrl
+     * @memberof protocol.ParticipateAssetIssueContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ParticipateAssetIssueContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ParticipateAssetIssueContract';
     };
 
     return ParticipateAssetIssueContract;
@@ -6558,21 +6973,26 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.frozenBalance = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             message.frozenDuration = reader.int64();
             break;
-          case 10:
+          }
+          case 10: {
             message.resource = reader.int32();
             break;
-          case 15:
+          }
+          case 15: {
             message.receiverAddress = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -6671,7 +7091,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.frozenBalance != null)
         if ($util.Long) (message.frozenBalance = $util.Long.fromValue(object.frozenBalance)).unsigned = false;
         else if (typeof object.frozenBalance === 'string') message.frozenBalance = parseInt(object.frozenBalance, 10);
@@ -6692,6 +7112,12 @@ $root.protocol = (function () {
             object.frozenDuration.high >>> 0
           ).toNumber();
       switch (object.resource) {
+        default:
+          if (typeof object.resource === 'number') {
+            message.resource = object.resource;
+            break;
+          }
+          break;
         case 'BANDWIDTH':
         case 0:
           message.resource = 0;
@@ -6708,7 +7134,7 @@ $root.protocol = (function () {
             (message.receiverAddress = $util.newBuffer($util.base64.length(object.receiverAddress))),
             0
           );
-        else if (object.receiverAddress.length) message.receiverAddress = object.receiverAddress;
+        else if (object.receiverAddress.length >= 0) message.receiverAddress = object.receiverAddress;
       return message;
     };
 
@@ -6775,7 +7201,12 @@ $root.protocol = (function () {
               ? new $util.LongBits(message.frozenDuration.low >>> 0, message.frozenDuration.high >>> 0).toNumber()
               : message.frozenDuration;
       if (message.resource != null && message.hasOwnProperty('resource'))
-        object.resource = options.enums === String ? $root.protocol.ResourceCode[message.resource] : message.resource;
+        object.resource =
+          options.enums === String
+            ? $root.protocol.ResourceCode[message.resource] === undefined
+              ? message.resource
+              : $root.protocol.ResourceCode[message.resource]
+            : message.resource;
       if (message.receiverAddress != null && message.hasOwnProperty('receiverAddress'))
         object.receiverAddress =
           options.bytes === String
@@ -6795,6 +7226,21 @@ $root.protocol = (function () {
      */
     FreezeBalanceContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for FreezeBalanceContract
+     * @function getTypeUrl
+     * @memberof protocol.FreezeBalanceContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    FreezeBalanceContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.FreezeBalanceContract';
     };
 
     return FreezeBalanceContract;
@@ -6911,15 +7357,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 10:
+          }
+          case 10: {
             message.resource = reader.int32();
             break;
-          case 15:
+          }
+          case 15: {
             message.receiverAddress = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -6998,8 +7447,14 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       switch (object.resource) {
+        default:
+          if (typeof object.resource === 'number') {
+            message.resource = object.resource;
+            break;
+          }
+          break;
         case 'BANDWIDTH':
         case 0:
           message.resource = 0;
@@ -7016,7 +7471,7 @@ $root.protocol = (function () {
             (message.receiverAddress = $util.newBuffer($util.base64.length(object.receiverAddress))),
             0
           );
-        else if (object.receiverAddress.length) message.receiverAddress = object.receiverAddress;
+        else if (object.receiverAddress.length >= 0) message.receiverAddress = object.receiverAddress;
       return message;
     };
 
@@ -7053,7 +7508,12 @@ $root.protocol = (function () {
             ? Array.prototype.slice.call(message.ownerAddress)
             : message.ownerAddress;
       if (message.resource != null && message.hasOwnProperty('resource'))
-        object.resource = options.enums === String ? $root.protocol.ResourceCode[message.resource] : message.resource;
+        object.resource =
+          options.enums === String
+            ? $root.protocol.ResourceCode[message.resource] === undefined
+              ? message.resource
+              : $root.protocol.ResourceCode[message.resource]
+            : message.resource;
       if (message.receiverAddress != null && message.hasOwnProperty('receiverAddress'))
         object.receiverAddress =
           options.bytes === String
@@ -7073,6 +7533,21 @@ $root.protocol = (function () {
      */
     UnfreezeBalanceContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for UnfreezeBalanceContract
+     * @function getTypeUrl
+     * @memberof protocol.UnfreezeBalanceContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    UnfreezeBalanceContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.UnfreezeBalanceContract';
     };
 
     return UnfreezeBalanceContract;
@@ -7167,9 +7642,10 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -7232,7 +7708,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       return message;
     };
 
@@ -7273,6 +7749,21 @@ $root.protocol = (function () {
      */
     UnfreezeAssetContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for UnfreezeAssetContract
+     * @function getTypeUrl
+     * @memberof protocol.UnfreezeAssetContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    UnfreezeAssetContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.UnfreezeAssetContract';
     };
 
     return UnfreezeAssetContract;
@@ -7367,9 +7858,10 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -7432,7 +7924,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       return message;
     };
 
@@ -7473,6 +7965,21 @@ $root.protocol = (function () {
      */
     WithdrawBalanceContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for WithdrawBalanceContract
+     * @function getTypeUrl
+     * @memberof protocol.WithdrawBalanceContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    WithdrawBalanceContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.WithdrawBalanceContract';
     };
 
     return WithdrawBalanceContract;
@@ -7611,21 +8118,26 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.description = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.url = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.newLimit = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             message.newPublicLimit = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -7715,7 +8227,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.description != null)
         if (typeof object.description === 'string')
           $util.base64.decode(
@@ -7723,11 +8235,11 @@ $root.protocol = (function () {
             (message.description = $util.newBuffer($util.base64.length(object.description))),
             0
           );
-        else if (object.description.length) message.description = object.description;
+        else if (object.description.length >= 0) message.description = object.description;
       if (object.url != null)
         if (typeof object.url === 'string')
           $util.base64.decode(object.url, (message.url = $util.newBuffer($util.base64.length(object.url))), 0);
-        else if (object.url.length) message.url = object.url;
+        else if (object.url.length >= 0) message.url = object.url;
       if (object.newLimit != null)
         if ($util.Long) (message.newLimit = $util.Long.fromValue(object.newLimit)).unsigned = false;
         else if (typeof object.newLimit === 'string') message.newLimit = parseInt(object.newLimit, 10);
@@ -7839,6 +8351,21 @@ $root.protocol = (function () {
      */
     UpdateAssetContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for UpdateAssetContract
+     * @function getTypeUrl
+     * @memberof protocol.UpdateAssetContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    UpdateAssetContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.UpdateAssetContract';
     };
 
     return UpdateAssetContract;
@@ -7955,10 +8482,11 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             if (message.parameters === $util.emptyObject) message.parameters = {};
             var end2 = reader.uint32() + reader.pos;
             key = 0;
@@ -7979,6 +8507,7 @@ $root.protocol = (function () {
             }
             message.parameters[typeof key === 'object' ? $util.longToHash(key) : key] = value;
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -8057,7 +8586,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.parameters) {
         if (typeof object.parameters !== 'object')
           throw TypeError('.protocol.ProposalCreateContract.parameters: object expected');
@@ -8134,6 +8663,21 @@ $root.protocol = (function () {
      */
     ProposalCreateContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ProposalCreateContract
+     * @function getTypeUrl
+     * @memberof protocol.ProposalCreateContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ProposalCreateContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ProposalCreateContract';
     };
 
     return ProposalCreateContract;
@@ -8250,15 +8794,18 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.proposalId = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             message.isAddApproval = reader.bool();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -8329,7 +8876,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.proposalId != null)
         if ($util.Long) (message.proposalId = $util.Long.fromValue(object.proposalId)).unsigned = false;
         else if (typeof object.proposalId === 'string') message.proposalId = parseInt(object.proposalId, 10);
@@ -8396,6 +8943,21 @@ $root.protocol = (function () {
      */
     ProposalApproveContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ProposalApproveContract
+     * @function getTypeUrl
+     * @memberof protocol.ProposalApproveContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ProposalApproveContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ProposalApproveContract';
     };
 
     return ProposalApproveContract;
@@ -8501,12 +9063,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.proposalId = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -8575,7 +9139,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.proposalId != null)
         if ($util.Long) (message.proposalId = $util.Long.fromValue(object.proposalId)).unsigned = false;
         else if (typeof object.proposalId === 'string') message.proposalId = parseInt(object.proposalId, 10);
@@ -8638,6 +9202,21 @@ $root.protocol = (function () {
      */
     ProposalDeleteContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ProposalDeleteContract
+     * @function getTypeUrl
+     * @memberof protocol.ProposalDeleteContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ProposalDeleteContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ProposalDeleteContract';
     };
 
     return ProposalDeleteContract;
@@ -8768,18 +9347,22 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.newContract = $root.protocol.SmartContract.decode(reader, reader.uint32());
             break;
-          case 3:
+          }
+          case 3: {
             message.callTokenValue = reader.int64();
             break;
-          case 4:
+          }
+          case 4: {
             message.tokenId = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -8862,7 +9445,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.newContract != null) {
         if (typeof object.newContract !== 'object')
           throw TypeError('.protocol.CreateSmartContract.newContract: object expected');
@@ -8958,6 +9541,21 @@ $root.protocol = (function () {
      */
     CreateSmartContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CreateSmartContract
+     * @function getTypeUrl
+     * @memberof protocol.CreateSmartContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CreateSmartContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.CreateSmartContract';
     };
 
     return CreateSmartContract;
@@ -9107,24 +9705,30 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.contractAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.callValue = reader.int64();
             break;
-          case 4:
+          }
+          case 4: {
             message.data = reader.bytes();
             break;
-          case 5:
+          }
+          case 5: {
             message.callTokenValue = reader.int64();
             break;
-          case 6:
+          }
+          case 6: {
             message.tokenId = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -9220,7 +9824,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.contractAddress != null)
         if (typeof object.contractAddress === 'string')
           $util.base64.decode(
@@ -9228,7 +9832,7 @@ $root.protocol = (function () {
             (message.contractAddress = $util.newBuffer($util.base64.length(object.contractAddress))),
             0
           );
-        else if (object.contractAddress.length) message.contractAddress = object.contractAddress;
+        else if (object.contractAddress.length >= 0) message.contractAddress = object.contractAddress;
       if (object.callValue != null)
         if ($util.Long) (message.callValue = $util.Long.fromValue(object.callValue)).unsigned = false;
         else if (typeof object.callValue === 'string') message.callValue = parseInt(object.callValue, 10);
@@ -9238,7 +9842,7 @@ $root.protocol = (function () {
       if (object.data != null)
         if (typeof object.data === 'string')
           $util.base64.decode(object.data, (message.data = $util.newBuffer($util.base64.length(object.data))), 0);
-        else if (object.data.length) message.data = object.data;
+        else if (object.data.length >= 0) message.data = object.data;
       if (object.callTokenValue != null)
         if ($util.Long) (message.callTokenValue = $util.Long.fromValue(object.callTokenValue)).unsigned = false;
         else if (typeof object.callTokenValue === 'string')
@@ -9367,6 +9971,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for TriggerSmartContract
+     * @function getTypeUrl
+     * @memberof protocol.TriggerSmartContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TriggerSmartContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TriggerSmartContract';
+    };
+
     return TriggerSmartContract;
   })();
 
@@ -9470,12 +10089,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.quant = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -9544,7 +10165,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.quant != null)
         if ($util.Long) (message.quant = $util.Long.fromValue(object.quant)).unsigned = false;
         else if (typeof object.quant === 'string') message.quant = parseInt(object.quant, 10);
@@ -9606,6 +10227,21 @@ $root.protocol = (function () {
      */
     BuyStorageContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for BuyStorageContract
+     * @function getTypeUrl
+     * @memberof protocol.BuyStorageContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    BuyStorageContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.BuyStorageContract';
     };
 
     return BuyStorageContract;
@@ -9711,12 +10347,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.bytes = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -9785,7 +10423,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.bytes != null)
         if ($util.Long) (message.bytes = $util.Long.fromValue(object.bytes)).unsigned = false;
         else if (typeof object.bytes === 'string') message.bytes = parseInt(object.bytes, 10);
@@ -9847,6 +10485,21 @@ $root.protocol = (function () {
      */
     BuyStorageBytesContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for BuyStorageBytesContract
+     * @function getTypeUrl
+     * @memberof protocol.BuyStorageBytesContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    BuyStorageBytesContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.BuyStorageBytesContract';
     };
 
     return BuyStorageBytesContract;
@@ -9952,12 +10605,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.storageBytes = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -10030,7 +10685,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.storageBytes != null)
         if ($util.Long) (message.storageBytes = $util.Long.fromValue(object.storageBytes)).unsigned = false;
         else if (typeof object.storageBytes === 'string') message.storageBytes = parseInt(object.storageBytes, 10);
@@ -10096,6 +10751,21 @@ $root.protocol = (function () {
      */
     SellStorageContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for SellStorageContract
+     * @function getTypeUrl
+     * @memberof protocol.SellStorageContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    SellStorageContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.SellStorageContract';
     };
 
     return SellStorageContract;
@@ -10234,21 +10904,26 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.firstTokenId = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.firstTokenBalance = reader.int64();
             break;
-          case 4:
+          }
+          case 4: {
             message.secondTokenId = reader.bytes();
             break;
-          case 5:
+          }
+          case 5: {
             message.secondTokenBalance = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -10347,7 +11022,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.firstTokenId != null)
         if (typeof object.firstTokenId === 'string')
           $util.base64.decode(
@@ -10355,7 +11030,7 @@ $root.protocol = (function () {
             (message.firstTokenId = $util.newBuffer($util.base64.length(object.firstTokenId))),
             0
           );
-        else if (object.firstTokenId.length) message.firstTokenId = object.firstTokenId;
+        else if (object.firstTokenId.length >= 0) message.firstTokenId = object.firstTokenId;
       if (object.firstTokenBalance != null)
         if ($util.Long) (message.firstTokenBalance = $util.Long.fromValue(object.firstTokenBalance)).unsigned = false;
         else if (typeof object.firstTokenBalance === 'string')
@@ -10373,7 +11048,7 @@ $root.protocol = (function () {
             (message.secondTokenId = $util.newBuffer($util.base64.length(object.secondTokenId))),
             0
           );
-        else if (object.secondTokenId.length) message.secondTokenId = object.secondTokenId;
+        else if (object.secondTokenId.length >= 0) message.secondTokenId = object.secondTokenId;
       if (object.secondTokenBalance != null)
         if ($util.Long) (message.secondTokenBalance = $util.Long.fromValue(object.secondTokenBalance)).unsigned = false;
         else if (typeof object.secondTokenBalance === 'string')
@@ -10484,6 +11159,21 @@ $root.protocol = (function () {
      */
     ExchangeCreateContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ExchangeCreateContract
+     * @function getTypeUrl
+     * @memberof protocol.ExchangeCreateContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ExchangeCreateContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ExchangeCreateContract';
     };
 
     return ExchangeCreateContract;
@@ -10611,18 +11301,22 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.exchangeId = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             message.tokenId = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.quant = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -10700,7 +11394,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.exchangeId != null)
         if ($util.Long) (message.exchangeId = $util.Long.fromValue(object.exchangeId)).unsigned = false;
         else if (typeof object.exchangeId === 'string') message.exchangeId = parseInt(object.exchangeId, 10);
@@ -10714,7 +11408,7 @@ $root.protocol = (function () {
             (message.tokenId = $util.newBuffer($util.base64.length(object.tokenId))),
             0
           );
-        else if (object.tokenId.length) message.tokenId = object.tokenId;
+        else if (object.tokenId.length >= 0) message.tokenId = object.tokenId;
       if (object.quant != null)
         if ($util.Long) (message.quant = $util.Long.fromValue(object.quant)).unsigned = false;
         else if (typeof object.quant === 'string') message.quant = parseInt(object.quant, 10);
@@ -10803,6 +11497,21 @@ $root.protocol = (function () {
      */
     ExchangeInjectContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ExchangeInjectContract
+     * @function getTypeUrl
+     * @memberof protocol.ExchangeInjectContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ExchangeInjectContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ExchangeInjectContract';
     };
 
     return ExchangeInjectContract;
@@ -10930,18 +11639,22 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.exchangeId = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             message.tokenId = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.quant = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -11019,7 +11732,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.exchangeId != null)
         if ($util.Long) (message.exchangeId = $util.Long.fromValue(object.exchangeId)).unsigned = false;
         else if (typeof object.exchangeId === 'string') message.exchangeId = parseInt(object.exchangeId, 10);
@@ -11033,7 +11746,7 @@ $root.protocol = (function () {
             (message.tokenId = $util.newBuffer($util.base64.length(object.tokenId))),
             0
           );
-        else if (object.tokenId.length) message.tokenId = object.tokenId;
+        else if (object.tokenId.length >= 0) message.tokenId = object.tokenId;
       if (object.quant != null)
         if ($util.Long) (message.quant = $util.Long.fromValue(object.quant)).unsigned = false;
         else if (typeof object.quant === 'string') message.quant = parseInt(object.quant, 10);
@@ -11122,6 +11835,21 @@ $root.protocol = (function () {
      */
     ExchangeWithdrawContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ExchangeWithdrawContract
+     * @function getTypeUrl
+     * @memberof protocol.ExchangeWithdrawContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ExchangeWithdrawContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ExchangeWithdrawContract';
     };
 
     return ExchangeWithdrawContract;
@@ -11260,21 +11988,26 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.exchangeId = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             message.tokenId = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.quant = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             message.expected = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -11358,7 +12091,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.exchangeId != null)
         if ($util.Long) (message.exchangeId = $util.Long.fromValue(object.exchangeId)).unsigned = false;
         else if (typeof object.exchangeId === 'string') message.exchangeId = parseInt(object.exchangeId, 10);
@@ -11372,7 +12105,7 @@ $root.protocol = (function () {
             (message.tokenId = $util.newBuffer($util.base64.length(object.tokenId))),
             0
           );
-        else if (object.tokenId.length) message.tokenId = object.tokenId;
+        else if (object.tokenId.length >= 0) message.tokenId = object.tokenId;
       if (object.quant != null)
         if ($util.Long) (message.quant = $util.Long.fromValue(object.quant)).unsigned = false;
         else if (typeof object.quant === 'string') message.quant = parseInt(object.quant, 10);
@@ -11482,6 +12215,21 @@ $root.protocol = (function () {
      */
     ExchangeTransactionContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ExchangeTransactionContract
+     * @function getTypeUrl
+     * @memberof protocol.ExchangeTransactionContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ExchangeTransactionContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ExchangeTransactionContract';
     };
 
     return ExchangeTransactionContract;
@@ -11614,19 +12362,23 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.ownerAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.owner = $root.protocol.Permission.decode(reader, reader.uint32());
             break;
-          case 3:
+          }
+          case 3: {
             message.witness = $root.protocol.Permission.decode(reader, reader.uint32());
             break;
-          case 4:
+          }
+          case 4: {
             if (!(message.actives && message.actives.length)) message.actives = [];
             message.actives.push($root.protocol.Permission.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -11704,7 +12456,7 @@ $root.protocol = (function () {
             (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
             0
           );
-        else if (object.ownerAddress.length) message.ownerAddress = object.ownerAddress;
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
       if (object.owner != null) {
         if (typeof object.owner !== 'object')
           throw TypeError('.protocol.AccountPermissionUpdateContract.owner: object expected');
@@ -11778,6 +12530,21 @@ $root.protocol = (function () {
      */
     AccountPermissionUpdateContract.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for AccountPermissionUpdateContract
+     * @function getTypeUrl
+     * @memberof protocol.AccountPermissionUpdateContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    AccountPermissionUpdateContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.AccountPermissionUpdateContract';
     };
 
     return AccountPermissionUpdateContract;
@@ -11900,12 +12667,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.name = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.address = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -11962,7 +12731,7 @@ $root.protocol = (function () {
       if (object.name != null)
         if (typeof object.name === 'string')
           $util.base64.decode(object.name, (message.name = $util.newBuffer($util.base64.length(object.name))), 0);
-        else if (object.name.length) message.name = object.name;
+        else if (object.name.length >= 0) message.name = object.name;
       if (object.address != null)
         if (typeof object.address === 'string')
           $util.base64.decode(
@@ -11970,7 +12739,7 @@ $root.protocol = (function () {
             (message.address = $util.newBuffer($util.base64.length(object.address))),
             0
           );
-        else if (object.address.length) message.address = object.address;
+        else if (object.address.length >= 0) message.address = object.address;
       return message;
     };
 
@@ -12024,6 +12793,21 @@ $root.protocol = (function () {
      */
     AccountId.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for AccountId
+     * @function getTypeUrl
+     * @memberof protocol.AccountId
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    AccountId.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.AccountId';
     };
 
     return AccountId;
@@ -12129,12 +12913,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.voteAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.voteCount = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -12203,7 +12989,7 @@ $root.protocol = (function () {
             (message.voteAddress = $util.newBuffer($util.base64.length(object.voteAddress))),
             0
           );
-        else if (object.voteAddress.length) message.voteAddress = object.voteAddress;
+        else if (object.voteAddress.length >= 0) message.voteAddress = object.voteAddress;
       if (object.voteCount != null)
         if ($util.Long) (message.voteCount = $util.Long.fromValue(object.voteCount)).unsigned = false;
         else if (typeof object.voteCount === 'string') message.voteCount = parseInt(object.voteCount, 10);
@@ -12266,6 +13052,21 @@ $root.protocol = (function () {
      */
     Vote.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Vote
+     * @function getTypeUrl
+     * @memberof protocol.Vote
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Vote.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Vote';
     };
 
     return Vote;
@@ -12439,13 +13240,15 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.proposalId = reader.int64();
             break;
-          case 2:
+          }
+          case 2: {
             message.proposerAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             if (message.parameters === $util.emptyObject) message.parameters = {};
             var end2 = reader.uint32() + reader.pos;
             key = 0;
@@ -12466,19 +13269,24 @@ $root.protocol = (function () {
             }
             message.parameters[typeof key === 'object' ? $util.longToHash(key) : key] = value;
             break;
-          case 4:
+          }
+          case 4: {
             message.expirationTime = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             message.createTime = reader.int64();
             break;
-          case 6:
+          }
+          case 6: {
             if (!(message.approvals && message.approvals.length)) message.approvals = [];
             message.approvals.push(reader.bytes());
             break;
-          case 7:
+          }
+          case 7: {
             message.state = reader.int32();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -12606,7 +13414,7 @@ $root.protocol = (function () {
             (message.proposerAddress = $util.newBuffer($util.base64.length(object.proposerAddress))),
             0
           );
-        else if (object.proposerAddress.length) message.proposerAddress = object.proposerAddress;
+        else if (object.proposerAddress.length >= 0) message.proposerAddress = object.proposerAddress;
       if (object.parameters) {
         if (typeof object.parameters !== 'object') throw TypeError('.protocol.Proposal.parameters: object expected');
         message.parameters = {};
@@ -12649,9 +13457,15 @@ $root.protocol = (function () {
               (message.approvals[i] = $util.newBuffer($util.base64.length(object.approvals[i]))),
               0
             );
-          else if (object.approvals[i].length) message.approvals[i] = object.approvals[i];
+          else if (object.approvals[i].length >= 0) message.approvals[i] = object.approvals[i];
       }
       switch (object.state) {
+        default:
+          if (typeof object.state === 'number') {
+            message.state = object.state;
+            break;
+          }
+          break;
         case 'PENDING':
         case 0:
           message.state = 0;
@@ -12775,7 +13589,12 @@ $root.protocol = (function () {
               : message.approvals[j];
       }
       if (message.state != null && message.hasOwnProperty('state'))
-        object.state = options.enums === String ? $root.protocol.Proposal.State[message.state] : message.state;
+        object.state =
+          options.enums === String
+            ? $root.protocol.Proposal.State[message.state] === undefined
+              ? message.state
+              : $root.protocol.Proposal.State[message.state]
+            : message.state;
       return object;
     };
 
@@ -12788,6 +13607,21 @@ $root.protocol = (function () {
      */
     Proposal.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Proposal
+     * @function getTypeUrl
+     * @memberof protocol.Proposal
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Proposal.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Proposal';
     };
 
     /**
@@ -12967,27 +13801,34 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.exchangeId = reader.int64();
             break;
-          case 2:
+          }
+          case 2: {
             message.creatorAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.createTime = reader.int64();
             break;
-          case 6:
+          }
+          case 6: {
             message.firstTokenId = reader.bytes();
             break;
-          case 7:
+          }
+          case 7: {
             message.firstTokenBalance = reader.int64();
             break;
-          case 8:
+          }
+          case 8: {
             message.secondTokenId = reader.bytes();
             break;
-          case 9:
+          }
+          case 9: {
             message.secondTokenBalance = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -13104,7 +13945,7 @@ $root.protocol = (function () {
             (message.creatorAddress = $util.newBuffer($util.base64.length(object.creatorAddress))),
             0
           );
-        else if (object.creatorAddress.length) message.creatorAddress = object.creatorAddress;
+        else if (object.creatorAddress.length >= 0) message.creatorAddress = object.creatorAddress;
       if (object.createTime != null)
         if ($util.Long) (message.createTime = $util.Long.fromValue(object.createTime)).unsigned = false;
         else if (typeof object.createTime === 'string') message.createTime = parseInt(object.createTime, 10);
@@ -13118,7 +13959,7 @@ $root.protocol = (function () {
             (message.firstTokenId = $util.newBuffer($util.base64.length(object.firstTokenId))),
             0
           );
-        else if (object.firstTokenId.length) message.firstTokenId = object.firstTokenId;
+        else if (object.firstTokenId.length >= 0) message.firstTokenId = object.firstTokenId;
       if (object.firstTokenBalance != null)
         if ($util.Long) (message.firstTokenBalance = $util.Long.fromValue(object.firstTokenBalance)).unsigned = false;
         else if (typeof object.firstTokenBalance === 'string')
@@ -13136,7 +13977,7 @@ $root.protocol = (function () {
             (message.secondTokenId = $util.newBuffer($util.base64.length(object.secondTokenId))),
             0
           );
-        else if (object.secondTokenId.length) message.secondTokenId = object.secondTokenId;
+        else if (object.secondTokenId.length >= 0) message.secondTokenId = object.secondTokenId;
       if (object.secondTokenBalance != null)
         if ($util.Long) (message.secondTokenBalance = $util.Long.fromValue(object.secondTokenBalance)).unsigned = false;
         else if (typeof object.secondTokenBalance === 'string')
@@ -13279,6 +14120,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for Exchange
+     * @function getTypeUrl
+     * @memberof protocol.Exchange
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Exchange.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Exchange';
+    };
+
     return Exchange;
   })();
 
@@ -13376,10 +14232,11 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             if (!(message.chainParameter && message.chainParameter.length)) message.chainParameter = [];
             message.chainParameter.push($root.protocol.ChainParameters.ChainParameter.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -13484,6 +14341,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for ChainParameters
+     * @function getTypeUrl
+     * @memberof protocol.ChainParameters
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ChainParameters.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ChainParameters';
+    };
+
     ChainParameters.ChainParameter = (function () {
       /**
        * Properties of a ChainParameter.
@@ -13584,12 +14456,14 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.key = reader.string();
               break;
-            case 2:
+            }
+            case 2: {
               message.value = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -13698,6 +14572,21 @@ $root.protocol = (function () {
        */
       ChainParameter.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for ChainParameter
+       * @function getTypeUrl
+       * @memberof protocol.ChainParameters.ChainParameter
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      ChainParameter.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.ChainParameters.ChainParameter';
       };
 
       return ChainParameter;
@@ -14249,23 +15138,28 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.accountName = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.type = reader.int32();
             break;
-          case 3:
+          }
+          case 3: {
             message.address = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.balance = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             if (!(message.votes && message.votes.length)) message.votes = [];
             message.votes.push($root.protocol.Vote.decode(reader, reader.uint32()));
             break;
-          case 6:
+          }
+          case 6: {
             if (message.asset === $util.emptyObject) message.asset = {};
             var end2 = reader.uint32() + reader.pos;
             key = '';
@@ -14286,7 +15180,8 @@ $root.protocol = (function () {
             }
             message.asset[key] = value;
             break;
-          case 56:
+          }
+          case 56: {
             if (message.assetV2 === $util.emptyObject) message.assetV2 = {};
             var end2 = reader.uint32() + reader.pos;
             key = '';
@@ -14307,51 +15202,66 @@ $root.protocol = (function () {
             }
             message.assetV2[key] = value;
             break;
-          case 7:
+          }
+          case 7: {
             if (!(message.frozen && message.frozen.length)) message.frozen = [];
             message.frozen.push($root.protocol.Account.Frozen.decode(reader, reader.uint32()));
             break;
-          case 8:
+          }
+          case 8: {
             message.netUsage = reader.int64();
             break;
-          case 41:
+          }
+          case 41: {
             message.acquiredDelegatedFrozenBalanceForBandwidth = reader.int64();
             break;
-          case 42:
+          }
+          case 42: {
             message.delegatedFrozenBalanceForBandwidth = reader.int64();
             break;
-          case 9:
+          }
+          case 9: {
             message.createTime = reader.int64();
             break;
-          case 10:
+          }
+          case 10: {
             message.latestOprationTime = reader.int64();
             break;
-          case 11:
+          }
+          case 11: {
             message.allowance = reader.int64();
             break;
-          case 12:
+          }
+          case 12: {
             message.latestWithdrawTime = reader.int64();
             break;
-          case 13:
+          }
+          case 13: {
             message.code = reader.bytes();
             break;
-          case 14:
+          }
+          case 14: {
             message.isWitness = reader.bool();
             break;
-          case 15:
+          }
+          case 15: {
             message.isCommittee = reader.bool();
             break;
-          case 16:
+          }
+          case 16: {
             if (!(message.frozenSupply && message.frozenSupply.length)) message.frozenSupply = [];
             message.frozenSupply.push($root.protocol.Account.Frozen.decode(reader, reader.uint32()));
             break;
-          case 17:
+          }
+          case 17: {
             message.assetIssuedName = reader.bytes();
             break;
-          case 57:
+          }
+          case 57: {
             message.assetIssued_ID = reader.bytes();
             break;
-          case 18:
+          }
+          case 18: {
             if (message.latestAssetOperationTime === $util.emptyObject) message.latestAssetOperationTime = {};
             var end2 = reader.uint32() + reader.pos;
             key = '';
@@ -14372,7 +15282,8 @@ $root.protocol = (function () {
             }
             message.latestAssetOperationTime[key] = value;
             break;
-          case 58:
+          }
+          case 58: {
             if (message.latestAssetOperationTimeV2 === $util.emptyObject) message.latestAssetOperationTimeV2 = {};
             var end2 = reader.uint32() + reader.pos;
             key = '';
@@ -14393,10 +15304,12 @@ $root.protocol = (function () {
             }
             message.latestAssetOperationTimeV2[key] = value;
             break;
-          case 19:
+          }
+          case 19: {
             message.freeNetUsage = reader.int64();
             break;
-          case 20:
+          }
+          case 20: {
             if (message.freeAssetNetUsage === $util.emptyObject) message.freeAssetNetUsage = {};
             var end2 = reader.uint32() + reader.pos;
             key = '';
@@ -14417,7 +15330,8 @@ $root.protocol = (function () {
             }
             message.freeAssetNetUsage[key] = value;
             break;
-          case 59:
+          }
+          case 59: {
             if (message.freeAssetNetUsageV2 === $util.emptyObject) message.freeAssetNetUsageV2 = {};
             var end2 = reader.uint32() + reader.pos;
             key = '';
@@ -14438,31 +15352,40 @@ $root.protocol = (function () {
             }
             message.freeAssetNetUsageV2[key] = value;
             break;
-          case 21:
+          }
+          case 21: {
             message.latestConsumeTime = reader.int64();
             break;
-          case 22:
+          }
+          case 22: {
             message.latestConsumeFreeTime = reader.int64();
             break;
-          case 23:
+          }
+          case 23: {
             message.accountId = reader.bytes();
             break;
-          case 26:
+          }
+          case 26: {
             message.accountResource = $root.protocol.Account.AccountResource.decode(reader, reader.uint32());
             break;
-          case 30:
+          }
+          case 30: {
             message.codeHash = reader.bytes();
             break;
-          case 31:
+          }
+          case 31: {
             message.ownerPermission = $root.protocol.Permission.decode(reader, reader.uint32());
             break;
-          case 32:
+          }
+          case 32: {
             message.witnessPermission = $root.protocol.Permission.decode(reader, reader.uint32());
             break;
-          case 33:
+          }
+          case 33: {
             if (!(message.activePermission && message.activePermission.length)) message.activePermission = [];
             message.activePermission.push($root.protocol.Permission.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -14790,8 +15713,14 @@ $root.protocol = (function () {
             (message.accountName = $util.newBuffer($util.base64.length(object.accountName))),
             0
           );
-        else if (object.accountName.length) message.accountName = object.accountName;
+        else if (object.accountName.length >= 0) message.accountName = object.accountName;
       switch (object.type) {
+        default:
+          if (typeof object.type === 'number') {
+            message.type = object.type;
+            break;
+          }
+          break;
         case 'Normal':
         case 0:
           message.type = 0;
@@ -14812,7 +15741,7 @@ $root.protocol = (function () {
             (message.address = $util.newBuffer($util.base64.length(object.address))),
             0
           );
-        else if (object.address.length) message.address = object.address;
+        else if (object.address.length >= 0) message.address = object.address;
       if (object.balance != null)
         if ($util.Long) (message.balance = $util.Long.fromValue(object.balance)).unsigned = false;
         else if (typeof object.balance === 'string') message.balance = parseInt(object.balance, 10);
@@ -14935,7 +15864,7 @@ $root.protocol = (function () {
       if (object.code != null)
         if (typeof object.code === 'string')
           $util.base64.decode(object.code, (message.code = $util.newBuffer($util.base64.length(object.code))), 0);
-        else if (object.code.length) message.code = object.code;
+        else if (object.code.length >= 0) message.code = object.code;
       if (object.isWitness != null) message.isWitness = Boolean(object.isWitness);
       if (object.isCommittee != null) message.isCommittee = Boolean(object.isCommittee);
       if (object.frozenSupply) {
@@ -14954,7 +15883,7 @@ $root.protocol = (function () {
             (message.assetIssuedName = $util.newBuffer($util.base64.length(object.assetIssuedName))),
             0
           );
-        else if (object.assetIssuedName.length) message.assetIssuedName = object.assetIssuedName;
+        else if (object.assetIssuedName.length >= 0) message.assetIssuedName = object.assetIssuedName;
       if (object.assetIssued_ID != null)
         if (typeof object.assetIssued_ID === 'string')
           $util.base64.decode(
@@ -14962,7 +15891,7 @@ $root.protocol = (function () {
             (message.assetIssued_ID = $util.newBuffer($util.base64.length(object.assetIssued_ID))),
             0
           );
-        else if (object.assetIssued_ID.length) message.assetIssued_ID = object.assetIssued_ID;
+        else if (object.assetIssued_ID.length >= 0) message.assetIssued_ID = object.assetIssued_ID;
       if (object.latestAssetOperationTime) {
         if (typeof object.latestAssetOperationTime !== 'object')
           throw TypeError('.protocol.Account.latestAssetOperationTime: object expected');
@@ -15077,7 +16006,7 @@ $root.protocol = (function () {
             (message.accountId = $util.newBuffer($util.base64.length(object.accountId))),
             0
           );
-        else if (object.accountId.length) message.accountId = object.accountId;
+        else if (object.accountId.length >= 0) message.accountId = object.accountId;
       if (object.accountResource != null) {
         if (typeof object.accountResource !== 'object')
           throw TypeError('.protocol.Account.accountResource: object expected');
@@ -15090,7 +16019,7 @@ $root.protocol = (function () {
             (message.codeHash = $util.newBuffer($util.base64.length(object.codeHash))),
             0
           );
-        else if (object.codeHash.length) message.codeHash = object.codeHash;
+        else if (object.codeHash.length >= 0) message.codeHash = object.codeHash;
       if (object.ownerPermission != null) {
         if (typeof object.ownerPermission !== 'object')
           throw TypeError('.protocol.Account.ownerPermission: object expected');
@@ -15246,7 +16175,12 @@ $root.protocol = (function () {
             ? Array.prototype.slice.call(message.accountName)
             : message.accountName;
       if (message.type != null && message.hasOwnProperty('type'))
-        object.type = options.enums === String ? $root.protocol.AccountType[message.type] : message.type;
+        object.type =
+          options.enums === String
+            ? $root.protocol.AccountType[message.type] === undefined
+              ? message.type
+              : $root.protocol.AccountType[message.type]
+            : message.type;
       if (message.address != null && message.hasOwnProperty('address'))
         object.address =
           options.bytes === String
@@ -15581,6 +16515,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for Account
+     * @function getTypeUrl
+     * @memberof protocol.Account
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Account.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Account';
+    };
+
     Account.Frozen = (function () {
       /**
        * Properties of a Frozen.
@@ -15681,12 +16630,14 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.frozenBalance = reader.int64();
               break;
-            case 2:
+            }
+            case 2: {
               message.expireTime = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -15827,6 +16778,21 @@ $root.protocol = (function () {
        */
       Frozen.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for Frozen
+       * @function getTypeUrl
+       * @memberof protocol.Account.Frozen
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      Frozen.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.Account.Frozen';
       };
 
       return Frozen;
@@ -16015,30 +16981,38 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.energyUsage = reader.int64();
               break;
-            case 2:
+            }
+            case 2: {
               message.frozenBalanceForEnergy = $root.protocol.Account.Frozen.decode(reader, reader.uint32());
               break;
-            case 3:
+            }
+            case 3: {
               message.latestConsumeTimeForEnergy = reader.int64();
               break;
-            case 4:
+            }
+            case 4: {
               message.acquiredDelegatedFrozenBalanceForEnergy = reader.int64();
               break;
-            case 5:
+            }
+            case 5: {
               message.delegatedFrozenBalanceForEnergy = reader.int64();
               break;
-            case 6:
+            }
+            case 6: {
               message.storageLimit = reader.int64();
               break;
-            case 7:
+            }
+            case 7: {
               message.storageUsage = reader.int64();
               break;
-            case 8:
+            }
+            case 8: {
               message.latestExchangeStorageTime = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -16427,6 +17401,21 @@ $root.protocol = (function () {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
       };
 
+      /**
+       * Gets the default type url for AccountResource
+       * @function getTypeUrl
+       * @memberof protocol.Account.AccountResource
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      AccountResource.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.Account.AccountResource';
+      };
+
       return AccountResource;
     })();
 
@@ -16533,12 +17522,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.address = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.weight = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -16602,7 +17593,7 @@ $root.protocol = (function () {
             (message.address = $util.newBuffer($util.base64.length(object.address))),
             0
           );
-        else if (object.address.length) message.address = object.address;
+        else if (object.address.length >= 0) message.address = object.address;
       if (object.weight != null)
         if ($util.Long) (message.weight = $util.Long.fromValue(object.weight)).unsigned = false;
         else if (typeof object.weight === 'string') message.weight = parseInt(object.weight, 10);
@@ -16665,6 +17656,21 @@ $root.protocol = (function () {
      */
     Key.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Key
+     * @function getTypeUrl
+     * @memberof protocol.Key
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Key.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Key';
     };
 
     return Key;
@@ -16814,24 +17820,30 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.from = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.to = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.frozenBalanceForBandwidth = reader.int64();
             break;
-          case 4:
+          }
+          case 4: {
             message.frozenBalanceForEnergy = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             message.expireTimeForBandwidth = reader.int64();
             break;
-          case 6:
+          }
+          case 6: {
             message.expireTimeForEnergy = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -16928,11 +17940,11 @@ $root.protocol = (function () {
       if (object.from != null)
         if (typeof object.from === 'string')
           $util.base64.decode(object.from, (message.from = $util.newBuffer($util.base64.length(object.from))), 0);
-        else if (object.from.length) message.from = object.from;
+        else if (object.from.length >= 0) message.from = object.from;
       if (object.to != null)
         if (typeof object.to === 'string')
           $util.base64.decode(object.to, (message.to = $util.newBuffer($util.base64.length(object.to))), 0);
-        else if (object.to.length) message.to = object.to;
+        else if (object.to.length >= 0) message.to = object.to;
       if (object.frozenBalanceForBandwidth != null)
         if ($util.Long)
           (message.frozenBalanceForBandwidth = $util.Long.fromValue(object.frozenBalanceForBandwidth)).unsigned = false;
@@ -17112,6 +18124,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for DelegatedResource
+     * @function getTypeUrl
+     * @memberof protocol.DelegatedResource
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DelegatedResource.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.DelegatedResource';
+    };
+
     return DelegatedResource;
   })();
 
@@ -17215,12 +18242,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.account = $root.protocol.AccountId.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             message.permissionName = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -17291,7 +18320,7 @@ $root.protocol = (function () {
             (message.permissionName = $util.newBuffer($util.base64.length(object.permissionName))),
             0
           );
-        else if (object.permissionName.length) message.permissionName = object.permissionName;
+        else if (object.permissionName.length >= 0) message.permissionName = object.permissionName;
       return message;
     };
 
@@ -17336,6 +18365,21 @@ $root.protocol = (function () {
      */
     authority.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for authority
+     * @function getTypeUrl
+     * @memberof protocol.authority
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    authority.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.authority';
     };
 
     return authority;
@@ -17498,28 +18542,35 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.type = reader.int32();
             break;
-          case 2:
+          }
+          case 2: {
             message.id = reader.int32();
             break;
-          case 3:
+          }
+          case 3: {
             message.permissionName = reader.string();
             break;
-          case 4:
+          }
+          case 4: {
             message.threshold = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             message.parentId = reader.int32();
             break;
-          case 6:
+          }
+          case 6: {
             message.operations = reader.bytes();
             break;
-          case 7:
+          }
+          case 7: {
             if (!(message.keys && message.keys.length)) message.keys = [];
             message.keys.push($root.protocol.Key.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -17601,6 +18652,12 @@ $root.protocol = (function () {
       if (object instanceof $root.protocol.Permission) return object;
       var message = new $root.protocol.Permission();
       switch (object.type) {
+        default:
+          if (typeof object.type === 'number') {
+            message.type = object.type;
+            break;
+          }
+          break;
         case 'Owner':
         case 0:
           message.type = 0;
@@ -17630,7 +18687,7 @@ $root.protocol = (function () {
             (message.operations = $util.newBuffer($util.base64.length(object.operations))),
             0
           );
-        else if (object.operations.length) message.operations = object.operations;
+        else if (object.operations.length >= 0) message.operations = object.operations;
       if (object.keys) {
         if (!Array.isArray(object.keys)) throw TypeError('.protocol.Permission.keys: array expected');
         message.keys = [];
@@ -17672,7 +18729,12 @@ $root.protocol = (function () {
         }
       }
       if (message.type != null && message.hasOwnProperty('type'))
-        object.type = options.enums === String ? $root.protocol.Permission.PermissionType[message.type] : message.type;
+        object.type =
+          options.enums === String
+            ? $root.protocol.Permission.PermissionType[message.type] === undefined
+              ? message.type
+              : $root.protocol.Permission.PermissionType[message.type]
+            : message.type;
       if (message.id != null && message.hasOwnProperty('id')) object.id = message.id;
       if (message.permissionName != null && message.hasOwnProperty('permissionName'))
         object.permissionName = message.permissionName;
@@ -17711,6 +18773,21 @@ $root.protocol = (function () {
      */
     Permission.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Permission
+     * @function getTypeUrl
+     * @memberof protocol.Permission
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Permission.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Permission';
     };
 
     /**
@@ -17910,33 +18987,42 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.address = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.voteCount = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             message.pubKey = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             message.url = reader.string();
             break;
-          case 5:
+          }
+          case 5: {
             message.totalProduced = reader.int64();
             break;
-          case 6:
+          }
+          case 6: {
             message.totalMissed = reader.int64();
             break;
-          case 7:
+          }
+          case 7: {
             message.latestBlockNum = reader.int64();
             break;
-          case 8:
+          }
+          case 8: {
             message.latestSlotNum = reader.int64();
             break;
-          case 9:
+          }
+          case 9: {
             message.isJobs = reader.bool();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -18047,7 +19133,7 @@ $root.protocol = (function () {
             (message.address = $util.newBuffer($util.base64.length(object.address))),
             0
           );
-        else if (object.address.length) message.address = object.address;
+        else if (object.address.length >= 0) message.address = object.address;
       if (object.voteCount != null)
         if ($util.Long) (message.voteCount = $util.Long.fromValue(object.voteCount)).unsigned = false;
         else if (typeof object.voteCount === 'string') message.voteCount = parseInt(object.voteCount, 10);
@@ -18057,7 +19143,7 @@ $root.protocol = (function () {
       if (object.pubKey != null)
         if (typeof object.pubKey === 'string')
           $util.base64.decode(object.pubKey, (message.pubKey = $util.newBuffer($util.base64.length(object.pubKey))), 0);
-        else if (object.pubKey.length) message.pubKey = object.pubKey;
+        else if (object.pubKey.length >= 0) message.pubKey = object.pubKey;
       if (object.url != null) message.url = String(object.url);
       if (object.totalProduced != null)
         if ($util.Long) (message.totalProduced = $util.Long.fromValue(object.totalProduced)).unsigned = false;
@@ -18231,6 +19317,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for Witness
+     * @function getTypeUrl
+     * @memberof protocol.Witness
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Witness.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Witness';
+    };
+
     return Witness;
   })();
 
@@ -18349,17 +19450,20 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.address = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             if (!(message.oldVotes && message.oldVotes.length)) message.oldVotes = [];
             message.oldVotes.push($root.protocol.Vote.decode(reader, reader.uint32()));
             break;
-          case 3:
+          }
+          case 3: {
             if (!(message.newVotes && message.newVotes.length)) message.newVotes = [];
             message.newVotes.push($root.protocol.Vote.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -18431,7 +19535,7 @@ $root.protocol = (function () {
             (message.address = $util.newBuffer($util.base64.length(object.address))),
             0
           );
-        else if (object.address.length) message.address = object.address;
+        else if (object.address.length >= 0) message.address = object.address;
       if (object.oldVotes) {
         if (!Array.isArray(object.oldVotes)) throw TypeError('.protocol.Votes.oldVotes: array expected');
         message.oldVotes = [];
@@ -18502,6 +19606,21 @@ $root.protocol = (function () {
      */
     Votes.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Votes
+     * @function getTypeUrl
+     * @memberof protocol.Votes
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Votes.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Votes';
     };
 
     return Votes;
@@ -18607,12 +19726,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.value = reader.int64();
             break;
-          case 2:
+          }
+          case 2: {
             message.pubKeyHash = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -18684,7 +19805,7 @@ $root.protocol = (function () {
             (message.pubKeyHash = $util.newBuffer($util.base64.length(object.pubKeyHash))),
             0
           );
-        else if (object.pubKeyHash.length) message.pubKeyHash = object.pubKeyHash;
+        else if (object.pubKeyHash.length >= 0) message.pubKeyHash = object.pubKeyHash;
       return message;
     };
 
@@ -18740,6 +19861,21 @@ $root.protocol = (function () {
      */
     TXOutput.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TXOutput
+     * @function getTypeUrl
+     * @memberof protocol.TXOutput
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TXOutput.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TXOutput';
     };
 
     return TXOutput;
@@ -18845,12 +19981,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.rawData = $root.protocol.TXInput.raw.decode(reader, reader.uint32());
             break;
-          case 4:
+          }
+          case 4: {
             message.signature = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -18916,7 +20054,7 @@ $root.protocol = (function () {
             (message.signature = $util.newBuffer($util.base64.length(object.signature))),
             0
           );
-        else if (object.signature.length) message.signature = object.signature;
+        else if (object.signature.length >= 0) message.signature = object.signature;
       return message;
     };
 
@@ -18961,6 +20099,21 @@ $root.protocol = (function () {
      */
     TXInput.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TXInput
+     * @function getTypeUrl
+     * @memberof protocol.TXInput
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TXInput.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TXInput';
     };
 
     TXInput.raw = (function () {
@@ -19074,15 +20227,18 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.txID = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               message.vout = reader.int64();
               break;
-            case 3:
+            }
+            case 3: {
               message.pubKey = reader.bytes();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -19145,7 +20301,7 @@ $root.protocol = (function () {
         if (object.txID != null)
           if (typeof object.txID === 'string')
             $util.base64.decode(object.txID, (message.txID = $util.newBuffer($util.base64.length(object.txID))), 0);
-          else if (object.txID.length) message.txID = object.txID;
+          else if (object.txID.length >= 0) message.txID = object.txID;
         if (object.vout != null)
           if ($util.Long) (message.vout = $util.Long.fromValue(object.vout)).unsigned = false;
           else if (typeof object.vout === 'string') message.vout = parseInt(object.vout, 10);
@@ -19159,7 +20315,7 @@ $root.protocol = (function () {
               (message.pubKey = $util.newBuffer($util.base64.length(object.pubKey))),
               0
             );
-          else if (object.pubKey.length) message.pubKey = object.pubKey;
+          else if (object.pubKey.length >= 0) message.pubKey = object.pubKey;
         return message;
       };
 
@@ -19228,6 +20384,21 @@ $root.protocol = (function () {
        */
       raw.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for raw
+       * @function getTypeUrl
+       * @memberof protocol.TXInput.raw
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      raw.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.TXInput.raw';
       };
 
       return raw;
@@ -19327,10 +20498,11 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             if (!(message.outputs && message.outputs.length)) message.outputs = [];
             message.outputs.push($root.protocol.TXOutput.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -19426,6 +20598,21 @@ $root.protocol = (function () {
      */
     TXOutputs.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TXOutputs
+     * @function getTypeUrl
+     * @memberof protocol.TXOutputs
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TXOutputs.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TXOutputs';
     };
 
     return TXOutputs;
@@ -19586,27 +20773,34 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.energyUsage = reader.int64();
             break;
-          case 2:
+          }
+          case 2: {
             message.energyFee = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             message.originEnergyUsage = reader.int64();
             break;
-          case 4:
+          }
+          case 4: {
             message.energyUsageTotal = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             message.netUsage = reader.int64();
             break;
-          case 6:
+          }
+          case 6: {
             message.netFee = reader.int64();
             break;
-          case 7:
+          }
+          case 7: {
             message.result = reader.int32();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -19771,6 +20965,12 @@ $root.protocol = (function () {
         else if (typeof object.netFee === 'object')
           message.netFee = new $util.LongBits(object.netFee.low >>> 0, object.netFee.high >>> 0).toNumber();
       switch (object.result) {
+        default:
+          if (typeof object.result === 'number') {
+            message.result = object.result;
+            break;
+          }
+          break;
         case 'DEFAULT':
         case 0:
           message.result = 0;
@@ -19944,7 +21144,11 @@ $root.protocol = (function () {
               : message.netFee;
       if (message.result != null && message.hasOwnProperty('result'))
         object.result =
-          options.enums === String ? $root.protocol.Transaction.Result.contractResult[message.result] : message.result;
+          options.enums === String
+            ? $root.protocol.Transaction.Result.contractResult[message.result] === undefined
+              ? message.result
+              : $root.protocol.Transaction.Result.contractResult[message.result]
+            : message.result;
       return object;
     };
 
@@ -19957,6 +21161,21 @@ $root.protocol = (function () {
      */
     ResourceReceipt.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ResourceReceipt
+     * @function getTypeUrl
+     * @memberof protocol.ResourceReceipt
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ResourceReceipt.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ResourceReceipt';
     };
 
     return ResourceReceipt;
@@ -20082,17 +21301,20 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.rawData = $root.protocol.Transaction.raw.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             if (!(message.signature && message.signature.length)) message.signature = [];
             message.signature.push(reader.bytes());
             break;
-          case 5:
+          }
+          case 5: {
             if (!(message.ret && message.ret.length)) message.ret = [];
             message.ret.push($root.protocol.Transaction.Result.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -20176,7 +21398,7 @@ $root.protocol = (function () {
               (message.signature[i] = $util.newBuffer($util.base64.length(object.signature[i]))),
               0
             );
-          else if (object.signature[i].length) message.signature[i] = object.signature[i];
+          else if (object.signature[i].length >= 0) message.signature[i] = object.signature[i];
       }
       if (object.ret) {
         if (!Array.isArray(object.ret)) throw TypeError('.protocol.Transaction.ret: array expected');
@@ -20235,6 +21457,21 @@ $root.protocol = (function () {
      */
     Transaction.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Transaction
+     * @function getTypeUrl
+     * @memberof protocol.Transaction
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Transaction.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Transaction';
     };
 
     Transaction.Contract = (function () {
@@ -20373,21 +21610,26 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.type = reader.int32();
               break;
-            case 2:
+            }
+            case 2: {
               message.parameter = $root.google.protobuf.Any.decode(reader, reader.uint32());
               break;
-            case 3:
+            }
+            case 3: {
               message.provider = reader.bytes();
               break;
-            case 4:
+            }
+            case 4: {
               message.ContractName = reader.bytes();
               break;
-            case 5:
+            }
+            case 5: {
               message.PermissionId = reader.int32();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -20490,6 +21732,12 @@ $root.protocol = (function () {
         if (object instanceof $root.protocol.Transaction.Contract) return object;
         var message = new $root.protocol.Transaction.Contract();
         switch (object.type) {
+          default:
+            if (typeof object.type === 'number') {
+              message.type = object.type;
+              break;
+            }
+            break;
           case 'AccountCreateContract':
           case 0:
             message.type = 0;
@@ -20627,7 +21875,7 @@ $root.protocol = (function () {
               (message.provider = $util.newBuffer($util.base64.length(object.provider))),
               0
             );
-          else if (object.provider.length) message.provider = object.provider;
+          else if (object.provider.length >= 0) message.provider = object.provider;
         if (object.ContractName != null)
           if (typeof object.ContractName === 'string')
             $util.base64.decode(
@@ -20635,7 +21883,7 @@ $root.protocol = (function () {
               (message.ContractName = $util.newBuffer($util.base64.length(object.ContractName))),
               0
             );
-          else if (object.ContractName.length) message.ContractName = object.ContractName;
+          else if (object.ContractName.length >= 0) message.ContractName = object.ContractName;
         if (object.PermissionId != null) message.PermissionId = object.PermissionId | 0;
         return message;
       };
@@ -20669,7 +21917,11 @@ $root.protocol = (function () {
         }
         if (message.type != null && message.hasOwnProperty('type'))
           object.type =
-            options.enums === String ? $root.protocol.Transaction.Contract.ContractType[message.type] : message.type;
+            options.enums === String
+              ? $root.protocol.Transaction.Contract.ContractType[message.type] === undefined
+                ? message.type
+                : $root.protocol.Transaction.Contract.ContractType[message.type]
+              : message.type;
         if (message.parameter != null && message.hasOwnProperty('parameter'))
           object.parameter = $root.google.protobuf.Any.toObject(message.parameter, options);
         if (message.provider != null && message.hasOwnProperty('provider'))
@@ -20700,6 +21952,21 @@ $root.protocol = (function () {
        */
       Contract.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for Contract
+       * @function getTypeUrl
+       * @memberof protocol.Transaction.Contract
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      Contract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.Transaction.Contract';
       };
 
       /**
@@ -20972,36 +22239,46 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.fee = reader.int64();
               break;
-            case 2:
+            }
+            case 2: {
               message.ret = reader.int32();
               break;
-            case 3:
+            }
+            case 3: {
               message.contractRet = reader.int32();
               break;
-            case 14:
+            }
+            case 14: {
               message.assetIssueID = reader.string();
               break;
-            case 15:
+            }
+            case 15: {
               message.withdrawAmount = reader.int64();
               break;
-            case 16:
+            }
+            case 16: {
               message.unfreezeAmount = reader.int64();
               break;
-            case 18:
+            }
+            case 18: {
               message.exchangeReceivedAmount = reader.int64();
               break;
-            case 19:
+            }
+            case 19: {
               message.exchangeInjectAnotherAmount = reader.int64();
               break;
-            case 20:
+            }
+            case 20: {
               message.exchangeWithdrawAnotherAmount = reader.int64();
               break;
-            case 21:
+            }
+            case 21: {
               message.exchangeId = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -21149,6 +22426,12 @@ $root.protocol = (function () {
           else if (typeof object.fee === 'object')
             message.fee = new $util.LongBits(object.fee.low >>> 0, object.fee.high >>> 0).toNumber();
         switch (object.ret) {
+          default:
+            if (typeof object.ret === 'number') {
+              message.ret = object.ret;
+              break;
+            }
+            break;
           case 'SUCESS':
           case 0:
             message.ret = 0;
@@ -21159,6 +22442,12 @@ $root.protocol = (function () {
             break;
         }
         switch (object.contractRet) {
+          default:
+            if (typeof object.contractRet === 'number') {
+              message.contractRet = object.contractRet;
+              break;
+            }
+            break;
           case 'DEFAULT':
           case 0:
             message.contractRet = 0;
@@ -21355,11 +22644,18 @@ $root.protocol = (function () {
                 ? new $util.LongBits(message.fee.low >>> 0, message.fee.high >>> 0).toNumber()
                 : message.fee;
         if (message.ret != null && message.hasOwnProperty('ret'))
-          object.ret = options.enums === String ? $root.protocol.Transaction.Result.code[message.ret] : message.ret;
+          object.ret =
+            options.enums === String
+              ? $root.protocol.Transaction.Result.code[message.ret] === undefined
+                ? message.ret
+                : $root.protocol.Transaction.Result.code[message.ret]
+              : message.ret;
         if (message.contractRet != null && message.hasOwnProperty('contractRet'))
           object.contractRet =
             options.enums === String
-              ? $root.protocol.Transaction.Result.contractResult[message.contractRet]
+              ? $root.protocol.Transaction.Result.contractResult[message.contractRet] === undefined
+                ? message.contractRet
+                : $root.protocol.Transaction.Result.contractResult[message.contractRet]
               : message.contractRet;
         if (message.assetIssueID != null && message.hasOwnProperty('assetIssueID'))
           object.assetIssueID = message.assetIssueID;
@@ -21451,6 +22747,21 @@ $root.protocol = (function () {
        */
       Result.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for Result
+       * @function getTypeUrl
+       * @memberof protocol.Transaction.Result
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      Result.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.Transaction.Result';
       };
 
       /**
@@ -21709,38 +23020,48 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.refBlockBytes = reader.bytes();
               break;
-            case 3:
+            }
+            case 3: {
               message.refBlockNum = reader.int64();
               break;
-            case 4:
+            }
+            case 4: {
               message.refBlockHash = reader.bytes();
               break;
-            case 8:
+            }
+            case 8: {
               message.expiration = reader.int64();
               break;
-            case 9:
+            }
+            case 9: {
               if (!(message.auths && message.auths.length)) message.auths = [];
               message.auths.push($root.protocol.authority.decode(reader, reader.uint32()));
               break;
-            case 10:
+            }
+            case 10: {
               message.data = reader.bytes();
               break;
-            case 11:
+            }
+            case 11: {
               if (!(message.contract && message.contract.length)) message.contract = [];
               message.contract.push($root.protocol.Transaction.Contract.decode(reader, reader.uint32()));
               break;
-            case 12:
+            }
+            case 12: {
               message.scripts = reader.bytes();
               break;
-            case 14:
+            }
+            case 14: {
               message.timestamp = reader.int64();
               break;
-            case 18:
+            }
+            case 18: {
               message.feeLimit = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -21859,7 +23180,7 @@ $root.protocol = (function () {
               (message.refBlockBytes = $util.newBuffer($util.base64.length(object.refBlockBytes))),
               0
             );
-          else if (object.refBlockBytes.length) message.refBlockBytes = object.refBlockBytes;
+          else if (object.refBlockBytes.length >= 0) message.refBlockBytes = object.refBlockBytes;
         if (object.refBlockNum != null)
           if ($util.Long) (message.refBlockNum = $util.Long.fromValue(object.refBlockNum)).unsigned = false;
           else if (typeof object.refBlockNum === 'string') message.refBlockNum = parseInt(object.refBlockNum, 10);
@@ -21876,7 +23197,7 @@ $root.protocol = (function () {
               (message.refBlockHash = $util.newBuffer($util.base64.length(object.refBlockHash))),
               0
             );
-          else if (object.refBlockHash.length) message.refBlockHash = object.refBlockHash;
+          else if (object.refBlockHash.length >= 0) message.refBlockHash = object.refBlockHash;
         if (object.expiration != null)
           if ($util.Long) (message.expiration = $util.Long.fromValue(object.expiration)).unsigned = false;
           else if (typeof object.expiration === 'string') message.expiration = parseInt(object.expiration, 10);
@@ -21898,7 +23219,7 @@ $root.protocol = (function () {
         if (object.data != null)
           if (typeof object.data === 'string')
             $util.base64.decode(object.data, (message.data = $util.newBuffer($util.base64.length(object.data))), 0);
-          else if (object.data.length) message.data = object.data;
+          else if (object.data.length >= 0) message.data = object.data;
         if (object.contract) {
           if (!Array.isArray(object.contract)) throw TypeError('.protocol.Transaction.raw.contract: array expected');
           message.contract = [];
@@ -21915,7 +23236,7 @@ $root.protocol = (function () {
               (message.scripts = $util.newBuffer($util.base64.length(object.scripts))),
               0
             );
-          else if (object.scripts.length) message.scripts = object.scripts;
+          else if (object.scripts.length >= 0) message.scripts = object.scripts;
         if (object.timestamp != null)
           if ($util.Long) (message.timestamp = $util.Long.fromValue(object.timestamp)).unsigned = false;
           else if (typeof object.timestamp === 'string') message.timestamp = parseInt(object.timestamp, 10);
@@ -22079,6 +23400,21 @@ $root.protocol = (function () {
        */
       raw.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for raw
+       * @function getTypeUrl
+       * @memberof protocol.Transaction.raw
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      raw.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.Transaction.raw';
       };
 
       return raw;
@@ -22384,64 +23720,82 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.id = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.fee = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             message.blockNumber = reader.int64();
             break;
-          case 4:
+          }
+          case 4: {
             message.blockTimeStamp = reader.int64();
             break;
-          case 5:
+          }
+          case 5: {
             if (!(message.contractResult && message.contractResult.length)) message.contractResult = [];
             message.contractResult.push(reader.bytes());
             break;
-          case 6:
+          }
+          case 6: {
             message.contractAddress = reader.bytes();
             break;
-          case 7:
+          }
+          case 7: {
             message.receipt = $root.protocol.ResourceReceipt.decode(reader, reader.uint32());
             break;
-          case 8:
+          }
+          case 8: {
             if (!(message.log && message.log.length)) message.log = [];
             message.log.push($root.protocol.TransactionInfo.Log.decode(reader, reader.uint32()));
             break;
-          case 9:
+          }
+          case 9: {
             message.result = reader.int32();
             break;
-          case 10:
+          }
+          case 10: {
             message.resMessage = reader.bytes();
             break;
-          case 14:
+          }
+          case 14: {
             message.assetIssueID = reader.string();
             break;
-          case 15:
+          }
+          case 15: {
             message.withdrawAmount = reader.int64();
             break;
-          case 16:
+          }
+          case 16: {
             message.unfreezeAmount = reader.int64();
             break;
-          case 17:
+          }
+          case 17: {
             if (!(message.internalTransactions && message.internalTransactions.length))
               message.internalTransactions = [];
             message.internalTransactions.push($root.protocol.InternalTransaction.decode(reader, reader.uint32()));
             break;
-          case 18:
+          }
+          case 18: {
             message.exchangeReceivedAmount = reader.int64();
             break;
-          case 19:
+          }
+          case 19: {
             message.exchangeInjectAnotherAmount = reader.int64();
             break;
-          case 20:
+          }
+          case 20: {
             message.exchangeWithdrawAnotherAmount = reader.int64();
             break;
-          case 21:
+          }
+          case 21: {
             message.exchangeId = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -22629,7 +23983,7 @@ $root.protocol = (function () {
       if (object.id != null)
         if (typeof object.id === 'string')
           $util.base64.decode(object.id, (message.id = $util.newBuffer($util.base64.length(object.id))), 0);
-        else if (object.id.length) message.id = object.id;
+        else if (object.id.length >= 0) message.id = object.id;
       if (object.fee != null)
         if ($util.Long) (message.fee = $util.Long.fromValue(object.fee)).unsigned = false;
         else if (typeof object.fee === 'string') message.fee = parseInt(object.fee, 10);
@@ -22666,7 +24020,7 @@ $root.protocol = (function () {
               (message.contractResult[i] = $util.newBuffer($util.base64.length(object.contractResult[i]))),
               0
             );
-          else if (object.contractResult[i].length) message.contractResult[i] = object.contractResult[i];
+          else if (object.contractResult[i].length >= 0) message.contractResult[i] = object.contractResult[i];
       }
       if (object.contractAddress != null)
         if (typeof object.contractAddress === 'string')
@@ -22675,7 +24029,7 @@ $root.protocol = (function () {
             (message.contractAddress = $util.newBuffer($util.base64.length(object.contractAddress))),
             0
           );
-        else if (object.contractAddress.length) message.contractAddress = object.contractAddress;
+        else if (object.contractAddress.length >= 0) message.contractAddress = object.contractAddress;
       if (object.receipt != null) {
         if (typeof object.receipt !== 'object') throw TypeError('.protocol.TransactionInfo.receipt: object expected');
         message.receipt = $root.protocol.ResourceReceipt.fromObject(object.receipt);
@@ -22689,6 +24043,12 @@ $root.protocol = (function () {
         }
       }
       switch (object.result) {
+        default:
+          if (typeof object.result === 'number') {
+            message.result = object.result;
+            break;
+          }
+          break;
         case 'SUCESS':
         case 0:
           message.result = 0;
@@ -22705,7 +24065,7 @@ $root.protocol = (function () {
             (message.resMessage = $util.newBuffer($util.base64.length(object.resMessage))),
             0
           );
-        else if (object.resMessage.length) message.resMessage = object.resMessage;
+        else if (object.resMessage.length >= 0) message.resMessage = object.resMessage;
       if (object.assetIssueID != null) message.assetIssueID = String(object.assetIssueID);
       if (object.withdrawAmount != null)
         if ($util.Long) (message.withdrawAmount = $util.Long.fromValue(object.withdrawAmount)).unsigned = false;
@@ -22930,7 +24290,12 @@ $root.protocol = (function () {
           object.log[j] = $root.protocol.TransactionInfo.Log.toObject(message.log[j], options);
       }
       if (message.result != null && message.hasOwnProperty('result'))
-        object.result = options.enums === String ? $root.protocol.TransactionInfo.code[message.result] : message.result;
+        object.result =
+          options.enums === String
+            ? $root.protocol.TransactionInfo.code[message.result] === undefined
+              ? message.result
+              : $root.protocol.TransactionInfo.code[message.result]
+            : message.result;
       if (message.resMessage != null && message.hasOwnProperty('resMessage'))
         object.resMessage =
           options.bytes === String
@@ -23036,6 +24401,21 @@ $root.protocol = (function () {
      */
     TransactionInfo.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TransactionInfo
+     * @function getTypeUrl
+     * @memberof protocol.TransactionInfo
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TransactionInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TransactionInfo';
     };
 
     /**
@@ -23166,16 +24546,19 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.address = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               if (!(message.topics && message.topics.length)) message.topics = [];
               message.topics.push(reader.bytes());
               break;
-            case 3:
+            }
+            case 3: {
               message.data = reader.bytes();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -23247,7 +24630,7 @@ $root.protocol = (function () {
               (message.address = $util.newBuffer($util.base64.length(object.address))),
               0
             );
-          else if (object.address.length) message.address = object.address;
+          else if (object.address.length >= 0) message.address = object.address;
         if (object.topics) {
           if (!Array.isArray(object.topics)) throw TypeError('.protocol.TransactionInfo.Log.topics: array expected');
           message.topics = [];
@@ -23258,12 +24641,12 @@ $root.protocol = (function () {
                 (message.topics[i] = $util.newBuffer($util.base64.length(object.topics[i]))),
                 0
               );
-            else if (object.topics[i].length) message.topics[i] = object.topics[i];
+            else if (object.topics[i].length >= 0) message.topics[i] = object.topics[i];
         }
         if (object.data != null)
           if (typeof object.data === 'string')
             $util.base64.decode(object.data, (message.data = $util.newBuffer($util.base64.length(object.data))), 0);
-          else if (object.data.length) message.data = object.data;
+          else if (object.data.length >= 0) message.data = object.data;
         return message;
       };
 
@@ -23328,6 +24711,21 @@ $root.protocol = (function () {
        */
       Log.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for Log
+       * @function getTypeUrl
+       * @memberof protocol.TransactionInfo.Log
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      Log.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.TransactionInfo.Log';
       };
 
       return Log;
@@ -23452,16 +24850,19 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.blockNumber = reader.int64();
             break;
-          case 2:
+          }
+          case 2: {
             message.blockTimeStamp = reader.int64();
             break;
-          case 3:
+          }
+          case 3: {
             if (!(message.transactioninfo && message.transactioninfo.length)) message.transactioninfo = [];
             message.transactioninfo.push($root.protocol.TransactionInfo.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -23632,6 +25033,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for TransactionRet
+     * @function getTypeUrl
+     * @memberof protocol.TransactionRet
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TransactionRet.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TransactionRet';
+    };
+
     return TransactionRet;
   })();
 
@@ -23729,10 +25145,11 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             if (!(message.transactions && message.transactions.length)) message.transactions = [];
             message.transactions.push($root.protocol.Transaction.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -23829,6 +25246,21 @@ $root.protocol = (function () {
      */
     Transactions.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Transactions
+     * @function getTypeUrl
+     * @memberof protocol.Transactions
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Transactions.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Transactions';
     };
 
     return Transactions;
@@ -23937,12 +25369,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.transaction = $root.protocol.Transaction.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             message.privateKey = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -24011,7 +25445,7 @@ $root.protocol = (function () {
             (message.privateKey = $util.newBuffer($util.base64.length(object.privateKey))),
             0
           );
-        else if (object.privateKey.length) message.privateKey = object.privateKey;
+        else if (object.privateKey.length >= 0) message.privateKey = object.privateKey;
       return message;
     };
 
@@ -24056,6 +25490,21 @@ $root.protocol = (function () {
      */
     TransactionSign.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TransactionSign
+     * @function getTypeUrl
+     * @memberof protocol.TransactionSign
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TransactionSign.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.TransactionSign';
     };
 
     return TransactionSign;
@@ -24163,12 +25612,14 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.rawData = $root.protocol.BlockHeader.raw.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             message.witnessSignature = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -24239,7 +25690,7 @@ $root.protocol = (function () {
             (message.witnessSignature = $util.newBuffer($util.base64.length(object.witnessSignature))),
             0
           );
-        else if (object.witnessSignature.length) message.witnessSignature = object.witnessSignature;
+        else if (object.witnessSignature.length >= 0) message.witnessSignature = object.witnessSignature;
       return message;
     };
 
@@ -24284,6 +25735,21 @@ $root.protocol = (function () {
      */
     BlockHeader.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for BlockHeader
+     * @function getTypeUrl
+     * @memberof protocol.BlockHeader
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    BlockHeader.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.BlockHeader';
     };
 
     BlockHeader.raw = (function () {
@@ -24452,30 +25918,38 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.timestamp = reader.int64();
               break;
-            case 2:
+            }
+            case 2: {
               message.txTrieRoot = reader.bytes();
               break;
-            case 3:
+            }
+            case 3: {
               message.parentHash = reader.bytes();
               break;
-            case 7:
+            }
+            case 7: {
               message.number = reader.int64();
               break;
-            case 8:
+            }
+            case 8: {
               message.witnessId = reader.int64();
               break;
-            case 9:
+            }
+            case 9: {
               message.witnessAddress = reader.bytes();
               break;
-            case 10:
+            }
+            case 10: {
               message.version = reader.int32();
               break;
-            case 11:
+            }
+            case 11: {
               message.accountStateRoot = reader.bytes();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -24588,7 +26062,7 @@ $root.protocol = (function () {
               (message.txTrieRoot = $util.newBuffer($util.base64.length(object.txTrieRoot))),
               0
             );
-          else if (object.txTrieRoot.length) message.txTrieRoot = object.txTrieRoot;
+          else if (object.txTrieRoot.length >= 0) message.txTrieRoot = object.txTrieRoot;
         if (object.parentHash != null)
           if (typeof object.parentHash === 'string')
             $util.base64.decode(
@@ -24596,7 +26070,7 @@ $root.protocol = (function () {
               (message.parentHash = $util.newBuffer($util.base64.length(object.parentHash))),
               0
             );
-          else if (object.parentHash.length) message.parentHash = object.parentHash;
+          else if (object.parentHash.length >= 0) message.parentHash = object.parentHash;
         if (object.number != null)
           if ($util.Long) (message.number = $util.Long.fromValue(object.number)).unsigned = false;
           else if (typeof object.number === 'string') message.number = parseInt(object.number, 10);
@@ -24616,7 +26090,7 @@ $root.protocol = (function () {
               (message.witnessAddress = $util.newBuffer($util.base64.length(object.witnessAddress))),
               0
             );
-          else if (object.witnessAddress.length) message.witnessAddress = object.witnessAddress;
+          else if (object.witnessAddress.length >= 0) message.witnessAddress = object.witnessAddress;
         if (object.version != null) message.version = object.version | 0;
         if (object.accountStateRoot != null)
           if (typeof object.accountStateRoot === 'string')
@@ -24625,7 +26099,7 @@ $root.protocol = (function () {
               (message.accountStateRoot = $util.newBuffer($util.base64.length(object.accountStateRoot))),
               0
             );
-          else if (object.accountStateRoot.length) message.accountStateRoot = object.accountStateRoot;
+          else if (object.accountStateRoot.length >= 0) message.accountStateRoot = object.accountStateRoot;
         return message;
       };
 
@@ -24752,6 +26226,21 @@ $root.protocol = (function () {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
       };
 
+      /**
+       * Gets the default type url for raw
+       * @function getTypeUrl
+       * @memberof protocol.BlockHeader.raw
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      raw.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.BlockHeader.raw';
+      };
+
       return raw;
     })();
 
@@ -24866,13 +26355,15 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             if (!(message.transactions && message.transactions.length)) message.transactions = [];
             message.transactions.push($root.protocol.Transaction.decode(reader, reader.uint32()));
             break;
-          case 2:
+          }
+          case 2: {
             message.blockHeader = $root.protocol.BlockHeader.decode(reader, reader.uint32());
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -24980,6 +26471,21 @@ $root.protocol = (function () {
      */
     Block.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Block
+     * @function getTypeUrl
+     * @memberof protocol.Block
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Block.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Block';
     };
 
     return Block;
@@ -25090,13 +26596,15 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             if (!(message.ids && message.ids.length)) message.ids = [];
             message.ids.push($root.protocol.ChainInventory.BlockId.decode(reader, reader.uint32()));
             break;
-          case 2:
+          }
+          case 2: {
             message.remainNum = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -25222,6 +26730,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for ChainInventory
+     * @function getTypeUrl
+     * @memberof protocol.ChainInventory
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ChainInventory.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.ChainInventory';
+    };
+
     ChainInventory.BlockId = (function () {
       /**
        * Properties of a BlockId.
@@ -25322,12 +26845,14 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.hash = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               message.number = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -25387,7 +26912,7 @@ $root.protocol = (function () {
         if (object.hash != null)
           if (typeof object.hash === 'string')
             $util.base64.decode(object.hash, (message.hash = $util.newBuffer($util.base64.length(object.hash))), 0);
-          else if (object.hash.length) message.hash = object.hash;
+          else if (object.hash.length >= 0) message.hash = object.hash;
         if (object.number != null)
           if ($util.Long) (message.number = $util.Long.fromValue(object.number)).unsigned = false;
           else if (typeof object.number === 'string') message.number = parseInt(object.number, 10);
@@ -25450,6 +26975,21 @@ $root.protocol = (function () {
        */
       BlockId.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for BlockId
+       * @function getTypeUrl
+       * @memberof protocol.ChainInventory.BlockId
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      BlockId.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.ChainInventory.BlockId';
       };
 
       return BlockId;
@@ -25563,13 +27103,15 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             if (!(message.ids && message.ids.length)) message.ids = [];
             message.ids.push($root.protocol.BlockInventory.BlockId.decode(reader, reader.uint32()));
             break;
-          case 2:
+          }
+          case 2: {
             message.type = reader.int32();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -25642,6 +27184,12 @@ $root.protocol = (function () {
         }
       }
       switch (object.type) {
+        default:
+          if (typeof object.type === 'number') {
+            message.type = object.type;
+            break;
+          }
+          break;
         case 'SYNC':
         case 0:
           message.type = 0;
@@ -25678,7 +27226,12 @@ $root.protocol = (function () {
           object.ids[j] = $root.protocol.BlockInventory.BlockId.toObject(message.ids[j], options);
       }
       if (message.type != null && message.hasOwnProperty('type'))
-        object.type = options.enums === String ? $root.protocol.BlockInventory.Type[message.type] : message.type;
+        object.type =
+          options.enums === String
+            ? $root.protocol.BlockInventory.Type[message.type] === undefined
+              ? message.type
+              : $root.protocol.BlockInventory.Type[message.type]
+            : message.type;
       return object;
     };
 
@@ -25691,6 +27244,21 @@ $root.protocol = (function () {
      */
     BlockInventory.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for BlockInventory
+     * @function getTypeUrl
+     * @memberof protocol.BlockInventory
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    BlockInventory.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.BlockInventory';
     };
 
     /**
@@ -25810,12 +27378,14 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.hash = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               message.number = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -25875,7 +27445,7 @@ $root.protocol = (function () {
         if (object.hash != null)
           if (typeof object.hash === 'string')
             $util.base64.decode(object.hash, (message.hash = $util.newBuffer($util.base64.length(object.hash))), 0);
-          else if (object.hash.length) message.hash = object.hash;
+          else if (object.hash.length >= 0) message.hash = object.hash;
         if (object.number != null)
           if ($util.Long) (message.number = $util.Long.fromValue(object.number)).unsigned = false;
           else if (typeof object.number === 'string') message.number = parseInt(object.number, 10);
@@ -25938,6 +27508,21 @@ $root.protocol = (function () {
        */
       BlockId.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for BlockId
+       * @function getTypeUrl
+       * @memberof protocol.BlockInventory.BlockId
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      BlockId.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.BlockInventory.BlockId';
       };
 
       return BlockId;
@@ -26047,13 +27632,15 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.type = reader.int32();
             break;
-          case 2:
+          }
+          case 2: {
             if (!(message.ids && message.ids.length)) message.ids = [];
             message.ids.push(reader.bytes());
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -26116,6 +27703,12 @@ $root.protocol = (function () {
       if (object instanceof $root.protocol.Inventory) return object;
       var message = new $root.protocol.Inventory();
       switch (object.type) {
+        default:
+          if (typeof object.type === 'number') {
+            message.type = object.type;
+            break;
+          }
+          break;
         case 'TRX':
         case 0:
           message.type = 0;
@@ -26135,7 +27728,7 @@ $root.protocol = (function () {
               (message.ids[i] = $util.newBuffer($util.base64.length(object.ids[i]))),
               0
             );
-          else if (object.ids[i].length) message.ids[i] = object.ids[i];
+          else if (object.ids[i].length >= 0) message.ids[i] = object.ids[i];
       }
       return message;
     };
@@ -26155,7 +27748,12 @@ $root.protocol = (function () {
       if (options.arrays || options.defaults) object.ids = [];
       if (options.defaults) object.type = options.enums === String ? 'TRX' : 0;
       if (message.type != null && message.hasOwnProperty('type'))
-        object.type = options.enums === String ? $root.protocol.Inventory.InventoryType[message.type] : message.type;
+        object.type =
+          options.enums === String
+            ? $root.protocol.Inventory.InventoryType[message.type] === undefined
+              ? message.type
+              : $root.protocol.Inventory.InventoryType[message.type]
+            : message.type;
       if (message.ids && message.ids.length) {
         object.ids = [];
         for (var j = 0; j < message.ids.length; ++j)
@@ -26178,6 +27776,21 @@ $root.protocol = (function () {
      */
     Inventory.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Inventory
+     * @function getTypeUrl
+     * @memberof protocol.Inventory
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Inventory.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Inventory';
     };
 
     /**
@@ -26332,21 +27945,25 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.type = reader.int32();
             break;
-          case 2:
+          }
+          case 2: {
             if (!(message.blocks && message.blocks.length)) message.blocks = [];
             message.blocks.push($root.protocol.Block.decode(reader, reader.uint32()));
             break;
-          case 3:
+          }
+          case 3: {
             if (!(message.blockHeaders && message.blockHeaders.length)) message.blockHeaders = [];
             message.blockHeaders.push($root.protocol.BlockHeader.decode(reader, reader.uint32()));
             break;
-          case 4:
+          }
+          case 4: {
             if (!(message.transactions && message.transactions.length)) message.transactions = [];
             message.transactions.push($root.protocol.Transaction.decode(reader, reader.uint32()));
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -26426,6 +28043,12 @@ $root.protocol = (function () {
       if (object instanceof $root.protocol.Items) return object;
       var message = new $root.protocol.Items();
       switch (object.type) {
+        default:
+          if (typeof object.type === 'number') {
+            message.type = object.type;
+            break;
+          }
+          break;
         case 'ERR':
         case 0:
           message.type = 0;
@@ -26491,7 +28114,12 @@ $root.protocol = (function () {
       }
       if (options.defaults) object.type = options.enums === String ? 'ERR' : 0;
       if (message.type != null && message.hasOwnProperty('type'))
-        object.type = options.enums === String ? $root.protocol.Items.ItemType[message.type] : message.type;
+        object.type =
+          options.enums === String
+            ? $root.protocol.Items.ItemType[message.type] === undefined
+              ? message.type
+              : $root.protocol.Items.ItemType[message.type]
+            : message.type;
       if (message.blocks && message.blocks.length) {
         object.blocks = [];
         for (var j = 0; j < message.blocks.length; ++j)
@@ -26519,6 +28147,21 @@ $root.protocol = (function () {
      */
     Items.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for Items
+     * @function getTypeUrl
+     * @memberof protocol.Items
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    Items.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.Items';
     };
 
     /**
@@ -26632,9 +28275,10 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.lastSolidityBlockNum = reader.int64();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -26751,6 +28395,21 @@ $root.protocol = (function () {
      */
     DynamicProperties.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DynamicProperties
+     * @function getTypeUrl
+     * @memberof protocol.DynamicProperties
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DynamicProperties.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.DynamicProperties';
     };
 
     return DynamicProperties;
@@ -26904,9 +28563,10 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.reason = reader.int32();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -26985,6 +28645,12 @@ $root.protocol = (function () {
       if (object instanceof $root.protocol.DisconnectMessage) return object;
       var message = new $root.protocol.DisconnectMessage();
       switch (object.reason) {
+        default:
+          if (typeof object.reason === 'number') {
+            message.reason = object.reason;
+            break;
+          }
+          break;
         case 'REQUESTED':
         case 0:
           message.reason = 0;
@@ -27099,7 +28765,12 @@ $root.protocol = (function () {
       var object = {};
       if (options.defaults) object.reason = options.enums === String ? 'REQUESTED' : 0;
       if (message.reason != null && message.hasOwnProperty('reason'))
-        object.reason = options.enums === String ? $root.protocol.ReasonCode[message.reason] : message.reason;
+        object.reason =
+          options.enums === String
+            ? $root.protocol.ReasonCode[message.reason] === undefined
+              ? message.reason
+              : $root.protocol.ReasonCode[message.reason]
+            : message.reason;
       return object;
     };
 
@@ -27112,6 +28783,21 @@ $root.protocol = (function () {
      */
     DisconnectMessage.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DisconnectMessage
+     * @function getTypeUrl
+     * @memberof protocol.DisconnectMessage
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DisconnectMessage.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.DisconnectMessage';
     };
 
     return DisconnectMessage;
@@ -27270,24 +28956,30 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.from = $root.protocol.Endpoint.decode(reader, reader.uint32());
             break;
-          case 2:
+          }
+          case 2: {
             message.version = reader.int32();
             break;
-          case 3:
+          }
+          case 3: {
             message.timestamp = reader.int64();
             break;
-          case 4:
+          }
+          case 4: {
             message.genesisBlockId = $root.protocol.HelloMessage.BlockId.decode(reader, reader.uint32());
             break;
-          case 5:
+          }
+          case 5: {
             message.solidBlockId = $root.protocol.HelloMessage.BlockId.decode(reader, reader.uint32());
             break;
-          case 6:
+          }
+          case 6: {
             message.headBlockId = $root.protocol.HelloMessage.BlockId.decode(reader, reader.uint32());
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -27445,6 +29137,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for HelloMessage
+     * @function getTypeUrl
+     * @memberof protocol.HelloMessage
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    HelloMessage.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.HelloMessage';
+    };
+
     HelloMessage.BlockId = (function () {
       /**
        * Properties of a BlockId.
@@ -27545,12 +29252,14 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.hash = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               message.number = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -27610,7 +29319,7 @@ $root.protocol = (function () {
         if (object.hash != null)
           if (typeof object.hash === 'string')
             $util.base64.decode(object.hash, (message.hash = $util.newBuffer($util.base64.length(object.hash))), 0);
-          else if (object.hash.length) message.hash = object.hash;
+          else if (object.hash.length >= 0) message.hash = object.hash;
         if (object.number != null)
           if ($util.Long) (message.number = $util.Long.fromValue(object.number)).unsigned = false;
           else if (typeof object.number === 'string') message.number = parseInt(object.number, 10);
@@ -27673,6 +29382,21 @@ $root.protocol = (function () {
        */
       BlockId.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for BlockId
+       * @function getTypeUrl
+       * @memberof protocol.HelloMessage.BlockId
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      BlockId.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.HelloMessage.BlockId';
       };
 
       return BlockId;
@@ -27872,36 +29596,46 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.originAddress = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.contractAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.abi = $root.protocol.SmartContract.ABI.decode(reader, reader.uint32());
             break;
-          case 4:
+          }
+          case 4: {
             message.bytecode = reader.bytes();
             break;
-          case 5:
+          }
+          case 5: {
             message.callValue = reader.int64();
             break;
-          case 6:
+          }
+          case 6: {
             message.consumeUserResourcePercent = reader.int64();
             break;
-          case 7:
+          }
+          case 7: {
             message.name = reader.string();
             break;
-          case 8:
+          }
+          case 8: {
             message.originEnergyLimit = reader.int64();
             break;
-          case 9:
+          }
+          case 9: {
             message.codeHash = reader.bytes();
             break;
-          case 10:
+          }
+          case 10: {
             message.trxHash = reader.bytes();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -28013,7 +29747,7 @@ $root.protocol = (function () {
             (message.originAddress = $util.newBuffer($util.base64.length(object.originAddress))),
             0
           );
-        else if (object.originAddress.length) message.originAddress = object.originAddress;
+        else if (object.originAddress.length >= 0) message.originAddress = object.originAddress;
       if (object.contractAddress != null)
         if (typeof object.contractAddress === 'string')
           $util.base64.decode(
@@ -28021,7 +29755,7 @@ $root.protocol = (function () {
             (message.contractAddress = $util.newBuffer($util.base64.length(object.contractAddress))),
             0
           );
-        else if (object.contractAddress.length) message.contractAddress = object.contractAddress;
+        else if (object.contractAddress.length >= 0) message.contractAddress = object.contractAddress;
       if (object.abi != null) {
         if (typeof object.abi !== 'object') throw TypeError('.protocol.SmartContract.abi: object expected');
         message.abi = $root.protocol.SmartContract.ABI.fromObject(object.abi);
@@ -28033,7 +29767,7 @@ $root.protocol = (function () {
             (message.bytecode = $util.newBuffer($util.base64.length(object.bytecode))),
             0
           );
-        else if (object.bytecode.length) message.bytecode = object.bytecode;
+        else if (object.bytecode.length >= 0) message.bytecode = object.bytecode;
       if (object.callValue != null)
         if ($util.Long) (message.callValue = $util.Long.fromValue(object.callValue)).unsigned = false;
         else if (typeof object.callValue === 'string') message.callValue = parseInt(object.callValue, 10);
@@ -28072,7 +29806,7 @@ $root.protocol = (function () {
             (message.codeHash = $util.newBuffer($util.base64.length(object.codeHash))),
             0
           );
-        else if (object.codeHash.length) message.codeHash = object.codeHash;
+        else if (object.codeHash.length >= 0) message.codeHash = object.codeHash;
       if (object.trxHash != null)
         if (typeof object.trxHash === 'string')
           $util.base64.decode(
@@ -28080,7 +29814,7 @@ $root.protocol = (function () {
             (message.trxHash = $util.newBuffer($util.base64.length(object.trxHash))),
             0
           );
-        else if (object.trxHash.length) message.trxHash = object.trxHash;
+        else if (object.trxHash.length >= 0) message.trxHash = object.trxHash;
       return message;
     };
 
@@ -28227,6 +29961,21 @@ $root.protocol = (function () {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
 
+    /**
+     * Gets the default type url for SmartContract
+     * @function getTypeUrl
+     * @memberof protocol.SmartContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    SmartContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.SmartContract';
+    };
+
     SmartContract.ABI = (function () {
       /**
        * Properties of a ABI.
@@ -28321,10 +30070,11 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               if (!(message.entrys && message.entrys.length)) message.entrys = [];
               message.entrys.push($root.protocol.SmartContract.ABI.Entry.decode(reader, reader.uint32()));
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -28421,6 +30171,21 @@ $root.protocol = (function () {
        */
       ABI.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for ABI
+       * @function getTypeUrl
+       * @memberof protocol.SmartContract.ABI
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      ABI.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.SmartContract.ABI';
       };
 
       ABI.Entry = (function () {
@@ -28599,32 +30364,40 @@ $root.protocol = (function () {
           while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 message.anonymous = reader.bool();
                 break;
-              case 2:
+              }
+              case 2: {
                 message.constant = reader.bool();
                 break;
-              case 3:
+              }
+              case 3: {
                 message.name = reader.string();
                 break;
-              case 4:
+              }
+              case 4: {
                 if (!(message.inputs && message.inputs.length)) message.inputs = [];
                 message.inputs.push($root.protocol.SmartContract.ABI.Entry.Param.decode(reader, reader.uint32()));
                 break;
-              case 5:
+              }
+              case 5: {
                 if (!(message.outputs && message.outputs.length)) message.outputs = [];
                 message.outputs.push($root.protocol.SmartContract.ABI.Entry.Param.decode(reader, reader.uint32()));
                 break;
-              case 6:
+              }
+              case 6: {
                 message.type = reader.int32();
                 break;
-              case 7:
+              }
+              case 7: {
                 message.payable = reader.bool();
                 break;
-              case 8:
+              }
+              case 8: {
                 message.stateMutability = reader.int32();
                 break;
+              }
               default:
                 reader.skipType(tag & 7);
                 break;
@@ -28740,6 +30513,12 @@ $root.protocol = (function () {
             }
           }
           switch (object.type) {
+            default:
+              if (typeof object.type === 'number') {
+                message.type = object.type;
+                break;
+              }
+              break;
             case 'UnknownEntryType':
             case 0:
               message.type = 0;
@@ -28763,6 +30542,12 @@ $root.protocol = (function () {
           }
           if (object.payable != null) message.payable = Boolean(object.payable);
           switch (object.stateMutability) {
+            default:
+              if (typeof object.stateMutability === 'number') {
+                message.stateMutability = object.stateMutability;
+                break;
+              }
+              break;
             case 'UnknownMutabilityType':
             case 0:
               message.stateMutability = 0;
@@ -28826,12 +30611,18 @@ $root.protocol = (function () {
           }
           if (message.type != null && message.hasOwnProperty('type'))
             object.type =
-              options.enums === String ? $root.protocol.SmartContract.ABI.Entry.EntryType[message.type] : message.type;
+              options.enums === String
+                ? $root.protocol.SmartContract.ABI.Entry.EntryType[message.type] === undefined
+                  ? message.type
+                  : $root.protocol.SmartContract.ABI.Entry.EntryType[message.type]
+                : message.type;
           if (message.payable != null && message.hasOwnProperty('payable')) object.payable = message.payable;
           if (message.stateMutability != null && message.hasOwnProperty('stateMutability'))
             object.stateMutability =
               options.enums === String
-                ? $root.protocol.SmartContract.ABI.Entry.StateMutabilityType[message.stateMutability]
+                ? $root.protocol.SmartContract.ABI.Entry.StateMutabilityType[message.stateMutability] === undefined
+                  ? message.stateMutability
+                  : $root.protocol.SmartContract.ABI.Entry.StateMutabilityType[message.stateMutability]
                 : message.stateMutability;
           return object;
         };
@@ -28845,6 +30636,21 @@ $root.protocol = (function () {
          */
         Entry.prototype.toJSON = function toJSON() {
           return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for Entry
+         * @function getTypeUrl
+         * @memberof protocol.SmartContract.ABI.Entry
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        Entry.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+          if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = 'type.googleapis.com';
+          }
+          return typeUrlPrefix + '/protocol.SmartContract.ABI.Entry';
         };
 
         /**
@@ -28979,15 +30785,18 @@ $root.protocol = (function () {
             while (reader.pos < end) {
               var tag = reader.uint32();
               switch (tag >>> 3) {
-                case 1:
+                case 1: {
                   message.indexed = reader.bool();
                   break;
-                case 2:
+                }
+                case 2: {
                   message.name = reader.string();
                   break;
-                case 3:
+                }
+                case 3: {
                   message.type = reader.string();
                   break;
+                }
                 default:
                   reader.skipType(tag & 7);
                   break;
@@ -29079,6 +30888,21 @@ $root.protocol = (function () {
            */
           Param.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+          };
+
+          /**
+           * Gets the default type url for Param
+           * @function getTypeUrl
+           * @memberof protocol.SmartContract.ABI.Entry.Param
+           * @static
+           * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+           * @returns {string} The default type url
+           */
+          Param.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+              typeUrlPrefix = 'type.googleapis.com';
+            }
+            return typeUrlPrefix + '/protocol.SmartContract.ABI.Entry.Param';
           };
 
           return Param;
@@ -29263,27 +31087,33 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.hash = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             message.callerAddress = reader.bytes();
             break;
-          case 3:
+          }
+          case 3: {
             message.transferToAddress = reader.bytes();
             break;
-          case 4:
+          }
+          case 4: {
             if (!(message.callValueInfo && message.callValueInfo.length)) message.callValueInfo = [];
             message.callValueInfo.push(
               $root.protocol.InternalTransaction.CallValueInfo.decode(reader, reader.uint32())
             );
             break;
-          case 5:
+          }
+          case 5: {
             message.note = reader.bytes();
             break;
-          case 6:
+          }
+          case 6: {
             message.rejected = reader.bool();
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -29365,7 +31195,7 @@ $root.protocol = (function () {
       if (object.hash != null)
         if (typeof object.hash === 'string')
           $util.base64.decode(object.hash, (message.hash = $util.newBuffer($util.base64.length(object.hash))), 0);
-        else if (object.hash.length) message.hash = object.hash;
+        else if (object.hash.length >= 0) message.hash = object.hash;
       if (object.callerAddress != null)
         if (typeof object.callerAddress === 'string')
           $util.base64.decode(
@@ -29373,7 +31203,7 @@ $root.protocol = (function () {
             (message.callerAddress = $util.newBuffer($util.base64.length(object.callerAddress))),
             0
           );
-        else if (object.callerAddress.length) message.callerAddress = object.callerAddress;
+        else if (object.callerAddress.length >= 0) message.callerAddress = object.callerAddress;
       if (object.transferToAddress != null)
         if (typeof object.transferToAddress === 'string')
           $util.base64.decode(
@@ -29381,7 +31211,7 @@ $root.protocol = (function () {
             (message.transferToAddress = $util.newBuffer($util.base64.length(object.transferToAddress))),
             0
           );
-        else if (object.transferToAddress.length) message.transferToAddress = object.transferToAddress;
+        else if (object.transferToAddress.length >= 0) message.transferToAddress = object.transferToAddress;
       if (object.callValueInfo) {
         if (!Array.isArray(object.callValueInfo))
           throw TypeError('.protocol.InternalTransaction.callValueInfo: array expected');
@@ -29397,7 +31227,7 @@ $root.protocol = (function () {
       if (object.note != null)
         if (typeof object.note === 'string')
           $util.base64.decode(object.note, (message.note = $util.newBuffer($util.base64.length(object.note))), 0);
-        else if (object.note.length) message.note = object.note;
+        else if (object.note.length >= 0) message.note = object.note;
       if (object.rejected != null) message.rejected = Boolean(object.rejected);
       return message;
     };
@@ -29487,6 +31317,21 @@ $root.protocol = (function () {
      */
     InternalTransaction.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for InternalTransaction
+     * @function getTypeUrl
+     * @memberof protocol.InternalTransaction
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    InternalTransaction.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.InternalTransaction';
     };
 
     InternalTransaction.CallValueInfo = (function () {
@@ -29589,12 +31434,14 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.callValue = reader.int64();
               break;
-            case 2:
+            }
+            case 2: {
               message.tokenId = reader.string();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -29703,6 +31550,21 @@ $root.protocol = (function () {
        */
       CallValueInfo.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for CallValueInfo
+       * @function getTypeUrl
+       * @memberof protocol.InternalTransaction.CallValueInfo
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      CallValueInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.InternalTransaction.CallValueInfo';
       };
 
       return CallValueInfo;
@@ -29826,17 +31688,20 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.account = reader.bytes();
             break;
-          case 2:
+          }
+          case 2: {
             if (!(message.fromAccounts && message.fromAccounts.length)) message.fromAccounts = [];
             message.fromAccounts.push(reader.bytes());
             break;
-          case 3:
+          }
+          case 3: {
             if (!(message.toAccounts && message.toAccounts.length)) message.toAccounts = [];
             message.toAccounts.push(reader.bytes());
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -29916,7 +31781,7 @@ $root.protocol = (function () {
             (message.account = $util.newBuffer($util.base64.length(object.account))),
             0
           );
-        else if (object.account.length) message.account = object.account;
+        else if (object.account.length >= 0) message.account = object.account;
       if (object.fromAccounts) {
         if (!Array.isArray(object.fromAccounts))
           throw TypeError('.protocol.DelegatedResourceAccountIndex.fromAccounts: array expected');
@@ -29928,7 +31793,7 @@ $root.protocol = (function () {
               (message.fromAccounts[i] = $util.newBuffer($util.base64.length(object.fromAccounts[i]))),
               0
             );
-          else if (object.fromAccounts[i].length) message.fromAccounts[i] = object.fromAccounts[i];
+          else if (object.fromAccounts[i].length >= 0) message.fromAccounts[i] = object.fromAccounts[i];
       }
       if (object.toAccounts) {
         if (!Array.isArray(object.toAccounts))
@@ -29941,7 +31806,7 @@ $root.protocol = (function () {
               (message.toAccounts[i] = $util.newBuffer($util.base64.length(object.toAccounts[i]))),
               0
             );
-          else if (object.toAccounts[i].length) message.toAccounts[i] = object.toAccounts[i];
+          else if (object.toAccounts[i].length >= 0) message.toAccounts[i] = object.toAccounts[i];
       }
       return message;
     };
@@ -30007,6 +31872,21 @@ $root.protocol = (function () {
      */
     DelegatedResourceAccountIndex.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DelegatedResourceAccountIndex
+     * @function getTypeUrl
+     * @memberof protocol.DelegatedResourceAccountIndex
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DelegatedResourceAccountIndex.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.DelegatedResourceAccountIndex';
     };
 
     return DelegatedResourceAccountIndex;
@@ -30233,38 +32113,48 @@ $root.protocol = (function () {
       while (reader.pos < end) {
         var tag = reader.uint32();
         switch (tag >>> 3) {
-          case 1:
+          case 1: {
             message.beginSyncNum = reader.int64();
             break;
-          case 2:
+          }
+          case 2: {
             message.block = reader.string();
             break;
-          case 3:
+          }
+          case 3: {
             message.solidityBlock = reader.string();
             break;
-          case 4:
+          }
+          case 4: {
             message.currentConnectCount = reader.int32();
             break;
-          case 5:
+          }
+          case 5: {
             message.activeConnectCount = reader.int32();
             break;
-          case 6:
+          }
+          case 6: {
             message.passiveConnectCount = reader.int32();
             break;
-          case 7:
+          }
+          case 7: {
             message.totalFlow = reader.int64();
             break;
-          case 8:
+          }
+          case 8: {
             if (!(message.peerInfoList && message.peerInfoList.length)) message.peerInfoList = [];
             message.peerInfoList.push($root.protocol.NodeInfo.PeerInfo.decode(reader, reader.uint32()));
             break;
-          case 9:
+          }
+          case 9: {
             message.configNodeInfo = $root.protocol.NodeInfo.ConfigNodeInfo.decode(reader, reader.uint32());
             break;
-          case 10:
+          }
+          case 10: {
             message.machineInfo = $root.protocol.NodeInfo.MachineInfo.decode(reader, reader.uint32());
             break;
-          case 11:
+          }
+          case 11: {
             if (message.cheatWitnessInfoMap === $util.emptyObject) message.cheatWitnessInfoMap = {};
             var end2 = reader.uint32() + reader.pos;
             key = '';
@@ -30285,6 +32175,7 @@ $root.protocol = (function () {
             }
             message.cheatWitnessInfoMap[key] = value;
             break;
+          }
           default:
             reader.skipType(tag & 7);
             break;
@@ -30517,6 +32408,21 @@ $root.protocol = (function () {
      */
     NodeInfo.prototype.toJSON = function toJSON() {
       return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for NodeInfo
+     * @function getTypeUrl
+     * @memberof protocol.NodeInfo
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    NodeInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.NodeInfo';
     };
 
     NodeInfo.PeerInfo = (function () {
@@ -30872,81 +32778,106 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.lastSyncBlock = reader.string();
               break;
-            case 2:
+            }
+            case 2: {
               message.remainNum = reader.int64();
               break;
-            case 3:
+            }
+            case 3: {
               message.lastBlockUpdateTime = reader.int64();
               break;
-            case 4:
+            }
+            case 4: {
               message.syncFlag = reader.bool();
               break;
-            case 5:
+            }
+            case 5: {
               message.headBlockTimeWeBothHave = reader.int64();
               break;
-            case 6:
+            }
+            case 6: {
               message.needSyncFromPeer = reader.bool();
               break;
-            case 7:
+            }
+            case 7: {
               message.needSyncFromUs = reader.bool();
               break;
-            case 8:
+            }
+            case 8: {
               message.host = reader.string();
               break;
-            case 9:
+            }
+            case 9: {
               message.port = reader.int32();
               break;
-            case 10:
+            }
+            case 10: {
               message.nodeId = reader.string();
               break;
-            case 11:
+            }
+            case 11: {
               message.connectTime = reader.int64();
               break;
-            case 12:
+            }
+            case 12: {
               message.avgLatency = reader.double();
               break;
-            case 13:
+            }
+            case 13: {
               message.syncToFetchSize = reader.int32();
               break;
-            case 14:
+            }
+            case 14: {
               message.syncToFetchSizePeekNum = reader.int64();
               break;
-            case 15:
+            }
+            case 15: {
               message.syncBlockRequestedSize = reader.int32();
               break;
-            case 16:
+            }
+            case 16: {
               message.unFetchSynNum = reader.int64();
               break;
-            case 17:
+            }
+            case 17: {
               message.blockInPorcSize = reader.int32();
               break;
-            case 18:
+            }
+            case 18: {
               message.headBlockWeBothHave = reader.string();
               break;
-            case 19:
+            }
+            case 19: {
               message.isActive = reader.bool();
               break;
-            case 20:
+            }
+            case 20: {
               message.score = reader.int32();
               break;
-            case 21:
+            }
+            case 21: {
               message.nodeCount = reader.int32();
               break;
-            case 22:
+            }
+            case 22: {
               message.inFlow = reader.int64();
               break;
-            case 23:
+            }
+            case 23: {
               message.disconnectTimes = reader.int32();
               break;
-            case 24:
+            }
+            case 24: {
               message.localDisconnectReason = reader.string();
               break;
-            case 25:
+            }
+            case 25: {
               message.remoteDisconnectReason = reader.string();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -31373,6 +33304,21 @@ $root.protocol = (function () {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
       };
 
+      /**
+       * Gets the default type url for PeerInfo
+       * @function getTypeUrl
+       * @memberof protocol.NodeInfo.PeerInfo
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      PeerInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.NodeInfo.PeerInfo';
+      };
+
       return PeerInfo;
     })();
 
@@ -31663,63 +33609,82 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.codeVersion = reader.string();
               break;
-            case 2:
+            }
+            case 2: {
               message.p2pVersion = reader.string();
               break;
-            case 3:
+            }
+            case 3: {
               message.listenPort = reader.int32();
               break;
-            case 4:
+            }
+            case 4: {
               message.discoverEnable = reader.bool();
               break;
-            case 5:
+            }
+            case 5: {
               message.activeNodeSize = reader.int32();
               break;
-            case 6:
+            }
+            case 6: {
               message.passiveNodeSize = reader.int32();
               break;
-            case 7:
+            }
+            case 7: {
               message.sendNodeSize = reader.int32();
               break;
-            case 8:
+            }
+            case 8: {
               message.maxConnectCount = reader.int32();
               break;
-            case 9:
+            }
+            case 9: {
               message.sameIpMaxConnectCount = reader.int32();
               break;
-            case 10:
+            }
+            case 10: {
               message.backupListenPort = reader.int32();
               break;
-            case 11:
+            }
+            case 11: {
               message.backupMemberSize = reader.int32();
               break;
-            case 12:
+            }
+            case 12: {
               message.backupPriority = reader.int32();
               break;
-            case 13:
+            }
+            case 13: {
               message.dbVersion = reader.int32();
               break;
-            case 14:
+            }
+            case 14: {
               message.minParticipationRate = reader.int32();
               break;
-            case 15:
+            }
+            case 15: {
               message.supportConstant = reader.bool();
               break;
-            case 16:
+            }
+            case 16: {
               message.minTimeRatio = reader.double();
               break;
-            case 17:
+            }
+            case 17: {
               message.maxTimeRatio = reader.double();
               break;
-            case 18:
+            }
+            case 18: {
               message.allowCreationOfContracts = reader.int64();
               break;
-            case 19:
+            }
+            case 19: {
               message.allowAdaptiveEnergy = reader.int64();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -31981,6 +33946,21 @@ $root.protocol = (function () {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
       };
 
+      /**
+       * Gets the default type url for ConfigNodeInfo
+       * @function getTypeUrl
+       * @memberof protocol.NodeInfo.ConfigNodeInfo
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      ConfigNodeInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.NodeInfo.ConfigNodeInfo';
+      };
+
       return ConfigNodeInfo;
     })();
 
@@ -32215,52 +34195,65 @@ $root.protocol = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.threadCount = reader.int32();
               break;
-            case 2:
+            }
+            case 2: {
               message.deadLockThreadCount = reader.int32();
               break;
-            case 3:
+            }
+            case 3: {
               message.cpuCount = reader.int32();
               break;
-            case 4:
+            }
+            case 4: {
               message.totalMemory = reader.int64();
               break;
-            case 5:
+            }
+            case 5: {
               message.freeMemory = reader.int64();
               break;
-            case 6:
+            }
+            case 6: {
               message.cpuRate = reader.double();
               break;
-            case 7:
+            }
+            case 7: {
               message.javaVersion = reader.string();
               break;
-            case 8:
+            }
+            case 8: {
               message.osName = reader.string();
               break;
-            case 9:
+            }
+            case 9: {
               message.jvmTotalMemoery = reader.int64();
               break;
-            case 10:
+            }
+            case 10: {
               message.jvmFreeMemory = reader.int64();
               break;
-            case 11:
+            }
+            case 11: {
               message.processCpuRate = reader.double();
               break;
-            case 12:
+            }
+            case 12: {
               if (!(message.memoryDescInfoList && message.memoryDescInfoList.length)) message.memoryDescInfoList = [];
               message.memoryDescInfoList.push(
                 $root.protocol.NodeInfo.MachineInfo.MemoryDescInfo.decode(reader, reader.uint32())
               );
               break;
-            case 13:
+            }
+            case 13: {
               if (!(message.deadLockThreadInfoList && message.deadLockThreadInfoList.length))
                 message.deadLockThreadInfoList = [];
               message.deadLockThreadInfoList.push(
                 $root.protocol.NodeInfo.MachineInfo.DeadLockThreadInfo.decode(reader, reader.uint32())
               );
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -32574,6 +34567,21 @@ $root.protocol = (function () {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
       };
 
+      /**
+       * Gets the default type url for MachineInfo
+       * @function getTypeUrl
+       * @memberof protocol.NodeInfo.MachineInfo
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      MachineInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/protocol.NodeInfo.MachineInfo';
+      };
+
       MachineInfo.MemoryDescInfo = (function () {
         /**
          * Properties of a MemoryDescInfo.
@@ -32707,21 +34715,26 @@ $root.protocol = (function () {
           while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 message.name = reader.string();
                 break;
-              case 2:
+              }
+              case 2: {
                 message.initSize = reader.int64();
                 break;
-              case 3:
+              }
+              case 3: {
                 message.useSize = reader.int64();
                 break;
-              case 4:
+              }
+              case 4: {
                 message.maxSize = reader.int64();
                 break;
-              case 5:
+              }
+              case 5: {
                 message.useRate = reader.double();
                 break;
+              }
               default:
                 reader.skipType(tag & 7);
                 break;
@@ -32892,6 +34905,21 @@ $root.protocol = (function () {
           return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
         };
 
+        /**
+         * Gets the default type url for MemoryDescInfo
+         * @function getTypeUrl
+         * @memberof protocol.NodeInfo.MachineInfo.MemoryDescInfo
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MemoryDescInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+          if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = 'type.googleapis.com';
+          }
+          return typeUrlPrefix + '/protocol.NodeInfo.MachineInfo.MemoryDescInfo';
+        };
+
         return MemoryDescInfo;
       })();
 
@@ -33050,27 +35078,34 @@ $root.protocol = (function () {
           while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 message.name = reader.string();
                 break;
-              case 2:
+              }
+              case 2: {
                 message.lockName = reader.string();
                 break;
-              case 3:
+              }
+              case 3: {
                 message.lockOwner = reader.string();
                 break;
-              case 4:
+              }
+              case 4: {
                 message.state = reader.string();
                 break;
-              case 5:
+              }
+              case 5: {
                 message.blockTime = reader.int64();
                 break;
-              case 6:
+              }
+              case 6: {
                 message.waitTime = reader.int64();
                 break;
-              case 7:
+              }
+              case 7: {
                 message.stackTrace = reader.string();
                 break;
+              }
               default:
                 reader.skipType(tag & 7);
                 break;
@@ -33232,6 +35267,21 @@ $root.protocol = (function () {
           return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
         };
 
+        /**
+         * Gets the default type url for DeadLockThreadInfo
+         * @function getTypeUrl
+         * @memberof protocol.NodeInfo.MachineInfo.DeadLockThreadInfo
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        DeadLockThreadInfo.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+          if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = 'type.googleapis.com';
+          }
+          return typeUrlPrefix + '/protocol.NodeInfo.MachineInfo.DeadLockThreadInfo';
+        };
+
         return DeadLockThreadInfo;
       })();
 
@@ -33360,12 +35410,14 @@ $root.google = (function () {
         while (reader.pos < end) {
           var tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               message.type_url = reader.string();
               break;
-            case 2:
+            }
+            case 2: {
               message.value = reader.bytes();
               break;
+            }
             default:
               reader.skipType(tag & 7);
               break;
@@ -33422,7 +35474,7 @@ $root.google = (function () {
         if (object.value != null)
           if (typeof object.value === 'string')
             $util.base64.decode(object.value, (message.value = $util.newBuffer($util.base64.length(object.value))), 0);
-          else if (object.value.length) message.value = object.value;
+          else if (object.value.length >= 0) message.value = object.value;
         return message;
       };
 
@@ -33466,6 +35518,21 @@ $root.google = (function () {
        */
       Any.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+      };
+
+      /**
+       * Gets the default type url for Any
+       * @function getTypeUrl
+       * @memberof google.protobuf.Any
+       * @static
+       * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns {string} The default type url
+       */
+      Any.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+          typeUrlPrefix = 'type.googleapis.com';
+        }
+        return typeUrlPrefix + '/google.protobuf.Any';
       };
 
       return Any;

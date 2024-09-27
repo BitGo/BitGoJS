@@ -813,6 +813,18 @@ class CoreumTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.testnet-1.coreum.dev/coreum/transactions/';
 }
 
+class Rune extends Mainnet implements AccountNetwork {
+  name = 'Rune';
+  family = CoinFamily.THOR;
+  explorerUrl = 'https://runescan.io/txs';
+}
+
+class RuneTestNet extends Testnet implements AccountNetwork {
+  name = 'RuneTestNet';
+  family = CoinFamily.THOR;
+  explorerUrl = 'https://runescan.io/txs?network=stagenet';
+}
+
 class Islm extends Mainnet implements AccountNetwork {
   name = 'Haqq';
   family = CoinFamily.ISLM;
@@ -1112,6 +1124,7 @@ export const Networks = {
     optimism: Object.freeze(new Optimism()),
     osmo: Object.freeze(new Osmo()),
     rbtc: Object.freeze(new Rbtc()),
+    rune: Object.freeze(new Rune()),
     stellar: Object.freeze(new Stellar()),
     sei: Object.freeze(new Sei()),
     sol: Object.freeze(new Sol()),
@@ -1171,6 +1184,7 @@ export const Networks = {
     optimism: Object.freeze(new OptimismTestnet()),
     osmo: Object.freeze(new OsmoTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
+    rune: Object.freeze(new RuneTestNet()),
     stellar: Object.freeze(new StellarTestnet()),
     sei: Object.freeze(new SeiTestnet()),
     sol: Object.freeze(new SolTestnet()),

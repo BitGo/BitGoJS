@@ -992,6 +992,27 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.TCOREUM,
     COSMOS_SIDECHAIN_FEATURES
   ),
+  //  check
+  account(
+    '7df858d5-9da3-4071-ab06-399962ea87b5',
+    'rune-native',
+    'Rune',
+    Networks.main.rune,
+    8,
+    UnderlyingAsset.RUNE,
+    BaseUnit.RUNE,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    'df2f040b-89f3-4bb3-8da7-2445c7fdefcb',
+    'trune-native',
+    'Testnet Rune',
+    Networks.test.rune,
+    8,
+    UnderlyingAsset.RUNE,
+    BaseUnit.RUNE,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
     'islm',
