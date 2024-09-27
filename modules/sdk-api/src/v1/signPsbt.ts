@@ -28,7 +28,7 @@ export function signPsbtRequest(params: { psbt: string; keychain: { xprv: string
     throw new Error(`invalid params.keychain.xprv`);
   }
 
-  const psbt = utxolib.bitgo.createPsbtFromBuffer(Buffer.from(params.psbt, 'hex'), utxolib.networks.bitcoin);
+  const psbt = utxolib.bitgo.createPsbtDecode(params.psbt, utxolib.networks.bitcoin);
   const keypair = utxolib.bip32.fromBase58(params.keychain.xprv, utxolib.networks.bitcoin);
   debug('signing PSBT with keychain %s', keypair.neutered().toBase58());
   utxolib.bitgo.withUnsafeNonSegwit(psbt, () => psbt.signAllInputsHD(keypair));
