@@ -10,6 +10,7 @@ describe('Coins', () => {
     const BitGoJS = window['BitGoJS'];
     const bitgo = new BitGoJS.BitGo({ env: 'test' });
     // these objects are defined in BitGoJS.Coin, but are not coins in the traditional sense
+    // or if statics coins name ("thorchain:rune") doesn't match with class name (Rune)
     const excludedKeys = {
       AbstractUtxoCoin: 1,
       AbstractLightningCoin: 1,
@@ -30,6 +31,8 @@ describe('Coins', () => {
       SuiToken: 1,
       BeraToken: 1,
       XrpToken: 1,
+      Rune: 1,
+      Trune: 1,
     };
     Object.keys(BitGoJS.Coin)
       .filter((coinName) => !excludedKeys[coinName])

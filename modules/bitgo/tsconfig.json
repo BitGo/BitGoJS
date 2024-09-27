@@ -111,10 +111,10 @@
       "path": "../sdk-coin-eth2"
     },
     {
-      "path": "../sdk-coin-ethw"
+      "path": "../sdk-coin-ethlike"
     },
     {
-      "path": "../sdk-coin-ethlike"
+      "path": "../sdk-coin-ethw"
     },
     {
       "path": "../sdk-coin-hash"
@@ -148,6 +148,9 @@
     },
     {
       "path": "../sdk-coin-rbtc"
+    },
+    {
+      "path": "../sdk-coin-rune"
     },
     {
       "path": "../sdk-coin-sei"
