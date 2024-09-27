@@ -4092,9 +4092,9 @@ export const coins = CoinMap.fromCoins([
   erc20(
     'd3c6a9b2-1551-401c-b576-db429d48b895',
     'ghst',
-    'Aavegotchi',
+    'aavegotchi',
     18,
-    '0x3F382DbD960E3a9bbCeaE22651E88158d2791550',
+    '0x3f382dbd960e3a9bbceae22651e88158d2791550',
     UnderlyingAsset.GHST
   ),
   erc20(
@@ -4254,15 +4254,15 @@ export const coins = CoinMap.fromCoins([
     'high',
     'Highstreet',
     6,
-    '0x71Ab77b7dbB4fa7e017BC15090b2163221420282',
+    '0x71ab77b7dbb4fa7e017bc15090b2163221420282',
     UnderlyingAsset.HIGH
   ),
   erc20(
     '713f7531-d5ba-4c38-9c21-64458cb1bcf9',
     'hifi',
     'Hifi Finance',
-    6,
-    '0x4b9278b94a1112cAD404048903b8d343a810B07e',
+    18,
+    '0x4b9278b94a1112cad404048903b8d343a810b07e',
     UnderlyingAsset.HIFI
   ),
   erc20(
@@ -4815,7 +4815,7 @@ export const coins = CoinMap.fromCoins([
     'loka',
     'League of Kingdoms',
     18,
-    '0x61E90A50137E1F645c9eF4a0d3A4f01477738406',
+    '0x61e90a50137e1f645c9ef4a0d3a4f01477738406',
     UnderlyingAsset.LOKA
   ),
   erc20(
@@ -4871,7 +4871,7 @@ export const coins = CoinMap.fromCoins([
     'lsk',
     'Lisk',
     18,
-    '0x6033F7f88332B8db6ad452B7C6D5bB643990aE3f',
+    '0x6033f7f88332b8db6ad452b7c6d5bb643990ae3f',
     UnderlyingAsset.LSK
   ),
   erc20(
@@ -10024,7 +10024,7 @@ export const coins = CoinMap.fromCoins([
     'lever',
     'LeverFI',
     18,
-    '0x4B5f49487ea7B3609b1aD05459BE420548789f1f',
+    '0x4b5f49487ea7b3609b1ad05459be420548789f1f',
     UnderlyingAsset.LEVER
   ),
   erc20(
@@ -10072,7 +10072,7 @@ export const coins = CoinMap.fromCoins([
     'lovely',
     'Lovely Finance',
     18,
-    '0x0f6d4d4643A514132F84F4a270946dB3c7Cb701C',
+    '0x0f6d4d4643a514132f84f4a270946db3c7cb701c',
     UnderlyingAsset.LOVELY
   ),
   erc20(
@@ -10112,7 +10112,7 @@ export const coins = CoinMap.fromCoins([
     'lto',
     'LTO Network',
     8,
-    '0xd01409314aCb3b245CEa9500eCE3F6Fd4d70ea30',
+    '0xd01409314acb3b245cea9500ece3f6fd4d70ea30',
     UnderlyingAsset.LTO
   ),
   erc20(
@@ -12059,23 +12059,23 @@ export const coins = CoinMap.fromCoins([
     'bsc:gft',
     'Gifto',
     18,
-    '0x72fF5742319eF07061836F5C924aC6D72c919080',
+    '0x72ff5742319ef07061836f5c924ac6d72c919080',
     UnderlyingAsset['bsc:gft']
   ),
   bscToken(
     '71861b2e-03b0-4101-81ea-ea35b13d48d1',
     'bsc:glmr',
-    'Moonbeam',
+    'moonbeam',
     18,
-    '0x76F3CE6aF26de7A9854dBD153ACd8f46a2Cf5133',
+    '0x76f3ce6af26de7a9854dbd153acd8f46a2cf5133',
     UnderlyingAsset['bsc:glmr']
   ),
   bscToken(
     'bcc8389e-a3bf-493d-89a8-3d95676e817c',
     'bsc:gmt',
-    'Green Metaverse Token',
-    18,
-    '0x3019BF2a2eF8040C242C9a4c5c4BD4C81678b2A1',
+    'green metaverse token',
+    8,
+    '0x3019bf2a2ef8040c242c9a4c5c4bd4c81678b2a1',
     UnderlyingAsset['bsc:gmt']
   ),
   bscToken(
