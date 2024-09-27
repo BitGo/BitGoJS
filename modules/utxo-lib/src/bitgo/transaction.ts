@@ -13,6 +13,7 @@ import { ZcashPsbt } from './zcash/ZcashPsbt';
 import { ZcashTransactionBuilder } from './zcash/ZcashTransactionBuilder';
 import { ZcashNetwork, ZcashTransaction } from './zcash/ZcashTransaction';
 import { LitecoinPsbt, LitecoinTransaction, LitecoinTransactionBuilder } from './litecoin';
+import { isPsbt, toPsbtBuffer } from './PsbtUtil';
 
 export function createTransactionFromBuffer(
   buf: Buffer,
@@ -87,7 +88,15 @@ export function createTransactionFromHex<TNumber extends number | bigint = numbe
   return createTransactionFromBuffer<TNumber>(Buffer.from(hex, 'hex'), network, p);
 }
 
+/**
+ * @param buf - must start with the PSBT magic bytes
+ * @param network
+ * @param bip32PathsAbsolute
+ */
 export function createPsbtFromBuffer(buf: Buffer, network: Network, bip32PathsAbsolute = false): UtxoPsbt {
+  if (!isPsbt(buf)) {
+    throw new Error(`invalid psbt (does not start with 'psbt' magic bytes)`);
+  }
   switch (getMainnet(network)) {
     case networks.bitcoin:
     case networks.bitcoincash:
@@ -106,6 +115,17 @@ export function createPsbtFromBuffer(buf: Buffer, network: Network, bip32PathsAb
 
   /* istanbul ignore next */
   throw new Error(`invalid network`);
+}
+
+/**
+ * Like createPsbtFromBuffer, but attempts hex and base64 decoding as well.
+ *
+ * @param buf
+ * @param network
+ * @param bip32PathsAbsolute
+ */
+export function createPsbtDecode(buf: Buffer | string, network: Network, bip32PathsAbsolute = false): UtxoPsbt {
+  return createPsbtFromBuffer(toPsbtBuffer(buf), network, bip32PathsAbsolute);
 }
 
 export function createPsbtFromHex(hex: string, network: Network, bip32PathsAbsolute = false): UtxoPsbt {

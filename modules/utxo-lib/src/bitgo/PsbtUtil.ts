@@ -107,6 +107,48 @@ export function isPsbt(data: Buffer | string): boolean {
 }
 
 /**
+ * First checks if the input is already a buffer that starts with the magic PSBT byte sequence.
+ * If not, it checks if the input is a base64- or hex-encoded string that starts with PSBT header.
+ *
+ * This function is useful when reading a file that could be in any of the above formats or when
+ * dealing with a request that could contain a hex or base64 encoded PSBT.
+ *
+ * @param data
+ * @return buffer that starts with the magic PSBT byte sequence
+ * @throws Error when conversion is not possible
+ */
+export function toPsbtBuffer(data: Buffer | string): Buffer {
+  if (Buffer.isBuffer(data)) {
+    // we are dealing with a buffer that looks like a psbt already
+    if (isPsbt(data)) {
+      return data;
+    }
+
+    // we could be dealing with a buffer that could be a hex or base64 encoded psbt
+    data = data.toString('ascii');
+  }
+
+  if (typeof data === 'string') {
+    const encodings = ['hex', 'base64'] as const;
+    for (const encoding of encodings) {
+      let buffer: Buffer;
+      try {
+        buffer = Buffer.from(data, encoding);
+      } catch (e) {
+        continue;
+      }
+      if (isPsbt(buffer)) {
+        return buffer;
+      }
+    }
+
+    throw new Error(`data is not in any of the following formats: ${encodings.join(', ')}`);
+  }
+
+  throw new Error('data must be a buffer or a string');
+}
+
+/**
  * This function allows signing or validating a psbt with non-segwit inputs those do not contain nonWitnessUtxo.
  */
 export function withUnsafeNonSegwit<T>(psbt: Psbt, fn: () => T, unsafe = true): T {
