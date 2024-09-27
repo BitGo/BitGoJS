@@ -433,6 +433,7 @@ export enum UnderlyingAsset {
   ARCX = 'arcx',
   ARKM = 'arkm',
   ARMOR = 'armor',
+  ARPA = 'arpa',
   ARTEQ = 'arteq',
   ASD = 'asd',
   AST = 'ast',
