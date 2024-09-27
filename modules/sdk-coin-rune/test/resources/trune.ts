@@ -89,9 +89,9 @@ export const testnetAddress = {
 };
 
 export const testnetCoinAmounts = {
-  amount1: { amount: '100000', denom: 'tor' },
-  amount2: { amount: '1000000', denom: 'tor' },
-  amount3: { amount: '10000000', denom: 'tor' },
-  amount4: { amount: '-1', denom: 'tor' },
-  amount5: { amount: '1000000000', denom: 'ator' },
+  amount1: { amount: '100000', denom: 'rune' },
+  amount2: { amount: '1000000', denom: 'rune' },
+  amount3: { amount: '10000000', denom: 'rune' },
+  amount4: { amount: '-1', denom: 'rune' },
+  amount5: { amount: '1000000000', denom: 'arune' },
 };

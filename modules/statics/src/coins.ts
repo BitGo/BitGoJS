@@ -994,7 +994,7 @@ export const coins = CoinMap.fromCoins([
   ),
   //  check
   account(
-    '7df858d5-9da3-4071-ab06-399962ea87b5',
+    '9fa0f191-4eed-4030-864a-d14bbd98c8af',
     'rune-native',
     'Rune',
     Networks.main.rune,
@@ -1004,7 +1004,7 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
-    'df2f040b-89f3-4bb3-8da7-2445c7fdefcb',
+    '7281ab3b-0451-4ef9-b367-8623d9bcfd87',
     'trune-native',
     'Testnet Rune',
     Networks.test.rune,
