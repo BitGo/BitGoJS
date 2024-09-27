@@ -341,6 +341,7 @@ export interface FanoutUnspentsOptions extends WalletSignTransactionOptions {
   maxValue?: number | string;
   minHeight?: number;
   maxNumInputsToUse?: number;
+  unspents?: string[];
   numUnspentsToMake?: number;
   minConfirms?: number;
   enforceMinConfirmsForChange?: boolean;

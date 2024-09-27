@@ -680,6 +680,7 @@ export class Wallet implements IWallet {
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);
 
     const reqId = new RequestTracer();
+    const fanoutInputFormat = params.maxNumInputsToUse ? 'maxNumInputsToUse' : 'unspents';
     const filteredParams = _.pick(params, [
       'feeRate',
       'maxFeeRate',
@@ -695,7 +696,7 @@ export class Wallet implements IWallet {
       'txFormat',
       'bulk',
 
-      routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
+      routeName === 'consolidate' ? 'limit' : fanoutInputFormat,
       'numUnspentsToMake',
     ]);
     this.bitgo.setRequestTracer(reqId);
