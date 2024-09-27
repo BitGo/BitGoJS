@@ -8836,6 +8836,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ARMOR
   ),
   erc20(
+    'cf354bed-ed58-48e5-a032-783405e1aaaf',
+    'arpa',
+    'ARPA Token',
+    18,
+    '0xba50933c268f567bdc86e1ac131be072c6b0b71a',
+    UnderlyingAsset.ARPA
+  ),
+  erc20(
     '2f121a90-9e17-49f3-ad4c-c23141ef0d5b',
     'ata',
     'Automata',
