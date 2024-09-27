@@ -1,5 +1,6 @@
 import { Chalk, Instance } from 'chalk';
 import * as archy from 'archy';
+
 import { ParserNode, ParserNodeValue } from './Parser';
 
 const hideDefault = ['pubkeys', 'sequence', 'locktime', 'scriptSig', 'witness'];

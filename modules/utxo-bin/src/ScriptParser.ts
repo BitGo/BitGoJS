@@ -1,5 +1,6 @@
-import { Parser, ParserNode } from './Parser';
 import * as utxolib from '@bitgo/utxo-lib';
+
+import { Parser, ParserNode } from './Parser';
 import { parseUnknown } from './parseUnknown';
 
 const paymentTypes = ['p2sh', 'p2pkh', 'p2wpkh', 'p2wsh', 'p2ms'] as const;

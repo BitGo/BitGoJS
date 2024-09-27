@@ -1,8 +1,11 @@
 import * as assert from 'assert';
+
 import * as utxolib from '@bitgo/utxo-lib';
-import { formatTreeNoColor, getFixtureString, getTransactionWithSpendType, ParsedFixture } from './fixtures';
+
 import { ParserNode } from '../src/Parser';
 import { ScriptParser } from '../src/ScriptParser';
+
+import { formatTreeNoColor, getFixtureString, getTransactionWithSpendType, ParsedFixture } from './fixtures';
 
 function testParseScript(type: utxolib.bitgo.outputScripts.ScriptType2Of3) {
   let tx: ParsedFixture;

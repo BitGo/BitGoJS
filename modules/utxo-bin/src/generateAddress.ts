@@ -1,5 +1,7 @@
 import * as assert from 'assert';
+
 import * as utxolib from '@bitgo/utxo-lib';
+
 import { Parser } from './Parser';
 import { parseUnknown } from './parseUnknown';
 import { formatTree } from './format';

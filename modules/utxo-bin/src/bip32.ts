@@ -1,4 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
+
 import { Parser, ParserNode } from './Parser';
 import { parseUnknown } from './parseUnknown';
 

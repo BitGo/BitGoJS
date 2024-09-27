@@ -1,9 +1,10 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { Network } from '@bitgo/utxo-lib';
+
 import { ChainInfo } from './TxParser';
 import { Parser, ParserNode } from './Parser';
 import { AddressParser } from './AddressParser';
 import { formatSat } from './format';
-import { Network } from '@bitgo/utxo-lib';
 
 export class OutputParser extends Parser {
   constructor(

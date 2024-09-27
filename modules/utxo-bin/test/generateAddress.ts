@@ -1,5 +1,7 @@
 import * as assert from 'assert';
+
 import { formatAddressWithFormatString, generateAddress, parseIndexRange } from '../src/generateAddress';
+
 import { getKeyTriple } from './bip32.util';
 
 describe('generateAddresses', function () {

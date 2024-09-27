@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as process from 'process';
+import { promisify } from 'util';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import * as blockapis from '@bitgo/blockapis';
@@ -7,7 +8,6 @@ import { BaseHttpClient, CachingHttpClient, getTransactionIdsAtHeight, HttpClien
 import { coins, UtxoCoin } from '@bitgo/statics';
 
 import { ParserTx } from './ParserTx';
-import { promisify } from 'util';
 
 function getTxOutPoints(tx: ParserTx): utxolib.bitgo.TxOutPoint[] {
   if (tx instanceof utxolib.bitgo.UtxoTransaction) {
