@@ -65,7 +65,6 @@ import {
   LoginResponse,
   PingOptions,
   ProcessedAuthenticationOptions,
-  ProcessedAuthenticationPasskeyOptions,
   ReconstitutedSecret,
   ReconstituteSecretOptions,
   RegisterPushTokenOptions,
@@ -775,48 +774,29 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Process auth passkey options into an object for bitgo authentication.
+   * Validate the passkey response is in the expected format
+   * Should be as is returned from navigator.credentials.get()
    */
-  preprocessAuthenticationPasskeyParams(params: AuthenticateWithPasskeyOptions): ProcessedAuthenticationPasskeyOptions {
+  validateWebauthnResponse(params: AuthenticateWithPasskeyOptions): void {
     if (!_.isString(params.username)) {
       throw new Error('expected string username');
     }
-
-    if (!_.isString(params.credId)) {
-      throw new Error('expected string credId');
+    const webauthnResponse = JSON.parse(params.webauthnResponse);
+    if (!webauthnResponse && !webauthnResponse.response) {
+      throw new Error('unexpected webauthnResponse');
     }
-
-    if (!_.isString(params.authenticatorData)) {
-      throw new Error('required string authenticatorData');
+    if (!_.isString(webauthnResponse.id)) {
+      throw new Error('id is missing');
     }
-
-    if (!_.isString(params.signature)) {
-      throw new Error('required string signature');
+    if (!_.isString(webauthnResponse.response.authenticatorData)) {
+      throw new Error('authenticatorData is missing');
     }
-
-    if (!_.isString(params.clientDataJSON)) {
-      throw new Error('required string clientDataJSON');
+    if (!_.isString(webauthnResponse.response.clientDataJSON)) {
+      throw new Error('clientDataJSON is missing');
     }
-
-    const processedParams: ProcessedAuthenticationPasskeyOptions = {
-      username: params.username,
-      credId: params.credId,
-      authenticatorData: params.authenticatorData,
-      signature: params.signature,
-      clientDataJSON: params.clientDataJSON,
-    };
-
-    if (params.extensible) {
-      this._extensionKey = makeRandomKey();
-      processedParams.extensible = true;
-      processedParams.extensionAddress = getAddressP2PKH(this._extensionKey);
+    if (!_.isString(webauthnResponse.response.signature)) {
+      throw new Error('signature is missing');
     }
-
-    if (params.forReset2FA) {
-      processedParams.forReset2FA = true;
-    }
-
-    return params;
   }
 
   /**
@@ -976,15 +956,17 @@ export class BitGoAPI implements BitGoBase {
       }
 
       const authUrl = this.microservicesUrl('/api/auth/v1/session');
-      const authParams = this.preprocessAuthenticationPasskeyParams(params);
       const request = this.post(authUrl);
 
-      const response: superagent.Response = await request.send(authParams);
+      this.validateWebauthnResponse(params);
+
+      const response: superagent.Response = await request.send(params);
       // extract body and user information
       const body = response.body;
       this._user = body.user;
 
       // Expecting unencrypted access token in response for now
+      // TODO (WP-2733): Use GPG encryption to decrypt access token
       if (body.access_token) {
         this._token = body.access_token;
       } else {

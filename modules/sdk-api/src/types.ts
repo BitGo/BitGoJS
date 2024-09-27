@@ -106,12 +106,7 @@ export interface AuthenticateOptions {
 
 export interface AuthenticateWithPasskeyOptions {
   username: string;
-  credId: string;
-  authenticatorData: string;
-  signature: string;
-  clientDataJSON: string;
-  extensible?: boolean;
-  forReset2FA?: boolean;
+  webauthnResponse: string;
 }
 
 export interface ProcessedAuthenticationOptions {
@@ -123,17 +118,6 @@ export interface ProcessedAuthenticationOptions {
   extensible?: boolean;
   extensionAddress?: string;
   forceV1Auth?: boolean;
-  forReset2FA?: boolean;
-}
-
-export interface ProcessedAuthenticationPasskeyOptions {
-  username: string;
-  credId: string;
-  authenticatorData: string;
-  signature: string;
-  clientDataJSON: string;
-  extensible?: boolean;
-  extensionAddress?: string;
   forReset2FA?: boolean;
 }
 
