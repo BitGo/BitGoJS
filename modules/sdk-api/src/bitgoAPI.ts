@@ -773,6 +773,32 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Validate the passkey response is in the expected format
+   * Should be as is returned from navigator.credentials.get()
+   */
+  validatePasskeyResponse(passkeyResponse: string): void {
+    const parsedPasskeyResponse = JSON.parse(passkeyResponse);
+    if (!parsedPasskeyResponse && !parsedPasskeyResponse.response) {
+      throw new Error('unexpected webauthnResponse');
+    }
+    if (!_.isString(parsedPasskeyResponse.id)) {
+      throw new Error('id is missing');
+    }
+    if (!_.isString(parsedPasskeyResponse.response.authenticatorData)) {
+      throw new Error('authenticatorData is missing');
+    }
+    if (!_.isString(parsedPasskeyResponse.response.clientDataJSON)) {
+      throw new Error('clientDataJSON is missing');
+    }
+    if (!_.isString(parsedPasskeyResponse.response.signature)) {
+      throw new Error('signature is missing');
+    }
+    if (!_.isString(parsedPasskeyResponse.response.userHandle)) {
+      throw new Error('userHandle is missing');
+    }
+  }
+
+  /**
    * Synchronous method for activating an access token.
    */
   authenticateWithAccessToken({ accessToken }: AccessTokenOptions): void {
@@ -907,6 +933,43 @@ export class BitGoAPI implements BitGoBase {
       const userSettings = params.ensureEcdhKeychain ? await this.ensureUserEcdhKeychainIsCreated(password) : undefined;
       if (userSettings?.ecdhKeychain) {
         response.body.user.ecdhKeychain = userSettings.ecdhKeychain;
+      }
+
+      return handleResponseResult<LoginResponse>()(response);
+    } catch (e) {
+      handleResponseError(e);
+    }
+  }
+
+  /**
+   * Login to the bitgo platform with passkey.
+   */
+  async authenticateWithPasskey(passkey: string): Promise<LoginResponse | any> {
+    try {
+      if (this._token) {
+        return new Error('already logged in');
+      }
+
+      const authUrl = this.microservicesUrl('/api/auth/v1/session');
+      const request = this.post(authUrl);
+
+      this.validatePasskeyResponse(passkey);
+      const userId = JSON.parse(passkey).response.userHandle;
+
+      const response: superagent.Response = await request.send({
+        passkey: passkey,
+        userId: userId,
+      });
+      // extract body and user information
+      const body = response.body;
+      this._user = body.user;
+
+      // Expecting unencrypted access token in response for now
+      // TODO (WP-2733): Use GPG encryption to decrypt access token
+      if (body.access_token) {
+        this._token = body.access_token;
+      } else {
+        throw new Error('failed to create access token');
       }
 
       return handleResponseResult<LoginResponse>()(response);
