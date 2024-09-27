@@ -839,6 +839,7 @@ export enum UnderlyingAsset {
   GENIE = 'genie',
   GF = 'gf',
   GFI = 'gfi',
+  GHST = 'ghst',
   GHUB = 'ghub',
   GIGDROP = 'gigdrop',
   GIV = 'giv',
@@ -889,6 +890,8 @@ export enum UnderlyingAsset {
   HEX = 'hex',
   HFT = 'hft',
   HGET = 'hget',
+  HIGH = 'high',
+  HIFI = 'hifi',
   HIT = 'hit',
   HKDX = 'hkdx',
   HLC = 'hlc',
@@ -993,6 +996,7 @@ export enum UnderlyingAsset {
   LEOHEDGE = 'leohedge',
   LEOMOON = 'leomoon',
   LEV = 'lev',
+  LEVER = 'lever',
   LGO = 'lgo',
   LIEN = 'lien',
   LIF3 = 'lif3',
@@ -1008,10 +1012,12 @@ export enum UnderlyingAsset {
   LKR = 'lkr',
   LMWR = 'lmwr',
   LNC = 'lnc',
+  LOKA = 'loka',
   LOOKS = 'looks',
   LOOM = 'loom',
   LOOM1 = 'loom1',
   LOVE = 'love',
+  LOVELY = 'lovely',
   LOWB = 'lowb',
   LPT = 'lpt',
   LQID = 'lqid',
@@ -1019,11 +1025,13 @@ export enum UnderlyingAsset {
   LRC = 'lrc',
   LRCV2 = 'lrcv2',
   LSETH = 'lseth',
+  LSK = 'lsk',
   LTCBEAR = 'ltcbear',
   LTCBULL = 'ltcbull',
   LTCDOOM = 'ltcdoom',
   LTCHEDGE = 'ltchedge',
   LTCMOON = 'ltcmoon',
+  LTO = 'lto',
   LUA = 'lua',
   LUNA = 'luna',
   LUNAWORMHOLE = 'lunawormhole',
@@ -1841,6 +1849,7 @@ export enum UnderlyingAsset {
   'avaxc:note' = 'avaxc:note',
   'avaxc:wrose' = 'avaxc:wrose',
   'avaxc:swap' = 'avaxc:swap',
+  'avaxc:tico' = 'avaxc:tico',
   // End FTX missing AVAXC tokens
 
   // polygon Token ERC-20
@@ -2051,6 +2060,9 @@ export enum UnderlyingAsset {
   'bsc:volt' = 'bsc:volt',
   'tbsc:busd' = 'tbsc:busd',
   'bsc:city' = 'bsc:city',
+  'bsc:gft' = 'bsc:gft',
+  'bsc:glmr' = 'bsc:glmr',
+  'bsc:gmt' = 'bsc:gmt',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2194,6 +2206,7 @@ export enum UnderlyingAsset {
   'sol:io' = 'sol:io',
 
   // TRX tokens
+  'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
   'trx:tusd' = 'trx:tusd',
   'trx:win' = 'trx:win',

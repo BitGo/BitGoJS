@@ -4090,6 +4090,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.GHUB
   ),
   erc20(
+    'd3c6a9b2-1551-401c-b576-db429d48b895',
+    'ghst',
+    'Aavegotchi',
+    18,
+    '0x3F382DbD960E3a9bbCeaE22651E88158d2791550',
+    UnderlyingAsset.GHST
+  ),
+  erc20(
     '2eb02229-65f4-46dc-9ff0-300ac647214c',
     'gigdrop',
     'GIG-POOL-DROP',
@@ -4240,6 +4248,22 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x7968bc6a03017ea2de509aaa816f163db0f35148',
     UnderlyingAsset.HGET
+  ),
+  erc20(
+    '50bc024c-f6e2-4b69-8010-be20243a1c35',
+    'high',
+    'Highstreet',
+    6,
+    '0x71Ab77b7dbB4fa7e017BC15090b2163221420282',
+    UnderlyingAsset.HIGH
+  ),
+  erc20(
+    '713f7531-d5ba-4c38-9c21-64458cb1bcf9',
+    'hifi',
+    'Hifi Finance',
+    6,
+    '0x4b9278b94a1112cAD404048903b8d343a810B07e',
+    UnderlyingAsset.HIFI
   ),
   erc20(
     '3e3c2765-2d55-4d18-b5a8-f5cca0d3dade',
@@ -4787,6 +4811,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LNC
   ),
   erc20(
+    '8b4aa7e7-6b76-4571-875f-9e2a45d690a4',
+    'loka',
+    'League of Kingdoms',
+    18,
+    '0x61E90A50137E1F645c9eF4a0d3A4f01477738406',
+    UnderlyingAsset.LOKA
+  ),
+  erc20(
     '903f10ef-6c5a-4049-9d84-584cae7cf3a6',
     'looks',
     'LooksRare',
@@ -4833,6 +4865,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x48d93d8c45fb25125f13cdd40529bbeaa97a6565',
     UnderlyingAsset.LSETH
+  ),
+  erc20(
+    'f55a200e-3eba-4336-9f95-4b0578c10d0b',
+    'lsk',
+    'Lisk',
+    18,
+    '0x6033F7f88332B8db6ad452B7C6D5bB643990aE3f',
+    UnderlyingAsset.LSK
   ),
   erc20(
     '69a336d1-d401-4efc-b613-615c6f19f450',
@@ -9980,6 +10020,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LEV
   ),
   erc20(
+    '5d760978-16f0-4575-85d9-2cc7a5d359fe',
+    'lever',
+    'LeverFI',
+    18,
+    '0x4B5f49487ea7B3609b1aD05459BE420548789f1f',
+    UnderlyingAsset.LEVER
+  ),
+  erc20(
     '2963170f-2c71-489a-b772-7e571b2683cb',
     'lien',
     'lien',
@@ -10020,6 +10068,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LOVE
   ),
   erc20(
+    'ce92918a-54ab-4d78-9b2d-dbc1b6a58b02',
+    'lovely',
+    'Lovely Finance',
+    18,
+    '0x0f6d4d4643A514132F84F4a270946dB3c7Cb701C',
+    UnderlyingAsset.LOVELY
+  ),
+  erc20(
     '24929a4b-d237-4224-8580-b425bcf0cfaa',
     'lpt',
     'Livepeer Token',
@@ -10050,6 +10106,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x08da69ca2bfe378f384cb76c84d6ded701ec65c7',
     UnderlyingAsset.LTCMOON
+  ),
+  erc20(
+    'ad6681c9-a517-4592-9aed-994804b133ce',
+    'lto',
+    'LTO Network',
+    8,
+    '0xd01409314aCb3b245CEa9500eCE3F6Fd4d70ea30',
+    UnderlyingAsset.LTO
   ),
   erc20(
     '7189b0aa-b4be-4fe9-8ad6-c02a948a21c3',
@@ -11991,6 +12055,30 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['bsc:city']
   ),
   bscToken(
+    '5c7702c4-8eb8-423b-ab23-eff15a6a8a1c',
+    'bsc:gft',
+    'Gifto',
+    18,
+    '0x72fF5742319eF07061836F5C924aC6D72c919080',
+    UnderlyingAsset['bsc:gft']
+  ),
+  bscToken(
+    '71861b2e-03b0-4101-81ea-ea35b13d48d1',
+    'bsc:glmr',
+    'Moonbeam',
+    18,
+    '0x76F3CE6aF26de7A9854dBD153ACd8f46a2Cf5133',
+    UnderlyingAsset['bsc:glmr']
+  ),
+  bscToken(
+    'bcc8389e-a3bf-493d-89a8-3d95676e817c',
+    'bsc:gmt',
+    'Green Metaverse Token',
+    18,
+    '0x3019BF2a2eF8040C242C9a4c5c4BD4C81678b2A1',
+    UnderlyingAsset['bsc:gmt']
+  ),
+  bscToken(
     '290801fc-fc48-4b5d-b5e7-abbc2101de13',
     'bsc:firo',
     'Firo',
@@ -12913,6 +13001,14 @@ export const coins = CoinMap.fromCoins([
     18,
     'TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S',
     UnderlyingAsset.SUN
+  ),
+  tronToken(
+    'dd0e0950-ff1a-4302-b12d-d661d59602d8',
+    'trx:htx',
+    'HTX',
+    18,
+    'TUPM7K8REVzD2UdV4R5fe5M8XbnR2DdoJ6',
+    UnderlyingAsset['trx:htx']
   ),
   tronToken(
     '888fb35c-1b3d-425d-af65-e6aa7453edce',
@@ -14780,6 +14876,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xc7b5d72c836e718cda8888eaf03707faef675079',
     UnderlyingAsset['avaxc:swap']
+  ),
+  avaxErc20(
+    'd4e4244e-505c-428b-b3a9-c039f3286a9a',
+    'avaxc:tico',
+    'Funtico',
+    18,
+    '0xba69b8aff564fe150ff7e2f965e0dba23b9d2571',
+    UnderlyingAsset['avaxc:tico']
   ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
