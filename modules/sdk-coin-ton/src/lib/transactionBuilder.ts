@@ -14,6 +14,8 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import TonWeb from 'tonweb';
 
+const WITHDRAW_OPCODE = 4096;
+
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _signatures: Signature[] = [];
@@ -106,12 +108,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
+    this.transaction.transactionType = this.transactionType;
     this.transaction.fromRawTransaction(rawTransaction);
     return this.transaction;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    this.transaction.transactionType = this.transactionType;
     await this.transaction.build();
     this.transaction.loadInputsAndOutputs();
     return this.transaction;
@@ -153,6 +157,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   setMessage(msg: string): TransactionBuilder {
     this.transaction.message = msg;
+    return this;
+  }
+
+  setWithdrawMessage(): TransactionBuilder {
+    const message = new TonWeb.boc.Cell();
+    message.bits.writeUint(WITHDRAW_OPCODE, 32);
+    message.bits.writeUint(0, 64);
+    message.bits.writeCoins(TonWeb.utils.toNano(this.transaction.withdrawAmount));
+    this.transaction.message = message;
     return this;
   }
 
