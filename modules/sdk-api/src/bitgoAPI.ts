@@ -47,7 +47,6 @@ import {
   AddAccessTokenOptions,
   AddAccessTokenResponse,
   AuthenticateOptions,
-  AuthenticateWithPasskeyOptions,
   AuthenticateWithAuthCodeOptions,
   BitGoAPIOptions,
   BitGoJson,
@@ -777,25 +776,25 @@ export class BitGoAPI implements BitGoBase {
    * Validate the passkey response is in the expected format
    * Should be as is returned from navigator.credentials.get()
    */
-  validateWebauthnResponse(params: AuthenticateWithPasskeyOptions): void {
-    if (!_.isString(params.username)) {
-      throw new Error('expected string username');
-    }
-    const webauthnResponse = JSON.parse(params.webauthnResponse);
-    if (!webauthnResponse && !webauthnResponse.response) {
+  validatePasskeyResponse(passkeyResponse: string): void {
+    const parsedPasskeyResponse = JSON.parse(passkeyResponse);
+    if (!parsedPasskeyResponse && !parsedPasskeyResponse.response) {
       throw new Error('unexpected webauthnResponse');
     }
-    if (!_.isString(webauthnResponse.id)) {
+    if (!_.isString(parsedPasskeyResponse.id)) {
       throw new Error('id is missing');
     }
-    if (!_.isString(webauthnResponse.response.authenticatorData)) {
+    if (!_.isString(parsedPasskeyResponse.response.authenticatorData)) {
       throw new Error('authenticatorData is missing');
     }
-    if (!_.isString(webauthnResponse.response.clientDataJSON)) {
+    if (!_.isString(parsedPasskeyResponse.response.clientDataJSON)) {
       throw new Error('clientDataJSON is missing');
     }
-    if (!_.isString(webauthnResponse.response.signature)) {
+    if (!_.isString(parsedPasskeyResponse.response.signature)) {
       throw new Error('signature is missing');
+    }
+    if (!_.isString(parsedPasskeyResponse.response.userHandle)) {
+      throw new Error('userHandle is missing');
     }
   }
 
@@ -945,12 +944,8 @@ export class BitGoAPI implements BitGoBase {
   /**
    * Login to the bitgo platform with passkey.
    */
-  async authenticateWithPasskey(params: AuthenticateWithPasskeyOptions): Promise<LoginResponse | any> {
+  async authenticateWithPasskey(passkey: string): Promise<LoginResponse | any> {
     try {
-      if (!_.isObject(params)) {
-        throw new Error('required object params');
-      }
-
       if (this._token) {
         return new Error('already logged in');
       }
@@ -958,9 +953,13 @@ export class BitGoAPI implements BitGoBase {
       const authUrl = this.microservicesUrl('/api/auth/v1/session');
       const request = this.post(authUrl);
 
-      this.validateWebauthnResponse(params);
+      this.validatePasskeyResponse(passkey);
+      const userId = JSON.parse(passkey).response.userHandle;
 
-      const response: superagent.Response = await request.send(params);
+      const response: superagent.Response = await request.send({
+        passkey: passkey,
+        userId: userId,
+      });
       // extract body and user information
       const body = response.body;
       this._user = body.user;

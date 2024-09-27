@@ -104,11 +104,6 @@ export interface AuthenticateOptions {
   forReset2FA?: boolean;
 }
 
-export interface AuthenticateWithPasskeyOptions {
-  username: string;
-  webauthnResponse: string;
-}
-
 export interface ProcessedAuthenticationOptions {
   email: string;
   password: string;
