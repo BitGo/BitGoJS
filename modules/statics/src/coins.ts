@@ -10076,7 +10076,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LOVE
   ),
   erc20(
-    'ce92918a-54ab-4d78-9b2d-dbc1b6a58b02',
+    '67a93874-3c56-4ed9-9d85-c591e05bd0c9',
     'lovely',
     'Lovely Finance',
     18,
