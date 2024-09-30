@@ -4277,7 +4277,7 @@ export const coins = CoinMap.fromCoins([
     '50bc024c-f6e2-4b69-8010-be20243a1c35',
     'high',
     'Highstreet',
-    6,
+    18,
     '0x71ab77b7dbb4fa7e017bc15090b2163221420282',
     UnderlyingAsset.HIGH
   ),
@@ -12121,7 +12121,7 @@ export const coins = CoinMap.fromCoins([
   bscToken(
     '71861b2e-03b0-4101-81ea-ea35b13d48d1',
     'bsc:glmr',
-    'moonbeam',
+    'Moonbeam',
     18,
     '0x76f3ce6af26de7a9854dbd153acd8f46a2cf5133',
     UnderlyingAsset['bsc:glmr']
@@ -12129,7 +12129,7 @@ export const coins = CoinMap.fromCoins([
   bscToken(
     'bcc8389e-a3bf-493d-89a8-3d95676e817c',
     'bsc:gmt',
-    'green metaverse token',
+    'Green Metaverse Token',
     8,
     '0x3019bf2a2ef8040c242c9a4c5c4bd4c81678b2a1',
     UnderlyingAsset['bsc:gmt']
