@@ -4,6 +4,7 @@ import {
   algoToken,
   arbethErc20,
   avaxErc20,
+  beraErc20,
   bscToken,
   celoToken,
   eosToken,
@@ -24,6 +25,7 @@ import {
   tarbethErc20,
   tavaxErc20,
   tbscToken,
+  tberaErc20,
   tceloToken,
   teosToken,
   terc1155,
@@ -17965,6 +17967,23 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xcccb29bac5ad81290383643c6fb38130cda9d881',
     UnderlyingAsset['tzketh:link']
+  ),
+  beraErc20(
+    'ef833f4e-7617-4c6d-8a1f-1fef0dd1dd0e',
+    'bera:bgt',
+    'BGT Token',
+    18,
+    // TODO: the mainnet contract address is still not available, adding placeholder here
+    '0xbda130737bdd9618301681329bf2e46a016ff9aa',
+    UnderlyingAsset['bera:bgt']
+  ),
+  tberaErc20(
+    '24af5e18-ab4b-43e5-80db-0ddb9beb01b3',
+    'tbera:bgt',
+    'Bera Testnet BGT',
+    18,
+    '0xbda130737bdd9618301681329bf2e46a016ff9ad',
+    UnderlyingAsset['tbera:bgt']
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',

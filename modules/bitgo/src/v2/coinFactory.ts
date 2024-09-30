@@ -21,6 +21,7 @@ import {
   AvaxP,
   Bch,
   Bera,
+  BeraToken,
   Bld,
   Bsc,
   BscToken,
@@ -293,6 +294,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   });
 
   ZkethToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    globalCoinFactory.register(name, coinConstructor);
+  });
+
+  BeraToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     globalCoinFactory.register(name, coinConstructor);
   });
 

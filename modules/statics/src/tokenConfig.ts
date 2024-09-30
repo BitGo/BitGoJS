@@ -18,6 +18,7 @@ import {
   OpethERC20Token,
   ZkethERC20Token,
   SuiCoin,
+  BeraERC20Token,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -135,6 +136,9 @@ export interface Tokens {
     sui: {
       tokens: SuiTokenConfig[];
     };
+    bera: {
+      tokens: EthLikeTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -190,6 +194,9 @@ export interface Tokens {
     };
     sui: {
       tokens: SuiTokenConfig[];
+    };
+    bera: {
+      tokens: EthLikeTokenConfig[];
     };
   };
 }
@@ -382,6 +389,20 @@ const formattedZkethTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedBeraTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
+  if (coin instanceof BeraERC20Token) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'bera' : 'tbera',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
   if (coin instanceof SolCoin) {
     acc.push({
@@ -541,6 +562,9 @@ export const tokens: Tokens = {
     sui: {
       tokens: formattedSuiTokens.filter((token) => token.network === 'Mainnet'),
     },
+    bera: {
+      tokens: formattedBeraTokens.filter((token) => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -597,6 +621,9 @@ export const tokens: Tokens = {
     },
     sui: {
       tokens: formattedSuiTokens.filter((token) => token.network === 'Testnet'),
+    },
+    bera: {
+      tokens: formattedBeraTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };
