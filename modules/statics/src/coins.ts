@@ -4114,6 +4114,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.GHUB
   ),
   erc20(
+    'd3c6a9b2-1551-401c-b576-db429d48b895',
+    'ghst',
+    'aavegotchi',
+    18,
+    '0x3f382dbd960e3a9bbceae22651e88158d2791550',
+    UnderlyingAsset.GHST
+  ),
+  erc20(
     '2eb02229-65f4-46dc-9ff0-300ac647214c',
     'gigdrop',
     'GIG-POOL-DROP',
@@ -4264,6 +4272,22 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x7968bc6a03017ea2de509aaa816f163db0f35148',
     UnderlyingAsset.HGET
+  ),
+  erc20(
+    '50bc024c-f6e2-4b69-8010-be20243a1c35',
+    'high',
+    'Highstreet',
+    18,
+    '0x71ab77b7dbb4fa7e017bc15090b2163221420282',
+    UnderlyingAsset.HIGH
+  ),
+  erc20(
+    '713f7531-d5ba-4c38-9c21-64458cb1bcf9',
+    'hifi',
+    'Hifi Finance',
+    18,
+    '0x4b9278b94a1112cad404048903b8d343a810b07e',
+    UnderlyingAsset.HIFI
   ),
   erc20(
     '3e3c2765-2d55-4d18-b5a8-f5cca0d3dade',
@@ -4505,6 +4529,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xbbc7f7a6aadac103769c66cbc69ab720f7f9eae3',
     UnderlyingAsset.INX
+  ),
+  erc20(
+    'e8763a73-0850-491d-9eda-45b2723f32d0',
+    'iost',
+    'IOSToken',
+    18,
+    '0xfa1a856cfa3409cfa145fa4e20eb270df3eb21ab',
+    UnderlyingAsset.IOST
   ),
   erc20(
     '17970beb-59a7-48d0-b494-c5f0e9c4680d',
@@ -4811,6 +4843,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LNC
   ),
   erc20(
+    '8b4aa7e7-6b76-4571-875f-9e2a45d690a4',
+    'loka',
+    'League of Kingdoms',
+    18,
+    '0x61e90a50137e1f645c9ef4a0d3a4f01477738406',
+    UnderlyingAsset.LOKA
+  ),
+  erc20(
     '903f10ef-6c5a-4049-9d84-584cae7cf3a6',
     'looks',
     'LooksRare',
@@ -4857,6 +4897,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x48d93d8c45fb25125f13cdd40529bbeaa97a6565',
     UnderlyingAsset.LSETH
+  ),
+  erc20(
+    'f55a200e-3eba-4336-9f95-4b0578c10d0b',
+    'lsk',
+    'Lisk',
+    18,
+    '0x6033f7f88332b8db6ad452b7c6d5bb643990ae3f',
+    UnderlyingAsset.LSK
   ),
   erc20(
     '69a336d1-d401-4efc-b613-615c6f19f450',
@@ -10028,6 +10076,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LEV
   ),
   erc20(
+    '5d760978-16f0-4575-85d9-2cc7a5d359fe',
+    'lever',
+    'LeverFI',
+    18,
+    '0x4b5f49487ea7b3609b1ad05459be420548789f1f',
+    UnderlyingAsset.LEVER
+  ),
+  erc20(
     '2963170f-2c71-489a-b772-7e571b2683cb',
     'lien',
     'lien',
@@ -10068,6 +10124,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.LOVE
   ),
   erc20(
+    '67a93874-3c56-4ed9-9d85-c591e05bd0c9',
+    'lovely',
+    'Lovely Finance',
+    18,
+    '0x0f6d4d4643a514132f84f4a270946db3c7cb701c',
+    UnderlyingAsset.LOVELY
+  ),
+  erc20(
     '24929a4b-d237-4224-8580-b425bcf0cfaa',
     'lpt',
     'Livepeer Token',
@@ -10098,6 +10162,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x08da69ca2bfe378f384cb76c84d6ded701ec65c7',
     UnderlyingAsset.LTCMOON
+  ),
+  erc20(
+    'ad6681c9-a517-4592-9aed-994804b133ce',
+    'lto',
+    'LTO Network',
+    8,
+    '0xd01409314acb3b245cea9500ece3f6fd4d70ea30',
+    UnderlyingAsset.LTO
   ),
   erc20(
     '7189b0aa-b4be-4fe9-8ad6-c02a948a21c3',
@@ -12047,6 +12119,30 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['bsc:city']
   ),
   bscToken(
+    '5c7702c4-8eb8-423b-ab23-eff15a6a8a1c',
+    'bsc:gft',
+    'Gifto',
+    18,
+    '0x72ff5742319ef07061836f5c924ac6d72c919080',
+    UnderlyingAsset['bsc:gft']
+  ),
+  bscToken(
+    '71861b2e-03b0-4101-81ea-ea35b13d48d1',
+    'bsc:glmr',
+    'Moonbeam',
+    18,
+    '0x76f3ce6af26de7a9854dbd153acd8f46a2cf5133',
+    UnderlyingAsset['bsc:glmr']
+  ),
+  bscToken(
+    'bcc8389e-a3bf-493d-89a8-3d95676e817c',
+    'bsc:gmt',
+    'Green Metaverse Token',
+    8,
+    '0x3019bf2a2ef8040c242c9a4c5c4bd4c81678b2a1',
+    UnderlyingAsset['bsc:gmt']
+  ),
+  bscToken(
     '290801fc-fc48-4b5d-b5e7-abbc2101de13',
     'bsc:firo',
     'Firo',
@@ -13017,6 +13113,14 @@ export const coins = CoinMap.fromCoins([
     18,
     'TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S',
     UnderlyingAsset.SUN
+  ),
+  tronToken(
+    'dd0e0950-ff1a-4302-b12d-d661d59602d8',
+    'trx:htx',
+    'HTX',
+    18,
+    'TUPM7K8REVzD2UdV4R5fe5M8XbnR2DdoJ6',
+    UnderlyingAsset['trx:htx']
   ),
   tronToken(
     '888fb35c-1b3d-425d-af65-e6aa7453edce',
@@ -14892,6 +14996,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xc7b5d72c836e718cda8888eaf03707faef675079',
     UnderlyingAsset['avaxc:swap']
+  ),
+  avaxErc20(
+    'd4e4244e-505c-428b-b3a9-c039f3286a9a',
+    'avaxc:tico',
+    'Funtico',
+    18,
+    '0xba69b8aff564fe150ff7e2f965e0dba23b9d2571',
+    UnderlyingAsset['avaxc:tico']
   ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
