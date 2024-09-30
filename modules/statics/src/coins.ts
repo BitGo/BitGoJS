@@ -4531,6 +4531,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.INX
   ),
   erc20(
+    'e8763a73-0850-491d-9eda-45b2723f32d0',
+    'iost',
+    'IOSToken',
+    18,
+    '0xfa1a856cfa3409cfa145fa4e20eb270df3eb21ab',
+    UnderlyingAsset.IOST
+  ),
+  erc20(
     '17970beb-59a7-48d0-b494-c5f0e9c4680d',
     'isf',
     'Susnova',

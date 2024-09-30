@@ -946,6 +946,7 @@ export enum UnderlyingAsset {
   INSUR = 'insur',
   INV = 'inv',
   INX = 'inx',
+  IOST = 'iost',
   IOTX = 'iotx',
   IP3 = 'ip3',
   ISF = 'isf',
