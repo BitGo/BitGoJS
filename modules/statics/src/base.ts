@@ -2149,6 +2149,12 @@ export enum UnderlyingAsset {
   // Celo mainnet tokens
   'celo:pact' = 'celo:pact',
 
+  // bera mainnet tokens
+  'bera:bgt' = 'bera:bgt',
+
+  // bera testnet tokens
+  'tbera:bgt' = 'tbera:bgt',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',
