@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*", "test/**/*", "index.ts"],
   "exclude": ["node_modules"],
   "references": [
     {
