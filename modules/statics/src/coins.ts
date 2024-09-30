@@ -2390,6 +2390,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BIT
   ),
   erc20(
+    '3ac1141f-6c09-476c-919b-9f5b0ef26dab',
+    'btt',
+    'BitTorrent',
+    18,
+    '0xc669928185dbce49d2230cc9b0979be6dc797957',
+    UnderlyingAsset.BTT
+  ),
+  erc20(
     '83214bf2-eec7-4225-b398-41e065e23311',
     'blur',
     'Blur',
@@ -2478,6 +2486,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BOND
   ),
   erc20(
+    '6b0fabae-5d77-4f1f-ab2d-33094ef70b64',
+    'bonk',
+    'BONK',
+    5,
+    '0x1151cb3d861920e07a38e03eead12c32178567f6',
+    UnderlyingAsset.BONK
+  ),
+  erc20(
     'c08b5b3c-2d6b-4eaa-aaf4-5e4aae9e741c',
     'borg',
     'SwissBorg Token',
@@ -2543,11 +2559,11 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '4e1e3c5a-315f-443d-9eea-7d0bb7bd1b94',
-    'btt',
+    'bkt',
     'Blocktrade',
     18,
     '0xfa456cf55250a839088b27ee32a424d7dacb54ff',
-    UnderlyingAsset.BTT
+    UnderlyingAsset.BKT
   ),
   erc20(
     'c968c10c-fd2f-4dac-b6ac-5b62d6bb0645',
@@ -3816,6 +3832,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
     UnderlyingAsset.FDT
+  ),
+  erc20(
+    '1bc29425-088d-4e24-905f-9d2afc7cd636',
+    'fdusd',
+    'First Digital USD',
+    18,
+    '0xc5f0f7b66764f6ec8c8dff7ba683102295e16409',
+    UnderlyingAsset.FDUSD
   ),
   erc20(
     '1bae0040-6e3c-4da5-bd27-a8a4818fd8c7',
@@ -5390,11 +5414,11 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'f4a71d1f-b4df-4f76-ac39-8fab55a644e1',
-    'om',
+    'omold',
     'Om Token',
     18,
     '0x2baecdf43734f22fd5c152db08e3c27233f0c7d2',
-    UnderlyingAsset.OM
+    UnderlyingAsset.OMOLD
   ),
   erc20(
     '35f74b88-41f0-4759-a0ad-050d054a3812',
@@ -7198,6 +7222,14 @@ export const coins = CoinMap.fromCoins([
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     UnderlyingAsset.USDC,
     [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_NEW_YORK]
+  ),
+  erc20(
+    'd2b0daf7-c664-4e97-a9b3-48c2fe4e6b30',
+    'usdd',
+    'USDD',
+    18,
+    '0x0c10bf8fcb7bf5412187a595ab97a3609160b5c6',
+    UnderlyingAsset.USDD
   ),
   erc20(
     '7ab504b3-eecc-45ca-8f33-7957cb9e774d',
@@ -9884,6 +9916,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.KCASH
   ),
   erc20(
+    '4e68ff9f-a423-4a8b-af31-34969178ce53',
+    'kcs',
+    'KuCoin',
+    6,
+    '0xf34960d9d60be18cc1d5afc1a6f012a723a28811',
+    UnderlyingAsset.KCS
+  ),
+  erc20(
     'f82b2f31-3437-46a1-bca8-35a991551a1c',
     'kill0',
     'Killerof0',
@@ -10077,11 +10117,11 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'd9371bee-e3f9-4a3b-8c59-209b39e92587',
-    'mantradao',
+    'om',
     'MANTRA DAO',
     18,
     '0x3593d125a4f7849a1b059e64f4517a86dd60c95d',
-    UnderlyingAsset.MANTRADAO
+    UnderlyingAsset.OM
   ),
   erc20(
     '528e1b1a-d94d-46a3-8854-ba243c89cc81',
@@ -11205,6 +11245,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BETA
   ),
   erc20(
+    '59b135f2-77f9-4c6e-b97d-a5eb11c225ee',
+    'bgb',
+    'Bitget',
+    18,
+    '0x54d2252757e1672eead234d27b1270728ff90581',
+    UnderlyingAsset.BGB
+  ),
+  erc20(
     '4cd37e4b-bb0f-449f-84d7-7c6dd4031dc3',
     'bigtime',
     'Big Time',
@@ -12005,6 +12053,54 @@ export const coins = CoinMap.fromCoins([
     8,
     '0xd5d0322b6bab6a762c79f8c81a0b674778e13aed',
     UnderlyingAsset['bsc:firo']
+  ),
+  bscToken(
+    '74b382c0-611a-4abf-ad2e-fedec28eb5e7',
+    'bsc:fdusd',
+    'First Digital USD',
+    18,
+    '0xc5f0f7b66764f6ec8c8dff7ba683102295e16409',
+    UnderlyingAsset['bsc:fdusd']
+  ),
+  bscToken(
+    '99f9276a-b2b7-471f-8e70-979559acd932',
+    'bsc:floki',
+    'FLOKI',
+    9,
+    '0xfb5b838b6cfeedc2873ab27866079ac55363d37e',
+    UnderlyingAsset['bsc:floki']
+  ),
+  bscToken(
+    '160b345f-f244-4412-a458-afc055b52a7e',
+    'bsc:ldo',
+    'LIDO DAO',
+    18,
+    '0x986854779804799c1d68867f5e03e601e781e41b',
+    UnderlyingAsset['bsc:ldo']
+  ),
+  bscToken(
+    'f0843b47-1472-44e7-88b7-9f3f46a04848',
+    'bsc:eos',
+    'EOS',
+    18,
+    '0x56b6fb708fc5732dec1afc8d8556423a2edccbd6',
+    UnderlyingAsset['bsc:eos']
+  ),
+  bscToken(
+    '2bdbc219-916f-4f73-9478-87c71eb51f39',
+    'bsc:om',
+    'MANTRA DAO',
+    18,
+    '0xf78d2e7936f5fe18308a3b2951a93b6c4a41f5e2',
+    UnderlyingAsset['bsc:om']
+  ),
+  bscToken(
+    '0abc1708-49f5-4a95-a14e-38ad55e58937',
+    'bsc:usdd',
+    'USDD',
+    18,
+    '0xd17479997f34dd9156deef8f95a52d81d265be9c',
+    UnderlyingAsset['bsc:usdd']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
@@ -12945,6 +13041,14 @@ export const coins = CoinMap.fromCoins([
     6,
     'TLa2f6VPqDgRE67v1736s7bJ8Ray5wYjU7',
     UnderlyingAsset['trx:win']
+  ),
+  tronToken(
+    '972e50a5-f513-469a-a4b7-f0776d3ab608',
+    'trx:usdd',
+    'USDD',
+    18,
+    'TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn',
+    UnderlyingAsset['trx:usdd']
   ),
   algoToken(
     'bf444e89-e762-48a9-a27d-8efa2aed7867',
@@ -16667,6 +16771,69 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:io'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'e29a3ff9-1045-4c94-afa3-6ecdb4286c58',
+    'sol:aave',
+    'Aave',
+    8,
+    '3vAs4D1WE6Na4tCgt4BApgFfENbm8WY7q4cSPD1yM4Cg',
+    UnderlyingAsset['sol:aave'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '8e851669-6fea-43a8-9f59-51fd1104ac42',
+    'sol:ldo',
+    'LIDO DAO',
+    8,
+    'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
+    UnderlyingAsset['sol:ldo'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'c4ec49c1-04cc-469d-a1f8-15534c5e619f',
+    'sol:gt',
+    'Gate Token',
+    8,
+    'ABAq2R9gSpDDGguQxBk4u13s4ZYW6zbwKVBx15mCMG8',
+    UnderlyingAsset['sol:gt'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'a8ebc810-a065-486d-844e-10802fffbabc',
+    'sol:popcat',
+    'POPCAT',
+    9,
+    '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
+    UnderlyingAsset['sol:popcat'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'ec3a6d0d-e6bf-4a2f-9e07-19bc81beee47',
+    'sol:axs',
+    'Axie Infinity',
+    8,
+    'HysWcbHiYY9888pHbaqhwLYZQeZrcQMXKQWRqS7zcPK5',
+    UnderlyingAsset['sol:axs'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '468c5741-2612-480d-9857-19a09aca5447',
+    'sol:sand',
+    'Sand',
+    8,
+    '49c7WuCZkQgc3M4qH8WuEUNXfgwupZf1xqWkDQ7gjRGt',
+    UnderlyingAsset['sol:sand'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '5dad984d-96dd-4a08-88c6-40c9a025810a',
+    'sol:ens',
+    'Ethereum Name Service',
+    8,
+    'CLQsDGoGibdNPnVCFp8BAsN2unvyvb41Jd5USYwAnzAg',
+    UnderlyingAsset['sol:ens'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -17885,6 +18052,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x1c43d05be7e5b54d506e3ddb6f0305e8a66cd04e',
     UnderlyingAsset['arbeth:ztx']
+  ),
+  arbethErc20(
+    '0aa284a4-f7cc-4b9c-8564-c305e113e456',
+    'arbeth:ldo',
+    'LIDO DAO',
+    18,
+    '0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60',
+    UnderlyingAsset['arbeth:ldo']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
