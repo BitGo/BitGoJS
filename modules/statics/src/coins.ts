@@ -12254,6 +12254,7 @@ export const coins = CoinMap.fromCoins([
     Networks.main.bsc,
     KeyCurve.Secp256k1
   ),
+  ofcerc20('a6b6dd56-c25e-45a3-83e5-5da0f95d27d2', 'ofcpol', 'Polygon Ecosystem Token', 18, UnderlyingAsset.POL),
   ofcerc20('3ed9ccb5-7dc9-46fe-8003-d19a12ffd258', 'ofcgods', 'Gods Unchained', 18, UnderlyingAsset.GODS),
   ofcerc20('36af444a-7829-4d78-8b34-7197ce4a34b9', 'ofcplanet', 'Planet', 18, UnderlyingAsset.PLANET),
   ofcerc20('20274306-7e40-43ac-ae91-d7744352f4e0', 'ofcbadger', 'Badger', 18, UnderlyingAsset.BADGER),
