@@ -4,6 +4,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import TonWeb from 'tonweb';
 import { BN } from 'bn.js';
 import { Cell } from 'tonweb/dist/types/boc/cell';
+import { WITHDRAW_OPCODE } from './transactionBuilder';
 
 const WALLET_ID = 698983191;
 
@@ -12,7 +13,7 @@ export class Transaction extends BaseTransaction {
   public bounceable: boolean;
   public fromAddressBounceable: boolean;
   public toAddressBounceable: boolean;
-  public message: string | Cell;
+  public message: string;
   public withdrawAmount: string;
   seqno: number;
   expireTime: number;
@@ -105,8 +106,17 @@ export class Transaction extends BaseTransaction {
         payloadCell = payload;
       } else if (typeof payload === 'string') {
         if (payload.length > 0) {
-          payloadCell.bits.writeUint(0, 32);
-          payloadCell.bits.writeString(payload);
+          if (payload.length > 24 && payload.substring(0, 8) === WITHDRAW_OPCODE) {
+            // payload is a withdraw txn message
+            const queryId = payload.substring(8, 24);
+            const withdrawAmount = payload.substring(24);
+            payloadCell.bits.writeUint(parseInt(WITHDRAW_OPCODE, 16), 32);
+            payloadCell.bits.writeUint(parseInt(queryId, 16), 64);
+            payloadCell.bits.writeCoins(TonWeb.utils.toNano(withdrawAmount));
+          } else {
+            payloadCell.bits.writeUint(0, 32);
+            payloadCell.bits.writeString(payload);
+          }
         }
       } else {
         payloadCell.bits.writeBytes(payload);
@@ -119,7 +129,7 @@ export class Transaction extends BaseTransaction {
       true,
       this.bounceable
     );
-    return TonWeb.Contract.createCommonMsgInfo(orderHeader, undefined, payloadCell); // compare with commonmsg tonweb and ton
+    return TonWeb.Contract.createCommonMsgInfo(orderHeader, undefined, payloadCell);
   }
 
   async createExternalMessage(signingMessage: Cell, seqno: number, signature: string): Promise<Cell> {
@@ -307,10 +317,7 @@ export class Transaction extends BaseTransaction {
         } else if (opcode === 4096) {
           const queryId = order.loadUint(64).toNumber();
           withdrawAmount = (order.loadCoins().toNumber() / 1e9).toString();
-          payload = new TonWeb.boc.Cell();
-          payload.bits.writeUint(opcode, 32);
-          payload.bits.writeUint(queryId, 64);
-          payload.bits.writeCoins(TonWeb.utils.toNano(withdrawAmount));
+          payload = WITHDRAW_OPCODE + queryId.toString(16).padStart(16, '0') + withdrawAmount;
           this.transactionType = TransactionType.SingleNominatorWithdraw;
         } else {
           payload = '';
