@@ -380,6 +380,7 @@ export enum UnderlyingAsset {
   ACH = 'ach',
   ADABEAR = 'adabear',
   ADABULL = 'adabull',
+  ADX = 'adx',
   AE = 'ae',
   AERGO = 'aergo',
   AERGO1 = 'aergo1',
@@ -805,6 +806,7 @@ export enum UnderlyingAsset {
   FLUX = 'flux',
   FLY = 'fly',
   FMF = 'fmf',
+  FOLD = 'fold',
   FOR = 'for',
   FOREX = 'forex',
   FORT = 'fort',
@@ -1962,6 +1964,7 @@ export enum UnderlyingAsset {
   'polygon:npt' = 'polygon:npt',
   'polygon:volt' = 'polygon:volt',
   'polygon:euroe' = 'polygon:euroe',
+  'polygon:geod' = 'polygon:geod',
 
   // Polygon NFTs
   // generic NFTs
@@ -2011,6 +2014,8 @@ export enum UnderlyingAsset {
   'bsc:1inch' = 'bsc:1inch',
   'bsc:ada' = 'bsc:ada',
   'bsc:alice' = 'bsc:alice',
+  'bsc:alpaca' = 'bsc:alpaca',
+  'bsc:alpine' = 'bsc:alpine',
   'bsc:ankr' = 'bsc:ankr',
   'bsc:avax' = 'bsc:avax',
   'bsc:beta' = 'bsc:beta',
@@ -2237,6 +2242,7 @@ export enum UnderlyingAsset {
   'sol:axs' = 'sol:axs',
   'sol:sand' = 'sol:sand',
   'sol:ens' = 'sol:ens',
+  'sol:jitosol' = 'sol:jitosol',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
@@ -2252,6 +2258,9 @@ export enum UnderlyingAsset {
   // Sui tokens
   'sui:deep' = 'sui:deep',
   'sui:suins' = 'sui:suins',
+  'sui:fdusd' = 'sui:fdusd',
+  'sui:usdc' = 'sui:usdc',
+  'sui:wusdc' = 'sui:wusdc',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
