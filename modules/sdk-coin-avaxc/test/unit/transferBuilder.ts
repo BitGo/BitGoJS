@@ -3,7 +3,7 @@ import { TransferBuilder as AvaxCTransferBuilder, TransactionBuilder, KeyPair } 
 import { getBuilder } from './getBuilder';
 import * as testData from '../resources/avaxc';
 import { TransactionType } from '@bitgo/sdk-core';
-import { decodeTokenTransferData } from '@bitgo/sdk-coin-eth';
+import { decodeTokenTransferData } from '@bitgo/abstract-eth';
 import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 
 const amount = '20000';

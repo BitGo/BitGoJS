@@ -12,7 +12,7 @@ import {
   CoinFamily,
   coins,
   ethGasConfigs,
-  BaseNetwork,
+  EthereumNetwork,
 } from '@bitgo/statics';
 import {
   BaseCoin,
@@ -32,15 +32,6 @@ import {
   Util,
   VerifyAddressOptions,
 } from '@bitgo/sdk-core';
-import {
-  GetSendMethodArgsOptions,
-  optionalDeps,
-  RecoverOptions,
-  RecoveryInfo,
-  SendMethodArgs,
-  TransactionBuilder as EthTransactionBuilder,
-  TransactionPrebuild,
-} from '@bitgo/sdk-coin-eth';
 import { getToken, isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 import request from 'superagent';
@@ -57,19 +48,33 @@ import {
   OfflineVaultTxInfo,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
-  SignedTransaction,
   SignFinalOptions,
   VerifyAvaxcTransactionOptions,
+  SignedTransaction,
 } from './iface';
 import { AvaxpLib } from '@bitgo/sdk-coin-avaxp';
+import {
+  SignTransactionOptions,
+  AbstractEthLikeNewCoins,
+  optionalDeps,
+  RecoverOptions,
+  RecoveryInfo,
+  OfflineVaultTxInfo as AvaxcRecoveryOfflineVaultTxInfo,
+  TransactionPrebuild,
+} from '@bitgo/abstract-eth';
 
-export class AvaxC extends BaseCoin {
+/** COIN-1708 : Avaxc is added for CCR in WRW,
+ * hence adding the feature for AbstractEthLikeNewCoins
+ * Super class changed from BaseCoin to AbstractEthLikeNewCoins
+ * @since Sept 2024
+ */
+export class AvaxC extends AbstractEthLikeNewCoins {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo);
+    super(bitgo, staticsCoin);
 
     if (!staticsCoin) {
       throw new Error('missing required constructor parameter staticsCoin');
@@ -94,8 +99,8 @@ export class AvaxC extends BaseCoin {
    * Method to return the coin's network object
    * @returns {BaseNetwork}
    */
-  getNetwork(): BaseNetwork {
-    return this._staticsCoin.network;
+  getNetwork(): EthereumNetwork {
+    return this._staticsCoin.network as EthereumNetwork;
   }
 
   /**
@@ -481,56 +486,6 @@ export class AvaxC extends BaseCoin {
   }
 
   /**
-   * Default expire time for a contract call (1 week)
-   * @returns {number} Time in seconds
-   */
-  getDefaultExpireTime(): number {
-    return Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 7;
-  }
-
-  /**
-   * Build arguments to call the send method on the wallet contract
-   * @param {Object} txInfo - data for send method args
-   * @returns {SendMethodArgs[]}
-   */
-  getSendMethodArgs(txInfo: GetSendMethodArgsOptions): SendMethodArgs[] {
-    // Method signature is
-    // sendMultiSig(address toAddress, uint value, bytes data, uint expireTime, uint sequenceId, bytes signature)
-    return [
-      {
-        name: 'toAddress',
-        type: 'address',
-        value: txInfo.recipient.address,
-      },
-      {
-        name: 'value',
-        type: 'uint',
-        value: txInfo.recipient.amount,
-      },
-      {
-        name: 'data',
-        type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.recipient.data || '')),
-      },
-      {
-        name: 'expireTime',
-        type: 'uint',
-        value: txInfo.expireTime,
-      },
-      {
-        name: 'sequenceId',
-        type: 'uint',
-        value: txInfo.contractSequenceId,
-      },
-      {
-        name: 'signature',
-        type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(optionalDeps.ethUtil.addHexPrefix(txInfo.signature)),
-      },
-    ];
-  }
-
-  /**
    * Builds a funds recovery transaction without BitGo
    * Steps:
    * 1) Node query - how much money is in the account
@@ -544,7 +499,7 @@ export class AvaxC extends BaseCoin {
    * @param {string} params.recoveryDestination - target address to send recovered funds to
    * @returns {Promise<RecoveryInfo>} - recovery tx info
    */
-  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+  async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo | AvaxcRecoveryOfflineVaultTxInfo> {
     if (_.isUndefined(params.userKey)) {
       throw new Error('missing userKey');
     }
@@ -576,6 +531,10 @@ export class AvaxC extends BaseCoin {
 
     if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
+    }
+
+    if (params.bitgoFeeAddress) {
+      return this.recoverEthLikeforEvmBasedRecovery(params);
     }
 
     // TODO (BG-56531): add support for krs
@@ -760,7 +719,7 @@ export class AvaxC extends BaseCoin {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected getTransactionBuilder(): EthTransactionBuilder {
+  protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }
 
@@ -990,7 +949,7 @@ export class AvaxC extends BaseCoin {
    * Assemble half-sign prebuilt transaction
    * @param params
    */
-  async signTransaction(params: AvaxSignTransactionOptions): Promise<SignedTransaction> {
+  async signTransaction(params: AvaxSignTransactionOptions | SignTransactionOptions): Promise<SignedTransaction> {
     // Normally the SDK provides the first signature for an AVAXC tx,
     // but for unsigned sweep recoveries it can provide the second and final one.
     if (params.isLastSignature) {
