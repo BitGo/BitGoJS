@@ -1816,6 +1816,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ACH
   ),
   erc20(
+    'd2d3040e-5455-4d1c-b9a4-0df429280f83',
+    'adx',
+    'AdEx Network',
+    18,
+    '0xade00c28244d5ce17d72e40330b1c318cd12b7c3',
+    UnderlyingAsset.ADX
+  ),
+  erc20(
     '2a6edc25-e290-4a2a-8ab1-300d6caa2e87',
     'ae',
     'Aeternity',
@@ -3898,6 +3906,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc',
     UnderlyingAsset.FMF
+  ),
+  erc20(
+    '5581778c-1e76-456d-a284-7c571a51efbb',
+    'fold',
+    'Manifold Finance',
+    18,
+    '0xd084944d3c05cd115c09d072b9f44ba3e0e45921',
+    UnderlyingAsset.FOLD
   ),
   erc20(
     '55f7bcc9-89db-42fc-a726-dc7233ae8388',
@@ -12232,6 +12248,22 @@ export const coins = CoinMap.fromCoins([
     '0xd17479997f34dd9156deef8f95a52d81d265be9c',
     UnderlyingAsset['bsc:usdd']
   ),
+  bscToken(
+    '74124b64-e619-4d4b-8e56-efcc3bdbf950',
+    'bsc:alpaca',
+    'Alpaca Finance',
+    18,
+    '0x8f0528ce5ef7b51152a59745befdd91d97091d2f',
+    UnderlyingAsset['bsc:alpaca']
+  ),
+  bscToken(
+    '4be7a586-4f50-430c-908c-5aff39acc323',
+    'bsc:alpine',
+    'Alpine F1 Team Fan Token',
+    8,
+    '0x287880ea252b52b63cc5f40a2d3e5a44aa665a76',
+    UnderlyingAsset['bsc:alpine']
+  ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
     'erc721:bsctoken',
@@ -16989,6 +17021,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:ens'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '34450f4a-1191-4a7b-a48a-2e5f4414aa02',
+    'sol:jitosol',
+    'Jito Staked SOL',
+    9,
+    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    UnderlyingAsset['sol:jitosol'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -17904,6 +17945,14 @@ export const coins = CoinMap.fromCoins([
     '0x820802fa8a99901f52e39acd21177b0be6ee2974',
     UnderlyingAsset['polygon:euroe']
   ),
+  polygonErc20(
+    '30a182f6-6c47-4b7c-976a-dab1255064d3',
+    'polygon:geod',
+    'GEODNET',
+    18,
+    '0xac0f66379a6d7801d7726d5a943356a172549adb',
+    UnderlyingAsset['polygon:geod']
+  ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
     'erc721:polygontoken',
@@ -18343,6 +18392,39 @@ export const coins = CoinMap.fromCoins([
     'ns',
     'NS',
     UnderlyingAsset['sui:suins'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '6ba90645-42ba-47d8-ba09-8b00228bfe33',
+    'sui:fdusd',
+    'First Digital USD',
+    6,
+    '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a',
+    'fdusd',
+    'FDUSD',
+    UnderlyingAsset['sui:fdusd'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    'e78941b5-9c34-4198-9c2c-cb9e27d4dde7',
+    'sui:usdc',
+    'USDC',
+    6,
+    '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7',
+    'usdc',
+    'USDC',
+    UnderlyingAsset['sui:usdc'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    'b3729af5-033b-495f-bab6-b5225c8f27e7',
+    'sui:wusdc',
+    'Wormhole USDC',
+    6,
+    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf',
+    'wusdc',
+    'WUSDC',
+    UnderlyingAsset['sui:wusdc'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(
