@@ -17,7 +17,7 @@ import { BN } from 'ethereumjs-util';
 
 nock.enableNetConnect();
 
-describe('Avalanche C-Chain', function () {
+describe('Avalanche P-Chain', function () {
   let bitgo: TestBitGoAPI;
   let tavaxCoin;
   let avaxCoin;
