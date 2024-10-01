@@ -11353,6 +11353,38 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['celo:pact']
   ),
   bscToken(
+    'b7540916-53ed-49e9-b8a4-8a853fd7d607',
+    'bsc:brise',
+    'Bitrise Token',
+    9,
+    '0x8fff93e810a2edaafc326edee51071da9d398e83',
+    UnderlyingAsset['bsc:brise']
+  ),
+  bscToken(
+    '2a3e9315-0cb8-4bdf-ba9c-d872aeeb1ce2',
+    'bsc:bsw',
+    'Biswap',
+    18,
+    '0x965f527d9159dce6288a2219db51fc6eef120dd1',
+    UnderlyingAsset['bsc:bsw']
+  ),
+  bscToken(
+    'b2f8e5fa-fd20-4844-ba3a-3daf1760e58f',
+    'bsc:burger',
+    'Burger Swap',
+    18,
+    '0xae9269f27437f0fcbc232d39ec814844a51d6b8f',
+    UnderlyingAsset['bsc:burger']
+  ),
+  bscToken(
+    'ccbc7619-7137-49c2-83d8-c8330e5479b8',
+    'bsc:cfx',
+    'BSC Conflux',
+    18,
+    '0x045c4324039da91c52c55df5d785385aab073dcf',
+    UnderlyingAsset['bsc:cfx']
+  ),
+  bscToken(
     '05d6b52a-21cb-4170-946f-8e7933d8562a',
     'bsc:bnx',
     'BinaryX',
@@ -15039,6 +15071,15 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xd769410dc8772695a7f55a304d2125320a65c2a5',
     UnderlyingAsset['tavaxc:xsgd']
+  ),
+  solToken(
+    '45d95e60-81df-4c5d-9ceb-e6e4f5b75eeb',
+    'sol:bome',
+    'Book Of Meme',
+    6,
+    'ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82', // https://explorer.solana.com/address/ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82
+    UnderlyingAsset['sol:bome'],
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     'acc2b136-c21e-46b6-aecf-69fd3c8281db',
