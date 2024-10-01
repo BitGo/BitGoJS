@@ -1969,6 +1969,10 @@ export enum UnderlyingAsset {
   'erc1155:polygontoken' = 'erc1155:polygontoken',
 
   // BSC Token BEP-20
+  'bsc:brise' = 'bsc:brise',
+  'bsc:bsw' = 'bsc:bsw',
+  'bsc:burger' = 'bsc:burger',
+  'bsc:cfx' = 'bsc:cfx',
   'bsc:bake' = 'bsc:bake',
   'bsc:bnx' = 'bsc:bnx',
   'bsc:busd' = 'bsc:busd',
@@ -2163,6 +2167,7 @@ export enum UnderlyingAsset {
   adaTestnetToken = 'temporary-placeholder',
 
   // solana token
+  'sol:bome' = 'sol:bome',
   '3uejh-usdc' = '3uejh-usdc',
   'avax-usdc' = 'avax-usdc',
   'bop-usdc' = 'bop-usdc',
