@@ -1,7 +1,21 @@
-import { jsPDF } from 'jspdf';
+import type { jsPDF } from 'jspdf';
 import * as QRCode from 'qrcode';
 import { IDrawKeyCard } from './types';
 import { splitKeys } from './utils';
+type jsPDFModule = typeof import('jspdf');
+
+async function loadJSPDF(): Promise<jsPDFModule> {
+  let jsPDF: jsPDFModule;
+
+  if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
+    // We are in the browser
+    jsPDF = await import('jspdf');
+  } else {
+    // We are in Node.js
+    jsPDF = require('jspdf');
+  }
+  return jsPDF;
+}
 
 enum KeyCurveName {
   ed25519 = 'EDDSA',
@@ -97,12 +111,14 @@ export async function drawKeycard({
   walletLabel,
   curve,
 }: IDrawKeyCard): Promise<jsPDF> {
+  const jsPDFModule = await loadJSPDF();
+
   // document details
   const width = 8.5 * 72;
   let y = 0;
 
   // Create the PDF instance
-  const doc = new jsPDF('portrait', 'pt', 'letter'); // jshint ignore:line
+  const doc = new jsPDFModule.jsPDF('portrait', 'pt', 'letter'); // jshint ignore:line
   doc.setFont('helvetica');
 
   // PDF Header Area - includes the logo and company name
