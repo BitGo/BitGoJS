@@ -9,6 +9,7 @@ yargs
   .command(cmdParseScript)
   .command(cmdGenerateAddress)
   .command(cmdBip32)
+  .strict()
   .demandCommand()
   .help()
   .parse();
