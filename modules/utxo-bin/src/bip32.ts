@@ -3,18 +3,19 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { Parser, ParserNode } from './Parser';
 import { parseUnknown } from './parseUnknown';
 
-export function parseXpub(xpub: string, params: { derive?: string }): ParserNode {
-  if (!xpub.startsWith('xpub')) {
-    throw new Error('expected xpub');
-  }
+export function parseBip32(bip32Key: string, params: { derive?: string }): ParserNode {
   const parser = new Parser();
-  let xpubObj = utxolib.bip32.fromBase58(xpub);
+  let bip32 = utxolib.bip32.fromBase58(bip32Key);
   if (params.derive) {
-    xpubObj = xpubObj.derivePath(params.derive);
+    bip32 = bip32.derivePath(params.derive);
   }
-  const node = parseUnknown(parser, 'xpub', xpubObj, {
+  const label = bip32.isNeutered() ? 'xpub' : 'xprv';
+  const node = parseUnknown(parser, label, bip32, {
     omit: ['network', '__Q', '__D', '__DEPTH', '__INDEX', '__PARENT_FINGERPRINT'],
   });
-  node.value = xpubObj.toBase58();
+  if (!bip32.isNeutered()) {
+    node.nodes?.unshift(parser.node('xpub', bip32.neutered().toBase58()));
+  }
+  node.value = bip32.toBase58();
   return node;
 }
