@@ -1,5 +1,3 @@
-import * as yargs from 'yargs';
-
 import { ParserNode } from '../Parser';
 import { formatTree } from '../format';
 import { FormatTreeOrJson } from '../args';
@@ -9,7 +7,7 @@ export type FormatStringArgs = {
   all: boolean;
 };
 
-export function formatString(parsed: ParserNode, argv: yargs.Arguments<FormatStringArgs>): string {
+export function formatString(parsed: ParserNode, argv: FormatStringArgs): string {
   switch (argv.format) {
     case 'json':
       return JSON.stringify(parsed, null, 2);
