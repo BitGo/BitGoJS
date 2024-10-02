@@ -11,7 +11,7 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as Bluebird from 'bluebird';
+import Bluebird from 'bluebird';
 import * as _ from 'lodash';
 
 import { common } from '@bitgo/sdk-core';

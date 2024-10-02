@@ -12,8 +12,8 @@
 import { common } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import * as Bluebird from 'bluebird';
-import * as _ from 'lodash';
+import Bluebird from 'bluebird';
+import _ from 'lodash';
 
 //
 // Constructor

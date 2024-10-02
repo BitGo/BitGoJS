@@ -15,7 +15,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import { common, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
 const _ = require('lodash');
-import * as Bluebird from 'bluebird';
+import Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
 //

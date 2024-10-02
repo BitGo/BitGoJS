@@ -20,8 +20,8 @@ import {
 } from '@bitgo/sdk-core';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as _ from 'lodash';
-import * as Bluebird from 'bluebird';
+import _ from 'lodash';
+import Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
 

@@ -13,8 +13,8 @@
 import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as Bluebird from 'bluebird';
-import * as _ from 'lodash';
+import Bluebird from 'bluebird';
+import _ from 'lodash';
 
 interface DecryptReceivedTravelRuleOptions {
   tx?: {
