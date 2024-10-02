@@ -128,7 +128,7 @@ export const cmdParseTx = {
       throw new Error(`no txdata`);
     }
 
-    const bytes = stringToBuffer(string, 'hex');
+    const bytes = stringToBuffer(string, ['hex', 'base64']);
 
     let tx = utxolib.bitgo.isPsbt(bytes)
       ? utxolib.bitgo.createPsbtFromBuffer(bytes, argv.network)
