@@ -1,6 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 
-import * as buildDebug from 'debug';
+import buildDebug from 'debug';
 
 const debug = buildDebug('bitgo:v1:txb');
 
