@@ -4,8 +4,11 @@ import { CommandModule } from 'yargs';
 import { getNetworkOptionsDemand, keyOptions, KeyOptions } from '../../args';
 import {
   formatAddressTree,
+  formatDescriptorAddress,
   formatFixedScriptAddress,
+  generateDescriptorAddress,
   generateFixedScriptAddress,
+  getDescriptorAddressPlaceholderDescription,
   getFixedScriptAddressPlaceholderDescription,
   getRange,
   parseIndexRange,
@@ -70,6 +73,45 @@ export const cmdGenerateFixedScript: CommandModule<unknown, ArgsGenerateAddressF
         console.log(formatAddressTree(address));
       } else {
         console.log(formatFixedScriptAddress(address, argv.format));
+      }
+    }
+  },
+};
+
+type ArgsGenerateDescriptorAddress = {
+  network: utxolib.Network;
+  descriptor: string;
+  format: string;
+} & IndexLimitOptions;
+
+export const cmdFromDescriptor: CommandModule<unknown, ArgsGenerateDescriptorAddress> = {
+  command: 'fromDescriptor [descriptor]',
+  describe: 'generate address from descriptor',
+  builder(b) {
+    return b
+      .options(getNetworkOptionsDemand('bitcoin'))
+      .positional('descriptor', {
+        type: 'string',
+        demandOption: true,
+      })
+      .options({
+        format: {
+          type: 'string',
+          description: `Format string.\nPlaceholders:\n${getDescriptorAddressPlaceholderDescription()}`,
+          default: '%i\t%a',
+        },
+      })
+      .options(indexLimitOptions);
+  },
+  handler(argv) {
+    for (const address of generateDescriptorAddress({
+      ...argv,
+      index: getIndexRangeFromArgv(argv),
+    })) {
+      if (argv.format === 'tree') {
+        console.log(formatAddressTree(address));
+      } else {
+        console.log(formatDescriptorAddress(address, argv.format));
       }
     }
   },
