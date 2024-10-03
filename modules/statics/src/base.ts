@@ -521,7 +521,7 @@ export enum UnderlyingAsset {
   BNL = 'bnl',
   BNT = 'bnt',
   BNTY = 'bnty',
-  BNVDA = 'bNVDA',
+  BNVDA = 'bnvda',
   BOB = 'bob',
   BOND = 'bond',
   BONK = 'bonk',

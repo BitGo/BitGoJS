@@ -2633,7 +2633,7 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '985807cc-6c4e-4d1e-83c5-b65d559d9ae5',
-    'bNVDA',
+    'bnvda',
     'Backed NVIDIA Corp',
     18,
     '0xa34c5e0abe843e10461e2c9586ea03e55dbcc495',
