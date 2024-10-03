@@ -2,14 +2,13 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as yargs from 'yargs';
 
 import { ScriptParser } from '../ScriptParser';
-import { getNetworkOptions, stringToBuffer } from '../args';
+import { formatTreeOrJson, getNetworkOptions, FormatTreeOrJson, stringToBuffer } from '../args';
 
-import { OutputFormat } from './cmdParseTx';
 import { formatString } from './formatString';
 
 export type ArgsParseScript = {
   network?: utxolib.Network;
-  format: OutputFormat;
+  format: FormatTreeOrJson;
   all: boolean;
   script: string;
 };
@@ -24,7 +23,7 @@ export const cmdParseScript = {
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseScript> {
     return b
       .options(getNetworkOptions())
-      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
+      .option('format', formatTreeOrJson)
       .option('all', { type: 'boolean', default: false })
       .positional('script', { type: 'string', demandOption: true });
   },

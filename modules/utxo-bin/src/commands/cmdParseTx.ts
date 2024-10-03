@@ -1,7 +1,15 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as yargs from 'yargs';
 
-import { argToString, getNetworkOptionsDemand, ReadStringOptions, readStringOptions, stringToBuffer } from '../args';
+import {
+  argToString,
+  formatTreeOrJson,
+  getNetworkOptionsDemand,
+  FormatTreeOrJson,
+  ReadStringOptions,
+  readStringOptions,
+  stringToBuffer,
+} from '../args';
 import { TxParser, TxParserArgs } from '../TxParser';
 import {
   fetchOutputSpends,
@@ -17,7 +25,6 @@ import { Parser } from '../Parser';
 
 import { formatString } from './formatString';
 
-export type OutputFormat = 'tree' | 'json';
 export type ArgsParseTransaction = ReadStringOptions & {
   network: utxolib.Network;
   txid?: string;
@@ -25,7 +32,7 @@ export type ArgsParseTransaction = ReadStringOptions & {
   txIndex?: number;
   all: boolean;
   cache: boolean;
-  format: OutputFormat;
+  format: FormatTreeOrJson;
   fetchAll: boolean;
   fetchStatus: boolean;
   fetchInputs: boolean;
@@ -95,7 +102,7 @@ export const cmdParseTx = {
         default: false,
         description: 'use local cache for http responses',
       })
-      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
+      .option('format', formatTreeOrJson)
       .option('parseError', { choices: ['continue', 'throw'], default: 'continue' } as const);
   },
 

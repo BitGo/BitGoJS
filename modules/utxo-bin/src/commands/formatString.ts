@@ -2,11 +2,10 @@ import * as yargs from 'yargs';
 
 import { ParserNode } from '../Parser';
 import { formatTree } from '../format';
-
-import { OutputFormat } from './cmdParseTx';
+import { FormatTreeOrJson } from '../args';
 
 export type FormatStringArgs = {
-  format: OutputFormat;
+  format: FormatTreeOrJson;
   all: boolean;
 };
 

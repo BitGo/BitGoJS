@@ -2,15 +2,14 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as yargs from 'yargs';
 
 import { AddressParser } from '../AddressParser';
-import { getNetworkOptions } from '../args';
+import { formatTreeOrJson, getNetworkOptions, FormatTreeOrJson } from '../args';
 
-import { OutputFormat } from './cmdParseTx';
 import { formatString } from './formatString';
 
 export type ArgsParseAddress = {
   network?: utxolib.Network;
   all: boolean;
-  format: OutputFormat;
+  format: FormatTreeOrJson;
   convert: boolean;
   address: string;
 };
@@ -26,7 +25,7 @@ export const cmdParseAddress = {
   builder(b: yargs.Argv<unknown>): yargs.Argv<ArgsParseAddress> {
     return b
       .options(getNetworkOptions())
-      .option('format', { choices: ['tree', 'json'], default: 'tree' } as const)
+      .option('format', formatTreeOrJson)
       .option('convert', { type: 'boolean', default: false })
       .option('all', { type: 'boolean', default: false })
       .positional('address', { type: 'string', demandOption: true });
