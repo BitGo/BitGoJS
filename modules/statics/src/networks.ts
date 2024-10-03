@@ -868,6 +868,7 @@ class Fiat extends Mainnet implements BaseNetwork {
 class Trx extends Mainnet implements TronNetwork {
   name = 'Trx';
   family = CoinFamily.TRX;
+  accountExplorerUrl = 'https://tronscan.org/#/address/';
   explorerUrl = 'https://tronscan.org/#/transaction/';
   maxFeeLimit = '5000000000';
   contractCallFeeLimit = '100000000';
@@ -876,6 +877,7 @@ class Trx extends Mainnet implements TronNetwork {
 class TrxTestnet extends Testnet implements TronNetwork {
   name = 'TrxTestnet';
   family = CoinFamily.TRX;
+  accountExplorerUrl = 'https://shasta.tronscan.org/#/address/';
   explorerUrl = 'https://shasta.tronscan.org/#/transaction/';
   maxFeeLimit = '5000000000';
   contractCallFeeLimit = '100000000';
