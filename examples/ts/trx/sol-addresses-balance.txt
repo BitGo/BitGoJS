@@ -1,0 +1,20 @@
+
+
+Fd6hEHXihJ4GU9DXUoHEmkFjpjTFEZHnKF4rSSg6DtQh, SOL balance: 13615987909, needsConsolidation: undefined (root address)
+Cv26TM4UjoJ1fknGwVQwJHU3V2PsbDU4y5rczx2hfSKB, SOL balance: 138497552864, needsConsolidation: true (ATA address associated to root address)
+B2CB5sZqLecUvkEh171pRyvezJCSdytVmT7bqMiqgH2E, SOL balance: 0, needsConsolidation: false (recieve address)
+
+
+
+
+
+Root address - SOL + ATA account (USDC + SOL)
+
+
+Receive address 1 - SOL
+Receive address 2 - SOL + ATA account (100 USDT + SOL)
+
+
+How to get the funds from ATA account associated with root address -> root address ?
+
+

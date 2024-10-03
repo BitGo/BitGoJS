@@ -1,0 +1,10 @@
+4eGGsLT8EKbpni3skKA4fdhMPJjzGEgh6L4YHo2CsAXv, USDT balance: 49957727, SOL balance: 156044343109, needsConsolidation: undefined
+7TCuQ4z8aN7jqz8NqL3z4TAFLWnfeKJUPTSB3NPGnNcu, USDT balance: 0, SOL balance: 0, needsConsolidation: false
+2tNfCXEs6FyupK8p836RoF7cKaQnc6WdSw7gGPx9bjGm, USDT balance: 0, SOL balance: 0, needsConsolidation: false
+3oqVZrtaC2YWgQpHWC8wnB5JtB4grx5mJJAw76ZSWxhM, USDT balance: 0, SOL balance: 0, needsConsolidation: false
+6EsbeF9G31J2G75qSq9bUxopQ6wXVqMbboGMKcgYqokW, USDT balance: 0, SOL balance: 0, needsConsolidation: false
+CyJVJmdo6HDWbchEX1J57Yenft8WRSEcB24Y2TjEdJJo, USDT balance: 0, SOL balance: 2381494, needsConsolidation: true
+4GVKfqQB6d2mm4FMiuLKFdcLeaQrPPY4cLDDHxRkrWpM, USDT balance: 0, SOL balance: 0, needsConsolidation: true
+F46WXGhfLgJteGesk6bdVxz3nDyn5eTGRvevxCfz1MwP, USDT balance: 49957727, SOL balance: 0, needsConsolidation: true
+DPZnNB2HuXFma81PQG7fEiawrZQSeX1662ULsEzyDupz, USDT balance: 0, SOL balance: 0, needsConsolidation: undefined
+2rnymotji4rXS1WiR3NnxCtVwfEdg75finDQKXJ4hWHg, USDT balance: 0, SOL balance: 0, needsConsolidation: undefined

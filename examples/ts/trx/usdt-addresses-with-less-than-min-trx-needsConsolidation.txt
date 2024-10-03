@@ -1,0 +1,5 @@
+TWt9arf1ZB6Bvc2tgrYPyg6hgR4bcZxVF3, needsConsolidation: true,USDT balance: 10490643, TRX balance: 22604100
+TQFNCCt9UzpYK16vt2bYoJb84DrF5bQPay, needsConsolidation: true,USDT balance: 283000000, TRX balance: 0
+TFgG2b1TpVHQQzicPRweiY4Thy7gn268Qq, needsConsolidation: true,USDT balance: 1000000000, TRX balance: 0
+TTp98E9YCeHWgFuKbqPEuW9gCtAMUJHJLe, needsConsolidation: true,USDT balance: 308000000, TRX balance: 0
+TLiJy1UWJuRkWMYsLb26yT8MZM5P83knU6, needsConsolidation: true,USDT balance: 258000000, TRX balance: 0

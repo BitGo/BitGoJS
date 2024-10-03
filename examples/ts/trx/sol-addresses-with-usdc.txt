@@ -1,0 +1,3 @@
+FQf1H44W98LUcf8mqGQu36dbjKACLgnPP5TDXq6vRTRQ, USDC balance: 0, SOL balance: 254714157, needsConsolidation: undefined
+EXHhxxtBqsFbJkuaqn23PvxGSJeadsAS4cFeiU5kC4ot, USDC balance: 4000400, SOL balance: 0, needsConsolidation: true
+7GnECdPG5EGoYZVcuUGfXNc97TtMfC3Uq2pJcH3bzBRx, USDC balance: 4000400, SOL balance: 0, needsConsolidation: false
