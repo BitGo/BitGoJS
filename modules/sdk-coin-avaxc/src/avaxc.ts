@@ -12,7 +12,7 @@ import {
   CoinFamily,
   coins,
   ethGasConfigs,
-  BaseNetwork,
+  EthereumNetwork,
 } from '@bitgo/statics';
 import {
   BaseCoin,
@@ -33,6 +33,7 @@ import {
   VerifyAddressOptions,
 } from '@bitgo/sdk-core';
 import {
+  AbstractEthLikeNewCoins,
   GetSendMethodArgsOptions,
   optionalDeps,
   RecoverOptions,
@@ -62,14 +63,20 @@ import {
   VerifyAvaxcTransactionOptions,
 } from './iface';
 import { AvaxpLib } from '@bitgo/sdk-coin-avaxp';
+import { SignTransactionOptions } from '@bitgo/abstract-eth';
 
-export class AvaxC extends BaseCoin {
+/** COIN-1708 : Avaxc is added for CCR in WRW,
+ * hence adding the feature for AbstractEthLikeNewCoins
+ * Super class changed from BaseCoin to AbstractEthLikeNewCoins
+ * @since Sept 2024
+ */
+export class AvaxC extends AbstractEthLikeNewCoins {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo);
+    super(bitgo, staticsCoin);
 
     if (!staticsCoin) {
       throw new Error('missing required constructor parameter staticsCoin');
@@ -94,8 +101,8 @@ export class AvaxC extends BaseCoin {
    * Method to return the coin's network object
    * @returns {BaseNetwork}
    */
-  getNetwork(): BaseNetwork {
-    return this._staticsCoin.network;
+  getNetwork(): EthereumNetwork {
+    return this._staticsCoin.network as EthereumNetwork;
   }
 
   /**
@@ -545,6 +552,10 @@ export class AvaxC extends BaseCoin {
    * @returns {Promise<RecoveryInfo>} - recovery tx info
    */
   async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    if (params.bitgoFeeAddress) {
+      return (await this.recoverEthLikeforEvmBasedRecovery(params)) as RecoveryInfo | OfflineVaultTxInfo;
+    }
+
     if (_.isUndefined(params.userKey)) {
       throw new Error('missing userKey');
     }
@@ -990,7 +1001,7 @@ export class AvaxC extends BaseCoin {
    * Assemble half-sign prebuilt transaction
    * @param params
    */
-  async signTransaction(params: AvaxSignTransactionOptions): Promise<SignedTransaction> {
+  async signTransaction(params: AvaxSignTransactionOptions | SignTransactionOptions): Promise<SignedTransaction> {
     // Normally the SDK provides the first signature for an AVAXC tx,
     // but for unsigned sweep recoveries it can provide the second and final one.
     if (params.isLastSignature) {
@@ -1118,16 +1129,6 @@ export class AvaxC extends BaseCoin {
   }
 
   /**
-   * Gets the hop digest for the user to sign. This is validated in the HSM to prove that the user requested this tx
-   * @param paramsArr The parameters to hash together for the digest
-   */
-  static getHopDigest(paramsArr: string[]): Buffer {
-    const hash = Keccak('keccak256');
-    hash.update([AvaxC.hopTransactionSalt, ...paramsArr].join('$'));
-    return hash.digest();
-  }
-
-  /**
    * Calculate tx hash like evm from tx hex.
    * @param {string} tx
    * @returns {Buffer} tx hash
@@ -1179,5 +1180,52 @@ export class AvaxC extends BaseCoin {
 
   getAvaxP(): string {
     return this.getChain().toString() === 'avaxc' ? 'avaxp' : 'tavaxp';
+  }
+
+  /**
+   * Fetch the gas price from the explorer
+   */
+  async getGasPriceFromExternalAPI(): Promise<BN> {
+    try {
+      const res = await this.recoveryBlockchainExplorerQuery({
+        jsonrpc: '2.0',
+        method: 'eth_gasPrice',
+        id: 1,
+      });
+      const gasPrice = new BN(res.result.slice(2), 16);
+      console.log(` Got gas price: ${gasPrice}`);
+      return gasPrice;
+    } catch (e) {
+      throw new Error('Failed to get gas price');
+    }
+  }
+
+  /**
+   * Fetch the gas limit from the explorer
+   * @param from
+   * @param to
+   * @param data
+   */
+  async getGasLimitFromExternalAPI(from: string, to: string, data: string): Promise<BN> {
+    try {
+      const res = await this.recoveryBlockchainExplorerQuery({
+        jsonrpc: '2.0',
+        method: 'eth_estimateGas',
+        params: [
+          {
+            from,
+            to,
+            data,
+          },
+          'latest',
+        ],
+        id: 1,
+      });
+      const gasLimit = new BN(res.result.slice(2), 16);
+      console.log(`Got gas limit: ${gasLimit}`);
+      return gasLimit;
+    } catch (e) {
+      throw new Error('Failed to get gas limit: ');
+    }
   }
 }
