@@ -3,7 +3,7 @@ import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Txrp } from '../../src/txrp';
-const ripple = require('../../src/ripple');
+import ripple from '../../src/ripple';
 
 import * as nock from 'nock';
 import assert from 'assert';
@@ -91,7 +91,7 @@ describe('XRP:', function () {
       txHex:
         '{"TransactionType":"Payment","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","Destination":"rfjub8A4dpSD5nnszUFTsLprxu1W398jwc","DestinationTag":0,"Amount":"253481","Flags":2147483648,"LastLedgerSequence":1626225,"Fee":"45","Sequence":7}',
     });
-    unsignedExplanation.id.should.equal('CB36F366F1AC25FCDB38A19F17384ED3509D9B7F063520034597852FB10A1B45');
+    unsignedExplanation.id.should.equal('37486621138DFB0C55FEF45FD275B565254464651A04CB02EE371F8C4A84D8CA');
     signedExplanation.id.should.equal('D52681436CC5B94E9D00BC8172047B1A6F3C028D2D0A5CDFB81680039C48ADFD');
     unsignedExplanation.outputAmount.should.equal('253481');
     signedExplanation.outputAmount.should.equal('253481');
@@ -122,7 +122,7 @@ describe('XRP:', function () {
       txHex:
         '{"TransactionType":"AccountSet","Account":"r95xbEHFzDfc9XfmXHaDnj6dHNntT9RNcy","Fee":"45","Sequence":15070378,"LastLedgerSequence":15320391,"MessageKey":"02000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61"}',
     });
-    unsignedExplanation.id.should.equal('69E8A046124F15749BF75554D82F19282C1FECAA9785444FCC21107528741EDD');
+    unsignedExplanation.id.should.equal('A0F2AF7A3E0936BCFEE0D047789502D01518D9A4F1287D50568D66474475B3E7');
     unsignedExplanation.accountSet.messageKey.should.equal(
       '02000000000000000000000000415F8315C9948AD91E2CCE5B8583A36DA431FB61'
     );
@@ -141,17 +141,19 @@ describe('XRP:', function () {
       xrpAddress: 'rJBWFy35Ya3qDZD89DuWBwm8oBbYmqb3H9',
     };
 
-    const rippleLib = ripple();
-    const fullySigned = rippleLib.signWithPrivateKey(halfSignedTxHex, signer.rawPrv, {
+    const fullySigned = ripple.signWithPrivateKey(halfSignedTxHex, signer.rawPrv, {
       signAs: signer.xrpAddress,
     });
 
     const signedTransaction = rippleBinaryCodec.decode(fullySigned.signedTransaction);
-    signedTransaction.TransactionType.should.equal('Payment');
-    signedTransaction.Amount.should.equal('14999970');
-    signedTransaction.Account.should.equal('rBfhJ6HopLW69xK83nyShdNxC3uggjs46K');
-    signedTransaction.Destination.should.equal('rKuDJCu188nbLDs2zfaT2RNScS6aa63PLC');
-    signedTransaction.Signers.length.should.equal(2);
+    signedTransaction.should.containDeep({
+      TransactionType: 'Payment',
+      Amount: '14999970',
+      Account: 'rBfhJ6HopLW69xK83nyShdNxC3uggjs46K',
+      Destination: 'rKuDJCu188nbLDs2zfaT2RNScS6aa63PLC',
+    });
+    assert(Array.isArray(signedTransaction.Signers));
+    (signedTransaction.Signers as Array<string>).length.should.equal(2);
   });
 
   it('should be able to cosign XRP transaction in any form', function () {
@@ -168,11 +170,10 @@ describe('XRP:', function () {
       xrpAddress: 'rJBWFy35Ya3qDZD89DuWBwm8oBbYmqb3H9',
     };
 
-    const rippleLib = ripple();
-    const coSignedHexTransaction = rippleLib.signWithPrivateKey(unsignedTxHex, signer.rawPrv, {
+    const coSignedHexTransaction = ripple.signWithPrivateKey(unsignedTxHex, signer.rawPrv, {
       signAs: signer.xrpAddress,
     });
-    const coSignedJsonTransaction = rippleLib.signWithPrivateKey(unsignedTxJson, signer.rawPrv, {
+    const coSignedJsonTransaction = ripple.signWithPrivateKey(unsignedTxJson, signer.rawPrv, {
       signAs: signer.xrpAddress,
     });
     coSignedHexTransaction.signedTransaction.should.equal(coSignedJsonTransaction.signedTransaction);

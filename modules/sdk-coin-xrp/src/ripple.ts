@@ -5,11 +5,10 @@
 /**
  */
 import * as rippleKeypairs from 'ripple-keypairs';
-import * as ripple from 'ripple-lib';
+import * as xrpl from 'xrpl';
 import { ECPair } from '@bitgo/utxo-lib';
 
 import * as binary from 'ripple-binary-codec';
-import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
 
 function computeSignature(tx, privateKey, signAs) {
   const signingData = signAs ? binary.encodeForMultisigning(tx, signAs) : binary.encodeForSigning(tx);
@@ -67,12 +66,8 @@ const signWithPrivateKey = function (txHex, privateKey, options) {
   const serialized = binary.encode(tx);
   return {
     signedTransaction: serialized,
-    id: computeBinaryTransactionHash(serialized),
+    id: xrpl.hashes.hashSignedTx(serialized),
   };
 };
 
-export = (params): ripple.RippleAPI => {
-  const rippleLib = new ripple.RippleAPI(params);
-  (rippleLib as any).signWithPrivateKey = signWithPrivateKey;
-  return rippleLib;
-};
+export = { ...xrpl, signWithPrivateKey };
