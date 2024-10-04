@@ -854,4 +854,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
     this._feeAddress = address;
   }
+
+  /**
+   * Get the wallet version for wallet
+   */
+  public getWalletVersion(): number {
+    return this._walletVersion;
+  }
 }

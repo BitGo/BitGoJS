@@ -172,6 +172,7 @@ export interface AvaxSignTransactionOptions extends BaseSignTransactionOptions {
   prv: string;
   custodianTransactionId?: string;
   isLastSignature?: boolean;
+  walletVersion?: number;
 }
 
 export interface HalfSignedTransaction extends HalfSignedAccountTransaction {

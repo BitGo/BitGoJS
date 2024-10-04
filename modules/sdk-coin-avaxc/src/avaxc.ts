@@ -358,19 +358,22 @@ export class AvaxC extends AbstractEthLikeNewCoins {
 
   /**
    * Queries avax.network for the token balance of an address
-   * @param {string} address - the AVAXC address
+   * @param {string} walletContractAddress - the AVAXC address
+   * @param {string} tokenContractAddress - the Token contract address
    * @returns {Promise<BigNumber>} address balance
    */
-  async queryAddressTokenBalance(address: string, contractAddress: string): Promise<BN> {
+  async queryAddressTokenBalance(tokenContractAddress: string, walletContractAddress: string): Promise<BN> {
     // get token balance using contract call
-    const tokenBalanceData = optionalDeps.ethAbi.simpleEncode('balanceOf(address)', address).toString('hex');
+    const tokenBalanceData = optionalDeps.ethAbi
+      .simpleEncode('balanceOf(address)', walletContractAddress)
+      .toString('hex');
     const tokenBalanceDataHex = optionalDeps.ethUtil.addHexPrefix(tokenBalanceData);
     const result = await this.recoveryBlockchainExplorerQuery({
       jsonrpc: '2.0',
       method: 'eth_call',
       params: [
         {
-          to: contractAddress,
+          to: tokenContractAddress,
           data: tokenBalanceDataHex,
         },
         'latest',
@@ -379,7 +382,9 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     });
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
-      throw new Error(`Could not obtain address token balance for ${address} from avax.network, got: ${result.result}`);
+      throw new Error(
+        `Could not obtain address token balance for ${walletContractAddress} from avax.network, got: ${result.result}`
+      );
     }
     const tokenBalanceHex = result.result;
     return new optionalDeps.ethUtil.BN(tokenBalanceHex.slice(2), 16);
@@ -657,7 +662,7 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     let txAmount;
     if (params.tokenContractAddress) {
       // get token balance of wallet
-      txAmount = await this.queryAddressTokenBalance(params.walletContractAddress, params.tokenContractAddress);
+      txAmount = await this.queryAddressTokenBalance(params.tokenContractAddress, params.walletContractAddress);
     } else {
       // get balance of wallet and deduct fees to get transaction amount
       txAmount = await this.queryAddressBalance(params.walletContractAddress);
@@ -1012,6 +1017,9 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     const txBuilder = this.getTransactionBuilder() as TransactionBuilder;
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new AvaxcKeyPair({ prv: params.prv }).getKeys().prv!);
+    if (params.walletVersion) {
+      txBuilder.walletVersion(params.walletVersion);
+    }
     const transaction = await txBuilder.build();
 
     const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));

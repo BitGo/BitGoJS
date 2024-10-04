@@ -161,6 +161,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions, Sign
   gasPrice?: number;
   custodianTransactionId?: string;
   common?: EthLikeCommon.default;
+  walletVersion?: number;
 }
 
 export type SignedTransaction = HalfSignedTransaction | FullySignedTransaction;
@@ -196,6 +197,7 @@ export interface OfflineVaultTxInfo {
   halfSigned?: HalfSignedTransaction;
   feesUsed?: FeesUsed;
   isEvmBasedCrossChainRecovery?: boolean;
+  walletVersion?: number;
 }
 
 interface UnformattedTxInfo {
@@ -1005,6 +1007,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       .transfer()
       .coin(this.staticsCoin?.name as string)
       .key(new KeyPairLib({ prv: params.prv }).getKeys().prv!);
+    if (params.walletVersion) {
+      txBuilder.walletVersion(params.walletVersion);
+    }
     const transaction = await txBuilder.build();
 
     const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
@@ -1633,8 +1638,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       txBuilder.walletVersion(4);
     }
 
-    // If gasLimit was not passed as a param, then fetch the gasLimit from Explorer
-    if (!params.gasLimit && !userKey.startsWith('xpub')) {
+    // If gasLimit was not passed as a param or if it is not cold/custody wallet, then fetch the gasLimit from Explorer
+    if (!params.gasLimit && userKey && !userKey.startsWith('xpub')) {
       const sendData = txBuilder.getSendData();
       gasLimit = await this.getGasLimitFromExternalAPI(
         params.bitgoFeeAddress as string,
@@ -1671,6 +1676,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       amount: batchExecutionInfo.totalAmount,
       backupKeyNonce: bitgoFeeAddressNonce,
       eip1559: params.eip1559,
+      ...(txBuilder.getWalletVersion() === 4 ? { walletVersion: txBuilder.getWalletVersion() } : {}),
     };
     _.extend(response, txInfo);
     response.nextContractSequenceId = response.contractSequenceId;
@@ -1803,7 +1809,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       txBuilder.walletVersion(4);
     }
 
-    if (!params.gasLimit && !userKey.startsWith('xpub')) {
+    if (!params.gasLimit && userKey && !userKey.startsWith('xpub')) {
       const sendData = txBuilder.getSendData();
       gasLimit = await this.getGasLimitFromExternalAPI(
         params.bitgoFeeAddress as string,
@@ -1840,6 +1846,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       amount: txAmount.toString(),
       backupKeyNonce: bitgoFeeAddressNonce,
       eip1559: params.eip1559,
+      ...(txBuilder.getWalletVersion() === 4 ? { walletVersion: txBuilder.getWalletVersion() } : {}),
     };
     _.extend(response, txInfo);
     response.nextContractSequenceId = response.contractSequenceId;
