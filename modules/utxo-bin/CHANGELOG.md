@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.50.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.49.9...@bitgo/utxo-bin@2.50.0) (2024-10-04)
+
+### Features
+
+- add btc testnet4 to sdk ([8edfa40](https://github.com/BitGo/BitGoJS/commit/8edfa40e24fa5061f104e7e59a8e55c2dd27a0b8))
+- **utxo-bin:** add strict mode to yargs ([824ed10](https://github.com/BitGo/BitGoJS/commit/824ed100fa45b6c6161230114f3de796797e16ea))
+
 ## [2.49.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.49.8...@bitgo/utxo-bin@2.49.9) (2024-09-24)
 
 ### Bug Fixes

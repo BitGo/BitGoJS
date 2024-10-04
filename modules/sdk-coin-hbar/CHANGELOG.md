@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.39](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.0.38...@bitgo/sdk-coin-hbar@2.0.39) (2024-10-04)
+
+### Bug Fixes
+
+- **sdk-coin-hbar:** hbar address validation ([7015310](https://github.com/BitGo/BitGoJS/commit/70153106ed77c0de469d88880cd42631aa6e2e5d))
+
 ## [2.0.38](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.0.37...@bitgo/sdk-coin-hbar@2.0.38) (2024-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar

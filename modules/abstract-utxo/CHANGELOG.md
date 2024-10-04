@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.14.4...@bitgo/abstract-utxo@9.0.0) (2024-10-04)
+
+### chore
+
+- **utxo-lib:** remove unnecessary properties from WalletUnspent ([159f667](https://github.com/BitGo/BitGoJS/commit/159f66715cf8aa0f485d4df601556b0564cc6cfa))
+
+### Features
+
+- add btc testnet4 to sdk ([8edfa40](https://github.com/BitGo/BitGoJS/commit/8edfa40e24fa5061f104e7e59a8e55c2dd27a0b8))
+
+### BREAKING CHANGES
+
+- **utxo-lib:** removes fields from WalletUnspent type
+
+Issue: BTC-1351
+
 ## [8.14.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@8.14.3...@bitgo/abstract-utxo@8.14.4) (2024-09-24)
 
 ### Bug Fixes

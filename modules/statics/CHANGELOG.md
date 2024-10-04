@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.0.0...@bitgo/statics@50.1.0) (2024-10-04)
+
+### Features
+
+- add btc testnet4 to sdk ([8edfa40](https://github.com/BitGo/BitGoJS/commit/8edfa40e24fa5061f104e7e59a8e55c2dd27a0b8))
+- **sdk-coin-bera:** add bera token support ([6dc002d](https://github.com/BitGo/BitGoJS/commit/6dc002d1c50eebee171256c732aab05a10337350))
+- **statics:** add ARPA eth token ([4d2cdf3](https://github.com/BitGo/BitGoJS/commit/4d2cdf30047d16e85db35dc62fd8341cb1bd59c6))
+- **statics:** add IOST token ([cc3ce4b](https://github.com/BitGo/BitGoJS/commit/cc3ce4bd6b844e1a234fa1209c7409f33eb77cae))
+- **statics:** add new batch of tokens - COIN-1824,COIN-1887 ([2426c4c](https://github.com/BitGo/BitGoJS/commit/2426c4c5c6a3cba297a2058cd552a428e2381d40))
+- **statics:** add new batch of tokens bNVDA - COIN-1829 - (Doddanna17) ([9c77fda](https://github.com/BitGo/BitGoJS/commit/9c77fdaa4a7d01b4326a26a9ef259b41c67f6f29))
+- **statics:** add new coinfeature to identify eth rollup chain ([61b241c](https://github.com/BitGo/BitGoJS/commit/61b241c5560cf1d91ca1762a28aca1379da2e44d))
+- **statics:** add new tokens ([60008c1](https://github.com/BitGo/BitGoJS/commit/60008c1cbe4ca27e24714beb13fc55b48e3983fc))
+- **statics:** add new tokens ([d9a792f](https://github.com/BitGo/BitGoJS/commit/d9a792f7ecd9b15b56c98db25a19a6bcf228ff50))
+- **statics:** adding token for pol token for go account ([dc044cb](https://github.com/BitGo/BitGoJS/commit/dc044cb1210c32e6c0fcfc0eed1da787a4d177e1))
+- **statics:** fixed token name ([f4a62a7](https://github.com/BitGo/BitGoJS/commit/f4a62a76eac153433a056da780b5e995aa8217ac))
+- **statics:** onboard new tokens - auction, ava, bake, beta, bigtime, bnx ([ab5bb63](https://github.com/BitGo/BitGoJS/commit/ab5bb634366cc2502d0acd60e4a69c2a4e23f4aa))
+- **statics:** onboard new tokens COIN-1826 ([b2a727a](https://github.com/BitGo/BitGoJS/commit/b2a727a86bc80e4cdf30cb3e61fca1676271c867))
+- **statics:** updated new batch of symbol for bnvda ([81ac309](https://github.com/BitGo/BitGoJS/commit/81ac30948dac56e64d1fc2248c073fdfd6234d1e))
+
 # [50.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@49.6.0...@bitgo/statics@50.0.0) (2024-09-24)
 
 ### Bug Fixes

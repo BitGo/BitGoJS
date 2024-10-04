@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.55.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.54.3...@bitgo/sdk-api@1.55.0) (2024-10-04)
+
+### Bug Fixes
+
+- move spec to unit-test scripto ([3a7f032](https://github.com/BitGo/BitGoJS/commit/3a7f0326d105a956597f66d2742c7c8a670ce9a7))
+- **sdk-api:** use createPsbtDecode instead of createPsbtFromBuffer ([06d0b30](https://github.com/BitGo/BitGoJS/commit/06d0b30e6987678c8147f98781f17cdc4e9cb37b))
+
+### Features
+
+- add psbt signing for v1 wallets ([2c01a77](https://github.com/BitGo/BitGoJS/commit/2c01a77b42904bad9ab63cc31af4c9fdeea58f5e))
+- **sdk-api:** assume unencrypted access token ([6b8dec1](https://github.com/BitGo/BitGoJS/commit/6b8dec1975ce99d6b144829f5a3d77a293e51d57))
+- **sdk-api:** authenticateWithPasskey ([0dce834](https://github.com/BitGo/BitGoJS/commit/0dce834c5415d469e2332723998ac02f9ce1f98c))
+- **sdk-api:** authenticateWithPasskey method ([4320e2b](https://github.com/BitGo/BitGoJS/commit/4320e2b57d52cd903e9d7e9721f5bbfe46eddb4f))
+
 ## [1.54.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.54.2...@bitgo/sdk-api@1.54.3) (2024-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-api
