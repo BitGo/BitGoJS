@@ -1965,6 +1965,7 @@ export enum UnderlyingAsset {
   'polygon:volt' = 'polygon:volt',
   'polygon:euroe' = 'polygon:euroe',
   'polygon:geod' = 'polygon:geod',
+  'polygon:heth' = 'polygon:heth',
 
   // Polygon NFTs
   // generic NFTs
