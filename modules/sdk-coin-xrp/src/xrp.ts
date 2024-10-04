@@ -17,84 +17,30 @@ import {
   BitGoBase,
   checkKrsProvider,
   getBip32Keys,
-  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
   InvalidAddressError,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
-  SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation,
-  TransactionPrebuild,
   UnexpectedAddressError,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 
 import ripple from './ripple';
-
-interface Address {
-  address: string;
-  destinationTag?: number;
-}
-
-interface FeeInfo {
-  date: string;
-  height: number;
-  baseReserve: string;
-  baseFee: string;
-}
-
-interface SignTransactionOptions extends BaseSignTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  prv: string;
-  isLastSignature?: boolean;
-}
-
-interface ExplainTransactionOptions {
-  txHex?: string;
-  halfSigned?: {
-    txHex: string; // txHex is poorly named here; it is just a wrapped JSON object
-  };
-}
-
-interface VerifyAddressOptions extends BaseVerifyAddressOptions {
-  rootAddress: string;
-}
-
-interface RecoveryInfo extends TransactionExplanation {
-  txHex: string;
-  backupKey?: string;
-  coin?: string;
-}
-
-export interface RecoveryTransaction {
-  txHex: string;
-}
-
-export interface InitiateRecoveryOptions extends BaseInitiateRecoveryOptions {
-  krsProvider?: string;
-}
-
-export interface RecoveryOptions {
-  backupKey: string;
-  userKey: string;
-  rootAddress: string;
-  recoveryDestination: string;
-  bitgoKey?: string;
-  walletPassphrase: string;
-  krsProvider?: string;
-}
-
-interface HalfSignedTransaction {
-  halfSigned: {
-    txHex: string;
-  };
-}
-
-interface SupplementGenerateWalletOptions {
-  rootPrivateKey?: string;
-}
+import {
+  Address,
+  ExplainTransactionOptions,
+  FeeInfo,
+  HalfSignedTransaction,
+  InitiateRecoveryOptions,
+  RecoveryInfo,
+  RecoveryOptions,
+  RecoveryTransaction,
+  SignTransactionOptions,
+  SupplementGenerateWalletOptions,
+  VerifyAddressOptions,
+} from './lib/iface';
 
 export class Xrp extends BaseCoin {
   protected constructor(bitgo: BitGoBase) {
