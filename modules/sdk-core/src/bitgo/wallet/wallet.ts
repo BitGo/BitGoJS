@@ -815,9 +815,14 @@ export class Wallet implements IWallet {
    * @param {Number} params.maxFeeRate - The max limit for a fee rate in satoshis/kB
    * @param {Number} params.maxNumInputsToUse - the number of unspents you want to use in the transaction
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
+   *
+   * @param {ManageUnspentsOptions} option - flag to toggle build and send or build only
    */
-  async fanoutUnspents(params: FanoutUnspentsOptions = {}): Promise<unknown> {
-    return this.manageUnspents('fanout', params);
+  async fanoutUnspents(
+    params: FanoutUnspentsOptions = {},
+    option = ManageUnspentsOptions.BUILD_SIGN_SEND
+  ): Promise<unknown> {
+    return this.manageUnspents('fanout', params, option);
   }
 
   /**
