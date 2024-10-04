@@ -17954,6 +17954,14 @@ export const coins = CoinMap.fromCoins([
     '0xac0f66379a6d7801d7726d5a943356a172549adb',
     UnderlyingAsset['polygon:geod']
   ),
+  polygonErc20(
+    'fd5f6faf-0a77-4bf0-b678-8979f5addad2',
+    'polygon:heth',
+    'ETH Hop Token',
+    18,
+    '0x1fdeaf938267ca43388ed1fdb879eaf91e920c7a',
+    UnderlyingAsset['polygon:heth']
+  ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
     'erc721:polygontoken',
