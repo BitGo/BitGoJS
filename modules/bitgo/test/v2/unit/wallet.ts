@@ -1513,6 +1513,21 @@ describe('V2 Wallet:', function () {
 
       response.isDone().should.be.true();
     });
+
+    it('should only build tx (not sign/send) while fanning out unspents', async function () {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
+      const response = nock(bgUrl).persist().post(path, _.matches({ unspents })).reply(200);
+
+      const unusedNocks = nock(bgUrl);
+      unusedNocks.get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`).reply(200);
+      unusedNocks.post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`).reply(200);
+
+      await wallet.fanoutUnspents({ address, unspents }, ManageUnspentsOptions.BUILD_ONLY);
+
+      response.isDone().should.be.true();
+      unusedNocks.pendingMocks().length.should.eql(2);
+      nock.cleanAll();
+    });
   });
 
   describe('manage unspents', function () {
