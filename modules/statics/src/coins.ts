@@ -6312,7 +6312,7 @@ export const coins = CoinMap.fromCoins([
     'rlusd',
     'Ripple USD',
     18,
-    '0xcfd748b9de538c9f5b1805e8db9e1d4671f7f2ec',
+    '0x8292bb45bf1ee4d140127049757c2e0ff06317ed',
     UnderlyingAsset.RLUSD
   ),
   erc20(
@@ -18259,7 +18259,7 @@ export const coins = CoinMap.fromCoins([
     'arbeth:xsgd',
     'XSGD',
     6,
-    '0xb9f5fc449ddd21302ab52af1ffea8d7a49614d3b',
+    '0xe333e7754a2dc1e020a162ecab019254b9dab653',
     UnderlyingAsset['arbeth:xsgd']
   ),
   arbethErc20(
@@ -18291,7 +18291,7 @@ export const coins = CoinMap.fromCoins([
     'tarbeth:xsgd',
     'XSGD',
     6,
-    '0x200898584f14c4213787556d40693c163cc677af',
+    '0x63681558c1b680e43bbcadc0ced21075854bba87',
     UnderlyingAsset['tarbeth:xsgd']
   ),
   opethErc20(
