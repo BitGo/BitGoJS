@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.7.0...@bitgo/sdk-core@28.8.0) (2024-10-04)
+
+### Features
+
+- **sdk-coin-ton:** add single nominator withdraw txn (Ticket: SC-370) ([f89be52](https://github.com/BitGo/BitGoJS/commit/f89be5262524a00803f7e31e89866bf58a613b30))
+- **sdk-core:** add new param to fanout interface ([7c98f35](https://github.com/BitGo/BitGoJS/commit/7c98f35a2da5da6708bec7cd8d3285a0518cca34))
+- **sdk-core:** reserve unspents from the SDK ([42ffe16](https://github.com/BitGo/BitGoJS/commit/42ffe168022efc5828cb2f5e8747158ba4105ffd))
+
 # [28.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.6.0...@bitgo/sdk-core@28.7.0) (2024-09-24)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.1.2...@bitgo/abstract-eth@22.2.0) (2024-10-04)
+
+### Features
+
+- **sdk-coin-avaxc:** add avaxc support for evm ccr ([b37f97b](https://github.com/BitGo/BitGoJS/commit/b37f97bf2aa1e7353e4ee15e53487c2f6024aa7e))
+
 ## [22.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.1.1...@bitgo/abstract-eth@22.1.2) (2024-09-24)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

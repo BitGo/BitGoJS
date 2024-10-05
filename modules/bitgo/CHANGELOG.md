@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.5.0...bitgo@39.6.0) (2024-10-04)
+
+### Bug Fixes
+
+- **sdk-core:** merge unit tests ([54bd2b7](https://github.com/BitGo/BitGoJS/commit/54bd2b7185f0749fde939cf84273adb3f71441df))
+- **sdk-core:** remove logs ([dc22770](https://github.com/BitGo/BitGoJS/commit/dc22770e987e3de98e6e18f1fd585f1756a89f1e))
+
+### Features
+
+- add btc testnet4 to sdk ([8edfa40](https://github.com/BitGo/BitGoJS/commit/8edfa40e24fa5061f104e7e59a8e55c2dd27a0b8))
+- **sdk-coin-bera:** add bera token support ([6dc002d](https://github.com/BitGo/BitGoJS/commit/6dc002d1c50eebee171256c732aab05a10337350))
+- **sdk-core:** add new param to fanout interface ([7c98f35](https://github.com/BitGo/BitGoJS/commit/7c98f35a2da5da6708bec7cd8d3285a0518cca34))
+- **sdk-core:** reserve unspents from the SDK ([42ffe16](https://github.com/BitGo/BitGoJS/commit/42ffe168022efc5828cb2f5e8747158ba4105ffd))
+
 # [39.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.4.1...bitgo@39.5.0) (2024-09-24)
 
 ### Bug Fixes

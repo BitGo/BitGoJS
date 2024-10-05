@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.2.9...@bitgo/sdk-coin-btc@2.3.0) (2024-10-04)
+
+### Features
+
+- add btc testnet4 to sdk ([8edfa40](https://github.com/BitGo/BitGoJS/commit/8edfa40e24fa5061f104e7e59a8e55c2dd27a0b8))
+- **sdk-coin-btc:** pass txformat for transfer ordinals ([6827315](https://github.com/BitGo/BitGoJS/commit/682731576cf89ae26ccda9b4a425ac25ff92cd09))
+
 ## [2.2.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.2.8...@bitgo/sdk-coin-btc@2.2.9) (2024-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-btc

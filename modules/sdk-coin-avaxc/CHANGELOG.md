@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@5.0.30...@bitgo/sdk-coin-avaxc@5.1.0) (2024-10-04)
+
+### Features
+
+- **sdk-coin-avaxc:** add avaxc support for evm ccr ([b37f97b](https://github.com/BitGo/BitGoJS/commit/b37f97bf2aa1e7353e4ee15e53487c2f6024aa7e))
+
 ## [5.0.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@5.0.29...@bitgo/sdk-coin-avaxc@5.0.30) (2024-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

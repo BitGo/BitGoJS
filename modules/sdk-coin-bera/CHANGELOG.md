@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.1.6...@bitgo/sdk-coin-bera@2.2.0) (2024-10-04)
+
+### Features
+
+- **sdk-coin-bera:** add bera token support ([6dc002d](https://github.com/BitGo/BitGoJS/commit/6dc002d1c50eebee171256c732aab05a10337350))
+
 ## [2.1.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.1.5...@bitgo/sdk-coin-bera@2.1.6) (2024-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bera

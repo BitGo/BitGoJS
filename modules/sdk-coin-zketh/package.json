@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-zketh",
-  "version": "2.0.30",
+  "version": "2.0.31",
   "description": "BitGo SDK coin library for zkSync",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,15 +40,15 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^22.1.2",
-    "@bitgo/sdk-core": "^28.7.0",
-    "@bitgo/statics": "^50.0.0",
-    "@bitgo/utxo-lib": "^10.3.0",
+    "@bitgo/abstract-eth": "^22.2.0",
+    "@bitgo/sdk-core": "^28.8.0",
+    "@bitgo/statics": "^50.1.0",
+    "@bitgo/utxo-lib": "^11.0.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.54.3",
-    "@bitgo/sdk-test": "^8.0.43",
+    "@bitgo/sdk-api": "^1.55.0",
+    "@bitgo/sdk-test": "^8.0.44",
     "secp256k1": "5.0.0"
   }
 }

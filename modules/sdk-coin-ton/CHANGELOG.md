@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.2.11...@bitgo/sdk-coin-ton@3.3.0) (2024-10-04)
+
+### Bug Fixes
+
+- **sdk-coin-ton:** make TON txn message type string (Ticket: SC-370) ([bf222a1](https://github.com/BitGo/BitGoJS/commit/bf222a1588dde328ba983c8cdc1c5c8a139f00d8))
+
+### Features
+
+- **sdk-coin-ton:** add single nominator withdraw txn (Ticket: SC-370) ([f89be52](https://github.com/BitGo/BitGoJS/commit/f89be5262524a00803f7e31e89866bf58a613b30))
+
 ## [3.2.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.2.10...@bitgo/sdk-coin-ton@3.2.11) (2024-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton
