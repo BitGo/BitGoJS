@@ -495,7 +495,6 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
-      CoinFeature.DEPRECATED,
     ]
   ),
   account(
