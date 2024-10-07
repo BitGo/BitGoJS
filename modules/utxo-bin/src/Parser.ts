@@ -23,9 +23,11 @@ export type ParserNode = {
 
 export class Parser {
   parseError: 'throw' | 'continue';
+
   constructor(params: { parseError?: 'throw' | 'continue' } = {}) {
     this.parseError = params.parseError ?? 'continue';
   }
+
   node(label: string | number, value: ParserNodeValue, nodes: ParserNode[] = []): ParserNode {
     if (!isParserNodeValue(value)) {
       throw new Error(`invalid node value ${typeof value}`);
@@ -36,6 +38,18 @@ export class Parser {
       value,
       nodes,
     };
+  }
+
+  nodeCatchError(
+    label: string | number,
+    buildValue: () => ParserNodeValue | undefined,
+    buildNodes: () => ParserNode[] = () => []
+  ): ParserNode {
+    try {
+      return this.node(label, buildValue?.(), buildNodes());
+    } catch (e) {
+      return this.handleParseError(e);
+    }
   }
 
   handleParseError(e: unknown): ParserNode {
