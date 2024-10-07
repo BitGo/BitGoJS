@@ -1,9 +1,9 @@
 import {
   InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionPrebuild,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionExplanation,
+  TransactionPrebuild,
 } from '@bitgo/sdk-core';
 
 export interface Address {

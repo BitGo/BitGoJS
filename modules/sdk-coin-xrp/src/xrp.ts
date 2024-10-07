@@ -2,16 +2,10 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import { bip32, ECPair } from '@bitgo/utxo-lib';
-import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
-import * as url from 'url';
 import * as querystring from 'querystring';
+import * as url from 'url';
 
-import * as xrpl from 'xrpl';
-import * as rippleAddressCodec from 'ripple-address-codec';
-import * as rippleBinaryCodec from 'ripple-binary-codec';
-import * as rippleKeypairs from 'ripple-keypairs';
 import {
   BaseCoin,
   BitGoBase,
@@ -26,14 +20,15 @@ import {
   UnexpectedAddressError,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import * as rippleBinaryCodec from 'ripple-binary-codec';
+import * as rippleKeypairs from 'ripple-keypairs';
+import * as xrpl from 'xrpl';
 
-import ripple from './ripple';
 import {
-  Address,
   ExplainTransactionOptions,
   FeeInfo,
   HalfSignedTransaction,
-  InitiateRecoveryOptions,
   RecoveryInfo,
   RecoveryOptions,
   RecoveryTransaction,
@@ -41,104 +36,50 @@ import {
   SupplementGenerateWalletOptions,
   VerifyAddressOptions,
 } from './lib/iface';
+import { KeyPair as XrpKeyPair } from './lib/keyPair';
+import utils from './lib/utils';
+import ripple from './ripple';
 
 export class Xrp extends BaseCoin {
-  protected constructor(bitgo: BitGoBase) {
+  protected _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
+    this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new Xrp(bitgo);
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Xrp(bitgo, staticsCoin);
   }
 
   /**
    * Factor between the coin's base unit and its smallest subdivison
    */
   public getBaseFactor(): number {
-    return 1e6;
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
   /**
    * Identifier for the blockchain which supports this coin
    */
   public getChain(): string {
-    return 'xrp';
+    return this._staticsCoin.name;
   }
 
   /**
    * Identifier for the coin family
    */
   public getFamily(): string {
-    return 'xrp';
+    return this._staticsCoin.family;
   }
 
   /**
    * Complete human-readable name of this coin
    */
   public getFullName(): string {
-    return 'Ripple';
-  }
-
-  /**
-   * Parse an address string into address and destination tag
-   */
-  public getAddressDetails(address: string): Address {
-    const destinationDetails = url.parse(address);
-    const destinationAddress = destinationDetails.pathname;
-    if (!destinationAddress || !rippleAddressCodec.isValidClassicAddress(destinationAddress)) {
-      throw new InvalidAddressError(`destination address "${destinationAddress}" is not valid`);
-    }
-    // there are no other properties like destination tags
-    if (destinationDetails.pathname === address) {
-      return {
-        address: address,
-        destinationTag: undefined,
-      };
-    }
-
-    if (!destinationDetails.query) {
-      throw new InvalidAddressError('no query params present');
-    }
-
-    const queryDetails = querystring.parse(destinationDetails.query);
-    if (!queryDetails.dt) {
-      // if there are more properties, the query details need to contain the destination tag property.
-      throw new InvalidAddressError('destination tag missing');
-    }
-
-    if (Array.isArray(queryDetails.dt)) {
-      // if queryDetails.dt is an array, that means dt was given multiple times, which is not valid
-      throw new InvalidAddressError(
-        `destination tag can appear at most once, but ${queryDetails.dt.length} destination tags were found`
-      );
-    }
-
-    const parsedTag = parseInt(queryDetails.dt, 10);
-    if (!Number.isSafeInteger(parsedTag)) {
-      throw new InvalidAddressError('invalid destination tag');
-    }
-
-    if (parsedTag > 0xffffffff || parsedTag < 0) {
-      throw new InvalidAddressError('destination tag out of range');
-    }
-
-    return {
-      address: destinationAddress,
-      destinationTag: parsedTag,
-    };
-  }
-
-  /**
-   * Construct a full, normalized address from an address and destination tag
-   */
-  public normalizeAddress({ address, destinationTag }: Address): string {
-    if (!_.isString(address)) {
-      throw new InvalidAddressError('invalid address details');
-    }
-    if (_.isInteger(destinationTag)) {
-      return `${address}?dt=${destinationTag}`;
-    }
-    return address;
+    return this._staticsCoin.fullName;
   }
 
   /**
@@ -146,12 +87,7 @@ export class Xrp extends BaseCoin {
    * @param address
    */
   public isValidAddress(address: string): boolean {
-    try {
-      const addressDetails = this.getAddressDetails(address);
-      return address === this.normalizeAddress(addressDetails);
-    } catch (e) {
-      return false;
-    }
+    return utils.isValidAddress(address);
   }
 
   /**
@@ -161,11 +97,7 @@ export class Xrp extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   public isValidPub(pub: string): boolean {
-    try {
-      return bip32.fromBase58(pub).isNeutered();
-    } catch (e) {
-      return false;
-    }
+    return utils.isValidPublicKey(pub);
   }
 
   /**
@@ -201,23 +133,17 @@ export class Xrp extends BaseCoin {
       throw new Error('missing prv parameter to sign transaction');
     }
 
-    const userKey = bip32.fromBase58(prv);
-    const userPrivateKey = userKey.privateKey;
-    if (!userPrivateKey) {
-      throw new Error(`no privateKey`);
+    if (!txPrebuild.txHex) {
+      throw new Error(`missing txHex in txPrebuild`);
     }
-    const userAddress = rippleKeypairs.deriveAddress(userKey.publicKey.toString('hex'));
-
-    const tx = ripple.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), {
-      signAs: userAddress,
-    });
+    const signedTx = utils.signString(txPrebuild.txHex, prv);
 
     // Normally the SDK provides the first signature for an XRP tx, but occasionally it provides the final one as well
     // (recoveries)
     if (isLastSignature) {
-      return { txHex: tx.signedTransaction };
+      return { txHex: signedTx };
     }
-    return { halfSigned: { txHex: tx.signedTransaction } };
+    return { halfSigned: { txHex: signedTx } };
   }
 
   /**
@@ -234,11 +160,11 @@ export class Xrp extends BaseCoin {
         throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
       }
     } else {
-      const keyPair = ECPair.makeRandom();
-      if (!keyPair.privateKey) {
+      const keyPair = new XrpKeyPair().getKeys();
+      if (!keyPair.prv) {
         throw new Error('no privateKey');
       }
-      walletParams.rootPrivateKey = keyPair.privateKey.toString('hex');
+      walletParams.rootPrivateKey = keyPair.prv;
     }
     return walletParams;
   }
@@ -356,8 +282,8 @@ export class Xrp extends BaseCoin {
       throw new InvalidAddressError(`address verification failure: address "${address}" is not valid`);
     }
 
-    const addressDetails = this.getAddressDetails(address);
-    const rootAddressDetails = this.getAddressDetails(rootAddress);
+    const addressDetails = utils.getAddressDetails(address);
+    const rootAddressDetails = utils.getAddressDetails(rootAddress);
 
     if (addressDetails.address !== rootAddressDetails.address) {
       throw new UnexpectedAddressError(
@@ -571,26 +497,19 @@ export class Xrp extends BaseCoin {
     return transactionExplanation;
   }
 
-  initiateRecovery(params: InitiateRecoveryOptions): never {
-    throw new Error('deprecated method');
-  }
-
   /**
    * Generate a new keypair for this coin.
    * @param seed Seed from which the new keypair should be generated, otherwise a random seed is used
    */
   public generateKeyPair(seed?: Buffer): KeyPair {
-    if (!seed) {
-      // An extended private key has both a normal 256 bit private key and a 256
-      // bit chain code, both of which must be random. 512 bits is therefore the
-      // maximum entropy and gives us maximum security against cracking.
-      seed = randomBytes(512 / 8);
+    const keyPair = seed ? new XrpKeyPair({ seed }) : new XrpKeyPair();
+    const keys = keyPair.getExtendedKeys();
+    if (!keys.xprv) {
+      throw new Error('Missing prv in key generation.');
     }
-    const extendedKey = bip32.fromSeed(seed);
-    const xpub = extendedKey.neutered().toBase58();
     return {
-      pub: xpub,
-      prv: extendedKey.toBase58(),
+      pub: keys.xpub,
+      prv: keys.xprv,
     };
   }
 
