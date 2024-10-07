@@ -1,5 +1,4 @@
 export * from './cmdParseTx';
-export * from './cmdParseAddress';
+export * from './cmdAddress';
 export * from './cmdParseScript';
-export * from './cmdGenerateAddress';
 export * from './cmdBip32';

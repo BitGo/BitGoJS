@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { formatAddressWithFormatString, generateAddress, parseIndexRange } from '../src/generateAddress';
+import { formatFixedScriptAddress, generateFixedScriptAddress, parseIndexRange } from '../src/generateAddress';
 
 import { getKeyTriple } from './bip32.util';
 
@@ -8,7 +8,7 @@ describe('generateAddresses', function () {
   it('should generate addresses', function () {
     const [userKey, backupKey, bitgoKey] = getKeyTriple('generateAddress').map((k) => k.neutered().toBase58());
     const lines = [];
-    for (const l of generateAddress({
+    for (const l of generateFixedScriptAddress({
       userKey,
       backupKey,
       bitgoKey,
@@ -16,7 +16,7 @@ describe('generateAddresses', function () {
       format: '%a',
       chain: [0, 1],
     })) {
-      lines.push(formatAddressWithFormatString(l, '%a'));
+      lines.push(formatFixedScriptAddress(l, '%a'));
     }
 
     assert.strictEqual(lines.length, 4);

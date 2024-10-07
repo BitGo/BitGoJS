@@ -3,10 +3,9 @@ import * as assert from 'assert';
 import * as yargs from 'yargs';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { cmdParseAddress, getAddressParser } from '../src/commands';
-
 import { formatTreeNoColor, getFixtureString } from './fixtures';
 import { getKeyTriple, KeyTriple } from './bip32.util';
+import { getAddressParser, cmdParse } from '../src/commands/cmdAddress/cmdParse';
 
 const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, ...scriptTypesSingleSig] as const;
@@ -67,7 +66,7 @@ function getAddresses(n: utxolib.Network): [type: string, format: string, addres
 }
 
 function parse(address: string, args: string[]) {
-  return getAddressParser(yargs.command(cmdParseAddress).parseSync(args)).parse(address);
+  return getAddressParser(yargs.command(cmdParse).parseSync(args)).parse(address);
 }
 
 function testParseAddress(
