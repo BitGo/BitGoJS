@@ -12,7 +12,7 @@ import * as _ from 'lodash';
 import { common } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as sinon from 'sinon';
 
 import { getFixtures } from './fixtures/accelerate-tx';

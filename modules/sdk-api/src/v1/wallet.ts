@@ -12,7 +12,7 @@
 //
 
 import { VirtualSizes } from '@bitgo/unspents';
-import * as assert from 'assert';
+import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/utxo-lib';
@@ -24,8 +24,8 @@ import {
   makeRandomKey,
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
-import * as Bluebird from 'bluebird';
-import * as _ from 'lodash';
+import Bluebird from 'bluebird';
+import _ from 'lodash';
 import { signPsbtRequest } from './signPsbt';
 
 const TransactionBuilder = require('./transactionBuilder');

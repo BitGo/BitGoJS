@@ -12,9 +12,9 @@
 //
 
 import { bip32 } from '@bitgo/utxo-lib';
-import * as Bluebird from 'bluebird';
+import Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');

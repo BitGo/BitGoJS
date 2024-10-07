@@ -2,12 +2,12 @@
  * @prettier
  */
 import Debug from 'debug';
-import * as eol from 'eol';
-import * as _ from 'lodash';
-import * as sanitizeHtml from 'sanitize-html';
-import * as superagent from 'superagent';
-import * as urlLib from 'url';
-import * as querystring from 'querystring';
+import eol from 'eol';
+import _ from 'lodash';
+import sanitizeHtml from 'sanitize-html';
+import superagent from 'superagent';
+import urlLib from 'url';
+import querystring from 'querystring';
 
 import { ApiResponseError, BitGoRequest } from '@bitgo/sdk-core';
 
