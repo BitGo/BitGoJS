@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { Parser } from './Parser';
 import { parseUnknown } from './parseUnknown';
@@ -84,7 +85,7 @@ function getAddressProperties(
   };
 }
 
-export function formatAddressTree(props: FixedScriptAddressProperties): string {
+export function formatAddressTree(props: FixedScriptAddressProperties | DescriptorAddressProperties): string {
   const parser = new Parser();
   return formatTree(parseUnknown(parser, 'address', props));
 }
@@ -139,5 +140,51 @@ export function* generateFixedScriptAddress(
       // yield formatAddress(rootXpubs, chain, i, argv.network ?? utxolib.networks.bitcoin, argv.format);
       yield getAddressProperties(rootXpubs, chain, i, argv.network ?? utxolib.networks.bitcoin);
     }
+  }
+}
+
+type DescriptorAddressProperties = {
+  descriptor: string;
+  index: number;
+  explicitScript: string;
+  scriptPubKey: string;
+  address: string;
+};
+
+const descriptorAddressPlaceholders = {
+  '%d': 'descriptor',
+  '%i': 'index',
+  '%e': 'explicitScript',
+  '%s': 'scriptPubKey',
+  '%a': 'address',
+} as const;
+
+export function getDescriptorAddressPlaceholderDescription(): string {
+  return getAsPlaceholderDescription(descriptorAddressPlaceholders);
+}
+
+export function formatDescriptorAddress(props: DescriptorAddressProperties, format: string): string {
+  return formatAddressWithFormatString(props, descriptorAddressPlaceholders, format);
+}
+
+export function* generateDescriptorAddress(argv: {
+  network: utxolib.Network;
+  descriptor: string;
+  format: string;
+  index: number[];
+}): Generator<DescriptorAddressProperties> {
+  const descriptor = Descriptor.fromString(argv.descriptor, 'derivable');
+  for (const i of argv.index) {
+    const derived = descriptor.atDerivationIndex(i);
+    const explicitScript = Buffer.from(derived.encode());
+    const scriptPubKey = Buffer.from(derived.scriptPubkey());
+    const address = utxolib.address.fromOutputScript(scriptPubKey, argv.network);
+    yield {
+      descriptor: derived.toString(),
+      index: i,
+      address,
+      explicitScript: explicitScript.toString('hex'),
+      scriptPubKey: scriptPubKey.toString('hex'),
+    };
   }
 }

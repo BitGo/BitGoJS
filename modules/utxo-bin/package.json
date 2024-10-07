@@ -29,6 +29,7 @@
     "@bitgo/blockapis": "^1.10.5",
     "@bitgo/statics": "^50.1.0",
     "@bitgo/utxo-lib": "^11.0.0",
+    "@bitgo/wasm-miniscript": "^1.8.0",
     "archy": "^1.0.0",
     "bech32": "^2.0.0",
     "bitcoinjs-lib": "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.2",
