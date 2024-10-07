@@ -392,8 +392,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
    * @param decryptedKeyshare - MPCv1 decrypted signing material for user or backup as a json.stringify string and bitgo's Big Si.
    * @param partyId - The party ID of the MPCv1 keyshare.
    * @returns The retrofit data needed to start an MPCv2 DKG session.
+   * @deprecated
    */
-  getKeyDataForRetrofit(
+  static getKeyDataForRetrofit(
     decryptedKeyshare: string,
     partyId: MPCv2PartiesEnum.BACKUP | MPCv2PartiesEnum.USER
   ): DklsTypes.RetrofitData {
@@ -403,7 +404,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       Array.from(bigIntToBufferBE(BigInt(2), 32)),
       Array.from(bigIntToBufferBE(BigInt(3), 32)),
     ];
-    return this.getMpcV2RetrofitDataFromMpcV1Key({
+    return EcdsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Key({
       mpcv1PartyKeyShare: decryptedKeyshare,
       mpcv1PartyIndex: partyId === MPCv2PartiesEnum.USER ? 1 : 2,
       xiList,
@@ -428,13 +429,13 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       Array.from(bigIntToBufferBE(BigInt(3), 32)),
     ];
     return {
-      mpcv2UserKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
+      mpcv2UserKeyShare: EcdsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Key({
         mpcv1PartyKeyShare: params.mpcv1UserKeyShare,
         mpcv1PartyIndex: 1,
         xiList,
         mpc,
       }),
-      mpcv2BackupKeyShare: this.getMpcV2RetrofitDataFromMpcV1Key({
+      mpcv2BackupKeyShare: EcdsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Key({
         mpcv1PartyKeyShare: params.mpcv1BackupKeyShare,
         mpcv1PartyIndex: 2,
         xiList,
@@ -443,7 +444,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     };
   }
 
-  getMpcV2RetrofitDataFromMpcV1Key({
+  /**
+   * Get retrofit data from MPCv1 key share.
+   * @param mpcv1PartyKeyShare
+   * @param mpcv1PartyIndex
+   * @param xiList
+   * @param mpc
+   * @deprecated
+   */
+  static getMpcV2RetrofitDataFromMpcV1Key({
     mpcv1PartyKeyShare,
     mpcv1PartyIndex,
     xiList,
