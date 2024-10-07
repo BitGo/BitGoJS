@@ -4,15 +4,16 @@
  * @format
  */
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Xrp } from './xrp';
 
 export class Txrp extends Xrp {
-  protected constructor(bitgo: BitGoBase) {
-    super(bitgo);
+  protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
+    super(bitgo, staticsCoin);
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
-    return new Txrp(bitgo);
+  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Txrp(bitgo, staticsCoin);
   }
   /**
    * Identifier for the blockchain which supports this coin
