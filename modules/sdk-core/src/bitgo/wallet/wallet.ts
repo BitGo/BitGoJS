@@ -17,7 +17,12 @@ import {
 import { makeRandomKey } from '../bitcoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
-import { AddressGenerationError, MethodNotImplementedError, MissingEncryptedKeychainError } from '../errors';
+import {
+  AddressGenerationError,
+  ApiResponseError,
+  MethodNotImplementedError,
+  MissingEncryptedKeychainError,
+} from '../errors';
 import * as internal from '../internal/internal';
 import { drawKeycard } from '../internal';
 import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv } from '../keychain';
@@ -932,14 +937,15 @@ export class Wallet implements IWallet {
 
     if (!this.baseCoin.sweepWithSendMany()) {
       if (this.confirmedBalanceString() !== this.balanceString()) {
-        throw new Error(
-          'cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm'
+        throw new ApiResponseError(
+          'cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm',
+          400
         );
       }
 
       const value = this.spendableBalanceString();
       if (_.isUndefined(value) || value === '0') {
-        throw new Error('no funds to sweep');
+        throw new ApiResponseError('no funds to sweep', 400);
       }
       (params as any).recipients = [
         {
