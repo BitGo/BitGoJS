@@ -1043,6 +1043,7 @@ class BerachainTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xc75fb848eb0bb04e3faedbee0fc8144e8d62b83d';
   walletFactoryAddress = '0x6e4a83086c6dd9fbce203c1ebb69eda1aba872d7';
   walletImplementationAddress = '0xb8d48d310818b15a6960f9afbef49dc96d2bd2d3';
+  batcherContractAddress = '0xf499549720116c3dEA867D4fC279C43aCA172712';
 }
 
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
