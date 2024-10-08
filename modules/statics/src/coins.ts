@@ -18384,6 +18384,16 @@ export const coins = CoinMap.fromCoins([
     'xrpl.org',
     UnderlyingAsset['txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd']
   ),
+  txrpToken(
+    '4c472d5f-0b9f-4086-9ff6-dcce51fce7fc',
+    'txrp:rlusd',
+    'RLUSD',
+    96,
+    'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+    '524C555344000000000000000000000000000000',
+    'ripple.com',
+    UnderlyingAsset['txrp:rlusd']
+  ),
   suiToken(
     'f26941b7-1110-4aa7-a2bc-29807297a51c',
     'sui:deep',

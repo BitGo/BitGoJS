@@ -65,6 +65,6 @@ export class XrpToken extends Xrp {
   }
 
   getBaseFactor(): number {
-    return Math.pow(10, this.tokenConfig.decimalPlaces);
+    return 1e96;
   }
 }
