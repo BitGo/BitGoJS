@@ -1180,7 +1180,6 @@ export enum UnderlyingAsset {
   ONT = 'ont',
   OOKI = 'ooki',
   OP = 'op',
-  OPEN = 'open',
   OPIUM = 'opium',
   OPT = 'opt',
   ORAI = 'orai',

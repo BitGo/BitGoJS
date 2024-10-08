@@ -10514,14 +10514,6 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.OKBMOON
   ),
   erc20(
-    'd08e2ba2-121c-4f21-874a-9ca8efe4000a',
-    'open',
-    'Open Custody Protocol',
-    8,
-    '0x4123a133ae3c521fd134d7b13a2dec35b56c2463',
-    UnderlyingAsset.OPEN
-  ),
-  erc20(
     '8c90ecef-9a98-4bbf-95df-92994488a363',
     'opium',
     'Opium Governance Token',
