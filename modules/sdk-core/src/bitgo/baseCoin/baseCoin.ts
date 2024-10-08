@@ -45,7 +45,7 @@ import {
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
-import { MPCSweepRecoveryOptions, MPCTxs } from '../utils';
+import { MPCSweepRecoveryOptions, MPCTxs, PopulatedIntent, PrebuildTransactionWithIntentOptions } from '../utils';
 
 export abstract class BaseCoin implements IBaseCoin {
   protected readonly bitgo: BitGoBase;
@@ -550,5 +550,16 @@ export abstract class BaseCoin implements IBaseCoin {
    */
   async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
     throw new NotImplementedError('createBroadcastableSweepTransaction is not supported for this coin');
+  }
+
+  /**
+   * Sets coinspecific fields in intent from input params.
+   * This method should be overridden in coin-specific classes
+   * to configure these fields in the intent
+   * @param intent - intent in which coinspecific fields are to be set
+   * @param params
+   */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    return;
   }
 }

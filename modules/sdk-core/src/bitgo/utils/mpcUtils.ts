@@ -169,9 +169,7 @@ export abstract class MpcUtils {
       }
     }
 
-    if (['ada', 'sui'].includes(baseCoin.getFamily()) && params.unspents) {
-      baseIntent.unspents = params.unspents;
-    }
+    this.baseCoin.setCoinSpecificFieldsInIntent(baseIntent, params);
 
     if (params.feeOptions !== undefined) {
       return {
