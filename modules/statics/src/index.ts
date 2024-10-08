@@ -19,5 +19,6 @@ export {
   HederaToken,
   TronErc20Coin,
   SuiCoin,
+  XrpCoin,
 } from './account';
 export { CoinMap } from './map';
