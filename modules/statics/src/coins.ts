@@ -4744,6 +4744,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.KP3R
   ),
   erc20(
+    '9a173227-e535-43dc-b907-1452d9d2a030',
+    'kro',
+    'Kroma',
+    18,
+    '0x25500000d700bbe27104577cccce8eabcc96c8ad',
+    UnderlyingAsset.KRO
+  ),
+  erc20(
     'cbcebae0-e2a8-4ebe-8da7-89983f04f917',
     'krom',
     'Kromatika',
@@ -7028,14 +7036,6 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TOK
   ),
   erc20(
-    'b1e84e84-96f9-4ac0-8f01-37a20202802d',
-    'tomoe',
-    'TomoChain',
-    18,
-    '0x05d3606d5c81eb9b7b18530995ec9b29da05faba',
-    UnderlyingAsset.TOMOE
-  ),
-  erc20(
     '233385fb-e778-4ab9-8487-2fe5fd9c4e80',
     'toncoin',
     'Wrapped TON Coin',
@@ -7058,6 +7058,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd43be54c1aedf7ee4099104f2dae4ea88b18a249',
     UnderlyingAsset.TRAXX
+  ),
+  erc20(
+    'b3219173-9075-4e3a-ad84-ec4ad4bfd59a',
+    'trb',
+    'Tellor',
+    18,
+    '0x88df592f8eb5d7bd38bfef7deb0fbc02cf3778a0',
+    UnderlyingAsset.TRB
   ),
   erc20(
     'c101171e-8104-4052-84d5-f192a63d4b7a',
@@ -7468,6 +7476,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x2c974b2d0ba1716e644c1fc59982a89ddd2ff724',
     UnderlyingAsset.VIB
+  ),
+  erc20(
+    'b1e84e84-96f9-4ac0-8f01-37a20202802d',
+    'vic',
+    'Viction',
+    18,
+    '0x05d3606d5c81eb9b7b18530995ec9b29da05faba',
+    UnderlyingAsset.VIC
   ),
   erc20(
     'd97452e6-3fcb-45ea-8301-e71f795d2667',
@@ -10569,6 +10585,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.PIRATE
   ),
   erc20(
+    '37a72660-61e8-42c8-b486-d966d9ce8c85',
+    'play',
+    'PLAY',
+    18,
+    '0x7404ac09adf614603d9c16a7ce85a1101f3514ba',
+    UnderlyingAsset.PLAY
+  ),
+  erc20(
     '94e47b5b-c0ac-4634-bcdb-b321f12d6953',
     'pols',
     'Polkastarter',
@@ -10975,6 +10999,14 @@ export const coins = CoinMap.fromCoins([
     'Tokemak',
     18,
     '0x2e9d63788249371f1dfc918a52f8d799f4a38c94',
+    UnderlyingAsset.TOKE
+  ),
+  erc20(
+    '9f81ef58-a9ef-44fb-9e51-e57a526921d1',
+    'token',
+    'TokenFi',
+    9,
+    '0x4507cef57c46789ef8d1a19ea45f4216bae2b528',
     UnderlyingAsset.TOKE
   ),
   erc20(
@@ -12266,6 +12298,22 @@ export const coins = CoinMap.fromCoins([
     8,
     '0x287880ea252b52b63cc5f40a2d3e5a44aa665a76',
     UnderlyingAsset['bsc:alpine']
+  ),
+  bscToken(
+    '2ea5523b-6330-447c-820f-ee0416e10cfc',
+    'bsc:tko',
+    'Toko Token',
+    18,
+    '0x9f589e3eabe42ebc94a44727b3f3531c0c877809',
+    UnderlyingAsset['bsc:tko']
+  ),
+  bscToken(
+    'c235a165-4d82-4522-b94c-c85ec1260f8a',
+    'bsc:vite',
+    'VITE',
+    18,
+    '0x2794dad4077602ed25a88d03781528d1637898b4',
+    UnderlyingAsset['bsc:vite']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
@@ -17965,6 +18013,14 @@ export const coins = CoinMap.fromCoins([
     '0x1fdeaf938267ca43388ed1fdb879eaf91e920c7a',
     UnderlyingAsset['polygon:heth']
   ),
+  polygonErc20(
+    'fdf725b0-496a-42f5-a543-6a8cef20d2b4',
+    'polygon:copm',
+    'COP Minteo',
+    18,
+    '0x12050c705152931cfee3dd56c52fb09dea816c23',
+    UnderlyingAsset['polygon:copm']
+  ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
     'erc721:polygontoken',
@@ -18276,6 +18332,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60',
     UnderlyingAsset['arbeth:ldo']
+  ),
+  arbethErc20(
+    '64d7ee44-d212-499f-bd2a-4e958f7583ed',
+    'arbeth:egp',
+    'Eigenpie',
+    18,
+    '0x7e7a7c916c19a45769f6bdaf91087f93c6c12f78',
+    UnderlyingAsset['arbeth:egp']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',

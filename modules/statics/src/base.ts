@@ -989,6 +989,7 @@ export enum UnderlyingAsset {
   KOL = 'kol',
   KOZ = 'koz',
   KP3R = 'kp3r',
+  KRO = 'kro',
   KROM = 'krom',
   KTRC = 'ktrc',
   KZE = 'kze',
@@ -1221,6 +1222,7 @@ export enum UnderlyingAsset {
   PIE = 'pie',
   PINE = 'pine',
   PIRATE = 'pirate',
+  PLAY = 'play',
   PLC = 'plc',
   PFCT = 'pfct',
   PLANET = 'planet',
@@ -1504,16 +1506,17 @@ export enum UnderlyingAsset {
   TNT = 'tnt',
   TOKAMAK = 'tokamak',
   TOKE = 'toke',
+  TOKEN = 'token',
   TOMI = 'tomi',
   TOMOBEAR = 'tomobear',
   TOMOBEAR2 = 'tomobear2',
   TOMOBULL = 'tomobull',
-  TOMOE = 'tomoe',
   TOK = 'tok',
   TONCOIN = 'toncoin',
   TOPM = 'topm',
   TRAC = 'trac',
   TRAXX = 'traxx',
+  TRB = 'trb',
   TRIBE = 'tribe',
   TRIBL = 'tribl',
   TRL = 'trl',
@@ -1608,6 +1611,7 @@ export enum UnderlyingAsset {
   VGX = 'vgx',
   VI = 'vi',
   VIB = 'vib',
+  VIC = 'vic',
   VIDT = 'vidt',
   VISR = 'visr',
   VIU = 'viu',
@@ -1970,7 +1974,7 @@ export enum UnderlyingAsset {
   'polygon:euroe' = 'polygon:euroe',
   'polygon:geod' = 'polygon:geod',
   'polygon:heth' = 'polygon:heth',
-
+  'polygon:copm' = 'polygon:copm',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2091,6 +2095,8 @@ export enum UnderlyingAsset {
   'bsc:gft' = 'bsc:gft',
   'bsc:glmr' = 'bsc:glmr',
   'bsc:gmt' = 'bsc:gmt',
+  'bsc:tko' = 'bsc:tko',
+  'bsc:vite' = 'bsc:vite',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2139,6 +2145,7 @@ export enum UnderlyingAsset {
   'arbeth:xsgd' = 'arbeth:xsgd',
   'arbeth:ztx' = 'arbeth:ztx',
   'arbeth:ldo' = 'arbeth:ldo',
+  'arbeth:egp' = 'arbeth:egp',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
