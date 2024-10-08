@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-opeth",
-  "version": "18.1.24",
+  "version": "18.1.25",
   "description": "BitGo SDK coin library for Optimism",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,17 +40,17 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^22.2.0",
-    "@bitgo/sdk-core": "^28.8.0",
-    "@bitgo/statics": "^50.1.0",
+    "@bitgo/abstract-eth": "^22.2.1",
+    "@bitgo/sdk-core": "^28.9.0",
+    "@bitgo/statics": "^50.2.0",
     "@bitgo/utxo-lib": "^11.0.0",
     "@ethereumjs/common": "^2.6.5",
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "7.1.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.55.0",
-    "@bitgo/sdk-test": "^8.0.44",
+    "@bitgo/sdk-api": "^1.55.1",
+    "@bitgo/sdk-test": "^8.0.45",
     "secp256k1": "5.0.0"
   }
 }

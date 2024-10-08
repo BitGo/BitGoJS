@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.2.0...@bitgo/abstract-eth@22.2.1) (2024-10-08)
+
+### Bug Fixes
+
+- v4 cold and custody ccr recovery txn ([b840f73](https://github.com/BitGo/BitGoJS/commit/b840f733d661e64694069ae142e127b46c7ad91b))
+
 # [22.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.1.2...@bitgo/abstract-eth@22.2.0) (2024-10-04)
 
 ### Features

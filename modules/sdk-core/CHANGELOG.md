@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.8.0...@bitgo/sdk-core@28.9.0) (2024-10-08)
+
+### Features
+
+- **sdk-core:** add BUILD_ONLY flag to fanoutUnspents ([667c366](https://github.com/BitGo/BitGoJS/commit/667c3662691600eb8bc0715eeab7353c89277f3c))
+
 # [28.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.7.0...@bitgo/sdk-core@28.8.0) (2024-10-04)
 
 ### Features
