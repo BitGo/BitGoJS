@@ -136,14 +136,20 @@ export class Xrp extends BaseCoin {
     if (!txPrebuild.txHex) {
       throw new Error(`missing txHex in txPrebuild`);
     }
-    const signedTx = utils.signString(txPrebuild.txHex, prv);
+    const keyPair = new XrpKeyPair({ prv });
+    const address = keyPair.getAddress();
+    const privateKey = (keyPair.getPrivateKey() as Buffer).toString('hex');
+
+    const tx = ripple.signWithPrivateKey(txPrebuild.txHex, privateKey, {
+      signAs: address,
+    });
 
     // Normally the SDK provides the first signature for an XRP tx, but occasionally it provides the final one as well
     // (recoveries)
     if (isLastSignature) {
-      return { txHex: signedTx };
+      return { txHex: tx.signedTransaction };
     }
-    return { halfSigned: { txHex: signedTx } };
+    return { halfSigned: { txHex: tx.signedTransaction } };
   }
 
   /**
