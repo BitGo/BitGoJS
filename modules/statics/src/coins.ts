@@ -337,6 +337,7 @@ const BERA_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+  CoinFeature.BULK_TRANSACTION,
 ];
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
