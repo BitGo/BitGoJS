@@ -127,6 +127,7 @@ import {
   Tzketh,
   Xlm,
   Xrp,
+  XrpToken,
   Xtz,
   Zec,
   Zeta,
@@ -318,6 +319,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   );
 
   SuiToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
+    globalCoinFactory.register(name, coinConstructor)
+  );
+
+  XrpToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
     globalCoinFactory.register(name, coinConstructor)
   );
 }

@@ -2266,6 +2266,8 @@ export enum UnderlyingAsset {
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
+  'xrp:rlusd' = 'xrp:rlusd',
+  'txrp:rlusd' = 'txrp:rlusd',
 
   // Sui tokens
   'sui:deep' = 'sui:deep',
