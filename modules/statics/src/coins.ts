@@ -11071,7 +11071,7 @@ export const coins = CoinMap.fromCoins([
     'TokenFi',
     9,
     '0x4507cef57c46789ef8d1a19ea45f4216bae2b528',
-    UnderlyingAsset.TOKE
+    UnderlyingAsset.TOKEN
   ),
   erc20(
     '2a831eb5-a7b1-44ab-9cdb-626d21ab6d03',
