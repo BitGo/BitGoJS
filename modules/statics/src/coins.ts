@@ -2123,6 +2123,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.AST
   ),
   erc20(
+    '1c6ef07d-6f69-4618-bb5b-5f6e554d4fde',
+    'asto',
+    'Altered State Token',
+    18,
+    '0x823556202e86763853b40e9cde725f412e294689',
+    UnderlyingAsset.ASTO
+  ),
+  erc20(
     'ec4b7116-b9eb-4698-8baa-de5b333367fe',
     'atri',
     'Atari Token',
@@ -5394,6 +5402,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.NEXO
   ),
   erc20(
+    '00df7662-904c-40a4-af71-969dd028c6ca',
+    'nftfi',
+    'NFTfi',
+    18,
+    '0x09d6f0f5a21f5be4f59e209747e2d07f50bc694c',
+    UnderlyingAsset.NFTFI
+  ),
+  erc20(
     '1fa66c69-0b7b-4ad5-8731-1edbce501e6e',
     'nftx',
     'NFTX',
@@ -5504,6 +5520,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd26114cd6ee289accf82350c8d8487fedb8a0c07',
     UnderlyingAsset.OMG
+  ),
+  erc20(
+    '6c931519-f760-4651-a021-8dc0c81cccdf',
+    'omni',
+    'Omni Network',
+    18,
+    '0x36e66fbbce51e4cd5bd3c62b637eb411b18949d4',
+    UnderlyingAsset.OMNI
   ),
   erc20(
     'def47964-e90c-4862-a724-086e439d01de',
@@ -5778,6 +5802,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.PEPE
   ),
   erc20(
+    '90edae14-9c2c-4245-bb90-a9062d08ef95',
+    'perl',
+    'Perlin',
+    18,
+    '0xeca82185adce47f39c684352b0439f030f860318',
+    UnderlyingAsset.PERL
+  ),
+  erc20(
     '8f767b43-c363-470a-b74b-695bb5ef629c',
     'perp',
     'Perpetual Protocol',
@@ -5856,6 +5888,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x846c66cf71c43f80403b51fe3906b3599d63336f',
     UnderlyingAsset.PMA
+  ),
+  erc20(
+    '03181686-ae56-45b6-86fb-9cf1969ff855',
+    'pnt',
+    'pNetwork',
+    18,
+    '0x89ab32156e46f46d02ade3fecbe5fc4243b9aaed',
+    UnderlyingAsset.PNT
   ),
   erc20(
     'a10eb871-eecd-4c63-ae23-ee1cd1098b62',
@@ -5969,6 +6009,14 @@ export const coins = CoinMap.fromCoins([
     8,
     '0x93d3296cac208422bf587c3597d116e809870f2b',
     UnderlyingAsset.PUSD
+  ),
+  erc20(
+    'dfe5dacc-73b2-482d-a402-9aec770e4808',
+    'push',
+    'Push Protocol',
+    18,
+    '0xf418588522d5dd018b425e472991e52ebbeeeeee',
+    UnderlyingAsset.PUSH
   ),
   erc20(
     'ebdc8de1-7b95-40d6-b16e-87298258b6de',
@@ -9457,6 +9505,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.DOGEBEAR2021
   ),
   erc20(
+    'f3ff2add-9f21-48bf-ae1f-1ccd36413953',
+    'domi',
+    'Domi Online',
+    18,
+    '0x45c2f8c9b4c0bdc76200448cc26c48ab6ffef83f',
+    UnderlyingAsset.DOMI
+  ),
+  erc20(
     'a5383490-708c-4dcb-b142-0d38fcbe8c90',
     'doom',
     '10X Short Bitcoin',
@@ -10577,6 +10633,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.PINE
   ),
   erc20(
+    'f362fea8-d01f-4a22-ad4a-7ef0264fdf47',
+    'pixel',
+    'Pixels',
+    18,
+    '0x3429d03c6f7521aec737a0bbf2e5ddcef2c3ae31',
+    UnderlyingAsset.PIXEL
+  ),
+  erc20(
     '92fd332f-4fd4-4346-9e24-12446d595abe',
     'pirate',
     'Pirate Nation Token',
@@ -11007,7 +11071,7 @@ export const coins = CoinMap.fromCoins([
     'TokenFi',
     9,
     '0x4507cef57c46789ef8d1a19ea45f4216bae2b528',
-    UnderlyingAsset.TOKE
+    UnderlyingAsset.TOKEN
   ),
   erc20(
     '2a831eb5-a7b1-44ab-9cdb-626d21ab6d03',
@@ -12314,6 +12378,30 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x2794dad4077602ed25a88d03781528d1637898b4',
     UnderlyingAsset['bsc:vite']
+  ),
+  bscToken(
+    '696cef5c-6d78-47f3-bc41-8849d3e6b3b2',
+    'bsc:mdx',
+    'Mdex',
+    18,
+    '0x9c65ab58d8d978db963e63f2bfb7121627e3a739',
+    UnderlyingAsset['bsc:mdx']
+  ),
+  bscToken(
+    '3cd43d47-451e-4043-822c-d2566ea93ade',
+    'bsc:multi',
+    'Multichain',
+    18,
+    '0x9fb9a33956351cf4fa040f65a13b835a3c8764e3',
+    UnderlyingAsset['bsc:multi']
+  ),
+  bscToken(
+    'bea7d7f0-a2c3-48fd-95aa-9c51811153f6',
+    'bsc:psg',
+    'Paris Saint-Germain Fan Token',
+    2,
+    '0xbc5609612b7c44bef426de600b5fd1379db2ecf1',
+    UnderlyingAsset['bsc:psg']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
@@ -18397,6 +18485,14 @@ export const coins = CoinMap.fromCoins([
     '0x4200000000000000000000000000000000000042',
     UnderlyingAsset['opeth:op']
   ),
+  opethErc20(
+    '0d045493-8667-4d86-b5c2-d90d2dd38ae5',
+    'opeth:exa',
+    '0x1e925de1c68ef83bd98ee3e130ef14a50309c01b',
+    18,
+    '0x1e925de1c68ef83bd98ee3e130ef14a50309c01b',
+    UnderlyingAsset['opeth:exa']
+  ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
     'topeth:terc18dp',
@@ -18511,6 +18607,17 @@ export const coins = CoinMap.fromCoins([
     'wusdc',
     'WUSDC',
     UnderlyingAsset['sui:wusdc'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '97617c48-004c-4222-9eff-d77d10ce8443',
+    'sui:sca',
+    'Scallop',
+    9,
+    '0x7016aae72cfc67f2fadf55769c0a7dd54291a583b63051a5ed71081cce836ac6',
+    'sca',
+    'SCA',
+    UnderlyingAsset['sui:sca'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(
