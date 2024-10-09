@@ -2165,9 +2165,13 @@ export enum UnderlyingAsset {
 
   // bera mainnet tokens
   'bera:bgt' = 'bera:bgt',
+  'bera:honey' = 'bera:honey',
+  'bera:usdc' = 'bera:usdc',
 
   // bera testnet tokens
   'tbera:bgt' = 'tbera:bgt',
+  'tbera:honey' = 'tbera:honey',
+  'tbera:usdc' = 'tbera:usdc',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',

@@ -18366,6 +18366,24 @@ export const coins = CoinMap.fromCoins([
     '0xbda130737bdd9618301681329bf2e46a016ff9aa',
     UnderlyingAsset['bera:bgt']
   ),
+  beraErc20(
+    'ca86baf8-fcc6-40ff-9d65-08db513a131e',
+    'bera:honey',
+    'Honey Token',
+    18,
+    // TODO: the mainnet contract address is still not available, adding placeholder here
+    '0xbda130737bdd9618301681329bf2e46a016ff9ab',
+    UnderlyingAsset['bera:honey']
+  ),
+  beraErc20(
+    '31cdb51f-3bcc-489e-8b35-8e074169c573',
+    'bera:usdc',
+    'USDC Token',
+    18,
+    // TODO: the mainnet contract address is still not available, adding placeholder here
+    '0xbda130737bdd9618301681329bf2e46a016ff9a0',
+    UnderlyingAsset['bera:usdc']
+  ),
   tberaErc20(
     '24af5e18-ab4b-43e5-80db-0ddb9beb01b3',
     'tbera:bgt',
@@ -18373,6 +18391,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xbda130737bdd9618301681329bf2e46a016ff9ad',
     UnderlyingAsset['tbera:bgt']
+  ),
+  tberaErc20(
+    '5fb4ca32-0bce-4f29-bef3-aebff61ed00c',
+    'tbera:honey',
+    'Bera Testnet Honey',
+    18,
+    '0x0e4aaf1351de4c0264c5c7056ef3777b41bd8e03',
+    UnderlyingAsset['tbera:honey']
+  ),
+  tberaErc20(
+    '7319878e-96ca-4a97-bad8-b4b9d040b94b',
+    'tbera:usdc',
+    'Bera Testnet usdc',
+    18,
+    '0xd6d83af58a19cd14ef3cf6fe848c9a4d21e5727c',
+    UnderlyingAsset['tbera:usdc']
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
