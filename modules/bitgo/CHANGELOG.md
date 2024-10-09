@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.6.0...bitgo@39.7.0) (2024-10-08)
+
+### Bug Fixes
+
+- **sdk-core:** fix broken mocking for unit tests ([fae6f66](https://github.com/BitGo/BitGoJS/commit/fae6f66822da5d77db5ed9cdb7dae84029724a8d))
+
+### Features
+
+- **sdk-core:** add BUILD_ONLY flag to fanoutUnspents ([667c366](https://github.com/BitGo/BitGoJS/commit/667c3662691600eb8bc0715eeab7353c89277f3c))
+
 # [39.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.5.0...bitgo@39.6.0) (2024-10-04)
 
 ### Bug Fixes

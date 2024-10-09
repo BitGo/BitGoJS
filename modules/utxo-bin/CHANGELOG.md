@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.50.0...@bitgo/utxo-bin@3.0.0) (2024-10-08)
+
+### Code Refactoring
+
+- **utxo-bin:** add address subcommand ([6266c62](https://github.com/BitGo/BitGoJS/commit/6266c625b592c8d7cea3718082aead95808f179a))
+
+### Features
+
+- **utxo-bin:** add command to generate addresses from descriptor ([55be38f](https://github.com/BitGo/BitGoJS/commit/55be38f6a0c0d07931b63031e7840c50068abc91))
+
+### BREAKING CHANGES
+
+- **utxo-bin:** renamed generateAddresses to `address fromFixedScript`
+- **utxo-bin:** renamed parseAddress to `address parse`
+
+TICKET: BTC-1351
+
 # [2.50.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.49.9...@bitgo/utxo-bin@2.50.0) (2024-10-04)
 
 ### Features

@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.1.0...@bitgo/statics@50.2.0) (2024-10-08)
+
+### Features
+
+- **sdk-coin-xrp:** add xrpToken skeleton ([441ec50](https://github.com/BitGo/BitGoJS/commit/441ec50e96675b7de550928e1192b37f4c9ef05c))
+- **statics:** add hETH POL token ([e9033e7](https://github.com/BitGo/BitGoJS/commit/e9033e7b406cdea9091c62e38754b37070d5194e))
+- **statics:** add new batch of tokens ([34b6bbb](https://github.com/BitGo/BitGoJS/commit/34b6bbb5f7cb6f48f782dcc997ab7649d77fe845))
+- **statics:** update address for arbeth:xsgd, rlusd ([8883b9c](https://github.com/BitGo/BitGoJS/commit/8883b9c566cb2e5b4326d881358c8c277a064558))
+
 # [50.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.0.0...@bitgo/statics@50.1.0) (2024-10-04)
 
 ### Features

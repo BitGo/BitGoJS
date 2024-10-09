@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@5.1.0...@bitgo/sdk-coin-avaxc@5.1.1) (2024-10-08)
+
+### Bug Fixes
+
+- v4 cold and custody ccr recovery txn ([b840f73](https://github.com/BitGo/BitGoJS/commit/b840f733d661e64694069ae142e127b46c7ad91b))
+
 # [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@5.0.30...@bitgo/sdk-coin-avaxc@5.1.0) (2024-10-04)
 
 ### Features

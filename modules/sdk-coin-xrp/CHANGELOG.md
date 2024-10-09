@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@2.1.20...@bitgo/sdk-coin-xrp@3.0.0) (2024-10-08)
+
+### Build System
+
+- **sdk-coin-xrp:** update ripple libs ([be7b887](https://github.com/BitGo/BitGoJS/commit/be7b887bf6f6d1c092fa0557165a8547191b765c))
+
+### Features
+
+- **sdk-coin-xrp:** add Utils & KeyPair ([e92eec5](https://github.com/BitGo/BitGoJS/commit/e92eec5bd50626b7ca8f672b4ba6622b33ae8778))
+- **sdk-coin-xrp:** add xrpToken skeleton ([441ec50](https://github.com/BitGo/BitGoJS/commit/441ec50e96675b7de550928e1192b37f4c9ef05c))
+
+### BREAKING CHANGES
+
+- **sdk-coin-xrp:** Move following functions from `XRP` to `Utils`,
+
+* `getAddressDetails`
+* `normalizeAddress`
+
+- **sdk-coin-xrp:** explainTransaction for XRP transactions now computes
+  a different transaction hash than previous versions. This is because
+  xrpl 2.x uses different hash prefixes for computing signed and
+  unsigned transaction hashes
+
+Ticket: WIN-3541
+
 ## [2.1.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@2.1.19...@bitgo/sdk-coin-xrp@2.1.20) (2024-10-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp
