@@ -205,6 +205,7 @@ const SOL_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
+const TSOL_FEATURES = [...SOL_FEATURES, CoinFeature.CUSTODY_BITGO_SINGAPORE];
 const SOL_TOKEN_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 const STX_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -313,6 +314,7 @@ const TON_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
 const ARBETH_FEATURES = [
   ...ETH_FEATURES,
@@ -339,6 +341,7 @@ const BERA_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
 ];
+const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
   ...utxoCoins,
@@ -773,7 +776,7 @@ export const coins = CoinMap.fromCoins([
     9,
     UnderlyingAsset.SOL,
     BaseUnit.SOL,
-    SOL_FEATURES,
+    TSOL_FEATURES,
     KeyCurve.Ed25519
   ),
   account(
@@ -4982,7 +4985,8 @@ export const coins = CoinMap.fromCoins([
     'Decentraland',
     18,
     '0x0f5d2fb29fb7d3cfee444a200298f468908cc942',
-    UnderlyingAsset.MANA
+    UnderlyingAsset.MANA,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '8b9991bf-e8f2-4e9a-a07f-8243529b6d25',
@@ -5256,7 +5260,8 @@ export const coins = CoinMap.fromCoins([
     'Moca',
     18,
     '0xf944e35f95e819e752f3ccb5faf40957d311e8c5',
-    UnderlyingAsset.MOCA
+    UnderlyingAsset.MOCA,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'f1654a22-81cc-4798-b815-c9faa5ad5cd0',
@@ -7042,7 +7047,8 @@ export const coins = CoinMap.fromCoins([
     'Tokenize',
     8,
     '0x667102bd3413bfeaa3dffb48fa8288819e480a88',
-    UnderlyingAsset.TKX
+    UnderlyingAsset.TKX,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'ed5b27a1-eaab-4a02-a1d1-a07ad736c5fd',
@@ -7636,7 +7642,8 @@ export const coins = CoinMap.fromCoins([
     'Wrapped Bitcoin',
     8,
     '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
-    UnderlyingAsset.WBTC
+    UnderlyingAsset.WBTC,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'f8a56e2b-55ae-4dc2-9fbc-2b1b162536a2',

@@ -131,7 +131,7 @@ const DOGE_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
 ];
-
+const DASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 export const utxoCoins: Readonly<BaseCoin>[] = [
   utxo(
     '8d6e08d5-399f-414f-8430-6ceca1798cbf',
@@ -266,7 +266,15 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     BaseUnit.LTC,
     LTC_FEATURES
   ),
-  utxo('0739be6a-c72e-468d-9464-ca5601965708', 'dash', 'Dash', Networks.main.dash, UnderlyingAsset.DASH, BaseUnit.DASH),
+  utxo(
+    '0739be6a-c72e-468d-9464-ca5601965708',
+    'dash',
+    'Dash',
+    Networks.main.dash,
+    UnderlyingAsset.DASH,
+    BaseUnit.DASH,
+    DASH_FEATURES
+  ),
   utxo(
     '5950d78f-e8dd-457a-ab5d-310e6b476bb1',
     'tdash',
