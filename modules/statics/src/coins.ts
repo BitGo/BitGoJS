@@ -18371,7 +18371,7 @@ export const coins = CoinMap.fromCoins([
     'bera:honey',
     'Honey Token',
     18,
-    // TODO: the mainnet contract address is still not available, adding placeholder here
+    // TODO: the mainnet contract address is still not available, adding placeholder here, WIN-3597
     '0xbda130737bdd9618301681329bf2e46a016ff9ab',
     UnderlyingAsset['bera:honey']
   ),
@@ -18380,7 +18380,7 @@ export const coins = CoinMap.fromCoins([
     'bera:usdc',
     'USDC Token',
     18,
-    // TODO: the mainnet contract address is still not available, adding placeholder here
+    // TODO: the mainnet contract address is still not available, adding placeholder here, WIN-3597
     '0xbda130737bdd9618301681329bf2e46a016ff9a0',
     UnderlyingAsset['bera:usdc']
   ),
@@ -18403,7 +18403,7 @@ export const coins = CoinMap.fromCoins([
   tberaErc20(
     '7319878e-96ca-4a97-bad8-b4b9d040b94b',
     'tbera:usdc',
-    'Bera Testnet usdc',
+    'Bera Testnet USDC',
     18,
     '0xd6d83af58a19cd14ef3cf6fe848c9a4d21e5727c',
     UnderlyingAsset['tbera:usdc']
