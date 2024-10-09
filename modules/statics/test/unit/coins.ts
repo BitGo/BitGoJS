@@ -100,6 +100,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
     ],
   },
+  dash: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   matic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   weth: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   eigen: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
@@ -130,6 +131,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   rbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   sol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   stx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  ton: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   xlm: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -142,6 +144,10 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   usdc: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_NEW_YORK] },
   shib: { features: [CoinFeature.CUSTODY_BITGO_NEW_YORK] },
   injv2: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  moca: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  wbtc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tkx: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  mana: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   // Test Coins
   talgo: {
     features: [
@@ -275,7 +281,13 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   trbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  tsol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tsol: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ],
+  },
   tstx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   txlm: {
     features: [
@@ -287,6 +299,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   ttrx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tia: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   ttia: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  tton: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
 };
 
 describe('CoinMap', function () {
