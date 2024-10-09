@@ -1,6 +1,7 @@
 inputScripts
 └─┬ witnessScript
   └─┬ script: length 105 bytes
+    ├── miniscript: multi(2,03199dc3912467b37ff890cc1740c8ef4ac7a50bf3741d99590e905ca3a79c7670,02396d5d0c79d779f9cf019cea9e81d2576bad476ea87ed634416205605a55ce8f,0286de50435e3680740715bfa3f7d41c9620d80d93b2c02672f53efa0c6e68d182)
     ├─┬ classification
     │ ├── input: nonstandard
     │ ├── output: multisig

@@ -1,4 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { Miniscript } from '@bitgo/wasm-miniscript';
 
 import { Parser, ParserNode } from './Parser';
 import { parseUnknown } from './parseUnknown';
@@ -19,6 +20,18 @@ function parsePaymentWithType(script: Buffer, type: PaymentType, network?: utxol
     case 'p2ms':
       return utxolib.payments.p2ms({ output: script, network });
   }
+}
+
+function asMiniscript(script: Buffer): Miniscript | undefined {
+  const contexts = ['tap', 'segwitv0', 'legacy'] as const;
+  for (const ctx of contexts) {
+    try {
+      return Miniscript.fromBitcoinScript(script, ctx);
+    } catch (e) {
+      continue;
+    }
+  }
+  throw new Error('failed to parse as miniscript');
 }
 
 export class ScriptParser extends Parser {
@@ -76,6 +89,7 @@ export class ScriptParser extends Parser {
     const classification = ScriptParser.classify(script, undefined);
     const decompiled = utxolib.script.decompile(script);
     return this.node('script', `length ${script.length} bytes`, [
+      this.nodeCatchError('miniscript', () => asMiniscript(script)?.toString()),
       this.node('classification', undefined, [
         this.node('input', classification.input),
         this.node('output', classification.output),
