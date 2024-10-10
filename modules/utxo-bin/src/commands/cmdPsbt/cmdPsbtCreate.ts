@@ -4,6 +4,7 @@ import { Buffer } from 'buffer';
 import * as t from 'io-ts';
 import * as yargs from 'yargs';
 import { CommandModule } from 'yargs';
+import { Dimensions } from '@bitgo/unspents';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as blockapis from '@bitgo/blockapis';
 
@@ -23,6 +24,7 @@ export type ArgsCreateTx = KeyOptions & {
   output?: string[];
   signer: string;
   cosigner: string;
+  feeRateSatKB?: number;
 };
 
 async function toWalletUnspents(
@@ -48,25 +50,87 @@ async function toWalletUnspents(
   );
 }
 
-function parseOutput(v: string, network: utxolib.Network): Output {
-  const parts = v.split(':');
-  let script: Buffer;
-  let value: bigint;
-  if (parts.length === 3) {
-    if (parts[0] === 'hex') {
-      script = Buffer.from(parts[1], 'hex');
-      value = BigInt(parseFloat(parts[2]));
+function parseOutput(
+  v: string | { script: Buffer; value: string },
+  network: utxolib.Network
+): { script: Buffer; value: bigint | 'rest' } {
+  if (typeof v === 'object') {
+    if (v.value === 'rest') {
+      return {
+        script: v.script,
+        value: v.value,
+      };
+    }
+    return {
+      script: v.script,
+      value: BigInt(parseFloat(v.value)),
+    };
+  }
+
+  if (typeof v === 'string') {
+    const parts = v.split(':');
+    if (parts.length === 3) {
+      if (parts[0] === 'hex') {
+        return parseOutput({ script: Buffer.from(parts[1], 'hex'), value: parts[2] }, network);
+      } else {
+        throw new Error(`invalid output specifier ${v}`);
+      }
+    } else if (parts.length === 2) {
+      return parseOutput(
+        {
+          script: utxolib.address.toOutputScript(parts[0], network),
+          value: parts[1],
+        },
+        network
+      );
     } else {
       throw new Error(`invalid output specifier ${v}`);
     }
-  } else if (parts.length === 2) {
-    script = utxolib.address.toOutputScript(parts[0], network);
-    value = BigInt(parseFloat(parts[1]));
-  } else {
-    throw new Error(`invalid output specifier ${v}`);
   }
 
-  return { script, value };
+  throw new Error(`invalid output specifier ${v}`);
+}
+
+function getFeeSat(dimensions: Dimensions, { feeRateSatKB }: { feeRateSatKB: number }): bigint {
+  const vsize = dimensions.getVSize();
+  return BigInt(Math.ceil((vsize * feeRateSatKB) / 1000));
+}
+
+function parseOutputs(
+  outputs: string[],
+  {
+    network,
+    inputDimensions,
+    inputSum,
+    feeRateSatKB,
+  }: {
+    network: utxolib.Network;
+    inputDimensions: Dimensions;
+    inputSum: bigint;
+    feeRateSatKB: number | undefined;
+  }
+): Output[] {
+  const outputsParsed = outputs.map((v) => parseOutput(v, network));
+  const feeSat = feeRateSatKB
+    ? getFeeSat(inputDimensions.plus(Dimensions.fromOutputs(outputsParsed)), { feeRateSatKB })
+    : undefined;
+  const fixedAmount = outputsParsed.reduce((sum, o) => (typeof o.value === 'bigint' ? sum + o.value : sum), BigInt(0));
+  const nRest = outputsParsed.filter((o) => o.value === 'rest').length;
+  if (nRest > 1) {
+    throw new Error(`only one output allowed with value "rest"`);
+  }
+  return outputsParsed.map(({ script, value }): Output => {
+    if (value === 'rest') {
+      if (feeSat === undefined) {
+        throw new Error(`fee rate required for output with value "rest"`);
+      }
+      return {
+        script,
+        value: inputSum - fixedAmount - feeSat,
+      };
+    }
+    return { script, value };
+  });
 }
 
 function createFixedScriptTxWithUnspents(
@@ -84,7 +148,9 @@ function createFixedScriptTxWithUnspents(
 ): utxolib.Psbt {
   const psbt = utxolib.bitgo.createPsbtForNetwork({ network });
   for (const u of unspents) {
-    utxolib.bitgo.addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signer, cosigner);
+    utxolib.bitgo.addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signer, cosigner, {
+      skipNonWitnessUtxo: true,
+    });
   }
   for (const output of outputs) {
     psbt.addOutput(output);
@@ -163,7 +229,10 @@ async function toWalletUnspentsFromArgs(
   );
 }
 
-export async function createFixedScriptTx(args: ArgsCreateTx, httpClient: blockapis.HttpClient): Promise<utxolib.Psbt> {
+export async function createFixedScriptTxs(
+  args: ArgsCreateTx,
+  httpClient: blockapis.HttpClient
+): Promise<utxolib.Psbt> {
   const rootWalletKeys = getRootWalletKeys(args);
 
   let unspents: WalletUnspent[];
@@ -180,7 +249,16 @@ export async function createFixedScriptTx(args: ArgsCreateTx, httpClient: blocka
     throw new Error(`invalid output array`);
   }
 
-  const outputs = args.output.map((v) => parseOutput(v, args.network));
+  const inputDimensions = Dimensions.fromUnspents(unspents);
+  const inputSum = unspents.reduce((sum, u) => sum + u.value, BigInt(0));
+
+  const outputs = parseOutputs(args.output, {
+    network: args.network,
+    inputDimensions,
+    inputSum,
+    feeRateSatKB: args.feeRateSatKB,
+  });
+
   if (!isWalletKeyName(args.signer)) {
     throw new Error('invalid signer');
   }
@@ -188,16 +266,10 @@ export async function createFixedScriptTx(args: ArgsCreateTx, httpClient: blocka
     throw new Error('invalid cosigner');
   }
 
-  return createFixedScriptTxWithUnspents(
-    args.network,
-    rootWalletKeys,
-    await toWalletUnspents(httpClient, unspents, args.network),
-    outputs,
-    {
-      signer: args.signer,
-      cosigner: args.cosigner,
-    }
-  );
+  return createFixedScriptTxWithUnspents(args.network, rootWalletKeys, unspents, outputs, {
+    signer: args.signer,
+    cosigner: args.cosigner,
+  });
 }
 
 export const cmdCreateFixedScriptTx: CommandModule<
@@ -222,12 +294,21 @@ export const cmdCreateFixedScriptTx: CommandModule<
       .option('chain', { type: 'string', array: true })
       .option('index', { type: 'string', array: true })
       .option('output', { type: 'string', array: true })
+      .option('feeRateSatKB', { type: 'number', description: 'fee rate in satoshis per kilobyte' })
       .option('signer', { type: 'string', default: 'user' })
-      .option('cosigner', { type: 'string', default: 'bitgo' });
+      .option('cosigner', { type: 'string', default: 'bitgo' })
+      .option('outdir', { type: 'string', description: 'output directory' });
   },
   async handler(argv) {
     const httpClient = await getClient({ cache: argv.cache });
-    const psbt = await createFixedScriptTx(argv, httpClient);
-    console.log(psbt.toBase64());
+    const psbt = await createFixedScriptTxs(argv, httpClient);
+    if (argv.outdir) {
+      const txid = (psbt as any).__CACHE.__TX.getId();
+      const filename = `${argv.outdir}/${txid}.psbt`;
+      console.log(`writing ${filename}`);
+      await fs.writeFile(filename, psbt.toBase64(), 'utf8');
+    } else {
+      console.log(psbt.toBase64());
+    }
   },
 };
