@@ -20,6 +20,8 @@ import {
   IRequestTracer,
   makeRandomKey,
   sanitizeLegacyPath,
+  generateGPGKeyPair,
+  readSignedMessage,
 } from '@bitgo/sdk-core';
 import * as sjcl from '@bitgo/sjcl';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -956,20 +958,33 @@ export class BitGoAPI implements BitGoBase {
       this.validatePasskeyResponse(passkey);
       const userId = JSON.parse(passkey).response.userHandle;
 
+      const userGpgKey = await generateGPGKeyPair('secp256k1');
       const response: superagent.Response = await request.send({
         passkey: passkey,
         userId: userId,
+        publicKey: userGpgKey.publicKey,
       });
       // extract body and user information
       const body = response.body;
       this._user = body.user;
 
-      // Expecting unencrypted access token in response for now
-      // TODO (WP-2733): Use GPG encryption to decrypt access token
       if (body.access_token) {
         this._token = body.access_token;
+      } else if (body.encryptedToken) {
+        const constants = await this.fetchConstants();
+
+        if (!constants.passkeyBitGoGpgKey) {
+          throw new Error('passkeyBitGoGpgKey is missing from constants');
+        }
+
+        const access_token = await readSignedMessage(
+          body.encryptedToken,
+          constants.passkeyBitGoGpgKey,
+          userGpgKey.privateKey
+        );
+        response.body.access_token = access_token;
       } else {
-        throw new Error('failed to create access token');
+        throw new Error('Failed to login. Please contact support@bitgo.com');
       }
 
       return handleResponseResult<LoginResponse>()(response);
