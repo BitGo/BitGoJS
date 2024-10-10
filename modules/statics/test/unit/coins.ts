@@ -148,6 +148,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   wbtc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tkx: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   mana: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'arbeth:arb': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   // Test Coins
   talgo: {
     features: [
