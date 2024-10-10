@@ -1,9 +1,10 @@
-import { BaseUtils, InvalidAddressError, UtilsError } from '@bitgo/sdk-core';
+import { BaseUtils, InvalidAddressError, InvalidTransactionError, UtilsError } from '@bitgo/sdk-core';
 import * as querystring from 'querystring';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as url from 'url';
 import * as xrpl from 'xrpl';
-import { Address } from './iface';
+import { VALID_ACCOUNT_SET_FLAGS } from './constants';
+import { Address, SignerDetails } from './iface';
 import { KeyPair as XrpKeyPair } from './keyPair';
 
 class Utils implements BaseUtils {
@@ -153,6 +154,60 @@ class Utils implements BaseUtils {
       return rippleKeypairs.verify(message, signature, publicKey);
     } catch (e) {
       return false;
+    }
+  }
+
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   *
+   * @param {string} rawTransaction - Transaction in hex string format
+   */
+  public validateRawTransaction(rawTransaction: string): void {
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Invalid raw transaction: Undefined');
+    }
+    if (!this.isValidHex(rawTransaction)) {
+      throw new InvalidTransactionError('Invalid raw transaction: Hex string expected');
+    }
+    if (!this.isValidRawTransaction(rawTransaction)) {
+      throw new InvalidTransactionError('Invalid raw transaction');
+    }
+  }
+
+  /**
+   * Checks if raw transaction can be deserialized
+   *
+   * @param {string} rawTransaction - transaction in base64 string format
+   * @returns {boolean} - the validation result
+   */
+  public isValidRawTransaction(rawTransaction: string): boolean {
+    try {
+      const jsonTx = xrpl.decode(rawTransaction);
+      xrpl.validate(jsonTx);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public validateAccountSetFlag(setFlag: number) {
+    if (typeof setFlag !== 'number') {
+      throw new UtilsError(`setFlag ${setFlag} is not valid`);
+    }
+    if (!VALID_ACCOUNT_SET_FLAGS.includes(setFlag)) {
+      throw new UtilsError(`setFlag ${setFlag} is not a valid account set flag`);
+    }
+  }
+
+  public validateSigner(signer: SignerDetails): void {
+    if (!signer.address) {
+      throw new UtilsError('signer must have an address');
+    }
+    if (!this.isValidAddress(signer.address)) {
+      throw new UtilsError(`signer address ${signer.address} is invalid`);
+    }
+    if (typeof signer.weight !== 'number' || signer.weight < 0) {
+      throw new UtilsError(`signer weight ${signer.weight} is not valid`);
     }
   }
 }

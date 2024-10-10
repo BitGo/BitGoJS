@@ -16,7 +16,6 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
-  TransactionExplanation,
   UnexpectedAddressError,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
@@ -34,6 +33,7 @@ import {
   RecoveryTransaction,
   SignTransactionOptions,
   SupplementGenerateWalletOptions,
+  TransactionExplanation,
   VerifyAddressOptions,
 } from './lib/iface';
 import { KeyPair as XrpKeyPair } from './lib/keyPair';
@@ -204,7 +204,7 @@ export class Xrp extends BaseCoin {
       id = xrpl.hashes.hashTx(txHex);
     }
 
-    if (transaction.TransactionType == 'AccountSet') {
+    if (transaction.TransactionType === 'AccountSet') {
       return {
         displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'accountSet'],
         id: id,
@@ -214,13 +214,14 @@ export class Xrp extends BaseCoin {
         outputs: [],
         fee: {
           fee: transaction.Fee,
-          feeRate: null,
-          size: txHex!.length / 2,
+          feeRate: undefined,
+          size: txHex.length / 2,
         },
         accountSet: {
           messageKey: transaction.MessageKey,
+          setFlag: transaction.SetFlag,
         },
-      } as any;
+      };
     }
 
     const address =
@@ -239,10 +240,10 @@ export class Xrp extends BaseCoin {
       ],
       fee: {
         fee: transaction.Fee,
-        feeRate: null,
+        feeRate: undefined,
         size: txHex.length / 2,
       },
-    } as any;
+    };
   }
 
   /**
@@ -492,7 +493,7 @@ export class Xrp extends BaseCoin {
 
     const transactionExplanation: RecoveryInfo = (await this.explainTransaction({
       txHex: signedTransaction,
-    })) as any;
+    })) as RecoveryInfo;
 
     transactionExplanation.txHex = signedTransaction;
 
