@@ -9,6 +9,7 @@ import {
 } from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { RuneTransferBuilder } from './transferBuilder';
 import { RuneUtils } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
@@ -44,7 +45,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   getTransferBuilder(tx?: CosmosTransaction): CosmosTransferBuilder {
     return this.initializeBuilder(
       tx,
-      new CosmosTransferBuilder(this._coinConfig, new RuneUtils(this._coinConfig.network.type))
+      new RuneTransferBuilder(this._coinConfig, new RuneUtils(this._coinConfig.network.type))
     );
   }
 
