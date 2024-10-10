@@ -5,7 +5,7 @@ import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
 import { MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX } from './constants';
 
 /**
- * Coreum keys and address management.
+ * Rune keys and address management.
  */
 export class KeyPair extends CosmosKeyPair {
   constructor(source?: KeyPairOptions) {

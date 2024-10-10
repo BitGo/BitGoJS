@@ -6,7 +6,7 @@ import should from 'should';
 import { Rune, Trune } from '../../../src';
 import * as testData from '../../resources/trune';
 
-describe('Coreum Transfer Builder', () => {
+describe('Rune Transfer Builder', () => {
   let bitgo: TestBitGoAPI;
   let basecoin;
   let factory;
@@ -14,10 +14,10 @@ describe('Coreum Transfer Builder', () => {
   let testTxWithMemo;
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('rune', Rune.createInstance);
-    bitgo.safeRegister('trune', Trune.createInstance);
+    bitgo.safeRegister('rune-native', Rune.createInstance);
+    bitgo.safeRegister('trune-native', Trune.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('trune');
+    basecoin = bitgo.coin('trune-native');
     factory = basecoin.getBuilder();
     testTx = testData.TEST_SEND_TX;
     testTxWithMemo = testData.TEST_TX_WITH_MEMO;
