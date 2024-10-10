@@ -27,6 +27,8 @@ import {
   MPCUnsignedTx,
   MPCSweepRecoveryOptions,
   MPCTxs,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -612,5 +614,11 @@ export class Ada extends BaseCoin {
 
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getBaseChain()));
+  }
+
+  /** inherited doc */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    intent.unspents = params.unspents;
+    intent.senderAddress = params.senderAddress;
   }
 }

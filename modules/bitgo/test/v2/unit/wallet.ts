@@ -30,6 +30,8 @@ import {
   BaseTssUtils,
   KeyType,
   SendManyOptions,
+  PopulatedIntent,
+  TxRequestVersion,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -45,6 +47,12 @@ import { nftResponse, unsupportedNftResponse } from '../fixtures/nfts/nftRespons
 require('should-sinon');
 
 nock.disableNetConnect();
+
+type CreateTxRequestBody = {
+  intent: PopulatedIntent;
+  apiversion: TxRequestVersion;
+  preview?: boolean;
+};
 
 describe('V2 Wallet:', function () {
   const reqId = new RequestTracer();
@@ -4386,6 +4394,47 @@ describe('V2 Wallet:', function () {
       sinon.stub(adaWallet, 'signTransaction').resolves({ txRequestId: 'txRequestId' });
       sinon.stub(BaseTssUtils.default.prototype, 'sendTxRequest').resolves('sendTxResponse');
       await adaWallet.sendMany(sendManyParams);
+    });
+
+    it('Should send senderAddress in payment intent when using sendmany', async function () {
+      const sendManyParams = {
+        type: 'transfer',
+        recipients: [
+          {
+            address: 'address',
+            amount: '1000',
+          },
+        ],
+        senderAddress: 'senderAddr1',
+      };
+
+      nock(bgUrl)
+        .post(`/api/v2/wallet/${adaWallet.id()}/txrequests`)
+        .reply((url, body: nock.Body) => {
+          const createTxRequestBody = body as CreateTxRequestBody;
+          createTxRequestBody.intent.intentType.should.equal('payment');
+          createTxRequestBody.intent.senderAddress?.should.equal('senderAddr1');
+
+          return [
+            200,
+            {
+              apiVersion: 'lite',
+              unsignedTxs: [
+                {
+                  unsignedTx: {
+                    serializedTxHex: 'serializedTxHex',
+                    feeInfo: 'fee info',
+                  },
+                },
+              ],
+            },
+          ];
+        });
+
+      sinon.stub(adaWallet.baseCoin, 'verifyTransaction').resolves(true);
+      sinon.stub(adaWallet, 'signTransaction').resolves({ txRequestId: 'txRequestId' });
+      sinon.stub(BaseTssUtils.default.prototype, 'sendTxRequest').resolves('sendTxResponse');
+      await adaWallet.sendMany(sendManyParams).should.be.resolved();
     });
   });
 });

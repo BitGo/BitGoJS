@@ -7,14 +7,14 @@ import { IMarkets } from '../market';
 import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
-import EddsaUtils, { TxRequest } from '../utils/tss/eddsa';
+import EddsaUtils, { PrebuildTransactionWithIntentOptions, TxRequest } from '../utils/tss/eddsa';
 import { CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
-import { MPCTx } from '../utils';
+import { MPCTx, PopulatedIntent } from '../utils';
 
 export interface Output extends ITransactionRecipient {
   address: string;
@@ -537,4 +537,5 @@ export interface IBaseCoin {
   buildNftTransferData(params: BuildNftTransferDataOptions): string;
   getHashFunction(): Hash;
   broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult>;
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void;
 }

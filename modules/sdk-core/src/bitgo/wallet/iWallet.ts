@@ -106,6 +106,11 @@ export interface PrebuildTransactionOptions {
   gasPrice?: number;
   noSplitChange?: boolean;
   unspents?: any[];
+  /**
+   * The receive address from which funds will be withdrawn.
+   * This feature is supported only for specific coins, like ADA.
+   */
+  senderAddress?: string;
   changeAddress?: string;
   allowExternalChangeAddress?: boolean;
   type?: string;

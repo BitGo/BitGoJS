@@ -25,6 +25,8 @@ import {
   TransactionExplanation,
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
@@ -790,5 +792,10 @@ export class Sui extends BaseCoin {
     }
 
     return { transactions: consolidationTransactions, lastScanIndex };
+  }
+
+  /** inherited doc */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    intent.unspents = params.unspents;
   }
 }

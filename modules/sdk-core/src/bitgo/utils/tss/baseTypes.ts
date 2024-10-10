@@ -195,6 +195,11 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   custodianTransactionId?: string;
   receiveAddress?: string;
   unspents?: string[];
+  /**
+   * The receive address from which funds will be withdrawn.
+   * This feature is supported only for specific coins, like ADA.
+   */
+  senderAddress?: string;
 }
 export interface IntentRecipient {
   address: {
@@ -233,6 +238,11 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   token?: string;
   enableTokens?: TokenEnablement[];
   unspents?: string[];
+  /**
+   * The receive address from which funds will be withdrawn.
+   * This feature is supported only for specific coins, like ADA.
+   */
+  senderAddress?: string;
   // ETH & ETH-like params
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;
