@@ -415,10 +415,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('deprecated');
     }
 
-    const formats = param && param.anyFormat ? undefined : ['default' as const];
+    const formats = utxolib.addressFormat.addressFormats.filter((format) =>
+      utxolib.addressFormat.isSupportedAddressFormat(format, this.network)
+    );
     try {
       const script = utxolib.addressFormat.toOutputScriptTryFormats(address, this.network, formats);
-      return address === utxolib.address.fromOutputScript(script, this.network);
+      const genAddresses = formats.map((format) =>
+        utxolib.addressFormat.fromOutputScriptWithFormat(script, format, this.network)
+      );
+      return genAddresses.includes(address);
     } catch (e) {
       return false;
     }
