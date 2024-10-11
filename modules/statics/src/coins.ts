@@ -301,7 +301,6 @@ const INJECTIVE_FEATURES = [
 ];
 const TOKEN_FEATURES_WITH_SWISS = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
 const TOKEN_FEATURES_WITH_NY = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_NEW_YORK];
-const TOKEN_FEATURES_WITH_FRANKFURT = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -18287,8 +18286,7 @@ export const coins = CoinMap.fromCoins([
     'Arbitrum',
     18,
     '0x912ce59144191c1204e64559fe8253a0e49e6548',
-    UnderlyingAsset['arbeth:arb'],
-    TOKEN_FEATURES_WITH_FRANKFURT
+    UnderlyingAsset['arbeth:arb']
   ),
   arbethErc20(
     '65668b2e-6560-4749-a965-4d03eaeffaec',
