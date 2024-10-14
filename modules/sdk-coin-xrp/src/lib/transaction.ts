@@ -13,7 +13,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 
 import BigNumber from 'bignumber.js';
-import { Signer } from 'xrpl/dist/npm/models/common';
+import { Signer } from 'xrpl';
 import {
   AccountSetTransactionExplanation,
   SignerListSetTransactionExplanation,
@@ -81,10 +81,12 @@ export class Transaction extends BaseTransaction {
       case XrpTransactionType.Payment:
         txData.destination = this._xrpTransaction.Destination;
         txData.destinationTag = this._xrpTransaction.DestinationTag;
-        if (_.isString(this._xrpTransaction.Amount)) {
+        if (
+          typeof this._xrpTransaction.Amount === 'string' ||
+          utils.isIssuedCurrencyAmount(this._xrpTransaction.Amount)
+        ) {
           txData.amount = this._xrpTransaction.Amount;
         } else {
-          // Amount is an object
           throw new InvalidTransactionError('Invalid amount');
         }
         return txData;
@@ -313,7 +315,12 @@ export class Transaction extends BaseTransaction {
         this.setTransactionType(TransactionType.AccountUpdate);
         break;
       case XrpTransactionType.Payment:
-        this.setTransactionType(TransactionType.Send);
+        if (utils.isIssuedCurrencyAmount(this._xrpTransaction.Amount)) {
+          this.setTransactionType(TransactionType.SendToken);
+        } else {
+          this.setTransactionType(TransactionType.Send);
+        }
+        break;
     }
     this.loadInputsAndOutputs();
   }
@@ -326,15 +333,14 @@ export class Transaction extends BaseTransaction {
       return;
     }
     if (this._xrpTransaction.TransactionType === XrpTransactionType.Payment) {
-      let value: string, coin: string;
+      let value: string;
       const { Account, Destination, Amount, DestinationTag } = this._xrpTransaction;
-      if (_.isString(Amount)) {
+      if (typeof Amount === 'string') {
         value = Amount;
-        coin = this._coinConfig.name;
       } else {
         value = Amount.value;
-        coin = Amount.currency;
       }
+      const coin = this._coinConfig.name;
       this.inputs.push({
         address: Account,
         value,

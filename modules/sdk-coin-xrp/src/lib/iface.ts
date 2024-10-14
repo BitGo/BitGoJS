@@ -5,7 +5,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild,
 } from '@bitgo/sdk-core';
-import { AccountSet, Payment, Signer, SignerEntry, SignerListSet } from 'xrpl';
+import { AccountSet, Amount, Payment, Signer, SignerEntry, SignerListSet } from 'xrpl';
 
 export enum XrpTransactionType {
   AccountSet = 'AccountSet',
@@ -115,7 +115,7 @@ export interface TxData {
   // transfer xrp fields
   destination?: string;
   destinationTag?: number;
-  amount?: string;
+  amount?: Amount;
   // account set fields
   messageKey?: string;
   setFlag?: number;

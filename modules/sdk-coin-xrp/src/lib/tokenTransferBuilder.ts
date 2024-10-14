@@ -1,11 +1,13 @@
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
 import { Amount, Payment } from 'xrpl';
+import { XrpTransactionType } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
 
-export class TransferBuilder extends TransactionBuilder {
+export class TokenTransferBuilder extends TransactionBuilder {
   private _amount: Amount;
   private _destination: string;
   private _destinationTag?: number;
@@ -18,8 +20,8 @@ export class TransferBuilder extends TransactionBuilder {
     return TransactionType.Send;
   }
 
-  protected get xrpTransactionType(): 'Payment' {
-    return 'Payment';
+  protected get xrpTransactionType(): XrpTransactionType.Payment {
+    return XrpTransactionType.Payment;
   }
 
   initBuilder(tx: Transaction): void {
@@ -35,10 +37,10 @@ export class TransferBuilder extends TransactionBuilder {
 
     const normalizeAddress = utils.normalizeAddress({ address: destination, destinationTag });
     this.to(normalizeAddress);
-    if (typeof amount !== 'string') {
+    if (!utils.isIssuedCurrencyAmount(amount)) {
       throw new BuildTransactionError('Invalid Amount');
     }
-    this.amount(amount);
+    this.amount(amount.value);
   }
 
   /**
@@ -62,11 +64,17 @@ export class TransferBuilder extends TransactionBuilder {
     if (typeof amount !== 'string') {
       throw new Error(`amount type ${typeof amount} must be a string`);
     }
-    const amountBigInt = BigInt(amount);
-    if (amountBigInt < 0) {
+    const amountBigNum = BigNumber(amount);
+    if (amountBigNum.lt(0)) {
       throw new Error(`amount ${amount} is not valid`);
     }
-    this._amount = amount;
+    const currency = utils.getXrpCurrencyFromTokenName(this._coinConfig.name);
+    // Unlike most coins, XRP Token amounts are represented in decimal notation
+    const value = amountBigNum.dividedBy(BigNumber(10).pow(this._coinConfig.decimalPlaces)).toFixed();
+    this._amount = {
+      value: value,
+      ...currency,
+    };
     return this;
   }
 
