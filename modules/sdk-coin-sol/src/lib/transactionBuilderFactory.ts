@@ -56,6 +56,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingRawMsgAuthorizeBuilder(tx);
         case TransactionType.StakingDelegate:
           return this.getStakingDelegateBuilder(tx);
+        case TransactionType.CloseAssociatedTokenAccount:
+          return this.getCloseAtaInitializationBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }

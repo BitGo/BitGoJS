@@ -114,8 +114,8 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
  */
 function parseSendInstructions(
   instructions: TransactionInstruction[]
-): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit> {
-  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit> = [];
+): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose> {
+  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose> = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -176,6 +176,22 @@ function parseSendInstructions(
           },
         };
         instructionData.push(ataInit);
+        break;
+      case ValidInstructionTypesEnum.CloseAssociatedTokenAccount:
+        const accountAddress = instruction.keys[closeAtaInstructionKeysIndexes.AccountAddress].pubkey.toString();
+        const destinationAddress =
+          instruction.keys[closeAtaInstructionKeysIndexes.DestinationAddress].pubkey.toString();
+        const authorityAddress = instruction.keys[closeAtaInstructionKeysIndexes.AuthorityAddress].pubkey.toString();
+
+        const ataClose: AtaClose = {
+          type: InstructionBuilderTypes.CloseAssociatedTokenAccount,
+          params: {
+            accountAddress,
+            destinationAddress,
+            authorityAddress,
+          },
+        };
+        instructionData.push(ataClose);
         break;
       default:
         throw new NotSupported(
@@ -570,6 +586,12 @@ const ataInitInstructionKeysIndexes = {
   ATAAddress: 1,
   OwnerAddress: 2,
   MintAddress: 3,
+};
+
+const closeAtaInstructionKeysIndexes = {
+  AccountAddress: 0,
+  DestinationAddress: 1,
+  AuthorityAddress: 2,
 };
 
 /**
