@@ -51,16 +51,6 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  private isIssuedCurrencyAmount(amount: Amount): amount is IssuedCurrencyAmount {
-    return (
-      !_.isString(amount) &&
-      _.isObjectLike(amount) &&
-      _.isString(amount.currency) &&
-      _.isString(amount.issuer) &&
-      _.isString(amount.value)
-    );
-  }
-
   toJson(): TxData {
     if (!this._xrpTransaction) {
       throw new InvalidTransactionError('Empty transaction');
@@ -87,6 +77,16 @@ export class Transaction extends BaseTransaction {
       txData.isMultiSig = false;
     }
 
+    function isIssuedCurrencyAmount(amount: Amount): amount is IssuedCurrencyAmount {
+      return (
+        !_.isString(amount) &&
+        _.isObjectLike(amount) &&
+        _.isString(amount.currency) &&
+        _.isString(amount.issuer) &&
+        _.isString(amount.value)
+      );
+    }
+
     switch (this._xrpTransaction.TransactionType) {
       case XrpTransactionType.Payment:
         txData.destination = this._xrpTransaction.Destination;
@@ -94,6 +94,8 @@ export class Transaction extends BaseTransaction {
         if (_.isString(this._xrpTransaction.Amount)) {
           txData.amount = this._xrpTransaction.Amount;
         } else if (this.isIssuedCurrencyAmount(this._xrpTransaction.Amount)) {
+          txData.amount = this._xrpTransaction.Amount;
+        } else if (isIssuedCurrencyAmount(this._xrpTransaction.Amount)) {
           txData.amount = this._xrpTransaction.Amount;
         } else {
           throw new InvalidTransactionError('Invalid amount');
