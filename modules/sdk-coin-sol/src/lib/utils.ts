@@ -7,7 +7,12 @@ import {
   UtilsError,
 } from '@bitgo/sdk-core';
 import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bitgo/statics';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  decodeCloseAccountInstruction,
+  getAssociatedTokenAddress,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 import {
   Keypair,
   PublicKey,
@@ -317,6 +322,15 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
     case SystemProgram.programId.toString():
       return SystemInstruction.decodeInstructionType(instruction);
     case TOKEN_PROGRAM_ID.toString():
+      try {
+        const decodedInstruction = decodeCloseAccountInstruction(instruction);
+        if (decodedInstruction && decodedInstruction.data.instruction === 9) {
+          return 'CloseAssociatedTokenAccount';
+        }
+      } catch (e) {
+        // ignore error and default to TokenTransfer
+        return 'TokenTransfer';
+      }
       return 'TokenTransfer';
     case StakeProgram.programId.toString():
       return StakeInstruction.decodeInstructionType(instruction);

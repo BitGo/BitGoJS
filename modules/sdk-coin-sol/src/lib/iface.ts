@@ -1,4 +1,5 @@
 import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
+import { DecodedCloseAccountInstruction } from '@solana/spl-token';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 
@@ -120,6 +121,7 @@ export type ValidInstructionTypes =
   | 'Memo'
   | 'InitializeAssociatedTokenAccount'
   | 'CloseAssociatedTokenAccount'
+  | DecodedCloseAccountInstruction
   | 'TokenTransfer';
 
 export type StakingAuthorizeParams = {

@@ -1337,6 +1337,12 @@ describe('SOL:', function () {
       const signingPayload = await basecoin.getSignablePayload(resources.TRANSFER_UNSIGNED_TX_WITH_MEMO);
       signingPayload.should.be.deepEqual(rebuiltSignablePayload);
     });
+
+    it('should build CloseAssociatedTokenAccount txn builder from raw txn', async function () {
+      const factory = getBuilderFactory(basecoin.getChain());
+      const txnBuilder = factory.from(resources.TRANSFER_UNSIGNED_TX_CLOSE_ATA);
+      assert.ok(txnBuilder);
+    });
   });
 
   describe('Presign transaction', () => {
