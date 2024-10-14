@@ -112,6 +112,9 @@ export class Transaction extends BaseTransaction {
         txData.signerEntries = this._xrpTransaction.SignerEntries;
         return txData;
 
+      case XrpTransactionType.TrustSet:
+        return txData;
+
       default:
         throw new InvalidTransactionError('Invalid transaction type');
     }
