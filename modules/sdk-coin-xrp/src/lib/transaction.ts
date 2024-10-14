@@ -13,7 +13,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 
 import BigNumber from 'bignumber.js';
-import { Signer } from 'xrpl/dist/npm/models/common';
+import { Signer, IssuedCurrencyAmount, Amount } from 'xrpl';
 import {
   AccountSetTransactionExplanation,
   SignerListSetTransactionExplanation,
@@ -51,6 +51,16 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
+  private isIssuedCurrencyAmount(amount: Amount): amount is IssuedCurrencyAmount {
+    return (
+      !_.isString(amount) &&
+      _.isObjectLike(amount) &&
+      _.isString(amount.currency) &&
+      _.isString(amount.issuer) &&
+      _.isString(amount.value)
+    );
+  }
+
   toJson(): TxData {
     if (!this._xrpTransaction) {
       throw new InvalidTransactionError('Empty transaction');
@@ -83,8 +93,9 @@ export class Transaction extends BaseTransaction {
         txData.destinationTag = this._xrpTransaction.DestinationTag;
         if (_.isString(this._xrpTransaction.Amount)) {
           txData.amount = this._xrpTransaction.Amount;
+        } else if (this.isIssuedCurrencyAmount(this._xrpTransaction.Amount)) {
+          txData.amount = this._xrpTransaction.Amount;
         } else {
-          // Amount is an object
           throw new InvalidTransactionError('Invalid amount');
         }
         return txData;
@@ -273,6 +284,27 @@ export class Transaction extends BaseTransaction {
     this._isMultiSig = isMultiSig;
   }
 
+  private getXrpTransactionType(xrpTransaction: XrpTransaction): XrpTransactionType {
+    if (xrpTransaction.TransactionType === XrpTransactionType.Payment) {
+      if (_.isString(xrpTransaction.Amount)) {
+        return XrpTransactionType.Payment;
+      } else if (this.isIssuedCurrencyAmount(xrpTransaction.Amount)) {
+        return XrpTransactionType.TokenPayment;
+      } else {
+        throw new InvalidTransactionError('Invalid amount');
+      }
+    } else {
+      switch (xrpTransaction.TransactionType) {
+        case XrpTransactionType.AccountSet:
+          return XrpTransactionType.AccountSet;
+        case XrpTransactionType.SignerListSet:
+          return XrpTransactionType.SignerListSet;
+        default:
+          throw new InvalidTransactionError(`Invalid TransactionType: ${xrpTransaction.TransactionType}`);
+      }
+    }
+  }
+
   /**
    * Sets this transaction payload
    *
@@ -304,8 +336,9 @@ export class Transaction extends BaseTransaction {
       this._isMultiSig = true;
     }
     this._id = this.calculateIdFromRawTx(txHex);
+    const txType = this.getXrpTransactionType(this._xrpTransaction);
 
-    switch (this._xrpTransaction.TransactionType) {
+    switch (txType) {
       case XrpTransactionType.SignerListSet:
         this.setTransactionType(TransactionType.WalletInitialization);
         break;
@@ -314,6 +347,10 @@ export class Transaction extends BaseTransaction {
         break;
       case XrpTransactionType.Payment:
         this.setTransactionType(TransactionType.Send);
+        break;
+      case XrpTransactionType.TokenPayment:
+        this.setTransactionType(TransactionType.SendToken);
+        break;
     }
     this.loadInputsAndOutputs();
   }

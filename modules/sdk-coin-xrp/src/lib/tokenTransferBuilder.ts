@@ -1,11 +1,13 @@
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Payment, Amount } from 'xrpl';
-import { Transaction } from './transaction';
+import { Amount, IssuedCurrencyAmount, Payment } from 'xrpl';
 import { TransactionBuilder } from './transactionBuilder';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { XrpTransactionType } from './iface';
+import { Transaction } from './transaction';
 import utils from './utils';
+import _ from 'lodash';
 
-export class TransferBuilder extends TransactionBuilder {
+export class TokenTransferBuilder extends TransactionBuilder {
   private _amount: Amount;
   private _destination: string;
   private _destinationTag?: number;
@@ -18,8 +20,8 @@ export class TransferBuilder extends TransactionBuilder {
     return TransactionType.Send;
   }
 
-  protected get xrpTransactionType(): 'Payment' {
-    return 'Payment';
+  protected get xrpTransactionType(): XrpTransactionType.Payment {
+    return XrpTransactionType.Payment;
   }
 
   initBuilder(tx: Transaction): void {
@@ -56,12 +58,18 @@ export class TransferBuilder extends TransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   amount(amount: Amount): TransactionBuilder {
-    if (typeof amount !== 'string') {
-      throw new Error(`amount type ${typeof amount} must be a string`);
+    function isIssuedCurrencyAmount(amount: Amount): amount is IssuedCurrencyAmount {
+      return (
+        !_.isString(amount) &&
+        _.isObjectLike(amount) &&
+        _.isString(amount.currency) &&
+        _.isString(amount.issuer) &&
+        _.isString(amount.value)
+      );
     }
-    const amountBigInt = BigInt(amount);
-    if (amountBigInt < 0) {
-      throw new Error(`amount ${amount} is not valid`);
+
+    if (!isIssuedCurrencyAmount(amount)) {
+      throw new Error(`amount type ${typeof amount} must be a IssuedCurrencyAmount type`);
     }
     this._amount = amount;
     return this;
