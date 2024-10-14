@@ -108,6 +108,21 @@ const getFeesResponse = {
   },
 };
 
+const getFeesForMessageResponse = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: {
+        apiVersion: '2.0.13',
+        slot: 332103639,
+      },
+      value: 5000,
+    },
+    id: 1,
+  },
+};
+
 const getMinimumBalanceForRentExemptionResponse = {
   status: 200,
   body: {
@@ -475,6 +490,7 @@ const getTokenAccountsByOwnerResponse3 = {
 export const SolResponses = {
   getBlockhashResponse,
   getFeesResponse,
+  getFeesForMessageResponse,
   getAccountBalanceResponse,
   getTokenInfoResponse,
   getAccountInfoResponse,
