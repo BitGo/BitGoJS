@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.0.0...@bitgo/sdk-coin-xrp@3.1.0) (2024-10-15)
+
+### Bug Fixes
+
+- **sdk-coin-xrp:** fix xrp signing bug ([a845372](https://github.com/BitGo/BitGoJS/commit/a845372c3e890bee062622836b492ce5ea8c3838)), closes [#4990](https://github.com/BitGo/BitGoJS/issues/4990)
+
+### Features
+
+- **statics:** add xrp rlusd token ([e3ba9f0](https://github.com/BitGo/BitGoJS/commit/e3ba9f04eba5807d2b3ccbbc63ef30bdc44ba3e3))
+
 # [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@2.1.20...@bitgo/sdk-coin-xrp@3.0.0) (2024-10-08)
 
 ### Build System

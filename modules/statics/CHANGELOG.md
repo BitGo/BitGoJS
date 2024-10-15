@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.2.0...@bitgo/statics@50.3.0) (2024-10-15)
+
+### Features
+
+- **statics:** add honey and USDC for bera ([881f41f](https://github.com/BitGo/BitGoJS/commit/881f41fad4fcec89d1f8f9e07e377984bb8d3e82))
+- **statics:** add honey token for bera ([f3bd9c5](https://github.com/BitGo/BitGoJS/commit/f3bd9c5d06f3d8f99303209b9809f4247b7ee0dd))
+- **statics:** add new coinfeature for bulk transaction ([6428730](https://github.com/BitGo/BitGoJS/commit/642873075243ec3a51864758662c7b8a47560ee5))
+- **statics:** add token and coin ungating for trusts ([04ea06c](https://github.com/BitGo/BitGoJS/commit/04ea06c901dc5d416f7b41df0d4e813a082ef885))
+- **statics:** add xrp rlusd token ([e3ba9f0](https://github.com/BitGo/BitGoJS/commit/e3ba9f04eba5807d2b3ccbbc63ef30bdc44ba3e3))
+- **statics:** added new batch of tokens ([aaed1a8](https://github.com/BitGo/BitGoJS/commit/aaed1a87033b2cc8dc67bd450ac3ba66f4f71fd2))
+- **statics:** changing token name from TOKE to TOKEN ([53853fe](https://github.com/BitGo/BitGoJS/commit/53853feb8df076a7b868e045c477aad0a5236d5c))
+- **statics:** enable l1 finality webhook on mainnet ([27f5761](https://github.com/BitGo/BitGoJS/commit/27f5761c0586cc193c258fc0449689996df5a75b))
+- **statics:** removal of trust frankfurt for arbeth:arb ([a0bd6dd](https://github.com/BitGo/BitGoJS/commit/a0bd6ddaebab9ea6421a5aa4da7e35c57a056ac0))
+- **statics:** ungating token arbeth:arb for Frankfurt ([32e633a](https://github.com/BitGo/BitGoJS/commit/32e633a6fc1ef9085339eee040eede112233f4c6))
+
 # [50.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.1.0...@bitgo/statics@50.2.0) (2024-10-08)
 
 ### Features

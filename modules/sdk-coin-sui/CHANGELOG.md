@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.7.3...@bitgo/sdk-coin-sui@5.8.0) (2024-10-15)
+
+### Features
+
+- add support for withdrawals from receive addr for ADA ([ed90e7d](https://github.com/BitGo/BitGoJS/commit/ed90e7d1b9fdebb96b5e2b5ea4afdcb42a9d2fd1))
+
 ## [5.7.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.7.2...@bitgo/sdk-coin-sui@5.7.3) (2024-10-08)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

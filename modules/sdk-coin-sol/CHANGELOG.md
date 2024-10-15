@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.5.6...@bitgo/sdk-coin-sol@4.6.0) (2024-10-15)
+
+### Bug Fixes
+
+- replace getFees rpc call with getFeeForMessage ([b59e4a6](https://github.com/BitGo/BitGoJS/commit/b59e4a65c4f071be5f9a127b7aaa963b2d1e6e63))
+
+### Features
+
+- **sdk-coin-sol:** add getInstructionType for closeATA ([41531f8](https://github.com/BitGo/BitGoJS/commit/41531f807119e2ae4a24c9738b3644075804b9b9))
+
 ## [4.5.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.5.5...@bitgo/sdk-coin-sol@4.5.6) (2024-10-08)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
