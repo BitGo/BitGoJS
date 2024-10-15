@@ -1,9 +1,12 @@
 import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
-import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, Environments, TransactionType, VerifyTransactionOptions } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo/statics';
 import { KeyPair, TransactionBuilderFactory } from './lib';
 import { GAS_AMOUNT, GAS_LIMIT } from './lib/constants';
 import { RuneUtils } from './lib/utils';
+import { BigNumber } from 'bignumber.js';
+const bech32 = require('bech32-buffer');
+import * as _ from 'lodash';
 
 export class Rune extends CosmosCoin {
   protected readonly _utils: RuneUtils;
@@ -63,5 +66,44 @@ export class Rune extends CosmosCoin {
   /** @inheritDoc **/
   getAddressFromPublicKey(publicKey: string): string {
     return new KeyPair({ pub: publicKey }).getAddress();
+  }
+
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    let totalAmount = new BigNumber(0);
+    const { txPrebuild, txParams } = params;
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+    const transaction = await this.getBuilder().from(rawTx).build();
+    const explainedTx = transaction.explainTransaction();
+
+    if (txParams.recipients && txParams.recipients.length > 0) {
+      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
+      let filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+
+      filteredOutputs = filteredOutputs.map((output) => {
+        const prefix = this._utils.getNetworkPrefix();
+        const convertedAddress = bech32.encode(prefix, output.address);
+        return {
+          ...output,
+          address: convertedAddress,
+        };
+      });
+
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+      // WithdrawDelegatorRewards and ContractCall transaction don't have amount
+      if (transaction.type !== TransactionType.StakingWithdraw && transaction.type !== TransactionType.ContractCall) {
+        for (const recipients of txParams.recipients) {
+          totalAmount = totalAmount.plus(recipients.amount);
+        }
+        if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+          throw new Error('Tx total amount does not match with expected total amount field');
+        }
+      }
+    }
+    return true;
   }
 }
