@@ -75,6 +75,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.ARBETH && // TODO(WIN-692): remove this once coin-specific module for arbeth is added
         n.asset !== UnderlyingAsset.OPETH && // TODO(WIN-692): remove this once coin-specific module for opeth is added
         n.asset !== UnderlyingAsset.ZKETH && // TODO(WIN-1427): remove this once coin-specific module for zketh is added
+        n.asset !== UnderlyingAsset.RUNE &&
         coinFamilyValues.includes(n.name)
     );
 

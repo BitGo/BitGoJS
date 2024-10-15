@@ -80,6 +80,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-opeth /var/modules/sdk-coin-opet
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-osmo /var/modules/sdk-coin-osmo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-polygon /var/modules/sdk-coin-polygon/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-rbtc /var/modules/sdk-coin-rbtc/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-rune /var/modules/sdk-coin-rune/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sei /var/modules/sdk-coin-sei/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sol /var/modules/sdk-coin-sol/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-stx /var/modules/sdk-coin-stx/
@@ -150,6 +151,7 @@ cd /var/modules/sdk-coin-opeth && yarn link && \
 cd /var/modules/sdk-coin-osmo && yarn link && \
 cd /var/modules/sdk-coin-polygon && yarn link && \
 cd /var/modules/sdk-coin-rbtc && yarn link && \
+cd /var/modules/sdk-coin-rune && yarn link && \
 cd /var/modules/sdk-coin-sei && yarn link && \
 cd /var/modules/sdk-coin-sol && yarn link && \
 cd /var/modules/sdk-coin-stx && yarn link && \
@@ -223,6 +225,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-osmo && \
     yarn link @bitgo/sdk-coin-polygon && \
     yarn link @bitgo/sdk-coin-rbtc && \
+    yarn link @bitgo/sdk-coin-rune && \
     yarn link @bitgo/sdk-coin-sei && \
     yarn link @bitgo/sdk-coin-sol && \
     yarn link @bitgo/sdk-coin-stx && \
