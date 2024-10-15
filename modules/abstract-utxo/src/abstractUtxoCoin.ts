@@ -415,10 +415,19 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('deprecated');
     }
 
-    const formats = utxolib.addressFormat.addressFormats.filter((format) =>
-      utxolib.addressFormat.isSupportedAddressFormat(format, this.network)
-    );
+    // Default to anyFormat to true - if anyFormat is false then only check the default. Otherwise, check
+    // all formats
+    const anyFormat = (param as { anyFormat: boolean | undefined })?.anyFormat;
+    const formats =
+      anyFormat === undefined || anyFormat
+        ? utxolib.addressFormat.addressFormats.filter((format) =>
+            utxolib.addressFormat.isSupportedAddressFormat(format, this.network)
+          )
+        : ['default' as const];
+
     try {
+      // To make sure that we are preserving `fromOutputScript(script, network) === address`, we need to do the
+      // circular check below. An example of something that this protects against is uppercase Bech32.
       const script = utxolib.addressFormat.toOutputScriptTryFormats(address, this.network, formats);
       const genAddresses = formats.map((format) =>
         utxolib.addressFormat.fromOutputScriptWithFormat(script, format, this.network)
