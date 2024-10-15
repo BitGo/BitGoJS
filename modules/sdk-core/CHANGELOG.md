@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.9.0...@bitgo/sdk-core@28.10.0) (2024-10-15)
+
+### Features
+
+- add support for withdrawals from receive addr for ADA ([ed90e7d](https://github.com/BitGo/BitGoJS/commit/ed90e7d1b9fdebb96b5e2b5ea4afdcb42a9d2fd1))
+
 # [28.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.8.0...@bitgo/sdk-core@28.9.0) (2024-10-08)
 
 ### Features

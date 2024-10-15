@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.7.0...bitgo@39.8.0) (2024-10-15)
+
+### Features
+
+- add support for withdrawals from receive addr for ADA ([ed90e7d](https://github.com/BitGo/BitGoJS/commit/ed90e7d1b9fdebb96b5e2b5ea4afdcb42a9d2fd1))
+- **statics:** add xrp rlusd token ([e3ba9f0](https://github.com/BitGo/BitGoJS/commit/e3ba9f04eba5807d2b3ccbbc63ef30bdc44ba3e3))
+
 # [39.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.6.0...bitgo@39.7.0) (2024-10-08)
 
 ### Bug Fixes

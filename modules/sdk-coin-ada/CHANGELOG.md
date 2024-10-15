@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.2.18...@bitgo/sdk-coin-ada@4.3.0) (2024-10-15)
+
+### Features
+
+- add support for withdrawals from receive addr for ADA ([ed90e7d](https://github.com/BitGo/BitGoJS/commit/ed90e7d1b9fdebb96b5e2b5ea4afdcb42a9d2fd1))
+
 ## [4.2.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.2.17...@bitgo/sdk-coin-ada@4.2.18) (2024-10-08)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.0.0...@bitgo/utxo-bin@3.1.0) (2024-10-15)
+
+### Features
+
+- **utxo-bin:** add nodeCatchError ([829842a](https://github.com/BitGo/BitGoJS/commit/829842aaf950dff3e3b4f196d6862dd9b02cdc5a))
+- **utxo-bin:** parse script as miniscript ([018dcf5](https://github.com/BitGo/BitGoJS/commit/018dcf52c48b7f1d1129aace8a78590f70e82e97))
+
 # [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@2.50.0...@bitgo/utxo-bin@3.0.0) (2024-10-08)
 
 ### Code Refactoring
