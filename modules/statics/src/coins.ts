@@ -345,6 +345,8 @@ const BERA_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
 ];
 const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const ZETA_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_SINGAPORE];
+const ZETA_EVM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SINGAPORE];
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
   ...utxoCoins,
@@ -932,7 +934,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ZETA,
     BaseUnit.ZETA,
-    COSMOS_SIDECHAIN_FEATURES
+    ZETA_FEATURES
   ),
   account(
     '1aeb7754-1518-4aac-8cc0-e4bb07713a31',
@@ -8583,7 +8585,8 @@ export const coins = CoinMap.fromCoins([
     'Zeta (ERC20)',
     18,
     '0xf091867ec603a6628ed83d274e835539d82e9cc8',
-    UnderlyingAsset.ZETAEVM
+    UnderlyingAsset.ZETAEVM,
+    ZETA_EVM_FEATURES
   ),
   erc20(
     '0e6832b9-9ff6-47b9-9250-5e0cd1e69614',
