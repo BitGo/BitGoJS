@@ -7,17 +7,17 @@
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*", "resources/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"],
   "references": [
+    {
+      "path": "../sdk-api"
+    },
     {
       "path": "../sdk-core"
     },
     {
-      "path": "../statics"
-    },
-    {
-      "path": "../utxo-lib"
+      "path": "../sdk-test"
     }
   ]
 }

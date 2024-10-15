@@ -22,6 +22,7 @@ import BigNumber from 'bignumber.js';
 import { SignDoc, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { Any } from 'cosmjs-types/google/protobuf/any';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
+const { MsgSend } = require('../../resources/MsgCompiled').types;
 
 import { Hash, createHash } from 'crypto';
 import * as constants from './constants';
@@ -38,11 +39,12 @@ import {
 import { CosmosKeyPair as KeyPair } from './keyPair';
 
 export class CosmosUtils implements BaseUtils {
-  private registry;
+  protected registry;
 
   constructor() {
     this.registry = new Registry([...defaultRegistryTypes]);
     this.registry.register(constants.executeContractMsgTypeUrl, MsgExecuteContract);
+    this.registry.register('/types.MsgSend', MsgSend);
   }
 
   /** @inheritdoc */
@@ -339,6 +341,8 @@ export class CosmosUtils implements BaseUtils {
   getTransactionTypeFromTypeUrl(typeUrl: string): TransactionType | undefined {
     switch (typeUrl) {
       case constants.sendMsgTypeUrl:
+        return TransactionType.Send;
+      case constants.sendMsgType:
         return TransactionType.Send;
       case constants.delegateMsgTypeUrl:
         return TransactionType.StakingActivate;
