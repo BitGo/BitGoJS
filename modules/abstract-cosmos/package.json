@@ -5,12 +5,13 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "npm run prepare",
+    "build-ts": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "prepare": "npm run build"
+    "prepare": "npm run build-ts && shx cp -r ./resources ./dist"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -46,6 +47,7 @@
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/proto-signing": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
+    "bech32-buffer": "^0.2.1",
     "bignumber.js": "^9.1.1",
     "cosmjs-types": "^0.6.1",
     "lodash": "^4.17.21",
