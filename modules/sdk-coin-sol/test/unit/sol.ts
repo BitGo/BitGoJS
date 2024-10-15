@@ -1454,10 +1454,16 @@ describe('SOL:', function () {
           payload: {
             id: '1',
             jsonrpc: '2.0',
-            method: 'getFees',
+            method: 'getFeeForMessage',
+            params: [
+              sinon.match.string,
+              {
+                commitment: 'finalized',
+              },
+            ],
           },
         })
-        .resolves(testData.SolResponses.getFeesResponse);
+        .resolves(testData.SolResponses.getFeesForMessageResponse);
       callBack
         .withArgs({
           payload: {
@@ -2049,10 +2055,16 @@ describe('SOL:', function () {
           payload: {
             id: '1',
             jsonrpc: '2.0',
-            method: 'getFees',
+            method: 'getFeeForMessage',
+            params: [
+              sinon.match.string,
+              {
+                commitment: 'finalized',
+              },
+            ],
           },
         })
-        .resolves(testData.SolResponses.getFeesResponse);
+        .resolves(testData.SolResponses.getFeesForMessageResponse);
       callBack
         .withArgs({
           payload: {
