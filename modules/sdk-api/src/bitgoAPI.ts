@@ -974,7 +974,7 @@ export class BitGoAPI implements BitGoBase {
         const constants = await this.fetchConstants();
 
         if (!constants.passkeyBitGoGpgKey) {
-          throw new Error('passkeyBitGoGpgKey is missing from constants');
+          throw new Error('Unable to get passkeyBitGoGpgKey');
         }
 
         const access_token = await readSignedMessage(

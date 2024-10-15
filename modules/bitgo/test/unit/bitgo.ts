@@ -800,5 +800,85 @@ describe('BitGo Prototype Methods', function () {
         assert(e.message.startsWith('Error decrypting message: Could not find signing key with key ID'));
       }
     });
+    it('should throw - missing bitgo public key', async () => {
+      const userId = '123';
+      const passkey = `{"id": "id", "response": {"authenticatorData": "123", "clientDataJSON": "123", "signature": "123", "userHandle": "${userId}"}}`;
+      const keyPair = await generateGPGKeyPair('secp256k1');
+
+      nock('https://bitgo.fakeurl').persist().get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
+
+      nock('https://bitgo.fakeurl')
+        .post('/api/auth/v1/session')
+        .reply(200, async (uri, requestBody) => {
+          assert(typeof requestBody === 'object');
+          const encryptedToken = (await encryptAndSignText(
+            'access_token',
+            requestBody.publicKey,
+            keyPair.privateKey
+          )) as string;
+
+          return {
+            encryptedToken: encryptedToken,
+            user: { username: 'auth-test@bitgo.com' },
+          };
+        });
+
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      try {
+        await bitgo.authenticateWithPasskey(passkey);
+        assert.fail('Expected error not thrown');
+      } catch (e) {
+        assert.equal(e.message, 'Unable to get passkeyBitGoGpgKey');
+      }
+    });
+    it('should throw - invalid userHandle', async () => {
+      const passkey = `{"id": "id", "response": {"authenticatorData": "123", "clientDataJSON": "123", "signature": "123", "userHandle": 123}}`;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      try {
+        await bitgo.validatePasskeyResponse(passkey);
+        assert.fail('Expected error not thrown');
+      } catch (e) {
+        assert.equal(e.message, 'userHandle is missing');
+      }
+    });
+    it('should throw - invalid authenticatorData', async () => {
+      const passkey = `{"id": "id", "response": { "clientDataJSON": "123", "signature": "123", "userHandle": "123"}}`;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      try {
+        await bitgo.validatePasskeyResponse(passkey);
+        assert.fail('Expected error not thrown');
+      } catch (e) {
+        assert.equal(e.message, 'authenticatorData is missing');
+      }
+    });
+    it('should throw - invalid passkey json', async () => {
+      const passkey = `{{"id": "id", "response": { "clientDataJSON": "123", "signature": "123", "userHandle": "123"}}`;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      try {
+        await bitgo.validatePasskeyResponse(passkey);
+        assert.fail('Expected error not thrown');
+      } catch (e) {
+        console.log(e);
+        assert(e.message.includes('JSON'));
+      }
+    });
+    it('should throw - missing encrypted token', async () => {
+      const passkey = `{"id": "id", "response": { "authenticatorData": "123", "clientDataJSON": "123", "signature": "123", "userHandle": "123"}}`;
+      nock('https://bitgo.fakeurl')
+        .post('/api/auth/v1/session')
+        .reply(200, async () => {
+          return {
+            user: { username: 'auth-test@bitgo.com' },
+          };
+        });
+
+      try {
+        const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+        await bitgo.authenticateWithPasskey(passkey);
+        assert.fail('Expected error not thrown');
+      } catch (e) {
+        assert.equal(e.message, 'Failed to login. Please contact support@bitgo.com');
+      }
+    });
   });
 });
