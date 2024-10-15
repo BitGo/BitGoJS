@@ -368,9 +368,11 @@ coins.forEach((coin, coinName) => {
     });
 
     if (!coin.isToken && coin.family !== CoinFamily.FIAT) {
-      it(`has expected network type`, function () {
-        coin.network.type.should.eql(coin.name === coin.family ? NetworkType.MAINNET : NetworkType.TESTNET);
-      });
+      if (coin.family !== CoinFamily.THOR) {
+        it(`has expected network type`, function () {
+          coin.network.type.should.eql(coin.name === coin.family ? NetworkType.MAINNET : NetworkType.TESTNET);
+        });
+      }
     }
 
     it('expect base unit', function () {

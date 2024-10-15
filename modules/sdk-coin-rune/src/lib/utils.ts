@@ -2,7 +2,7 @@ import { InvalidTransactionError } from '@bitgo/sdk-core';
 import { Coin } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 
-import { CosmosUtils } from '@bitgo/abstract-cosmos';
+import { CosmosLikeTransaction, CosmosUtils, FeeData } from '@bitgo/abstract-cosmos';
 import { MessageData } from './iface';
 import * as constants from './constants';
 import { NetworkType } from '@bitgo/statics';
@@ -38,13 +38,25 @@ export class RuneUtils extends CosmosUtils {
   }
 
   /** @inheritdoc */
-  isValidAddress(address: string): boolean {
-    // address = bech32.encode('sthor', address); // thorchain transactions have encoded addresses
-    // console.log(address);
-    if (this.networkType === NetworkType.TESTNET) {
-      return this.isValidCosmosLikeAddressWithMemoId(address, constants.testnetAccountAddressRegex);
+  isValidAddress(address: string | Buffer): boolean {
+    if (address === undefined) {
+      return false;
     }
-    return this.isValidCosmosLikeAddressWithMemoId(address, constants.mainnetAccountAddressRegex);
+    if (typeof address !== 'string') {
+      const encodedAddress =
+        this.networkType === NetworkType.TESTNET
+          ? bech32.encode(TESTNET_ADDRESS_PREFIX, address)
+          : bech32.encode(MAINNET_ADDRESS_PREFIX, address);
+      if (this.networkType === NetworkType.TESTNET) {
+        return this.isValidCosmosLikeAddressWithMemoId(encodedAddress, constants.testnetAccountAddressRegex);
+      }
+      return this.isValidCosmosLikeAddressWithMemoId(encodedAddress, constants.mainnetAccountAddressRegex);
+    } else {
+      if (this.networkType === NetworkType.TESTNET) {
+        return this.isValidCosmosLikeAddressWithMemoId(address, constants.testnetAccountAddressRegex);
+      }
+      return this.isValidCosmosLikeAddressWithMemoId(address, constants.mainnetAccountAddressRegex);
+    }
   }
 
   /** @inheritdoc */
@@ -69,6 +81,55 @@ export class RuneUtils extends CosmosUtils {
     ) {
       throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid denom: ' + amount.denom);
     }
+  }
+
+  convertMessageAddressToBuffer(messages: MessageData[]): MessageData[] {
+    return messages.map((message) => {
+      if ('fromAddress' in message.value && 'toAddress' in message.value) {
+        const sendMessage = message.value;
+
+        const decodedFrom =
+          typeof sendMessage.fromAddress === 'string'
+            ? bech32.decode(sendMessage.fromAddress).data
+            : sendMessage.fromAddress;
+        const decodedTo =
+          typeof sendMessage.toAddress === 'string' ? bech32.decode(sendMessage.toAddress).data : sendMessage.toAddress;
+
+        return {
+          ...message,
+          value: {
+            ...sendMessage,
+            fromAddress: decodedFrom,
+            toAddress: decodedTo,
+          },
+        };
+      }
+
+      return message;
+    });
+  }
+
+  createTransaction(
+    sequence: number,
+    messages: MessageData[],
+    gasBudget: FeeData,
+    publicKey?: string,
+    memo?: string
+  ): CosmosLikeTransaction {
+    messages = this.convertMessageAddressToBuffer(messages);
+    const cosmosLikeTxn = {
+      sequence: sequence,
+      sendMessages: messages,
+      gasBudget: gasBudget,
+      publicKey: publicKey,
+      memo: memo,
+    };
+    this.validateTransaction(cosmosLikeTxn);
+    return cosmosLikeTxn;
+  }
+
+  getNetworkPrefix() {
+    return this.networkType === NetworkType.TESTNET ? TESTNET_ADDRESS_PREFIX : MAINNET_ADDRESS_PREFIX;
   }
 }
 

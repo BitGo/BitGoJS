@@ -3,6 +3,6 @@ import { Rune } from './rune';
 import { Trune } from './trune';
 
 export const register = (sdk: BitGoBase): void => {
-  sdk.register('core', Rune.createInstance);
-  sdk.register('tcore', Trune.createInstance);
+  sdk.register('rune-native', Rune.createInstance);
+  sdk.register('trune-native', Trune.createInstance);
 };

@@ -7,6 +7,7 @@ import { Rune, Trune } from '../../src';
 import { RuneUtils } from '../../src/lib/utils';
 import { mainnetAddress } from '../resources/rune';
 import { TEST_SEND_TX, TEST_TX_WITH_MEMO, testnetAddress } from '../resources/trune';
+const bech32 = require('bech32-buffer');
 import should = require('should');
 
 describe('Rune', function () {
@@ -184,7 +185,7 @@ describe('Rune', function () {
         id: TEST_SEND_TX.hash,
         outputs: [
           {
-            address: TEST_SEND_TX.recipient,
+            address: bech32.decode(TEST_SEND_TX.recipient).data,
             amount: TEST_SEND_TX.sendAmount,
           },
         ],
@@ -205,7 +206,7 @@ describe('Rune', function () {
         id: TEST_TX_WITH_MEMO.hash,
         outputs: [
           {
-            address: TEST_TX_WITH_MEMO.recipient,
+            address: bech32.decode(TEST_TX_WITH_MEMO.recipient).data,
             amount: TEST_TX_WITH_MEMO.sendAmount,
             memo: TEST_TX_WITH_MEMO.memo,
           },
@@ -238,12 +239,12 @@ describe('Rune', function () {
   describe('Parse Transactions: ', () => {
     it('should parse a transfer transaction', async function () {
       const transferInputsResponse = {
-        address: TEST_SEND_TX.recipient,
+        address: bech32.decode(TEST_SEND_TX.recipient).data,
         amount: new BigNumber(TEST_SEND_TX.sendAmount).plus(TEST_SEND_TX.gasBudget.amount[0].amount).toFixed(),
       };
 
       const transferOutputsResponse = {
-        address: TEST_SEND_TX.recipient,
+        address: bech32.decode(TEST_SEND_TX.recipient).data,
         amount: TEST_SEND_TX.sendAmount,
       };
 

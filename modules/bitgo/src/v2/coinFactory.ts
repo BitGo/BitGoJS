@@ -182,7 +182,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('osmo', Osmo.createInstance);
   globalCoinFactory.register('polygon', Polygon.createInstance);
   globalCoinFactory.register('rbtc', Rbtc.createInstance);
-  globalCoinFactory.register('rune', Rune.createInstance);
+  globalCoinFactory.register('rune-native', Rune.createInstance);
   globalCoinFactory.register('sei', Sei.createInstance);
   globalCoinFactory.register('sol', Sol.createInstance);
   globalCoinFactory.register('stx', Stx.createInstance);
@@ -230,7 +230,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tosmo', Tosmo.createInstance);
   globalCoinFactory.register('tpolygon', Tpolygon.createInstance);
   globalCoinFactory.register('trbtc', Trbtc.createInstance);
-  globalCoinFactory.register('trune', Trune.createInstance);
+  globalCoinFactory.register('trune-native', Trune.createInstance);
   globalCoinFactory.register('trx', Trx.createInstance);
   globalCoinFactory.register('tsei', Tsei.createInstance);
   globalCoinFactory.register('tsol', Tsol.createInstance);
