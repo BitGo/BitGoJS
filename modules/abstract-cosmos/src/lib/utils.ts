@@ -839,7 +839,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {string} address
    * @returns {boolean} - the validation result
    */
-  isValidValidatorAddress(address: string): boolean {
+  isValidValidatorAddress(address: string | Buffer): boolean {
     throw new NotImplementedError('isValidValidatorAddress not implemented');
   }
 
@@ -848,7 +848,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {string} address
    * @returns {boolean} - the validation result
    */
-  isValidAddress(address: string): boolean {
+  isValidAddress(address: string | Buffer): boolean {
     throw new NotImplementedError('isValidAddress not implemented');
   }
 

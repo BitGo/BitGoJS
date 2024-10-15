@@ -5,6 +5,7 @@ import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
 import { Rune, Trune } from '../../../src';
 import * as testData from '../../resources/trune';
+const bech32 = require('bech32-buffer');
 
 describe('Rune Transfer Builder', () => {
   let bitgo: TestBitGoAPI;
@@ -35,21 +36,27 @@ describe('Rune Transfer Builder', () => {
     const json = await (await txBuilder.build()).toJson();
     should.equal(tx.type, TransactionType.Send);
     should.deepEqual(json.gasBudget, testTx.gasBudget);
-    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+    should.deepEqual(json.sendMessages[0].typeUrl, testTx.sendMessage.typeUrl);
+    should.deepEqual(json.sendMessages[0].value.amount, testTx.sendMessage.value.amount);
+    should.deepEqual(
+      bech32.encode('sthor', json.sendMessages[0].value.fromAddress),
+      testTx.sendMessage.value.fromAddress
+    );
+    should.deepEqual(bech32.encode('sthor', json.sendMessages[0].value.toAddress), testTx.sendMessage.value.toAddress);
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_SEND_TX.sender,
+        address: bech32.decode(testData.TEST_SEND_TX.sender).data,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+        address: bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
@@ -72,7 +79,13 @@ describe('Rune Transfer Builder', () => {
     const json = await (await txBuilder.build()).toJson();
     should.equal(tx.type, TransactionType.Send);
     should.deepEqual(json.gasBudget, testTxWithMemo.gasBudget);
-    should.deepEqual(json.sendMessages, [testTxWithMemo.sendMessage]);
+    should.deepEqual(json.sendMessages[0].typeUrl, testTx.sendMessage.typeUrl);
+    should.deepEqual(json.sendMessages[0].value.amount, testTx.sendMessage.value.amount);
+    should.deepEqual(
+      bech32.encode('sthor', json.sendMessages[0].value.fromAddress),
+      testTx.sendMessage.value.fromAddress
+    );
+    should.deepEqual(bech32.encode('sthor', json.sendMessages[0].value.toAddress), testTx.sendMessage.value.toAddress);
     should.deepEqual(json.publicKey, toHex(fromBase64(testTxWithMemo.pubKey)));
     should.deepEqual(json.sequence, testTxWithMemo.sequence);
     should.equal(json.memo, testTxWithMemo.memo);
@@ -80,14 +93,14 @@ describe('Rune Transfer Builder', () => {
     should.equal(rawTx, testTxWithMemo.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testTxWithMemo.sendMessage.value.fromAddress,
+        address: bech32.decode(testTxWithMemo.sendMessage.value.fromAddress).data,
         value: testTxWithMemo.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testTxWithMemo.sendMessage.value.toAddress,
+        address: bech32.decode(testTxWithMemo.sendMessage.value.toAddress).data,
         value: testTxWithMemo.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
@@ -104,20 +117,27 @@ describe('Rune Transfer Builder', () => {
     const json = await (await txBuilder.build()).toJson();
     should.equal(tx.type, TransactionType.Send);
     should.deepEqual(json.gasBudget, testTx.gasBudget);
-    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+    should.deepEqual(json.sendMessages[0].typeUrl, testTx.sendMessage.typeUrl);
+    should.deepEqual(json.sendMessages[0].value.amount, testTx.sendMessage.value.amount);
+    should.deepEqual(
+      bech32.encode('sthor', json.sendMessages[0].value.fromAddress),
+      testTx.sendMessage.value.fromAddress
+    );
+    should.deepEqual(bech32.encode('sthor', json.sendMessages[0].value.toAddress), testTx.sendMessage.value.toAddress);
+
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     tx.toBroadcastFormat();
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_SEND_TX.sender,
+        address: bech32.decode(testData.TEST_SEND_TX.sender).data,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+        address: bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
@@ -136,7 +156,13 @@ describe('Rune Transfer Builder', () => {
     const json = await (await txBuilder.build()).toJson();
     should.equal(tx.type, TransactionType.Send);
     should.deepEqual(json.gasBudget, testTx.gasBudget);
-    should.deepEqual(json.sendMessages, [testTx.sendMessage]);
+    should.deepEqual(json.sendMessages[0].typeUrl, testTx.sendMessage.typeUrl);
+    should.deepEqual(json.sendMessages[0].value.amount, testTx.sendMessage.value.amount);
+    should.deepEqual(
+      bech32.encode('sthor', json.sendMessages[0].value.fromAddress),
+      testTx.sendMessage.value.fromAddress
+    );
+    should.deepEqual(bech32.encode('sthor', json.sendMessages[0].value.toAddress), testTx.sendMessage.value.toAddress);
     should.deepEqual(json.publicKey, toHex(fromBase64(testTx.pubKey)));
     should.deepEqual(json.sequence, testTx.sequence);
     const rawTx = tx.toBroadcastFormat();
@@ -144,14 +170,14 @@ describe('Rune Transfer Builder', () => {
     should.equal(rawTx, testTx.signedTxBase64);
     should.deepEqual(tx.inputs, [
       {
-        address: testData.TEST_SEND_TX.sender,
+        address: bech32.decode(testData.TEST_SEND_TX.sender).data,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },
     ]);
     should.deepEqual(tx.outputs, [
       {
-        address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+        address: bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data,
         value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
         coin: basecoin.getChain(),
       },

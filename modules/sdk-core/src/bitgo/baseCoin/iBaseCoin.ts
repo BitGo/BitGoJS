@@ -69,7 +69,7 @@ export interface ExplanationResult extends ITransactionExplanation {
 }
 
 export interface ITransactionRecipient {
-  address: string;
+  address: string | Buffer;
   amount: string | number;
   tokenName?: string;
   memo?: string;

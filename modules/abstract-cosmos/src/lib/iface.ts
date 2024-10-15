@@ -22,8 +22,8 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
 }
 
 export interface SendMessage {
-  fromAddress: string;
-  toAddress: string;
+  fromAddress: string | Buffer;
+  toAddress: string | Buffer;
   amount: Coin[];
 }
 

@@ -123,7 +123,7 @@ export type BlsKeys = {
 };
 
 export interface BaseAddress {
-  address: string;
+  address: string | Buffer;
 }
 
 export interface Entry extends BaseAddress {
@@ -136,7 +136,7 @@ export interface BaseFee {
 }
 
 export interface TransactionRecipient {
-  address: string;
+  address: string | Buffer;
   amount: string | number;
   memo?: string;
   tokenName?: string;

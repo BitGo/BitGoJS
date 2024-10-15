@@ -2,6 +2,7 @@ import { toHex, TransactionType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
+const bech32 = require('bech32-buffer');
 
 import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { RuneUtils } from '../../src/lib/utils';
@@ -9,7 +10,7 @@ import * as testData from '../resources/trune';
 
 describe('Rune Transaction', () => {
   let tx: CosmosTransaction;
-  const config = coins.get('tcoreum');
+  const config = coins.get('trune-native');
   const utils = new RuneUtils(config.network.type);
 
   beforeEach(() => {
@@ -29,9 +30,9 @@ describe('Rune Transaction', () => {
       should.equal(json.sequence, testData.TEST_SEND_TX.sequence);
       should.deepEqual(json.gasBudget, testData.TEST_SEND_TX.gasBudget);
       should.equal(json.publicKey, toHex(fromBase64(testData.TEST_SEND_TX.pubKey)));
-      should.equal(
+      should.deepEqual(
         (json.sendMessages[0].value as SendMessage).toAddress,
-        testData.TEST_SEND_TX.sendMessage.value.toAddress
+        bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data
       );
       should.deepEqual(
         (json.sendMessages[0].value as SendMessage).amount[0].denom,
@@ -46,16 +47,16 @@ describe('Rune Transaction', () => {
       tx.loadInputsAndOutputs();
       should.deepEqual(tx.inputs, [
         {
-          address: testData.TEST_SEND_TX.sender,
+          address: bech32.decode(testData.TEST_SEND_TX.sender).data,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tcoreum',
+          coin: 'trune-native',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
-          address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+          address: bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tcoreum',
+          coin: 'trune-native',
         },
       ]);
     });
@@ -66,9 +67,9 @@ describe('Rune Transaction', () => {
       should.equal(json.sequence, testData.TEST_SEND_TX.sequence);
       should.deepEqual(json.gasBudget, testData.TEST_SEND_TX.gasBudget);
       should.equal(json.publicKey, toHex(fromBase64(testData.TEST_SEND_TX.pubKey)));
-      should.equal(
+      should.deepEqual(
         (json.sendMessages[0].value as SendMessage).toAddress,
-        testData.TEST_SEND_TX.sendMessage.value.toAddress
+        bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data
       );
       should.deepEqual(
         (json.sendMessages[0].value as SendMessage).amount[0].denom,
@@ -83,16 +84,16 @@ describe('Rune Transaction', () => {
       tx.loadInputsAndOutputs();
       should.deepEqual(tx.inputs, [
         {
-          address: testData.TEST_SEND_TX.sender,
+          address: bech32.decode(testData.TEST_SEND_TX.sender).data,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tcoreum',
+          coin: 'trune-native',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
-          address: testData.TEST_SEND_TX.sendMessage.value.toAddress,
+          address: bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'tcoreum',
+          coin: 'trune-native',
         },
       ]);
     });
@@ -118,7 +119,7 @@ describe('Rune Transaction', () => {
         id: testData.TEST_SEND_TX.hash,
         outputs: [
           {
-            address: testData.TEST_SEND_TX.recipient,
+            address: bech32.decode(testData.TEST_SEND_TX.recipient).data,
             amount: testData.TEST_SEND_TX.sendAmount,
           },
         ],
