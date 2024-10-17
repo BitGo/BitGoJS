@@ -1983,6 +1983,8 @@ export enum UnderlyingAsset {
   'polygon:geod' = 'polygon:geod',
   'polygon:heth' = 'polygon:heth',
   'polygon:copm' = 'polygon:copm',
+  'polygon:gmt' = 'polygon:gmt',
+
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',

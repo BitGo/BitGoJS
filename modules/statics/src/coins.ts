@@ -12992,7 +12992,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset['polygon:moca']
   ),
-
+  ofcPolygonErc20(
+    '0x714DB550b574b3E927af3D93E26127D15721D4C2',
+    'ofcpolygon:gmt',
+    'GMT',
+    8,
+    UnderlyingAsset['polygon:gmt']
+  ),
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
     'ofctpolygon:link',
