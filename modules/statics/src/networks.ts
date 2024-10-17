@@ -278,8 +278,7 @@ class LightningBitcoin extends Mainnet implements LightningNetwork {
   family = CoinFamily.LNBTC;
   utxolibName = 'bitcoin';
   explorerUrl = 'https://mempool.space/lightning';
-  // TODO BTC-1423 - Currently dummy key is used here to unblock development. Replace with the actual public key once the ticket is done.
-  lightningServicePubKey = '039c67c461dc751b32b983075210875c388bbb918d7b88c31e1a5a3164d693cf41';
+  lightningServicePubKey = '0338508686f978ceffd7ce05404041b1a5b4f75a39bc92a6d355240ccc081f763e';
 }
 
 class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
@@ -287,8 +286,7 @@ class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
   family = CoinFamily.LNBTC;
   utxolibName = 'testnet';
   explorerUrl = 'https://mempool.space/testnet/lightning';
-  // TODO BTC-1423 - Currently dummy key is used here to unblock development. Replace with the actual public key once the ticket is done.
-  lightningServicePubKey = '03b6fe266b3f8ae110b877d942765e9cea9e82faf03cdbb6d0effe980b6371b9c2';
+  lightningServicePubKey = '024055021db1e7f019ebb783ab0b0810c21a819207d4cb1ec4a6e2150ac07f1482';
 }
 
 class Bitcoin extends Mainnet implements UtxoNetwork {

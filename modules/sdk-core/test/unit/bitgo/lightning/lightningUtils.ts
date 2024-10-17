@@ -26,6 +26,7 @@ describe('lightning utils', function () {
     { name: 'tlnbtc', networkName: 'testnet' },
   ].forEach(({ name, networkName }) => {
     describe(`success - coin ${name} and network ${networkName}`, function () {
+      afterEach(sinon.restore);
       it(`isValidLightningNetworkName and getLightningNetwork`, function () {
         assert(isValidLightningNetworkName(networkName));
         const network = getLightningNetwork(networkName);
@@ -103,7 +104,7 @@ describe('lightning utils', function () {
     });
 
     const secret = deriveLightningServiceSharedSecret('tlnbtc', userAuthXprv);
-    getStaticsLightningNetworkStub.restore();
+    assert(getStaticsLightningNetworkStub.called);
 
     const expectedSecret = getSharedSecret(
       Buffer.from(lightningServicePrvKey, 'hex'),
