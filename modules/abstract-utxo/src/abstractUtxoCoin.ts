@@ -415,24 +415,19 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('deprecated');
     }
 
-    // Default to anyFormat to true - if anyFormat is false then only check the default. Otherwise, check
-    // all formats
-    const anyFormat = (param as { anyFormat: boolean | undefined })?.anyFormat;
-    const formats =
-      anyFormat === undefined || anyFormat
-        ? utxolib.addressFormat.addressFormats.filter((format) =>
-            utxolib.addressFormat.isSupportedAddressFormat(format, this.network)
-          )
-        : ['default' as const];
-
+    // By default, allow all address formats.
+    // At the time of writing, the only additional address format is bch cashaddr.
+    const anyFormat = (param as { anyFormat: boolean } | undefined)?.anyFormat ?? true;
     try {
-      // To make sure that we are preserving `fromOutputScript(script, network) === address`, we need to do the
-      // circular check below. An example of something that this protects against is uppercase Bech32.
-      const script = utxolib.addressFormat.toOutputScriptTryFormats(address, this.network, formats);
-      const genAddresses = formats.map((format) =>
-        utxolib.addressFormat.fromOutputScriptWithFormat(script, format, this.network)
-      );
-      return genAddresses.includes(address);
+      // Find out if the address is valid for any format. Tries all supported formats by default.
+      // Throws if address cannot be decoded with any format.
+      const [format, script] = utxolib.addressFormat.toOutputScriptAndFormat(address, this.network);
+      // unless anyFormat is set, only 'default' is allowed.
+      if (!anyFormat && format !== 'default') {
+        return false;
+      }
+      // make sure that address is in normal representation for given format.
+      return address === utxolib.addressFormat.fromOutputScriptWithFormat(script, format, this.network);
     } catch (e) {
       return false;
     }
