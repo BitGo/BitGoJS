@@ -415,10 +415,19 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('deprecated');
     }
 
-    const formats = param && param.anyFormat ? undefined : ['default' as const];
+    // By default, allow all address formats.
+    // At the time of writing, the only additional address format is bch cashaddr.
+    const anyFormat = (param as { anyFormat: boolean } | undefined)?.anyFormat ?? true;
     try {
-      const script = utxolib.addressFormat.toOutputScriptTryFormats(address, this.network, formats);
-      return address === utxolib.address.fromOutputScript(script, this.network);
+      // Find out if the address is valid for any format. Tries all supported formats by default.
+      // Throws if address cannot be decoded with any format.
+      const [format, script] = utxolib.addressFormat.toOutputScriptAndFormat(address, this.network);
+      // unless anyFormat is set, only 'default' is allowed.
+      if (!anyFormat && format !== 'default') {
+        return false;
+      }
+      // make sure that address is in normal representation for given format.
+      return address === utxolib.addressFormat.fromOutputScriptWithFormat(script, format, this.network);
     } catch (e) {
       return false;
     }

@@ -242,6 +242,18 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  it('should verify bch cashaddr format as valid', async function () {
+    const coin = bitgo.coin('tbch');
+    const valid = coin.isValidAddress('bchtest:pzfkxv532t0q5zchck2mhmmf2y02cdejyssq5qrz7a');
+    valid.should.be.True();
+  });
+
+  it('should verify bch legacy format as valid', async function () {
+    const coin = bitgo.coin('tbch');
+    const valid = coin.isValidAddress('2N6gY9r9iuXQQzZiSyngWJeoUuL5mC1x4Ac');
+    valid.should.be.True();
+  });
+
   describe('TETH Wallet Addresses', function () {
     let ethWallet;
 
