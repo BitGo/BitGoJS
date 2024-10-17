@@ -588,7 +588,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const bitgoIndex = ShareKeyPosition.BITGO;
     const signerShare = signingKey.yShares[bitgoIndex].u + signingKey.yShares[bitgoIndex].chaincode;
-    const bitgoGpgKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
+    const bitgoGpgKey = await this.pickBitgoPubGpgKeyForSigning(false, params.reqId, txRequestResolved.enterpriseId);
     const userToBitgoEncryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
     const userGpgKey = await generateGPGKeyPair('secp256k1');

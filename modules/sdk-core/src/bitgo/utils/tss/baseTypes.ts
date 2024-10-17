@@ -408,6 +408,8 @@ export type TSSParamsForMessageWithPrv = TSSParamsForMessage & {
   mpcv2PartyId?: 0 | 1;
 };
 
+export type BitgoPubKeyType = 'nitro' | 'onprem';
+
 export type TSSParams = {
   txRequest: string | TxRequest; // can be either a string or TxRequest
   reqId: IRequestTracer;

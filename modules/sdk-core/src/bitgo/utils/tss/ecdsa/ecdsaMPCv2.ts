@@ -48,6 +48,7 @@ import {
 } from '../baseTypes';
 import { BaseEcdsaUtils } from './base';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
+import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   /** @inheritdoc */
@@ -66,6 +67,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const bitgoPublicGpgKey = (
       (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true)) ?? this.bitgoMPCv2PublicGpgKey
     ).armor();
+    
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      // Ensure the public key is one of the expected BitGo public keys when in test or prod.
+      assert(isBitgoMpcPubKey(bitgoPublicGpgKey, 'mpcv2'), 'Invalid BitGo GPG public key');
+    }
 
     const userGpgPrvKey: DklsTypes.PartyGpgKey = {
       partyId: MPCv2PartiesEnum.USER,
@@ -711,16 +717,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       typeof params.txRequest === 'string'
         ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest, params.reqId)
         : params.txRequest;
-
     let txOrMessageToSign;
     let derivationPath;
     let bufferContent;
-    const [userGpgKey, bitgoGpgPubKey] = await Promise.all([
-      generateGPGKeyPair('secp256k1'),
-      this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequest.enterpriseId, true, params.reqId).then(
-        (pubKey) => pubKey ?? this.bitgoMPCv2PublicGpgKey
-      ),
-    ]);
+    const userGpgKey = await generateGPGKeyPair('secp256k1');
+    const bitgoGpgPubKey = await this.pickBitgoPubGpgKeyForSigning(true, params.reqId, txRequest.enterpriseId);
+
     if (!bitgoGpgPubKey) {
       throw new Error('Missing BitGo GPG key for MPCv2');
     }
