@@ -8,6 +8,7 @@ import { TransferBuilder } from './transferBuilder';
 import utils from './utils';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { TrustSetBuilder } from './trustsetBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -35,6 +36,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getWalletInitializationBuilder(tx);
         case TransactionType.SendToken:
           return this.getTokenTransferBuilder(tx);
+        case TransactionType.TrustLine:
+          return this.getTrustSetBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -61,6 +64,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   public getTokenTransferBuilder(tx?: Transaction): TokenTransferBuilder {
     return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  public getTrustSetBuilder(tx?: Transaction): TrustSetBuilder {
+    return this.initializeBuilder(tx, new TrustSetBuilder(this._coinConfig));
   }
 
   /**

@@ -5,7 +5,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild,
 } from '@bitgo/sdk-core';
-import { AccountSet, Payment, Signer, SignerEntry, SignerListSet, Amount } from 'xrpl';
+import { AccountSet, Payment, Signer, SignerEntry, SignerListSet, Amount, TrustSet } from 'xrpl';
 
 export enum XrpTransactionType {
   AccountSet = 'AccountSet',
@@ -15,7 +15,7 @@ export enum XrpTransactionType {
   TokenPayment = 'TokenPayment',
 }
 
-export type XrpTransaction = Payment | AccountSet | SignerListSet;
+export type XrpTransaction = Payment | AccountSet | SignerListSet | TrustSet;
 
 export interface Address {
   address: string;

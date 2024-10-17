@@ -110,6 +110,9 @@ export class Transaction extends BaseTransaction {
         txData.signerEntries = this._xrpTransaction.SignerEntries;
         return txData;
 
+      case XrpTransactionType.TrustSet:
+        return txData;
+
       default:
         throw new InvalidTransactionError('Invalid transaction type');
     }
@@ -299,6 +302,8 @@ export class Transaction extends BaseTransaction {
           return XrpTransactionType.AccountSet;
         case XrpTransactionType.SignerListSet:
           return XrpTransactionType.SignerListSet;
+        case XrpTransactionType.TrustSet:
+          return XrpTransactionType.TrustSet;
         default:
           throw new InvalidTransactionError(`Invalid TransactionType: ${xrpTransaction.TransactionType}`);
       }
@@ -350,6 +355,9 @@ export class Transaction extends BaseTransaction {
         break;
       case XrpTransactionType.TokenPayment:
         this.setTransactionType(TransactionType.SendToken);
+        break;
+      case XrpTransactionType.TrustSet:
+        this.setTransactionType(TransactionType.TrustLine);
         break;
     }
     this.loadInputsAndOutputs();
