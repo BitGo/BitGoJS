@@ -112,7 +112,7 @@ export class Transaction extends BaseTransaction {
             const withdrawAmount = payload.substring(24);
             payloadCell.bits.writeUint(parseInt(WITHDRAW_OPCODE, 16), 32);
             payloadCell.bits.writeUint(parseInt(queryId, 16), 64);
-            payloadCell.bits.writeCoins(TonWeb.utils.toNano(withdrawAmount));
+            payloadCell.bits.writeCoins(new BN(withdrawAmount));
           } else {
             payloadCell.bits.writeUint(0, 32);
             payloadCell.bits.writeString(payload);
@@ -316,7 +316,7 @@ export class Transaction extends BaseTransaction {
           payload = new TextDecoder().decode(payloadBytes);
         } else if (opcode === 4096) {
           const queryId = order.loadUint(64).toNumber();
-          withdrawAmount = (order.loadCoins().toNumber() / 1e9).toString();
+          withdrawAmount = order.loadCoins().toNumber().toString();
           payload = WITHDRAW_OPCODE + queryId.toString(16).padStart(16, '0') + withdrawAmount;
           this.transactionType = TransactionType.SingleNominatorWithdraw;
         } else {
