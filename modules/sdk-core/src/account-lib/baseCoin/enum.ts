@@ -70,7 +70,10 @@ export enum TransactionType {
   // Closing an associated token account (e.g. SOL)
   CloseAssociatedTokenAccount,
   SingleNominatorWithdraw,
+  // Send Tokens (e.g XRPL tokens)
   SendToken,
+  // Setup a trustline with issuer of a token (eg. XRPL tokens)
+  TrustLine,
 }
 
 /**
