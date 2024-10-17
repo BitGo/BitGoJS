@@ -20,7 +20,7 @@ describe('TON:', function () {
       txInfo: {},
     },
     {
-      txHex: Buffer.from(testData.signedTransferTransaction.tx, 'base64').toString('hex'),
+      txHex: Buffer.from(testData.signedSingleNominatorWithdrawTransaction.tx, 'base64').toString('hex'),
       txInfo: {},
     },
   ];
@@ -30,7 +30,7 @@ describe('TON:', function () {
       txInfo: {},
     },
     {
-      txHex: Buffer.from(testData.signedTransferTransaction.txBounceable, 'base64').toString('hex'),
+      txHex: Buffer.from(testData.signedSingleNominatorWithdrawTransaction.txBounceable, 'base64').toString('hex'),
       txInfo: {},
     },
   ];
@@ -40,7 +40,7 @@ describe('TON:', function () {
       recipients: [testData.signedSendTransaction.recipient],
     },
     {
-      recipients: [testData.signedTransferTransaction.recipient],
+      recipients: [testData.signedSingleNominatorWithdrawTransaction.recipient],
     },
   ];
 
@@ -49,7 +49,7 @@ describe('TON:', function () {
       recipients: [testData.signedSendTransaction.recipientBounceable],
     },
     {
-      recipients: [testData.signedTransferTransaction.recipientBounceable],
+      recipients: [testData.signedSingleNominatorWithdrawTransaction.recipientBounceable],
     },
   ];
 
@@ -120,12 +120,10 @@ describe('TON:', function () {
       });
 
       it('should succeed to verify transaction when recipients amounts are number and amount is same', async function () {
-        const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
-        txParamsWithNumberAmounts.recipients[0].amount = 10000000;
         const verification = {};
         await basecoin
           .verifyTransaction({
-            txParams: txParamsWithNumberAmounts,
+            txParams,
             txPrebuild,
             verification,
           } as any)
@@ -133,12 +131,10 @@ describe('TON:', function () {
       });
 
       it('should succeed to verify transaction when recipients amounts are string and amount is same', async function () {
-        const txParamsWithNumberAmounts = JSON.parse(JSON.stringify(txParams));
-        txParamsWithNumberAmounts.recipients[0].amount = '10000000';
         const verification = {};
         await basecoin
           .verifyTransaction({
-            txParams: txParamsWithNumberAmounts,
+            txParams,
             txPrebuild,
             verification,
           } as any)
@@ -219,45 +215,45 @@ describe('TON:', function () {
 
     it('should explain a single nominator withdraw transaction', async function () {
       const explainedTransaction = (await basecoin.explainTransaction({
-        txHex: Buffer.from(testData.signedTransferTransaction.tx, 'base64').toString('hex'),
+        txHex: Buffer.from(testData.signedSingleNominatorWithdrawTransaction.tx, 'base64').toString('hex'),
       })) as TransactionExplanation;
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'],
-        id: 'GUD-auBCZ3PJFfAPkSfeqe8rj2OiHMTXudH4IEWdDgo=',
+        id: testData.signedSingleNominatorWithdrawTransaction.txId,
         outputs: [
           {
-            address: testData.signedTransferTransaction.recipient.address,
-            amount: testData.signedTransferTransaction.recipient.amount,
+            address: testData.signedSingleNominatorWithdrawTransaction.recipient.address,
+            amount: testData.signedSingleNominatorWithdrawTransaction.recipient.amount,
           },
         ],
-        outputAmount: testData.signedTransferTransaction.recipient.amount,
+        outputAmount: testData.signedSingleNominatorWithdrawTransaction.recipient.amount,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: 'UNKNOWN' },
-        withdrawAmount: '1',
+        withdrawAmount: '932178112330000',
       });
     });
 
     it('should explain a non-bounceable single nominator withdraw transaction', async function () {
       const explainedTransaction = (await basecoin.explainTransaction({
-        txHex: Buffer.from(testData.signedTransferTransaction.tx, 'base64').toString('hex'),
+        txHex: Buffer.from(testData.signedSingleNominatorWithdrawTransaction.tx, 'base64').toString('hex'),
         toAddressBounceable: false,
         fromAddressBounceable: false,
       })) as TransactionExplanation;
       explainedTransaction.should.deepEqual({
         displayOrder: ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'],
-        id: 'GUD-auBCZ3PJFfAPkSfeqe8rj2OiHMTXudH4IEWdDgo=',
+        id: testData.signedSingleNominatorWithdrawTransaction.txIdBounceable,
         outputs: [
           {
-            address: testData.signedTransferTransaction.recipientBounceable.address,
-            amount: testData.signedTransferTransaction.recipientBounceable.amount,
+            address: testData.signedSingleNominatorWithdrawTransaction.recipientBounceable.address,
+            amount: testData.signedSingleNominatorWithdrawTransaction.recipientBounceable.amount,
           },
         ],
-        outputAmount: testData.signedTransferTransaction.recipientBounceable.amount,
+        outputAmount: testData.signedSingleNominatorWithdrawTransaction.recipientBounceable.amount,
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: 'UNKNOWN' },
-        withdrawAmount: '1',
+        withdrawAmount: '932178112330000',
       });
     });
 
@@ -281,7 +277,7 @@ describe('TON:', function () {
   describe('Parse Transactions: ', () => {
     const basecoin = bitgo.coin('tton');
 
-    const transactionsList = [testData.signedSendTransaction.tx, testData.signedTransferTransaction.tx];
+    const transactionsList = [testData.signedSendTransaction.tx, testData.signedSingleNominatorWithdrawTransaction.tx];
 
     const transactionInputsResponseList = [
       [
@@ -293,7 +289,7 @@ describe('TON:', function () {
       [
         {
           address: 'EQAbJug-k-tufWMjEC1RKSM0iiJTDUcYkC7zWANHrkT55Fol',
-          amount: '10000000',
+          amount: '123400000',
         },
       ],
     ];
@@ -308,29 +304,47 @@ describe('TON:', function () {
       [
         {
           address: 'UQAbJug-k-tufWMjEC1RKSM0iiJTDUcYkC7zWANHrkT55Afg',
-          amount: '10000000',
+          amount: '123400000',
         },
       ],
     ];
 
-    const transactionOutputsResponse = [
-      {
-        address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
-        amount: '10000000',
-      },
+    const transactionOutputsResponseList = [
+      [
+        {
+          address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+          amount: '10000000',
+        },
+      ],
+      [
+        {
+          address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+          amount: '123400000',
+        },
+      ],
     ];
 
-    const transactionOutputsResponseBounceable = [
-      {
-        address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
-        amount: '10000000',
-      },
+    const transactionOutputsResponseBounceableList = [
+      [
+        {
+          address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
+          amount: '10000000',
+        },
+      ],
+      [
+        {
+          address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
+          amount: '123400000',
+        },
+      ],
     ];
 
     transactionsList.forEach((_, index) => {
       const transaction = transactionsList[index];
       const transactionInputsResponse = transactionInputsResponseList[index];
       const transactionInputsResponseBounceable = transactionInputsResponseBounceableList[index];
+      const transactionOutputsResponse = transactionOutputsResponseList[index];
+      const transactionOutputsResponseBounceable = transactionOutputsResponseBounceableList[index];
 
       it('should parse a TON transaction', async function () {
         const parsedTransaction = await basecoin.parseTransaction({
