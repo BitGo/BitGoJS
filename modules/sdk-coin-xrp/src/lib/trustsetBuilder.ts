@@ -1,59 +1,40 @@
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { Amount, Payment } from 'xrpl';
+import { IssuedCurrencyAmount, TrustSet } from 'xrpl';
 import { XrpTransactionType } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
 
-export class TokenTransferBuilder extends TransactionBuilder {
-  private _amount: Amount;
-  private _destination: string;
-  private _destinationTag?: number;
+export class TrustSetBuilder extends TransactionBuilder {
+  private _amount: IssuedCurrencyAmount;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.Send;
+    return TransactionType.TrustLine;
   }
 
-  protected get xrpTransactionType(): XrpTransactionType.Payment {
-    return XrpTransactionType.Payment;
+  protected get xrpTransactionType(): XrpTransactionType.TrustSet {
+    return XrpTransactionType.TrustSet;
   }
 
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
 
-    const { destination, amount, destinationTag } = tx.toJson();
-    if (!destination) {
-      throw new BuildTransactionError('Missing destination');
-    }
+    const { amount } = tx.toJson();
     if (!amount) {
       throw new BuildTransactionError('Missing amount');
     }
-
-    const normalizeAddress = utils.normalizeAddress({ address: destination, destinationTag });
-    this.to(normalizeAddress);
     if (!utils.isIssuedCurrencyAmount(amount)) {
-      throw new BuildTransactionError('Invalid Amount');
+      throw new BuildTransactionError('Invalid Limit Amount');
     }
+    // The amount is represented in decimal notation, so we need to multiply it by the decimal places
     const amountBigNum = BigNumber(amount.value).shiftedBy(this._coinConfig.decimalPlaces);
     this.amount(amountBigNum.toFixed());
-  }
-
-  /**
-   *  Set the receiver address
-   * @param {string} address - the address with optional destination tag
-   * @returns {TransactionBuilder} This transaction builder
-   */
-  to(address: string): TransactionBuilder {
-    const { address: xrpAddress, destinationTag } = utils.getAddressDetails(address);
-    this._destination = xrpAddress;
-    this._destinationTag = destinationTag;
-    return this;
   }
 
   /**
@@ -85,18 +66,13 @@ export class TokenTransferBuilder extends TransactionBuilder {
       throw new BuildTransactionError('Sender must be set before building the transaction');
     }
 
-    const transferFields: Payment = {
+    const trustSetFields: TrustSet = {
       TransactionType: this.xrpTransactionType,
       Account: this._sender,
-      Destination: this._destination,
-      Amount: this._amount,
+      LimitAmount: this._amount,
     };
 
-    if (typeof this._destinationTag === 'number') {
-      transferFields.DestinationTag = this._destinationTag;
-    }
-
-    this._specificFields = transferFields;
+    this._specificFields = trustSetFields;
 
     return await super.buildImplementation();
   }

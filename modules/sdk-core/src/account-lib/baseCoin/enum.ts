@@ -71,6 +71,7 @@ export enum TransactionType {
   CloseAssociatedTokenAccount,
   SingleNominatorWithdraw,
   SendToken,
+  TrustLine,
 }
 
 /**
