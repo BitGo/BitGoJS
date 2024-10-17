@@ -1,10 +1,20 @@
 import {
   InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation as BaseTransactionExplanation,
   VerifyAddressOptions as BaseVerifyAddressOptions,
-  TransactionExplanation,
   TransactionPrebuild,
 } from '@bitgo/sdk-core';
+import { AccountSet, Payment, Signer, SignerEntry, SignerListSet } from 'xrpl';
+
+export enum XrpTransactionType {
+  AccountSet = 'AccountSet',
+  Payment = 'Payment',
+  SignerListSet = 'SignerListSet',
+  TrustSet = 'TrustSet',
+}
+
+export type XrpTransaction = Payment | AccountSet | SignerListSet;
 
 export interface Address {
   address: string;
@@ -35,7 +45,7 @@ export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   rootAddress: string;
 }
 
-export interface RecoveryInfo extends TransactionExplanation {
+export interface RecoveryInfo extends BaseTransactionExplanation {
   txHex: string;
   backupKey?: string;
   coin?: string;
@@ -67,4 +77,54 @@ export interface HalfSignedTransaction {
 
 export interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
+}
+
+export type TransactionExplanation =
+  | BaseTransactionExplanation
+  | AccountSetTransactionExplanation
+  | SignerListSetTransactionExplanation;
+
+export interface AccountSetTransactionExplanation extends BaseTransactionExplanation {
+  accountSet: {
+    messageKey?: string;
+    setFlag: number;
+  };
+}
+
+export interface SignerListSetTransactionExplanation extends BaseTransactionExplanation {
+  signerListSet: {
+    signerQuorum: number;
+    signerEntries: SignerEntry[];
+  };
+}
+
+export interface TxData {
+  // mandatory fields
+  from: string;
+  transactionType: XrpTransactionType;
+  isMultiSig: boolean;
+  // optional fields
+  id?: string;
+  fee?: string;
+  flags: number;
+  sequence?: number;
+  lastLedgerSequence?: number;
+  signingPubKey?: string; // if '' then it is a multi sig
+  txnSignature?: string; // only for single sig
+  signers?: Signer[]; // only for multi sig
+  // transfer xrp fields
+  destination?: string;
+  destinationTag?: number;
+  amount?: string;
+  // account set fields
+  messageKey?: string;
+  setFlag?: number;
+  // signer list set fields
+  signerQuorum?: number;
+  signerEntries?: SignerEntry[];
+}
+
+export interface SignerDetails {
+  address: string;
+  weight: number;
 }
