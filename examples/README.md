@@ -17,6 +17,7 @@ In this directory, you can find examples on how to use the BitGoJS SDK with Type
 - [List Wallet Shares](./ts/list-wallet-shares.ts)
 - [List Wallet Transfers](./ts/list-wallet-transfers.ts)
 - [List Wallets](./ts/list-wallets.ts)
+- [Recover TSS](./ts/tss-recovery.ts)
 - [Recover XRP](./ts/recover-xrp.ts)
 - [Resend Wallet Share Invite](./ts/resend-wallet-share-invite.ts)
 - [Send Wallet Transaction](./ts/send-wallet-transaction.ts)
