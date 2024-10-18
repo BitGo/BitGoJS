@@ -97,6 +97,7 @@ import {
   SharedKeyChain,
   BulkWalletShareKeychain,
   ManageUnspentReservationOptions,
+  SendHotWalletAllTSSWithdrawalTransactionOptions,
 } from './iWallet';
 import { StakingWallet } from '../staking';
 import { Lightning } from '../lightning/custodial';
@@ -3274,6 +3275,40 @@ export class Wallet implements IWallet {
     } catch (e) {
       throw new Error('failed to sign transaction ' + e);
     }
+  }
+
+  /**
+   * Sends a transaction from a TSS (Threshold Signature Scheme) wallet.
+   *
+   * @param params
+   *    txRequestId - The ID of the transaction request.
+   *    walletPassphrase - The passphrase for the wallet.
+   *    isTxRequestFull - Flag indicating if the transaction request is full.
+   *    isTxRequestLite - Flag indicating if the transaction request is lite.
+   * @returns A promise that resolves to a SignedTransaction.
+   */
+  public async sendHotWalletAllTSSWithdrawalTransaction(
+    params: SendHotWalletAllTSSWithdrawalTransactionOptions
+  ): Promise<SignedTransaction> {
+    if (params.isTxRequestFull == params.isTxRequestLite) {
+      throw new Error('Invalid transaction request type. Transaction must be either full or lite.');
+    }
+
+    if (params.isTxRequestFull) {
+      await this.tssUtils?.deleteSignatureShares(params.txRequestId);
+    }
+
+    const ret = await this.getUserKeyAndSignTssTransaction({
+      walletPassphrase: params.walletPassphrase,
+      txRequestId: params.txRequestId,
+    });
+    if (params.isTxRequestLite) {
+      const submitTx = await this.submitTransaction({
+        txRequestId: params.txRequestId,
+      });
+      return submitTx;
+    }
+    return ret;
   }
 
   /**
