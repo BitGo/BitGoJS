@@ -3178,6 +3178,53 @@ describe('V2 Wallet:', function () {
       });
     });
 
+    describe('getUserKeyAndSignTssTransaction', function () {
+      const exampleSignedTx = {
+        txHex: '0x123',
+        txid: '0x456',
+        status: 'signed',
+      };
+
+      afterEach(async function () {
+        sandbox.restore();
+      });
+
+      it('should sign lite transaction', async function () {
+        const getUserKeyAndSignTssTxSpy = sandbox.stub(tssSolWallet, 'getUserKeyAndSignTssTransaction');
+        getUserKeyAndSignTssTxSpy.resolves(exampleSignedTx);
+        const submitTxSpy = sandbox.stub(tssSolWallet, 'submitTransaction');
+        submitTxSpy.resolves(exampleSignedTx);
+
+        const signedTx = await tssSolWallet.sendHotWalletAllTSSWithdrawalTransaction({
+          walletPassphrase: 'passphrase',
+          txRequestId: 'id',
+          isTxRequestFull: false,
+          isTxRequestLite: true,
+        });
+
+        sandbox.assert.calledOnce(getUserKeyAndSignTssTxSpy);
+        sandbox.assert.calledOnce(submitTxSpy);
+        signedTx.should.deepEqual(exampleSignedTx);
+      });
+
+      it('should sign full transaction', async function () {
+        const deleteSignatureSharesSpy = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+        const getUserKeyAndSignTssTxSpy = sandbox.stub(tssSolWallet, 'getUserKeyAndSignTssTransaction');
+        getUserKeyAndSignTssTxSpy.resolves(exampleSignedTx);
+
+        const signedTx = await tssSolWallet.sendHotWalletAllTSSWithdrawalTransaction({
+          walletPassphrase: 'passphrase',
+          txRequestId: 'id',
+          isTxRequestFull: true,
+          isTxRequestLite: false,
+        });
+
+        sandbox.assert.calledOnce(deleteSignatureSharesSpy);
+        sandbox.assert.calledOnce(getUserKeyAndSignTssTxSpy);
+        signedTx.should.deepEqual(exampleSignedTx);
+      });
+    });
+
     describe('Message Signing', function () {
       const txHash = '0xrrrsss1b';
       const txRequestForMessageSigning: TxRequest = {

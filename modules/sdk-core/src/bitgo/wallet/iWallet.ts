@@ -233,6 +233,13 @@ export interface WalletSignTypedDataOptions extends WalletSignMessageBase {
   typedData: TypedData;
 }
 
+export interface SendHotWalletAllTSSWithdrawalTransactionOptions {
+  txRequestId: string;
+  walletPassphrase: string;
+  isTxRequestFull: boolean;
+  isTxRequestLite: boolean;
+}
+
 export interface GetUserPrvOptions {
   keychain?: Keychain;
   key?: Keychain;
@@ -837,6 +844,9 @@ export interface IWallet {
   signTransaction(params?: WalletSignTransactionOptions): Promise<SignedTransaction>;
   getUserPrv(params?: GetUserPrvOptions): string;
   prebuildAndSignTransaction(params?: PrebuildAndSignTransactionOptions): Promise<SignedTransaction>;
+  sendHotWalletAllTSSWithdrawalTransaction(
+    params?: SendHotWalletAllTSSWithdrawalTransactionOptions
+  ): Promise<SignedTransaction>;
   accelerateTransaction(params?: AccelerateTransactionOptions): Promise<any>;
   submitTransaction(params?: SubmitTransactionOptions): Promise<any>;
   send(params?: SendOptions): Promise<any>;
