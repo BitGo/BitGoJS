@@ -1,7 +1,5 @@
 import assert from 'assert';
-import * as sinon from 'sinon';
 import { importMacaroon } from 'macaroon';
-import * as statics from '@bitgo/statics';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { accounts, signerRootKey } from './createWatchOnlyFixture';
@@ -17,7 +15,6 @@ import {
   deriveLightningServiceSharedSecret,
 } from './../../../../src/bitgo/lightning/lightningUtils';
 
-import * as lightningUtils from '../../../../src/bitgo/lightning/lightningUtils';
 import { getSharedSecret } from '../../../../src';
 
 describe('lightning utils', function () {
@@ -91,24 +88,14 @@ describe('lightning utils', function () {
   it(`deriveLightningServiceSharedSecret`, function () {
     const userAuthXprv =
       'xprv9s21ZrQH143K4NPkV8riiTnFf72MRyQDVHMmmpekGF1w5QkS2MfTei9KXYvrZVMop4zQ4arnzSF7TRp3Cy73AWaDdADiYMCi5qpYW1bUa5m';
-    const lightningServicePubKey = '03b6fe266b3f8ae110b877d942765e9cea9e82faf03cdbb6d0effe980b6371b9c2';
-    const lightningServicePrvKey = '8b95613f4341e347743bd2625728d87bc6f0a119acb6ae9121afeee2b2a650f7';
-
-    const coin = statics.coins.get('tlnbtc');
-    assert(coin instanceof statics.LightningCoin);
-
-    const getStaticsLightningNetworkStub = sinon.stub(lightningUtils, 'getStaticsLightningNetwork').returns({
-      ...coin.network,
-      lightningServicePubKey,
-    });
-
-    const secret = deriveLightningServiceSharedSecret('tlnbtc', userAuthXprv);
-    getStaticsLightningNetworkStub.restore();
+    const lightningServicePubKey = getStaticsLightningNetwork('tlnbtc').lightningServicePubKey;
 
     const expectedSecret = getSharedSecret(
-      Buffer.from(lightningServicePrvKey, 'hex'),
-      utxolib.bip32.fromBase58(userAuthXprv).neutered()
+      utxolib.bip32.fromBase58(userAuthXprv),
+      Buffer.from(lightningServicePubKey, 'hex')
     );
+
+    const secret = deriveLightningServiceSharedSecret('tlnbtc', userAuthXprv);
 
     assert.deepStrictEqual(secret, expectedSecret);
   });
