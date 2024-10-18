@@ -30,12 +30,6 @@
 # Lightning coin modules
 /modules/abstract-lightning/ @BitGo/btc-team
 /modules/sdk-coin-lnbtc/ @BitGo/btc-team
-/modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
-/modules/sdk-core/test/unit/bitgo/lightning/ @BitGo/btc-team
-/modules/express/src/lightning/ @BitGo/btc-team
-/modules/express/test/unit/lightning/ @BitGo/btc-team
-/modules/express/test/unit/clientRoutes/lightning/ @BitGo/btc-team
-/modules/bitgo/test/v2/unit/lightning/ @BitGo/btc-team
 
 # Eth
 /modules/account-lib/ @BitGo/ethalt-team
@@ -81,14 +75,20 @@
 
 # Core Modules
 /modules/bitgo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+/modules/bitgo/test/v2/unit/lightning/ @BitGo/btc-team
 /modules/blake2b-wasm/  @BitGo/custody-experience @BitGo/wallet-platform
 /modules/blake2b/ @BitGo/custody-experience @BitGo/wallet-platform
 /modules/express/ @BitGo/wallet-platform
+/modules/express/src/lightning/ @BitGo/btc-team
+/modules/express/test/unit/lightning/ @BitGo/btc-team
+/modules/express/test/unit/clientRoutes/lightning/ @BitGo/btc-team
 /modules/key-card/ @BitGo/wallet-platform
 /modules/sdk-api/ @BitGo/custody-experience @BitGo/wallet-platform
 /modules/sdk-api/src/v1 @BitGo/btc-team
 /modules/sdk-api/test/unit/v1 @BitGo/btc-team
 /modules/sdk-core/ @BitGo/wallet-platform @BitGo/hsm @BitGo/coins
+/modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
+/modules/sdk-core/test/unit/bitgo/lightning/ @BitGo/btc-team
 /modules/sdk-lib-mpc/ @BitGo/wallet-platform @BitGo/hsm
 /modules/deser-lib/ @BitGo/wallet-platform @BitGo/hsm
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team
