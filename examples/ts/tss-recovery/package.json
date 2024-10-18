@@ -4,7 +4,7 @@
   "description": "TSS User <> Backup keycard signing",
   "scripts": {
     "test:ecdsa": "ts-node mpcv2-recovery.ts",
-    "test:eddsa": "ts-node TBD"
+    "test:eddsa": "ts-node eddsa-recovery.ts"
   },
   "dependencies": {
     "@bitgo/sdk-core": "28.10.0",
