@@ -6,7 +6,7 @@ import assert = require('assert');
 import { bigIntFromBufferBE, bigIntToBufferBE, HDTree, Secp256k1Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 
 const sampleMessage = "Hello, World!";
-// Replace the following variables with your own values. Moreover, copy the encrypted user and backup keys from the key card into the userKey.txt and backupKey.txt files.
+// TODO: Replace the following variables with your own values. Moreover, copy the encrypted user and backup keys from the key card into the userKey.txt and backupKey.txt files.
 const commonKeyChain = "<Public key from key card>";
 const walletPassphrase = "<Wallet passphrase>";
 
