@@ -51,6 +51,7 @@
     "@bitgo/sdk-coin-osmo": "^3.0.10",
     "@bitgo/sdk-coin-polygon": "^21.0.10",
     "@bitgo/sdk-coin-rbtc": "^2.0.41",
+    "@bitgo/sdk-coin-rune": "^1.0.0",
     "@bitgo/sdk-coin-sei": "^3.0.10",
     "@bitgo/sdk-coin-sol": "^4.6.0",
     "@bitgo/sdk-coin-stx": "^3.2.26",
