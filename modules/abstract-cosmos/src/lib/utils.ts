@@ -38,7 +38,7 @@ import {
 import { CosmosKeyPair as KeyPair } from './keyPair';
 
 export class CosmosUtils implements BaseUtils {
-  private registry;
+  protected registry;
 
   constructor() {
     this.registry = new Registry([...defaultRegistryTypes]);
@@ -339,6 +339,8 @@ export class CosmosUtils implements BaseUtils {
   getTransactionTypeFromTypeUrl(typeUrl: string): TransactionType | undefined {
     switch (typeUrl) {
       case constants.sendMsgTypeUrl:
+        return TransactionType.Send;
+      case constants.sendMsgType:
         return TransactionType.Send;
       case constants.delegateMsgTypeUrl:
         return TransactionType.StakingActivate;

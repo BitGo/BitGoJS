@@ -65,6 +65,7 @@ export enum CoinFamily {
   SUI = 'sui',
   STX = 'stx',
   SUSD = 'susd',
+  THOR = 'thor',
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
@@ -2348,6 +2349,7 @@ export enum BaseUnit {
   COREUM = 'ucore',
   TCOREUM = 'utestcore', // Coreum testnet uses different name for native coin
   ISLM = 'aISLM',
+  RUNE = 'rune',
 }
 
 export interface BaseCoinConstructorOptions {

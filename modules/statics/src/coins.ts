@@ -1007,6 +1007,26 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
+    '9fa0f191-4eed-4030-864a-d14bbd98c8af',
+    'rune-native',
+    'Rune',
+    Networks.main.rune,
+    8,
+    UnderlyingAsset.RUNE,
+    BaseUnit.RUNE,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    '7281ab3b-0451-4ef9-b367-8623d9bcfd87',
+    'trune-native',
+    'Testnet Rune',
+    Networks.test.rune,
+    8,
+    UnderlyingAsset.RUNE,
+    BaseUnit.RUNE,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
     'islm',
     'Islamic Coin',
