@@ -46,7 +46,10 @@ export class Stx extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    // TODO: Implement when available on the SDK.
+    const { txParams } = params;
+    if (txParams?.recipients?.length !== 1) {
+      throw new Error(`txParams should only have 1 recipient but ${txParams?.recipients?.length} found`);
+    }
     return true;
   }
 

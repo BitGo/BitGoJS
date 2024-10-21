@@ -4,6 +4,7 @@ import { coins } from '@bitgo/statics';
 import * as testData from '../fixtures';
 import { Stx, Tstx, StxLib } from '../../src';
 import assert from 'assert';
+import { Wallet } from '@bitgo/sdk-core';
 
 const { KeyPair } = StxLib;
 
@@ -282,6 +283,27 @@ describe('STX:', function () {
       const nonTSSCoin = bitgo.coin('tstx');
       const bufferTx = await nonTSSCoin.getSignablePayload(testData.unsignedTxForExplainTransfer);
       bufferTx.should.be.deepEqual(Buffer.from(testData.unsignedTxForExplainTransfer));
+    });
+  });
+
+  describe('Verify Transaction', function () {
+    const address1 = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+    const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+    it('should reject a txPrebuild with more than one recipient', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        recipients: [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams })
+        .should.be.rejectedWith('txParams should only have 1 recipient but 2 found');
     });
   });
 });
