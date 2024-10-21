@@ -101,6 +101,9 @@ export { Zeta };
 import * as Coreum from '@bitgo/sdk-coin-coreum';
 export { Coreum };
 
+import * as Rune from '@bitgo/sdk-coin-rune';
+export { Rune };
+
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
@@ -196,6 +199,8 @@ const coinBuilderMap = {
   tzketh: zkEth.TransactionBuilder,
   bera: Bera.TransactionBuilder,
   tbera: Bera.TransactionBuilder,
+  rune: Rune.TransactionBuilderFactory,
+  trune: Rune.TransactionBuilderFactory,
 };
 
 /**
