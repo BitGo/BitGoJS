@@ -1,5 +1,6 @@
-import { InvalidAddressError } from '@bitgo/sdk-core';
+import { InvalidAddressError, UtilsError } from '@bitgo/sdk-core';
 import should from 'should';
+import { VALID_ACCOUNT_SET_FLAGS } from '../../../src/lib/constants';
 import { Address } from '../../../src/lib/iface';
 import XrpUtils from '../../../src/lib/utils';
 
@@ -303,6 +304,79 @@ describe('Utils', () => {
         '3045022100A98B2F3BD6F602F08FAFAFAFE51A14785EDAD8F00CE3B3339B73702201C67EA3B43A7C2EFB8C2DC064F734897DE671D6D8A0402986A0E116F3A9FDAD9';
       const publicKey = '02d15efd7200d9da40e10d3f5a3149ed006c6db8f3b2d22912597f0b6b74785490';
       XrpUtils.verifySignature(message, signature, publicKey).should.be.false();
+    });
+  });
+
+  describe('validateRawTransaction', () => {
+    it('should throw an error when given an undefined raw transaction', () => {
+      const rawTransaction = undefined;
+      should(() => {
+        // @ts-expect-error testing for invalid type
+        XrpUtils.validateRawTransaction(rawTransaction);
+      }).throw('Invalid raw transaction: Undefined');
+    });
+
+    it('should throw an error when given a non-hex raw transaction', () => {
+      const rawTransaction = 'not a hex string';
+      should(() => {
+        XrpUtils.validateRawTransaction(rawTransaction);
+      }).throw('Invalid raw transaction: Hex string expected');
+    });
+
+    it('should throw an error when given an invalid raw transaction', () => {
+      const rawTransaction =
+        '228000000024000000072E00000000201B0018D07161400000000003DE296840000000B7C9D0AF67D113EBCE1F1';
+      should(() => {
+        XrpUtils.validateRawTransaction(rawTransaction);
+      }).throw('Invalid raw transaction');
+    });
+
+    it('should not throw an error when given a valid raw transaction', () => {
+      const rawTransaction =
+        '120000228000000024000000072E00000000201B0018D07161400000000003DE2968400000000000002D73008114726D0D8A26568D5D9680AC80577C912236717191831449EE221CCACC4DD2BF8862B22B0960A84FC771D9F3E010732103AFBB6845826367D738B0D42EA0756C94547E70B064E8FE1260CF21354C898B0B74473045022100CA3A98AA6FC8CCA251C3A2754992E474EA469884EB8D489D2B180EB644AC7695022037EB886DCF57928E5844DB73C2E86DE553FB59DCFC9408F3FD5D802ADB69DFCC8114F0DBA9D34C77B6769F6142AB7C9D0AF67D113EBCE1F1';
+      should(() => {
+        XrpUtils.validateRawTransaction(rawTransaction);
+      }).not.throw();
+    });
+  });
+
+  describe('isValidRawTransaction', () => {
+    it('should return false when given an invalid raw transaction', () => {
+      const rawTransaction =
+        '228000000024000000072E00000000201B0018D07161400000000003DE296840000000B7C9D0AF67D113EBCE1F1';
+      XrpUtils.isValidRawTransaction(rawTransaction).should.be.false();
+    });
+
+    it('should return true when given a valid raw transaction', () => {
+      const rawTransaction =
+        '120000228000000024000000072E00000000201B0018D07161400000000003DE2968400000000000002D73008114726D0D8A26568D5D9680AC80577C912236717191831449EE221CCACC4DD2BF8862B22B0960A84FC771D9F3E010732103AFBB6845826367D738B0D42EA0756C94547E70B064E8FE1260CF21354C898B0B74473045022100CA3A98AA6FC8CCA251C3A2754992E474EA469884EB8D489D2B180EB644AC7695022037EB886DCF57928E5844DB73C2E86DE553FB59DCFC9408F3FD5D802ADB69DFCC8114F0DBA9D34C77B6769F6142AB7C9D0AF67D113EBCE1F1';
+      XrpUtils.isValidRawTransaction(rawTransaction).should.be.true();
+    });
+  });
+
+  describe('validateAccountSetFlag', () => {
+    it('should throw an error if the flag is not a valid number', () => {
+      const invalidFlag = 'invalid';
+      should(() => {
+        // @ts-expect-error testing for invalid type
+        XrpUtils.validateAccountSetFlag(invalidFlag);
+      }).throw(UtilsError, { message: `setFlag ${invalidFlag} is not valid` });
+    });
+
+    it('should throw an error if the flag is not a valid account set flag', () => {
+      const invalidFlag = 55;
+      should(() => {
+        XrpUtils.validateAccountSetFlag(invalidFlag);
+      }).throw(UtilsError, { message: `setFlag ${invalidFlag} is not a valid account set flag` });
+    });
+
+    it('should not throw an error if the flag is valid', () => {
+      const validFlags = VALID_ACCOUNT_SET_FLAGS;
+      for (const validFlag of validFlags) {
+        should(() => {
+          XrpUtils.validateAccountSetFlag(validFlag);
+        }).not.throw();
+      }
     });
   });
 });
