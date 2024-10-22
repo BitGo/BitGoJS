@@ -69,7 +69,7 @@
     "noble-bls12-381": "0.7.2",
     "openpgp": "5.10.1",
     "paillier-bigint": "3.3.0",
-    "secp256k1": "5.0.0",
+    "secp256k1": "5.0.1",
     "strip-hex-prefix": "^1.0.0",
     "superagent": "^9.0.1",
     "tweetnacl": "^1.0.3",
