@@ -661,19 +661,38 @@ const ataCloseInstructionKeysIndexes = {
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
-function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Array<AtaClose> {
-  const instructionData: Array<AtaClose> = [];
-
+function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Array<AtaClose | Nonce> {
+  const instructionData: Array<AtaClose | Nonce> = [];
   for (const instruction of instructions) {
-    const ataClose: AtaClose = {
-      type: InstructionBuilderTypes.CloseAssociatedTokenAccount,
-      params: {
-        accountAddress: instruction.keys[ataCloseInstructionKeysIndexes.AccountAddress].pubkey.toString(),
-        destinationAddress: instruction.keys[ataCloseInstructionKeysIndexes.DestinationAddress].pubkey.toString(),
-        authorityAddress: instruction.keys[ataCloseInstructionKeysIndexes.AuthorityAddress].pubkey.toString(),
-      },
-    };
-    instructionData.push(ataClose);
+    const type = getInstructionType(instruction);
+    switch (type) {
+      case ValidInstructionTypesEnum.AdvanceNonceAccount:
+        const advanceNonceInstruction = SystemInstruction.decodeNonceAdvance(instruction);
+        const nonce: Nonce = {
+          type: InstructionBuilderTypes.NonceAdvance,
+          params: {
+            walletNonceAddress: advanceNonceInstruction.noncePubkey.toString(),
+            authWalletAddress: advanceNonceInstruction.authorizedPubkey.toString(),
+          },
+        };
+        instructionData.push(nonce);
+        break;
+      case ValidInstructionTypesEnum.CloseAssociatedTokenAccount:
+        const ataClose: AtaClose = {
+          type: InstructionBuilderTypes.CloseAssociatedTokenAccount,
+          params: {
+            accountAddress: instruction.keys[ataCloseInstructionKeysIndexes.AccountAddress].pubkey.toString(),
+            destinationAddress: instruction.keys[ataCloseInstructionKeysIndexes.DestinationAddress].pubkey.toString(),
+            authorityAddress: instruction.keys[ataCloseInstructionKeysIndexes.AuthorityAddress].pubkey.toString(),
+          },
+        };
+        instructionData.push(ataClose);
+        break;
+      default:
+        throw new NotSupported(
+          'Invalid transaction, instruction type not supported: ' + getInstructionType(instruction)
+        );
+    }
   }
   return instructionData;
 }
