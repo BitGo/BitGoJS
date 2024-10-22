@@ -49,7 +49,7 @@
     "libsodium-wrappers-sumo": "^0.7.9",
     "openpgp": "5.10.1",
     "paillier-bigint": "3.3.0",
-    "secp256k1": "5.0.0"
+    "secp256k1": "5.0.1"
   },
   "devDependencies": {
     "@bitgo/sdk-opensslbytes": "^2.0.0",
