@@ -1,0 +1,60 @@
+{
+  "name": "@bitgo/sdk-coin-rune",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Rune",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "npm run prepare",
+    "build-ts": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18 <21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-rune"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/abstract-cosmos": "^11.0.11",
+    "@bitgo/sdk-core": "^28.10.0",
+    "@bitgo/statics": "^50.4.0",
+    "@cosmjs/amino": "^0.32.4",
+    "@cosmjs/encoding": "^0.32.4",
+    "@cosmjs/proto-signing": "^0.32.4",
+    "@cosmjs/stargate": "^0.32.4",
+    "bech32-buffer": "^0.2.1",
+    "bignumber.js": "^9.1.2",
+    "lodash": "^4.17.21",
+    "protobufjs": "^7.4.0"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.55.2",
+    "@bitgo/sdk-test": "^8.0.46"
+  }
+}
