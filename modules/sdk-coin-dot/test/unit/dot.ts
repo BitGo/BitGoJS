@@ -6,6 +6,7 @@ import { Dot, Tdot, KeyPair } from '../../src';
 import * as testData from '../fixtures';
 import { chainName, txVersion, genesisHash, specVersion } from '../resources';
 import * as sinon from 'sinon';
+import { Wallet } from '@bitgo/sdk-core';
 
 describe('DOT:', function () {
   let bitgo: TestBitGoAPI;
@@ -644,6 +645,27 @@ describe('DOT:', function () {
           recoveryDestination: destAddr,
         })
         .should.rejectedWith('Did not find address with funds to recover');
+    });
+  });
+
+  describe('Verify Transaction', function () {
+    const address1 = '5Ge59qRnZa8bxyhVFE6BDoY3kuhSrNVETRxXYLty1Hh6XTaf';
+    const address2 = '5DiMLZugmcKEH3igPZP367FqummZkWeW5Z6zDCHLfxRjnPXe';
+    it('should reject a txPrebuild with more than one recipient', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        recipients: [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams })
+        .should.be.rejectedWith('txParams should only have 1 recipient but 2 found');
     });
   });
 });
