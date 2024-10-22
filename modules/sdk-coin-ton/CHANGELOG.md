@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.3.2...@bitgo/sdk-coin-ton@3.3.3) (2024-10-22)
+
+### Bug Fixes
+
+- **sdk-coin-ton:** fix withdraw amount to base unit ([f1ea9cb](https://github.com/BitGo/BitGoJS/commit/f1ea9cb00c244e9d4e6d1af2462ddc188d1d2614))
+
 ## [3.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.3.1...@bitgo/sdk-coin-ton@3.3.2) (2024-10-15)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

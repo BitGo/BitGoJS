@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.10.0...@bitgo/sdk-core@28.11.0) (2024-10-22)
+
+### Features
+
+- **sdk-core:** fix deriveLightningServiceSharedSecret test ([696c91a](https://github.com/BitGo/BitGoJS/commit/696c91afb30bb1ee3a1cc075f265db4ed647810d))
+
 # [28.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.9.0...@bitgo/sdk-core@28.10.0) (2024-10-15)
 
 ### Features

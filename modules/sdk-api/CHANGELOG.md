@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.56.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.55.2...@bitgo/sdk-api@1.56.0) (2024-10-22)
+
+### Features
+
+- **sdk-api:** gpg encryption for passkey auth ([1eda08f](https://github.com/BitGo/BitGoJS/commit/1eda08f88cd2303c492882ce47fa7865604e7eb9))
+- **sdk-api:** gpg passkey authentication ([2b96e37](https://github.com/BitGo/BitGoJS/commit/2b96e37638bbe336bd91c6a8c7aa6d1eb749dd52))
+
 ## [1.55.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.55.1...@bitgo/sdk-api@1.55.2) (2024-10-15)
 
 **Note:** Version bump only for package @bitgo/sdk-api

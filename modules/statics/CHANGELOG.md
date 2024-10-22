@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.3.0...@bitgo/statics@50.4.0) (2024-10-22)
+
+### Features
+
+- **statics:** add POLYGON:GMT token ([7275d1f](https://github.com/BitGo/BitGoJS/commit/7275d1f2e35d1ab777fbd486770b5b6bd278a6b5))
+
 # [50.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.2.0...@bitgo/statics@50.3.0) (2024-10-15)
 
 ### Features
