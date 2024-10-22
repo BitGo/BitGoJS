@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.0.2...@bitgo/abstract-utxo@9.0.3) (2024-10-22)
+
+### Bug Fixes
+
+- **abstract-utxo:** fix isValidAddress by generating all addr formats ([5be7bfc](https://github.com/BitGo/BitGoJS/commit/5be7bfcfebacadd1b6eed85ca3ed2c134bfff829))
+- **abstract-utxo:** use param in isValidAddress ([ec9165a](https://github.com/BitGo/BitGoJS/commit/ec9165a9bf32eb09ecf97942839e40c3133e7256))
+
 ## [9.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.0.1...@bitgo/abstract-utxo@9.0.2) (2024-10-15)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

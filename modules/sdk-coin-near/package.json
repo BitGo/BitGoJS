@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-near",
-  "version": "2.0.41",
+  "version": "2.0.42",
   "description": "BitGo SDK coin library for Near",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,8 +40,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^28.10.0",
-    "@bitgo/statics": "^50.3.0",
+    "@bitgo/sdk-core": "^28.11.0",
+    "@bitgo/statics": "^50.4.0",
     "@stablelib/hex": "^1.0.0",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
@@ -53,8 +53,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.55.2",
-    "@bitgo/sdk-test": "^8.0.46",
+    "@bitgo/sdk-api": "^1.56.0",
+    "@bitgo/sdk-test": "^8.0.47",
     "@types/lodash": "^4.14.121"
   }
 }

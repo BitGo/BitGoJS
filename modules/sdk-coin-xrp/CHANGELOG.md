@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.1.0...@bitgo/sdk-coin-xrp@3.2.0) (2024-10-22)
+
+### Features
+
+- **sdk-coin-xrp:** add transaction builder ([392222b](https://github.com/BitGo/BitGoJS/commit/392222b7daea83df05f47fdb1f14123f6b6eabf1))
+
 # [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.0.0...@bitgo/sdk-coin-xrp@3.1.0) (2024-10-15)
 
 ### Bug Fixes

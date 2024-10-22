@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.9.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.8.0...bitgo@39.9.0) (2024-10-22)
+
+### Bug Fixes
+
+- **abstract-utxo:** fix isValidAddress by generating all addr formats ([5be7bfc](https://github.com/BitGo/BitGoJS/commit/5be7bfcfebacadd1b6eed85ca3ed2c134bfff829))
+
+### Features
+
+- **sdk-api:** gpg encryption for passkey auth ([1eda08f](https://github.com/BitGo/BitGoJS/commit/1eda08f88cd2303c492882ce47fa7865604e7eb9))
+- **sdk-api:** gpg passkey authentication ([2b96e37](https://github.com/BitGo/BitGoJS/commit/2b96e37638bbe336bd91c6a8c7aa6d1eb749dd52))
+
 # [39.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.7.0...bitgo@39.8.0) (2024-10-15)
 
 ### Features

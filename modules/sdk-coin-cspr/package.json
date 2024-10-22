@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-cspr",
-  "version": "2.0.41",
+  "version": "2.0.42",
   "description": "BitGo SDK coin library for Casper",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,8 +40,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^28.10.0",
-    "@bitgo/statics": "^50.3.0",
+    "@bitgo/sdk-core": "^28.11.0",
+    "@bitgo/statics": "^50.4.0",
     "@bitgo/utxo-lib": "^11.0.0",
     "@ethersproject/bignumber": "^5.6.0",
     "@stablelib/hex": "^1.0.0",
@@ -51,8 +51,8 @@
     "secp256k1": "5.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.55.2",
-    "@bitgo/sdk-test": "^8.0.46",
+    "@bitgo/sdk-api": "^1.56.0",
+    "@bitgo/sdk-test": "^8.0.47",
     "tweetnacl": "^1.0.3"
   }
 }
