@@ -9,7 +9,7 @@ import * as https from 'https';
 import * as http from 'http';
 import * as morgan from 'morgan';
 import * as fs from 'fs';
-import { Request as StaticRequest } from 'express-serve-static-core';
+import type { Request as StaticRequest } from 'express-serve-static-core';
 import * as timeout from 'connect-timeout';
 
 import { Config, config } from './config';
@@ -78,15 +78,21 @@ function configureEnvironment(config: Config): void {
  * @param app
  * @return {Server}
  */
-async function createHttpsServer(
-  app: express.Application,
-  config: Config & { keyPath: string; crtPath: string }
-): Promise<https.Server> {
-  const { keyPath, crtPath } = config;
-  const privateKeyPromise = fs.promises.readFile(keyPath, 'utf8');
-  const certificatePromise = fs.promises.readFile(crtPath, 'utf8');
+async function createHttpsServer(app: express.Application, config: Config): Promise<https.Server> {
+  const { keyPath, crtPath, sslKey, sslCert } = config;
+  let key: string;
+  let cert: string;
+  if (sslKey && sslCert) {
+    key = sslKey;
+    cert = sslCert;
+  } else if (keyPath && crtPath) {
+    const privateKeyPromise = fs.promises.readFile(keyPath, 'utf8');
+    const certificatePromise = fs.promises.readFile(crtPath, 'utf8');
 
-  const [key, cert] = await Promise.all([privateKeyPromise, certificatePromise]);
+    [key, cert] = await Promise.all([privateKeyPromise, certificatePromise]);
+  } else {
+    throw new Error('Failed to get ssl key and certificate');
+  }
 
   return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
 }
@@ -139,8 +145,8 @@ export function startup(config: Config, baseUri: string): () => void {
  * helper function to determine whether we should run the server over TLS or not
  */
 function isTLS(config: Config): config is Config & { keyPath: string; crtPath: string } {
-  const { keyPath, crtPath } = config;
-  return Boolean(keyPath && crtPath);
+  const { keyPath, crtPath, sslKey, sslCert } = config;
+  return Boolean((keyPath && crtPath) || (sslKey && sslCert));
 }
 
 /**
@@ -187,6 +193,8 @@ function checkPreconditions(config: Config) {
     disableSSL,
     keyPath,
     crtPath,
+    sslKey,
+    sslCert,
     customRootUri,
     customBitcoinNetwork,
     externalSignerUrl,
@@ -211,11 +219,11 @@ function checkPreconditions(config: Config) {
   const needsTLS = !ipc && env === 'prod' && bind !== 'localhost' && !disableSSL;
 
   // make sure keyPath and crtPath are set when running over TLS
-  if (needsTLS && !(keyPath && crtPath)) {
+  if (needsTLS && !(keyPath && crtPath) && !(sslKey && sslCert)) {
     throw new TlsConfigurationError('Must enable TLS when running against prod and listening on external interfaces!');
   }
 
-  if (Boolean(keyPath) !== Boolean(crtPath)) {
+  if (Boolean(keyPath) !== Boolean(crtPath) || Boolean(sslKey) !== Boolean(sslCert)) {
     throw new TlsConfigurationError('Must provide both keypath and crtpath when running in TLS mode!');
   }
 

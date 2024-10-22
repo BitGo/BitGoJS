@@ -27,6 +27,8 @@ export interface Config {
   debugNamespace: string[];
   keyPath?: string;
   crtPath?: string;
+  sslKey?: string;
+  sslCert?: string;
   logFile?: string;
   disableSSL: boolean;
   disableProxy: boolean;
@@ -49,6 +51,8 @@ export const ArgConfig = (args): Partial<Config> => ({
   debugNamespace: args.debugnamespace,
   keyPath: args.keypath,
   crtPath: args.crtpath,
+  sslKey: args.sslkey,
+  sslCert: args.sslcert,
   logFile: args.logfile,
   disableSSL: args.disablessl,
   disableProxy: args.disableproxy,
@@ -71,6 +75,8 @@ export const EnvConfig = (): Partial<Config> => ({
   debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(','),
   keyPath: readEnvVar('BITGO_KEYPATH'),
   crtPath: readEnvVar('BITGO_CRTPATH'),
+  sslKey: readEnvVar('BITGO_SSL_KEY'),
+  sslCert: readEnvVar('BITGO_SSL_CERT'),
   logFile: readEnvVar('BITGO_LOGFILE'),
   disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ? true : undefined,
   disableProxy: readEnvVar('BITGO_DISABLE_PROXY', 'DISABLE_PROXY') ? true : undefined,
@@ -153,6 +159,8 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     debugNamespace: get('debugNamespace'),
     keyPath: get('keyPath'),
     crtPath: get('crtPath'),
+    sslKey: get('sslKey'),
+    sslCert: get('sslCert'),
     logFile: get('logFile'),
     disableSSL,
     disableProxy: get('disableProxy'),
