@@ -69,29 +69,41 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     this.bitgoPublicGpgKey = mpcV1;
     this.bitgoMPCv2PublicGpgKey = mpcV2;
   }
-  
-  protected async pickBitgoPubGpgKeyForSigning(isMpcv2: boolean, reqId: IRequestTracer, enterpriseId?: string): Promise<openpgp.Key> {
+
+  protected async pickBitgoPubGpgKeyForSigning(
+    isMpcv2: boolean,
+    reqId?: IRequestTracer,
+    enterpriseId?: string
+  ): Promise<openpgp.Key> {
     let bitgoGpgPubKey;
     try {
-      const bitgoKeyChain =  await this.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.BITGO], reqId });
+      const bitgoKeyChain = await this.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.BITGO], reqId });
       if (!bitgoKeyChain || !bitgoKeyChain.hsmType) {
         throw new Error('Missing Bitgo GPG Pub Key Type.');
       }
       bitgoGpgPubKey = await openpgp.readKey({
-        armoredKey: getBitgoMpcGpgPubKey(this.bitgo.getEnv(), bitgoKeyChain.hsmType === 'nitro' ? 'nitro' : 'onprem', isMpcv2 ? 'mpcv2' : 'mpcv1'),
+        armoredKey: getBitgoMpcGpgPubKey(
+          this.bitgo.getEnv(),
+          bitgoKeyChain.hsmType === 'nitro' ? 'nitro' : 'onprem',
+          isMpcv2 ? 'mpcv2' : 'mpcv1'
+        ),
       });
     } catch (e) {
       if (!envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
         console.warn(
           `Unable to get BitGo GPG key based on key data with error: ${e}. Fetching BitGo GPG key based on feature flags.`
         );
-        bitgoGpgPubKey = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(
-          enterpriseId,
-          isMpcv2,
-          reqId
-        ).then(async (pubKey) => pubKey ?? (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey()));
+        // First try to get the key based on feature flags, if that fails, fallback to the default key from constants api.
+        bitgoGpgPubKey = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId, isMpcv2, reqId)
+          .then(
+            async (pubKey) =>
+              pubKey ?? (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey())
+          )
+          .catch(async (e) => (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey()));
       } else {
-        throw new Error(`Environment "${this.bitgo.getEnv()}" requires a BitGo GPG Pub Key Config in BitGoJS for TSS. Error thrown while getting the key from config: ${e}`);
+        throw new Error(
+          `Environment "${this.bitgo.getEnv()}" requires a BitGo GPG Pub Key Config in BitGoJS for TSS. Error thrown while getting the key from config: ${e}`
+        );
       }
     }
     return bitgoGpgPubKey;
@@ -119,7 +131,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     }
 
     return this.bitgoMPCv2PublicGpgKey;
-  }  
+  }
 
   async createBitgoHeldBackupKeyShare(
     userGpgKey: SerializedKeyPair<string>,
@@ -251,7 +263,12 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    *
    * @returns {Promise<{ userToBitgoCommitment: CommitmentShareRecor, encryptedSignerShare: EncryptedSignerShareRecord }>} - Commitment Share and the Encrypted Signer Share to BitGo
    */
-  createCommitmentShareFromTxRequest(params: { txRequest: TxRequest; prv: string; walletPassphrase: string }): Promise<{
+  createCommitmentShareFromTxRequest(params: {
+    txRequest: TxRequest;
+    prv: string;
+    walletPassphrase: string;
+    bitgoGpgPubKey: string;
+  }): Promise<{
     userToBitgoCommitment: CommitmentShareRecord;
     encryptedSignerShare: EncryptedSignerShareRecord;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;

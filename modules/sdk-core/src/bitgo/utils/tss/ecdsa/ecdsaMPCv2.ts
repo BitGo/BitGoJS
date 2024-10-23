@@ -67,7 +67,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const bitgoPublicGpgKey = (
       (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true)) ?? this.bitgoMPCv2PublicGpgKey
     ).armor();
-    
+
     if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
       // Ensure the public key is one of the expected BitGo public keys when in test or prod.
       assert(isBitgoMpcPubKey(bitgoPublicGpgKey, 'mpcv2'), 'Invalid BitGo GPG public key');
@@ -1010,9 +1010,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       txRequestResolved = txRequest;
     }
 
-    const bitgoPublicGpgKey =
-      (await this.getBitgoGpgPubkeyBasedOnFeatureFlags(txRequestResolved.enterpriseId, true, reqId)) ??
-      this.bitgoMPCv2PublicGpgKey;
+    const bitgoPublicGpgKey = await this.pickBitgoPubGpgKeyForSigning(
+      true,
+      params.reqId,
+      txRequestResolved.enterpriseId
+    );
+
     if (!bitgoPublicGpgKey) {
       throw new Error('Missing BitGo GPG key for MPCv2');
     }
