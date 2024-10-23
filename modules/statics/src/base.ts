@@ -1672,10 +1672,12 @@ export enum UnderlyingAsset {
   WROSE = 'wrose',
   WSTETH = 'wsteth',
   WPX = 'wpx',
+  WTAO = 'wtao',
   WTC = 'wtc',
   // USD Coin (Wormhole)
   WUSDC = 'wusdc',
   WUSDCV2 = 'wusdvcv2',
+  WUSDM = 'wusdm',
   // Tether USD (Wormhole)
   WUSDTV2 = 'wusdtv2',
   WXRP = 'wxrp',
@@ -2158,6 +2160,7 @@ export enum UnderlyingAsset {
   'arbeth:ztx' = 'arbeth:ztx',
   'arbeth:ldo' = 'arbeth:ldo',
   'arbeth:egp' = 'arbeth:egp',
+  'arbeth:myrc' = 'arbeth:myrc',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2272,6 +2275,8 @@ export enum UnderlyingAsset {
   'sol:sand' = 'sol:sand',
   'sol:ens' = 'sol:ens',
   'sol:jitosol' = 'sol:jitosol',
+  'sol:zeus' = 'sol:zeus',
+  'sol:kmno' = 'sol:kmno',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
@@ -2293,6 +2298,8 @@ export enum UnderlyingAsset {
   'sui:usdc' = 'sui:usdc',
   'sui:wusdc' = 'sui:wusdc',
   'sui:sca' = 'sui:sca',
+  'sui:times' = 'sui:times',
+  'sui:fud' = 'sui:fud',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',

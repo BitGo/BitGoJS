@@ -7804,12 +7804,28 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.WPX
   ),
   erc20(
+    '5d8b899f-bc1b-4ec2-88e6-d946cbb8d476',
+    'wtao',
+    'Wrapped BitTensor',
+    9,
+    '0x77e06c9eccf2e797fd462a92b6d7642ef85b0a44',
+    UnderlyingAsset.WTAO
+  ),
+  erc20(
     '30de14a3-4caa-462d-a7d2-8756f6921165',
     'wtc',
     'Walton Token',
     18,
     '0xb7cb1c96db6b22b0d3d9536e0108d062bd488f74',
     UnderlyingAsset.WTC
+  ),
+  erc20(
+    'acf1b526-75e0-47f8-b812-32893f85b180',
+    'wusdm',
+    'Wrapped Mountain USD',
+    18,
+    '0x57f5e098cad7a3d1eed53991d4d66c45c9af7812',
+    UnderlyingAsset.WUSDM
   ),
   erc20(
     '5e335386-e4db-45bc-b743-97fd6085330d',
@@ -17183,6 +17199,24 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:jitosol'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'bd2130ca-c44f-4d7a-977b-62939a1f9fdb',
+    'sol:zeus',
+    'ZEUS Network',
+    6,
+    'ZEUS1aR7aX8DFFJf5QjWj2ftDDdNTroMNGo8YoQm3Gq',
+    UnderlyingAsset['sol:zeus'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f435d327-cb31-4a3e-a350-1e2abb2b48bd',
+    'sol:kmno',
+    'Kamino',
+    6,
+    'KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS',
+    UnderlyingAsset['sol:kmno'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -18363,6 +18397,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['arbeth:knc']
   ),
   arbethErc20(
+    '89917127-2f82-49fa-9f3c-737ca9f5be4a',
+    'arbeth:myrc',
+    'Blox MYRC',
+    18,
+    '0x3ed03e95dd894235090b3d4a49e0c3239edce59e',
+    UnderlyingAsset['arbeth:myrc']
+  ),
+  arbethErc20(
     '230c1576-d591-4123-bac0-756eb9446fbd',
     'arbeth:trb',
     'Tellor Tributes',
@@ -18673,6 +18715,28 @@ export const coins = CoinMap.fromCoins([
     'sca',
     'SCA',
     UnderlyingAsset['sui:sca'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    'a4e5ab0e-5051-4ccc-a04c-c43ae3d9dcfa',
+    'sui:times',
+    'Darktimes',
+    5,
+    '0x46fbe54691b27d7abd2c9e5a01088913531f241b98f3c2351f8215e45cc17a4c',
+    'times',
+    'TIMES',
+    UnderlyingAsset['sui:times'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    'a7b13b4a-60b3-4167-b2db-5bbb46f8f603',
+    'sui:fud',
+    'Fud',
+    5,
+    '0x76cb819b01abed502bee8a702b4c2d547532c12f25001c9dea795a5e631c26f1',
+    'fud',
+    'FUD',
+    UnderlyingAsset['sui:fud'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(
