@@ -12672,6 +12672,8 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('d0efbafb-f9c7-4eb9-83b2-cf137f49e458', 'ofcpendle', 'Pendle', 18, UnderlyingAsset.PENDLE),
   ofcerc20('4efe4036-6528-45f8-9a3f-d4175103da72', 'ofcom', 'Om Token', 18, UnderlyingAsset.OM),
   ofcerc20('f60e2aa4-0b99-40df-a316-bc1a41912ffd', 'ofcoceanv2', 'Ocean Token V2', 18, UnderlyingAsset.OCEANV2),
+  ofcerc20('0ee531d4-6df5-437d-aec5-aa72e33ac775', 'ofceigen', 'Eigen', 18, UnderlyingAsset.EIGEN),
+  ofcerc20('bbe911d8-c900-401c-8dfb-febd98256e75', 'ofcusdy', 'Ondo U.S. Dollar Yield', 18, UnderlyingAsset.USDY),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
