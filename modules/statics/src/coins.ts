@@ -3124,6 +3124,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.CXT
   ),
   erc20(
+    '605c10a7-7d5e-4674-bca5-72d0e8588652',
+    'cyber',
+    'Cyber',
+    18,
+    '0x14778860e937f509e651192a90589de711fb88a9',
+    UnderlyingAsset.CYBER
+  ),
+  erc20(
     '10aff04d-e6b5-4120-b714-8a36a86092ea',
     'czrx',
     'Compound ZRX',
@@ -3710,6 +3718,14 @@ export const coins = CoinMap.fromCoins([
     6,
     '0x820802fa8a99901f52e39acd21177b0be6ee2974',
     UnderlyingAsset.EUROE
+  ),
+  erc20(
+    'af65c573-fb5f-4d35-b942-09eb172c4415',
+    'europ',
+    'EURØP',
+    6,
+    '0x888883b5f5d21fb10dfeb70e8f9722b9fb0e5e51',
+    UnderlyingAsset.EUROP
   ),
   erc20(
     'df6dd9e6-64bb-4289-8c58-3d7d2d288eff',
@@ -7570,6 +7586,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VRGX
   ),
   erc20(
+    '2e3fa047-1765-480b-ab11-87618c3d78a4',
+    'vrtx',
+    'Vertex Protocol',
+    18,
+    '0xbbee07b3e8121227afcfe1e2b82772246226128e',
+    UnderlyingAsset.VRTX
+  ),
+  erc20(
     '56e5abc8-a5d5-4383-9c5c-c5f680538d77',
     'vxc',
     'Vinx Coin',
@@ -7818,6 +7842,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xb7cb1c96db6b22b0d3d9536e0108d062bd488f74',
     UnderlyingAsset.WTC
+  ),
+  erc20(
+    '60eded7e-3aac-4cb8-943c-c3c3d88dfe5c',
+    'wtgxx',
+    'WisdomTree Government Money Market Digital Fund',
+    18,
+    '0x1fecf3d9d4fee7f2c02917a66028a48c6706c179',
+    UnderlyingAsset.WTGXX
   ),
   erc20(
     'acf1b526-75e0-47f8-b812-32893f85b180',
@@ -10501,6 +10533,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x981dc247745800bd2ca28a4bf147f0385eaa0bc0',
     UnderlyingAsset.NUTS
+  ),
+  erc20(
+    '235910f9-350d-4c30-a2ee-7cbd2bbf1d5b',
+    'nxm',
+    'Nexus Mutual',
+    18,
+    '0xd7c49cee7e9188cca6ad8ff264c1da2e69d4cf3b',
+    UnderlyingAsset.NXM
   ),
   erc20(
     'f54c530a-be45-4e47-a210-5196d961e4ad',
@@ -15275,6 +15315,14 @@ export const coins = CoinMap.fromCoins([
     '0xd769410dc8772695a7f55a304d2125320a65c2a5',
     UnderlyingAsset['tavaxc:xsgd']
   ),
+  tavaxErc20(
+    '463e36b1-8f92-40a3-9cb3-bd0aa7df8408',
+    'tavaxc:bitgo',
+    'BitGo',
+    8,
+    '0x3ad5f9119ca063189095784b9a7d2bf80fc24de6',
+    UnderlyingAsset['tavaxc:bitgo']
+  ),
   solToken(
     '45d95e60-81df-4c5d-9ceb-e6e4f5b75eeb',
     'sol:bome',
@@ -18739,6 +18787,17 @@ export const coins = CoinMap.fromCoins([
     'fud',
     'FUD',
     UnderlyingAsset['sui:fud'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '0d35b697-01f6-4694-a5b1-283ecfd733ac',
+    'sui:afsui',
+    'afSUI',
+    9,
+    '0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc',
+    'afsui',
+    'AFSUI',
+    UnderlyingAsset['sui:afsui'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(

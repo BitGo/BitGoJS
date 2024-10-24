@@ -651,6 +651,7 @@ export enum UnderlyingAsset {
   CVC = 'cvc',
   CVX = 'cvx',
   CXT = 'cxt',
+  CYBER = 'cyber',
   CZRX = 'czrx',
   DACXI = 'dacxi',
   DADI = 'dadi',
@@ -775,6 +776,7 @@ export enum UnderlyingAsset {
   EURE = 'eure',
   EURL = 'eurl',
   EUROE = 'euroe',
+  EUROP = 'europ',
   EURS = 'eurs',
   EURST = 'eurst',
   EURT = 'eurt',
@@ -1157,6 +1159,7 @@ export enum UnderlyingAsset {
   NU = 'nu',
   NULS = 'nuls',
   NUTS = 'nuts',
+  NXM = 'nxm',
   NYM = 'nym',
   NZDX = 'nzdx',
   OAX = 'oax',
@@ -1626,6 +1629,7 @@ export enum UnderlyingAsset {
   VOLT = 'volt',
   VRA = 'vra',
   VRGX = 'vrgx',
+  VRTX = 'vrtx',
   VSP = 'vsp',
   VXC = 'vxc',
   VXV = 'vxv',
@@ -1674,6 +1678,7 @@ export enum UnderlyingAsset {
   WPX = 'wpx',
   WTAO = 'wtao',
   WTC = 'wtc',
+  WTGXX = 'wtgxx',
   // USD Coin (Wormhole)
   WUSDC = 'wusdc',
   WUSDCV2 = 'wusdvcv2',
@@ -1821,6 +1826,7 @@ export enum UnderlyingAsset {
   'tavaxc:opm' = 'tavaxc:opm',
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   'tavaxc:xsgd' = 'tavaxc:xsgd',
+  'tavaxc:bitgo' = 'tavaxc:bitgo',
   // Begin FTX missing AVAXC tokens
   'avaxc:yeti' = 'avaxc:yeti',
   'avaxc:spell' = 'avaxc:spell',
@@ -2300,6 +2306,7 @@ export enum UnderlyingAsset {
   'sui:sca' = 'sui:sca',
   'sui:times' = 'sui:times',
   'sui:fud' = 'sui:fud',
+  'sui:afsui' = 'sui:afsui',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
