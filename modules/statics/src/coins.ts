@@ -14452,6 +14452,49 @@ export const coins = CoinMap.fromCoins([
     undefined,
     'gteth'
   ),
+  tofcerc20(
+    '4144a64f-eacd-4df1-a482-72e9c0d976ff',
+    'ofchterc18dp',
+    'Test ERC Token 18 decimals',
+    18,
+    UnderlyingAsset.TERC18DP,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'e34cd75e-62dc-4453-a282-577e407bdb95',
+    'ofchterc6dp',
+    'Test ERC Token 6 decimals',
+    6,
+    UnderlyingAsset.TERC6DP,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '5f83eaf5-9ba2-4aee-8d6a-b97bf2669edb',
+    'ofctusds',
+    'Test ERC Token 6 decimals TUSDS',
+    6,
+    UnderlyingAsset.TUSDS,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+
   tofcArbethErc20(
     '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',
     'ofctarbeth:link',
