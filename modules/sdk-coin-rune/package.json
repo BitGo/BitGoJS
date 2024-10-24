@@ -1,17 +1,19 @@
 {
-  "name": "@bitgo/abstract-cosmos",
-  "version": "11.0.11",
-  "description": "BitGo SDK coin library for COSMOS base implementation",
+  "name": "@bitgo/sdk-coin-rune",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Thorchain",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "build": "npm run prepare",
-    "build-ts": "yarn tsc --build --incremental --verbose .",
+    "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "prepare": "npm run build-ts && shx cp -r ./resources ./dist"
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -21,7 +23,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/abstract-cosmos"
+    "directory": "modules/sdk-coin-rune"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -38,22 +40,19 @@
     ]
   },
   "dependencies": {
+    "@bitgo/abstract-cosmos": "^11.0.11",
     "@bitgo/sdk-core": "^28.11.0",
-    "@bitgo/sdk-lib-mpc": "^10.0.1",
     "@bitgo/statics": "^50.4.0",
-    "@bitgo/utxo-lib": "^11.0.0",
     "@cosmjs/amino": "^0.29.5",
-    "@cosmjs/crypto": "^0.30.1",
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/proto-signing": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
+    "bech32-buffer": "^0.2.1",
     "bignumber.js": "^9.1.1",
-    "cosmjs-types": "^0.6.1",
-    "lodash": "^4.17.21",
-    "superagent": "^9.0.1",
-    "protobufjs": "^7.4.0"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.183"
+    "@bitgo/sdk-api": "^1.56.0",
+    "@bitgo/sdk-test": "^8.0.47"
   }
 }

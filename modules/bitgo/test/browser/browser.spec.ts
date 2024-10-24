@@ -31,10 +31,12 @@ describe('Coins', () => {
       BeraToken: 1,
       XrpToken: 1,
     };
+    console.warn(BitGoJS.Coin);
     Object.keys(BitGoJS.Coin)
       .filter((coinName) => !excludedKeys[coinName])
       .forEach((coinName) => {
         const coinIdentifier = coinName.toLowerCase();
+        console.warn(coinIdentifier);
         const coin = bitgo.coin(coinIdentifier);
         expect(coin).toBeTruthy();
         expect(coin.type).toEqual(coinIdentifier);
