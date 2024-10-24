@@ -157,6 +157,24 @@ describe('Bitgo Express', function () {
       })
     );
 
+    it('should create https server with sslkey and sslcert', async () => {
+      const createServerStub = sinon.stub(https, 'createServer');
+      const args: any = {
+        env: 'test',
+        bind: '1',
+        sslKey: 'ssl-key',
+        sslCert: 'ssl-cert',
+      };
+
+      try {
+        await createServer(args, null as any);
+        https.createServer.should.be.calledOnce();
+        https.createServer.should.be.calledWith({ secureOptions: SSL_OP_NO_TLSv1, key: 'ssl-key', cert: 'ssl-cert' });
+      } finally {
+        createServerStub.restore();
+      }
+    });
+
     it('should output basic information upon server startup', () => {
       const logStub = sinon.stub(console, 'log');
 

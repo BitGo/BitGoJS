@@ -39,11 +39,19 @@ parser.addArgument(['-D', '--debugnamespace'], {
 });
 
 parser.addArgument(['-k', '--keypath'], {
-  help: 'Path to the SSL Key file (required if running production)',
+  help: 'Path to the SSL Key file (either --keypath or --sslkey required if running production)',
+});
+
+parser.addArgument(['--sslkey'], {
+  help: 'The SSL Key (either --keypath or --sslkey required if running production)',
 });
 
 parser.addArgument(['-c', '--crtpath'], {
-  help: 'Path to the SSL Crt file (required if running production)',
+  help: 'Path to the SSL Crt file (either --crtpath or --sslcert required if running production)',
+});
+
+parser.addArgument(['--sslcert'], {
+  help: 'The SSL Cert (either --crtpath or --sslcert required if running production)',
 });
 
 parser.addArgument(['-u', '--customrooturi'], {

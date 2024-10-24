@@ -79,6 +79,16 @@ Finally you can run your docker container like this (note, replace `/path/to` wi
 $ docker run -it --volume /path/to/certs:/private -p 4000:4000 bitgo/express:latest -p 4000 -k /private/cert.key -c /private/cert.crt -e prod
 ```
 
+An alternative way to provide the ssl certification is to export them as environment variables.
+```bash
+$ export BITGO_SSL_KEY=$(cat /private/cert.key)
+$ export BITGO_SSL_CERT=$(cat /private/cert.cert)
+```
+
+```bash
+$ docker run -it --volume /path/to/certs:/private -p 4000:4000 bitgo/express:latest -p 4000 -e BITGO_SSL_KEY -e BITGO_SSL_CERT -e prod
+```
+
 BitGo Express should start on the specified port, 4000:
 
 ```
@@ -207,8 +217,10 @@ BitGo Express is able to take configuration options from either command line arg
 | -t              | --timeout              | `BITGO_TIMEOUT`                          | 305000        | Number of milliseconds to wait before requests made by `bitgo-express` time out.                                                                                                                                                                                                                                                                     |
 | -d              | --debug                | N/A, use `BITGO_DEBUG_NAMESPACE` instead | N/A           | Enable debug output for bitgo-express. This is equivalent to passing `--debugnamespace bitgo:express`.                                                                                                                                                                                                                                               |
 | -D              | --debugnamespace       | `BITGO_DEBUG_NAMESPACE`                  | N/A           | Enable debug output for a particular debug namespace. Multiple debug namespaces can be given as a comma separated list. See the [`bitgo` package README](https://github.com/BitGo/BitGoJS/blob/master/modules/bitgo/README.md#available-debug-namespaces) for a complete list of recognized options, in addition to those listed in the table below. |
-| -k              | --keypath              | `BITGO_KEYPATH`                          | N/A           | Path to SSL .key file (required if running against production environment).                                                                                                                                                                                                                                                                          |
+| -k              | --keypath              | `BITGO_KEYPATH`                          | N/A           | Path to SSL .key file (either `keypath` or `sslkey` required if running against production environment).                                                                                                                                                                                                                                                                          |
+| N/A              | --sslkey              | `BITGO_SSL_KEY`                          | N/A           | The SSL key (either `keypath` or `sslkey` required if running against production environment).                                                                                                                                                                                                                                                                          |
 | -c              | --crtpath              | `BITGO_CRTPATH`                          | N/A           | Path to SSL .crt file (required if running against production environment).                                                                                                                                                                                                                                                                          |
+| N/A              | --sslcert              | `BITGO_SSL_CERT`                        | N/A           | The SSL cert (either `crtpath` or `sslcert` required if running against production environment).                                                                                                                                                                                                                                                                          |
 | -u              | --customrooturi        | `BITGO_CUSTOM_ROOT_URI`                  | N/A           | Force a custom BitGo URI.                                                                                                                                                                                                                                                                                                                            |
 | -n              | --custombitcoinnetwork | `BITGO_CUSTOM_BITCOIN_NETWORK`           | N/A           | Force a custom BitGo network                                                                                                                                                                                                                                                                                                                         |
 | -l              | --logfile              | `BITGO_LOGFILE`                          | N/A           | Filepath to write access logs.                                                                                                                                                                                                                                                                                                                       |
