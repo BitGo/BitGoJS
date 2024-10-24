@@ -14483,7 +14483,7 @@ export const coins = CoinMap.fromCoins([
   tofcerc20(
     '5f83eaf5-9ba2-4aee-8d6a-b97bf2669edb',
     'ofctusds',
-    'Test ERC Token 6 decimals TUSDS',
+    'Holesky Testnet USD Standard',
     6,
     UnderlyingAsset.TUSDS,
     undefined,
