@@ -7,3 +7,4 @@ export const withdrawDelegatorRewardMsgTypeUrl = '/cosmos.distribution.v1beta1.M
 export const executeContractMsgTypeUrl = '/cosmwasm.wasm.v1.MsgExecuteContract';
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 export const ROOT_PATH = 'm/0';
+export const sendMsgType = '/types.MsgSend'; // thorchain uses this custom message type
