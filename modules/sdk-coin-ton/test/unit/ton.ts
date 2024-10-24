@@ -508,6 +508,12 @@ describe('TON:', function () {
           'UQDVeyUJOx3AnZGWLtE0l-Vxv7c7uTnD8OXtCFhaO-nvaqn8'
         );
       });
+
+      it('should derive raw address when requested', async function () {
+        (await utils.getAddressFromPublicKey(derivedPublicKey, false, false)).should.equal(
+          '0:d57b25093b1dc09d91962ed13497e571bfb73bb939c3f0e5ed08585a3be9ef6a'
+        );
+      });
     });
 
     describe('getAddress', function () {
@@ -551,6 +557,16 @@ describe('TON:', function () {
         'te6cckECCgEAAkoAA7V2k4Vw1nhxr7XcCBjWcFFHKqGwCglPSRuYAkWjWiTVAIAAAPbLgva0G7ytKw/xeE9a3FHK2RM8fgOpGvTpQRseeMer3efRKsiQAADxPhnaQFZWYrlQADRqbCUIAQIDAgHgBAUAgnIAZ0UIwmknkMaW7QboTcq48FfZ1NT5oMUj2VPOBr3zPoxriab4SfV65i6Hd1J2sFsuTcIWUobcKXMcIys+JWknAhMMwSvWBhmTzwRACAkB4YgA0nCuGs8ONfa7gQMazgoo5VQ2AUEp6SNzAEi0a0SaoBAHHgnPJBQQJ/meoCwzK5/PajBSxuJK2Gkva7NmlALNDs2IMEWi4ZRfIV4VeJpKBhzhKjNlFjuz60g+aeT5cNi4CU1NGLsrey/4AAAAGAAcBgEB3wcAaGIAK2cYdYCtxtBaWJ9hi7N+HVzeMsPQxLHSqYn7bfpOcRyh3NZQAAAAAAAAAAAAAAAAAAAAsWgA0nCuGs8ONfa7gQMazgoo5VQ2AUEp6SNzAEi0a0SaoBEAFbOMOsBW42gtLE+wxdm/Dq5vGWHoYljpVMT9tv0nOI5Q7msoAAYUWGAAAB7ZcF7WhMrMVypAAJ1BnYMTiAAAAAAAAAAAEQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAG/Jh6EgTBRYQAAAAAAAAgAAAAAAA4E52AP/eAYnVhJkoII4YUrhpLfpDFt6mRKiktbFnqs+QFAWDAAacQ0=\\'
       );
       should.equal(id, 'TsVgNKT05cde4Q54sC+RFC7nToTrHk9ppGgE5M0jXtE=');
+    });
+
+    it('should deserialize a cell to get the address', function () {
+      const data1 = 'te6cckEBAQEAJAAAQ4AaFUTgUQ/k2i+DdAooib0wNVREZQ2z+8R9WQvvFNpUJBARyAgK';
+      const rawAddress1 = '0:d0aa2702887f26d17c1ba051444de981aaa223286d9fde23eac85f78a6d2a120';
+      should.equal(utils.getRawWalletAddressFromCell(data1), rawAddress1);
+
+      const data2 = 'te6cckEBAQEAJAAAQ5/75w034qP9T0ZXY3muM5ouvFlNoNPky2YUs+Hcxd8otjDkIOPq';
+      const rawAddress2 = '-1:df3869bf151fea7a32bb1bcd719cd175e2ca6d069f265b30a59f0ee62ef945b1';
+      should.equal(utils.getRawWalletAddressFromCell(data2), rawAddress2);
     });
   });
 });
