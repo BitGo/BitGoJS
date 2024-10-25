@@ -239,5 +239,31 @@ describe('psbt internal and wallet outputs', function () {
         (e: any) => e.message === 'Input Bip32Derivation can not be found'
       );
     });
+
+    it('PSBT woth an OP_RETURN output', function () {
+      const opReturnScript =
+        '6a4c505341542b01045bde60b7d0e6b758ca5dd8c61d377a2c5f1af51ec1a9e209f5ea0036c8c2f41078a3cebee57d8a47d501041f5e0e66b17576a914c4b8ae927ff2b9ce218e20bf06d425d6b68424fd88ac';
+      const psbt = testutil.constructPsbt(
+        [{ scriptType: 'p2wsh', value: BigInt(value) }],
+        [
+          {
+            address: externalAddress,
+            value: BigInt(value - fee),
+          },
+          {
+            script: opReturnScript,
+            value: BigInt(0),
+          },
+        ],
+        network,
+        rootWalletKeys,
+        'unsigned'
+      );
+      const tx = psbt.getUnsignedTx();
+      assert.strictEqual(tx.outs.length, 2);
+      const out = tx.outs[1];
+      assert.strictEqual(out.value, BigInt(0));
+      assert.strictEqual(out.script.toString('hex'), opReturnScript);
+    });
   });
 });

@@ -49,10 +49,11 @@ export type Input = {
 /**
  * Set isInternalAddress=true for internal output address
  */
+// Make script: string as instead of scriptType or address
 export type Output = {
   value: bigint;
   isInternalAddress?: boolean;
-} & ({ scriptType: OutputScriptType } | { address: string });
+} & ({ scriptType: OutputScriptType } | { address: string } | { script: string });
 
 /**
  * array of supported input script types.
@@ -207,9 +208,12 @@ export function constructPsbt(
         i,
         output.value
       );
-    } else if (output.address) {
+    } else if ('address' in output) {
       const { address, value } = output;
       psbt.addOutput({ script: toOutputScript(address, network), value });
+    } else if ('script' in output) {
+      const { script, value } = output;
+      psbt.addOutput({ script: Buffer.from(script, 'hex'), value });
     }
   });
 
