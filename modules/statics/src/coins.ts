@@ -13913,7 +13913,7 @@ export const coins = CoinMap.fromCoins([
     'tusds',
     'Holesky Testnet USD Standard',
     6,
-    '0x2d416976f396bcd2e9b32401269fdfea638e82bc',
+    '0x399ae63d3fd23da82109fc8b632c19a1810f657e',
     UnderlyingAsset.TUSDS,
     undefined,
     undefined,
