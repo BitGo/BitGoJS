@@ -1,11 +1,10 @@
-import * as openpgp from 'openpgp';
 import { ec } from 'elliptic';
 
 import { IBaseCoin } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeyShare } from './types';
 import { BackupGpgKey } from '../baseTypes';
-import { generateGPGKeyPair, getBitgoGpgPubKey, getTrustGpgPubKey } from '../../opengpgUtils';
+import { generateGPGKeyPair, getTrustGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { IWallet } from '../../../wallet';
 

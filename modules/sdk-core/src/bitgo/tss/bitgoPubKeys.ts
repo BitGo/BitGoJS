@@ -24,10 +24,20 @@ export const bitgoMpcGpgPubKeys = {
   },
 };
 
-export function getBitgoMpcGpgPubKey(env: EnvironmentName, pubKeyType: 'nitro' | 'onprem', mpcVersion: 'mpcv1' | 'mpcv2'): string {
-  assert(mpcVersion in bitgoMpcGpgPubKeys, `Invalid mpcVersion in getBitgoMpcGpgPubKey, got: ${mpcVersion}, expected: mpcv1 or mpcv2`);
-  assert(pubKeyType in bitgoMpcGpgPubKeys[mpcVersion], `Invalid pubKeyType in getBitgoMpcGpgPubKey, got: ${pubKeyType}, expected: nitro or onprem`);
-  if (env !== 'prod' && env !== 'test' && env !== 'staging' && env !== 'adminProd' && env !== 'adminTest'){
+export function getBitgoMpcGpgPubKey(
+  env: EnvironmentName,
+  pubKeyType: 'nitro' | 'onprem',
+  mpcVersion: 'mpcv1' | 'mpcv2'
+): string {
+  assert(
+    mpcVersion in bitgoMpcGpgPubKeys,
+    `Invalid mpcVersion in getBitgoMpcGpgPubKey, got: ${mpcVersion}, expected: mpcv1 or mpcv2`
+  );
+  assert(
+    pubKeyType in bitgoMpcGpgPubKeys[mpcVersion],
+    `Invalid pubKeyType in getBitgoMpcGpgPubKey, got: ${pubKeyType}, expected: nitro or onprem`
+  );
+  if (env !== 'prod' && env !== 'test' && env !== 'staging' && env !== 'adminProd' && env !== 'adminTest') {
     throw new Error('Invalid environment to get a BitGo MPC GPG public key');
   }
   if (env !== 'prod' && env !== 'adminProd') {
@@ -37,7 +47,7 @@ export function getBitgoMpcGpgPubKey(env: EnvironmentName, pubKeyType: 'nitro' |
   if (env === 'adminProd') {
     env = 'prod';
   }
-  if (pubKeyType === 'nitro' && env === 'prod') {
+  if (pubKeyType === 'nitro' && env === 'prod' && mpcVersion === 'mpcv2') {
     throw new Error('Nitro mpcv2 pub key is not available in production environments yet.');
   }
   if (pubKeyType !== 'nitro') {
@@ -52,5 +62,5 @@ export function isBitgoMpcPubKey(key: string, mpcvVersion: 'mpcv1' | 'mpcv2'): b
 }
 
 export function envRequiresBitgoPubGpgKeyConfig(env: EnvironmentName): boolean {
-  return env === 'prod' || env === 'test' ||  env === 'staging' || env === 'adminProd' || env === 'adminTest';
+  return env === 'prod' || env === 'test' || env === 'staging' || env === 'adminProd' || env === 'adminTest';
 }

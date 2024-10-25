@@ -3,6 +3,7 @@ import ECDSAMethods, { ECDSAMethodTypes, DKLSMethods } from './ecdsa';
 
 export { EDDSAMethods, EDDSAMethodTypes, ECDSAMethods, ECDSAMethodTypes, DKLSMethods };
 export { ShareKeyPosition } from './types';
+export * as BitgoMpcGpgPubKeys from './bitgoPubKeys';
 
 // exporting this types for backward compatibility.
 /** @deprecated Use EDDSAMethods */

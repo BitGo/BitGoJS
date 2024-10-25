@@ -66,8 +66,14 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
 
   protected async setBitgoGpgPubKey(bitgo) {
     const { mpcV1, mpcV2 } = await getBitgoGpgPubKey(bitgo);
-    this.bitgoPublicGpgKey = mpcV1;
-    this.bitgoMPCv2PublicGpgKey = mpcV2;
+    // Do not unset the MPCv1 key if it is already set. This is to avoid unsetting if extra constants api calls fail.
+    if (mpcV1 !== undefined) {
+      this.bitgoPublicGpgKey = mpcV1;
+    }
+    // Do not unset the MPCv2 key if it is already set
+    if (mpcV2 !== undefined) {
+      this.bitgoMPCv2PublicGpgKey = mpcV2;
+    }
   }
 
   protected async pickBitgoPubGpgKeyForSigning(
