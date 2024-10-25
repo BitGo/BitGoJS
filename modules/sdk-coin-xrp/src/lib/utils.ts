@@ -1,8 +1,16 @@
-import { BaseUtils, InvalidAddressError, InvalidTransactionError, UtilsError } from '@bitgo/sdk-core';
+import {
+  BaseUtils,
+  InvalidAddressError,
+  InvalidTransactionError,
+  UnsupportedTokenError,
+  UtilsError,
+} from '@bitgo/sdk-core';
 import * as querystring from 'querystring';
+import { coins, XrpCoin } from '@bitgo/statics';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as url from 'url';
 import * as xrpl from 'xrpl';
+import { Amount, IssuedCurrencyAmount } from 'xrpl';
 import { VALID_ACCOUNT_SET_FLAGS } from './constants';
 import { Address, SignerDetails } from './iface';
 import { KeyPair as XrpKeyPair } from './keyPair';
@@ -209,6 +217,37 @@ class Utils implements BaseUtils {
     if (typeof signer.weight !== 'number' || signer.weight < 0) {
       throw new UtilsError(`signer weight ${signer.weight} is not valid`);
     }
+  }
+
+  /**
+   * Determines if the provided `amount` is for a token payment
+   */
+  public isIssuedCurrencyAmount(amount: Amount): amount is IssuedCurrencyAmount {
+    return (
+      !!amount &&
+      typeof amount === 'object' &&
+      typeof amount.currency === 'string' &&
+      typeof amount.issuer === 'string' &&
+      typeof amount.value === 'string'
+    );
+  }
+
+  /**
+   * Get the associated XRP Currency details from token name. Throws an error if token is unsupported
+   * @param {string} tokenName - The token name
+   */
+  public getXrpCurrencyFromTokenName(tokenName: string): xrpl.IssuedCurrency {
+    if (!coins.has(tokenName)) {
+      throw new UnsupportedTokenError(`${tokenName} is not supported`);
+    }
+    const token = coins.get(tokenName);
+    if (!token.isToken || !(token instanceof XrpCoin)) {
+      throw new UnsupportedTokenError(`${tokenName} is not an XRP token`);
+    }
+    return {
+      currency: token.currencyCode,
+      issuer: token.issuerAddress,
+    };
   }
 }
 
