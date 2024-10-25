@@ -291,22 +291,29 @@ export class Wallets implements IWallets {
       walletParams.enterprise = enterprise;
     }
 
-    // EVM TSS wallets must use wallet version 3 and 5
-    if (isTss && this.baseCoin.isEVM() && !(params.walletVersion === 3 || params.walletVersion === 5)) {
-      throw new Error('EVM TSS wallets are only supported for wallet version 3 and 5');
+    // EVM TSS wallets must use wallet version 3, 5 and 6
+    if (
+      isTss &&
+      this.baseCoin.isEVM() &&
+      !(params.walletVersion === 3 || params.walletVersion === 5 || params.walletVersion === 6)
+    ) {
+      throw new Error('EVM TSS wallets are only supported for wallet version 3, 5 and 6');
     }
 
     if (isTss) {
       if (!this.baseCoin.supportsTss()) {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS at this time`);
       }
-      if (params.walletVersion === 5 && !this.baseCoin.getConfig().features.includes(CoinFeature.MPCV2)) {
+      if (
+        (params.walletVersion === 5 || params.walletVersion === 6) &&
+        !this.baseCoin.getConfig().features.includes(CoinFeature.MPCV2)
+      ) {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS MPCv2 at this time`);
       }
       assert(enterprise, 'enterprise is required for TSS wallet');
 
       if (type === 'cold') {
-        if (params.walletVersion === 5) {
+        if (params.walletVersion === 5 || params.walletVersion === 6) {
           throw new Error('EVM TSS MPCv2 wallets are not supported for cold wallets');
         }
         // validate
@@ -324,7 +331,7 @@ export class Wallets implements IWallets {
       }
 
       if (type === 'custodial') {
-        if (params.walletVersion === 5) {
+        if (params.walletVersion === 5 || params.walletVersion === 6) {
           throw new Error('EVM TSS MPCv2 wallets are not supported for custodial wallets');
         }
         return this.generateCustodialMpcWallet({
