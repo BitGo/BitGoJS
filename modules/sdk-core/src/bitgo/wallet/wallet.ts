@@ -97,6 +97,7 @@ import {
   SharedKeyChain,
   BulkWalletShareKeychain,
   ManageUnspentReservationOptions,
+  SignAndSendTxRequestOptions,
 } from './iWallet';
 import { StakingWallet } from '../staking';
 import { Lightning } from '../lightning/custodial';
@@ -3274,6 +3275,35 @@ export class Wallet implements IWallet {
     } catch (e) {
       throw new Error('failed to sign transaction ' + e);
     }
+  }
+
+  /**
+   * Signs and sends a transaction request from a TSS (hot) wallet, or a SMC (cold) wallet with an external signer.
+   * Meant to be used for a transaction request where the signing process is aborted.
+   *
+   * @param params
+   *    txRequestId - The ID of the transaction request.
+   *    walletPassphrase - The passphrase for the wallet.
+   *    isTxRequestFull - Flag indicating if the transaction request is full.
+   * @returns A promise that resolves to a SignedTransaction.
+   */
+  public async signAndSendTxRequest(params: SignAndSendTxRequestOptions): Promise<SignedTransaction> {
+    if (params.isTxRequestFull) {
+      await this.tssUtils?.deleteSignatureShares(params.txRequestId);
+    }
+
+    const ret = await this.getUserKeyAndSignTssTransaction({
+      walletPassphrase: params.walletPassphrase,
+      txRequestId: params.txRequestId,
+    });
+    if (!params.isTxRequestFull) {
+      // It is assumed that if its not a full tx request, then it is a lite tx request
+      const submitTx = await this.submitTransaction({
+        txRequestId: params.txRequestId,
+      });
+      return submitTx;
+    }
+    return ret;
   }
 
   /**
