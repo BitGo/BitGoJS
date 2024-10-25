@@ -145,6 +145,24 @@ module.exports.nockXrpRecovery = function nockXrpRecovery() {
         },
         status: 'success',
       },
+    })
+    .post('/', {
+      method: 'account_lines',
+      params: [
+        {
+          account: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
+          ledger_index: 'validated',
+        },
+      ],
+    })
+    .reply(200, {
+      result: {
+        account: 'rMficzfw4t5iGu9hhB23eKwDjM879vJWTR',
+        ledger_hash: 'E6F38D1D7B94153BF7FFC8D8CC1DF57D57151D26FC2EB7647B5631786B955EFF',
+        ledger_index: 1848964,
+        lines: [],
+        validated: true,
+      },
     });
 };
 

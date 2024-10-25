@@ -67,6 +67,7 @@ export interface RecoveryOptions {
   bitgoKey?: string;
   walletPassphrase: string;
   krsProvider?: string;
+  tokenName?: string;
 }
 
 export interface HalfSignedTransaction {
