@@ -9448,11 +9448,11 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     'e015ea18-e731-4148-adc1-ab9443459c82',
-    'core',
+    'cvault',
     'cVault.finance',
     18,
     '0x62359ed7505efc61ff1d56fef82158ccaffa23d7',
-    UnderlyingAsset.CORE
+    UnderlyingAsset.CVAULT
   ),
   erc20(
     '2352b468-b85b-4c09-b0b6-8f27e0e8b789',
