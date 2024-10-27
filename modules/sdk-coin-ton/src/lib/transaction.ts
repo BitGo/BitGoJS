@@ -110,6 +110,8 @@ export class Transaction extends BaseTransaction {
             // payload is a withdraw txn message
             const queryId = payload.substring(8, 24);
             const withdrawAmount = payload.substring(24);
+            /* eslint-disable-next-line no-console */
+            console.log(`payload: ${payload}, queryId: ${queryId}, withdrawAmount: ${withdrawAmount}`);
             payloadCell.bits.writeUint(parseInt(WITHDRAW_OPCODE, 16), 32);
             payloadCell.bits.writeUint(parseInt(queryId, 16), 64);
             payloadCell.bits.writeCoins(new BN(withdrawAmount));
