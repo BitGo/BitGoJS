@@ -2,9 +2,11 @@ import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import xrpl from 'xrpl';
 import { AccountSetBuilder } from './accountSetBuilder';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
+import { TrustSetBuilder } from './trustsetBuilder';
 import utils from './utils';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 
@@ -32,6 +34,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getTransferBuilder(tx);
         case TransactionType.WalletInitialization:
           return this.getWalletInitializationBuilder(tx);
+        case TransactionType.SendToken:
+          return this.getTokenTransferBuilder(tx);
+        case TransactionType.TrustLine:
+          return this.getTrustSetBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -53,6 +59,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   public getAccountUpdateBuilder(tx?: Transaction): AccountSetBuilder {
     return this.initializeBuilder(tx, new AccountSetBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  public getTokenTransferBuilder(tx?: Transaction): TokenTransferBuilder {
+    return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  public getTrustSetBuilder(tx?: Transaction): TrustSetBuilder {
+    return this.initializeBuilder(tx, new TrustSetBuilder(this._coinConfig));
   }
 
   /**
