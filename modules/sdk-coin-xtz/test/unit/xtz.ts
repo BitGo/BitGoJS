@@ -10,6 +10,7 @@ import {
   unsignedHex,
   unsignedTransactionWithTwoTransfersHex,
 } from '../fixtures';
+import { Wallet } from '@bitgo/sdk-core';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 bitgo.safeRegister('xtz', Xtz.createInstance);
@@ -197,6 +198,27 @@ describe('Tezos:', function () {
       const publicKey = new XtzLib.KeyPair();
       const isValid = await XtzLib.Utils.verifySignature(messageHex, publicKey.getKeys().pub, sig);
       isValid.should.equal(false);
+    });
+  });
+
+  describe('Verify Transaction', function () {
+    const address1 = '5Ge59qRnZa8bxyhVFE6BDoY3kuhSrNVETRxXYLty1Hh6XTaf';
+    const address2 = '5DiMLZugmcKEH3igPZP367FqummZkWeW5Z6zDCHLfxRjnPXe';
+    it('should reject a txPrebuild with more than one recipient', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        recipients: [
+          { amount: '1000000000000', address: address1 },
+          { amount: '2500000000000', address: address2 },
+        ],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams })
+        .should.be.rejectedWith('txParams should only have 1 recipient but 2 found');
     });
   });
 });
