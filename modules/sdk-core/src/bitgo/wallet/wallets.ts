@@ -982,9 +982,7 @@ export class Wallets implements IWallets {
         .result();
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
-      if (this.baseCoin.isEVM() && multisigTypeVersion === 'MPCv2') {
-        walletVersion = 5;
-      }
+      walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
     }
 
     const reqId = new RequestTracer();
@@ -1144,5 +1142,14 @@ export class Wallets implements IWallets {
     };
 
     return result;
+  }
+
+  private determineEcdsaMpcWalletVersion(walletVersion?: number, multisigTypeVersion?: string): number | undefined {
+    if (this.baseCoin.isEVM() && multisigTypeVersion === 'MPCv2') {
+      if (!walletVersion || (walletVersion !== 5 && walletVersion !== 6)) {
+        return 5;
+      }
+    }
+    return walletVersion;
   }
 }

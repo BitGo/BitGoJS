@@ -944,6 +944,120 @@ describe('V2 Wallets:', function () {
       });
     });
 
+    it(`should create a new hteth TSS MPCv2 wallet with walletVersion 6`, async function () {
+      const testCoin = bitgo.coin('hteth');
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'user',
+        },
+        backupKeychain: {
+          id: '2',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'backup',
+        },
+        bitgoKeychain: {
+          id: '3',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'bitgo',
+        },
+      };
+      const stubCreateKeychains = sandbox
+        .stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychains')
+        .resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post(`/api/v2/hteth/wallet`, (body) => {
+          body.walletVersion.should.equal(6);
+          return true;
+        })
+        .reply(200);
+
+      const wallets = new Wallets(bitgo, testCoin);
+
+      const params = {
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss' as const,
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+        walletVersion: 6,
+      };
+
+      const response = await wallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+      stubCreateKeychains.calledOnce.should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.ok(response.wallet);
+      assert.equal(
+        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        params.passphrase
+      );
+    });
+
+    it(`should create a new MPCv2 wallet with version 5 if walletVersion passed is not 5 or 6`, async function () {
+      const testCoin = bitgo.coin('hteth');
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'user',
+        },
+        backupKeychain: {
+          id: '2',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'backup',
+        },
+        bitgoKeychain: {
+          id: '3',
+          commonKeychain: 'userPub',
+          type: 'tss',
+          source: 'bitgo',
+        },
+      };
+      const stubCreateKeychains = sandbox
+        .stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychains')
+        .resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post(`/api/v2/hteth/wallet`, (body) => {
+          body.walletVersion.should.equal(5);
+          return true;
+        })
+        .reply(200);
+
+      const wallets = new Wallets(bitgo, testCoin);
+
+      const params = {
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        multisigType: 'tss' as const,
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+        walletVersion: 3,
+      };
+
+      const response = await wallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+      stubCreateKeychains.calledOnce.should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.ok(response.wallet);
+      assert.equal(
+        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        params.passphrase
+      );
+    });
+
     it('should throw for a cold wallet using wallet version 5', async function () {
       const hteth = bitgo.coin('hteth');
       const wallets = new Wallets(bitgo, hteth);
