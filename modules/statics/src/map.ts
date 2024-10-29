@@ -1,11 +1,15 @@
 import { BaseCoin } from './base';
 import { DuplicateCoinDefinitionError, CoinNotDefinedError, DuplicateCoinIdDefinitionError } from './errors';
+import { ContractAddressDefinedToken } from './account';
 
 export class CoinMap {
   private readonly _map = new Map<string, Readonly<BaseCoin>>();
   private readonly _coinByIds = new Map<string, Readonly<BaseCoin>>();
   // Holds key equivalences used during an asset name migration
   private readonly _coinByAliases = new Map<string, Readonly<BaseCoin>>();
+  // map of coin by address -> the key is the family:contractAddress
+  // the family is the where the coin is e.g l1 chains like eth, bsc etc. or l2 like arbeth, celo etc.
+  private readonly _coinByContractAddress = new Map<string, Readonly<BaseCoin>>();
 
   private constructor() {
     // Do not instantiate
@@ -29,6 +33,9 @@ export class CoinMap {
           throw new DuplicateCoinDefinitionError(alias);
         }
         coinMap._coinByAliases.set(alias, coin);
+      }
+      if (coin.isToken && coin instanceof ContractAddressDefinedToken) {
+        coinMap._coinByContractAddress.set(`${coin.family}:${coin.contractAddress}`, coin);
       }
       return coinMap;
     }, new CoinMap());
@@ -60,7 +67,11 @@ export class CoinMap {
    * @return {BaseCoin}
    */
   public get(key: string): Readonly<BaseCoin> {
-    const coin = this._map.get(key) || this._coinByIds.get(key) || this._coinByAliases.get(key);
+    const coin =
+      this._map.get(key) ||
+      this._coinByIds.get(key) ||
+      this._coinByAliases.get(key) ||
+      this._coinByContractAddress.get(key);
 
     if (coin) {
       return coin;
@@ -70,7 +81,12 @@ export class CoinMap {
   }
 
   public has(key: string): boolean {
-    return this._map.has(key) || this._coinByIds.has(key) || this._coinByAliases.has(key);
+    return (
+      this._map.has(key) ||
+      this._coinByIds.has(key) ||
+      this._coinByAliases.has(key) ||
+      this._coinByContractAddress.has(key)
+    );
   }
 
   public map<T>(mapper: (coin: Readonly<BaseCoin>, coinName: string) => T): T[] {

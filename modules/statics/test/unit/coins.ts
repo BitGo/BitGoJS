@@ -352,6 +352,15 @@ describe('CoinMap', function () {
     btcById.should.deepEqual(btc);
   });
 
+  it('should get coin by address', () => {
+    const weth = coins.get('weth');
+    const wethByAddress = coins.get(`${weth.family}:${(weth as Erc20Coin).contractAddress}`);
+    wethByAddress.should.deepEqual(weth);
+    const tweth = coins.get('tweth');
+    const twethByAddress = coins.get(`${tweth.family}:${(tweth as Erc20Coin).contractAddress}`);
+    twethByAddress.should.deepEqual(tweth);
+  });
+
   it('should find coin by id', () => {
     coins.has(btc.id).should.be.true();
   });
