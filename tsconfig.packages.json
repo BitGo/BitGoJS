@@ -104,10 +104,10 @@
       "path": "./modules/sdk-coin-eth"
     },
     {
-      "path": "./modules/sdk-coin-ethlike"
+      "path": "./modules/sdk-coin-eth2"
     },
     {
-      "path": "./modules/sdk-coin-eth2"
+      "path": "./modules/sdk-coin-ethlike"
     },
     {
       "path": "./modules/sdk-coin-ethw"
@@ -144,6 +144,9 @@
     },
     {
       "path": "./modules/sdk-coin-rbtc"
+    },
+    {
+      "path": "./modules/sdk-coin-rune"
     },
     {
       "path": "./modules/sdk-coin-sei"
