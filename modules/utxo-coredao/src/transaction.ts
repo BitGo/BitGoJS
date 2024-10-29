@@ -3,6 +3,16 @@ export const CORE_DAO_TESTNET_CHAIN_ID = Buffer.alloc(2, 0x1115);
 export const CORE_DAO_MAINNET_CHAIN_ID = Buffer.alloc(2, 0x1116);
 export const CORE_DAO_SATOSHI_PLUS_IDENTIFIER = Buffer.alloc(4, 0x5341542b);
 
+type BaseParams = {
+  version: number;
+  chainId: Buffer;
+  delegator: Buffer;
+  validator: Buffer;
+  fee: number;
+};
+
+type OpReturnParams = BaseParams & ({ redeemScript: Buffer } | { timelock: number });
+
 /**
  * Create a CoreDAO OP_RETURN output script
  *
@@ -21,17 +31,8 @@ export function createCoreDaoOpReturnOutputScript({
   delegator,
   validator,
   fee,
-  redeemScript,
-  timelock,
-}: {
-  version: number;
-  chainId: Buffer;
-  delegator: Buffer;
-  validator: Buffer;
-  fee: number;
-  redeemScript?: Buffer;
-  timelock?: number;
-}): Buffer {
+  ...rest
+}: OpReturnParams): Buffer {
   /**
    * As of v2, this is the construction of the OP_RETURN:
    * Source: https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output
@@ -83,14 +84,11 @@ export function createCoreDaoOpReturnOutputScript({
     throw new Error('Invalid fee');
   }
 
-  if (!redeemScript && !timelock) {
-    throw new Error('Either redeemScript or timelock must be provided');
-  }
-  const redeemScriptBuffer = redeemScript ?? Buffer.from([]);
-  if (timelock && (timelock < 0 || timelock > 4294967295)) {
+  const redeemScriptBuffer = 'redeemScript' in rest ? rest.redeemScript : Buffer.from([]);
+  if ('timelock' in rest && (rest.timelock < 0 || rest.timelock > 4294967295)) {
     throw new Error('Invalid timelock - out of range');
   }
-  const timelockBuffer = timelock ? Buffer.alloc(4, timelock).reverse() : Buffer.from([]);
+  const timelockBuffer = 'timelock' in rest ? Buffer.alloc(4, rest.timelock).reverse() : Buffer.from([]);
 
   const totalLength =
     CORE_DAO_SATOSHI_PLUS_IDENTIFIER.length +

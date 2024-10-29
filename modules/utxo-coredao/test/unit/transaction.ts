@@ -80,15 +80,6 @@ describe('OP_RETURN', function () {
         timelock: -1,
       })
     );
-    assert.throws(() =>
-      createCoreDaoOpReturnOutputScript({
-        version: validVersion,
-        chainId: validChainId,
-        delegator: validDelegator,
-        validator: validValidator,
-        fee: validFee,
-      })
-    );
   });
 
   it('should return a buffer with the correct length', function () {
