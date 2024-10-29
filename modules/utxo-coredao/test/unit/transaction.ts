@@ -2,9 +2,12 @@ import * as assert from 'assert';
 import {
   CORE_DAO_MAINNET_CHAIN_ID,
   CORE_DAO_SATOSHI_PLUS_IDENTIFIER,
+  CORE_DAO_TESTNET_CHAIN_ID,
   createCoreDaoOpReturnOutputScript,
   decodeTimelock,
   encodeTimelock,
+  parseCoreDaoOpReturnOutputScript,
+  verifyCoreDaoOpReturnOutputScript,
 } from '../../src';
 import { testutil } from '@bitgo/utxo-lib';
 
@@ -230,6 +233,123 @@ describe('OP_RETURN', function () {
       assert.strictEqual(scriptPushdata4[1], 0x4e);
       // We do not count the OP_RETURN opcode or the bytes for the length
       assert.strictEqual(scriptPushdata4.readInt32BE(2), scriptPushdata4.length - 6);
+    });
+  });
+
+  describe('parseCoreDaoOpReturnOutputScript', function () {
+    it('should parse a valid script with a timelock', function () {
+      const script = createCoreDaoOpReturnOutputScript({
+        version: validVersion,
+        chainId: validChainId,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        timelock: validTimelock,
+      });
+      const parsed = parseCoreDaoOpReturnOutputScript(script);
+      assert.strictEqual(parsed.version, validVersion);
+      assert.deepStrictEqual(parsed.chainId, validChainId);
+      assert.deepStrictEqual(parsed.delegator, validDelegator);
+      assert.deepStrictEqual(parsed.validator, validValidator);
+      assert.strictEqual(parsed.fee, validFee);
+      assert('timelock' in parsed);
+      assert.deepStrictEqual(parsed.timelock, validTimelock);
+    });
+
+    it('should parse a valid script with a redeem script', function () {
+      const script = createCoreDaoOpReturnOutputScript({
+        version: validVersion,
+        chainId: validChainId,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        redeemScript: validRedeemScript,
+      });
+      const parsed = parseCoreDaoOpReturnOutputScript(script);
+      assert.strictEqual(parsed.version, validVersion);
+      assert.deepStrictEqual(parsed.chainId, validChainId);
+      assert.deepStrictEqual(parsed.delegator, validDelegator);
+      assert.deepStrictEqual(parsed.validator, validValidator);
+      assert.strictEqual(parsed.fee, validFee);
+      assert('redeemScript' in parsed);
+      assert.deepStrictEqual(parsed.redeemScript, validRedeemScript);
+    });
+
+    it('should fail if there is an invalid op-return', function () {
+      const script = defaultScript.replace('6a4c50', '6b4c50');
+      assert.throws(() => parseCoreDaoOpReturnOutputScript(Buffer.from(script, 'hex')));
+    });
+
+    it('should fail if the length is incorrect', function () {
+      const script = defaultScript.replace('4c50', '4c51');
+      assert.throws(() => parseCoreDaoOpReturnOutputScript(Buffer.from(script, 'hex')));
+    });
+
+    it('should fail if the satoshi+ identifier is incorrect', function () {
+      const script = defaultScript.replace('5341542b', '5341532b');
+      assert.throws(() => parseCoreDaoOpReturnOutputScript(Buffer.from(script, 'hex')));
+    });
+
+    it('should fail if the chainId is incorrect', function () {
+      const script = defaultScript.replace('045b', '0454');
+      assert.throws(() => parseCoreDaoOpReturnOutputScript(Buffer.from(script, 'hex')));
+    });
+  });
+
+  describe('verifyCoreDaoOpReturnOutputScript', function () {
+    it('should return true for a valid script with a redeem script', function () {
+      const params = {
+        version: validVersion,
+        chainId: validChainId,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        redeemScript: validRedeemScript,
+      };
+      const script = createCoreDaoOpReturnOutputScript(params);
+      assert.strictEqual(verifyCoreDaoOpReturnOutputScript(script, params), true);
+    });
+
+    it('should return true for a valid script with a timelock', function () {
+      const params = {
+        version: validVersion,
+        chainId: validChainId,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        timelock: validTimelock,
+      };
+      const script = createCoreDaoOpReturnOutputScript(params);
+      assert.strictEqual(verifyCoreDaoOpReturnOutputScript(script, params), true);
+    });
+
+    it('should return false when they are not equivalent', function () {
+      const params = {
+        version: validVersion,
+        chainId: validChainId,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        redeemScript: validRedeemScript,
+      };
+      const script = createCoreDaoOpReturnOutputScript(params);
+      // Change the version
+      params.version = 3;
+      assert.strictEqual(verifyCoreDaoOpReturnOutputScript(script, params), false);
+    });
+
+    it('should fail if they one is mainnet and one is testnet', function () {
+      const params = {
+        version: validVersion,
+        chainId: CORE_DAO_MAINNET_CHAIN_ID,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        timelock: validTimelock,
+      };
+      const script = createCoreDaoOpReturnOutputScript(params);
+      params.chainId = CORE_DAO_TESTNET_CHAIN_ID;
+      assert.strictEqual(verifyCoreDaoOpReturnOutputScript(script, params), false);
     });
   });
 });

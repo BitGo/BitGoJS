@@ -176,3 +176,80 @@ export function createCoreDaoOpReturnOutputScript({
     timelockBuffer,
   ]);
 }
+
+/**
+ * Parse a CoreDAO OP_RETURN output script into the constituent parts
+ * @param script
+ * @returns OpReturnParams
+ */
+export function parseCoreDaoOpReturnOutputScript(script: Buffer): OpReturnParams {
+  // OP_RETURN
+  let offset = 0;
+  if (!script.subarray(0, 1).equals(OP_RETURN_IDENTIFIER)) {
+    throw new Error('First byte must be an OP_RETURN');
+  }
+  offset += 1;
+
+  // Decode Length
+  const { length, offset: lengthOffset } = decodeOpReturnLength(script.subarray(offset));
+  // Do not include the OP_RETURN identifier and the length bytes itself in the length
+  if (script.length - lengthOffset - 1 !== length) {
+    throw new Error(`Length ${length} does not match script length (${script.length})`);
+  }
+  offset += lengthOffset;
+
+  // Decode satoshi+ identifier
+  if (!script.subarray(offset, offset + 4).equals(CORE_DAO_SATOSHI_PLUS_IDENTIFIER)) {
+    throw new Error('Invalid satoshi+ identifier');
+  }
+  offset += 4;
+
+  // Decode version
+  const version = script[offset];
+  offset += 1;
+
+  // Decode chainId
+  const chainId = Buffer.from(script.subarray(offset, offset + 2));
+  if (!(chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) || chainId.equals(CORE_DAO_MAINNET_CHAIN_ID))) {
+    throw new Error(
+      `Invalid ChainID: ${chainId.toString('hex')}. Must be either 0x045b (testnet) or 0x045c (mainnet).`
+    );
+  }
+  offset += 2;
+
+  // Decode delegator
+  const delegator = Buffer.from(script.subarray(offset, offset + 20));
+  offset += 20;
+
+  // Decode validator
+  const validator = Buffer.from(script.subarray(offset, offset + 20));
+  offset += 20;
+
+  // Decode fee
+  const fee = script[offset];
+  offset += 1;
+
+  const baseParams = { version, chainId, delegator, validator, fee };
+
+  // Decode redeemScript or timelock
+  if (offset === script.length - 4) {
+    return { ...baseParams, timelock: decodeTimelock(script.subarray(offset)) };
+  } else {
+    return { ...baseParams, redeemScript: Buffer.from(script.subarray(offset)) };
+  }
+}
+
+/**
+ * Check that the params are valid and that they make the given script
+ * @param script
+ * @param params
+ */
+export function verifyCoreDaoOpReturnOutputScript(script: Buffer, params: OpReturnParams): boolean {
+  try {
+    parseCoreDaoOpReturnOutputScript(script);
+    const inferredScript = createCoreDaoOpReturnOutputScript(params);
+    return inferredScript.equals(script);
+  } catch (e) {
+    return false;
+  }
+}
