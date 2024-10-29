@@ -3,6 +3,8 @@ import {
   CORE_DAO_MAINNET_CHAIN_ID,
   CORE_DAO_SATOSHI_PLUS_IDENTIFIER,
   createCoreDaoOpReturnOutputScript,
+  decodeTimelock,
+  encodeTimelock,
 } from '../../src';
 import { testutil } from '@bitgo/utxo-lib';
 
@@ -19,6 +21,9 @@ describe('OP_RETURN', function () {
     'hex'
   );
   const validTimelock = 800800;
+  // https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output-1
+  const defaultScript =
+    '6a4c505341542b01045bde60b7d0e6b758ca5dd8c61d377a2c5f1af51ec1a9e209f5ea0036c8c2f41078a3cebee57d8a47d501041f5e0e66b17576a914c4b8ae927ff2b9ce218e20bf06d425d6b68424fd88ac';
 
   describe('createCoreDaoOpReturnOutputScript', function () {
     it('should throw if invalid parameters are passed', function () {
@@ -97,8 +102,8 @@ describe('OP_RETURN', function () {
       assert.strictEqual(script[0], 0x6a);
       // Make sure that the length of the script matches what is in the buffer
       assert.strictEqual(
-        // We do not count the OP_RETURN opcode
-        script.length - 1,
+        // We do not count the OP_RETURN opcode or the bytes for the length
+        script.length - 2,
         script[1]
       );
     });
@@ -118,8 +123,8 @@ describe('OP_RETURN', function () {
       // Make sure that the length of the script matches what is in the buffer
       assert.strictEqual(script[1], 0x4c);
       assert.strictEqual(
-        // We do not count the OP_RETURN opcode
-        script.length - 1,
+        // We do not count the OP_RETURN opcode or the length + pushbytes
+        script.length - 3,
         script[2]
       );
       // Satoshi plus identifier
@@ -155,8 +160,8 @@ describe('OP_RETURN', function () {
       assert.strictEqual(script[0], 0x6a);
       // Make sure that the length of the script matches what is in the buffer
       assert.strictEqual(
-        // We do not count the OP_RETURN opcode
-        script.length - 1,
+        // We do not count the OP_RETURN opcode or the length
+        script.length - 2,
         script[1]
       );
       // Satoshi plus identifier
@@ -172,10 +177,59 @@ describe('OP_RETURN', function () {
       // Make sure that the fee is correct
       assert.strictEqual(script[49], validFee);
       // Make sure that the redeemScript is correct
+      assert.deepStrictEqual(script.subarray(50, 54).toString('hex'), encodeTimelock(validTimelock).toString('hex'));
+      assert.deepStrictEqual(decodeTimelock(script.subarray(50, 54)), validTimelock);
+    });
+
+    it('should recreate the example OP_RETURN correctly', function () {
       assert.deepStrictEqual(
-        script.subarray(50, 54).reverse().toString('hex'),
-        Buffer.alloc(4, validTimelock).toString('hex')
+        createCoreDaoOpReturnOutputScript({
+          version: 1,
+          chainId: Buffer.from('045b', 'hex'),
+          delegator: Buffer.from('de60b7d0e6b758ca5dd8c61d377a2c5f1af51ec1', 'hex'),
+          validator: Buffer.from('a9e209f5ea0036c8c2f41078a3cebee57d8a47d5', 'hex'),
+          fee: 1,
+          redeemScript: Buffer.from('041f5e0e66b17576a914c4b8ae927ff2b9ce218e20bf06d425d6b68424fd88ac', 'hex'),
+        }).toString('hex'),
+        // Source: https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output-1
+        defaultScript
       );
+    });
+
+    it('should create a OP_RETURN with the extra long length identifier', function () {
+      const redeemScriptPushdata2 = Buffer.alloc(265, 0);
+      const scriptPushdata2 = createCoreDaoOpReturnOutputScript({
+        version: validVersion,
+        chainId: validChainId,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        redeemScript: redeemScriptPushdata2,
+      });
+
+      // Make sure that the first byte is the OP_RETURN opcode
+      assert.strictEqual(scriptPushdata2[0], 0x6a);
+      // Make sure that there is the OP_PUSHDATA2 identifier
+      assert.strictEqual(scriptPushdata2[1], 0x4d);
+      // We do not count the OP_RETURN opcode or the bytes for the length
+      assert.strictEqual(scriptPushdata2.readInt16BE(2), scriptPushdata2.length - 4);
+
+      const redeemScriptPushdata4 = Buffer.alloc(65540, 0);
+      const scriptPushdata4 = createCoreDaoOpReturnOutputScript({
+        version: validVersion,
+        chainId: validChainId,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        redeemScript: redeemScriptPushdata4,
+      });
+
+      // Make sure that the first byte is the OP_RETURN opcode
+      assert.strictEqual(scriptPushdata4[0], 0x6a);
+      // Make sure that there is the OP_PUSHDATA4 identifier
+      assert.strictEqual(scriptPushdata4[1], 0x4e);
+      // We do not count the OP_RETURN opcode or the bytes for the length
+      assert.strictEqual(scriptPushdata4.readInt32BE(2), scriptPushdata4.length - 6);
     });
   });
 });
