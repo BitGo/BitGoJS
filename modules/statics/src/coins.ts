@@ -344,6 +344,13 @@ const BERA_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
 ];
+const OAS_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+  CoinFeature.BULK_TRANSACTION,
+];
 const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const ZETA_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_SINGAPORE];
 const ZETA_EVM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SINGAPORE];
@@ -1225,6 +1232,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BERA,
     BaseUnit.ETH,
     BERA_FEATURES
+  ),
+  account(
+    '7482e3f1-5bf8-45a6-9d98-69e0506602d2',
+    'oas',
+    'oaschain',
+    Networks.main.oas,
+    18,
+    UnderlyingAsset.OAS,
+    BaseUnit.ETH,
+    OAS_FEATURES
+  ),
+  account(
+    'b5316b57-8aa3-4f0b-9736-96b7838dbde8',
+    'toas',
+    'Testnet oaschain',
+    Networks.test.oas,
+    18,
+    UnderlyingAsset.OAS,
+    BaseUnit.ETH,
+    OAS_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
