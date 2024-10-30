@@ -1056,6 +1056,24 @@ class BerachainTestnet extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0xf499549720116c3dEA867D4fC279C43aCA172712';
 }
 
+class Oas extends Mainnet implements EthereumNetwork {
+  name = 'Oaschain';
+  family = CoinFamily.OAS;
+  explorerUrl = 'https://explorer.oasys.games/tx/';
+  accountExplorerUrl = 'https://explorer.oasys.games/address/';
+  chainId = 248;
+  nativeCoinOperationHashPrefix = '248';
+}
+
+class OasTestnet extends Testnet implements EthereumNetwork {
+  name = 'OaschainTestnet';
+  family = CoinFamily.OAS;
+  explorerUrl = 'https://scan.sandverse.oasys.games/tx/';
+  accountExplorerUrl = 'https://scan.sandverse.oasys.games/address/';
+  chainId = 20197;
+  nativeCoinOperationHashPrefix = '20197';
+}
+
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
   name = 'BaseChainTestnet';
   family = CoinFamily.BASEETH;
@@ -1121,6 +1139,7 @@ export const Networks = {
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
     polygon: Object.freeze(new Polygon()),
+    oas: Object.freeze(new Oas()),
     ofc: Object.freeze(new Ofc()),
     optimism: Object.freeze(new Optimism()),
     osmo: Object.freeze(new Osmo()),
@@ -1181,6 +1200,7 @@ export const Networks = {
     lnbtc: Object.freeze(new LightningBitcoinTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
+    oas: Object.freeze(new OasTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
     osmo: Object.freeze(new OsmoTestnet()),
