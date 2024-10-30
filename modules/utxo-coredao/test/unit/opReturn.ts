@@ -18,11 +18,7 @@ describe('OP_RETURN', function () {
   const validDelegator = Buffer.alloc(20, testutil.getKey('wasm-possum').publicKey);
   const validValidator = Buffer.alloc(20, testutil.getKey('possum-wasm').publicKey);
   const validFee = 1;
-  // p2sh 2-3 script
-  const validRedeemScript = Buffer.from(
-    '522103a8295453660d5e212d4aaf82e8254e27e4c6752b2afa36e648537b644a6ca2702103099e28dd8bcb345e655b5312db0a574dded8f740eeef636cf45317bf010452982102a45b464fed0167d175d89bbc31d7ba1c288b52f64270c7eddaafa38803c5a6b553ae',
-    'hex'
-  );
+  const validRedeemScript = Buffer.from('522103a8295453660d5e212d55556666666666666666666666666666666666', 'hex');
   const validTimelock = 800800;
   // https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output-1
   const defaultScript =
@@ -88,6 +84,19 @@ describe('OP_RETURN', function () {
           validator: validValidator,
           fee: validFee,
           timelock: -1,
+        })
+      );
+    });
+
+    it('should throw if the length of the script is too long', function () {
+      assert.throws(() =>
+        createCoreDaoOpReturnOutputScript({
+          version: validVersion,
+          chainId: validChainId,
+          delegator: validDelegator,
+          validator: validValidator,
+          fee: validFee,
+          redeemScript: Buffer.alloc(100),
         })
       );
     });
@@ -197,42 +206,6 @@ describe('OP_RETURN', function () {
         // Source: https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output-1
         defaultScript
       );
-    });
-
-    it('should create a OP_RETURN with the extra long length identifier', function () {
-      const redeemScriptPushdata2 = Buffer.alloc(265, 0);
-      const scriptPushdata2 = createCoreDaoOpReturnOutputScript({
-        version: validVersion,
-        chainId: validChainId,
-        delegator: validDelegator,
-        validator: validValidator,
-        fee: validFee,
-        redeemScript: redeemScriptPushdata2,
-      });
-
-      // Make sure that the first byte is the OP_RETURN opcode
-      assert.strictEqual(scriptPushdata2[0], 0x6a);
-      // Make sure that there is the OP_PUSHDATA2 identifier
-      assert.strictEqual(scriptPushdata2[1], 0x4d);
-      // We do not count the OP_RETURN opcode or the bytes for the length
-      assert.strictEqual(scriptPushdata2.readInt16BE(2), scriptPushdata2.length - 4);
-
-      const redeemScriptPushdata4 = Buffer.alloc(65540, 0);
-      const scriptPushdata4 = createCoreDaoOpReturnOutputScript({
-        version: validVersion,
-        chainId: validChainId,
-        delegator: validDelegator,
-        validator: validValidator,
-        fee: validFee,
-        redeemScript: redeemScriptPushdata4,
-      });
-
-      // Make sure that the first byte is the OP_RETURN opcode
-      assert.strictEqual(scriptPushdata4[0], 0x6a);
-      // Make sure that there is the OP_PUSHDATA4 identifier
-      assert.strictEqual(scriptPushdata4[1], 0x4e);
-      // We do not count the OP_RETURN opcode or the bytes for the length
-      assert.strictEqual(scriptPushdata4.readInt32BE(2), scriptPushdata4.length - 6);
     });
   });
 

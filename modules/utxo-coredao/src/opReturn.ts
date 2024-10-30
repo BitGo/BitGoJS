@@ -1,12 +1,11 @@
+import { payments, networks } from '@bitgo/utxo-lib';
+
 // Source: https://docs.coredao.org/docs/Learn/products/btc-staking/design
 export const CORE_DAO_TESTNET_CHAIN_ID = Buffer.from('045b', 'hex');
 export const CORE_DAO_MAINNET_CHAIN_ID = Buffer.from('045c', 'hex');
 export const CORE_DAO_SATOSHI_PLUS_IDENTIFIER = Buffer.from('5341542b', 'hex');
 // https://github.com/bitcoin/bitcoin/blob/5961b23898ee7c0af2626c46d5d70e80136578d3/src/script/script.h#L47
 const OP_RETURN_IDENTIFIER = Buffer.from('6a', 'hex');
-const OP_PUSHDATA1_IDENTIFIER = Buffer.from('4c', 'hex');
-const OP_PUSHDATA2_IDENTIFIER = Buffer.from('4d', 'hex');
-const OP_PUSHDATA4_IDENTIFIER = Buffer.from('4e', 'hex');
 
 export function encodeTimelock(timelock: number): Buffer {
   const buff = Buffer.alloc(4);
@@ -19,47 +18,6 @@ export function decodeTimelock(buffer: Buffer): number {
     throw new Error('Invalid timelock buffer length');
   }
   return buffer.readUInt32LE();
-}
-
-export function encodeOpReturnLength(length: number): Buffer {
-  /**
-   * Any bytes with lengths smaller than 0x4c (76) is pushed with 1 byte equal to the size (byte[10] -> 10 + byte[10]; byte[70] -> 70 + byte[70])
-   * Any bytes bigger than or equal to 0x4c is pushed by using 0x4c (ie. OP_PUSHDATA) followed by the length followed by the data (byte[80] -> OP_PUSHDATA + 80 + byte[80])
-   * Any bytes with length bigger than 255 uses 0x4d (OP_PUSHDATA2)
-   * Any bytes with length bigger than 65535 (0xffff) uses 0x4e (OP_PUSHDATA4)
-   */
-  if (length < 76) {
-    return Buffer.alloc(1, length);
-  } else if (length < 255) {
-    return Buffer.concat([OP_PUSHDATA1_IDENTIFIER, Buffer.alloc(1, length)]);
-  } else if (length < 65535) {
-    const buff = Buffer.alloc(2);
-    buff.writeUInt16BE(length);
-    return Buffer.concat([OP_PUSHDATA2_IDENTIFIER, buff]);
-  } else {
-    const buff = Buffer.alloc(4);
-    buff.writeUInt32BE(length);
-    return Buffer.concat([OP_PUSHDATA4_IDENTIFIER, buff]);
-  }
-}
-
-/**
- * Decode the length of an OP_RETURN output script
- * @param buffer
- * @returns { length: number, offset: number } Length of the OP_RETURN output script and the offset
- */
-export function decodeOpReturnLength(buffer: Buffer): { length: number; offset: number } {
-  if (buffer[0] < 0x4c) {
-    return { length: buffer[0], offset: 1 };
-  } else if (buffer[0] === 0x4c) {
-    return { length: buffer[1], offset: 2 };
-  } else if (buffer[0] === 0x4d) {
-    return { length: buffer.readUInt16BE(1), offset: 3 };
-  } else if (buffer[0] === 0x4e) {
-    return { length: buffer.readUInt32BE(1), offset: 5 };
-  } else {
-    throw new Error('Invalid length');
-  }
 }
 
 type BaseParams = {
@@ -151,21 +109,7 @@ export function createCoreDaoOpReturnOutputScript({
   // encode the number into a 4-byte buffer
   // if timelock is provided, write it into 32-bit little-endian
   const timelockBuffer = 'timelock' in rest ? encodeTimelock(rest.timelock) : Buffer.from([]);
-
-  const lengthBuffer = encodeOpReturnLength(
-    CORE_DAO_SATOSHI_PLUS_IDENTIFIER.length +
-      versionBuffer.length +
-      chainId.length +
-      delegator.length +
-      validator.length +
-      feeBuffer.length +
-      redeemScriptBuffer.length +
-      timelockBuffer.length
-  );
-
-  return Buffer.concat([
-    OP_RETURN_IDENTIFIER,
-    lengthBuffer,
+  const data = Buffer.concat([
     CORE_DAO_SATOSHI_PLUS_IDENTIFIER,
     versionBuffer,
     chainId,
@@ -175,6 +119,19 @@ export function createCoreDaoOpReturnOutputScript({
     redeemScriptBuffer,
     timelockBuffer,
   ]);
+  if (data.length > 80) {
+    throw new Error('OP_RETURN outputs cannot have a length larger than 80 bytes');
+  }
+
+  const payment = payments.embed({
+    data: [data],
+    network: chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) ? networks.testnet : networks.bitcoin,
+  });
+  if (!payment.output) {
+    throw new Error('Unable to create OP_RETURN output');
+  }
+
+  return payment.output;
 }
 
 /**
@@ -183,33 +140,35 @@ export function createCoreDaoOpReturnOutputScript({
  * @returns OpReturnParams
  */
 export function parseCoreDaoOpReturnOutputScript(script: Buffer): OpReturnParams {
-  // OP_RETURN
-  let offset = 0;
   if (!script.subarray(0, 1).equals(OP_RETURN_IDENTIFIER)) {
     throw new Error('First byte must be an OP_RETURN');
   }
-  offset += 1;
 
-  // Decode Length
-  const { length, offset: lengthOffset } = decodeOpReturnLength(script.subarray(offset));
-  // Do not include the OP_RETURN identifier and the length bytes itself in the length
-  if (script.length - lengthOffset - 1 !== length) {
-    throw new Error(`Length ${length} does not match script length (${script.length})`);
+  const payment = payments.embed({
+    output: script,
+  });
+  const data = payment.data;
+  if (!data || data.length !== 1) {
+    throw new Error('Invalid OP_RETURN output');
   }
-  offset += lengthOffset;
+  const dataBuffer = data[0];
+  if (dataBuffer.length > 80) {
+    throw new Error(`OP_RETURN outputs cannot have a length larger than 80 bytes`);
+  }
+  let offset = 0;
 
   // Decode satoshi+ identifier
-  if (!script.subarray(offset, offset + 4).equals(CORE_DAO_SATOSHI_PLUS_IDENTIFIER)) {
+  if (!dataBuffer.subarray(offset, offset + 4).equals(CORE_DAO_SATOSHI_PLUS_IDENTIFIER)) {
     throw new Error('Invalid satoshi+ identifier');
   }
   offset += 4;
 
   // Decode version
-  const version = script[offset];
+  const version = dataBuffer[offset];
   offset += 1;
 
   // Decode chainId
-  const chainId = Buffer.from(script.subarray(offset, offset + 2));
+  const chainId = Buffer.from(dataBuffer.subarray(offset, offset + 2));
   if (!(chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) || chainId.equals(CORE_DAO_MAINNET_CHAIN_ID))) {
     throw new Error(
       `Invalid ChainID: ${chainId.toString('hex')}. Must be either 0x045b (testnet) or 0x045c (mainnet).`
@@ -218,24 +177,24 @@ export function parseCoreDaoOpReturnOutputScript(script: Buffer): OpReturnParams
   offset += 2;
 
   // Decode delegator
-  const delegator = Buffer.from(script.subarray(offset, offset + 20));
+  const delegator = Buffer.from(dataBuffer.subarray(offset, offset + 20));
   offset += 20;
 
   // Decode validator
-  const validator = Buffer.from(script.subarray(offset, offset + 20));
+  const validator = Buffer.from(dataBuffer.subarray(offset, offset + 20));
   offset += 20;
 
   // Decode fee
-  const fee = script[offset];
+  const fee = dataBuffer[offset];
   offset += 1;
 
   const baseParams = { version, chainId, delegator, validator, fee };
 
   // Decode redeemScript or timelock
-  if (offset === script.length - 4) {
-    return { ...baseParams, timelock: decodeTimelock(script.subarray(offset)) };
+  if (offset === dataBuffer.length - 4) {
+    return { ...baseParams, timelock: decodeTimelock(dataBuffer.subarray(offset)) };
   } else {
-    return { ...baseParams, redeemScript: Buffer.from(script.subarray(offset)) };
+    return { ...baseParams, redeemScript: Buffer.from(dataBuffer.subarray(offset)) };
   }
 }
 
