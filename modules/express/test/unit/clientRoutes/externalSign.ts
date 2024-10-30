@@ -367,6 +367,7 @@ describe('External signer', () => {
     const reqCommitment = {
       bitgo: bgTest,
       body: {
+        bitgoGpgPubKey: bitgoGpgKey.public,
         txRequest: {
           apiVersion: 'full',
           walletId: walletID,

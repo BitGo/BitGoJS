@@ -2,7 +2,7 @@ import { IRequestTracer } from '../../../api';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
-import { Keychain } from '../../keychain';
+import { Keychain, KeyIndices } from '../../keychain';
 import { getTxRequest } from '../../tss';
 import { IWallet, BackupProvider } from '../../wallet';
 import { MpcUtils } from '../mpcUtils';
@@ -40,12 +40,17 @@ import {
 } from './baseTypes';
 import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { RequestTracer } from '../util';
+import * as openpgp from 'openpgp';
+import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss/bitgoPubKeys';
+import { getBitgoGpgPubKey } from '../opengpgUtils';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
  */
 export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtils<KeyShare> {
   private _wallet?: IWallet;
+  protected bitgoPublicGpgKey: openpgp.Key;
+  protected bitgoMPCv2PublicGpgKey: openpgp.Key | undefined;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
     super(bitgo, baseCoin);
@@ -57,6 +62,81 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       throw new Error('Wallet not defined');
     }
     return this._wallet;
+  }
+
+  protected async setBitgoGpgPubKey(bitgo) {
+    const { mpcV1, mpcV2 } = await getBitgoGpgPubKey(bitgo);
+    // Do not unset the MPCv1 key if it is already set. This is to avoid unsetting if extra constants api calls fail.
+    if (mpcV1 !== undefined) {
+      this.bitgoPublicGpgKey = mpcV1;
+    }
+    // Do not unset the MPCv2 key if it is already set
+    if (mpcV2 !== undefined) {
+      this.bitgoMPCv2PublicGpgKey = mpcV2;
+    }
+  }
+
+  protected async pickBitgoPubGpgKeyForSigning(
+    isMpcv2: boolean,
+    reqId?: IRequestTracer,
+    enterpriseId?: string
+  ): Promise<openpgp.Key> {
+    let bitgoGpgPubKey;
+    try {
+      const bitgoKeyChain = await this.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.BITGO], reqId });
+      if (!bitgoKeyChain || !bitgoKeyChain.hsmType) {
+        throw new Error('Missing Bitgo GPG Pub Key Type.');
+      }
+      bitgoGpgPubKey = await openpgp.readKey({
+        armoredKey: getBitgoMpcGpgPubKey(
+          this.bitgo.getEnv(),
+          bitgoKeyChain.hsmType === 'nitro' ? 'nitro' : 'onprem',
+          isMpcv2 ? 'mpcv2' : 'mpcv1'
+        ),
+      });
+    } catch (e) {
+      if (!envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+        console.warn(
+          `Unable to get BitGo GPG key based on key data with error: ${e}. Fetching BitGo GPG key based on feature flags.`
+        );
+        // First try to get the key based on feature flags, if that fails, fallback to the default key from constants api.
+        bitgoGpgPubKey = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(enterpriseId, isMpcv2, reqId)
+          .then(
+            async (pubKey) =>
+              pubKey ?? (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey())
+          )
+          .catch(async (e) => (isMpcv2 ? await this.getBitgoMpcv2PublicGpgKey() : await this.getBitgoPublicGpgKey()));
+      } else {
+        throw new Error(
+          `Environment "${this.bitgo.getEnv()}" requires a BitGo GPG Pub Key Config in BitGoJS for TSS. Error thrown while getting the key from config: ${e}`
+        );
+      }
+    }
+    return bitgoGpgPubKey;
+  }
+
+  async getBitgoPublicGpgKey(): Promise<openpgp.Key> {
+    if (!this.bitgoPublicGpgKey) {
+      // retry getting bitgo's gpg key
+      await this.setBitgoGpgPubKey(this.bitgo);
+      if (!this.bitgoPublicGpgKey) {
+        throw new Error("Failed to get Bitgo's gpg key");
+      }
+    }
+
+    return this.bitgoPublicGpgKey;
+  }
+
+  async getBitgoMpcv2PublicGpgKey(): Promise<openpgp.Key> {
+    if (!this.bitgoMPCv2PublicGpgKey) {
+      // retry getting bitgo's gpg key
+      await this.setBitgoGpgPubKey(this.bitgo);
+      if (!this.bitgoMPCv2PublicGpgKey) {
+        throw new Error("Failed to get Bitgo's gpg key");
+      }
+    }
+
+    return this.bitgoMPCv2PublicGpgKey;
   }
 
   async createBitgoHeldBackupKeyShare(
@@ -189,7 +269,12 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    *
    * @returns {Promise<{ userToBitgoCommitment: CommitmentShareRecor, encryptedSignerShare: EncryptedSignerShareRecord }>} - Commitment Share and the Encrypted Signer Share to BitGo
    */
-  createCommitmentShareFromTxRequest(params: { txRequest: TxRequest; prv: string; walletPassphrase: string }): Promise<{
+  createCommitmentShareFromTxRequest(params: {
+    txRequest: TxRequest;
+    prv: string;
+    walletPassphrase: string;
+    bitgoGpgPubKey: string;
+  }): Promise<{
     userToBitgoCommitment: CommitmentShareRecord;
     encryptedSignerShare: EncryptedSignerShareRecord;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;

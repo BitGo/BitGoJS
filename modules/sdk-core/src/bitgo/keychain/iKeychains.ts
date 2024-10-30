@@ -1,5 +1,6 @@
 import { IRequestTracer } from '../../api';
 import { KeychainsTriplet, KeyPair } from '../baseCoin';
+import { BitgoPubKeyType } from '../utils/tss/baseTypes';
 import { BackupProvider, IWallet } from '../wallet';
 import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
@@ -39,6 +40,7 @@ export interface Keychain {
   commonKeychain?: string;
   keyShares?: ApiKeyShare[];
   walletHSMGPGPublicKeySigs?: string;
+  hsmType?: BitgoPubKeyType;
   type: KeyType;
   source?: SourceType;
   coinSpecific?: { [coinName: string]: unknown };
