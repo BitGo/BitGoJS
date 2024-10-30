@@ -2,12 +2,10 @@ import * as assert from 'assert';
 import {
   CORE_DAO_MAINNET_CHAIN_ID,
   CORE_DAO_SATOSHI_PLUS_IDENTIFIER,
-  CORE_DAO_TESTNET_CHAIN_ID,
   createCoreDaoOpReturnOutputScript,
   decodeTimelock,
   encodeTimelock,
   parseCoreDaoOpReturnOutputScript,
-  verifyCoreDaoOpReturnOutputScript,
 } from '../../src';
 import { testutil } from '@bitgo/utxo-lib';
 
@@ -266,63 +264,6 @@ describe('OP_RETURN', function () {
     it('should fail if the chainId is incorrect', function () {
       const script = defaultScript.replace('045b', '0454');
       assert.throws(() => parseCoreDaoOpReturnOutputScript(Buffer.from(script, 'hex')));
-    });
-  });
-
-  describe('verifyCoreDaoOpReturnOutputScript', function () {
-    it('should return true for a valid script with a redeem script', function () {
-      const params = {
-        version: validVersion,
-        chainId: validChainId,
-        delegator: validDelegator,
-        validator: validValidator,
-        fee: validFee,
-        redeemScript: validRedeemScript,
-      };
-      const script = createCoreDaoOpReturnOutputScript(params);
-      assert.strictEqual(verifyCoreDaoOpReturnOutputScript(script, params), true);
-    });
-
-    it('should return true for a valid script with a timelock', function () {
-      const params = {
-        version: validVersion,
-        chainId: validChainId,
-        delegator: validDelegator,
-        validator: validValidator,
-        fee: validFee,
-        timelock: validTimelock,
-      };
-      const script = createCoreDaoOpReturnOutputScript(params);
-      assert.strictEqual(verifyCoreDaoOpReturnOutputScript(script, params), true);
-    });
-
-    it('should return false when they are not equivalent', function () {
-      const params = {
-        version: validVersion,
-        chainId: validChainId,
-        delegator: validDelegator,
-        validator: validValidator,
-        fee: validFee,
-        redeemScript: validRedeemScript,
-      };
-      const script = createCoreDaoOpReturnOutputScript(params);
-      // Change the version
-      params.version = 3;
-      assert.strictEqual(verifyCoreDaoOpReturnOutputScript(script, params), false);
-    });
-
-    it('should fail if they one is mainnet and one is testnet', function () {
-      const params = {
-        version: validVersion,
-        chainId: CORE_DAO_MAINNET_CHAIN_ID,
-        delegator: validDelegator,
-        validator: validValidator,
-        fee: validFee,
-        timelock: validTimelock,
-      };
-      const script = createCoreDaoOpReturnOutputScript(params);
-      params.chainId = CORE_DAO_TESTNET_CHAIN_ID;
-      assert.strictEqual(verifyCoreDaoOpReturnOutputScript(script, params), false);
     });
   });
 });

@@ -56,8 +56,6 @@ export function createCoreDaoOpReturnOutputScript({
    *
    * The OP_RETURN output should contain all staking information in order, and be composed in the following format:
    *
-   * OP_RETURN: identifier 0x6a
-   * LENGTH: which represents the total byte length after the OP_RETURN opcode. Note that all data has to be pushed with its appropriate size byte(s). [1]
    * Satoshi Plus Identifier: (SAT+) 4 bytes
    * Version: (0x01) 1 byte
    * Chain ID: (0x045b (1115) for Core Testnet and 0x045c (1116) for Core Mainnet) 2 bytes
@@ -67,13 +65,12 @@ export function createCoreDaoOpReturnOutputScript({
    * (Optional) RedeemScript
    * (Optional) Timelock: 4 bytes
    *
-   * [1] Any bytes bigger than or equal to 0x4c is pushed by using 0x4c (ie. OP_PUSHDATA)
-   * followed by the length followed by the data (byte[80] -> OP_PUSHDATA + 80 + byte[80])
-   *
    * Either RedeemScript or Timelock must be available, the purpose is to allow relayer to
    * obtain the RedeemScript and submit transactions on Core. If a RedeemScript is provided,
    * relayer will use it directly. Otherwise, relayer will construct the redeem script based
    * on the timelock and the information in the transaction inputs.
+   *
+   * Note that any length > 80 bytes wont be relayed by nodes and therefore we will throw an error.
    */
   if (version < 0 || version > 255) {
     throw new Error('Invalid version - out of range');
@@ -195,20 +192,5 @@ export function parseCoreDaoOpReturnOutputScript(script: Buffer): OpReturnParams
     return { ...baseParams, timelock: decodeTimelock(dataBuffer.subarray(offset)) };
   } else {
     return { ...baseParams, redeemScript: Buffer.from(dataBuffer.subarray(offset)) };
-  }
-}
-
-/**
- * Check that the params are valid and that they make the given script
- * @param script
- * @param params
- */
-export function verifyCoreDaoOpReturnOutputScript(script: Buffer, params: OpReturnParams): boolean {
-  try {
-    parseCoreDaoOpReturnOutputScript(script);
-    const inferredScript = createCoreDaoOpReturnOutputScript(params);
-    return inferredScript.equals(script);
-  } catch (e) {
-    return false;
   }
 }
