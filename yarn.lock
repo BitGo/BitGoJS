@@ -3994,19 +3994,6 @@
     "@polkadot/util" "^13.2.1"
     tslib "^2.8.0"
 
-"@polkadot/api-augment@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/api-augment/-/api-augment-14.2.1.tgz#8d732f72208f5fcbff6adc33819b30e83228f540"
-  integrity sha512-Vi1iuGliJe3rrH2wyfZq/FIYncUqX6ue15Zx0gpj20kRW9hNEU3ywr3NRrr3UXGZRozJZ/C4s0FNneNYvu/KCQ==
-  dependencies:
-    "@polkadot/api-base" "14.2.1"
-    "@polkadot/rpc-augment" "14.2.1"
-    "@polkadot/types" "14.2.1"
-    "@polkadot/types-augment" "14.2.1"
-    "@polkadot/types-codec" "14.2.1"
-    "@polkadot/util" "^13.2.2"
-    tslib "^2.8.0"
-
 "@polkadot/api-base@14.1.1":
   version "14.1.1"
   resolved "https://registry.npmjs.org/@polkadot/api-base/-/api-base-14.1.1.tgz#3aa619fa1df5b2c00e0a1ec00dd82d8a2bd58474"
@@ -4015,17 +4002,6 @@
     "@polkadot/rpc-core" "14.1.1"
     "@polkadot/types" "14.1.1"
     "@polkadot/util" "^13.2.1"
-    rxjs "^7.8.1"
-    tslib "^2.8.0"
-
-"@polkadot/api-base@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/api-base/-/api-base-14.2.1.tgz#09e1a4019a7284583a26d153ca0f01092465b67e"
-  integrity sha512-HofQlndP8OeO91iU+Ueg7DWo7fmzD5TJs/WHBS2XwSZfZ6rzYnfBxpFM8A51oY+HxXHc5EgvjdhqY2aO2OjZ2w==
-  dependencies:
-    "@polkadot/rpc-core" "14.2.1"
-    "@polkadot/types" "14.2.1"
-    "@polkadot/util" "^13.2.2"
     rxjs "^7.8.1"
     tslib "^2.8.0"
 
@@ -4045,23 +4021,7 @@
     rxjs "^7.8.1"
     tslib "^2.8.0"
 
-"@polkadot/api-derive@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/api-derive/-/api-derive-14.2.1.tgz#9fa769e28a831bf48648539dab2089e8559855f1"
-  integrity sha512-2JqFcu+qRHpeveu3f/LTxhWw0MNt4M+aNeyttyo5kRRSAL/pmU75E43b4tXq7UZmlmKZZtga8b0dFHoiMTuuwA==
-  dependencies:
-    "@polkadot/api" "14.2.1"
-    "@polkadot/api-augment" "14.2.1"
-    "@polkadot/api-base" "14.2.1"
-    "@polkadot/rpc-core" "14.2.1"
-    "@polkadot/types" "14.2.1"
-    "@polkadot/types-codec" "14.2.1"
-    "@polkadot/util" "^13.2.2"
-    "@polkadot/util-crypto" "^13.2.2"
-    rxjs "^7.8.1"
-    tslib "^2.8.0"
-
-"@polkadot/api@14.1.1":
+"@polkadot/api@14.1.1", "@polkadot/api@^14.0.1":
   version "14.1.1"
   resolved "https://registry.npmjs.org/@polkadot/api/-/api-14.1.1.tgz#4aff6b397ff366ef1d24f77197d7a1aa8cb0b11e"
   integrity sha512-3uSJUdaohKtAvj9fjqyOkYs0PthWBdWtkko2TcYGRxj9BikbZMmx+agdkty8VrOxvn3pPoTRKe/jMt2Txn2MaA==
@@ -4084,29 +4044,6 @@
     rxjs "^7.8.1"
     tslib "^2.8.0"
 
-"@polkadot/api@14.2.1", "@polkadot/api@^14.0.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/api/-/api-14.2.1.tgz#13886dd144aec3e37573f29aa5d173b5eb950d92"
-  integrity sha512-vYYOvCbGzKWq2auv7e3r71lp0N9hLi4Wfvdb+PjDlUWy4CBydDPgNRL7eC/pJyY4/8zs5dAWVmmu5SQsdpM93g==
-  dependencies:
-    "@polkadot/api-augment" "14.2.1"
-    "@polkadot/api-base" "14.2.1"
-    "@polkadot/api-derive" "14.2.1"
-    "@polkadot/keyring" "^13.2.2"
-    "@polkadot/rpc-augment" "14.2.1"
-    "@polkadot/rpc-core" "14.2.1"
-    "@polkadot/rpc-provider" "14.2.1"
-    "@polkadot/types" "14.2.1"
-    "@polkadot/types-augment" "14.2.1"
-    "@polkadot/types-codec" "14.2.1"
-    "@polkadot/types-create" "14.2.1"
-    "@polkadot/types-known" "14.2.1"
-    "@polkadot/util" "^13.2.2"
-    "@polkadot/util-crypto" "^13.2.2"
-    eventemitter3 "^5.0.1"
-    rxjs "^7.8.1"
-    tslib "^2.8.0"
-
 "@polkadot/keyring@13.2.1":
   version "13.2.1"
   resolved "https://registry.npmjs.org/@polkadot/keyring/-/keyring-13.2.1.tgz#2fa93582a1affebe41d1a1574476e7adb71915c8"
@@ -4116,7 +4053,7 @@
     "@polkadot/util-crypto" "13.2.1"
     tslib "^2.8.0"
 
-"@polkadot/keyring@^13.1.1", "@polkadot/keyring@^13.2.1", "@polkadot/keyring@^13.2.2":
+"@polkadot/keyring@^13.1.1", "@polkadot/keyring@^13.2.1":
   version "13.2.2"
   resolved "https://registry.npmjs.org/@polkadot/keyring/-/keyring-13.2.2.tgz#ec3b2e1d71e177accf6428ea6564569d73d35bdb"
   integrity sha512-h4bPU92CALAAC+QOp6+zttuhI5H0GKOUzj1qwnmoPVoWxh21FoekLAXO1YJlsKxciTDdK5OhjdNPOIqcF0GCXA==
@@ -4134,7 +4071,7 @@
     "@substrate/ss58-registry" "^1.51.0"
     tslib "^2.8.0"
 
-"@polkadot/networks@13.2.2", "@polkadot/networks@^13.2.1", "@polkadot/networks@^13.2.2":
+"@polkadot/networks@13.2.2", "@polkadot/networks@^13.2.1":
   version "13.2.2"
   resolved "https://registry.npmjs.org/@polkadot/networks/-/networks-13.2.2.tgz#6c8e6340fc718da925f5aab0c91c69f2971ca3f0"
   integrity sha512-di3dLB9BcLQ9ARcDe/nizl7jZZnQbQlxB8kXtAXqTIVFtshtKT+zYcji6dTX7xX9/O9tZB7qnrvuIuI0MkwJ5A==
@@ -4154,17 +4091,6 @@
     "@polkadot/util" "^13.2.1"
     tslib "^2.8.0"
 
-"@polkadot/rpc-augment@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/rpc-augment/-/rpc-augment-14.2.1.tgz#9e0651b49ed7af7ba89be5e9ff4345ea0838382c"
-  integrity sha512-ouRRq7suXiPBECImMf+pM7U/k4541uJxuYreFhnplE+egaikKieY720hKiRxesLALr6fjgBr3DRsUsk8yP3YtA==
-  dependencies:
-    "@polkadot/rpc-core" "14.2.1"
-    "@polkadot/types" "14.2.1"
-    "@polkadot/types-codec" "14.2.1"
-    "@polkadot/util" "^13.2.2"
-    tslib "^2.8.0"
-
 "@polkadot/rpc-core@14.1.1":
   version "14.1.1"
   resolved "https://registry.npmjs.org/@polkadot/rpc-core/-/rpc-core-14.1.1.tgz#828530f417e5637dd407bb4833bc57a58c77faaf"
@@ -4174,18 +4100,6 @@
     "@polkadot/rpc-provider" "14.1.1"
     "@polkadot/types" "14.1.1"
     "@polkadot/util" "^13.2.1"
-    rxjs "^7.8.1"
-    tslib "^2.8.0"
-
-"@polkadot/rpc-core@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/rpc-core/-/rpc-core-14.2.1.tgz#d4d609e75c315d336fcd28f4260be75518cda1b8"
-  integrity sha512-jGOoRKdY6XbMY4Z7N9lKI3YmLfZWjT+DcXo+kRfSr3YgORDUXNwHy9v5doJCkPoY3OIIDmhlK5OaIEXeEjvrcQ==
-  dependencies:
-    "@polkadot/rpc-augment" "14.2.1"
-    "@polkadot/rpc-provider" "14.2.1"
-    "@polkadot/types" "14.2.1"
-    "@polkadot/util" "^13.2.2"
     rxjs "^7.8.1"
     tslib "^2.8.0"
 
@@ -4209,26 +4123,6 @@
   optionalDependencies:
     "@substrate/connect" "0.8.11"
 
-"@polkadot/rpc-provider@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/rpc-provider/-/rpc-provider-14.2.1.tgz#1bbe18607e731a5fc46420e389f6b4801b1e7de9"
-  integrity sha512-5ty21djvymqgxIpqKya9ekLHbiIRISIq9pl/GyVUSj2y3ditmXHF1UElmKfMCvi0b6nmOJlkxJIb7ZDyfjkBag==
-  dependencies:
-    "@polkadot/keyring" "^13.2.2"
-    "@polkadot/types" "14.2.1"
-    "@polkadot/types-support" "14.2.1"
-    "@polkadot/util" "^13.2.2"
-    "@polkadot/util-crypto" "^13.2.2"
-    "@polkadot/x-fetch" "^13.2.2"
-    "@polkadot/x-global" "^13.2.2"
-    "@polkadot/x-ws" "^13.2.2"
-    eventemitter3 "^5.0.1"
-    mock-socket "^9.3.1"
-    nock "^13.5.5"
-    tslib "^2.8.0"
-  optionalDependencies:
-    "@substrate/connect" "0.8.11"
-
 "@polkadot/types-augment@14.1.1":
   version "14.1.1"
   resolved "https://registry.npmjs.org/@polkadot/types-augment/-/types-augment-14.1.1.tgz#e7760a596cb276102dc74a8d0835ea6bf2cfccfc"
@@ -4237,16 +4131,6 @@
     "@polkadot/types" "14.1.1"
     "@polkadot/types-codec" "14.1.1"
     "@polkadot/util" "^13.2.1"
-    tslib "^2.8.0"
-
-"@polkadot/types-augment@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/types-augment/-/types-augment-14.2.1.tgz#afa60a73cb169bb907f8b9f392d6a14a4df1dc4c"
-  integrity sha512-dAsiRRPr7ClX/zz7YqpIr4dB5fOR8UzXnxz8d4Tyrcxpf9CAivIIJ8Mxl5M/71CTF/LSlCbSvsmvBG0mAX7HLg==
-  dependencies:
-    "@polkadot/types" "14.2.1"
-    "@polkadot/types-codec" "14.2.1"
-    "@polkadot/util" "^13.2.2"
     tslib "^2.8.0"
 
 "@polkadot/types-codec@14.1.1":
@@ -4258,15 +4142,6 @@
     "@polkadot/x-bigint" "^13.2.1"
     tslib "^2.8.0"
 
-"@polkadot/types-codec@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/types-codec/-/types-codec-14.2.1.tgz#ef6360313d86bacac588ed08d1baaa44d8c42503"
-  integrity sha512-NKI9hiW2tE3AcEKL1eGd6fyNa2QbOvlH+mEq1vTyT3/fm65mrtIqOuZASWa3kXMQmOHCs2/mMGh7p1Kj8glalQ==
-  dependencies:
-    "@polkadot/util" "^13.2.2"
-    "@polkadot/x-bigint" "^13.2.2"
-    tslib "^2.8.0"
-
 "@polkadot/types-create@14.1.1":
   version "14.1.1"
   resolved "https://registry.npmjs.org/@polkadot/types-create/-/types-create-14.1.1.tgz#120a2c7e410e912dc431b518d1c08d0420214e3c"
@@ -4274,15 +4149,6 @@
   dependencies:
     "@polkadot/types-codec" "14.1.1"
     "@polkadot/util" "^13.2.1"
-    tslib "^2.8.0"
-
-"@polkadot/types-create@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/types-create/-/types-create-14.2.1.tgz#fac790e97075c7b88897efaed60268fcd846f6ff"
-  integrity sha512-AhcyVR6eoc+br76QbqQ3LVwFuOrdZH/A9hlpMPI8MvIW46wZ5bPcDoqKLZugeH6wOKKVzbqw8z9tZ1KWgUSdVg==
-  dependencies:
-    "@polkadot/types-codec" "14.2.1"
-    "@polkadot/util" "^13.2.2"
     tslib "^2.8.0"
 
 "@polkadot/types-known@14.1.1":
@@ -4297,32 +4163,12 @@
     "@polkadot/util" "^13.2.1"
     tslib "^2.8.0"
 
-"@polkadot/types-known@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/types-known/-/types-known-14.2.1.tgz#f6eafa7945dd3ced7a8d9b42273bf00c021e665d"
-  integrity sha512-Lp8km3+0NKBR3x9covI84Mz3dXFAmIkohzJhcGjpjwcOKH0W4GSQBTDcsYfTH+UAY1mF7hvgXCtvGwbyLm2kOQ==
-  dependencies:
-    "@polkadot/networks" "^13.2.2"
-    "@polkadot/types" "14.2.1"
-    "@polkadot/types-codec" "14.2.1"
-    "@polkadot/types-create" "14.2.1"
-    "@polkadot/util" "^13.2.2"
-    tslib "^2.8.0"
-
 "@polkadot/types-support@14.1.1":
   version "14.1.1"
   resolved "https://registry.npmjs.org/@polkadot/types-support/-/types-support-14.1.1.tgz#93c8e0321b8fdd962c5ecf427599502debedd966"
   integrity sha512-DJgJ/2n3eWFlgH1K/U7G4NSbgdsx4Lb1fK4yVlZ9t81lJWWiAeb/FodHJb8jlQ6Jezx5S71fRripXfg+FdyCDA==
   dependencies:
     "@polkadot/util" "^13.2.1"
-    tslib "^2.8.0"
-
-"@polkadot/types-support@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/types-support/-/types-support-14.2.1.tgz#92ba4cda0af0b1a23a707971cc504cd01a3484ad"
-  integrity sha512-pAaAGDEBUnDiC15AjVc1aULk+vfCma2OlVzU6usOLee1OKkwDuk74Bnyo9jshKVYuTjujLrmp3zmzmuU1NjbeQ==
-  dependencies:
-    "@polkadot/util" "^13.2.2"
     tslib "^2.8.0"
 
 "@polkadot/types@14.1.1":
@@ -4336,20 +4182,6 @@
     "@polkadot/types-create" "14.1.1"
     "@polkadot/util" "^13.2.1"
     "@polkadot/util-crypto" "^13.2.1"
-    rxjs "^7.8.1"
-    tslib "^2.8.0"
-
-"@polkadot/types@14.2.1":
-  version "14.2.1"
-  resolved "https://registry.npmjs.org/@polkadot/types/-/types-14.2.1.tgz#30a6b3d4cb940dbc32ad34a0f805dea1603d9a14"
-  integrity sha512-C4mf3257vefKDCF5dPtw3WPztE/cTgHjI/fmimwxjGakX3u1mni19wqvBXKg69tuzJ31YMagqMkD2YFZ/zGSPg==
-  dependencies:
-    "@polkadot/keyring" "^13.2.2"
-    "@polkadot/types-augment" "14.2.1"
-    "@polkadot/types-codec" "14.2.1"
-    "@polkadot/types-create" "14.2.1"
-    "@polkadot/util" "^13.2.2"
-    "@polkadot/util-crypto" "^13.2.2"
     rxjs "^7.8.1"
     tslib "^2.8.0"
 
@@ -4369,7 +4201,7 @@
     "@scure/base" "^1.1.7"
     tslib "^2.8.0"
 
-"@polkadot/util-crypto@13.2.2", "@polkadot/util-crypto@^13.2.1", "@polkadot/util-crypto@^13.2.2":
+"@polkadot/util-crypto@13.2.2", "@polkadot/util-crypto@^13.2.1":
   version "13.2.2"
   resolved "https://registry.npmjs.org/@polkadot/util-crypto/-/util-crypto-13.2.2.tgz#b3bc6554177952b5224cc4d71cb38efd35d4f163"
   integrity sha512-C4vl07XC43vE6egd9LmSe0uOc7hAvBq6CIoILk5ZB95ABNBQSHOrS1pHugW4rJgVUiZgv8sdl+twmgisuSsSfg==
@@ -4398,7 +4230,7 @@
     bn.js "^5.2.1"
     tslib "^2.8.0"
 
-"@polkadot/util@13.2.2", "@polkadot/util@^13.2.1", "@polkadot/util@^13.2.2":
+"@polkadot/util@13.2.2", "@polkadot/util@^13.2.1":
   version "13.2.2"
   resolved "https://registry.npmjs.org/@polkadot/util/-/util-13.2.2.tgz#b834afd84bbf06084c728aed4b84d55e4278d518"
   integrity sha512-zhsGtR0J2a0ODesJNbCYqEXOL2rhPrmv1F6OB2JMdho7iOrkONck3PZaoT/Y0JF7IlHjGV8K6yrw7k9KUtFrEA==
@@ -4472,7 +4304,7 @@
     "@polkadot/x-global" "13.2.1"
     tslib "^2.8.0"
 
-"@polkadot/x-bigint@13.2.2", "@polkadot/x-bigint@^13.2.1", "@polkadot/x-bigint@^13.2.2":
+"@polkadot/x-bigint@13.2.2", "@polkadot/x-bigint@^13.2.1":
   version "13.2.2"
   resolved "https://registry.npmjs.org/@polkadot/x-bigint/-/x-bigint-13.2.2.tgz#61c776f162bdf55f5c71be2802540a3cb95f63e9"
   integrity sha512-9ENDfG2wYqABWhQYYrbjJK0aPBvCqVPiFhBiKgIg6OTSJKJToa4Di9R8NxelF8eJTtz7DIvgf6gZY/jnKfbtWw==
@@ -4480,7 +4312,7 @@
     "@polkadot/x-global" "13.2.2"
     tslib "^2.8.0"
 
-"@polkadot/x-fetch@^13.2.1", "@polkadot/x-fetch@^13.2.2":
+"@polkadot/x-fetch@^13.2.1":
   version "13.2.2"
   resolved "https://registry.npmjs.org/@polkadot/x-fetch/-/x-fetch-13.2.2.tgz#b72546d9360155ce93d3a508b2911656e962b9ec"
   integrity sha512-aDhd2kdx3JWvZSU4Ge966C0111CH8pCsDX7+9IsMGaZhjLF1NEo2xDjs+EwfUbSvNk68A4UVeJsXjG+IVor/ug==
@@ -4496,7 +4328,7 @@
   dependencies:
     tslib "^2.8.0"
 
-"@polkadot/x-global@13.2.2", "@polkadot/x-global@^13.2.1", "@polkadot/x-global@^13.2.2":
+"@polkadot/x-global@13.2.2", "@polkadot/x-global@^13.2.1":
   version "13.2.2"
   resolved "https://registry.npmjs.org/@polkadot/x-global/-/x-global-13.2.2.tgz#5a624a244e8bb65a693c7dd57ca871974fe97293"
   integrity sha512-a+iKD7JXxDRtYVo0bp1+HHlaem6MkUHU2yE0cx2e97p9x+IKyNEY58D0L5P66kszLvhFw+t3Jq+qHIj0+2YxkQ==
@@ -4551,7 +4383,7 @@
     "@polkadot/x-global" "13.2.2"
     tslib "^2.8.0"
 
-"@polkadot/x-ws@^13.2.1", "@polkadot/x-ws@^13.2.2":
+"@polkadot/x-ws@^13.2.1":
   version "13.2.2"
   resolved "https://registry.npmjs.org/@polkadot/x-ws/-/x-ws-13.2.2.tgz#087bbb6eb025173cbc6be593d3f00d3b64b1880e"
   integrity sha512-WEygcHPB55cKLiNoejJ0Lq3Z1fb4hUO3FmYTXdpHgk0xIOfYDrr7rTlI2cZ4Nb32MofeehN/ZStmEW5Edib6TQ==
@@ -7652,7 +7484,7 @@ browserify@^14.4.0:
     vm-browserify "~0.0.1"
     xtend "^4.0.0"
 
-browserslist@^4.14.5, browserslist@^4.21.10, browserslist@^4.21.4, browserslist@^4.23.3, browserslist@^4.24.0:
+browserslist@^4.14.5, browserslist@^4.21.10, browserslist@^4.21.4, browserslist@^4.23.3, browserslist@^4.24.0, browserslist@^4.24.2:
   version "4.24.2"
   resolved "https://registry.npmjs.org/browserslist/-/browserslist-4.24.2.tgz#f5845bc91069dbd55ee89faf9822e1d885d16580"
   integrity sha512-ZIc+Q62revdMcqC6aChtW4jz3My3klmCO1fEmINZY/8J3EpBg5/A/D0AKmBveUh6pgoeycoMkVMko84tuYS+Gg==
@@ -8739,16 +8571,16 @@ copy-webpack-plugin@^8.1.1:
     serialize-javascript "^5.0.1"
 
 core-js-compat@^3.38.0, core-js-compat@^3.38.1:
-  version "3.38.1"
-  resolved "https://registry.npmjs.org/core-js-compat/-/core-js-compat-3.38.1.tgz#2bc7a298746ca5a7bcb9c164bcb120f2ebc09a09"
-  integrity sha512-JRH6gfXxGmrzF3tZ57lFx97YARxCXPaMzPo6jELZhv88pBH5VXpQ+y0znKGlFnzuaihqhLbefxSJxWJMPtfDzw==
+  version "3.39.0"
+  resolved "https://registry.npmjs.org/core-js-compat/-/core-js-compat-3.39.0.tgz#b12dccb495f2601dc860bdbe7b4e3ffa8ba63f61"
+  integrity sha512-VgEUx3VwlExr5no0tXlBt+silBvhTryPwCXRI2Id1PN8WTKu7MreethvddqOubrYxkFdv/RnYrqlv1sFNAUelw==
   dependencies:
-    browserslist "^4.23.3"
+    browserslist "^4.24.2"
 
 core-js@^3.6.0, core-js@^3.8.3:
-  version "3.38.1"
-  resolved "https://registry.npmjs.org/core-js/-/core-js-3.38.1.tgz#aa375b79a286a670388a1a363363d53677c0383e"
-  integrity sha512-OP35aUorbU3Zvlx7pjsFdu1rGNnD4pgw/CWoYzRY3t2EzoVT7shKHY1dlAy3f41cGIO7ZDPQimhGFTlEYkG/Hw==
+  version "3.39.0"
+  resolved "https://registry.npmjs.org/core-js/-/core-js-3.39.0.tgz#57f7647f4d2d030c32a72ea23a0555b2eaa30f83"
+  integrity sha512-raM0ew0/jJUqkJ0E6e8UDtl+y/7ktFivgWvqw8dNSQeNWoSDLvQ1H/RN3aPXB9tBd4/FhyR4RDPGhsNIMsAn7g==
 
 core-util-is@1.0.2:
   version "1.0.2"
