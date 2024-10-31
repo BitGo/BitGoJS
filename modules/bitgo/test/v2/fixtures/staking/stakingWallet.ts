@@ -20,7 +20,11 @@ export default {
       transactions: transactions,
     };
   },
-  transaction: function (status: string, buildParams?: PrebuildTransactionOptions): StakingTransaction {
+  transaction: function (
+    status: string,
+    buildParams?: PrebuildTransactionOptions,
+    setTxRequestId = true
+  ): StakingTransaction {
     const transaction: StakingTransaction = {
       id: '00566722-daef-40eb-b0ac-fa5402bbfe72',
       stakingRequestId: '8638284a-dab2-46b9-b07f-21109a6e7220',
@@ -32,10 +36,12 @@ export default {
       amount: '1234',
       pendingApprovalId: 'd99e3ae1-d2a6-4f57-87b6-d04c24854739',
       transferId: 'e4b482b0-54d5-474b-bb2b-c56ce8516b5e',
-      txRequestId: this.txRequestId,
     };
     if (buildParams) {
       transaction.buildParams = buildParams;
+    }
+    if (setTxRequestId) {
+      transaction.txRequestId = this.txRequestId;
     }
     return transaction;
   },
