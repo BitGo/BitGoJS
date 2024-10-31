@@ -75,10 +75,6 @@
     "paillier-bigint": "3.3.0",
     "shx": "^0.3.4"
   },
-  "resolutions": {
-    "@substrate/txwrapper-core": "7.0.1",
-    "@substrate/txwrapper-polkadot": "7.0.1"
-  },
   "nyc": {
     "extension": [
       ".ts"

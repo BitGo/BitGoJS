@@ -47,13 +47,13 @@
     "debug": "^3.1.0",
     "dotenv": "^16.0.0",
     "express": "4.17.3",
-    "io-ts": "2.1.3",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "lodash": "^4.17.20",
     "morgan": "^1.9.1",
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/public-types": "2.33.4",
+    "@bitgo/public-types": "3.6.0",
     "@bitgo/sdk-lib-mpc": "^10.0.1",
     "@bitgo/sdk-test": "^8.0.47",
     "@types/argparse": "^1.0.36",
