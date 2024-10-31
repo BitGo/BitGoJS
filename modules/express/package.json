@@ -46,7 +46,7 @@
     "connect-timeout": "^1.9.0",
     "debug": "^3.1.0",
     "dotenv": "^16.0.0",
-    "express": "4.17.3",
+    "express": "4.20.0",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "lodash": "^4.17.20",
     "morgan": "^1.9.1",
