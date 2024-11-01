@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.4.6...@bitgo/express@10.5.0) (2024-11-01)
+
+### Bug Fixes
+
+- **express:** fix express overriding 2xx status ([712585c](https://github.com/BitGo/BitGoJS/commit/712585c57050057a103ad8541c1271a082e014b5))
+
+### Features
+
+- **express:** set ssl using env vars option ([cc41cd7](https://github.com/BitGo/BitGoJS/commit/cc41cd702889c2f9590b7900a2d51d45deb784ee))
+- **sdk-core:** add tests for new pick mpc gpg pub key function ([fbcfcbf](https://github.com/BitGo/BitGoJS/commit/fbcfcbf58b852c466c8e49c35acc77119348ee50))
+- update public-types ([85f8d0f](https://github.com/BitGo/BitGoJS/commit/85f8d0fcf1c1e8bf85088406b0ff3de62aab180d))
+
 ## [10.4.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.4.5...@bitgo/express@10.4.6) (2024-10-22)
 
 **Note:** Version bump only for package @bitgo/express

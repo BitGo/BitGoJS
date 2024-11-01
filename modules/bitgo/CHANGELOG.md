@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.10.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.9.0...bitgo@39.10.0) (2024-11-01)
+
+### Bug Fixes
+
+- **sdk-core:** pass correct walletVersion to wallet platform ([6564098](https://github.com/BitGo/BitGoJS/commit/6564098f79dab328128bea52e86b18d0d6684568))
+
+### Features
+
+- **sdk-coin-rune:** new coin generation ([64775ca](https://github.com/BitGo/BitGoJS/commit/64775caefc425df17f893fe1a5ae26d21adc7b6b))
+- **sdk-core:** add tests for new pick mpc gpg pub key function ([fbcfcbf](https://github.com/BitGo/BitGoJS/commit/fbcfcbf58b852c466c8e49c35acc77119348ee50))
+- **sdk-core:** refactor tss ecdsa hot wallet signing logic to be in sdk ([27c4c7d](https://github.com/BitGo/BitGoJS/commit/27c4c7de6f428364f324c0188446b4a154056d51))
+- **statics:** add oas coin config ([07045f8](https://github.com/BitGo/BitGoJS/commit/07045f8e713cf7a191345cf512824f5494df97b4))
+- update public-types ([85f8d0f](https://github.com/BitGo/BitGoJS/commit/85f8d0fcf1c1e8bf85088406b0ff3de62aab180d))
+
 # [39.9.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.8.0...bitgo@39.9.0) (2024-10-22)
 
 ### Bug Fixes

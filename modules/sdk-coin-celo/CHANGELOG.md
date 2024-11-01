@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@3.0.34...@bitgo/sdk-coin-celo@3.0.35) (2024-11-01)
+
+### Bug Fixes
+
+- **sdk-coin-celo,sdk-coin-xtz:** throw error on sendmany API call when recipients greater than 1 ([a5f9630](https://github.com/BitGo/BitGoJS/commit/a5f9630638d5b8b1d50707efb20e517f8b904872))
+
 ## [3.0.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@3.0.33...@bitgo/sdk-coin-celo@3.0.34) (2024-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo

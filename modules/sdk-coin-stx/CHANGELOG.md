@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.2.27...@bitgo/sdk-coin-stx@3.3.0) (2024-11-01)
+
+### Features
+
+- **sdk-coin-stx:** added check for multiple reciepents ([58321c0](https://github.com/BitGo/BitGoJS/commit/58321c089337f7df9374fcbd901c5b8122410a02))
+
 ## [3.2.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.2.26...@bitgo/sdk-coin-stx@3.2.27) (2024-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

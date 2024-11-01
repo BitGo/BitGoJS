@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.1.20...@bitgo/sdk-coin-dot@4.1.21) (2024-11-01)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** throw error on sendmany API call when recipients greater than 1 ([c323e7e](https://github.com/BitGo/BitGoJS/commit/c323e7e06745698b6f56238d213acd5d61e2333d))
+
 ## [4.1.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.1.19...@bitgo/sdk-coin-dot@4.1.20) (2024-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

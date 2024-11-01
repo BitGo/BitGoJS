@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.4.0...@bitgo/statics@50.5.0) (2024-11-01)
+
+### Bug Fixes
+
+- **statics:** update ofc usds name ([09a34f0](https://github.com/BitGo/BitGoJS/commit/09a34f07735500282fcf60f1bed5e96e7eac7b35))
+- xrp explorer link for testnet ([37a6963](https://github.com/BitGo/BitGoJS/commit/37a69636bd90f17dac0257c34e993718ce394bb2))
+
+### Features
+
+- add deprecated feature to gteth ([dc5b6c0](https://github.com/BitGo/BitGoJS/commit/dc5b6c0f8ffd135378ab7c16ce97ba6496c3fb8d))
+- **sdk-coin-rune:** new coin generation ([64775ca](https://github.com/BitGo/BitGoJS/commit/64775caefc425df17f893fe1a5ae26d21adc7b6b))
+- **statics:** add btc staking feature ([a4e8715](https://github.com/BitGo/BitGoJS/commit/a4e8715c434137f0cd643641561f92e15c64c125))
+- **statics:** add new batch of tokens COIN-2007 ([ccbf75d](https://github.com/BitGo/BitGoJS/commit/ccbf75df2d83395b0aebc5d182900cf6fe763b75))
+- **statics:** add new batch of tokens COIN-2007 ([82cb011](https://github.com/BitGo/BitGoJS/commit/82cb011ed786b2e4b46b76132f1479682b50cdc8))
+- **statics:** add new map of address to coin ([220b029](https://github.com/BitGo/BitGoJS/commit/220b029adbc4f55af5680f2785a4c40d9e3939f3))
+- **statics:** add oas coin config ([07045f8](https://github.com/BitGo/BitGoJS/commit/07045f8e713cf7a191345cf512824f5494df97b4))
+- **statics:** add ofc erc20 support for usdy and eigen ([d8f6ef5](https://github.com/BitGo/BitGoJS/commit/d8f6ef56e38e1462994cd9e48cc76afdd7c0dc58))
+- **statics:** adding ofchterc18dp, ofchterc6dp, ofctusds in coins.ts ([66ec3d7](https://github.com/BitGo/BitGoJS/commit/66ec3d75c47ac87856c1aa6b1db14c6ab43d64c3))
+
 # [50.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.3.0...@bitgo/statics@50.4.0) (2024-10-22)
 
 ### Features

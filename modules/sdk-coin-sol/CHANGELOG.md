@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.6.1...@bitgo/sdk-coin-sol@4.7.0) (2024-11-01)
+
+### Features
+
+- **sdk-coin-sol:** add close ATA durable nonce support ([fc5115e](https://github.com/BitGo/BitGoJS/commit/fc5115e69f3cab8b2ae90c81f1a24f56b1a92cad))
+
 ## [4.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.6.0...@bitgo/sdk-coin-sol@4.6.1) (2024-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

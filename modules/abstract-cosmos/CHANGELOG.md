@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.0.11...@bitgo/abstract-cosmos@11.1.0) (2024-11-01)
+
+### Features
+
+- **sdk-coin-rune:** new coin generation ([64775ca](https://github.com/BitGo/BitGoJS/commit/64775caefc425df17f893fe1a5ae26d21adc7b6b))
+
 ## [11.0.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.0.10...@bitgo/abstract-cosmos@11.0.11) (2024-10-22)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos
