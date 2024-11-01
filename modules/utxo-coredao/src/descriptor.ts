@@ -5,19 +5,27 @@ import { BIP32Interface } from '@bitgo/utxo-lib';
  */
 export type ScriptType = 'sh' | 'sh-wsh';
 
+function asDescriptorKey(key: BIP32Interface | Buffer, neutered: boolean): string {
+  if (Buffer.isBuffer(key)) {
+    return key.toString('hex');
+  }
+  return (neutered ? key.neutered() : key).toBase58() + '/*';
+}
+
 /**
  * Create a multi-sig descriptor to produce a coredao staking address
  * @param scriptType segwit or legacy
  * @param locktime locktime for CLTV
  * @param m Total number of keys required to unlock
- * @param orderedKeys
+ * @param orderedKeys If Bip32Interfaces, these are xprvs or xpubs and are derivable.
+ *                    If they are buffers, then they are pub/prv keys and are not derivable.
  * @param neutered If true, neuter the keys. Default to true
  */
 export function createMultiSigDescriptor(
   scriptType: ScriptType,
   locktime: number,
   m: number,
-  orderedKeys: BIP32Interface[],
+  orderedKeys: (BIP32Interface | Buffer)[],
   neutered = true
 ): string {
   if (m > orderedKeys.length || m < 1) {
@@ -28,8 +36,7 @@ export function createMultiSigDescriptor(
   if (locktime <= 0) {
     throw new Error(`locktime (${locktime}) must be greater than 0`);
   }
-
-  const xpubs = orderedKeys.map((key) => (neutered ? key.neutered() : key).toBase58() + '/*');
-  const inner = `and_v(r:after(${locktime}),multi(${m},${xpubs.join(',')}))`;
+  const keys = orderedKeys.map((key) => asDescriptorKey(key, neutered));
+  const inner = `and_v(r:after(${locktime}),multi(${m},${keys.join(',')}))`;
   return scriptType === 'sh' ? `sh(${inner})` : `sh(wsh(${inner}))`;
 }
