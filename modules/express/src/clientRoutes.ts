@@ -1114,7 +1114,13 @@ async function handleNetworkV1EnterpriseClientConnections(
  * @param req
  * @param next
  */
-function redirectRequest(bitgo: BitGo, method: string, url: string, req: express.Request, next: express.NextFunction) {
+export function redirectRequest(
+  bitgo: BitGo,
+  method: string,
+  url: string,
+  req: express.Request,
+  next: express.NextFunction
+) {
   let request;
 
   switch (method) {
@@ -1142,7 +1148,11 @@ function redirectRequest(bitgo: BitGo, method: string, url: string, req: express
     if (req.params.enterpriseId) {
       request.set('enterprise-id', req.params.enterpriseId);
     }
-    return request.result();
+
+    return request.result().then((result) => {
+      const status = request.res?.statusCode || 200;
+      return { status, body: result };
+    });
   }
 
   // something has presumably gone wrong
@@ -1217,8 +1227,7 @@ function prepareBitGo(config: Config) {
     next();
   };
 }
-
-type RequestHandlerResponse = string | unknown | undefined;
+type RequestHandlerResponse = string | unknown | undefined | { status: number; body: unknown };
 interface RequestHandler extends express.RequestHandler<ParamsDictionary, any, RequestHandlerResponse> {
   (req: express.Request, res: express.Response, next: express.NextFunction):
     | RequestHandlerResponse
@@ -1260,12 +1269,17 @@ function handleRequestHandlerError(res: express.Response, error: unknown) {
  * Promise handler wrapper to handle sending responses and error cases
  * @param promiseRequestHandler
  */
-function promiseWrapper(promiseRequestHandler: RequestHandler) {
+export function promiseWrapper(promiseRequestHandler: RequestHandler) {
   return async function promWrapper(req: express.Request, res: express.Response, next: express.NextFunction) {
     debug(`handle: ${req.method} ${req.originalUrl}`);
     try {
       const result = await promiseRequestHandler(req, res, next);
-      res.status(200).send(result);
+      if (typeof result === 'object' && result !== null && 'body' in result && 'status' in result) {
+        const { status, body } = result as { status: number; body: unknown };
+        res.status(status).send(body);
+      } else {
+        res.status(200).send(result);
+      }
     } catch (e) {
       handleRequestHandlerError(res, e);
     }
