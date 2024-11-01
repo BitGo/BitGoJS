@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.11.0...@bitgo/sdk-core@28.12.0) (2024-11-01)
+
+### Bug Fixes
+
+- **sdk-core:** pass correct walletVersion to wallet platform ([6564098](https://github.com/BitGo/BitGoJS/commit/6564098f79dab328128bea52e86b18d0d6684568))
+
+### Features
+
+- **sdk-coin-xrp:** add tokenTransferBuilder ([ce6e142](https://github.com/BitGo/BitGoJS/commit/ce6e1427bfd7d1b5f7f63bba5dd374313cfa9307))
+- **sdk-coin-xrp:** add trustsetBuilder ([9c23193](https://github.com/BitGo/BitGoJS/commit/9c231930cfe54221ccc023b2aedfd39bc0c77c3b))
+- **sdk-core:** add support for eth v6 wallet ([6ac4ba3](https://github.com/BitGo/BitGoJS/commit/6ac4ba33a985e9c2f5c09e8fad68573320e1ca5d))
+- **sdk-core:** add tests for new pick mpc gpg pub key function ([fbcfcbf](https://github.com/BitGo/BitGoJS/commit/fbcfcbf58b852c466c8e49c35acc77119348ee50))
+- **sdk-core:** refactor tss ecdsa hot wallet signing logic to be in sdk ([27c4c7d](https://github.com/BitGo/BitGoJS/commit/27c4c7de6f428364f324c0188446b4a154056d51))
+- **sdk-core:** support hardcoded gpg keys for non-express hot wallet flow ([7dda747](https://github.com/BitGo/BitGoJS/commit/7dda747f22dc30eb24461da3acfc137fa8605686))
+- **sdk-core:** support hardcoding bitgo pgp keys in external signer ([f2db18f](https://github.com/BitGo/BitGoJS/commit/f2db18ffeab5194e31eab0280e0039ca9c380985))
+- update public-types ([85f8d0f](https://github.com/BitGo/BitGoJS/commit/85f8d0fcf1c1e8bf85088406b0ff3de62aab180d))
+
 # [28.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.10.0...@bitgo/sdk-core@28.11.0) (2024-10-22)
 
 ### Features

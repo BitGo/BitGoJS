@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.3.3...@bitgo/sdk-coin-ton@3.4.0) (2024-11-01)
+
+### Bug Fixes
+
+- **sdk-coin-ton:** add logging for single nom (Ticket: SC-372) ([9093440](https://github.com/BitGo/BitGoJS/commit/909344015ec57ea0404051e31608769c0b0fe735))
+
+### Features
+
+- **sdk-coin-ton:** add logic to deserialize TON address from cell (Ticket: SC-486) ([62fc713](https://github.com/BitGo/BitGoJS/commit/62fc7137f85a37bfc8f6defb6d3b9109f70ed409))
+
 ## [3.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.3.2...@bitgo/sdk-coin-ton@3.3.3) (2024-10-22)
 
 ### Bug Fixes

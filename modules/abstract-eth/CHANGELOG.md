@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.2.3...@bitgo/abstract-eth@22.2.4) (2024-11-01)
+
+### Bug Fixes
+
+- **sdk-core:** pass correct walletVersion to wallet platform ([6564098](https://github.com/BitGo/BitGoJS/commit/6564098f79dab328128bea52e86b18d0d6684568))
+
 ## [22.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.2.2...@bitgo/abstract-eth@22.2.3) (2024-10-22)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

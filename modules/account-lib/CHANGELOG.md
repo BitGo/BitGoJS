@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [23.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.1.10...@bitgo/account-lib@23.2.0) (2024-11-01)
+
+### Features
+
+- **sdk-coin-rune:** new coin generation ([64775ca](https://github.com/BitGo/BitGoJS/commit/64775caefc425df17f893fe1a5ae26d21adc7b6b))
+
 ## [23.1.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.1.9...@bitgo/account-lib@23.1.10) (2024-10-22)
 
 **Note:** Version bump only for package @bitgo/account-lib
