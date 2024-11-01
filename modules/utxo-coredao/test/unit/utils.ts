@@ -7,7 +7,7 @@ function encode(path: string, defaultValue: unknown): string {
     return String(defaultValue);
   }
   if (path.endsWith('.json')) {
-    return JSON.stringify(defaultValue, null, 2);
+    return JSON.stringify(defaultValue, null, 2) + '\n';
   }
   throw new Error(`unrecognized path ${path}`);
 }
