@@ -194,3 +194,15 @@ export function parseCoreDaoOpReturnOutputScript(script: Buffer): OpReturnParams
     return { ...baseParams, redeemScript: Buffer.from(dataBuffer.subarray(offset)) };
   }
 }
+
+export function toString(params: OpReturnParams): string {
+  return JSON.stringify({
+    version: params.version,
+    chainId: params.chainId.toString('hex'),
+    delegator: params.delegator.toString('hex'),
+    validator: params.validator.toString('hex'),
+    fee: params.fee,
+    ...('redeemScript' in params ? { redeemScript: params.redeemScript.toString('hex') } : {}),
+    ...('timelock' in params ? { timelock: params.timelock } : {}),
+  });
+}
