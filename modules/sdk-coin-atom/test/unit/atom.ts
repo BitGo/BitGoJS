@@ -21,10 +21,6 @@ import {
 } from '../resources/atom';
 import should = require('should');
 
-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
-
-const openSSLBytes = loadWebAssembly().buffer;
-
 describe('ATOM', function () {
   let bitgo: TestBitGoAPI;
   let basecoin;
@@ -433,16 +429,13 @@ describe('ATOM', function () {
     });
 
     it('should recover funds for non-bitgo recoveries', async function () {
-      const res = await basecoin.recover(
-        {
-          userKey: wrwUser.userKey,
-          backupKey: wrwUser.backupKey,
-          bitgoKey: wrwUser.bitgoKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          recoveryDestination: destinationAddress,
-        },
-        openSSLBytes
-      );
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destinationAddress,
+      });
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(basecoin.getAccountBalance);
@@ -460,16 +453,13 @@ describe('ATOM', function () {
     });
 
     it('should recover funds for non-bitgo recoveries - DKLS type', async function () {
-      const res = await basecoin.recover(
-        {
-          userKey: wrwUserDkls.userKey,
-          backupKey: wrwUserDkls.backupKey,
-          bitgoKey: wrwUserDkls.bitgoKey,
-          walletPassphrase: wrwUserDkls.walletPassphrase,
-          recoveryDestination: wrwUserDkls.destinationAddress,
-        },
-        openSSLBytes
-      );
+      const res = await basecoin.recover({
+        userKey: wrwUserDkls.userKey,
+        backupKey: wrwUserDkls.backupKey,
+        bitgoKey: wrwUserDkls.bitgoKey,
+        walletPassphrase: wrwUserDkls.walletPassphrase,
+        recoveryDestination: wrwUserDkls.destinationAddress,
+      });
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(basecoin.getAccountBalance);
@@ -487,18 +477,15 @@ describe('ATOM', function () {
     });
 
     it('should redelegate funds to new validator', async function () {
-      const res = await basecoin.redelegate(
-        {
-          userKey: wrwUser.userKey,
-          backupKey: wrwUser.backupKey,
-          bitgoKey: wrwUser.bitgoKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          amountToRedelegate: '10000000000000000',
-          validatorSrcAddress: 'cosmosvaloper1409te27da74uahh6hn0040x7l272hjs2padjuz',
-          validatorDstAddress: 'cosmosvaloper183aycgtstp67r6s4vd7ts2npp2ckk4xah7rxj6',
-        },
-        openSSLBytes
-      );
+      const res = await basecoin.redelegate({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        amountToRedelegate: '10000000000000000',
+        validatorSrcAddress: 'cosmosvaloper1409te27da74uahh6hn0040x7l272hjs2padjuz',
+        validatorDstAddress: 'cosmosvaloper183aycgtstp67r6s4vd7ts2npp2ckk4xah7rxj6',
+      });
 
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
@@ -574,7 +561,7 @@ describe('ATOM', function () {
         .should.rejectedWith('missing wallet passphrase');
     });
 
-    it('should throw error if openSSLBytes is not present', async function () {
+    it('should throw error if there is no balance', async function () {
       await basecoin
         .recover({
           userKey: wrwUser.userKey,
@@ -583,21 +570,6 @@ describe('ATOM', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destinationAddress,
         })
-        .should.rejectedWith('missing openSSLBytes');
-    });
-
-    it('should throw error if there is no balance', async function () {
-      await basecoin
-        .recover(
-          {
-            userKey: wrwUser.userKey,
-            backupKey: wrwUser.backupKey,
-            bitgoKey: wrwUser.bitgoKey,
-            walletPassphrase: wrwUser.walletPassphrase,
-            recoveryDestination: destinationAddress,
-          },
-          openSSLBytes
-        )
         .should.rejectedWith('Did not have enough funds to recover');
     });
   });

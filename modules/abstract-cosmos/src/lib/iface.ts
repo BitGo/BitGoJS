@@ -30,7 +30,6 @@ export interface SendMessage {
 export interface RecoveryOptions {
   userKey?: string; // Box A
   backupKey?: string; // Box B
-  bitgoKey: string; // Box C
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase?: string;

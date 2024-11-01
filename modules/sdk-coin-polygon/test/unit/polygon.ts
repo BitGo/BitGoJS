@@ -13,10 +13,6 @@ import * as sjcl from '@bitgo/sjcl';
 
 nock.enableNetConnect();
 
-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
-
-const openSSLBytes = loadWebAssembly().buffer;
-
 describe('Polygon', function () {
   let bitgo: TestBitGoAPI;
   let basecoin;
@@ -661,7 +657,6 @@ describe('Polygon', function () {
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         isTss: true,
-        openSSLBytes,
       };
 
       const recovery = await basecoin.recover(recoveryParams);
@@ -694,7 +689,6 @@ describe('Polygon', function () {
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         isTss: true,
-        openSSLBytes,
         gasPrice: 20000000000,
         gasLimit: 500000,
         replayProtectionOptions: {

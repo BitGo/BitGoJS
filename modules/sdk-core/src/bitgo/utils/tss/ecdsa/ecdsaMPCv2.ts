@@ -1261,22 +1261,131 @@ export function isGG18SigningMaterial(keyShare: string, walletPassphrase: string
 }
 
 /**
+ * Get the MPC v2 recovery key shares from the provided user and backup key shares.
+ * @param encryptedUserKey encrypted gg18 or MPCv2 user key
+ * @param encryptedBackupKey encrypted gg18 or MPCv2 backup key
+ * @param walletPassphrase password for user and backup key
+ * @returns MPC v2 recovery key shares
+ */
+export async function getMpcV2RecoveryKeyShares(
+  encryptedUserKey: string,
+  encryptedBackupKey: string,
+  walletPassphrase?: string
+): Promise<{
+  userKeyShare: Buffer;
+  backupKeyShare: Buffer;
+  commonKeyChain: string;
+}> {
+  if (isGG18SigningMaterial(encryptedUserKey, walletPassphrase)) {
+    return getMpcV2RecoveryKeySharesFromGG18(encryptedUserKey, encryptedBackupKey, walletPassphrase);
+  }
+  return getMpcV2RecoveryKeySharesFromReducedKey(encryptedUserKey, encryptedBackupKey, walletPassphrase);
+}
+
+/**
+ * Signs a message hash using MPC v2 recovery key shares.
+ *
+ * @param {Buffer} messageHash
+ * @param {Buffer} userKeyShare
+ * @param {Buffer} backupKeyShare
+ * @param {string} commonKeyChain
+ * @returns {Promise<{ recid: number, r: string, s: string, y: string }>}
+ *
+ * @async
+ */
+export async function signRecoveryMpcV2(
+  messageHash: Buffer,
+  userKeyShare: Buffer,
+  backupKeyShare: Buffer,
+  commonKeyChain: string
+): Promise<{
+  recid: number;
+  r: string;
+  s: string;
+  y: string;
+}> {
+  const userDsg = new DklsDsg.Dsg(userKeyShare, 0, 'm/0', messageHash);
+  const backupDsg = new DklsDsg.Dsg(backupKeyShare, 1, 'm/0', messageHash);
+
+  const signatureString = DklsUtils.verifyAndConvertDklsSignature(
+    messageHash,
+    (await DklsUtils.executeTillRound(5, userDsg, backupDsg)) as DklsTypes.DeserializedDklsSignature,
+    commonKeyChain,
+    'm/0',
+    undefined,
+    false
+  );
+  const sigParts = signatureString.split(':');
+
+  return {
+    recid: parseInt(sigParts[0], 10),
+    r: sigParts[1],
+    s: sigParts[2],
+    y: sigParts[3],
+  };
+}
+
+// #region private utils
+
+/**
+ * Get the MPC v2 recovery key shares from the provided user and backup key shares.
+ * @param encryptedGG18UserKey encrypted gg18 user key
+ * @param encryptedGG18BackupKey encrypted gg18 backup key
+ * @param walletPassphrase password for user and backup key
+ * @returns MPC v2 recovery key shares
+ */
+async function getMpcV2RecoveryKeySharesFromGG18(
+  encryptedGG18UserKey: string,
+  encryptedGG18BackupKey: string,
+  walletPassphrase?: string
+): Promise<{
+  userKeyShare: Buffer;
+  backupKeyShare: Buffer;
+  commonKeyChain: string;
+}> {
+  const [userKeyCombined, backupKeyCombined] = getKeyCombinedFromTssKeyShares(
+    encryptedGG18UserKey,
+    encryptedGG18BackupKey,
+    walletPassphrase
+  );
+  const retrofitDataA: DklsTypes.RetrofitData = {
+    xShare: userKeyCombined.xShare,
+  };
+  const retrofitDataB: DklsTypes.RetrofitData = {
+    xShare: backupKeyCombined.xShare,
+  };
+  const [user, backup] = await DklsUtils.generate2of2KeyShares(retrofitDataA, retrofitDataB);
+
+  const userKeyShare = user.getKeyShare();
+  const backupKeyShare = backup.getKeyShare();
+  return {
+    userKeyShare,
+    backupKeyShare,
+    commonKeyChain: DklsTypes.getCommonKeychain(backupKeyShare),
+  };
+}
+
+/**
  * Retrieves the MPC v2 recovery key shares from the provided user and backup key shares.
  *
- * @param {string} userPublicOrPrivateKeyShare
- * @param {string} backupPrivateOrPublicKeyShare
+ * @param {string} encryptedMPCv2UserKey
+ * @param {string} encryptedMPCv2BackupKey
  * @param {string} [walletPassphrase] - The passphrase used to decrypt the key shares
  * @returns {Promise<{ userKeyShare: KeyShare, backupKeyShare: KeyShare, commonKeyChain: string }>}
  *
  * @async
  */
-export async function getMpcV2RecoveryKeyShares(
-  userPublicOrPrivateKeyShare: string,
-  backupPrivateOrPublicKeyShare: string,
+async function getMpcV2RecoveryKeySharesFromReducedKey(
+  encryptedMPCv2UserKey: string,
+  encryptedMPCv2BackupKey: string,
   walletPassphrase?: string
-) {
-  const userCompressedPrv = Buffer.from(sjcl.decrypt(walletPassphrase, userPublicOrPrivateKeyShare), 'base64');
-  const bakcupCompressedPrv = Buffer.from(sjcl.decrypt(walletPassphrase, backupPrivateOrPublicKeyShare), 'base64');
+): Promise<{
+  userKeyShare: Buffer;
+  backupKeyShare: Buffer;
+  commonKeyChain: string;
+}> {
+  const userCompressedPrv = Buffer.from(sjcl.decrypt(walletPassphrase, encryptedMPCv2UserKey), 'base64');
+  const bakcupCompressedPrv = Buffer.from(sjcl.decrypt(walletPassphrase, encryptedMPCv2BackupKey), 'base64');
 
   const userPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(userCompressedPrv);
   const backupPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(bakcupCompressedPrv);
@@ -1304,39 +1413,54 @@ export async function getMpcV2RecoveryKeyShares(
 }
 
 /**
- * Signs a message hash using MPC v2 recovery key shares.
- *
- * @param {Buffer} messageHash
- * @param {Buffer} userKeyShare
- * @param {Buffer} backupKeyShare
- * @param {string} commonKeyChain
- * @returns {Promise<{ recid: number, r: string, s: string, y: string }>}
- *
- * @async
+ * Gets the combined key for GG18
+ * @param encryptedGG18UserKey encrypted GG18 user key
+ * @param encryptedGG18BackupKey encrypted GG18 backup key
+ * @param walletPassphrase wallet passphrase
+ * @returns key shares
  */
-export async function signRecoveryMpcV2(
-  messageHash: Buffer,
-  userKeyShare: Buffer,
-  backupKeyShare: Buffer,
-  commonKeyChain: string
-) {
-  const userDsg = new DklsDsg.Dsg(userKeyShare, 0, 'm/0', messageHash);
-  const backupDsg = new DklsDsg.Dsg(backupKeyShare, 1, 'm/0', messageHash);
+function getKeyCombinedFromTssKeyShares(
+  encryptedGG18UserKey: string,
+  encryptedGG18BackupKey: string,
+  walletPassphrase?: string
+): [ECDSAMethodTypes.KeyCombined, ECDSAMethodTypes.KeyCombined] {
+  let backupPrv;
+  let userPrv;
+  try {
+    backupPrv = sjcl.decrypt(walletPassphrase, encryptedGG18BackupKey);
+    userPrv = sjcl.decrypt(walletPassphrase, encryptedGG18UserKey);
+  } catch (e) {
+    throw new Error(`Error decrypting backup keychain: ${e.message}`);
+  }
 
-  const signatureString = DklsUtils.verifyAndConvertDklsSignature(
-    messageHash,
-    (await DklsUtils.executeTillRound(5, userDsg, backupDsg)) as DklsTypes.DeserializedDklsSignature,
-    commonKeyChain,
-    'm/0',
-    undefined,
-    false
-  );
-  const sigParts = signatureString.split(':');
+  const userSigningMaterial = JSON.parse(userPrv) as ECDSAMethodTypes.SigningMaterial;
+  const backupSigningMaterial = JSON.parse(backupPrv) as ECDSAMethodTypes.SigningMaterial;
 
-  return {
-    recid: parseInt(sigParts[0], 10),
-    r: sigParts[1],
-    s: sigParts[2],
-    y: sigParts[3],
-  };
+  if (!userSigningMaterial.backupNShare) {
+    throw new Error('Invalid user key - missing backupNShare');
+  }
+
+  if (!backupSigningMaterial.userNShare) {
+    throw new Error('Invalid backup key - missing userNShare');
+  }
+
+  const MPC = new Ecdsa();
+
+  const userKeyCombined = MPC.keyCombine(userSigningMaterial.pShare, [
+    userSigningMaterial.bitgoNShare,
+    userSigningMaterial.backupNShare,
+  ]);
+  const backupKeyCombined = MPC.keyCombine(backupSigningMaterial.pShare, [
+    backupSigningMaterial.userNShare,
+    backupSigningMaterial.bitgoNShare,
+  ]);
+  if (
+    userKeyCombined.xShare.y !== backupKeyCombined.xShare.y ||
+    userKeyCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode
+  ) {
+    throw new Error('Common keychains do not match');
+  }
+  return [userKeyCombined, backupKeyCombined];
 }
+
+// #endregion

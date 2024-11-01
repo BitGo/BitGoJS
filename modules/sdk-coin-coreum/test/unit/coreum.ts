@@ -21,10 +21,6 @@ import {
 } from '../resources/tcoreum';
 import should = require('should');
 
-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
-
-const openSSLBytes = loadWebAssembly().buffer;
-
 describe('Coreum', function () {
   let bitgo: TestBitGoAPI;
   let coreum;
@@ -427,16 +423,13 @@ describe('Coreum', function () {
     });
 
     it('should recover funds for non-bitgo recoveries', async function () {
-      const res = await tcoreum.recover(
-        {
-          userKey: wrwUser.userPrivateKey,
-          backupKey: wrwUser.backupPrivateKey,
-          bitgoKey: wrwUser.bitgoPublicKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          recoveryDestination: destinationAddress,
-        },
-        openSSLBytes
-      );
+      const res = await tcoreum.recover({
+        userKey: wrwUser.userPrivateKey,
+        backupKey: wrwUser.backupPrivateKey,
+        bitgoKey: wrwUser.bitgoPublicKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destinationAddress,
+      });
       res.should.not.be.empty();
       res.should.hasOwnProperty('serializedTx');
       sandBox.assert.calledOnce(tcoreum.getAccountBalance);
@@ -482,58 +475,46 @@ describe('Coreum', function () {
 
     it('should throw error if backupkey is not present', async function () {
       await tcoreum
-        .recover(
-          {
-            userKey: wrwUser.userPrivateKey,
-            bitgoKey: wrwUser.bitgoPublicKey,
-            walletPassphrase: wrwUser.walletPassphrase,
-            recoveryDestination: destinationAddress,
-          },
-          openSSLBytes
-        )
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
         .should.rejectedWith('missing backupKey');
     });
 
     it('should throw error if userkey is not present', async function () {
       await tcoreum
-        .recover(
-          {
-            backupKey: wrwUser.backupPrivateKey,
-            bitgoKey: wrwUser.bitgoPublicKey,
-            walletPassphrase: wrwUser.walletPassphrase,
-            recoveryDestination: destinationAddress,
-          },
-          openSSLBytes
-        )
+        .recover({
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
         .should.rejectedWith('missing userKey');
     });
 
     it('should throw error if wallet passphrase is not present', async function () {
       await tcoreum
-        .recover(
-          {
-            userKey: wrwUser.userPrivateKey,
-            backupKey: wrwUser.backupPrivateKey,
-            bitgoKey: wrwUser.bitgoPublicKey,
-            recoveryDestination: destinationAddress,
-          },
-          openSSLBytes
-        )
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          recoveryDestination: destinationAddress,
+        })
         .should.rejectedWith('missing wallet passphrase');
     });
 
     it('should throw error if there is no balance', async function () {
       await tcoreum
-        .recover(
-          {
-            userKey: wrwUser.userPrivateKey,
-            backupKey: wrwUser.backupPrivateKey,
-            bitgoKey: wrwUser.bitgoPublicKey,
-            walletPassphrase: wrwUser.walletPassphrase,
-            recoveryDestination: destinationAddress,
-          },
-          openSSLBytes
-        )
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
         .should.rejectedWith('Did not have enough funds to recover');
     });
   });
