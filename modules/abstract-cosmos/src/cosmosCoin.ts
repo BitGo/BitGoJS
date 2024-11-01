@@ -2,12 +2,9 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
-  ECDSA,
   Ecdsa,
-  ECDSAMethodTypes,
   ECDSAUtils,
   ExplanationResult,
-  hexToBigInt,
   InvalidAddressError,
   InvalidMemoIdError,
   KeyPair,
@@ -22,7 +19,6 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { Coin } from '@cosmjs/stargate';
@@ -136,11 +132,8 @@ export class CosmosCoin extends BaseCoin {
    * @returns {CosmosLikeCoinRecoveryOutput} the serialized transaction hex string and index
    * of the address being swept
    */
-  async recover(params: RecoveryOptions, openSSLBytes: Uint8Array): Promise<CosmosLikeCoinRecoveryOutput> {
+  async recover(params: RecoveryOptions): Promise<CosmosLikeCoinRecoveryOutput> {
     // Step 1: Check if params contains the required parameters
-    if (!params.bitgoKey) {
-      throw new Error('missing bitgoKey');
-    }
 
     if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
@@ -157,19 +150,20 @@ export class CosmosCoin extends BaseCoin {
     if (!params.walletPassphrase) {
       throw new Error('missing wallet passphrase');
     }
-    if (!openSSLBytes) {
-      throw new Error('missing openSSLBytes');
-    }
 
     // Step 2: Fetch the bitgo key from params
     const userKey = params.userKey.replace(/\s/g, '');
     const backupKey = params.backupKey.replace(/\s/g, '');
-    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
+    const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+      userKey,
+      backupKey,
+      params.walletPassphrase
+    ); // baseAddress is not extracted
     // Step 3: Instantiate the ECDSA signer and fetch the address details
     const MPC = new Ecdsa();
     const chainId = await this.getChainId();
-    const publicKey = MPC.deriveUnhardened(bitgoKey, ROOT_PATH).slice(0, 66);
+    const publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
     const senderAddress = this.getAddressFromPublicKey(publicKey);
 
     // Step 4: Fetch account details such as accountNo, balance and check for sufficient funds once gasAmount has been deducted
@@ -214,47 +208,11 @@ export class CosmosCoin extends BaseCoin {
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     const signableHex = unsignedTransaction.signablePayload.toString('hex');
 
-    const isGG18SigningMaterial = ECDSAUtils.isGG18SigningMaterial(userKey, params.walletPassphrase);
-    let signature: ECDSA.Signature;
+    // Step 7: Sign the tx
+    const message = unsignedTransaction.signablePayload;
+    const messageHash = (utils.getHashFunction() || createHash('sha256')).update(message).digest();
 
-    if (isGG18SigningMaterial) {
-      // GG18
-      const [userKeyCombined, backupKeyCombined] = ((): [
-        ECDSAMethodTypes.KeyCombined | undefined,
-        ECDSAMethodTypes.KeyCombined | undefined
-      ] => {
-        const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
-          userKey,
-          backupKey,
-          params.walletPassphrase
-        );
-        return [userKeyCombined, backupKeyCombined];
-      })();
-
-      if (!userKeyCombined || !backupKeyCombined) {
-        throw new Error('Missing combined key shares for user or backup');
-      }
-
-      // Step 7: Sign the tx
-      signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex, openSSLBytes);
-    } else {
-      // DKLS
-      const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
-        userKey,
-        backupKey,
-        params.walletPassphrase
-      ); // baseAddress is not extracted
-
-      if (!userKeyShare || !backupKeyShare || !commonKeyChain) {
-        throw new Error('Missing combined key shares for user or backup or common');
-      }
-
-      // Step 7: Sign the tx
-      const message = unsignedTransaction.signablePayload;
-      const messageHash = (utils.getHashFunction() || createHash('sha256')).update(message).digest();
-
-      signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
-    }
+    const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
 
     const signableBuffer = Buffer.from(signableHex, 'hex');
     MPC.verify(signableBuffer, signature, this.getHashFunction());
@@ -278,13 +236,8 @@ export class CosmosCoin extends BaseCoin {
       validatorSrcAddress: string;
       validatorDstAddress: string;
       amountToRedelegate: string;
-    },
-    openSSLBytes: Uint8Array
-  ): Promise<CosmosLikeCoinRecoveryOutput> {
-    if (!params.bitgoKey) {
-      throw new Error('missing bitgoKey');
     }
-
+  ): Promise<CosmosLikeCoinRecoveryOutput> {
     if (!params.validatorSrcAddress || !this.isValidAddress(params.validatorSrcAddress)) {
       throw new Error('invalid validatorSrcAddress');
     }
@@ -308,14 +261,19 @@ export class CosmosCoin extends BaseCoin {
     if (!params.amountToRedelegate) {
       throw new Error('missing amountToRedelegate');
     }
-    if (!openSSLBytes) {
-      throw new Error('missing openSSLBytes');
-    }
-    const bitgoKey = params.bitgoKey.replace(/\s/g, '');
+
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+      userKey,
+      backupKey,
+      params.walletPassphrase
+    ); // baseAddress is not extracted
 
     const MPC = new Ecdsa();
     const chainId = await this.getChainId();
-    const publicKey = MPC.deriveUnhardened(bitgoKey, ROOT_PATH).slice(0, 66);
+    const publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
     const senderAddress = this.getAddressFromPublicKey(publicKey);
 
     const [accountNumber, sequenceNo] = await this.getAccountDetails(senderAddress);
@@ -350,25 +308,9 @@ export class CosmosCoin extends BaseCoin {
     const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction;
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     const signableHex = unsignedTransaction.signablePayload.toString('hex');
-    const userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
-    const [userKeyCombined, backupKeyCombined] = ((): [
-      ECDSAMethodTypes.KeyCombined | undefined,
-      ECDSAMethodTypes.KeyCombined | undefined
-    ] => {
-      const [userKeyCombined, backupKeyCombined] = this.getKeyCombinedFromTssKeyShares(
-        userKey,
-        backupKey,
-        params.walletPassphrase
-      );
-      return [userKeyCombined, backupKeyCombined];
-    })();
-
-    if (!userKeyCombined || !backupKeyCombined) {
-      throw new Error('Missing combined key shares for user or backup');
-    }
-
-    const signature = await this.signRecoveryTSS(userKeyCombined, backupKeyCombined, signableHex, openSSLBytes);
+    const message = unsignedTransaction.signablePayload;
+    const messageHash = (utils.getHashFunction() || createHash('sha256')).update(message).digest();
+    const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
     const signableBuffer = Buffer.from(signableHex, 'hex');
     MPC.verify(signableBuffer, signature, this.getHashFunction());
     const cosmosKeyPair = this.getKeyPair(publicKey);
@@ -377,161 +319,6 @@ export class CosmosCoin extends BaseCoin {
     serializedTx = signedTransaction.toBroadcastFormat();
 
     return { serializedTx: serializedTx };
-  }
-
-  private getKeyCombinedFromTssKeyShares(
-    userPublicOrPrivateKeyShare: string,
-    backupPrivateOrPublicKeyShare: string,
-    walletPassphrase?: string
-  ): [ECDSAMethodTypes.KeyCombined, ECDSAMethodTypes.KeyCombined] {
-    let backupPrv;
-    let userPrv;
-    try {
-      backupPrv = this.bitgo.decrypt({
-        input: backupPrivateOrPublicKeyShare,
-        password: walletPassphrase,
-      });
-      userPrv = this.bitgo.decrypt({
-        input: userPublicOrPrivateKeyShare,
-        password: walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
-    }
-
-    const userSigningMaterial = JSON.parse(userPrv) as ECDSAMethodTypes.SigningMaterial;
-    const backupSigningMaterial = JSON.parse(backupPrv) as ECDSAMethodTypes.SigningMaterial;
-
-    if (!userSigningMaterial.backupNShare) {
-      throw new Error('Invalid user key - missing backupNShare');
-    }
-
-    if (!backupSigningMaterial.userNShare) {
-      throw new Error('Invalid backup key - missing userNShare');
-    }
-
-    const MPC = new Ecdsa();
-
-    const userKeyCombined = MPC.keyCombine(userSigningMaterial.pShare, [
-      userSigningMaterial.bitgoNShare,
-      userSigningMaterial.backupNShare,
-    ]);
-
-    const userSigningKeyDerived = MPC.keyDerive(
-      userSigningMaterial.pShare,
-      [userSigningMaterial.bitgoNShare, userSigningMaterial.backupNShare],
-      'm/0'
-    );
-
-    const userKeyDerivedCombined = {
-      xShare: userSigningKeyDerived.xShare,
-      yShares: userKeyCombined.yShares,
-    };
-
-    const backupKeyCombined = MPC.keyCombine(backupSigningMaterial.pShare, [
-      userSigningKeyDerived.nShares[2],
-      backupSigningMaterial.bitgoNShare,
-    ]);
-
-    if (
-      userKeyDerivedCombined.xShare.y !== backupKeyCombined.xShare.y ||
-      userKeyDerivedCombined.xShare.chaincode !== backupKeyCombined.xShare.chaincode
-    ) {
-      throw new Error('Common keychains do not match');
-    }
-
-    return [userKeyDerivedCombined, backupKeyCombined];
-  }
-
-  // TODO(BG-78714): Reduce code duplication between this and eth.ts
-  private async signRecoveryTSS(
-    userKeyCombined: ECDSA.KeyCombined,
-    backupKeyCombined: ECDSA.KeyCombined,
-    txHex: string,
-    openSSLBytes: Uint8Array,
-    {
-      rangeProofChallenge,
-    }: {
-      rangeProofChallenge?: EcdsaTypes.SerializedNtilde;
-    } = {}
-  ): Promise<ECDSAMethodTypes.Signature> {
-    const MPC = new Ecdsa();
-    const signerOneIndex = userKeyCombined.xShare.i;
-    const signerTwoIndex = backupKeyCombined.xShare.i;
-
-    // Since this is a user <> backup signing, we will reuse the same range proof challenge
-    rangeProofChallenge =
-      rangeProofChallenge ?? EcdsaTypes.serializeNtildeWithProofs(await EcdsaRangeProof.generateNtilde(openSSLBytes));
-
-    const userToBackupPaillierChallenge = await EcdsaPaillierProof.generateP(
-      hexToBigInt(userKeyCombined.yShares[signerTwoIndex].n)
-    );
-    const backupToUserPaillierChallenge = await EcdsaPaillierProof.generateP(
-      hexToBigInt(backupKeyCombined.yShares[signerOneIndex].n)
-    );
-
-    const userXShare = MPC.appendChallenge(
-      userKeyCombined.xShare,
-      rangeProofChallenge,
-      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
-    );
-    const userYShare = MPC.appendChallenge(
-      userKeyCombined.yShares[signerTwoIndex],
-      rangeProofChallenge,
-      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
-    );
-    const backupXShare = MPC.appendChallenge(
-      backupKeyCombined.xShare,
-      rangeProofChallenge,
-      EcdsaTypes.serializePaillierChallenge({ p: backupToUserPaillierChallenge })
-    );
-    const backupYShare = MPC.appendChallenge(
-      backupKeyCombined.yShares[signerOneIndex],
-      rangeProofChallenge,
-      EcdsaTypes.serializePaillierChallenge({ p: userToBackupPaillierChallenge })
-    );
-
-    const signShares: ECDSA.SignShareRT = await MPC.signShare(userXShare, userYShare);
-
-    const signConvertS21 = await MPC.signConvertStep1({
-      xShare: backupXShare,
-      yShare: backupYShare, // YShare corresponding to the other participant signerOne
-      kShare: signShares.kShare,
-    });
-    const signConvertS12 = await MPC.signConvertStep2({
-      aShare: signConvertS21.aShare,
-      wShare: signShares.wShare,
-    });
-    const signConvertS21_2 = await MPC.signConvertStep3({
-      muShare: signConvertS12.muShare,
-      bShare: signConvertS21.bShare,
-    });
-
-    const [signCombineOne, signCombineTwo] = [
-      MPC.signCombine({
-        gShare: signConvertS12.gShare,
-        signIndex: {
-          i: signConvertS12.muShare.i,
-          j: signConvertS12.muShare.j,
-        },
-      }),
-      MPC.signCombine({
-        gShare: signConvertS21_2.gShare,
-        signIndex: {
-          i: signConvertS21_2.signIndex.i,
-          j: signConvertS21_2.signIndex.j,
-        },
-      }),
-    ];
-
-    const MESSAGE = Buffer.from(txHex, 'hex');
-
-    const [signA, signB] = [
-      MPC.sign(MESSAGE, signCombineOne.oShare, signCombineTwo.dShare, this.getHashFunction()),
-      MPC.sign(MESSAGE, signCombineTwo.oShare, signCombineOne.dShare, this.getHashFunction()),
-    ];
-
-    return MPC.constructSignature([signA, signB]);
   }
 
   /** @inheritDoc **/

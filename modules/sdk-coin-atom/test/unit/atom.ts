@@ -574,18 +574,6 @@ describe('ATOM', function () {
         .should.rejectedWith('missing wallet passphrase');
     });
 
-    it('should throw error if openSSLBytes is not present', async function () {
-      await basecoin
-        .recover({
-          userKey: wrwUser.userKey,
-          backupKey: wrwUser.backupKey,
-          bitgoKey: wrwUser.bitgoKey,
-          walletPassphrase: wrwUser.walletPassphrase,
-          recoveryDestination: destinationAddress,
-        })
-        .should.rejectedWith('missing openSSLBytes');
-    });
-
     it('should throw error if there is no balance', async function () {
       await basecoin
         .recover(
