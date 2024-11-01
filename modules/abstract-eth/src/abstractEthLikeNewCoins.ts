@@ -203,8 +203,12 @@ interface UnformattedTxInfo {
 
 export type RecoverOptionsWithBytes = {
   isTss: true;
-  openSSLBytes: Uint8Array;
+  /**
+   * @deprecated this is no longer used
+   */
+  openSSLBytes?: Uint8Array;
 };
+
 export type NonTSSRecoverOptions = {
   isTss?: false | undefined;
 };
