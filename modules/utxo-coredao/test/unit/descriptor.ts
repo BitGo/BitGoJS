@@ -4,6 +4,7 @@ import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { createMultiSigDescriptor } from '../../src/descriptor';
 import { finalizePsbt, getFixture, updateInputWithDescriptor } from './utils';
+import { decodeTimelock } from '../../src';
 
 describe('descriptor', function () {
   const baseFixturePath = 'test/fixtures/descriptor/';
@@ -114,4 +115,36 @@ describe('descriptor', function () {
   runTestForParams('sh', 2, [key1, key2]);
   runTestForParams('sh-wsh', 2, [key1, key2]);
   runTestForParams('sh', 3, [key1, key2, key3]);
+
+  it('should recreate the script used in testnet staking transaction', function () {
+    // Source: https://mempool.space/testnet/address/2MxTi2EhHKgdJFKRTBttVGGxir9ZzjmKCXw
+    // 2 of 2 multisig
+    const timelock = 'fce4cb66';
+    const pubkey1 = '03ecb6d4b7f5d56962e547fc52dd588359f5729c0ba856d6978b84723895a16691';
+    const pubkey2 = '024aaea25d82b1db2be030a05b641d6302e48ed652b1ca9cb08a67267fcbb56747';
+    const redeemScriptASM = [
+      'OP_PUSHBYTES_4',
+      timelock,
+      'OP_CLTV',
+      'OP_DROP',
+      'OP_PUSHNUM_2',
+      'OP_PUSHBYTES_33',
+      pubkey1,
+      'OP_PUSHBYTES_33',
+      pubkey2,
+      'OP_PUSHNUM_2',
+      'OP_CHECKMULTISIG',
+    ].join(' ');
+
+    const decodedTimelock = decodeTimelock(Buffer.from(timelock, 'hex'));
+    const descriptor = createMultiSigDescriptor(
+      'sh',
+      decodedTimelock,
+      2,
+      [Buffer.from(pubkey1, 'hex'), Buffer.from(pubkey2, 'hex')],
+      false
+    );
+    const descriptorASM = Descriptor.fromString(descriptor, 'definite').toAsmString();
+    assert.deepStrictEqual(redeemScriptASM, descriptorASM);
+  });
 });

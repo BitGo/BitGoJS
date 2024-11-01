@@ -6,8 +6,10 @@ import {
   decodeTimelock,
   encodeTimelock,
   parseCoreDaoOpReturnOutputScript,
+  toString,
 } from '../../src';
 import { testutil } from '@bitgo/utxo-lib';
+import { getFixture } from './utils';
 
 describe('OP_RETURN', function () {
   const validVersion = 2;
@@ -18,9 +20,14 @@ describe('OP_RETURN', function () {
   const validFee = 1;
   const validRedeemScript = Buffer.from('522103a8295453660d5e212d55556666666666666666666666666666666666', 'hex');
   const validTimelock = 800800;
-  // https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output-1
-  const defaultScript =
-    '6a4c505341542b01045bde60b7d0e6b758ca5dd8c61d377a2c5f1af51ec1a9e209f5ea0036c8c2f41078a3cebee57d8a47d501041f5e0e66b17576a914c4b8ae927ff2b9ce218e20bf06d425d6b68424fd88ac';
+  let defaultScript: string;
+
+  before(async function () {
+    // https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output-1
+    const script = await getFixture('test/fixtures/opReturn/documentation.txt', undefined);
+    assert(typeof script === 'string');
+    defaultScript = script;
+  });
 
   describe('createCoreDaoOpReturnOutputScript', function () {
     it('should throw if invalid parameters are passed', function () {
@@ -201,7 +208,6 @@ describe('OP_RETURN', function () {
           fee: 1,
           redeemScript: Buffer.from('041f5e0e66b17576a914c4b8ae927ff2b9ce218e20bf06d425d6b68424fd88ac', 'hex'),
         }).toString('hex'),
-        // Source: https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output-1
         defaultScript
       );
     });
@@ -244,6 +250,16 @@ describe('OP_RETURN', function () {
       assert.strictEqual(parsed.fee, validFee);
       assert('redeemScript' in parsed);
       assert.deepStrictEqual(parsed.redeemScript, validRedeemScript);
+    });
+
+    it('should parse valid opreturn script from testnet', async function () {
+      // Source: https://mempool.space/testnet/tx/66ed4cea26a410248a6d87f14b2bca514f33920c54d4af63ed46a903793115d5
+      const baseFixturePath = 'test/fixtures/opReturn/66ed4cea26a410248a6d87f14b2bca514f33920c54d4af63ed46a903793115d5';
+      const opReturnHex = await getFixture(baseFixturePath + '.txt', undefined);
+      assert(typeof opReturnHex === 'string');
+      const parsed = parseCoreDaoOpReturnOutputScript(Buffer.from(opReturnHex, 'hex'));
+      const parsedFixture = await getFixture(baseFixturePath + '.json', JSON.parse(toString(parsed)));
+      assert.deepStrictEqual(toString(parsed), JSON.stringify(parsedFixture));
     });
 
     it('should fail if there is an invalid op-return', function () {
