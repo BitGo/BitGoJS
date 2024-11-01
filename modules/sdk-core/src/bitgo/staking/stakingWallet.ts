@@ -218,11 +218,17 @@ export class StakingWallet implements IStakingWallet {
 
   /**
    * Create prebuilt staking transaction.
+   *
+   * for transactions with tx request id (TSS transactions), we need to delete signature shares before creating prebuild transaction
+   * we only need to get transaction build params if they exist to pre build
+   *
    * @param transaction
    */
   async prebuildSelfManagedStakingTransaction(transaction: StakingTransaction): Promise<PrebuildTransactionResult> {
-    const builtStakingTransaction = await this.build(transaction);
-    const buildParams = builtStakingTransaction.transaction.buildParams;
+    if (transaction.txRequestId) {
+      await this.tssUtil.deleteSignatureShares(transaction.txRequestId);
+    }
+    const buildParams = (await this.expandBuildParams(transaction)).buildParams;
     const formattedParams = {
       ...buildParams,
       coin: this.coin,
@@ -230,7 +236,7 @@ export class StakingWallet implements IStakingWallet {
       walletType: this.wallet.type(),
       preview: true,
     };
-    return await this.wallet.prebuildTransaction(formattedParams);
+    return await (await this.getWalletForBuildingAndSigning()).prebuildTransaction(formattedParams);
   }
 
   /**

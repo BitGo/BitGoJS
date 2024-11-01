@@ -2,7 +2,7 @@ import * as nock from 'nock';
 import * as should from 'should';
 import fixtures from '../../fixtures/staking/stakingWallet';
 
-import { Enterprise, Environments, StakingRequest, StakingWallet, Wallet } from '@bitgo/sdk-core';
+import { Enterprise, Environments, StakingRequest, StakingWallet, TssUtils, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 import * as sinon from 'sinon';
@@ -309,7 +309,7 @@ describe('Staking Wallet Common', function () {
 
   describe('prebuildSelfManagedStakingTransaction', function () {
     it('should prebuild self-managed staking transaction', async function () {
-      const transaction = fixtures.transaction('READY', fixtures.buildParams);
+      const transaction = fixtures.transaction('READY', fixtures.buildParams, false);
       nock(microservicesUri)
         .get(
           `/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`
@@ -317,7 +317,9 @@ describe('Staking Wallet Common', function () {
         .query({ expandBuildParams: true })
         .reply(200, transaction);
 
+      const deleteSignatureShares = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
       const prebuildTransaction = sandbox.stub(Wallet.prototype, 'prebuildTransaction');
+      const build = sandbox.stub(StakingWallet.prototype, 'build');
       const txPrebuild = {
         walletId: stakingWallet.walletId,
         txHex: 'hex',
@@ -325,7 +327,6 @@ describe('Staking Wallet Common', function () {
       };
       prebuildTransaction.resolves(txPrebuild);
       prebuildTransaction.calledOnceWithExactly(transaction.buildParams);
-
       const formattedParams = {
         ...fixtures.buildParams,
         coin: stakingWallet.coin,
@@ -333,8 +334,48 @@ describe('Staking Wallet Common', function () {
         walletType: stakingWallet.wallet.type(),
         preview: true,
       };
-      const expected = await stakingWallet.wallet.prebuildTransaction(formattedParams);
       const stakingTransaction = await stakingWallet.prebuildSelfManagedStakingTransaction(transaction);
+      sandbox.assert.calledOnce(prebuildTransaction);
+      sandbox.assert.notCalled(build);
+      sandbox.assert.notCalled(deleteSignatureShares);
+
+      const expected = await stakingWallet.wallet.prebuildTransaction(formattedParams);
+      stakingTransaction.should.deepEqual(expected);
+      should.exist(stakingTransaction);
+    });
+    it('should prebuild self-managed staking transaction - no build params', async function () {
+      const transaction = fixtures.transaction('READY', undefined, true);
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`
+        )
+        .query({ expandBuildParams: true })
+        .reply(200, transaction);
+
+      const deleteSignatureShares = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+      const prebuildTransaction = sandbox.stub(Wallet.prototype, 'prebuildTransaction');
+      const build = sandbox.stub(StakingWallet.prototype, 'build');
+      const txPrebuild = {
+        walletId: stakingWallet.walletId,
+        txHex: 'hex',
+      };
+      prebuildTransaction.resolves(txPrebuild);
+      if (transaction.txRequestId) {
+        deleteSignatureShares.calledOnceWithExactly(transaction.txRequestId);
+      }
+      const formattedParams = {
+        ...fixtures.buildParams,
+        coin: stakingWallet.coin,
+        walletId: stakingWallet.walletId,
+        walletType: stakingWallet.wallet.type(),
+        preview: true,
+      };
+      const stakingTransaction = await stakingWallet.prebuildSelfManagedStakingTransaction(transaction);
+      sandbox.assert.calledOnce(prebuildTransaction);
+      sandbox.assert.notCalled(build);
+      sandbox.assert.calledOnce(deleteSignatureShares);
+
+      const expected = await stakingWallet.wallet.prebuildTransaction(formattedParams);
 
       stakingTransaction.should.deepEqual(expected);
       should.exist(stakingTransaction);
