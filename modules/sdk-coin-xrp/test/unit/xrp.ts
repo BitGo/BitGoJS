@@ -8,6 +8,8 @@ import ripple from '../../src/ripple';
 import * as nock from 'nock';
 import assert from 'assert';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
+import sinon from 'sinon';
+import * as testData from '../resources/xrp';
 
 nock.disableNetConnect();
 
@@ -215,6 +217,81 @@ describe('XRP:', function () {
     it('should validate pub key', () => {
       const { pub } = basecoin.keychains().create();
       basecoin.isValidPub(pub).should.equal(true);
+    });
+  });
+
+  describe('Recover Token Transactions', () => {
+    const sandBox = sinon.createSandbox();
+    const tokenName = 'txrp:rlusd';
+    const destination = 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP';
+    const passPhrase = '#Bondiola1234';
+    let xrplStub;
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('should recover a token txn for non-bitgo recovery', async function () {
+      xrplStub = sinon.stub(basecoin.bitgo, 'post');
+      const accountInfoParams = {
+        method: 'account_info',
+        params: [
+          {
+            account: testData.keys.rootAddress,
+            strict: true,
+            ledger_index: 'current',
+            queue: true,
+            signer_lists: true,
+          },
+        ],
+      };
+
+      const accountLinesParams = {
+        method: 'account_lines',
+        params: [
+          {
+            account: testData.keys.rootAddress,
+            ledger_index: 'validated',
+          },
+        ],
+      };
+
+      const accountInfoResponse = testData.accountInfoResponse;
+      const feeResponse = testData.feeResponse;
+      const accountLinesResponse = testData.accountlinesResponse;
+      const serverInfoResponse = testData.serverInfoResponse;
+
+      const sendStub = sinon.stub();
+      sendStub.withArgs(accountInfoParams).resolves(accountInfoResponse);
+      sendStub.withArgs({ method: 'fee' }).resolves(feeResponse);
+      sendStub.withArgs({ method: 'server_info' }).resolves(serverInfoResponse);
+      sendStub.withArgs(accountLinesParams).resolves(accountLinesResponse);
+
+      // Apply the stub to the `xrplStub`
+      xrplStub.withArgs(basecoin.getRippledUrl()).returns({
+        send: sendStub,
+      });
+
+      const res = await basecoin.recover({
+        userKey: testData.keys.userKey,
+        backupKey: testData.keys.backupKey,
+        rootAddress: testData.keys.rootAddress,
+        recoveryDestination: destination,
+        walletPassphrase: passPhrase,
+        tokenName: tokenName,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('txHex');
+      res.should.hasOwnProperty('fee');
+      res.should.hasOwnProperty('outputAmount');
+      res.id.should.equal('BED49314330C3EB252B7275B1ADDBB6BF87439F2886ED7ACB1255BFF3A113FBC');
+      res.outputAmount.value.should.equal('4');
+      res.outputAmount.currency.should.equal('524C555344000000000000000000000000000000');
+      res.outputAmount.issuer.should.equal('rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV');
+      res.txHex.should.equal(
+        '120000228000000024000C50B8201B002B750061D48E35FA931A0000524C555344000000000000000000000000000000FCF4DD8C64636BC503F4A58DC6C684D2C7C3C24F68400000000000001E730081149389EC07DF6E6567D658BACC54606EBB33DC13E6831438D1B9A61C0FFA1A82FCF8A40AF709A9C8CF1890F3E0107321035F72A84A6BCD8ED2D26EAD2C5F864C55C26364EAF20257EFF7241F0F8D987BDA74463044022014B6C2471088A08B1C4FD065CE87DEB7AB30EBDB00C1A38A689BCFC36AA3D02402205CF25122414B766FBAA87EED35C12579799EC06DB3E9B41ABBDF47A4C9FAFEF681146BBA54CE60D9F3C926711A2C60D1CC712F21993CE1E01073210261E923400BDF6024D1D05574A7303C3D6878C7678F31254BD769DD4037495D9974473045022100AA1386B125E3131D21A95D735CDCC1923CDCE0B950F1B165F9DC50336F6C68A40220791EE568403D444E218E7BACF203B63AE96A803C0AF704F9EB6DD1FF91A355D88114EE3FBE636ADCBDD05B53493501DA6FBBC9287562E1F1'
+      );
     });
   });
 });

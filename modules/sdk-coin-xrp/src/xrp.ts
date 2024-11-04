@@ -329,10 +329,20 @@ export class Xrp extends BaseCoin {
       params: [
         {
           account: params.rootAddress,
-          strict: true,
           ledger_index: 'current',
           queue: true,
+          strict: true,
           signer_lists: true,
+        },
+      ],
+    };
+
+    const accountLinesParams = {
+      method: 'account_lines',
+      params: [
+        {
+          account: params.rootAddress,
+          ledger_index: 'validated',
         },
       ],
     };
@@ -348,10 +358,11 @@ export class Xrp extends BaseCoin {
 
     const keys = getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
 
-    const { addressDetails, feeDetails, serverDetails } = await promiseProps({
+    const { addressDetails, feeDetails, serverDetails, accountLines } = await promiseProps({
       addressDetails: this.bitgo.post(rippledUrl).send(accountInfoParams),
       feeDetails: this.bitgo.post(rippledUrl).send({ method: 'fee' }),
       serverDetails: this.bitgo.post(rippledUrl).send({ method: 'server_info' }),
+      accountLines: this.bitgo.post(rippledUrl).send(accountLinesParams),
     });
 
     const openLedgerFee = new BigNumber(feeDetails.body.result.drops.open_ledger_fee);
@@ -452,6 +463,25 @@ export class Xrp extends BaseCoin {
       );
     }
 
+    const tokenName = params?.tokenName;
+    if (!!tokenName) {
+      const tokenParams = {
+        destinationAddress,
+        destinationTag,
+        recoverableBalance,
+        currentLedger,
+        openLedgerFee,
+        sequenceId,
+        accountLines,
+        keys,
+        isKrsRecovery,
+        userAddress,
+        backupAddress,
+      };
+
+      return this.recoverXrpToken(params, tokenName, tokenParams);
+    }
+
     const transaction = {
       TransactionType: 'Payment',
       Account: params.rootAddress, // source address
@@ -475,6 +505,82 @@ export class Xrp extends BaseCoin {
     if (!keys[0].privateKey) {
       throw new Error(`userKey is not a private key`);
     }
+    const userKey = keys[0].privateKey.toString('hex');
+    const userSignature = ripple.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
+
+    let signedTransaction: string;
+
+    if (isKrsRecovery) {
+      signedTransaction = userSignature.signedTransaction;
+    } else {
+      if (!keys[1].privateKey) {
+        throw new Error(`backupKey is not a private key`);
+      }
+      const backupKey = keys[1].privateKey.toString('hex');
+      const backupSignature = ripple.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
+      signedTransaction = ripple.multisign([userSignature.signedTransaction, backupSignature.signedTransaction]);
+    }
+
+    const transactionExplanation: RecoveryInfo = (await this.explainTransaction({
+      txHex: signedTransaction,
+    })) as RecoveryInfo;
+
+    transactionExplanation.txHex = signedTransaction;
+
+    if (isKrsRecovery) {
+      transactionExplanation.backupKey = params.backupKey;
+      transactionExplanation.coin = this.getChain();
+    }
+    return transactionExplanation;
+  }
+
+  public async recoverXrpToken(params, tokenName, tokenParams) {
+    const { currency, issuer } = utils.getXrpCurrencyFromTokenName(tokenName);
+
+    // const accountLines = JSON.parse(tokenParams.accountLines);
+    // const lines = accountLines.body.result.lines;
+    const lines = tokenParams.accountLines.body.result.lines;
+
+    let amount;
+    for (const line of lines) {
+      if (line.currency === currency && line.account === issuer) {
+        amount = line.balance;
+        break;
+      }
+    }
+
+    if (amount === undefined) {
+      throw new Error(`Does not have Trustline with ${issuer}`);
+    }
+    if (amount === '0') {
+      throw new Error(`Does not have funds to recover`);
+    }
+
+    const FLAG_VALUE = 2147483648;
+
+    const transaction = {
+      TransactionType: 'Payment',
+      Amount: {
+        value: amount,
+        currency,
+        issuer,
+      }, // source address
+      Destination: tokenParams.destinationAddress,
+      DestinationTag: tokenParams.destinationTag,
+      Account: params.rootAddress,
+      Flags: FLAG_VALUE,
+      LastLedgerSequence: tokenParams.currentLedger + 1000000, // give it 1 million ledgers' time (~1 month, suitable for KRS)
+      Fee: tokenParams.openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
+      Sequence: tokenParams.sequenceId,
+    };
+    const txJSON: string = JSON.stringify(transaction);
+
+    const { keys, isKrsRecovery, userAddress, backupAddress } = tokenParams;
+
+    if (!keys[0].privateKey) {
+      throw new Error(`userKey is not a private key`);
+    }
+
     const userKey = keys[0].privateKey.toString('hex');
     const userSignature = ripple.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
 
