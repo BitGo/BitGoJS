@@ -1,5 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
+import { addHexPrefix } from 'ethereumjs-util';
 import { TransactionBuilder as EthTransactionBuilder, TxData, walletSimpleConstructor } from '@bitgo/sdk-coin-eth';
 import { BuildTransactionError, TransactionType, StakingOperationTypes } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
@@ -7,7 +8,6 @@ import { StakingBuilder } from './stakingBuilder';
 import { StakingCall } from './stakingCall';
 import { getCommon, walletSimpleByteCode } from './utils';
 import { TransferBuilder } from './transferBuilder';
-import { addHexPrefix } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
 
 export class TransactionBuilder extends EthTransactionBuilder {

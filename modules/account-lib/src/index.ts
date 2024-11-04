@@ -154,7 +154,7 @@ const coinBuilderMap = {
   rbtc: Rbtc.TransactionBuilder,
   trbtc: Rbtc.TransactionBuilder,
   celo: Celo.TransactionBuilder,
-  tcelo: Celo.TransactionBuilder,
+  tcelo: Celo.TestnetTransactionBuilder,
   avaxc: AvaxC.TransactionBuilder,
   tavaxc: AvaxC.TransactionBuilder,
   bsc: Bsc.TransactionBuilder,
