@@ -7,7 +7,6 @@ import { StakingBuilder } from './stakingBuilder';
 import { StakingCall } from './stakingCall';
 import { getCommon, walletSimpleByteCode } from './utils';
 import { TransferBuilder } from './transferBuilder';
-import { addHexPrefix } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
 
 export class TransactionBuilder extends EthTransactionBuilder {
@@ -221,15 +220,6 @@ export class TransactionBuilder extends EthTransactionBuilder {
     data.to = stake.address;
 
     return data;
-  }
-
-  /**
-   * Get the final v value. Final v is described in EIP-155.
-   *
-   * @protected for internal use when the enableFinalVField flag is true.
-   */
-  protected getFinalV(): string {
-    return addHexPrefix(this._common.chainIdBN().toString(16));
   }
 
   /**
