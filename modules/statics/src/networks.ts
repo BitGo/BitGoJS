@@ -1074,6 +1074,24 @@ class OasTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '20197';
 }
 
+class Coredao extends Mainnet implements EthereumNetwork {
+  name = 'Coredaochain';
+  family = CoinFamily.COREDAO;
+  explorerUrl = 'https://scan.coredao.org/tx/';
+  accountExplorerUrl = 'https://scan.coredao.org/address/';
+  chainId = 1116;
+  nativeCoinOperationHashPrefix = '1116';
+}
+
+class CoredaoTestnet extends Testnet implements EthereumNetwork {
+  name = 'CoredaochainTestnet';
+  family = CoinFamily.COREDAO;
+  explorerUrl = 'https://scan.test.btcs.network/tx/';
+  accountExplorerUrl = 'https://scan.test.btcs.network/address/';
+  chainId = 1115;
+  nativeCoinOperationHashPrefix = '1115';
+}
+
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
   name = 'BaseChainTestnet';
   family = CoinFamily.BASEETH;
@@ -1120,6 +1138,7 @@ export const Networks = {
     bsc: Object.freeze(new BinanceSmartChain()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
+    coredao: Object.freeze(new Coredao()),
     coreum: Object.freeze(new Coreum()),
     dash: Object.freeze(new Dash()),
     dogecoin: Object.freeze(new Dogecoin()),
@@ -1180,6 +1199,7 @@ export const Networks = {
     bld: Object.freeze(new BldTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
     casper: Object.freeze(new CasperTestnet()),
+    coredao: Object.freeze(new CoredaoTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
     dogecoin: Object.freeze(new DogecoinTestnet()),
