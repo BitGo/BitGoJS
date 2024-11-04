@@ -1465,6 +1465,8 @@ export enum UnderlyingAsset {
   TBTC2 = 'tbtc2',
   TCAD = 'tcad',
   TCO = 'tco',
+  TEIGEN = 'teigen',
+  TEINU = 'teinu',
   TEL = 'tel',
   TELEGRAMDAO = 'telegramdao',
   TEN = 'ten',
@@ -2185,6 +2187,7 @@ export enum UnderlyingAsset {
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
+  'topeth:cnkt' = 'topeth:cnkt',
 
   // zkSync mainnet tokens
   'zketh:link' = 'zketh:link',

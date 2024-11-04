@@ -14343,6 +14343,22 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.RLUSD
   ),
   terc20(
+    '34dd36d9-18f9-4c99-b96e-d5c29ae2a4cd',
+    'teigen',
+    'Test Eigen',
+    18,
+    '0x3b78576f7d6837500ba3de27a60c7f594934027e',
+    UnderlyingAsset.TEIGEN
+  ),
+  terc20(
+    '49fde5ac-1204-4c5c-b62b-cc1363592193',
+    'teinu',
+    'Test EigenInu',
+    18,
+    '0xdeeeee2b48c121e6728ed95c860e296177849932',
+    UnderlyingAsset.TEINU
+  ),
+  terc20(
     '031e6052-ed7a-42cf-a6e6-2107d8e448ed',
     'bgerch',
     'Test ERC Token on Holesky',
@@ -18703,6 +18719,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xe9df68a54bba438c8a6192e95f0f2c53ac93d997',
     UnderlyingAsset['topeth:terc18dp']
+  ),
+  topethErc20(
+    'fa6bc0a9-49f8-4516-88b7-cad6a62f1dc2',
+    'topeth:cnkt',
+    'Wallet Connect',
+    18,
+    '0x75bb6dca2cd6f9a0189c478bbb8f7ee2fef07c78',
+    UnderlyingAsset['topeth:cnkt']
   ),
   zkethErc20(
     '53f0e845-f415-44d3-8517-7565dc346390',
