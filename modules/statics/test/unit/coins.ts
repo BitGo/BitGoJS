@@ -29,6 +29,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
+  arbeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   avaxc: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -68,6 +69,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   celo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  coreum: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   doge: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -107,6 +109,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   eigen: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   'reth-rocket': { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   injective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  opeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   polygon: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -130,8 +133,10 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   rbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  sei: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   sol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   stx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  sui: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   ton: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   xlm: {
     features: [
@@ -141,8 +146,14 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   trx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  usdt: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
-  usdc: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_NEW_YORK] },
+  usdt: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  usdc: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
   shib: { features: [CoinFeature.CUSTODY_BITGO_NEW_YORK] },
   injv2: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   moca: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -174,6 +185,11 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   smt: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   strk: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   rad: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  dgld: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  eurcv: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  euroc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  mnt: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  pyusd: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   'sol:pyth': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   'sol:bonk': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   'sol:jup': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -189,6 +205,13 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   'xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN': {
     features: [CoinFeature.CUSTODY_BITGO_FRANKFURT],
   },
+  'xlm:GYEN-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB': {
+    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT],
+  },
+  'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU': {
+    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT],
+  },
+  'arbeth:arb': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
 
   // Test Coins
   talgo: {
@@ -198,6 +221,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
+  tarbeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tavaxc: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -269,6 +293,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   tcelo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tcoreum: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tdoge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   teos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   gteth: {
@@ -308,6 +333,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   tmatic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   tweth: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   tinjective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  topeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tpolygon: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -324,6 +350,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   trbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tsei: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tsol: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -332,6 +359,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   tstx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tsui: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   txlm: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,

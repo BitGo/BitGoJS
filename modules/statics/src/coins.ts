@@ -265,6 +265,7 @@ const SUI_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
 const SUI_TOKEN_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -299,8 +300,11 @@ const INJECTIVE_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
+const COREUM_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const SEI_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const TOKEN_FEATURES_WITH_SWISS = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
 const TOKEN_FEATURES_WITH_NY = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_NEW_YORK];
+const TOKEN_FEATURES_WITH_FRANKFURT = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -322,6 +326,7 @@ const ARBETH_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
 const OPETH_FEATURES = [
   ...ETH_FEATURES,
@@ -329,6 +334,7 @@ const OPETH_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
 const ZKETH_FEATURES = [
   ...ETH_FEATURES,
@@ -923,7 +929,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.SEI,
     BaseUnit.SEI,
-    COSMOS_SIDECHAIN_FEATURES
+    SEI_FEATURES
   ),
   account(
     '5be8a3f3-5c71-41ff-8d87-1ade63ce2543',
@@ -933,7 +939,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.SEI,
     BaseUnit.SEI,
-    COSMOS_SIDECHAIN_FEATURES
+    SEI_FEATURES
   ),
   account(
     '9fbfb875-fb80-4a37-b844-48b9e48dfcdd',
@@ -1003,7 +1009,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.COREUM,
     BaseUnit.COREUM,
-    COSMOS_SIDECHAIN_FEATURES
+    COREUM_FEATURES
   ),
   account(
     'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
@@ -1013,7 +1019,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.COREUM,
     BaseUnit.TCOREUM,
-    COSMOS_SIDECHAIN_FEATURES
+    COREUM_FEATURES
   ),
   account(
     '9fa0f191-4eed-4030-864a-d14bbd98c8af',
@@ -3345,7 +3351,8 @@ export const coins = CoinMap.fromCoins([
     'Digital Gold',
     18,
     '0xa9299c296d7830a99414d1e5546f5171fa01e9c8',
-    UnderlyingAsset.DGLD
+    UnderlyingAsset.DGLD,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '5847740c-8ff2-414a-ba65-e9fa48b847f6',
@@ -3827,7 +3834,8 @@ export const coins = CoinMap.fromCoins([
     'EUR CoinVertible',
     18,
     '0x5f7827fdeb7c20b443265fc2f40845b715385ff2',
-    UnderlyingAsset.EURCV
+    UnderlyingAsset.EURCV,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'fd8e59ae-d6f1-4ab6-917e-954d052cf60c',
@@ -3835,7 +3843,8 @@ export const coins = CoinMap.fromCoins([
     'Euro Coin',
     6,
     '0x1abaea1f7c830bd89acc67ec4af516284b1bc33c',
-    UnderlyingAsset.EUROC
+    UnderlyingAsset.EUROC,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '2ec7511c-7794-4f79-9745-d7186ee226b9',
@@ -5314,7 +5323,8 @@ export const coins = CoinMap.fromCoins([
     'Mantle',
     18,
     '0x3c3a81e81dc49a522a592e7622a7e711c06bf354',
-    UnderlyingAsset.MNT
+    UnderlyingAsset.MNT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '1301f2e6-3f4c-46ab-9f21-e6e8eadb0f3c',
@@ -6136,7 +6146,8 @@ export const coins = CoinMap.fromCoins([
     'PayPal USD',
     6,
     '0x6c3ea9036406852006290770bedfcaba0e23a0e8',
-    UnderlyingAsset.PYUSD
+    UnderlyingAsset.PYUSD,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '62a385af-296f-44e7-b4f0-7a25a1e990dc',
@@ -7443,7 +7454,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     UnderlyingAsset.USDC,
-    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_NEW_YORK]
+    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_NEW_YORK, CoinFeature.CUSTODY_BITGO_FRANKFURT]
   ),
   erc20(
     'd2b0daf7-c664-4e97-a9b3-48c2fe4e6b30',
@@ -7468,7 +7479,7 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xdac17f958d2ee523a2206206994597c13d831ec7',
     UnderlyingAsset.USDT,
-    TOKEN_FEATURES_WITH_SWISS
+    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_FRANKFURT]
   ),
   erc20(
     '7eab6610-5fa7-4a92-8317-c4d143cd58c0',
@@ -13349,7 +13360,7 @@ export const coins = CoinMap.fromCoins([
     7,
     UnderlyingAsset['xlm:GYEN-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB'],
     'stablecoin.z.com',
-    AccountCoin.DEFAULT_FEATURES,
+    XLM_TOKEN_FEATURES_WITH_FRANKFURT,
     '',
     'GYEN'
   ),
@@ -13404,7 +13415,7 @@ export const coins = CoinMap.fromCoins([
     7,
     UnderlyingAsset['xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU'],
     'audd.digital',
-    AccountCoin.DEFAULT_FEATURES,
+    XLM_TOKEN_FEATURES_WITH_FRANKFURT,
     '',
     'AUDD'
   ),
@@ -18512,7 +18523,8 @@ export const coins = CoinMap.fromCoins([
     'Arbitrum',
     18,
     '0x912ce59144191c1204e64559fe8253a0e49e6548',
-    UnderlyingAsset['arbeth:arb']
+    UnderlyingAsset['arbeth:arb'],
+    TOKEN_FEATURES_WITH_FRANKFURT
   ),
   arbethErc20(
     '65668b2e-6560-4749-a965-4d03eaeffaec',
