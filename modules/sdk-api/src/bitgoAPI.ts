@@ -20,8 +20,6 @@ import {
   IRequestTracer,
   makeRandomKey,
   sanitizeLegacyPath,
-  generateGPGKeyPair,
-  readSignedMessage,
 } from '@bitgo/sdk-core';
 import * as sjcl from '@bitgo/sjcl';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -958,11 +956,9 @@ export class BitGoAPI implements BitGoBase {
       this.validatePasskeyResponse(passkey);
       const userId = JSON.parse(passkey).response.userHandle;
 
-      const userGpgKey = await generateGPGKeyPair('secp256k1');
       const response: superagent.Response = await request.send({
         passkey: passkey,
         userId: userId,
-        publicKey: userGpgKey.publicKey,
       });
       // extract body and user information
       const body = response.body;
@@ -970,19 +966,7 @@ export class BitGoAPI implements BitGoBase {
 
       if (body.access_token) {
         this._token = body.access_token;
-      } else if (body.encryptedToken) {
-        const constants = await this.fetchConstants();
-
-        if (!constants.passkeyBitGoGpgKey) {
-          throw new Error('Unable to get passkeyBitGoGpgKey');
-        }
-
-        const access_token = await readSignedMessage(
-          body.encryptedToken,
-          constants.passkeyBitGoGpgKey,
-          userGpgKey.privateKey
-        );
-        response.body.access_token = access_token;
+        response.body.access_token = body.access_token;
       } else {
         throw new Error('Failed to login. Please contact support@bitgo.com');
       }
