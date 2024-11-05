@@ -31,7 +31,7 @@ export class Celo extends AbstractEthLikeCoin {
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txParams } = params;
-    if (txParams?.recipients?.length !== 1) {
+    if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(`txParams should only have 1 recipient but ${txParams?.recipients?.length} found`);
     }
     return true;
