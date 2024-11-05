@@ -1,11 +1,11 @@
-import { ITransactionRecipient } from '@bitgo/sdk-core';
+import { IAddressRecipient } from '@bitgo/sdk-core';
 
 export interface ITransactionExplanation<TFee = any, TAmount = any> {
   displayOrder: string[];
   id: string;
-  outputs: ITransactionRecipient[];
+  outputs: IAddressRecipient[];
   outputAmount: TAmount;
-  changeOutputs: ITransactionRecipient[];
+  changeOutputs: IAddressRecipient[];
   changeAmount: TAmount;
   fee: TFee;
   proxy?: string;

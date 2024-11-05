@@ -33,6 +33,7 @@ import {
   VerifyTransactionOptions,
   Wallet,
   ECDSAUtils,
+  IAddressRecipient,
 } from '@bitgo/sdk-core';
 import {
   BaseCoin as StaticsBaseCoin,
@@ -2378,7 +2379,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {TypedData} typedData - the typed data to prepare
    * @return {Buffer} a buffer of the result
    */
-  encodeTypedData(typedData: TypedData): Buffer {
+  encodeTypedData(typedData: TypedData<IAddressRecipient>): Buffer {
     const version = typedData.version;
     if (version === SignTypedDataVersion.V1) {
       throw new Error('SignTypedData v1 is not supported due to security concerns');

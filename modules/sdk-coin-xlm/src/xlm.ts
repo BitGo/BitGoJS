@@ -16,7 +16,6 @@ import {
   ExtraPrebuildParamsOptions,
   InvalidAddressError,
   InvalidMemoIdError,
-  ITransactionRecipient,
   KeyIndices,
   KeyPair,
   ParsedTransaction,
@@ -34,6 +33,7 @@ import {
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
   NotSupported,
+  IAddressRecipient,
 } from '@bitgo/sdk-core';
 import { toBitgoRequest } from '@bitgo/sdk-api';
 import { getStellarKeys } from './getStellarKeys';
@@ -98,7 +98,7 @@ interface HalfSignedTransaction {
   halfSigned: {
     txBase64: string;
   };
-  recipients?: ITransactionRecipient[];
+  recipients?: IAddressRecipient[];
   type?: string;
 }
 
@@ -143,6 +143,7 @@ interface TrustlineOptions {
 
 interface TransactionParams extends BaseTransactionParams {
   trustlines?: TrustlineOptions[];
+  recipients?: IAddressRecipient[];
 }
 
 interface VerifyTransactionOptions extends BaseVerifyTransactionOptions {
@@ -794,7 +795,7 @@ export class Xlm extends BaseCoin {
       return {
         halfSigned: { txBase64 },
         type,
-        recipients,
+        recipients: recipients as IAddressRecipient[] | undefined,
       };
     } else {
       return { halfSigned: { txBase64 } };

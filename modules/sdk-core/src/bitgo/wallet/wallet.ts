@@ -98,6 +98,7 @@ import {
   BulkWalletShareKeychain,
   ManageUnspentReservationOptions,
   SignAndSendTxRequestOptions,
+  AddressRecipient,
 } from './iWallet';
 import { StakingWallet } from '../staking';
 import { Lightning } from '../lightning/custodial';
@@ -1743,7 +1744,7 @@ export class Wallet implements IWallet {
    */
   async prebuildTransaction(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     if (this._wallet.multisigType === 'tss') {
-      return this.prebuildTransactionTss(params);
+      return this.prebuildTransactionTss(params as PrebuildTransactionOptions<AddressRecipient>);
     }
 
     // Whitelist params to build tx
@@ -2495,7 +2496,7 @@ export class Wallet implements IWallet {
     }
 
     if (this._wallet.multisigType === 'tss') {
-      return this.sendManyTss(params);
+      return this.sendManyTss(params as SendManyOptions<AddressRecipient>);
     }
 
     const selectParams = _.pick(params, [...this.prebuildWhitelistedParams(), 'comment', 'otp', 'hop']);
@@ -2807,7 +2808,7 @@ export class Wallet implements IWallet {
    */
   async buildAccountConsolidations(
     params: BuildConsolidationTransactionOptions = {}
-  ): Promise<PrebuildTransactionResult[]> {
+  ): Promise<PrebuildTransactionResult<AddressRecipient>[]> {
     if (!this.baseCoin.allowsAccountConsolidations()) {
       throw new Error(`${this.baseCoin.getFullName()} does not allow account consolidations.`);
     }
@@ -2831,11 +2832,11 @@ export class Wallet implements IWallet {
     }
 
     // we need to step over each prebuild now - should be in an array in the body
-    const consolidations: PrebuildTransactionResult[] = [];
+    const consolidations: PrebuildTransactionResult<AddressRecipient>[] = [];
     for (const consolidateAccountBuild of buildResponse) {
-      let prebuild: PrebuildTransactionResult = (await this.baseCoin.postProcessPrebuild(
+      let prebuild: PrebuildTransactionResult<AddressRecipient> = (await this.baseCoin.postProcessPrebuild(
         Object.assign(consolidateAccountBuild, { wallet: this, buildParams: whitelistedParams })
-      )) as PrebuildTransactionResult;
+      )) as PrebuildTransactionResult<AddressRecipient>;
 
       delete prebuild.wallet;
       delete prebuild.buildParams;
@@ -2855,7 +2856,7 @@ export class Wallet implements IWallet {
    *                    an additional parameter of consolidateId.
    *     verification - normal keychains, etc. for verification
    */
-  async sendAccountConsolidation(params: PrebuildAndSignTransactionOptions = {}): Promise<any> {
+  async sendAccountConsolidation(params: PrebuildAndSignTransactionOptions<AddressRecipient> = {}): Promise<any> {
     if (!this.baseCoin.allowsAccountConsolidations()) {
       throw new Error(`${this.baseCoin.getFullName()} does not allow account consolidations.`);
     }
@@ -2916,7 +2917,7 @@ export class Wallet implements IWallet {
       const failedTxs = new Array<Error>();
       for (const unsignedBuild of unsignedBuilds) {
         // fold any of the parameters we used to build this transaction into the unsignedBuild
-        const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = Object.assign({}, params);
+        const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions<AddressRecipient> = Object.assign({}, params);
         unsignedBuildWithOptions.prebuildTx = unsignedBuild;
         try {
           const sendTx = await this.sendAccountConsolidation(unsignedBuildWithOptions);
@@ -3017,7 +3018,7 @@ export class Wallet implements IWallet {
     }
 
     if (this._wallet.multisigType === 'tss') {
-      return await this.sendManyTss(params);
+      return await this.sendManyTss(params as SendManyOptions<AddressRecipient>);
     } else {
       switch (this._wallet.type) {
         case 'hot':
@@ -3085,7 +3086,9 @@ export class Wallet implements IWallet {
    *
    * @param params prebuild transaction options
    */
-  private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
+  private async prebuildTransactionTss(
+    params: PrebuildTransactionOptions<AddressRecipient> = {}
+  ): Promise<PrebuildTransactionResult<AddressRecipient>> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
@@ -3558,7 +3561,7 @@ export class Wallet implements IWallet {
    *
    * @param params send options
    */
-  private async sendManyTss(params: SendManyOptions = {}): Promise<any> {
+  private async sendManyTss(params: SendManyOptions<AddressRecipient> = {}): Promise<any> {
     const { apiVersion } = params;
     const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() ?? [];
     const onlySupportsTxRequestFull =

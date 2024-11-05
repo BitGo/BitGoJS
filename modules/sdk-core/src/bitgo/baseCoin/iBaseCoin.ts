@@ -16,8 +16,7 @@ import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
 import { MPCTx, PopulatedIntent } from '../utils';
 
-export interface Output extends ITransactionRecipient {
-  address: string;
+export type Output<TRecipient = ITransactionRecipient> = TRecipient & {
   // of form coin:token
   coinName?: string;
   isPayGo?: boolean;
@@ -31,7 +30,7 @@ export interface Output extends ITransactionRecipient {
   // "change" is a utxo-specific concept and this property should
   // be removed once it it's usage is refactored out of base coin logic
   change?: boolean;
-}
+};
 
 export type Input = {
   derivationIndex?: number;
@@ -68,12 +67,22 @@ export interface ExplanationResult extends ITransactionExplanation {
   blockNumber: number | unknown;
 }
 
-export interface ITransactionRecipient {
-  address: string;
+type BaseRecipient = {
   amount: string | number;
+};
+
+export type IScriptRecipient = BaseRecipient & {
+  /** hex encoded output script */
+  script: string;
+};
+
+export type IAddressRecipient = BaseRecipient & {
+  address: string;
   tokenName?: string;
   memo?: string;
-}
+};
+
+export type ITransactionRecipient = IScriptRecipient | IAddressRecipient;
 
 export interface ITransactionFee<TAmount = string> {
   fee: TAmount;
@@ -81,12 +90,12 @@ export interface ITransactionFee<TAmount = string> {
   size?: number;
 }
 
-export interface ITransactionExplanation<TFee = any, TAmount = any> {
+export interface ITransactionExplanation<TFee = any, TAmount = any, TRecipient = ITransactionRecipient> {
   displayOrder: string[];
   id: string;
-  outputs: ITransactionRecipient[];
+  outputs: TRecipient[];
   outputAmount: TAmount;
-  changeOutputs: ITransactionRecipient[];
+  changeOutputs: TRecipient[];
   changeAmount: TAmount;
   fee: TFee;
   proxy?: string;
@@ -250,19 +259,20 @@ export interface LightningKeychainsTriplet {
   nodeAuthKeychain: Keychain;
 }
 
-interface BuildParams {
+interface BuildParams<TRecipient = IAddressRecipient | IScriptRecipient> {
   preview?: boolean;
-  recipients?: ITransactionRecipient[];
+  recipients?: TRecipient[];
 }
 
-interface BaseSignable {
+interface BaseSignable<TRecipient = IAddressRecipient | IScriptRecipient> {
   wallet?: IWallet;
-  buildParams?: BuildParams & Partial<any>;
+  buildParams?: BuildParams<TRecipient> & Partial<any>;
   consolidateId?: string;
   txRequestId?: string;
 }
 
-export interface TransactionPrebuild extends BaseSignable {
+export interface TransactionPrebuild<TRecipient = IAddressRecipient | IScriptRecipient>
+  extends BaseSignable<TRecipient> {
   txBase64?: string;
   txHex?: string;
   txInfo?: unknown;
@@ -318,7 +328,7 @@ export interface TypedMessage<T extends MessageTypes> {
   message: Record<string, unknown>;
 }
 
-export interface TypedData extends BaseSignable {
+export interface TypedData<TRecipient = IAddressRecipient | IScriptRecipient> extends BaseSignable<TRecipient> {
   typedDataRaw: string;
   version: SignTypedDataVersion;
   typedDataEncoded?: Buffer;

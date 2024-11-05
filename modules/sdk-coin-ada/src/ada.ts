@@ -18,7 +18,6 @@ import {
   EDDSAMethodTypes,
   AddressFormat,
   Environments,
-  ITransactionRecipient,
   MPCTx,
   MPCRecoveryOptions,
   MPCConsolidationRecoveryOptions,
@@ -29,6 +28,7 @@ import {
   MPCTxs,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
+  IAddressRecipient,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -131,6 +131,9 @@ export class Ada extends BaseCoin {
         for (const recipient of txParams.recipients) {
           let find = false;
           for (const output of explainedTx.outputs) {
+            if (!('address' in recipient)) {
+              throw new Error('missing recipient address');
+            }
             if (recipient.address === output.address && recipient.amount === output.amount) {
               find = true;
             }
@@ -445,7 +448,7 @@ export class Ada extends BaseCoin {
       const transactionPrebuild = { txHex: serializedTx };
       const parsedTx = await this.parseTransaction({ txPrebuild: transactionPrebuild });
       const walletCoin = this.getChain();
-      const output = (parsedTx.outputs as ITransactionRecipient)[0];
+      const output = (parsedTx.outputs as IAddressRecipient)[0];
       const inputs = [
         {
           address: senderAddr,

@@ -57,7 +57,9 @@ export interface Memo {
   type: string;
 }
 
-export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
+export interface BuildConsolidationTransactionOptions
+  extends PrebuildTransactionOptions<AddressRecipient>,
+    WalletSignTransactionOptions<AddressRecipient> {
   consolidateAddresses?: string[];
 }
 
@@ -85,14 +87,26 @@ export type NftBalance = BaseBalance & {
 
 export type ApiVersion = 'lite' | 'full';
 
-export interface PrebuildTransactionOptions {
+type BaseRecipient = {
+  amount: string | number;
+  tokenName?: string;
+  tokenData?: TokenTransferRecipientParams;
+};
+
+export type AddressRecipient = BaseRecipient & {
+  address: string;
+};
+
+export type ScriptRecipient = BaseRecipient & {
+  /** hex encoded output script */
+  script: string;
+};
+
+type Recipient = AddressRecipient | ScriptRecipient;
+
+export interface PrebuildTransactionOptions<TRecipient = Recipient> {
   reqId?: IRequestTracer;
-  recipients?: {
-    address: string;
-    amount: string | number;
-    tokenName?: string;
-    tokenData?: TokenTransferRecipientParams;
-  }[];
+  recipients?: TRecipient[];
   numBlocks?: number;
   maxFeeRate?: number;
   minConfirms?: number;
@@ -157,12 +171,14 @@ export interface PrebuildTransactionOptions {
   txFormat?: 'legacy' | 'psbt';
 }
 
-export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
-  prebuildTx?: string | PrebuildTransactionResult;
+export interface PrebuildAndSignTransactionOptions<TRecipient = Recipient>
+  extends PrebuildTransactionOptions<TRecipient>,
+    WalletSignTransactionOptions<TRecipient> {
+  prebuildTx?: string | PrebuildTransactionResult<TRecipient>;
   verification?: VerificationOptions;
 }
 
-export interface PrebuildTransactionResult extends TransactionPrebuild {
+export interface PrebuildTransactionResult<TRecipient = Recipient> extends TransactionPrebuild<TRecipient> {
   walletId: string;
   // Consolidate ID is used for consolidate account transactions and indicates if this is
   // a consolidation and what consolidate group it should be referenced by.
@@ -198,8 +214,8 @@ export interface WalletSignBaseOptions {
   customSigningFunction?: CustomSigningFunction;
 }
 
-export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
-  txPrebuild?: TransactionPrebuild;
+export interface WalletSignTransactionOptions<TRecipient = Recipient> extends WalletSignBaseOptions {
+  txPrebuild?: TransactionPrebuild<TRecipient>;
   customCommitmentGeneratingFunction?: CustomCommitmentGeneratingFunction;
   customRShareGeneratingFunction?: CustomRShareGeneratingFunction;
   customGShareGeneratingFunction?: CustomGShareGeneratingFunction;
@@ -615,15 +631,14 @@ export interface SendOptions {
   tokenName?: string;
 }
 
-export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
+export interface SendManyOptions<TRecipient = Recipient> extends PrebuildAndSignTransactionOptions<TRecipient> {
   reqId?: IRequestTracer;
-  recipients?: {
-    address: string;
+  recipients?: (TRecipient & {
     amount: string | number;
     feeLimit?: string;
     data?: string;
     tokenName?: string;
-  }[];
+  })[];
   numBlocks?: number;
   feeRate?: number;
   maxFeeRate?: number;
@@ -771,7 +786,7 @@ export interface WalletEcdsaChallenges {
 }
 
 export type SendNFTOptions = Omit<
-  SendManyOptions,
+  SendManyOptions<AddressRecipient>,
   'recipients' | 'enableTokens' | 'tokenName' | 'txFormat' | 'receiveAddress'
 >;
 

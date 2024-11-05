@@ -4,6 +4,7 @@ import {
   TransactionExplanation as BaseTransactionExplanation,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild,
+  IAddressRecipient,
 } from '@bitgo/sdk-core';
 import { AccountSet, Amount, Payment, Signer, SignerEntry, SignerListSet, TrustSet } from 'xrpl';
 
@@ -29,7 +30,7 @@ export interface FeeInfo {
 }
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
-  txPrebuild: TransactionPrebuild;
+  txPrebuild: TransactionPrebuild<IAddressRecipient>;
   prv: string;
   isLastSignature?: boolean;
 }

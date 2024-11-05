@@ -5,6 +5,7 @@ import {
   WalletSignTypedDataOptions,
   SignTypedDataVersion,
   SendManyOptions,
+  AddressRecipient,
 } from '@bitgo/sdk-core';
 import { hexStringToNumber } from '@bitgo/sdk-coin-eth';
 import { personal_sign, eth_signTypedData, eth_sendTransaction } from './constants';
@@ -71,7 +72,7 @@ export class EvmRPCWrapper {
   private async sendTransaction(options: EVMRPCTransactionOptions): Promise<any> {
     const { to, data, gasPrice, gasLimit, value } = options;
 
-    const sendManyOptions: SendManyOptions = {
+    const sendManyOptions: SendManyOptions<AddressRecipient> = {
       recipients: [
         {
           address: to,

@@ -103,7 +103,11 @@ export class AvaxP extends BaseCoin {
       );
     }
 
-    if (explainedTx.outputs && !utils.isValidAddress(explainedTx.outputs[0].address)) {
+    if (
+      explainedTx.outputs &&
+      'address' in explainedTx.outputs[0] &&
+      !utils.isValidAddress(explainedTx.outputs[0].address)
+    ) {
       throw new Error(`Invalid P-chain address ${explainedTx.outputs[0].address}`);
     }
   }
