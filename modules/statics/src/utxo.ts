@@ -111,8 +111,8 @@ const BTC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
-  CoinFeature.STAKING,
 ];
+const TBTC_FEATURES = [...BTC_FEATURES, CoinFeature.STAKING];
 const BTG_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
   CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -202,7 +202,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.test.bitcoin,
     UnderlyingAsset.BTC,
     BaseUnit.BTC,
-    BTC_FEATURES
+    TBTC_FEATURES
   ),
   utxo(
     'a0d53dc9-2dcc-4ebb-a2d4-51983fe20da6',
