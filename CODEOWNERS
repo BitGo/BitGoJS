@@ -60,6 +60,7 @@
 /modules/sdk-coin-near/ @BitGo/ethalt-team
 /modules/sdk-coin-opeth/ @BitGo/ethalt-team
 /modules/sdk-coin-polygon/ @BitGo/ethalt-team
+/modules/sdk-coin-rune/ @BitGo/ethalt-team
 /modules/sdk-coin-sol/ @BitGo/ethalt-team
 /modules/sdk-coin-stx/ @BitGo/ethalt-team
 /modules/sdk-coin-sui/ @BitGo/ethalt-team

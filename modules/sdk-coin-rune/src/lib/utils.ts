@@ -22,14 +22,8 @@ export class RuneUtils extends CosmosUtils {
       const value = this.registry.decode(message);
       return {
         value: {
-          fromAddress:
-            this.networkType === NetworkType.TESTNET
-              ? bech32.encode(TESTNET_ADDRESS_PREFIX, value.fromAddress)
-              : bech32.encode(MAINNET_ADDRESS_PREFIX, value.fromAddress),
-          toAddress:
-            this.networkType === NetworkType.TESTNET
-              ? bech32.encode(TESTNET_ADDRESS_PREFIX, value.toAddress)
-              : bech32.encode(MAINNET_ADDRESS_PREFIX, value.toAddress),
+          fromAddress: this.getEncodedAddress(value.fromAddress),
+          toAddress: this.getEncodedAddress(value.toAddress),
           amount: value.amount,
         },
         typeUrl: message.typeUrl,
@@ -39,23 +33,74 @@ export class RuneUtils extends CosmosUtils {
 
   /** @inheritdoc */
   isValidAddress(address: string | Buffer): boolean {
-    if (address === undefined) {
+    if (address === undefined || address === null) {
       return false;
     }
-    if (typeof address !== 'string') {
-      const encodedAddress =
-        this.networkType === NetworkType.TESTNET
-          ? bech32.encode(TESTNET_ADDRESS_PREFIX, address)
-          : bech32.encode(MAINNET_ADDRESS_PREFIX, address);
-      if (this.networkType === NetworkType.TESTNET) {
-        return this.isValidCosmosLikeAddressWithMemoId(encodedAddress, constants.testnetAccountAddressRegex);
-      }
-      return this.isValidCosmosLikeAddressWithMemoId(encodedAddress, constants.mainnetAccountAddressRegex);
-    } else {
-      if (this.networkType === NetworkType.TESTNET) {
-        return this.isValidCosmosLikeAddressWithMemoId(address, constants.testnetAccountAddressRegex);
-      }
-      return this.isValidCosmosLikeAddressWithMemoId(address, constants.mainnetAccountAddressRegex);
+    if (address instanceof Uint8Array) {
+      return this.isValidDecodedAddress(address);
+    }
+    if (typeof address === 'string') {
+      return this.isValidEncodedAddress(address);
+    }
+    return false;
+  }
+
+  /**
+   * Validates a decoded address in `Buffer` form by encoding it and
+   * checking if the encoded version is valid
+   *
+   * @param address - The decoded address as a `Buffer`.
+   * @returns `true` if the encoded address is valid, `false` otherwise.
+   */
+  private isValidDecodedAddress(address: Buffer): boolean {
+    const encodedAddress = this.getEncodedAddress(address);
+    return this.isValidEncodedAddress(encodedAddress);
+  }
+
+  /**
+   * Validates an encoded address string against network-specific criteria.
+   *
+   * @param address - The encoded address as a `string`.
+   * @returns `true` if the address meets network-specific validation criteria, `false` otherwise.
+   */
+  private isValidEncodedAddress(address: string): boolean {
+    if (this.networkType === NetworkType.TESTNET) {
+      return this.isValidCosmosLikeAddressWithMemoId(address, constants.testnetAccountAddressRegex);
+    }
+    return this.isValidCosmosLikeAddressWithMemoId(address, constants.mainnetAccountAddressRegex);
+  }
+
+  /**
+   * Encodes a given address `Buffer` into a bech32 string format, based on the current network type.
+   * Primarily serves as a utility to convert a `Buffer`-type address to a bech32 encoded string
+   *
+   * @param address - The address to be encoded, provided as a `Buffer`.
+   * @returns A bech32-encoded string representing the address.
+   * @throws Error - Throws an error if encoding fails
+   */
+  getEncodedAddress(address: Buffer): string {
+    try {
+      return this.networkType === NetworkType.TESTNET
+        ? bech32.encode(TESTNET_ADDRESS_PREFIX, address)
+        : bech32.encode(MAINNET_ADDRESS_PREFIX, address);
+    } catch (error) {
+      throw new Error(`Failed to encode address: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Decodes a bech32-encoded address string back into a `Buffer`.
+   * Primarily serves as a utility to convert a string-type address into its binary representation,
+   *
+   * @param address - The bech32-encoded address as a `string`.
+   * @returns The decoded address as a `Buffer`.
+   * @throws Error - Throws an error if decoding fails
+   */
+  getDecodedAddress(address: string): Buffer {
+    try {
+      return bech32.decode(address).data;
+    } catch (error) {
+      throw new Error(`Failed to decode address: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
