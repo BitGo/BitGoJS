@@ -7307,6 +7307,14 @@ export const coins = CoinMap.fromCoins([
     ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
+    '1c022222-9173-4136-8438-49cbac3c645c',
+    'trufv2',
+    'Truflation (v2)',
+    18,
+    '0x243c9be13faba09f945ccc565547293337da0ad7',
+    UnderlyingAsset.TRUFV2
+  ),
+  erc20(
     '800b8416-6928-4adf-b291-5016760e740b',
     'tryb',
     'Bilira Token',
@@ -8144,6 +8152,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x8f9b4525681f3ea6e43b8e0a57bfff86c0a1dd2e',
     UnderlyingAsset.ZBU
+  ),
+  erc20(
+    '9224cc18-b067-4502-a23a-d5c3c4d15da2',
+    'zbuv2',
+    'Zeebu (v2)',
+    18,
+    '0xe77f6acd24185e149e329c1c0f479201b9ec2f4b',
+    UnderlyingAsset.ZBUV2
   ),
   erc20(
     'c0c239c6-484f-46a9-8454-06c19504ddea',
@@ -9100,6 +9116,14 @@ export const coins = CoinMap.fromCoins([
     0,
     '0x06147110022b768ba8f99a8f385df11a151a9cc8',
     UnderlyingAsset.ACEV2
+  ),
+  erc20(
+    '33c99c6f-8375-4370-bc40-65317aa5ff3f',
+    'acx',
+    'Across Protocol',
+    18,
+    '0x44108f0223a3c3028f5fe7aec7f9bb2e66bef82f',
+    UnderlyingAsset.ACX
   ),
   erc20(
     '17c7eb1b-c1e5-4223-b3ff-f77446ada7c9',
@@ -11031,6 +11055,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.RYOSHI
   ),
   erc20(
+    '07d7d3e9-22ad-42fd-a406-f97266df79f2',
+    'safe',
+    'SAFE',
+    18,
+    '0x5afe3855358e112b5647b952709e6165e1c1eeee',
+    UnderlyingAsset.SAFE
+  ),
+  erc20(
     '76db084a-0a7d-4cf3-a717-80d7f0294c19',
     'saitabit',
     'SAITABIT',
@@ -11205,6 +11237,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xea12642633b5cf03d9111efb13512d46502a7597',
     UnderlyingAsset.SYNCH
+  ),
+  erc20(
+    'bd5084b8-a566-4ff9-ae0e-42ed6d5a9f70',
+    'syrup',
+    'Syrup',
+    0,
+    '0x643c4e15d7d62ad0abec4a9bd4b001aa3ef52d66',
+    UnderlyingAsset.SYRUP
   ),
   erc20(
     '31e842ac-eaa8-438d-a779-138183ae502e',
@@ -17437,6 +17477,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:kmno'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'cee268cb-6df4-4738-baf0-63564ef08c63',
+    'sol:goat',
+    'Goatseus Maximus',
+    6,
+    'czlsujwblfssjncfkh59rufqvafwcy5tzedwjsuypump',
+    UnderlyingAsset['sol:goat'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -18777,6 +18826,14 @@ export const coins = CoinMap.fromCoins([
     '0x1e925de1c68ef83bd98ee3e130ef14a50309c01b',
     UnderlyingAsset['opeth:exa']
   ),
+  opethErc20(
+    '555ec04f-1149-4f20-be11-2b97cfa4a833',
+    'opeth:wld',
+    'Worldcoin',
+    18,
+    '0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1',
+    UnderlyingAsset['opeth:wld']
+  ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
     'topeth:terc18dp',
@@ -18977,6 +19034,17 @@ export const coins = CoinMap.fromCoins([
     'afsui',
     'AFSUI',
     UnderlyingAsset['sui:afsui'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    'af864118-e9ec-47b2-896c-735f0530fb8f',
+    'sui:navx',
+    'navx',
+    9,
+    '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5',
+    'navx',
+    'NAVX',
+    UnderlyingAsset['sui:navx'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(

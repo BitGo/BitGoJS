@@ -385,6 +385,7 @@ export enum UnderlyingAsset {
   ABT = 'abt',
   ACE = 'ace',
   ACEV2 = 'acev2',
+  ACX = 'acx',
   ACXT = 'acxt',
   ACH = 'ach',
   ADABEAR = 'adabear',
@@ -869,6 +870,7 @@ export enum UnderlyingAsset {
   'sol:gmt' = 'sol:gmt',
   GNO = 'gno',
   GNT = 'gnt',
+  'sol:goat' = 'sol:goat',
   GODS = 'gods',
   GOHM = 'gohm',
   GOG = 'gog',
@@ -1351,6 +1353,7 @@ export enum UnderlyingAsset {
   RUNE = 'rune',
   RVR = 'rvr',
   RYOSHI = 'ryoshi',
+  SAFE = 'safe',
   SAIL = 'sail',
   SAITABIT = 'saitabit',
   SALT = 'salt',
@@ -1458,6 +1461,7 @@ export enum UnderlyingAsset {
   SXP = 'sxp',
   SYN = 'syn',
   SYNCH = 'synch',
+  SYRUP = 'syrup',
   'SYNTH-SUSD' = 'synth-susd',
   THRESHOLD = 'threshold',
   THEU = 'theu',
@@ -1542,6 +1546,7 @@ export enum UnderlyingAsset {
   TRST = 'trst',
   TRU = 'tru',
   TRUF = 'truf',
+  TRUFV2 = 'trufv2',
   TRUMPLOSE = 'trumplose',
   TRUMPWIN = 'trumpwin',
   TRXBEAR = 'trxbear',
@@ -1736,6 +1741,7 @@ export enum UnderlyingAsset {
   ZARX = 'zarx',
   ZBC = 'zbc',
   ZBU = 'zbu',
+  ZBUV2 = 'zbuv2',
   ZCO = 'zco',
   ZECBEAR = 'zecbear',
   ZECBULL = 'zecbull',
@@ -2186,6 +2192,7 @@ export enum UnderlyingAsset {
   'opeth:usdt' = 'opeth:usdt',
   'opeth:op' = 'opeth:op',
   'opeth:exa' = 'opeth:exa',
+  'opeth:wld' = 'opeth:wld',
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
@@ -2315,6 +2322,7 @@ export enum UnderlyingAsset {
   'sui:times' = 'sui:times',
   'sui:fud' = 'sui:fud',
   'sui:afsui' = 'sui:afsui',
+  'sui:navx' = 'sui:navx',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
