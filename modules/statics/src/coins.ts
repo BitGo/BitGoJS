@@ -18745,7 +18745,7 @@ export const coins = CoinMap.fromCoins([
   opethErc20(
     '0d045493-8667-4d86-b5c2-d90d2dd38ae5',
     'opeth:exa',
-    '0x1e925de1c68ef83bd98ee3e130ef14a50309c01b',
+    'Exactly Protocol',
     18,
     '0x1e925de1c68ef83bd98ee3e130ef14a50309c01b',
     UnderlyingAsset['opeth:exa']
