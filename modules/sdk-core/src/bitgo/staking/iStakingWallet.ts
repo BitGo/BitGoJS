@@ -105,6 +105,16 @@ export interface StakeOptions {
    * pox-contract name (valid values are pox-3 and pox-4)
    */
   contractName?: 'pox-3' | 'pox-4';
+
+  /**
+   * btc staking expire time
+   */
+  expireAt?: number;
+
+  /**
+   * btc staking reward address
+   */
+  rewardAddress?: string;
 }
 
 export interface UnstakeOptions {
