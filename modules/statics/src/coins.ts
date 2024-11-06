@@ -357,6 +357,13 @@ const OAS_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
 ];
+const COREDAO_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+  CoinFeature.BULK_TRANSACTION,
+];
 const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const SOL_TOKEN_FEATURES_WITH_FRANKFURT = [...SOL_TOKEN_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const XLM_TOKEN_FEATURES_WITH_FRANKFURT = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
@@ -1260,6 +1267,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.OAS,
     BaseUnit.ETH,
     OAS_FEATURES
+  ),
+  account(
+    'bac24d8c-0f8f-4530-a63c-bc52458acf95',
+    'coredao',
+    'coredaochain',
+    Networks.main.coredao,
+    18,
+    UnderlyingAsset.COREDAO,
+    BaseUnit.ETH,
+    COREDAO_FEATURES
+  ),
+  account(
+    'd1d5e492-be8c-4b60-b2ab-3ed26b7dd8c8',
+    'tcoredao',
+    'Testnet coredao chain',
+    Networks.test.coredao,
+    18,
+    UnderlyingAsset.COREDAO,
+    BaseUnit.ETH,
+    COREDAO_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
