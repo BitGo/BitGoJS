@@ -10,6 +10,8 @@ import assert from 'assert';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
 import sinon from 'sinon';
 import * as testData from '../resources/xrp';
+import * as _ from 'lodash';
+import { XrpToken } from '../../src';
 
 nock.disableNetConnect();
 
@@ -18,10 +20,15 @@ bitgo.safeRegister('txrp', Txrp.createInstance);
 
 describe('XRP:', function () {
   let basecoin;
+  let token;
 
   before(function () {
+    XrpToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txrp');
+    token = bitgo.coin('txrp:rlusd');
   });
 
   after(function () {
@@ -292,6 +299,73 @@ describe('XRP:', function () {
       res.txHex.should.equal(
         '120000228000000024000C50B8201B002B750061D48E35FA931A0000524C555344000000000000000000000000000000FCF4DD8C64636BC503F4A58DC6C684D2C7C3C24F68400000000000001E730081149389EC07DF6E6567D658BACC54606EBB33DC13E6831438D1B9A61C0FFA1A82FCF8A40AF709A9C8CF1890F3E0107321035F72A84A6BCD8ED2D26EAD2C5F864C55C26364EAF20257EFF7241F0F8D987BDA74463044022014B6C2471088A08B1C4FD065CE87DEB7AB30EBDB00C1A38A689BCFC36AA3D02402205CF25122414B766FBAA87EED35C12579799EC06DB3E9B41ABBDF47A4C9FAFEF681146BBA54CE60D9F3C926711A2C60D1CC712F21993CE1E01073210261E923400BDF6024D1D05574A7303C3D6878C7678F31254BD769DD4037495D9974473045022100AA1386B125E3131D21A95D735CDCC1923CDCE0B950F1B165F9DC50336F6C68A40220791EE568403D444E218E7BACF203B63AE96A803C0AF704F9EB6DD1FF91A355D88114EE3FBE636ADCBDD05B53493501DA6FBBC9287562E1F1'
       );
+    });
+  });
+
+  describe('Verify Transaction', () => {
+    let newTxPrebuild;
+
+    const txPrebuild = {
+      txHex: `{"TransactionType":"TrustSet","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","LimitAmount":{"currency":"524C555344000000000000000000000000000000","issuer":"rnox8i6h9GoAbuwr73JtaDxXoncLLUCpXH","value":"1000000000"},"Flags":2147483648,"Fee":"45","Sequence":7}`,
+    };
+
+    before(function () {
+      newTxPrebuild = () => {
+        return _.cloneDeep(txPrebuild);
+      };
+    });
+
+    it('should verify token trustline transactions', async function () {
+      const txPrebuild = newTxPrebuild();
+
+      const txParams = {
+        recipients: [
+          {
+            address: 'rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG',
+            amount: '0',
+            tokenName: 'txrp:rlusd',
+          },
+        ],
+        type: 'enabletoken',
+      };
+
+      const validTransaction = await token.verifyTransaction({
+        txParams,
+        txPrebuild,
+      });
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail verify trustline transaction with mismatch recipients', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = {
+        recipients: [
+          {
+            address: 'rBSpCz8PafXTJHppDadfaex7dYnbe3tSuFG',
+            amount: '0',
+            tokenName: 'txrp:rlusd',
+          },
+        ],
+        type: 'enabletoken',
+      };
+      await token
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify trustline transaction with incorrect token name', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = {
+        recipients: [
+          {
+            address: 'rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG',
+            amount: '0',
+            tokenName: 'txrp:usd',
+          },
+        ],
+        type: 'enabletoken',
+      };
+      await token.verifyTransaction({ txParams, txPrebuild }).should.be.rejectedWith('txrp:usd is not supported');
     });
   });
 });
