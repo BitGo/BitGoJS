@@ -250,6 +250,14 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * Preprocess the build parameters before sending to the API
+   * @param buildParams
+   */
+  preprocessBuildParams(buildParams: Record<string, any>): Record<string, any> {
+    return buildParams;
+  }
+
+  /**
    * Sign message with private key
    *
    * @param key

@@ -448,6 +448,21 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
   }
 
+  preprocessBuildParams(params: Record<string, any>): Record<string, any> {
+    params.recipients =
+      params.recipients && params.recipients instanceof Array
+        ? params?.recipients?.map((recipient) => {
+            if (recipient.address.startsWith(ScriptRecipientPrefix)) {
+              const { address, ...rest } = recipient;
+              return { ...rest, script: address.replace(ScriptRecipientPrefix, '') };
+            }
+            return recipient;
+          })
+        : params.recipients;
+
+    return params;
+  }
+
   /**
    * Get the latest block height
    * @param reqId

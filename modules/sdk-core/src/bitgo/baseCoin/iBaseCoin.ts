@@ -485,6 +485,7 @@ export interface IBaseCoin {
   getBaseFactor(): number | string;
   baseUnitsToBigUnits(baseUnits: string | number): string;
   bigUnitsToBaseUnits(bigUnits: string | number): string;
+  preprocessBuildParams(params: Record<string, any>): Record<string, any>;
   signMessage(key: { prv: string }, message: string): Promise<Buffer>;
   createKeySignatures(
     prv: string,
