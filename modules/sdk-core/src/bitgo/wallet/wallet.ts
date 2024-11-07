@@ -2484,13 +2484,7 @@ export class Wallet implements IWallet {
     const coin = this.baseCoin;
     if (_.isObject(params.recipients)) {
       params.recipients.map(function (recipient) {
-        const amount = new BigNumber(recipient.amount);
-        if (amount.isNegative()) {
-          throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-        }
-        if (!coin.valuelessTransferAllowed() && amount.isZero()) {
-          throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-        }
+        coin.checkRecipient(recipient);
       });
     }
 

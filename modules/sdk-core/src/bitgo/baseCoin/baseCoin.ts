@@ -225,6 +225,16 @@ export abstract class BaseCoin implements IBaseCoin {
     return bigNumber.toFormat(null as any, null as any, { groupSeparator: '', decimalSeparator: '.' });
   }
 
+  checkRecipient(recipient: { address: string; amount: string | number }): void {
+    const amount = new BigNumber(recipient.amount);
+    if (amount.isNegative()) {
+      throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+    }
+    if (!this.valuelessTransferAllowed() && amount.isZero()) {
+      throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+    }
+  }
+
   /**
    * Convert a currency amount represented in big units (btc, eth, xrp, xlm)
    * to base units (satoshi, wei, atoms, drops, stroops)

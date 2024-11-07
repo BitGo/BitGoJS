@@ -104,6 +104,7 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   }): Promise<SignedTransaction>;
 };
 
+export const ScriptRecipientPrefix = 'scriptPubkey:';
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
@@ -457,6 +458,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
     const chainhead = await this.bitgo.get(this.url('/public/block/latest')).result();
     return (chainhead as any).height;
+  }
+
+  checkRecipient(recipient: { address: string; amount: number | string }): void {
+    if (recipient.address.startsWith(ScriptRecipientPrefix)) {
+      const amount = BigInt(recipient.amount);
+      if (amount !== BigInt(0)) {
+        throw new Error('Only zero amounts allowed for non-encodeable scriptPubkeys');
+      }
+    } else {
+      super.checkRecipient(recipient);
+    }
   }
 
   /**
