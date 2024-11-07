@@ -109,6 +109,7 @@ import { postWithCodec } from '../utils/postWithCodec';
 import { TxSendBody } from '@bitgo/public-types';
 import { AddressBook, IAddressBook } from '../address-book';
 import { IRequestTracer } from '../../api';
+import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -2096,11 +2097,8 @@ export class Wallet implements IWallet {
       error.code = 'recipients_not_allowed_for_fillnonce_and_acceleration_tx_type';
       throw error;
     }
-    const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() || [];
-    if (params.apiVersion && !supportedTxRequestVersions.includes(params.apiVersion)) {
-      throw new Error(
-        `prebuildAndSignTransaction params.apiVersion=${params.apiVersion} must be one of ${supportedTxRequestVersions}`
-      );
+    if (params.apiVersion) {
+      validateTxRequestApiVersion(this, params.apiVersion);
     }
 
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
@@ -3087,19 +3085,7 @@ export class Wallet implements IWallet {
   private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
-
-    if (
-      params.apiVersion === 'lite' &&
-      (this._wallet.type === 'custodial' || this._wallet.type === 'cold' || this.baseCoin.getMPCAlgorithm() === 'ecdsa')
-    ) {
-      throw new Error(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
-    }
-
-    const apiVersion =
-      params.apiVersion ||
-      (this._wallet.type === 'custodial' || this._wallet.type === 'cold' || this.baseCoin.getMPCAlgorithm() === 'ecdsa'
-        ? 'full'
-        : 'lite');
+    const apiVersion = getTxRequestApiVersion(this, params.apiVersion);
     // Two options different implementations of fees seems to now be supported, for now we will support both to be backwards compatible
     // TODO(BG-59685): deprecate one of these so that we have a single way to pass fees
     let feeOptions;
@@ -3558,20 +3544,14 @@ export class Wallet implements IWallet {
    * @param params send options
    */
   private async sendManyTss(params: SendManyOptions = {}): Promise<any> {
-    const { apiVersion } = params;
-    const supportedTxRequestVersions = this.tssUtils?.supportedTxRequestVersions() ?? [];
-    const onlySupportsTxRequestFull =
-      supportedTxRequestVersions.length === 1 && supportedTxRequestVersions.includes('full');
-    if (apiVersion === 'lite' && onlySupportsTxRequestFull) {
-      throw new Error('TxRequest Lite API is not supported for this wallet');
-    }
+    params.apiVersion = getTxRequestApiVersion(this, params.apiVersion);
 
     const signedTransaction = (await this.prebuildAndSignTransaction(params)) as SignedTransactionRequest;
     if (!signedTransaction.txRequestId) {
       throw new Error('txRequestId missing from signed transaction');
     }
 
-    if (onlySupportsTxRequestFull || apiVersion === 'full') {
+    if (params.apiVersion === 'full') {
       const latestTxRequest = await getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId, params.reqId);
       const reqId = params.reqId || new RequestTracer();
       this.bitgo.setRequestTracer(reqId);

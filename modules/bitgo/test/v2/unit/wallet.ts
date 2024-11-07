@@ -2417,15 +2417,15 @@ describe('V2 Wallet:', function () {
         type: 'transfer',
       };
 
-      ['eddsa', 'ecdsa'].forEach((keyCurvve: string) => {
-        describe(keyCurvve, () => {
-          const wallet = keyCurvve === 'eddsa' ? tssSolWallet : tssEthWallet;
+      ['eddsa', 'ecdsa'].forEach((keyCurve: string) => {
+        describe(keyCurve, () => {
+          const wallet = keyCurve === 'eddsa' ? tssSolWallet : tssEthWallet;
 
           beforeEach(function () {
             sandbox
               .stub(Keychains.prototype, 'getKeysForSigning')
               .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
-            if (keyCurvve === 'eddsa') {
+            if (keyCurve === 'eddsa') {
               sandbox.stub(Tsol.prototype, 'verifyTransaction').resolves(true);
             } else {
               sandbox.stub(Teth.prototype, 'verifyTransaction').resolves(true);
@@ -2679,7 +2679,7 @@ describe('V2 Wallet:', function () {
             ],
             type: 'transfer',
           })
-          .should.be.rejectedWith(`Custodial and ECDSA MPC algorithm must always use 'full' api version`);
+          .should.be.rejectedWith('For non self-custodial (hot) tss wallets, parameter `apiVersion` must be `full`.');
       });
 
       it('should build a single recipient transfer transaction for full', async function () {

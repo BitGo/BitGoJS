@@ -55,6 +55,8 @@ const createKeccakHash = require('keccak');
 const encryptNShare = ECDSAMethods.encryptNShare;
 type KeyShare = ECDSA.KeyShare;
 
+openpgp.config.rejectCurves = new Set();
+
 describe('TSS Ecdsa Utils:', async function () {
   const isThirdPartyBackup = false;
   const coinName = 'hteth';
