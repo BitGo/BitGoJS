@@ -1859,6 +1859,30 @@ describe('V2 Wallet:', function () {
       postProcessStub.restore();
     });
 
+    it('should pass script outputs with the proper structure to wallet platform', async function () {
+      const script = '6a11223344556677889900';
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, {
+          ...tbtcHotWalletDefaultParams,
+          recipients: [{ script, amount: 1e6 }],
+        })
+        .query({})
+        .reply(200, {});
+
+      const blockHeight = 100;
+      const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      await wallet.prebuildTransaction({ recipients: [{ address: `scriptPubkey:${script}`, amount: 1e6 }] });
+      blockHeightStub.should.have.been.calledOnce();
+      postProcessStub.should.have.been.calledOnceWith({
+        blockHeight: 100,
+        wallet: wallet,
+        buildParams: { ...tbtcHotWalletDefaultParams, recipients: [{ script, amount: 1e6 }] },
+      });
+      blockHeightStub.restore();
+      postProcessStub.restore();
+    });
+
     it('prebuild should call build and getLatestBlockHeight for utxo coins', async function () {
       const params = {};
       nock(bgUrl)

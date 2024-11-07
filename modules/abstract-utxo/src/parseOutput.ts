@@ -213,6 +213,15 @@ export async function parseOutput({
   const disableNetworking = !!verification.disableNetworking;
   const currentAddress = currentOutput.address;
 
+  if (currentAddress === undefined) {
+    // In the case that the address is undefined, it means that the output has a non-encodeable scriptPubkey
+    // If this is the case, then we need to check that the amount is 0 and we can skip the rest.
+    if (currentOutput.amount.toString() !== '0') {
+      throw new Error('output with undefined address must have amount of 0');
+    }
+    return currentOutput;
+  }
+
   // attempt to grab the address details from either the prebuilt tx, or the verification params.
   // If both of these are empty, then we will try to get the address details from bitgo instead
   const addressDetailsPrebuild = _.get(txPrebuild, `txInfo.walletAddressDetails.${currentAddress}`, {});

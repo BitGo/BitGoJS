@@ -8,8 +8,12 @@ import {
   TransactionExplanation,
   TransactionPrebuild,
   Output,
+  ScriptRecipientPrefix,
 } from './abstractUtxoCoin';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
+
+// https://github.com/bitcoin/bitcoin/blob/5961b23898ee7c0af2626c46d5d70e80136578d3/src/script/script.h#L47
+const OP_RETURN_IDENTIFIER = Buffer.from('6a', 'hex');
 
 /**
  * Get the inputs for a psbt from a prebuild.
@@ -106,7 +110,14 @@ function explainCommon<TNumber extends number | bigint>(
   const changeAddresses = changeInfo?.map((info) => info.address) ?? [];
 
   tx.outs.forEach((currentOutput) => {
-    const currentAddress = utxolib.address.fromOutputScript(currentOutput.script, network);
+    // Try to encode the script pubkey with an address. If it fails, try to parse it as an OP_RETURN output with the prefix.
+    // If that fails, then it is an unrecognized scriptPubkey and should fail
+    let currentAddress: string;
+    if (currentOutput.script.subarray(0, 1).equals(OP_RETURN_IDENTIFIER)) {
+      currentAddress = `${ScriptRecipientPrefix}${currentOutput.script.toString('hex')}`;
+    } else {
+      currentAddress = utxolib.address.fromOutputScript(currentOutput.script, network);
+    }
     const currentAmount = BigInt(currentOutput.value);
 
     if (changeAddresses.includes(currentAddress)) {

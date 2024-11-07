@@ -449,16 +449,18 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   preprocessBuildParams(params: Record<string, any>): Record<string, any> {
-    params.recipients =
-      params.recipients && params.recipients instanceof Array
-        ? params?.recipients?.map((recipient) => {
-            if (recipient.address.startsWith(ScriptRecipientPrefix)) {
-              const { address, ...rest } = recipient;
-              return { ...rest, script: address.replace(ScriptRecipientPrefix, '') };
-            }
-            return recipient;
-          })
-        : params.recipients;
+    if (params.recipients !== undefined) {
+      params.recipients =
+        params.recipients instanceof Array
+          ? params?.recipients?.map((recipient) => {
+              if (recipient.address.startsWith(ScriptRecipientPrefix)) {
+                const { address, ...rest } = recipient;
+                return { ...rest, script: address.replace(ScriptRecipientPrefix, '') };
+              }
+              return recipient;
+            })
+          : params.recipients;
+    }
 
     return params;
   }
@@ -594,25 +596,47 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       assert(txParams.rbfTxIds.length === 1);
 
       const txToBeReplaced = await wallet.getTransaction({ txHash: txParams.rbfTxIds[0], includeRbf: true });
-      expectedOutputs = txToBeReplaced.outputs
-        .filter((output) => output.wallet !== wallet.id()) // For self-sends, the walletId will be the same as the wallet's id
-        .map((output) => {
-          return { amount: BigInt(output.valueString), address: this.canonicalAddress(output.address) };
-        });
+      expectedOutputs = txToBeReplaced.outputs.flatMap(
+        (output: { valueString: string; address?: string; wallet?: string }) => {
+          // For self-sends, the walletId will be the same as the wallet's id
+          if (output.wallet === wallet.id()) {
+            return [];
+          }
+          // In the case that this is an OP_RETURN output or another non-encodable scriptPubkey, we dont have an address.
+          // We will verify that the amount is zero, and if it isnt then we will throw an error.
+          if (!output.address) {
+            if (output.valueString !== '0') {
+              throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${JSON.stringify(output)}`);
+            }
+            return [{ amount: BigInt(0) }];
+          }
+          return [{ amount: BigInt(output.valueString), address: this.canonicalAddress(output.address) }];
+        }
+      );
     } else {
       // verify that each recipient from txParams has their own output
-      expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).map((output) => {
-        return { ...output, address: this.canonicalAddress(output.address) };
+      expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).flatMap((output) => {
+        if (output.address === undefined) {
+          if (output.amount.toString() !== '0') {
+            throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${output}`);
+          }
+          return [output];
+        }
+        return [{ ...output, address: this.canonicalAddress(output.address) }];
       });
       if (params.txParams.allowExternalChangeAddress && params.txParams.changeAddress) {
         // when an external change address is explicitly specified, count all outputs going towards that
         // address in the expected outputs (regardless of the output amount)
         expectedOutputs.push(
-          ...allOutputs
-            .map((output) => {
-              return { ...output, address: this.canonicalAddress(output.address) };
-            })
-            .filter((output) => output.address === this.canonicalAddress(params.txParams.changeAddress as string))
+          ...allOutputs.flatMap((output) => {
+            if (
+              output.address === undefined ||
+              output.address !== this.canonicalAddress(params.txParams.changeAddress as string)
+            ) {
+              return [];
+            }
+            return [{ ...output, address: this.canonicalAddress(output.address) }];
+          })
         );
       }
     }
