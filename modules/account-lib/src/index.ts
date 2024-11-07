@@ -128,6 +128,9 @@ export { Sui };
 import * as Ton from '@bitgo/sdk-coin-ton';
 export { Ton };
 
+import * as XRP from '@bitgo/sdk-coin-xrp';
+export { XRP };
+
 import * as zkEth from '@bitgo/sdk-coin-zketh';
 export { zkEth };
 
