@@ -59,6 +59,7 @@
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.56.1",
-    "@bitgo/sdk-test": "^8.0.48"
+    "@bitgo/sdk-test": "^8.0.48",
+    "@bitgo/sdk-lib-mpc": "^10.1.0"
   }
 }

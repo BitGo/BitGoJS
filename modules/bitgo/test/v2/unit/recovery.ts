@@ -708,7 +708,7 @@ describe('Recovery:', function () {
         params: {
           module: 'account',
           action: 'txlist',
-          address: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+          address: '0xd18ee37daeab8468020dd65fa7f6f6b9ac741584',
         },
         response: {
           status: '0',
@@ -720,7 +720,7 @@ describe('Recovery:', function () {
         params: {
           module: 'account',
           action: 'balance',
-          address: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+          address: '0xd18ee37daeab8468020dd65fa7f6f6b9ac741584',
         },
         response: {
           status: '1',
@@ -1098,12 +1098,13 @@ describe('Recovery:', function () {
 
       const basecoin = bitgo.coin('hteth');
 
-      const userKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
-      const backupKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
+      const bitgoKey =
+        '03ffd706c97ce5438ffa38016f3708a3e4ffa7126a2d03d3e02a087767950d72c9197ee747c5c146ae62f8d80fe313c943139190ce3e49727a9707e9626b15fc0d';
 
       recoveryParams = {
-        userKey: userKey,
-        backupKey: backupKey,
+        userKey: '',
+        backupKey: '',
+        bitgoKey: bitgoKey,
         walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,

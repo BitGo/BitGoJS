@@ -78,12 +78,17 @@ export function getIsKrsRecovery({ backupKey, userKey }: { backupKey: string; us
 export function getIsUnsignedSweep({
   backupKey,
   userKey,
+  bitgoKey,
   isTss,
 }: {
   backupKey: string;
   userKey: string;
+  bitgoKey?: string;
   isTss?: boolean;
 }): boolean {
+  if (isTss && bitgoKey) {
+    return true;
+  }
   if (isTss) {
     try {
       return typeof JSON.parse(backupKey) === 'string' && typeof JSON.parse(userKey) === 'string';

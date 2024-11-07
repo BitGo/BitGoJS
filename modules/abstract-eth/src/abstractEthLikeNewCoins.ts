@@ -68,6 +68,7 @@ import {
   TransactionBuilder,
   TransferBuilder,
 } from './lib';
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 /**
  * The prebuilt hop transaction returned from the HSM
@@ -218,6 +219,8 @@ export type TSSRecoverOptions = RecoverOptionsWithBytes | NonTSSRecoverOptions;
 export type RecoverOptions = {
   userKey: string;
   backupKey: string;
+  bitgoKey?: string;
+  seed?: string;
   walletPassphrase?: string;
   walletContractAddress: string; // use this as walletBaseAddress for TSS
   recoveryDestination: string;
@@ -1812,6 +1815,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     // Clean up whitespace from entered values
     const userPublicOrPrivateKeyShare = params.userKey.replace(/\s/g, '');
     const backupPrivateOrPublicKeyShare = params.backupKey.replace(/\s/g, '');
+    const bitgoCommonKeychain = params.bitgoKey?.replace(/\s/g, '');
 
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
     const gasPrice = params.eip1559
@@ -1822,10 +1826,20 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       getIsUnsignedSweep({
         userKey: userPublicOrPrivateKeyShare,
         backupKey: backupPrivateOrPublicKeyShare,
+        bitgoKey: bitgoCommonKeychain,
         isTss: params.isTss,
       })
     ) {
-      const backupKeyPair = new KeyPairLib({ pub: backupPrivateOrPublicKeyShare });
+      let backupKeyPair: KeyPairLib;
+      if (bitgoCommonKeychain) {
+        const MPC = new Ecdsa();
+        const path = params.seed ? getDerivationPath(params.seed) + '/0' : 'm/0';
+        const derivedCommonKeyChain = MPC.deriveUnhardened(bitgoCommonKeychain, path);
+        backupKeyPair = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
+      } else {
+        backupKeyPair = new KeyPairLib({ pub: backupPrivateOrPublicKeyShare });
+      }
+
       const baseAddress = backupKeyPair.getAddress();
       const { txInfo, tx, nonce } = await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params);
       return this.formatForOfflineVaultTSS(
