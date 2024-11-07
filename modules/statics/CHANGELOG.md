@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.5.0...@bitgo/statics@50.6.0) (2024-11-07)
+
+### Bug Fixes
+
+- **statics:** enable bulk tx for hteth ([5000d23](https://github.com/BitGo/BitGoJS/commit/5000d23a6d031d29acd185c0c28cdab187f9451f))
+- **statics:** fixed exactly coin name ([5466534](https://github.com/BitGo/BitGoJS/commit/54665341d2c40b597ee497c08087481f802dc546))
+- **statics:** keep staking feature for btc testnet only ([70cf590](https://github.com/BitGo/BitGoJS/commit/70cf5909c5f90ae16b2924adaa2deb71ac85152f))
+
+### Features
+
+- **statics:** add coredao coin config ([8e3d536](https://github.com/BitGo/BitGoJS/commit/8e3d5364031da92889c2d5512ed73aa94de47ac5))
+- **statics:** add teigen, teinu and topeth:cnkt tokens ([2dcfad9](https://github.com/BitGo/BitGoJS/commit/2dcfad946172393787309296d12712074c12d3f0))
+- **statics:** onboarded batch of tokens ([06cd25a](https://github.com/BitGo/BitGoJS/commit/06cd25ae7c9b3be49162c51220be26869a178bbc))
+- **statics:** ungate tokens and coins for Frankfurt Trust ([acbbc66](https://github.com/BitGo/BitGoJS/commit/acbbc66cf0533af313b9d07ad46612a0eb81be31))
+- **statics:** ungating tokens for Frankfurt trust ([7ab9463](https://github.com/BitGo/BitGoJS/commit/7ab9463b0bbff6db8aa66f5d7a233ae6fff2aa6f))
+
 # [50.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.4.0...@bitgo/statics@50.5.0) (2024-11-01)
 
 ### Bug Fixes

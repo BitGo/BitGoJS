@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.0...@bitgo/sdk-coin-stx@3.3.1) (2024-11-07)
+
+### Bug Fixes
+
+- check if recipients is defined in verifyTransaction ([6022a62](https://github.com/BitGo/BitGoJS/commit/6022a6282173f312d38ed993757aae54050f8282))
+
 # [3.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.2.27...@bitgo/sdk-coin-stx@3.3.0) (2024-11-01)
 
 ### Features

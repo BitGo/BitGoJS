@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.0.12...@bitgo/sdk-coin-atom@13.1.0) (2024-11-07)
+
+### Features
+
+- retrofit during cosmos tss recovery ([ceaae14](https://github.com/BitGo/BitGoJS/commit/ceaae147598120576eaa67a50df7977624558b82))
+
 ## [13.0.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.0.11...@bitgo/sdk-coin-atom@13.0.12) (2024-11-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-atom

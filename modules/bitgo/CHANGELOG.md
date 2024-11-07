@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.11.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.10.0...bitgo@39.11.0) (2024-11-07)
+
+### Features
+
+- **sdk-coin-xrp:** add non-bitgo recovery for xrpl token ([ef10edd](https://github.com/BitGo/BitGoJS/commit/ef10edd92b790df10a184174498d7b60ffe6849a))
+- **sdk-core:** update `prebuildSelfManagedStakingTransaction` ([92c8c9d](https://github.com/BitGo/BitGoJS/commit/92c8c9dcfc7aca71a331087a7af402f843149c8c))
+- **statics:** add coredao coin config ([8e3d536](https://github.com/BitGo/BitGoJS/commit/8e3d5364031da92889c2d5512ed73aa94de47ac5))
+
 # [39.10.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.9.0...bitgo@39.10.0) (2024-11-01)
 
 ### Bug Fixes
