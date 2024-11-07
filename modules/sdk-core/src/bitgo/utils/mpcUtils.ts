@@ -9,7 +9,6 @@ import { AddKeychainOptions, Keychain, KeyType } from '../keychain';
 import { BackupProvider } from '../wallet';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { IntentRecipient, PopulatedIntent, PrebuildTransactionWithIntentOptions } from './tss/baseTypes';
-import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../tss/bitgoPubKeys';
 
 export interface MpcKeyShare {
   publicShare: string;
@@ -53,10 +52,6 @@ export abstract class MpcUtils {
     enterprise?: string
   ): Promise<Keychain> {
     const bitgoKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
-    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
-      // Ensure the public key is one of the expected BitGo public keys when in test or prod.
-      assert(isBitgoMpcPubKey(bitgoKey.armor(), 'mpcv1'), 'Invalid BitGo GPG public key');
-    }
     const encUserToBitGoMessage = await encryptText(userKeyShare.privateShare, bitgoKey);
     const encBackupToBitGoMessage = await encryptText(backupKeyShare.privateShare, bitgoKey);
 

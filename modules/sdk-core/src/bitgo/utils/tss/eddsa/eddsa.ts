@@ -371,7 +371,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     txRequest: TxRequest;
     prv: string;
     walletPassphrase: string;
-    bitgoGpgPubKey: string;
   }): Promise<{
     userToBitgoCommitment: CommitmentShareRecord;
     encryptedSignerShare: EncryptedSignerShareRecord;
@@ -409,11 +408,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const userToBitgoCommitment = this.createUserToBitgoCommitmentShare(commitment);
 
     const signerShare = signingKey.yShares[bitgoIndex].u + signingKey.yShares[bitgoIndex].chaincode;
-
-    const userToBitgoEncryptedSignerShare = await encryptText(
-      signerShare,
-      await openpgp.readKey({ armoredKey: params.bitgoGpgPubKey })
-    );
+    const bitgoGpgKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
+    const userToBitgoEncryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
     const encryptedSignerShare = this.createUserToBitgoEncryptedSignerShare(userToBitgoEncryptedSignerShare);
     const stringifiedRShare = JSON.stringify(userSignShare);
@@ -500,10 +496,9 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     }
 
     const { apiVersion } = txRequestResolved;
-    const bitgoGpgKey = await this.pickBitgoPubGpgKeyForSigning(false, reqId, txRequestResolved.enterpriseId);
 
     const { userToBitgoCommitment, encryptedSignerShare, encryptedUserToBitgoRShare } =
-      await externalSignerCommitmentGenerator({ txRequest: txRequestResolved, bitgoGpgPubKey: bitgoGpgKey.armor() });
+      await externalSignerCommitmentGenerator({ txRequest: txRequestResolved });
 
     const { commitmentShare: bitgoToUserCommitment } = await exchangeEddsaCommitments(
       this.bitgo,
@@ -593,7 +588,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const bitgoIndex = ShareKeyPosition.BITGO;
     const signerShare = signingKey.yShares[bitgoIndex].u + signingKey.yShares[bitgoIndex].chaincode;
-    const bitgoGpgKey = await this.pickBitgoPubGpgKeyForSigning(false, params.reqId, txRequestResolved.enterpriseId);
+    const bitgoGpgKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
     const userToBitgoEncryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
     const userGpgKey = await generateGPGKeyPair('secp256k1');

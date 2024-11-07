@@ -1,20 +1,41 @@
+import * as openpgp from 'openpgp';
 import { ec } from 'elliptic';
 
 import { IBaseCoin } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
 import { KeyShare } from './types';
 import { BackupGpgKey } from '../baseTypes';
-import { generateGPGKeyPair, getTrustGpgPubKey } from '../../opengpgUtils';
+import { generateGPGKeyPair, getBitgoGpgPubKey, getTrustGpgPubKey } from '../../opengpgUtils';
 import { BitGoBase } from '../../../bitgoBase';
 import { IWallet } from '../../../wallet';
 
 /** @inheritdoc */
 export class BaseEcdsaUtils extends baseTSSUtils<KeyShare> {
   // We do not have full support for 3-party verification (w/ external source) of key shares and signature shares. There is no 3rd party key service support with this release.
+  protected bitgoPublicGpgKey: openpgp.Key;
+  protected bitgoMPCv2PublicGpgKey: openpgp.Key | undefined;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
     super(bitgo, baseCoin, wallet);
     this.setBitgoGpgPubKey(bitgo);
+  }
+
+  private async setBitgoGpgPubKey(bitgo) {
+    const { mpcV1, mpcV2 } = await getBitgoGpgPubKey(bitgo);
+    this.bitgoPublicGpgKey = mpcV1;
+    this.bitgoMPCv2PublicGpgKey = mpcV2;
+  }
+
+  async getBitgoPublicGpgKey(): Promise<openpgp.Key> {
+    if (!this.bitgoPublicGpgKey) {
+      // retry getting bitgo's gpg key
+      await this.setBitgoGpgPubKey(this.bitgo);
+      if (!this.bitgoPublicGpgKey) {
+        throw new Error("Failed to get Bitgo's gpg key");
+      }
+    }
+
+    return this.bitgoPublicGpgKey;
   }
 
   /**

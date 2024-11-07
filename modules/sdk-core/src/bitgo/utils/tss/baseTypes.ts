@@ -89,7 +89,7 @@ export interface CustomSShareGeneratingFunction {
 }
 
 export interface CustomCommitmentGeneratingFunction {
-  (params: { txRequest: TxRequest; bitgoGpgPubKey?: string }): Promise<{
+  (params: { txRequest: TxRequest }): Promise<{
     userToBitgoCommitment: CommitmentShareRecord;
     encryptedSignerShare: EncryptedSignerShareRecord;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
@@ -408,8 +408,6 @@ export type TSSParamsForMessageWithPrv = TSSParamsForMessage & {
   mpcv2PartyId?: 0 | 1;
 };
 
-export type BitgoPubKeyType = 'nitro' | 'onprem';
-
 export type TSSParams = {
   txRequest: string | TxRequest; // can be either a string or TxRequest
   reqId: IRequestTracer;
@@ -592,12 +590,7 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     externalSignerMuDeltaShareGenerator: CustomMuDeltaShareGeneratingFunction,
     externalSignerSShareGenerator: CustomSShareGeneratingFunction
   ): Promise<TxRequest>;
-  createCommitmentShareFromTxRequest(params: {
-    txRequest: TxRequest;
-    prv: string;
-    walletPassphrase: string;
-    bitgoGpgPubKey: string;
-  }): Promise<{
+  createCommitmentShareFromTxRequest(params: { txRequest: TxRequest; prv: string; walletPassphrase: string }): Promise<{
     userToBitgoCommitment: CommitmentShareRecord;
     encryptedSignerShare: EncryptedSignerShareRecord;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
