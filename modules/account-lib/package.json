@@ -59,6 +59,7 @@
     "@bitgo/sdk-coin-tia": "^3.0.12",
     "@bitgo/sdk-coin-ton": "^3.4.0",
     "@bitgo/sdk-coin-trx": "^2.0.43",
+    "@bitgo/sdk-coin-xrp": "^3.3.0",
     "@bitgo/sdk-coin-xtz": "^2.1.41",
     "@bitgo/sdk-coin-zeta": "^3.0.12",
     "@bitgo/sdk-coin-zketh": "^2.0.35",
