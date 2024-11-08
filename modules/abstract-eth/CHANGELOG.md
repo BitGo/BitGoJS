@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.2.4...@bitgo/abstract-eth@22.3.0) (2024-11-07)
+
+### Features
+
+- retrofit during eth tss recovery ([4a743ac](https://github.com/BitGo/BitGoJS/commit/4a743ac3eb11486d3917ca6c71429ec7b331dcab))
+
 ## [22.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.2.3...@bitgo/abstract-eth@22.2.4) (2024-11-01)
 
 ### Bug Fixes

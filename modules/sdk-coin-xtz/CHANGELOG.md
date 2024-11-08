@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.42](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.1.41...@bitgo/sdk-coin-xtz@2.1.42) (2024-11-07)
+
+### Bug Fixes
+
+- check if recipients is defined in verifyTransaction ([6022a62](https://github.com/BitGo/BitGoJS/commit/6022a6282173f312d38ed993757aae54050f8282))
+
 ## [2.1.41](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.1.40...@bitgo/sdk-coin-xtz@2.1.41) (2024-11-01)
 
 ### Bug Fixes

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.12.0...@bitgo/sdk-core@28.13.0) (2024-11-07)
+
+### Bug Fixes
+
+- **sdk-core:** add ui field for btc staking ([c932add](https://github.com/BitGo/BitGoJS/commit/c932add9d829144f7f625c13b3d699c97007159e))
+- **sdk-core:** update mpcv1 gpg key on prod ([05da48f](https://github.com/BitGo/BitGoJS/commit/05da48f236368adf803989134ca5a18af1f92854))
+
+### Features
+
+- retrofit during eth tss recovery ([4a743ac](https://github.com/BitGo/BitGoJS/commit/4a743ac3eb11486d3917ca6c71429ec7b331dcab))
+- **sdk-core:** update `prebuildSelfManagedStakingTransaction` ([92c8c9d](https://github.com/BitGo/BitGoJS/commit/92c8c9dcfc7aca71a331087a7af402f843149c8c))
+
 # [28.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.11.0...@bitgo/sdk-core@28.12.0) (2024-11-01)
 
 ### Bug Fixes

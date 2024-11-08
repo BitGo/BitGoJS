@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.1.0...@bitgo/abstract-cosmos@11.2.0) (2024-11-07)
+
+### Features
+
+- retrofit during cosmos tss recovery ([ceaae14](https://github.com/BitGo/BitGoJS/commit/ceaae147598120576eaa67a50df7977624558b82))
+
 # [11.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.0.11...@bitgo/abstract-cosmos@11.1.0) (2024-11-01)
 
 ### Features
