@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [28.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.13.0...@bitgo/sdk-core@28.13.1) (2024-11-08)
+
+### Bug Fixes
+
+- **sdk-core:** update mpcv1 gpg key for prod ([4402dcc](https://github.com/BitGo/BitGoJS/commit/4402dcc6bb5ccc95def1d6ad41f96667dbd571d8))
+
 # [28.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.12.0...@bitgo/sdk-core@28.13.0) (2024-11-07)
 
 ### Bug Fixes
