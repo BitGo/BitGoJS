@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.4.0...@bitgo/sdk-coin-xrp@3.5.0) (2024-11-08)
+
+### Features
+
+- **sdk-coin-xrp:** add support for token enablement ([8972a6e](https://github.com/BitGo/BitGoJS/commit/8972a6e857ae47835639e023d4b3f6adcd832c4b))
+
 # [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.3.0...@bitgo/sdk-coin-xrp@3.4.0) (2024-11-07)
 
 ### Features
