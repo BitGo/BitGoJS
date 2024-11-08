@@ -83,12 +83,22 @@ export interface SupplementGenerateWalletOptions {
 export type TransactionExplanation =
   | BaseTransactionExplanation
   | AccountSetTransactionExplanation
+  | TrustSetTransactionExplanation
   | SignerListSetTransactionExplanation;
 
 export interface AccountSetTransactionExplanation extends BaseTransactionExplanation {
   accountSet: {
     messageKey?: string;
     setFlag: number;
+  };
+}
+
+export interface TrustSetTransactionExplanation extends BaseTransactionExplanation {
+  account: string;
+  limitAmount: {
+    currency: string;
+    issuer: string;
+    value: string;
   };
 }
 

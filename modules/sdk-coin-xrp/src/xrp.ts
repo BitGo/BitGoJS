@@ -16,10 +16,11 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
+  TokenEnablementConfig,
   UnexpectedAddressError,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins, XrpCoin } from '@bitgo/statics';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as xrpl from 'xrpl';
@@ -105,6 +106,13 @@ export class Xrp extends BaseCoin {
    */
   public async getFeeInfo(): Promise<FeeInfo> {
     return this.bitgo.get(this.url('/public/feeinfo')).result();
+  }
+
+  public getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: false,
+    };
   }
 
   /**
@@ -222,6 +230,35 @@ export class Xrp extends BaseCoin {
           setFlag: transaction.SetFlag,
         },
       };
+    } else if (transaction.TransactionType === 'TrustSet') {
+      return {
+        displayOrder: [
+          'id',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'account',
+          'limitAmount',
+        ],
+        id: id,
+        changeOutputs: [],
+        outputAmount: 0,
+        changeAmount: 0,
+        outputs: [],
+        fee: {
+          fee: transaction.Fee,
+          feeRate: undefined,
+          size: txHex.length / 2,
+        },
+        account: transaction.Account,
+        limitAmount: {
+          currency: transaction.LimitAmount.currency,
+          issuer: transaction.LimitAmount.issuer,
+          value: transaction.LimitAmount.value,
+        },
+      };
     }
 
     const address =
@@ -254,6 +291,7 @@ export class Xrp extends BaseCoin {
    * @returns {boolean}
    */
   public async verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions): Promise<boolean> {
+    const coinConfig = coins.get(this.getChain()) as XrpCoin;
     const explanation = await this.explainTransaction({
       txHex: txPrebuild.txHex,
     });
@@ -270,10 +308,34 @@ export class Xrp extends BaseCoin {
       return amount1.toFixed() === amount2.toFixed();
     };
 
-    if (!comparator(output, expectedOutput)) {
+    if ((txParams.type === undefined || txParams.type === 'payment') && !comparator(output, expectedOutput)) {
       throw new Error('transaction prebuild does not match expected output');
     }
 
+    if (txParams.type === 'enabletoken') {
+      if (txParams.recipients?.length !== 1) {
+        throw new Error('Only one recipient is allowed.');
+      }
+      const recipient = txParams.recipients[0];
+      if (!recipient.tokenName) {
+        throw new Error('Recipient must include a token name.');
+      }
+      const recipientCurrency = utils.getXrpCurrencyFromTokenName(recipient.tokenName).currency;
+      if (coinConfig.isToken) {
+        if (recipientCurrency !== coinConfig.currencyCode) {
+          throw new Error('Incorrect token name specified in recipients');
+        }
+      }
+      if (!('account' in explanation) || !('limitAmount' in explanation) || !explanation.limitAmount.currency) {
+        throw new Error('Explanation is missing required keys (account or limitAmount with currency)');
+      }
+      const baseAddress = explanation.account;
+      const currency = explanation.limitAmount.currency;
+
+      if (recipient.address !== baseAddress || recipientCurrency !== currency) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+    }
     return true;
   }
 
