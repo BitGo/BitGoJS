@@ -47,6 +47,7 @@
 /modules/abstract-cosmos/ @BitGo/ethalt-team
 /modules/sdk-coin-ada/ @BitGo/ethalt-team
 /modules/sdk-coin-algo/ @BitGo/ethalt-team
+/modules/sdk-coin-apt/ @Bitgo/ethalt-team
 /modules/sdk-coin-arbeth/ @BitGo/ethalt-team
 /modules/sdk-coin-atom/ @BitGo/ethalt-team
 /modules/sdk-coin-avaxc/ @BitGo/ethalt-team

@@ -12,3 +12,4 @@ lab/
 .env
 .yarn
 modules/**/dist/
+dist
