@@ -11,8 +11,7 @@ process.on('unhandledRejection', (reason, promise) => {
 const { init } = require('../dist/src/expressApp');
 
 if (require.main === module) {
-  init()
-  .catch(err => {
+  init().catch((err) => {
     console.log(`Fatal error: ${err.message}`);
     console.log(err.stack);
   });

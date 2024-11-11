@@ -3,7 +3,6 @@
 This repository contains a CLI tool for parsing BitGo wallet transactions (withdrawals) and
 formatting them for terminal output.
 
-
 # Installation
 
 ## npm
@@ -75,9 +74,9 @@ utxo-bin -n bitcoin parseTx \
 
 Supported transactions formats are
 
-* full-signed transactions
-* half-signed transactions in proprietary bitcoinjs-lib format ("legacy")
-* half-signed transactions in PSBT/BIP174 format
+- full-signed transactions
+- half-signed transactions in proprietary bitcoinjs-lib format ("legacy")
+- half-signed transactions in PSBT/BIP174 format
 
 Supported encodings are hex and base64.
 
@@ -94,6 +93,7 @@ utxo-bin -n bitcoin parseAddress 3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC --convert
 ```
 
 ## Generate addresses
+
 ```
 utxo-bin generateAddresses \
     --userKey xpub661MyMwAqRbcEvoSo4qrsT5xhByHzUoBjm88hdCPohF1rdQ4TkntuHfccN2N7FbmAmBgmaBxD7VY1QZ43YfgGRLBL37BBkBhYbezgnsPRVP \
