@@ -1551,7 +1551,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:slnd',
     'testnet SOLEND',
     9,
-    UnderlyingAsset['sol:slnd'],
+    UnderlyingAsset['tsol:slnd'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -1559,7 +1559,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:orca',
     'testnet ORCA',
     9,
-    UnderlyingAsset['sol:orca'],
+    UnderlyingAsset['tsol:orca'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -1567,7 +1567,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:usdc',
     'testnet USD Coin',
     6,
-    UnderlyingAsset['sol:usdc'],
+    UnderlyingAsset['tsol:usdc'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -1575,7 +1575,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:ray',
     'testnet Raydium',
     9,
-    UnderlyingAsset['sol:ray'],
+    UnderlyingAsset['tsol:ray'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -1583,7 +1583,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:gmt',
     'testnet GMT',
     9,
-    UnderlyingAsset['sol:gmt'],
+    UnderlyingAsset['tsol:gmt'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -1591,7 +1591,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:usdt',
     'testnet USD Tether',
     9,
-    UnderlyingAsset['sol:usdt'],
+    UnderlyingAsset['tsol:usdt'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -1599,7 +1599,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:srm',
     'testnet Serum',
     9,
-    UnderlyingAsset['sol:srm'],
+    UnderlyingAsset['tsol:srm'],
     SOL_TOKEN_FEATURES
   ),
 
@@ -1608,7 +1608,7 @@ export const coins = CoinMap.fromCoins([
     'ofctsol:gari',
     'testnet Gari Token',
     9,
-    UnderlyingAsset['sol:gari'],
+    UnderlyingAsset['tsol:gari'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -17494,7 +17494,7 @@ export const coins = CoinMap.fromCoins([
     'Serum',
     9,
     'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
-    UnderlyingAsset['sol:srm'],
+    UnderlyingAsset['tsol:srm'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -17503,7 +17503,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin',
     9,
     'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
-    UnderlyingAsset['sol:usdc'],
+    UnderlyingAsset['tsol:usdc'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -17521,7 +17521,7 @@ export const coins = CoinMap.fromCoins([
     'Raydium',
     9,
     '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
-    UnderlyingAsset['sol:ray'],
+    UnderlyingAsset['tsol:ray'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -17530,7 +17530,7 @@ export const coins = CoinMap.fromCoins([
     'GMT',
     9,
     '64bco36MjrZ8K26FXZGoSrnDFDSCZhvJGfQ5ywLRFUpF',
-    UnderlyingAsset['sol:gmt'],
+    UnderlyingAsset['tsol:gmt'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -17539,7 +17539,7 @@ export const coins = CoinMap.fromCoins([
     'USD Tether',
     9,
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
-    UnderlyingAsset['sol:usdt'],
+    UnderlyingAsset['tsol:usdt'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -17548,7 +17548,7 @@ export const coins = CoinMap.fromCoins([
     'GARI',
     9,
     'Aub3Nun71bD5B98JQAivGtEdwCuFJVvZVXKkcVJkuzgh',
-    UnderlyingAsset['sol:gari'],
+    UnderlyingAsset['tsol:gari'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -17557,7 +17557,7 @@ export const coins = CoinMap.fromCoins([
     'ORCA',
     9,
     '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h',
-    UnderlyingAsset['sol:orca'],
+    UnderlyingAsset['tsol:orca'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -17566,7 +17566,7 @@ export const coins = CoinMap.fromCoins([
     'SOLEND',
     9,
     'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
-    UnderlyingAsset['sol:slnd'],
+    UnderlyingAsset['tsol:slnd'],
     SOL_TOKEN_FEATURES
   ),
 
