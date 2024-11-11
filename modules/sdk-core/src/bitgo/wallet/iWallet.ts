@@ -306,6 +306,8 @@ export interface UnspentsOptions extends PaginationOptions {
   target?: number | string;
   segwit?: boolean;
   chains?: number[];
+  changeAddressType?: string;
+  numRecipients?: number;
 }
 
 export interface ManageUnspentReservationOptions {
