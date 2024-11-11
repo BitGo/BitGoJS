@@ -130,8 +130,8 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
     return this.isOfflineKeyRegAccountLibTransaction()
       ? this.buildOfflineKeyRegTransaction()
       : this.isNonParticipationKeyRegAccountLibTransaction()
-      ? this.buildNonParticipationKeyRegTransaction()
-      : this.buildOnlineKeyRegTransaction();
+        ? this.buildNonParticipationKeyRegTransaction()
+        : this.buildOnlineKeyRegTransaction();
   }
 
   private buildOfflineKeyRegTransaction(): algosdk.Transaction {

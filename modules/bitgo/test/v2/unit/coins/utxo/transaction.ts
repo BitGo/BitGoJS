@@ -453,8 +453,8 @@ function run<TNumber extends number | bigint = number>(
           v === undefined || v instanceof utxolib.bitgo.UtxoPsbt
             ? undefined
             : v instanceof utxolib.bitgo.UtxoTransaction
-            ? transactionToObj<TNumber>(v)
-            : transactionHexToObj(v.txHex, coin.network, amountType)
+              ? transactionToObj<TNumber>(v)
+              : transactionHexToObj(v.txHex, coin.network, amountType)
         ) as TransactionObjStages;
       }
 
@@ -563,10 +563,10 @@ function run<TNumber extends number | bigint = number>(
         stageName === 'prebuild' || pubs === undefined
           ? 0
           : stageName.startsWith('halfSigned')
-          ? 1
-          : stageName.startsWith('fullSigned')
-          ? 2
-          : undefined;
+            ? 1
+            : stageName.startsWith('fullSigned')
+              ? 2
+              : undefined;
 
       explanation.inputSignatures.should.eql(
         // FIXME(BG-35154): implement signature verification for replay protection inputs

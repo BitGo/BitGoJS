@@ -53,7 +53,11 @@ createOutputs(
 import { SatRange } from './SatRange';
 
 export class InvalidOrdOutput extends Error {
-  constructor(message: string, public value: bigint, public ordinals: SatRange[]) {
+  constructor(
+    message: string,
+    public value: bigint,
+    public ordinals: SatRange[]
+  ) {
     super(message);
   }
 }
@@ -68,7 +72,10 @@ export class OrdOutput {
    *                   Required to be ordered and non-overlapping.
    *                   Not required to be exhaustive.
    */
-  constructor(public value: bigint, public ordinals: SatRange[] = []) {
+  constructor(
+    public value: bigint,
+    public ordinals: SatRange[] = []
+  ) {
     const maxRange = this.asSatRange();
     ordinals.forEach((r, i) => {
       if (!maxRange.isSupersetOf(r)) {

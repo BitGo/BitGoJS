@@ -244,16 +244,16 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.address, 0, message.address.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.address)
-            : message.address;
+              ? Array.prototype.slice.call(message.address)
+              : message.address;
       if (message.port != null && message.hasOwnProperty('port')) object.port = message.port;
       if (message.nodeId != null && message.hasOwnProperty('nodeId'))
         object.nodeId =
           options.bytes === String
             ? $util.base64.encode(message.nodeId, 0, message.nodeId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.nodeId)
-            : message.nodeId;
+              ? Array.prototype.slice.call(message.nodeId)
+              : message.nodeId;
       return object;
     };
 
@@ -521,8 +521,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.timestamp)
               : options.longs === Number
-              ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
-              : message.timestamp;
+                ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
+                : message.timestamp;
       return object;
     };
 
@@ -765,8 +765,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.timestamp)
               : options.longs === Number
-              ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
-              : message.timestamp;
+                ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
+                : message.timestamp;
       return object;
     };
 
@@ -1017,8 +1017,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.targetId, 0, message.targetId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.targetId)
-            : message.targetId;
+              ? Array.prototype.slice.call(message.targetId)
+              : message.targetId;
       if (message.timestamp != null && message.hasOwnProperty('timestamp'))
         if (typeof message.timestamp === 'number')
           object.timestamp = options.longs === String ? String(message.timestamp) : message.timestamp;
@@ -1027,8 +1027,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.timestamp)
               : options.longs === Number
-              ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
-              : message.timestamp;
+                ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
+                : message.timestamp;
       return object;
     };
 
@@ -1294,8 +1294,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.timestamp)
               : options.longs === Number
-              ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
-              : message.timestamp;
+                ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
+                : message.timestamp;
       return object;
     };
 
@@ -1765,15 +1765,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.accountAddress != null && message.hasOwnProperty('accountAddress'))
         object.accountAddress =
           options.bytes === String
             ? $util.base64.encode(message.accountAddress, 0, message.accountAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.accountAddress)
-            : message.accountAddress;
+              ? Array.prototype.slice.call(message.accountAddress)
+              : message.accountAddress;
       if (message.type != null && message.hasOwnProperty('type'))
         object.type = options.enums === String ? $root.protocol.AccountType[message.type] : message.type;
       return object;
@@ -2010,15 +2010,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.accountName, 0, message.accountName.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.accountName)
-            : message.accountName;
+              ? Array.prototype.slice.call(message.accountName)
+              : message.accountName;
       if (message.ownerAddress != null && message.hasOwnProperty('ownerAddress'))
         object.ownerAddress =
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       return object;
     };
 
@@ -2248,15 +2248,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.accountId, 0, message.accountId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.accountId)
-            : message.accountId;
+              ? Array.prototype.slice.call(message.accountId)
+              : message.accountId;
       if (message.ownerAddress != null && message.hasOwnProperty('ownerAddress'))
         object.ownerAddress =
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       return object;
     };
 
@@ -2517,15 +2517,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.toAddress != null && message.hasOwnProperty('toAddress'))
         object.toAddress =
           options.bytes === String
             ? $util.base64.encode(message.toAddress, 0, message.toAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.toAddress)
-            : message.toAddress;
+              ? Array.prototype.slice.call(message.toAddress)
+              : message.toAddress;
       if (message.amount != null && message.hasOwnProperty('amount'))
         if (typeof message.amount === 'number')
           object.amount = options.longs === String ? String(message.amount) : message.amount;
@@ -2534,8 +2534,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.amount)
               : options.longs === Number
-              ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber()
-              : message.amount;
+                ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber()
+                : message.amount;
       return object;
     };
 
@@ -2826,22 +2826,22 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.assetName, 0, message.assetName.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.assetName)
-            : message.assetName;
+              ? Array.prototype.slice.call(message.assetName)
+              : message.assetName;
       if (message.ownerAddress != null && message.hasOwnProperty('ownerAddress'))
         object.ownerAddress =
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.toAddress != null && message.hasOwnProperty('toAddress'))
         object.toAddress =
           options.bytes === String
             ? $util.base64.encode(message.toAddress, 0, message.toAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.toAddress)
-            : message.toAddress;
+              ? Array.prototype.slice.call(message.toAddress)
+              : message.toAddress;
       if (message.amount != null && message.hasOwnProperty('amount'))
         if (typeof message.amount === 'number')
           object.amount = options.longs === String ? String(message.amount) : message.amount;
@@ -2850,8 +2850,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.amount)
               : options.longs === Number
-              ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber()
-              : message.amount;
+                ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber()
+                : message.amount;
       return object;
     };
 
@@ -3129,8 +3129,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.voteAddress && message.voteAddress.length) {
         object.voteAddress = [];
         for (var j = 0; j < message.voteAddress.length; ++j)
@@ -3138,8 +3138,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.voteAddress[j], 0, message.voteAddress[j].length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.voteAddress[j])
-              : message.voteAddress[j];
+                ? Array.prototype.slice.call(message.voteAddress[j])
+                : message.voteAddress[j];
       }
       if (message.support != null && message.hasOwnProperty('support')) object.support = message.support;
       if (message.count != null && message.hasOwnProperty('count')) object.count = message.count;
@@ -3397,8 +3397,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.votes && message.votes.length) {
         object.votes = [];
         for (var j = 0; j < message.votes.length; ++j)
@@ -3632,8 +3632,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.voteAddress, 0, message.voteAddress.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.voteAddress)
-              : message.voteAddress;
+                ? Array.prototype.slice.call(message.voteAddress)
+                : message.voteAddress;
         if (message.voteCount != null && message.hasOwnProperty('voteCount'))
           if (typeof message.voteCount === 'number')
             object.voteCount = options.longs === String ? String(message.voteCount) : message.voteCount;
@@ -3642,8 +3642,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.voteCount)
                 : options.longs === Number
-                ? new $util.LongBits(message.voteCount.low >>> 0, message.voteCount.high >>> 0).toNumber()
-                : message.voteCount;
+                  ? new $util.LongBits(message.voteCount.low >>> 0, message.voteCount.high >>> 0).toNumber()
+                  : message.voteCount;
         return object;
       };
 
@@ -3878,9 +3878,8 @@ $root.protocol = (function () {
         else if (object.contractAddress.length) message.contractAddress = object.contractAddress;
       if (object.consumeUserResourcePercent != null)
         if ($util.Long)
-          (message.consumeUserResourcePercent = $util.Long.fromValue(
-            object.consumeUserResourcePercent
-          )).unsigned = false;
+          (message.consumeUserResourcePercent = $util.Long.fromValue(object.consumeUserResourcePercent)).unsigned =
+            false;
         else if (typeof object.consumeUserResourcePercent === 'string')
           message.consumeUserResourcePercent = parseInt(object.consumeUserResourcePercent, 10);
         else if (typeof object.consumeUserResourcePercent === 'number')
@@ -3927,15 +3926,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.contractAddress != null && message.hasOwnProperty('contractAddress'))
         object.contractAddress =
           options.bytes === String
             ? $util.base64.encode(message.contractAddress, 0, message.contractAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.contractAddress)
-            : message.contractAddress;
+              ? Array.prototype.slice.call(message.contractAddress)
+              : message.contractAddress;
       if (message.consumeUserResourcePercent != null && message.hasOwnProperty('consumeUserResourcePercent'))
         if (typeof message.consumeUserResourcePercent === 'number')
           object.consumeUserResourcePercent =
@@ -3945,11 +3944,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.consumeUserResourcePercent)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.consumeUserResourcePercent.low >>> 0,
-                  message.consumeUserResourcePercent.high >>> 0
-                ).toNumber()
-              : message.consumeUserResourcePercent;
+                ? new $util.LongBits(
+                    message.consumeUserResourcePercent.low >>> 0,
+                    message.consumeUserResourcePercent.high >>> 0
+                  ).toNumber()
+                : message.consumeUserResourcePercent;
       return object;
     };
 
@@ -4223,15 +4222,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.contractAddress != null && message.hasOwnProperty('contractAddress'))
         object.contractAddress =
           options.bytes === String
             ? $util.base64.encode(message.contractAddress, 0, message.contractAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.contractAddress)
-            : message.contractAddress;
+              ? Array.prototype.slice.call(message.contractAddress)
+              : message.contractAddress;
       if (message.originEnergyLimit != null && message.hasOwnProperty('originEnergyLimit'))
         if (typeof message.originEnergyLimit === 'number')
           object.originEnergyLimit =
@@ -4241,8 +4240,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.originEnergyLimit)
               : options.longs === Number
-              ? new $util.LongBits(message.originEnergyLimit.low >>> 0, message.originEnergyLimit.high >>> 0).toNumber()
-              : message.originEnergyLimit;
+                ? new $util.LongBits(
+                    message.originEnergyLimit.low >>> 0,
+                    message.originEnergyLimit.high >>> 0
+                  ).toNumber()
+                : message.originEnergyLimit;
       return object;
     };
 
@@ -4477,15 +4479,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.contractAddress != null && message.hasOwnProperty('contractAddress'))
         object.contractAddress =
           options.bytes === String
             ? $util.base64.encode(message.contractAddress, 0, message.contractAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.contractAddress)
-            : message.contractAddress;
+              ? Array.prototype.slice.call(message.contractAddress)
+              : message.contractAddress;
       return object;
     };
 
@@ -4711,15 +4713,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.url != null && message.hasOwnProperty('url'))
         object.url =
           options.bytes === String
             ? $util.base64.encode(message.url, 0, message.url.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.url)
-            : message.url;
+              ? Array.prototype.slice.call(message.url)
+              : message.url;
       return object;
     };
 
@@ -4949,15 +4951,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.updateUrl != null && message.hasOwnProperty('updateUrl'))
         object.updateUrl =
           options.bytes === String
             ? $util.base64.encode(message.updateUrl, 0, message.updateUrl.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.updateUrl)
-            : message.updateUrl;
+              ? Array.prototype.slice.call(message.updateUrl)
+              : message.updateUrl;
       return object;
     };
 
@@ -5690,22 +5692,22 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.name != null && message.hasOwnProperty('name'))
         object.name =
           options.bytes === String
             ? $util.base64.encode(message.name, 0, message.name.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.name)
-            : message.name;
+              ? Array.prototype.slice.call(message.name)
+              : message.name;
       if (message.abbr != null && message.hasOwnProperty('abbr'))
         object.abbr =
           options.bytes === String
             ? $util.base64.encode(message.abbr, 0, message.abbr.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.abbr)
-            : message.abbr;
+              ? Array.prototype.slice.call(message.abbr)
+              : message.abbr;
       if (message.totalSupply != null && message.hasOwnProperty('totalSupply'))
         if (typeof message.totalSupply === 'number')
           object.totalSupply = options.longs === String ? String(message.totalSupply) : message.totalSupply;
@@ -5714,8 +5716,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.totalSupply)
               : options.longs === Number
-              ? new $util.LongBits(message.totalSupply.low >>> 0, message.totalSupply.high >>> 0).toNumber()
-              : message.totalSupply;
+                ? new $util.LongBits(message.totalSupply.low >>> 0, message.totalSupply.high >>> 0).toNumber()
+                : message.totalSupply;
       if (message.frozenSupply && message.frozenSupply.length) {
         object.frozenSupply = [];
         for (var j = 0; j < message.frozenSupply.length; ++j)
@@ -5735,8 +5737,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.startTime)
               : options.longs === Number
-              ? new $util.LongBits(message.startTime.low >>> 0, message.startTime.high >>> 0).toNumber()
-              : message.startTime;
+                ? new $util.LongBits(message.startTime.low >>> 0, message.startTime.high >>> 0).toNumber()
+                : message.startTime;
       if (message.endTime != null && message.hasOwnProperty('endTime'))
         if (typeof message.endTime === 'number')
           object.endTime = options.longs === String ? String(message.endTime) : message.endTime;
@@ -5745,8 +5747,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.endTime)
               : options.longs === Number
-              ? new $util.LongBits(message.endTime.low >>> 0, message.endTime.high >>> 0).toNumber()
-              : message.endTime;
+                ? new $util.LongBits(message.endTime.low >>> 0, message.endTime.high >>> 0).toNumber()
+                : message.endTime;
       if (message.order != null && message.hasOwnProperty('order'))
         if (typeof message.order === 'number')
           object.order = options.longs === String ? String(message.order) : message.order;
@@ -5755,23 +5757,23 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.order)
               : options.longs === Number
-              ? new $util.LongBits(message.order.low >>> 0, message.order.high >>> 0).toNumber()
-              : message.order;
+                ? new $util.LongBits(message.order.low >>> 0, message.order.high >>> 0).toNumber()
+                : message.order;
       if (message.voteScore != null && message.hasOwnProperty('voteScore')) object.voteScore = message.voteScore;
       if (message.description != null && message.hasOwnProperty('description'))
         object.description =
           options.bytes === String
             ? $util.base64.encode(message.description, 0, message.description.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.description)
-            : message.description;
+              ? Array.prototype.slice.call(message.description)
+              : message.description;
       if (message.url != null && message.hasOwnProperty('url'))
         object.url =
           options.bytes === String
             ? $util.base64.encode(message.url, 0, message.url.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.url)
-            : message.url;
+              ? Array.prototype.slice.call(message.url)
+              : message.url;
       if (message.freeAssetNetLimit != null && message.hasOwnProperty('freeAssetNetLimit'))
         if (typeof message.freeAssetNetLimit === 'number')
           object.freeAssetNetLimit =
@@ -5781,8 +5783,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.freeAssetNetLimit)
               : options.longs === Number
-              ? new $util.LongBits(message.freeAssetNetLimit.low >>> 0, message.freeAssetNetLimit.high >>> 0).toNumber()
-              : message.freeAssetNetLimit;
+                ? new $util.LongBits(
+                    message.freeAssetNetLimit.low >>> 0,
+                    message.freeAssetNetLimit.high >>> 0
+                  ).toNumber()
+                : message.freeAssetNetLimit;
       if (message.publicFreeAssetNetLimit != null && message.hasOwnProperty('publicFreeAssetNetLimit'))
         if (typeof message.publicFreeAssetNetLimit === 'number')
           object.publicFreeAssetNetLimit =
@@ -5792,11 +5797,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.publicFreeAssetNetLimit)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.publicFreeAssetNetLimit.low >>> 0,
-                  message.publicFreeAssetNetLimit.high >>> 0
-                ).toNumber()
-              : message.publicFreeAssetNetLimit;
+                ? new $util.LongBits(
+                    message.publicFreeAssetNetLimit.low >>> 0,
+                    message.publicFreeAssetNetLimit.high >>> 0
+                  ).toNumber()
+                : message.publicFreeAssetNetLimit;
       if (message.publicFreeAssetNetUsage != null && message.hasOwnProperty('publicFreeAssetNetUsage'))
         if (typeof message.publicFreeAssetNetUsage === 'number')
           object.publicFreeAssetNetUsage =
@@ -5806,11 +5811,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.publicFreeAssetNetUsage)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.publicFreeAssetNetUsage.low >>> 0,
-                  message.publicFreeAssetNetUsage.high >>> 0
-                ).toNumber()
-              : message.publicFreeAssetNetUsage;
+                ? new $util.LongBits(
+                    message.publicFreeAssetNetUsage.low >>> 0,
+                    message.publicFreeAssetNetUsage.high >>> 0
+                  ).toNumber()
+                : message.publicFreeAssetNetUsage;
       if (message.publicLatestFreeNetTime != null && message.hasOwnProperty('publicLatestFreeNetTime'))
         if (typeof message.publicLatestFreeNetTime === 'number')
           object.publicLatestFreeNetTime =
@@ -5820,11 +5825,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.publicLatestFreeNetTime)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.publicLatestFreeNetTime.low >>> 0,
-                  message.publicLatestFreeNetTime.high >>> 0
-                ).toNumber()
-              : message.publicLatestFreeNetTime;
+                ? new $util.LongBits(
+                    message.publicLatestFreeNetTime.low >>> 0,
+                    message.publicLatestFreeNetTime.high >>> 0
+                  ).toNumber()
+                : message.publicLatestFreeNetTime;
       if (message.id != null && message.hasOwnProperty('id')) object.id = message.id;
       return object;
     };
@@ -6062,8 +6067,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.frozenAmount)
                 : options.longs === Number
-                ? new $util.LongBits(message.frozenAmount.low >>> 0, message.frozenAmount.high >>> 0).toNumber()
-                : message.frozenAmount;
+                  ? new $util.LongBits(message.frozenAmount.low >>> 0, message.frozenAmount.high >>> 0).toNumber()
+                  : message.frozenAmount;
         if (message.frozenDays != null && message.hasOwnProperty('frozenDays'))
           if (typeof message.frozenDays === 'number')
             object.frozenDays = options.longs === String ? String(message.frozenDays) : message.frozenDays;
@@ -6072,8 +6077,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.frozenDays)
                 : options.longs === Number
-                ? new $util.LongBits(message.frozenDays.low >>> 0, message.frozenDays.high >>> 0).toNumber()
-                : message.frozenDays;
+                  ? new $util.LongBits(message.frozenDays.low >>> 0, message.frozenDays.high >>> 0).toNumber()
+                  : message.frozenDays;
         return object;
       };
 
@@ -6367,22 +6372,22 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.toAddress != null && message.hasOwnProperty('toAddress'))
         object.toAddress =
           options.bytes === String
             ? $util.base64.encode(message.toAddress, 0, message.toAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.toAddress)
-            : message.toAddress;
+              ? Array.prototype.slice.call(message.toAddress)
+              : message.toAddress;
       if (message.assetName != null && message.hasOwnProperty('assetName'))
         object.assetName =
           options.bytes === String
             ? $util.base64.encode(message.assetName, 0, message.assetName.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.assetName)
-            : message.assetName;
+              ? Array.prototype.slice.call(message.assetName)
+              : message.assetName;
       if (message.amount != null && message.hasOwnProperty('amount'))
         if (typeof message.amount === 'number')
           object.amount = options.longs === String ? String(message.amount) : message.amount;
@@ -6391,8 +6396,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.amount)
               : options.longs === Number
-              ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber()
-              : message.amount;
+                ? new $util.LongBits(message.amount.low >>> 0, message.amount.high >>> 0).toNumber()
+                : message.amount;
       return object;
     };
 
@@ -6752,8 +6757,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.frozenBalance != null && message.hasOwnProperty('frozenBalance'))
         if (typeof message.frozenBalance === 'number')
           object.frozenBalance = options.longs === String ? String(message.frozenBalance) : message.frozenBalance;
@@ -6762,8 +6767,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.frozenBalance)
               : options.longs === Number
-              ? new $util.LongBits(message.frozenBalance.low >>> 0, message.frozenBalance.high >>> 0).toNumber()
-              : message.frozenBalance;
+                ? new $util.LongBits(message.frozenBalance.low >>> 0, message.frozenBalance.high >>> 0).toNumber()
+                : message.frozenBalance;
       if (message.frozenDuration != null && message.hasOwnProperty('frozenDuration'))
         if (typeof message.frozenDuration === 'number')
           object.frozenDuration = options.longs === String ? String(message.frozenDuration) : message.frozenDuration;
@@ -6772,8 +6777,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.frozenDuration)
               : options.longs === Number
-              ? new $util.LongBits(message.frozenDuration.low >>> 0, message.frozenDuration.high >>> 0).toNumber()
-              : message.frozenDuration;
+                ? new $util.LongBits(message.frozenDuration.low >>> 0, message.frozenDuration.high >>> 0).toNumber()
+                : message.frozenDuration;
       if (message.resource != null && message.hasOwnProperty('resource'))
         object.resource = options.enums === String ? $root.protocol.ResourceCode[message.resource] : message.resource;
       if (message.receiverAddress != null && message.hasOwnProperty('receiverAddress'))
@@ -6781,8 +6786,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.receiverAddress, 0, message.receiverAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.receiverAddress)
-            : message.receiverAddress;
+              ? Array.prototype.slice.call(message.receiverAddress)
+              : message.receiverAddress;
       return object;
     };
 
@@ -7050,8 +7055,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.resource != null && message.hasOwnProperty('resource'))
         object.resource = options.enums === String ? $root.protocol.ResourceCode[message.resource] : message.resource;
       if (message.receiverAddress != null && message.hasOwnProperty('receiverAddress'))
@@ -7059,8 +7064,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.receiverAddress, 0, message.receiverAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.receiverAddress)
-            : message.receiverAddress;
+              ? Array.prototype.slice.call(message.receiverAddress)
+              : message.receiverAddress;
       return object;
     };
 
@@ -7259,8 +7264,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       return object;
     };
 
@@ -7459,8 +7464,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       return object;
     };
 
@@ -7791,22 +7796,22 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.description != null && message.hasOwnProperty('description'))
         object.description =
           options.bytes === String
             ? $util.base64.encode(message.description, 0, message.description.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.description)
-            : message.description;
+              ? Array.prototype.slice.call(message.description)
+              : message.description;
       if (message.url != null && message.hasOwnProperty('url'))
         object.url =
           options.bytes === String
             ? $util.base64.encode(message.url, 0, message.url.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.url)
-            : message.url;
+              ? Array.prototype.slice.call(message.url)
+              : message.url;
       if (message.newLimit != null && message.hasOwnProperty('newLimit'))
         if (typeof message.newLimit === 'number')
           object.newLimit = options.longs === String ? String(message.newLimit) : message.newLimit;
@@ -7815,8 +7820,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.newLimit)
               : options.longs === Number
-              ? new $util.LongBits(message.newLimit.low >>> 0, message.newLimit.high >>> 0).toNumber()
-              : message.newLimit;
+                ? new $util.LongBits(message.newLimit.low >>> 0, message.newLimit.high >>> 0).toNumber()
+                : message.newLimit;
       if (message.newPublicLimit != null && message.hasOwnProperty('newPublicLimit'))
         if (typeof message.newPublicLimit === 'number')
           object.newPublicLimit = options.longs === String ? String(message.newPublicLimit) : message.newPublicLimit;
@@ -7825,8 +7830,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.newPublicLimit)
               : options.longs === Number
-              ? new $util.LongBits(message.newPublicLimit.low >>> 0, message.newPublicLimit.high >>> 0).toNumber()
-              : message.newPublicLimit;
+                ? new $util.LongBits(message.newPublicLimit.low >>> 0, message.newPublicLimit.high >>> 0).toNumber()
+                : message.newPublicLimit;
       return object;
     };
 
@@ -8102,8 +8107,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       var keys2;
       if (message.parameters && (keys2 = Object.keys(message.parameters)).length) {
         object.parameters = {};
@@ -8116,11 +8121,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.parameters[keys2[j]])
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.parameters[keys2[j]].low >>> 0,
-                    message.parameters[keys2[j]].high >>> 0
-                  ).toNumber()
-                : message.parameters[keys2[j]];
+                  ? new $util.LongBits(
+                      message.parameters[keys2[j]].low >>> 0,
+                      message.parameters[keys2[j]].high >>> 0
+                    ).toNumber()
+                  : message.parameters[keys2[j]];
       }
       return object;
     };
@@ -8370,8 +8375,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.proposalId != null && message.hasOwnProperty('proposalId'))
         if (typeof message.proposalId === 'number')
           object.proposalId = options.longs === String ? String(message.proposalId) : message.proposalId;
@@ -8380,8 +8385,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.proposalId)
               : options.longs === Number
-              ? new $util.LongBits(message.proposalId.low >>> 0, message.proposalId.high >>> 0).toNumber()
-              : message.proposalId;
+                ? new $util.LongBits(message.proposalId.low >>> 0, message.proposalId.high >>> 0).toNumber()
+                : message.proposalId;
       if (message.isAddApproval != null && message.hasOwnProperty('isAddApproval'))
         object.isAddApproval = message.isAddApproval;
       return object;
@@ -8614,8 +8619,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.proposalId != null && message.hasOwnProperty('proposalId'))
         if (typeof message.proposalId === 'number')
           object.proposalId = options.longs === String ? String(message.proposalId) : message.proposalId;
@@ -8624,8 +8629,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.proposalId)
               : options.longs === Number
-              ? new $util.LongBits(message.proposalId.low >>> 0, message.proposalId.high >>> 0).toNumber()
-              : message.proposalId;
+                ? new $util.LongBits(message.proposalId.low >>> 0, message.proposalId.high >>> 0).toNumber()
+                : message.proposalId;
       return object;
     };
 
@@ -8922,8 +8927,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.newContract != null && message.hasOwnProperty('newContract'))
         object.newContract = $root.protocol.SmartContract.toObject(message.newContract, options);
       if (message.callTokenValue != null && message.hasOwnProperty('callTokenValue'))
@@ -8934,8 +8939,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.callTokenValue)
               : options.longs === Number
-              ? new $util.LongBits(message.callTokenValue.low >>> 0, message.callTokenValue.high >>> 0).toNumber()
-              : message.callTokenValue;
+                ? new $util.LongBits(message.callTokenValue.low >>> 0, message.callTokenValue.high >>> 0).toNumber()
+                : message.callTokenValue;
       if (message.tokenId != null && message.hasOwnProperty('tokenId'))
         if (typeof message.tokenId === 'number')
           object.tokenId = options.longs === String ? String(message.tokenId) : message.tokenId;
@@ -8944,8 +8949,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.tokenId)
               : options.longs === Number
-              ? new $util.LongBits(message.tokenId.low >>> 0, message.tokenId.high >>> 0).toNumber()
-              : message.tokenId;
+                ? new $util.LongBits(message.tokenId.low >>> 0, message.tokenId.high >>> 0).toNumber()
+                : message.tokenId;
       return object;
     };
 
@@ -9307,15 +9312,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.contractAddress != null && message.hasOwnProperty('contractAddress'))
         object.contractAddress =
           options.bytes === String
             ? $util.base64.encode(message.contractAddress, 0, message.contractAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.contractAddress)
-            : message.contractAddress;
+              ? Array.prototype.slice.call(message.contractAddress)
+              : message.contractAddress;
       if (message.callValue != null && message.hasOwnProperty('callValue'))
         if (typeof message.callValue === 'number')
           object.callValue = options.longs === String ? String(message.callValue) : message.callValue;
@@ -9324,15 +9329,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.callValue)
               : options.longs === Number
-              ? new $util.LongBits(message.callValue.low >>> 0, message.callValue.high >>> 0).toNumber()
-              : message.callValue;
+                ? new $util.LongBits(message.callValue.low >>> 0, message.callValue.high >>> 0).toNumber()
+                : message.callValue;
       if (message.data != null && message.hasOwnProperty('data'))
         object.data =
           options.bytes === String
             ? $util.base64.encode(message.data, 0, message.data.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.data)
-            : message.data;
+              ? Array.prototype.slice.call(message.data)
+              : message.data;
       if (message.callTokenValue != null && message.hasOwnProperty('callTokenValue'))
         if (typeof message.callTokenValue === 'number')
           object.callTokenValue = options.longs === String ? String(message.callTokenValue) : message.callTokenValue;
@@ -9341,8 +9346,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.callTokenValue)
               : options.longs === Number
-              ? new $util.LongBits(message.callTokenValue.low >>> 0, message.callTokenValue.high >>> 0).toNumber()
-              : message.callTokenValue;
+                ? new $util.LongBits(message.callTokenValue.low >>> 0, message.callTokenValue.high >>> 0).toNumber()
+                : message.callTokenValue;
       if (message.tokenId != null && message.hasOwnProperty('tokenId'))
         if (typeof message.tokenId === 'number')
           object.tokenId = options.longs === String ? String(message.tokenId) : message.tokenId;
@@ -9351,8 +9356,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.tokenId)
               : options.longs === Number
-              ? new $util.LongBits(message.tokenId.low >>> 0, message.tokenId.high >>> 0).toNumber()
-              : message.tokenId;
+                ? new $util.LongBits(message.tokenId.low >>> 0, message.tokenId.high >>> 0).toNumber()
+                : message.tokenId;
       return object;
     };
 
@@ -9582,8 +9587,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.quant != null && message.hasOwnProperty('quant'))
         if (typeof message.quant === 'number')
           object.quant = options.longs === String ? String(message.quant) : message.quant;
@@ -9592,8 +9597,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.quant)
               : options.longs === Number
-              ? new $util.LongBits(message.quant.low >>> 0, message.quant.high >>> 0).toNumber()
-              : message.quant;
+                ? new $util.LongBits(message.quant.low >>> 0, message.quant.high >>> 0).toNumber()
+                : message.quant;
       return object;
     };
 
@@ -9823,8 +9828,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.bytes != null && message.hasOwnProperty('bytes'))
         if (typeof message.bytes === 'number')
           object.bytes = options.longs === String ? String(message.bytes) : message.bytes;
@@ -9833,8 +9838,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.bytes)
               : options.longs === Number
-              ? new $util.LongBits(message.bytes.low >>> 0, message.bytes.high >>> 0).toNumber()
-              : message.bytes;
+                ? new $util.LongBits(message.bytes.low >>> 0, message.bytes.high >>> 0).toNumber()
+                : message.bytes;
       return object;
     };
 
@@ -10072,8 +10077,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.storageBytes != null && message.hasOwnProperty('storageBytes'))
         if (typeof message.storageBytes === 'number')
           object.storageBytes = options.longs === String ? String(message.storageBytes) : message.storageBytes;
@@ -10082,8 +10087,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.storageBytes)
               : options.longs === Number
-              ? new $util.LongBits(message.storageBytes.low >>> 0, message.storageBytes.high >>> 0).toNumber()
-              : message.storageBytes;
+                ? new $util.LongBits(message.storageBytes.low >>> 0, message.storageBytes.high >>> 0).toNumber()
+                : message.storageBytes;
       return object;
     };
 
@@ -10431,15 +10436,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.firstTokenId != null && message.hasOwnProperty('firstTokenId'))
         object.firstTokenId =
           options.bytes === String
             ? $util.base64.encode(message.firstTokenId, 0, message.firstTokenId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.firstTokenId)
-            : message.firstTokenId;
+              ? Array.prototype.slice.call(message.firstTokenId)
+              : message.firstTokenId;
       if (message.firstTokenBalance != null && message.hasOwnProperty('firstTokenBalance'))
         if (typeof message.firstTokenBalance === 'number')
           object.firstTokenBalance =
@@ -10449,15 +10454,18 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.firstTokenBalance)
               : options.longs === Number
-              ? new $util.LongBits(message.firstTokenBalance.low >>> 0, message.firstTokenBalance.high >>> 0).toNumber()
-              : message.firstTokenBalance;
+                ? new $util.LongBits(
+                    message.firstTokenBalance.low >>> 0,
+                    message.firstTokenBalance.high >>> 0
+                  ).toNumber()
+                : message.firstTokenBalance;
       if (message.secondTokenId != null && message.hasOwnProperty('secondTokenId'))
         object.secondTokenId =
           options.bytes === String
             ? $util.base64.encode(message.secondTokenId, 0, message.secondTokenId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.secondTokenId)
-            : message.secondTokenId;
+              ? Array.prototype.slice.call(message.secondTokenId)
+              : message.secondTokenId;
       if (message.secondTokenBalance != null && message.hasOwnProperty('secondTokenBalance'))
         if (typeof message.secondTokenBalance === 'number')
           object.secondTokenBalance =
@@ -10467,11 +10475,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.secondTokenBalance)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.secondTokenBalance.low >>> 0,
-                  message.secondTokenBalance.high >>> 0
-                ).toNumber()
-              : message.secondTokenBalance;
+                ? new $util.LongBits(
+                    message.secondTokenBalance.low >>> 0,
+                    message.secondTokenBalance.high >>> 0
+                  ).toNumber()
+                : message.secondTokenBalance;
       return object;
     };
 
@@ -10762,8 +10770,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.exchangeId != null && message.hasOwnProperty('exchangeId'))
         if (typeof message.exchangeId === 'number')
           object.exchangeId = options.longs === String ? String(message.exchangeId) : message.exchangeId;
@@ -10772,15 +10780,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.exchangeId)
               : options.longs === Number
-              ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
-              : message.exchangeId;
+                ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
+                : message.exchangeId;
       if (message.tokenId != null && message.hasOwnProperty('tokenId'))
         object.tokenId =
           options.bytes === String
             ? $util.base64.encode(message.tokenId, 0, message.tokenId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.tokenId)
-            : message.tokenId;
+              ? Array.prototype.slice.call(message.tokenId)
+              : message.tokenId;
       if (message.quant != null && message.hasOwnProperty('quant'))
         if (typeof message.quant === 'number')
           object.quant = options.longs === String ? String(message.quant) : message.quant;
@@ -10789,8 +10797,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.quant)
               : options.longs === Number
-              ? new $util.LongBits(message.quant.low >>> 0, message.quant.high >>> 0).toNumber()
-              : message.quant;
+                ? new $util.LongBits(message.quant.low >>> 0, message.quant.high >>> 0).toNumber()
+                : message.quant;
       return object;
     };
 
@@ -11081,8 +11089,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.exchangeId != null && message.hasOwnProperty('exchangeId'))
         if (typeof message.exchangeId === 'number')
           object.exchangeId = options.longs === String ? String(message.exchangeId) : message.exchangeId;
@@ -11091,15 +11099,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.exchangeId)
               : options.longs === Number
-              ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
-              : message.exchangeId;
+                ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
+                : message.exchangeId;
       if (message.tokenId != null && message.hasOwnProperty('tokenId'))
         object.tokenId =
           options.bytes === String
             ? $util.base64.encode(message.tokenId, 0, message.tokenId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.tokenId)
-            : message.tokenId;
+              ? Array.prototype.slice.call(message.tokenId)
+              : message.tokenId;
       if (message.quant != null && message.hasOwnProperty('quant'))
         if (typeof message.quant === 'number')
           object.quant = options.longs === String ? String(message.quant) : message.quant;
@@ -11108,8 +11116,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.quant)
               : options.longs === Number
-              ? new $util.LongBits(message.quant.low >>> 0, message.quant.high >>> 0).toNumber()
-              : message.quant;
+                ? new $util.LongBits(message.quant.low >>> 0, message.quant.high >>> 0).toNumber()
+                : message.quant;
       return object;
     };
 
@@ -11431,8 +11439,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.exchangeId != null && message.hasOwnProperty('exchangeId'))
         if (typeof message.exchangeId === 'number')
           object.exchangeId = options.longs === String ? String(message.exchangeId) : message.exchangeId;
@@ -11441,15 +11449,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.exchangeId)
               : options.longs === Number
-              ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
-              : message.exchangeId;
+                ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
+                : message.exchangeId;
       if (message.tokenId != null && message.hasOwnProperty('tokenId'))
         object.tokenId =
           options.bytes === String
             ? $util.base64.encode(message.tokenId, 0, message.tokenId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.tokenId)
-            : message.tokenId;
+              ? Array.prototype.slice.call(message.tokenId)
+              : message.tokenId;
       if (message.quant != null && message.hasOwnProperty('quant'))
         if (typeof message.quant === 'number')
           object.quant = options.longs === String ? String(message.quant) : message.quant;
@@ -11458,8 +11466,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.quant)
               : options.longs === Number
-              ? new $util.LongBits(message.quant.low >>> 0, message.quant.high >>> 0).toNumber()
-              : message.quant;
+                ? new $util.LongBits(message.quant.low >>> 0, message.quant.high >>> 0).toNumber()
+                : message.quant;
       if (message.expected != null && message.hasOwnProperty('expected'))
         if (typeof message.expected === 'number')
           object.expected = options.longs === String ? String(message.expected) : message.expected;
@@ -11468,8 +11476,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.expected)
               : options.longs === Number
-              ? new $util.LongBits(message.expected.low >>> 0, message.expected.high >>> 0).toNumber()
-              : message.expected;
+                ? new $util.LongBits(message.expected.low >>> 0, message.expected.high >>> 0).toNumber()
+                : message.expected;
       return object;
     };
 
@@ -11755,8 +11763,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.ownerAddress)
-            : message.ownerAddress;
+              ? Array.prototype.slice.call(message.ownerAddress)
+              : message.ownerAddress;
       if (message.owner != null && message.hasOwnProperty('owner'))
         object.owner = $root.protocol.Permission.toObject(message.owner, options);
       if (message.witness != null && message.hasOwnProperty('witness'))
@@ -12003,15 +12011,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.name, 0, message.name.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.name)
-            : message.name;
+              ? Array.prototype.slice.call(message.name)
+              : message.name;
       if (message.address != null && message.hasOwnProperty('address'))
         object.address =
           options.bytes === String
             ? $util.base64.encode(message.address, 0, message.address.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.address)
-            : message.address;
+              ? Array.prototype.slice.call(message.address)
+              : message.address;
       return object;
     };
 
@@ -12242,8 +12250,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.voteAddress, 0, message.voteAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.voteAddress)
-            : message.voteAddress;
+              ? Array.prototype.slice.call(message.voteAddress)
+              : message.voteAddress;
       if (message.voteCount != null && message.hasOwnProperty('voteCount'))
         if (typeof message.voteCount === 'number')
           object.voteCount = options.longs === String ? String(message.voteCount) : message.voteCount;
@@ -12252,8 +12260,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.voteCount)
               : options.longs === Number
-              ? new $util.LongBits(message.voteCount.low >>> 0, message.voteCount.high >>> 0).toNumber()
-              : message.voteCount;
+                ? new $util.LongBits(message.voteCount.low >>> 0, message.voteCount.high >>> 0).toNumber()
+                : message.voteCount;
       return object;
     };
 
@@ -12717,15 +12725,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.proposalId)
               : options.longs === Number
-              ? new $util.LongBits(message.proposalId.low >>> 0, message.proposalId.high >>> 0).toNumber()
-              : message.proposalId;
+                ? new $util.LongBits(message.proposalId.low >>> 0, message.proposalId.high >>> 0).toNumber()
+                : message.proposalId;
       if (message.proposerAddress != null && message.hasOwnProperty('proposerAddress'))
         object.proposerAddress =
           options.bytes === String
             ? $util.base64.encode(message.proposerAddress, 0, message.proposerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.proposerAddress)
-            : message.proposerAddress;
+              ? Array.prototype.slice.call(message.proposerAddress)
+              : message.proposerAddress;
       var keys2;
       if (message.parameters && (keys2 = Object.keys(message.parameters)).length) {
         object.parameters = {};
@@ -12738,11 +12746,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.parameters[keys2[j]])
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.parameters[keys2[j]].low >>> 0,
-                    message.parameters[keys2[j]].high >>> 0
-                  ).toNumber()
-                : message.parameters[keys2[j]];
+                  ? new $util.LongBits(
+                      message.parameters[keys2[j]].low >>> 0,
+                      message.parameters[keys2[j]].high >>> 0
+                    ).toNumber()
+                  : message.parameters[keys2[j]];
       }
       if (message.expirationTime != null && message.hasOwnProperty('expirationTime'))
         if (typeof message.expirationTime === 'number')
@@ -12752,8 +12760,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.expirationTime)
               : options.longs === Number
-              ? new $util.LongBits(message.expirationTime.low >>> 0, message.expirationTime.high >>> 0).toNumber()
-              : message.expirationTime;
+                ? new $util.LongBits(message.expirationTime.low >>> 0, message.expirationTime.high >>> 0).toNumber()
+                : message.expirationTime;
       if (message.createTime != null && message.hasOwnProperty('createTime'))
         if (typeof message.createTime === 'number')
           object.createTime = options.longs === String ? String(message.createTime) : message.createTime;
@@ -12762,8 +12770,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.createTime)
               : options.longs === Number
-              ? new $util.LongBits(message.createTime.low >>> 0, message.createTime.high >>> 0).toNumber()
-              : message.createTime;
+                ? new $util.LongBits(message.createTime.low >>> 0, message.createTime.high >>> 0).toNumber()
+                : message.createTime;
       if (message.approvals && message.approvals.length) {
         object.approvals = [];
         for (var j = 0; j < message.approvals.length; ++j)
@@ -12771,8 +12779,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.approvals[j], 0, message.approvals[j].length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.approvals[j])
-              : message.approvals[j];
+                ? Array.prototype.slice.call(message.approvals[j])
+                : message.approvals[j];
       }
       if (message.state != null && message.hasOwnProperty('state'))
         object.state = options.enums === String ? $root.protocol.Proposal.State[message.state] : message.state;
@@ -13207,15 +13215,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.exchangeId)
               : options.longs === Number
-              ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
-              : message.exchangeId;
+                ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
+                : message.exchangeId;
       if (message.creatorAddress != null && message.hasOwnProperty('creatorAddress'))
         object.creatorAddress =
           options.bytes === String
             ? $util.base64.encode(message.creatorAddress, 0, message.creatorAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.creatorAddress)
-            : message.creatorAddress;
+              ? Array.prototype.slice.call(message.creatorAddress)
+              : message.creatorAddress;
       if (message.createTime != null && message.hasOwnProperty('createTime'))
         if (typeof message.createTime === 'number')
           object.createTime = options.longs === String ? String(message.createTime) : message.createTime;
@@ -13224,15 +13232,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.createTime)
               : options.longs === Number
-              ? new $util.LongBits(message.createTime.low >>> 0, message.createTime.high >>> 0).toNumber()
-              : message.createTime;
+                ? new $util.LongBits(message.createTime.low >>> 0, message.createTime.high >>> 0).toNumber()
+                : message.createTime;
       if (message.firstTokenId != null && message.hasOwnProperty('firstTokenId'))
         object.firstTokenId =
           options.bytes === String
             ? $util.base64.encode(message.firstTokenId, 0, message.firstTokenId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.firstTokenId)
-            : message.firstTokenId;
+              ? Array.prototype.slice.call(message.firstTokenId)
+              : message.firstTokenId;
       if (message.firstTokenBalance != null && message.hasOwnProperty('firstTokenBalance'))
         if (typeof message.firstTokenBalance === 'number')
           object.firstTokenBalance =
@@ -13242,15 +13250,18 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.firstTokenBalance)
               : options.longs === Number
-              ? new $util.LongBits(message.firstTokenBalance.low >>> 0, message.firstTokenBalance.high >>> 0).toNumber()
-              : message.firstTokenBalance;
+                ? new $util.LongBits(
+                    message.firstTokenBalance.low >>> 0,
+                    message.firstTokenBalance.high >>> 0
+                  ).toNumber()
+                : message.firstTokenBalance;
       if (message.secondTokenId != null && message.hasOwnProperty('secondTokenId'))
         object.secondTokenId =
           options.bytes === String
             ? $util.base64.encode(message.secondTokenId, 0, message.secondTokenId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.secondTokenId)
-            : message.secondTokenId;
+              ? Array.prototype.slice.call(message.secondTokenId)
+              : message.secondTokenId;
       if (message.secondTokenBalance != null && message.hasOwnProperty('secondTokenBalance'))
         if (typeof message.secondTokenBalance === 'number')
           object.secondTokenBalance =
@@ -13260,11 +13271,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.secondTokenBalance)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.secondTokenBalance.low >>> 0,
-                  message.secondTokenBalance.high >>> 0
-                ).toNumber()
-              : message.secondTokenBalance;
+                ? new $util.LongBits(
+                    message.secondTokenBalance.low >>> 0,
+                    message.secondTokenBalance.high >>> 0
+                  ).toNumber()
+                : message.secondTokenBalance;
       return object;
     };
 
@@ -13684,8 +13695,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.value)
                 : options.longs === Number
-                ? new $util.LongBits(message.value.low >>> 0, message.value.high >>> 0).toNumber()
-                : message.value;
+                  ? new $util.LongBits(message.value.low >>> 0, message.value.high >>> 0).toNumber()
+                  : message.value;
         return object;
       };
 
@@ -15016,9 +15027,8 @@ $root.protocol = (function () {
         message.freeAssetNetUsage = {};
         for (var keys = Object.keys(object.freeAssetNetUsage), i = 0; i < keys.length; ++i)
           if ($util.Long)
-            (message.freeAssetNetUsage[keys[i]] = $util.Long.fromValue(
-              object.freeAssetNetUsage[keys[i]]
-            )).unsigned = false;
+            (message.freeAssetNetUsage[keys[i]] = $util.Long.fromValue(object.freeAssetNetUsage[keys[i]])).unsigned =
+              false;
           else if (typeof object.freeAssetNetUsage[keys[i]] === 'string')
             message.freeAssetNetUsage[keys[i]] = parseInt(object.freeAssetNetUsage[keys[i]], 10);
           else if (typeof object.freeAssetNetUsage[keys[i]] === 'number')
@@ -15243,8 +15253,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.accountName, 0, message.accountName.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.accountName)
-            : message.accountName;
+              ? Array.prototype.slice.call(message.accountName)
+              : message.accountName;
       if (message.type != null && message.hasOwnProperty('type'))
         object.type = options.enums === String ? $root.protocol.AccountType[message.type] : message.type;
       if (message.address != null && message.hasOwnProperty('address'))
@@ -15252,8 +15262,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.address, 0, message.address.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.address)
-            : message.address;
+              ? Array.prototype.slice.call(message.address)
+              : message.address;
       if (message.balance != null && message.hasOwnProperty('balance'))
         if (typeof message.balance === 'number')
           object.balance = options.longs === String ? String(message.balance) : message.balance;
@@ -15262,8 +15272,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.balance)
               : options.longs === Number
-              ? new $util.LongBits(message.balance.low >>> 0, message.balance.high >>> 0).toNumber()
-              : message.balance;
+                ? new $util.LongBits(message.balance.low >>> 0, message.balance.high >>> 0).toNumber()
+                : message.balance;
       if (message.votes && message.votes.length) {
         object.votes = [];
         for (var j = 0; j < message.votes.length; ++j)
@@ -15281,8 +15291,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.asset[keys2[j]])
                 : options.longs === Number
-                ? new $util.LongBits(message.asset[keys2[j]].low >>> 0, message.asset[keys2[j]].high >>> 0).toNumber()
-                : message.asset[keys2[j]];
+                  ? new $util.LongBits(message.asset[keys2[j]].low >>> 0, message.asset[keys2[j]].high >>> 0).toNumber()
+                  : message.asset[keys2[j]];
       }
       if (message.frozen && message.frozen.length) {
         object.frozen = [];
@@ -15297,8 +15307,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.netUsage)
               : options.longs === Number
-              ? new $util.LongBits(message.netUsage.low >>> 0, message.netUsage.high >>> 0).toNumber()
-              : message.netUsage;
+                ? new $util.LongBits(message.netUsage.low >>> 0, message.netUsage.high >>> 0).toNumber()
+                : message.netUsage;
       if (message.createTime != null && message.hasOwnProperty('createTime'))
         if (typeof message.createTime === 'number')
           object.createTime = options.longs === String ? String(message.createTime) : message.createTime;
@@ -15307,8 +15317,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.createTime)
               : options.longs === Number
-              ? new $util.LongBits(message.createTime.low >>> 0, message.createTime.high >>> 0).toNumber()
-              : message.createTime;
+                ? new $util.LongBits(message.createTime.low >>> 0, message.createTime.high >>> 0).toNumber()
+                : message.createTime;
       if (message.latestOprationTime != null && message.hasOwnProperty('latestOprationTime'))
         if (typeof message.latestOprationTime === 'number')
           object.latestOprationTime =
@@ -15318,11 +15328,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.latestOprationTime)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.latestOprationTime.low >>> 0,
-                  message.latestOprationTime.high >>> 0
-                ).toNumber()
-              : message.latestOprationTime;
+                ? new $util.LongBits(
+                    message.latestOprationTime.low >>> 0,
+                    message.latestOprationTime.high >>> 0
+                  ).toNumber()
+                : message.latestOprationTime;
       if (message.allowance != null && message.hasOwnProperty('allowance'))
         if (typeof message.allowance === 'number')
           object.allowance = options.longs === String ? String(message.allowance) : message.allowance;
@@ -15331,8 +15341,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.allowance)
               : options.longs === Number
-              ? new $util.LongBits(message.allowance.low >>> 0, message.allowance.high >>> 0).toNumber()
-              : message.allowance;
+                ? new $util.LongBits(message.allowance.low >>> 0, message.allowance.high >>> 0).toNumber()
+                : message.allowance;
       if (message.latestWithdrawTime != null && message.hasOwnProperty('latestWithdrawTime'))
         if (typeof message.latestWithdrawTime === 'number')
           object.latestWithdrawTime =
@@ -15342,18 +15352,18 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.latestWithdrawTime)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.latestWithdrawTime.low >>> 0,
-                  message.latestWithdrawTime.high >>> 0
-                ).toNumber()
-              : message.latestWithdrawTime;
+                ? new $util.LongBits(
+                    message.latestWithdrawTime.low >>> 0,
+                    message.latestWithdrawTime.high >>> 0
+                  ).toNumber()
+                : message.latestWithdrawTime;
       if (message.code != null && message.hasOwnProperty('code'))
         object.code =
           options.bytes === String
             ? $util.base64.encode(message.code, 0, message.code.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.code)
-            : message.code;
+              ? Array.prototype.slice.call(message.code)
+              : message.code;
       if (message.isWitness != null && message.hasOwnProperty('isWitness')) object.isWitness = message.isWitness;
       if (message.isCommittee != null && message.hasOwnProperty('isCommittee'))
         object.isCommittee = message.isCommittee;
@@ -15367,8 +15377,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.assetIssuedName, 0, message.assetIssuedName.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.assetIssuedName)
-            : message.assetIssuedName;
+              ? Array.prototype.slice.call(message.assetIssuedName)
+              : message.assetIssuedName;
       if (message.latestAssetOperationTime && (keys2 = Object.keys(message.latestAssetOperationTime)).length) {
         object.latestAssetOperationTime = {};
         for (var j = 0; j < keys2.length; ++j)
@@ -15382,11 +15392,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.latestAssetOperationTime[keys2[j]])
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.latestAssetOperationTime[keys2[j]].low >>> 0,
-                    message.latestAssetOperationTime[keys2[j]].high >>> 0
-                  ).toNumber()
-                : message.latestAssetOperationTime[keys2[j]];
+                  ? new $util.LongBits(
+                      message.latestAssetOperationTime[keys2[j]].low >>> 0,
+                      message.latestAssetOperationTime[keys2[j]].high >>> 0
+                    ).toNumber()
+                  : message.latestAssetOperationTime[keys2[j]];
       }
       if (message.freeNetUsage != null && message.hasOwnProperty('freeNetUsage'))
         if (typeof message.freeNetUsage === 'number')
@@ -15396,8 +15406,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.freeNetUsage)
               : options.longs === Number
-              ? new $util.LongBits(message.freeNetUsage.low >>> 0, message.freeNetUsage.high >>> 0).toNumber()
-              : message.freeNetUsage;
+                ? new $util.LongBits(message.freeNetUsage.low >>> 0, message.freeNetUsage.high >>> 0).toNumber()
+                : message.freeNetUsage;
       if (message.freeAssetNetUsage && (keys2 = Object.keys(message.freeAssetNetUsage)).length) {
         object.freeAssetNetUsage = {};
         for (var j = 0; j < keys2.length; ++j)
@@ -15411,11 +15421,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.freeAssetNetUsage[keys2[j]])
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.freeAssetNetUsage[keys2[j]].low >>> 0,
-                    message.freeAssetNetUsage[keys2[j]].high >>> 0
-                  ).toNumber()
-                : message.freeAssetNetUsage[keys2[j]];
+                  ? new $util.LongBits(
+                      message.freeAssetNetUsage[keys2[j]].low >>> 0,
+                      message.freeAssetNetUsage[keys2[j]].high >>> 0
+                    ).toNumber()
+                  : message.freeAssetNetUsage[keys2[j]];
       }
       if (message.latestConsumeTime != null && message.hasOwnProperty('latestConsumeTime'))
         if (typeof message.latestConsumeTime === 'number')
@@ -15426,8 +15436,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.latestConsumeTime)
               : options.longs === Number
-              ? new $util.LongBits(message.latestConsumeTime.low >>> 0, message.latestConsumeTime.high >>> 0).toNumber()
-              : message.latestConsumeTime;
+                ? new $util.LongBits(
+                    message.latestConsumeTime.low >>> 0,
+                    message.latestConsumeTime.high >>> 0
+                  ).toNumber()
+                : message.latestConsumeTime;
       if (message.latestConsumeFreeTime != null && message.hasOwnProperty('latestConsumeFreeTime'))
         if (typeof message.latestConsumeFreeTime === 'number')
           object.latestConsumeFreeTime =
@@ -15437,18 +15450,18 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.latestConsumeFreeTime)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.latestConsumeFreeTime.low >>> 0,
-                  message.latestConsumeFreeTime.high >>> 0
-                ).toNumber()
-              : message.latestConsumeFreeTime;
+                ? new $util.LongBits(
+                    message.latestConsumeFreeTime.low >>> 0,
+                    message.latestConsumeFreeTime.high >>> 0
+                  ).toNumber()
+                : message.latestConsumeFreeTime;
       if (message.accountId != null && message.hasOwnProperty('accountId'))
         object.accountId =
           options.bytes === String
             ? $util.base64.encode(message.accountId, 0, message.accountId.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.accountId)
-            : message.accountId;
+              ? Array.prototype.slice.call(message.accountId)
+              : message.accountId;
       if (message.accountResource != null && message.hasOwnProperty('accountResource'))
         object.accountResource = $root.protocol.Account.AccountResource.toObject(message.accountResource, options);
       if (message.codeHash != null && message.hasOwnProperty('codeHash'))
@@ -15456,8 +15469,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.codeHash, 0, message.codeHash.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.codeHash)
-            : message.codeHash;
+              ? Array.prototype.slice.call(message.codeHash)
+              : message.codeHash;
       if (message.ownerPermission != null && message.hasOwnProperty('ownerPermission'))
         object.ownerPermission = $root.protocol.Permission.toObject(message.ownerPermission, options);
       if (message.witnessPermission != null && message.hasOwnProperty('witnessPermission'))
@@ -15481,11 +15494,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.acquiredDelegatedFrozenBalanceForBandwidth)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.acquiredDelegatedFrozenBalanceForBandwidth.low >>> 0,
-                  message.acquiredDelegatedFrozenBalanceForBandwidth.high >>> 0
-                ).toNumber()
-              : message.acquiredDelegatedFrozenBalanceForBandwidth;
+                ? new $util.LongBits(
+                    message.acquiredDelegatedFrozenBalanceForBandwidth.low >>> 0,
+                    message.acquiredDelegatedFrozenBalanceForBandwidth.high >>> 0
+                  ).toNumber()
+                : message.acquiredDelegatedFrozenBalanceForBandwidth;
       if (
         message.delegatedFrozenBalanceForBandwidth != null &&
         message.hasOwnProperty('delegatedFrozenBalanceForBandwidth')
@@ -15500,11 +15513,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.delegatedFrozenBalanceForBandwidth)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.delegatedFrozenBalanceForBandwidth.low >>> 0,
-                  message.delegatedFrozenBalanceForBandwidth.high >>> 0
-                ).toNumber()
-              : message.delegatedFrozenBalanceForBandwidth;
+                ? new $util.LongBits(
+                    message.delegatedFrozenBalanceForBandwidth.low >>> 0,
+                    message.delegatedFrozenBalanceForBandwidth.high >>> 0
+                  ).toNumber()
+                : message.delegatedFrozenBalanceForBandwidth;
       if (message.assetV2 && (keys2 = Object.keys(message.assetV2)).length) {
         object.assetV2 = {};
         for (var j = 0; j < keys2.length; ++j)
@@ -15516,19 +15529,19 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.assetV2[keys2[j]])
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.assetV2[keys2[j]].low >>> 0,
-                    message.assetV2[keys2[j]].high >>> 0
-                  ).toNumber()
-                : message.assetV2[keys2[j]];
+                  ? new $util.LongBits(
+                      message.assetV2[keys2[j]].low >>> 0,
+                      message.assetV2[keys2[j]].high >>> 0
+                    ).toNumber()
+                  : message.assetV2[keys2[j]];
       }
       if (message.assetIssued_ID != null && message.hasOwnProperty('assetIssued_ID'))
         object.assetIssued_ID =
           options.bytes === String
             ? $util.base64.encode(message.assetIssued_ID, 0, message.assetIssued_ID.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.assetIssued_ID)
-            : message.assetIssued_ID;
+              ? Array.prototype.slice.call(message.assetIssued_ID)
+              : message.assetIssued_ID;
       if (message.latestAssetOperationTimeV2 && (keys2 = Object.keys(message.latestAssetOperationTimeV2)).length) {
         object.latestAssetOperationTimeV2 = {};
         for (var j = 0; j < keys2.length; ++j)
@@ -15542,11 +15555,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.latestAssetOperationTimeV2[keys2[j]])
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.latestAssetOperationTimeV2[keys2[j]].low >>> 0,
-                    message.latestAssetOperationTimeV2[keys2[j]].high >>> 0
-                  ).toNumber()
-                : message.latestAssetOperationTimeV2[keys2[j]];
+                  ? new $util.LongBits(
+                      message.latestAssetOperationTimeV2[keys2[j]].low >>> 0,
+                      message.latestAssetOperationTimeV2[keys2[j]].high >>> 0
+                    ).toNumber()
+                  : message.latestAssetOperationTimeV2[keys2[j]];
       }
       if (message.freeAssetNetUsageV2 && (keys2 = Object.keys(message.freeAssetNetUsageV2)).length) {
         object.freeAssetNetUsageV2 = {};
@@ -15561,11 +15574,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.freeAssetNetUsageV2[keys2[j]])
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.freeAssetNetUsageV2[keys2[j]].low >>> 0,
-                    message.freeAssetNetUsageV2[keys2[j]].high >>> 0
-                  ).toNumber()
-                : message.freeAssetNetUsageV2[keys2[j]];
+                  ? new $util.LongBits(
+                      message.freeAssetNetUsageV2[keys2[j]].low >>> 0,
+                      message.freeAssetNetUsageV2[keys2[j]].high >>> 0
+                    ).toNumber()
+                  : message.freeAssetNetUsageV2[keys2[j]];
       }
       return object;
     };
@@ -15803,8 +15816,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.frozenBalance)
                 : options.longs === Number
-                ? new $util.LongBits(message.frozenBalance.low >>> 0, message.frozenBalance.high >>> 0).toNumber()
-                : message.frozenBalance;
+                  ? new $util.LongBits(message.frozenBalance.low >>> 0, message.frozenBalance.high >>> 0).toNumber()
+                  : message.frozenBalance;
         if (message.expireTime != null && message.hasOwnProperty('expireTime'))
           if (typeof message.expireTime === 'number')
             object.expireTime = options.longs === String ? String(message.expireTime) : message.expireTime;
@@ -15813,8 +15826,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.expireTime)
                 : options.longs === Number
-                ? new $util.LongBits(message.expireTime.low >>> 0, message.expireTime.high >>> 0).toNumber()
-                : message.expireTime;
+                  ? new $util.LongBits(message.expireTime.low >>> 0, message.expireTime.high >>> 0).toNumber()
+                  : message.expireTime;
         return object;
       };
 
@@ -16182,9 +16195,8 @@ $root.protocol = (function () {
         }
         if (object.latestConsumeTimeForEnergy != null)
           if ($util.Long)
-            (message.latestConsumeTimeForEnergy = $util.Long.fromValue(
-              object.latestConsumeTimeForEnergy
-            )).unsigned = false;
+            (message.latestConsumeTimeForEnergy = $util.Long.fromValue(object.latestConsumeTimeForEnergy)).unsigned =
+              false;
           else if (typeof object.latestConsumeTimeForEnergy === 'string')
             message.latestConsumeTimeForEnergy = parseInt(object.latestConsumeTimeForEnergy, 10);
           else if (typeof object.latestConsumeTimeForEnergy === 'number')
@@ -16245,9 +16257,8 @@ $root.protocol = (function () {
             ).toNumber();
         if (object.latestExchangeStorageTime != null)
           if ($util.Long)
-            (message.latestExchangeStorageTime = $util.Long.fromValue(
-              object.latestExchangeStorageTime
-            )).unsigned = false;
+            (message.latestExchangeStorageTime = $util.Long.fromValue(object.latestExchangeStorageTime)).unsigned =
+              false;
           else if (typeof object.latestExchangeStorageTime === 'string')
             message.latestExchangeStorageTime = parseInt(object.latestExchangeStorageTime, 10);
           else if (typeof object.latestExchangeStorageTime === 'number')
@@ -16318,8 +16329,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.energyUsage)
                 : options.longs === Number
-                ? new $util.LongBits(message.energyUsage.low >>> 0, message.energyUsage.high >>> 0).toNumber()
-                : message.energyUsage;
+                  ? new $util.LongBits(message.energyUsage.low >>> 0, message.energyUsage.high >>> 0).toNumber()
+                  : message.energyUsage;
         if (message.frozenBalanceForEnergy != null && message.hasOwnProperty('frozenBalanceForEnergy'))
           object.frozenBalanceForEnergy = $root.protocol.Account.Frozen.toObject(
             message.frozenBalanceForEnergy,
@@ -16336,11 +16347,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.latestConsumeTimeForEnergy)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.latestConsumeTimeForEnergy.low >>> 0,
-                    message.latestConsumeTimeForEnergy.high >>> 0
-                  ).toNumber()
-                : message.latestConsumeTimeForEnergy;
+                  ? new $util.LongBits(
+                      message.latestConsumeTimeForEnergy.low >>> 0,
+                      message.latestConsumeTimeForEnergy.high >>> 0
+                    ).toNumber()
+                  : message.latestConsumeTimeForEnergy;
         if (
           message.acquiredDelegatedFrozenBalanceForEnergy != null &&
           message.hasOwnProperty('acquiredDelegatedFrozenBalanceForEnergy')
@@ -16355,11 +16366,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.acquiredDelegatedFrozenBalanceForEnergy)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.acquiredDelegatedFrozenBalanceForEnergy.low >>> 0,
-                    message.acquiredDelegatedFrozenBalanceForEnergy.high >>> 0
-                  ).toNumber()
-                : message.acquiredDelegatedFrozenBalanceForEnergy;
+                  ? new $util.LongBits(
+                      message.acquiredDelegatedFrozenBalanceForEnergy.low >>> 0,
+                      message.acquiredDelegatedFrozenBalanceForEnergy.high >>> 0
+                    ).toNumber()
+                  : message.acquiredDelegatedFrozenBalanceForEnergy;
         if (
           message.delegatedFrozenBalanceForEnergy != null &&
           message.hasOwnProperty('delegatedFrozenBalanceForEnergy')
@@ -16374,11 +16385,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.delegatedFrozenBalanceForEnergy)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.delegatedFrozenBalanceForEnergy.low >>> 0,
-                    message.delegatedFrozenBalanceForEnergy.high >>> 0
-                  ).toNumber()
-                : message.delegatedFrozenBalanceForEnergy;
+                  ? new $util.LongBits(
+                      message.delegatedFrozenBalanceForEnergy.low >>> 0,
+                      message.delegatedFrozenBalanceForEnergy.high >>> 0
+                    ).toNumber()
+                  : message.delegatedFrozenBalanceForEnergy;
         if (message.storageLimit != null && message.hasOwnProperty('storageLimit'))
           if (typeof message.storageLimit === 'number')
             object.storageLimit = options.longs === String ? String(message.storageLimit) : message.storageLimit;
@@ -16387,8 +16398,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.storageLimit)
                 : options.longs === Number
-                ? new $util.LongBits(message.storageLimit.low >>> 0, message.storageLimit.high >>> 0).toNumber()
-                : message.storageLimit;
+                  ? new $util.LongBits(message.storageLimit.low >>> 0, message.storageLimit.high >>> 0).toNumber()
+                  : message.storageLimit;
         if (message.storageUsage != null && message.hasOwnProperty('storageUsage'))
           if (typeof message.storageUsage === 'number')
             object.storageUsage = options.longs === String ? String(message.storageUsage) : message.storageUsage;
@@ -16397,8 +16408,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.storageUsage)
                 : options.longs === Number
-                ? new $util.LongBits(message.storageUsage.low >>> 0, message.storageUsage.high >>> 0).toNumber()
-                : message.storageUsage;
+                  ? new $util.LongBits(message.storageUsage.low >>> 0, message.storageUsage.high >>> 0).toNumber()
+                  : message.storageUsage;
         if (message.latestExchangeStorageTime != null && message.hasOwnProperty('latestExchangeStorageTime'))
           if (typeof message.latestExchangeStorageTime === 'number')
             object.latestExchangeStorageTime =
@@ -16408,11 +16419,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.latestExchangeStorageTime)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.latestExchangeStorageTime.low >>> 0,
-                    message.latestExchangeStorageTime.high >>> 0
-                  ).toNumber()
-                : message.latestExchangeStorageTime;
+                  ? new $util.LongBits(
+                      message.latestExchangeStorageTime.low >>> 0,
+                      message.latestExchangeStorageTime.high >>> 0
+                    ).toNumber()
+                  : message.latestExchangeStorageTime;
         return object;
       };
 
@@ -16641,8 +16652,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.address, 0, message.address.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.address)
-            : message.address;
+              ? Array.prototype.slice.call(message.address)
+              : message.address;
       if (message.weight != null && message.hasOwnProperty('weight'))
         if (typeof message.weight === 'number')
           object.weight = options.longs === String ? String(message.weight) : message.weight;
@@ -16651,8 +16662,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.weight)
               : options.longs === Number
-              ? new $util.LongBits(message.weight.low >>> 0, message.weight.high >>> 0).toNumber()
-              : message.weight;
+                ? new $util.LongBits(message.weight.low >>> 0, message.weight.high >>> 0).toNumber()
+                : message.weight;
       return object;
     };
 
@@ -17033,15 +17044,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.from, 0, message.from.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.from)
-            : message.from;
+              ? Array.prototype.slice.call(message.from)
+              : message.from;
       if (message.to != null && message.hasOwnProperty('to'))
         object.to =
           options.bytes === String
             ? $util.base64.encode(message.to, 0, message.to.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.to)
-            : message.to;
+              ? Array.prototype.slice.call(message.to)
+              : message.to;
       if (message.frozenBalanceForBandwidth != null && message.hasOwnProperty('frozenBalanceForBandwidth'))
         if (typeof message.frozenBalanceForBandwidth === 'number')
           object.frozenBalanceForBandwidth =
@@ -17051,11 +17062,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.frozenBalanceForBandwidth)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.frozenBalanceForBandwidth.low >>> 0,
-                  message.frozenBalanceForBandwidth.high >>> 0
-                ).toNumber()
-              : message.frozenBalanceForBandwidth;
+                ? new $util.LongBits(
+                    message.frozenBalanceForBandwidth.low >>> 0,
+                    message.frozenBalanceForBandwidth.high >>> 0
+                  ).toNumber()
+                : message.frozenBalanceForBandwidth;
       if (message.frozenBalanceForEnergy != null && message.hasOwnProperty('frozenBalanceForEnergy'))
         if (typeof message.frozenBalanceForEnergy === 'number')
           object.frozenBalanceForEnergy =
@@ -17065,11 +17076,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.frozenBalanceForEnergy)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.frozenBalanceForEnergy.low >>> 0,
-                  message.frozenBalanceForEnergy.high >>> 0
-                ).toNumber()
-              : message.frozenBalanceForEnergy;
+                ? new $util.LongBits(
+                    message.frozenBalanceForEnergy.low >>> 0,
+                    message.frozenBalanceForEnergy.high >>> 0
+                  ).toNumber()
+                : message.frozenBalanceForEnergy;
       if (message.expireTimeForBandwidth != null && message.hasOwnProperty('expireTimeForBandwidth'))
         if (typeof message.expireTimeForBandwidth === 'number')
           object.expireTimeForBandwidth =
@@ -17079,11 +17090,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.expireTimeForBandwidth)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.expireTimeForBandwidth.low >>> 0,
-                  message.expireTimeForBandwidth.high >>> 0
-                ).toNumber()
-              : message.expireTimeForBandwidth;
+                ? new $util.LongBits(
+                    message.expireTimeForBandwidth.low >>> 0,
+                    message.expireTimeForBandwidth.high >>> 0
+                  ).toNumber()
+                : message.expireTimeForBandwidth;
       if (message.expireTimeForEnergy != null && message.hasOwnProperty('expireTimeForEnergy'))
         if (typeof message.expireTimeForEnergy === 'number')
           object.expireTimeForEnergy =
@@ -17093,11 +17104,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.expireTimeForEnergy)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.expireTimeForEnergy.low >>> 0,
-                  message.expireTimeForEnergy.high >>> 0
-                ).toNumber()
-              : message.expireTimeForEnergy;
+                ? new $util.LongBits(
+                    message.expireTimeForEnergy.low >>> 0,
+                    message.expireTimeForEnergy.high >>> 0
+                  ).toNumber()
+                : message.expireTimeForEnergy;
       return object;
     };
 
@@ -17322,8 +17333,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.permissionName, 0, message.permissionName.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.permissionName)
-            : message.permissionName;
+              ? Array.prototype.slice.call(message.permissionName)
+              : message.permissionName;
       return object;
     };
 
@@ -17684,16 +17695,16 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.threshold)
               : options.longs === Number
-              ? new $util.LongBits(message.threshold.low >>> 0, message.threshold.high >>> 0).toNumber()
-              : message.threshold;
+                ? new $util.LongBits(message.threshold.low >>> 0, message.threshold.high >>> 0).toNumber()
+                : message.threshold;
       if (message.parentId != null && message.hasOwnProperty('parentId')) object.parentId = message.parentId;
       if (message.operations != null && message.hasOwnProperty('operations'))
         object.operations =
           options.bytes === String
             ? $util.base64.encode(message.operations, 0, message.operations.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.operations)
-            : message.operations;
+              ? Array.prototype.slice.call(message.operations)
+              : message.operations;
       if (message.keys && message.keys.length) {
         object.keys = [];
         for (var j = 0; j < message.keys.length; ++j)
@@ -18156,8 +18167,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.address, 0, message.address.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.address)
-            : message.address;
+              ? Array.prototype.slice.call(message.address)
+              : message.address;
       if (message.voteCount != null && message.hasOwnProperty('voteCount'))
         if (typeof message.voteCount === 'number')
           object.voteCount = options.longs === String ? String(message.voteCount) : message.voteCount;
@@ -18166,15 +18177,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.voteCount)
               : options.longs === Number
-              ? new $util.LongBits(message.voteCount.low >>> 0, message.voteCount.high >>> 0).toNumber()
-              : message.voteCount;
+                ? new $util.LongBits(message.voteCount.low >>> 0, message.voteCount.high >>> 0).toNumber()
+                : message.voteCount;
       if (message.pubKey != null && message.hasOwnProperty('pubKey'))
         object.pubKey =
           options.bytes === String
             ? $util.base64.encode(message.pubKey, 0, message.pubKey.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.pubKey)
-            : message.pubKey;
+              ? Array.prototype.slice.call(message.pubKey)
+              : message.pubKey;
       if (message.url != null && message.hasOwnProperty('url')) object.url = message.url;
       if (message.totalProduced != null && message.hasOwnProperty('totalProduced'))
         if (typeof message.totalProduced === 'number')
@@ -18184,8 +18195,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.totalProduced)
               : options.longs === Number
-              ? new $util.LongBits(message.totalProduced.low >>> 0, message.totalProduced.high >>> 0).toNumber()
-              : message.totalProduced;
+                ? new $util.LongBits(message.totalProduced.low >>> 0, message.totalProduced.high >>> 0).toNumber()
+                : message.totalProduced;
       if (message.totalMissed != null && message.hasOwnProperty('totalMissed'))
         if (typeof message.totalMissed === 'number')
           object.totalMissed = options.longs === String ? String(message.totalMissed) : message.totalMissed;
@@ -18194,8 +18205,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.totalMissed)
               : options.longs === Number
-              ? new $util.LongBits(message.totalMissed.low >>> 0, message.totalMissed.high >>> 0).toNumber()
-              : message.totalMissed;
+                ? new $util.LongBits(message.totalMissed.low >>> 0, message.totalMissed.high >>> 0).toNumber()
+                : message.totalMissed;
       if (message.latestBlockNum != null && message.hasOwnProperty('latestBlockNum'))
         if (typeof message.latestBlockNum === 'number')
           object.latestBlockNum = options.longs === String ? String(message.latestBlockNum) : message.latestBlockNum;
@@ -18204,8 +18215,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.latestBlockNum)
               : options.longs === Number
-              ? new $util.LongBits(message.latestBlockNum.low >>> 0, message.latestBlockNum.high >>> 0).toNumber()
-              : message.latestBlockNum;
+                ? new $util.LongBits(message.latestBlockNum.low >>> 0, message.latestBlockNum.high >>> 0).toNumber()
+                : message.latestBlockNum;
       if (message.latestSlotNum != null && message.hasOwnProperty('latestSlotNum'))
         if (typeof message.latestSlotNum === 'number')
           object.latestSlotNum = options.longs === String ? String(message.latestSlotNum) : message.latestSlotNum;
@@ -18214,8 +18225,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.latestSlotNum)
               : options.longs === Number
-              ? new $util.LongBits(message.latestSlotNum.low >>> 0, message.latestSlotNum.high >>> 0).toNumber()
-              : message.latestSlotNum;
+                ? new $util.LongBits(message.latestSlotNum.low >>> 0, message.latestSlotNum.high >>> 0).toNumber()
+                : message.latestSlotNum;
       if (message.isJobs != null && message.hasOwnProperty('isJobs')) object.isJobs = message.isJobs;
       return object;
     };
@@ -18478,8 +18489,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.address, 0, message.address.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.address)
-            : message.address;
+              ? Array.prototype.slice.call(message.address)
+              : message.address;
       if (message.oldVotes && message.oldVotes.length) {
         object.oldVotes = [];
         for (var j = 0; j < message.oldVotes.length; ++j)
@@ -18719,15 +18730,15 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.value)
               : options.longs === Number
-              ? new $util.LongBits(message.value.low >>> 0, message.value.high >>> 0).toNumber()
-              : message.value;
+                ? new $util.LongBits(message.value.low >>> 0, message.value.high >>> 0).toNumber()
+                : message.value;
       if (message.pubKeyHash != null && message.hasOwnProperty('pubKeyHash'))
         object.pubKeyHash =
           options.bytes === String
             ? $util.base64.encode(message.pubKeyHash, 0, message.pubKeyHash.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.pubKeyHash)
-            : message.pubKeyHash;
+              ? Array.prototype.slice.call(message.pubKeyHash)
+              : message.pubKeyHash;
       return object;
     };
 
@@ -18947,8 +18958,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.signature, 0, message.signature.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.signature)
-            : message.signature;
+              ? Array.prototype.slice.call(message.signature)
+              : message.signature;
       return object;
     };
 
@@ -19197,8 +19208,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.txID, 0, message.txID.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.txID)
-              : message.txID;
+                ? Array.prototype.slice.call(message.txID)
+                : message.txID;
         if (message.vout != null && message.hasOwnProperty('vout'))
           if (typeof message.vout === 'number')
             object.vout = options.longs === String ? String(message.vout) : message.vout;
@@ -19207,15 +19218,15 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.vout)
                 : options.longs === Number
-                ? new $util.LongBits(message.vout.low >>> 0, message.vout.high >>> 0).toNumber()
-                : message.vout;
+                  ? new $util.LongBits(message.vout.low >>> 0, message.vout.high >>> 0).toNumber()
+                  : message.vout;
         if (message.pubKey != null && message.hasOwnProperty('pubKey'))
           object.pubKey =
             options.bytes === String
               ? $util.base64.encode(message.pubKey, 0, message.pubKey.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.pubKey)
-              : message.pubKey;
+                ? Array.prototype.slice.call(message.pubKey)
+                : message.pubKey;
         return object;
       };
 
@@ -19888,8 +19899,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.energyUsage)
               : options.longs === Number
-              ? new $util.LongBits(message.energyUsage.low >>> 0, message.energyUsage.high >>> 0).toNumber()
-              : message.energyUsage;
+                ? new $util.LongBits(message.energyUsage.low >>> 0, message.energyUsage.high >>> 0).toNumber()
+                : message.energyUsage;
       if (message.energyFee != null && message.hasOwnProperty('energyFee'))
         if (typeof message.energyFee === 'number')
           object.energyFee = options.longs === String ? String(message.energyFee) : message.energyFee;
@@ -19898,8 +19909,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.energyFee)
               : options.longs === Number
-              ? new $util.LongBits(message.energyFee.low >>> 0, message.energyFee.high >>> 0).toNumber()
-              : message.energyFee;
+                ? new $util.LongBits(message.energyFee.low >>> 0, message.energyFee.high >>> 0).toNumber()
+                : message.energyFee;
       if (message.originEnergyUsage != null && message.hasOwnProperty('originEnergyUsage'))
         if (typeof message.originEnergyUsage === 'number')
           object.originEnergyUsage =
@@ -19909,8 +19920,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.originEnergyUsage)
               : options.longs === Number
-              ? new $util.LongBits(message.originEnergyUsage.low >>> 0, message.originEnergyUsage.high >>> 0).toNumber()
-              : message.originEnergyUsage;
+                ? new $util.LongBits(
+                    message.originEnergyUsage.low >>> 0,
+                    message.originEnergyUsage.high >>> 0
+                  ).toNumber()
+                : message.originEnergyUsage;
       if (message.energyUsageTotal != null && message.hasOwnProperty('energyUsageTotal'))
         if (typeof message.energyUsageTotal === 'number')
           object.energyUsageTotal =
@@ -19920,8 +19934,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.energyUsageTotal)
               : options.longs === Number
-              ? new $util.LongBits(message.energyUsageTotal.low >>> 0, message.energyUsageTotal.high >>> 0).toNumber()
-              : message.energyUsageTotal;
+                ? new $util.LongBits(message.energyUsageTotal.low >>> 0, message.energyUsageTotal.high >>> 0).toNumber()
+                : message.energyUsageTotal;
       if (message.netUsage != null && message.hasOwnProperty('netUsage'))
         if (typeof message.netUsage === 'number')
           object.netUsage = options.longs === String ? String(message.netUsage) : message.netUsage;
@@ -19930,8 +19944,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.netUsage)
               : options.longs === Number
-              ? new $util.LongBits(message.netUsage.low >>> 0, message.netUsage.high >>> 0).toNumber()
-              : message.netUsage;
+                ? new $util.LongBits(message.netUsage.low >>> 0, message.netUsage.high >>> 0).toNumber()
+                : message.netUsage;
       if (message.netFee != null && message.hasOwnProperty('netFee'))
         if (typeof message.netFee === 'number')
           object.netFee = options.longs === String ? String(message.netFee) : message.netFee;
@@ -19940,8 +19954,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.netFee)
               : options.longs === Number
-              ? new $util.LongBits(message.netFee.low >>> 0, message.netFee.high >>> 0).toNumber()
-              : message.netFee;
+                ? new $util.LongBits(message.netFee.low >>> 0, message.netFee.high >>> 0).toNumber()
+                : message.netFee;
       if (message.result != null && message.hasOwnProperty('result'))
         object.result =
           options.enums === String ? $root.protocol.Transaction.Result.contractResult[message.result] : message.result;
@@ -20215,8 +20229,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.signature[j], 0, message.signature[j].length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.signature[j])
-              : message.signature[j];
+                ? Array.prototype.slice.call(message.signature[j])
+                : message.signature[j];
       }
       if (message.ret && message.ret.length) {
         object.ret = [];
@@ -20677,15 +20691,15 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.provider, 0, message.provider.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.provider)
-              : message.provider;
+                ? Array.prototype.slice.call(message.provider)
+                : message.provider;
         if (message.ContractName != null && message.hasOwnProperty('ContractName'))
           object.ContractName =
             options.bytes === String
               ? $util.base64.encode(message.ContractName, 0, message.ContractName.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.ContractName)
-              : message.ContractName;
+                ? Array.prototype.slice.call(message.ContractName)
+                : message.ContractName;
         if (message.PermissionId != null && message.hasOwnProperty('PermissionId'))
           object.PermissionId = message.PermissionId;
         return object;
@@ -21255,9 +21269,8 @@ $root.protocol = (function () {
             ).toNumber();
         if (object.exchangeInjectAnotherAmount != null)
           if ($util.Long)
-            (message.exchangeInjectAnotherAmount = $util.Long.fromValue(
-              object.exchangeInjectAnotherAmount
-            )).unsigned = false;
+            (message.exchangeInjectAnotherAmount = $util.Long.fromValue(object.exchangeInjectAnotherAmount)).unsigned =
+              false;
           else if (typeof object.exchangeInjectAnotherAmount === 'string')
             message.exchangeInjectAnotherAmount = parseInt(object.exchangeInjectAnotherAmount, 10);
           else if (typeof object.exchangeInjectAnotherAmount === 'number')
@@ -21352,8 +21365,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.fee)
                 : options.longs === Number
-                ? new $util.LongBits(message.fee.low >>> 0, message.fee.high >>> 0).toNumber()
-                : message.fee;
+                  ? new $util.LongBits(message.fee.low >>> 0, message.fee.high >>> 0).toNumber()
+                  : message.fee;
         if (message.ret != null && message.hasOwnProperty('ret'))
           object.ret = options.enums === String ? $root.protocol.Transaction.Result.code[message.ret] : message.ret;
         if (message.contractRet != null && message.hasOwnProperty('contractRet'))
@@ -21371,8 +21384,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.withdrawAmount)
                 : options.longs === Number
-                ? new $util.LongBits(message.withdrawAmount.low >>> 0, message.withdrawAmount.high >>> 0).toNumber()
-                : message.withdrawAmount;
+                  ? new $util.LongBits(message.withdrawAmount.low >>> 0, message.withdrawAmount.high >>> 0).toNumber()
+                  : message.withdrawAmount;
         if (message.unfreezeAmount != null && message.hasOwnProperty('unfreezeAmount'))
           if (typeof message.unfreezeAmount === 'number')
             object.unfreezeAmount = options.longs === String ? String(message.unfreezeAmount) : message.unfreezeAmount;
@@ -21381,8 +21394,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.unfreezeAmount)
                 : options.longs === Number
-                ? new $util.LongBits(message.unfreezeAmount.low >>> 0, message.unfreezeAmount.high >>> 0).toNumber()
-                : message.unfreezeAmount;
+                  ? new $util.LongBits(message.unfreezeAmount.low >>> 0, message.unfreezeAmount.high >>> 0).toNumber()
+                  : message.unfreezeAmount;
         if (message.exchangeReceivedAmount != null && message.hasOwnProperty('exchangeReceivedAmount'))
           if (typeof message.exchangeReceivedAmount === 'number')
             object.exchangeReceivedAmount =
@@ -21392,11 +21405,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.exchangeReceivedAmount)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.exchangeReceivedAmount.low >>> 0,
-                    message.exchangeReceivedAmount.high >>> 0
-                  ).toNumber()
-                : message.exchangeReceivedAmount;
+                  ? new $util.LongBits(
+                      message.exchangeReceivedAmount.low >>> 0,
+                      message.exchangeReceivedAmount.high >>> 0
+                    ).toNumber()
+                  : message.exchangeReceivedAmount;
         if (message.exchangeInjectAnotherAmount != null && message.hasOwnProperty('exchangeInjectAnotherAmount'))
           if (typeof message.exchangeInjectAnotherAmount === 'number')
             object.exchangeInjectAnotherAmount =
@@ -21408,11 +21421,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.exchangeInjectAnotherAmount)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.exchangeInjectAnotherAmount.low >>> 0,
-                    message.exchangeInjectAnotherAmount.high >>> 0
-                  ).toNumber()
-                : message.exchangeInjectAnotherAmount;
+                  ? new $util.LongBits(
+                      message.exchangeInjectAnotherAmount.low >>> 0,
+                      message.exchangeInjectAnotherAmount.high >>> 0
+                    ).toNumber()
+                  : message.exchangeInjectAnotherAmount;
         if (message.exchangeWithdrawAnotherAmount != null && message.hasOwnProperty('exchangeWithdrawAnotherAmount'))
           if (typeof message.exchangeWithdrawAnotherAmount === 'number')
             object.exchangeWithdrawAnotherAmount =
@@ -21424,11 +21437,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.exchangeWithdrawAnotherAmount)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.exchangeWithdrawAnotherAmount.low >>> 0,
-                    message.exchangeWithdrawAnotherAmount.high >>> 0
-                  ).toNumber()
-                : message.exchangeWithdrawAnotherAmount;
+                  ? new $util.LongBits(
+                      message.exchangeWithdrawAnotherAmount.low >>> 0,
+                      message.exchangeWithdrawAnotherAmount.high >>> 0
+                    ).toNumber()
+                  : message.exchangeWithdrawAnotherAmount;
         if (message.exchangeId != null && message.hasOwnProperty('exchangeId'))
           if (typeof message.exchangeId === 'number')
             object.exchangeId = options.longs === String ? String(message.exchangeId) : message.exchangeId;
@@ -21437,8 +21450,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.exchangeId)
                 : options.longs === Number
-                ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
-                : message.exchangeId;
+                  ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
+                  : message.exchangeId;
         return object;
       };
 
@@ -21994,8 +22007,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.refBlockBytes, 0, message.refBlockBytes.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.refBlockBytes)
-              : message.refBlockBytes;
+                ? Array.prototype.slice.call(message.refBlockBytes)
+                : message.refBlockBytes;
         if (message.refBlockNum != null && message.hasOwnProperty('refBlockNum'))
           if (typeof message.refBlockNum === 'number')
             object.refBlockNum = options.longs === String ? String(message.refBlockNum) : message.refBlockNum;
@@ -22004,15 +22017,15 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.refBlockNum)
                 : options.longs === Number
-                ? new $util.LongBits(message.refBlockNum.low >>> 0, message.refBlockNum.high >>> 0).toNumber()
-                : message.refBlockNum;
+                  ? new $util.LongBits(message.refBlockNum.low >>> 0, message.refBlockNum.high >>> 0).toNumber()
+                  : message.refBlockNum;
         if (message.refBlockHash != null && message.hasOwnProperty('refBlockHash'))
           object.refBlockHash =
             options.bytes === String
               ? $util.base64.encode(message.refBlockHash, 0, message.refBlockHash.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.refBlockHash)
-              : message.refBlockHash;
+                ? Array.prototype.slice.call(message.refBlockHash)
+                : message.refBlockHash;
         if (message.expiration != null && message.hasOwnProperty('expiration'))
           if (typeof message.expiration === 'number')
             object.expiration = options.longs === String ? String(message.expiration) : message.expiration;
@@ -22021,8 +22034,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.expiration)
                 : options.longs === Number
-                ? new $util.LongBits(message.expiration.low >>> 0, message.expiration.high >>> 0).toNumber()
-                : message.expiration;
+                  ? new $util.LongBits(message.expiration.low >>> 0, message.expiration.high >>> 0).toNumber()
+                  : message.expiration;
         if (message.auths && message.auths.length) {
           object.auths = [];
           for (var j = 0; j < message.auths.length; ++j)
@@ -22033,8 +22046,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.data, 0, message.data.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.data)
-              : message.data;
+                ? Array.prototype.slice.call(message.data)
+                : message.data;
         if (message.contract && message.contract.length) {
           object.contract = [];
           for (var j = 0; j < message.contract.length; ++j)
@@ -22045,8 +22058,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.scripts, 0, message.scripts.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.scripts)
-              : message.scripts;
+                ? Array.prototype.slice.call(message.scripts)
+                : message.scripts;
         if (message.timestamp != null && message.hasOwnProperty('timestamp'))
           if (typeof message.timestamp === 'number')
             object.timestamp = options.longs === String ? String(message.timestamp) : message.timestamp;
@@ -22055,8 +22068,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.timestamp)
                 : options.longs === Number
-                ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
-                : message.timestamp;
+                  ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
+                  : message.timestamp;
         if (message.feeLimit != null && message.hasOwnProperty('feeLimit'))
           if (typeof message.feeLimit === 'number')
             object.feeLimit = options.longs === String ? String(message.feeLimit) : message.feeLimit;
@@ -22065,8 +22078,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.feeLimit)
                 : options.longs === Number
-                ? new $util.LongBits(message.feeLimit.low >>> 0, message.feeLimit.high >>> 0).toNumber()
-                : message.feeLimit;
+                  ? new $util.LongBits(message.feeLimit.low >>> 0, message.feeLimit.high >>> 0).toNumber()
+                  : message.feeLimit;
         return object;
       };
 
@@ -22753,9 +22766,8 @@ $root.protocol = (function () {
           ).toNumber();
       if (object.exchangeInjectAnotherAmount != null)
         if ($util.Long)
-          (message.exchangeInjectAnotherAmount = $util.Long.fromValue(
-            object.exchangeInjectAnotherAmount
-          )).unsigned = false;
+          (message.exchangeInjectAnotherAmount = $util.Long.fromValue(object.exchangeInjectAnotherAmount)).unsigned =
+            false;
         else if (typeof object.exchangeInjectAnotherAmount === 'string')
           message.exchangeInjectAnotherAmount = parseInt(object.exchangeInjectAnotherAmount, 10);
         else if (typeof object.exchangeInjectAnotherAmount === 'number')
@@ -22874,8 +22886,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.id, 0, message.id.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.id)
-            : message.id;
+              ? Array.prototype.slice.call(message.id)
+              : message.id;
       if (message.fee != null && message.hasOwnProperty('fee'))
         if (typeof message.fee === 'number') object.fee = options.longs === String ? String(message.fee) : message.fee;
         else
@@ -22883,8 +22895,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.fee)
               : options.longs === Number
-              ? new $util.LongBits(message.fee.low >>> 0, message.fee.high >>> 0).toNumber()
-              : message.fee;
+                ? new $util.LongBits(message.fee.low >>> 0, message.fee.high >>> 0).toNumber()
+                : message.fee;
       if (message.blockNumber != null && message.hasOwnProperty('blockNumber'))
         if (typeof message.blockNumber === 'number')
           object.blockNumber = options.longs === String ? String(message.blockNumber) : message.blockNumber;
@@ -22893,8 +22905,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.blockNumber)
               : options.longs === Number
-              ? new $util.LongBits(message.blockNumber.low >>> 0, message.blockNumber.high >>> 0).toNumber()
-              : message.blockNumber;
+                ? new $util.LongBits(message.blockNumber.low >>> 0, message.blockNumber.high >>> 0).toNumber()
+                : message.blockNumber;
       if (message.blockTimeStamp != null && message.hasOwnProperty('blockTimeStamp'))
         if (typeof message.blockTimeStamp === 'number')
           object.blockTimeStamp = options.longs === String ? String(message.blockTimeStamp) : message.blockTimeStamp;
@@ -22903,8 +22915,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.blockTimeStamp)
               : options.longs === Number
-              ? new $util.LongBits(message.blockTimeStamp.low >>> 0, message.blockTimeStamp.high >>> 0).toNumber()
-              : message.blockTimeStamp;
+                ? new $util.LongBits(message.blockTimeStamp.low >>> 0, message.blockTimeStamp.high >>> 0).toNumber()
+                : message.blockTimeStamp;
       if (message.contractResult && message.contractResult.length) {
         object.contractResult = [];
         for (var j = 0; j < message.contractResult.length; ++j)
@@ -22912,16 +22924,16 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.contractResult[j], 0, message.contractResult[j].length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.contractResult[j])
-              : message.contractResult[j];
+                ? Array.prototype.slice.call(message.contractResult[j])
+                : message.contractResult[j];
       }
       if (message.contractAddress != null && message.hasOwnProperty('contractAddress'))
         object.contractAddress =
           options.bytes === String
             ? $util.base64.encode(message.contractAddress, 0, message.contractAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.contractAddress)
-            : message.contractAddress;
+              ? Array.prototype.slice.call(message.contractAddress)
+              : message.contractAddress;
       if (message.receipt != null && message.hasOwnProperty('receipt'))
         object.receipt = $root.protocol.ResourceReceipt.toObject(message.receipt, options);
       if (message.log && message.log.length) {
@@ -22936,8 +22948,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.resMessage, 0, message.resMessage.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.resMessage)
-            : message.resMessage;
+              ? Array.prototype.slice.call(message.resMessage)
+              : message.resMessage;
       if (message.assetIssueID != null && message.hasOwnProperty('assetIssueID'))
         object.assetIssueID = message.assetIssueID;
       if (message.withdrawAmount != null && message.hasOwnProperty('withdrawAmount'))
@@ -22948,8 +22960,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.withdrawAmount)
               : options.longs === Number
-              ? new $util.LongBits(message.withdrawAmount.low >>> 0, message.withdrawAmount.high >>> 0).toNumber()
-              : message.withdrawAmount;
+                ? new $util.LongBits(message.withdrawAmount.low >>> 0, message.withdrawAmount.high >>> 0).toNumber()
+                : message.withdrawAmount;
       if (message.unfreezeAmount != null && message.hasOwnProperty('unfreezeAmount'))
         if (typeof message.unfreezeAmount === 'number')
           object.unfreezeAmount = options.longs === String ? String(message.unfreezeAmount) : message.unfreezeAmount;
@@ -22958,8 +22970,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.unfreezeAmount)
               : options.longs === Number
-              ? new $util.LongBits(message.unfreezeAmount.low >>> 0, message.unfreezeAmount.high >>> 0).toNumber()
-              : message.unfreezeAmount;
+                ? new $util.LongBits(message.unfreezeAmount.low >>> 0, message.unfreezeAmount.high >>> 0).toNumber()
+                : message.unfreezeAmount;
       if (message.internalTransactions && message.internalTransactions.length) {
         object.internalTransactions = [];
         for (var j = 0; j < message.internalTransactions.length; ++j)
@@ -22977,11 +22989,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.exchangeReceivedAmount)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.exchangeReceivedAmount.low >>> 0,
-                  message.exchangeReceivedAmount.high >>> 0
-                ).toNumber()
-              : message.exchangeReceivedAmount;
+                ? new $util.LongBits(
+                    message.exchangeReceivedAmount.low >>> 0,
+                    message.exchangeReceivedAmount.high >>> 0
+                  ).toNumber()
+                : message.exchangeReceivedAmount;
       if (message.exchangeInjectAnotherAmount != null && message.hasOwnProperty('exchangeInjectAnotherAmount'))
         if (typeof message.exchangeInjectAnotherAmount === 'number')
           object.exchangeInjectAnotherAmount =
@@ -22993,11 +23005,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.exchangeInjectAnotherAmount)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.exchangeInjectAnotherAmount.low >>> 0,
-                  message.exchangeInjectAnotherAmount.high >>> 0
-                ).toNumber()
-              : message.exchangeInjectAnotherAmount;
+                ? new $util.LongBits(
+                    message.exchangeInjectAnotherAmount.low >>> 0,
+                    message.exchangeInjectAnotherAmount.high >>> 0
+                  ).toNumber()
+                : message.exchangeInjectAnotherAmount;
       if (message.exchangeWithdrawAnotherAmount != null && message.hasOwnProperty('exchangeWithdrawAnotherAmount'))
         if (typeof message.exchangeWithdrawAnotherAmount === 'number')
           object.exchangeWithdrawAnotherAmount =
@@ -23009,11 +23021,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.exchangeWithdrawAnotherAmount)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.exchangeWithdrawAnotherAmount.low >>> 0,
-                  message.exchangeWithdrawAnotherAmount.high >>> 0
-                ).toNumber()
-              : message.exchangeWithdrawAnotherAmount;
+                ? new $util.LongBits(
+                    message.exchangeWithdrawAnotherAmount.low >>> 0,
+                    message.exchangeWithdrawAnotherAmount.high >>> 0
+                  ).toNumber()
+                : message.exchangeWithdrawAnotherAmount;
       if (message.exchangeId != null && message.hasOwnProperty('exchangeId'))
         if (typeof message.exchangeId === 'number')
           object.exchangeId = options.longs === String ? String(message.exchangeId) : message.exchangeId;
@@ -23022,8 +23034,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.exchangeId)
               : options.longs === Number
-              ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
-              : message.exchangeId;
+                ? new $util.LongBits(message.exchangeId.low >>> 0, message.exchangeId.high >>> 0).toNumber()
+                : message.exchangeId;
       return object;
     };
 
@@ -23297,8 +23309,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.address, 0, message.address.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.address)
-              : message.address;
+                ? Array.prototype.slice.call(message.address)
+                : message.address;
         if (message.topics && message.topics.length) {
           object.topics = [];
           for (var j = 0; j < message.topics.length; ++j)
@@ -23306,16 +23318,16 @@ $root.protocol = (function () {
               options.bytes === String
                 ? $util.base64.encode(message.topics[j], 0, message.topics[j].length)
                 : options.bytes === Array
-                ? Array.prototype.slice.call(message.topics[j])
-                : message.topics[j];
+                  ? Array.prototype.slice.call(message.topics[j])
+                  : message.topics[j];
         }
         if (message.data != null && message.hasOwnProperty('data'))
           object.data =
             options.bytes === String
               ? $util.base64.encode(message.data, 0, message.data.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.data)
-              : message.data;
+                ? Array.prototype.slice.call(message.data)
+                : message.data;
         return object;
       };
 
@@ -23601,8 +23613,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.blockNumber)
               : options.longs === Number
-              ? new $util.LongBits(message.blockNumber.low >>> 0, message.blockNumber.high >>> 0).toNumber()
-              : message.blockNumber;
+                ? new $util.LongBits(message.blockNumber.low >>> 0, message.blockNumber.high >>> 0).toNumber()
+                : message.blockNumber;
       if (message.blockTimeStamp != null && message.hasOwnProperty('blockTimeStamp'))
         if (typeof message.blockTimeStamp === 'number')
           object.blockTimeStamp = options.longs === String ? String(message.blockTimeStamp) : message.blockTimeStamp;
@@ -23611,8 +23623,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.blockTimeStamp)
               : options.longs === Number
-              ? new $util.LongBits(message.blockTimeStamp.low >>> 0, message.blockTimeStamp.high >>> 0).toNumber()
-              : message.blockTimeStamp;
+                ? new $util.LongBits(message.blockTimeStamp.low >>> 0, message.blockTimeStamp.high >>> 0).toNumber()
+                : message.blockTimeStamp;
       if (message.transactioninfo && message.transactioninfo.length) {
         object.transactioninfo = [];
         for (var j = 0; j < message.transactioninfo.length; ++j)
@@ -24042,8 +24054,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.privateKey, 0, message.privateKey.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.privateKey)
-            : message.privateKey;
+              ? Array.prototype.slice.call(message.privateKey)
+              : message.privateKey;
       return object;
     };
 
@@ -24270,8 +24282,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.witnessSignature, 0, message.witnessSignature.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.witnessSignature)
-            : message.witnessSignature;
+              ? Array.prototype.slice.call(message.witnessSignature)
+              : message.witnessSignature;
       return object;
     };
 
@@ -24687,22 +24699,22 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.timestamp)
                 : options.longs === Number
-                ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
-                : message.timestamp;
+                  ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
+                  : message.timestamp;
         if (message.txTrieRoot != null && message.hasOwnProperty('txTrieRoot'))
           object.txTrieRoot =
             options.bytes === String
               ? $util.base64.encode(message.txTrieRoot, 0, message.txTrieRoot.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.txTrieRoot)
-              : message.txTrieRoot;
+                ? Array.prototype.slice.call(message.txTrieRoot)
+                : message.txTrieRoot;
         if (message.parentHash != null && message.hasOwnProperty('parentHash'))
           object.parentHash =
             options.bytes === String
               ? $util.base64.encode(message.parentHash, 0, message.parentHash.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.parentHash)
-              : message.parentHash;
+                ? Array.prototype.slice.call(message.parentHash)
+                : message.parentHash;
         if (message.number != null && message.hasOwnProperty('number'))
           if (typeof message.number === 'number')
             object.number = options.longs === String ? String(message.number) : message.number;
@@ -24711,8 +24723,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.number)
                 : options.longs === Number
-                ? new $util.LongBits(message.number.low >>> 0, message.number.high >>> 0).toNumber()
-                : message.number;
+                  ? new $util.LongBits(message.number.low >>> 0, message.number.high >>> 0).toNumber()
+                  : message.number;
         if (message.witnessId != null && message.hasOwnProperty('witnessId'))
           if (typeof message.witnessId === 'number')
             object.witnessId = options.longs === String ? String(message.witnessId) : message.witnessId;
@@ -24721,23 +24733,23 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.witnessId)
                 : options.longs === Number
-                ? new $util.LongBits(message.witnessId.low >>> 0, message.witnessId.high >>> 0).toNumber()
-                : message.witnessId;
+                  ? new $util.LongBits(message.witnessId.low >>> 0, message.witnessId.high >>> 0).toNumber()
+                  : message.witnessId;
         if (message.witnessAddress != null && message.hasOwnProperty('witnessAddress'))
           object.witnessAddress =
             options.bytes === String
               ? $util.base64.encode(message.witnessAddress, 0, message.witnessAddress.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.witnessAddress)
-              : message.witnessAddress;
+                ? Array.prototype.slice.call(message.witnessAddress)
+                : message.witnessAddress;
         if (message.version != null && message.hasOwnProperty('version')) object.version = message.version;
         if (message.accountStateRoot != null && message.hasOwnProperty('accountStateRoot'))
           object.accountStateRoot =
             options.bytes === String
               ? $util.base64.encode(message.accountStateRoot, 0, message.accountStateRoot.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.accountStateRoot)
-              : message.accountStateRoot;
+                ? Array.prototype.slice.call(message.accountStateRoot)
+                : message.accountStateRoot;
         return object;
       };
 
@@ -25206,8 +25218,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.remainNum)
               : options.longs === Number
-              ? new $util.LongBits(message.remainNum.low >>> 0, message.remainNum.high >>> 0).toNumber()
-              : message.remainNum;
+                ? new $util.LongBits(message.remainNum.low >>> 0, message.remainNum.high >>> 0).toNumber()
+                : message.remainNum;
       return object;
     };
 
@@ -25426,8 +25438,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.hash, 0, message.hash.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.hash)
-              : message.hash;
+                ? Array.prototype.slice.call(message.hash)
+                : message.hash;
         if (message.number != null && message.hasOwnProperty('number'))
           if (typeof message.number === 'number')
             object.number = options.longs === String ? String(message.number) : message.number;
@@ -25436,8 +25448,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.number)
                 : options.longs === Number
-                ? new $util.LongBits(message.number.low >>> 0, message.number.high >>> 0).toNumber()
-                : message.number;
+                  ? new $util.LongBits(message.number.low >>> 0, message.number.high >>> 0).toNumber()
+                  : message.number;
         return object;
       };
 
@@ -25914,8 +25926,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.hash, 0, message.hash.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.hash)
-              : message.hash;
+                ? Array.prototype.slice.call(message.hash)
+                : message.hash;
         if (message.number != null && message.hasOwnProperty('number'))
           if (typeof message.number === 'number')
             object.number = options.longs === String ? String(message.number) : message.number;
@@ -25924,8 +25936,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.number)
                 : options.longs === Number
-                ? new $util.LongBits(message.number.low >>> 0, message.number.high >>> 0).toNumber()
-                : message.number;
+                  ? new $util.LongBits(message.number.low >>> 0, message.number.high >>> 0).toNumber()
+                  : message.number;
         return object;
       };
 
@@ -26163,8 +26175,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.ids[j], 0, message.ids[j].length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.ids[j])
-              : message.ids[j];
+                ? Array.prototype.slice.call(message.ids[j])
+                : message.ids[j];
       }
       return object;
     };
@@ -26734,11 +26746,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.lastSolidityBlockNum)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.lastSolidityBlockNum.low >>> 0,
-                  message.lastSolidityBlockNum.high >>> 0
-                ).toNumber()
-              : message.lastSolidityBlockNum;
+                ? new $util.LongBits(
+                    message.lastSolidityBlockNum.low >>> 0,
+                    message.lastSolidityBlockNum.high >>> 0
+                  ).toNumber()
+                : message.lastSolidityBlockNum;
       return object;
     };
 
@@ -27423,8 +27435,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.timestamp)
               : options.longs === Number
-              ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
-              : message.timestamp;
+                ? new $util.LongBits(message.timestamp.low >>> 0, message.timestamp.high >>> 0).toNumber()
+                : message.timestamp;
       if (message.genesisBlockId != null && message.hasOwnProperty('genesisBlockId'))
         object.genesisBlockId = $root.protocol.HelloMessage.BlockId.toObject(message.genesisBlockId, options);
       if (message.solidBlockId != null && message.hasOwnProperty('solidBlockId'))
@@ -27649,8 +27661,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.hash, 0, message.hash.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.hash)
-              : message.hash;
+                ? Array.prototype.slice.call(message.hash)
+                : message.hash;
         if (message.number != null && message.hasOwnProperty('number'))
           if (typeof message.number === 'number')
             object.number = options.longs === String ? String(message.number) : message.number;
@@ -27659,8 +27671,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.number)
                 : options.longs === Number
-                ? new $util.LongBits(message.number.low >>> 0, message.number.high >>> 0).toNumber()
-                : message.number;
+                  ? new $util.LongBits(message.number.low >>> 0, message.number.high >>> 0).toNumber()
+                  : message.number;
         return object;
       };
 
@@ -28042,9 +28054,8 @@ $root.protocol = (function () {
           message.callValue = new $util.LongBits(object.callValue.low >>> 0, object.callValue.high >>> 0).toNumber();
       if (object.consumeUserResourcePercent != null)
         if ($util.Long)
-          (message.consumeUserResourcePercent = $util.Long.fromValue(
-            object.consumeUserResourcePercent
-          )).unsigned = false;
+          (message.consumeUserResourcePercent = $util.Long.fromValue(object.consumeUserResourcePercent)).unsigned =
+            false;
         else if (typeof object.consumeUserResourcePercent === 'string')
           message.consumeUserResourcePercent = parseInt(object.consumeUserResourcePercent, 10);
         else if (typeof object.consumeUserResourcePercent === 'number')
@@ -28145,15 +28156,15 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.originAddress, 0, message.originAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.originAddress)
-            : message.originAddress;
+              ? Array.prototype.slice.call(message.originAddress)
+              : message.originAddress;
       if (message.contractAddress != null && message.hasOwnProperty('contractAddress'))
         object.contractAddress =
           options.bytes === String
             ? $util.base64.encode(message.contractAddress, 0, message.contractAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.contractAddress)
-            : message.contractAddress;
+              ? Array.prototype.slice.call(message.contractAddress)
+              : message.contractAddress;
       if (message.abi != null && message.hasOwnProperty('abi'))
         object.abi = $root.protocol.SmartContract.ABI.toObject(message.abi, options);
       if (message.bytecode != null && message.hasOwnProperty('bytecode'))
@@ -28161,8 +28172,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.bytecode, 0, message.bytecode.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.bytecode)
-            : message.bytecode;
+              ? Array.prototype.slice.call(message.bytecode)
+              : message.bytecode;
       if (message.callValue != null && message.hasOwnProperty('callValue'))
         if (typeof message.callValue === 'number')
           object.callValue = options.longs === String ? String(message.callValue) : message.callValue;
@@ -28171,8 +28182,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.callValue)
               : options.longs === Number
-              ? new $util.LongBits(message.callValue.low >>> 0, message.callValue.high >>> 0).toNumber()
-              : message.callValue;
+                ? new $util.LongBits(message.callValue.low >>> 0, message.callValue.high >>> 0).toNumber()
+                : message.callValue;
       if (message.consumeUserResourcePercent != null && message.hasOwnProperty('consumeUserResourcePercent'))
         if (typeof message.consumeUserResourcePercent === 'number')
           object.consumeUserResourcePercent =
@@ -28182,11 +28193,11 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.consumeUserResourcePercent)
               : options.longs === Number
-              ? new $util.LongBits(
-                  message.consumeUserResourcePercent.low >>> 0,
-                  message.consumeUserResourcePercent.high >>> 0
-                ).toNumber()
-              : message.consumeUserResourcePercent;
+                ? new $util.LongBits(
+                    message.consumeUserResourcePercent.low >>> 0,
+                    message.consumeUserResourcePercent.high >>> 0
+                  ).toNumber()
+                : message.consumeUserResourcePercent;
       if (message.name != null && message.hasOwnProperty('name')) object.name = message.name;
       if (message.originEnergyLimit != null && message.hasOwnProperty('originEnergyLimit'))
         if (typeof message.originEnergyLimit === 'number')
@@ -28197,22 +28208,25 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.originEnergyLimit)
               : options.longs === Number
-              ? new $util.LongBits(message.originEnergyLimit.low >>> 0, message.originEnergyLimit.high >>> 0).toNumber()
-              : message.originEnergyLimit;
+                ? new $util.LongBits(
+                    message.originEnergyLimit.low >>> 0,
+                    message.originEnergyLimit.high >>> 0
+                  ).toNumber()
+                : message.originEnergyLimit;
       if (message.codeHash != null && message.hasOwnProperty('codeHash'))
         object.codeHash =
           options.bytes === String
             ? $util.base64.encode(message.codeHash, 0, message.codeHash.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.codeHash)
-            : message.codeHash;
+              ? Array.prototype.slice.call(message.codeHash)
+              : message.codeHash;
       if (message.trxHash != null && message.hasOwnProperty('trxHash'))
         object.trxHash =
           options.bytes === String
             ? $util.base64.encode(message.trxHash, 0, message.trxHash.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.trxHash)
-            : message.trxHash;
+              ? Array.prototype.slice.call(message.trxHash)
+              : message.trxHash;
       return object;
     };
 
@@ -29443,22 +29457,22 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.hash, 0, message.hash.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.hash)
-            : message.hash;
+              ? Array.prototype.slice.call(message.hash)
+              : message.hash;
       if (message.callerAddress != null && message.hasOwnProperty('callerAddress'))
         object.callerAddress =
           options.bytes === String
             ? $util.base64.encode(message.callerAddress, 0, message.callerAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.callerAddress)
-            : message.callerAddress;
+              ? Array.prototype.slice.call(message.callerAddress)
+              : message.callerAddress;
       if (message.transferToAddress != null && message.hasOwnProperty('transferToAddress'))
         object.transferToAddress =
           options.bytes === String
             ? $util.base64.encode(message.transferToAddress, 0, message.transferToAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.transferToAddress)
-            : message.transferToAddress;
+              ? Array.prototype.slice.call(message.transferToAddress)
+              : message.transferToAddress;
       if (message.callValueInfo && message.callValueInfo.length) {
         object.callValueInfo = [];
         for (var j = 0; j < message.callValueInfo.length; ++j)
@@ -29472,8 +29486,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.note, 0, message.note.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.note)
-            : message.note;
+              ? Array.prototype.slice.call(message.note)
+              : message.note;
       if (message.rejected != null && message.hasOwnProperty('rejected')) object.rejected = message.rejected;
       return object;
     };
@@ -29688,8 +29702,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.callValue)
                 : options.longs === Number
-                ? new $util.LongBits(message.callValue.low >>> 0, message.callValue.high >>> 0).toNumber()
-                : message.callValue;
+                  ? new $util.LongBits(message.callValue.low >>> 0, message.callValue.high >>> 0).toNumber()
+                  : message.callValue;
         if (message.tokenId != null && message.hasOwnProperty('tokenId')) object.tokenId = message.tokenId;
         return object;
       };
@@ -29973,8 +29987,8 @@ $root.protocol = (function () {
           options.bytes === String
             ? $util.base64.encode(message.account, 0, message.account.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.account)
-            : message.account;
+              ? Array.prototype.slice.call(message.account)
+              : message.account;
       if (message.fromAccounts && message.fromAccounts.length) {
         object.fromAccounts = [];
         for (var j = 0; j < message.fromAccounts.length; ++j)
@@ -29982,8 +29996,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.fromAccounts[j], 0, message.fromAccounts[j].length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.fromAccounts[j])
-              : message.fromAccounts[j];
+                ? Array.prototype.slice.call(message.fromAccounts[j])
+                : message.fromAccounts[j];
       }
       if (message.toAccounts && message.toAccounts.length) {
         object.toAccounts = [];
@@ -29992,8 +30006,8 @@ $root.protocol = (function () {
             options.bytes === String
               ? $util.base64.encode(message.toAccounts[j], 0, message.toAccounts[j].length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.toAccounts[j])
-              : message.toAccounts[j];
+                ? Array.prototype.slice.call(message.toAccounts[j])
+                : message.toAccounts[j];
       }
       return object;
     };
@@ -30469,8 +30483,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.beginSyncNum)
               : options.longs === Number
-              ? new $util.LongBits(message.beginSyncNum.low >>> 0, message.beginSyncNum.high >>> 0).toNumber()
-              : message.beginSyncNum;
+                ? new $util.LongBits(message.beginSyncNum.low >>> 0, message.beginSyncNum.high >>> 0).toNumber()
+                : message.beginSyncNum;
       if (message.block != null && message.hasOwnProperty('block')) object.block = message.block;
       if (message.solidityBlock != null && message.hasOwnProperty('solidityBlock'))
         object.solidityBlock = message.solidityBlock;
@@ -30488,8 +30502,8 @@ $root.protocol = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.totalFlow)
               : options.longs === Number
-              ? new $util.LongBits(message.totalFlow.low >>> 0, message.totalFlow.high >>> 0).toNumber()
-              : message.totalFlow;
+                ? new $util.LongBits(message.totalFlow.low >>> 0, message.totalFlow.high >>> 0).toNumber()
+                : message.totalFlow;
       if (message.peerInfoList && message.peerInfoList.length) {
         object.peerInfoList = [];
         for (var j = 0; j < message.peerInfoList.length; ++j)
@@ -31257,8 +31271,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.remainNum)
                 : options.longs === Number
-                ? new $util.LongBits(message.remainNum.low >>> 0, message.remainNum.high >>> 0).toNumber()
-                : message.remainNum;
+                  ? new $util.LongBits(message.remainNum.low >>> 0, message.remainNum.high >>> 0).toNumber()
+                  : message.remainNum;
         if (message.lastBlockUpdateTime != null && message.hasOwnProperty('lastBlockUpdateTime'))
           if (typeof message.lastBlockUpdateTime === 'number')
             object.lastBlockUpdateTime =
@@ -31268,11 +31282,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.lastBlockUpdateTime)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.lastBlockUpdateTime.low >>> 0,
-                    message.lastBlockUpdateTime.high >>> 0
-                  ).toNumber()
-                : message.lastBlockUpdateTime;
+                  ? new $util.LongBits(
+                      message.lastBlockUpdateTime.low >>> 0,
+                      message.lastBlockUpdateTime.high >>> 0
+                    ).toNumber()
+                  : message.lastBlockUpdateTime;
         if (message.syncFlag != null && message.hasOwnProperty('syncFlag')) object.syncFlag = message.syncFlag;
         if (message.headBlockTimeWeBothHave != null && message.hasOwnProperty('headBlockTimeWeBothHave'))
           if (typeof message.headBlockTimeWeBothHave === 'number')
@@ -31283,11 +31297,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.headBlockTimeWeBothHave)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.headBlockTimeWeBothHave.low >>> 0,
-                    message.headBlockTimeWeBothHave.high >>> 0
-                  ).toNumber()
-                : message.headBlockTimeWeBothHave;
+                  ? new $util.LongBits(
+                      message.headBlockTimeWeBothHave.low >>> 0,
+                      message.headBlockTimeWeBothHave.high >>> 0
+                    ).toNumber()
+                  : message.headBlockTimeWeBothHave;
         if (message.needSyncFromPeer != null && message.hasOwnProperty('needSyncFromPeer'))
           object.needSyncFromPeer = message.needSyncFromPeer;
         if (message.needSyncFromUs != null && message.hasOwnProperty('needSyncFromUs'))
@@ -31303,8 +31317,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.connectTime)
                 : options.longs === Number
-                ? new $util.LongBits(message.connectTime.low >>> 0, message.connectTime.high >>> 0).toNumber()
-                : message.connectTime;
+                  ? new $util.LongBits(message.connectTime.low >>> 0, message.connectTime.high >>> 0).toNumber()
+                  : message.connectTime;
         if (message.avgLatency != null && message.hasOwnProperty('avgLatency'))
           object.avgLatency =
             options.json && !isFinite(message.avgLatency) ? String(message.avgLatency) : message.avgLatency;
@@ -31319,11 +31333,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.syncToFetchSizePeekNum)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.syncToFetchSizePeekNum.low >>> 0,
-                    message.syncToFetchSizePeekNum.high >>> 0
-                  ).toNumber()
-                : message.syncToFetchSizePeekNum;
+                  ? new $util.LongBits(
+                      message.syncToFetchSizePeekNum.low >>> 0,
+                      message.syncToFetchSizePeekNum.high >>> 0
+                    ).toNumber()
+                  : message.syncToFetchSizePeekNum;
         if (message.syncBlockRequestedSize != null && message.hasOwnProperty('syncBlockRequestedSize'))
           object.syncBlockRequestedSize = message.syncBlockRequestedSize;
         if (message.unFetchSynNum != null && message.hasOwnProperty('unFetchSynNum'))
@@ -31334,8 +31348,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.unFetchSynNum)
                 : options.longs === Number
-                ? new $util.LongBits(message.unFetchSynNum.low >>> 0, message.unFetchSynNum.high >>> 0).toNumber()
-                : message.unFetchSynNum;
+                  ? new $util.LongBits(message.unFetchSynNum.low >>> 0, message.unFetchSynNum.high >>> 0).toNumber()
+                  : message.unFetchSynNum;
         if (message.blockInPorcSize != null && message.hasOwnProperty('blockInPorcSize'))
           object.blockInPorcSize = message.blockInPorcSize;
         if (message.headBlockWeBothHave != null && message.hasOwnProperty('headBlockWeBothHave'))
@@ -31351,8 +31365,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.inFlow)
                 : options.longs === Number
-                ? new $util.LongBits(message.inFlow.low >>> 0, message.inFlow.high >>> 0).toNumber()
-                : message.inFlow;
+                  ? new $util.LongBits(message.inFlow.low >>> 0, message.inFlow.high >>> 0).toNumber()
+                  : message.inFlow;
         if (message.disconnectTimes != null && message.hasOwnProperty('disconnectTimes'))
           object.disconnectTimes = message.disconnectTimes;
         if (message.localDisconnectReason != null && message.hasOwnProperty('localDisconnectReason'))
@@ -31948,11 +31962,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.allowCreationOfContracts)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.allowCreationOfContracts.low >>> 0,
-                    message.allowCreationOfContracts.high >>> 0
-                  ).toNumber()
-                : message.allowCreationOfContracts;
+                  ? new $util.LongBits(
+                      message.allowCreationOfContracts.low >>> 0,
+                      message.allowCreationOfContracts.high >>> 0
+                    ).toNumber()
+                  : message.allowCreationOfContracts;
         if (message.allowAdaptiveEnergy != null && message.hasOwnProperty('allowAdaptiveEnergy'))
           if (typeof message.allowAdaptiveEnergy === 'number')
             object.allowAdaptiveEnergy =
@@ -31962,11 +31976,11 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.allowAdaptiveEnergy)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.allowAdaptiveEnergy.low >>> 0,
-                    message.allowAdaptiveEnergy.high >>> 0
-                  ).toNumber()
-                : message.allowAdaptiveEnergy;
+                  ? new $util.LongBits(
+                      message.allowAdaptiveEnergy.low >>> 0,
+                      message.allowAdaptiveEnergy.high >>> 0
+                    ).toNumber()
+                  : message.allowAdaptiveEnergy;
         return object;
       };
 
@@ -32503,8 +32517,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.totalMemory)
                 : options.longs === Number
-                ? new $util.LongBits(message.totalMemory.low >>> 0, message.totalMemory.high >>> 0).toNumber()
-                : message.totalMemory;
+                  ? new $util.LongBits(message.totalMemory.low >>> 0, message.totalMemory.high >>> 0).toNumber()
+                  : message.totalMemory;
         if (message.freeMemory != null && message.hasOwnProperty('freeMemory'))
           if (typeof message.freeMemory === 'number')
             object.freeMemory = options.longs === String ? String(message.freeMemory) : message.freeMemory;
@@ -32513,8 +32527,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.freeMemory)
                 : options.longs === Number
-                ? new $util.LongBits(message.freeMemory.low >>> 0, message.freeMemory.high >>> 0).toNumber()
-                : message.freeMemory;
+                  ? new $util.LongBits(message.freeMemory.low >>> 0, message.freeMemory.high >>> 0).toNumber()
+                  : message.freeMemory;
         if (message.cpuRate != null && message.hasOwnProperty('cpuRate'))
           object.cpuRate = options.json && !isFinite(message.cpuRate) ? String(message.cpuRate) : message.cpuRate;
         if (message.javaVersion != null && message.hasOwnProperty('javaVersion'))
@@ -32529,8 +32543,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.jvmTotalMemoery)
                 : options.longs === Number
-                ? new $util.LongBits(message.jvmTotalMemoery.low >>> 0, message.jvmTotalMemoery.high >>> 0).toNumber()
-                : message.jvmTotalMemoery;
+                  ? new $util.LongBits(message.jvmTotalMemoery.low >>> 0, message.jvmTotalMemoery.high >>> 0).toNumber()
+                  : message.jvmTotalMemoery;
         if (message.jvmFreeMemory != null && message.hasOwnProperty('jvmFreeMemory'))
           if (typeof message.jvmFreeMemory === 'number')
             object.jvmFreeMemory = options.longs === String ? String(message.jvmFreeMemory) : message.jvmFreeMemory;
@@ -32539,8 +32553,8 @@ $root.protocol = (function () {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.jvmFreeMemory)
                 : options.longs === Number
-                ? new $util.LongBits(message.jvmFreeMemory.low >>> 0, message.jvmFreeMemory.high >>> 0).toNumber()
-                : message.jvmFreeMemory;
+                  ? new $util.LongBits(message.jvmFreeMemory.low >>> 0, message.jvmFreeMemory.high >>> 0).toNumber()
+                  : message.jvmFreeMemory;
         if (message.processCpuRate != null && message.hasOwnProperty('processCpuRate'))
           object.processCpuRate =
             options.json && !isFinite(message.processCpuRate) ? String(message.processCpuRate) : message.processCpuRate;
@@ -32854,8 +32868,8 @@ $root.protocol = (function () {
                 options.longs === String
                   ? $util.Long.prototype.toString.call(message.initSize)
                   : options.longs === Number
-                  ? new $util.LongBits(message.initSize.low >>> 0, message.initSize.high >>> 0).toNumber()
-                  : message.initSize;
+                    ? new $util.LongBits(message.initSize.low >>> 0, message.initSize.high >>> 0).toNumber()
+                    : message.initSize;
           if (message.useSize != null && message.hasOwnProperty('useSize'))
             if (typeof message.useSize === 'number')
               object.useSize = options.longs === String ? String(message.useSize) : message.useSize;
@@ -32864,8 +32878,8 @@ $root.protocol = (function () {
                 options.longs === String
                   ? $util.Long.prototype.toString.call(message.useSize)
                   : options.longs === Number
-                  ? new $util.LongBits(message.useSize.low >>> 0, message.useSize.high >>> 0).toNumber()
-                  : message.useSize;
+                    ? new $util.LongBits(message.useSize.low >>> 0, message.useSize.high >>> 0).toNumber()
+                    : message.useSize;
           if (message.maxSize != null && message.hasOwnProperty('maxSize'))
             if (typeof message.maxSize === 'number')
               object.maxSize = options.longs === String ? String(message.maxSize) : message.maxSize;
@@ -32874,8 +32888,8 @@ $root.protocol = (function () {
                 options.longs === String
                   ? $util.Long.prototype.toString.call(message.maxSize)
                   : options.longs === Number
-                  ? new $util.LongBits(message.maxSize.low >>> 0, message.maxSize.high >>> 0).toNumber()
-                  : message.maxSize;
+                    ? new $util.LongBits(message.maxSize.low >>> 0, message.maxSize.high >>> 0).toNumber()
+                    : message.maxSize;
           if (message.useRate != null && message.hasOwnProperty('useRate'))
             object.useRate = options.json && !isFinite(message.useRate) ? String(message.useRate) : message.useRate;
           return object;
@@ -33204,8 +33218,8 @@ $root.protocol = (function () {
                 options.longs === String
                   ? $util.Long.prototype.toString.call(message.blockTime)
                   : options.longs === Number
-                  ? new $util.LongBits(message.blockTime.low >>> 0, message.blockTime.high >>> 0).toNumber()
-                  : message.blockTime;
+                    ? new $util.LongBits(message.blockTime.low >>> 0, message.blockTime.high >>> 0).toNumber()
+                    : message.blockTime;
           if (message.waitTime != null && message.hasOwnProperty('waitTime'))
             if (typeof message.waitTime === 'number')
               object.waitTime = options.longs === String ? String(message.waitTime) : message.waitTime;
@@ -33214,8 +33228,8 @@ $root.protocol = (function () {
                 options.longs === String
                   ? $util.Long.prototype.toString.call(message.waitTime)
                   : options.longs === Number
-                  ? new $util.LongBits(message.waitTime.low >>> 0, message.waitTime.high >>> 0).toNumber()
-                  : message.waitTime;
+                    ? new $util.LongBits(message.waitTime.low >>> 0, message.waitTime.high >>> 0).toNumber()
+                    : message.waitTime;
           if (message.stackTrace != null && message.hasOwnProperty('stackTrace'))
             object.stackTrace = message.stackTrace;
           return object;
@@ -33452,8 +33466,8 @@ $root.google = (function () {
             options.bytes === String
               ? $util.base64.encode(message.value, 0, message.value.length)
               : options.bytes === Array
-              ? Array.prototype.slice.call(message.value)
-              : message.value;
+                ? Array.prototype.slice.call(message.value)
+                : message.value;
         return object;
       };
 

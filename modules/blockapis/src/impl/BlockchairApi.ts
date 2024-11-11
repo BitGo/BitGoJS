@@ -118,7 +118,10 @@ export class BlockchairApi implements AddressApi, UtxoApi {
     return new BlockchairApi(httpClient.withBaseUrl(`https://api.blockchair.com/${blockchain}`), params.apiToken);
   }
 
-  constructor(public client: HttpClient, apiToken?: string) {
+  constructor(
+    public client: HttpClient,
+    apiToken?: string
+  ) {
     this.apiToken = apiToken ?? process.env.BLOCKCHAIR_TOKEN;
   }
 

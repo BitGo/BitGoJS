@@ -235,8 +235,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return input.tapBip32Derivation?.length
       ? UtxoPsbt.deriveKeyPair(bip32, input.tapBip32Derivation, { ignoreY: true })?.publicKey
       : input.bip32Derivation?.length
-      ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation, { ignoreY: false })?.publicKey
-      : bip32?.publicKey;
+        ? UtxoPsbt.deriveKeyPair(bip32, input.bip32Derivation, { ignoreY: false })?.publicKey
+        : bip32?.publicKey;
   }
 
   get network(): Network {

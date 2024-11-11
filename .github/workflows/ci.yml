@@ -53,11 +53,7 @@ jobs:
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile
-
-      - name: build packages
-        if: steps.lerna-cache.outputs.cache-hit == 'true'
-        run: yarn run postinstall
+        run: yarn install --with-frozen-lockfile --ignore-scripts
 
       - name: Lint Commit Messages
         run: |
@@ -69,6 +65,9 @@ jobs:
       - name: Dependency Audit
         run: yarn run improved-yarn-audit --min-severity high
 
+      - name: Print prettier version
+        run: ./node_modules/.bin/prettier --version
+
       - name: Lint Source Code
         run: yarn run lint
 
@@ -77,6 +76,10 @@ jobs:
 
       - name: Check Package Dependencies
         run: yarn run check-deps
+
+      - name: build packages
+        if: steps.lerna-cache.outputs.cache-hit == 'true'
+        run: yarn run postinstall
 
       - name: Unit Test
         run: yarn run unit-test-changed

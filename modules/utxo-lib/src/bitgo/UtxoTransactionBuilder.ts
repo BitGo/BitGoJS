@@ -18,7 +18,7 @@ export interface TxbSignArg<TNumber extends number | bigint = number> {
 
 export class UtxoTransactionBuilder<
   TNumber extends number | bigint = number,
-  T extends UtxoTransaction<TNumber> = UtxoTransaction<TNumber>
+  T extends UtxoTransaction<TNumber> = UtxoTransaction<TNumber>,
 > extends TransactionBuilder<TNumber> {
   constructor(network: Network, tx?: UtxoTransaction<TNumber>) {
     super();

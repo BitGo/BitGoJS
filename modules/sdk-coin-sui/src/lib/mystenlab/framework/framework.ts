@@ -105,8 +105,8 @@ export class Coin {
       Coin.getBalanceFromCoinStruct(a) < Coin.getBalanceFromCoinStruct(b)
         ? -1
         : Coin.getBalanceFromCoinStruct(a) > Coin.getBalanceFromCoinStruct(b)
-        ? 1
-        : 0
+          ? 1
+          : 0
     );
   }
 

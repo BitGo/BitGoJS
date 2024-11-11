@@ -21,8 +21,8 @@ export function deriveKeyPairForOutput(bip32: BIP32Interface, output: PsbtOutput
   return output.tapBip32Derivation?.length
     ? UtxoPsbt.deriveKeyPair(bip32, output.tapBip32Derivation, { ignoreY: true })
     : output.bip32Derivation?.length
-    ? UtxoPsbt.deriveKeyPair(bip32, output.bip32Derivation, { ignoreY: false })
-    : undefined;
+      ? UtxoPsbt.deriveKeyPair(bip32, output.bip32Derivation, { ignoreY: false })
+      : undefined;
 }
 
 /**

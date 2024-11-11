@@ -1367,8 +1367,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
       : params.gasPrice
-      ? new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice))
-      : await this.getGasPriceFromExternalAPI();
+        ? new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice))
+        : await this.getGasPriceFromExternalAPI();
 
     const bitgoFeeAddressNonce = await this.getAddressNonce(bitgoFeeAddress);
 

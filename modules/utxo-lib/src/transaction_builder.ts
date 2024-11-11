@@ -163,7 +163,10 @@ export class TransactionBuilder<TNumber extends number | bigint = number> {
 
   // WARNING: maximumFeeRate is __NOT__ to be relied on,
   //          it's just another potential safety mechanism (safety in-depth)
-  constructor(public network: Network = networks.bitcoin, public maximumFeeRate: number = 2500) {
+  constructor(
+    public network: Network = networks.bitcoin,
+    public maximumFeeRate: number = 2500
+  ) {
     this.__PREV_TX_SET = {};
     this.__INPUTS = [];
     this.__TX = new Transaction<TNumber>();

@@ -16,7 +16,7 @@ import { SuperAgent, SuperAgentRequest } from 'superagent';
 export function postWithCodec<
   TAgent extends BitGoBase | SuperAgent<any>,
   A extends Record<string, unknown>,
-  O extends Record<string, unknown>
+  O extends Record<string, unknown>,
 >(
   agent: TAgent,
   url: string,

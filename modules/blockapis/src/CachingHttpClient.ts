@@ -15,7 +15,10 @@ export class CachingHttpClient implements HttpClient {
   client: BaseHttpClient;
   isHttpEnabled: boolean;
 
-  constructor(private cacheDir: string, { client = new BaseHttpClient(), isHttpEnabled = true } = {}) {
+  constructor(
+    private cacheDir: string,
+    { client = new BaseHttpClient(), isHttpEnabled = true } = {}
+  ) {
     this.client = client;
     this.isHttpEnabled = isHttpEnabled;
   }

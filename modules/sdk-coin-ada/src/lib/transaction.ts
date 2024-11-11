@@ -387,14 +387,14 @@ export class Transaction extends BaseTransaction {
       this._type === TransactionType.Send
         ? 'Transfer'
         : this._type === TransactionType.StakingActivate
-        ? 'StakingActivate'
-        : this._type === TransactionType.StakingWithdraw
-        ? 'StakingWithdraw'
-        : this._type === TransactionType.StakingDeactivate
-        ? 'StakingDeactivate'
-        : this._type === TransactionType.StakingPledge
-        ? 'StakingPledge'
-        : 'undefined';
+          ? 'StakingActivate'
+          : this._type === TransactionType.StakingWithdraw
+            ? 'StakingWithdraw'
+            : this._type === TransactionType.StakingDeactivate
+              ? 'StakingDeactivate'
+              : this._type === TransactionType.StakingPledge
+                ? 'StakingPledge'
+                : 'undefined';
     return {
       displayOrder,
       id: txJson.id,

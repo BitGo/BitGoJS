@@ -32,7 +32,11 @@ const BITCOIN_CORE_22_99 = '/Satoshi:22.99.0/';
 export class RpcClient {
   id = 0;
 
-  constructor(protected network: Network, protected url: string, protected networkInfo?: NetworkInfo) {}
+  constructor(
+    protected network: Network,
+    protected url: string,
+    protected networkInfo?: NetworkInfo
+  ) {}
 
   /**
    * Poor man's Bluebird.map(arr, f, { concurrency })
@@ -198,7 +202,12 @@ export class RpcClient {
 }
 
 export class RpcClientWithWallet extends RpcClient {
-  constructor(network: Network, url: string, networkInfo: NetworkInfo, private walletName?: string) {
+  constructor(
+    network: Network,
+    url: string,
+    networkInfo: NetworkInfo,
+    private walletName?: string
+  ) {
     super(network, url, networkInfo);
   }
 

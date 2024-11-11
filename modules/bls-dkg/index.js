@@ -184,9 +184,12 @@ function mergeSecretShares(shares) {
 
 /** Merge public shares to produce a common public key. */
 function mergePublicShares(shares) {
-  const sum = shares.slice(1).reduce((sum, share) => {
-    return sum.add(bls.PointG1.fromCompressedHex(bigIntToBuffer(share)));
-  }, bls.PointG1.fromCompressedHex(bigIntToBuffer(shares[0])));
+  const sum = shares.slice(1).reduce(
+    (sum, share) => {
+      return sum.add(bls.PointG1.fromCompressedHex(bigIntToBuffer(share)));
+    },
+    bls.PointG1.fromCompressedHex(bigIntToBuffer(shares[0]))
+  );
   return bufferToBigInt(sum.toCompressedHex());
 }
 

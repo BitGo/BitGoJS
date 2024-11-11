@@ -1229,9 +1229,11 @@ function prepareBitGo(config: Config) {
 }
 type RequestHandlerResponse = string | unknown | undefined | { status: number; body: unknown };
 interface RequestHandler extends express.RequestHandler<ParamsDictionary, any, RequestHandlerResponse> {
-  (req: express.Request, res: express.Response, next: express.NextFunction):
-    | RequestHandlerResponse
-    | Promise<RequestHandlerResponse>;
+  (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): RequestHandlerResponse | Promise<RequestHandlerResponse>;
 }
 
 function handleRequestHandlerError(res: express.Response, error: unknown) {

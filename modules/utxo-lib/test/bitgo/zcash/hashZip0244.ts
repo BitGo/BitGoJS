@@ -15,7 +15,7 @@ type Vector = [
   sighash_single: string,
   sighash_all_anyone: string,
   sighash_none_anyone: string,
-  sighash_single_anyone: string
+  sighash_single_anyone: string,
 ];
 
 function parseHashType(hashTypeStr: string): number {

@@ -2,7 +2,10 @@ import * as superagent from 'superagent';
 import * as Bluebird from 'bluebird';
 
 export class ApiRequestError extends Error {
-  constructor(public url: string, public reason: Error | string) {
+  constructor(
+    public url: string,
+    public reason: Error | string
+  ) {
     super(`error in API request: ${url}: ${reason}`);
   }
 

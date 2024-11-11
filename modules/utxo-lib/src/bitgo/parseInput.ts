@@ -635,8 +635,8 @@ export function parsePubScript2Of3(
     scriptType === 'taprootKeyPathSpend'
       ? parseTaprootKeyPathPubScript(inputPubScript, scriptType)
       : scriptType === 'taprootScriptPathSpend'
-      ? parseTaprootScriptPathPubScript(inputPubScript, scriptType)
-      : parseP2msPubScript(inputPubScript, scriptType);
+        ? parseTaprootScriptPathPubScript(inputPubScript, scriptType)
+        : parseP2msPubScript(inputPubScript, scriptType);
 
   if (result instanceof MatchError) {
     throw new Error(result.message);

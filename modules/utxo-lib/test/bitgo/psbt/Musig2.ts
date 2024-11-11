@@ -915,8 +915,8 @@ describe('p2trMusig2', function () {
             scriptType === 'p2trMusig2'
               ? psbt.setAllInputsMusig2NonceHD(rootWalletKeys.user)
               : scriptType === 'p2tr'
-              ? psbt.signTaprootInputHD(index, rootWalletKeys.user)
-              : psbt.signInputHD(index, rootWalletKeys.user),
+                ? psbt.signTaprootInputHD(index, rootWalletKeys.user)
+                : psbt.signInputHD(index, rootWalletKeys.user),
           (e: any) =>
             isSegwit(u.chain) && scriptType !== 'p2shP2wsh'
               ? e.message === `Witness script for input #${index} doesn't match the scriptPubKey in the prevout`

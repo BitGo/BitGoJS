@@ -48,7 +48,11 @@ class TestCase<T> {
    * @param methodName - method to test
    * @param args - method arguments
    */
-  constructor(public coinName: string, public methodName: keyof UtxoApi, public args: unknown[]) {}
+  constructor(
+    public coinName: string,
+    public methodName: keyof UtxoApi,
+    public args: unknown[]
+  ) {}
 
   /**
    * Call the method on the given API.

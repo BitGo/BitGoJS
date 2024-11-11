@@ -144,9 +144,8 @@ describe('TSS Ecdsa Utils:', async function () {
         curve: 'secp256k1',
       }),
     ];
-    [userGpgKey, userLocalBackupGpgKey, thirdPartyBackupGpgKeyPair, bitGoGPGKeyPair] = await Promise.all(
-      gpgKeyPromises
-    );
+    [userGpgKey, userLocalBackupGpgKey, thirdPartyBackupGpgKeyPair, bitGoGPGKeyPair] =
+      await Promise.all(gpgKeyPromises);
     thirdPartyBackupPublicGpgKey = await openpgp.readKey({ armoredKey: thirdPartyBackupGpgKeyPair.publicKey });
     bitgoPublicKey = await openpgp.readKey({ armoredKey: bitGoGPGKeyPair.publicKey });
     const constants = {

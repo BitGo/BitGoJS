@@ -84,7 +84,7 @@ export type SigHashTestVector = [
   script: string,
   inputIndex: number,
   hashType: number,
-  signatureHash: string
+  signatureHash: string,
   // BCH and BSV have two extra entries that we don't care abount
 ];
 
@@ -94,14 +94,14 @@ export type ZcashSigHashTestVector = [
   inputIndex: number,
   hashType: number,
   branchId: number,
-  signatureHash: string
+  signatureHash: string,
 ];
 
 export const txValidTestFile = 'tx_valid.json';
 export type TxValidVector = [
   inputData: [prevoutHash: string, prevoutIndex: string, prevoutScriptPubKey: string][],
   serializedTransaction: string,
-  verifyFlags: string
+  verifyFlags: string,
 ];
 
 export function testFixture<T>(

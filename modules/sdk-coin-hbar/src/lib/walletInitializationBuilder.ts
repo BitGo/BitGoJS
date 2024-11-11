@@ -34,14 +34,17 @@ export class WalletInitializationBuilder extends TransactionBuilder {
    * @returns {proto.ThresholdKey} - The wallet threshold keys
    */
   private buildOwnersKeys(rawKeys = true): proto.ThresholdKey {
-    return this._owners.reduce((tKeys, key) => {
-      if (tKeys.keys && tKeys.keys.keys) {
-        tKeys.keys.keys.push({
-          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys(rawKeys).pub),
-        });
-      }
-      return tKeys;
-    }, new proto.ThresholdKey({ threshold: 2, keys: { keys: [] } }));
+    return this._owners.reduce(
+      (tKeys, key) => {
+        if (tKeys.keys && tKeys.keys.keys) {
+          tKeys.keys.keys.push({
+            ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys(rawKeys).pub),
+          });
+        }
+        return tKeys;
+      },
+      new proto.ThresholdKey({ threshold: 2, keys: { keys: [] } })
+    );
   }
 
   /** @inheritdoc */

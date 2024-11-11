@@ -498,8 +498,8 @@ $root.common = (function () {
             options.longs === String
               ? $util.Long.prototype.toString.call(message.decimals)
               : options.longs === Number
-              ? new $util.LongBits(message.decimals.low >>> 0, message.decimals.high >>> 0).toNumber()
-              : message.decimals;
+                ? new $util.LongBits(message.decimals.low >>> 0, message.decimals.high >>> 0).toNumber()
+                : message.decimals;
       return object;
     };
 
@@ -1678,8 +1678,8 @@ $root.types = (function () {
           options.bytes === String
             ? $util.base64.encode(message.signer, 0, message.signer.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.signer)
-            : message.signer;
+              ? Array.prototype.slice.call(message.signer)
+              : message.signer;
       return object;
     };
 
@@ -1945,15 +1945,15 @@ $root.types = (function () {
           options.bytes === String
             ? $util.base64.encode(message.fromAddress, 0, message.fromAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.fromAddress)
-            : message.fromAddress;
+              ? Array.prototype.slice.call(message.fromAddress)
+              : message.fromAddress;
       if (message.toAddress != null && message.hasOwnProperty('toAddress'))
         object.toAddress =
           options.bytes === String
             ? $util.base64.encode(message.toAddress, 0, message.toAddress.length)
             : options.bytes === Array
-            ? Array.prototype.slice.call(message.toAddress)
-            : message.toAddress;
+              ? Array.prototype.slice.call(message.toAddress)
+              : message.toAddress;
       if (message.amount && message.amount.length) {
         object.amount = [];
         for (var j = 0; j < message.amount.length; ++j)

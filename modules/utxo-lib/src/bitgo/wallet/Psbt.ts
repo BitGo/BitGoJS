@@ -304,8 +304,8 @@ function parseSignatures(
   return scriptType === 'taprootKeyPathSpend'
     ? parseTaprootKeyPathSignatures(input)
     : scriptType === 'taprootScriptPathSpend'
-    ? parsePartialOrTapScriptSignatures(input.tapScriptSig)
-    : parsePartialOrTapScriptSignatures(input.partialSig);
+      ? parsePartialOrTapScriptSignatures(input.tapScriptSig)
+      : parsePartialOrTapScriptSignatures(input.partialSig);
 }
 
 function parseScript(
@@ -408,8 +408,8 @@ export function toScriptType2Of3s(parsedScriptType: ParsedScriptType2Of3): Scrip
   return parsedScriptType === 'taprootScriptPathSpend'
     ? ['p2trMusig2', 'p2tr']
     : parsedScriptType === 'taprootKeyPathSpend'
-    ? ['p2trMusig2']
-    : [parsedScriptType];
+      ? ['p2trMusig2']
+      : [parsedScriptType];
 }
 
 /**

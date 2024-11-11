@@ -64,7 +64,10 @@ export class DerivedWalletKeys extends WalletKeys {
    * @param parent - wallet keys to derive from
    * @param paths - paths to derive with
    */
-  constructor(public parent: RootWalletKeys, public paths: Triple<string>) {
+  constructor(
+    public parent: RootWalletKeys,
+    public paths: Triple<string>
+  ) {
     super(parent.triple.map((k, i) => k.derivePath(paths[i])) as Triple<BIP32Interface>);
   }
 }

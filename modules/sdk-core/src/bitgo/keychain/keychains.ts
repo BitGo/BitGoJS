@@ -315,8 +315,8 @@ export class Keychains implements IKeychains {
           this.baseCoin.getMPCAlgorithm() === 'eddsa'
             ? EDDSAUtils.default
             : multisigTypeVersion === 'MPCv2'
-            ? ECDSAUtils.EcdsaMPCv2Utils
-            : ECDSAUtils.EcdsaUtils;
+              ? ECDSAUtils.EcdsaMPCv2Utils
+              : ECDSAUtils.EcdsaUtils;
         break;
       case 'blsdkg':
         if (_.isUndefined(params.passphrase)) {

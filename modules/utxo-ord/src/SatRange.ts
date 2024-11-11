@@ -1,5 +1,9 @@
 export class InvalidSatRange extends Error {
-  constructor(message: string, public start: bigint, public end: bigint) {
+  constructor(
+    message: string,
+    public start: bigint,
+    public end: bigint
+  ) {
     super(message);
   }
 }
@@ -13,7 +17,10 @@ function toRange(v: bigint | SatRange): SatRange {
  * Inscriptions have start === end.
  */
 export class SatRange {
-  constructor(public start: bigint, public end: bigint) {
+  constructor(
+    public start: bigint,
+    public end: bigint
+  ) {
     if (start < 0 || end < 0 || end < start) {
       throw new InvalidSatRange(`Invalid SatRange [${start}, ${end}]`, start, end);
     }

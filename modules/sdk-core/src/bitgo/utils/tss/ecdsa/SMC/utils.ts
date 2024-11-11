@@ -21,7 +21,10 @@ import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from '../ecdsaMPCv2
 export class MPCv2SMCUtils {
   private MPCv2Utils: EcdsaMPCv2Utils;
 
-  constructor(private bitgo: BitGoBase, private baseCoin: IBaseCoin) {
+  constructor(
+    private bitgo: BitGoBase,
+    private baseCoin: IBaseCoin
+  ) {
     this.MPCv2Utils = new EcdsaMPCv2Utils(bitgo, baseCoin);
   }
 

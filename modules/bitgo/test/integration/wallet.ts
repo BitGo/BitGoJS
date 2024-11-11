@@ -1501,15 +1501,15 @@ describe('Wallet API', function () {
           amount: 0.01 * 1e8,
         });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients }).then(function (
-          result
-        ) {
-          result.should.have.property('unspents');
-          result.txInfo.nP2pkhInputs.should.equal(15);
-          result.should.have.property('fee');
-          result.should.have.property('feeRate');
-          result.walletId.should.equal(wallet1.id());
-        });
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients }).then(
+          function (result) {
+            result.should.have.property('unspents');
+            result.txInfo.nP2pkhInputs.should.equal(15);
+            result.should.have.property('fee');
+            result.should.have.property('feeRate');
+            result.walletId.should.equal(wallet1.id());
+          }
+        );
       });
 
       it('Filter uneconomic unspents test, no feerate set', function () {
@@ -1658,14 +1658,14 @@ describe('Wallet API', function () {
           amount: 0.01 * 1e8,
         });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients }).then(function (
-          result
-        ) {
-          result.should.have.property('unspents');
-          result.should.have.property('fee');
-          result.should.have.property('feeRate');
-          result.walletId.should.equal(wallet1.id());
-        });
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients }).then(
+          function (result) {
+            result.should.have.property('unspents');
+            result.should.have.property('fee');
+            result.should.have.property('feeRate');
+            result.walletId.should.equal(wallet1.id());
+          }
+        );
       });
     });
 
