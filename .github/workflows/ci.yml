@@ -53,11 +53,7 @@ jobs:
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile
-
-      - name: build packages
-        if: steps.lerna-cache.outputs.cache-hit == 'true'
-        run: yarn run postinstall
+        run: yarn install --with-frozen-lockfile --ignore-scripts
 
       - name: Lint Commit Messages
         run: |
@@ -74,6 +70,9 @@ jobs:
 
       - name: Check Source Code Formatting
         run: yarn run check-fmt
+
+      - name: build packages
+        run: yarn run postinstall
 
       - name: Check Package Dependencies
         run: yarn run check-deps
