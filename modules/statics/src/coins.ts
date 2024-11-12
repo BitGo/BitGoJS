@@ -17542,7 +17542,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin V2',
     6,
     '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-    UnderlyingAsset['sol:usdc'],
+    UnderlyingAsset['tsol:usdc'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
