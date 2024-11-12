@@ -308,7 +308,11 @@ export class Xrp extends BaseCoin {
       return amount1.toFixed() === amount2.toFixed();
     };
 
-    if ((txParams.type === undefined || txParams.type === 'payment') && !comparator(output, expectedOutput)) {
+    if (
+      (txParams.type === undefined || txParams.type === 'payment') &&
+      typeof output.amount !== 'object' &&
+      !comparator(output, expectedOutput)
+    ) {
       throw new Error('transaction prebuild does not match expected output');
     }
 

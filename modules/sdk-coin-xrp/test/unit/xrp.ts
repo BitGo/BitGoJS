@@ -336,6 +336,42 @@ describe('XRP:', function () {
       validTransaction.should.equal(true);
     });
 
+    it('should verify token transfers', async function () {
+      const txPrebuild = {
+        txHex:
+          '{"Account":"rsgg4mwHTGPRP7A4eGUmrpTxTeDZHQrHkQ","Fee":"45","Sequence":1760661,"Flags":2147483648,"TransactionType":"Payment","Destination":"raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a","Amount":{"value":"0.01","currency":"524C555344000000000000000000000000000000","issuer":"rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV"},"DestinationTag":1}',
+        txInfo: {
+          Account: 'rsgg4mwHTGPRP7A4eGUmrpTxTeDZHQrHkQ',
+          TransactionType: 'Payment',
+          Destination: 'raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a',
+          Amount: {
+            value: '0.01',
+            currency: '524C555344000000000000000000000000000000',
+            issuer: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+          },
+          DestinationTag: 1,
+        },
+        coin: 'txrp',
+        token: 'txrp:rlusd',
+      };
+
+      const txParams = {
+        coin: 'txrp:rlusd',
+        recipients: [
+          {
+            address: 'raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a?dt=1',
+            amount: '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+          },
+        ],
+      };
+
+      const validTransaction = await token.verifyTransaction({
+        txParams,
+        txPrebuild,
+      });
+      validTransaction.should.equal(true);
+    });
+
     it('should fail verify trustline transaction with mismatch recipients', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = {
