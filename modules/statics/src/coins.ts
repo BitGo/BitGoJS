@@ -369,6 +369,9 @@ const SOL_TOKEN_FEATURES_WITH_FRANKFURT = [...SOL_TOKEN_FEATURES, CoinFeature.CU
 const XLM_TOKEN_FEATURES_WITH_FRANKFURT = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const ZETA_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_SINGAPORE];
 const ZETA_EVM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SINGAPORE];
+const ETH_FEATURES_WITH_FRANKFURT_EXCLUDE_SINGAPORE = ETH_FEATURES_WITH_FRANKFURT.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
+);
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
   ...utxoCoins,
@@ -2061,7 +2064,8 @@ export const coins = CoinMap.fromCoins([
     'Alongside Crypto Market Index',
     18,
     '0xf17a3fe536f8f7847f1385ec1bc967b2ca9cae8d',
-    UnderlyingAsset.AMKT
+    UnderlyingAsset.AMKT,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'f050777a-c194-46a1-9f37-ee006b03365d',
@@ -2205,7 +2209,8 @@ export const coins = CoinMap.fromCoins([
     'arteQ NFT Investment Fund',
     0,
     '0x805c2077f3ab224d889f9c3992b41b2f4722c787',
-    UnderlyingAsset.ARTEQ
+    UnderlyingAsset.ARTEQ,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '908540ad-6793-4bb5-8712-041a4c258d26',
@@ -2453,7 +2458,8 @@ export const coins = CoinMap.fromCoins([
     'Bankless BED Index',
     18,
     '0x2af1df3ab0ab157e1e2ad8f88a7d04fbea0c7dc6',
-    UnderlyingAsset.BED
+    UnderlyingAsset.BED,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '6a744a2e-e6b6-4bb2-bf7a-7fee330678c3',
@@ -3766,7 +3772,8 @@ export const coins = CoinMap.fromCoins([
     'Stader ETHx',
     18,
     '0xa35b1b31ce002fbf2058d22f30f95d405200a15b',
-    UnderlyingAsset.ETHX
+    UnderlyingAsset.ETHX,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'a598f01d-06cb-4da8-88b0-31fef308d454',
@@ -4553,7 +4560,8 @@ export const coins = CoinMap.fromCoins([
     'Interest Compounding ETH Index',
     18,
     '0x7c07f7abe10ce8e33dc6c5ad68fe033085256a84',
-    UnderlyingAsset.ICETH
+    UnderlyingAsset.ICETH,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '85100681-2a5c-4a36-81fa-34361c284a52',
@@ -4625,7 +4633,8 @@ export const coins = CoinMap.fromCoins([
     'Index Coop',
     18,
     '0x0954906da0bf32d5479e25f46056d22f08464cab',
-    UnderlyingAsset.INDEX
+    UnderlyingAsset.INDEX,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '7ea4ddc4-8247-4a9c-8077-fb111164840d',
@@ -5052,7 +5061,8 @@ export const coins = CoinMap.fromCoins([
     'Liquid Staked ETH',
     18,
     '0x48d93d8c45fb25125f13cdd40529bbeaa97a6565',
-    UnderlyingAsset.LSETH
+    UnderlyingAsset.LSETH,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'f55a200e-3eba-4336-9f95-4b0578c10d0b',
@@ -5459,7 +5469,8 @@ export const coins = CoinMap.fromCoins([
     'Metaverse Index',
     18,
     '0x72e364f2abdc788b7e918bc238b21f109cd634d7',
-    UnderlyingAsset.MVI
+    UnderlyingAsset.MVI,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '95a8ea88-32de-4099-a359-603a57b3c3e8',
@@ -5507,7 +5518,8 @@ export const coins = CoinMap.fromCoins([
     'Indexed Finance',
     18,
     '0x86772b1409b61c639eaac9ba0acfbb6e238e5f83',
-    UnderlyingAsset.NDX
+    UnderlyingAsset.NDX,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'f609f046-6dac-4d6f-9011-4eab449ee730',
@@ -5732,7 +5744,8 @@ export const coins = CoinMap.fromCoins([
     'Staked ETH',
     18,
     '0xf1c9acdc66974dfb6decb12aa385b9cd01190e38',
-    UnderlyingAsset.OSETH
+    UnderlyingAsset.OSETH,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '3cdd832f-6776-4694-b8a0-90ba4fc50c89',
@@ -5740,7 +5753,8 @@ export const coins = CoinMap.fromCoins([
     'Ondo Short-Term U.S. Government Bond Fund',
     18,
     '0x1b19c19393e2d034d8ff31ff34c81252fcbbee92',
-    UnderlyingAsset.OUSG
+    UnderlyingAsset.OUSG,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'ddeee3d2-e34e-4bac-9587-77e4295c6fde',
@@ -5876,7 +5890,8 @@ export const coins = CoinMap.fromCoins([
     'Phuture DeFi Index',
     18,
     '0x632806bf5c8f062932dd121244c9fbe7becb8b48',
-    UnderlyingAsset.PDI
+    UnderlyingAsset.PDI,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'ac3efe78-4921-44e9-8766-454ce2d3b522',
@@ -6102,7 +6117,8 @@ export const coins = CoinMap.fromCoins([
     'PSTAKE Finance',
     18,
     '0xfb5c6815ca3ac72ce9f5006869ae67f18bf77006',
-    UnderlyingAsset.PSTAKE
+    UnderlyingAsset.PSTAKE,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '32123c42-32b7-4d26-a662-ae0d2270eecb',
@@ -6118,7 +6134,8 @@ export const coins = CoinMap.fromCoins([
     'New Silver Series 2 DROP',
     18,
     '0xe4c72b4de5b0f9accea880ad0b1f944f85a9daa0',
-    UnderlyingAsset.NS2DRP
+    UnderlyingAsset.NS2DRP,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c0468531-8a6b-49b8-acc2-771d9860096e',
@@ -6255,7 +6272,8 @@ export const coins = CoinMap.fromCoins([
     'Qlindo Realestate Investment Token',
     0,
     '0xc18c07a18198a6340cf4d94855fe5eb6dd33b46e',
-    UnderlyingAsset.QLINDO
+    UnderlyingAsset.QLINDO,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'ced49948-7b64-4696-a1c0-2eca3a63392f',
@@ -6561,7 +6579,8 @@ export const coins = CoinMap.fromCoins([
     'Rocket Pool',
     18,
     '0xd33526068d116ce69f19a9ee46f0bd304f21a51f',
-    UnderlyingAsset.RPL
+    UnderlyingAsset.RPL,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'bbe17b1a-04e4-4ed8-a941-db52c61f502a',
@@ -6797,7 +6816,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xb17548c7b510427baac4e267bea62e800b247173',
     UnderlyingAsset.SMT,
-    ETH_FEATURES_WITH_FRANKFURT
+    ETH_FEATURES_WITH_FRANKFURT_EXCLUDE_SINGAPORE
   ),
   erc20(
     'd736cd6a-55d1-48a5-8cf5-6b920715cb7f',
@@ -6934,7 +6953,8 @@ export const coins = CoinMap.fromCoins([
     'Staked ETH Harbour',
     18,
     '0x65077fa7df8e38e135bd4052ac243f603729892d',
-    UnderlyingAsset['SETH-H']
+    UnderlyingAsset['SETH-H'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'af29b7af-55bd-42e1-8ef2-3a95c19744be',
@@ -7062,7 +7082,8 @@ export const coins = CoinMap.fromCoins([
     'OpenEden T-Bills',
     6,
     '0xdd50c053c096cb04a3e3362e2b622529ec5f2e8a',
-    UnderlyingAsset.TBILL
+    UnderlyingAsset.TBILL,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '56af670b-76df-4e8e-9765-18a90e0f8b4d',
@@ -7531,7 +7552,8 @@ export const coins = CoinMap.fromCoins([
     'Ondo U.S. Dollar Yield',
     18,
     '0x96f6ef951840721adbf46ac996b59e0235cb985c',
-    UnderlyingAsset.USDY
+    UnderlyingAsset.USDY,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'fd8d8929-ebd3-4d12-81bf-5b8183206741',
@@ -7563,7 +7585,8 @@ export const coins = CoinMap.fromCoins([
     'Superstate Short Duration US Government Securities Fund',
     6,
     '0x43415eb6ff9db7e26a15b704e7a3edce97d31c4e',
-    UnderlyingAsset.USTB
+    UnderlyingAsset.USTB,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '072bda2d-3c21-40a8-8581-0518b75bace1',
@@ -7579,7 +7602,8 @@ export const coins = CoinMap.fromCoins([
     'US Yield Coin',
     6,
     '0x136471a34f6ef19fe571effc1ca711fdb8e49f2b',
-    UnderlyingAsset.USYC
+    UnderlyingAsset.USYC,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'ef825ff6-4304-415b-a202-5cfe60e343b4',
@@ -7839,7 +7863,8 @@ export const coins = CoinMap.fromCoins([
     'Wrapped eETH',
     18,
     '0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee',
-    UnderlyingAsset.WEETH
+    UnderlyingAsset.WEETH,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '7292b88e-0a4d-4044-ba0a-caea267a0bea',
@@ -7935,7 +7960,8 @@ export const coins = CoinMap.fromCoins([
     'Wrapped stETH',
     18,
     '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0',
-    UnderlyingAsset.WSTETH
+    UnderlyingAsset.WSTETH,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '2caacc37-cebc-488a-9367-5aa501add555',
@@ -8955,7 +8981,8 @@ export const coins = CoinMap.fromCoins([
     'StakeWise',
     18,
     '0x48c3399719b582dd63eb5aadf12a40b4c3f52fa2',
-    UnderlyingAsset.SWISE
+    UnderlyingAsset.SWISE,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'ea58f25e-a0dc-4202-804e-9b62741a6e94',
@@ -11021,7 +11048,8 @@ export const coins = CoinMap.fromCoins([
     'Rio Network',
     18,
     '0x3c61297e71e9bb04b9fbfead72a6d3c70e4f1e4a',
-    UnderlyingAsset.RN
+    UnderlyingAsset.RN,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '9f0bb336-b6a9-4a58-9841-333b836ef186',
@@ -11807,7 +11835,8 @@ export const coins = CoinMap.fromCoins([
     'Ellipsis X',
     18,
     '0xaf41054c1487b0e5e2b9250c0332ecbce6ce9d71',
-    UnderlyingAsset['bsc:epx']
+    UnderlyingAsset['bsc:epx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '56eac82e-d310-4ba0-b48e-2aaa3761f8e0',
@@ -15467,7 +15496,8 @@ export const coins = CoinMap.fromCoins([
     'Republic Note',
     8,
     '0x7c6a937943f135283a2561938de2200994a8f7a7',
-    UnderlyingAsset['avaxc:note']
+    UnderlyingAsset['avaxc:note'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   avaxErc20(
     '929c8d8c-fff3-4702-9dc1-477c70400024',

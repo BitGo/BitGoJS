@@ -37,6 +37,11 @@ export class AccountCoin extends BaseCoin {
     CoinFeature.CUSTODY_BITGO_SINGAPORE,
   ];
 
+  // Need to gate some high risk coin from SINGAPORE trust
+  public static readonly DEFAULT_FEATURES_EXCLUDE_SINGAPORE = AccountCoin.DEFAULT_FEATURES.filter(
+    (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
+  );
+
   public readonly network: AccountNetwork;
 
   constructor(options: AccountConstructorOptions) {
