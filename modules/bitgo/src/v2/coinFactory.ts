@@ -230,7 +230,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tosmo', Tosmo.createInstance);
   globalCoinFactory.register('tpolygon', Tpolygon.createInstance);
   globalCoinFactory.register('trbtc', Trbtc.createInstance);
-  globalCoinFactory.register('thorchain:trune', Trune.createInstance);
+  globalCoinFactory.register('tthorchain:rune', Trune.createInstance);
   globalCoinFactory.register('trx', Trx.createInstance);
   globalCoinFactory.register('tsei', Tsei.createInstance);
   globalCoinFactory.register('tsol', Tsol.createInstance);

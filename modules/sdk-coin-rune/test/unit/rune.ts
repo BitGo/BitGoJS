@@ -19,10 +19,10 @@ describe('Rune', function () {
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('thorchain:rune', Rune.createInstance);
-    bitgo.safeRegister('thorchain:trune', Trune.createInstance);
+    bitgo.safeRegister('tthorchain:rune', Trune.createInstance);
     bitgo.initializeTestVars();
     rune = bitgo.coin('thorchain:rune');
-    trune = bitgo.coin('thorchain:trune');
+    trune = bitgo.coin('tthorchain:rune');
     mainnetUtils = new RuneUtils(NetworkType.MAINNET);
     testnetUtils = new RuneUtils(NetworkType.TESTNET);
   });
@@ -33,7 +33,7 @@ describe('Rune', function () {
     rune.getFullName().should.equal('Rune');
     rune.getBaseFactor().should.equal(1e8);
 
-    trune.getChain().should.equal('thorchain:trune');
+    trune.getChain().should.equal('tthorchain:rune');
     trune.getFamily().should.equal('thor');
     trune.getFullName().should.equal('Testnet Rune');
     trune.getBaseFactor().should.equal(1e8);

@@ -4,5 +4,5 @@ import { Trune } from './trune';
 
 export const register = (sdk: BitGoBase): void => {
   sdk.register('thorchain:rune', Rune.createInstance);
-  sdk.register('thorchain:trune', Trune.createInstance);
+  sdk.register('tthorchain:rune', Trune.createInstance);
 };

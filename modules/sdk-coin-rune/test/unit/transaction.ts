@@ -10,7 +10,7 @@ import * as testData from '../resources/trune';
 
 describe('Rune Transaction', () => {
   let tx: CosmosTransaction;
-  const config = coins.get('thorchain:trune');
+  const config = coins.get('tthorchain:rune');
   const utils = new RuneUtils(config.network.type);
 
   beforeEach(() => {
@@ -49,14 +49,14 @@ describe('Rune Transaction', () => {
         {
           address: bech32.decode(testData.TEST_SEND_TX.sender).data,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'thorchain:trune',
+          coin: 'tthorchain:rune',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'thorchain:trune',
+          coin: 'tthorchain:rune',
         },
       ]);
     });
@@ -86,14 +86,14 @@ describe('Rune Transaction', () => {
         {
           address: bech32.decode(testData.TEST_SEND_TX.sender).data,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'thorchain:trune',
+          coin: 'tthorchain:rune',
         },
       ]);
       should.deepEqual(tx.outputs, [
         {
           address: bech32.decode(testData.TEST_SEND_TX.sendMessage.value.toAddress).data,
           value: testData.TEST_SEND_TX.sendMessage.value.amount[0].amount,
-          coin: 'thorchain:trune',
+          coin: 'tthorchain:rune',
         },
       ]);
     });
