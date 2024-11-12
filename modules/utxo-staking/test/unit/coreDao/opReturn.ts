@@ -7,7 +7,7 @@ import {
   encodeTimelock,
   parseCoreDaoOpReturnOutputScript,
   toString,
-} from '../../src';
+} from '../../../src/coreDao';
 import { testutil } from '@bitgo/utxo-lib';
 import { getFixture } from './utils';
 
@@ -24,7 +24,7 @@ describe('OP_RETURN', function () {
 
   before(async function () {
     // https://docs.coredao.org/docs/Learn/products/btc-staking/design#op_return-output-1
-    const script = await getFixture('test/fixtures/opReturn/documentation.txt', undefined);
+    const script = await getFixture('test/fixtures/coreDao/opReturn/documentation.txt', undefined);
     assert(typeof script === 'string');
     defaultScript = script;
   });
@@ -254,7 +254,8 @@ describe('OP_RETURN', function () {
 
     it('should parse valid opreturn script from testnet', async function () {
       // Source: https://mempool.space/testnet/tx/66ed4cea26a410248a6d87f14b2bca514f33920c54d4af63ed46a903793115d5
-      const baseFixturePath = 'test/fixtures/opReturn/66ed4cea26a410248a6d87f14b2bca514f33920c54d4af63ed46a903793115d5';
+      const baseFixturePath =
+        'test/fixtures/coreDao/opReturn/66ed4cea26a410248a6d87f14b2bca514f33920c54d4af63ed46a903793115d5';
       const opReturnHex = await getFixture(baseFixturePath + '.txt', undefined);
       assert(typeof opReturnHex === 'string');
       const parsed = parseCoreDaoOpReturnOutputScript(Buffer.from(opReturnHex, 'hex'));

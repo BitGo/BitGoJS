@@ -1,2 +1,1 @@
-export * from './opReturn';
-export * from './descriptor';
+export * as coreDao from './coreDao';
