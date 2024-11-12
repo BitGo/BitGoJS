@@ -1041,7 +1041,7 @@ export const coins = CoinMap.fromCoins([
   ),
   account(
     '7281ab3b-0451-4ef9-b367-8623d9bcfd87',
-    'thorchain:trune',
+    'tthorchain:rune',
     'Testnet Rune',
     Networks.test.rune,
     8,

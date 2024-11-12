@@ -13,9 +13,9 @@ describe('Rune Transaction Builder', async () => {
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('thorchain:rune', Rune.createInstance);
-    bitgo.safeRegister('thorchain:trune', Trune.createInstance);
+    bitgo.safeRegister('tthorchain:rune', Trune.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('thorchain:trune');
+    basecoin = bitgo.coin('tthorchain:rune');
     factory = basecoin.getBuilder();
   });
 
