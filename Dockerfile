@@ -45,6 +45,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-opensslbytes /var/modules/sdk-openssl
 COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
 COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
+COPY --from=builder /tmp/bitgo/modules/utxo-staking /var/modules/utxo-staking/
 COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
 COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
 COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
