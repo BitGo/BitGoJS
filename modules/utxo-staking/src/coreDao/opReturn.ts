@@ -28,7 +28,7 @@ type BaseParams = {
   fee: number;
 };
 
-type OpReturnParams = BaseParams & ({ redeemScript: Buffer } | { timelock: number });
+export type OpReturnParams = BaseParams & ({ redeemScript: Buffer } | { timelock: number });
 
 /**
  * Create a CoreDAO OP_RETURN output script
