@@ -761,6 +761,7 @@ export enum UnderlyingAsset {
   EQO = 'eqo',
   ESE = 'ese',
   ETA = 'eta',
+  'eth:bgerchv2' = 'eth:bgerchv2',
   ETHBULL = 'ethbull',
   ETCBEAR = 'etcbear',
   ETCBULL = 'etcbull',
