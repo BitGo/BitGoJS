@@ -45,6 +45,9 @@
       "path": "../sdk-coin-algo"
     },
     {
+      "path": "../sdk-coin-apt"
+    },
+    {
       "path": "../sdk-coin-arbeth"
     },
     {

@@ -13,6 +13,7 @@ import { tokens } from '../config';
 import {
   Ada,
   Algo,
+  Apt,
   Arbeth,
   ArbethToken,
   Atom,
@@ -74,6 +75,7 @@ import {
   Ton,
   Tada,
   Talgo,
+  Tapt,
   Tarbeth,
   Tatom,
   TavaxC,
@@ -140,6 +142,7 @@ import {
 function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('ada', Ada.createInstance);
   globalCoinFactory.register('algo', Algo.createInstance);
+  globalCoinFactory.register('apt', Apt.createInstance);
   globalCoinFactory.register('arbeth', Arbeth.createInstance);
   globalCoinFactory.register('atom', Atom.createInstance);
   globalCoinFactory.register('avaxc', AvaxC.createInstance);
@@ -191,6 +194,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tia', Tia.createInstance);
   globalCoinFactory.register('ton', Ton.createInstance);
   globalCoinFactory.register('talgo', Talgo.createInstance);
+  globalCoinFactory.register('tapt', Tapt.createInstance);
   globalCoinFactory.register('tarbeth', Tarbeth.createInstance);
   globalCoinFactory.register('tada', Tada.createInstance);
   globalCoinFactory.register('tatom', Tatom.createInstance);
