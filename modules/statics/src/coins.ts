@@ -14161,6 +14161,18 @@ export const coins = CoinMap.fromCoins([
     Networks.test.holesky
   ),
   terc20(
+    '9d5730cf-a1c2-4d0e-9ee9-922add38a11e',
+    'eth:bgerchv2',
+    'BG Test Token',
+    18,
+    '0xee4d03adfca9a902d09f6e3e09dbd5a8a5122fb6',
+    UnderlyingAsset['eth:bgerchv2'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
     'e09792d6-87f9-412e-9394-03ececf56232',
     'hterc6dp',
     'TERC6DP',
