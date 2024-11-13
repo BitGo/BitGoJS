@@ -22,6 +22,7 @@ export enum CoinKind {
 export enum CoinFamily {
   ADA = 'ada',
   ALGO = 'algo',
+  APT = 'apt',
   ARBETH = 'arbeth',
   ATOM = 'atom',
   AVAXC = 'avaxc',
@@ -2351,6 +2352,7 @@ export enum KeyCurve {
  */
 export enum BaseUnit {
   ATOM = 'uatom',
+  APT = 'octa',
   ETH = 'wei',
   BTC = 'satoshi',
   BSC = 'jager',

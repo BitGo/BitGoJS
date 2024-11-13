@@ -151,6 +151,18 @@ class AdaTestnet extends Testnet implements AdaNetwork {
   stakeKeyDeposit = 2000000;
 }
 
+class Apt extends Mainnet implements AccountNetwork {
+  name = 'Apt';
+  family = CoinFamily.APT;
+  explorerUrl = 'https://explorer.aptoslabs.com/?network=mainnet';
+}
+
+class AptTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Apt';
+  family = CoinFamily.APT;
+  explorerUrl = 'https://explorer.aptoslabs.com/?network=testnet';
+}
+
 class Arbitrum extends Mainnet implements EthereumNetwork {
   name = 'Arbitrum';
   family = CoinFamily.ARBETH;
@@ -1124,6 +1136,7 @@ export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
     algorand: Object.freeze(new Algorand()),
+    apt: Object.freeze(new Apt()),
     arbitrum: Object.freeze(new Arbitrum()),
     atom: Object.freeze(new Atom()),
     avalancheC: Object.freeze(new AvalancheC()),
@@ -1183,6 +1196,7 @@ export const Networks = {
   test: {
     ada: Object.freeze(new AdaTestnet()),
     algorand: Object.freeze(new AlgorandTestnet()),
+    apt: Object.freeze(new AptTestnet()),
     arbitrum: Object.freeze(new ArbitrumTestnet()),
     atom: Object.freeze(new AtomTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
