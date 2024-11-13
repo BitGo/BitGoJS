@@ -364,6 +364,15 @@ const COREDAO_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
 ];
+const APT_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.STAKING,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.BULK_STAKING_TRANSACTION,
+  CoinFeature.SUPPORTS_TOKENS,
+];
 const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const SOL_TOKEN_FEATURES_WITH_FRANKFURT = [...SOL_TOKEN_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const XLM_TOKEN_FEATURES_WITH_FRANKFURT = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
@@ -1288,6 +1297,28 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
     COREDAO_FEATURES
+  ),
+  account(
+    '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',
+    'apt',
+    'Aptos',
+    Networks.main.apt,
+    8,
+    UnderlyingAsset.APT,
+    BaseUnit.APT,
+    APT_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    '7aca10bf-79dd-428b-aeb6-54f03f9aec0f',
+    'tapt',
+    'Testnet Apt',
+    Networks.test.apt,
+    8,
+    UnderlyingAsset.APT,
+    BaseUnit.APT,
+    APT_FEATURES,
+    KeyCurve.Ed25519
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
