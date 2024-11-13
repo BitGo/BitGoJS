@@ -693,7 +693,7 @@ class SuiTestnet extends Testnet implements AccountNetwork {
 class Atom extends Mainnet implements AccountNetwork {
   name = 'Cosmos Hub ATOM';
   family = CoinFamily.ATOM;
-  explorerUrl = 'https://atomscan.com/transactions/';
+  explorerUrl = 'https://www.mintscan.io/cosmos/tx/';
 }
 
 class AtomTestnet extends Testnet implements AccountNetwork {
@@ -729,7 +729,7 @@ class TiaTestnet extends Testnet implements AccountNetwork {
 class Hash extends Mainnet implements AccountNetwork {
   name = 'Provenance';
   family = CoinFamily.HASH;
-  explorerUrl = 'https://explorer.provenance.io/tx/';
+  explorerUrl = 'https://www.mintscan.io/provenance/tx/';
 }
 
 class HashTestnet extends Testnet implements AccountNetwork {
@@ -760,7 +760,7 @@ class Sei extends Mainnet implements AccountNetwork {
 class SeiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Sei';
   family = CoinFamily.SEI;
-  explorerUrl = 'https://www.seiscan.app/atlantic-2/txs/';
+  explorerUrl = 'https://www.mintscan.io/sei/tx/';
 }
 
 class Zeta extends Mainnet implements AccountNetwork {
@@ -778,7 +778,7 @@ class ZetaTestnet extends Testnet implements AccountNetwork {
 class Injective extends Mainnet implements AccountNetwork {
   name = 'Injective';
   family = CoinFamily.INJECTIVE;
-  explorerUrl = 'https://explorer.injective.network/transaction/';
+  explorerUrl = 'https://www.mintscan.io/injective/tx/';
 }
 
 class InjectiveTestnet extends Testnet implements AccountNetwork {
@@ -814,7 +814,7 @@ class TonTestnet extends Testnet implements AccountNetwork {
 class Coreum extends Mainnet implements AccountNetwork {
   name = 'Coreum';
   family = CoinFamily.COREUM;
-  explorerUrl = 'https://explorer.coreum.com/coreum/transactions/';
+  explorerUrl = 'https://www.mintscan.io/coreum/tx/';
 }
 
 class CoreumTestnet extends Testnet implements AccountNetwork {
