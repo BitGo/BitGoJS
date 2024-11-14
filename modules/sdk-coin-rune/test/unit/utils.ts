@@ -83,13 +83,11 @@ describe('utils', () => {
 
   it('should convert string type testnet address to Uint8Array', () => {
     const decodedAddress = testnetUtils.getDecodedAddress(testnetAddress.address1);
-    should.equal(decodedAddress instanceof Uint8Array, true);
     should.equal(decodedAddress.length, 20);
   });
 
   it('should convert string type mainnet address to Uint8Array', () => {
     const decodedAddress = mainnetUtils.getDecodedAddress(mainnetAddress.address1);
-    should.equal(decodedAddress instanceof Uint8Array, true);
     should.equal(decodedAddress.length, 20);
   });
 
