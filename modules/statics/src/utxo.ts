@@ -220,7 +220,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.test.bitcoinTestnet4,
     UnderlyingAsset.BTC,
     BaseUnit.BTC,
-    BTC_FEATURES
+    TBTC_FEATURES
   ),
   utxo(
     '722522dc-a613-4bff-a1d1-183ebe5138ae',
