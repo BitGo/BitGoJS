@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.6.0...@bitgo/statics@50.7.0) (2024-11-14)
+
+### Bug Fixes
+
+- **sdk-coin-rune:** rename thorchain:rune to tthorchain:rune ([27f3afa](https://github.com/BitGo/BitGoJS/commit/27f3afa5fcfe8d3281d845a37e13bc7ccec86098))
+- **statics:** fix test token name prefix ([c26eb6b](https://github.com/BitGo/BitGoJS/commit/c26eb6b87c602708a4d34bcc47866b2c63026acc))
+- **statics:** update correct explorer url for thorchain ([0c9258f](https://github.com/BitGo/BitGoJS/commit/0c9258f171141e4bd94a44e8793c5fd93ecdbaca))
+
+### Features
+
+- **sdk-coin-apt:** add APT to statics ([3d1c70d](https://github.com/BitGo/BitGoJS/commit/3d1c70ded1c687488a2fe5a2322a19a58b779fb6))
+- **statics:** add test token to test eth prefix ([9424f25](https://github.com/BitGo/BitGoJS/commit/9424f25b79a69a33ebf3cc9502ac42aa13b179e4))
+- **statics:** fixing sol test tokens ([3816a41](https://github.com/BitGo/BitGoJS/commit/3816a41fffc68414aa71cf55920ca2936a79d870))
+- **statics:** fixing sol token ([dee1e71](https://github.com/BitGo/BitGoJS/commit/dee1e71def5b933189dc14862df87e4129efcde3))
+
 # [50.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.5.0...@bitgo/statics@50.6.0) (2024-11-07)
 
 ### Bug Fixes

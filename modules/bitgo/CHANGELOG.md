@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.12.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.11.1...bitgo@39.12.0) (2024-11-14)
+
+### Bug Fixes
+
+- **sdk-coin-rune:** rename thorchain:rune to tthorchain:rune ([27f3afa](https://github.com/BitGo/BitGoJS/commit/27f3afa5fcfe8d3281d845a37e13bc7ccec86098))
+
+### Features
+
+- **sdk-coin-apt:** add APT to statics ([3d1c70d](https://github.com/BitGo/BitGoJS/commit/3d1c70ded1c687488a2fe5a2322a19a58b779fb6))
+- **sdk-coin-apt:** new coin generation, apt skeleton ([3405799](https://github.com/BitGo/BitGoJS/commit/3405799d07096829093c590bf1506bc6b93c6e68))
+
 ## [39.11.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.11.0...bitgo@39.11.1) (2024-11-08)
 
 **Note:** Version bump only for package bitgo
