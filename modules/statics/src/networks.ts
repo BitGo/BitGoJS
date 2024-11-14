@@ -826,13 +826,13 @@ class CoreumTestnet extends Testnet implements AccountNetwork {
 class Rune extends Mainnet implements AccountNetwork {
   name = 'Rune';
   family = CoinFamily.THOR;
-  explorerUrl = 'https://runescan.io/txs';
+  explorerUrl = 'https://runescan.io/tx/';
 }
 
 class RuneTestNet extends Testnet implements AccountNetwork {
   name = 'RuneTestNet';
   family = CoinFamily.THOR;
-  explorerUrl = 'https://runescan.io/txs?network=stagenet';
+  explorerUrl = 'https://runescan.io/tx/?network=stagenet';
 }
 
 class Islm extends Mainnet implements AccountNetwork {
