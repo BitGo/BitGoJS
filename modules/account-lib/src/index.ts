@@ -134,6 +134,9 @@ export { XRP };
 import * as zkEth from '@bitgo/sdk-coin-zketh';
 export { zkEth };
 
+import * as Oas from '@bitgo/sdk-coin-oas';
+export { Oas };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -204,6 +207,8 @@ const coinBuilderMap = {
   tbera: Bera.TransactionBuilder,
   rune: Rune.TransactionBuilderFactory,
   trune: Rune.TransactionBuilderFactory,
+  oas: Oas.TransactionBuilder,
+  toas: Oas.TransactionBuilder,
 };
 
 /**

@@ -23,4 +23,8 @@ export class TransactionBuilder extends AbstractTransactionBuilder {
     }
     return this._transfer;
   }
+
+  protected getContractData(addresses: string[]): string {
+    throw new Error('Method not implemented.');
+  }
 }

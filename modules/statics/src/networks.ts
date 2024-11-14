@@ -1068,10 +1068,12 @@ class Oas extends Mainnet implements EthereumNetwork {
 class OasTestnet extends Testnet implements EthereumNetwork {
   name = 'OaschainTestnet';
   family = CoinFamily.OAS;
-  explorerUrl = 'https://scan.sandverse.oasys.games/tx/';
-  accountExplorerUrl = 'https://scan.sandverse.oasys.games/address/';
-  chainId = 20197;
-  nativeCoinOperationHashPrefix = '20197';
+  explorerUrl = 'https://explorer.testnet.oasys.games/tx/';
+  accountExplorerUrl = 'https://explorer.testnet.oasys.games/address/';
+  chainId = 9372;
+  nativeCoinOperationHashPrefix = '9372';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class Coredao extends Mainnet implements EthereumNetwork {
