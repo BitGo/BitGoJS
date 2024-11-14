@@ -14193,11 +14193,11 @@ export const coins = CoinMap.fromCoins([
   ),
   terc20(
     '9d5730cf-a1c2-4d0e-9ee9-922add38a11e',
-    'eth:bgerchv2',
+    'hteth:bgerchv2',
     'BG Test Token',
     18,
     '0xee4d03adfca9a902d09f6e3e09dbd5a8a5122fb6',
-    UnderlyingAsset['eth:bgerchv2'],
+    UnderlyingAsset['hteth:bgerchv2'],
     undefined,
     undefined,
     undefined,
