@@ -5,7 +5,7 @@ import {
   UnsupportedTokenError,
   UtilsError,
 } from '@bitgo/sdk-core';
-import { coins, XrpCoin } from '@bitgo/statics';
+import { BaseCoin, coins, XrpCoin } from '@bitgo/statics';
 import * as querystring from 'querystring';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as url from 'url';
@@ -14,6 +14,7 @@ import { Amount, IssuedCurrencyAmount } from 'xrpl';
 import { VALID_ACCOUNT_SET_FLAGS } from './constants';
 import { Address, SignerDetails } from './iface';
 import { KeyPair as XrpKeyPair } from './keyPair';
+import assert from 'assert';
 
 class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
@@ -248,6 +249,47 @@ class Utils implements BaseUtils {
       currency: token.currencyCode,
       issuer: token.issuerAddress,
     };
+  }
+
+  /**
+   * Decodes a serialized XRPL transaction.
+   *
+   * @param {string} txHex - The serialized transaction in hex.
+   * @returns {Object} - Decoded transaction object.
+   * @throws {Error} - If decoding fails or input is invalid.
+   */
+  public decodeTransaction(txHex: string) {
+    if (typeof txHex !== 'string' || txHex.trim() === '') {
+      throw new Error('Invalid transaction hex. Expected a non-empty string.');
+    }
+    try {
+      return xrpl.decode(txHex);
+    } catch (error) {
+      throw new Error(`Failed to decode transaction: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get the statics coin object matching a given Xrp token issuer address and currency code if it exists
+   *
+   * @param issuerAddress The token issuer address to match against
+   * @param currencyCode The token currency code to match against
+   * @returns statics BaseCoin object for the matching token
+   */
+  public getXrpToken(issuerAddress, currencyCode): Readonly<BaseCoin> | undefined {
+    const tokens = coins.filter((coin) => {
+      if (coin instanceof XrpCoin) {
+        return coin.issuerAddress === issuerAddress && coin.currencyCode === currencyCode;
+      }
+      return false;
+    });
+    const tokensArray = tokens.map((token) => token);
+    if (tokensArray.length >= 1) {
+      // there should never be two tokens with the same issuer address and currency code, so we assert that here
+      assert(tokensArray.length === 1);
+      return tokensArray[0];
+    }
+    return undefined;
   }
 }
 

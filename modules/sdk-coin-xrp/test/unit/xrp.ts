@@ -12,6 +12,7 @@ import sinon from 'sinon';
 import * as testData from '../resources/xrp';
 import * as _ from 'lodash';
 import { XrpToken } from '../../src';
+import * as xrpl from 'xrpl';
 
 nock.disableNetConnect();
 
@@ -230,7 +231,7 @@ describe('XRP:', function () {
   describe('Recover Token Transactions', () => {
     const sandBox = sinon.createSandbox();
     const tokenName = 'txrp:rlusd';
-    const destination = 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP';
+    const destination = 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP?dt=12345';
     const passPhrase = '#Bondiola1234';
     let xrplStub;
 
@@ -239,7 +240,7 @@ describe('XRP:', function () {
     });
 
     it('should recover a token txn for non-bitgo recovery', async function () {
-      xrplStub = sinon.stub(basecoin.bitgo, 'post');
+      xrplStub = sandBox.stub(basecoin.bitgo, 'post');
       const accountInfoParams = {
         method: 'account_info',
         params: [
@@ -292,13 +293,81 @@ describe('XRP:', function () {
       res.should.hasOwnProperty('txHex');
       res.should.hasOwnProperty('fee');
       res.should.hasOwnProperty('outputAmount');
-      res.id.should.equal('BED49314330C3EB252B7275B1ADDBB6BF87439F2886ED7ACB1255BFF3A113FBC');
+      res.id.should.equal('09F430C97394F0E6A1690A5DB0FD16E47D210815A9C8257DFBDAEE225D7402AA');
       res.outputAmount.value.should.equal('4');
       res.outputAmount.currency.should.equal('524C555344000000000000000000000000000000');
       res.outputAmount.issuer.should.equal('rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV');
       res.txHex.should.equal(
-        '120000228000000024000C50B8201B002B750061D48E35FA931A0000524C555344000000000000000000000000000000FCF4DD8C64636BC503F4A58DC6C684D2C7C3C24F68400000000000001E730081149389EC07DF6E6567D658BACC54606EBB33DC13E6831438D1B9A61C0FFA1A82FCF8A40AF709A9C8CF1890F3E0107321035F72A84A6BCD8ED2D26EAD2C5F864C55C26364EAF20257EFF7241F0F8D987BDA74463044022014B6C2471088A08B1C4FD065CE87DEB7AB30EBDB00C1A38A689BCFC36AA3D02402205CF25122414B766FBAA87EED35C12579799EC06DB3E9B41ABBDF47A4C9FAFEF681146BBA54CE60D9F3C926711A2C60D1CC712F21993CE1E01073210261E923400BDF6024D1D05574A7303C3D6878C7678F31254BD769DD4037495D9974473045022100AA1386B125E3131D21A95D735CDCC1923CDCE0B950F1B165F9DC50336F6C68A40220791EE568403D444E218E7BACF203B63AE96A803C0AF704F9EB6DD1FF91A355D88114EE3FBE636ADCBDD05B53493501DA6FBBC9287562E1F1'
+        '120000228000000024000C50B82E00003039201B002B750061D48E35FA931A0000524C555344000000000000000000000000000000FCF4DD8C64636BC503F4A58DC6C684D2C7C3C24F68400000000000001E730081149389EC07DF6E6567D658BACC54606EBB33DC13E6831438D1B9A61C0FFA1A82FCF8A40AF709A9C8CF1890F3E0107321035F72A84A6BCD8ED2D26EAD2C5F864C55C26364EAF20257EFF7241F0F8D987BDA74473045022100A954411577684F5844C79F7B49FBE2D71E6E8AEC6A6BF4C04C3E3A208F5DA3F702206C114D4E2B7EA16CAF1DFAE2CE9D5C878818F879B8C921E5CF389F5AB87FE59381146BBA54CE60D9F3C926711A2C60D1CC712F21993CE1E01073210261E923400BDF6024D1D05574A7303C3D6878C7678F31254BD769DD4037495D9974473045022100F0FCF1044224A1DCB6ACE8AB057FD2344B39ED5C09B436A2B94EB1EF1A7ED99802206EFB9321E6344C94591B9D1F921045DDBAE3EC78808CB30D6C9CA18F02A11E7B8114EE3FBE636ADCBDD05B53493501DA6FBBC9287562E1F1'
       );
+    });
+
+    it('should generate an unsigned sweep for token', async function () {
+      xrplStub = sandBox.stub(basecoin.bitgo, 'post');
+      const accountInfoParams = {
+        method: 'account_info',
+        params: [
+          {
+            account: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
+            strict: true,
+            ledger_index: 'current',
+            queue: true,
+            signer_lists: true,
+          },
+        ],
+      };
+
+      const accountLinesParams = {
+        method: 'account_lines',
+        params: [
+          {
+            account: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
+            ledger_index: 'validated',
+          },
+        ],
+      };
+
+      const accountInfoResponse = testData.accountInfoResponseUnsigned;
+      const feeResponse = testData.feeResponse;
+      const accountLinesResponse = testData.accountlinesResponseUnsigned;
+      const serverInfoResponse = testData.serverInfoResponse;
+
+      const sendStub = sinon.stub();
+      sendStub.withArgs(accountInfoParams).resolves(accountInfoResponse);
+      sendStub.withArgs({ method: 'fee' }).resolves(feeResponse);
+      sendStub.withArgs({ method: 'server_info' }).resolves(serverInfoResponse);
+      sendStub.withArgs(accountLinesParams).resolves(accountLinesResponse);
+
+      // Apply the stub to the `xrplStub`
+      xrplStub.withArgs(basecoin.getRippledUrl()).returns({
+        send: sendStub,
+      });
+
+      const res = await basecoin.recover({
+        userKey:
+          'xpub661MyMwAqRbcF9Ya4zDHGzDtJz3NaaeEGbQ6rnqnNxL9RXDJNHcfzAyPUBXuKXjytvJNzQxqbjBwmPveiYX323Zp8Zx2RYQN9gGM7ntiXxr',
+        backupKey:
+          'xpub661MyMwAqRbcFtWdmWHKZEh9pYiJrAGTu1NNSwxY2S63tU9nGcfCAbNUKQuFqXRTRk8KkuBabxo6YjeBri8Q7dkMsmths6MVxSd6MTaeCmd',
+        rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
+        recoveryDestination: destination,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
+        tokenName: tokenName,
+      });
+
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('txHex');
+      res.txHex.should.equal(
+        '120000228000000024000C50B82E00003039201B002B750061D48E35FA931A0000524C555344000000000000000000000000000000FCF4DD8C64636BC503F4A58DC6C684D2C7C3C24F68400000000000001E811439CA010E0E0198150F8DDD5768CCD2B095701D8C831438D1B9A61C0FFA1A82FCF8A40AF709A9C8CF1890'
+      );
+      const tx: any = xrpl.decode(res.txHex);
+      tx.TransactionType.should.equal('Payment');
+      tx.Amount.value.should.equal('4');
+      tx.Amount.currency.should.equal('524C555344000000000000000000000000000000');
+      tx.Amount.issuer.should.equal('rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV');
+      tx.Fee.should.equal('30');
+      tx.Account.should.equal('raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA');
+      tx.Destination.should.equal('raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP');
+      tx.DestinationTag.should.equal(12345);
     });
   });
 

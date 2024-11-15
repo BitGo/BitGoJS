@@ -46,7 +46,7 @@ export class TransferBuilder extends TransactionBuilder {
    * @param {string} address - the address with optional destination tag
    * @returns {TransactionBuilder} This transaction builder
    */
-  to(address: string): TransactionBuilder {
+  to(address: string): TransferBuilder {
     const { address: xrpAddress, destinationTag } = utils.getAddressDetails(address);
     this._destination = xrpAddress;
     this._destinationTag = destinationTag;

@@ -40,6 +40,7 @@ import {
 import { KeyPair as XrpKeyPair } from './lib/keyPair';
 import utils from './lib/utils';
 import ripple from './ripple';
+import { TokenTransferBuilder, TransactionBuilderFactory, TransferBuilder } from './lib';
 
 export class Xrp extends BaseCoin {
   protected _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -443,6 +444,7 @@ export class Xrp extends BaseCoin {
     const balance = new BigNumber(addressDetails.body.result.account_data.Balance);
     const signerLists = addressDetails.body.result.account_data.signer_lists;
     const accountFlags = addressDetails.body.result.account_data.Flags;
+    const ownerCount = new BigNumber(addressDetails.body.result.account_data.OwnerCount);
 
     // make sure there is only one signer list set
     if (signerLists.length !== 1) {
@@ -499,15 +501,13 @@ export class Xrp extends BaseCoin {
     }
 
     // recover the funds
-    const reserve = baseReserve.plus(reserveDelta);
+    const totalReserveDelta = reserveDelta.times(ownerCount);
+    const reserve = baseReserve.plus(totalReserveDelta);
     const recoverableBalance = balance.minus(reserve);
 
     const rawDestination = params.recoveryDestination;
     const destinationDetails = url.parse(rawDestination);
-    const destinationAddress = destinationDetails.pathname;
 
-    // parse destination tag from query
-    let destinationTag: number | undefined;
     if (destinationDetails.query) {
       const queryDetails = querystring.parse(destinationDetails.query);
       if (Array.isArray(queryDetails.dt)) {
@@ -515,11 +515,6 @@ export class Xrp extends BaseCoin {
         throw new InvalidAddressError(
           `destination tag can appear at most once, but ${queryDetails.dt.length} destination tags were found`
         );
-      }
-
-      const parsedTag = parseInt(queryDetails.dt as string, 10);
-      if (Number.isInteger(parsedTag)) {
-        destinationTag = parsedTag;
       }
     }
 
@@ -529,11 +524,11 @@ export class Xrp extends BaseCoin {
       );
     }
 
-    const tokenName = params?.tokenName;
-    if (!!tokenName) {
+    const issuer = params?.issuerAddress;
+    const currency = params?.currencyCode;
+    if (!!issuer && !!currency) {
       const tokenParams = {
-        destinationAddress,
-        destinationTag,
+        recoveryDestination: params.recoveryDestination,
         recoverableBalance,
         currentLedger,
         openLedgerFee,
@@ -541,29 +536,33 @@ export class Xrp extends BaseCoin {
         accountLines,
         keys,
         isKrsRecovery,
+        isUnsignedSweep,
         userAddress,
         backupAddress,
+        issuer,
+        currency,
       };
 
-      return this.recoverXrpToken(params, tokenName, tokenParams);
+      return this.recoverXrpToken(params, tokenParams);
     }
 
-    const transaction = {
-      TransactionType: 'Payment',
-      Account: params.rootAddress, // source address
-      Destination: destinationAddress,
-      DestinationTag: destinationTag,
-      Amount: recoverableBalance.toFixed(0),
-      Flags: 2147483648,
-      LastLedgerSequence: currentLedger + 1000000, // give it 1 million ledgers' time (~1 month, suitable for KRS)
-      Fee: openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
-      Sequence: sequenceId,
-    };
-    const txJSON: string = JSON.stringify(transaction);
+    const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
+    const txBuilder = factory.getTransferBuilder() as TransferBuilder;
+    txBuilder
+      .to(params.recoveryDestination as string)
+      .amount(recoverableBalance.toFixed(0))
+      .sender(params.rootAddress)
+      .flags(2147483648)
+      .lastLedgerSequence(currentLedger + 1000000) // give it 1 million ledgers' time (~1 month, suitable for KRS)
+      .fee(openLedgerFee.times(3).toFixed(0)) // the factor three is for the multisigning
+      .sequence(sequenceId);
+
+    const tx = await txBuilder.build();
+    const serializedTx = tx.toBroadcastFormat();
 
     if (isUnsignedSweep) {
       return {
-        txHex: txJSON,
+        txHex: serializedTx,
         coin: this.getChain(),
       };
     }
@@ -572,7 +571,7 @@ export class Xrp extends BaseCoin {
       throw new Error(`userKey is not a private key`);
     }
     const userKey = keys[0].privateKey.toString('hex');
-    const userSignature = ripple.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
+    const userSignature = ripple.signWithPrivateKey(serializedTx, userKey, { signAs: userAddress });
 
     let signedTransaction: string;
 
@@ -583,7 +582,7 @@ export class Xrp extends BaseCoin {
         throw new Error(`backupKey is not a private key`);
       }
       const backupKey = keys[1].privateKey.toString('hex');
-      const backupSignature = ripple.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
+      const backupSignature = ripple.signWithPrivateKey(serializedTx, backupKey, { signAs: backupAddress });
       signedTransaction = ripple.multisign([userSignature.signedTransaction, backupSignature.signedTransaction]);
     }
 
@@ -600,11 +599,9 @@ export class Xrp extends BaseCoin {
     return transactionExplanation;
   }
 
-  public async recoverXrpToken(params, tokenName, tokenParams) {
-    const { currency, issuer } = utils.getXrpCurrencyFromTokenName(tokenName);
-
-    // const accountLines = JSON.parse(tokenParams.accountLines);
-    // const lines = accountLines.body.result.lines;
+  public async recoverXrpToken(params, tokenParams) {
+    const { currency, issuer } = tokenParams;
+    const tokenName = (utils.getXrpToken(currency, issuer) as XrpCoin).name;
     const lines = tokenParams.accountLines.body.result.lines;
 
     let amount;
@@ -622,33 +619,40 @@ export class Xrp extends BaseCoin {
       throw new Error(`Does not have funds to recover`);
     }
 
+    const decimalPlaces = coins.get(tokenName).decimalPlaces;
+    amount = new BigNumber(amount).shiftedBy(decimalPlaces).toFixed();
+
     const FLAG_VALUE = 2147483648;
 
-    const transaction = {
-      TransactionType: 'Payment',
-      Amount: {
-        value: amount,
-        currency,
-        issuer,
-      }, // source address
-      Destination: tokenParams.destinationAddress,
-      DestinationTag: tokenParams.destinationTag,
-      Account: params.rootAddress,
-      Flags: FLAG_VALUE,
-      LastLedgerSequence: tokenParams.currentLedger + 1000000, // give it 1 million ledgers' time (~1 month, suitable for KRS)
-      Fee: tokenParams.openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
-      Sequence: tokenParams.sequenceId,
-    };
-    const txJSON: string = JSON.stringify(transaction);
+    const factory = new TransactionBuilderFactory(coins.get(tokenName));
+    const txBuilder = factory.getTokenTransferBuilder() as TokenTransferBuilder;
+    txBuilder
+      .to(tokenParams.recoveryDestination)
+      .amount(amount)
+      .sender(params.rootAddress)
+      .flags(FLAG_VALUE)
+      .lastLedgerSequence(tokenParams.currentLedger + 1000000) // give it 1 million ledgers' time (~1 month, suitable for KRS)
+      .fee(tokenParams.openLedgerFee.times(3).toFixed(0)) // the factor three is for the multisigning
+      .sequence(tokenParams.sequenceId);
 
-    const { keys, isKrsRecovery, userAddress, backupAddress } = tokenParams;
+    const tx = await txBuilder.build();
+    const serializedTx = tx.toBroadcastFormat();
+
+    const { keys, isKrsRecovery, isUnsignedSweep, userAddress, backupAddress } = tokenParams;
+
+    if (isUnsignedSweep) {
+      return {
+        txHex: serializedTx,
+        coin: this.getChain(),
+      };
+    }
 
     if (!keys[0].privateKey) {
       throw new Error(`userKey is not a private key`);
     }
 
     const userKey = keys[0].privateKey.toString('hex');
-    const userSignature = ripple.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
+    const userSignature = ripple.signWithPrivateKey(serializedTx, userKey, { signAs: userAddress });
 
     let signedTransaction: string;
 
@@ -659,7 +663,7 @@ export class Xrp extends BaseCoin {
         throw new Error(`backupKey is not a private key`);
       }
       const backupKey = keys[1].privateKey.toString('hex');
-      const backupSignature = ripple.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
+      const backupSignature = ripple.signWithPrivateKey(serializedTx, backupKey, { signAs: backupAddress });
       signedTransaction = ripple.multisign([userSignature.signedTransaction, backupSignature.signedTransaction]);
     }
 
