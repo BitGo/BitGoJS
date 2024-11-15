@@ -249,6 +249,24 @@ class Utils implements BaseUtils {
       issuer: token.issuerAddress,
     };
   }
+
+  /**
+   * Decodes a serialized XRPL transaction.
+   *
+   * @param {string} txHex - The serialized transaction in hex.
+   * @returns {Object} - Decoded transaction object.
+   * @throws {Error} - If decoding fails or input is invalid.
+   */
+  public decodeTransaction(txHex: string) {
+    if (typeof txHex !== 'string' || txHex.trim() === '') {
+      throw new Error('Invalid transaction hex. Expected a non-empty string.');
+    }
+    try {
+      return xrpl.decode(txHex);
+    } catch (error) {
+      throw new Error(`Failed to decode transaction: ${error.message}`);
+    }
+  }
 }
 
 const utils = new Utils();

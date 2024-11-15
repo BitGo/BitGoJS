@@ -195,6 +195,105 @@ export const accountlinesResponse = {
   },
 };
 
+export const accountInfoResponseUnsigned = {
+  body: {
+    result: {
+      account_data: {
+        Account: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
+        Balance: '99997952',
+        Flags: 1179648,
+        LedgerEntryType: 'AccountRoot',
+        OwnerCount: 2,
+        PreviousTxnID: '1216237378659EC1849D45D210B45C96B7B091B4134BA3A00509B8F9DCBA59C4',
+        PreviousTxnLgrSeq: 1851142,
+        Sequence: 807096,
+        index: 'BDD920F6F4C21E2EDF8E604257AB2D3EFF3CD8374330B98989A58E9AB27FDC9D',
+        signer_lists: [
+          {
+            Flags: 65536,
+            LedgerEntryType: 'SignerList',
+            OwnerNode: '0',
+            PreviousTxnID: '1216237378659EC1849D45D210B45C96B7B091B4134BA3A00509B8F9DCBA59C4',
+            PreviousTxnLgrSeq: 1851142,
+            SignerEntries: [
+              {
+                SignerEntry: {
+                  Account: 'rGmQHwvb5SZRbyhp4JBHdpRzSmgqADxPbE',
+                  SignerWeight: 1,
+                },
+              },
+              {
+                SignerEntry: {
+                  Account: 'rGevN87RpWBbdLxKCF4FAqWgRoSyMJA81f',
+                  SignerWeight: 1,
+                },
+              },
+              {
+                SignerEntry: {
+                  Account: 'r3mykfPQZt4eJZKLUGMNVB49eDSJiE9zh3',
+                  SignerWeight: 1,
+                },
+              },
+            ],
+            SignerListID: 0,
+            SignerQuorum: 2,
+            index: '00B47042E37B5F11E6325D7BECAA08D165C6681DB4F6528AF7D1CA6ED50075B7',
+          },
+        ],
+      },
+      account_flags: {
+        allowTrustLineClawback: false,
+        defaultRipple: false,
+        depositAuth: false,
+        disableMasterKey: false,
+        disallowIncomingCheck: false,
+        disallowIncomingNFTokenOffer: false,
+        disallowIncomingPayChan: false,
+        disallowIncomingTrustline: false,
+        disallowIncomingXRP: false,
+        globalFreeze: false,
+        noFreeze: false,
+        passwordSpent: false,
+        requireAuthorization: false,
+        requireDestinationTag: false,
+      },
+      ledger_current_index: 1851200,
+      queue_data: {
+        txn_count: 0,
+      },
+      validated: false,
+    },
+    status: 'success',
+    type: 'response',
+  },
+};
+
+export const accountlinesResponseUnsigned = {
+  body: {
+    result: {
+      account: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
+      ledger_hash: 'E6F38D1D7B94153BF7FFC8D8CC1DF57D57151D26FC2EB7647B5631786B955EFF',
+      ledger_index: 1848964,
+      lines: [
+        {
+          account: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+          balance: '4',
+          currency: '524C555344000000000000000000000000000000',
+          limit: '1000000000',
+          limit_peer: '0',
+          no_ripple: false,
+          no_ripple_peer: false,
+          quality_in: 0,
+          quality_out: 0,
+        },
+      ],
+      validated: true,
+    },
+    status: 'success',
+    type: 'response',
+  },
+};
+
 export const feeResponse = {
   body: {
     id: 'fee_websocket_example',
