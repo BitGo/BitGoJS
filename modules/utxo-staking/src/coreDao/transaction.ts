@@ -1,5 +1,6 @@
-import { createCoreDaoOpReturnOutputScript, OpReturnParams } from './opReturn';
 import { Descriptor } from '@bitgo/wasm-miniscript';
+
+import { createCoreDaoOpReturnOutputScript, OpReturnParams } from './opReturn';
 
 /**
  * Create the staking outputs for a CoreDAO staking transaction. This is the ordering
@@ -12,20 +13,19 @@ import { Descriptor } from '@bitgo/wasm-miniscript';
 export function createStakingOutputs(
   stakingParams: {
     amount: bigint;
-    descriptor: string;
+    descriptor: Descriptor;
     index?: number;
   },
   opReturnParams: OpReturnParams
 ): { script: Buffer; amount: bigint }[] {
-  const descriptor = Descriptor.fromString(
-    stakingParams.descriptor,
-    stakingParams.index === undefined ? 'definite' : 'derivable'
-  );
+  if (stakingParams.descriptor.hasWildcard() && stakingParams.index === undefined) {
+    throw new Error('Cannot create staking outputs with a wildcard descriptor and no derivation index');
+  }
 
   const outputScript = Buffer.from(
     stakingParams.index === undefined
-      ? descriptor.scriptPubkey()
-      : descriptor.atDerivationIndex(stakingParams.index).scriptPubkey()
+      ? stakingParams.descriptor.scriptPubkey()
+      : stakingParams.descriptor.atDerivationIndex(stakingParams.index).scriptPubkey()
   );
   const opReturnScript = createCoreDaoOpReturnOutputScript(opReturnParams);
 
