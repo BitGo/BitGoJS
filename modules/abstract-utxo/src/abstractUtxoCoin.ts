@@ -76,7 +76,15 @@ import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
-import { explainPsbt, explainTx, getPsbtTxInputs, getTxInputs } from './transaction';
+import {
+  assertValidTransactionRecipient,
+  explainPsbt,
+  explainTx,
+  fromExtendedAddressFormat,
+  getPsbtTxInputs,
+  getTxInputs,
+  isExtendedAddressFormat,
+} from './transaction';
 import { assertDescriptorWalletAddress } from './descriptor/assertDescriptorWalletAddress';
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
@@ -104,7 +112,6 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   }): Promise<SignedTransaction>;
 };
 
-export const ScriptRecipientPrefix = 'scriptPubkey:';
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
@@ -453,11 +460,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       params.recipients =
         params.recipients instanceof Array
           ? params?.recipients?.map((recipient) => {
-              if (recipient.address.startsWith(ScriptRecipientPrefix)) {
-                const { address, ...rest } = recipient;
-                return { ...rest, script: address.replace(ScriptRecipientPrefix, '') };
-              }
-              return recipient;
+              const { address, ...rest } = recipient;
+              return { ...rest, ...fromExtendedAddressFormat(address) };
             })
           : params.recipients;
     }
@@ -478,12 +482,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   checkRecipient(recipient: { address: string; amount: number | string }): void {
-    if (recipient.address.startsWith(ScriptRecipientPrefix)) {
-      const amount = BigInt(recipient.amount);
-      if (amount !== BigInt(0)) {
-        throw new Error('Only zero amounts allowed for non-encodeable scriptPubkeys');
-      }
-    } else {
+    assertValidTransactionRecipient(recipient);
+    if (!isExtendedAddressFormat(recipient.address)) {
       super.checkRecipient(recipient);
     }
   }
@@ -538,6 +538,18 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     hex: string
   ): utxolib.bitgo.UtxoTransaction<TNumber> {
     return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
+  }
+
+  toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
+    amount: bigint;
+    address?: string;
+  } {
+    const amount = BigInt(output.valueString);
+    assertValidTransactionRecipient({ amount, address: output.address });
+    if (!output.address) {
+      return { amount };
+    }
+    return { amount, address: this.canonicalAddress(output.address) };
   }
 
   /**
@@ -602,15 +614,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           if (output.wallet === wallet.id()) {
             return [];
           }
-          // In the case that this is an OP_RETURN output or another non-encodable scriptPubkey, we dont have an address.
-          // We will verify that the amount is zero, and if it isnt then we will throw an error.
-          if (!output.address) {
-            if (output.valueString !== '0') {
-              throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${JSON.stringify(output)}`);
-            }
-            return [{ amount: BigInt(0) }];
-          }
-          return [{ amount: BigInt(output.valueString), address: this.canonicalAddress(output.address) }];
+          return [this.toCanonicalTransactionRecipient(output)];
         }
       );
     } else {
