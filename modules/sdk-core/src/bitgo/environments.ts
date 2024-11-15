@@ -21,6 +21,8 @@ interface EnvironmentTemplate {
   polygonscanApiToken?: string;
   arbiscanBaseUrl?: string;
   arbiscanApiToken?: string;
+  oasExplorerApiToken?: string;
+  oasExplorerBaseUrl?: string;
   optimisticEtherscanBaseUrl?: string;
   optimisticEtherscanApiToken?: string;
   zksyncExplorerBaseUrl?: string;

@@ -137,6 +137,9 @@
       "path": "./modules/sdk-coin-near"
     },
     {
+      "path": "./modules/sdk-coin-oas"
+    },
+    {
       "path": "./modules/sdk-coin-opeth"
     },
     {
