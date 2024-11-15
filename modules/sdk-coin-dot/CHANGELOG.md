@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.1.23...@bitgo/sdk-coin-dot@4.1.24) (2024-11-14)
+
+### Bug Fixes
+
+- **root:** bumped some polkadot libs ([f33c83e](https://github.com/BitGo/BitGoJS/commit/f33c83ee96090f76101290250152077620bd02bc))
+
 ## [4.1.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.1.22...@bitgo/sdk-coin-dot@4.1.23) (2024-11-08)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

@@ -40,13 +40,13 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^22.3.1",
-    "@bitgo/sdk-core": "^28.13.1",
-    "@bitgo/statics": "^50.6.0",
+    "@bitgo/abstract-eth": "^22.3.2",
+    "@bitgo/sdk-core": "^28.13.2",
+    "@bitgo/statics": "^50.7.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.56.3",
-    "@bitgo/sdk-test": "^8.0.50"
+    "@bitgo/sdk-api": "^1.56.4",
+    "@bitgo/sdk-test": "^8.0.51"
   }
 }
