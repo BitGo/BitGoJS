@@ -76,7 +76,15 @@ import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
-import { explainPsbt, explainTx, getPsbtTxInputs, getTxInputs } from './transaction';
+import {
+  assertValidTransactionRecipient,
+  explainPsbt,
+  explainTx,
+  fromExtendedAddressFormat,
+  getPsbtTxInputs,
+  getTxInputs,
+  isExtendedAddressFormat,
+} from './transaction';
 import { assertDescriptorWalletAddress } from './descriptor/assertDescriptorWalletAddress';
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
@@ -447,6 +455,20 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
   }
 
+  preprocessBuildParams(params: Record<string, any>): Record<string, any> {
+    if (params.recipients !== undefined) {
+      params.recipients =
+        params.recipients instanceof Array
+          ? params?.recipients?.map((recipient) => {
+              const { address, ...rest } = recipient;
+              return { ...rest, ...fromExtendedAddressFormat(address) };
+            })
+          : params.recipients;
+    }
+
+    return params;
+  }
+
   /**
    * Get the latest block height
    * @param reqId
@@ -457,6 +479,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
     const chainhead = await this.bitgo.get(this.url('/public/block/latest')).result();
     return (chainhead as any).height;
+  }
+
+  checkRecipient(recipient: { address: string; amount: number | string }): void {
+    assertValidTransactionRecipient(recipient);
+    if (!isExtendedAddressFormat(recipient.address)) {
+      super.checkRecipient(recipient);
+    }
   }
 
   /**
@@ -509,6 +538,18 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     hex: string
   ): utxolib.bitgo.UtxoTransaction<TNumber> {
     return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
+  }
+
+  toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
+    amount: bigint;
+    address?: string;
+  } {
+    const amount = BigInt(output.valueString);
+    assertValidTransactionRecipient({ amount, address: output.address });
+    if (!output.address) {
+      return { amount };
+    }
+    return { amount, address: this.canonicalAddress(output.address) };
   }
 
   /**
@@ -567,25 +608,39 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       assert(txParams.rbfTxIds.length === 1);
 
       const txToBeReplaced = await wallet.getTransaction({ txHash: txParams.rbfTxIds[0], includeRbf: true });
-      expectedOutputs = txToBeReplaced.outputs
-        .filter((output) => output.wallet !== wallet.id()) // For self-sends, the walletId will be the same as the wallet's id
-        .map((output) => {
-          return { amount: BigInt(output.valueString), address: this.canonicalAddress(output.address) };
-        });
+      expectedOutputs = txToBeReplaced.outputs.flatMap(
+        (output: { valueString: string; address?: string; wallet?: string }) => {
+          // For self-sends, the walletId will be the same as the wallet's id
+          if (output.wallet === wallet.id()) {
+            return [];
+          }
+          return [this.toCanonicalTransactionRecipient(output)];
+        }
+      );
     } else {
       // verify that each recipient from txParams has their own output
-      expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).map((output) => {
-        return { ...output, address: this.canonicalAddress(output.address) };
+      expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).flatMap((output) => {
+        if (output.address === undefined) {
+          if (output.amount.toString() !== '0') {
+            throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${output}`);
+          }
+          return [output];
+        }
+        return [{ ...output, address: this.canonicalAddress(output.address) }];
       });
       if (params.txParams.allowExternalChangeAddress && params.txParams.changeAddress) {
         // when an external change address is explicitly specified, count all outputs going towards that
         // address in the expected outputs (regardless of the output amount)
         expectedOutputs.push(
-          ...allOutputs
-            .map((output) => {
-              return { ...output, address: this.canonicalAddress(output.address) };
-            })
-            .filter((output) => output.address === this.canonicalAddress(params.txParams.changeAddress as string))
+          ...allOutputs.flatMap((output) => {
+            if (
+              output.address === undefined ||
+              output.address !== this.canonicalAddress(params.txParams.changeAddress as string)
+            ) {
+              return [];
+            }
+            return [{ ...output, address: this.canonicalAddress(output.address) }];
+          })
         );
       }
     }

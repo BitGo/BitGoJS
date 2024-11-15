@@ -1747,7 +1747,7 @@ export class Wallet implements IWallet {
     }
 
     // Whitelist params to build tx
-    const whitelistedParams = _.pick(params, this.prebuildWhitelistedParams());
+    const whitelistedParams = this.baseCoin.preprocessBuildParams(_.pick(params, this.prebuildWhitelistedParams()));
     debug('prebuilding transaction: %O', whitelistedParams);
 
     if (params.reqId) {
@@ -2484,13 +2484,7 @@ export class Wallet implements IWallet {
     const coin = this.baseCoin;
     if (_.isObject(params.recipients)) {
       params.recipients.map(function (recipient) {
-        const amount = new BigNumber(recipient.amount);
-        if (amount.isNegative()) {
-          throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-        }
-        if (!coin.valuelessTransferAllowed() && amount.isZero()) {
-          throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-        }
+        coin.checkRecipient(recipient);
       });
     }
 
@@ -3661,7 +3655,7 @@ export class Wallet implements IWallet {
     // extract the whitelisted params from the top level, in case
     // other invalid params are present that would fail encoding
     // and fall back to the body params
-    const whitelistedParams = _.pick(params, whitelistedSendParams);
+    const whitelistedParams = this.baseCoin.preprocessBuildParams(_.pick(params, whitelistedSendParams));
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
     return postWithCodec(
