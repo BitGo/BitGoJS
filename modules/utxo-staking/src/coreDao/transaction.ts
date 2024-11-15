@@ -11,12 +11,12 @@ import { Descriptor } from '@bitgo/wasm-miniscript';
  */
 export function createStakingOutputs(
   stakingParams: {
-    value: bigint;
+    amount: bigint;
     descriptor: string;
     index?: number;
   },
   opReturnParams: OpReturnParams
-): { script: Buffer; value: bigint }[] {
+): { script: Buffer; amount: bigint }[] {
   const descriptor = Descriptor.fromString(
     stakingParams.descriptor,
     stakingParams.index === undefined ? 'definite' : 'derivable'
@@ -30,7 +30,7 @@ export function createStakingOutputs(
   const opReturnScript = createCoreDaoOpReturnOutputScript(opReturnParams);
 
   return [
-    { script: outputScript, value: stakingParams.value },
-    { script: opReturnScript, value: BigInt(0) },
+    { script: outputScript, amount: stakingParams.amount },
+    { script: opReturnScript, amount: BigInt(0) },
   ];
 }
