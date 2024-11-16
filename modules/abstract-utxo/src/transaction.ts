@@ -14,11 +14,11 @@ import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 const ScriptRecipientPrefix = 'scriptPubKey:';
 
 /**
- * Check if the address is in the extended address format.
+ * Check if the address is a script recipient (starts with `scriptPubKey:`).
  * @param address
  */
-export function isExtendedAddressFormat(address: string): boolean {
-  return address.toLowerCase().startsWith(ScriptRecipientPrefix);
+export function isScriptRecipient(address: string): boolean {
+  return address.toLowerCase().startsWith(ScriptRecipientPrefix.toLowerCase());
 }
 
 /**
@@ -27,7 +27,7 @@ export function isExtendedAddressFormat(address: string): boolean {
  * @param extendedAddress
  */
 export function fromExtendedAddressFormat(extendedAddress: string): { address: string } | { script: string } {
-  if (isExtendedAddressFormat(extendedAddress)) {
+  if (isScriptRecipient(extendedAddress)) {
     return { script: extendedAddress.slice(ScriptRecipientPrefix.length) };
   }
   return { address: extendedAddress };
@@ -48,7 +48,7 @@ export function toExtendedAddressFormat(script: Buffer, network: utxolib.Network
 export function assertValidTransactionRecipient(output: { amount: bigint | number | string; address?: string }): void {
   // In the case that this is an OP_RETURN output or another non-encodable scriptPubkey, we dont have an address.
   // We will verify that the amount is zero, and if it isnt then we will throw an error.
-  if (!output.address || output.address.startsWith(ScriptRecipientPrefix)) {
+  if (!output.address || isScriptRecipient(output.address)) {
     if (output.amount.toString() !== '0') {
       throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${JSON.stringify(output)}`);
     }

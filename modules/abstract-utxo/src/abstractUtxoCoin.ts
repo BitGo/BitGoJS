@@ -83,7 +83,7 @@ import {
   fromExtendedAddressFormat,
   getPsbtTxInputs,
   getTxInputs,
-  isExtendedAddressFormat,
+  isScriptRecipient,
 } from './transaction';
 import { assertDescriptorWalletAddress } from './descriptor/assertDescriptorWalletAddress';
 
@@ -483,7 +483,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   checkRecipient(recipient: { address: string; amount: number | string }): void {
     assertValidTransactionRecipient(recipient);
-    if (!isExtendedAddressFormat(recipient.address)) {
+    if (!isScriptRecipient(recipient.address)) {
       super.checkRecipient(recipient);
     }
   }

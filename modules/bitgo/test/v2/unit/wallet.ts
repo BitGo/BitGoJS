@@ -1872,7 +1872,7 @@ describe('V2 Wallet:', function () {
       const blockHeight = 100;
       const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
       const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
-      await wallet.prebuildTransaction({ recipients: [{ address: `scriptPubkey:${script}`, amount: 1e6 }] });
+      await wallet.prebuildTransaction({ recipients: [{ address: `scriptPubKey:${script}`, amount: 1e6 }] });
       blockHeightStub.should.have.been.calledOnce();
       postProcessStub.should.have.been.calledOnceWith({
         blockHeight: 100,
