@@ -1095,6 +1095,8 @@ class Coredao extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://scan.coredao.org/address/';
   chainId = 1116;
   nativeCoinOperationHashPrefix = '1116';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class CoredaoTestnet extends Testnet implements EthereumNetwork {

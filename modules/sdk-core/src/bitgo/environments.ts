@@ -55,6 +55,8 @@ interface EnvironmentTemplate {
   hmacVerificationEnforced: boolean;
   suiNodeUrl: string;
   etcNodeUrl: string;
+  coredaoExplorerBaseUrl?: string;
+  coredaoExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
