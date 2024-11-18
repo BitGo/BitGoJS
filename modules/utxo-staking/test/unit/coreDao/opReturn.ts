@@ -163,7 +163,7 @@ describe('OP_RETURN', function () {
       );
     });
 
-    it('should have the correct placement of the values provided with a timelock', function () {
+    it('should have the correct placement of the values provided with a blockheight timelock', function () {
       // This should produce an Op_RETURN that needs the extra push bytes for the length
       const script = createCoreDaoOpReturnOutputScript({
         version: validVersion,
@@ -196,6 +196,42 @@ describe('OP_RETURN', function () {
       // Make sure that the redeemScript is correct
       assert.deepStrictEqual(script.subarray(50, 54).toString('hex'), encodeTimelock(validTimelock).toString('hex'));
       assert.deepStrictEqual(decodeTimelock(script.subarray(50, 54)), validTimelock);
+    });
+
+    it('should have the correct placement of the values provided with a time timelock', function () {
+      // This should produce an Op_RETURN that needs the extra push bytes for the length
+      const timelock = new Date('2022-01-01T00:00:00Z').getTime() / 1000;
+      const script = createCoreDaoOpReturnOutputScript({
+        version: validVersion,
+        chainId: validChainId,
+        delegator: validDelegator,
+        validator: validValidator,
+        fee: validFee,
+        timelock,
+      });
+      // Make sure that the first byte is the OP_RETURN opcode
+      assert.strictEqual(script[0], 0x6a);
+      // Make sure that the length of the script matches what is in the buffer
+      assert.strictEqual(
+        // We do not count the OP_RETURN opcode or the length
+        script.length - 2,
+        script[1]
+      );
+      // Satoshi plus identifier
+      assert.deepStrictEqual(script.subarray(2, 6).toString('hex'), CORE_DAO_SATOSHI_PLUS_IDENTIFIER.toString('hex'));
+      // Make sure that the version is correct
+      assert.strictEqual(script[6], validVersion);
+      // Make sure that the chainId is correct
+      assert.deepStrictEqual(script.subarray(7, 9).toString('hex'), validChainId.toString('hex'));
+      // Make sure that the delegator is correct
+      assert.deepStrictEqual(script.subarray(9, 29).toString('hex'), validDelegator.toString('hex'));
+      // Make sure that the validator is correct
+      assert.deepStrictEqual(script.subarray(29, 49).toString('hex'), validValidator.toString('hex'));
+      // Make sure that the fee is correct
+      assert.strictEqual(script[49], validFee);
+      // Make sure that the redeemScript is correct
+      assert.deepStrictEqual(script.subarray(50, 54).toString('hex'), encodeTimelock(timelock).toString('hex'));
+      assert.deepStrictEqual(decodeTimelock(script.subarray(50, 54)), timelock);
     });
 
     it('should recreate the example OP_RETURN correctly', function () {
