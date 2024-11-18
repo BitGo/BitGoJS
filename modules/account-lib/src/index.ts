@@ -137,6 +137,9 @@ export { zkEth };
 import * as Oas from '@bitgo/sdk-coin-oas';
 export { Oas };
 
+import * as Coredao from '@bitgo/sdk-coin-coredao';
+export { Coredao };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -209,6 +212,8 @@ const coinBuilderMap = {
   trune: Rune.TransactionBuilderFactory,
   oas: Oas.TransactionBuilder,
   toas: Oas.TransactionBuilder,
+  coredao: Coredao.TransactionBuilder,
+  tcoredao: Coredao.TransactionBuilder,
 };
 
 /**

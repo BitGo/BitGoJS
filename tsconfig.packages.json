@@ -83,6 +83,9 @@
       "path": "./modules/sdk-coin-celo"
     },
     {
+      "path": "./modules/sdk-coin-coredao"
+    },
+    {
       "path": "./modules/sdk-coin-coreum"
     },
     {

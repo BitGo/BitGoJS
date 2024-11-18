@@ -35,6 +35,9 @@
       "path": "../sdk-coin-celo"
     },
     {
+      "path": "../sdk-coin-coredao"
+    },
+    {
       "path": "../sdk-coin-coreum"
     },
     {
