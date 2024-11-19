@@ -11746,6 +11746,62 @@ export const coins = CoinMap.fromCoins([
     '0x64bc2ca1be492be7185faa2c8835d9b824c8a194',
     UnderlyingAsset.BIGTIME
   ),
+  erc20(
+    'a6a075b1-5e85-4f06-9ca0-6ba9d3a67994',
+    'eth:aevo',
+    'Aevo',
+    18,
+    '0xb528edbef013aff855ac3c50b381f253af13b997',
+    UnderlyingAsset['eth:aevo']
+  ),
+  erc20(
+    '0d952130-c891-4b01-a84a-a523c19bda4f',
+    'eth:alt',
+    'AltLayer',
+    18,
+    '0x8457ca5040ad67fdebbcc8edce889a335bc0fbfb',
+    UnderlyingAsset['eth:alt']
+  ),
+  erc20(
+    '64c0c7cb-aee4-42cf-9d9c-5258c9551ba7',
+    'eth:rtbl',
+    'Rolling T-bill',
+    6,
+    '0x526be1c610616be0e8e69893fc6766fddfbada61',
+    UnderlyingAsset['eth:rtbl']
+  ),
+  erc20(
+    '147e1c0b-20a4-4862-9038-42a6fb7894d0',
+    'eth:usdg',
+    'Global Dollar',
+    6,
+    '0xe343167631d89b6ffc58b88d6b7fb0228795491d',
+    UnderlyingAsset['eth:usdg']
+  ),
+  erc20(
+    '6418f63b-3c9b-4880-9034-e286d3abd1ac',
+    'eth:edu',
+    'Open Campus',
+    18,
+    '0xf8173a39c56a554837c4c7f104153a005d284d11',
+    UnderlyingAsset['eth:edu']
+  ),
+  erc20(
+    '58738d34-bed7-4c34-aa51-472fe83b3a33',
+    'eth:telos',
+    'Telos',
+    18,
+    '0x193f4a4a6ea24102f49b931deeeb931f6e32405d',
+    UnderlyingAsset['eth:telos']
+  ),
+  erc20(
+    '56ef1e13-8f49-4a1d-8e43-623880fa9a10',
+    'eth:cusdo',
+    'Compounding Open Dollar',
+    18,
+    '0xad55aebc9b8c03fc43cd9f62260391c13c23e7c0',
+    UnderlyingAsset['eth:cusdo']
+  ),
 
   // End FTX missing ERC20 tokens
   celoToken(
@@ -12054,11 +12110,11 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['bsc:win']
   ),
   bscToken(
-    'b4211998-459a-465d-9927-b762016dc211',
+    'cf634a53-0f48-49dc-9b2f-b15efa414d59',
     'bsc:wrx',
-    'Binance-Peg Wazirx Token',
-    8,
-    '0x8e17ed70334c87ece574c9d537bc153d8609e2a3',
+    'WazirX New',
+    18,
+    '0x2a459dd33f05ed8ea9584505cf04698be5654e6d',
     UnderlyingAsset['bsc:wrx']
   ),
   bscToken(
@@ -12700,6 +12756,14 @@ export const coins = CoinMap.fromCoins([
     2,
     '0xbc5609612b7c44bef426de600b5fd1379db2ecf1',
     UnderlyingAsset['bsc:psg']
+  ),
+  bscToken(
+    'd2618917-5087-4627-ba10-9d456ac7870f',
+    'bsc:telos',
+    'Telos',
+    18,
+    '0x193f4a4a6ea24102f49b931deeeb931f6e32405d',
+    UnderlyingAsset['bsc:telos']
   ),
   erc721(
     'b744b184-ae07-42e1-9585-f4a65fe96d11',
@@ -17591,6 +17655,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:goat'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'bb6f1627-0c73-46f2-86bd-80c2c6873522',
+    'sol:giga',
+    'Gigachad',
+    5,
+    '63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9',
+    UnderlyingAsset['sol:giga'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -18538,6 +18611,14 @@ export const coins = CoinMap.fromCoins([
     '0x714db550b574b3e927af3d93e26127d15721d4c2',
     UnderlyingAsset['polygon:gmt']
   ),
+  polygonErc20(
+    '8aed2ce2-614d-41a1-b276-c26b651d3549',
+    'polygon:uhu',
+    'Uhu',
+    18,
+    '0x8d5482c83bb5b49e2b4b97bcf264342eac164c00',
+    UnderlyingAsset['polygon:uhu']
+  ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
     'erc721:polygontoken',
@@ -18938,6 +19019,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1',
     UnderlyingAsset['opeth:wld']
+  ),
+  opethErc20(
+    'cceb569d-38fe-48f2-a7f5-8d2e414f80a0',
+    'opeth:wct',
+    'WalletConnect',
+    18,
+    '0xef4461891dfb3ac8572ccf7c794664a8dd927945',
+    UnderlyingAsset['opeth:wct']
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
