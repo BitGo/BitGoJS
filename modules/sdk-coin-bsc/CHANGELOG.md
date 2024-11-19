@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.1.29...@bitgo/sdk-coin-bsc@22.2.0) (2024-11-19)
+
+### Features
+
+- **sdk-coin-oas:** add oas sdk skeleton ([d04f601](https://github.com/BitGo/BitGoJS/commit/d04f601103e949da4ff50653b6d593c678536ea5))
+
 ## [22.1.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.1.29...@bitgo/sdk-coin-bsc@22.1.30) (2024-11-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

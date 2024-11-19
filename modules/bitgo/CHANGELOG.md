@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.13.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.11.1...bitgo@39.13.0) (2024-11-19)
+
+### Bug Fixes
+
+- **abstract-utxo:** rename isExtendedAddressFormat to isScriptRecipient ([c37b2a5](https://github.com/BitGo/BitGoJS/commit/c37b2a50fec7c4a60706e0cb906b40c2d47990ef))
+- deps fix ([0e49204](https://github.com/BitGo/BitGoJS/commit/0e49204b1b259f8c851f08828b115038d0854dee))
+- **sdk-coin-rune:** rename thorchain:rune to tthorchain:rune ([27f3afa](https://github.com/BitGo/BitGoJS/commit/27f3afa5fcfe8d3281d845a37e13bc7ccec86098))
+
+### Features
+
+- **abstract-utxo:** explain and verify tx with op return ([04f8518](https://github.com/BitGo/BitGoJS/commit/04f851884ab245fd25eb9ee2858743263a5e99d9))
+- **sdk-coin-apt:** add APT to statics ([3d1c70d](https://github.com/BitGo/BitGoJS/commit/3d1c70ded1c687488a2fe5a2322a19a58b779fb6))
+- **sdk-coin-apt:** new coin generation, apt skeleton ([3405799](https://github.com/BitGo/BitGoJS/commit/3405799d07096829093c590bf1506bc6b93c6e68))
+- **sdk-coin-coredao:** add coredao sdk skeleton ([0e6ce18](https://github.com/BitGo/BitGoJS/commit/0e6ce183f378968ea1453395ba28f7eb5ab26d96))
+- **sdk-coin-oas:** add oas sdk skeleton ([d04f601](https://github.com/BitGo/BitGoJS/commit/d04f601103e949da4ff50653b6d593c678536ea5))
+- **sdk-coin-xrp:** add wrw support cold wallet xrpl token ([095c408](https://github.com/BitGo/BitGoJS/commit/095c408d07412ee39ef6bfaf6e30b32bb0b78447))
+
 # [39.12.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.11.1...bitgo@39.12.0) (2024-11-14)
 
 ### Bug Fixes

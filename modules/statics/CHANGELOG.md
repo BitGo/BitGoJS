@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.6.0...@bitgo/statics@50.8.0) (2024-11-19)
+
+### Bug Fixes
+
+- **sdk-coin-rune:** rename thorchain:rune to tthorchain:rune ([27f3afa](https://github.com/BitGo/BitGoJS/commit/27f3afa5fcfe8d3281d845a37e13bc7ccec86098))
+- **statics:** add staking feature to tbtc4 ([f3551d0](https://github.com/BitGo/BitGoJS/commit/f3551d02db493fed14a3e1904e072e904e61965e))
+- **statics:** fix test token name prefix ([c26eb6b](https://github.com/BitGo/BitGoJS/commit/c26eb6b87c602708a4d34bcc47866b2c63026acc))
+- **statics:** update correct explorer url for thorchain ([0c9258f](https://github.com/BitGo/BitGoJS/commit/0c9258f171141e4bd94a44e8793c5fd93ecdbaca))
+
+### Features
+
+- **sdk-coin-apt:** add APT to statics ([3d1c70d](https://github.com/BitGo/BitGoJS/commit/3d1c70ded1c687488a2fe5a2322a19a58b779fb6))
+- **sdk-coin-coredao:** add coredao sdk skeleton ([0e6ce18](https://github.com/BitGo/BitGoJS/commit/0e6ce183f378968ea1453395ba28f7eb5ab26d96))
+- **sdk-coin-oas:** add oas sdk skeleton ([d04f601](https://github.com/BitGo/BitGoJS/commit/d04f601103e949da4ff50653b6d593c678536ea5))
+- **statics:** add ofc erc20 support for fold ([258ccda](https://github.com/BitGo/BitGoJS/commit/258ccda1f877890284f42c0bae7569028b59086e))
+- **statics:** add ofc support for polygon:copm ([d2304d3](https://github.com/BitGo/BitGoJS/commit/d2304d32351366e3e8512155c6596f7aea628d5c))
+- **statics:** add ofc support for polygon:geod ([459fde2](https://github.com/BitGo/BitGoJS/commit/459fde20ae21c4a3948ec4a25966199231ef3ea8))
+- **statics:** add ofc support for sol:natix ([ac37b0a](https://github.com/BitGo/BitGoJS/commit/ac37b0a1bb57fde6f9e31b896685156fcf9e3a26))
+- **statics:** add ofc support for sol:render ([14d7d39](https://github.com/BitGo/BitGoJS/commit/14d7d395c912e60186bd6421475f099e6a2b077f))
+- **statics:** add test token to test eth prefix ([9424f25](https://github.com/BitGo/BitGoJS/commit/9424f25b79a69a33ebf3cc9502ac42aa13b179e4))
+- **statics:** fixing sol test tokens ([3816a41](https://github.com/BitGo/BitGoJS/commit/3816a41fffc68414aa71cf55920ca2936a79d870))
+- **statics:** fixing sol token ([dee1e71](https://github.com/BitGo/BitGoJS/commit/dee1e71def5b933189dc14862df87e4129efcde3))
+
 # [50.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.6.0...@bitgo/statics@50.7.0) (2024-11-14)
 
 ### Bug Fixes

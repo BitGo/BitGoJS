@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [23.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.2.2...@bitgo/account-lib@23.3.0) (2024-11-19)
+
+### Bug Fixes
+
+- deps fix ([0e49204](https://github.com/BitGo/BitGoJS/commit/0e49204b1b259f8c851f08828b115038d0854dee))
+
+### Features
+
+- **sdk-coin-coredao:** add coredao sdk skeleton ([0e6ce18](https://github.com/BitGo/BitGoJS/commit/0e6ce183f378968ea1453395ba28f7eb5ab26d96))
+- **sdk-coin-oas:** add oas sdk skeleton ([d04f601](https://github.com/BitGo/BitGoJS/commit/d04f601103e949da4ff50653b6d593c678536ea5))
+
 ## [23.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.2.2...@bitgo/account-lib@23.2.3) (2024-11-14)
 
 **Note:** Version bump only for package @bitgo/account-lib

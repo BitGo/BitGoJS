@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 1.3.0 (2024-11-19)
+
+### Features
+
+- **utxo-staking:** build staking transaction ([73b33bc](https://github.com/BitGo/BitGoJS/commit/73b33bc93e46934fe5e6002c52c0b1443a3d0d8d))
+- **utxo-staking:** create coredao staking outputs ([6b5ca4b](https://github.com/BitGo/BitGoJS/commit/6b5ca4b7c726fb6a4380526391416f6db356e0b7))
+
 # 1.2.0 (2024-11-14)
 
 ### Features
