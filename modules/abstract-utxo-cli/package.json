@@ -1,0 +1,48 @@
+{
+  "name": "@bitgo/abstract-utxo-cli",
+  "version": "1.0.0",
+  "description": "CLI for BitGo UTXO wallets",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "mocha --recursive test/"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18 <21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/abstract-utxo-cli"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "@bitgo/abstract-utxo": "^9.1.2",
+    "@bitgo/blockapis": "^1.10.3",
+    "@bitgo/sdk-api": "^1.56.3",
+    "@bitgo/sdk-core": "^28.13.1",
+    "@bitgo/unspents": "^0.47.9",
+    "@bitgo/utxo-lib": "^11.0.1",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
