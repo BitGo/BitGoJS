@@ -43,7 +43,7 @@ export type ArgsParseTransaction = ReadStringOptions & {
   parseError: 'throw' | 'continue';
 } & Omit<TxParserArgs, 'parseSignatureData'>;
 
-export function getTxParser(argv: yargs.Arguments<ArgsParseTransaction>): TxParser {
+export function getTxParser(argv: ArgsParseTransaction): TxParser {
   if (argv.all) {
     return new TxParser({ ...argv, ...TxParser.PARSE_ALL });
   }
