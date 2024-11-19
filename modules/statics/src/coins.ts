@@ -1580,6 +1580,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '05a51449-e2e5-4076-991f-1d480960a6fb',
+    'ofcsol:render',
+    'Render Token',
+    8,
+    UnderlyingAsset['sol:render'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
