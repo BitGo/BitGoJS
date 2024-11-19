@@ -1588,6 +1588,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:render'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '170b81f2-9378-44b6-8f25-4f4b7e3f4dfd',
+    'ofcsol:natix',
+    'NATIX Network ',
+    6,
+    UnderlyingAsset['natix'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
