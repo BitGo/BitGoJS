@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.1.2...@bitgo/abstract-utxo@9.2.0) (2024-11-19)
+
+### Bug Fixes
+
+- **abstract-utxo:** rename isExtendedAddressFormat to isScriptRecipient ([c37b2a5](https://github.com/BitGo/BitGoJS/commit/c37b2a50fec7c4a60706e0cb906b40c2d47990ef))
+
+### Features
+
+- **abstract-utxo:** explain and verify tx with op return ([04f8518](https://github.com/BitGo/BitGoJS/commit/04f851884ab245fd25eb9ee2858743263a5e99d9))
+- fix scriptPubKey prefix ([9d9ce34](https://github.com/BitGo/BitGoJS/commit/9d9ce34330583cd65aba082c623024e0d9ab1505)), closes [/github.com/bitcoin/bitcoin/blob/v28.0/src/rpc/blockchain.cpp#L657](https://github.com//github.com/bitcoin/bitcoin/blob/v28.0/src/rpc/blockchain.cpp/issues/L657)
+
 ## [9.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.1.2...@bitgo/abstract-utxo@9.1.3) (2024-11-14)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

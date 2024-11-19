@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.13.1...@bitgo/sdk-core@28.14.0) (2024-11-19)
+
+### Features
+
+- **sdk-coin-coredao:** add coredao sdk skeleton ([0e6ce18](https://github.com/BitGo/BitGoJS/commit/0e6ce183f378968ea1453395ba28f7eb5ab26d96))
+- **sdk-coin-oas:** add oas sdk skeleton ([d04f601](https://github.com/BitGo/BitGoJS/commit/d04f601103e949da4ff50653b6d593c678536ea5))
+
 ## [28.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.13.1...@bitgo/sdk-core@28.13.2) (2024-11-14)
 
 **Note:** Version bump only for package @bitgo/sdk-core

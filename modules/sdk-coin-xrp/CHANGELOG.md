@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.5.0...@bitgo/sdk-coin-xrp@3.6.0) (2024-11-19)
+
+### Bug Fixes
+
+- **sdk-coin-xrp:** verifyTransaction for token transfers ([234a98d](https://github.com/BitGo/BitGoJS/commit/234a98d83e4707ac6b54259334f1b6492a8ba9d0))
+
+### Features
+
+- **sdk-coin-xrp:** add wrw support cold wallet xrpl token ([095c408](https://github.com/BitGo/BitGoJS/commit/095c408d07412ee39ef6bfaf6e30b32bb0b78447))
+
 ## [3.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.5.0...@bitgo/sdk-coin-xrp@3.5.1) (2024-11-14)
 
 ### Bug Fixes
