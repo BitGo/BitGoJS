@@ -1770,6 +1770,13 @@ export enum UnderlyingAsset {
   'ZRO-0xE5C' = 'zro-0xe5c',
   ZRX = 'zrx',
   ZUSD = 'zusd',
+  'eth:usdg' = 'eth:usdg',
+  'eth:edu' = 'eth:edu',
+  'eth:telos' = 'eth:telos',
+  'eth:cusdo' = 'eth:cusdo',
+  'eth:aevo' = 'eth:aevo',
+  'eth:alt' = 'eth:alt',
+  'eth:rtbl' = 'eth:rtbl',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2015,6 +2022,7 @@ export enum UnderlyingAsset {
   'polygon:heth' = 'polygon:heth',
   'polygon:copm' = 'polygon:copm',
   'polygon:gmt' = 'polygon:gmt',
+  'polygon:uhu' = 'polygon:uhu',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2140,6 +2148,7 @@ export enum UnderlyingAsset {
   'bsc:mdx' = 'bsc:mdx',
   'bsc:multi' = 'bsc:multi',
   'bsc:psg' = 'bsc:psg',
+  'bsc:telos' = 'bsc:telos',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2203,6 +2212,7 @@ export enum UnderlyingAsset {
   'opeth:op' = 'opeth:op',
   'opeth:exa' = 'opeth:exa',
   'opeth:wld' = 'opeth:wld',
+  'opeth:wct' = 'opeth:wct',
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
@@ -2308,6 +2318,7 @@ export enum UnderlyingAsset {
   'sol:jitosol' = 'sol:jitosol',
   'sol:zeus' = 'sol:zeus',
   'sol:kmno' = 'sol:kmno',
+  'sol:giga' = 'sol:giga',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
