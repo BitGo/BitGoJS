@@ -23,6 +23,7 @@ const ZIP225_VERSION_GROUP_ID = 0x26a7270a;
 const OVERWINTER_BRANCH_ID = 0x5ba81b19;
 const CANOPY_BRANCH_ID = 0xe9ff75a6;
 const NU5_BRANCH_ID = 0xc2d6d0b4;
+const NU6_BRANCH_ID = 0xc8e71055;
 
 export class UnsupportedTransactionError extends Error {
   constructor(message: string) {
@@ -34,14 +35,25 @@ export function getDefaultVersionGroupIdForVersion(version: number): number {
   switch (version) {
     case 400:
     case 450:
+    case 455:
       return SAPLING_VERSION_GROUP_ID;
     case 500:
+    case 550:
       return ZIP225_VERSION_GROUP_ID;
   }
   throw new Error(`no value for version ${version}`);
 }
 
 export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, version: number): number {
+  // When createTransactionFromHex we don't use utxo-lib versions, instead we use the protocol transaction version of
+  // 4 or 5 use NU6_BRANCH_ID for all versions 4 and 5 in testnet. Remove this and use NU6 for all versions 4 and 5 in
+  // both mainnet and testnet once it goes live in mainnet on height 2726400
+  if (network === networks.zcashTest) {
+    if (version === 4 || version === 5) {
+      return NU6_BRANCH_ID;
+    }
+  }
+
   switch (version) {
     case 1:
     case 2:
@@ -57,6 +69,10 @@ export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, ver
     case ZcashTransaction.VERSION5_BRANCH_NU5:
       // https://zips.z.cash/zip-0252
       return NU5_BRANCH_ID;
+    case ZcashTransaction.VERSION4_BRANCH_NU6:
+    case ZcashTransaction.VERSION5_BRANCH_NU6:
+      // https://zips.z.cash/zip-0253
+      return NU6_BRANCH_ID;
   }
   throw new Error(`no value for version ${version}`);
 }
@@ -68,7 +84,9 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
 
   static VERSION4_BRANCH_CANOPY = 400;
   static VERSION4_BRANCH_NU5 = 450;
+  static VERSION4_BRANCH_NU6 = 455;
   static VERSION5_BRANCH_NU5 = 500;
+  static VERSION5_BRANCH_NU6 = 550;
 
   // 1 if the transaction is post overwinter upgrade, 0 otherwise
   overwintered = 0;

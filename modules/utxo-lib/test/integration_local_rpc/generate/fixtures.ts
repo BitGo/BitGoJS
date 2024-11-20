@@ -16,7 +16,7 @@ export type Protocol = {
 export function getProtocolVersions(network: Network): number[] {
   switch (getMainnet(network)) {
     case networks.zcash:
-      // FIXME: re-enable protocol version 500
+      // FIXME(BTC-1633): re-enable protocol version 500
       // return [400, 450, 500];
       return [400, 450];
     default:
