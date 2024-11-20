@@ -8,7 +8,7 @@ import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { PrebuildTransactionWithIntentOptions, TxRequest } from '../utils/tss/eddsa';
-import { CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
+import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
 import { TransactionType } from '../../account-lib';
@@ -105,6 +105,7 @@ export interface IBlsKeyPair extends KeyPair {
 }
 
 export interface VerifyAddressOptions {
+  format?: CreateAddressFormat;
   address: string;
   addressType?: string;
   keychains?: {
