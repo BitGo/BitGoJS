@@ -1267,6 +1267,7 @@ export class Wallet implements IWallet {
 
       newAddress.keychains = keychains;
       newAddress.baseAddress = baseAddress ?? _.get(this._wallet, 'coinSpecific.baseAddress');
+      newAddress.format = addressParams.format;
 
       const verificationData: VerifyAddressOptions = _.merge({}, newAddress, { rootAddress });
 

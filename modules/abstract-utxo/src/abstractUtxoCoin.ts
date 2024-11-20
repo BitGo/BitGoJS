@@ -29,6 +29,7 @@ import {
   AddressTypeChainMismatchError,
   BaseCoin,
   BitGoBase,
+  CreateAddressFormat,
   decryptKeychainPrivateKey,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
@@ -251,6 +252,7 @@ export interface GenerateAddressOptions {
 }
 
 export interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
+  format?: CreateAddressFormat;
   keychains: {
     pub: string;
     aspKeyId?: string;
@@ -1092,6 +1094,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     const expectedAddress = this.generateAddress({
+      format: params.format,
       addressType: addressType as ScriptType2Of3,
       keychains,
       threshold: 2,
@@ -1220,7 +1223,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     );
 
     return {
-      address,
+      address: this.canonicalAddress(address, params.format),
       chain: derivationChain,
       index: derivationIndex,
       coin: this.getChain(),

@@ -437,6 +437,8 @@ export interface ForwarderBalanceOptions {
   maximumBalance?: number;
 }
 
+export type CreateAddressFormat = 'base58' | 'cashaddr';
+
 export interface CreateAddressOptions {
   chain?: number;
   gasPrice?: number | string;
@@ -444,7 +446,7 @@ export interface CreateAddressOptions {
   label?: string;
   lowPriority?: boolean;
   forwarderVersion?: number;
-  format?: 'base58' | 'cashaddr';
+  format?: CreateAddressFormat;
   baseAddress?: string;
   allowSkipVerifyAddress?: boolean;
   derivedAddress?: string;
