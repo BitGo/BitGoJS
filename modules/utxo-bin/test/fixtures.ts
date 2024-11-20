@@ -30,6 +30,7 @@ const walletKeys = utxolib.testutil.getDefaultWalletKeys();
 
 export async function getPsbt(
   network: utxolib.Network,
+  basePath: string,
   params: FixtureParams,
   { writeFixture }: { writeFixture?: string } = {}
 ): Promise<ParsedFixture> {
@@ -47,14 +48,14 @@ export async function getPsbt(
   if (params.spendType === 'keyPath' && writeFixture === undefined) {
     // because we currently cannot create deterministic signatures for taprootKeyPathSpend, we
     // store a copy in fixtures/psbt and use that instead of creating a new one
-    const filename = `test/fixtures/psbt/${params.scriptType}.${params.spendType}.${stage}.json`;
+    const filename = basePath + `/${params.scriptType}.${params.spendType}.${stage}.json`;
     try {
       const psbtHex = JSON.parse(await fs.readFile(filename, 'utf8'));
       const transaction = utxolib.bitgo.createPsbtFromHex(psbtHex, network);
       return { transaction, prevOutputs: undefined };
     } catch (e) {
       if (e.code === 'ENOENT') {
-        return await getPsbt(network, params, { writeFixture: filename });
+        return await getPsbt(network, basePath, params, { writeFixture: filename });
       }
       throw e;
     }
@@ -71,10 +72,11 @@ export async function getPsbt(
 
 export async function getTransactionWithSpendType(
   network: utxolib.Network,
+  basePath: string,
   params: FixtureParams
 ): Promise<ParsedFixture> {
   if (params.fixtureType !== 'networkFullSigned') {
-    return await getPsbt(network, params);
+    return getPsbt(network, basePath, params);
   }
 
   if (params.scriptType === 'p2trMusig2') {

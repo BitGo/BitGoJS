@@ -66,7 +66,7 @@ function getAddresses(n: utxolib.Network): [type: string, format: string, addres
 }
 
 function parse(address: string, args: string[]) {
-  return getAddressParser(yargs.command(cmdParse).parseSync(args)).parse(address);
+  return getAddressParser(yargs([]).command(cmdParse).parseSync(args)).parse(address);
 }
 
 function testParseAddress(
