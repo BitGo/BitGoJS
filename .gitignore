@@ -3,6 +3,8 @@ node_modules/
 *.iml
 lerna-debug.log
 npm-debug.log
+yarn-error.log
+*.tsbuildinfo
 .nyc_output
 coverage.lcov
 package-lock.json
