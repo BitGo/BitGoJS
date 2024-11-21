@@ -26,20 +26,20 @@ transaction: a09c2df0ca5cb40e1b7b9be851ad1f7c87f51ff54b27f096a991edd1ae78f9b2
 │   │ ├─┬ 0
 │   │ │ ├── participantPubKey: 0263fe2086c9ee59d2898c89c406062dc12be86178f36fa8bdc2207ef50de6c10a (33 bytes)
 │   │ │ ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
-│   │ │ └── pubNonce: 038cf4076f7c1e7bcbcf1cd34fea606c41b767c87e535cc35ea9f6465f4c31fa590382dc926e1f1c67730a0684718afab561440f94bc133907f2d7ed86ea9683fe4f (66 bytes)
+│   │ │ └── pubNonce: 028b327c0c03556b2318b385b90c3f9bd730dc30b62af48186662c39c5b44798c503ff577d6408b020b81e06bb41d92483dd65a9ca6f2a4a98646a21eae834554aa3 (66 bytes)
 │   │ └─┬ 1
 │   │   ├── participantPubKey: 0397f6fda272efbf9d9502e40b1a6da60b7dcfcd883fb371b0765c18523be5e9bc (33 bytes)
 │   │   ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
-│   │   └── pubNonce: 0369cad50c588e8d1ed0d110e42ff629b8ce99fe28601320777c1b051f7bd55acb032f26c999c1a13525ca215a58b25207df29c21061c906dd9cac0d54bd4527a43b (66 bytes)
+│   │   └── pubNonce: 032b6ef6e4fdacc0bc95b9872c66234229e3c51dc95aea26b62c1d3cdf0b16201a0336f7e1679a879948849897d1a31a969b3f8eb349d91429fbe6c76dd15d9f4a11 (66 bytes)
 │   └─┬ musig2PartialSignatures: length: 2
 │     ├─┬ 0
 │     │ ├── participantPubKey: 0263fe2086c9ee59d2898c89c406062dc12be86178f36fa8bdc2207ef50de6c10a (33 bytes)
 │     │ ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
-│     │ └── partialSig: 36207dcb2c0ed898d5c5a8e2d683fa119db8d28d38a0a2b84752cb59f37fefe7 (32 bytes)
+│     │ └── partialSig: a1d7710fc064bfa57698b3cb5eda8cd244296465fcfea1a54e5b17b29c5c8817 (32 bytes)
 │     └─┬ 1
 │       ├── participantPubKey: 0397f6fda272efbf9d9502e40b1a6da60b7dcfcd883fb371b0765c18523be5e9bc (33 bytes)
 │       ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
-│       └── partialSig: 0a5a8b1d3c00f6dad7652c80485e53acac467bdd371af63b4d6fd3fb16336d20 (32 bytes)
+│       └── partialSig: 6d629b8e9f7da45f4da21829ce1c42f026a6645d8678854ca4a08e4316b50940 (32 bytes)
 └─┬ outputs: 1 sum=0.00009000
   └─┬ 0: tb1pzqezqx02rhqf5mspjppjjkwnyuylacdyxcgaz8jg3wnfvaf7hpfspx744m
     └── value: 0.00009000

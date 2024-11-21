@@ -38,21 +38,21 @@ function getParams(): TestParams[] {
 }
 
 getParams().forEach(({ scriptType, spendType, fixtureType, showAll }) => {
-  describe(`parse ${fixtureType} ${scriptType} ${spendType ? spendType : 'default'} spend [args=${getArgs({
-    showAll,
-  })}`, function () {
+  const args = getArgs({ showAll });
+  describe(`parse ${fixtureType} ${scriptType} ${spendType ? spendType : 'default'} spend [args=${args}]`, function () {
     function parse(tx: ParserTx, prevOutputs?: utxolib.TxOutput<bigint>[]): ParserNode {
-      return getTxParser(yargs.command(cmdParseTx).parse([...getArgs({ showAll }), '--parseError=throw']) as any).parse(
-        tx,
-        {
-          prevOutputs,
-        }
-      );
+      return getTxParser(
+        yargs([])
+          .command(cmdParseTx)
+          .parse([...getArgs({ showAll }), '--parseError=throw']) as any
+      ).parse(tx, {
+        prevOutputs,
+      });
     }
 
     let fixture: ParsedFixture;
     before(async function () {
-      fixture = await getTransactionWithSpendType(utxolib.networks.testnet, {
+      fixture = await getTransactionWithSpendType(utxolib.networks.testnet, 'test/fixtures/parse/psbt', {
         scriptType,
         spendType,
         fixtureType,

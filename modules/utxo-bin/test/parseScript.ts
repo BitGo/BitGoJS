@@ -10,7 +10,7 @@ import { formatTreeNoColor, getFixtureString, getTransactionWithSpendType, Parse
 function testParseScript(type: utxolib.bitgo.outputScripts.ScriptType2Of3) {
   let tx: ParsedFixture;
   before('setup transaction', async function () {
-    tx = await getTransactionWithSpendType(utxolib.networks.testnet, {
+    tx = await getTransactionWithSpendType(utxolib.networks.testnet, 'test/fixtures/parse/psbt', {
       scriptType: type,
       spendType: type === 'p2trMusig2' ? 'scriptPath' : undefined,
       fixtureType: 'psbtFullSigned',
