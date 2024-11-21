@@ -29,7 +29,7 @@
     "@bitgo/blockapis": "^1.10.6",
     "@bitgo/statics": "^50.8.0",
     "@bitgo/utxo-lib": "^11.0.1",
-    "@bitgo/unspents": "^0.47.13",
+    "@bitgo/unspents": "^0.47.14",
     "@bitgo/wasm-miniscript": "^1.8.0",
     "archy": "^1.0.0",
     "bech32": "^2.0.0",
