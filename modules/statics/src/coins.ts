@@ -129,6 +129,7 @@ const XRP_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
 ];
+const POLYGON_TOKEN_FEATURES_WITH_FRANKFURT = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const CSPR_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.REQUIRES_RESERVE,
@@ -295,6 +296,7 @@ const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.BULK_STAKING_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
+const ATOM_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const INJECTIVE_FEATURES = [
   ...COSMOS_SIDECHAIN_FEATURES,
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
@@ -381,6 +383,11 @@ const ZETA_EVM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_
 const ETH_FEATURES_WITH_FRANKFURT_EXCLUDE_SINGAPORE = ETH_FEATURES_WITH_FRANKFURT.filter(
   (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
 );
+const TIA_FEATURES = [
+  ...COSMOS_SIDECHAIN_FEATURES,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+];
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
   ...utxoCoins,
@@ -849,7 +856,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.ATOM,
     BaseUnit.ATOM,
-    COSMOS_SIDECHAIN_FEATURES
+    ATOM_FEATURES
   ),
   account(
     '9869004c-d372-42e1-bdd5-9ac8716c86cb',
@@ -859,7 +866,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.ATOM,
     BaseUnit.ATOM,
-    COSMOS_SIDECHAIN_FEATURES
+    ATOM_FEATURES
   ),
   account(
     '8352bdf2-71e7-4ff1-a5b0-9b88c61aef1d',
@@ -889,7 +896,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.TIA,
     BaseUnit.TIA,
-    [CoinFeature.CUSTODY_BITGO_SWITZERLAND, ...COSMOS_SIDECHAIN_FEATURES]
+    TIA_FEATURES
   ),
   account(
     '6ea4f120-6d26-4070-a12a-a0cac39ea552',
@@ -899,7 +906,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.TIA,
     BaseUnit.TIA,
-    [CoinFeature.CUSTODY_BITGO_SWITZERLAND, ...COSMOS_SIDECHAIN_FEATURES]
+    TIA_FEATURES
   ),
   account(
     '2e20e302-d743-457c-a023-58b80e8d3a15',
@@ -1119,6 +1126,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.MPCV2,
       CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ]
   ),
   account(
@@ -1137,6 +1145,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.MPCV2,
       CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ]
   ),
   account(
@@ -3400,7 +3409,8 @@ export const coins = CoinMap.fromCoins([
     'DeFiChain',
     8,
     '0x8fc8f8269ebca376d046ce292dc7eac40c8d358a',
-    UnderlyingAsset.DFI
+    UnderlyingAsset.DFI,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'a51ea723-2d14-4a1a-8e39-b688e436896d',
@@ -6569,7 +6579,8 @@ export const coins = CoinMap.fromCoins([
     'Rally',
     18,
     '0xf1f955016ecbcd7321c7266bccfb96c68ea5e49b',
-    UnderlyingAsset.RLY
+    UnderlyingAsset.RLY,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '61c4e736-08a9-431c-82f5-d62447e0ed78',
@@ -7381,7 +7392,8 @@ export const coins = CoinMap.fromCoins([
     'Truflation (v2)',
     18,
     '0x243c9be13faba09f945ccc565547293337da0ad7',
-    UnderlyingAsset.TRUFV2
+    UnderlyingAsset.TRUFV2,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '800b8416-6928-4adf-b291-5016760e740b',
@@ -7723,7 +7735,8 @@ export const coins = CoinMap.fromCoins([
     'Veloce',
     18,
     '0xb2492e97a68a6e4b9e9a11b99f6c42e5accd38c7',
-    UnderlyingAsset.VEXT
+    UnderlyingAsset.VEXT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '00dd6c84-9651-45ba-9f05-f3c15cf83554',
@@ -11320,7 +11333,8 @@ export const coins = CoinMap.fromCoins([
     'Syrup',
     0,
     '0x643c4e15d7d62ad0abec4a9bd4b001aa3ef52d66',
-    UnderlyingAsset.SYRUP
+    UnderlyingAsset.SYRUP,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '31e842ac-eaa8-438d-a779-138183ae502e',
@@ -13517,7 +13531,7 @@ export const coins = CoinMap.fromCoins([
     7,
     UnderlyingAsset['xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN'],
     'centre.io',
-    AccountCoin.DEFAULT_FEATURES,
+    XLM_TOKEN_FEATURES_WITH_FRANKFURT,
     '',
     'USDC'
   ),
@@ -15727,7 +15741,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
     UnderlyingAsset['sol:usdc'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
   solToken(
     '2a41c38d-c79a-4734-ae3a-c60e4d1f2d99',
@@ -15763,7 +15777,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // https://explorer.solana.com/address/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
     UnderlyingAsset['sol:usdt'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
   solToken(
     '4d631f91-02e2-4b89-af01-7b42cb61b1bb',
@@ -17653,7 +17667,7 @@ export const coins = CoinMap.fromCoins([
     6,
     'czlsujwblfssjncfkh59rufqvafwcy5tzedwjsuypump',
     UnderlyingAsset['sol:goat'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
   solToken(
     'bb6f1627-0c73-46f2-86bd-80c2c6873522',
@@ -17761,7 +17775,8 @@ export const coins = CoinMap.fromCoins([
     'USD Coin',
     6,
     '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-    UnderlyingAsset['polygon:usdc']
+    UnderlyingAsset['polygon:usdc'],
+    POLYGON_TOKEN_FEATURES_WITH_FRANKFURT
   ),
   polygonErc20(
     '5a17fe9c-3b78-4f12-b419-ed3662f4e985',
@@ -17777,7 +17792,8 @@ export const coins = CoinMap.fromCoins([
     'Tether USD',
     6,
     '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
-    UnderlyingAsset['polygon:usdt']
+    UnderlyingAsset['polygon:usdt'],
+    POLYGON_TOKEN_FEATURES_WITH_FRANKFURT
   ),
   polygonErc20(
     '7e891f15-a29e-4a01-9ff5-d739cfc171f9',

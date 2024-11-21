@@ -211,6 +211,22 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     features: [CoinFeature.CUSTODY_BITGO_FRANKFURT],
   },
   'arbeth:arb': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'sol:usdc': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN': {
+    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT],
+  },
+  'polygon:usdc': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'sol:usdt': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'polygon:usdt': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'sol:goat': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  syrup: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  trufv2: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  vext: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  rly: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  atom: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  dfi: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tia: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  bsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
 
   // Test Coins
   talgo: {
@@ -368,9 +384,10 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   ttrx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  tia: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
-  ttia: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  ttia: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tatom: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tton: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tbsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
 };
 
 describe('CoinMap', function () {
