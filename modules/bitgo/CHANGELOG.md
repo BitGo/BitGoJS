@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.14.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.13.0...bitgo@39.14.0) (2024-11-21)
+
+### Features
+
+- add NU6 consensus id support for tzec ([a4bf394](https://github.com/BitGo/BitGoJS/commit/a4bf3945ff621ba0baaccf671cf3e08646697f05))
+
 # [39.13.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.11.1...bitgo@39.13.0) (2024-11-19)
 
 ### Bug Fixes

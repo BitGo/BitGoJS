@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.0.1...@bitgo/utxo-lib@11.1.0) (2024-11-21)
+
+### Features
+
+- add NU6 consensus id support for tzec ([a4bf394](https://github.com/BitGo/BitGoJS/commit/a4bf3945ff621ba0baaccf671cf3e08646697f05))
+
 ## [11.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.0.0...@bitgo/utxo-lib@11.0.1) (2024-11-01)
 
 **Note:** Version bump only for package @bitgo/utxo-lib
