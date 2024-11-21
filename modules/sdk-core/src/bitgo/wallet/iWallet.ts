@@ -626,6 +626,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   }[];
   numBlocks?: number;
   feeRate?: number;
+  feeMultiplier?: number;
   maxFeeRate?: number;
   minConfirms?: number;
   enforceMinConfirmsForChange?: boolean;
