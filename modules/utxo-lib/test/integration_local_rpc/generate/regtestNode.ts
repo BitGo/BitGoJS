@@ -47,12 +47,8 @@ function getDockerParams(network: Network): DockerImageParams {
     case utxolib.networks.litecoinTest:
       return dockerImage('uphold/litecoin-core:0.17.1', 'litecoind');
     case utxolib.networks.zcashTest:
-      const paramsDir = process.env.ZCASH_PARAMS_DIR;
-      if (!paramsDir) {
-        throw new Error(`envvar ZCASH_PARAMS_DIR not set`);
-      }
       return dockerImage(
-        'electriccoinco/zcashd:v4.7.0',
+        'electriccoinco/zcashd:v6.0.0',
         undefined, // `zcashd` is implicit
         [
           '-nuparams=5ba81b19:10',
@@ -62,8 +58,10 @@ function getDockerParams(network: Network): DockerImageParams {
           '-nuparams=e9ff75a6:400',
           // https://zips.z.cash/zip-0252
           '-nuparams=c2d6d0b4:500',
-        ],
-        [`--volume=${paramsDir}:/srv/zcashd/.zcash-params`]
+          // https://zips.z.cash/zip-0253
+          '-nuparams=c8e71055:600',
+        ]
+        // [`--volume=${paramsDir}:/srv/zcashd/.zcash-params`]
       );
   }
   throw new Error(`unsupported network ${getNetworkName(network)}`);

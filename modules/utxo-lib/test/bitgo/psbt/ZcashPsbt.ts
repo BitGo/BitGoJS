@@ -29,7 +29,7 @@ describe('Zcash PSBT', function () {
         assert.deepStrictEqual(psbt.toHex(), psbt.toBuffer().toString('hex'));
       });
     }
-    [400, 450, 500].forEach((version) => testToHexForVersion(version));
+    [400, 450, 455, 500, 550].forEach((version) => testToHexForVersion(version));
 
     function testFromHexForVersion(version: number) {
       it(`version ${version} should deserialize from toHex`, async function () {
@@ -39,7 +39,7 @@ describe('Zcash PSBT', function () {
         assert.deepStrictEqual(psbt2Hex, psbtHex);
       });
     }
-    [400, 450, 500].forEach((version) => testFromHexForVersion(version));
+    [400, 450, 455, 500, 550].forEach((version) => testFromHexForVersion(version));
   });
 
   describe('should be able to sign the transaction', function () {

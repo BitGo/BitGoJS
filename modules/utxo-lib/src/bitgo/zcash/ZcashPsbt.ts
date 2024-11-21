@@ -82,7 +82,7 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
    * the transaction.
    */
   toBuffer(): Buffer {
-    if (this.tx.version === 5 || this.tx.version === ZcashTransaction.VERSION5_BRANCH_NU5) {
+    if (this.tx.version === 5 || this.tx.version >= ZcashTransaction.VERSION5_BRANCH_NU5) {
       return super.toBuffer();
     }
     const value = Buffer.alloc(4);
@@ -108,10 +108,12 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
       case 4:
       case ZcashTransaction.VERSION4_BRANCH_CANOPY:
       case ZcashTransaction.VERSION4_BRANCH_NU5:
+      case ZcashTransaction.VERSION4_BRANCH_NU6:
         this.setVersion(4);
         break;
       case 5:
       case ZcashTransaction.VERSION5_BRANCH_NU5:
+      case ZcashTransaction.VERSION5_BRANCH_NU6:
         this.setVersion(5);
         break;
       default:
