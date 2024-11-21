@@ -3671,7 +3671,7 @@ export class Wallet implements IWallet {
     // extract the whitelisted params from the top level, in case
     // other invalid params are present that would fail encoding
     // and fall back to the body params
-    const whitelistedParams = _.pick(params, whitelistedSendParams);
+    const whitelistedParams = this.baseCoin.preprocessBuildParams(_.pick(params, whitelistedSendParams));
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
     return postWithCodec(
