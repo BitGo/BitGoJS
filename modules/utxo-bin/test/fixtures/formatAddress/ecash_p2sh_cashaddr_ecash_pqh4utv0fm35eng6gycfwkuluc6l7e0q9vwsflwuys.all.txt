@@ -1,23 +1,23 @@
-address: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
+address: ecash:pqh4utv0fm35eng6gycfwkuluc6l7e0q9vwsflwuys
 ├─┬ base58
-│ └── payload: 052f5e2d8f4ee34ccd1a4130975b9fe635ff65e02bb4eab7ff (25 bytes)
+│ └── decodeError: Error: Non-base58 character
 ├─┬ base58Check
-│ ├── payload: 052f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b (21 bytes)
-│ ├── version: 5
-│ └── hash: 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b (20 bytes)
+│ └── decodeError: Error: Non-base58 character
 ├─┬ bech32
-│ └── decodeError: Error: Mixed-case string 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
+│ └── decodeError: Error: No separator character for ecash:pqh4utv0fm35eng6gycfwkuluc6l7e0q9vwsflwuys
 ├─┬ bech32m
-│ └── decodeError: Error: Mixed-case string 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
+│ └── decodeError: Error: No separator character for ecash:pqh4utv0fm35eng6gycfwkuluc6l7e0q9vwsflwuys
 ├─┬ cashaddr
-│ └── decodeError: Error: Mixed-case string 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
-├── format: default
+│ ├── prefix: ecash
+│ ├── version: scripthash
+│ └── hash: 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b (20 bytes)
+├── format: cashaddr
 ├─┬ outputScript: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87 (23 bytes)
 │ └─┬ scriptPubKey: [23byte]
 │   ├── type: scripthash
 │   ├── hex: a9142f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b87
 │   └── asm: OP_HASH160 2f5e2d8f4ee34ccd1a4130975b9fe635ff65e02b OP_EQUAL
-├── network: bitcoin, bitcoincash, bitcoinsv, ecash
+├── network: ecash
 └─┬ converted
   ├── bitcoin default: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
   ├── bitcoinBitGoSignet default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW

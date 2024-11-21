@@ -1,6 +1,8 @@
-address: tb1p8gv9m64s539mycj4m29wu8thy5n3y6u36xs58wq3yezrmqygwfns9l2hrf
+address: bcrt1p8gv9m64s539mycj4m29wu8thy5n3y6u36xs58wq3yezrmqygwfnsgxq3kn
+├─┬ base58
+│ └── payload: 47d14b5ca8a3257d6d2adf22a28a0d67fa3988e407eb7ed0a04f8268e21a7ee3ccd8f6ab9c4ea649e450272d237483 (47 bytes)
 ├─┬ bech32m
-│ ├── prefix: tb
+│ ├── prefix: bcrt
 │ ├── words: 0107080c051b1a15101411051b041812151b0a050e1c070b1704141311041a1c111a061014070e0011041902031b0004080e091310 (53 bytes)
 │ └── bytes: 09d0c2ef5585225d9312aed45770ebb92938935c8e8d0a1dc0893221ec04439338 (33 bytes)
 ├── format: default
@@ -9,4 +11,4 @@ address: tb1p8gv9m64s539mycj4m29wu8thy5n3y6u36xs58wq3yezrmqygwfns9l2hrf
 │   ├── type: taproot
 │   ├── hex: 51203a185deab0a44bb26255da8aee1d772527126b91d1a143b81126443d80887267
 │   └── asm: OP_1 3a185deab0a44bb26255da8aee1d772527126b91d1a143b81126443d80887267
-└── network: bitcoinBitGoSignet, bitcoinPublicSignet, bitcoinTestnet4, testnet
+└── network: bitcoinRegtest

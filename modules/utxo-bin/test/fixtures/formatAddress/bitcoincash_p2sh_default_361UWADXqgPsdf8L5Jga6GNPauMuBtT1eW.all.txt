@@ -20,10 +20,11 @@ address: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
 ├── network: bitcoin, bitcoincash, bitcoinsv, ecash
 └─┬ converted
   ├── bitcoin default: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
-  ├── testnet default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
-  ├── bitcoinPublicSignet default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
-  ├── bitcoinTestnet4 default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
   ├── bitcoinBitGoSignet default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
+  ├── bitcoinPublicSignet default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
+  ├── bitcoinRegtest default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
+  ├── bitcoinTestnet4 default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
+  ├── testnet default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
   ├── bitcoincash default: 361UWADXqgPsdf8L5Jga6GNPauMuBtT1eW
   ├── bitcoincash cashaddr: bitcoincash:pqh4utv0fm35eng6gycfwkuluc6l7e0q9vhaa54xz8
   ├── bitcoincashTestnet default: 2MwZgZu9ZT8uDqSkskSJSiDMeoFa4z4RtdW
