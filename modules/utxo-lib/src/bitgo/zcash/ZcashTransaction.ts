@@ -45,15 +45,6 @@ export function getDefaultVersionGroupIdForVersion(version: number): number {
 }
 
 export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, version: number): number {
-  // When createTransactionFromHex we don't use utxo-lib versions, instead we use the protocol transaction version of
-  // 4 or 5 use NU6_BRANCH_ID for all versions 4 and 5 in testnet. Remove this and use NU6 for all versions 4 and 5 in
-  // both mainnet and testnet once it goes live in mainnet on height 2726400
-  if (network === networks.zcashTest) {
-    if (version === 4 || version === 5) {
-      return NU6_BRANCH_ID;
-    }
-  }
-
   switch (version) {
     case 1:
     case 2:
@@ -63,12 +54,13 @@ export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, ver
     case ZcashTransaction.VERSION4_BRANCH_CANOPY:
       // https://zips.z.cash/zip-0251
       return CANOPY_BRANCH_ID;
-    case 4:
-    case 5:
     case ZcashTransaction.VERSION4_BRANCH_NU5:
     case ZcashTransaction.VERSION5_BRANCH_NU5:
       // https://zips.z.cash/zip-0252
+      // NU5 is deprecated on mainnet on block 2726400
       return NU5_BRANCH_ID;
+    case 4:
+    case 5:
     case ZcashTransaction.VERSION4_BRANCH_NU6:
     case ZcashTransaction.VERSION5_BRANCH_NU6:
       // https://zips.z.cash/zip-0253

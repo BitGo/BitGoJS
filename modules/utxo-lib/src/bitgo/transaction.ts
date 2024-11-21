@@ -167,7 +167,7 @@ export function getDefaultTransactionVersion(network: Network): number {
     case networks.ecash:
       return 2;
     case networks.zcash:
-      return ZcashTransaction.VERSION4_BRANCH_NU5;
+      return ZcashTransaction.VERSION4_BRANCH_NU6;
     default:
       return 1;
   }
