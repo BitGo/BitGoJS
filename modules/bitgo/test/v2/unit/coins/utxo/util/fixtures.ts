@@ -34,6 +34,7 @@ async function getFixtureWithName<T>(name: string, defaultValue: T, rawCoinName:
     return JSON.parse(textContent);
   } catch (e) {
     if (e.code === 'ENOENT') {
+      await fs.writeFile(path, JSON.stringify(defaultValue, serializeBigInt, 2));
       throw new Error(`Wrote defaultValue to ${path}. Inspect output and rerun tests.`);
     }
     throw e;
