@@ -109,7 +109,7 @@ export interface StakeOptions {
   /**
    * btc staking expire time
    */
-  expireAt?: number;
+  expireAt?: string;
 
   /**
    * btc staking reward address
