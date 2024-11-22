@@ -301,10 +301,18 @@ export class Etc extends AbstractEthLikeCoin {
       params: [address, 'latest'],
       id: 1,
     });
-    // throw if the result does not exist or the result is not a valid number
-    if (!result || !result.result || isNaN(result.result)) {
-      throw new Error(`Could not obtain address balance for ${address} from etc.network, got: ${result.result}`);
+
+    // throw if the result object does not exist
+    if (!result) {
+      throw new Error(`Could not obtain address balance for ${address} from etc.network, got: Empty object response`);
+    } else if (result.error) {
+      // throw if result.error exists
+      throw new Error(`Could not obtain address balance for ${address} from etc.network, got: ${result.error}`);
+    } else if (!result.result || isNaN(result.result)) {
+      // throw if the result.result is not a number
+      throw new Error(`Could not obtain address balance for ${address} from etc.network, got: Incorrect Balance Hex`);
     }
+
     const nativeBalanceHex = result.result;
     return new optionalDeps.ethUtil.BN(nativeBalanceHex.slice(2), 16);
   }
