@@ -99,6 +99,11 @@ export class AddressParser extends Parser {
   }
 
   convert(outputScript: Buffer): ParserNode {
+    function getWidth(list: readonly string[]): number {
+      return Math.max(...list.map((s) => s.length));
+    }
+    const networkWith = getWidth(getNetworkList().map(getNetworkName));
+    const addressFormatWith = getWidth(utxolib.addressFormat.addressFormats);
     return this.node(
       'converted',
       undefined,
@@ -106,14 +111,14 @@ export class AddressParser extends Parser {
         utxolib.addressFormat.addressFormats
           .filter((f) => utxolib.addressFormat.isSupportedAddressFormat(f, network))
           .map((addressFormat) => {
-            const name = getNetworkName(network);
+            const label = `${getNetworkName(network).padEnd(networkWith)} ${addressFormat.padEnd(addressFormatWith)}`;
             try {
               return this.node(
-                `${name} ${addressFormat}`,
+                label,
                 utxolib.addressFormat.fromOutputScriptWithFormat(outputScript, addressFormat, network)
               );
             } catch (e) {
-              return this.node(`${name} ${addressFormat}`, 'undefined');
+              return this.node(label, 'undefined');
             }
           })
       )
