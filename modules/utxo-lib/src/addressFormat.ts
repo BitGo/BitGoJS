@@ -4,7 +4,7 @@
  * Use `toOutputScriptTryFormats()` instead of `toOutputScript()` to parse addresses in
  * non-canonical formats
  */
-import { getMainnet, getNetworkName, Network, networks } from './networks';
+import { getMainnet, getNetworkName, isValidNetwork, Network, networks } from './networks';
 import { fromOutputScript, toOutputScript } from './address';
 
 import { bcashAddress } from './bitgo';
@@ -12,6 +12,10 @@ import { bcashAddress } from './bitgo';
 export const addressFormats = ['default', 'cashaddr'] as const;
 
 export type AddressFormat = (typeof addressFormats)[number];
+
+function isCashaddrNetwork(network: Network): boolean {
+  return isValidNetwork(network) && [networks.bitcoincash, networks.ecash].includes(getMainnet(network));
+}
 
 /**
  * @param format
@@ -23,7 +27,7 @@ export function isSupportedAddressFormat(format: AddressFormat, network: Network
     case 'default':
       return true;
     case 'cashaddr':
-      return [networks.bitcoincash, networks.ecash].includes(getMainnet(network));
+      return isCashaddrNetwork(network);
   }
   throw new Error(`unknown address format ${format}`);
 }
@@ -39,13 +43,9 @@ export function fromOutputScriptWithFormat(outputScript: Buffer, format: Address
     throw new Error(`unsupported address format ${format} for network ${getNetworkName(network)}`);
   }
 
-  switch (getMainnet(network)) {
-    case networks.bitcoincash:
-    case networks.ecash:
-      return bcashAddress.fromOutputScriptWithFormat(outputScript, format, network);
-    default:
-      return fromOutputScript(outputScript, network);
-  }
+  return isCashaddrNetwork(network)
+    ? bcashAddress.fromOutputScriptWithFormat(outputScript, format, network)
+    : fromOutputScript(outputScript, network);
 }
 
 /**
@@ -59,13 +59,9 @@ export function toOutputScriptWithFormat(address: string, format: AddressFormat,
     throw new Error(`unsupported address format ${format} for network ${getNetworkName(network)}`);
   }
 
-  switch (getMainnet(network)) {
-    case networks.bitcoincash:
-    case networks.ecash:
-      return bcashAddress.toOutputScriptWithFormat(address, format, network);
-    default:
-      return toOutputScript(address, network);
-  }
+  return isCashaddrNetwork(network)
+    ? bcashAddress.toOutputScriptWithFormat(address, format, network)
+    : toOutputScript(address, network);
 }
 
 /**
