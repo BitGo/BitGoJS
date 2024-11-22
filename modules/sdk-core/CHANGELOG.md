@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [28.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.14.0...@bitgo/sdk-core@28.14.1) (2024-11-21)
+
+### Bug Fixes
+
+- validate addresses created matches the requested format ([01006ee](https://github.com/BitGo/BitGoJS/commit/01006ee65a4e036c0268ca96e2c435df8337027b))
+
 # [28.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.13.1...@bitgo/sdk-core@28.14.0) (2024-11-19)
 
 ### Features

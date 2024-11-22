@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.1.5...@bitgo/utxo-bin@3.2.0) (2024-11-21)
+
+### Bug Fixes
+
+- **utxo-bin:** update @bitgo/unspents to 0.47.14 ([8f6cff8](https://github.com/BitGo/BitGoJS/commit/8f6cff8d61187bde6372866b810d0146b4d6d568))
+
+### Features
+
+- **utxo-bin:** add psbt subcommands to utxo-bin ([f4b945b](https://github.com/BitGo/BitGoJS/commit/f4b945b2a5e094e87b45cacbd5384930d08d048b))
+
 ## [3.1.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.1.3...@bitgo/utxo-bin@3.1.5) (2024-11-19)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

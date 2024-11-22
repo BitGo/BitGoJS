@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.8.0...@bitgo/statics@50.9.0) (2024-11-21)
+
+### Features
+
+- **statics:** add new batch of tokens ([f75a9b3](https://github.com/BitGo/BitGoJS/commit/f75a9b35c208fce3826322843c1ab436a874ca81))
+- **statics:** ungate assets for Frankfurt Trust added BNB ([1ab1a79](https://github.com/BitGo/BitGoJS/commit/1ab1a79e1346a6a440848fb6f61969feb3d793b6))
+
 # [50.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.6.0...@bitgo/statics@50.8.0) (2024-11-19)
 
 ### Bug Fixes
