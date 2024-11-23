@@ -2,6 +2,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as bech32 from 'bech32';
 
 import { Parser, ParserNode } from './Parser';
+import { getNetworkList, getNetworkName } from './args';
 
 const bs58 = require('bs58');
 const bs58check = require('bs58check');
@@ -98,21 +99,26 @@ export class AddressParser extends Parser {
   }
 
   convert(outputScript: Buffer): ParserNode {
+    function getWidth(list: readonly string[]): number {
+      return Math.max(...list.map((s) => s.length));
+    }
+    const networkWith = getWidth(getNetworkList().map(getNetworkName));
+    const addressFormatWith = getWidth(utxolib.addressFormat.addressFormats);
     return this.node(
       'converted',
       undefined,
-      utxolib.getNetworkList().flatMap((network) =>
+      getNetworkList().flatMap((network) =>
         utxolib.addressFormat.addressFormats
           .filter((f) => utxolib.addressFormat.isSupportedAddressFormat(f, network))
           .map((addressFormat) => {
-            const name = utxolib.getNetworkName(network) as string;
+            const label = `${getNetworkName(network).padEnd(networkWith)} ${addressFormat.padEnd(addressFormatWith)}`;
             try {
               return this.node(
-                `${name} ${addressFormat}`,
+                label,
                 utxolib.addressFormat.fromOutputScriptWithFormat(outputScript, addressFormat, network)
               );
             } catch (e) {
-              return this.node(`${name} ${addressFormat}`, 'undefined');
+              return this.node(label, 'undefined');
             }
           })
       )
@@ -139,7 +145,7 @@ export class AddressParser extends Parser {
   }
 
   parse(input: string): ParserNode {
-    const networks = this.params.network ? [this.params.network] : utxolib.getNetworkList();
+    const networks = this.params.network ? [this.params.network] : getNetworkList();
 
     type Match = {
       network: utxolib.Network;
@@ -168,7 +174,7 @@ export class AddressParser extends Parser {
 
       nodes.push(this.node('format', firstMatch.addressFormat));
       nodes.push(this.node('outputScript', firstMatch.buffer, this.parseOutputScript(firstMatch.buffer)));
-      nodes.push(this.node('network', matches.map((m) => utxolib.getNetworkName(m.network)).join(', ')));
+      nodes.push(this.node('network', matches.map((m) => getNetworkName(m.network)).join(', ')));
 
       if (this.params.all || this.params.convert) {
         nodes.push(this.convert(firstMatch.buffer));

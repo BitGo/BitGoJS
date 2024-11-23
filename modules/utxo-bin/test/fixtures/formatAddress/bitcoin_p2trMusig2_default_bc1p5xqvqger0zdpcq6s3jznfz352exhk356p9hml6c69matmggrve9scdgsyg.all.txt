@@ -1,0 +1,47 @@
+address: bc1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9scdgsyg
+├─┬ base58
+│ └── decodeError: Error: Non-base58 character
+├─┬ base58Check
+│ └── decodeError: Error: Non-base58 character
+├─┬ bech32
+│ └── decodeError: Error: Invalid checksum for bc1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9scdgsyg
+├─┬ bech32m
+│ ├── prefix: bc
+│ ├── words: 011406000c000819030f020d0118001a1011120213090211140a1906171611141a0105171b1f1a181a051b1d0b1b0808030c190510 (53 bytes)
+│ └── bytes: 0d0c0601191bc4d0e01a846429a451a2b26bda34d04b7dff58d177d5ed081b3258 (33 bytes)
+├─┬ cashaddr
+│ └── decodeError: Error: No separator character for bc1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9scdgsyg
+├── format: default
+├─┬ outputScript: 5120a180c02323789a1c03508c85348a34564d7b469a096fbfeb1a2efabda103664b (34 bytes)
+│ └─┬ scriptPubKey: [34byte]
+│   ├── type: taproot
+│   ├── hex: 5120a180c02323789a1c03508c85348a34564d7b469a096fbfeb1a2efabda103664b
+│   └── asm: OP_1 a180c02323789a1c03508c85348a34564d7b469a096fbfeb1a2efabda103664b
+├── network: bitcoin
+└─┬ converted
+  ├── bitcoin             default : bc1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9scdgsyg
+  ├── bitcoinBitGoSignet  default : tb1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9s097l78
+  ├── bitcoinPublicSignet default : tb1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9s097l78
+  ├── bitcoinRegtest      default : bcrt1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9szu5eta
+  ├── bitcoinTestnet4     default : tb1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9s097l78
+  ├── testnet             default : tb1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9s097l78
+  ├── bitcoincash         default : undefined
+  ├── bitcoincash         cashaddr: undefined
+  ├── bitcoincashTestnet  default : undefined
+  ├── bitcoincashTestnet  cashaddr: undefined
+  ├── bitcoingold         default : btg1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9skdvd5z
+  ├── bitcoingoldTestnet  default : tbtg1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9sazgnth
+  ├── bitcoinsv           default : undefined
+  ├── bitcoinsvTestnet    default : undefined
+  ├── dash                default : undefined
+  ├── dashTest            default : undefined
+  ├── dogecoin            default : undefined
+  ├── dogecoinTest        default : undefined
+  ├── ecash               default : undefined
+  ├── ecash               cashaddr: undefined
+  ├── ecashTest           default : undefined
+  ├── ecashTest           cashaddr: undefined
+  ├── litecoin            default : ltc1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9smfxq7d
+  ├── litecoinTest        default : tltc1p5xqvqger0zdpcq6s3jznfz352exhk356p9hml6c69matmggrve9ssxz7pc
+  ├── zcash               default : undefined
+  └── zcashTest           default : undefined

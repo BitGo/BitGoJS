@@ -6,12 +6,17 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { formatTreeNoColor, getFixtureString } from './fixtures';
 import { getKeyTriple, KeyTriple } from './bip32.util';
 import { getAddressParser, cmdParse } from '../src/commands/cmdAddress/cmdParse';
+import { bitcoinRegtest, getNetworkList, getNetworkName } from '../src/args';
 
 const scriptTypesSingleSig = ['p2pkh', 'p2wkh'] as const;
 const scriptTypes = [...utxolib.bitgo.outputScripts.scriptTypes2Of3, ...scriptTypesSingleSig] as const;
 type ScriptType = (typeof scriptTypes)[number];
 
 export function isSupportedDepositType(network: utxolib.Network, scriptType: ScriptType): boolean {
+  if (network === bitcoinRegtest) {
+    return isSupportedDepositType(utxolib.networks.bitcoin, scriptType);
+  }
+
   if (scriptType === 'p2pkh') {
     return true;
   }
@@ -81,17 +86,16 @@ function testParseAddress(
     it(`formats address`, async function () {
       const formatted = formatTreeNoColor(parse(address, args), { showAll: true });
       const addrNoColon = address.replace(':', '_');
-      const filename = [utxolib.getNetworkName(network), type, addressFormat, addrNoColon + suffix].join('_');
-      console.log(filename);
+      const filename = [getNetworkName(network), type, addressFormat, addrNoColon + suffix].join('_');
       assert.strictEqual(await getFixtureString(`test/fixtures/formatAddress/${filename}.txt`, formatted), formatted);
     });
   });
 }
 
-utxolib.getNetworkList().forEach((n) => {
+getNetworkList().forEach((n) => {
   getAddresses(n).forEach(([type, addressFormat, address], i) => {
     testParseAddress(n, type, addressFormat, address, [], '');
-    if ([utxolib.networks.bitcoin, utxolib.networks.bitcoincash, utxolib.networks.ecash].includes(n) && i === 0) {
+    if ([utxolib.networks.bitcoin, utxolib.networks.bitcoincash, utxolib.networks.ecash].includes(n)) {
       testParseAddress(n, type, addressFormat, address, ['--all'], '.all');
     }
   });

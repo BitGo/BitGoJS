@@ -1,0 +1,45 @@
+address: bc1q62tshlryz9lrjlw9edaf4l5l3v3deg034uw28c
+├─┬ base58
+│ └── decodeError: Error: Non-base58 character
+├─┬ base58Check
+│ └── decodeError: Error: Non-base58 character
+├─┬ bech32
+│ └── decodeError: Error: Excess padding
+├─┬ bech32m
+│ └── decodeError: Error: Invalid checksum for bc1q62tshlryz9lrjlw9edaf4l5l3v3deg034uw28c
+├─┬ cashaddr
+│ └── decodeError: Error: No separator character for bc1q62tshlryz9lrjlw9edaf4l5l3v3deg034uw28c
+├── format: default
+├─┬ outputScript: 0014d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1 (22 bytes)
+│ └─┬ scriptPubKey: [22byte]
+│   ├── type: witnesspubkeyhash
+│   ├── hex: 0014d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1
+│   └── asm: OP_0 d2970bfc64117e397dc5cb7a9afe9f8b22dca1f1
+├── network: bitcoin
+└─┬ converted
+  ├── bitcoin             default : bc1q62tshlryz9lrjlw9edaf4l5l3v3deg034uw28c
+  ├── bitcoinBitGoSignet  default : tb1q62tshlryz9lrjlw9edaf4l5l3v3deg03l64eut
+  ├── bitcoinPublicSignet default : tb1q62tshlryz9lrjlw9edaf4l5l3v3deg03l64eut
+  ├── bitcoinRegtest      default : bcrt1q62tshlryz9lrjlw9edaf4l5l3v3deg03anv5tz
+  ├── bitcoinTestnet4     default : tb1q62tshlryz9lrjlw9edaf4l5l3v3deg03l64eut
+  ├── testnet             default : tb1q62tshlryz9lrjlw9edaf4l5l3v3deg03l64eut
+  ├── bitcoincash         default : undefined
+  ├── bitcoincash         cashaddr: undefined
+  ├── bitcoincashTestnet  default : undefined
+  ├── bitcoincashTestnet  cashaddr: undefined
+  ├── bitcoingold         default : btg1q62tshlryz9lrjlw9edaf4l5l3v3deg03r4g0js
+  ├── bitcoingoldTestnet  default : tbtg1q62tshlryz9lrjlw9edaf4l5l3v3deg0358txp6
+  ├── bitcoinsv           default : undefined
+  ├── bitcoinsvTestnet    default : undefined
+  ├── dash                default : undefined
+  ├── dashTest            default : undefined
+  ├── dogecoin            default : undefined
+  ├── dogecoinTest        default : undefined
+  ├── ecash               default : undefined
+  ├── ecash               cashaddr: undefined
+  ├── ecashTest           default : undefined
+  ├── ecashTest           cashaddr: undefined
+  ├── litecoin            default : ltc1q62tshlryz9lrjlw9edaf4l5l3v3deg033q5wlg
+  ├── litecoinTest        default : tltc1q62tshlryz9lrjlw9edaf4l5l3v3deg03xjh8vz
+  ├── zcash               default : undefined
+  └── zcashTest           default : undefined
