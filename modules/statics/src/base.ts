@@ -2322,6 +2322,7 @@ export enum UnderlyingAsset {
   'sol:giga' = 'sol:giga',
   'sol:tnsr' = 'sol:tnsr',
   'sol:ssol' = 'sol:ssol',
+  'sol:drift' = 'sol:drift',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
