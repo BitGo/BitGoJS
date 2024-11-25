@@ -140,6 +140,9 @@ export { Oas };
 import * as Coredao from '@bitgo/sdk-coin-coredao';
 export { Coredao };
 
+import * as Apt from '@bitgo/sdk-coin-apt';
+export { Apt };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -214,6 +217,8 @@ const coinBuilderMap = {
   toas: Oas.TransactionBuilder,
   coredao: Coredao.TransactionBuilder,
   tcoredao: Coredao.TransactionBuilder,
+  apt: Apt.TransactionBuilder,
+  tapt: Apt.TransactionBuilder,
 };
 
 /**
