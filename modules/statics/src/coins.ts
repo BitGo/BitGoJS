@@ -388,6 +388,8 @@ const TIA_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
+const WCT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
+
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
   ...utxoCoins,
@@ -19084,7 +19086,8 @@ export const coins = CoinMap.fromCoins([
     'Wallet Connect',
     18,
     '0x75bb6dca2cd6f9a0189c478bbb8f7ee2fef07c78',
-    UnderlyingAsset['topeth:cnkt']
+    UnderlyingAsset['topeth:cnkt'],
+    WCT_FEATURES
   ),
   zkethErc20(
     '53f0e845-f415-44d3-8517-7565dc346390',
