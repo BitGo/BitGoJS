@@ -17704,6 +17704,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:ssol'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '371ba1d9-8abf-48c5-85f5-8af2fa7df7ed',
+    'sol:drift',
+    'Drift',
+    6,
+    'driftupjyltosbwon8kombeysx54afavlddwsbksjwg7',
+    UnderlyingAsset['sol:drift'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
