@@ -23,13 +23,14 @@ export default {
   transaction: function (
     status: string,
     buildParams?: PrebuildTransactionOptions,
-    setTxRequestId = true
+    setTxRequestId = true,
+    transactionType = 'DELEGATE'
   ): StakingTransaction {
     const transaction: StakingTransaction = {
       id: '00566722-daef-40eb-b0ac-fa5402bbfe72',
       stakingRequestId: '8638284a-dab2-46b9-b07f-21109a6e7220',
       delegationId: '505bda16-a000-461a-8421-1cf3f8617883',
-      transactionType: 'DELEGATE',
+      transactionType,
       createdDate: '2022-01-03T22:04:29.264Z',
       status: status,
       statusModifiedDate: '2022-01-03T22:04:29.264Z',
@@ -59,5 +60,21 @@ export default {
       validator: 'validator',
       actionType: 'DELEGATE',
     },
+  },
+  btcUnstakingBuildParams: {
+    recipients: [
+      {
+        amount: '1234',
+        address: 'address',
+        data: 'data',
+      },
+    ],
+    stakingParams: {
+      requestId: '8638284a-dab2-46b9-b07f-21109a6e7220',
+      amount: '1234',
+      validator: 'validator',
+      actionType: 'DELEGATE',
+    },
+    senderWalletId: 'btcDescriptorWalletId',
   },
 };

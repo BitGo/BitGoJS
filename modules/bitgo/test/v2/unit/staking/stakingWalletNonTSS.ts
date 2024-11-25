@@ -13,10 +13,14 @@ describe('non-TSS Staking Wallet', function () {
   let bitgo;
   let ethBaseCoin;
   let maticBaseCoin;
+  let btcBaseCoin;
   let enterprise;
   let ethWalletData: any;
+  let btcWalletData: any;
+  let btcDescriptorWalletData: any;
   let ethStakingWallet: StakingWallet;
   let maticStakingWallet: StakingWallet;
+  let btcStakingWallet: StakingWallet;
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
@@ -25,6 +29,8 @@ describe('non-TSS Staking Wallet', function () {
     ethBaseCoin.keychains();
     maticBaseCoin = bitgo.coin('matic');
     maticBaseCoin.keychains();
+    btcBaseCoin = bitgo.coin('btc');
+    btcBaseCoin.keychains();
 
     enterprise = new Enterprise(bitgo, ethBaseCoin, {
       id: '5cf940949449412d00f53b3d92dbcaa3',
@@ -43,10 +49,26 @@ describe('non-TSS Staking Wallet', function () {
       enterprise: enterprise.id,
       keys: ['5b3424f91bf349930e340175'],
     };
+    btcWalletData = {
+      id: 'btcWalletId',
+      coin: 'btc',
+      enterprise: enterprise.id,
+      keys: ['5b3424f91bf349930e340175'],
+      coinSpecific: {},
+    };
+    btcDescriptorWalletData = {
+      id: 'btcDescriptorWalletId',
+      coin: 'btc',
+      enterprise: enterprise.id,
+      keys: ['5b3424f91bf349930e340175'],
+      coinSpecific: {},
+    };
     const ethWallet = new Wallet(bitgo, ethBaseCoin, ethWalletData);
     const maticWallet = new Wallet(bitgo, maticBaseCoin, maticWalletData);
+    const btcWallet = new Wallet(bitgo, btcBaseCoin, btcWalletData);
     ethStakingWallet = ethWallet.toStakingWallet();
     maticStakingWallet = maticWallet.toStakingWallet();
+    btcStakingWallet = btcWallet.toStakingWallet();
   });
 
   const sandbox = sinon.createSandbox();
@@ -205,6 +227,43 @@ describe('non-TSS Staking Wallet', function () {
       );
 
       stakingTransaction.should.deepEqual(transaction);
+    });
+  });
+
+  describe('BTC staking', function () {
+    it('btc delegation transaction', async function () {
+      const transaction = fixtures.transaction('READY', fixtures.buildParams, false);
+
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${btcStakingWallet.coin}/wallets/${btcStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`
+        )
+        .query({ expandBuildParams: true })
+        .reply(200, transaction);
+
+      const prebuildTransaction = sandbox.stub(Wallet.prototype, 'prebuildTransaction');
+      const descriptor = sandbox.stub(StakingWallet.prototype, <any>'getDescriptorWallet');
+      await btcStakingWallet.build(transaction);
+      prebuildTransaction.calledOnceWithExactly(transaction.buildParams).should.be.true;
+      descriptor.notCalled.should.be.true;
+    });
+
+    it('btc undelegation transaction', async function () {
+      const transaction = fixtures.transaction('READY', fixtures.btcUnstakingBuildParams, false, 'UNDELEGATE_WITHDRAW');
+
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${btcStakingWallet.coin}/wallets/${btcStakingWallet.walletId}/requests/${transaction.stakingRequestId}/transactions/${transaction.id}`
+        )
+        .query({ expandBuildParams: true })
+        .reply(200, transaction);
+      nock(microservicesUri)
+        .get(`/api/v2/btc/wallet/${btcDescriptorWalletData.id}`)
+        .reply(200, btcDescriptorWalletData);
+
+      const prebuildTransaction = sandbox.stub(Wallet.prototype, 'prebuildTransaction');
+      await btcStakingWallet.build(transaction);
+      prebuildTransaction.calledOnceWithExactly(transaction.buildParams).should.be.true;
     });
   });
 });
