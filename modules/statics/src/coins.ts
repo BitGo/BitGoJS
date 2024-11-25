@@ -11816,6 +11816,14 @@ export const coins = CoinMap.fromCoins([
     '0xad55aebc9b8c03fc43cd9f62260391c13c23e7c0',
     UnderlyingAsset['eth:cusdo']
   ),
+  erc20(
+    '1fe2a541-8cf8-4634-9404-8945042edd68',
+    'eth:virtual',
+    'Virtual Protocol',
+    18,
+    '0x44ff8620b8ca30902395a7bd3f2407e1a091bf73',
+    UnderlyingAsset['eth:virtual']
+  ),
 
   // End FTX missing ERC20 tokens
   celoToken(
@@ -17676,6 +17684,24 @@ export const coins = CoinMap.fromCoins([
     5,
     '63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9',
     UnderlyingAsset['sol:giga'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '7c423a2c-1651-4145-adf1-1b910a98abc8',
+    'sol:tnsr',
+    'Tensor',
+    9,
+    'tnsrxcuxot9xbg3de7pijytdyu7ksklqcpddxnejas6',
+    UnderlyingAsset['sol:tnsr'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '9d6c29dc-1374-4c59-a9a6-af4c91242281',
+    'sol:ssol',
+    'Solayer SOL',
+    9,
+    'sso14endruubvqajs3dq36q829a3a6befoeergjyweh',
+    UnderlyingAsset['sol:ssol'],
     SOL_TOKEN_FEATURES
   ),
 
