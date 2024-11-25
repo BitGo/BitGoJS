@@ -1,7 +1,9 @@
 import {
   BaseCoin,
   BitGoBase,
+  InvalidAddressError,
   KeyPair,
+  MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -10,6 +12,8 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { KeyPair as AptKeyPair } from './lib';
+import utils from './lib/utils';
 
 export class Apt extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -46,12 +50,30 @@ export class Apt extends BaseCoin {
     return 'Aptos';
   }
 
-  verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
+  }
+
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'eddsa';
+  }
+
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
-  isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
+    const { address: newAddress } = params;
+
+    if (!this.isValidAddress(newAddress)) {
+      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    }
+    return true;
   }
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
@@ -59,15 +81,23 @@ export class Apt extends BaseCoin {
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
-    throw new Error('Method not implemented.');
+    const keyPair = seed ? new AptKeyPair({ seed }) : new AptKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
   }
 
   isValidPub(pub: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidPublicKey(pub);
   }
 
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidAddress(address);
   }
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
