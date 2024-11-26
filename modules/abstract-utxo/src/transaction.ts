@@ -258,17 +258,11 @@ function getTxInputSignaturesCount<TNumber extends number | bigint>(
  * Decompose a raw psbt into useful information, such as the total amounts,
  * change amounts, and transaction outputs.
  */
-export function explainPsbt<TNumber extends number | bigint>(
+export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.UtxoTransaction<bigint>>(
+  psbt: bitgo.UtxoPsbt<Tx>,
   params: ExplainTransactionOptions<TNumber>,
   network: utxolib.Network
 ): TransactionExplanation {
-  const { txHex } = params;
-  let psbt: bitgo.UtxoPsbt;
-  try {
-    psbt = bitgo.createPsbtFromHex(txHex, network);
-  } catch (e) {
-    throw new Error('failed to parse psbt hex');
-  }
   const txOutputs = psbt.txOutputs;
 
   function getChainAndIndexFromBip32Derivations(output: bitgo.PsbtOutput) {
@@ -346,18 +340,12 @@ export function explainPsbt<TNumber extends number | bigint>(
  * change amounts, and transaction outputs.
  */
 export function explainTx<TNumber extends number | bigint>(
+  tx: bitgo.UtxoTransaction<TNumber>,
   params: ExplainTransactionOptions<TNumber>,
-  coin: AbstractUtxoCoin
+  network: utxolib.Network
 ): TransactionExplanation {
-  const { txHex } = params;
-  let tx;
-  try {
-    tx = coin.createTransactionFromHex(txHex);
-  } catch (e) {
-    throw new Error('failed to parse transaction hex');
-  }
-  const common = explainCommon(tx, params, coin.network);
-  const inputSignaturesCount = getTxInputSignaturesCount(tx, params, coin.network);
+  const common = explainCommon(tx, params, network);
+  const inputSignaturesCount = getTxInputSignaturesCount(tx, params, network);
   return {
     ...common,
     inputSignatures: inputSignaturesCount,

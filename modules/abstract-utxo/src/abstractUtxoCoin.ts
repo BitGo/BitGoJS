@@ -1503,7 +1503,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (typeof txHex !== 'string' || !txHex.match(/^([a-f0-9]{2})+$/i)) {
       throw new Error('invalid transaction hex, must be a valid hex string');
     }
-    return utxolib.bitgo.isPsbt(txHex) ? explainPsbt(params, this.network) : explainTx(params, this);
+    if (utxolib.bitgo.isPsbt(txHex)) {
+      return explainPsbt(utxolib.bitgo.createPsbtFromHex(txHex, this.network), params, this.network);
+    } else {
+      return explainTx(this.createTransactionFromHex<TNumber>(txHex), params, this.network);
+    }
   }
 
   /**
