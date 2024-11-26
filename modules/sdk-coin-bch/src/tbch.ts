@@ -13,12 +13,4 @@ export class Tbch extends Bch {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tbch(bitgo);
   }
-
-  getChain() {
-    return 'tbch';
-  }
-
-  getFullName() {
-    return 'Testnet Bitcoin Cash';
-  }
 }

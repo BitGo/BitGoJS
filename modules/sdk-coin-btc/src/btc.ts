@@ -21,22 +21,6 @@ export class Btc extends AbstractUtxoCoin {
     return new Btc(bitgo);
   }
 
-  getChain(): string {
-    return 'btc';
-  }
-
-  getFamily(): string {
-    return 'btc';
-  }
-
-  getFullName(): string {
-    return 'Bitcoin';
-  }
-
-  supportsBlockTarget(): boolean {
-    return true;
-  }
-
   supportsLightning(): boolean {
     return true;
   }

@@ -19,7 +19,7 @@ describe('utxoCoins', function () {
         ['bsv', 'bsv', 'Bitcoin SV', 'bitcoinsv'],
         ['tbsv', 'bsv', 'Testnet Bitcoin SV', 'bitcoinsvTestnet'],
         ['dash', 'dash', 'Dash', 'dash'],
-        ['tdash', 'tdash', 'Testnet Dash', 'dashTest'],
+        ['tdash', 'dash', 'Testnet Dash', 'dashTest'],
         ['doge', 'doge', 'Dogecoin', 'dogecoin'],
         ['tdoge', 'doge', 'Testnet Dogecoin', 'dogecoinTest'],
         ['bcha', 'bcha', 'Bitcoin ABC', 'ecash'],

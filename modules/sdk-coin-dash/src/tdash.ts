@@ -12,16 +12,4 @@ export class Tdash extends Dash {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tdash(bitgo);
   }
-
-  getChain(): string {
-    return 'tdash';
-  }
-
-  getFamily(): string {
-    return 'tdash';
-  }
-
-  getFullName(): string {
-    return 'Testnet Dash';
-  }
 }

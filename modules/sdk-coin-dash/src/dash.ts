@@ -10,20 +10,4 @@ export class Dash extends AbstractUtxoCoin {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Dash(bitgo);
   }
-
-  getChain(): string {
-    return 'dash';
-  }
-
-  getFamily(): string {
-    return 'dash';
-  }
-
-  getFullName(): string {
-    return 'Dash';
-  }
-
-  supportsBlockTarget(): boolean {
-    return false;
-  }
 }

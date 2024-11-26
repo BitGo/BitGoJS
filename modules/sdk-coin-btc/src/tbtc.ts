@@ -13,12 +13,4 @@ export class Tbtc extends Btc {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tbtc(bitgo);
   }
-
-  getChain() {
-    return 'tbtc';
-  }
-
-  getFullName() {
-    return 'Testnet Bitcoin';
-  }
 }

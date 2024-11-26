@@ -14,20 +14,4 @@ export class Ltc extends AbstractUtxoCoin {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Ltc(bitgo);
   }
-
-  getChain(): string {
-    return 'ltc';
-  }
-
-  getFamily(): string {
-    return 'ltc';
-  }
-
-  getFullName(): string {
-    return 'Litecoin';
-  }
-
-  supportsBlockTarget(): boolean {
-    return false;
-  }
 }

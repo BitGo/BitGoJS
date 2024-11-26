@@ -12,12 +12,4 @@ export class Tdoge extends Doge {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tdoge(bitgo);
   }
-
-  getChain(): string {
-    return 'tdoge';
-  }
-
-  getFullName(): string {
-    return 'Testnet Dogecoin';
-  }
 }

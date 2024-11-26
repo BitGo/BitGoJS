@@ -11,22 +11,6 @@ export class Bch extends AbstractUtxoCoin {
     return new Bch(bitgo);
   }
 
-  getChain() {
-    return 'bch';
-  }
-
-  getFamily() {
-    return 'bch';
-  }
-
-  getFullName() {
-    return 'Bitcoin Cash';
-  }
-
-  supportsBlockTarget() {
-    return false;
-  }
-
   /**
    * Canonicalize a Bitcoin Cash address for a specific version
    *

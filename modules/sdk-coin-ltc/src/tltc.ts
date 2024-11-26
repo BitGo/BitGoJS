@@ -12,12 +12,4 @@ export class Tltc extends Ltc {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tltc(bitgo);
   }
-
-  getChain(): string {
-    return 'tltc';
-  }
-
-  getFullName(): string {
-    return 'Testnet Litecoin';
-  }
 }

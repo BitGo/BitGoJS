@@ -13,12 +13,4 @@ export class Tbsv extends Bsv {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tbsv(bitgo);
   }
-
-  getChain(): string {
-    return 'tbsv';
-  }
-
-  getFullName(): string {
-    return 'Testnet Bitcoin SV';
-  }
 }
