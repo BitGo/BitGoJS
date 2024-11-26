@@ -167,6 +167,60 @@ describe('Send transaction', function () {
       should.equal(txJson.from, undefined);
     });
 
+    it('should build txn with eip1559', async function () {
+      const txBuilder = getBuilder('tcelo') as TransactionBuilder;
+      txBuilder.fee({
+        fee: '1000000000',
+        gasLimit: '12100000',
+        eip1559: {
+          maxFeePerGas: '7593123',
+          maxPriorityFeePerGas: '150',
+        },
+      });
+      txBuilder.counter(2);
+      txBuilder.type(TransactionType.Send);
+      txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
+      txBuilder
+        .transfer()
+        .coin('tcusd')
+        .amount('1000000000')
+        .to('0x19645032c7f1533395d44a629462e751084d3e4c')
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      txBuilder.sign({ key: testData.PRIVATE_KEY });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.gasLimit, '12100000');
+      should.equal(txJson._type, 'EIP1559');
+      should.equal(txJson.maxFeePerGas, '7593123');
+      should.equal(txJson.maxPriorityFeePerGas, '150');
+    });
+
+    it('should build legacy txn for celo', async function () {
+      const txBuilder = getBuilder('celo') as TransactionBuilder;
+      txBuilder.fee({
+        fee: '1000000000',
+        gasLimit: '12100000',
+      });
+      txBuilder.counter(2);
+      txBuilder.type(TransactionType.Send);
+      txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
+      txBuilder
+        .transfer()
+        .coin('celo')
+        .amount('1000000000')
+        .to('0x19645032c7f1533395d44a629462e751084d3e4c')
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.gasLimit, '12100000');
+      should.equal(txJson._type, 'Legacy');
+      should.equal(txJson.v, '0xa4ec');
+    });
+
     it('a send token transaction without final v', async () => {
       const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
       const contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
@@ -183,7 +237,7 @@ describe('Send transaction', function () {
         .key(key);
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.v, '0xaef3');
+      should.equal(txJson.v, '0x015e09');
     });
   });
 
