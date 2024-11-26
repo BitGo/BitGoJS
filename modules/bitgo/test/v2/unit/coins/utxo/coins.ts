@@ -1,40 +1,38 @@
-/**
- * prettier
- */
-import 'should';
+import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
+
 import { getUtxoCoinForNetwork, utxoCoins } from './util';
 
 describe('utxoCoins', function () {
   it('has expected chain/network values for items', function () {
-    utxoCoins
-      .map((c) => [c.getChain(), utxolib.getNetworkName(c.network)])
-      .should.eql([
-        ['btc', 'bitcoin'],
-        ['tbtc', 'testnet'],
-        ['tbtcsig', 'bitcoinPublicSignet'],
-        ['tbtc4', 'bitcoinTestnet4'],
-        ['tbtcbgsig', 'bitcoinBitGoSignet'],
-        ['bch', 'bitcoincash'],
-        ['tbch', 'bitcoincashTestnet'],
-        ['btg', 'bitcoingold'],
-        ['bsv', 'bitcoinsv'],
-        ['tbsv', 'bitcoinsvTestnet'],
-        ['dash', 'dash'],
-        ['tdash', 'dashTest'],
-        ['doge', 'dogecoin'],
-        ['tdoge', 'dogecoinTest'],
-        ['bcha', 'ecash'],
-        ['tbcha', 'ecashTest'],
-        ['ltc', 'litecoin'],
-        ['tltc', 'litecoinTest'],
-        ['zec', 'zcash'],
-        ['tzec', 'zcashTest'],
-      ]);
+    assert.deepStrictEqual(
+      utxoCoins.map((c) => [c.getChain(), c.getFamily(), c.getFullName(), utxolib.getNetworkName(c.network)]),
+      [
+        ['btc', 'btc', 'Bitcoin', 'bitcoin'],
+        ['tbtc', 'btc', 'Testnet Bitcoin', 'testnet'],
+        ['tbtcsig', 'btc', 'Public Signet Bitcoin', 'bitcoinPublicSignet'],
+        ['tbtc4', 'btc', 'Testnet4 Bitcoin', 'bitcoinTestnet4'],
+        ['tbtcbgsig', 'btc', 'BitGo Signet Bitcoin', 'bitcoinBitGoSignet'],
+        ['bch', 'bch', 'Bitcoin Cash', 'bitcoincash'],
+        ['tbch', 'bch', 'Testnet Bitcoin Cash', 'bitcoincashTestnet'],
+        ['btg', 'btg', 'Bitcoin Gold', 'bitcoingold'],
+        ['bsv', 'bsv', 'Bitcoin SV', 'bitcoinsv'],
+        ['tbsv', 'bsv', 'Testnet Bitcoin SV', 'bitcoinsvTestnet'],
+        ['dash', 'dash', 'Dash', 'dash'],
+        ['tdash', 'tdash', 'Testnet Dash', 'dashTest'],
+        ['doge', 'doge', 'Dogecoin', 'dogecoin'],
+        ['tdoge', 'doge', 'Testnet Dogecoin', 'dogecoinTest'],
+        ['bcha', 'bcha', 'Bitcoin ABC', 'ecash'],
+        ['tbcha', 'bcha', 'Testnet Bitcoin ABC', 'ecashTest'],
+        ['ltc', 'ltc', 'Litecoin', 'litecoin'],
+        ['tltc', 'ltc', 'Testnet Litecoin', 'litecoinTest'],
+        ['zec', 'zec', 'ZCash', 'zcash'],
+        ['tzec', 'zec', 'Testnet ZCash', 'zcashTest'],
+      ]
+    );
 
-    utxolib
-      .getNetworkList()
-      .map((network): [string | undefined, string | undefined] => {
+    assert.deepStrictEqual(
+      utxolib.getNetworkList().map((network): [string | undefined, string | undefined] => {
         let coin;
         try {
           coin = getUtxoCoinForNetwork(network);
@@ -43,8 +41,8 @@ describe('utxoCoins', function () {
         }
 
         return [utxolib.getNetworkName(network), coin?.getChain()];
-      })
-      .should.eql([
+      }),
+      [
         ['bitcoin', 'btc'],
         ['testnet', 'tbtc'],
         ['bitcoinPublicSignet', 'tbtcsig'],
@@ -66,6 +64,7 @@ describe('utxoCoins', function () {
         ['litecoinTest', 'tltc'],
         ['zcash', 'zec'],
         ['zcashTest', 'tzec'],
-      ]);
+      ]
+    );
   });
 });
