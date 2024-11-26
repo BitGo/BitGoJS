@@ -230,7 +230,6 @@ describe('XRP:', function () {
 
   describe('Recover Token Transactions', () => {
     const sandBox = sinon.createSandbox();
-    const tokenName = 'txrp:rlusd';
     const destination = 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP?dt=12345';
     const passPhrase = '#Bondiola1234';
     let xrplStub;
@@ -286,7 +285,8 @@ describe('XRP:', function () {
         rootAddress: testData.keys.rootAddress,
         recoveryDestination: destination,
         walletPassphrase: passPhrase,
-        tokenName: tokenName,
+        issuerAddress: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+        currencyCode: '524C555344000000000000000000000000000000',
       });
 
       res.should.not.be.empty();
@@ -351,7 +351,8 @@ describe('XRP:', function () {
         rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
         recoveryDestination: destination,
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
-        tokenName: tokenName,
+        issuerAddress: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+        currencyCode: '524C555344000000000000000000000000000000',
       });
 
       res.should.not.be.empty();

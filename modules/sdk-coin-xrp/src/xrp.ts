@@ -524,8 +524,9 @@ export class Xrp extends BaseCoin {
       );
     }
 
-    const tokenName = params?.tokenName;
-    if (!!tokenName) {
+    const issuer = params?.issuerAddress;
+    const currency = params?.currencyCode;
+    if (!!issuer && !!currency) {
       const tokenParams = {
         recoveryDestination: params.recoveryDestination,
         recoverableBalance,
@@ -538,9 +539,11 @@ export class Xrp extends BaseCoin {
         isUnsignedSweep,
         userAddress,
         backupAddress,
+        issuer,
+        currency,
       };
 
-      return this.recoverXrpToken(params, tokenName, tokenParams);
+      return this.recoverXrpToken(params, tokenParams);
     }
 
     const factory = new TransactionBuilderFactory(coins.get(this.getChain()));
@@ -596,9 +599,9 @@ export class Xrp extends BaseCoin {
     return transactionExplanation;
   }
 
-  public async recoverXrpToken(params, tokenName, tokenParams) {
-    const { currency, issuer } = utils.getXrpCurrencyFromTokenName(tokenName);
-
+  public async recoverXrpToken(params, tokenParams) {
+    const { currency, issuer } = tokenParams;
+    const tokenName = (utils.getXrpToken(issuer, currency) as XrpCoin).name;
     const lines = tokenParams.accountLines.body.result.lines;
 
     let amount;
