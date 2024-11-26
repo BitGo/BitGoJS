@@ -500,9 +500,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (_.isUndefined(prebuild.txHex)) {
       throw new Error('missing required txPrebuild property txHex');
     }
-    const tx = bitgo.isPsbt(prebuild.txHex)
-      ? bitgo.createPsbtFromHex(prebuild.txHex, this.network)
-      : this.createTransactionFromHex<TNumber>(prebuild.txHex);
+    const tx = this.decodeTransaction(prebuild.txHex);
     if (_.isUndefined(prebuild.blockHeight)) {
       prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
     }
@@ -540,6 +538,29 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     hex: string
   ): utxolib.bitgo.UtxoTransaction<TNumber> {
     return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
+  }
+
+  decodeTransaction<TNumber extends number | bigint>(
+    input: Buffer | string
+  ): utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoPsbt {
+    if (typeof input === 'string') {
+      for (const format of ['hex', 'base64'] as const) {
+        const buffer = Buffer.from(input, format);
+        if (buffer.toString(format) === input.toLowerCase()) {
+          return this.decodeTransaction(buffer);
+        }
+      }
+
+      throw new Error('input must be a valid hex or base64 string');
+    }
+
+    if (utxolib.bitgo.isPsbt(input)) {
+      return utxolib.bitgo.createPsbtFromBuffer(input, this.network);
+    } else {
+      return utxolib.bitgo.createTransactionFromBuffer(input, this.network, {
+        amountType: this.amountType,
+      });
+    }
   }
 
   toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
@@ -1278,9 +1299,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('missing txPrebuild parameter');
     }
 
-    let tx = bitgo.isPsbt(txPrebuild.txHex)
-      ? bitgo.createPsbtFromHex(txPrebuild.txHex, this.network)
-      : this.createTransactionFromHex<TNumber>(txPrebuild.txHex);
+    let tx = this.decodeTransaction(params.txPrebuild.txHex);
 
     const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
 
@@ -1413,9 +1432,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const txHex = signTransactionParams.txPrebuild.txHex;
     assert(txHex, 'missing txHex parameter');
 
-    const tx = bitgo.isPsbt(txHex)
-      ? bitgo.createPsbtFromHex(txHex, this.network)
-      : this.createTransactionFromHex<TNumber>(txHex);
+    const tx = this.decodeTransaction(txHex);
 
     const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
 
@@ -1503,10 +1520,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (typeof txHex !== 'string' || !txHex.match(/^([a-f0-9]{2})+$/i)) {
       throw new Error('invalid transaction hex, must be a valid hex string');
     }
-    if (utxolib.bitgo.isPsbt(txHex)) {
-      return explainPsbt(utxolib.bitgo.createPsbtFromHex(txHex, this.network), params, this.network);
+    const tx = this.decodeTransaction(txHex);
+    if (tx instanceof bitgo.UtxoPsbt) {
+      return explainPsbt(tx, params, this.network);
     } else {
-      return explainTx(this.createTransactionFromHex<TNumber>(txHex), params, this.network);
+      return explainTx(tx, params, this.network);
     }
   }
 
