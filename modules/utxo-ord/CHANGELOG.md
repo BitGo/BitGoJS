@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.54](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.20.53...@bitgo/utxo-ord@1.20.54) (2024-11-26)
+
+**Note:** Version bump only for package @bitgo/utxo-ord
+
 ## [1.20.53](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.20.52...@bitgo/utxo-ord@1.20.53) (2024-11-21)
 
 **Note:** Version bump only for package @bitgo/utxo-ord

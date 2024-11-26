@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.2.0...@bitgo/utxo-bin@3.3.0) (2024-11-26)
+
+### Bug Fixes
+
+- **utxo-bin:** add missing command `address fromDescriptor` ([d9d42b6](https://github.com/BitGo/BitGoJS/commit/d9d42b629d458122327a0f10802e0fb19f7147b5))
+
+### Features
+
+- **utxo-bin:** add support for regtest addresses ([3f3886f](https://github.com/BitGo/BitGoJS/commit/3f3886ff2373bb32fe4a9c8fe88c8b5bcbb2deb6))
+- **utxo-bin:** make conversion table a little prettier ([002f296](https://github.com/BitGo/BitGoJS/commit/002f2960928c946bd7bf1de5759ef514892dd0bb))
+
 # [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.1.5...@bitgo/utxo-bin@3.2.0) (2024-11-21)
 
 ### Bug Fixes

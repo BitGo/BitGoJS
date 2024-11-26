@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.6.1...@bitgo/sdk-coin-xrp@3.6.2) (2024-11-26)
+
+### Bug Fixes
+
+- **sdk-coin-xrp:** support recovery using issuer address and currency code ([0123e85](https://github.com/BitGo/BitGoJS/commit/0123e85bfb45f3408365408e50fe62d492cb20cc))
+
 ## [3.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.6.0...@bitgo/sdk-coin-xrp@3.6.1) (2024-11-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

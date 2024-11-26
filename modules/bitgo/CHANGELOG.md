@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.15.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.14.0...bitgo@39.15.0) (2024-11-26)
+
+### Bug Fixes
+
+- re-add writing of fixtures if not found ([08ee552](https://github.com/BitGo/BitGoJS/commit/08ee552cd4d582835da0c1fb00eed5491cef3006))
+
+### Features
+
+- default to NU6 consensus branch id for zcash ([95f677c](https://github.com/BitGo/BitGoJS/commit/95f677c04da30d6f21f44438617218232cc1b835))
+- **statics:** added support for bsc cfx and erc20 acx ([00cf9ef](https://github.com/BitGo/BitGoJS/commit/00cf9efdcfc0d2161acd2b7eed0e7c58d70795c9))
+
 # [39.14.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.13.0...bitgo@39.14.0) (2024-11-21)
 
 ### Features

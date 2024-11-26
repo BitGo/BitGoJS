@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [28.14.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.14.1...@bitgo/sdk-core@28.14.2) (2024-11-26)
+
+### Bug Fixes
+
+- **sdk-core:** change expireAt for btc staking to string ([1fd302b](https://github.com/BitGo/BitGoJS/commit/1fd302b5c1a506c3e4a3bf158aa3476de5e784a3))
+- **sdk-core:** preprocess recipients before initiate ([c71ca11](https://github.com/BitGo/BitGoJS/commit/c71ca11a0c084d52b795299f62a457a22be83c0e))
+
 ## [28.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.14.0...@bitgo/sdk-core@28.14.1) (2024-11-21)
 
 ### Bug Fixes
