@@ -407,4 +407,16 @@ describe('OFC:', function () {
       });
     });
   });
+
+  describe('check ofc tokens for bsc tokens', function () {
+    const tokenMain = 'ofcbsc:cfx';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('BSC Conflux');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_18);
+      });
+    });
+  });
 });

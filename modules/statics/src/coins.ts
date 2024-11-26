@@ -52,6 +52,7 @@ import {
   ofcAlgoToken,
   ofcArbethErc20,
   ofcAvaxErc20,
+  ofcBscToken,
   ofcPolygonErc20,
   ofcerc20,
   ofcHederaToken,
@@ -13037,6 +13038,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('0ee531d4-6df5-437d-aec5-aa72e33ac775', 'ofceigen', 'Eigen', 18, UnderlyingAsset.EIGEN),
   ofcerc20('bbe911d8-c900-401c-8dfb-febd98256e75', 'ofcusdy', 'Ondo U.S. Dollar Yield', 18, UnderlyingAsset.USDY),
   ofcerc20('017c87e8-db41-41f6-8382-c61ad8ced64b', 'ofcfold', 'Manifold Finance', 18, UnderlyingAsset.FOLD),
+  ofcerc20('94fcd19b-6dd6-4a8c-8fea-11c73ba9fa48', 'ofcacx', 'Across Protocol', 18, UnderlyingAsset.ACX),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
@@ -13126,6 +13128,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset['avaxc:link']
   ),
+  ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
     'ofcpolygon:sbc',
