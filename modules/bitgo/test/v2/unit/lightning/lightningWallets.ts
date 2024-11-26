@@ -165,7 +165,7 @@ describe('Lightning wallets', function () {
         .reply(200, { id: 'keyId3' });
 
       nock(bgUrl)
-        .post('/api/v2/' + coinName + '/wallet', (body) => validateWalletRequest(body))
+        .post('/api/v2/' + coinName + '/wallet/add', (body) => validateWalletRequest(body))
         .reply(200, { id: 'walletId' });
 
       const response = await wallets.generateWallet(params);

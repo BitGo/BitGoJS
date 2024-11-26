@@ -150,7 +150,7 @@ export class Wallets implements IWallets {
       throw new Error('invalid argument for address - valid address string expected');
     }
 
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(params).result();
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(params).result();
     return {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
     };
@@ -197,7 +197,7 @@ export class Wallets implements IWallets {
       coinSpecific: { [this.baseCoin.getChain()]: { keys: [userAuthKeychain.id, nodeAuthKeychain.id] } },
     };
 
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(walletParams).result();
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(walletParams).result();
     const wallet = new Wallet(this.bitgo, this.baseCoin, newWallet);
     return {
       wallet,
@@ -466,7 +466,7 @@ export class Wallets implements IWallets {
       walletParams.keys = undefined;
       walletParams.keySignatures = undefined;
 
-      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(walletParams).result(); // returns the ids
+      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(walletParams).result(); // returns the ids
 
       const userKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.USER], reqId });
       const backupKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.BACKUP], reqId });
@@ -582,7 +582,7 @@ export class Wallets implements IWallets {
       }
 
       this.bitgo.setRequestTracer(reqId);
-      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
 
       const result: WalletWithKeychains = {
         wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -1010,7 +1010,7 @@ export class Wallets implements IWallets {
       walletVersion,
     };
     const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
 
     const result: WalletWithKeychains = {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -1094,7 +1094,7 @@ export class Wallets implements IWallets {
     };
 
     const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
 
     const result: WalletWithKeychains = {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -1130,7 +1130,7 @@ export class Wallets implements IWallets {
     };
 
     // Create Wallet
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet')).send(finalWalletParams).result();
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
     const wallet = new Wallet(this.bitgo, this.baseCoin, newWallet);
     const keychains = wallet.keyIds();
     const result: WalletWithKeychains = {
