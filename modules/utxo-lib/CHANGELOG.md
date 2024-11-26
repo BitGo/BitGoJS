@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.1.0...@bitgo/utxo-lib@11.2.0) (2024-11-26)
+
+### Bug Fixes
+
+- **utxo-lib:** add isCashaddrNetwork ([6040324](https://github.com/BitGo/BitGoJS/commit/6040324a5133856e25906499d9c819d395c696dc))
+
+### Features
+
+- default to NU6 consensus branch id for zcash ([95f677c](https://github.com/BitGo/BitGoJS/commit/95f677c04da30d6f21f44438617218232cc1b835))
+
 # [11.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.0.1...@bitgo/utxo-lib@11.1.0) (2024-11-21)
 
 ### Features

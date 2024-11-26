@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@3.0.40...@bitgo/sdk-coin-celo@4.0.0) (2024-11-26)
+
+### Features
+
+- **sdk-coin-celo:** support eip1559 for celo ([3a7a64d](https://github.com/BitGo/BitGoJS/commit/3a7a64deec69cd57750324205a326fbe80c338b9))
+
+### BREAKING CHANGES
+
+- **sdk-coin-celo:** This commit updates the hardfork of testnet celo, which
+  changes the final v value and adds support to eip1559 txn
+
 ## [3.0.40](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@3.0.39...@bitgo/sdk-coin-celo@3.0.40) (2024-11-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo

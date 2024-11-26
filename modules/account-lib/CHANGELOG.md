@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.3.1...@bitgo/account-lib@24.0.0) (2024-11-26)
+
+### Features
+
+- **sdk-coin-apt:** addition of apt skeleton in account-lib ([b6c5e93](https://github.com/BitGo/BitGoJS/commit/b6c5e932a0cafb8bbeebed0d807cac4ab31a26f8))
+- **sdk-coin-celo:** support eip1559 for celo ([3a7a64d](https://github.com/BitGo/BitGoJS/commit/3a7a64deec69cd57750324205a326fbe80c338b9))
+
+### BREAKING CHANGES
+
+- **sdk-coin-celo:** This commit updates the hardfork of testnet celo, which
+  changes the final v value and adds support to eip1559 txn
+
 ## [23.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.3.0...@bitgo/account-lib@23.3.1) (2024-11-21)
 
 **Note:** Version bump only for package @bitgo/account-lib

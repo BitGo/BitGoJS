@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.2.15...@bitgo/sdk-coin-etc@2.2.16) (2024-11-26)
+
+### Bug Fixes
+
+- **sdk-coin-etc:** unsigned sweep error message ([6bfb623](https://github.com/BitGo/BitGoJS/commit/6bfb6231fc6651156ecb7eb64fc30b67e69ae40e))
+
 ## [2.2.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.2.14...@bitgo/sdk-coin-etc@2.2.15) (2024-11-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-etc

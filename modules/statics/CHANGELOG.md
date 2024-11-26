@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.9.0...@bitgo/statics@50.10.0) (2024-11-26)
+
+### Features
+
+- **statics:** add staking feature to TWCT tokens ([c6abf54](https://github.com/BitGo/BitGoJS/commit/c6abf54f76288edc0c58bbafbc5a7ca151757de4))
+- **statics:** added batch of tokens for onboarding ([28fff78](https://github.com/BitGo/BitGoJS/commit/28fff78e9ff870af74d0464b441460e06e98c0eb))
+- **statics:** added drift token ([9afb80b](https://github.com/BitGo/BitGoJS/commit/9afb80bca6e491b15b262304c2a08474dae84917))
+- **statics:** added support for bsc cfx and erc20 acx ([00cf9ef](https://github.com/BitGo/BitGoJS/commit/00cf9efdcfc0d2161acd2b7eed0e7c58d70795c9))
+- **statics:** ungate assets for germany trust ([128fdc4](https://github.com/BitGo/BitGoJS/commit/128fdc45b82738ae3095468fa84925eaa82429c1))
+
 # [50.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.8.0...@bitgo/statics@50.9.0) (2024-11-21)
 
 ### Features
