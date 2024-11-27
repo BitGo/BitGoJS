@@ -111,6 +111,15 @@ export interface PrebuildTransactionOptions {
    * This feature is supported only for specific coins, like ADA.
    */
   senderAddress?: string;
+
+  /**
+   * The wallet ID of the sender wallet when sender wallet is different from current wallet id.
+   * @type {string}
+   * @default {undefined}
+   * @description For BTC unstaking, the sender wallet(a descriptor wallet) is different from original wallet
+   * */
+  senderWalletId?: string;
+
   changeAddress?: string;
   allowExternalChangeAddress?: boolean;
   type?: string;

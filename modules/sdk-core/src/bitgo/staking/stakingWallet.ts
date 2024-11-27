@@ -20,6 +20,7 @@ import {
 import { BitGoBase } from '../bitgoBase';
 import { IWallet, PrebuildTransactionResult } from '../wallet';
 import { ITssUtils, RequestTracer, TssUtils } from '../utils';
+import assert from 'assert';
 
 export class StakingWallet implements IStakingWallet {
   private readonly bitgo: BitGoBase;
@@ -153,9 +154,15 @@ export class StakingWallet implements IStakingWallet {
       if (!transaction.buildParams) {
         throw Error(`Staking transaction ${transaction.id} build params not expanded`);
       }
+      const isBtcUndelegate =
+        this.wallet.baseCoin.getFamily() === 'btc' && transaction.transactionType === 'UNDELEGATE_WITHDRAW';
+      const wallet = isBtcUndelegate
+        ? await this.getDescriptorWallet(transaction)
+        : await this.getWalletForBuildingAndSigning();
+
       return {
         transaction: transaction,
-        result: await (await this.getWalletForBuildingAndSigning()).prebuildTransaction(transaction.buildParams),
+        result: await wallet.prebuildTransaction(transaction.buildParams),
       };
     }
   }
@@ -319,5 +326,10 @@ export class StakingWallet implements IStakingWallet {
     } else {
       return true;
     }
+  }
+
+  private async getDescriptorWallet(transaction: StakingTransaction): Promise<IWallet> {
+    assert(transaction.buildParams?.senderWalletId, 'senderWalletId is required for btc undelegate transaction');
+    return await this.wallet.baseCoin.wallets().get({ id: transaction.buildParams.senderWalletId });
   }
 }
