@@ -67,6 +67,8 @@ import {
   tofcsolToken,
   tofcStellarToken,
   tofcPolygonErc20,
+  ofcOpethErc20,
+  tofcXrpToken,
 } from './ofc';
 import { utxoCoins } from './utxo';
 import { lightningCoins } from './lightning';
@@ -1687,6 +1689,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
+  tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 96, UnderlyingAsset['txrp:rlusd']),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   ofc('f37bbb72-adfe-4d06-90dc-afd0aa34aadd', 'ofcgbp', 'Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
@@ -13128,6 +13131,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset['avaxc:link']
   ),
+  ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
