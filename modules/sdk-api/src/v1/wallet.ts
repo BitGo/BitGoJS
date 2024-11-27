@@ -899,11 +899,7 @@ Wallet.prototype.signTransaction = function (params, callback) {
   params = _.extend({}, params);
 
   if (params.psbt) {
-    try {
-      return callback(null, signPsbtRequest(params));
-    } catch (e) {
-      return callback(e);
-    }
+    return Bluebird.try(() => signPsbtRequest(params)).nodeify(callback);
   }
 
   common.validateParams(params, ['transactionHex'], [], callback);
