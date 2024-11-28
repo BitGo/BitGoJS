@@ -11,16 +11,4 @@ export class Bsv extends Bch {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Bsv(bitgo);
   }
-
-  getChain(): string {
-    return 'bsv';
-  }
-
-  getFamily(): string {
-    return 'bsv';
-  }
-
-  getFullName(): string {
-    return 'Bitcoin SV';
-  }
 }

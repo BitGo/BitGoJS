@@ -10,12 +10,4 @@ export class Tzec extends Zec {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tzec(bitgo);
   }
-
-  getChain() {
-    return 'tzec';
-  }
-
-  getFullName() {
-    return 'Testnet ZCash';
-  }
 }

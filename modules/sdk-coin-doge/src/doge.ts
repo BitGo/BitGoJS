@@ -64,18 +64,6 @@ export class Doge extends AbstractUtxoCoin {
     return new Doge(bitgo);
   }
 
-  getChain(): string {
-    return 'doge';
-  }
-
-  getFamily(): string {
-    return 'doge';
-  }
-
-  getFullName(): string {
-    return 'Dogecoin';
-  }
-
   supportsBlockTarget(): boolean {
     return true;
   }

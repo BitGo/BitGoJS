@@ -10,20 +10,4 @@ export class Btg extends AbstractUtxoCoin {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Btg(bitgo);
   }
-
-  getChain(): string {
-    return 'btg';
-  }
-
-  getFamily(): string {
-    return 'btg';
-  }
-
-  getFullName(): string {
-    return 'Bitcoin Gold';
-  }
-
-  supportsBlockTarget(): boolean {
-    return false;
-  }
 }

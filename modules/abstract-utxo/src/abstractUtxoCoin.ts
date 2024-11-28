@@ -88,6 +88,8 @@ import {
 } from './transaction';
 import { assertDescriptorWalletAddress } from './descriptor/assertDescriptorWalletAddress';
 
+import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
+
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
     coin: IBaseCoin;
@@ -389,6 +391,30 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   get network() {
     return this._network;
+  }
+
+  getChain() {
+    return getChainFromNetwork(this.network);
+  }
+
+  getFamily() {
+    return getFamilyFromNetwork(this.network);
+  }
+
+  getFullName() {
+    return getFullNameFromNetwork(this.network);
+  }
+
+  /** Indicates whether the coin supports a block target */
+  supportsBlockTarget() {
+    // FIXME: the SDK does not seem to use this anywhere so it is unclear what the purpose of this method is
+    switch (getMainnet(this.network)) {
+      case utxolib.networks.bitcoin:
+      case utxolib.networks.dogecoin:
+        return true;
+      default:
+        return false;
+    }
   }
 
   sweepWithSendMany(): boolean {
@@ -1129,14 +1155,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       );
     }
 
-    return true;
-  }
-
-  /**
-   * Indicates whether coin supports a block target
-   * @returns {boolean}
-   */
-  supportsBlockTarget() {
     return true;
   }
 

@@ -13,12 +13,4 @@ export class Tbtcbgsig extends Btc {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tbtcbgsig(bitgo);
   }
-
-  getChain(): string {
-    return 'tbtcbgsig';
-  }
-
-  getFullName(): string {
-    return 'BitGo Signet Bitcoin';
-  }
 }

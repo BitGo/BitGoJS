@@ -12,18 +12,6 @@ export class Bcha extends Bch {
     return new Bcha(bitgo);
   }
 
-  getChain(): string {
-    return 'bcha';
-  }
-
-  getFamily(): string {
-    return 'bcha';
-  }
-
-  getFullName(): string {
-    return 'Bitcoin ABC';
-  }
-
   canonicalAddress(address: string, version: unknown = 'base58'): string {
     if (version === 'base58') {
       return utxolib.addressFormat.toCanonicalFormat(address, this.network);

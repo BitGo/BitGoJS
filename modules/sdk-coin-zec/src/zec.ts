@@ -13,20 +13,4 @@ export class Zec extends AbstractUtxoCoin {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Zec(bitgo);
   }
-
-  getChain() {
-    return 'zec';
-  }
-
-  getFamily() {
-    return 'zec';
-  }
-
-  getFullName() {
-    return 'ZCash';
-  }
-
-  supportsBlockTarget() {
-    return false;
-  }
 }

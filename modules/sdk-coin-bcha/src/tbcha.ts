@@ -13,12 +13,4 @@ export class Tbcha extends Bcha {
   static createInstance(bitgo: BitGoBase): BaseCoin {
     return new Tbcha(bitgo);
   }
-
-  getChain(): string {
-    return 'tbcha';
-  }
-
-  getFullName(): string {
-    return 'Testnet Bitcoin ABC';
-  }
 }
