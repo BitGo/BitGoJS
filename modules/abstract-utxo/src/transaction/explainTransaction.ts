@@ -135,7 +135,7 @@ function getTxInputSignaturesCount<TNumber extends number | bigint>(
  * Decompose a raw psbt into useful information, such as the total amounts,
  * change amounts, and transaction outputs.
  */
-export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.UtxoTransaction<bigint>>(
+function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.UtxoTransaction<bigint>>(
   psbt: bitgo.UtxoPsbt<Tx>,
   params: ExplainTransactionOptions<TNumber>,
   network: utxolib.Network
@@ -212,11 +212,7 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
   } as TransactionExplanation;
 }
 
-/**
- * Decompose a raw transaction into useful information, such as the total amounts,
- * change amounts, and transaction outputs.
- */
-export function explainTx<TNumber extends number | bigint>(
+function explainLegacyTx<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
   params: ExplainTransactionOptions<TNumber>,
   network: utxolib.Network
@@ -228,4 +224,20 @@ export function explainTx<TNumber extends number | bigint>(
     inputSignatures: inputSignaturesCount,
     signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
   } as TransactionExplanation;
+}
+
+/**
+ * Decompose a raw transaction into useful information, such as the total amounts,
+ * change amounts, and transaction outputs.
+ */
+export function explainTx<TNumber extends number | bigint>(
+  tx: bitgo.UtxoTransaction<TNumber> | bitgo.UtxoPsbt,
+  params: ExplainTransactionOptions<TNumber>,
+  network: utxolib.Network
+): TransactionExplanation {
+  if (tx instanceof bitgo.UtxoPsbt) {
+    return explainPsbt(tx, params, network);
+  } else {
+    return explainLegacyTx(tx, params, network);
+  }
 }
