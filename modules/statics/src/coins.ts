@@ -1616,6 +1616,46 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['natix'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'abbdcf44-ac44-46be-b4e9-8a760d44b79a',
+    'ofcsol:mobile',
+    'Helium Mobile',
+    6,
+    UnderlyingAsset['mobile'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '94e55bde-f57f-4817-9984-b461a5d6bcd0',
+    'ofcsol:jup',
+    'Jupiter',
+    6,
+    UnderlyingAsset['jup'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '989eec31-a0d5-4cdc-b4de-6fca30cde366',
+    'ofcsol:popcat',
+    'POPCAT',
+    9,
+    UnderlyingAsset['sol:popcat'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ca2a2bc9-ed79-426f-8378-96f9c9568526',
+    'ofcsol:wif',
+    'dogwifhat',
+    6,
+    UnderlyingAsset['wif'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ab833723-8b40-4fc4-8dd1-f5ea9a07c76c',
+    'ofcsol:goat',
+    'Goatseus Maximus',
+    6,
+    UnderlyingAsset['sol:goat'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
