@@ -363,10 +363,12 @@ const OAS_FEATURES = [
 ];
 const COREDAO_FEATURES = [
   ...ETH_FEATURES,
-  CoinFeature.MULTISIG_COLD,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
   CoinFeature.EVM_WALLET,
-  CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 const APT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
