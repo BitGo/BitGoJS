@@ -1084,6 +1084,7 @@ class OasTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.testnet.oasys.games/address/';
   chainId = 9372;
   nativeCoinOperationHashPrefix = '9372';
+  batcherContractAddress = '0x55670664990e6efb9189cb15ff59d25c0579d32b';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1106,6 +1107,9 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://scan.test.btcs.network/address/';
   chainId = 1115;
   nativeCoinOperationHashPrefix = '1115';
+  batcherContractAddress = '0x103a5e8b870ca1de37982ddc09cbb4f2fd6fe6fe';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
