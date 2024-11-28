@@ -118,7 +118,7 @@ export class Doge extends AbstractUtxoCoin {
     return super.explainTransaction({
       ...params,
       txInfo: params.txInfo ? parseTransactionInfo(params.txInfo as TransactionInfoJSON) : undefined,
-    });
+    } as ExplainTransactionOptions<bigint>);
   }
 
   async recoverFromWrongChain<TNumber extends number | bigint = bigint>(

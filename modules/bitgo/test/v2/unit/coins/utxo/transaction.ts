@@ -541,7 +541,7 @@ function run<TNumber extends number | bigint = number>(
       pubs?: Triple<string>
     ): Promise<void> {
       const explanation = await coin.explainTransaction<TNumber>({
-        txHex,
+        tx: coin.decodeTransaction(txHex),
         txInfo: {
           unspents,
         },

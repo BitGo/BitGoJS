@@ -115,7 +115,12 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
 };
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
+
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+
+type DecodedTransaction<TNumber extends number | bigint> =
+  | utxolib.bitgo.UtxoTransaction<TNumber>
+  | utxolib.bitgo.UtxoPsbt;
 
 type RootWalletKeys = bitgo.RootWalletKeys;
 
@@ -172,7 +177,7 @@ export interface TransactionInfo<TNumber extends number | bigint = number> {
 }
 
 export interface ExplainTransactionOptions<TNumber extends number | bigint = number> {
-  txHex: string;
+  tx: DecodedTransaction<TNumber>;
   txInfo?: TransactionInfo<TNumber>;
   feeInfo?: string;
   pubs?: Triple<string>;
@@ -565,9 +570,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
   }
 
-  decodeTransaction<TNumber extends number | bigint>(
-    input: Buffer | string
-  ): utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoPsbt {
+  decodeTransaction<TNumber extends number | bigint>(input: Buffer | string): DecodedTransaction<TNumber> {
     if (typeof input === 'string') {
       for (const format of ['hex', 'base64'] as const) {
         const buffer = Buffer.from(input, format);
@@ -640,12 +643,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const keySignatures = _.get(wallet, '_wallet.keySignatures', {});
 
-    if (_.isUndefined(txPrebuild.txHex)) {
-      throw new Error('missing required txPrebuild property txHex');
+    let tx: DecodedTransaction<TNumber>;
+    if (txPrebuild.txHex !== undefined) {
+      tx = this.decodeTransaction<TNumber>(txPrebuild.txHex);
+    } else if (txPrebuild.txBase64 !== undefined) {
+      tx = this.decodeTransaction(txPrebuild.txBase64);
+    } else {
+      throw new Error('missing required txPrebuild property txHex or txBase64');
     }
-    // obtain all outputs
     const explanation: TransactionExplanation = await this.explainTransaction<TNumber>({
-      txHex: txPrebuild.txHex,
+      tx,
       txInfo: txPrebuild.txInfo,
       pubs: keychainArray.map((k) => k.pub) as Triple<string>,
     });
@@ -1533,11 +1540,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async explainTransaction<TNumber extends number | bigint = number>(
     params: ExplainTransactionOptions<TNumber>
   ): Promise<TransactionExplanation> {
-    const { txHex } = params;
-    if (typeof txHex !== 'string' || !txHex.match(/^([a-f0-9]{2})+$/i)) {
-      throw new Error('invalid transaction hex, must be a valid hex string');
-    }
-    return explainTx(this.decodeTransaction(txHex), params, this.network);
+    return explainTx(params.tx, params, this.network);
   }
 
   /**
