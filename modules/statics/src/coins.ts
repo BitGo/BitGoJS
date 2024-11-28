@@ -19100,11 +19100,11 @@ export const coins = CoinMap.fromCoins([
   ),
   topethErc20(
     'fa6bc0a9-49f8-4516-88b7-cad6a62f1dc2',
-    'topeth:cnkt',
+    'topeth:wct',
     'Wallet Connect',
     18,
     '0x75bb6dca2cd6f9a0189c478bbb8f7ee2fef07c78',
-    UnderlyingAsset['topeth:cnkt'],
+    UnderlyingAsset['topeth:wct'],
     WCT_FEATURES
   ),
   zkethErc20(
