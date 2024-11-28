@@ -2217,7 +2217,7 @@ export enum UnderlyingAsset {
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
-  'topeth:cnkt' = 'topeth:cnkt',
+  'topeth:wct' = 'topeth:wct',
 
   // zkSync mainnet tokens
   'zketh:link' = 'zketh:link',
