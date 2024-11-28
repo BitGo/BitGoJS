@@ -1,139 +1,16 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { BitGoBase, IRequestTracer, Triple } from '@bitgo/sdk-core';
-import {
-  AbstractUtxoCoin,
-  DecoratedExplainTransactionOptions,
-  WalletOutput,
-  ExplainTransactionOptions,
-  TransactionExplanation,
-  TransactionPrebuild,
-  Output,
-} from './abstractUtxoCoin';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
+import { Triple } from '@bitgo/sdk-core';
 
-const ScriptRecipientPrefix = 'scriptPubKey:';
+import {
+  DecoratedExplainTransactionOptions,
+  ExplainTransactionOptions,
+  Output,
+  TransactionExplanation,
+  WalletOutput,
+} from '../abstractUtxoCoin';
 
-/**
- * Check if the address is a script recipient (starts with `scriptPubKey:`).
- * @param address
- */
-export function isScriptRecipient(address: string): boolean {
-  return address.toLowerCase().startsWith(ScriptRecipientPrefix.toLowerCase());
-}
-
-/**
- * An extended address is one that encodes either a regular address or a hex encoded script with the prefix `scriptPubKey:`.
- * This function converts the extended address format to either a script or an address.
- * @param extendedAddress
- */
-export function fromExtendedAddressFormat(extendedAddress: string): { address: string } | { script: string } {
-  if (isScriptRecipient(extendedAddress)) {
-    return { script: extendedAddress.slice(ScriptRecipientPrefix.length) };
-  }
-  return { address: extendedAddress };
-}
-
-/**
- * Convert a script or address to the extended address format.
- * @param script
- * @param network
- * @returns if the script is an OP_RETURN script, then it will be prefixed with `scriptPubKey:`, otherwise it will be converted to an address.
- */
-export function toExtendedAddressFormat(script: Buffer, network: utxolib.Network): string {
-  return script[0] === utxolib.opcodes.OP_RETURN
-    ? `${ScriptRecipientPrefix}${script.toString('hex')}`
-    : utxolib.address.fromOutputScript(script, network);
-}
-
-export function assertValidTransactionRecipient(output: { amount: bigint | number | string; address?: string }): void {
-  // In the case that this is an OP_RETURN output or another non-encodable scriptPubkey, we dont have an address.
-  // We will verify that the amount is zero, and if it isnt then we will throw an error.
-  if (!output.address || isScriptRecipient(output.address)) {
-    if (output.amount.toString() !== '0') {
-      throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${JSON.stringify(output)}`);
-    }
-  }
-}
-
-/**
- * Get the inputs for a psbt from a prebuild.
- */
-export function getPsbtTxInputs(
-  psbtArg: string | utxolib.bitgo.UtxoPsbt,
-  network: utxolib.Network
-): { address: string; value: bigint; valueString: string }[] {
-  const psbt = psbtArg instanceof utxolib.bitgo.UtxoPsbt ? psbtArg : utxolib.bitgo.createPsbtFromHex(psbtArg, network);
-  const txInputs = psbt.txInputs;
-  return psbt.data.inputs.map((input, index) => {
-    let address: string;
-    let value: bigint;
-    if (input.witnessUtxo) {
-      address = utxolib.address.fromOutputScript(input.witnessUtxo.script, network);
-      value = input.witnessUtxo.value;
-    } else if (input.nonWitnessUtxo) {
-      const tx = utxolib.bitgo.createTransactionFromBuffer<bigint>(input.nonWitnessUtxo, network, {
-        amountType: 'bigint',
-      });
-      const txId = (Buffer.from(txInputs[index].hash).reverse() as Buffer).toString('hex');
-      if (tx.getId() !== txId) {
-        throw new Error('input transaction hex does not match id');
-      }
-      const prevTxOutputIndex = txInputs[index].index;
-      address = utxolib.address.fromOutputScript(tx.outs[prevTxOutputIndex].script, network);
-      value = tx.outs[prevTxOutputIndex].value;
-    } else {
-      throw new Error('psbt input is missing both witnessUtxo and nonWitnessUtxo');
-    }
-    return { address, value, valueString: value.toString() };
-  });
-}
-
-/**
- * Get the inputs for a transaction from a prebuild.
- */
-export async function getTxInputs<TNumber extends number | bigint>(params: {
-  txPrebuild: TransactionPrebuild<TNumber>;
-  bitgo: BitGoBase;
-  coin: AbstractUtxoCoin;
-  disableNetworking: boolean;
-  reqId?: IRequestTracer;
-}): Promise<{ address: string; value: TNumber; valueString: string }[]> {
-  const { txPrebuild, bitgo, coin, disableNetworking, reqId } = params;
-  if (!txPrebuild.txHex) {
-    throw new Error(`txPrebuild.txHex not set`);
-  }
-  const transaction = coin.createTransactionFromHex<TNumber>(txPrebuild.txHex);
-  const transactionCache = {};
-  return await Promise.all(
-    transaction.ins.map(async (currentInput): Promise<{ address: string; value: TNumber; valueString: string }> => {
-      const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
-      const txHex = txPrebuild.txInfo?.txHexes?.[transactionId];
-      if (txHex) {
-        const localTx = coin.createTransactionFromHex<TNumber>(txHex);
-        if (localTx.getId() !== transactionId) {
-          throw new Error('input transaction hex does not match id');
-        }
-        const currentOutput = localTx.outs[currentInput.index];
-        const address = utxolib.address.fromOutputScript(currentOutput.script, coin.network);
-        return {
-          address,
-          value: currentOutput.value,
-          valueString: currentOutput.value.toString(),
-        };
-      } else if (!transactionCache[transactionId]) {
-        if (disableNetworking) {
-          throw new Error('attempting to retrieve transaction details externally with networking disabled');
-        }
-        if (reqId) {
-          bitgo.setRequestTracer(reqId);
-        }
-        transactionCache[transactionId] = await bitgo.get(coin.url(`/public/tx/${transactionId}`)).result();
-      }
-      const transactionDetails = transactionCache[transactionId];
-      return transactionDetails.outputs[currentInput.index];
-    })
-  );
-}
+import { toExtendedAddressFormat } from './recipient';
 
 function explainCommon<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
@@ -258,17 +135,11 @@ function getTxInputSignaturesCount<TNumber extends number | bigint>(
  * Decompose a raw psbt into useful information, such as the total amounts,
  * change amounts, and transaction outputs.
  */
-export function explainPsbt<TNumber extends number | bigint>(
+export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.UtxoTransaction<bigint>>(
+  psbt: bitgo.UtxoPsbt<Tx>,
   params: ExplainTransactionOptions<TNumber>,
   network: utxolib.Network
 ): TransactionExplanation {
-  const { txHex } = params;
-  let psbt: bitgo.UtxoPsbt;
-  try {
-    psbt = bitgo.createPsbtFromHex(txHex, network);
-  } catch (e) {
-    throw new Error('failed to parse psbt hex');
-  }
   const txOutputs = psbt.txOutputs;
 
   function getChainAndIndexFromBip32Derivations(output: bitgo.PsbtOutput) {
@@ -346,18 +217,12 @@ export function explainPsbt<TNumber extends number | bigint>(
  * change amounts, and transaction outputs.
  */
 export function explainTx<TNumber extends number | bigint>(
+  tx: bitgo.UtxoTransaction<TNumber>,
   params: ExplainTransactionOptions<TNumber>,
-  coin: AbstractUtxoCoin
+  network: utxolib.Network
 ): TransactionExplanation {
-  const { txHex } = params;
-  let tx;
-  try {
-    tx = coin.createTransactionFromHex(txHex);
-  } catch (e) {
-    throw new Error('failed to parse transaction hex');
-  }
-  const common = explainCommon(tx, params, coin.network);
-  const inputSignaturesCount = getTxInputSignaturesCount(tx, params, coin.network);
+  const common = explainCommon(tx, params, network);
+  const inputSignaturesCount = getTxInputSignaturesCount(tx, params, network);
   return {
     ...common,
     inputSignatures: inputSignaturesCount,
