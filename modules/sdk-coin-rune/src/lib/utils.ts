@@ -32,7 +32,7 @@ export class RuneUtils extends CosmosUtils {
   }
 
   /** @inheritdoc */
-  isValidAddress(address: string | Buffer): boolean {
+  isValidAddress(address: string | Uint8Array): boolean {
     if (address === undefined || address === null) {
       return false;
     }
@@ -46,13 +46,13 @@ export class RuneUtils extends CosmosUtils {
   }
 
   /**
-   * Validates a decoded address in `Buffer` form by encoding it and
+   * Validates a decoded address in `Uint8Array` form by encoding it and
    * checking if the encoded version is valid
    *
-   * @param address - The decoded address as a `Buffer`.
+   * @param address - The decoded address as a `Uint8Array`.
    * @returns `true` if the encoded address is valid, `false` otherwise.
    */
-  private isValidDecodedAddress(address: Buffer): boolean {
+  private isValidDecodedAddress(address: Uint8Array): boolean {
     const encodedAddress = this.getEncodedAddress(address);
     return this.isValidEncodedAddress(encodedAddress);
   }
@@ -71,14 +71,14 @@ export class RuneUtils extends CosmosUtils {
   }
 
   /**
-   * Encodes a given address `Buffer` into a bech32 string format, based on the current network type.
-   * Primarily serves as a utility to convert a `Buffer`-type address to a bech32 encoded string
+   * Encodes a given address `Uint8Array` into a bech32 string format, based on the current network type.
+   * Primarily serves as a utility to convert a `Uint8Array`-type address to a bech32 encoded string
    *
-   * @param address - The address to be encoded, provided as a `Buffer`.
+   * @param address - The address to be encoded, provided as a `Uint8Array`.
    * @returns A bech32-encoded string representing the address.
    * @throws Error - Throws an error if encoding fails
    */
-  getEncodedAddress(address: Buffer): string {
+  getEncodedAddress(address: Uint8Array): string {
     try {
       return this.networkType === NetworkType.TESTNET
         ? bech32.encode(TESTNET_ADDRESS_PREFIX, address)
@@ -89,14 +89,14 @@ export class RuneUtils extends CosmosUtils {
   }
 
   /**
-   * Decodes a bech32-encoded address string back into a `Buffer`.
+   * Decodes a bech32-encoded address string back into a `Uint8Array`.
    * Primarily serves as a utility to convert a string-type address into its binary representation,
    *
    * @param address - The bech32-encoded address as a `string`.
-   * @returns The decoded address as a `Buffer`.
+   * @returns The decoded address as a `Uint8Array`.
    * @throws Error - Throws an error if decoding fails
    */
-  getDecodedAddress(address: string): Buffer {
+  getDecodedAddress(address: string): Uint8Array {
     try {
       return bech32.decode(address).data;
     } catch (error) {
@@ -128,7 +128,7 @@ export class RuneUtils extends CosmosUtils {
     }
   }
 
-  convertMessageAddressToBuffer(messages: MessageData[]): MessageData[] {
+  convertMessageAddressToUint8Array(messages: MessageData[]): MessageData[] {
     return messages.map((message) => {
       if ('fromAddress' in message.value && 'toAddress' in message.value) {
         const sendMessage = message.value;
@@ -161,7 +161,7 @@ export class RuneUtils extends CosmosUtils {
     publicKey?: string,
     memo?: string
   ): CosmosLikeTransaction {
-    messages = this.convertMessageAddressToBuffer(messages);
+    messages = this.convertMessageAddressToUint8Array(messages);
     const cosmosLikeTxn = {
       sequence: sequence,
       sendMessages: messages,
