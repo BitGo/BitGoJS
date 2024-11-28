@@ -76,7 +76,6 @@ import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
-  explainPsbt,
   explainTx,
   fromExtendedAddressFormat,
   getPsbtTxInputs,
@@ -1535,12 +1534,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (typeof txHex !== 'string' || !txHex.match(/^([a-f0-9]{2})+$/i)) {
       throw new Error('invalid transaction hex, must be a valid hex string');
     }
-    const tx = this.decodeTransaction(txHex);
-    if (tx instanceof bitgo.UtxoPsbt) {
-      return explainPsbt(tx, params, this.network);
-    } else {
-      return explainTx(tx, params, this.network);
-    }
+    return explainTx(this.decodeTransaction(txHex), params, this.network);
   }
 
   /**
