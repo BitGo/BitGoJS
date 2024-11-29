@@ -156,7 +156,7 @@ export class TransferBuilder {
     if (this._coinUsesNonPackedEncodingForTxData) {
       const types: string[] = operationData[0] as string[];
       const values: string[] = operationData[1].map((item) =>
-        item instanceof Buffer ? '0x' + item.toString('hex') : item
+        typeof item === 'string' ? item : '0x' + item.toString('hex')
       );
       operationHash = keccak256(defaultAbiCoder.encode(types, values));
     } else {

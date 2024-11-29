@@ -247,7 +247,7 @@ export class Cspr extends BaseCoin {
    */
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
     const keyPair = new CsprLib.KeyPair({ prv: key.prv });
-    const messageHex = message instanceof Buffer ? message.toString('hex') : message;
+    const messageHex = typeof message === 'string' ? message : message.toString('hex');
     const signatureData = CsprLib.Utils.signMessage(keyPair, messageHex);
     return Buffer.from(signatureData.signature);
   }

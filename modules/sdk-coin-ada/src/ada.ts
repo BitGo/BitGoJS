@@ -161,7 +161,7 @@ export class Ada extends BaseCoin {
   /** @inheritDoc */
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
     const adaKeypair = new AdaKeyPair({ prv: key.prv });
-    const messageHex = message instanceof Buffer ? message.toString('hex') : message;
+    const messageHex = typeof message === 'string' ? message : message.toString('hex');
 
     return Buffer.from(adaKeypair.signMessage(messageHex));
   }
