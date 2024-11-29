@@ -28,8 +28,7 @@
     "skipLibCheck": true,
     "strict": true,
     "useUnknownInCatchVariables": false,
-    "target": "es6",
-    "types": ["cypress", "@testing-library/cypress"]
+    "target": "es6"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
