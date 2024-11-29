@@ -2173,7 +2173,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
     return consolidationTransactions;
   });
 
-  return runNextConsolidation(this, target)
+  return runNextConsolidation()
     .catch(function (err) {
       if (err.message === 'Done') {
         return;

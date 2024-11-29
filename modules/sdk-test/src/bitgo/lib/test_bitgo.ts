@@ -582,8 +582,7 @@ export class TestBitGo {
       }
     };
 
-    BitGoAPI.prototype.fetchConstants = function () {
-      // @ts-expect-error - no implicit this
+    BitGoAPI.prototype.fetchConstants = function (this: any) {
       nock(this._baseUrl)
         .get('/api/v1/client/constants')
         .reply(200, {

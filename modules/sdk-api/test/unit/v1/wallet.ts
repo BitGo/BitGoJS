@@ -23,8 +23,7 @@ const TestBitGo = {
   TEST_WALLET1_PASSCODE: 'iVWeATjqLS1jJShrPpETti0b',
 };
 const originalFetchConstants = BitGoAPI.prototype.fetchConstants;
-BitGoAPI.prototype.fetchConstants = function () {
-  // @ts-expect-error - no implicit this
+BitGoAPI.prototype.fetchConstants = function (this: any) {
   nock(this._baseUrl).get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
 
   // force client constants reload
