@@ -26,7 +26,7 @@
     "webpack-dev": "cross-env NODE_ENV=development webpack",
     "webpack-prod": "NODE_OPTIONS=--max-old-space-size=4096 cross-env NODE_ENV=production webpack",
     "test": "npm run coverage",
-    "unit-test": "mocha 'test/legacy/v2/unit/**/*.ts' 'test/legacy/unit/**/*.ts'",
+    "unit-test": "mocha 'test/legacy/v2/unit/**/*.ts' 'test/legacy/unit/**/*.ts' 'test/utxo/**/*.ts'",
     "coverage": "nyc -- npm run unit-test",
     "integration-test": "nyc -- mocha \"test/legacy/v2/integration/**/*.ts\"",
     "browser-test": "karma start karma.conf.js",

@@ -5,7 +5,7 @@ import { AbstractUtxoCoin, descriptor as utxod } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
 
-import { BitGo } from '../../../../../../src';
+import { BitGo } from '../../src';
 
 export function getDescriptorAddress(d: string, index: number, network: utxolib.Network): string {
   const derivedScript = Buffer.from(

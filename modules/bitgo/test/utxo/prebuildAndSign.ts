@@ -10,7 +10,7 @@ import * as nock from 'nock';
 import { encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
 import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
 import { getSeed, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../../src';
+import { BitGo } from '../../src';
 
 const txFormats = ['legacy', 'psbt'] as const;
 export type TxFormat = (typeof txFormats)[number];

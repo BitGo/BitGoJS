@@ -38,7 +38,7 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 import * as utxoLib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
-import { getDefaultWalletKeys, toKeychainObjects } from './coins/utxo/util';
+import { getDefaultWalletKeys, toKeychainObjects } from '../../../utxo/util';
 import { Tsol } from '@bitgo/sdk-coin-sol';
 import { Teth } from '@bitgo/sdk-coin-eth';
 

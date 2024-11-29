@@ -2,10 +2,10 @@
  * @prettier
  */
 import * as utxolib from '@bitgo/utxo-lib';
-import * as coins from '../../../../../../../src/v2/coins';
+import * as coins from '../../../src/v2/coins';
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../../../src/bitgo';
+import { BitGo } from '../../../src/bitgo';
 
 const AbstractUtxoCoinCtor = AbstractUtxoCoin as unknown as ObjectConstructor;
 

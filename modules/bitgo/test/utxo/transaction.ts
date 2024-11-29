@@ -35,7 +35,7 @@ import {
   WalletSignTransactionOptions,
 } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../../src';
+import { BitGo } from '../../src';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 type WalletUnspent<TNumber extends number | bigint = number> = bitgo.WalletUnspent<TNumber>;

@@ -13,7 +13,7 @@ type WalletUnspent = utxolib.bitgo.WalletUnspent<bigint>;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
-import { Config } from '../../../../../../../src/config';
+import { Config } from '../../../src/config';
 import {
   AbstractUtxoCoin,
   backupKeyRecovery,
