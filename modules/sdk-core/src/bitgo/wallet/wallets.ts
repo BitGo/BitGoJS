@@ -313,9 +313,6 @@ export class Wallets implements IWallets {
       assert(enterprise, 'enterprise is required for TSS wallet');
 
       if (type === 'cold') {
-        if (params.walletVersion === 5 || params.walletVersion === 6) {
-          throw new Error('EVM TSS MPCv2 wallets are not supported for cold wallets');
-        }
         // validate
         assert(params.bitgoKeyId, 'bitgoKeyId is required for SMC TSS wallet');
         assert(params.commonKeychain, 'commonKeychain is required for SMC TSS wallet');
@@ -331,9 +328,6 @@ export class Wallets implements IWallets {
       }
 
       if (type === 'custodial') {
-        if (params.walletVersion === 5 || params.walletVersion === 6) {
-          throw new Error('EVM TSS MPCv2 wallets are not supported for custodial wallets');
-        }
         return this.generateCustodialMpcWallet({
           multisigType: 'tss',
           label,
@@ -1044,6 +1038,15 @@ export class Wallets implements IWallets {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
+    if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      const tssSettings: TssSettings = await this.bitgo
+        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .result();
+      const multisigTypeVersion =
+        tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.coldMultiSigTypeVersion;
+      walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
+    }
+
     // Create MPC Keychains
     const bitgoKeychain = await this.baseCoin.keychains().get({ id: bitgoKeyId });
 
@@ -1120,6 +1123,15 @@ export class Wallets implements IWallets {
   }: GenerateBaseMpcWalletOptions): Promise<WalletWithKeychains> {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
+
+    if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      const tssSettings: TssSettings = await this.bitgo
+        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        .result();
+      const multisigTypeVersion =
+        tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.custodialMultiSigTypeVersion;
+      walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
+    }
 
     const finalWalletParams = {
       label,

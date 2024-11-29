@@ -24,6 +24,7 @@ import {
   getSharedSecret,
   BulkWalletShareOptions,
   KeychainWithEncryptedPrv,
+  WalletWithKeychains,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
 import { afterEach } from 'mocha';
@@ -858,26 +859,36 @@ describe('V2 Wallets:', function () {
           eth: {
             walletCreationSettings: {
               multiSigTypeVersion: 'MPCv2',
+              coldMultiSigTypeVersion: 'MPCv2',
+              custodialMultiSigTypeVersion: 'MPCv2',
             },
           },
           bsc: {
             walletCreationSettings: {
               multiSigTypeVersion: 'MPCv2',
+              coldMultiSigTypeVersion: 'MPCv2',
+              custodialMultiSigTypeVersion: 'MPCv2',
             },
           },
           polygon: {
             walletCreationSettings: {
               multiSigTypeVersion: 'MPCv2',
+              coldMultiSigTypeVersion: 'MPCv2',
+              custodialMultiSigTypeVersion: 'MPCv2',
             },
           },
           atom: {
             walletCreationSettings: {
               multiSigTypeVersion: 'MPCv2',
+              coldMultiSigTypeVersion: 'MPCv2',
+              custodialMultiSigTypeVersion: 'MPCv2',
             },
           },
           tia: {
             walletCreationSettings: {
               multiSigTypeVersion: 'MPCv2',
+              coldMultiSigTypeVersion: 'MPCv2',
+              custodialMultiSigTypeVersion: 'MPCv2',
             },
           },
         },
@@ -891,7 +902,7 @@ describe('V2 Wallets:', function () {
     });
 
     ['hteth', 'tbsc', 'tpolygon', 'ttia', 'tatom'].forEach((coin) => {
-      it(`should create a new ${coin} TSS MPCv2 wallet`, async function () {
+      it(`should create a new ${coin} TSS MPCv2 hot wallet`, async function () {
         const testCoin = bitgo.coin(coin);
         const stubbedKeychainsTriplet: KeychainsTriplet = {
           userKeychain: {
@@ -941,6 +952,130 @@ describe('V2 Wallets:', function () {
           bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
           params.passphrase
         );
+      });
+
+      it(`should create a new ${coin} TSS MPCv2 cold wallet`, async function () {
+        const testCoin = bitgo.coin(coin);
+        const bitgoKeyId = 'key123';
+        const commonKeychain = '0xabc';
+
+        const bitgoKeyNock = nock('https://bitgo.fakeurl')
+          .get(`/api/v2/${coin}/key/${bitgoKeyId}`)
+          .times(1)
+          .reply(200, {
+            id: 'key123',
+            pub: 'bitgoPub',
+            type: 'tss',
+            source: 'bitgo',
+            commonKeychain,
+          });
+
+        const userKeyNock = nock('https://bitgo.fakeurl')
+          .post(`/api/v2/${coin}/key`, {
+            source: 'user',
+            keyType: 'tss',
+            commonKeychain,
+            derivedFromParentWithSeed: '37',
+          })
+          .times(1)
+          .reply(200, {
+            id: 'userKey123',
+            pub: 'userPub',
+            type: 'tss',
+            source: 'user',
+          });
+
+        const backupKeyNock = nock('https://bitgo.fakeurl')
+          .post(`/api/v2/${coin}/key`, {
+            source: 'backup',
+            keyType: 'tss',
+            commonKeychain,
+            derivedFromParentWithSeed: '37',
+          })
+          .times(1)
+          .reply(200, {
+            id: 'backupKey123',
+            pub: 'backupPub',
+            type: 'tss',
+            source: 'backup',
+          });
+
+        const walletNock = nock('https://bitgo.fakeurl')
+          .post(`/api/v2/${coin}/wallet`, {
+            label: 'tss wallet',
+            m: 2,
+            n: 3,
+            keys: ['userKey123', 'backupKey123', 'key123'],
+            type: 'cold',
+            multisigType: 'tss',
+            enterprise: 'enterprise',
+            walletVersion: 5,
+          })
+          .reply(200);
+
+        const wallets = new Wallets(bitgo, testCoin);
+
+        const params: GenerateWalletOptions = {
+          label: 'tss wallet',
+          multisigType: 'tss' as const,
+          enterprise: 'enterprise',
+          passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+          walletVersion: 5,
+          type: 'cold',
+          bitgoKeyId: 'key123',
+          commonKeychain: '0xabc',
+          coldDerivationSeed: '37',
+        };
+
+        const response = (await wallets.generateWallet(params)) as WalletWithKeychains;
+
+        bitgoKeyNock.isDone().should.be.true();
+        userKeyNock.isDone().should.be.true();
+        backupKeyNock.isDone().should.be.true();
+        walletNock.isDone().should.be.true();
+
+        should.exist(response.wallet);
+        should.exist(response.userKeychain);
+        should.exist(response.backupKeychain);
+        should.exist(response.bitgoKeychain);
+        response.responseType.should.equal('WalletWithKeychains');
+        response.userKeychain.id.should.equal('userKey123');
+        response.backupKeychain.id.should.equal('backupKey123');
+        response.bitgoKeychain.id.should.equal('key123');
+      });
+
+      it(`should create a new ${coin} TSS MPCv2 custody wallet`, async function () {
+        const testCoin = bitgo.coin(coin);
+        const keys = ['userKey', 'backupKey', 'bitgoKey'];
+
+        const params: GenerateWalletOptions = {
+          label: 'tss wallet',
+          passphrase: 'tss password',
+          multisigType: 'tss' as const,
+          enterprise: 'enterprise',
+          passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+          walletVersion: 5,
+          type: 'custodial',
+        };
+
+        const walletNock = nock('https://bitgo.fakeurl')
+          .post(`/api/v2/${coin}/wallet`)
+          .times(1)
+          .reply(200, { ...params, keys });
+
+        const wallets = new Wallets(bitgo, testCoin);
+
+        const response = (await wallets.generateWallet(params)) as WalletWithKeychains;
+
+        walletNock.isDone().should.be.true();
+        should.exist(response.wallet);
+        should.exist(response.userKeychain);
+        should.exist(response.backupKeychain);
+        should.exist(response.bitgoKeychain);
+        response.responseType.should.equal('WalletWithKeychains');
+        response.userKeychain.id.should.equal(keys[0]);
+        response.backupKeychain.id.should.equal(keys[1]);
+        response.bitgoKeychain.id.should.equal(keys[2]);
       });
     });
 
@@ -1055,42 +1190,6 @@ describe('V2 Wallets:', function () {
       assert.equal(
         bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
-      );
-    });
-
-    it('should throw for a cold wallet using wallet version 5', async function () {
-      const hteth = bitgo.coin('hteth');
-      const wallets = new Wallets(bitgo, hteth);
-
-      await assert.rejects(
-        async () => {
-          await wallets.generateWallet({
-            label: 'tss wallet',
-            multisigType: 'tss',
-            enterprise: 'enterprise',
-            walletVersion: 5,
-            type: 'cold',
-          });
-        },
-        { message: 'EVM TSS MPCv2 wallets are not supported for cold wallets' }
-      );
-    });
-
-    it('should throw for a custodial wallet using wallet version 5', async function () {
-      const hteth = bitgo.coin('hteth');
-      const wallets = new Wallets(bitgo, hteth);
-
-      await assert.rejects(
-        async () => {
-          await wallets.generateWallet({
-            label: 'tss wallet',
-            multisigType: 'tss',
-            enterprise: 'enterprise',
-            walletVersion: 5,
-            type: 'custodial',
-          });
-        },
-        { message: 'EVM TSS MPCv2 wallets are not supported for custodial wallets' }
       );
     });
   });
