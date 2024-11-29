@@ -205,7 +205,7 @@ Here is a template to help get started:</br>
     "outDir": "./dist",
     "rootDir": "."
   },
-  "include": ["src/**/*", "package.json"],
+  "include": ["src/**/*", "test/**/*", "package.json"],
   "references": [
     {
       "path": "../sdk-core"
