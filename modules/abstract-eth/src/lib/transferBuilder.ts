@@ -155,8 +155,8 @@ export class TransferBuilder {
 
     if (this._coinUsesNonPackedEncodingForTxData) {
       const types: string[] = operationData[0] as string[];
-      const values: string[] = operationData[1].map((item) =>
-        item instanceof Buffer ? '0x' + item.toString('hex') : item
+      const values: (string | number)[] = operationData[1].map((item) =>
+        typeof item === 'string' || typeof item === 'number' ? item : '0x' + item.toString('hex')
       );
       operationHash = keccak256(defaultAbiCoder.encode(types, values));
     } else {
@@ -166,7 +166,7 @@ export class TransferBuilder {
     return operationHash;
   }
 
-  protected getOperationData(): (string | Buffer)[][] {
+  protected getOperationData(): (string | number | Buffer)[][] {
     let operationData;
     const prefix = this.getOperationHashPrefix();
     if (this._tokenContractAddress !== undefined) {
