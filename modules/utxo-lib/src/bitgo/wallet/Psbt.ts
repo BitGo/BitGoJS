@@ -357,6 +357,7 @@ export function parsePsbtInput(input: PsbtInput): ParsedPsbtP2ms | ParsedPsbtTap
     return {
       ...parsedPubScript,
       ...signatures,
+      scriptType: parsedPubScript.scriptType,
     };
   }
   if (parsedPubScript.scriptType === 'taprootScriptPathSpend') {
@@ -372,6 +373,7 @@ export function parsePsbtInput(input: PsbtInput): ParsedPsbtP2ms | ParsedPsbtTap
     return {
       ...parsedPubScript,
       ...signatures,
+      scriptType: parsedPubScript.scriptType,
       controlBlock,
       scriptPathLevel,
       leafVersion,
