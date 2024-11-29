@@ -14,7 +14,29 @@
   },
   "include": [
     "src/**/*",
+    "test/**/*",
     "package.json"
+  ],
+  "exclude": [
+    "test/integration/bitgo.ts",
+    "test/integration/travelRule.ts",
+    "test/integration/wallet.ts",
+    "test/integration/wallets.ts",
+    "test/integration/userWebhooks.ts",
+    "test/integration/keychains.ts",
+    "test/integration/enterprise.ts",
+    "test/v2/integration/baseCoin.ts",
+    "test/v2/integration/bitgo.ts",
+    "test/v2/integration/wallet.ts",
+    "test/v2/integration/wallets.ts",
+    "test/v2/integration/keychains.ts",
+    "test/v2/integration/userWebhooks.ts",
+    "test/v2/integration/markets.ts",
+    "test/v2/integration/coins/baseCoin.ts",
+    "test/v2/integration/coins/eth.ts",
+    "test/v2/integration/coins/eth2.ts",
+    "test/v2/integration/coins/xlm.ts",
+    "test/v2/integration/coins/xrp.ts"
   ],
   "typedocOptions": {
     "mode": "modules",
