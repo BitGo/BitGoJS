@@ -14,7 +14,11 @@
   },
   "include": [
     "src/**/*",
+    "test/**/*",
     "package.json"
+  ],
+  "exclude": [
+    "test/legacy/**/*"
   ],
   "typedocOptions": {
     "mode": "modules",
