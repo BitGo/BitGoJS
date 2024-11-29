@@ -8,6 +8,7 @@ const PRECISION_7 = '10000000';
 const PRECISION_8 = '100000000';
 const PRECISION_9 = '1000000000';
 const PRECISION_18 = '1000000000000000000';
+const PRECISION_96 = '9.999999999999999e+95';
 
 describe('OFC:', function () {
   let bitgo;
@@ -415,6 +416,30 @@ describe('OFC:', function () {
         const ofcCoin = bitgo.coin(tokenMain);
         ofcCoin.getChain().should.equal(tokenMain);
         ofcCoin.getFullName().should.equal('BSC Conflux');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_18);
+      });
+    });
+  });
+
+  describe('check ofc tokens for ripple', function () {
+    const tokenTest = 'ofctxrp:rlusd';
+    describe('for test network', function () {
+      it(`should have the correct values for ${tokenTest}`, function () {
+        const ofcCoin = bitgo.coin(tokenTest);
+        ofcCoin.getChain().should.equal(tokenTest);
+        ofcCoin.getFullName().should.equal('RLUSD');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_96);
+      });
+    });
+  });
+
+  describe('check ofc tokens for opethErc20', function () {
+    const tokenMain = 'ofcopeth:op';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('Optimism');
         ofcCoin.getBaseFactor().should.equal(PRECISION_18);
       });
     });

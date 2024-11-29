@@ -67,6 +67,8 @@ import {
   tofcsolToken,
   tofcStellarToken,
   tofcPolygonErc20,
+  ofcOpethErc20,
+  tofcXrpToken,
 } from './ofc';
 import { utxoCoins } from './utxo';
 import { lightningCoins } from './lightning';
@@ -1618,6 +1620,46 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['natix'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'abbdcf44-ac44-46be-b4e9-8a760d44b79a',
+    'ofcsol:mobile',
+    'Helium Mobile',
+    6,
+    UnderlyingAsset['mobile'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '94e55bde-f57f-4817-9984-b461a5d6bcd0',
+    'ofcsol:jup',
+    'Jupiter',
+    6,
+    UnderlyingAsset['jup'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '989eec31-a0d5-4cdc-b4de-6fca30cde366',
+    'ofcsol:popcat',
+    'POPCAT',
+    9,
+    UnderlyingAsset['sol:popcat'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ca2a2bc9-ed79-426f-8378-96f9c9568526',
+    'ofcsol:wif',
+    'dogwifhat',
+    6,
+    UnderlyingAsset['wif'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ab833723-8b40-4fc4-8dd1-f5ea9a07c76c',
+    'ofcsol:goat',
+    'Goatseus Maximus',
+    6,
+    UnderlyingAsset['sol:goat'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1691,6 +1733,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
+  tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 96, UnderlyingAsset['txrp:rlusd']),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   ofc('f37bbb72-adfe-4d06-90dc-afd0aa34aadd', 'ofcgbp', 'Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
@@ -13043,6 +13086,20 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('bbe911d8-c900-401c-8dfb-febd98256e75', 'ofcusdy', 'Ondo U.S. Dollar Yield', 18, UnderlyingAsset.USDY),
   ofcerc20('017c87e8-db41-41f6-8382-c61ad8ced64b', 'ofcfold', 'Manifold Finance', 18, UnderlyingAsset.FOLD),
   ofcerc20('94fcd19b-6dd6-4a8c-8fea-11c73ba9fa48', 'ofcacx', 'Across Protocol', 18, UnderlyingAsset.ACX),
+  ofcerc20('b5f3afea-f69a-4a05-87f9-965476ad77de', 'ofclpt', 'Livepeer Token', 18, UnderlyingAsset.LPT),
+  ofcerc20('567b571f-6f79-40e4-adff-3e0e3c6ba959', 'ofcethfi', 'ether.fi governance token', 18, UnderlyingAsset.ETHFI),
+  ofcerc20('cba66dc6-31eb-46c4-b73f-8cb77eb7ef5b', 'ofcgal', 'Project Galaxy', 18, UnderlyingAsset.GAL),
+  ofcerc20('0c6e4b19-d748-477c-9507-6c0f51142b07', 'ofcfdusd', 'First Digital USD', 18, UnderlyingAsset.FDUSD),
+  ofcerc20('80c3e860-f589-4227-a0f5-2aa6b18293c5', 'ofcrune', 'THORChain ETH.RUNE', 18, UnderlyingAsset.RUNE),
+  ofcerc20('db35feb4-9cdb-447a-a698-e0e944ca6869', 'ofckcs', 'KuCoin', 6, UnderlyingAsset.KCS),
+  ofcerc20('519ab013-f634-41f4-9d31-6f9368de5b09', 'ofcbeam', 'Beam', 18, UnderlyingAsset.BEAM),
+  ofcerc20('4030e0fa-fa80-4e30-8c0f-9168ec65c731', 'ofcmog', 'Mog Coin', 18, UnderlyingAsset.MOG),
+  ofcerc20('1a7fdcc6-8a6c-4780-b483-c6aaf990e461', 'ofcgt', 'GateChainToken', 18, UnderlyingAsset.GT),
+  ofcerc20('969180cc-5af9-49c5-ad19-d8e8de755467', 'ofckas', 'Kaspa', 8, UnderlyingAsset.KAS),
+  ofcerc20('eb54ecb6-7312-42c0-926a-1600d61a50dc', 'ofcbgb', 'Bitget', 18, UnderlyingAsset.BGB),
+  ofcerc20('a4e0613e-1d1b-477c-9da5-7c553ff787b7', 'ofcmew', 'MEW coin', 18, UnderlyingAsset.MEW),
+  ofcerc20('ba2c8abb-6375-4207-9262-8b907a1dbf1b', 'ofcusdd', 'USDD', 18, UnderlyingAsset.USDD),
+  ofcerc20('cbb73d46-ce0d-4045-822b-8aa0d6fb8ad4', 'ofcw', 'Wormhole Token', 18, UnderlyingAsset.W),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
@@ -13132,6 +13189,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset['avaxc:link']
   ),
+  ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',

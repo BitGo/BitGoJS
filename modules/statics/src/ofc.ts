@@ -1017,3 +1017,105 @@ export function ofcBscToken(
     })
   );
 }
+
+/**
+ * Factory function for testnet ofc xrp token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param isToken? Whether or not this account coin is a token of another coin
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tofcXrpToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  kind: CoinKind = CoinKind.CRYPTO,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.test.ofc,
+  isToken = true,
+  addressCoin = 'txrp',
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.XRP,
+    })
+  );
+}
+
+/**
+ * Factory function for ofc opetherc20 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param isToken? Whether or not this account coin is a token of another coin
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function ofcOpethErc20(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  kind: CoinKind = CoinKind.CRYPTO,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.main.ofc,
+  isToken = true,
+  addressCoin = 'opeth',
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
+    })
+  );
+}
