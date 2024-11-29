@@ -95,7 +95,7 @@ export class IslmUtils extends CosmosUtils {
 
   /** @inheritdoc */
   getHashFunction(): Hash {
-    return Keccak('keccak256');
+    return Keccak('keccak256') as Hash;
   }
 }
 
