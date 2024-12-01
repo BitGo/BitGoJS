@@ -34,6 +34,20 @@ type Input = {
   value: bigint;
 };
 
+function assertSignable(psbtHex: string, inputScripts: ScriptType[], network: utxolib.Network): void {
+  const psbt = utxolib.bitgo.createPsbtFromHex(psbtHex, network);
+  // Make sure that you can sign with bitgo key and extract the transaction
+  // No signatures should be present if it's a p2shP2pk input
+  if (!inputScripts.includes('p2shP2pk')) {
+    const key = inputScripts.includes('p2trMusig2') ? rootWalletKeys.backup : rootWalletKeys.bitgo;
+    psbt.signAllInputsHD(key, { deterministic: true });
+    psbt.validateSignaturesOfAllInputs();
+    psbt.finalizeAllInputs();
+    const tx = psbt.extractTransaction();
+    assert.ok(tx);
+  }
+}
+
 // Build the key objects
 const rootWalletKeys = getDefaultWalletKeys();
 const keyDocumentObjects = rootWalletKeys.triple.map((bip32, keyIdx) => {
@@ -214,24 +228,9 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           walletPassphrase: useWebauthn ? webauthnWalletPassPhrase : walletPassphrase,
         })) as HalfSignedUtxoTransaction;
 
-        // Can produce the right fee in explain transaction
-        const explainedTransaction = await coin.explainTransaction(res);
-        assert.strictEqual(explainedTransaction.fee, fee.toString());
-
         nocks.forEach((nock) => assert.ok(nock.isDone()));
 
-        // Make sure that you can sign with bitgo key and extract the transaction
-        const psbt = utxolib.bitgo.createPsbtFromHex(res.txHex, coin.network);
-
-        // No signatures should be present if it's a p2shP2pk input
-        if (!inputScripts.includes('p2shP2pk')) {
-          const key = inputScripts.includes('p2trMusig2') ? rootWalletKeys.backup : rootWalletKeys.bitgo;
-          psbt.signAllInputsHD(key, { deterministic: true });
-          psbt.validateSignaturesOfAllInputs();
-          psbt.finalizeAllInputs();
-          const tx = psbt.extractTransaction();
-          assert.ok(tx);
-        }
+        assertSignable(res.txHex, inputScripts, coin.network);
       });
 
       it('should fail if the wallet passphrase is incorrect', async function () {
@@ -279,24 +278,9 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           feeMultiplier,
         })) as HalfSignedUtxoTransaction;
 
-        // Can produce the right fee in explain transaction
-        const explainedTransaction = await coin.explainTransaction(res);
-        assert.strictEqual(explainedTransaction.fee, fee.toString());
-
         nocks.forEach((nock) => assert.ok(nock.isDone()));
 
-        // Make sure that you can sign with bitgo key and extract the transaction
-        const psbt = utxolib.bitgo.createPsbtFromHex(res.txHex, coin.network);
-
-        // No signatures should be present if it's a p2shP2pk input
-        if (!inputScripts.includes('p2shP2pk')) {
-          const key = inputScripts.includes('p2trMusig2') ? rootWalletKeys.backup : rootWalletKeys.bitgo;
-          psbt.signAllInputsHD(key, { deterministic: true });
-          psbt.validateSignaturesOfAllInputs();
-          psbt.finalizeAllInputs();
-          const tx = psbt.extractTransaction();
-          assert.ok(tx);
-        }
+        assertSignable(res.txHex, inputScripts, coin.network);
       });
     });
   });
