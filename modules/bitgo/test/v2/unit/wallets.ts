@@ -80,7 +80,7 @@ describe('V2 Wallets:', function () {
 
     it('creates a paired custodial wallet', async function () {
       nock(bgUrl)
-        .post('/api/v2/tbtc/wallet', function (body) {
+        .post('/api/v2/tbtc/wallet/add', function (body) {
           body.isCustodial.should.be.true();
           body.should.have.property('keys');
           body.m.should.equal(2);
@@ -97,7 +97,7 @@ describe('V2 Wallets:', function () {
       const eosWallets = eosBitGo.coin('teos').wallets();
       const address = 'testeosaddre';
       nock(bgUrl)
-        .post('/api/v2/teos/wallet', function (body) {
+        .post('/api/v2/teos/wallet/add', function (body) {
           body.should.have.property('keys');
           body.m.should.equal(2);
           body.n.should.equal(3);
@@ -110,7 +110,7 @@ describe('V2 Wallets:', function () {
 
     it('creates a single custodial wallet', async function () {
       nock(bgUrl)
-        .post('/api/v2/tbtc/wallet', function (body) {
+        .post('/api/v2/tbtc/wallet/add', function (body) {
           body.type.should.equal('custodial');
           body.should.not.have.property('keys');
           body.should.not.have.property('m');
@@ -126,7 +126,7 @@ describe('V2 Wallets:', function () {
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
-        .post('/api/v2/teth/wallet', function (body) {
+        .post('/api/v2/teth/wallet/add', function (body) {
           body.type.should.equal('custodial');
           body.gasPrice.should.equal(20000000000);
           body.should.not.have.property('keys');
@@ -148,7 +148,7 @@ describe('V2 Wallets:', function () {
       ethBitGo.initializeTestVars();
       const ethWallets = ethBitGo.coin('teth').wallets();
       nock(bgUrl)
-        .post('/api/v2/teth/wallet', function (body) {
+        .post('/api/v2/teth/wallet/add', function (body) {
           body.type.should.equal('custodial');
           body.walletVersion.should.equal(1);
           body.should.not.have.property('keys');
@@ -162,7 +162,7 @@ describe('V2 Wallets:', function () {
 
     it('creates a new hot wallet with userKey', async function () {
       nock(bgUrl)
-        .post('/api/v2/tbtc/wallet', function (body) {
+        .post('/api/v2/tbtc/wallet/add', function (body) {
           body.type.should.equal('hot');
           body.should.have.property('keys');
           body.should.have.property('m');
@@ -330,7 +330,7 @@ describe('V2 Wallets:', function () {
         .reply(200);
 
       // wallet
-      nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
+      nock(bgUrl).post('/api/v2/tbtc/wallet/add').reply(200);
 
       await wallets.generateWallet(params);
     });
@@ -367,7 +367,7 @@ describe('V2 Wallets:', function () {
         .reply(200);
 
       // wallet
-      nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
+      nock(bgUrl).post('/api/v2/tbtc/wallet/add').reply(200);
 
       await wallets.generateWallet(params);
     });
@@ -402,7 +402,7 @@ describe('V2 Wallets:', function () {
         .reply(200);
 
       // wallet
-      const walletNock = nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
+      const walletNock = nock(bgUrl).post('/api/v2/tbtc/wallet/add').reply(200);
 
       await wallets.generateWallet(params);
       for (const scope of [bitgoKeyNock, userKeyNock, backupKeyNock, walletNock]) {
@@ -418,7 +418,7 @@ describe('V2 Wallets:', function () {
       };
 
       const walletNock = nock(bgUrl)
-        .post('/api/v2/tbtc/wallet', function (body) {
+        .post('/api/v2/tbtc/wallet/add', function (body) {
           body.type.should.equal('custodial');
           should.not.exist(body.m);
           should.not.exist(body.n);
@@ -449,7 +449,7 @@ describe('V2 Wallets:', function () {
       };
 
       const walletNock = nock(bgUrl)
-        .post('/api/v2/tbtc/wallet', function (body) {
+        .post('/api/v2/tbtc/wallet/add', function (body) {
           body.type.should.equal('hot');
           return true;
         })
@@ -527,7 +527,7 @@ describe('V2 Wallets:', function () {
       };
       sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet').reply(200);
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet/add').reply(200);
 
       const wallets = new Wallets(bitgo, tsol);
 
@@ -574,7 +574,7 @@ describe('V2 Wallets:', function () {
       };
       sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet').reply(200);
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet/add').reply(200);
 
       const wallets = new Wallets(bitgo, tsol);
 
@@ -612,7 +612,7 @@ describe('V2 Wallets:', function () {
       };
       sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tpolygon/wallet').reply(200);
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tpolygon/wallet/add').reply(200);
 
       const wallets = new Wallets(bitgo, tpolygon);
 
@@ -651,7 +651,7 @@ describe('V2 Wallets:', function () {
         .post('/api/v2/tbtc/key', _.matches({ source: 'backup' }))
         .reply(200);
 
-      nock(bgUrl).post('/api/v2/tbtc/wallet').reply(200);
+      nock(bgUrl).post('/api/v2/tbtc/wallet/add').reply(200);
 
       // create a non tss wallet for coin that doesn't support tss even though multisigType is set to tss
       await wallets.generateWallet({ ...params, multisigType: 'tss' });
@@ -688,7 +688,7 @@ describe('V2 Wallets:', function () {
       };
 
       const walletNock = nock('https://bitgo.fakeurl')
-        .post('/api/v2/tsol/wallet')
+        .post('/api/v2/tsol/wallet/add')
         .times(1)
         .reply(200, { ...walletParams, keys });
 
@@ -777,7 +777,7 @@ describe('V2 Wallets:', function () {
       };
 
       const walletNock = nock('https://bitgo.fakeurl')
-        .post('/api/v2/tsol/wallet', walletNockExpected)
+        .post('/api/v2/tsol/wallet/add', walletNockExpected)
         .reply(200, { ...walletNockExpected, responseType: 'WalletWithKeychains' });
 
       const wallets = new Wallets(bitgo, tsol);
@@ -917,7 +917,7 @@ describe('V2 Wallets:', function () {
           .stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychains')
           .resolves(stubbedKeychainsTriplet);
 
-        const walletNock = nock('https://bitgo.fakeurl').post(`/api/v2/${coin}/wallet`).reply(200);
+        const walletNock = nock('https://bitgo.fakeurl').post(`/api/v2/${coin}/wallet/add`).reply(200);
 
         const wallets = new Wallets(bitgo, testCoin);
 
@@ -971,7 +971,7 @@ describe('V2 Wallets:', function () {
         .resolves(stubbedKeychainsTriplet);
 
       const walletNock = nock('https://bitgo.fakeurl')
-        .post(`/api/v2/hteth/wallet`, (body) => {
+        .post(`/api/v2/hteth/wallet/add`, (body) => {
           body.walletVersion.should.equal(6);
           return true;
         })
@@ -1028,7 +1028,7 @@ describe('V2 Wallets:', function () {
         .resolves(stubbedKeychainsTriplet);
 
       const walletNock = nock('https://bitgo.fakeurl')
-        .post(`/api/v2/hteth/wallet`, (body) => {
+        .post(`/api/v2/hteth/wallet/add`, (body) => {
           body.walletVersion.should.equal(5);
           return true;
         })
@@ -1124,7 +1124,7 @@ describe('V2 Wallets:', function () {
       };
       sandbox.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/eth2/wallet').reply(200);
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/eth2/wallet/add').reply(200);
 
       const wallets = new Wallets(bitgo, eth2);
 
