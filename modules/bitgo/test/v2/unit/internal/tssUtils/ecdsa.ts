@@ -910,7 +910,7 @@ describe('TSS Ecdsa Utils:', async function () {
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
-      const userGpgActual = sendShareSpy.getCalls()[0].args[10];
+      const userGpgActual = sendShareSpy.getCalls()[0].args[10] as string;
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
     });
 
@@ -927,7 +927,7 @@ describe('TSS Ecdsa Utils:', async function () {
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
-      const userGpgActual = sendShareSpy.getCalls()[0].args[10];
+      const userGpgActual = sendShareSpy.getCalls()[0].args[10] as string;
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
     });
 
