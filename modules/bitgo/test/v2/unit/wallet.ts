@@ -32,6 +32,8 @@ import {
   SendManyOptions,
   PopulatedIntent,
   TxRequestVersion,
+  WalletSignMessageOptions,
+  WalletSignTypedDataOptions,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -3334,8 +3336,8 @@ describe('V2 Wallet:', function () {
             prv: 'secretKey',
           });
           signMessage.should.deepEqual(expectedWithCoinField);
-          const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.message.messageEncoded.should.equal(
+          const actualArg = signMessageTssSpy.getCalls()[0].args[0] as WalletSignMessageOptions;
+          actualArg.message?.messageEncoded?.should.equal(
             `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
           );
         });
@@ -3351,8 +3353,8 @@ describe('V2 Wallet:', function () {
             prv: 'secretKey',
           });
           signMessage.should.deepEqual(expectedWithCoinField);
-          const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.message.messageEncoded.should.equal(
+          const actualArg = signMessageTssSpy.getCalls()[0].args[0] as WalletSignMessageOptions;
+          actualArg.message?.messageEncoded?.should.equal(
             `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
           );
         });
@@ -3367,8 +3369,8 @@ describe('V2 Wallet:', function () {
             prv: 'secretKey',
           });
           signMessage.should.deepEqual(expectedWithCoinField);
-          const actualArg = signMessageTssSpy.getCalls()[0].args[0];
-          actualArg.message.messageEncoded.should.equal(
+          const actualArg = signMessageTssSpy.getCalls()[0].args[0] as WalletSignMessageOptions;
+          actualArg.message?.messageEncoded?.should.equal(
             `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
           );
         });
@@ -3530,8 +3532,8 @@ describe('V2 Wallet:', function () {
               prv: 'secretKey',
             });
             signedTypedData.should.deepEqual(expected);
-            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
+            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0] as WalletSignTypedDataOptions;
+            actualArg.typedData?.typedDataEncoded?.toString('hex').should.equal(txHash);
           });
 
           it('should sign typed data V3 when custodianMessageID is provided', async function () {
@@ -3552,8 +3554,8 @@ describe('V2 Wallet:', function () {
               prv: 'secretKey',
             });
             signedTypedData.should.deepEqual(expected);
-            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0];
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
+            const actualArg = signTypedDataTssSpy.getCalls()[0].args[0] as WalletSignTypedDataOptions;
+            actualArg.typedData?.typedDataEncoded?.toString('hex').should.equal(txHash);
           });
 
           it('should fail to sign typed data V3 with empty prv', async function () {
@@ -3577,8 +3579,8 @@ describe('V2 Wallet:', function () {
               prv: 'secretKey',
             });
             signedTypedData.should.deepEqual(expected);
-            const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0];
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
+            const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0] as WalletSignTypedDataOptions;
+            actualArg.typedData?.typedDataEncoded?.toString('hex').should.equal(txHash);
           });
         });
 
@@ -3643,8 +3645,8 @@ describe('V2 Wallet:', function () {
               prv: 'secretKey',
             });
             signedTypedData.should.deepEqual(expected);
-            const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0];
-            actualArg.typedData.typedDataEncoded.toString('hex').should.equal(txHash);
+            const actualArg = signedTypedDataTssSpy.getCalls()[0].args[0] as WalletSignTypedDataOptions;
+            actualArg.typedData?.typedDataEncoded?.toString('hex').should.equal(txHash);
           });
         });
       });
