@@ -753,8 +753,7 @@ class BldTestnet extends Testnet implements AccountNetwork {
 class Sei extends Mainnet implements AccountNetwork {
   name = 'Sei';
   family = CoinFamily.SEI;
-  //  TODO(BG-78997): Sei is still only in testnet update to mainnet url when it's live
-  explorerUrl = 'https://sei.explorers.guru/transaction/';
+  explorerUrl = 'https://seistream.app/transactions/';
 }
 
 class SeiTestnet extends Testnet implements AccountNetwork {
