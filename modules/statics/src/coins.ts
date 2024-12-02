@@ -40,6 +40,7 @@ import {
   ttronToken,
   txrpToken,
   tzkethErc20,
+  xrpToken,
   zkethErc20,
 } from './account';
 import { ada } from './ada';
@@ -19255,6 +19256,16 @@ export const coins = CoinMap.fromCoins([
     '524C555344000000000000000000000000000000',
     'ripple.com',
     UnderlyingAsset['txrp:rlusd']
+  ),
+  xrpToken(
+    'a5e3e409-4cde-443d-9000-22bfc99ad456',
+    'xrp:rlusd',
+    'Ripple USD',
+    96,
+    'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
+    '524C555344000000000000000000000000000000',
+    'ripple.com',
+    UnderlyingAsset['xrp:rlusd']
   ),
   suiToken(
     'f26941b7-1110-4aa7-a2bc-29807297a51c',
