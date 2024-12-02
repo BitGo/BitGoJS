@@ -1778,6 +1778,7 @@ export enum UnderlyingAsset {
   'eth:alt' = 'eth:alt',
   'eth:rtbl' = 'eth:rtbl',
   'eth:virtual' = 'eth:virtual',
+  'eth:vice' = 'eth:vice',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2348,6 +2349,7 @@ export enum UnderlyingAsset {
   'sui:fud' = 'sui:fud',
   'sui:afsui' = 'sui:afsui',
   'sui:navx' = 'sui:navx',
+  'sui:vsui' = 'sui:vsui',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',

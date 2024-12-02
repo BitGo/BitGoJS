@@ -24,8 +24,8 @@ import {
   talgoToken,
   tarbethErc20,
   tavaxErc20,
-  tbscToken,
   tberaErc20,
+  tbscToken,
   tceloToken,
   teosToken,
   terc1155,
@@ -53,9 +53,10 @@ import {
   ofcArbethErc20,
   ofcAvaxErc20,
   ofcBscToken,
-  ofcPolygonErc20,
   ofcerc20,
   ofcHederaToken,
+  ofcOpethErc20,
+  ofcPolygonErc20,
   ofcsolToken,
   ofcStellarToken,
   tofc,
@@ -64,10 +65,9 @@ import {
   tofcAvaxErc20,
   tofcerc20,
   tofcHederaToken,
+  tofcPolygonErc20,
   tofcsolToken,
   tofcStellarToken,
-  tofcPolygonErc20,
-  ofcOpethErc20,
   tofcXrpToken,
 } from './ofc';
 import { utxoCoins } from './utxo';
@@ -11880,6 +11880,14 @@ export const coins = CoinMap.fromCoins([
     '0x44ff8620b8ca30902395a7bd3f2407e1a091bf73',
     UnderlyingAsset['eth:virtual']
   ),
+  erc20(
+    '8970dd16-3fa8-409b-b17c-d06ea9a7a900',
+    'eth:vice',
+    'VICE',
+    18,
+    '0xfd409bc96d126bc8a56479d4c7672015d539f96c',
+    UnderlyingAsset['eth:vice']
+  ),
 
   // End FTX missing ERC20 tokens
   celoToken(
@@ -19371,6 +19379,17 @@ export const coins = CoinMap.fromCoins([
     'navx',
     'NAVX',
     UnderlyingAsset['sui:navx'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '4f2ad1be-7c21-4e15-b8c6-d2329d6b7ffc',
+    'sui:vsui',
+    'vsui',
+    9,
+    '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55',
+    'vsui',
+    'VSUI',
+    UnderlyingAsset['sui:vsui'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(
