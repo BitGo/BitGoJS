@@ -13100,6 +13100,13 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('a4e0613e-1d1b-477c-9da5-7c553ff787b7', 'ofcmew', 'MEW coin', 18, UnderlyingAsset.MEW),
   ofcerc20('ba2c8abb-6375-4207-9262-8b907a1dbf1b', 'ofcusdd', 'USDD', 18, UnderlyingAsset.USDD),
   ofcerc20('cbb73d46-ce0d-4045-822b-8aa0d6fb8ad4', 'ofcw', 'Wormhole Token', 18, UnderlyingAsset.W),
+  ofcerc20(
+    '03a02e79-f604-4b79-96da-fb4a21456566',
+    'ofceth:virtual',
+    'Virtual Protocol',
+    18,
+    UnderlyingAsset['eth:virtual']
+  ),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
