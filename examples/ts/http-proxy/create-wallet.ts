@@ -1,5 +1,6 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Tpolygon } from '@bitgo/sdk-coin-polygon'; // Replace with your given coin (e.g. Ltc, Tltc)
+import { ProxyAgent } from 'proxy-agent';
 
 // This script emulates a front-end using the BitGo SDK to BitGo backend via a proxy.
 // Set up the BitGo connection object.
@@ -10,7 +11,9 @@ const bitgo = new BitGoAPI({
   // This *must* match the BitGo platform API your proxy instance is using.
   env: 'test',
   // TODO: In your real setup this would be <your.proxy.url>, where you host the proxy server.
-  proxy: 'http://localhost:3000',
+  customProxyAgent: new ProxyAgent({
+    getProxyForUrl: () => 'http://localhost:3000',
+  }),
 });
 const coin = 'tpolygon';
 bitgo.register(coin, Tpolygon.createInstance);

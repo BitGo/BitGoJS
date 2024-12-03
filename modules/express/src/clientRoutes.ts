@@ -53,6 +53,7 @@ import {
   handleInitLightningWallet,
   handleUnlockLightningWallet,
 } from './lightning/lightningSignerRoutes';
+import { ProxyAgent } from 'proxy-agent';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -1213,12 +1214,21 @@ function prepareBitGo(config: Config) {
     const userAgent = req.headers['user-agent']
       ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
       : BITGOEXPRESS_USER_AGENT;
+
+    const useProxyUrl = process.env.BITGO_USE_PROXY;
     const bitgoConstructorParams: BitGoOptions = {
       env,
       customRootURI: customRootUri,
       customBitcoinNetwork,
       accessToken,
       userAgent,
+      ...(useProxyUrl
+        ? {
+            customProxyAgent: new ProxyAgent({
+              getProxyForUrl: () => useProxyUrl,
+            }),
+          }
+        : {}),
     };
 
     req.bitgo = new BitGo(bitgoConstructorParams);
