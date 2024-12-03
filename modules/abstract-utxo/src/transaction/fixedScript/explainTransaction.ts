@@ -7,7 +7,7 @@ import {
   ExplainTransactionOptions,
   Output,
   TransactionExplanation,
-  WalletOutput,
+  FixedScriptWalletOutput,
 } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';
 
@@ -19,7 +19,7 @@ function explainCommon<TNumber extends number | bigint>(
   const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'];
   let spendAmount = BigInt(0);
   let changeAmount = BigInt(0);
-  const changeOutputs: WalletOutput[] = [];
+  const changeOutputs: FixedScriptWalletOutput[] = [];
   const outputs: Output[] = [];
 
   const { changeInfo } = params;

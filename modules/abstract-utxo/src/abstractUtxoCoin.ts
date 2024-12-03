@@ -132,16 +132,18 @@ export interface BaseOutput {
   external?: boolean;
 }
 
-export interface WalletOutput extends BaseOutput {
+export interface FixedScriptWalletOutput extends BaseOutput {
   needsCustomChangeKeySignatureVerification?: boolean;
   chain: number;
   index: number;
 }
 
-export type Output = BaseOutput | WalletOutput;
+export type Output = BaseOutput | FixedScriptWalletOutput;
 
-export function isWalletOutput(output: Output): output is WalletOutput {
-  return (output as WalletOutput).chain !== undefined && (output as WalletOutput).index !== undefined;
+export function isWalletOutput(output: Output): output is FixedScriptWalletOutput {
+  return (
+    (output as FixedScriptWalletOutput).chain !== undefined && (output as FixedScriptWalletOutput).index !== undefined
+  );
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation<string, string> {
@@ -745,7 +747,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     );
 
     const needsCustomChangeKeySignatureVerification = allOutputDetails.some(
-      (output) => (output as WalletOutput)?.needsCustomChangeKeySignatureVerification
+      (output) => (output as FixedScriptWalletOutput)?.needsCustomChangeKeySignatureVerification
     );
 
     const changeOutputs = _.filter(allOutputDetails, { external: false });
