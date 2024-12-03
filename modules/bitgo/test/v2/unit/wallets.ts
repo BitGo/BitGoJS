@@ -1001,7 +1001,7 @@ describe('V2 Wallets:', function () {
           });
 
         const walletNock = nock('https://bitgo.fakeurl')
-          .post(`/api/v2/${coin}/wallet`, {
+          .post(`/api/v2/${coin}/wallet/add`, {
             label: 'tss wallet',
             m: 2,
             n: 3,
@@ -1059,7 +1059,7 @@ describe('V2 Wallets:', function () {
         };
 
         const walletNock = nock('https://bitgo.fakeurl')
-          .post(`/api/v2/${coin}/wallet`)
+          .post(`/api/v2/${coin}/wallet/add`)
           .times(1)
           .reply(200, { ...params, keys });
 
