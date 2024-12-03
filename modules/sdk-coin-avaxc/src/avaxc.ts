@@ -170,8 +170,10 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     if (txParams.hop && txParams.recipients.length > 1) {
       throw new Error(`tx cannot be both a batch and hop transaction`);
     }
-    if (txPrebuild.recipients.length !== 1) {
-      throw new Error(`txPrebuild should only have 1 recipient but ${txPrebuild.recipients.length} found`);
+    if (txPrebuild.recipients.length > 1) {
+      throw new Error(
+        `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+      );
     }
     if (txParams.hop && txPrebuild.hopTransaction) {
       // Check recipient amount for hop transaction
