@@ -1,5 +1,6 @@
 import 'should';
 import { BitGoAPI } from '../../src/bitgoAPI';
+import { ProxyAgent } from 'proxy-agent';
 
 describe('Constructor', function () {
   describe('cookiesPropagationEnabled argument', function () {
@@ -36,23 +37,26 @@ describe('Constructor', function () {
     });
   });
   describe('http proxy agent', function () {
-    it('http proxy agent shall be created when proxy is set', function () {
+    it('http proxy agent shall be created when proxy(customProxyagent) is set', function () {
+      const customProxyAgent = new ProxyAgent({
+        getProxyForUrl: () => 'http://localhost:3000',
+      });
       const bitgo = new BitGoAPI({
         env: 'custom',
         customRootURI: 'https://app.example.local',
-        proxy: 'http://localhost:3000',
+        customProxyAgent,
       });
 
-      bitgo.should.have.property('_proxy', 'http://localhost:3000');
+      bitgo.should.have.property('_customProxyAgent', customProxyAgent);
     });
 
-    it('bitgo api is still initiated when proxy is not set', function () {
+    it('bitgo api is still initiated when proxy(customProxyAgent) is not set', function () {
       const bitgo = new BitGoAPI({
         env: 'custom',
         customRootURI: 'https://app.example.local',
       });
 
-      bitgo.should.have.property('_proxy', undefined);
+      bitgo.should.have.property('_customProxyAgent', undefined);
     });
   });
 

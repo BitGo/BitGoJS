@@ -47,7 +47,6 @@
     "@types/superagent": "4.1.15",
     "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.2",
     "bluebird": "^3.5.3",
-    "browser-or-node": "2.0.0",
     "debug": "3.1.0",
     "eol": "^0.5.0",
     "lodash": "^4.17.15",
