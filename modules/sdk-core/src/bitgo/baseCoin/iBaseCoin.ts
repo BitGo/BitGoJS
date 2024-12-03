@@ -82,7 +82,8 @@ export interface ITransactionFee<TAmount = string> {
 }
 
 export interface ITransactionExplanation<TFee = any, TAmount = any> {
-  displayOrder: string[];
+  /** @deprecated */
+  displayOrder?: string[];
   id: string;
   outputs: ITransactionRecipient[];
   outputAmount: TAmount;

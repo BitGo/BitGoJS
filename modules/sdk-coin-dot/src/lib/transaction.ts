@@ -282,7 +282,7 @@ export class Transaction extends BaseTransaction {
   }
 
   explainTransferTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    explanationResult.displayOrder.push('owner', 'forceProxyType');
+    explanationResult.displayOrder?.push('owner', 'forceProxyType');
     return {
       ...explanationResult,
       outputs: [
@@ -297,7 +297,7 @@ export class Transaction extends BaseTransaction {
   }
 
   explainStakingActivateTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
-    explanationResult.displayOrder.push('payee', 'forceProxyType');
+    explanationResult.displayOrder?.push('payee', 'forceProxyType');
     return {
       ...explanationResult,
       outputs: [
@@ -315,7 +315,7 @@ export class Transaction extends BaseTransaction {
     json: TxData,
     explanationResult: TransactionExplanation
   ): TransactionExplanation {
-    explanationResult.displayOrder.push('owner', 'proxyType', 'delay');
+    explanationResult.displayOrder?.push('owner', 'proxyType', 'delay');
     return {
       ...explanationResult,
       owner: json.owner,
