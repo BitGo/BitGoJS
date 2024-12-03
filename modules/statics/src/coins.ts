@@ -17762,7 +17762,7 @@ export const coins = CoinMap.fromCoins([
     'sol:goat',
     'Goatseus Maximus',
     6,
-    'czlsujwblfssjncfkh59rufqvafwcy5tzedwjsuypump',
+    'CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump',
     UnderlyingAsset['sol:goat'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -17780,7 +17780,7 @@ export const coins = CoinMap.fromCoins([
     'sol:tnsr',
     'Tensor',
     9,
-    'tnsrxcuxot9xbg3de7pijytdyu7ksklqcpddxnejas6',
+    'TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6',
     UnderlyingAsset['sol:tnsr'],
     SOL_TOKEN_FEATURES
   ),
@@ -17789,7 +17789,7 @@ export const coins = CoinMap.fromCoins([
     'sol:ssol',
     'Solayer SOL',
     9,
-    'sso14endruubvqajs3dq36q829a3a6befoeergjyweh',
+    'sSo14endRuUbvQaJS3dq36Q829a3A6BEfoeeRGJywEh',
     UnderlyingAsset['sol:ssol'],
     SOL_TOKEN_FEATURES
   ),
@@ -17798,7 +17798,7 @@ export const coins = CoinMap.fromCoins([
     'sol:drift',
     'Drift',
     6,
-    'driftupjyltosbwon8kombeysx54afavlddwsbksjwg7',
+    'DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7',
     UnderlyingAsset['sol:drift'],
     SOL_TOKEN_FEATURES
   ),
