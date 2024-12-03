@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.50](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@2.0.49...@bitgo/sdk-coin-cspr@2.0.50) (2024-12-03)
+
+### Bug Fixes
+
+- use better string conversion for message signing ([c81d0b1](https://github.com/BitGo/BitGoJS/commit/c81d0b19c379109df69f8bdd7ff92c582492ab45))
+
 ## [2.0.49](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cspr@2.0.48...@bitgo/sdk-coin-cspr@2.0.49) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-cspr

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.14.2...@bitgo/sdk-core@28.15.0) (2024-12-03)
+
+### Bug Fixes
+
+- **sdk-core:** deprecate displayOrder in ITransactionExplanation ([316ea22](https://github.com/BitGo/BitGoJS/commit/316ea22b4e834d4f850ef3589e2d6f66a6d62fe5))
+
+### Features
+
+- add @types/keccak to packages that use it ([7e25872](https://github.com/BitGo/BitGoJS/commit/7e25872a5749cb6b3281b5355d4f45151d042d67))
+- **sdk-core:** add sender walletId for btc unstaking ([ab12948](https://github.com/BitGo/BitGoJS/commit/ab12948c11455eb96bf21aaf0f3987227ca00603))
+- **sdk-core:** enable dkls cold and custody wallet creation ([5360e06](https://github.com/BitGo/BitGoJS/commit/5360e06bca19430324e48e30ce5d0e4df1d79125))
+
 ## [28.14.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.14.1...@bitgo/sdk-core@28.14.2) (2024-11-26)
 
 ### Bug Fixes

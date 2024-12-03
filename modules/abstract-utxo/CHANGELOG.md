@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.2.2...@bitgo/abstract-utxo@9.3.0) (2024-12-03)
+
+### Features
+
+- **abstract-utxo:** make AbstractUtxoCoin less abstract ([e456e04](https://github.com/BitGo/BitGoJS/commit/e456e04628c773b72e77e06c094e6c56e0d9661d))
+
 ## [9.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.2.1...@bitgo/abstract-utxo@9.2.2) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

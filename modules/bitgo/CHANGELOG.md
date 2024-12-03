@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.16.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.15.0...bitgo@39.16.0) (2024-12-03)
+
+### Bug Fixes
+
+- **bitgo:** improve prebuildAndSign test by extracting common logic ([0286fa6](https://github.com/BitGo/BitGoJS/commit/0286fa6291d02c6ef06042f81bc14447af23dd1a))
+- **bitgo:** include test/ in tsconfig.json ([68a552a](https://github.com/BitGo/BitGoJS/commit/68a552a1302aad5555e2140b2a985d2521a5c75b))
+
+### Features
+
+- **abstract-utxo:** make AbstractUtxoCoin less abstract ([e456e04](https://github.com/BitGo/BitGoJS/commit/e456e04628c773b72e77e06c094e6c56e0d9661d))
+- **bitgo:** extend utxoCoins test to cover new fields ([b7c422f](https://github.com/BitGo/BitGoJS/commit/b7c422f0f713ba04d2ae23da546ccd5a4a8b9ad7))
+- **sdk-core:** add sender walletId for btc unstaking ([ab12948](https://github.com/BitGo/BitGoJS/commit/ab12948c11455eb96bf21aaf0f3987227ca00603))
+- **sdk-core:** enable dkls cold and custody wallet creation ([5360e06](https://github.com/BitGo/BitGoJS/commit/5360e06bca19430324e48e30ce5d0e4df1d79125))
+- **statics:** add ofc txrp and opeth token ([e4ab52e](https://github.com/BitGo/BitGoJS/commit/e4ab52e53957aae718e1e78ec10b0fb4bc84a94e))
+- **statics:** add support for trx tokens ([814c6d9](https://github.com/BitGo/BitGoJS/commit/814c6d9450b1e3b24606cc2df6eb3b3e845c3299))
+
 # [39.15.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.14.0...bitgo@39.15.0) (2024-11-26)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bcha@2.1.33...@bitgo/sdk-coin-bcha@2.2.0) (2024-12-03)
+
+### Features
+
+- **abstract-utxo:** make AbstractUtxoCoin less abstract ([e456e04](https://github.com/BitGo/BitGoJS/commit/e456e04628c773b72e77e06c094e6c56e0d9661d))
+
 ## [2.1.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bcha@2.1.32...@bitgo/sdk-coin-bcha@2.1.33) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bcha

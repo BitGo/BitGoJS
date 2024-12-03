@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@2.0.18...@bitgo/web-demo@2.0.19) (2024-12-03)
+
+### Bug Fixes
+
+- **web-demo:** remove invalid types from tsconfig.json ([340efd9](https://github.com/BitGo/BitGoJS/commit/340efd987311492d484c2c92d9c9e89aea489a6c))
+
 ## [2.0.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@2.0.17...@bitgo/web-demo@2.0.18) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/web-demo

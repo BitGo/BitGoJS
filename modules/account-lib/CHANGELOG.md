@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.0.0...@bitgo/account-lib@24.1.0) (2024-12-03)
+
+### Features
+
+- add @types/keccak to packages that use it ([7e25872](https://github.com/BitGo/BitGoJS/commit/7e25872a5749cb6b3281b5355d4f45151d042d67))
+
 # [24.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@23.3.1...@bitgo/account-lib@24.0.0) (2024-11-26)
 
 ### Features

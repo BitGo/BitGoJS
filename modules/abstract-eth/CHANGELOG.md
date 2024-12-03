@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.3.5...@bitgo/abstract-eth@22.4.0) (2024-12-03)
+
+### Bug Fixes
+
+- use better string conversion for message signing ([c81d0b1](https://github.com/BitGo/BitGoJS/commit/c81d0b19c379109df69f8bdd7ff92c582492ab45))
+
+### Features
+
+- add @types/keccak to packages that use it ([7e25872](https://github.com/BitGo/BitGoJS/commit/7e25872a5749cb6b3281b5355d4f45151d042d67))
+
 ## [22.3.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.3.4...@bitgo/abstract-eth@22.3.5) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/abstract-eth
