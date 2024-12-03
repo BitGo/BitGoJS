@@ -60,6 +60,7 @@ import {
   ofcPolygonErc20,
   ofcsolToken,
   ofcStellarToken,
+  ofcTronToken,
   tofc,
   tofcAlgoToken,
   tofcArbethErc20,
@@ -69,6 +70,7 @@ import {
   tofcPolygonErc20,
   tofcsolToken,
   tofcStellarToken,
+  tofcTronToken,
   tofcXrpToken,
 } from './ofc';
 import { utxoCoins } from './utxo';
@@ -1734,6 +1736,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
+  tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset.USDT),
+  ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset.USDT),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 96, UnderlyingAsset['txrp:rlusd']),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
