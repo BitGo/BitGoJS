@@ -76,6 +76,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/keccak": "^3.0.5",
     "@bitgo/sdk-opensslbytes": "^2.0.0",
     "@openpgp/web-stream-tools": "0.0.14",
     "@types/lodash": "^4.14.151",

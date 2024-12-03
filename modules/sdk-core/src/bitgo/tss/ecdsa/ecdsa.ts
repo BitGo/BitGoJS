@@ -173,7 +173,7 @@ export async function createUserSignatureShare(
   oShare: OShare,
   dShare: DShare,
   message: Buffer,
-  hash: Hash = createKeccakHash('keccak256')
+  hash: Hash = createKeccakHash('keccak256') as Hash
 ): Promise<SignatureShare> {
   if (oShare.i !== ShareKeyPosition.USER) {
     throw new Error(`Invalid OShare, doesn't belong to the User`);

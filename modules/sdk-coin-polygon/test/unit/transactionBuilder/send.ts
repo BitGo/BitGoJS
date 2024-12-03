@@ -23,7 +23,7 @@ describe('Polygon transaction builder send', () => {
       ];
       const types: string[] = operationParams[0] as string[];
       const values: (string | number)[] = operationParams[1].map((item) =>
-        item instanceof Buffer ? '0x' + item.toString('hex') : item
+        typeof item === 'string' || typeof item === 'number' ? item : '0x' + item.toString('hex')
       );
       return keccak256(defaultAbiCoder.encode(types, values));
     };

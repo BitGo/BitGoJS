@@ -75,6 +75,7 @@
   "devDependencies": {
     "@solana/web3.js": "1.92.1",
     "@types/bs58": "^4.0.1",
+    "@types/keccak": "^3.0.5",
     "keccak": "3.0.3",
     "paillier-bigint": "3.3.0",
     "shx": "^0.3.4"
