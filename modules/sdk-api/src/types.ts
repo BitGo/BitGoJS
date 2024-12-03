@@ -1,5 +1,6 @@
 import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
 import { ECPairInterface } from '@bitgo/utxo-lib';
+import { type Agent } from 'http';
 
 export interface BitGoAPIOptions {
   accessToken?: string;
@@ -17,7 +18,7 @@ export interface BitGoAPIOptions {
   zksyncExplorerApiToken?: string;
   bscscanApiToken?: string;
   hmacVerification?: boolean;
-  proxy?: string;
+  customProxyAgent?: Agent;
   refreshToken?: string;
   serverXpub?: string;
   stellarFederationServerUrl?: string;

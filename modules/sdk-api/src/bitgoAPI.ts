@@ -25,8 +25,8 @@ import * as sjcl from '@bitgo/sjcl';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { isBrowser, isWebWorker } from 'browser-or-node';
 import { createHmac } from 'crypto';
+import { type Agent } from 'http';
 import debugLib from 'debug';
 import * as _ from 'lodash';
 import * as secp256k1 from 'secp256k1';
@@ -96,14 +96,6 @@ const PendingApprovals = require('./v1/pendingapprovals');
 const TravelRule = require('./v1/travelRule');
 const TransactionBuilder = require('./v1/transactionBuilder');
 
-let enableProxyAgent = false;
-let proxyAgentModule;
-if (!isBrowser && !isWebWorker) {
-  debug('enabling proxy-agent');
-  enableProxyAgent = true;
-  proxyAgentModule = require('proxy-agent');
-}
-
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
 
 export class BitGoAPI implements BitGoBase {
@@ -138,6 +130,7 @@ export class BitGoAPI implements BitGoBase {
   protected readonly _clientSecret?: string;
   protected _validate: boolean;
   public readonly cookiesPropagationEnabled: boolean;
+  private _customProxyAgent?: Agent;
 
   constructor(params: BitGoAPIOptions = {}) {
     this.cookiesPropagationEnabled = false;
@@ -278,15 +271,12 @@ export class BitGoAPI implements BitGoBase {
       debug('HMAC verification explicitly disabled by constructor option');
       this._hmacVerification = params.hmacVerification;
     }
-    if (!params.proxy && process.env.BITGO_USE_PROXY) {
-      params.proxy = process.env.BITGO_USE_PROXY;
+
+    if ((process as any).browser && params.customProxyAgent) {
+      throw new Error('should not use https proxy while in browser');
     }
 
-    if ((process as any).browser && params.proxy) {
-      throw new Error('cannot use https proxy params while in browser');
-    }
-
-    this._proxy = params.proxy;
+    this._customProxyAgent = params.customProxyAgent;
 
     // capture outer stack so we have useful debug information if fetch constants fails
     const e = new Error();
@@ -342,14 +332,10 @@ export class BitGoAPI implements BitGoBase {
    */
   private requestPatch(method: (typeof patchedRequestMethods)[number], url: string) {
     const req = this.getAgentRequest(method, url);
-    if (this._proxy && enableProxyAgent) {
-      debug('proxying request through %s', this._proxy);
-      const proxyUrl: string = this._proxy;
-      const agent = new proxyAgentModule.ProxyAgent({
-        getProxyForUrl: () => proxyUrl,
-      });
-      if (agent) {
-        req.agent(agent);
+    if (this._customProxyAgent) {
+      debug('using custom proxy agent');
+      if (this._customProxyAgent) {
+        req.agent(this._customProxyAgent);
       }
     }
 
@@ -585,14 +571,8 @@ export class BitGoAPI implements BitGoBase {
     // Proxy settings must still be respected however
     const resultPromise = this.getAgentRequest('get', this.url('/client/constants'));
     resultPromise.set('BitGo-SDK-Version', this._version);
-    if (this._proxy && enableProxyAgent) {
-      const proxyUrl: string = this._proxy;
-      const agent = new proxyAgentModule.ProxyAgent({
-        getProxyForUrl: () => proxyUrl,
-      });
-      if (agent) {
-        resultPromise.agent(agent);
-      }
+    if (this._customProxyAgent) {
+      resultPromise.agent(this._customProxyAgent);
     }
     const result = await resultPromise;
     BitGoAPI._constants[env] = result.body.constants;
