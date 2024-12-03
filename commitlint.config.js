@@ -34,6 +34,7 @@ module.exports = {
         'EA-',
         'ERC20-',
         'FAC-',
+        'GNA-',
         'GRC-',
         'HSM-',
         'INC-',
