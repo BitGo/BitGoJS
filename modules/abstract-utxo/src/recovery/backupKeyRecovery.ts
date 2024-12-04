@@ -1,9 +1,5 @@
-/**
- * @prettier
- */
-
-import * as assert from 'assert';
-import * as _ from 'lodash';
+import assert from 'assert';
+import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
 

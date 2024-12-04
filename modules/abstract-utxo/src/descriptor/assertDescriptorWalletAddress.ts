@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import * as t from 'io-ts';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';

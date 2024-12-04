@@ -1,16 +1,16 @@
-/**
- * @prettier
- */
 import * as utxolib from '@bitgo/utxo-lib';
-const { isWalletUnspent, signInputWithUnspent, toOutput } = utxolib.bitgo;
-type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
-type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 
-import * as debugLib from 'debug';
+import debugLib from 'debug';
 
 import { isReplayProtectionUnspent } from './replayProtection';
 
 const debug = debugLib('bitgo:v2:utxo');
+
+const { isWalletUnspent, signInputWithUnspent, toOutput } = utxolib.bitgo;
+
+type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
+
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 
 type PsbtParsedScriptTypes =
   | 'p2sh'

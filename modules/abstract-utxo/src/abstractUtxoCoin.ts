@@ -1,13 +1,10 @@
-/**
- * @prettier
- */
+import assert from 'assert';
+import { randomBytes } from 'crypto';
+import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface, bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
-import * as assert from 'assert';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { randomBytes } from 'crypto';
-import * as debugLib from 'debug';
-import * as _ from 'lodash';
+import debugLib from 'debug';
 import BigNumber from 'bignumber.js';
 
 import {
