@@ -1,9 +1,5 @@
-/**
- * @prettier
- */
-
-import * as debugLib from 'debug';
-import * as _ from 'lodash';
+import debugLib from 'debug';
+import _ from 'lodash';
 import {
   AddressVerificationData,
   IRequestTracer,

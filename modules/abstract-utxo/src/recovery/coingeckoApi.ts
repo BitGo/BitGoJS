@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { BaseApi } from './baseApi';
 
 const familyNamesToCoinGeckoIds = new Map()

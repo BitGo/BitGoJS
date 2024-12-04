@@ -1,8 +1,4 @@
-/**
- * @prettier
- */
-import * as Bluebird from 'bluebird';
-
+import Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 
