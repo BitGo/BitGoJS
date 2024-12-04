@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-islm@2.0.49...@bitgo/sdk-coin-islm@2.1.0) (2024-12-03)
+
+### Features
+
+- add @types/keccak to packages that use it ([7e25872](https://github.com/BitGo/BitGoJS/commit/7e25872a5749cb6b3281b5355d4f45151d042d67))
+
 ## [2.0.49](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-islm@2.0.48...@bitgo/sdk-coin-islm@2.0.49) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-islm

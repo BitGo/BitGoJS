@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.1.27...@bitgo/sdk-coin-dot@4.1.28) (2024-12-03)
+
+### Bug Fixes
+
+- **sdk-core:** deprecate displayOrder in ITransactionExplanation ([316ea22](https://github.com/BitGo/BitGoJS/commit/316ea22b4e834d4f850ef3589e2d6f66a6d62fe5))
+
 ## [4.1.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.1.26...@bitgo/sdk-coin-dot@4.1.27) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

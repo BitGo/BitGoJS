@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.23.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.23.35...@bitgo/key-card@0.23.36) (2024-12-03)
+
+**Note:** Version bump only for package @bitgo/key-card
+
 ## [0.23.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.23.34...@bitgo/key-card@0.23.35) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/key-card

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.2.0...@bitgo/utxo-lib@11.2.1) (2024-12-03)
+
+### Bug Fixes
+
+- **utxo-lib:** remove unnecessary assertion ([02d13f8](https://github.com/BitGo/BitGoJS/commit/02d13f8e6fb6aaf499795fdaa0518d622b3a8abe))
+- **utxo-lib:** type errors in wallet/Psbt.ts ([4d30786](https://github.com/BitGo/BitGoJS/commit/4d30786c6d502f51a2332b590a327501614ad11d))
+
 # [11.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.1.0...@bitgo/utxo-lib@11.2.0) (2024-11-26)
 
 ### Bug Fixes

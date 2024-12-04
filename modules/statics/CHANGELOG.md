@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.10.0...@bitgo/statics@50.11.0) (2024-12-03)
+
+### Bug Fixes
+
+- **statics:** update explorer link for sei ([45ae431](https://github.com/BitGo/BitGoJS/commit/45ae431b93d289c04b1dfa75d8c984904ee3ff7f))
+- **statics:** update topeth:cnkt symbol to toopeth:wct ([b28b80f](https://github.com/BitGo/BitGoJS/commit/b28b80f90f862d0dbe7d2cb55aefae8cee53c0c1))
+
+### Features
+
+- **statics:** add eth:vice and sui:vsui token ([61adc37](https://github.com/BitGo/BitGoJS/commit/61adc379d82c78d7d07a170d83dc2b4984f66cdb))
+- **statics:** add ofc erc20 tokens ([9820ff2](https://github.com/BitGo/BitGoJS/commit/9820ff28a410b2084c2892b7e901141b3f147bd2))
+- **statics:** add ofc sol tokens ([fe9d7cd](https://github.com/BitGo/BitGoJS/commit/fe9d7cd6166bf0307c91b4022ce15b4b499ec86b))
+- **statics:** add ofc txrp and opeth token ([e4ab52e](https://github.com/BitGo/BitGoJS/commit/e4ab52e53957aae718e1e78ec10b0fb4bc84a94e))
+- **statics:** add ofceth:virtual token ([2e81981](https://github.com/BitGo/BitGoJS/commit/2e81981c7e5ed2f2c0f5b31f1ef0bbc911301604))
+- **statics:** add rlusd ([473ff08](https://github.com/BitGo/BitGoJS/commit/473ff08201bbdfde11d9d79839d1c0fa18e8afa6))
+- **statics:** add support for trx tokens ([814c6d9](https://github.com/BitGo/BitGoJS/commit/814c6d9450b1e3b24606cc2df6eb3b3e845c3299))
+- **statics:** added forwarder, wallet & batcher contract address for coredao testnet & oas testnet ([ae37ac6](https://github.com/BitGo/BitGoJS/commit/ae37ac67dd8f688a4d7a80e13e87dc34e85403cc))
+- **statics:** fixed sol token address ([42f73df](https://github.com/BitGo/BitGoJS/commit/42f73dfa9f408affba29897be9b8739b651c170c))
+- **statics:** update coredao coin config ([54dbe19](https://github.com/BitGo/BitGoJS/commit/54dbe19e3fd79c340ff2901164e461a65f3697b1))
+- **statics:** update oas coin config ([e7b0738](https://github.com/BitGo/BitGoJS/commit/e7b073886faef5e29030a4ffb68a82890f5c394b))
+
+### Reverts
+
+- Revert "Revert "feat: add deprecated feature to gteth"" ([58892e4](https://github.com/BitGo/BitGoJS/commit/58892e4519c67a34afe93852719e20a22bf30734))
+
 # [50.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.9.0...@bitgo/statics@50.10.0) (2024-11-26)
 
 ### Features

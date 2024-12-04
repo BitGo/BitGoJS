@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.56.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.56.7...@bitgo/sdk-api@1.56.8) (2024-12-03)
+
+### Bug Fixes
+
+- handle signPsbtRequest with Bluebird ([12df43d](https://github.com/BitGo/BitGoJS/commit/12df43db7c43f8dd99c451a83408d8226633f5de))
+- **sdk-api:** type errors in old code ([f09599f](https://github.com/BitGo/BitGoJS/commit/f09599fab7052b1dc0689a28b0726857f1917965))
+
 ## [1.56.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.56.6...@bitgo/sdk-api@1.56.7) (2024-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-api
