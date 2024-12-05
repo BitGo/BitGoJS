@@ -1,6 +1,7 @@
 import { payments, networks } from '@bitgo/utxo-lib';
 
 // Source: https://docs.coredao.org/docs/Learn/products/btc-staking/design
+export const CORE_DAO_DEVNET_CHAIN_ID = Buffer.from('0458', 'hex');
 export const CORE_DAO_TESTNET_CHAIN_ID = Buffer.from('045b', 'hex');
 export const CORE_DAO_MAINNET_CHAIN_ID = Buffer.from('045c', 'hex');
 export const CORE_DAO_SATOSHI_PLUS_IDENTIFIER = Buffer.from('5341542b', 'hex');
@@ -77,7 +78,13 @@ export function createCoreDaoOpReturnOutputScript({
   }
   const versionBuffer = Buffer.alloc(1, version);
 
-  if (!(chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) || chainId.equals(CORE_DAO_MAINNET_CHAIN_ID))) {
+  if (
+    !(
+      chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) ||
+      chainId.equals(CORE_DAO_MAINNET_CHAIN_ID) ||
+      chainId.equals(CORE_DAO_DEVNET_CHAIN_ID)
+    )
+  ) {
     throw new Error('Invalid chain ID');
   }
 
@@ -122,7 +129,7 @@ export function createCoreDaoOpReturnOutputScript({
 
   const payment = payments.embed({
     data: [data],
-    network: chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) ? networks.testnet : networks.bitcoin,
+    network: chainId.equals(CORE_DAO_DEVNET_CHAIN_ID) ? networks.testnet : networks.bitcoin,
   });
   if (!payment.output) {
     throw new Error('Unable to create OP_RETURN output');
@@ -166,9 +173,17 @@ export function parseCoreDaoOpReturnOutputScript(script: Buffer): OpReturnParams
 
   // Decode chainId
   const chainId = Buffer.from(dataBuffer.subarray(offset, offset + 2));
-  if (!(chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) || chainId.equals(CORE_DAO_MAINNET_CHAIN_ID))) {
+  if (
+    !(
+      chainId.equals(CORE_DAO_DEVNET_CHAIN_ID) ||
+      chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) ||
+      chainId.equals(CORE_DAO_MAINNET_CHAIN_ID)
+    )
+  ) {
     throw new Error(
-      `Invalid ChainID: ${chainId.toString('hex')}. Must be either 0x045b (testnet) or 0x045c (mainnet).`
+      `Invalid ChainID: ${chainId.toString(
+        'hex'
+      )}. Must be either 0x0458 (devnet), 0x045b (testnet), or 0x045c (mainnet).`
     );
   }
   offset += 2;
