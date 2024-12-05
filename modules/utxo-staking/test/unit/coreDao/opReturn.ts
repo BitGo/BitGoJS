@@ -238,7 +238,7 @@ describe('OP_RETURN', function () {
       assert.deepStrictEqual(
         createCoreDaoOpReturnOutputScript({
           version: 1,
-          chainId: Buffer.from('045b', 'hex'),
+          chainId: Buffer.from('0458', 'hex'),
           delegator: Buffer.from('de60b7d0e6b758ca5dd8c61d377a2c5f1af51ec1', 'hex'),
           validator: Buffer.from('a9e209f5ea0036c8c2f41078a3cebee57d8a47d5', 'hex'),
           fee: 1,
@@ -315,7 +315,7 @@ describe('OP_RETURN', function () {
     });
 
     it('should fail if the chainId is incorrect', function () {
-      const script = defaultScript.replace('045b', '0454');
+      const script = defaultScript.replace('0458', '0454');
       assert.throws(() => parseCoreDaoOpReturnOutputScript(Buffer.from(script, 'hex')));
     });
   });
