@@ -45,6 +45,9 @@ jobs:
         run: rm yarn.lock
 
       - name: Install Packages
+        env:
+          # Workaround for https://github.com/nodejs/node/issues/51555
+          DISABLE_V8_COMPILE_CACHE: '1'
         run: yarn install
 
       - name: Unit test all
