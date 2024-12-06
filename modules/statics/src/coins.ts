@@ -1326,7 +1326,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
-    COREDAO_FEATURES
+    [...COREDAO_FEATURES, CoinFeature.STAKING]
   ),
   account(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',
