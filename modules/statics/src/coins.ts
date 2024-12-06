@@ -1736,8 +1736,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
-  tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset.USDT),
-  ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset.USDT),
+  tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset['ttrx:usdt']),
+  ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset['trx:usdt']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 96, UnderlyingAsset['txrp:rlusd']),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
@@ -13803,7 +13803,7 @@ export const coins = CoinMap.fromCoins([
     'Tether USD',
     6,
     'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-    UnderlyingAsset.USDT
+    UnderlyingAsset['trx:usdt']
   ),
   tronToken(
     '77fe25dc-7871-4d9d-9cc0-2e5cba6250ff',
@@ -15004,7 +15004,7 @@ export const coins = CoinMap.fromCoins([
     'Tether USD',
     6,
     'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
-    UnderlyingAsset.USDT
+    UnderlyingAsset['ttrx:usdt']
   ),
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',
