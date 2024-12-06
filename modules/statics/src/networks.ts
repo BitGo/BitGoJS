@@ -347,7 +347,7 @@ class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
   name = 'BitcoinCashTestnet';
   family = CoinFamily.BCH;
   utxolibName = 'bitcoincashTestnet';
-  explorerUrl = 'https://www.blockchain.com/bch-testnet/tx/';
+  explorerUrl = 'https://tbch.loping.net/tx/';
 }
 class BitcoinSV extends Mainnet implements UtxoNetwork {
   name = 'BitcoinSV';
