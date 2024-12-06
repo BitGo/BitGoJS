@@ -2332,6 +2332,10 @@ export enum UnderlyingAsset {
   'trx:win' = 'trx:win',
   'trx:btt' = 'trx:btt',
   'trx:usdd' = 'trx:usdd',
+  'trx:usdt' = 'trx:usdt',
+
+  // TRX testnet tokens
+  'ttrx:usdt' = 'ttrx:usdt',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
