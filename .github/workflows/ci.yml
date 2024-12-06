@@ -12,7 +12,7 @@ on:
 
 jobs:
   unit-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4-cores
 
     strategy:
       fail-fast: false
