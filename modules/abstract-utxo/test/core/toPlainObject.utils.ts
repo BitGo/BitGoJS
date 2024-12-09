@@ -2,6 +2,7 @@ type ToPlainObjectOpts = {
   propertyDescriptors?: boolean;
   skipUndefinedValues?: boolean;
   ignorePaths?: string[] | ((path: PathElement[]) => boolean);
+  apply?: (v: unknown, path: PathElement[]) => unknown;
 };
 export type PathElement = string | number;
 
@@ -50,6 +51,13 @@ function toPlainObjectFromPropertyDescriptors(v: unknown, opts: ToPlainObjectOpt
 }
 
 export function toPlainObject(v: unknown, opts: ToPlainObjectOpts, path: PathElement[]): unknown {
+  if (opts.apply) {
+    const result = opts.apply(v, path);
+    if (result !== undefined) {
+      return result;
+    }
+  }
+
   switch (typeof v) {
     case 'string':
     case 'number':
