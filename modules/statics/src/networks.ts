@@ -699,7 +699,7 @@ class Atom extends Mainnet implements AccountNetwork {
 class AtomTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Cosmos Hub ATOM';
   family = CoinFamily.ATOM;
-  explorerUrl = 'https://explorer.polypore.xyz/theta-testnet-001/tx/';
+  explorerUrl = 'https://explorer.polypore.xyz/provider/tx/';
 }
 
 class Osmo extends Mainnet implements AccountNetwork {
