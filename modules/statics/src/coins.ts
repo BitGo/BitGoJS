@@ -11886,6 +11886,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['eth:virtual']
   ),
   erc20(
+    '3cdd1d41-b561-4c0c-aa82-72c52ebe69e5',
+    'eth:kava',
+    'Kava',
+    6,
+    '0x0C356B7fD36a5357E5A017EF11887ba100C9AB76'
+    UnderlyingAsset['eth:kava']
+  ),
+  erc20(
     '8970dd16-3fa8-409b-b17c-d06ea9a7a900',
     'eth:vice',
     'VICE',
