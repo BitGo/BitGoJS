@@ -2,9 +2,7 @@
 
 module.exports = {
   require: 'ts-node/register',
-  timeout: '20000',
-  reporter: 'min',
-  'reporter-option': ['cdn=true', 'json=false'],
+  timeout: '2000',
   exit: true,
-  spec: ['test/unit/**/*.ts'],
+  spec: ['test/**/*.ts'],
 };

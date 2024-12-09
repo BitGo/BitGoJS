@@ -10,7 +10,9 @@
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "npm run unit-test",
+    "unit-test": "mocha --recursive test/"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -46,6 +48,7 @@
     "@types/bluebird": "^3.5.25",
     "@types/lodash": "^4.14.121",
     "@types/superagent": "4.1.15",
+    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
     "bignumber.js": "^9.0.2",
     "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3",
     "bluebird": "^3.5.3",
