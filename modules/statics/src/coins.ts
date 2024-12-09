@@ -12738,6 +12738,54 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['bsc:gmt']
   ),
   bscToken(
+    'cc8ee3f4-ffac-4046-9d38-dff2be8c5e2a',
+    'bsc:h2o',
+    'H2O DAO',
+    18,
+    '0xaf3287cae99c982586c07401c0d911bf7de6cd82',
+    UnderlyingAsset['bsc:h2o']
+  ),
+  bscToken(
+    '4887e5e6-6dbd-453c-af52-e260562af2e7',
+    'bsc:flux',
+    'Flux',
+    8,
+    '0xaff9084f2374585879e8b434c399e29e80cce635',
+    UnderlyingAsset['bsc:flux']
+  ),
+  bscToken(
+    '4fe50080-b1e5-4d8e-a358-773a1fcf5002',
+    'bsc:lto',
+    'LTO Network',
+    18,
+    '0x857b222fc79e1cbbf8ca5f78cb133d1b7cf34bbd',
+    UnderlyingAsset['bsc:lto']
+  ),
+  bscToken(
+    '401cf05a-8fe1-40c5-9e73-b37417a08dac',
+    'bsc:kmd',
+    'Komodo',
+    18,
+    '0x2003f7ba57ea956b05b85c60b4b2ceea9b111256',
+    UnderlyingAsset['bsc:kmd']
+  ),
+  bscToken(
+    'a4cda030-4c22-4ece-93b4-840da127781c',
+    'bsc:farm',
+    'Harvest Finance',
+    18,
+    '0x4b5c23cac08a567ecf0c1ffca8372a45a5d33743',
+    UnderlyingAsset['bsc:farm']
+  ),
+  bscToken(
+    '7a97cef9-ac2c-4c76-88d2-334544fdc6bf',
+    'bsc:lina',
+    'Linear Finance',
+    18,
+    '0x762539b45a1dcce3d36d080f74d1aed37844b878',
+    UnderlyingAsset['bsc:lina']
+  ),
+  bscToken(
     '290801fc-fc48-4b5d-b5e7-abbc2101de13',
     'bsc:firo',
     'Firo',
