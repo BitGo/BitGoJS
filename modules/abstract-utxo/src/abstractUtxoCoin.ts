@@ -76,7 +76,6 @@ import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
-  explainPsbt,
   explainTx,
   fromExtendedAddressFormat,
   getPsbtTxInputs,
@@ -133,16 +132,18 @@ export interface BaseOutput {
   external?: boolean;
 }
 
-export interface WalletOutput extends BaseOutput {
+export interface FixedScriptWalletOutput extends BaseOutput {
   needsCustomChangeKeySignatureVerification?: boolean;
   chain: number;
   index: number;
 }
 
-export type Output = BaseOutput | WalletOutput;
+export type Output = BaseOutput | FixedScriptWalletOutput;
 
-export function isWalletOutput(output: Output): output is WalletOutput {
-  return (output as WalletOutput).chain !== undefined && (output as WalletOutput).index !== undefined;
+export function isWalletOutput(output: Output): output is FixedScriptWalletOutput {
+  return (
+    (output as FixedScriptWalletOutput).chain !== undefined && (output as FixedScriptWalletOutput).index !== undefined
+  );
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation<string, string> {
@@ -746,7 +747,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     );
 
     const needsCustomChangeKeySignatureVerification = allOutputDetails.some(
-      (output) => (output as WalletOutput)?.needsCustomChangeKeySignatureVerification
+      (output) => (output as FixedScriptWalletOutput)?.needsCustomChangeKeySignatureVerification
     );
 
     const changeOutputs = _.filter(allOutputDetails, { external: false });
@@ -1535,12 +1536,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (typeof txHex !== 'string' || !txHex.match(/^([a-f0-9]{2})+$/i)) {
       throw new Error('invalid transaction hex, must be a valid hex string');
     }
-    const tx = this.decodeTransaction(txHex);
-    if (tx instanceof bitgo.UtxoPsbt) {
-      return explainPsbt(tx, params, this.network);
-    } else {
-      return explainTx(tx, params, this.network);
-    }
+    return explainTx(this.decodeTransaction(txHex), params, this.network);
   }
 
   /**

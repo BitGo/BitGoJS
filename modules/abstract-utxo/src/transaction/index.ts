@@ -1,3 +1,3 @@
 export * from './recipient';
-export * from './explainTransaction';
+export { explainTx } from './explainTransaction';
 export * from './fetchInputs';
