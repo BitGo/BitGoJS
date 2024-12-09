@@ -2,18 +2,17 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
 
-import {
-  DecoratedExplainTransactionOptions,
-  ExplainTransactionOptions,
-  Output,
-  TransactionExplanation,
-  FixedScriptWalletOutput,
-} from '../../abstractUtxoCoin';
+import { Output, TransactionExplanation, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';
+
+export type ChangeAddressInfo = { address: string; chain: number; index: number };
 
 function explainCommon<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
-  params: DecoratedExplainTransactionOptions<TNumber>,
+  params: {
+    changeInfo?: ChangeAddressInfo[];
+    feeInfo?: string;
+  },
   network: utxolib.Network
 ) {
   const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'];
@@ -85,14 +84,16 @@ function explainCommon<TNumber extends number | bigint>(
   return { displayOrder, id: tx.getId(), ...outputDetails, fee, locktime };
 }
 
-function getRootWalletKeys<TNumber extends number | bigint>(params: ExplainTransactionOptions<TNumber>) {
+function getRootWalletKeys(params: { pubs?: string[] }) {
   const keys = params.pubs?.map((xpub) => bip32.fromBase58(xpub));
   return keys && keys.length === 3 ? new bitgo.RootWalletKeys(keys as Triple<BIP32Interface>) : undefined;
 }
 
-function getPsbtInputSignaturesCount<TNumber extends number | bigint>(
+function getPsbtInputSignaturesCount(
   psbt: bitgo.UtxoPsbt,
-  params: ExplainTransactionOptions<TNumber>
+  params: {
+    pubs?: string[];
+  }
 ) {
   const rootWalletKeys = getRootWalletKeys(params);
   return rootWalletKeys
@@ -102,7 +103,10 @@ function getPsbtInputSignaturesCount<TNumber extends number | bigint>(
 
 function getTxInputSignaturesCount<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
-  params: ExplainTransactionOptions<TNumber>,
+  params: {
+    txInfo?: { unspents?: bitgo.Unspent<TNumber>[] };
+    pubs?: string[];
+  },
   network: utxolib.Network
 ) {
   const prevOutputs = params.txInfo?.unspents?.map((u) => bitgo.toOutput<TNumber>(u, network));
@@ -136,7 +140,10 @@ function getTxInputSignaturesCount<TNumber extends number | bigint>(
  */
 export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.UtxoTransaction<bigint>>(
   psbt: bitgo.UtxoPsbt<Tx>,
-  params: ExplainTransactionOptions<TNumber>,
+  params: {
+    pubs?: string[];
+    txInfo?: { unspents?: bitgo.Unspent<TNumber>[] };
+  },
   network: utxolib.Network
 ): TransactionExplanation {
   const txOutputs = psbt.txOutputs;
@@ -186,7 +193,7 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
   }
   const changeInfo = getChangeInfo();
   const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
-  const common = explainCommon(tx, { ...params, txInfo: params.txInfo, changeInfo }, network);
+  const common = explainCommon(tx, { ...params, changeInfo }, network);
   const inputSignaturesCount = getPsbtInputSignaturesCount(psbt, params);
 
   // Set fee from subtracting inputs from outputs
@@ -213,7 +220,11 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
 
 export function explainLegacyTx<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
-  params: ExplainTransactionOptions<TNumber>,
+  params: {
+    pubs?: string[];
+    txInfo?: { unspents?: bitgo.Unspent<TNumber>[] };
+    changeInfo?: { address: string; chain: number; index: number }[];
+  },
   network: utxolib.Network
 ): TransactionExplanation {
   const common = explainCommon(tx, params, network);
