@@ -1790,6 +1790,41 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('sweep wallet', function () {
+    let basecoin;
+    let wallet;
+
+    before(async function () {
+      basecoin = bitgo.coin('ttrx');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'ttrx',
+        keys: ['5b3424f91bf349930e340175'],
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    it('should use maximum spendable balance of wallet to sweep funds ', async function () {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/maximumSpendable`;
+      const response = nock(bgUrl).get(path).reply(200, {
+        coin: 'ttrx',
+        maximumSpendable: 65000,
+      });
+      const body = {
+        coin: 'ttrx',
+        address: '2MwvR24yqym2CgHMp7zwvdeqBa4F8KTqunS',
+      };
+      try {
+        await wallet.sweep(body);
+      } catch (e) {
+        // the sweep method will probably throw an exception for not having all of the correct nocks
+        // we only care about maximum spendable balance being used to sweep funds
+      }
+
+      response.isDone().should.be.true();
+    });
+  });
+
   describe('Transaction prebuilds', function () {
     let ethWallet;
 
