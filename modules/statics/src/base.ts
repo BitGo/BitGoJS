@@ -228,6 +228,10 @@ export enum CoinFeature {
    * This coin supports custody in BitGo Korea entities
    */
   CUSTODY_BITGO_KOREA = 'custody-bitgo-korea',
+  /**
+   * This coin supports custody in BitGo Europe ApS entities
+   */
+  CUSTODY_BITGO_EUROPE_APS = 'custody-bitgo-europe-aps',
   /*
    * This coin has transactions that expire after a certain amount of time.
    */
