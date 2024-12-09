@@ -72,6 +72,9 @@ jobs:
         run: yarn run check-fmt
 
       - name: build packages
+        env:
+          # Workaround for https://github.com/nodejs/node/issues/51555
+          DISABLE_V8_COMPILE_CACHE: '1'
         run: yarn run postinstall
 
       - name: Check Package Dependencies
@@ -172,6 +175,9 @@ jobs:
 
       - name: build packages
         if: steps.lerna-cache.outputs.cache-hit == 'true'
+        env:
+          # Workaround for https://github.com/nodejs/node/issues/51555
+          DISABLE_V8_COMPILE_CACHE: '1'
         run: yarn run postinstall
 
       - name: Browser Tests
