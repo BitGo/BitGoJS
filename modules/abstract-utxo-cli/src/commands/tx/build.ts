@@ -72,7 +72,6 @@ export async function buildTransactionLocal(
     descriptorName: string;
     index: number;
   };
-  // throw new Error('Not implemented');
   const unspents: { unspents: Unspent[] } = await wallet.unspents();
   const descriptors = getDescriptors(wallet);
   const psbt = new utxolib.Psbt({ network: coin.network });
@@ -114,7 +113,8 @@ export const cmdBuild: CommandModule<BitGoApiArgs, BitGoApiArgs & ArgsBuildTrans
     const recipients = [{ address: recipient, amount: args.amount }];
     if (args.local) {
       assert(coin instanceof AbstractUtxoCoin);
-      const psbt = buildTransactionLocal(bitgo, coin, wallet, recipients, args);
+      const change = (await wallet.createAddress()).address;
+      const psbt = await buildTransactionLocal(bitgo, coin, wallet, recipients, change);
       console.log(psbt.toBase64());
     }
 

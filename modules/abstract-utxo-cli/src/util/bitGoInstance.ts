@@ -1,5 +1,5 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { CoinConstructor } from '@bitgo/sdk-core';
+import { CoinConstructor, IWallet } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { Btc, Tbtc, Tbtc4, Tbtcsig, Tbtcbgsig } from '@bitgo/sdk-coin-btc';
@@ -54,6 +54,22 @@ export function getBitGoInstance({ env, accessToken = getAccessTokenFromEnv(), c
   return api;
 }
 
+export async function getDefaultEnterpriseId(bitgo: BitGoAPI): Promise<string> {
+  type Enterprise = {
+    id: string;
+  };
+  type MeResponse = {
+    id: string;
+    username: string;
+    enterprises: Enterprise[];
+  };
+  const me: MeResponse = await bitgo.me();
+  if (!me.enterprises || me.enterprises.length === 0) {
+    throw new Error('No enterprises found');
+  }
+  return me.enterprises[0].id;
+}
+
 export function getBitGoWithUtxoCoin({ env, accessToken = getAccessTokenFromEnv(), coin }: BitGoApiArgs): {
   bitgo: BitGoAPI;
   coin: AbstractUtxoCoin;
@@ -67,4 +83,28 @@ export function getBitGoWithUtxoCoin({ env, accessToken = getAccessTokenFromEnv(
     throw new Error(`Coin ${coin} is not an UTXO coin`);
   }
   return { bitgo: api, coin: coinInstance };
+}
+
+export async function selectWallet(
+  bitgo: BitGoAPI,
+  coin: AbstractUtxoCoin,
+  args: { walletId?: string; walletLabel?: string }
+): Promise<IWallet> {
+  if (args.walletId) {
+    return coin.wallets().get({ id: args.walletId });
+  }
+
+  if (args.walletLabel) {
+    const { wallets } = await coin.wallets().list();
+    for (const wallet of wallets) {
+      console.dir(wallet._wallet);
+    }
+    const wallet = wallets.find((w) => w.label() === args.walletLabel);
+    if (wallet) {
+      return wallet;
+    }
+    throw new Error(`Wallet with label ${args.walletLabel} not found: ${wallets.map((w) => w.label()).join(', ')}`);
+  }
+
+  throw new Error('Either walletId or walletLabel must be provided');
 }
