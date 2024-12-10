@@ -58,6 +58,7 @@ module.exports = {
         'WIN-',
         'WP-',
         'COIN-',
+        'FIAT-',
         '#', // Prefix used by GitHub issues
       ],
     },
