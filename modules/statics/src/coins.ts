@@ -19178,7 +19178,8 @@ export const coins = CoinMap.fromCoins([
     'WalletConnect',
     18,
     '0xef4461891dfb3ac8572ccf7c794664a8dd927945',
-    UnderlyingAsset['opeth:wct']
+    UnderlyingAsset['opeth:wct'],
+    WCT_FEATURES
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
