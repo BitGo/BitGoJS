@@ -3,25 +3,25 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 import { DescriptorMap } from '../DescriptorMap';
 import { getVirtualSize } from '../VirtualSize';
-import { findDescriptorForInput, findDescriptorForOutput } from '../psbt/findDescriptors';
-import { assertSatisfiable } from '../psbt/assertSatisfiable';
+import { findDescriptorForInput, findDescriptorForOutput } from './findDescriptors';
+import { assertSatisfiable } from './assertSatisfiable';
 
-type ScriptId = { descriptor: Descriptor; index: number };
+export type ScriptId = { descriptor: Descriptor; index: number };
 
-type ParsedInput = {
+export type ParsedInput = {
   address: string;
   value: bigint;
   scriptId: ScriptId;
 };
 
-type ParsedOutput = {
+export type ParsedOutput = {
   address?: string;
   script: Buffer;
   value: bigint;
   scriptId?: ScriptId;
 };
 
-type ParsedDescriptorTransaction = {
+export type ParsedDescriptorTransaction = {
   inputs: ParsedInput[];
   outputs: ParsedOutput[];
   spendAmount: bigint;
@@ -33,7 +33,7 @@ function sum(...values: bigint[]): bigint {
   return values.reduce((a, b) => a + b, BigInt(0));
 }
 
-export function parseAndValidateTransaction(
+export function parse(
   psbt: utxolib.Psbt,
   descriptorMap: DescriptorMap,
   network: utxolib.Network
