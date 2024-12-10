@@ -1013,7 +1013,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
     const transaction = await txBuilder.build();
 
-    const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
+    // In case of tx with contract data from a custodial wallet, we are running into an issue
+    // as halfSigned is not having the data field. So, we are adding the data field to the halfSigned tx
+    let recipients = params.txPrebuild.recipients || params.recipients;
+    if (recipients === undefined) {
+      recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
+    }
 
     const txParams = {
       eip1559: params.txPrebuild.eip1559,
