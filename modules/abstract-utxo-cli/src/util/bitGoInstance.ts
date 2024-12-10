@@ -12,31 +12,43 @@ import { Zec, Tzec } from '@bitgo/sdk-coin-zec';
 
 import { BitGoApiArgs } from '../bitGoArgs';
 
-const coinClasses = [
-  Btc,
-  Tbtc,
-  Tbtc4,
-  Tbtcsig,
-  Tbtcbgsig,
-  Bch,
-  Tbch,
-  Btg,
-  Ltc,
-  Tltc,
-  Dash,
-  Tdash,
-  Doge,
-  Tdoge,
-  Zec,
-  Tzec,
-];
-
 function getBuilder(coinName: string): CoinConstructor {
-  const coinClass = coinClasses.find((coinClass) => coinClass.prototype.getChain.call(null) === coinName);
-  if (!coinClass) {
-    throw new Error(`Coin ${coinName} not supported`);
+  switch (coinName) {
+    case 'btc':
+      return Btc.createInstance;
+    case 'tbtc':
+      return Tbtc.createInstance;
+    case 'tbtc4':
+      return Tbtc4.createInstance;
+    case 'tbtcsig':
+      return Tbtcsig.createInstance;
+    case 'tbtcbgsig':
+      return Tbtcbgsig.createInstance;
+    case 'bch':
+      return Bch.createInstance;
+    case 'tbch':
+      return Tbch.createInstance;
+    case 'btg':
+      return Btg.createInstance;
+    case 'ltc':
+      return Ltc.createInstance;
+    case 'tltc':
+      return Tltc.createInstance;
+    case 'dash':
+      return Dash.createInstance;
+    case 'tdash':
+      return Tdash.createInstance;
+    case 'doge':
+      return Doge.createInstance;
+    case 'tdoge':
+      return Tdoge.createInstance;
+    case 'zec':
+      return Zec.createInstance;
+    case 'tzec':
+      return Tzec.createInstance;
+    default:
+      throw new Error(`Coin ${coinName} is not supported`);
   }
-  return coinClass.createInstance;
 }
 
 function getAccessTokenFromEnv(): string {
