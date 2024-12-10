@@ -976,6 +976,7 @@ describe('V2 Wallets:', function () {
             keyType: 'tss',
             commonKeychain,
             derivedFromParentWithSeed: '37',
+            isMPCv2: true,
           })
           .times(1)
           .reply(200, {
@@ -991,6 +992,7 @@ describe('V2 Wallets:', function () {
             keyType: 'tss',
             commonKeychain,
             derivedFromParentWithSeed: '37',
+            isMPCv2: true,
           })
           .times(1)
           .reply(200, {

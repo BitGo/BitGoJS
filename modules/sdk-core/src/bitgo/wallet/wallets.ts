@@ -1038,11 +1038,12 @@ export class Wallets implements IWallets {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
+    let multisigTypeVersion: 'MPCv2' | undefined;
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       const tssSettings: TssSettings = await this.bitgo
         .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
         .result();
-      const multisigTypeVersion =
+      multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.coldMultiSigTypeVersion;
       walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
     }
@@ -1071,6 +1072,7 @@ export class Wallets implements IWallets {
       keyType: 'tss',
       commonKeychain: commonKeychain,
       derivedFromParentWithSeed: coldDerivationSeed,
+      isMPCv2: multisigTypeVersion === 'MPCv2' ? true : undefined,
     };
     const userKeychain = await this.baseCoin.keychains().add(userKeychainParams);
 
@@ -1079,6 +1081,7 @@ export class Wallets implements IWallets {
       keyType: 'tss',
       commonKeychain: commonKeychain,
       derivedFromParentWithSeed: coldDerivationSeed,
+      isMPCv2: multisigTypeVersion === 'MPCv2' ? true : undefined,
     };
 
     const backupKeychain = await this.baseCoin.keychains().add(backupKeyChainParams);
