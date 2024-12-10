@@ -24,6 +24,9 @@
       "path": "../utxo-lib"
     },
     {
+      "path": "../utxo-staking"
+    },
+    {
       "path": "../abstract-utxo"
     },
     {

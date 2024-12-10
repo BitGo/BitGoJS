@@ -1,20 +1,23 @@
 import { ArgumentsCamelCase, CommandModule } from 'yargs';
+
 import * as utxolib from '@bitgo/utxo-lib';
-import { BitGoApiArgs } from '../bitGoArgs';
-import { getBitGoInstance, getBitGoWithUtxoCoin } from '../util/bitGoInstance';
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Keychain } from '@bitgo/sdk-core';
+import { Keychain, Wallet, WalletData } from '@bitgo/sdk-core';
+import { Descriptor } from '@bitgo/wasm-miniscript';
+
+import { BitGoApiArgs } from '../bitGoArgs';
+import { getBitGoInstance, getBitGoWithUtxoCoin, getDefaultEnterpriseId } from '../util/bitGoInstance';
+
 import { createFullnodeKeychain, getHdKeys } from './fullnode';
 import { getDescriptors } from './descriptorWallet';
 import { RpcClient } from './RpcClient';
-import { Descriptor } from '@bitgo/wasm-miniscript';
 
-type CreateWalletArgs = {
-  enterpriseId: string;
+export type CreateWalletArgs = {
   name: string;
+  enterpriseId?: string;
   descriptor?: string;
-  descriptorTemplate?: string;
+  descriptorTemplate?: DescriptorTemplate;
   walletPassphrase: string;
   fullnodeUrl?: string;
 };
@@ -48,61 +51,64 @@ export function getPsbtParams(t: DescriptorTemplate): Partial<PsbtParams> {
     case 'Wsh2Of3':
       return {};
     case 'ShWsh2Of3CltvDrop':
-      return { locktime: 17 };
+      return { locktime: 1 };
   }
 }
 
-function getDescriptorString(
-  {
-    descriptor,
-    descriptorTemplate,
-  }: {
-    descriptor?: string;
-    descriptorTemplate?: string;
-  },
-  keychains: Keychain[]
-): string {
+type DescriptorBuilder = (keychains: Keychain[]) => string;
+
+function toDescriptorBuilder({
+  descriptor,
+  descriptorTemplate,
+}: {
+  descriptor?: string;
+  descriptorTemplate?: DescriptorTemplate;
+}): DescriptorBuilder {
   if (descriptor) {
-    return descriptor;
+    return () => descriptor;
   }
-  const xpubs = keychains.map(getXpub);
+
   if (descriptorTemplate) {
-    switch (descriptorTemplate) {
-      case 'Wsh2Of3':
-        return `wsh(${multi(2, 3, xpubs, '0/*')})`;
-      case 'ShWsh2Of3CltvDrop':
-        const { locktime } = getPsbtParams(descriptorTemplate);
-        return `sh(wsh(and_v(r:after(${locktime}),${multi(2, 3, xpubs, '0/*')})))`;
-      default:
-        throw new Error(`Unknown descriptor template: ${descriptorTemplate}`);
-    }
+    return (keychains) => getDescriptorString(descriptorTemplate, keychains);
   }
-  throw new Error('Not implemented');
+
+  throw new TypeError('descriptor or descriptorTemplate is required');
+}
+
+function getDescriptorString(descriptorTemplate: DescriptorTemplate, keychains: Keychain[]): string {
+  const xpubs = keychains.map(getXpub);
+  switch (descriptorTemplate) {
+    case 'Wsh2Of3':
+      return `wsh(${multi(2, 3, xpubs, '0/*')})`;
+    case 'ShWsh2Of3CltvDrop':
+      const { locktime } = getPsbtParams(descriptorTemplate);
+      return `sh(wsh(and_v(r:after(${locktime}),${multi(2, 3, xpubs, '0/*')})))`;
+    default:
+      throw new Error(`Unknown descriptor template: ${descriptorTemplate}`);
+  }
 }
 
 function printJSON(obj: unknown): void {
   console.log(JSON.stringify(obj, null, 2));
 }
 
-async function createDescriptorWalletWithKeychains(
+export async function createDescriptorWalletWithKeychains(
   bitgo: BitGoAPI,
   coin: AbstractUtxoCoin,
   {
     name,
     keychains,
-    descriptor,
-    descriptorTemplate,
+    descriptorBuilder,
     enterpriseId,
   }: {
     name: string;
     keychains: Keychain[];
-    descriptor?: string;
-    descriptorTemplate?: string;
+    descriptorBuilder: (keychains: Keychain[]) => string;
     enterpriseId: string;
   }
-) {
+): Promise<WalletData> {
   const keys = keychains.map((keychain) => keychain.id);
-  return await bitgo
+  return bitgo
     .post(coin.url('/wallet'))
     .send({
       type: 'hot',
@@ -113,7 +119,7 @@ async function createDescriptorWalletWithKeychains(
         descriptors: [
           {
             name: 'default',
-            value: getDescriptorString({ descriptor, descriptorTemplate }, keychains),
+            value: descriptorBuilder(keychains),
             lastIndex: 0,
             signatures: [],
           },
@@ -123,45 +129,69 @@ async function createDescriptorWalletWithKeychains(
     .result();
 }
 
-async function createDescriptorWallet(
+export async function createDescriptorWallet(
   bitgo: BitGoAPI,
   coin: AbstractUtxoCoin,
   {
     name,
     descriptor,
     descriptorTemplate,
+    descriptorBuilder,
     enterpriseId,
     walletPassphrase,
   }: {
     name: string;
     descriptor?: string;
-    descriptorTemplate?: string;
-    // FIXME - pick a default here
+    descriptorTemplate?: DescriptorTemplate;
+    descriptorBuilder?: DescriptorBuilder;
     enterpriseId: string;
     walletPassphrase: string;
   }
-): Promise<void> {
-  if (!descriptor && !descriptorTemplate) {
-    throw new Error('Descriptor is required');
-  }
-  if (descriptor && descriptorTemplate) {
-    throw new Error('Only one of descriptor or descriptorTemplate can be provided');
-  }
-  // FIXME remove dummy keychains
+): Promise<WalletData> {
   const userKeychain = await coin.keychains().createUserKeychain(walletPassphrase);
   const backupKeychain = await coin.keychains().createBackup();
   const bitgoKeychain = await coin.keychains().createBitGo({ enterprise: enterpriseId });
-  return await createDescriptorWalletWithKeychains(bitgo, coin, {
+  return createDescriptorWalletWithKeychains(bitgo, coin, {
     name,
     keychains: [userKeychain, backupKeychain, bitgoKeychain],
-    descriptor,
-    descriptorTemplate,
+    descriptorBuilder: descriptorBuilder ?? toDescriptorBuilder({ descriptor, descriptorTemplate }),
     enterpriseId,
   });
 }
 
+async function createFixedScriptWallet(
+  bitgo: BitGoAPI,
+  coin: AbstractUtxoCoin,
+  {
+    name,
+    enterpriseId,
+    walletPassphrase,
+  }: {
+    name: string;
+    enterpriseId: string;
+    walletPassphrase: string;
+  }
+) {
+  const userKeychain = await coin.keychains().createUserKeychain(walletPassphrase);
+  const backupKeychain = await coin.keychains().createBackup();
+  const bitgoKeychain = await coin.keychains().createBitGo({ enterprise: enterpriseId });
+  const keychains = [userKeychain, backupKeychain, bitgoKeychain];
+  const keys = keychains.map((keychain) => keychain.id);
+  return bitgo
+    .post(coin.url('/wallet'))
+    .send({
+      type: 'hot',
+      label: name,
+      m: 2,
+      n: 3,
+      enterprise: enterpriseId,
+      keys,
+    })
+    .result();
+}
+
 async function createDescriptorWalletWithFullnode(
-  bitcoin: BitGoAPI,
+  bitgo: BitGoAPI,
   coin: AbstractUtxoCoin,
   {
     name,
@@ -175,13 +205,14 @@ async function createDescriptorWalletWithFullnode(
     };
   }
 ) {
+  enterpriseId = enterpriseId ?? (await getDefaultEnterpriseId(bitgo));
   const userKeychain = await createFullnodeKeychain(coin, fullnodeConfig, name, 'user');
   const backupKeychain = await coin.keychains().createBackup();
   const bitgoKeychain = await coin.keychains().createBitGo({ enterprise: enterpriseId });
-  let wallet = await createDescriptorWalletWithKeychains(bitcoin, coin, {
+  let wallet: Wallet | WalletData = await createDescriptorWalletWithKeychains(bitgo, coin, {
     name,
     keychains: [userKeychain, backupKeychain, bitgoKeychain],
-    descriptorTemplate: 'Wsh2Of3',
+    descriptorBuilder: (keychains) => getDescriptorString('Wsh2Of3', keychains),
     enterpriseId,
   });
   wallet = await coin.wallets().get({ id: wallet.id });
@@ -192,36 +223,49 @@ async function createDescriptorWalletWithFullnode(
   return wallet;
 }
 
-export const cmdCreate: CommandModule<BitGoApiArgs, BitGoApiArgs & CreateWalletArgs> = {
+export const cmdCreate = {
   command: 'create',
 
   builder(y) {
     return y
-      .option('enterpriseId', { type: 'string', demandOption: true })
+      .option('enterpriseId', { type: 'string' })
       .option('name', { type: 'string', demandOption: true })
+      .option('fixedScript', { type: 'boolean', default: false })
       .option('descriptor', { type: 'string' })
-      .option('descriptorTemplate', { type: 'string' })
+      .option('descriptorTemplate', { choices: ['Wsh2Of3', 'ShWsh2Of3CltvDrop'] as const })
       .option('walletPassphrase', { type: 'string', default: 'setec astronomy' })
       .option('fullnodeUrl', { type: 'string' });
   },
 
   async handler(args: ArgumentsCamelCase<BitGoApiArgs & CreateWalletArgs>): Promise<void> {
     const { bitgo, coin } = getBitGoWithUtxoCoin(args);
+    const enterpriseId = args.enterpriseId ?? (await getDefaultEnterpriseId(bitgo));
     if ('descriptor' in args || 'descriptorTemplate' in args) {
       if (!args.descriptor && !args.descriptorTemplate) {
         throw new Error('descriptor or descriptorTemplate is required');
       }
       if (args.fullnodeUrl) {
         return printJSON(
-          await createDescriptorWalletWithFullnode(bitgo, coin, { ...args, fullnodeConfig: { url: args.fullnodeUrl } })
+          await createDescriptorWalletWithFullnode(bitgo, coin, {
+            ...args,
+            enterpriseId,
+            fullnodeConfig: { url: args.fullnodeUrl },
+          })
         );
       }
-      printJSON(await createDescriptorWallet(bitgo, coin, args));
+      printJSON(
+        await createDescriptorWallet(bitgo, coin, {
+          ...args,
+          enterpriseId,
+        })
+      );
+    } else if (args.fixedScript) {
+      await createFixedScriptWallet(bitgo, coin, { ...args, enterpriseId });
     } else {
       throw new Error('Not implemented');
     }
   },
-};
+} satisfies CommandModule<BitGoApiArgs, BitGoApiArgs & CreateWalletArgs>;
 
 type ShowWalletArgs = {
   wallet: string;

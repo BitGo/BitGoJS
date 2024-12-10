@@ -1,6 +1,7 @@
 import { CommandModule } from 'yargs';
 import { BitGoApiArgs } from '../bitGoArgs';
-import { getBitGoInstance } from '../util/bitGoInstance';
+import { getBitGoWithUtxoCoin, selectWallet } from '../util/bitGoInstance';
+import { optionsWallet } from './args/wallet';
 
 export const cmdAddress: CommandModule<BitGoApiArgs, BitGoApiArgs> = {
   command: 'address',
@@ -13,12 +14,11 @@ export const cmdAddress: CommandModule<BitGoApiArgs, BitGoApiArgs> = {
         command: 'create',
         describe: 'Create a new address',
         builder(yargs) {
-          return yargs.option('wallet', { type: 'string', demandOption: true });
+          return yargs.options(optionsWallet);
         },
         async handler(args) {
-          const bitgo = getBitGoInstance(args);
-          const coin = bitgo.coin(args.coin);
-          const wallet = await coin.wallets().get({ id: args.wallet });
+          const { bitgo, coin } = getBitGoWithUtxoCoin(args);
+          const wallet = await selectWallet(bitgo, coin, args);
           console.log(await wallet.createAddress());
         },
       });
