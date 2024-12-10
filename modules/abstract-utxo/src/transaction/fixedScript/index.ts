@@ -1,1 +1,1 @@
-export { explainPsbt, explainLegacyTx } from './explainTransaction';
+export { explainPsbt, explainLegacyTx, ChangeAddressInfo } from './explainTransaction';

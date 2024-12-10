@@ -1,6 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { ExplainTransactionOptions, TransactionExplanation } from '../abstractUtxoCoin';
+import { TransactionExplanation } from '../abstractUtxoCoin';
 
 import * as fixedScript from './fixedScript';
 
@@ -10,7 +10,11 @@ import * as fixedScript from './fixedScript';
  */
 export function explainTx<TNumber extends number | bigint>(
   tx: utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoPsbt,
-  params: ExplainTransactionOptions<TNumber>,
+  params: {
+    pubs?: string[];
+    txInfo?: { unspents?: utxolib.bitgo.Unspent<TNumber>[] };
+    changeInfo?: fixedScript.ChangeAddressInfo[];
+  },
   network: utxolib.Network
 ): TransactionExplanation {
   if (tx instanceof utxolib.bitgo.UtxoPsbt) {
