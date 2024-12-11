@@ -2,6 +2,7 @@ import { payments, networks } from '@bitgo/utxo-lib';
 
 // Source: https://docs.coredao.org/docs/Learn/products/btc-staking/design
 export const CORE_DAO_DEVNET_CHAIN_ID = Buffer.from('0458', 'hex');
+export const CORE_DAO_TESTNET2_CHAIN_ID = Buffer.from('045a', 'hex');
 export const CORE_DAO_TESTNET_CHAIN_ID = Buffer.from('045b', 'hex');
 export const CORE_DAO_MAINNET_CHAIN_ID = Buffer.from('045c', 'hex');
 export const CORE_DAO_SATOSHI_PLUS_IDENTIFIER = Buffer.from('5341542b', 'hex');
@@ -81,6 +82,7 @@ export function createCoreDaoOpReturnOutputScript({
   if (
     !(
       chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) ||
+      chainId.equals(CORE_DAO_TESTNET2_CHAIN_ID) ||
       chainId.equals(CORE_DAO_MAINNET_CHAIN_ID) ||
       chainId.equals(CORE_DAO_DEVNET_CHAIN_ID)
     )
@@ -177,6 +179,7 @@ export function parseCoreDaoOpReturnOutputScript(script: Buffer): OpReturnParams
     !(
       chainId.equals(CORE_DAO_DEVNET_CHAIN_ID) ||
       chainId.equals(CORE_DAO_TESTNET_CHAIN_ID) ||
+      chainId.equals(CORE_DAO_TESTNET2_CHAIN_ID) ||
       chainId.equals(CORE_DAO_MAINNET_CHAIN_ID)
     )
   ) {
