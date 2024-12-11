@@ -232,6 +232,56 @@ describe('Optimism', function () {
       halfSignedRawTx.halfSigned.eip1559.maxFeePerGas.should.equal('7593123');
       halfSignedRawTx.halfSigned.eip1559.maxPriorityFeePerGas.should.equal('150');
     });
+
+    it('should sign an unsigned test tx with data', async function () {
+      const builder = getBuilder('topeth') as TransactionBuilder;
+      builder.fee({
+        fee: '280000000000',
+        gasLimit: '7000000',
+        eip1559: {
+          maxFeePerGas: '7593123',
+          maxPriorityFeePerGas: '150',
+        },
+      });
+      builder.counter(1);
+      builder.type(TransactionType.Send);
+      builder.contract(account_1.address);
+      const transferBuilder = builder.transfer() as TransferBuilder;
+      transferBuilder.coin('topeth').amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
+
+      const unsignedTx = await builder.build();
+      const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();
+
+      const halfSignedRawTx = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: unsignedTxForBroadcasting,
+          eip1559: {
+            maxFeePerGas: '7593123',
+            maxPriorityFeePerGas: '150',
+          },
+          recipients: [
+            {
+              address: account_2.address,
+              amount: '1',
+              data: '0xaaaa',
+            },
+          ],
+        },
+        prv: account_1.owner_2,
+      });
+
+      builder.transfer().key(account_1.owner_2);
+      const halfSignedTx = await builder.build();
+      const halfSignedTxForBroadcasting = halfSignedTx.toBroadcastFormat();
+
+      halfSignedRawTx.halfSigned.txHex.should.equals(halfSignedTxForBroadcasting);
+      halfSignedRawTx.halfSigned.recipients.length.should.equals(1);
+      halfSignedRawTx.halfSigned.recipients[0].address.toLowerCase().should.equals(account_2.address.toLowerCase());
+      halfSignedRawTx.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
+      halfSignedRawTx.halfSigned.recipients[0].data.toLowerCase().should.equals('0xaaaa');
+      halfSignedRawTx.halfSigned.eip1559.maxFeePerGas.should.equal('7593123');
+      halfSignedRawTx.halfSigned.eip1559.maxPriorityFeePerGas.should.equal('150');
+    });
   });
 
   describe('Transaction Verification', function () {
