@@ -66,19 +66,20 @@ import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
   explainTx,
+  parseTransaction,
+  verifyTransaction,
   fromExtendedAddressFormat,
   isScriptRecipient,
 } from './transaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
-import { CustomChangeOptions, parseTransaction } from './transaction/fixedScript';
+import { CustomChangeOptions } from './transaction/fixedScript';
 import { NamedKeychains } from './keychains';
 
 const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { verifyTransaction } from './transaction/fixedScript/verifyTransaction';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
