@@ -9,8 +9,9 @@ import {
   TransactionPrebuild,
   UnexpectedAddressError,
   VerificationOptions,
+  ITransactionRecipient,
 } from '@bitgo/sdk-core';
-import { AbstractUtxoCoin, Output, TransactionParams, isWalletOutput } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, Output, isWalletOutput } from '../../abstractUtxoCoin';
 
 const debug = debugLib('bitgo:v2:parseoutput');
 
@@ -90,7 +91,9 @@ interface HandleVerifyAddressErrorOptions {
   e: Error;
   currentAddress: string;
   wallet: IWallet;
-  txParams: TransactionParams;
+  txParams: {
+    changeAddress?: string;
+  };
   customChangeKeys?: CustomChangeOptions['keys'];
   coin: AbstractUtxoCoin;
   addressDetails?: any;
@@ -190,7 +193,10 @@ export interface ParseOutputOptions {
   verification: VerificationOptions;
   keychainArray: [Keychain, Keychain, Keychain];
   wallet: IWallet;
-  txParams: TransactionParams;
+  txParams: {
+    recipients: ITransactionRecipient[];
+    changeAddress?: string;
+  };
   customChange?: CustomChangeOptions;
   reqId?: IRequestTracer;
 }

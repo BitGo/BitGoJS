@@ -8,17 +8,17 @@ import debugLib from 'debug';
 import BigNumber from 'bignumber.js';
 
 import {
+  backupKeyRecovery,
   CrossChainRecoverySigned,
   CrossChainRecoveryUnsigned,
   forCoin,
   recoverCrossChain,
-  RecoveryProvider,
-  backupKeyRecovery,
   RecoverParams,
-  V1RecoverParams,
+  RecoveryProvider,
   v1BackupKeyRecovery,
-  V1SweepParams,
+  V1RecoverParams,
   v1Sweep,
+  V1SweepParams,
 } from './recovery';
 
 import {
@@ -44,11 +44,9 @@ import {
   P2trMusig2UnsupportedError,
   P2trUnsupportedError,
   P2wshUnsupportedError,
-  ParsedTransaction as BaseParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
-  promiseProps,
   RequestTracer,
   sanitizeLegacyPath,
   SignedTransaction,
@@ -56,7 +54,6 @@ import {
   SupplementGenerateWalletOptions,
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
-  TransactionRecipient,
   Triple,
   UnexpectedAddressError,
   UnsupportedAddressTypeError,
@@ -66,11 +63,6 @@ import {
   Wallet,
   WalletData,
 } from '@bitgo/sdk-core';
-import { CustomChangeOptions, parseOutput } from './parseOutput';
-
-const debug = debugLib('bitgo:v2:utxo');
-
-import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 import { supportedCrossChainRecoveries } from './config';
@@ -82,9 +74,15 @@ import {
   getTxInputs,
   isScriptRecipient,
 } from './transaction';
-import { assertDescriptorWalletAddress } from './descriptor/assertDescriptorWalletAddress';
+import { assertDescriptorWalletAddress } from './descriptor';
 
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
+import { CustomChangeOptions, parseTransaction } from './transaction/fixedScript';
+import { NamedKeychains } from './keychains';
+
+const debug = debugLib('bitgo:v2:utxo');
+
+import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
@@ -221,12 +219,8 @@ export interface ParseTransactionOptions<TNumber extends number | bigint = numbe
   reqId?: IRequestTracer;
 }
 
-export interface ParsedTransaction<TNumber extends number | bigint = number> extends BaseParsedTransaction {
-  keychains: {
-    user?: Keychain;
-    backup?: Keychain;
-    bitgo?: Keychain;
-  };
+export type ParsedTransaction<TNumber extends number | bigint = number> = {
+  keychains: NamedKeychains;
   keySignatures: {
     backupPub?: string;
     bitgoPub?: string;
@@ -240,7 +234,7 @@ export interface ParsedTransaction<TNumber extends number | bigint = number> ext
   implicitExternalSpendAmount: TNumber;
   needsCustomChangeKeySignatureVerification: boolean;
   customChange?: CustomChangeOptions;
-}
+};
 
 export interface GenerateAddressOptions {
   addressType?: ScriptType2Of3;
@@ -532,6 +526,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+<<<<<<< HEAD
    * @param first
    * @param second
    * @returns {Array} All outputs that are in the first array but not in the second
@@ -551,6 +546,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+=======
+>>>>>>> 8cc76f6e8 (refactor(abstract-utxo): factor fixedScript parseTransaction)
    * Determine an address' type based on its witness and redeem script presence
    * @param addressDetails
    */
@@ -607,196 +604,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async parseTransaction<TNumber extends number | bigint = number>(
     params: ParseTransactionOptions<TNumber>
   ): Promise<ParsedTransaction<TNumber>> {
-    const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
-
-    if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
-      throw new Error('verification.disableNetworking must be a boolean');
-    }
-    const disableNetworking = verification.disableNetworking;
-
-    const fetchKeychains = async (wallet: IWallet): Promise<VerificationOptions['keychains']> => {
-      return promiseProps({
-        user: this.keychains().get({ id: wallet.keyIds()[KeyIndices.USER], reqId }),
-        backup: this.keychains().get({ id: wallet.keyIds()[KeyIndices.BACKUP], reqId }),
-        bitgo: this.keychains().get({ id: wallet.keyIds()[KeyIndices.BITGO], reqId }),
-      });
-    };
-
-    // obtain the keychains and key signatures
-    let keychains: VerificationOptions['keychains'] | undefined = verification.keychains;
-    if (!keychains) {
-      if (disableNetworking) {
-        throw new Error('cannot fetch keychains without networking');
-      }
-      keychains = await fetchKeychains(wallet);
-    }
-
-    if (!keychains || !keychains.user || !keychains.backup || !keychains.bitgo) {
-      throw new Error('keychains are required, but could not be fetched');
-    }
-
-    const keychainArray: Triple<Keychain> = [keychains.user, keychains.backup, keychains.bitgo];
-
-    const keySignatures = _.get(wallet, '_wallet.keySignatures', {});
-
-    if (_.isUndefined(txPrebuild.txHex)) {
-      throw new Error('missing required txPrebuild property txHex');
-    }
-    // obtain all outputs
-    const explanation: TransactionExplanation = await this.explainTransaction<TNumber>({
-      txHex: txPrebuild.txHex,
-      txInfo: txPrebuild.txInfo,
-      pubs: keychainArray.map((k) => k.pub) as Triple<string>,
-    });
-    const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
-
-    let expectedOutputs;
-    if (txParams.rbfTxIds) {
-      assert(txParams.rbfTxIds.length === 1);
-
-      const txToBeReplaced = await wallet.getTransaction({ txHash: txParams.rbfTxIds[0], includeRbf: true });
-      expectedOutputs = txToBeReplaced.outputs.flatMap(
-        (output: { valueString: string; address?: string; wallet?: string }) => {
-          // For self-sends, the walletId will be the same as the wallet's id
-          if (output.wallet === wallet.id()) {
-            return [];
-          }
-          return [this.toCanonicalTransactionRecipient(output)];
-        }
-      );
-    } else {
-      // verify that each recipient from txParams has their own output
-      expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]).flatMap((output) => {
-        if (output.address === undefined) {
-          if (output.amount.toString() !== '0') {
-            throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${output}`);
-          }
-          return [output];
-        }
-        return [{ ...output, address: this.canonicalAddress(output.address) }];
-      });
-      if (params.txParams.allowExternalChangeAddress && params.txParams.changeAddress) {
-        // when an external change address is explicitly specified, count all outputs going towards that
-        // address in the expected outputs (regardless of the output amount)
-        expectedOutputs.push(
-          ...allOutputs.flatMap((output) => {
-            if (
-              output.address === undefined ||
-              output.address !== this.canonicalAddress(params.txParams.changeAddress as string)
-            ) {
-              return [];
-            }
-            return [{ ...output, address: this.canonicalAddress(output.address) }];
-          })
-        );
-      }
-    }
-
-    const missingOutputs = AbstractUtxoCoin.outputDifference(expectedOutputs, allOutputs);
-
-    // get the keychains from the custom change wallet if needed
-    let customChange: CustomChangeOptions | undefined;
-    const { customChangeWalletId = undefined } = wallet.coinSpecific() || {};
-    if (customChangeWalletId) {
-      // fetch keychains from custom change wallet for deriving addresses.
-      // These keychains should be signed and this should be verified in verifyTransaction
-      const customChangeKeySignatures = wallet._wallet.customChangeKeySignatures;
-      const customChangeWallet: Wallet = await this.wallets().get({ id: customChangeWalletId });
-      const customChangeKeys = await fetchKeychains(customChangeWallet);
-
-      if (!customChangeKeys) {
-        throw new Error('failed to fetch keychains for custom change wallet');
-      }
-
-      if (customChangeKeys.user && customChangeKeys.backup && customChangeKeys.bitgo && customChangeWallet) {
-        const customChangeKeychains: [Keychain, Keychain, Keychain] = [
-          customChangeKeys.user,
-          customChangeKeys.backup,
-          customChangeKeys.bitgo,
-        ];
-
-        customChange = {
-          keys: customChangeKeychains,
-          signatures: [
-            customChangeKeySignatures.user,
-            customChangeKeySignatures.backup,
-            customChangeKeySignatures.bitgo,
-          ],
-        };
-      }
-    }
-
-    /**
-     * Loop through all the outputs and classify each of them as either internal spends
-     * or external spends by setting the "external" property to true or false on the output object.
-     */
-    const allOutputDetails: Output[] = await Promise.all(
-      allOutputs.map((currentOutput) => {
-        return parseOutput({
-          currentOutput,
-          coin: this,
-          txPrebuild,
-          verification,
-          keychainArray,
-          wallet,
-          txParams,
-          customChange,
-          reqId,
-        });
-      })
-    );
-
-    const needsCustomChangeKeySignatureVerification = allOutputDetails.some(
-      (output) => (output as FixedScriptWalletOutput)?.needsCustomChangeKeySignatureVerification
-    );
-
-    const changeOutputs = _.filter(allOutputDetails, { external: false });
-
-    // these are all the outputs that were not originally explicitly specified in recipients
-    // ideally change outputs or a paygo output that might have been added
-    const implicitOutputs = AbstractUtxoCoin.outputDifference(allOutputDetails, expectedOutputs);
-
-    const explicitOutputs = AbstractUtxoCoin.outputDifference(allOutputDetails, implicitOutputs);
-
-    // these are all the non-wallet outputs that had been originally explicitly specified in recipients
-    const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
-
-    // this is the sum of all the originally explicitly specified non-wallet output values
-    const explicitExternalSpendAmount = utxolib.bitgo.toTNumber<TNumber>(
-      explicitExternalOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0)) as bigint,
-      this.amountType
-    );
-
-    /**
-     * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
-     * automatically applies to transactions sending money out of the wallet. The logic is fairly straightforward
-     * in that we compare the external spend amount that was specified explicitly by the user to the portion
-     * that was specified implicitly. To protect customers from people tampering with the transaction outputs, we
-     * define a threshold for the maximum percentage of the implicit external spend in relation to the explicit
-     * external spend.
-     */
-
-    // make sure that all the extra addresses are change addresses
-    // get all the additional external outputs the server added and calculate their values
-    const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
-    const implicitExternalSpendAmount = utxolib.bitgo.toTNumber<TNumber>(
-      implicitExternalOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0)) as bigint,
-      this.amountType
-    );
-
-    return {
-      keychains,
-      keySignatures,
-      outputs: allOutputDetails,
-      missingOutputs,
-      explicitExternalOutputs,
-      implicitExternalOutputs,
-      changeOutputs,
-      explicitExternalSpendAmount,
-      implicitExternalSpendAmount,
-      needsCustomChangeKeySignatureVerification,
-      customChange,
-    };
+    return parseTransaction(this, params);
   }
 
   /**

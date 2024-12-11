@@ -1,6 +1,5 @@
 import 'should';
-
-import { AbstractUtxoCoin } from '../src';
+import { outputDifference } from '../src/transaction/fixedScript/parseTransaction';
 
 describe('Missing output detection', function () {
   it('should recognize count mismatch dupes', function () {
@@ -25,9 +24,9 @@ describe('Missing output detection', function () {
         amount: 15349374,
       },
     ];
-
     // missing should be one entry of the two
-    const missingOutputs = AbstractUtxoCoin.outputDifference(expectedOutputs, actualOutputs);
+
+    const missingOutputs = outputDifference(expectedOutputs, actualOutputs);
 
     missingOutputs.length.should.equal(1);
     missingOutputs[0].address.should.equal('2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ');
@@ -58,7 +57,7 @@ describe('Missing output detection', function () {
     ];
     // missing should be one entry of the two
 
-    const missingOutputs = AbstractUtxoCoin.outputDifference(expectedOutputs, actualOutputs);
+    const missingOutputs = outputDifference(expectedOutputs, actualOutputs);
 
     missingOutputs.length.should.equal(1);
     missingOutputs[0].address.should.equal('2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ');
@@ -85,7 +84,7 @@ describe('Missing output detection', function () {
     ];
     // missing should be one entry of the two
 
-    const missingOutputs = AbstractUtxoCoin.outputDifference(expectedOutputs, actualOutputs);
+    const missingOutputs = outputDifference(expectedOutputs, actualOutputs);
 
     missingOutputs.length.should.equal(2);
     missingOutputs[0].address.should.equal('2N6eb6Gosm2jt4o3djFLjb4kuKyPgAj8teZ');
