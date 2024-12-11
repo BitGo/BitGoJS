@@ -3,9 +3,7 @@ import { randomBytes } from 'crypto';
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface, bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
-import * as bitcoinMessage from 'bitcoinjs-message';
 import debugLib from 'debug';
-import BigNumber from 'bignumber.js';
 
 import {
   backupKeyRecovery,
@@ -27,7 +25,6 @@ import {
   BaseCoin,
   BitGoBase,
   CreateAddressFormat,
-  decryptKeychainPrivateKey,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
   IBaseCoin,
@@ -70,8 +67,6 @@ import {
   assertValidTransactionRecipient,
   explainTx,
   fromExtendedAddressFormat,
-  getPsbtTxInputs,
-  getTxInputs,
   isScriptRecipient,
 } from './transaction';
 import { assertDescriptorWalletAddress } from './descriptor';
@@ -83,6 +78,8 @@ import { NamedKeychains } from './keychains';
 const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+import { verifyTransaction } from './transaction/fixedScript/verifyTransaction';
+import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
@@ -608,150 +605,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Decrypt the wallet's user private key and verify that the claimed public key matches
-   * @param {VerifyUserPublicKeyOptions} params
-   * @return {boolean}
-   * @protected
+   * @deprecated - use function verifyUserPublicKey instead
    */
   protected verifyUserPublicKey(params: VerifyUserPublicKeyOptions): boolean {
-    const { userKeychain, txParams, disableNetworking } = params;
-    if (!userKeychain) {
-      throw new Error('user keychain is required');
-    }
-
-    const userPub = userKeychain.pub;
-
-    // decrypt the user private key, so we can verify that the claimed public key is a match
-    let userPrv = userKeychain.prv;
-    if (!userPrv && txParams.walletPassphrase) {
-      userPrv = decryptKeychainPrivateKey(this.bitgo, userKeychain, txParams.walletPassphrase);
-    }
-
-    if (!userPrv) {
-      const errorMessage = 'user private key unavailable for verification';
-      if (disableNetworking) {
-        console.log(errorMessage);
-        return false;
-      } else {
-        throw new Error(errorMessage);
-      }
-    } else {
-      const userPrivateKey = bip32.fromBase58(userPrv);
-      if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
-        throw new Error('user private key is only public');
-      }
-      if (userPrivateKey.neutered().toBase58() !== userPub) {
-        throw new Error('user private key does not match public key');
-      }
-    }
-
-    return true;
+    return verifyUserPublicKey(this.bitgo, params);
   }
 
   /**
-   * Verify signatures produced by the user key over the backup and bitgo keys.
-   *
-   * If set, these signatures ensure that the wallet keys cannot be changed after the wallet has been created.
-   * @param {VerifyKeySignaturesOptions} params
-   * @return {{backup: boolean, bitgo: boolean}}
+   * @deprecated - use function verifyKeySignature instead
    */
   public verifyKeySignature(params: VerifyKeySignaturesOptions): boolean {
-    // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
-    const { userKeychain, keychainToVerify, keySignature } = params;
-    if (!userKeychain) {
-      throw new Error('user keychain is required');
-    }
-
-    if (!keychainToVerify) {
-      throw new Error('keychain to verify is required');
-    }
-
-    if (!keySignature) {
-      throw new Error('key signature is required');
-    }
-
-    // verify the signature against the user public key
-    assert(userKeychain.pub);
-    const publicKey = bip32.fromBase58(userKeychain.pub).publicKey;
-    // Due to interface of `bitcoinMessage`, we need to convert the public key to an address.
-    // Note that this address has no relationship to on-chain transactions. We are
-    // only interested in the address as a representation of the public key.
-    const signingAddress = utxolib.address.toBase58Check(
-      utxolib.crypto.hash160(publicKey),
-      utxolib.networks.bitcoin.pubKeyHash,
-      // we do not pass `this.network` here because it would fail for zcash
-      // the bitcoinMessage library decodes the address and throws away the first byte
-      // because zcash has a two-byte prefix, verify() decodes zcash addresses to an invalid pubkey hash
-      utxolib.networks.bitcoin
-    );
-
-    // BG-5703: use BTC mainnet prefix for all key signature operations
-    // (this means do not pass a prefix parameter, and let it use the default prefix instead)
-    assert(keychainToVerify.pub);
-    try {
-      return bitcoinMessage.verify(keychainToVerify.pub, signingAddress, Buffer.from(keySignature, 'hex'));
-    } catch (e) {
-      debug('error thrown from bitcoinmessage while verifying key signature', e);
-      return false;
-    }
-  }
-
-  /**
-   * Verify signatures against the user private key over the change wallet extended keys
-   * @param {ParsedTransaction} tx
-   * @param {Keychain} userKeychain
-   * @return {boolean}
-   * @protected
-   */
-  protected verifyCustomChangeKeySignatures<TNumber extends number | bigint>(
-    tx: ParsedTransaction<TNumber>,
-    userKeychain: Keychain
-  ): boolean {
-    if (!tx.customChange) {
-      throw new Error('parsed transaction is missing required custom change verification data');
-    }
-
-    if (!Array.isArray(tx.customChange.keys) || !Array.isArray(tx.customChange.signatures)) {
-      throw new Error('customChange property is missing keys or signatures');
-    }
-
-    for (const keyIndex of [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO]) {
-      const keychainToVerify = tx.customChange.keys[keyIndex];
-      const keySignature = tx.customChange.signatures[keyIndex];
-      if (!keychainToVerify) {
-        throw new Error(`missing required custom change ${KeyIndices[keyIndex].toLowerCase()} keychain public key`);
-      }
-      if (!keySignature) {
-        throw new Error(`missing required custom change ${KeyIndices[keyIndex].toLowerCase()} keychain signature`);
-      }
-      if (
-        !this.verifyKeySignature({
-          userKeychain: userKeychain as { pub: string },
-          keychainToVerify: keychainToVerify as { pub: string },
-          keySignature,
-        })
-      ) {
-        debug('failed to verify custom change %s key signature!', KeyIndices[keyIndex].toLowerCase());
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Get the maximum percentage limit for pay-as-you-go outputs
-   *
-   * @protected
-   */
-  protected getPayGoLimit(allowPaygoOutput?: boolean): number {
-    // allowing paygo outputs needs to be the default behavior, so only disallow paygo outputs if the
-    // relevant verification option is both set and false
-    if (!_.isNil(allowPaygoOutput) && !allowPaygoOutput) {
-      return 0;
-    }
-    // 150 basis points is the absolute permitted maximum if paygo outputs are allowed
-    return 0.015;
+    return verifyKeySignature(params);
   }
 
   /**
@@ -771,142 +635,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
-    const { txParams, txPrebuild, wallet, verification = { allowPaygoOutput: true }, reqId } = params;
-    const isPsbt = txPrebuild.txHex && bitgo.isPsbt(txPrebuild.txHex);
-    if (isPsbt && txPrebuild.txInfo?.unspents) {
-      throw new Error('should not have unspents in txInfo for psbt');
-    }
-
-    const disableNetworking = !!verification.disableNetworking;
-    const parsedTransaction: ParsedTransaction<TNumber> = await this.parseTransaction<TNumber>({
-      txParams,
-      txPrebuild,
-      wallet,
-      verification,
-      reqId,
-    });
-
-    const keychains = parsedTransaction.keychains;
-
-    // verify that the claimed user public key corresponds to the wallet's user private key
-    let userPublicKeyVerified = false;
-    try {
-      // verify the user public key matches the private key - this will throw if there is no match
-      userPublicKeyVerified = this.verifyUserPublicKey({ userKeychain: keychains.user, disableNetworking, txParams });
-    } catch (e) {
-      debug('failed to verify user public key!', e);
-    }
-
-    // let's verify these keychains
-    const keySignatures = parsedTransaction.keySignatures;
-    if (!_.isEmpty(keySignatures)) {
-      const verify = (key, pub) => {
-        if (!keychains.user || !keychains.user.pub) {
-          throw new Error('missing user keychain');
-        }
-        return this.verifyKeySignature({
-          userKeychain: keychains.user as { pub: string },
-          keychainToVerify: key,
-          keySignature: pub,
-        });
-      };
-      const isBackupKeySignatureValid = verify(keychains.backup, keySignatures.backupPub);
-      const isBitgoKeySignatureValid = verify(keychains.bitgo, keySignatures.bitgoPub);
-      if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {
-        throw new Error('secondary public key signatures invalid');
-      }
-      debug('successfully verified backup and bitgo key signatures');
-    } else if (!disableNetworking) {
-      // these keys were obtained online and their signatures were not verified
-      // this could be dangerous
-      console.log('unsigned keys obtained online are being used for address verification');
-    }
-
-    if (parsedTransaction.needsCustomChangeKeySignatureVerification) {
-      if (!keychains.user || !userPublicKeyVerified) {
-        throw new Error('transaction requires verification of user public key, but it was unable to be verified');
-      }
-      const customChangeKeySignaturesVerified = this.verifyCustomChangeKeySignatures(parsedTransaction, keychains.user);
-      if (!customChangeKeySignaturesVerified) {
-        throw new Error(
-          'transaction requires verification of custom change key signatures, but they were unable to be verified'
-        );
-      }
-      debug('successfully verified user public key and custom change key signatures');
-    }
-
-    const missingOutputs = parsedTransaction.missingOutputs;
-    if (missingOutputs.length !== 0) {
-      // there are some outputs in the recipients list that have not made it into the actual transaction
-      throw new Error('expected outputs missing in transaction prebuild');
-    }
-
-    const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
-
-    // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
-    const payAsYouGoLimit = new BigNumber(this.getPayGoLimit(verification.allowPaygoOutput)).multipliedBy(
-      intendedExternalSpend.toString()
-    );
-
-    /*
-    Some explanation for why we're doing what we're doing:
-    Some customers will have an output to BitGo's PAYGo wallet added to their transaction, and we need to account for
-    it here. To protect someone tampering with the output to make it send more than it should to BitGo, we define a
-    threshold for the output's value above which we'll throw an error, because the paygo output should never be that
-    high.
-     */
-
-    // make sure that all the extra addresses are change addresses
-    // get all the additional external outputs the server added and calculate their values
-    const nonChangeAmount = new BigNumber(parsedTransaction.implicitExternalSpendAmount.toString());
-
-    debug(
-      'Intended spend is %s, Non-change amount is %s, paygo limit is %s',
-      intendedExternalSpend.toString(),
-      nonChangeAmount.toString(),
-      payAsYouGoLimit.toString()
-    );
-
-    // There are two instances where we will get into this point here
-    if (nonChangeAmount.gt(payAsYouGoLimit)) {
-      if (isPsbt && parsedTransaction.customChange) {
-        // In the case that we have a custom change address on a wallet and we are building the transaction
-        // with a PSBT, we do not have the metadata to verify the address from the custom change wallet, nor
-        // can we fetch that information from the other wallet because we may not have the credentials. Therefore,
-        // we will not throw an error here, but we will log a warning.
-        debug(`cannot verify some of the addresses because it belongs to a separate wallet`);
-      } else {
-        // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
-        // there are some addresses that are outside the scope of intended recipients that are not change addresses
-        throw new Error('prebuild attempts to spend to unintended external recipients');
-      }
-    }
-
-    const allOutputs = parsedTransaction.outputs;
-    if (!txPrebuild.txHex) {
-      throw new Error(`txPrebuild.txHex not set`);
-    }
-    const inputs = isPsbt
-      ? getPsbtTxInputs(txPrebuild.txHex, this.network).map((v) => ({
-          ...v,
-          value: bitgo.toTNumber(v.value, this.amountType),
-        }))
-      : await getTxInputs({ txPrebuild, bitgo: this.bitgo, coin: this, disableNetworking, reqId });
-    // coins (doge) that can exceed number limits (and thus will use bigint) will have the `valueString` field
-    const inputAmount = inputs.reduce(
-      (sum: bigint, i) => sum + BigInt(this.amountType === 'bigint' ? i.valueString : i.value),
-      BigInt(0)
-    );
-    const outputAmount = allOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0));
-    const fee = inputAmount - outputAmount;
-
-    if (fee < 0) {
-      throw new Error(
-        `attempting to spend ${outputAmount} satoshis, which exceeds the input amount (${inputAmount} satoshis) by ${-fee}`
-      );
-    }
-
-    return true;
+    return verifyTransaction(this, this.bitgo, params);
   }
 
   /**
