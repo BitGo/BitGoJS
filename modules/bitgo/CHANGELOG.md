@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [39.16.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.16.0...bitgo@39.16.1) (2024-12-11)
+
+### Bug Fixes
+
+- **sdk-core:** fix MPCv2 SMC wallet generation ([4782337](https://github.com/BitGo/BitGoJS/commit/4782337f8905d95ebbe6c82d29cc4d5c46243c89))
+
 # [39.16.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.15.0...bitgo@39.16.0) (2024-12-03)
 
 ### Bug Fixes

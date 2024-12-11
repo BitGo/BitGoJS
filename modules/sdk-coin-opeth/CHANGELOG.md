@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [18.1.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.1.35...@bitgo/sdk-coin-opeth@18.1.36) (2024-12-11)
+
+### Bug Fixes
+
+- **abstract-eth:** fix issue with ethlike signTx ([7584c8b](https://github.com/BitGo/BitGoJS/commit/7584c8bf2e3ddea21582cac36abdebe0a0a78646))
+
 ## [18.1.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.1.34...@bitgo/sdk-coin-opeth@18.1.35) (2024-12-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-opeth

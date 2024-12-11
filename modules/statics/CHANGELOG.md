@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.11.0...@bitgo/statics@50.12.0) (2024-12-11)
+
+### Features
+
+- **statics:** add BitGo Europe ApS entity ([3d0438e](https://github.com/BitGo/BitGoJS/commit/3d0438efa495f7485e03e52522bc9806f1b0c8d7))
+- **statics:** add bulk withdrawal feature for ada ([466eb14](https://github.com/BitGo/BitGoJS/commit/466eb14370d6de0a5bad8ded7a8116e522fce0d6))
+- **statics:** add staking feature to tcoredao ([bfcc70f](https://github.com/BitGo/BitGoJS/commit/bfcc70f684691f7408b71a6cc2e11369b59370c2))
+- **statics:** add staking feature to WCT in prod for testing ([d23195f](https://github.com/BitGo/BitGoJS/commit/d23195fd47737103520a33c260ffcf7834f3ffba))
+- **statics:** fix trx tokens underlying asset ([259f21f](https://github.com/BitGo/BitGoJS/commit/259f21f91678d33a3b0c9e9bae9ec52142d0643b))
+
+### Reverts
+
+- Revert "Revert "Revert "feat: add deprecated feature to gteth""" ([8290db5](https://github.com/BitGo/BitGoJS/commit/8290db536b37176fbde71fbde04c20f2a2ed382c))
+
 # [50.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.10.0...@bitgo/statics@50.11.0) (2024-12-03)
 
 ### Bug Fixes
