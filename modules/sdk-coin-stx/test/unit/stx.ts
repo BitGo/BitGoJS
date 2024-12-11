@@ -303,7 +303,9 @@ describe('STX:', function () {
 
       await basecoin
         .verifyTransaction({ txParams })
-        .should.be.rejectedWith('txParams should only have 1 recipient but 2 found');
+        .should.be.rejectedWith(
+          `tstx doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+        );
     });
   });
 });

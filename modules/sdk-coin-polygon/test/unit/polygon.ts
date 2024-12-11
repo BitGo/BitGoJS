@@ -387,9 +387,10 @@ describe('Polygon', function () {
 
       await basecoin
         .verifyTransaction({ txParams, txPrebuild, wallet, verification })
-        .should.be.rejectedWith('txPrebuild should only have 1 recipient but 2 found');
+        .should.be.rejectedWith(
+          `tpolygon doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+        );
     });
-
     it('should reject a hop txPrebuild that does not send to its hop address', async function () {
       const wallet = new Wallet(bitgo, basecoin, {});
 
