@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.0...@bitgo/abstract-eth@22.4.1) (2024-12-11)
+
+### Bug Fixes
+
+- **abstract-eth:** fix issue with ethlike signTx ([7584c8b](https://github.com/BitGo/BitGoJS/commit/7584c8bf2e3ddea21582cac36abdebe0a0a78646))
+
 # [22.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.3.5...@bitgo/abstract-eth@22.4.0) (2024-12-03)
 
 ### Bug Fixes

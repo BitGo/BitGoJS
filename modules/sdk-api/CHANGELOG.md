@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.57.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.56.8...@bitgo/sdk-api@1.57.0) (2024-12-11)
+
+### Features
+
+- **sdk-api:** implement custom proxy agent support in BitGoAPI ([cab3958](https://github.com/BitGo/BitGoJS/commit/cab3958288a685f261f67f70a82c520d74a64ec9))
+
 ## [1.56.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.56.7...@bitgo/sdk-api@1.56.8) (2024-12-03)
 
 ### Bug Fixes

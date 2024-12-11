@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.5.7...@bitgo/express@10.6.0) (2024-12-11)
+
+### Features
+
+- **sdk-api:** implement custom proxy agent support in BitGoAPI ([cab3958](https://github.com/BitGo/BitGoJS/commit/cab3958288a685f261f67f70a82c520d74a64ec9))
+
 ## [10.5.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.5.6...@bitgo/express@10.5.7) (2024-12-03)
 
 **Note:** Version bump only for package @bitgo/express

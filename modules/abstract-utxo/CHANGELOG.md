@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.3.0...@bitgo/abstract-utxo@9.4.0) (2024-12-11)
+
+### Features
+
+- **abstract-utxo:** add apply option to toPlainObject ([6eae1ca](https://github.com/BitGo/BitGoJS/commit/6eae1ca0a46f36cef19cbd839abb4b68d972089b))
+- **abstract-utxo:** add package src/core ([6ca55f5](https://github.com/BitGo/BitGoJS/commit/6ca55f5fb0df16e2a38fcd7a9bcd7286bbb68d5d))
+- **abstract-utxo:** enable esModuleInterop ([f99aa90](https://github.com/BitGo/BitGoJS/commit/f99aa90ad656b62eeae8c094d57caf5ae883eb7c))
+- **abstract-utxo:** include test files in tsconfig.json ([c2187fb](https://github.com/BitGo/BitGoJS/commit/c2187fbf1d5ea150cc8a69630e1b819dd2a300e0))
+- **abstract-utxo:** update wasm-miniscript to 2.0.0-beta.2 ([cec5cd7](https://github.com/BitGo/BitGoJS/commit/cec5cd72f5ea1b7eed074a3ef436e21cf7362733))
+
 # [9.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.2.2...@bitgo/abstract-utxo@9.3.0) (2024-12-03)
 
 ### Features
