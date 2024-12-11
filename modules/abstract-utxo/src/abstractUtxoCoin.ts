@@ -536,7 +536,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param second
    * @returns {Array} All outputs that are in the first array but not in the second
    */
-  protected static outputDifference(first: Output[], second: Output[]): Output[] {
+  public static outputDifference(first: Output[], second: Output[]): Output[] {
     const keyFunc = ({ address, amount }: Output): string => `${address}:${amount}`;
     const groupedOutputs = _.groupBy(first, keyFunc);
 
