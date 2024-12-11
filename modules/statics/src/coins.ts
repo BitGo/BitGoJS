@@ -165,6 +165,7 @@ const DOT_FEATURES = [
   CoinFeature.STAKING,
   CoinFeature.EXPIRING_TRANSACTIONS,
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
 const EOS_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -230,6 +231,7 @@ const NEAR_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
 const MATIC_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -313,9 +315,13 @@ const INJECTIVE_FEATURES = [
 const COREUM_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const SEI_FEATURES = [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const TOKEN_FEATURES_WITH_SWISS = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_SWITZERLAND];
-const TOKEN_FEATURES_WITH_NY = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_NEW_YORK];
-const TOKEN_FEATURES_WITH_NY_GERMANY = [...TOKEN_FEATURES_WITH_NY, CoinFeature.CUSTODY_BITGO_GERMANY];
 const TOKEN_FEATURES_WITH_FRANKFURT = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const TOKEN_FEATURES_WITH_NY_GERMANY_FRANKFURT = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+];
 const GENERIC_TOKEN_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
@@ -4474,7 +4480,8 @@ export const coins = CoinMap.fromCoins([
     'The Graph',
     18,
     '0xc944e90c64b2c07662a292be6244bdf05cda44a7',
-    UnderlyingAsset.GRT
+    UnderlyingAsset.GRT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'b9a52473-f4a9-491f-a59d-e642f87299ef',
@@ -5102,7 +5109,8 @@ export const coins = CoinMap.fromCoins([
     'ChainLink',
     18,
     '0x514910771af9ca656af840dff83e8264ecf986ca',
-    UnderlyingAsset.LINK
+    UnderlyingAsset.LINK,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'ca72e22a-8fd4-4f17-90f0-c44987be9dcd',
@@ -6767,7 +6775,8 @@ export const coins = CoinMap.fromCoins([
     'Sand',
     18,
     '0x3845badade8e6dff049820680d1f14bd3903a5d0',
-    UnderlyingAsset.SAND
+    UnderlyingAsset.SAND,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '2de0ecf5-f1ad-410f-900d-1843755e4b49',
@@ -6856,7 +6865,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
     UnderlyingAsset.SHIB,
-    TOKEN_FEATURES_WITH_NY_GERMANY
+    TOKEN_FEATURES_WITH_NY_GERMANY_FRANKFURT
   ),
   erc20(
     'e25ca1cf-b0f4-42a0-9d7f-42b94a1e9738',
@@ -7578,7 +7587,8 @@ export const coins = CoinMap.fromCoins([
     'Uniswap Token',
     18,
     '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
-    UnderlyingAsset.UNI
+    UnderlyingAsset.UNI,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'c0210f3b-f053-4a5b-b375-2abe8c013e29',
