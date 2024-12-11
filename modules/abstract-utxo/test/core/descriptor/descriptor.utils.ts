@@ -1,7 +1,8 @@
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { DescriptorMap, PsbtParams } from '../../../src/core/descriptor';
-import { getKeyTriple } from '../key.utils';
+import { getKeyTriple, KeyTriple } from '../key.utils';
+import { BIP32Interface } from '@bitgo/utxo-lib';
 
 export function getDefaultXPubs(seed?: string): string[] {
   return getKeyTriple(seed).map((k) => k.neutered().toBase58());
@@ -21,7 +22,14 @@ export type DescriptorTemplate =
    */
   | 'ShWsh2Of3CltvDrop';
 
-function multi(m: number, n: number, keys: string[], path: string): string {
+function toXPub(k: BIP32Interface | string): string {
+  if (typeof k === 'string') {
+    return k;
+  }
+  return k.neutered().toBase58();
+}
+
+function multi(m: number, n: number, keys: BIP32Interface[] | string[], path: string): string {
   if (n < m) {
     throw new Error(`Cannot create ${m} of ${n} multisig`);
   }
@@ -29,7 +37,7 @@ function multi(m: number, n: number, keys: string[], path: string): string {
     throw new Error(`Not enough keys for ${m} of ${n} multisig: keys.length=${keys.length}`);
   }
   keys = keys.slice(0, n);
-  return `multi(${m},${keys.map((k) => `${k}/${path}`).join(',')})`;
+  return `multi(${m},${keys.map((k) => `${toXPub(k)}/${path}`).join(',')})`;
 }
 
 export function getPsbtParams(t: DescriptorTemplate): Partial<PsbtParams> {
@@ -44,7 +52,7 @@ export function getPsbtParams(t: DescriptorTemplate): Partial<PsbtParams> {
 
 export function getDescriptorString(
   template: DescriptorTemplate,
-  keys: string[] = getDefaultXPubs(),
+  keys: KeyTriple | string[] = getDefaultXPubs(),
   path = '0/*'
 ): string {
   switch (template) {
@@ -62,13 +70,16 @@ export function getDescriptorString(
 
 export function getDescriptor(
   template: DescriptorTemplate,
-  keys: string[] = getDefaultXPubs(),
+  keys: KeyTriple | string[] = getDefaultXPubs(),
   path = '0/*'
 ): Descriptor {
   return Descriptor.fromString(getDescriptorString(template, keys, path), 'derivable');
 }
 
-export function getDescriptorMap(template: DescriptorTemplate, keys: string[] = getDefaultXPubs()): DescriptorMap {
+export function getDescriptorMap(
+  template: DescriptorTemplate,
+  keys: KeyTriple | string[] = getDefaultXPubs()
+): DescriptorMap {
   return toDescriptorMap({
     external: getDescriptor(template, keys, '0/*').toString(),
     internal: getDescriptor(template, keys, '1/*').toString(),

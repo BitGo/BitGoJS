@@ -143,6 +143,7 @@ export function isWalletOutput(output: Output): output is FixedScriptWalletOutpu
 
 export interface TransactionExplanation extends BaseTransactionExplanation<string, string> {
   locktime: number;
+  /** NOTE: this actually only captures external outputs */
   outputs: Output[];
   changeOutputs: Output[];
 
