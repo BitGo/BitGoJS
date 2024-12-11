@@ -641,7 +641,9 @@ export class Dot extends BaseCoin {
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txParams } = params;
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
-      throw new Error(`txParams should only have 1 recipient but ${txParams?.recipients?.length} found`);
+      throw new Error(
+        `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+      );
     }
     return true;
   }

@@ -319,7 +319,9 @@ export class Xrp extends BaseCoin {
 
     if (txParams.type === 'enabletoken') {
       if (txParams.recipients?.length !== 1) {
-        throw new Error('Only one recipient is allowed.');
+        throw new Error(
+          `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+        );
       }
       const recipient = txParams.recipients[0];
       if (!recipient.tokenName) {

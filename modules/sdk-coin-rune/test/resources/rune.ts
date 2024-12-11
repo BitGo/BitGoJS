@@ -47,3 +47,10 @@ export const mainnetCoinAmounts = {
   amount4: { amount: '-1', denom: 'rune' },
   amount5: { amount: '1000000000', denom: 'arune' },
 };
+
+export const mainnetGasAmounts = {
+  positiveGasAmount: { amount: '100', denom: 'rune' },
+  zeroGasAmount: { amount: '0', denom: 'rune' },
+  emptyGasAmount: { amount: '', denom: 'rune' },
+  alphabeticGasAmount: { amount: 'xyz', denom: 'rune' },
+};

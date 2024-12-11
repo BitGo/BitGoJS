@@ -46,6 +46,7 @@ import {
 import { Ada, ada } from './ada';
 import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import { erc20Coins } from './coins/erc20Coins';
 import { CoinMap } from './map';
 import { Networks } from './networks';
 import {
@@ -410,6 +411,7 @@ const WCT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
   ...utxoCoins,
+  ...erc20Coins,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -1982,6 +1984,14 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
+  erc20(
+    '149c6c26-1c25-44b5-90a8-1b6b606f6604',
+    'eth:audu',
+    'Ubiquity Stablecoin AUD',
+    18,
+    '0xb749e8920b25430bd070fe859ddc84b1c99aab87',
+    UnderlyingAsset["eth:audu"]
+  ),
   erc20(
     '919ba34e-c61e-4346-831f-87660586572a',
     '1inch',
