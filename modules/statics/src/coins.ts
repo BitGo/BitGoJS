@@ -1986,6 +1986,22 @@ export const coins = CoinMap.fromCoins([
   ),
   tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
   erc20(
+    '149c6c26-1c25-44b5-90a8-1b6b606f6604',
+    'eth:audu',
+    'Ubiquity Stablecoin AUD',
+    18,
+    '0xb749e8920b25430bd070fe859ddc84b1c99aab87',
+    UnderlyingAsset['eth:audu']
+  ),
+  erc20(
+    'e27793c3-996c-4736-a4c9-87527136aac5',
+    'eth:wlfi',
+    'World Liberty Financial',
+    18,
+    '0xda5e1988097297dcdc1f90d4dfe7909e847cbef6',
+    UnderlyingAsset['eth:wlfi']
+  ),
+  erc20(
     '919ba34e-c61e-4346-831f-87660586572a',
     '1inch',
     '1inch Token',
