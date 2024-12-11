@@ -2155,6 +2155,12 @@ export enum UnderlyingAsset {
   'bsc:multi' = 'bsc:multi',
   'bsc:psg' = 'bsc:psg',
   'bsc:telos' = 'bsc:telos',
+  'bsc:flux' = 'bsc:flux',
+  'bsc:h2o' = 'bsc:h2o',
+  'bsc:lto' = 'bsc:lto',
+  'bsc:kmd' = 'bsc:kmd',
+  'bsc:farm' = 'bsc:farm',
+  'bsc:lina' = 'bsc:lina',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
