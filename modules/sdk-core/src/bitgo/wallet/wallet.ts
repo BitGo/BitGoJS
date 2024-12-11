@@ -937,19 +937,23 @@ export class Wallet implements IWallet {
           'cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm'
         );
       }
-
-      const value = this.spendableBalanceString();
-      if (_.isUndefined(value) || value === '0') {
+      const value = await this.bitgo.get(this.url('/maximumSpendable')).result();
+      const maximumSpendable = new BigNumber(value.maximumSpendable);
+      if (value !== undefined || maximumSpendable.isZero()) {
         throw new Error('no funds to sweep');
       }
-      (params as any).recipients = [
-        {
-          address: params.address,
-          amount: value,
-        },
-      ];
 
-      return this.sendMany(params);
+      const sendManyParams: SendManyOptions = {
+        ...params,
+        recipients: [
+          {
+            address: params.address || '', // Ensure address is always a string
+            amount: maximumSpendable.toString(),
+          },
+        ],
+      };
+
+      return this.sendMany(sendManyParams);
     }
     // the following flow works for all UTXO coins
 
