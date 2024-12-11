@@ -346,6 +346,7 @@ const OPETH_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.BULK_TRANSACTION,
 ];
 const ZKETH_FEATURES = [
   ...ETH_FEATURES,
@@ -406,7 +407,7 @@ const TIA_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
-const WCT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
+const OPETH_TOKEN_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
 
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
@@ -19173,7 +19174,8 @@ export const coins = CoinMap.fromCoins([
     'Chainlink Token',
     18,
     '0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6',
-    UnderlyingAsset['opeth:link']
+    UnderlyingAsset['opeth:link'],
+    OPETH_TOKEN_FEATURES
   ),
   opethErc20(
     'ff6b3a6a-0cfa-419c-a815-31ea72dd7cb9',
@@ -19181,7 +19183,8 @@ export const coins = CoinMap.fromCoins([
     'USD Coin',
     6,
     '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
-    UnderlyingAsset['opeth:usdc']
+    UnderlyingAsset['opeth:usdc'],
+    OPETH_TOKEN_FEATURES
   ),
   opethErc20(
     '00abc58e-c1fb-4b9b-8b9a-d609071bb7be',
@@ -19189,7 +19192,8 @@ export const coins = CoinMap.fromCoins([
     'USD Coin (native)',
     6,
     '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
-    UnderlyingAsset['opeth:usdcv2']
+    UnderlyingAsset['opeth:usdcv2'],
+    OPETH_TOKEN_FEATURES
   ),
   opethErc20(
     '634d052e-8c1c-47ed-aded-d0a2399439b0',
@@ -19197,7 +19201,8 @@ export const coins = CoinMap.fromCoins([
     'Tether USD',
     6,
     '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
-    UnderlyingAsset['opeth:usdt']
+    UnderlyingAsset['opeth:usdt'],
+    OPETH_TOKEN_FEATURES
   ),
   opethErc20(
     '949c4e1f-83b8-4ca0-a6dc-72817a8a86e7',
@@ -19205,7 +19210,8 @@ export const coins = CoinMap.fromCoins([
     'Optimism',
     18,
     '0x4200000000000000000000000000000000000042',
-    UnderlyingAsset['opeth:op']
+    UnderlyingAsset['opeth:op'],
+    OPETH_TOKEN_FEATURES
   ),
   opethErc20(
     '0d045493-8667-4d86-b5c2-d90d2dd38ae5',
@@ -19213,7 +19219,8 @@ export const coins = CoinMap.fromCoins([
     'Exactly Protocol',
     18,
     '0x1e925de1c68ef83bd98ee3e130ef14a50309c01b',
-    UnderlyingAsset['opeth:exa']
+    UnderlyingAsset['opeth:exa'],
+    OPETH_TOKEN_FEATURES
   ),
   opethErc20(
     '555ec04f-1149-4f20-be11-2b97cfa4a833',
@@ -19221,7 +19228,8 @@ export const coins = CoinMap.fromCoins([
     'Worldcoin',
     18,
     '0xdc6ff44d5d932cbd77b52e5612ba0529dc6226f1',
-    UnderlyingAsset['opeth:wld']
+    UnderlyingAsset['opeth:wld'],
+    OPETH_TOKEN_FEATURES
   ),
   opethErc20(
     'cceb569d-38fe-48f2-a7f5-8d2e414f80a0',
@@ -19230,7 +19238,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xef4461891dfb3ac8572ccf7c794664a8dd927945',
     UnderlyingAsset['opeth:wct'],
-    WCT_FEATURES
+    [...OPETH_TOKEN_FEATURES, CoinFeature.STAKING]
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
@@ -19247,7 +19255,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x75bb6dca2cd6f9a0189c478bbb8f7ee2fef07c78',
     UnderlyingAsset['topeth:wct'],
-    WCT_FEATURES
+    [...OPETH_TOKEN_FEATURES, CoinFeature.STAKING]
   ),
   zkethErc20(
     '53f0e845-f415-44d3-8517-7565dc346390',
