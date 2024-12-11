@@ -1,0 +1,24 @@
+{
+  "inputSignatures": [
+    0,
+    0
+  ],
+  "signatures": 0,
+  "locktime": 0,
+  "id": "b9b272a1f0407ea461aca2da115b3399311f424949653c37d5c0023102add158",
+  "outputs": [
+    {
+      "address": "bc1qvn279lx29cg843u77p3c37npay7w4uc4xw5d92xxa92z8gd3lkuq4w8477",
+      "amount": "400000"
+    }
+  ],
+  "outputAmount": "400000",
+  "changeOutputs": [
+    {
+      "address": "bc1q2yau645jl7k577lmanqn9a0ulcgcqm0wrrmx09dppd3kcwguvyzqk86umj",
+      "amount": "400000"
+    }
+  ],
+  "changeAmount": "400000",
+  "fee": "1200000"
+}
