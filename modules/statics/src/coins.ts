@@ -46,6 +46,7 @@ import {
 import { Ada, ada } from './ada';
 import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
+import { erc20Coins } from './coins/erc20Coins';
 import { CoinMap } from './map';
 import { Networks } from './networks';
 import {
@@ -410,6 +411,7 @@ const WCT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
   ...utxoCoins,
+  ...erc20Coins,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
