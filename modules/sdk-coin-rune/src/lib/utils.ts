@@ -115,16 +115,49 @@ export class RuneUtils extends CosmosUtils {
   /** @inheritdoc */
   validateAmount(amount: Coin): void {
     const amountBig = BigNumber(amount.amount);
-    if (amountBig.isLessThanOrEqualTo(0)) {
+    if (amountBig.isNaN() || amountBig.isLessThanOrEqualTo(0)) {
       throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid amount: ' + amount.amount);
     }
+    this.validateDenomination(amount.denom);
+  }
+
+  /**
+   * Validates the gas limit and gas amount for a transaction.
+   * @param {FeeData} gasBudget - The gas budget to validate.
+   * @throws {InvalidTransactionError} Throws an error if the gas budget is invalid.
+   */
+  validateGasBudget(gasBudget: FeeData): void {
+    if (gasBudget.gasLimit <= 0) {
+      throw new InvalidTransactionError('Invalid gas limit ' + gasBudget.gasLimit);
+    }
+    this.validateGasAmountData(gasBudget.amount);
+  }
+
+  /**
+   * Validates an array of coin amounts.
+   * @param {Coin[]} amountArray - The array of coin amounts to validate.
+   */
+  validateGasAmountData(amountArray: Coin[]): void {
+    amountArray.forEach((coinAmount) => {
+      this.validateGasAmount(coinAmount);
+    });
+  }
+
+  validateGasAmount(amount: Coin): void {
+    const amountBig = BigNumber(amount.amount);
+    if (amountBig.isNaN() || amountBig.isLessThan(0)) {
+      throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid amount: ' + amount.amount);
+    }
+    this.validateDenomination(amount.denom);
+  }
+
+  validateDenomination(amountDenom: string): void {
     if (
       (this.networkType === NetworkType.TESTNET &&
-        !constants.testnetValidDenoms.find((denom) => denom === amount.denom)) ||
-      (this.networkType === NetworkType.MAINNET &&
-        !constants.mainnetValidDenoms.find((denom) => denom === amount.denom))
+        !constants.testnetValidDenoms.find((denom) => denom === amountDenom)) ||
+      (this.networkType === NetworkType.MAINNET && !constants.mainnetValidDenoms.find((denom) => denom === amountDenom))
     ) {
-      throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid denom: ' + amount.denom);
+      throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid denom: ' + amountDenom);
     }
   }
 
