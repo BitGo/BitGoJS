@@ -69,7 +69,7 @@ import {
   fromExtendedAddressFormat,
   isScriptRecipient,
 } from './transaction';
-import { assertDescriptorWalletAddress } from './descriptor';
+import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { CustomChangeOptions, parseTransaction } from './transaction/fixedScript';
@@ -676,12 +676,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
-    if (wallet) {
-      const walletCoinSpecific = wallet.coinSpecific();
-      if (walletCoinSpecific && 'descriptors' in walletCoinSpecific) {
-        assertDescriptorWalletAddress(this.network, params, walletCoinSpecific.descriptors);
-        return true;
-      }
+    if (wallet && isDescriptorWallet(wallet)) {
+      assertDescriptorWalletAddress(this.network, params, getDescriptorMapFromWallet(wallet));
+      return true;
     }
 
     if ((_.isUndefined(chain) && _.isUndefined(index)) || !(_.isFinite(chain) && _.isFinite(index))) {
