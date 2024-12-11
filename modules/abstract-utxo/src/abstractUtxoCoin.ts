@@ -567,7 +567,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (typeof input === 'string') {
       for (const format of ['hex', 'base64'] as const) {
         const buffer = Buffer.from(input, format);
-        if (buffer.toString(format) === input.toLowerCase()) {
+        const bufferToString = buffer.toString(format);
+        if (
+          (format === 'base64' && bufferToString === input) ||
+          (format === 'hex' && bufferToString === input.toLowerCase())
+        ) {
           return this.decodeTransaction(buffer);
         }
       }
