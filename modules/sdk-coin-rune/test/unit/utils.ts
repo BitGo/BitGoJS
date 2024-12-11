@@ -2,7 +2,7 @@ import { NetworkType } from '@bitgo/statics';
 import should from 'should';
 import { RuneUtils } from '../../src/lib/utils';
 import { MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX } from '../../src/lib/constants';
-import { blockHash, mainnetCoinAmounts, txIds, mainnetAddress } from '../resources/rune';
+import { blockHash, mainnetCoinAmounts, txIds, mainnetAddress, mainnetGasAmounts } from '../resources/rune';
 import { testnetCoinAmounts, testnetAddress } from '../resources/trune';
 const bech32 = require('bech32-buffer');
 
@@ -60,6 +60,24 @@ describe('utils', () => {
     );
     should(() => testnetUtils.validateAmountData([testnetCoinAmounts.amount5])).throwError(
       'transactionBuilder: validateAmount: Invalid denom: ' + testnetCoinAmounts.amount5.denom
+    );
+  });
+
+  it('validate gas amount', function () {
+    const gasBudget = { amount: [mainnetGasAmounts.positiveGasAmount], gasLimit: 1 };
+    should.doesNotThrow(() => mainnetUtils.validateGasBudget(gasBudget));
+
+    gasBudget.amount[0] = mainnetGasAmounts.zeroGasAmount;
+    should.doesNotThrow(() => mainnetUtils.validateGasBudget(gasBudget));
+
+    gasBudget.amount[0] = mainnetGasAmounts.emptyGasAmount;
+    should(() => mainnetUtils.validateGasBudget(gasBudget)).throwError(
+      'transactionBuilder: validateAmount: Invalid amount: '
+    );
+
+    gasBudget.amount[0] = mainnetGasAmounts.alphabeticGasAmount;
+    should(() => mainnetUtils.validateGasBudget(gasBudget)).throwError(
+      'transactionBuilder: validateAmount: Invalid amount: xyz'
     );
   });
 
