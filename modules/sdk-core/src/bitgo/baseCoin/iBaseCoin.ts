@@ -85,7 +85,9 @@ export interface ITransactionExplanation<TFee = any, TAmount = any> {
   /** @deprecated */
   displayOrder?: string[];
   id: string;
+  /** NOTE: External recipients */
   outputs: ITransactionRecipient[];
+  /** NOTE: External amount */
   outputAmount: TAmount;
   changeOutputs: ITransactionRecipient[];
   changeAmount: TAmount;
