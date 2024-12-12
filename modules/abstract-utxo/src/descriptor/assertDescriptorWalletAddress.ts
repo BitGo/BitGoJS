@@ -1,10 +1,9 @@
 import assert from 'assert';
-import * as t from 'io-ts';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { UtxoCoinSpecific, VerifyAddressOptions } from '../abstractUtxoCoin';
-import { NamedDescriptor } from './NamedDescriptor';
+import { DescriptorMap } from '../core/descriptor';
 
 class DescriptorAddressMismatchError extends Error {
   constructor(descriptor: Descriptor, index: number, derivedAddress: string, expectedAddress: string) {
@@ -17,19 +16,16 @@ class DescriptorAddressMismatchError extends Error {
 export function assertDescriptorWalletAddress(
   network: utxolib.Network,
   params: VerifyAddressOptions<UtxoCoinSpecific>,
-  descriptors: unknown
+  descriptors: DescriptorMap
 ): void {
   assert(params.coinSpecific);
-  assert(t.array(NamedDescriptor).is(descriptors));
   assert('descriptorName' in params.coinSpecific);
   assert('descriptorChecksum' in params.coinSpecific);
-  const descriptorName = params.coinSpecific.descriptorName;
-  const descriptorChecksum = params.coinSpecific.descriptorChecksum;
-  const namedDescriptor = descriptors.find((d) => d.name === descriptorName);
-  if (!namedDescriptor) {
+  const { descriptorName, descriptorChecksum } = params.coinSpecific;
+  const descriptor = descriptors.get(params.coinSpecific.descriptorName);
+  if (!descriptor) {
     throw new Error(`Descriptor ${descriptorName} not found`);
   }
-  const descriptor = Descriptor.fromString(namedDescriptor.value, 'derivable');
   const checksum = descriptor.toString().slice(-8);
   if (checksum !== descriptorChecksum) {
     throw new Error(

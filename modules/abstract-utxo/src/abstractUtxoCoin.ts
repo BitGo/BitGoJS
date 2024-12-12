@@ -66,19 +66,20 @@ import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
   explainTx,
+  parseTransaction,
+  verifyTransaction,
   fromExtendedAddressFormat,
   isScriptRecipient,
 } from './transaction';
-import { assertDescriptorWalletAddress } from './descriptor';
+import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
-import { CustomChangeOptions, parseTransaction } from './transaction/fixedScript';
+import { CustomChangeOptions } from './transaction/fixedScript';
 import { NamedKeychains } from './keychains';
 
 const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { verifyTransaction } from './transaction/fixedScript/verifyTransaction';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
@@ -107,7 +108,12 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
 };
 
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
+
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+
+type DecodedTransaction<TNumber extends number | bigint> =
+  | utxolib.bitgo.UtxoTransaction<TNumber>
+  | utxolib.bitgo.UtxoPsbt;
 
 type RootWalletKeys = bitgo.RootWalletKeys;
 
@@ -516,7 +522,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (_.isUndefined(prebuild.txHex)) {
       throw new Error('missing required txPrebuild property txHex');
     }
-    const tx = this.decodeTransaction(prebuild.txHex);
+    const tx = this.decodeTransactionFromPrebuild(prebuild);
     if (_.isUndefined(prebuild.blockHeight)) {
       prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
     }
@@ -559,9 +565,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
   }
 
-  decodeTransaction<TNumber extends number | bigint>(
-    input: Buffer | string
-  ): utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoPsbt {
+  decodeTransaction<TNumber extends number | bigint>(input: Buffer | string): DecodedTransaction<TNumber> {
     if (typeof input === 'string') {
       for (const format of ['hex', 'base64'] as const) {
         const buffer = Buffer.from(input, format);
@@ -584,6 +588,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         amountType: this.amountType,
       });
     }
+  }
+
+  decodeTransactionFromPrebuild<TNumber extends number | bigint>(prebuild: {
+    txHex?: string;
+    txBase64?: string;
+  }): DecodedTransaction<TNumber> {
+    const string = prebuild.txHex ?? prebuild.txBase64;
+    if (!string) {
+      throw new Error('missing required txHex or txBase64 property');
+    }
+    return this.decodeTransaction(string);
   }
 
   toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
@@ -662,12 +677,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
-    if (wallet) {
-      const walletCoinSpecific = wallet.coinSpecific();
-      if (walletCoinSpecific && 'descriptors' in walletCoinSpecific) {
-        assertDescriptorWalletAddress(this.network, params, walletCoinSpecific.descriptors);
-        return true;
-      }
+    if (wallet && isDescriptorWallet(wallet)) {
+      assertDescriptorWalletAddress(this.network, params, getDescriptorMapFromWallet(wallet));
+      return true;
     }
 
     if ((_.isUndefined(chain) && _.isUndefined(index)) || !(_.isFinite(chain) && _.isFinite(index))) {
@@ -857,7 +869,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('missing txPrebuild parameter');
     }
 
-    let tx = this.decodeTransaction(params.txPrebuild.txHex);
+    let tx = this.decodeTransactionFromPrebuild(params.txPrebuild);
 
     const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
 
@@ -1074,11 +1086,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async explainTransaction<TNumber extends number | bigint = number>(
     params: ExplainTransactionOptions<TNumber>
   ): Promise<TransactionExplanation> {
-    const { txHex } = params;
-    if (typeof txHex !== 'string' || !txHex.match(/^([a-f0-9]{2})+$/i)) {
-      throw new Error('invalid transaction hex, must be a valid hex string');
-    }
-    return explainTx(this.decodeTransaction(txHex), params, this.network);
+    return explainTx(this.decodeTransactionFromPrebuild(params), params, this.network);
   }
 
   /**
