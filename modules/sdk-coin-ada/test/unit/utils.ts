@@ -1,7 +1,7 @@
 import should from 'should';
 import { KeyPair, Utils } from '../../src';
 import { AddressFormat, toHex } from '@bitgo/sdk-core';
-import { Ed25519Signature } from '@emurgo/cardano-serialization-lib-nodejs';
+import { Ed25519Signature, DRep } from '@emurgo/cardano-serialization-lib-nodejs';
 import {
   address,
   blockHash,
@@ -128,10 +128,58 @@ describe('utils', () => {
     should.equal(Utils.default.isValidTransactionId('dalij43ta0ga2dadda02'), false);
   });
 
+  it('should validate DRepId correctly', () => {
+    should.equal(Utils.default.isValidDRepId('always-abstain'), true);
+    should.equal(Utils.default.isValidDRepId('not-a-correct-choice'), false);
+    should.equal(Utils.default.isValidDRepId('always-no-confidence'), true);
+    should.equal(Utils.default.isValidDRepId('drep13d6sxkyz6st9h65qqrzd8ukpywhr8swe9f6357qntgjqye0incorrect'), false);
+    // CIP-105 standard DRepId
+    should.equal(Utils.default.isValidDRepId('drep13d6sxkyz6st9h65qqrzd8ukpywhr8swe9f6357qntgjqye0gttd'), true);
+    // CIP-129 standard DRepId
+    should.equal(Utils.default.isValidDRepId('drep1y29h2q6cst2pvkl2sqqvf5ljcy36uv7pmy482xnczddzgqshus24w'), true);
+  });
+
+  it('should get DRep entity from DRepId correctly', () => {
+    should.equal(Utils.default.getDRepFromDRepId('always-abstain').to_json(), DRep.new_always_abstain().to_json());
+    should.equal(
+      Utils.default.getDRepFromDRepId('always-no-confidence').to_json(),
+      DRep.new_always_no_confidence().to_json()
+    );
+    should.equal(
+      Utils.default.getDRepFromDRepId('drep13d6sxkyz6st9h65qqrzd8ukpywhr8swe9f6357qntgjqye0gttd').to_json(),
+      DRep.from_bech32('drep13d6sxkyz6st9h65qqrzd8ukpywhr8swe9f6357qntgjqye0gttd').to_json()
+    );
+    // DRep should be the same from both CIP-105 and CIP-129 IDs
+    should.equal(
+      Utils.default.getDRepFromDRepId('drep1y29h2q6cst2pvkl2sqqvf5ljcy36uv7pmy482xnczddzgqshus24w').to_json(),
+      Utils.default.getDRepFromDRepId('drep13d6sxkyz6st9h65qqrzd8ukpywhr8swe9f6357qntgjqye0gttd').to_json()
+    );
+  });
+
+  it('should get DRepId from DRep entity correctly', () => {
+    should.equal(Utils.default.getDRepIdFromDRep(DRep.new_always_abstain()), 'always-abstain');
+    should.equal(Utils.default.getDRepIdFromDRep(DRep.new_always_no_confidence()), 'always-no-confidence');
+    // Regardless of whether DRep was created from CIP-105 or CIP-129 ID, the DRepId from getDRepIdFromDRep will be the ID format from `to_bech32`
+    should.equal(
+      Utils.default.getDRepIdFromDRep(
+        Utils.default.getDRepFromDRepId('drep13d6sxkyz6st9h65qqrzd8ukpywhr8swe9f6357qntgjqye0gttd')
+      ),
+      'drep13d6sxkyz6st9h65qqrzd8ukpywhr8swe9f6357qntgjqye0gttd'
+    );
+    should.equal(
+      Utils.default.getDRepIdFromDRep(
+        Utils.default.getDRepFromDRepId('drep1y29h2q6cst2pvkl2sqqvf5ljcy36uv7pmy482xnczddzgqshus24w')
+      ),
+      'drep13d6sxkyz6st9h65qqrzd8ukpywhr8swe9f6357qntgjqye0gttd'
+    );
+  });
+
   it('should get transaction body correctly', () => {
     const {
       unsignedTx,
       unsignedTxBody,
+      unsignedVoteDelegationTx,
+      unsignedVoteDelegationTxBody,
       unsignedStakingActiveTx,
       unsignedStakingActiveTxBody,
       unsignedStakingDeactiveTx,
@@ -145,6 +193,7 @@ describe('utils', () => {
       partiallySignedPledgeTx,
     } = rawTx;
     should.equal(Utils.default.getTransactionBody(unsignedTx), unsignedTxBody);
+    should.equal(Utils.default.getTransactionBody(unsignedVoteDelegationTx), unsignedVoteDelegationTxBody);
     should.equal(Utils.default.getTransactionBody(unsignedStakingActiveTx), unsignedStakingActiveTxBody);
     should.equal(Utils.default.getTransactionBody(unsignedStakingDeactiveTx), unsignedStakingDeactiveTxBody);
     should.equal(Utils.default.getTransactionBody(unsignedStakingWithdrawTx), unsignedStakingWithdrawTxBody);

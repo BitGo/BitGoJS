@@ -56,6 +56,8 @@ export enum TransactionType {
   StakingAdd,
   // Staking pledge (e.g. ADA)
   StakingPledge,
+  // Delegating vote (e.g. ADA)
+  VoteDelegation,
   // Staking Authorize (e.g. SOL)
   StakingAuthorize,
   // Staking Authorize from raw message (e.g. SOL)

@@ -9,6 +9,7 @@ import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 import { StakingPledgeBuilder } from './stakingPledgeBuilder';
 import { StakingClaimRewardsBuilder } from './stakingClaimRewardsBuilder';
+import { VoteDelegationBuilder } from './voteDelegationBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -38,6 +39,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getWalletInitializationBuilder(tx);
         case TransactionType.StakingPledge:
           return this.getStakingPledgeBuilder(tx);
+        case TransactionType.VoteDelegation:
+          return this.getVoteDelegationBuilder(tx);
         default:
           throw new InvalidTransactionError('unsupported transaction');
       }
@@ -60,19 +63,23 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig));
   }
 
-  getStakingClaimRewardsBuilder(tx?: Transaction) {
+  getVoteDelegationBuilder(tx?: Transaction): VoteDelegationBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new VoteDelegationBuilder(this._coinConfig));
+  }
+
+  getStakingClaimRewardsBuilder(tx?: Transaction): StakingClaimRewardsBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingClaimRewardsBuilder(this._coinConfig));
   }
 
-  getStakingDeactivateBuilder(tx?: Transaction) {
+  getStakingDeactivateBuilder(tx?: Transaction): StakingDeactivateBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig));
   }
 
-  getStakingWithdrawBuilder(tx?: Transaction) {
+  getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
   }
 
-  getStakingPledgeBuilder(tx?: Transaction) {
+  getStakingPledgeBuilder(tx?: Transaction): StakingPledgeBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingPledgeBuilder(this._coinConfig));
   }
 
