@@ -1,4 +1,4 @@
-import { BitGoBase, IBaseCoin, Wallet, WalletData } from '@bitgo/sdk-core';
+import { Wallet, WalletData } from '@bitgo/sdk-core';
 
 // parseTransactions' return type makes use of WalletData's type but with customChangeKeySignatures as required.
 export interface AbstractUtxoCoinWalletData extends WalletData {
@@ -9,10 +9,6 @@ export interface AbstractUtxoCoinWalletData extends WalletData {
   };
 }
 
-export class AbstractUtxoCoinWallet extends Wallet {
-  public _wallet: AbstractUtxoCoinWalletData;
-
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
-    super(bitgo, baseCoin, walletData);
-  }
+export interface AbstractUtxoCoinWallet extends Wallet {
+  _wallet: AbstractUtxoCoinWalletData;
 }
