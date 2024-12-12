@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../../src/descriptor';
-import { AbstractUtxoCoinWallet } from '../../src';
+import { AbstractUtxoCoinWallet } from '../../src/wallet';
 import { getDefaultXPubs, getDescriptorMap } from '../core/descriptor/descriptor.utils';
 import { toBip32Triple } from '../../src/keychains';
 

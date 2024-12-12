@@ -57,7 +57,6 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
-  WalletData,
 } from '@bitgo/sdk-core';
 import { isReplayProtectionUnspent } from './replayProtection';
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
@@ -65,22 +64,23 @@ import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
   explainTx,
-  parseTransaction,
-  verifyTransaction,
   fromExtendedAddressFormat,
   isScriptRecipient,
+  parseTransaction,
+  verifyTransaction,
 } from './transaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { CustomChangeOptions } from './transaction/fixedScript';
 import { toBip32Triple, UtxoKeychain, UtxoNamedKeychains } from './keychains';
+import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
+import { getPolicyForEnv } from './descriptor/validatePolicy';
+import { AbstractUtxoCoinWallet } from './wallet';
 
 const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
-import { getPolicyForEnv } from './descriptor/validatePolicy';
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
@@ -196,23 +196,6 @@ export interface TransactionParams extends BaseTransactionParams {
   allowExternalChangeAddress?: boolean;
   changeAddress?: string;
   rbfTxIds?: string[];
-}
-
-// parseTransactions' return type makes use of WalletData's type but with customChangeKeySignatures as required.
-export interface AbstractUtxoCoinWalletData extends WalletData {
-  customChangeKeySignatures: {
-    user: string;
-    backup: string;
-    bitgo: string;
-  };
-}
-
-export class AbstractUtxoCoinWallet extends Wallet {
-  public _wallet: AbstractUtxoCoinWalletData;
-
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
-    super(bitgo, baseCoin, walletData);
-  }
 }
 
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
