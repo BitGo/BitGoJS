@@ -75,12 +75,13 @@ import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptor
 
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { CustomChangeOptions } from './transaction/fixedScript';
-import { NamedKeychains } from './keychains';
+import { NamedKeychains, toBip32Triple } from './keychains';
 
 const debug = debugLib('bitgo:v2:utxo');
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
+import { getPolicyForEnv } from './descriptor/validatePolicy';
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
@@ -678,7 +679,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     if (wallet && isDescriptorWallet(wallet)) {
-      assertDescriptorWalletAddress(this.network, params, getDescriptorMapFromWallet(wallet));
+      if (!keychains) {
+        throw new Error('missing required param keychains');
+      }
+      if (!isTriple(keychains)) {
+        throw new Error('keychains must be a triple');
+      }
+      assertDescriptorWalletAddress(
+        this.network,
+        params,
+        getDescriptorMapFromWallet(wallet, toBip32Triple(keychains), getPolicyForEnv(this.bitgo.env))
+      );
       return true;
     }
 
