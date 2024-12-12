@@ -125,6 +125,7 @@ const LTC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
+  CoinFeature.BULK_TRANSACTION,
 ];
 const DOGE_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
@@ -132,8 +133,11 @@ const DOGE_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
+  CoinFeature.BULK_TRANSACTION,
 ];
-const DASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const DASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION];
+const TDASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
+const ZEC_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
 export const utxoCoins: Readonly<BaseCoin>[] = [
   utxo(
     '8d6e08d5-399f-414f-8430-6ceca1798cbf',
@@ -283,16 +287,26 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'Testnet Dash',
     Networks.test.dash,
     UnderlyingAsset.DASH,
-    BaseUnit.DASH
+    BaseUnit.DASH,
+    TDASH_FEATURES
   ),
-  utxo('508f6b53-1e6e-41fd-b541-b2498b7c4b61', 'zec', 'ZCash', Networks.main.zCash, UnderlyingAsset.ZEC, BaseUnit.ZEC),
+  utxo(
+    '508f6b53-1e6e-41fd-b541-b2498b7c4b61',
+    'zec',
+    'ZCash',
+    Networks.main.zCash,
+    UnderlyingAsset.ZEC,
+    BaseUnit.ZEC,
+    ZEC_FEATURES
+  ),
   utxo(
     '549a4499-387c-42d3-9048-c01d6724d98a',
     'tzec',
     'Testnet ZCash',
     Networks.test.zCash,
     UnderlyingAsset.ZEC,
-    BaseUnit.ZEC
+    BaseUnit.ZEC,
+    ZEC_FEATURES
   ),
   utxo(
     'c93a9160-458f-4a31-bea0-4a93ae8b1d2d',
