@@ -1,8 +1,10 @@
 import * as t from 'io-ts';
-import { NamedDescriptor } from './NamedDescriptor';
-import { AbstractUtxoCoinWalletData } from '../abstractUtxoCoin';
-import { DescriptorMap, toDescriptorMap } from '../core/descriptor';
 import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
+
+import { NamedDescriptor } from './NamedDescriptor';
+import { DescriptorMap } from '../core/descriptor';
+import { AbstractUtxoCoinWalletData } from '../abstractUtxoCoin';
+import { DescriptorValidationPolicy, KeyTriple, toDescriptorMapValidate } from './validatePolicy';
 
 type DescriptorWalletCoinSpecific = {
   descriptors: NamedDescriptor[];
@@ -30,10 +32,10 @@ export function isDescriptorWallet(obj: IWallet): obj is IDescriptorWallet {
   return isDescriptorWalletCoinSpecific(obj.coinSpecific());
 }
 
-export function getDescriptorMapFromWalletData(wallet: DescriptorWalletData): DescriptorMap {
-  return toDescriptorMap(wallet.coinSpecific.descriptors);
-}
-
-export function getDescriptorMapFromWallet(wallet: IDescriptorWallet): DescriptorMap {
-  return toDescriptorMap(wallet.coinSpecific().descriptors);
+export function getDescriptorMapFromWallet(
+  wallet: IDescriptorWallet,
+  walletKeys: KeyTriple,
+  policy: DescriptorValidationPolicy
+): DescriptorMap {
+  return toDescriptorMapValidate(wallet.coinSpecific().descriptors, walletKeys, policy);
 }

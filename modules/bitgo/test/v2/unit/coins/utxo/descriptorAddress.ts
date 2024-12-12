@@ -65,7 +65,15 @@ describe('descriptor wallets', function () {
     it(`should return ${expected} for address ${address} with index ${index} and descriptor ${descriptorName} with checksum ${descriptorChecksum}`, async function () {
       const wallet = getIWalletWithDescriptors([descFoo, descBar]);
       async function f() {
-        return coin.isWalletAddress({ address, index, coinSpecific: { descriptorName, descriptorChecksum } }, wallet);
+        return coin.isWalletAddress(
+          {
+            address,
+            index,
+            coinSpecific: { descriptorName, descriptorChecksum },
+            keychains: xpubs.map((pub) => ({ pub })),
+          },
+          wallet
+        );
       }
       if (expected === true) {
         assert.equal(await f(), expected);

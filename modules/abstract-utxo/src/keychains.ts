@@ -1,5 +1,7 @@
-import { AbstractUtxoCoin } from './abstractUtxoCoin';
+import * as utxolib from '@bitgo/utxo-lib';
 import { IRequestTracer, IWallet, Keychain, KeyIndices, promiseProps, Triple } from '@bitgo/sdk-core';
+
+import { AbstractUtxoCoin } from './abstractUtxoCoin';
 
 export type NamedKeychains = {
   user?: Keychain;
@@ -13,6 +15,13 @@ export function toKeychainTriple(keychains: NamedKeychains): Triple<Keychain> {
     throw new Error('keychains must include user, backup, and bitgo');
   }
   return [user, backup, bitgo];
+}
+
+export function toBip32Triple(keychains: Triple<{ pub: string }> | Triple<string>): Triple<utxolib.BIP32Interface> {
+  return keychains.map((keychain: { pub: string } | string) => {
+    const v = typeof keychain === 'string' ? keychain : keychain.pub;
+    return utxolib.bip32.fromBase58(v);
+  }) as Triple<utxolib.BIP32Interface>;
 }
 
 export async function fetchKeychains(

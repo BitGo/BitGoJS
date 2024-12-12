@@ -1,11 +1,12 @@
+import { Triple } from '@bitgo/sdk-core';
 import { Descriptor } from '@bitgo/wasm-miniscript';
+import { BIP32Interface } from '@bitgo/utxo-lib';
 
 import { DescriptorMap, PsbtParams } from '../../../src/core/descriptor';
 import { getKeyTriple, KeyTriple } from '../key.utils';
-import { BIP32Interface } from '@bitgo/utxo-lib';
 
-export function getDefaultXPubs(seed?: string): string[] {
-  return getKeyTriple(seed).map((k) => k.neutered().toBase58());
+export function getDefaultXPubs(seed?: string): Triple<string> {
+  return getKeyTriple(seed).map((k) => k.neutered().toBase58()) as Triple<string>;
 }
 
 function toDescriptorMap(v: Record<string, string>): DescriptorMap {
