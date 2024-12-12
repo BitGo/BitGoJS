@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.12.0...@bitgo/statics@50.13.0) (2024-12-12)
+
+### Bug Fixes
+
+- **sdk-coin-rune:** disable bulk transaction ([b185544](https://github.com/BitGo/BitGoJS/commit/b1855448775f27964adadcd5519463cab718b62c))
+
+### Features
+
+- **statics:** add ofc tbtc4 ([924dff5](https://github.com/BitGo/BitGoJS/commit/924dff52a3391d8722432c1e9c9773fc39603bfa))
+- **statics:** added batch of tokens for onboarding ([d808dab](https://github.com/BitGo/BitGoJS/commit/d808dab648be3e7f1944675cc1d9da9c193b1b27))
+- **statics:** added batch of tokens for onboarding ([4afe437](https://github.com/BitGo/BitGoJS/commit/4afe4372144b52c28c49422c62aba1a880fe7913))
+- **statics:** enable bulk txns for opeth & opeth tokens ([924683b](https://github.com/BitGo/BitGoJS/commit/924683b9316639e1101b4c08f99fa327344bf73d))
+- **statics:** ungate 7 top priority assets for bitstamp ([b314ad8](https://github.com/BitGo/BitGoJS/commit/b314ad86199171489f725af9acda30ef6c935232))
+- **statics:** ungate MATIC ERC20 for Frankfurt ([73ab85a](https://github.com/BitGo/BitGoJS/commit/73ab85a158aeb4f03ee4ca3a131acd0e10156d84))
+
 # [50.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.11.0...@bitgo/statics@50.12.0) (2024-12-11)
 
 ### Features

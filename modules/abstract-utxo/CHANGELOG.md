@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.4.0...@bitgo/abstract-utxo@9.5.0) (2024-12-12)
+
+### Bug Fixes
+
+- **abstract-utxo:** fix decodeTransaction for base64 input ([c00ade0](https://github.com/BitGo/BitGoJS/commit/c00ade0e16b7af07f69b4981eae7245ff331549e))
+- **abstract-utxo:** fix mocha config ([b4931d1](https://github.com/BitGo/BitGoJS/commit/b4931d10381e0ca959d256bcf559b0820f7696b7))
+- **abstract-utxo:** remove outputDifference ([caebae1](https://github.com/BitGo/BitGoJS/commit/caebae110e970056483a172fea4fd262808c62bc))
+
+### Features
+
+- **abstract-utxo:** add .json files to .prettierignore ([ffbff4e](https://github.com/BitGo/BitGoJS/commit/ffbff4ed40c9c3097fc8d04939548990de4c2101))
+- **abstract-utxo:** add DescriptorBuilder and parser ([e25bc68](https://github.com/BitGo/BitGoJS/commit/e25bc6883626629d6fc244ca8dcb6af7142ca734))
+- **abstract-utxo:** add descriptorWallet explainPsbt ([897d369](https://github.com/BitGo/BitGoJS/commit/897d369cd94c1ad12a3d68ede75f56a88efdd2a2))
+- **abstract-utxo:** add isDescriptorWalletData ([017ba2c](https://github.com/BitGo/BitGoJS/commit/017ba2c1405f7d5ff0a9f81bc4c639b0fb7657b1))
+- **abstract-utxo:** add outputDifference utility ([02f84bc](https://github.com/BitGo/BitGoJS/commit/02f84bcfef19bb36b44367bcf29fc60a4c6188d6))
+- **abstract-utxo:** guard against descriptor wallets ([45dda5a](https://github.com/BitGo/BitGoJS/commit/45dda5abbdcad98494572a22479d0721ea0f5501))
+- **abstract-utxo:** improve isDescriptorWallet family ([b92855e](https://github.com/BitGo/BitGoJS/commit/b92855e4c89840e5b2c9d114cb4181edef217d81))
+- **abstract-utxo:** permit BIP32Interface in descriptor utils ([baa9290](https://github.com/BitGo/BitGoJS/commit/baa92902d9407dd5b9178e3bbf92701629b20cb2))
+- **abstract-utxo:** validate descriptors depending on env ([dcd9793](https://github.com/BitGo/BitGoJS/commit/dcd9793ab3b070ac38334c8b66c484725e21d749))
+
 # [9.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.3.0...@bitgo/abstract-utxo@9.4.0) (2024-12-11)
 
 ### Features
