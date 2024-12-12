@@ -45,11 +45,17 @@ export function toKeychainTriple(keychains: UtxoNamedKeychains): Triple<UtxoKeyc
   return [user, backup, bitgo];
 }
 
-export function toBip32Triple(keychains: Triple<{ pub: string }> | Triple<string>): Triple<utxolib.BIP32Interface> {
-  return keychains.map((keychain: { pub: string } | string) => {
-    const v = typeof keychain === 'string' ? keychain : keychain.pub;
-    return utxolib.bip32.fromBase58(v);
-  }) as Triple<utxolib.BIP32Interface>;
+export function toBip32Triple(
+  keychains: UtxoNamedKeychains | Triple<{ pub: string }> | Triple<string>
+): Triple<utxolib.BIP32Interface> {
+  if (Array.isArray(keychains)) {
+    return keychains.map((keychain: { pub: string } | string) => {
+      const v = typeof keychain === 'string' ? keychain : keychain.pub;
+      return utxolib.bip32.fromBase58(v);
+    }) as Triple<utxolib.BIP32Interface>;
+  }
+
+  return toBip32Triple(toKeychainTriple(keychains));
 }
 
 export async function fetchKeychains(

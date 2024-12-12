@@ -22,6 +22,14 @@ export function fromExtendedAddressFormat(extendedAddress: string): { address: s
   return { address: extendedAddress };
 }
 
+export function fromExtendedAddressFormatToScript(extendedAddress: string, network: utxolib.Network): Buffer {
+  const result = fromExtendedAddressFormat(extendedAddress);
+  if ('script' in result) {
+    return Buffer.from(result.script, 'hex');
+  }
+  return utxolib.addressFormat.toOutputScriptTryFormats(result.address, network);
+}
+
 /**
  * Convert a script or address to the extended address format.
  * @param script
