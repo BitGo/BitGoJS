@@ -105,7 +105,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   dash: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  matic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
+  matic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   near: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   weth: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   eigen: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
