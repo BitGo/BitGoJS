@@ -939,7 +939,7 @@ export class Wallet implements IWallet {
       }
       const value = await this.bitgo.get(this.url('/maximumSpendable')).result();
       const maximumSpendable = new BigNumber(value.maximumSpendable);
-      if (value !== undefined || maximumSpendable.isZero()) {
+      if (value === undefined || maximumSpendable.isZero()) {
         throw new Error('no funds to sweep');
       }
 
