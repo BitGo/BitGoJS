@@ -4,13 +4,7 @@ import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
-import {
-  AbstractUtxoCoin,
-  AbstractUtxoCoinWallet,
-  Output,
-  TransactionExplanation,
-  TransactionParams,
-} from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, UtxoWallet, Output, TransactionExplanation, TransactionParams } from '@bitgo/abstract-utxo';
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
@@ -60,7 +54,7 @@ describe('Abstract UTXO Coin:', () => {
       const parsedTransaction = await coin.parseTransaction({
         txParams,
         txPrebuild: { txHex: '' },
-        wallet: wallet as unknown as AbstractUtxoCoinWallet,
+        wallet: wallet as unknown as UtxoWallet,
         verification,
       });
 

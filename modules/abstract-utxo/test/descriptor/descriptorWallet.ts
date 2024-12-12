@@ -1,13 +1,13 @@
 import assert from 'assert';
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../../src/descriptor';
-import { AbstractUtxoCoinWallet } from '../../src/wallet';
+import { UtxoWallet } from '../../src/wallet';
 import { getDefaultXPubs, getDescriptorMap } from '../core/descriptor/descriptor.utils';
 import { toBip32Triple } from '../../src/keychains';
 
 describe('isDescriptorWalletData', function () {
   const descriptorMap = getDescriptorMap('Wsh2Of3');
   it('should return true for valid DescriptorWalletData', function () {
-    const wallet: AbstractUtxoCoinWallet = {
+    const wallet: UtxoWallet = {
       coinSpecific() {
         return {
           descriptors: [...descriptorMap.entries()].map(([name, descriptor]) => ({
@@ -16,7 +16,7 @@ describe('isDescriptorWalletData', function () {
           })),
         };
       },
-    } as unknown as AbstractUtxoCoinWallet;
+    } as unknown as UtxoWallet;
 
     assert(isDescriptorWallet(wallet));
     assert.strictEqual(

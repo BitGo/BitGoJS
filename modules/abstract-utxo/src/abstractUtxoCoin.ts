@@ -76,7 +76,7 @@ import { CustomChangeOptions } from './transaction/fixedScript';
 import { toBip32Triple, UtxoKeychain, UtxoNamedKeychains } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
-import { AbstractUtxoCoinWallet } from './wallet';
+import { UtxoWallet } from './wallet';
 
 const debug = debugLib('bitgo:v2:utxo');
 
@@ -201,7 +201,7 @@ export interface TransactionParams extends BaseTransactionParams {
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
   txParams: TransactionParams;
   txPrebuild: TransactionPrebuild<TNumber>;
-  wallet: AbstractUtxoCoinWallet;
+  wallet: UtxoWallet;
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
 }
@@ -329,7 +329,7 @@ export interface VerifyTransactionOptions<TNumber extends number | bigint = numb
   extends BaseVerifyTransactionOptions {
   txPrebuild: TransactionPrebuild<TNumber>;
   txParams: TransactionParams;
-  wallet: AbstractUtxoCoinWallet;
+  wallet: UtxoWallet;
 }
 
 export interface SignPsbtRequest {
