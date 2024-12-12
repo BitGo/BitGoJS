@@ -530,28 +530,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-<<<<<<< HEAD
-   * @param first
-   * @param second
-   * @returns {Array} All outputs that are in the first array but not in the second
-   */
-  public static outputDifference(first: Output[], second: Output[]): Output[] {
-    const keyFunc = ({ address, amount }: Output): string => `${address}:${amount}`;
-    const groupedOutputs = _.groupBy(first, keyFunc);
-
-    second.forEach((output) => {
-      const group = groupedOutputs[keyFunc(output)];
-      if (group) {
-        group.pop();
-      }
-    });
-
-    return _.flatten(_.values(groupedOutputs));
-  }
-
-  /**
-=======
->>>>>>> 8cc76f6e8 (refactor(abstract-utxo): factor fixedScript parseTransaction)
    * Determine an address' type based on its witness and redeem script presence
    * @param addressDetails
    */
