@@ -241,6 +241,8 @@ const MATIC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
 ];
+const MATIC_FEATURES_WITH_FRANKFURT = [...MATIC_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+
 const WETH_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.MULTISIG_COLD,
@@ -5289,7 +5291,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
     UnderlyingAsset.MATIC,
-    MATIC_FEATURES
+    MATIC_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'ab8c9dac-5e2e-4a10-bb78-250203b93adf',
