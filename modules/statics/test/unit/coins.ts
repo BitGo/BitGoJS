@@ -59,6 +59,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.BULK_TRANSACTION,
     ],
   },
   btg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -71,12 +72,13 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   },
   celo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   coreum: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  ada: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  ada: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
   doge: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.BULK_TRANSACTION,
     ],
   },
   dot: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -104,9 +106,10 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.BULK_TRANSACTION,
     ],
   },
-  dash: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  dash: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
   matic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   near: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   weth: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
@@ -120,6 +123,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.BULK_TRANSACTION,
     ],
   },
   pol: {
@@ -139,7 +143,9 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   },
   rbtc: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   sei: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  sol: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  sol: {
+    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION],
+  },
   stx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   sui: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   ton: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -242,7 +248,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   sand: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   uni: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tia: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  bsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  bsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
   '1inch': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   aave: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   alpha: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -350,6 +356,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.BULK_TRANSACTION,
     ],
   },
   tbtg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -362,8 +369,10 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   },
   tcelo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tcoreum: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  tada: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  tdoge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tada: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
+  tdoge: {
+    features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION],
+  },
   tdot: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   teos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   gteth: {
@@ -382,6 +391,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.BULK_TRANSACTION,
     ],
   },
   tetc: {
@@ -398,6 +408,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_NEW_YORK,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.BULK_TRANSACTION,
     ],
   },
   tmatic: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
@@ -427,6 +438,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.BULK_TRANSACTION,
     ],
   },
   tstx: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -442,7 +454,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   ttia: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tatom: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tton: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  tbsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tbsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
 };
 
 describe('CoinMap', function () {
@@ -654,6 +666,22 @@ describe('Distributed Custody Features', () => {
     targetCoins.forEach((coinName) => {
       const coin = coins.get(coinName);
       coin.features.includes(CoinFeature.DISTRIBUTED_CUSTODY).should.eql(true);
+    });
+  });
+});
+
+describe('Bulk Transaction Features', () => {
+  it.only('Tokens supports Bulk Withdrawal', () => {
+    it.only('should have no duplicate contract addresses', () => {
+      coins.forEach((coin) => {
+        //if coin.name starts with polygon
+        if (coin.name.startsWith('sol:')) {
+          coin.features.includes(CoinFeature.BULK_TRANSACTION).should.eql(true);
+        }
+        if (coin.name.startsWith('polygon:')) {
+          coin.features.includes(CoinFeature.BULK_TRANSACTION).should.eql(true);
+        }
+      });
     });
   });
 });
