@@ -296,6 +296,7 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    * transaction (nonWitnessUtxo)
    */
   allowNonSegwitSigningWithoutPrevTx?: boolean;
+  wallet?: UtxoWallet;
 };
 
 export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
