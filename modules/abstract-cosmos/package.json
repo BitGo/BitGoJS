@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-cosmos",
-  "version": "11.2.7",
+  "version": "11.2.8",
   "description": "BitGo SDK coin library for COSMOS base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -38,8 +38,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^28.15.1",
-    "@bitgo/statics": "^50.12.0",
+    "@bitgo/sdk-core": "^28.15.2",
+    "@bitgo/statics": "^50.13.0",
     "@bitgo/utxo-lib": "^11.2.1",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/crypto": "^0.30.1",

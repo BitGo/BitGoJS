@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [28.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.15.1...@bitgo/sdk-core@28.15.2) (2024-12-12)
+
+### Bug Fixes
+
+- use max spendable amount to sweep balance ([19eba51](https://github.com/BitGo/BitGoJS/commit/19eba513ea1a5fe4e3760ebfd5c5fc8922acdaa3))
+
 ## [28.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.15.0...@bitgo/sdk-core@28.15.1) (2024-12-11)
 
 ### Bug Fixes

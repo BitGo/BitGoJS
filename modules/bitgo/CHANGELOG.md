@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.17.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.16.1...bitgo@39.17.0) (2024-12-12)
+
+### Bug Fixes
+
+- use max spendable amount to sweep balance ([19eba51](https://github.com/BitGo/BitGoJS/commit/19eba513ea1a5fe4e3760ebfd5c5fc8922acdaa3))
+
+### Features
+
+- **abstract-utxo:** validate descriptors depending on env ([dcd9793](https://github.com/BitGo/BitGoJS/commit/dcd9793ab3b070ac38334c8b66c484725e21d749))
+
 ## [39.16.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.16.0...bitgo@39.16.1) (2024-12-11)
 
 ### Bug Fixes
