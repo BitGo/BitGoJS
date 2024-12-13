@@ -1,6 +1,6 @@
 import assert from 'assert';
 import _ from 'lodash';
-import { Keychain, Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
+import { Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 import { CustomChangeOptions, parseOutput } from './parseOutput';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
@@ -11,7 +11,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
 } from '../../abstractUtxoCoin';
-import { fetchKeychains, toKeychainTriple } from '../../keychains';
+import { fetchKeychains, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
 
 /**
  * @param first
@@ -44,7 +44,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
   const disableNetworking = verification.disableNetworking;
 
   // obtain the keychains and key signatures
-  let keychains: VerificationOptions['keychains'] | undefined = verification.keychains;
+  let keychains: UtxoNamedKeychains | VerificationOptions['keychains'] | undefined = verification.keychains;
   if (!keychains) {
     if (disableNetworking) {
       throw new Error('cannot fetch keychains without networking');
@@ -52,11 +52,11 @@ export async function parseTransaction<TNumber extends bigint | number>(
     keychains = await fetchKeychains(coin, wallet, reqId);
   }
 
-  if (!keychains || !keychains.user || !keychains.backup || !keychains.bitgo) {
-    throw new Error('keychains are required, but could not be fetched');
+  if (!UtxoNamedKeychains.is(keychains)) {
+    throw new Error('invalid keychains');
   }
 
-  const keychainArray: Triple<Keychain> = [keychains.user, keychains.backup, keychains.bitgo];
+  const keychainArray: Triple<UtxoKeychain> = toKeychainTriple(keychains);
 
   if (_.isUndefined(txPrebuild.txHex)) {
     throw new Error('missing required txPrebuild property txHex');
@@ -130,7 +130,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
     }
 
     if (customChangeKeys.user && customChangeKeys.backup && customChangeKeys.bitgo && customChangeWallet) {
-      const customChangeKeychains: [Keychain, Keychain, Keychain] = [
+      const customChangeKeychains: Triple<UtxoKeychain> = [
         customChangeKeys.user,
         customChangeKeys.backup,
         customChangeKeys.bitgo,

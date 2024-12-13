@@ -34,7 +34,6 @@ import {
   isTriple,
   ITransactionExplanation as BaseTransactionExplanation,
   IWallet,
-  Keychain,
   KeychainsTriplet,
   KeyIndices,
   P2shP2wshUnsupportedError,
@@ -75,7 +74,7 @@ import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptor
 
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { CustomChangeOptions } from './transaction/fixedScript';
-import { NamedKeychains, toBip32Triple } from './keychains';
+import { toBip32Triple, UtxoKeychain, UtxoNamedKeychains } from './keychains';
 
 const debug = debugLib('bitgo:v2:utxo');
 
@@ -225,7 +224,7 @@ export interface ParseTransactionOptions<TNumber extends number | bigint = numbe
 }
 
 export type ParsedTransaction<TNumber extends number | bigint = number> = {
-  keychains: NamedKeychains;
+  keychains: UtxoNamedKeychains;
   keySignatures: {
     backupPub?: string;
     bitgoPub?: string;
@@ -338,7 +337,7 @@ export interface VerifyKeySignaturesOptions {
 }
 
 export interface VerifyUserPublicKeyOptions {
-  userKeychain?: Keychain;
+  userKeychain?: UtxoKeychain;
   disableNetworking: boolean;
   txParams: TransactionParams;
 }

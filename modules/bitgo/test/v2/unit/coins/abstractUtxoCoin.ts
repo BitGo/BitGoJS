@@ -418,7 +418,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should not allow more than 150 basis points of implicit external outputs (for paygo outputs)', async () => {
       const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
-        keychains: {},
+        keychains: {} as any,
         keySignatures: {},
         outputs: [],
         missingOutputs: [],
@@ -445,7 +445,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should allow 150 basis points of implicit external outputs (for paygo outputs)', async () => {
       const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
-        keychains: {},
+        keychains: {} as any,
         keySignatures: {},
         outputs: [],
         missingOutputs: [],
@@ -479,7 +479,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should not allow any implicit external outputs if paygo outputs are disallowed', async () => {
       const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
-        keychains: {},
+        keychains: {} as any,
         keySignatures: {},
         outputs: [],
         missingOutputs: [],
@@ -511,7 +511,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should allow paygo outputs if empty verification object is passed', async () => {
       const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
-        keychains: {},
+        keychains: {} as any,
         keySignatures: {},
         outputs: [],
         missingOutputs: [],
@@ -549,7 +549,7 @@ describe('Abstract UTXO Coin:', () => {
       const bigintCoin = bitgo.coin('tdoge') as AbstractUtxoCoin;
 
       const coinMock = sinon.stub(bigintCoin, 'parseTransaction').resolves({
-        keychains: {},
+        keychains: {} as any,
         keySignatures: {},
         outputs: [],
         missingOutputs: [],
