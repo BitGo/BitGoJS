@@ -3,12 +3,9 @@ import _ from 'lodash';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { isTriple, Triple } from '@bitgo/sdk-core';
-import buildDebug from 'debug';
 
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from '../../sign';
 import { AbstractUtxoCoin, DecodedTransaction, RootWalletKeys } from '../../abstractUtxoCoin';
-
-const debug = buildDebug('bitgo:abstract-utxo:signTransaction');
 
 /**
  * Key Value: Unsigned tx id => PSBT
@@ -23,11 +20,11 @@ const PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
 export async function signTransaction<TNumber extends number | bigint>(
   coin: AbstractUtxoCoin,
   tx: DecodedTransaction<TNumber>,
+  signerKeychain: BIP32Interface | undefined,
   params: {
     walletId: string | undefined;
     txInfo: { unspents?: utxolib.bitgo.Unspent<TNumber>[] } | undefined;
     isLastSignature: boolean;
-    prv: string | undefined;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
     allowNonSegwitSigningWithoutPrevTx: boolean;
     pubs: string[] | undefined;
@@ -49,22 +46,6 @@ export async function signTransaction<TNumber extends number | bigint>(
     isLastSignature = params.isLastSignature;
   }
 
-  const getSignerKeychain = (): utxolib.BIP32Interface => {
-    const userPrv = params.prv;
-    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-      if (!_.isUndefined(userPrv)) {
-        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
-      }
-      throw new Error('missing prv parameter to sign transaction');
-    }
-    const signerKeychain = bip32.fromBase58(userPrv, utxolib.networks.bitcoin);
-    if (signerKeychain.isNeutered()) {
-      throw new Error('expected user private key but received public key');
-    }
-    debug(`Here is the public key of the xprv you used to sign: ${signerKeychain.neutered().toBase58()}`);
-    return signerKeychain;
-  };
-
   const setSignerMusigNonceWithOverride = (
     psbt: utxolib.bitgo.UtxoPsbt,
     signerKeychain: utxolib.BIP32Interface,
@@ -73,12 +54,10 @@ export async function signTransaction<TNumber extends number | bigint>(
     utxolib.bitgo.withUnsafeNonSegwit(psbt, () => psbt.setAllInputsMusig2NonceHD(signerKeychain), nonSegwitOverride);
   };
 
-  let signerKeychain: utxolib.BIP32Interface | undefined;
-
   if (tx instanceof bitgo.UtxoPsbt && isTxWithKeyPathSpendInput) {
     switch (params.signingStep) {
       case 'signerNonce':
-        signerKeychain = getSignerKeychain();
+        assert(signerKeychain);
         setSignerMusigNonceWithOverride(tx, signerKeychain, params.allowNonSegwitSigningWithoutPrevTx);
         PSBT_CACHE.set(tx.getUnsignedTx().getId(), tx);
         return { txHex: tx.toHex() };
@@ -99,7 +78,7 @@ export async function signTransaction<TNumber extends number | bigint>(
       default:
         // this instance is not an external signer
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
-        signerKeychain = getSignerKeychain();
+        assert(signerKeychain);
         setSignerMusigNonceWithOverride(tx, signerKeychain, params.allowNonSegwitSigningWithoutPrevTx);
         const response = await coin.signPsbt(tx.toHex(), params.walletId);
         tx.combine(bitgo.createPsbtFromHex(response.psbt, coin.network));
@@ -117,12 +96,9 @@ export async function signTransaction<TNumber extends number | bigint>(
     }
   }
 
-  if (signerKeychain === undefined) {
-    signerKeychain = getSignerKeychain();
-  }
-
   let signedTransaction: bitgo.UtxoTransaction<bigint> | bitgo.UtxoPsbt;
   if (tx instanceof bitgo.UtxoPsbt) {
+    assert(signerKeychain);
     signedTransaction = signAndVerifyPsbt(tx, signerKeychain, {
       isLastSignature,
       allowNonSegwitSigningWithoutPrevTx: params.allowNonSegwitSigningWithoutPrevTx,
@@ -140,6 +116,7 @@ export async function signTransaction<TNumber extends number | bigint>(
     const cosignerPub = params.cosignerPub ?? params.pubs[2];
     const cosignerKeychain = bip32.fromBase58(cosignerPub);
 
+    assert(signerKeychain);
     const walletSigner = new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain);
     signedTransaction = signAndVerifyWalletTransaction(tx, params.txInfo.unspents, walletSigner, {
       isLastSignature,
