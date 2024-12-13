@@ -8,8 +8,10 @@ import assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { BitGoBase, decryptKeychainPrivateKey, Keychain, KeyIndices } from '@bitgo/sdk-core';
+import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
 import { ParsedTransaction, VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
+import { UtxoKeychain } from './keychains';
+
 const debug = buildDebug('bitgo:abstract-utxo:verifyKey');
 
 /**
@@ -69,7 +71,7 @@ export function verifyKeySignature(params: VerifyKeySignaturesOptions): boolean 
  */
 export function verifyCustomChangeKeySignatures<TNumber extends number | bigint>(
   tx: ParsedTransaction<TNumber>,
-  userKeychain: Keychain
+  userKeychain: UtxoKeychain
 ): boolean {
   if (!tx.customChange) {
     throw new Error('parsed transaction is missing required custom change verification data');
@@ -88,13 +90,7 @@ export function verifyCustomChangeKeySignatures<TNumber extends number | bigint>
     if (!keySignature) {
       throw new Error(`missing required custom change ${KeyIndices[keyIndex].toLowerCase()} keychain signature`);
     }
-    if (
-      !verifyKeySignature({
-        userKeychain: userKeychain as { pub: string },
-        keychainToVerify: keychainToVerify as { pub: string },
-        keySignature,
-      })
-    ) {
+    if (!verifyKeySignature({ userKeychain, keychainToVerify, keySignature })) {
       debug('failed to verify custom change %s key signature!', KeyIndices[keyIndex].toLowerCase());
       return false;
     }

@@ -5,11 +5,11 @@ import {
   IRequestTracer,
   InvalidAddressDerivationPropertyError,
   IWallet,
-  Keychain,
   TransactionPrebuild,
   UnexpectedAddressError,
   VerificationOptions,
   ITransactionRecipient,
+  Triple,
 } from '@bitgo/sdk-core';
 import { AbstractUtxoCoin, Output, isWalletOutput } from '../../abstractUtxoCoin';
 
@@ -182,8 +182,8 @@ async function fetchAddressDetails({
 }
 
 export interface CustomChangeOptions {
-  keys: [Keychain, Keychain, Keychain];
-  signatures: [string, string, string];
+  keys: Triple<{ pub: string }>;
+  signatures: Triple<string>;
 }
 
 export interface ParseOutputOptions {
@@ -191,7 +191,7 @@ export interface ParseOutputOptions {
   coin: AbstractUtxoCoin;
   txPrebuild: TransactionPrebuild;
   verification: VerificationOptions;
-  keychainArray: [Keychain, Keychain, Keychain];
+  keychainArray: Triple<{ pub: string }>;
   wallet: IWallet;
   txParams: {
     recipients: ITransactionRecipient[];
@@ -248,7 +248,7 @@ export async function parseOutput({
       if (isWalletOutput(currentOutput)) {
         const res = await coin.isWalletAddress({
           addressType: AbstractUtxoCoin.inferAddressType({ chain: currentOutput.chain }) || undefined,
-          keychains: keychainArray as { pub: string; commonKeychain?: string | undefined }[],
+          keychains: keychainArray,
           address: currentAddress,
           chain: currentOutput.chain,
           index: currentOutput.index,
