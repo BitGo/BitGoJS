@@ -2147,10 +2147,7 @@ export class Wallet implements IWallet {
     const signingParams = {
       ...params,
       txPrebuild,
-      wallet: {
-        // this is the version of the multisig address at wallet creation time
-        addressVersion: this._wallet.coinSpecific.addressVersion,
-      },
+      wallet: this,
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,

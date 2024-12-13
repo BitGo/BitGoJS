@@ -131,7 +131,6 @@ export class Xtz extends BaseCoin {
    * @param params
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
    * @returns Bluebird<SignedTransaction>
    */
   async signTransaction(params: Interface.XtzSignTransactionOptions): Promise<SignedTransaction> {
