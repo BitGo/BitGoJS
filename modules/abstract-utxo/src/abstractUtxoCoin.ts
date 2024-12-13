@@ -835,7 +835,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async signTransaction<TNumber extends number | bigint = number>(
     params: SignTransactionOptions<TNumber>
   ): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
-    return signTransaction<TNumber>(this, params);
+    return signTransaction<TNumber>(this, this.bitgo, params);
   }
 
   /**
