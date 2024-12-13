@@ -39,6 +39,7 @@ export const cmdBuildSignSend: CommandModule<BitGoApiArgs, BitGoApiArgs & ArgsBu
   async handler(args) {
     const { bitgo, coin } = getBitGoWithUtxoCoin(args);
     const wallet = await selectWallet(bitgo, coin, args);
+    const { walletPassphrase } = args;
     let { recipient } = args;
     if (recipient === 'self') {
       recipient = (await wallet.createAddress()).address;
@@ -79,7 +80,9 @@ export const cmdBuildSignSend: CommandModule<BitGoApiArgs, BitGoApiArgs & ArgsBu
         }
         break;
       case 'wallet':
-        return console.dir(await wallet.sendMany({ recipients }), { depth: 99 });
+        return console.dir(await wallet.sendMany({ recipients, walletPassphrase, feeRate: args.feeRateSatB * 1000 }), {
+          depth: 99,
+        });
     }
 
     switch (args.sendMode) {
