@@ -1783,6 +1783,8 @@ export enum UnderlyingAsset {
   'eth:rtbl' = 'eth:rtbl',
   'eth:virtual' = 'eth:virtual',
   'eth:vice' = 'eth:vice',
+  'eth:audu' = 'eth:audu',
+  'eth:wlfi' = 'eth:wlfi',
   'eth:kava' = 'eth:kava',
   'eth:iq' = 'eth:iq',
   'eth:iris' = 'eth:iris',
