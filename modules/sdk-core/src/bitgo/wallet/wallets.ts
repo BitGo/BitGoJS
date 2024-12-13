@@ -124,9 +124,9 @@ export class Wallets implements IWallets {
           .result();
         const multisigTypeVersion =
           tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
-        if (multisigTypeVersion === 'MPCv2') {
-          params.walletVersion = 5;
-        }
+        // if (multisigTypeVersion === 'MPCv2') {
+        //   params.walletVersion = 5;
+        // }
       }
     }
 
@@ -976,7 +976,7 @@ export class Wallets implements IWallets {
         .result();
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
-      walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
+      // walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
     }
 
     const reqId = new RequestTracer();
