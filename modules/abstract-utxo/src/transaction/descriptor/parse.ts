@@ -59,10 +59,12 @@ function toBaseOutputs(outputs: ParsedOutput[], network: utxolib.Network): BaseO
   );
 }
 
+export type ParsedOutputsBigInt = BaseParsedTransactionOutputs<bigint, BaseOutput<bigint>>;
+
 function toBaseParsedTransactionOutputs(
   { outputs, changeOutputs, explicitExternalOutputs, implicitExternalOutputs, missingOutputs }: ParsedOutputs,
   network: utxolib.Network
-): BaseParsedTransactionOutputs<bigint, BaseOutput<bigint>> {
+): ParsedOutputsBigInt {
   return {
     outputs: toBaseOutputs(outputs, network),
     changeOutputs: toBaseOutputs(changeOutputs, network),
@@ -79,7 +81,7 @@ export function toBaseParsedTransactionOutputsFromPsbt(
   descriptorMap: coreDescriptors.DescriptorMap,
   recipients: ITransactionRecipient[],
   network: utxolib.Network
-): BaseParsedTransactionOutputs<bigint, BaseOutput<bigint>> {
+): ParsedOutputsBigInt {
   return toBaseParsedTransactionOutputs(
     parseOutputsWithPsbt(
       psbt,

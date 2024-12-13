@@ -1,9 +1,11 @@
 import { BitGoBase } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../abstractUtxoCoin';
-import { isDescriptorWallet } from '../descriptor';
+import { getDescriptorMapFromWallet, isDescriptorWallet, getPolicyForEnv } from '../descriptor';
 
 import * as fixedScript from './fixedScript';
+import * as descriptor from './descriptor';
+import { fetchKeychains, toBip32Triple } from '../keychains';
 
 export async function verifyTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
@@ -11,7 +13,12 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   params: VerifyTransactionOptions<TNumber>
 ): Promise<boolean> {
   if (isDescriptorWallet(params.wallet)) {
-    throw new Error('Descriptor wallets are not supported');
+    const walletKeys = toBip32Triple(await fetchKeychains(coin, params.wallet));
+    return descriptor.verifyTransaction(
+      coin,
+      params,
+      getDescriptorMapFromWallet(params.wallet, walletKeys, getPolicyForEnv(bitgo.env))
+    );
   } else {
     return fixedScript.verifyTransaction(coin, bitgo, params);
   }

@@ -4,7 +4,7 @@ import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 
 type AmountType = 'number' | 'bigint' | 'string';
 
-function toAmountType(v: number | bigint | string, t: AmountType): number | bigint | string {
+export function toAmountType(v: number | bigint | string, t: AmountType): number | bigint | string {
   switch (t) {
     case 'number':
       return Number(v);
