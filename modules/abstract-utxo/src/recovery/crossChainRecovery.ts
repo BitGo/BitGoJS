@@ -3,7 +3,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 
 const { unspentSum, scriptTypeForChain, outputScripts } = utxolib.bitgo;
-export type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 type WalletUnspentLegacy<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspentLegacy<TNumber>;
