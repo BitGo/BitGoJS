@@ -508,9 +508,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async postProcessPrebuild<TNumber extends number | bigint>(
     prebuild: TransactionPrebuild<TNumber>
   ): Promise<TransactionPrebuild<TNumber>> {
-    if (_.isUndefined(prebuild.txHex)) {
-      throw new Error('missing required txPrebuild property txHex');
-    }
     const tx = this.decodeTransactionFromPrebuild(prebuild);
     if (_.isUndefined(prebuild.blockHeight)) {
       prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
