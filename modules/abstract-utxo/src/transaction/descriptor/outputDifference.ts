@@ -3,20 +3,6 @@ export type ComparableOutput = {
   value: bigint;
 };
 
-export type ParseOutputsResult<T extends ComparableOutput> = {
-  /** These are the external outputs that were explicitly specified in the transaction */
-  explicitExternalOutputs: T[];
-  /**
-   * These are the surprise external outputs that were not explicitly specified in the transaction.
-   * They can be PayGo fees.
-   */
-  implicitExternalOutputs: T[];
-  /**
-   * These are the outputs that were expected to be in the transaction but were not found.
-   */
-  missingOutputs: T[];
-};
-
 export function equalOutput<T extends ComparableOutput>(a: T, b: T): boolean {
   return a.value === b.value && a.script.equals(b.script);
 }
@@ -36,6 +22,20 @@ export function outputDifference<T extends ComparableOutput>(first: T[], second:
   return first;
 }
 
+export type OutputDifferenceWithExpected<T extends ComparableOutput> = {
+  /** These are the external outputs that were expected and found in the transaction. */
+  explicitExternalOutputs: T[];
+  /**
+   * These are the surprise external outputs that were not explicitly specified in the transaction.
+   * They can be PayGo fees.
+   */
+  implicitExternalOutputs: T[];
+  /**
+   * These are the outputs that were expected to be in the transaction but were not found.
+   */
+  missingOutputs: T[];
+};
+
 /**
  * @param actualExternalOutputs - external outputs in the transaction
  * @param expectedExternalOutputs - external outputs that were expected to be in the transaction
@@ -44,7 +44,7 @@ export function outputDifference<T extends ComparableOutput>(first: T[], second:
 export function outputDifferencesWithExpected<T extends ComparableOutput>(
   actualExternalOutputs: T[],
   expectedExternalOutputs: T[]
-): ParseOutputsResult<T> {
+): OutputDifferenceWithExpected<T> {
   const implicitExternalOutputs = outputDifference(actualExternalOutputs, expectedExternalOutputs);
   const explicitExternalOutputs = outputDifference(actualExternalOutputs, implicitExternalOutputs);
   const missingOutputs = outputDifference(expectedExternalOutputs, actualExternalOutputs);
