@@ -3,8 +3,8 @@ import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
 
 import { NamedDescriptor } from './NamedDescriptor';
 import { DescriptorMap } from '../core/descriptor';
-import { AbstractUtxoCoinWalletData } from '../abstractUtxoCoin';
 import { DescriptorValidationPolicy, KeyTriple, toDescriptorMapValidate } from './validatePolicy';
+import { UtxoWalletData } from '../wallet';
 
 type DescriptorWalletCoinSpecific = {
   descriptors: NamedDescriptor[];
@@ -16,7 +16,7 @@ function isDescriptorWalletCoinSpecific(obj: unknown): obj is DescriptorWalletCo
   );
 }
 
-type DescriptorWalletData = AbstractUtxoCoinWalletData & {
+type DescriptorWalletData = UtxoWalletData & {
   coinSpecific: DescriptorWalletCoinSpecific;
 };
 
@@ -24,7 +24,7 @@ interface IDescriptorWallet extends IWallet {
   coinSpecific(): WalletCoinSpecific & DescriptorWalletCoinSpecific;
 }
 
-export function isDescriptorWalletData(obj: AbstractUtxoCoinWalletData): obj is DescriptorWalletData {
+export function isDescriptorWalletData(obj: UtxoWalletData): obj is DescriptorWalletData {
   return isDescriptorWalletCoinSpecific(obj.coinSpecific);
 }
 
