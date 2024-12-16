@@ -2,6 +2,7 @@ import { AbstractUtxoCoin, ParsedTransaction, ParseTransactionOptions } from '..
 
 import { isDescriptorWallet } from '../descriptor';
 
+import * as descriptor from './descriptor';
 import * as fixedScript from './fixedScript';
 
 export async function parseTransaction<TNumber extends bigint | number>(
@@ -9,7 +10,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
   params: ParseTransactionOptions<TNumber>
 ): Promise<ParsedTransaction<TNumber>> {
   if (isDescriptorWallet(params.wallet)) {
-    throw new Error('Descriptor wallets are not supported');
+    return descriptor.parseToAmountType(coin, params.wallet, params);
   } else {
     return fixedScript.parseTransaction(coin, params);
   }

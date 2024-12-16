@@ -1,15 +1,11 @@
 import assert from 'assert';
 
+import { TransactionExplanation } from '../../../src';
 import { explainPsbt } from '../../../src/transaction/descriptor';
 import { mockPsbtDefaultWithDescriptorTemplate } from '../../core/descriptor/psbt/mock.utils';
 import { getDescriptorMap } from '../../core/descriptor/descriptor.utils';
-import { getFixture } from '../../core/fixtures.utils';
 import { getKeyTriple } from '../../core/key.utils';
-import { TransactionExplanation } from '../../../src';
-
-async function assertEqualFixture(name: string, v: unknown) {
-  assert.deepStrictEqual(v, await getFixture(__dirname + '/fixtures/' + name, v));
-}
+import { assertEqualFixture } from './fixtures.utils';
 
 function assertSignatureCount(expl: TransactionExplanation, signatures: number, inputSignatures: number[]) {
   assert.deepStrictEqual(expl.signatures, signatures);

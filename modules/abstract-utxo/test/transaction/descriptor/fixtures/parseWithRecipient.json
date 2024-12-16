@@ -1,0 +1,32 @@
+{
+  "outputs": [
+    {
+      "address": "bc1qvn279lx29cg843u77p3c37npay7w4uc4xw5d92xxa92z8gd3lkuq4w8477",
+      "amount": "400000",
+      "external": true
+    },
+    {
+      "address": "bc1q2yau645jl7k577lmanqn9a0ulcgcqm0wrrmx09dppd3kcwguvyzqk86umj",
+      "amount": "400000",
+      "external": false
+    }
+  ],
+  "changeOutputs": [
+    {
+      "address": "bc1q2yau645jl7k577lmanqn9a0ulcgcqm0wrrmx09dppd3kcwguvyzqk86umj",
+      "amount": "400000",
+      "external": false
+    }
+  ],
+  "explicitExternalOutputs": [
+    {
+      "address": "bc1qvn279lx29cg843u77p3c37npay7w4uc4xw5d92xxa92z8gd3lkuq4w8477",
+      "amount": "400000",
+      "external": true
+    }
+  ],
+  "explicitExternalSpendAmount": "400000",
+  "implicitExternalOutputs": [],
+  "implicitExternalSpendAmount": "0",
+  "missingOutputs": []
+}
