@@ -96,17 +96,23 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
     feeMultiplier?: number;
     selfSend?: boolean;
     nockOutputAddresses?: boolean;
+    txFormat?: string;
   }): nock.Scope[] {
     const nocks: nock.Scope[] = [];
 
     // Nock the prebuild route (/tx/build, blockheight)
+    const expected_params = {
+      recipients: [params.recipient],
+      rbfTxIds: params.rbfTxIds,
+      feeMultiplier: params.feeMultiplier,
+      changeAddressType: ['p2trMusig2', 'p2wsh', 'p2shP2wsh', 'p2sh', 'p2tr'],
+    };
+    if (params.txFormat) {
+      expected_params['txFormat'] = params.txFormat;
+    }
     nocks.push(
       nock(params.bgUrl)
-        .post(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/tx/build`, {
-          recipients: [params.recipient],
-          rbfTxIds: params.rbfTxIds,
-          feeMultiplier: params.feeMultiplier,
-        })
+        .post(`/api/v2/${coin.getChain()}/wallet/${params.wallet.id()}/tx/build`, expected_params)
         .reply(200, { txHex: params.prebuild.toHex(), txInfo: {} })
     );
     nocks.push(nock(params.bgUrl).get(`/api/v2/${coin.getChain()}/public/block/latest`).reply(200, { height: 1000 }));
@@ -212,6 +218,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
 
     [true, false].forEach((useWebauthn) => {
       it(`should succeed with ${useWebauthn ? 'webauthn encryptedPrv' : 'encryptedPrv'}`, async function () {
+        const txCoins = ['tzec', 'zec', 'ltc', 'bcha', 'doge', 'dash', 'btg', 'bch'];
         const nocks = createNocks({
           bgUrl,
           wallet,
@@ -220,6 +227,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           recipient,
           addressInfo,
           nockOutputAddresses: txFormat !== 'psbt',
+          txFormat: !txCoins.includes(coin.getChain()) ? 'psbt' : undefined,
         });
 
         // call prebuild and sign, nocks should be consumed
@@ -257,6 +265,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
       it(`should be able to build, sign, & verify a replacement transaction with selfSend: ${selfSend}`, async function () {
         const rbfTxIds = ['tx-to-be-replaced'],
           feeMultiplier = 1.5;
+        const txCoins = ['tzec', 'zec', 'ltc', 'bcha', 'doge', 'dash', 'btg', 'bch'];
         const nocks = createNocks({
           bgUrl,
           wallet,
@@ -268,6 +277,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           feeMultiplier,
           selfSend,
           nockOutputAddresses: txFormat !== 'psbt',
+          txFormat: !txCoins.includes(coin.getChain()) ? 'psbt' : undefined,
         });
 
         // call prebuild and sign, nocks should be consumed
