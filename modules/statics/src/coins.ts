@@ -159,6 +159,7 @@ const ALGO_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
 ];
 const ADA_FEATURES = [...Ada.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
+const ADA_FEATURES_WITH_FRANKFURT = [...ADA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const DOT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
@@ -435,14 +436,21 @@ export const coins = CoinMap.fromCoins([
     Networks.test.avalancheP,
     UnderlyingAsset.AVAXP
   ),
-  ada('fd4d125e-f14f-414b-bd17-6cb1393265f0', 'ada', 'Cardano ADA', Networks.main.ada, UnderlyingAsset.ADA),
+  ada(
+    'fd4d125e-f14f-414b-bd17-6cb1393265f0',
+    'ada',
+    'Cardano ADA',
+    Networks.main.ada,
+    UnderlyingAsset.ADA,
+    ADA_FEATURES_WITH_FRANKFURT
+  ),
   ada(
     '1cbfb5aa-94ba-415b-b5c2-c51e801e21b3',
     'tada',
     'Testnet Cardano ADA',
     Networks.test.ada,
     UnderlyingAsset.ADA,
-    ADA_FEATURES
+    ADA_FEATURES_WITH_FRANKFURT
   ),
   account(
     'ec41e62a-cc57-4aa0-9b9e-217da1226817',
