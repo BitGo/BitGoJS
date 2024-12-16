@@ -30,6 +30,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   arbeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'arbeth:usdcv2': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   avaxc: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
