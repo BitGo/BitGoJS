@@ -422,7 +422,16 @@ describe('OFC:', function () {
   });
 
   describe('check ofc tokens for ripple', function () {
+    const tokenMain = 'ofcxrp:rlusd';
     const tokenTest = 'ofctxrp:rlusd';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('Ripple USD');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_96);
+      });
+    });
     describe('for test network', function () {
       it(`should have the correct values for ${tokenTest}`, function () {
         const ofcCoin = bitgo.coin(tokenTest);
