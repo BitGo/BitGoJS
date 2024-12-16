@@ -19043,7 +19043,8 @@ export const coins = CoinMap.fromCoins([
     'USD Coin (native)',
     6,
     '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    UnderlyingAsset['arbeth:usdcv2']
+    UnderlyingAsset['arbeth:usdcv2'],
+    TOKEN_FEATURES_WITH_FRANKFURT
   ),
   arbethErc20(
     'a49b04e6-5a1b-4d55-9187-4d41c41f8f1e',
