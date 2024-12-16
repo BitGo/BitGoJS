@@ -50,7 +50,7 @@ function toPlainObjectFromPropertyDescriptors(v: unknown, opts: ToPlainObjectOpt
   );
 }
 
-export function toPlainObject(v: unknown, opts: ToPlainObjectOpts, path: PathElement[]): unknown {
+export function toPlainObject(v: unknown, opts: ToPlainObjectOpts = {}, path: PathElement[] = []): unknown {
   if (opts.apply) {
     const result = opts.apply(v, path);
     if (result !== undefined) {
