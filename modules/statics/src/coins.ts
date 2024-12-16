@@ -62,6 +62,7 @@ import {
   ofcsolToken,
   ofcStellarToken,
   ofcTronToken,
+  ofcXrpToken,
   tofc,
   tofcAlgoToken,
   tofcArbethErc20,
@@ -1638,7 +1639,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:natix',
     'NATIX Network ',
     6,
-    UnderlyingAsset['natix'],
+    UnderlyingAsset['sol:natix'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1646,7 +1647,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:mobile',
     'Helium Mobile',
     6,
-    UnderlyingAsset['mobile'],
+    UnderlyingAsset['sol:mobile'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1654,7 +1655,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:jup',
     'Jupiter',
     6,
-    UnderlyingAsset['jup'],
+    UnderlyingAsset['sol:jup'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1670,7 +1671,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:wif',
     'dogwifhat',
     6,
-    UnderlyingAsset['wif'],
+    UnderlyingAsset['sol:wif'],
     SOL_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1756,6 +1757,7 @@ export const coins = CoinMap.fromCoins([
   ),
   tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset['ttrx:usdt']),
   ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset['trx:usdt']),
+  ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 96, UnderlyingAsset['xrp:rlusd']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 96, UnderlyingAsset['txrp:rlusd']),
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
