@@ -19268,7 +19268,8 @@ export const coins = CoinMap.fromCoins([
     'Optimism',
     18,
     '0x4200000000000000000000000000000000000042',
-    UnderlyingAsset['opeth:op']
+    UnderlyingAsset['opeth:op'],
+    TOKEN_FEATURES_WITH_FRANKFURT
   ),
   opethErc20(
     '0d045493-8667-4d86-b5c2-d90d2dd38ae5',
