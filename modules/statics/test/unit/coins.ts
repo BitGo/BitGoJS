@@ -112,6 +112,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   'reth-rocket': { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   injective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   opeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'opeth:op': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   polygon: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
