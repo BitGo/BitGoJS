@@ -70,6 +70,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   },
   celo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   coreum: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  ada: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   doge: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -359,6 +360,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   },
   tcelo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tcoreum: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tada: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tdoge: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tdot: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   teos: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
