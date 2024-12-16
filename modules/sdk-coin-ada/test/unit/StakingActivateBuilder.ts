@@ -3,7 +3,7 @@ import { TransactionType, AddressFormat } from '@bitgo/sdk-core';
 import * as testData from '../resources';
 import { KeyPair, TransactionBuilderFactory } from '../../src';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../src/lib/transaction';
+import { CertType, Transaction } from '../../src/lib/transaction';
 import * as Utils from '../../src/lib/utils';
 
 describe('ADA Staking Activate Transaction Builder', async () => {
@@ -21,19 +21,24 @@ describe('ADA Staking Activate Transaction Builder', async () => {
       'addr1q8rm9z7w4yx5gz652kn2q238efvms6t0qelur9nlglun8eu4tr5knj4fu4adelzqhxg8adu5xca4jra0gtllfrpcawyq9psz23',
       totalInput
     );
-    txBuilder.stakingCredential(keyPairStake.getKeys().pub, '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3');
+    txBuilder.stakingCredential(
+      keyPairStake.getKeys().pub,
+      '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3',
+      'always-abstain'
+    );
     txBuilder.ttl(800000000);
     const tx = (await txBuilder.build()) as Transaction;
     should.equal(tx.type, TransactionType.StakingActivate);
     const txData = tx.toJson();
     const fee = tx.getFee;
-    txData.certs.length.should.equal(2);
+    txData.certs.length.should.equal(3);
     txData.certs[0].type.should.equal(0);
     txData.certs[1].type.should.equal(1);
+    txData.certs[2].type.should.equal(CertType.VoteDelegation);
 
     txData.outputs.length.should.equal(1);
     txData.outputs[0].amount.should.equal((Number(totalInput) - 2000000 - Number(fee)).toString());
-    fee.should.equal('169945');
+    fee.should.equal('171529');
     tx.toBroadcastFormat().should.equal(testData.rawTx.unsignedStakingActiveTx);
     should.equal(tx.id, testData.rawTx.unsignedStakingActiveTxHash);
   });
@@ -50,7 +55,11 @@ describe('ADA Staking Activate Transaction Builder', async () => {
       'addr1q8rm9z7w4yx5gz652kn2q238efvms6t0qelur9nlglun8eu4tr5knj4fu4adelzqhxg8adu5xca4jra0gtllfrpcawyq9psz23',
       totalInput
     );
-    txBuilder.stakingCredential(keyPairStake.getKeys().pub, '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3');
+    txBuilder.stakingCredential(
+      keyPairStake.getKeys().pub,
+      '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3',
+      'always-abstain'
+    );
     txBuilder.ttl(800000000);
     const tx = (await txBuilder.build()) as Transaction;
     should.equal(tx.type, TransactionType.StakingActivate);
@@ -129,7 +138,11 @@ describe('ADA Staking Activate Transaction Builder', async () => {
     const txBuilder = factory.getStakingActivateBuilder();
     const senderBalance = '22122071';
     txBuilder.changeAddress(senderAddress, senderBalance);
-    txBuilder.stakingCredential(keyPairStake.getKeys().pub, '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3');
+    txBuilder.stakingCredential(
+      keyPairStake.getKeys().pub,
+      '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3',
+      'always-no-confidence'
+    );
 
     txBuilder.input({
       transaction_id: '0a4f80d83ba9ce1f83306a79252909241308d7eff317d04c9ea018966d687fe3',
@@ -172,7 +185,11 @@ describe('ADA Staking Activate Transaction Builder', async () => {
     const txBuilder = factory.getStakingActivateBuilder();
     const senderBalance = '22122071';
     txBuilder.changeAddress(senderAddress, senderBalance);
-    txBuilder.stakingCredential(keyPairStake.getKeys().pub, '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3');
+    txBuilder.stakingCredential(
+      keyPairStake.getKeys().pub,
+      '7a623c48348501c2380e60ac2307fcd1b67df4218f819930821a15b3',
+      'always-no-confidence'
+    );
 
     txBuilder.input({
       transaction_id: '0a4f80d83ba9ce1f83306a79252909241308d7eff317d04c9ea018966d687fe3',

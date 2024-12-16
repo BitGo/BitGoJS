@@ -9,6 +9,7 @@ import {
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import adaUtils from './utils';
 
 export interface TransactionInput {
   transaction_id: string;
@@ -31,17 +32,19 @@ export interface Witness {
   publicKey: string;
   signature: string;
 }
-enum CertType {
+export enum CertType {
   StakeKeyRegistration,
   StakeKeyDelegation,
   StakeKeyDeregistration,
   StakePoolRegistration,
+  VoteDelegation,
 }
 
 export interface Cert {
   type: CertType;
   stakeCredentialHash?: string;
   poolKeyHash?: string;
+  dRepId?: string;
 }
 
 export interface Withdrawal {
@@ -183,6 +186,14 @@ export class Transaction extends BaseTransaction {
             poolKeyHash: Buffer.from(stakePoolRegistration.pool_params().operator().to_bytes()).toString('hex'),
           });
         }
+        if (cert.as_vote_delegation() !== undefined) {
+          const voteDelegation = cert.as_vote_delegation() as CardanoWasm.VoteDelegation;
+          result.certs.push({
+            type: CertType.VoteDelegation,
+            stakeCredentialHash: Buffer.from(voteDelegation.stake_credential().to_bytes()).toString('hex'),
+            dRepId: adaUtils.getDRepIdFromDRep(voteDelegation.drep()),
+          });
+        }
       }
     }
 
@@ -279,6 +290,8 @@ export class Transaction extends BaseTransaction {
           this._type = TransactionType.StakingActivate;
         } else if (certs.some((c) => c.as_stake_deregistration() !== undefined)) {
           this._type = TransactionType.StakingDeactivate;
+        } else if (certs.some((c) => c.as_vote_delegation() !== undefined)) {
+          this._type = TransactionType.VoteDelegation;
         }
       }
       if (this._transaction.body().withdrawals()) {
@@ -394,6 +407,8 @@ export class Transaction extends BaseTransaction {
         ? 'StakingDeactivate'
         : this._type === TransactionType.StakingPledge
         ? 'StakingPledge'
+        : this._type === TransactionType.VoteDelegation
+        ? 'VoteDelegation'
         : 'undefined';
     return {
       displayOrder,

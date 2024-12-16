@@ -7,11 +7,17 @@ import {
   Credential,
   RewardAddress,
   Transaction as CardanoTransaction,
+  DRep,
+  Ed25519KeyHash,
+  ScriptHash,
+  DRepKind,
 } from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { bech32 } from 'bech32';
 
 export const MIN_ADA_FOR_ONE_ASSET = '1500000';
+export const VOTE_ALWAYS_ABSTAIN = 'always-abstain';
+export const VOTE_ALWAYS_NO_CONFIDENCE = 'always-no-confidence';
 
 export class Utils implements BaseUtils {
   createBaseAddressWithStakeAndPaymentKey(
@@ -73,6 +79,65 @@ export class Utils implements BaseUtils {
       );
     }
     return rewardAddress.to_address().to_bech32();
+  }
+
+  isValidDRepId(dRepId: string): boolean {
+    try {
+      this.getDRepFromDRepId(dRepId);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  getDRepFromDRepId(dRepId: string): DRep {
+    switch (dRepId) {
+      case 'always-abstain':
+        return DRep.new_always_abstain();
+      case 'always-no-confidence':
+        return DRep.new_always_no_confidence();
+      default:
+        try {
+          // for parsing CIP-105 standard DRep ID
+          return DRep.from_bech32(dRepId);
+        } catch (err) {
+          // for parsing CIP-129 standard DRep ID
+          // https://cips.cardano.org/cip/CIP-0129
+          const decodedBech32 = bech32.decode(dRepId);
+          const decodedBytes = Buffer.from(bech32.fromWords(decodedBech32.words));
+          const header = decodedBytes[0];
+          const keyBytes = decodedBytes.subarray(1);
+
+          const keyType = (header & 0xf0) >> 4;
+          const credentialType = header & 0x0f;
+
+          if (keyType !== 0x02) {
+            throw new Error('Invalid key type for DRep');
+          }
+
+          switch (credentialType) {
+            case 0x02:
+              const ed25519KeyHash = Ed25519KeyHash.from_bytes(keyBytes);
+              return DRep.new_key_hash(ed25519KeyHash);
+            case 0x03:
+              const scriptHash = ScriptHash.from_bytes(keyBytes);
+              return DRep.new_script_hash(scriptHash);
+            default:
+              throw new Error('Invalid credential type for DRep');
+          }
+        }
+    }
+  }
+
+  getDRepIdFromDRep(dRep: DRep): string {
+    switch (dRep.kind()) {
+      case DRepKind.AlwaysAbstain:
+        return VOTE_ALWAYS_ABSTAIN;
+      case DRepKind.AlwaysNoConfidence:
+        return VOTE_ALWAYS_NO_CONFIDENCE;
+      default:
+        return dRep.to_bech32();
+    }
   }
 
   /** @inheritdoc */
