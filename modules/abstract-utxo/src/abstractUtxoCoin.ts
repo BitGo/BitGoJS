@@ -206,12 +206,7 @@ export interface ParseTransactionOptions<TNumber extends number | bigint = numbe
   reqId?: IRequestTracer;
 }
 
-export type BaseParsedTransaction<TNumber extends number | bigint, TOutput> = {
-  keychains: UtxoNamedKeychains;
-  keySignatures: {
-    backupPub?: string;
-    bitgoPub?: string;
-  };
+export type BaseParsedTransactionOutputs<TNumber extends number | bigint, TOutput> = {
   /** all transaction outputs */
   outputs: TOutput[];
   /** transaction outputs that were specified as recipients but are missing from the transaction */
@@ -226,6 +221,17 @@ export type BaseParsedTransaction<TNumber extends number | bigint, TOutput> = {
   explicitExternalSpendAmount: TNumber;
   /** sum of all implicit external outputs */
   implicitExternalSpendAmount: TNumber;
+};
+
+export type BaseParsedTransaction<TNumber extends number | bigint, TOutput> = BaseParsedTransactionOutputs<
+  TNumber,
+  TOutput
+> /** Some extra properties that have nothing to do with an individual transaction */ & {
+  keychains: UtxoNamedKeychains;
+  keySignatures: {
+    backupPub?: string;
+    bitgoPub?: string;
+  };
   needsCustomChangeKeySignatureVerification: boolean;
   customChange?: CustomChangeOptions;
 };
