@@ -1,9 +1,10 @@
+import assert from 'assert';
 import * as t from 'io-ts';
 import * as utxolib from '@bitgo/utxo-lib';
 import { IRequestTracer, IWallet, KeyIndices, promiseProps, Triple } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
-import assert from 'assert';
+import { UtxoWallet } from './wallet';
 
 /*
 
@@ -63,4 +64,18 @@ export async function fetchKeychains(
   });
   assert(UtxoNamedKeychains.is(result));
   return result;
+}
+
+export const KeySignatures = t.partial({
+  backupPub: t.string,
+  bitgoPub: t.string,
+});
+
+export type KeySignatures = t.TypeOf<typeof KeySignatures>;
+
+export function getKeySignatures(wallet: UtxoWallet): KeySignatures | undefined {
+  if (t.partial({ keySignatures: KeySignatures }).is(wallet._wallet)) {
+    return wallet._wallet.keySignatures;
+  }
+  return undefined;
 }

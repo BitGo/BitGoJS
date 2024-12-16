@@ -11,7 +11,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
 } from '../../abstractUtxoCoin';
-import { fetchKeychains, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
+import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
 
 /**
  * @param first
@@ -206,7 +206,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   return {
     keychains,
-    keySignatures: _.get(wallet, '_wallet.keySignatures', {}),
+    keySignatures: getKeySignatures(wallet) ?? {},
     outputs: allOutputDetails,
     missingOutputs,
     explicitExternalOutputs,
