@@ -155,7 +155,8 @@ export class StakingWallet implements IStakingWallet {
         throw Error(`Staking transaction ${transaction.id} build params not expanded`);
       }
       const isBtcUndelegate =
-        this.wallet.baseCoin.getFamily() === 'btc' && transaction.transactionType === 'UNDELEGATE_WITHDRAW';
+        this.wallet.baseCoin.getFamily() === 'btc' &&
+        transaction.transactionType.toLowerCase() === 'undelegate_withdraw';
       const wallet = isBtcUndelegate
         ? await this.getDescriptorWallet(transaction)
         : await this.getWalletForBuildingAndSigning();
