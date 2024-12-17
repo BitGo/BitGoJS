@@ -59,7 +59,7 @@ function parseMulti(node: unknown): {
   };
 }
 
-export function parseDescriptorNode(node: unknown): DescriptorBuilder {
+function parseWshMulti(node: unknown): DescriptorBuilder | undefined {
   const wshMsMulti = unwrapNode(node, ['Wsh', 'Ms', 'Multi']);
   if (wshMsMulti) {
     const { threshold, keys, path } = parseMulti(wshMsMulti);
@@ -77,31 +77,47 @@ export function parseDescriptorNode(node: unknown): DescriptorBuilder {
       path,
     };
   }
+}
 
-  const shWshMsAndV = unwrapNode(node, ['Sh', 'Wsh', 'Ms', 'AndV']);
-  if (shWshMsAndV) {
-    if (Array.isArray(shWshMsAndV) && shWshMsAndV.length === 2) {
-      const [a, b] = shWshMsAndV;
-      const dropAfterAbsLocktime = unwrapNode(a, ['Drop', 'After', 'absLockTime']);
-      if (typeof dropAfterAbsLocktime !== 'number') {
-        throw new Error('Expected absLockTime number');
-      }
-      if (!isUnaryNode(b, 'Multi')) {
-        throw new Error('Expected Multi node');
-      }
-      const multi = parseMulti(b.Multi);
-      if (multi.threshold === 2 && multi.keys.length === 3) {
-        return {
-          name: 'ShWsh2Of3CltvDrop',
-          locktime: dropAfterAbsLocktime,
-          keys: multi.keys,
-          path: multi.path,
-        };
-      }
+function parseCltvDrop(
+  node: unknown,
+  name: 'Wsh2Of3CltvDrop' | 'ShWsh2Of3CltvDrop',
+  wrapping: string[]
+): DescriptorBuilder | undefined {
+  const unwrapped = unwrapNode(node, wrapping);
+  if (!unwrapped) {
+    return;
+  }
+  if (Array.isArray(unwrapped) && unwrapped.length === 2) {
+    const [a, b] = unwrapped;
+    const dropAfterAbsLocktime = unwrapNode(a, ['Drop', 'After', 'absLockTime']);
+    if (typeof dropAfterAbsLocktime !== 'number') {
+      throw new Error('Expected absLockTime number');
+    }
+    if (!isUnaryNode(b, 'Multi')) {
+      throw new Error('Expected Multi node');
+    }
+    const multi = parseMulti(b.Multi);
+    if (multi.threshold === 2 && multi.keys.length === 3) {
+      return {
+        name,
+        locktime: dropAfterAbsLocktime,
+        keys: multi.keys,
+        path: multi.path,
+      };
     }
   }
+}
 
-  throw new Error('Not implemented');
+export function parseDescriptorNode(node: unknown): DescriptorBuilder {
+  const parsed =
+    parseWshMulti(node) ??
+    parseCltvDrop(node, 'ShWsh2Of3CltvDrop', ['Sh', 'Wsh', 'Ms', 'AndV']) ??
+    parseCltvDrop(node, 'Wsh2Of3CltvDrop', ['Wsh', 'Ms', 'AndV']);
+  if (!parsed) {
+    throw new Error('Failed to parse descriptor node');
+  }
+  return parsed;
 }
 
 export function parseDescriptor(descriptor: Descriptor): DescriptorBuilder {

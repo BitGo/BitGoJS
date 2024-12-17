@@ -11,11 +11,11 @@ export type DescriptorBuilder =
   | DescriptorWithKeys<'Wsh2Of2'>
   | DescriptorWithKeys<'Wsh2Of3'>
   /*
-   * This is a wrapped segwit 2of3 multisig that also uses a relative locktime with
-   * an OP_DROP (requiring a miniscript extension).
+   * This is a segwit (wrapped or native) 2of3 multisig that also uses a
+   * relative locktime with an OP_DROP (requiring a miniscript extension).
    * It is basically what is used in CoreDao staking transactions.
    */
-  | (DescriptorWithKeys<'ShWsh2Of3CltvDrop'> & { locktime: number });
+  | (DescriptorWithKeys<'ShWsh2Of3CltvDrop' | 'Wsh2Of3CltvDrop'> & { locktime: number });
 
 function toXPub(k: BIP32Interface | string): string {
   if (typeof k === 'string') {
@@ -41,8 +41,10 @@ function getDescriptorString(builder: DescriptorBuilder): string {
       return `wsh(${multi(2, 3, builder.keys, builder.path)})`;
     case 'Wsh2Of2':
       return `wsh(${multi(2, 2, builder.keys, builder.path)})`;
+    case 'Wsh2Of3CltvDrop':
+      return `wsh(and_v(r:after(${builder.locktime}),${multi(2, 3, builder.keys, builder.path)}))`;
     case 'ShWsh2Of3CltvDrop':
-      return `sh(wsh(and_v(r:after(${builder.locktime}),${multi(2, 3, builder.keys, builder.path)})))`;
+      return `sh(${getDescriptorString({ ...builder, name: 'Wsh2Of3CltvDrop' })})`;
   }
   throw new Error(`Unknown descriptor template: ${builder}`);
 }
