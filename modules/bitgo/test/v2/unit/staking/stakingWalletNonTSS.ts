@@ -249,7 +249,7 @@ describe('non-TSS Staking Wallet', function () {
     });
 
     it('btc undelegation transaction', async function () {
-      const transaction = fixtures.transaction('READY', fixtures.btcUnstakingBuildParams, false, 'UNDELEGATE_WITHDRAW');
+      const transaction = fixtures.transaction('READY', fixtures.btcUnstakingBuildParams, false, 'undelegate_withdraw');
 
       nock(microservicesUri)
         .get(
