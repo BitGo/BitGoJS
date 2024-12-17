@@ -296,6 +296,7 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
    * transaction (nonWitnessUtxo)
    */
   allowNonSegwitSigningWithoutPrevTx?: boolean;
+  wallet?: UtxoWallet;
 };
 
 export type SignTransactionOptions<TNumber extends number | bigint = number> = UtxoBaseSignTransactionOptions<TNumber> &
@@ -508,9 +509,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async postProcessPrebuild<TNumber extends number | bigint>(
     prebuild: TransactionPrebuild<TNumber>
   ): Promise<TransactionPrebuild<TNumber>> {
-    if (_.isUndefined(prebuild.txHex)) {
-      throw new Error('missing required txPrebuild property txHex');
-    }
     const tx = this.decodeTransactionFromPrebuild(prebuild);
     if (_.isUndefined(prebuild.blockHeight)) {
       prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
@@ -837,7 +835,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async signTransaction<TNumber extends number | bigint = number>(
     params: SignTransactionOptions<TNumber>
   ): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
-    return signTransaction<TNumber>(this, params);
+    return signTransaction<TNumber>(this, this.bitgo, params);
   }
 
   /**
