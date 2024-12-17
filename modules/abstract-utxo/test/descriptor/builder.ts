@@ -13,6 +13,7 @@ function getDescriptorBuilderForType(name: DescriptorBuilder['name']): Descripto
         keys: keys.slice(0, name === 'Wsh2Of3' ? 3 : 2),
         path: '0/*',
       };
+    case 'Wsh2Of3CltvDrop':
     case 'ShWsh2Of3CltvDrop':
       return {
         name,
@@ -35,4 +36,5 @@ function describeForName(n: DescriptorBuilder['name']) {
 
 describeForName('Wsh2Of2');
 describeForName('Wsh2Of3');
+describeForName('Wsh2Of3CltvDrop');
 describeForName('ShWsh2Of3CltvDrop');

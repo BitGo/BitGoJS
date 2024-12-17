@@ -61,7 +61,7 @@ export function getPolicyForEnv(env: EnvironmentName): DescriptorValidationPolic
     case 'adminProd':
     case 'prod':
       return {
-        allowedTemplates: ['Wsh2Of3', 'ShWsh2Of3CltvDrop'],
+        allowedTemplates: ['Wsh2Of3', 'Wsh2Of3CltvDrop', 'ShWsh2Of3CltvDrop'],
       };
     default:
       return 'allowAll';
