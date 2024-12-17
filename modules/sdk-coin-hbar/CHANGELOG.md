@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.54](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.0.52...@bitgo/sdk-coin-hbar@2.0.54) (2024-12-17)
+
+### Bug Fixes
+
+- **abstract-utxo:** pass actual wallet to signTransaction ([55caa4a](https://github.com/BitGo/BitGoJS/commit/55caa4a6ddcb7699732d6259f1a2db014008a815))
+
+## [2.0.53](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.0.52...@bitgo/sdk-coin-hbar@2.0.53) (2024-12-17)
+
+### Bug Fixes
+
+- **abstract-utxo:** pass actual wallet to signTransaction ([55caa4a](https://github.com/BitGo/BitGoJS/commit/55caa4a6ddcb7699732d6259f1a2db014008a815))
+
 ## [2.0.52](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.0.51...@bitgo/sdk-coin-hbar@2.0.52) (2024-12-12)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar

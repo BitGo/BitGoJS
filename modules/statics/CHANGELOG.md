@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.13.0...@bitgo/statics@50.15.0) (2024-12-17)
+
+### Features
+
+- add ofc core and ofc sol tokens ([26d269f](https://github.com/BitGo/BitGoJS/commit/26d269f35424f394b0012ae4b604425dcca84bed))
+- add ofcxrp mainnet support and update ofcsol tokens ([5eef4a9](https://github.com/BitGo/BitGoJS/commit/5eef4a940498f83caa95c3ab1f3e6636ffb74279))
+- **statics:** changes for onboarding audu & wifi coin COIN-2507 ([c875767](https://github.com/BitGo/BitGoJS/commit/c87576756c4c8c636f3474e36b8a9b5361e6b07c))
+- **statics:** enabled bulk withdrawal feature ([0542952](https://github.com/BitGo/BitGoJS/commit/054295205dc7335010040f8e6aa5feeebd27332c))
+- **statics:** ungate ada for Frankfurt Trust - Bitstamp ([4571a8c](https://github.com/BitGo/BitGoJS/commit/4571a8cac13a5ecaa829a67c33ebea66e012fbf5))
+- **statics:** ungate Optimism for Frankfurt Trust - Bitstamp ([44c3ad0](https://github.com/BitGo/BitGoJS/commit/44c3ad0d7f237a5e2cb949c6f922c47d436c8069))
+- **statics:** ungate remaining ERC-20 tokens for Frankfurt Trust - Bitstamp ([d00ba52](https://github.com/BitGo/BitGoJS/commit/d00ba52123571bf769bfa810f0f0925b8bdec062))
+- **statics:** ungate remaining usdcv2 for Frankfurt Trust - Bitstamp ([2b57c00](https://github.com/BitGo/BitGoJS/commit/2b57c00550f06b862faa258f590e4505d9800950))
+
+# [50.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.13.0...@bitgo/statics@50.14.0) (2024-12-17)
+
+### Features
+
+- add ofc core and ofc sol tokens ([26d269f](https://github.com/BitGo/BitGoJS/commit/26d269f35424f394b0012ae4b604425dcca84bed))
+- add ofcxrp mainnet support and update ofcsol tokens ([5eef4a9](https://github.com/BitGo/BitGoJS/commit/5eef4a940498f83caa95c3ab1f3e6636ffb74279))
+- **statics:** changes for onboarding audu & wifi coin COIN-2507 ([c875767](https://github.com/BitGo/BitGoJS/commit/c87576756c4c8c636f3474e36b8a9b5361e6b07c))
+- **statics:** enabled bulk withdrawal feature ([0542952](https://github.com/BitGo/BitGoJS/commit/054295205dc7335010040f8e6aa5feeebd27332c))
+- **statics:** ungate ada for Frankfurt Trust - Bitstamp ([4571a8c](https://github.com/BitGo/BitGoJS/commit/4571a8cac13a5ecaa829a67c33ebea66e012fbf5))
+- **statics:** ungate Optimism for Frankfurt Trust - Bitstamp ([44c3ad0](https://github.com/BitGo/BitGoJS/commit/44c3ad0d7f237a5e2cb949c6f922c47d436c8069))
+- **statics:** ungate remaining ERC-20 tokens for Frankfurt Trust - Bitstamp ([d00ba52](https://github.com/BitGo/BitGoJS/commit/d00ba52123571bf769bfa810f0f0925b8bdec062))
+- **statics:** ungate remaining usdcv2 for Frankfurt Trust - Bitstamp ([2b57c00](https://github.com/BitGo/BitGoJS/commit/2b57c00550f06b862faa258f590e4505d9800950))
+
 # [50.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.12.0...@bitgo/statics@50.13.0) (2024-12-12)
 
 ### Bug Fixes

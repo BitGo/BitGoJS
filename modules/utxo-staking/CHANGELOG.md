@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.3.5...@bitgo/utxo-staking@1.5.0) (2024-12-17)
+
+### Features
+
+- **utxo-staking:** add support for wsh script type ([c3632a4](https://github.com/BitGo/BitGoJS/commit/c3632a456a92953ee52340c79740bcd9e6f66215))
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.3.5...@bitgo/utxo-staking@1.4.0) (2024-12-17)
+
+### Features
+
+- **utxo-staking:** add support for wsh script type ([c3632a4](https://github.com/BitGo/BitGoJS/commit/c3632a456a92953ee52340c79740bcd9e6f66215))
+
 ## [1.3.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.3.4...@bitgo/utxo-staking@1.3.5) (2024-12-12)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

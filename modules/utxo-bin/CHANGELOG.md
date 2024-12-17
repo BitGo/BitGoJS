@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.3.3...@bitgo/utxo-bin@3.5.0) (2024-12-17)
+
+### Bug Fixes
+
+- **utxo-bin:** make network required in ScriptParser constructor ([cecb4d4](https://github.com/BitGo/BitGoJS/commit/cecb4d46208c2b7018fcd2eef79cd52649572df5))
+
+### Features
+
+- **utxo-bin:** add p2shP2wsh payment type ([5344d46](https://github.com/BitGo/BitGoJS/commit/5344d4692fa5af5d67fb927adca87c7dd0f17827))
+
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.3.3...@bitgo/utxo-bin@3.4.0) (2024-12-17)
+
+### Bug Fixes
+
+- **utxo-bin:** make network required in ScriptParser constructor ([cecb4d4](https://github.com/BitGo/BitGoJS/commit/cecb4d46208c2b7018fcd2eef79cd52649572df5))
+
+### Features
+
+- **utxo-bin:** add p2shP2wsh payment type ([5344d46](https://github.com/BitGo/BitGoJS/commit/5344d4692fa5af5d67fb927adca87c7dd0f17827))
+
 ## [3.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.3.2...@bitgo/utxo-bin@3.3.3) (2024-12-12)
 
 **Note:** Version bump only for package @bitgo/utxo-bin
