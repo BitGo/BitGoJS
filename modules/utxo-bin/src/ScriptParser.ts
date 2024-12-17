@@ -40,8 +40,8 @@ function asMiniscript(script: Buffer): Miniscript | undefined {
 }
 
 export class ScriptParser extends Parser {
-  network?: utxolib.Network;
-  constructor({ network }: { network?: utxolib.Network } = {}) {
+  network: utxolib.Network;
+  constructor({ network }: { network: utxolib.Network }) {
     super();
     this.network = network;
   }
