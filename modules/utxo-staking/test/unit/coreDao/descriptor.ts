@@ -30,7 +30,7 @@ describe('descriptor', function () {
     });
   });
 
-  async function runTestForParams(scriptType: 'sh' | 'sh-wsh', m: number, keys: utxolib.BIP32Interface[]) {
+  async function runTestForParams(scriptType: 'sh' | 'sh-wsh' | 'wsh', m: number, keys: utxolib.BIP32Interface[]) {
     const fixturePath = baseFixturePath + `${scriptType}-${m}of${keys.length}`;
     describe(`should create a ${m} of ${keys.length} multi-sig ${scriptType} descriptor`, function () {
       it('has expected descriptor string', async function () {
@@ -115,6 +115,7 @@ describe('descriptor', function () {
   runTestForParams('sh', 2, [key1, key2]);
   runTestForParams('sh-wsh', 2, [key1, key2]);
   runTestForParams('sh', 3, [key1, key2, key3]);
+  runTestForParams('wsh', 3, [key1, key2, key3]);
 
   it('should recreate the script used in testnet staking transaction', function () {
     // Source: https://mempool.space/testnet/address/2MxTi2EhHKgdJFKRTBttVGGxir9ZzjmKCXw

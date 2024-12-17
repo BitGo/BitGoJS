@@ -1,9 +1,11 @@
 import { BIP32Interface } from '@bitgo/utxo-lib';
 
 /**
- * Script type for a descriptor. This is either a p2sh (sh) or a p2sh-p2wsh (sh-wsh) script.
+ * Script type for a descriptor.
+ *
+ * See https://docs.coredao.org/docs/Learn/products/btc-staking/design#p2shp2wsh-output
  */
-export type ScriptType = 'sh' | 'sh-wsh';
+export type ScriptType = 'sh' | 'sh-wsh' | 'wsh';
 
 function asDescriptorKey(key: BIP32Interface | Buffer, neutered: boolean): string {
   if (Buffer.isBuffer(key)) {
@@ -38,5 +40,12 @@ export function createMultiSigDescriptor(
   }
   const keys = orderedKeys.map((key) => asDescriptorKey(key, neutered));
   const inner = `and_v(r:after(${locktime}),multi(${m},${keys.join(',')}))`;
-  return scriptType === 'sh' ? `sh(${inner})` : `sh(wsh(${inner}))`;
+  switch (scriptType) {
+    case 'sh':
+      return `sh(${inner})`;
+    case 'sh-wsh':
+      return `sh(wsh(${inner}))`;
+    case 'wsh':
+      return `wsh(${inner})`;
+  }
 }
