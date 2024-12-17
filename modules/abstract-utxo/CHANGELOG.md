@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.5.0...@bitgo/abstract-utxo@9.7.0) (2024-12-17)
+
+### Features
+
+- **abstract-utxo:** add getKeySignatures function ([cbbf6e3](https://github.com/BitGo/BitGoJS/commit/cbbf6e34918fd499fbdf9f2325b123238dc0ebee))
+- **abstract-utxo:** implement explainTx for descriptor wallets ([36bca5b](https://github.com/BitGo/BitGoJS/commit/36bca5b230f60b7fd3766079c7adc8b0be66a9ed))
+- **abstract-utxo:** implement parseTransaction for descriptor ([9573556](https://github.com/BitGo/BitGoJS/commit/957355697b233a164fb889ed52bda17805780d93))
+- **abstract-utxo:** implement verifyTransaction ([8261e50](https://github.com/BitGo/BitGoJS/commit/8261e50c4fb20454704f3b544d4d7bc0edb71cad))
+- **abstract-utxo:** permit Wsh2Of3CltvDrop in descriptor validation ([95a393f](https://github.com/BitGo/BitGoJS/commit/95a393faaa44ea6a6018773b06bc916b4ad1420b))
+
+# [9.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.5.0...@bitgo/abstract-utxo@9.6.0) (2024-12-17)
+
+### Features
+
+- **abstract-utxo:** add getKeySignatures function ([cbbf6e3](https://github.com/BitGo/BitGoJS/commit/cbbf6e34918fd499fbdf9f2325b123238dc0ebee))
+- **abstract-utxo:** implement explainTx for descriptor wallets ([36bca5b](https://github.com/BitGo/BitGoJS/commit/36bca5b230f60b7fd3766079c7adc8b0be66a9ed))
+- **abstract-utxo:** implement parseTransaction for descriptor ([9573556](https://github.com/BitGo/BitGoJS/commit/957355697b233a164fb889ed52bda17805780d93))
+- **abstract-utxo:** implement verifyTransaction ([8261e50](https://github.com/BitGo/BitGoJS/commit/8261e50c4fb20454704f3b544d4d7bc0edb71cad))
+- **abstract-utxo:** permit Wsh2Of3CltvDrop in descriptor validation ([95a393f](https://github.com/BitGo/BitGoJS/commit/95a393faaa44ea6a6018773b06bc916b4ad1420b))
+
 # [9.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.4.0...@bitgo/abstract-utxo@9.5.0) (2024-12-12)
 
 ### Bug Fixes

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.19.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.17.0...bitgo@39.19.0) (2024-12-17)
+
+### Features
+
+- add ofcxrp mainnet support and update ofcsol tokens ([5eef4a9](https://github.com/BitGo/BitGoJS/commit/5eef4a940498f83caa95c3ab1f3e6636ffb74279))
+
+# [39.18.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.17.0...bitgo@39.18.0) (2024-12-17)
+
+### Features
+
+- add ofcxrp mainnet support and update ofcsol tokens ([5eef4a9](https://github.com/BitGo/BitGoJS/commit/5eef4a940498f83caa95c3ab1f3e6636ffb74279))
+
 # [39.17.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.16.1...bitgo@39.17.0) (2024-12-12)
 
 ### Bug Fixes

@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.15.2...@bitgo/sdk-core@28.17.0) (2024-12-17)
+
+### Bug Fixes
+
+- **abstract-utxo:** pass actual wallet to signTransaction ([55caa4a](https://github.com/BitGo/BitGoJS/commit/55caa4a6ddcb7699732d6259f1a2db014008a815))
+
+### Features
+
+- **sdk-coin-ada:** support vote delegation ([6b9ddd8](https://github.com/BitGo/BitGoJS/commit/6b9ddd867ecb458e2d5d9890829c20a22cf7658b))
+
+# [28.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.15.2...@bitgo/sdk-core@28.16.0) (2024-12-17)
+
+### Bug Fixes
+
+- **abstract-utxo:** pass actual wallet to signTransaction ([55caa4a](https://github.com/BitGo/BitGoJS/commit/55caa4a6ddcb7699732d6259f1a2db014008a815))
+
+### Features
+
+- **sdk-coin-ada:** support vote delegation ([6b9ddd8](https://github.com/BitGo/BitGoJS/commit/6b9ddd867ecb458e2d5d9890829c20a22cf7658b))
+
 ## [28.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.15.1...@bitgo/sdk-core@28.15.2) (2024-12-12)
 
 ### Bug Fixes
