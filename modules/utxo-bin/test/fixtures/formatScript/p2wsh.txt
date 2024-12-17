@@ -20,7 +20,26 @@ inputScripts
     │ ├── 3: 0286de50435e3680740715bfa3f7d41c9620d80d93b2c02672f53efa0c6e68d182 (33 bytes)
     │ ├── 4: 83
     │ └── 5: 174
-    └─┬ payment: p2ms(2 of 3)
+    ├─┬ payment: p2sh
+    │ ├── name: "p2sh"
+    │ ├── address: "33aL7tdTaow65xNdHNzWPunFfHa7o419j1"
+    │ ├── hash: 14ac875ee498fdb3071246b96df4e8d9bf483e2a (20 bytes)
+    │ ├── output: a91414ac875ee498fdb3071246b96df4e8d9bf483e2a87 (23 bytes)
+    │ ├─┬ redeem
+    │ │ └── output: 522103199dc3912467b37ff890cc1740c8ef4ac7a50bf3741d99590e905ca3a79c76702102396d5d0c79d779f9cf019cea9e81d2576bad476ea87ed634416205605a55ce8f210286de50435e3680740715bfa3f7d41c9620d80d93b2c02672f53efa0c6e68d18253ae (105 bytes)
+    │ ├── input: undefined
+    │ └── witness: undefined
+    ├─┬ payment: p2shP2wsh
+    │ ├── name: "p2sh"
+    │ ├── address: "3ME6emiaighNsKVUeobZnAznRLvPUDKPiw"
+    │ ├── hash: d64b3b43a7d3f7e08c60865452400ff6d4f2c7e5 (20 bytes)
+    │ ├── output: a914d64b3b43a7d3f7e08c60865452400ff6d4f2c7e587 (23 bytes)
+    │ ├─┬ redeem
+    │ │ └── output: 00204b1ab1ce9838362321329c5899a38f4c4bf83dd7386007bf9a45498d26cd307b (34 bytes)
+    │ ├── input: undefined
+    │ └── witness: undefined
+    └─┬ payment: p2ms
+      ├── name: "p2ms(2 of 3)"
       ├── output: 522103199dc3912467b37ff890cc1740c8ef4ac7a50bf3741d99590e905ca3a79c76702102396d5d0c79d779f9cf019cea9e81d2576bad476ea87ed634416205605a55ce8f210286de50435e3680740715bfa3f7d41c9620d80d93b2c02672f53efa0c6e68d18253ae (105 bytes)
       ├── m: 2
       ├── n: 3

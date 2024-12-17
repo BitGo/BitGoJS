@@ -4,13 +4,18 @@ import { Miniscript } from '@bitgo/wasm-miniscript';
 import { Parser, ParserNode } from './Parser';
 import { parseUnknown } from './parseUnknown';
 
-const paymentTypes = ['p2sh', 'p2pkh', 'p2wpkh', 'p2wsh', 'p2ms'] as const;
+const paymentTypes = ['p2sh', 'p2shP2wsh', 'p2pkh', 'p2wpkh', 'p2wsh', 'p2ms'] as const;
 type PaymentType = (typeof paymentTypes)[number];
 
 function parsePaymentWithType(script: Buffer, type: PaymentType, network?: utxolib.Network): utxolib.Payment {
   switch (type) {
     case 'p2sh':
       return utxolib.payments.p2sh({ redeem: { output: script }, network });
+    case 'p2shP2wsh':
+      return utxolib.payments.p2sh({
+        redeem: { output: utxolib.payments.p2wsh({ redeem: { output: script }, network }).output },
+        network,
+      });
     case 'p2pkh':
       return utxolib.payments.p2pkh({ output: script, network });
     case 'p2wpkh':
@@ -35,8 +40,8 @@ function asMiniscript(script: Buffer): Miniscript | undefined {
 }
 
 export class ScriptParser extends Parser {
-  network?: utxolib.Network;
-  constructor({ network }: { network?: utxolib.Network } = {}) {
+  network: utxolib.Network;
+  constructor({ network }: { network: utxolib.Network }) {
     super();
     this.network = network;
   }
@@ -69,16 +74,21 @@ export class ScriptParser extends Parser {
     };
   }
 
-  parsePayment(payment: utxolib.Payment): ParserNode {
-    return parseUnknown(this, `payment: ${payment.name}`, payment, {
-      omit: ['network', 'name'],
-    });
+  parsePayment(type: PaymentType, payment: utxolib.Payment): ParserNode {
+    return parseUnknown(
+      this,
+      `payment: ${type}`,
+      { name: payment.name, ...payment },
+      {
+        omit: ['network'],
+      }
+    );
   }
 
   parseBufferAsPayment(script: Buffer): ParserNode[] {
     return paymentTypes.flatMap((type) => {
       try {
-        return [this.parsePayment(parsePaymentWithType(script, type, this.network))];
+        return [this.parsePayment(type, parsePaymentWithType(script, type, this.network))];
       } catch (e) {
         return [];
       }

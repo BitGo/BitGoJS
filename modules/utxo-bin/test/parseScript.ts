@@ -7,6 +7,10 @@ import { ScriptParser } from '../src/ScriptParser';
 
 import { formatTreeNoColor, getFixtureString, getTransactionWithSpendType, ParsedFixture } from './fixtures';
 
+function getParser(): ScriptParser {
+  return new ScriptParser({ network: utxolib.networks.bitcoin });
+}
+
 function testParseScript(type: utxolib.bitgo.outputScripts.ScriptType2Of3) {
   let tx: ParsedFixture;
   before('setup transaction', async function () {
@@ -17,7 +21,7 @@ function testParseScript(type: utxolib.bitgo.outputScripts.ScriptType2Of3) {
     });
   });
 
-  const parser = new ScriptParser();
+  const parser = getParser();
 
   function parse(label: string, script: Buffer): ParserNode {
     return parser.node(label, undefined, [parser.parse(script)]);
@@ -35,7 +39,7 @@ function testParseScript(type: utxolib.bitgo.outputScripts.ScriptType2Of3) {
       ];
     });
 
-    const root = new ScriptParser().node('inputScripts', undefined, nodes);
+    const root = getParser().node('inputScripts', undefined, nodes);
 
     const formatted = formatTreeNoColor(root, { showAll: true });
 
