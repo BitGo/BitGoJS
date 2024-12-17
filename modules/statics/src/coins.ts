@@ -1716,6 +1716,30 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:goat'],
     SOL_OFC_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'fe8e4d63-f2ed-4351-b9da-70a705444095',
+    'ofcsol:mnde',
+    'Marinade',
+    9,
+    UnderlyingAsset['sol:mnde'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'fc7ac820-4b48-4286-8881-9b418118198e',
+    'ofcsol:jto',
+    'Jito',
+    9,
+    UnderlyingAsset['sol:jto'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '9b6bd751-2057-4067-9e16-9a26df0e4127',
+    'ofcsol:tnsr',
+    'Tensor',
+    9,
+    UnderlyingAsset['sol:tnsr'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -13398,6 +13422,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset['eth:virtual']
   ),
+  ofcerc20('8f0d3af0-8f99-4860-88db-e9b52855262f', 'ofccore', 'cVault.finance', 18, UnderlyingAsset.CORE),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
