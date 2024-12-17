@@ -36,6 +36,7 @@ export class AccountCoin extends BaseCoin {
     CoinFeature.CUSTODY_BITGO_TRUST,
     CoinFeature.CUSTODY_BITGO_SINGAPORE,
     CoinFeature.CUSTODY_BITGO_KOREA,
+    CoinFeature.CUSTODY_BITGO_EUROPE_APS,
   ];
 
   // Need to gate some high risk coin from SINGAPORE trust
