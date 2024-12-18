@@ -6,7 +6,7 @@
     "declarationMap": true,
     "inlineSourceMap": true,
     "inlineSources": true,
-    "lib": ["dom", "es2019"],
+    "lib": ["dom", "es2020"],
     "module": "commonjs",
     "noFallthroughCasesInSwitch": true,
     "noImplicitThis": true,
@@ -16,7 +16,7 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
-    "target": "es2019",
+    "target": "es2020",
     "typeRoots": ["./node_modules/@types", "./types"]
   },
   "exclude": ["node_modules"]
