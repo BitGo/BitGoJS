@@ -1,6 +1,7 @@
 import { BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
+
 import { DescriptorBuilder, getDescriptorFromBuilder } from './builder';
 
 type NodeUnary<Key extends string> = { [k in Key]: unknown };

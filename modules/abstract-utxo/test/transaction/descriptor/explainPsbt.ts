@@ -5,6 +5,7 @@ import { explainPsbt } from '../../../src/transaction/descriptor';
 import { mockPsbtDefaultWithDescriptorTemplate } from '../../core/descriptor/psbt/mock.utils';
 import { getDescriptorMap } from '../../core/descriptor/descriptor.utils';
 import { getKeyTriple } from '../../core/key.utils';
+
 import { assertEqualFixture } from './fixtures.utils';
 
 function assertSignatureCount(expl: TransactionExplanation, signatures: number, inputSignatures: number[]) {

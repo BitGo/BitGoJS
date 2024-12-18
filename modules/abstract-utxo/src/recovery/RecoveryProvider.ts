@@ -1,6 +1,7 @@
 import { BlockchairApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
-import { ApiNotImplementedError } from './baseApi';
 import { bitgo } from '@bitgo/utxo-lib';
+
+import { ApiNotImplementedError } from './baseApi';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 

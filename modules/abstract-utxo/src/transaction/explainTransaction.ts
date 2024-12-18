@@ -1,14 +1,13 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { isTriple, IWallet } from '@bitgo/sdk-core';
 
 import { TransactionExplanation } from '../abstractUtxoCoin';
-
-import * as fixedScript from './fixedScript';
-import * as descriptor from './descriptor';
-
-import { isTriple, IWallet } from '@bitgo/sdk-core';
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';
 import { toBip32Triple } from '../keychains';
 import { getPolicyForEnv } from '../descriptor/validatePolicy';
+
+import * as fixedScript from './fixedScript';
+import * as descriptor from './descriptor';
 
 /**
  * Decompose a raw transaction into useful information, such as the total amounts,

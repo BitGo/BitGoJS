@@ -1,8 +1,9 @@
 import assert from 'assert';
+
 import _ from 'lodash';
 import { Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
-import { CustomChangeOptions, parseOutput } from './parseOutput';
 import * as utxolib from '@bitgo/utxo-lib';
+
 import {
   AbstractUtxoCoin,
   FixedScriptWalletOutput,
@@ -12,6 +13,8 @@ import {
   ParseTransactionOptions,
 } from '../../abstractUtxoCoin';
 import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
+
+import { CustomChangeOptions, parseOutput } from './parseOutput';
 
 /**
  * @param first

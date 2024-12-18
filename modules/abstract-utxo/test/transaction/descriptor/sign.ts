@@ -1,8 +1,9 @@
+import assert from 'assert';
+
 import { mockPsbtDefaultWithDescriptorTemplate } from '../../core/descriptor/psbt/mock.utils';
 import { signPsbt } from '../../../src/transaction/descriptor';
 import { getKeyTriple } from '../../core/key.utils';
 import { getDescriptorMap } from '../../core/descriptor/descriptor.utils';
-import assert from 'assert';
 import { ErrorUnknownInput } from '../../../src/transaction/descriptor/signPsbt';
 
 describe('sign', function () {

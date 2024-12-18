@@ -1,23 +1,9 @@
 import assert from 'assert';
 import { randomBytes } from 'crypto';
+
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
-
-import {
-  backupKeyRecovery,
-  CrossChainRecoverySigned,
-  CrossChainRecoveryUnsigned,
-  forCoin,
-  recoverCrossChain,
-  RecoverParams,
-  RecoveryProvider,
-  v1BackupKeyRecovery,
-  V1RecoverParams,
-  v1Sweep,
-  V1SweepParams,
-} from './recovery';
-
 import {
   AddressCoinSpecific,
   AddressTypeChainMismatchError,
@@ -57,6 +43,20 @@ import {
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
+
+import {
+  backupKeyRecovery,
+  CrossChainRecoverySigned,
+  CrossChainRecoveryUnsigned,
+  forCoin,
+  recoverCrossChain,
+  RecoverParams,
+  RecoveryProvider,
+  v1BackupKeyRecovery,
+  V1RecoverParams,
+  v1Sweep,
+  V1SweepParams,
+} from './recovery';
 import { isReplayProtectionUnspent } from './replayProtection';
 import { supportedCrossChainRecoveries } from './config';
 import {
@@ -68,7 +68,6 @@ import {
   verifyTransaction,
 } from './transaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
-
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { CustomChangeOptions } from './transaction/fixedScript';
 import { toBip32Triple, UtxoKeychain, UtxoNamedKeychains } from './keychains';

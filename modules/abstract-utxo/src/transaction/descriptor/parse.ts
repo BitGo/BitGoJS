@@ -13,8 +13,9 @@ import { getDescriptorMapFromWallet, getPolicyForEnv } from '../../descriptor';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 import * as coreDescriptors from '../../core/descriptor';
 import { ParsedOutput } from '../../core/descriptor/psbt/parse';
-import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from './outputDifference';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
+
+import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from './outputDifference';
 
 function toParsedOutput(recipient: ITransactionRecipient, network: utxolib.Network): ParsedOutput {
   return {

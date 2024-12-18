@@ -3,6 +3,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 import { DescriptorMap } from '../DescriptorMap';
 import { getVirtualSize } from '../VirtualSize';
+
 import { findDescriptorForInput, findDescriptorForOutput } from './findDescriptors';
 import { assertSatisfiable } from './assertSatisfiable';
 

@@ -1,18 +1,8 @@
 import assert from 'assert';
+
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
-
-type ChainCode = utxolib.bitgo.ChainCode;
-type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-type WalletUnspent<TNumber extends number | bigint> = utxolib.bitgo.WalletUnspent<TNumber>;
-type WalletUnspentJSON = utxolib.bitgo.WalletUnspent & {
-  valueString: string;
-};
-type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
-
 import { VirtualSizes } from '@bitgo/unspents';
-
 import {
   BitGoBase,
   ErrorNoInputToRecover,
@@ -23,13 +13,24 @@ import {
   isTriple,
   krsProviders,
 } from '@bitgo/sdk-core';
+import { getMainnet, networks } from '@bitgo/utxo-lib';
+
 import { AbstractUtxoCoin, MultiSigAddress } from '../abstractUtxoCoin';
+import { signAndVerifyPsbt } from '../sign';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { signAndVerifyPsbt } from '../sign';
-import { getMainnet, networks } from '@bitgo/utxo-lib';
+
+type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
+type ChainCode = utxolib.bitgo.ChainCode;
+type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+type WalletUnspent<TNumber extends number | bigint> = utxolib.bitgo.WalletUnspent<TNumber>;
+type WalletUnspentJSON = utxolib.bitgo.WalletUnspent & {
+  valueString: string;
+};
+
+const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
 
 export interface OfflineVaultTxInfo {
   inputs: WalletUnspentJSON[];

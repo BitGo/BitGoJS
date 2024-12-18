@@ -11,6 +11,7 @@ import {
   ITransactionRecipient,
   Triple,
 } from '@bitgo/sdk-core';
+
 import { AbstractUtxoCoin, Output, isWalletOutput } from '../../abstractUtxoCoin';
 
 const debug = debugLib('bitgo:v2:parseoutput');

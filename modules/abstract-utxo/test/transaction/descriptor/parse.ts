@@ -1,9 +1,10 @@
 import assert from 'assert';
+
 import * as utxolib from '@bitgo/utxo-lib';
+
 import { mockPsbtDefaultWithDescriptorTemplate } from '../../core/descriptor/psbt/mock.utils';
 import { ParsedOutputsBigInt, toBaseParsedTransactionOutputsFromPsbt } from '../../../src/transaction/descriptor/parse';
 import { getDefaultXPubs, getDescriptorMap } from '../../core/descriptor/descriptor.utils';
-import { assertEqualFixture } from './fixtures.utils';
 import { toPlainObject } from '../../core/toPlainObject.utils';
 import {
   AggregateValidationError,
@@ -13,6 +14,8 @@ import {
 } from '../../../src/transaction/descriptor/verifyTransaction';
 import { toAmountType } from '../../../src/transaction/descriptor/parseToAmountType';
 import { BaseOutput } from '../../../src';
+
+import { assertEqualFixture } from './fixtures.utils';
 
 function toBaseOutput<TNumber>(output: utxolib.PsbtTxOutput, amountType: 'bigint' | 'string'): BaseOutput<TNumber> {
   assert(output.address);

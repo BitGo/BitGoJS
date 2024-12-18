@@ -1,4 +1,5 @@
 import assert from 'assert';
+
 import _ from 'lodash';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';

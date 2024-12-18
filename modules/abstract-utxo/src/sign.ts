@@ -1,5 +1,4 @@
 import * as utxolib from '@bitgo/utxo-lib';
-
 import debugLib from 'debug';
 
 import { isReplayProtectionUnspent } from './replayProtection';

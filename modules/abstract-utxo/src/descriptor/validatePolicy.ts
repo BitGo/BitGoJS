@@ -2,9 +2,10 @@ import { Descriptor } from '@bitgo/wasm-miniscript';
 import { EnvironmentName, Triple } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
+import { DescriptorMap, toDescriptorMap } from '../core/descriptor';
+
 import { DescriptorBuilder, parseDescriptor } from './builder';
 import { NamedDescriptor } from './NamedDescriptor';
-import { DescriptorMap, toDescriptorMap } from '../core/descriptor';
 
 export type DescriptorValidationPolicy = { allowedTemplates: DescriptorBuilder['name'][] } | 'allowAll';
 

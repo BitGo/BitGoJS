@@ -1,10 +1,11 @@
 import * as t from 'io-ts';
 import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
 
-import { NamedDescriptor } from './NamedDescriptor';
 import { DescriptorMap } from '../core/descriptor';
-import { DescriptorValidationPolicy, KeyTriple, toDescriptorMapValidate } from './validatePolicy';
 import { UtxoWallet, UtxoWalletData } from '../wallet';
+
+import { NamedDescriptor } from './NamedDescriptor';
+import { DescriptorValidationPolicy, KeyTriple, toDescriptorMapValidate } from './validatePolicy';
 
 type DescriptorWalletCoinSpecific = {
   descriptors: NamedDescriptor[];

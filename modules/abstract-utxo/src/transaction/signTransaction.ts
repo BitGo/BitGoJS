@@ -6,9 +6,10 @@ import buildDebug from 'debug';
 
 import { AbstractUtxoCoin, SignTransactionOptions } from '../abstractUtxoCoin';
 import { getDescriptorMapFromWallet, getPolicyForEnv, isDescriptorWallet } from '../descriptor';
+import { fetchKeychains, toBip32Triple } from '../keychains';
+
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
-import { fetchKeychains, toBip32Triple } from '../keychains';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 

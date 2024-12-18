@@ -1,20 +1,18 @@
 import Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { Dimensions } from '@bitgo/unspents';
+import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
+import { decrypt } from '@bitgo/sdk-api';
+
+import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
+import { signAndVerifyWalletTransaction } from '../sign';
 
 const { unspentSum, scriptTypeForChain, outputScripts } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 type WalletUnspentLegacy<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspentLegacy<TNumber>;
-
-import { Dimensions } from '@bitgo/unspents';
-
-import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
-import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
-
-import { decrypt } from '@bitgo/sdk-api';
-import { signAndVerifyWalletTransaction } from '../sign';
 
 export interface BuildRecoveryTransactionOptions {
   wallet: string;

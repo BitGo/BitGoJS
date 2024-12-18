@@ -1,5 +1,4 @@
 import { AbstractUtxoCoin, ParsedTransaction, ParseTransactionOptions } from '../abstractUtxoCoin';
-
 import { isDescriptorWallet } from '../descriptor';
 
 import * as descriptor from './descriptor';

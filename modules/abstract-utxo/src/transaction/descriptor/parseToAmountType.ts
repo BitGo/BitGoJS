@@ -1,6 +1,7 @@
 import { AbstractUtxoCoin, BaseOutput, BaseParsedTransaction, ParseTransactionOptions } from '../../abstractUtxoCoin';
-import { parse, ParsedDescriptorTransaction } from './parse';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
+
+import { parse, ParsedDescriptorTransaction } from './parse';
 
 type AmountType = 'number' | 'bigint' | 'string';
 
