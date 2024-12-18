@@ -185,6 +185,7 @@ describe('AvaxP permissionlessValidatorTxBuilder', () => {
       txExplain.inputs[0].id.should.equal('WyjYJHa7Ye1KMsBZiQ8hQJzY7YYxTJTTyMkxcVrKRDiNytTY8:0');
       txExplain.inputs[1].id.should.equal('WyjYJHa7Ye1KMsBZiQ8hQJzY7YYxTJTTyMkxcVrKRDiNytTY8:1');
       txExplain.inputs[2].id.should.equal('s92SjoZQemgG97HocX9GgyFy6ZKmapgcgqQ3y5J2uwP3qWBUy:0');
+      txExplain.fee.fee.should.equal('1000000');
       assert(txJson.outputs[0].value === testData.BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE.stakeAmount);
       tx.type.should.equal(TransactionType.AddPermissionlessValidator);
       console.log(tx.toBroadcastFormat());
