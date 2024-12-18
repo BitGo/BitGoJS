@@ -289,7 +289,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this._endTime = this.transaction._endTime;
     this.transaction._fromAddresses = output.outputOwners.addrs.map((a) => a.toBytes());
     this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
-    this.stakeAmount(permissionlessValidatorTx.stake[0].output.amount());
+    this.stakeAmount(this.transaction._stakeAmount);
     this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
     // TODO(CR-1073): remove log
     console.log('utxos: ', this.transaction._utxos);
@@ -465,7 +465,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         const stakeOutput = new avaxSerial.TransferableOutput(
           assetId,
           new TransferOutput(
-            new BigIntPr(totalTarget),
+            new BigIntPr(this._stakeAmount),
             new OutputOwners(
               new BigIntPr(this.transaction._locktime),
               new Int(this.transaction._threshold),
