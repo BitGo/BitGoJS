@@ -2,10 +2,10 @@ import { BitGoBase } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../abstractUtxoCoin';
 import { getDescriptorMapFromWallet, isDescriptorWallet, getPolicyForEnv } from '../descriptor';
+import { fetchKeychains, toBip32Triple } from '../keychains';
 
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
-import { fetchKeychains, toBip32Triple } from '../keychains';
 
 export async function verifyTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,

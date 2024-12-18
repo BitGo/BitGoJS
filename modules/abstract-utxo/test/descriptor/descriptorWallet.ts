@@ -1,4 +1,5 @@
 import assert from 'assert';
+
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../../src/descriptor';
 import { UtxoWallet } from '../../src/wallet';
 import { getDefaultXPubs, getDescriptorMap } from '../core/descriptor/descriptor.utils';

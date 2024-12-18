@@ -1,8 +1,10 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { ITransactionRecipient, VerifyTransactionOptions } from '@bitgo/sdk-core';
+
 import { DescriptorMap } from '../../core/descriptor';
-import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
 import { AbstractUtxoCoin, BaseOutput, BaseParsedTransactionOutputs } from '../../abstractUtxoCoin';
+
+import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
 
 export class ValidationError extends Error {
   constructor(message: string) {

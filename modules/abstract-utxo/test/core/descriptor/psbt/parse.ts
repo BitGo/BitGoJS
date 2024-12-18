@@ -1,11 +1,14 @@
 import assert from 'assert';
+
+import { Descriptor } from '@bitgo/wasm-miniscript';
+
 import { parse } from '../../../../src/core/descriptor';
 import { DescriptorTemplate, getDefaultXPubs, getDescriptorMap } from '../descriptor.utils';
-import { mockPsbtDefaultWithDescriptorTemplate } from './mock.utils';
 import { getFixture } from '../../fixtures.utils';
 import { ParsedDescriptorTransaction } from '../../../../src/core/descriptor/psbt/parse';
 import { toPlainObject } from '../../toPlainObject.utils';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+
+import { mockPsbtDefaultWithDescriptorTemplate } from './mock.utils';
 
 function normalize(parsed: ParsedDescriptorTransaction) {
   return toPlainObject(
