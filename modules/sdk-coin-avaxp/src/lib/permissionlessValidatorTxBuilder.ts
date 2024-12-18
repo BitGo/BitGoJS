@@ -54,6 +54,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
    */
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
+    this.transaction._fee.fee = this.transaction._network.txFee;
   }
 
   /**

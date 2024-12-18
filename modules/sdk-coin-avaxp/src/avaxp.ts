@@ -8,7 +8,6 @@ import {
   ParseTransactionOptions,
   BaseTransaction,
   InvalidTransactionError,
-  FeeEstimateOptions,
   SigningError,
   TransactionType,
   InvalidAddressError,
@@ -19,7 +18,6 @@ import {
 import * as AvaxpLib from './lib';
 import {
   AvaxpSignTransactionOptions,
-  TransactionFee,
   ExplainTransactionOptions,
   AvaxpVerifyTransactionOptions,
   AvaxpTransactionStakingOptions,
@@ -316,11 +314,6 @@ export class AvaxP extends BaseCoin {
     return transaction.signature.length >= 2
       ? { txHex: transaction.toBroadcastFormat() }
       : { halfSigned: { txHex: transaction.toBroadcastFormat() } };
-  }
-
-  async feeEstimate(params: FeeEstimateOptions): Promise<TransactionFee> {
-    // staking transactions are fee-less
-    return { fee: '0' };
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
