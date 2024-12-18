@@ -326,8 +326,9 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     let currentTotal = BigInt(0);
 
-    // delegating and validating have no fees
-    const totalTarget = this._stakeAmount.valueOf();
+    // staking tx requires fees after ACP-103
+    // https://github.com/avalanche-foundation/ACPs/blob/main/ACPs/103-dynamic-fees/README.md
+    const totalTarget = this._stakeAmount + BigInt(this.transaction._network.txFee);
 
     const credentials: Credential[] = this.transaction.credentials ?? [];
     // Convert fromAddresses to string
