@@ -530,20 +530,18 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
 
   /**
    * Returns supported TxRequest versions for this wallet
+   * @deprecated Whenever needed, use apiVersion 'full' for TSS wallets
    */
   public supportedTxRequestVersions(): TxRequestVersion[] {
-    const walletType = this._wallet?.type();
-    const supportedWalletTypes = ['custodial', 'cold', 'hot'];
-    if (!walletType || this._wallet?.multisigType() !== 'tss' || !supportedWalletTypes.includes(walletType)) {
+    if (!this._wallet || this._wallet.type() === 'trading' || this._wallet.multisigType() !== 'tss') {
       return [];
-    } else if (this._wallet?.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+    } else if (this._wallet.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       return ['full'];
-    } else if (walletType === 'custodial' || walletType === 'cold') {
-      return ['full'];
-    } else if (this._wallet?.baseCoin.getMPCAlgorithm() === 'eddsa' && walletType === 'hot') {
+    } else if (this._wallet.baseCoin.getMPCAlgorithm() === 'eddsa' && this._wallet.type() === 'hot') {
       return ['lite', 'full'];
+    } else {
+      return ['full'];
     }
-    return [];
   }
 
   /**
