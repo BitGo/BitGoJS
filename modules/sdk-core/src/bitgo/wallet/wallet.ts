@@ -2483,7 +2483,7 @@ export class Wallet implements IWallet {
     this.bitgo.setRequestTracer(reqId);
     const coin = this.baseCoin;
     if (_.isObject(params.recipients)) {
-      params.recipients.map(function (recipient) {
+      params.recipients.forEach(function (recipient) {
         coin.checkRecipient(recipient);
       });
     }
