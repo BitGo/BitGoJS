@@ -419,6 +419,7 @@ const COREDAO_FEATURES = [
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
   CoinFeature.EIP1559,
   CoinFeature.STAKING,
+  CoinFeature.EIP1559,
 ];
 const APT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
