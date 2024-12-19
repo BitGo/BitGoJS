@@ -682,3 +682,25 @@ describe('Bulk Transaction Features', () => {
     });
   });
 });
+
+describe('Eip1559 coins', () => {
+  const eip1559Coins = [
+    'tavaxc',
+    'celo',
+    'tcelo',
+    'arbeth',
+    'tarbeth',
+    'opeth',
+    'topeth',
+    'polygon',
+    'tpolygon',
+    'zketh',
+    'tzketh',
+  ];
+  it('should have EIP1559 feature', () => {
+    eip1559Coins.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.EIP1559).should.eql(true);
+    });
+  });
+});
