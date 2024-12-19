@@ -3644,7 +3644,7 @@ export class Wallet implements IWallet {
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
-      t.intersection([TxSendBody, t.type({ locktime: t.number })]),
+      t.intersection([TxSendBody, t.partial({ locktime: t.number })]),
       whitelistedParams
     ).result();
   }
