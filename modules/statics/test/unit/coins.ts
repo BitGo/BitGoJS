@@ -685,6 +685,9 @@ describe('Bulk Transaction Features', () => {
 
 describe('Eip1559 coins', () => {
   const eip1559Coins = [
+    'avaxc',
+    'eth',
+    'hteth:bgerchv2',
     'tavaxc',
     'celo',
     'tcelo',
