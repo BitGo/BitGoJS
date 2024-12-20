@@ -1652,6 +1652,48 @@ describe('V2 Wallet:', function () {
       });
     });
   });
+  describe('max recipient', function () {
+    const address = '5b34252f1bf349930e34020a';
+    const recipients = [
+      {
+        address,
+        amount: 'max',
+      },
+    ];
+    let basecoin;
+    let wallet;
+
+    before(async function () {
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: ['5b3424f91bf349930e340175'],
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    it('should pass maxFeeRate parameter when building transactions', async function () {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
+      const response = nock(bgUrl)
+        .post(
+          path,
+          _.matches({
+            recipients,
+          })
+        ) // use _.matches to do a partial match on request body object instead of strict matching
+        .reply(200);
+
+      try {
+        await wallet.prebuildTransaction({ recipients });
+      } catch (e) {
+        // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
+        // we only care about /tx/build and whether maxFeeRate is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    });
+  });
 
   describe('maxFeeRate verification', function () {
     const address = '5b34252f1bf349930e34020a';

@@ -226,12 +226,14 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   checkRecipient(recipient: { address: string; amount: string | number }): void {
-    const amount = new BigNumber(recipient.amount);
-    if (amount.isNegative()) {
-      throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-    }
-    if (!this.valuelessTransferAllowed() && amount.isZero()) {
-      throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+    if (recipient.amount !== 'max') {
+      const amount = new BigNumber(recipient.amount);
+      if (amount.isNegative()) {
+        throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+      }
+      if (!this.valuelessTransferAllowed() && amount.isZero()) {
+        throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+      }
     }
   }
 
