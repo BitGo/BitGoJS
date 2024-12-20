@@ -686,11 +686,13 @@ describe('Bulk Transaction Features', () => {
 describe('Eip1559 coins', () => {
   const eip1559Coins = [
     'avaxc',
-    'eth',
-    'hteth:bgerchv2',
     'tavaxc',
-    'celo',
+    'eth',
+    'teth',
+    'gteth',
     'hteth',
+    'hteth:bgerchv2',
+    'celo',
     'tcelo',
     'arbeth',
     'tarbeth',
@@ -700,6 +702,12 @@ describe('Eip1559 coins', () => {
     'tpolygon',
     'zketh',
     'tzketh',
+    'bera',
+    'tbera',
+    'oas',
+    'toas',
+    'coredao',
+    'tcoredao',
   ];
   it('should have EIP1559 feature', () => {
     eip1559Coins.forEach((coinName) => {
