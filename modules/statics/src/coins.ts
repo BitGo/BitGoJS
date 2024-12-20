@@ -2054,6 +2054,38 @@ export const coins = CoinMap.fromCoins([
   ),
   tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
   erc20(
+    'aba8da14-ee9a-44b0-9680-f53069495b08',
+    'eth:spx',
+    'SPX6900',
+    8,
+    '0xe0f63a424a4439cbe457d80e4f4b51ad25b2c56c',
+    UnderlyingAsset['eth:spx']
+  ),
+  erc20(
+    'a6c285f4-e39b-4e67-b266-749462e95487',
+    'eth:exrd',
+    'e-RADIX',
+    18,
+    '0x6468e79a80c0eab0f9a2b574c8d5bc374af59414',
+    UnderlyingAsset['eth:exrd']
+  ),
+  erc20(
+    '2cc8846d-8b8d-4480-b49f-026bc56fbf42',
+    'eth:turbo',
+    'Turbo',
+    18,
+    '0xa35923162c49cf95e6bf26623385eb431ad920d3',
+    UnderlyingAsset['eth:turbo']
+  ),
+  erc20(
+    'b0ac7199-4e32-4309-a0cd-99d7465a007c',
+    'eth:icnt',
+    'Impossible Cloud Network Token',
+    18,
+    '0xe5e0b73380181273abcfd88695f52c4d0c825661',
+    UnderlyingAsset['eth:icnt']
+  ),
+  erc20(
     '149c6c26-1c25-44b5-90a8-1b6b606f6604',
     'eth:audu',
     'Ubiquity Stablecoin AUD',
@@ -9417,7 +9449,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     'f0d670d3-a735-4004-9b23-fac5a97c0b0c',
     'ald',
-    'ALD',
+    'AladdinDAO',
     18,
     '0xb26c4b3ca601136daf98593feaeff9e0ca702a8d',
     UnderlyingAsset.ALD
@@ -16132,6 +16164,24 @@ export const coins = CoinMap.fromCoins([
     8,
     '0x3ad5f9119ca063189095784b9a7d2bf80fc24de6',
     UnderlyingAsset['tavaxc:bitgo']
+  ),
+  solToken(
+    'cf5040dc-ff15-4be5-97a0-78c53d58e111',
+    'sol:spx',
+    'SPX6900',
+    8,
+    'J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr', // https://solscan.io/token/J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr
+    UnderlyingAsset['sol:spx'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '53e6b4e7-6ff6-40d5-8737-af2b31fa0bc0',
+    'sol:turbo',
+    'Serum',
+    8,
+    '2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm', // https://solscan.io/token/2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm
+    UnderlyingAsset['sol:turbo'],
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '45d95e60-81df-4c5d-9ceb-e6e4f5b75eeb',
