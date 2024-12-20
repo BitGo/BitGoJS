@@ -649,6 +649,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.BULK_TRANSACTION,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+      CoinFeature.EIP1559,
     ]
   ),
   account(

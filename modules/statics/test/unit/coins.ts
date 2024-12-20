@@ -690,6 +690,7 @@ describe('Eip1559 coins', () => {
     'hteth:bgerchv2',
     'tavaxc',
     'celo',
+    'hteth',
     'tcelo',
     'arbeth',
     'tarbeth',
