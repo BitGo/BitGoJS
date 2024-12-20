@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.7.0...@bitgo/abstract-utxo@9.8.0) (2024-12-19)
+
+### Bug Fixes
+
+- **abstract-utxo:** pass actual wallet to signTransaction ([1024bff](https://github.com/BitGo/BitGoJS/commit/1024bff44bd5387a908703336e83ca7f6e4c9edc))
+- **abstract-utxo:** remove txHex check from postProcessPrebuild ([7e7c047](https://github.com/BitGo/BitGoJS/commit/7e7c04757320f8af2f1235e34b8cea1cf6b8a442))
+
+### Features
+
+- **abstract-utxo:** enforce import order lint rule ([c6f0d09](https://github.com/BitGo/BitGoJS/commit/c6f0d093fceefdd7035212bf00fd2c3ac458b5bd))
+- **abstract-utxo:** extract signer keychain earlier ([048c240](https://github.com/BitGo/BitGoJS/commit/048c240138c833bd4782f4c606a37a47d41dc6a5))
+- **abstract-utxo:** implement sign for descriptor wallets ([24eaced](https://github.com/BitGo/BitGoJS/commit/24eacedc9f77c7308ceb06dc06dca6c9742581a0))
+
 # [9.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.5.0...@bitgo/abstract-utxo@9.7.0) (2024-12-17)
 
 ### Features
