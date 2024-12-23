@@ -6,6 +6,9 @@ import { parse, ParsedDescriptorTransaction } from './parse';
 type AmountType = 'number' | 'bigint' | 'string';
 
 export function toAmountType(v: number | bigint | string, t: AmountType): number | bigint | string {
+  if (v === 'max') {
+    return v;
+  }
   switch (t) {
     case 'number':
       return Number(v);
@@ -22,7 +25,7 @@ type AmountTypeOptions = {
 };
 
 function baseOutputToTNumber<TAmount extends number | bigint>(
-  output: BaseOutput<bigint>,
+  output: BaseOutput<bigint | 'max'>,
   amountType: AmountType
 ): BaseOutput<TAmount> {
   return {
