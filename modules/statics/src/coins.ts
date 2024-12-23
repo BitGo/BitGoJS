@@ -4226,7 +4226,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '314c848a-c06e-47c8-8dcf-70946e6c4a6c',
     'fet1',
-    'Fet1',
+    'Artificial Superintelligence Alliance',
     18,
     '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
     UnderlyingAsset.FET1
