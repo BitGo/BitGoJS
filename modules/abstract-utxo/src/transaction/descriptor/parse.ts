@@ -25,7 +25,8 @@ function toParsedOutput(recipient: ITransactionRecipient, network: utxolib.Netwo
   };
 }
 
-type ParsedOutputs = OutputDifferenceWithExpected<ParsedOutput> & {
+// TODO(BTC-1697): allow outputs with `value: 'max'` here
+type ParsedOutputs = OutputDifferenceWithExpected<ParsedOutput, ParsedOutput> & {
   outputs: ParsedOutput[];
   changeOutputs: ParsedOutput[];
 };
