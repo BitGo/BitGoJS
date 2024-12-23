@@ -13,7 +13,7 @@ import {
   ParseTransactionOptions,
 } from '../../abstractUtxoCoin';
 import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
-import { ComparableOutput, outputDifference } from '../descriptor/outputDifference';
+import { ComparableOutput, outputDifference } from '../outputDifference';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
 
 import { CustomChangeOptions, parseOutput } from './parseOutput';

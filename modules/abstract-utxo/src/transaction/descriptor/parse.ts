@@ -14,8 +14,7 @@ import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 import * as coreDescriptors from '../../core/descriptor';
 import { ParsedOutput } from '../../core/descriptor/psbt/parse';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
-
-import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from './outputDifference';
+import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
 
 export type RecipientOutput = Omit<ParsedOutput, 'value'> & {
   value: bigint | 'max';
