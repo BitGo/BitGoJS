@@ -386,7 +386,9 @@ const ZKETH_FEATURES = [
 ];
 const BERA_FEATURES = [
   ...ETH_FEATURES,
-  CoinFeature.MULTISIG_COLD,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,

@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common, MPCAlgorithm } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
@@ -21,6 +21,15 @@ export class Bera extends AbstractEthLikeNewCoins {
 
   protected getTransactionBuilder(): EthLikeTransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 
   /**
