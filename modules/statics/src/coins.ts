@@ -408,6 +408,7 @@ const COREDAO_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.STAKING,
 ];
 const APT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -1379,7 +1380,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
-    [...COREDAO_FEATURES, CoinFeature.STAKING]
+    COREDAO_FEATURES
   ),
   account(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',
