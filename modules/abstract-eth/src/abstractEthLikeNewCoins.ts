@@ -2230,7 +2230,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @returns {boolean}
    */
   verifyCoin(txPrebuild: TransactionPrebuild): boolean {
-    return txPrebuild.coin === this.getChain();
+    const nativeCoin = this.getChain().split(':')[0];
+    return txPrebuild.coin === nativeCoin;
   }
 
   /**
