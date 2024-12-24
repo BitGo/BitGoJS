@@ -891,6 +891,13 @@ describe('V2 Wallets:', function () {
               custodialMultiSigTypeVersion: 'MPCv2',
             },
           },
+          bera: {
+            walletCreationSettings: {
+              multiSigTypeVersion: 'MPCv2',
+              coldMultiSigTypeVersion: 'MPCv2',
+              custodialMultiSigTypeVersion: 'MPCv2',
+            },
+          },
         },
       };
       nock('https://bitgo.fakeurl').get(`/api/v2/tss/settings`).times(2).reply(200, tssSettings);
@@ -901,7 +908,7 @@ describe('V2 Wallets:', function () {
       sandbox.verifyAndRestore();
     });
 
-    ['hteth', 'tbsc', 'tpolygon', 'ttia', 'tatom'].forEach((coin) => {
+    ['hteth', 'tbsc', 'tpolygon', 'ttia', 'tatom', 'tbera'].forEach((coin) => {
       it(`should create a new ${coin} TSS MPCv2 hot wallet`, async function () {
         const testCoin = bitgo.coin(coin);
         const stubbedKeychainsTriplet: KeychainsTriplet = {
