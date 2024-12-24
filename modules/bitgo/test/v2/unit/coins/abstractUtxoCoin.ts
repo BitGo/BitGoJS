@@ -26,7 +26,7 @@ describe('Abstract UTXO Coin:', () => {
     };
 
     const wallet = sinon.createStubInstance(Wallet, {
-      migratedFrom: 'v1_wallet_base_address',
+      migratedFrom: '2MzJxAENaesCFu3orrCdj22c69tLEsKXQoR',
     });
 
     const outputAmount = (0.01 * 1e8).toString();
@@ -95,7 +95,7 @@ describe('Abstract UTXO Coin:', () => {
     );
 
     it('should classify outputs which spend to addresses not on the wallet as external', async function () {
-      return runClassifyOutputsTest('external_address', verification, true);
+      return runClassifyOutputsTest('2Mxjx4E2EEe4yJuLvdEuAdMUd4id1emPCZs', verification, true);
     });
 
     it('should accept a custom change address', async function () {

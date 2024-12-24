@@ -6,7 +6,7 @@ import {
   matchingOutput,
   outputDifference,
   outputDifferencesWithExpected,
-} from '../../../src/transaction/descriptor/outputDifference';
+} from '../../../src/transaction/outputDifference';
 
 describe('outputDifference', function () {
   function output(script: string, value: bigint | number): ActualOutput;
