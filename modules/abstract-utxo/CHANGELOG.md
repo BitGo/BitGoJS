@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.8.0...@bitgo/abstract-utxo@9.9.0) (2024-12-24)
+
+### Features
+
+- **abstract-utxo:** add support for 'max' value parse.ts ([e664c26](https://github.com/BitGo/BitGoJS/commit/e664c267a2f35f9dcc5d62cbd3386be5943748e9))
+- **abstract-utxo:** allow 'max' value in ExpectedOutput ([470767a](https://github.com/BitGo/BitGoJS/commit/470767ab3e4df7946d12f354dee12906566bc7d4))
+- use descriptor outputDifference method ([663944a](https://github.com/BitGo/BitGoJS/commit/663944af14072b988d80cc69d85d257438f8846b))
+
 # [9.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.7.0...@bitgo/abstract-utxo@9.8.0) (2024-12-19)
 
 ### Bug Fixes

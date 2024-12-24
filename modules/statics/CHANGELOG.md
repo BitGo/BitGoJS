@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.15.0...@bitgo/statics@50.16.0) (2024-12-24)
+
+### Features
+
+- **sdk-coin-bera:** add TSS Suport ([2afd7f0](https://github.com/BitGo/BitGoJS/commit/2afd7f0453b7c32eb14e6a30dbb2b6341a8a6122))
+- **statics:** add new batch of tokens, COIN-2524 ([d9ff25c](https://github.com/BitGo/BitGoJS/commit/d9ff25c9c26be840f0310b7d6f40d12a0c66de16))
+- **statics:** enable staking for coredao ([dc7aefb](https://github.com/BitGo/BitGoJS/commit/dc7aefb3c4a47a65b9040ed9ebb87fe82986892f))
+- **statics:** rename of fet coin, COIN-2524 ([5d1d33d](https://github.com/BitGo/BitGoJS/commit/5d1d33d9ddf51448fde73a1235a8635d555354e0))
+
 # [50.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.13.0...@bitgo/statics@50.15.0) (2024-12-17)
 
 ### Features
