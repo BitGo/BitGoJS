@@ -1676,7 +1676,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:natix',
     'NATIX Network ',
     6,
-    UnderlyingAsset['natix'],
+    UnderlyingAsset['sol:natix'],
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
