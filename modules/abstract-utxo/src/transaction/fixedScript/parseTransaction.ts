@@ -74,6 +74,16 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
+  /** Get the amount on the transaction. This amount is being derived explicitly from the txHex
+   * and not by any API metadata, so this is safe to do */
+  function getExplanationAmountForAddress(address: string): number | string {
+    const recipient = explanation.outputs.find((output) => output.address === address);
+    if (!recipient) {
+      throw new Error(`Recipient not found for address: ${address}`);
+    }
+    return recipient.amount;
+  }
+
   let expectedOutputs;
   if (txParams.rbfTxIds) {
     assert(txParams.rbfTxIds.length === 1);
@@ -97,7 +107,15 @@ export async function parseTransaction<TNumber extends bigint | number>(
         }
         return [output];
       }
-      return [{ ...output, address: coin.canonicalAddress(output.address) }];
+      const address = coin.canonicalAddress(output.address);
+      return [
+        {
+          ...output,
+          address,
+          // If one of the recipients has the amount max, we need to set it to an actual amount
+          amount: output.amount === 'max' ? getExplanationAmountForAddress(address) : output.amount,
+        },
+      ];
     });
     if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
       // when an external change address is explicitly specified, count all outputs going towards that
