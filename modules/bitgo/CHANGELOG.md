@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.20.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.19.1...bitgo@39.20.0) (2024-12-24)
+
+### Features
+
+- **sdk-coin-bera:** add TSS Suport ([2afd7f0](https://github.com/BitGo/BitGoJS/commit/2afd7f0453b7c32eb14e6a30dbb2b6341a8a6122))
+- use descriptor outputDifference method ([663944a](https://github.com/BitGo/BitGoJS/commit/663944af14072b988d80cc69d85d257438f8846b))
+
 ## [39.19.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.19.0...bitgo@39.19.1) (2024-12-19)
 
 ### Bug Fixes
