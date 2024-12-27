@@ -1936,6 +1936,7 @@ export class Wallet implements IWallet {
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
       prv: this.getUserPrv(presign as GetUserPrvOptions),
+      wallet: this,
     });
   }
 

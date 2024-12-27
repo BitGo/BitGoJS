@@ -178,15 +178,20 @@ export class StakingWallet implements IStakingWallet {
     stakingPrebuildTransaction: StakingPrebuildTransactionResult
   ): Promise<StakingSignedTransaction> {
     const reqId = new RequestTracer();
-    const keychain = await this.wallet.baseCoin.keychains().getKeysForSigning({
+    const isBtcUndelegate =
+      this.wallet.baseCoin.getFamily() === 'btc' &&
+      stakingPrebuildTransaction.transaction.transactionType.toLowerCase() === 'undelegate_withdraw';
+    const wallet = isBtcUndelegate
+      ? await this.getDescriptorWallet(stakingPrebuildTransaction.transaction)
+      : await this.getWalletForBuildingAndSigning();
+
+    const keychain = await wallet.baseCoin.keychains().getKeysForSigning({
       wallet: this.wallet,
       reqId: reqId,
     });
     return {
       transaction: stakingPrebuildTransaction.transaction,
-      signed: await (
-        await this.getWalletForBuildingAndSigning()
-      ).signTransaction({
+      signed: await wallet.signTransaction({
         txPrebuild: stakingPrebuildTransaction.result,
         walletPassphrase: signOptions.walletPassphrase,
         keychain: keychain[0],
