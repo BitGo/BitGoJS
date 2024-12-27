@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as t from 'io-ts';
 import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
 import * as _ from 'lodash';
@@ -1935,6 +1936,7 @@ export class Wallet implements IWallet {
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
       prv: this.getUserPrv(presign as GetUserPrvOptions),
+      wallet: this,
     });
   }
 
@@ -3643,7 +3645,7 @@ export class Wallet implements IWallet {
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
-      TxSendBody,
+      t.intersection([TxSendBody, t.partial({ locktime: t.number })]),
       whitelistedParams
     ).result();
   }
