@@ -3019,6 +3019,7 @@ export class Wallet implements IWallet {
           const signedPrebuild = await this.prebuildAndSignTransaction(params);
           return await this.submitTransaction(signedPrebuild, params.reqId);
         case 'custodial':
+        case 'backing':
           return this.initiateTransaction(params.prebuildTx.buildParams, params.reqId);
       }
     }
