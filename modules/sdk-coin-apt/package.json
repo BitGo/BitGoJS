@@ -43,10 +43,12 @@
     "@aptos-labs/ts-sdk": "^1.32.0",
     "@bitgo/sdk-core": "^28.19.0",
     "@bitgo/statics": "^50.18.0",
-    "bignumber.js": "^9.1.2"
+    "bignumber.js": "^9.1.2",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.58.0",
-    "@bitgo/sdk-test": "^8.0.63"
+    "@bitgo/sdk-test": "^8.0.63",
+    "@bitgo/sdk-lib-mpc": "^10.1.0"
   }
 }
