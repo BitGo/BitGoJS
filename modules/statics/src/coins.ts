@@ -1912,6 +1912,22 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   ofc('07083ea6-74ba-4da7-8cf3-031126a130a4', 'ofcton', 'Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
+  ofc(
+    '055691ec-f750-4349-b505-92954ca08257',
+    'ofccoredao',
+    'coredaochain',
+    18,
+    UnderlyingAsset.COREDAO,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'f17727ec-5d0b-4c5d-bbbc-cd93da537f40',
+    'ofctcoredao',
+    'Testnet coredao chain',
+    18,
+    UnderlyingAsset.COREDAO,
+    CoinKind.CRYPTO
+  ),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
