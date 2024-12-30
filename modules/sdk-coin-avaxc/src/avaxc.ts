@@ -1212,11 +1212,12 @@ export class AvaxC extends AbstractEthLikeNewCoins {
 
   /**
    * Fetch the gas limit from the explorer
+   * @param intendedChain
    * @param from
    * @param to
    * @param data
    */
-  async getGasLimitFromExternalAPI(from: string, to: string, data: string): Promise<BN> {
+  async getGasLimitFromExternalAPI(intendedChain: string, from: string, to: string, data: string): Promise<BN> {
     try {
       const res = await this.recoveryBlockchainExplorerQuery({
         jsonrpc: '2.0',
@@ -1235,7 +1236,9 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       console.log(`Got gas limit: ${gasLimit}`);
       return gasLimit;
     } catch (e) {
-      throw new Error('Failed to get gas limit: ');
+      throw new Error(
+        `Failed to get gas limit. Please make sure to use the privateKey aka userKey of ${intendedChain} wallet ${to}`
+      );
     }
   }
 }
