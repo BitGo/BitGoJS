@@ -304,6 +304,11 @@ export enum CoinFeature {
    * This coin is onboarded on etheruem rollup chain
    */
   ETH_ROLLUP_CHAIN = 'eth-rollup-chain',
+
+  /**
+   * This coin supports EIP1559 proposal for transaction fee
+   */
+  EIP1559 = 'EIP1559',
 }
 
 /**
