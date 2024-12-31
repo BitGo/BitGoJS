@@ -1,0 +1,7 @@
+{
+  "name": "foo",
+  "value": "wsh(multi(2,xpub661MyMwAqRbcFXS2qwsTkaFc7PEpwDXWgY1Hx2MS7XywhW24sTjQzxiUgnGNW5v6DsW9Z8JcAqf8a22v21jDSA3DwLbbpt2ra3WbP83QNvP/0/*,xpub661MyMwAqRbcGfiaWcoeKLerFu3qRfy6zSYAwnmxSKW8JSauRajFsAsRHs2pV4q5rxkb4ynx4Bm8t54McTCp8V27s7XsdpD8T4s56etpjro/0/*))#qd26atvj",
+  "signatures": [
+    "20c5eac59397664cc8cdf07b92b85bc55f6d91051aac522a78f7d1ab72043543cd17c3436e11d96d3326274754812c3dd0e693c6330a6cdab1e3e53d618a066091"
+  ]
+}

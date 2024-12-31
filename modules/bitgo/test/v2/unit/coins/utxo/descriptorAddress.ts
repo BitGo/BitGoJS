@@ -27,6 +27,7 @@ describe('descriptor wallets', function () {
     return {
       name,
       value: withChecksum(`sh(multi(2,${a}/*,${b}/*))`),
+      signatures: [],
     };
   }
 
