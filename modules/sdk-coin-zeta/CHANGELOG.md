@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@3.0.24...@bitgo/sdk-coin-zeta@3.0.25) (2024-12-24)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-zeta
+
+## [3.0.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@3.0.23...@bitgo/sdk-coin-zeta@3.0.24) (2024-12-19)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-zeta
+
 ## [3.0.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@3.0.21...@bitgo/sdk-coin-zeta@3.0.23) (2024-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-zeta

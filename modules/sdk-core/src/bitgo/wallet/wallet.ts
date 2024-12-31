@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as t from 'io-ts';
 import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
 import * as _ from 'lodash';
@@ -1935,6 +1936,7 @@ export class Wallet implements IWallet {
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
       prv: this.getUserPrv(presign as GetUserPrvOptions),
+      wallet: this,
     });
   }
 
@@ -2483,7 +2485,7 @@ export class Wallet implements IWallet {
     this.bitgo.setRequestTracer(reqId);
     const coin = this.baseCoin;
     if (_.isObject(params.recipients)) {
-      params.recipients.map(function (recipient) {
+      params.recipients.forEach(function (recipient) {
         coin.checkRecipient(recipient);
       });
     }
@@ -3019,6 +3021,7 @@ export class Wallet implements IWallet {
           const signedPrebuild = await this.prebuildAndSignTransaction(params);
           return await this.submitTransaction(signedPrebuild, params.reqId);
         case 'custodial':
+        case 'backing':
           return this.initiateTransaction(params.prebuildTx.buildParams, params.reqId);
       }
     }
@@ -3643,7 +3646,7 @@ export class Wallet implements IWallet {
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
-      TxSendBody,
+      t.intersection([TxSendBody, t.partial({ locktime: t.number })]),
       whitelistedParams
     ).result();
   }

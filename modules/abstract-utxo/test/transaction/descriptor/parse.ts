@@ -1,7 +1,5 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
-
 import { mockPsbtDefaultWithDescriptorTemplate } from '../../core/descriptor/psbt/mock.utils';
 import { ParsedOutputsBigInt, toBaseParsedTransactionOutputsFromPsbt } from '../../../src/transaction/descriptor/parse';
 import { getDefaultXPubs, getDescriptorMap } from '../../core/descriptor/descriptor.utils';
@@ -17,7 +15,12 @@ import { BaseOutput } from '../../../src';
 
 import { assertEqualFixture } from './fixtures.utils';
 
-function toBaseOutput<TNumber>(output: utxolib.PsbtTxOutput, amountType: 'bigint' | 'string'): BaseOutput<TNumber> {
+type OutputWithValue<T = number | bigint | string> = {
+  address?: string;
+  value: T;
+};
+
+function toBaseOutput<TNumber>(output: OutputWithValue, amountType: 'bigint' | 'string'): BaseOutput<TNumber> {
   assert(output.address);
   return {
     address: output.address,
@@ -25,18 +28,25 @@ function toBaseOutput<TNumber>(output: utxolib.PsbtTxOutput, amountType: 'bigint
   };
 }
 
-function toBaseOutputBigInt(output: utxolib.PsbtTxOutput): BaseOutput<bigint> {
+function toBaseOutputBigInt(output: OutputWithValue): BaseOutput<bigint> {
   return toBaseOutput(output, 'bigint');
 }
 
-function toBaseOutputString(output: utxolib.PsbtTxOutput): BaseOutput<string> {
+function toBaseOutputString(output: OutputWithValue): BaseOutput<string> {
   return toBaseOutput(output, 'string');
+}
+
+function toMaxOutput(output: OutputWithValue): OutputWithValue<'max'> {
+  return {
+    ...output,
+    value: 'max',
+  };
 }
 
 describe('parse', function () {
   const psbt = mockPsbtDefaultWithDescriptorTemplate('Wsh2Of3');
 
-  function getBaseParsedTransaction(recipients: utxolib.PsbtTxOutput[]): ParsedOutputsBigInt {
+  function getBaseParsedTransaction(recipients: OutputWithValue[]): ParsedOutputsBigInt {
     return toBaseParsedTransactionOutputsFromPsbt(
       psbt,
       getDescriptorMap('Wsh2Of3', getDefaultXPubs('a')),
@@ -49,6 +59,11 @@ describe('parse', function () {
     it('should return the correct BaseParsedTransactionOutputs', async function () {
       await assertEqualFixture('parseWithoutRecipients.json', toPlainObject(getBaseParsedTransaction([])));
       await assertEqualFixture('parseWithRecipient.json', toPlainObject(getBaseParsedTransaction([psbt.txOutputs[0]])));
+      await assertEqualFixture(
+        'parseWithRecipient.json',
+        // max recipient: ignore actual value
+        toPlainObject(getBaseParsedTransaction([toMaxOutput(psbt.txOutputs[0])]))
+      );
     });
 
     function assertEqualValidationError(actual: unknown, expected: AggregateValidationError) {
@@ -85,6 +100,14 @@ describe('parse', function () {
         () => assertExpectedOutputDifference(getBaseParsedTransaction([psbt.txOutputs[1]])),
         new AggregateValidationError([
           new ErrorMissingOutputs([{ ...toBaseOutputBigInt(psbt.txOutputs[1]), external: true }]),
+          new ErrorImplicitExternalOutputs([{ ...toBaseOutputBigInt(psbt.txOutputs[0]), external: true }]),
+        ])
+      );
+
+      assertValidationError(
+        () => assertExpectedOutputDifference(getBaseParsedTransaction([toMaxOutput(psbt.txOutputs[1])])),
+        new AggregateValidationError([
+          new ErrorMissingOutputs([{ ...toBaseOutputBigInt(toMaxOutput(psbt.txOutputs[1])), external: true }]),
           new ErrorImplicitExternalOutputs([{ ...toBaseOutputBigInt(psbt.txOutputs[0]), external: true }]),
         ])
       );

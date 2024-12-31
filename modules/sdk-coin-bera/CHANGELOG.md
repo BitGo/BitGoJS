@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.2.16...@bitgo/sdk-coin-bera@2.3.0) (2024-12-24)
+
+### Features
+
+- **sdk-coin-bera:** add TSS Suport ([2afd7f0](https://github.com/BitGo/BitGoJS/commit/2afd7f0453b7c32eb14e6a30dbb2b6341a8a6122))
+
+## [2.2.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.2.15...@bitgo/sdk-coin-bera@2.2.16) (2024-12-19)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bera
+
 ## [2.2.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.2.13...@bitgo/sdk-coin-bera@2.2.15) (2024-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bera

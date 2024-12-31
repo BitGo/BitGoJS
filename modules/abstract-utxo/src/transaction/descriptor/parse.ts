@@ -14,18 +14,22 @@ import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 import * as coreDescriptors from '../../core/descriptor';
 import { ParsedOutput } from '../../core/descriptor/psbt/parse';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
+import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
 
-import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from './outputDifference';
+export type RecipientOutput = Omit<ParsedOutput, 'value'> & {
+  value: bigint | 'max';
+};
 
-function toParsedOutput(recipient: ITransactionRecipient, network: utxolib.Network): ParsedOutput {
+function toRecipientOutput(recipient: ITransactionRecipient, network: utxolib.Network): RecipientOutput {
   return {
     address: recipient.address,
-    value: BigInt(recipient.amount),
+    value: recipient.amount === 'max' ? 'max' : BigInt(recipient.amount),
     script: fromExtendedAddressFormatToScript(recipient.address, network),
   };
 }
 
-type ParsedOutputs = OutputDifferenceWithExpected<ParsedOutput> & {
+// TODO(BTC-1697): allow outputs with `value: 'max'` here
+type ParsedOutputs = OutputDifferenceWithExpected<ParsedOutput, RecipientOutput> & {
   outputs: ParsedOutput[];
   changeOutputs: ParsedOutput[];
 };
@@ -33,7 +37,7 @@ type ParsedOutputs = OutputDifferenceWithExpected<ParsedOutput> & {
 function parseOutputsWithPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
   descriptorMap: coreDescriptors.DescriptorMap,
-  recipientOutputs: ParsedOutput[]
+  recipientOutputs: RecipientOutput[]
 ): ParsedOutputs {
   const parsed = coreDescriptors.parse(psbt, descriptorMap, psbt.network);
   const externalOutputs = parsed.outputs.filter((o) => o.scriptId === undefined);
@@ -50,17 +54,22 @@ function sumValues(arr: { value: bigint }[]): bigint {
   return arr.reduce((sum, e) => sum + e.value, BigInt(0));
 }
 
-function toBaseOutputs(outputs: ParsedOutput[], network: utxolib.Network): BaseOutput<bigint>[] {
+function toBaseOutputs(outputs: ParsedOutput[], network: utxolib.Network): BaseOutput<bigint>[];
+function toBaseOutputs(outputs: RecipientOutput[], network: utxolib.Network): BaseOutput<bigint | 'max'>[];
+function toBaseOutputs(
+  outputs: (ParsedOutput | RecipientOutput)[],
+  network: utxolib.Network
+): BaseOutput<bigint | 'max'>[] {
   return outputs.map(
-    (o): BaseOutput<bigint> => ({
+    (o): BaseOutput<bigint | 'max'> => ({
       address: toExtendedAddressFormat(o.script, network),
-      amount: BigInt(o.value),
+      amount: o.value === 'max' ? 'max' : BigInt(o.value),
       external: o.scriptId === undefined,
     })
   );
 }
 
-export type ParsedOutputsBigInt = BaseParsedTransactionOutputs<bigint, BaseOutput<bigint>>;
+export type ParsedOutputsBigInt = BaseParsedTransactionOutputs<bigint, BaseOutput<bigint | 'max'>>;
 
 function toBaseParsedTransactionOutputs(
   { outputs, changeOutputs, explicitExternalOutputs, implicitExternalOutputs, missingOutputs }: ParsedOutputs,
@@ -87,7 +96,7 @@ export function toBaseParsedTransactionOutputsFromPsbt(
     parseOutputsWithPsbt(
       psbt,
       descriptorMap,
-      recipients.map((r) => toParsedOutput(r, psbt.network))
+      recipients.map((r) => toRecipientOutput(r, psbt.network))
     ),
     network
   );
@@ -95,7 +104,7 @@ export function toBaseParsedTransactionOutputsFromPsbt(
 
 export type ParsedDescriptorTransaction<TAmount extends number | bigint> = BaseParsedTransaction<
   TAmount,
-  BaseOutput<TAmount>
+  BaseOutput<TAmount | 'max'>
 >;
 
 export function parse(

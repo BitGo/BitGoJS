@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.4.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.5...@bitgo/abstract-eth@22.4.6) (2024-12-24)
+
+### Bug Fixes
+
+- **abstract-eth:** fix verifyCoin method to validate native coin ([c2bf82c](https://github.com/BitGo/BitGoJS/commit/c2bf82cd0268f63081d2bc4ef46854dfe0db1819))
+
+## [22.4.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.4...@bitgo/abstract-eth@22.4.5) (2024-12-19)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
 ## [22.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.2...@bitgo/abstract-eth@22.4.4) (2024-12-17)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

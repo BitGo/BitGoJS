@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.55](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.54...@bitgo/sdk-coin-avaxp@5.0.55) (2024-12-24)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
+## [5.0.54](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.53...@bitgo/sdk-coin-avaxp@5.0.54) (2024-12-19)
+
+### Bug Fixes
+
+- **sdk-coin-avaxp:** include fees in utxo calculation ([22c9bb9](https://github.com/BitGo/BitGoJS/commit/22c9bb9dde1665225149c36e7c34df22e09811f8))
+- **sdk-coin-avaxp:** set flat fee for staking tx ([37da7f1](https://github.com/BitGo/BitGoJS/commit/37da7f1545b99d7123c33a68007e4d486ef1f283))
+- **sdk-coin-avaxp:** update tests ([ec9fc58](https://github.com/BitGo/BitGoJS/commit/ec9fc5896cea9f63b87fad494c2d876b30e6d2b6))
+
 ## [5.0.53](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.51...@bitgo/sdk-coin-avaxp@5.0.53) (2024-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

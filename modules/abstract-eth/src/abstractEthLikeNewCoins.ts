@@ -1373,7 +1373,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
       : params.gasPrice
       ? new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice))
-      : await this.getGasPriceFromExternalAPI();
+      : await this.getGasPriceFromExternalAPI(this.staticsCoin?.name as string);
 
     const bitgoFeeAddressNonce = await this.getAddressNonce(bitgoFeeAddress);
 
@@ -1480,6 +1480,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (!params.gasLimit && userKey && !userKey.startsWith('xpub')) {
       const sendData = txBuilder.getSendData();
       gasLimit = await this.getGasLimitFromExternalAPI(
+        params.intendedChain as string,
         params.bitgoFeeAddress as string,
         params.walletContractAddress,
         sendData
@@ -1650,6 +1651,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (!params.gasLimit && userKey && !userKey.startsWith('xpub')) {
       const sendData = txBuilder.getSendData();
       gasLimit = await this.getGasLimitFromExternalAPI(
+        params.intendedChain as string,
         params.bitgoFeeAddress as string,
         params.walletContractAddress,
         sendData
@@ -2230,7 +2232,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @returns {boolean}
    */
   verifyCoin(txPrebuild: TransactionPrebuild): boolean {
-    return txPrebuild.coin === this.getChain();
+    const nativeCoin = this.getChain().split(':')[0];
+    return txPrebuild.coin === nativeCoin;
   }
 
   /**
@@ -2446,7 +2449,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   /**
    * Fetch the gas price from the explorer
    */
-  async getGasPriceFromExternalAPI(): Promise<BN> {
+  async getGasPriceFromExternalAPI(wrongChainCoin: string): Promise<BN> {
     try {
       const res = await this.recoveryBlockchainExplorerQuery({
         module: 'proxy',
@@ -2456,17 +2459,18 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       console.log(` Got gas price: ${gasPrice}`);
       return gasPrice;
     } catch (e) {
-      throw new Error('Failed to get gas price');
+      throw new Error(`Failed to get gas price. Please make sure to use the api key of ${wrongChainCoin}`);
     }
   }
 
   /**
    * Fetch the gas limit from the explorer
+   * @param intendedChain
    * @param from
    * @param to
    * @param data
    */
-  async getGasLimitFromExternalAPI(from: string, to: string, data: string): Promise<BN> {
+  async getGasLimitFromExternalAPI(intendedChain: string, from: string, to: string, data: string): Promise<BN> {
     try {
       const res = await this.recoveryBlockchainExplorerQuery({
         module: 'proxy',
@@ -2479,7 +2483,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       console.log(`Got gas limit: ${gasLimit}`);
       return gasLimit;
     } catch (e) {
-      throw new Error('Failed to get gas limit: ');
+      throw new Error(
+        `Failed to get gas limit. Please make sure to use the privateKey aka userKey of ${intendedChain} wallet ${to}`
+      );
     }
   }
 

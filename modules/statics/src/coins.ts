@@ -391,7 +391,9 @@ const ZKETH_FEATURES = [
 ];
 const BERA_FEATURES = [
   ...ETH_FEATURES,
-  CoinFeature.MULTISIG_COLD,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
@@ -416,6 +418,7 @@ const COREDAO_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
   CoinFeature.EIP1559,
+  CoinFeature.STAKING,
 ];
 const APT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -1390,7 +1393,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
-    [...COREDAO_FEATURES, CoinFeature.STAKING]
+    COREDAO_FEATURES
   ),
   account(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',
@@ -1684,7 +1687,7 @@ export const coins = CoinMap.fromCoins([
     'ofcsol:natix',
     'NATIX Network ',
     6,
-    UnderlyingAsset['natix'],
+    UnderlyingAsset['sol:natix'],
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1920,6 +1923,22 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   ofc('07083ea6-74ba-4da7-8cf3-031126a130a4', 'ofcton', 'Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
+  ofc(
+    '055691ec-f750-4349-b505-92954ca08257',
+    'ofccoredao',
+    'coredaochain',
+    18,
+    UnderlyingAsset.COREDAO,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'f17727ec-5d0b-4c5d-bbbc-cd93da537f40',
+    'ofctcoredao',
+    'Testnet coredao chain',
+    18,
+    UnderlyingAsset.COREDAO,
+    CoinKind.CRYPTO
+  ),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
@@ -2064,6 +2083,38 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
+  erc20(
+    'aba8da14-ee9a-44b0-9680-f53069495b08',
+    'eth:spx',
+    'SPX6900',
+    8,
+    '0xe0f63a424a4439cbe457d80e4f4b51ad25b2c56c',
+    UnderlyingAsset['eth:spx']
+  ),
+  erc20(
+    'a6c285f4-e39b-4e67-b266-749462e95487',
+    'eth:exrd',
+    'e-RADIX',
+    18,
+    '0x6468e79a80c0eab0f9a2b574c8d5bc374af59414',
+    UnderlyingAsset['eth:exrd']
+  ),
+  erc20(
+    '2cc8846d-8b8d-4480-b49f-026bc56fbf42',
+    'eth:turbo',
+    'Turbo',
+    18,
+    '0xa35923162c49cf95e6bf26623385eb431ad920d3',
+    UnderlyingAsset['eth:turbo']
+  ),
+  erc20(
+    'b0ac7199-4e32-4309-a0cd-99d7465a007c',
+    'eth:icnt',
+    'Impossible Cloud Network Token',
+    18,
+    '0xe5e0b73380181273abcfd88695f52c4d0c825661',
+    UnderlyingAsset['eth:icnt']
+  ),
   erc20(
     '149c6c26-1c25-44b5-90a8-1b6b606f6604',
     'eth:audu',
@@ -4205,7 +4256,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     '314c848a-c06e-47c8-8dcf-70946e6c4a6c',
     'fet1',
-    'Fet1',
+    'Artificial Superintelligence Alliance',
     18,
     '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85',
     UnderlyingAsset.FET1
@@ -9428,7 +9479,7 @@ export const coins = CoinMap.fromCoins([
   erc20(
     'f0d670d3-a735-4004-9b23-fac5a97c0b0c',
     'ald',
-    'ALD',
+    'AladdinDAO',
     18,
     '0xb26c4b3ca601136daf98593feaeff9e0ca702a8d',
     UnderlyingAsset.ALD
@@ -16143,6 +16194,42 @@ export const coins = CoinMap.fromCoins([
     8,
     '0x3ad5f9119ca063189095784b9a7d2bf80fc24de6',
     UnderlyingAsset['tavaxc:bitgo']
+  ),
+  solToken(
+    'cf5040dc-ff15-4be5-97a0-78c53d58e111',
+    'sol:spx',
+    'SPX6900',
+    8,
+    'J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr', // https://solscan.io/token/J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr
+    UnderlyingAsset['sol:spx'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '53e6b4e7-6ff6-40d5-8737-af2b31fa0bc0',
+    'sol:turbo',
+    'Serum',
+    8,
+    '2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm', // https://solscan.io/token/2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm
+    UnderlyingAsset['sol:turbo'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'e743ddc6-9d5e-41b6-9367-9d6e5f7dd7b4',
+    'sol:corn',
+    'Solanacorn',
+    7,
+    '6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok', // https://solscan.io/token/6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok
+    UnderlyingAsset['sol:corn'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '4eee379c-7f46-4f75-bb92-baf6583f0787',
+    'sol:yes',
+    'Yes Token',
+    9,
+    '32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9', // ttps://solscan.io/token/32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9
+    UnderlyingAsset['sol:yes'],
+    SOL_TOKEN_FEATURES
   ),
   solToken(
     '45d95e60-81df-4c5d-9ceb-e6e4f5b75eeb',

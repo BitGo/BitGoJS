@@ -13,13 +13,13 @@ export class ValidationError extends Error {
 }
 
 export class ErrorMissingOutputs extends ValidationError {
-  constructor(public missingOutputs: BaseOutput<bigint>[]) {
+  constructor(public missingOutputs: BaseOutput<bigint | 'max'>[]) {
     super(`missing outputs (count=${missingOutputs.length})`);
   }
 }
 
 export class ErrorImplicitExternalOutputs extends ValidationError {
-  constructor(public implicitExternalOutputs: BaseOutput<bigint>[]) {
+  constructor(public implicitExternalOutputs: BaseOutput<bigint | 'max'>[]) {
     super(`unexpected implicit external outputs (count=${implicitExternalOutputs.length})`);
   }
 }
@@ -31,7 +31,7 @@ export class AggregateValidationError extends ValidationError {
 }
 
 export function assertExpectedOutputDifference(
-  parsedOutputs: BaseParsedTransactionOutputs<bigint, BaseOutput<bigint>>
+  parsedOutputs: BaseParsedTransactionOutputs<bigint, BaseOutput<bigint | 'max'>>
 ): void {
   const errors: ValidationError[] = [];
   if (parsedOutputs.missingOutputs.length > 0) {

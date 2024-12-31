@@ -13,27 +13,14 @@ import {
   ParseTransactionOptions,
 } from '../../abstractUtxoCoin';
 import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
+import { ComparableOutput, outputDifference } from '../outputDifference';
+import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
 
 import { CustomChangeOptions, parseOutput } from './parseOutput';
 
-/**
- * @param first
- * @param second
- * @returns {Array} All outputs that are in the first array but not in the second
- */
-export function outputDifference(first: Output[], second: Output[]): Output[] {
-  const keyFunc = ({ address, amount }: Output): string => `${address}:${amount}`;
-  const groupedOutputs = _.groupBy(first, keyFunc);
-
-  second.forEach((output) => {
-    const group = groupedOutputs[keyFunc(output)];
-    if (group) {
-      group.pop();
-    }
-  });
-
-  return _.flatten(_.values(groupedOutputs));
-}
+export type ComparableOutputWithExternal<TValue> = ComparableOutput<TValue> & {
+  external: boolean | undefined;
+};
 
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
@@ -116,8 +103,6 @@ export async function parseTransaction<TNumber extends bigint | number>(
     }
   }
 
-  const missingOutputs = outputDifference(expectedOutputs, allOutputs);
-
   // get the keychains from the custom change wallet if needed
   let customChange: CustomChangeOptions | undefined;
   const { customChangeWalletId = undefined } = wallet.coinSpecific() || {};
@@ -175,18 +160,30 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   const changeOutputs = _.filter(allOutputDetails, { external: false });
 
-  // these are all the outputs that were not originally explicitly specified in recipients
-  // ideally change outputs or a paygo output that might have been added
-  const implicitOutputs = outputDifference(allOutputDetails, expectedOutputs);
+  function toComparableOutputsWithExternal(outputs: Output[]): ComparableOutputWithExternal<bigint | 'max'>[] {
+    return outputs.map((output) => ({
+      script: fromExtendedAddressFormatToScript(output.address, coin.network),
+      value: output.amount === 'max' ? 'max' : (BigInt(output.amount) as bigint | 'max'),
+      external: output.external,
+    }));
+  }
 
-  const explicitOutputs = outputDifference(allOutputDetails, implicitOutputs);
+  const missingOutputs = outputDifference(
+    toComparableOutputsWithExternal(expectedOutputs),
+    toComparableOutputsWithExternal(allOutputs)
+  );
+
+  const implicitOutputs = outputDifference(
+    toComparableOutputsWithExternal(allOutputDetails),
+    toComparableOutputsWithExternal(expectedOutputs)
+  );
+  const explicitOutputs = outputDifference(toComparableOutputsWithExternal(allOutputDetails), implicitOutputs);
 
   // these are all the non-wallet outputs that had been originally explicitly specified in recipients
-  const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
-
+  const explicitExternalOutputs = explicitOutputs.filter((output) => output.external);
   // this is the sum of all the originally explicitly specified non-wallet output values
   const explicitExternalSpendAmount = utxolib.bitgo.toTNumber<TNumber>(
-    explicitExternalOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0)) as bigint,
+    explicitExternalOutputs.reduce((sum: bigint, o) => sum + BigInt(o.value), BigInt(0)) as bigint,
     coin.amountType
   );
 
@@ -201,19 +198,27 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   // make sure that all the extra addresses are change addresses
   // get all the additional external outputs the server added and calculate their values
-  const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
+  const implicitExternalOutputs = implicitOutputs.filter((output) => output.external);
   const implicitExternalSpendAmount = utxolib.bitgo.toTNumber<TNumber>(
-    implicitExternalOutputs.reduce((sum: bigint, o: Output) => sum + BigInt(o.amount), BigInt(0)) as bigint,
+    implicitExternalOutputs.reduce((sum: bigint, o) => sum + BigInt(o.value), BigInt(0)) as bigint,
     coin.amountType
   );
+
+  function toOutputs(outputs: ComparableOutputWithExternal<bigint | 'max'>[]): Output[] {
+    return outputs.map((output) => ({
+      address: toExtendedAddressFormat(output.script, coin.network),
+      amount: output.value.toString(),
+      external: output.external,
+    }));
+  }
 
   return {
     keychains,
     keySignatures: getKeySignatures(wallet) ?? {},
     outputs: allOutputDetails,
-    missingOutputs,
-    explicitExternalOutputs,
-    implicitExternalOutputs,
+    missingOutputs: toOutputs(missingOutputs),
+    explicitExternalOutputs: toOutputs(explicitExternalOutputs),
+    implicitExternalOutputs: toOutputs(implicitExternalOutputs),
     changeOutputs,
     explicitExternalSpendAmount,
     implicitExternalSpendAmount,

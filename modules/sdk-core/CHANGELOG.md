@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [28.17.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.17.1...@bitgo/sdk-core@28.17.2) (2024-12-24)
+
+**Note:** Version bump only for package @bitgo/sdk-core
+
+## [28.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.17.0...@bitgo/sdk-core@28.17.1) (2024-12-19)
+
+### Bug Fixes
+
+- **sdk-core:** choose correct default apiVersion for tss ([c3bc7f0](https://github.com/BitGo/BitGoJS/commit/c3bc7f0839477321c9bd415d7b3036a32ef6d3aa))
+- **sdk-core:** ignore case for btc unstaking transaction type ([aed4488](https://github.com/BitGo/BitGoJS/commit/aed448848ef90967b9eaf44e3e4d25ed2901822c))
+
 # [28.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.15.2...@bitgo/sdk-core@28.17.0) (2024-12-17)
 
 ### Bug Fixes
