@@ -16203,6 +16203,24 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'e743ddc6-9d5e-41b6-9367-9d6e5f7dd7b4',
+    'sol:corn',
+    'Solanacorn',
+    7,
+    '6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok', // https://solscan.io/token/6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok
+    UnderlyingAsset['sol:corn'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '4eee379c-7f46-4f75-bb92-baf6583f0787',
+    'sol:yes',
+    'Yes Token',
+    9,
+    '32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9', // ttps://solscan.io/token/32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9
+    UnderlyingAsset['sol:yes'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '45d95e60-81df-4c5d-9ceb-e6e4f5b75eeb',
     'sol:bome',
     'Book Of Meme',

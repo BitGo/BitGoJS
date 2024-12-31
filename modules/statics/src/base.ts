@@ -2354,6 +2354,8 @@ export enum UnderlyingAsset {
   'sol:drift' = 'sol:drift',
   'sol:spx' = 'sol:spx',
   'sol:turbo' = 'sol:turbo',
+  'sol:corn' = 'sol:corn',
+  'sol:yes' = 'sol:yes',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
