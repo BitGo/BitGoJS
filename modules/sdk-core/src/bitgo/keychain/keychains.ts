@@ -498,25 +498,28 @@ export class Keychains implements IKeychains {
   }
 
   /**
-   * Create keychain for ofc wallet using the password
-   * @param userPassword
-   * @returns
+   * Create user keychain, encrypt the private key with the wallet passphrase and store it in BitGo.
+   * @param walletPassphrase
+   * @returns Keychain including the decrypted private key
    */
-  async createUserKeychain(userPassword: string): Promise<Keychain> {
+  async createUserKeychain(walletPassphrase: string): Promise<Keychain> {
     const keychains = this.baseCoin.keychains();
     const newKeychain = keychains.create();
     const originalPasscodeEncryptionCode = generateRandomPassword(5);
 
     const encryptedPrv = this.bitgo.encrypt({
-      password: userPassword,
+      password: walletPassphrase,
       input: newKeychain.prv,
     });
 
-    return await keychains.add({
-      encryptedPrv,
-      originalPasscodeEncryptionCode,
-      pub: newKeychain.pub,
-      source: 'user',
-    });
+    return {
+      ...(await keychains.add({
+        encryptedPrv,
+        originalPasscodeEncryptionCode,
+        pub: newKeychain.pub,
+        source: 'user',
+      })),
+      prv: newKeychain.prv,
+    };
   }
 }
