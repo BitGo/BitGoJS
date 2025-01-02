@@ -527,10 +527,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       rShare,
       encryptedSignerShare.share,
       apiVersion,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
       reqId
     );
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId, reqId);
@@ -596,12 +592,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const bitgoGpgKey = await this.pickBitgoPubGpgKeyForSigning(false, params.reqId, txRequestResolved.enterpriseId);
     const userToBitgoEncryptedSignerShare = await encryptText(signerShare, bitgoGpgKey);
 
-    const userGpgKey = await generateGPGKeyPair('secp256k1');
-    const privateShareProof = await createShareProof(userGpgKey.privateKey, signingKey.yShares[bitgoIndex].u, 'eddsa');
-    const vssProof = signingKey.yShares[bitgoIndex].v;
-    const userPublicGpgKey = userGpgKey.publicKey;
-    const publicShare = signingKey.yShares[bitgoIndex].y + signingKey.yShares[bitgoIndex].chaincode;
-
     const userToBitgoCommitment = userSignShare.rShares[bitgoIndex].commitment;
     assert(userToBitgoCommitment, 'Missing userToBitgoCommitment commitment');
 
@@ -625,10 +615,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       userSignShare,
       userToBitgoEncryptedSignerShare,
       apiVersion,
-      vssProof,
-      privateShareProof,
-      userPublicGpgKey,
-      publicShare,
       params.reqId
     );
 

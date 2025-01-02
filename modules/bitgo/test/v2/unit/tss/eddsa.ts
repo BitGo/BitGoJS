@@ -561,10 +561,6 @@ describe('test tss helper functions', function () {
           validUserSignShare,
           'signerShare',
           undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
           reqId
         ).should.be.fulfilled();
         nock.isDone().should.equal(true);
