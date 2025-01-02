@@ -118,7 +118,8 @@
     "update-dockerfile": "ts-node scripts/update-dockerfile.ts",
     "precommit": "lint-staged",
     "lint-fix": "lerna run lint --parallel -- --fix",
-    "prepare-commit-msg": "node ./scripts/prepare-commit-msg.js"
+    "prepare-commit-msg": "node ./scripts/prepare-commit-msg.js",
+    "random": "12345"
   },
   "dependencies": {
     "terser": "^5.14.2"
