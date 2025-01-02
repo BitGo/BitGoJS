@@ -23,6 +23,10 @@ describe('XRP:', function () {
   let basecoin;
   let token;
 
+  afterEach(function () {
+    sinon.restore();
+  });
+
   before(function () {
     XrpToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
       bitgo.safeRegister(name, coinConstructor);
@@ -82,6 +86,18 @@ describe('XRP:', function () {
       makeArgs('http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?a=b&dt=4294967295', 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8'),
       makeArgs('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', 'rDgocL7QpZh8ZhrPsax4zVqbGGxeAsiBoh'),
     ];
+
+    sinon.stub(basecoin.bitgo, 'post').returns({
+      send: sinon.stub().resolves({
+        body: {
+          result: {
+            account_data: {
+              Flags: 0, // Mock Flags value
+            },
+          },
+        },
+      }),
+    });
 
     for (const nonThrowingArg of nonThrowingArgs) {
       await basecoin.verifyAddress(nonThrowingArg);
