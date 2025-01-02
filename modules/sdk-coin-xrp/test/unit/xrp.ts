@@ -474,4 +474,111 @@ describe('XRP:', function () {
       await token.verifyTransaction({ txParams, txPrebuild }).should.be.rejectedWith('txrp:usd is not supported');
     });
   });
+
+  describe('Unit Tests for isWalletAddress function', function () {
+    it('should return true for valid wallet address with matching root address', async function () {
+      sinon.stub(basecoin.bitgo, 'post').returns({
+        send: sinon.stub().resolves({
+          body: {
+            result: {
+              account_data: {
+                Flags: 0, // Include the Flags field
+              },
+            },
+          },
+        }),
+      });
+
+      const validAddress = 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1893500718';
+      const rootAddress = 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8';
+
+      const result = await basecoin.isWalletAddress({ address: validAddress, rootAddress });
+      result.should.be.true();
+    });
+
+    it('should throw InvalidAddressError if the address is invalid', async function () {
+      const invalidAddress = 'invalidAddress';
+      const rootAddress = 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8';
+
+      sinon.stub(basecoin, 'isValidAddress').returns(false);
+
+      await assert.rejects(async () => basecoin.isWalletAddress({ address: invalidAddress, rootAddress }), {
+        name: 'InvalidAddressError',
+        message: `address verification failure: address "${invalidAddress}" is not valid`,
+      });
+    });
+
+    it('should throw InvalidAddressError if destinationTag is required but not provided', async function () {
+      const addressWithoutTag = 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8';
+      const rootAddress = 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8';
+
+      sinon.stub(basecoin, 'isValidAddress').returns(true);
+      sinon.stub(basecoin.bitgo, 'post').returns({
+        send: sinon.stub().resolves({
+          body: {
+            result: {
+              account_data: {
+                Flags: 0x00020000, // lsfRequireDestTag
+              },
+            },
+          },
+        }),
+      });
+
+      await assert.rejects(async () => basecoin.isWalletAddress({ address: addressWithoutTag, rootAddress }), {
+        name: 'InvalidAddressError',
+        message: 'Invalid Address: Destination Tag is required for address "r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8".',
+      });
+    });
+
+    it('should throw UnexpectedAddressError if the root address does not match', async function () {
+      sinon.stub(basecoin.bitgo, 'post').returns({
+        send: sinon.stub().resolves({
+          body: {
+            result: {
+              account_data: {
+                Flags: 0, // Include the Flags field
+              },
+            },
+          },
+        }),
+      });
+
+      const validAddress = 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1893500718';
+      const mismatchedRootAddress = 'rBfhJ6HopLW69xK83nyShdNxC3uggjs46K';
+
+      await assert.rejects(
+        async () => basecoin.isWalletAddress({ address: validAddress, rootAddress: mismatchedRootAddress }),
+        {
+          name: 'UnexpectedAddressError',
+          message: `address validation failure: ${validAddress.split('?')[0]} vs. ${mismatchedRootAddress}`,
+        }
+      );
+    });
+
+    it('should handle missing Flags field gracefully', async function () {
+      const validAddress = 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1893500718';
+      const rootAddress = 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8';
+
+      sinon.stub(basecoin, 'isValidAddress').returns(true);
+      sinon.stub(basecoin.bitgo, 'post').returns({
+        send: sinon.stub().resolves({
+          body: {
+            result: {
+              account_data: {}, // Flags field is missing
+            },
+          },
+        }),
+      });
+
+      await assert.rejects(async () => basecoin.isWalletAddress({ address: validAddress, rootAddress }), {
+        name: 'Error',
+        message: 'Invalid account information: Flags field is missing.',
+      });
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+  });
 });
