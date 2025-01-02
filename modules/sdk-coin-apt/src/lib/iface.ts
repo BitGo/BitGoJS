@@ -1,16 +1,6 @@
-import {
-  TransactionExplanation as BaseTransactionExplanation,
-  TransactionType as BitGoTransactionType,
-} from '@bitgo/sdk-core';
+import { ITransactionExplanation, TransactionFee } from '@bitgo/sdk-core';
 
-export enum AptTransactionType {
-  Transfer = 'Transfer',
-  TokenTransfer = 'TokenTransfer',
-}
-
-export interface TransactionExplanation extends BaseTransactionExplanation {
-  type: BitGoTransactionType;
-}
+export type TransactionExplanation = ITransactionExplanation<TransactionFee>;
 
 /**
  * The transaction data returned from the toJson() function of a transaction
@@ -18,10 +8,10 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
 export interface TxData {
   id: string;
   sender: string;
-  sequenceNumber: BigInt;
-  maxGasAmount: BigInt;
-  gasUnitPrice: BigInt;
-  expirationTime: BigInt;
+  sequenceNumber: bigint;
+  maxGasAmount: bigint;
+  gasUnitPrice: bigint;
+  expirationTime: bigint;
   payload: AptPayload;
   chainId: number;
 }
