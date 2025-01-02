@@ -97,6 +97,7 @@ const AVAXC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.EIP1559,
 ];
 const CELO_FEATURES = [
   ...ETH_FEATURES,
@@ -104,6 +105,7 @@ const CELO_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.EIP1559,
 ];
 const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const RBTC_FEATURES = [
@@ -162,7 +164,7 @@ const ALGO_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.BULK_TRANSACTION,
 ];
-const HTETH_TOKEN_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
+const HTETH_TOKEN_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.EIP1559];
 const ADA_FEATURES = [...Ada.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
 const ADA_FEATURES_WITH_FRANKFURT = [...ADA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const DOT_FEATURES = [
@@ -368,6 +370,7 @@ const ARBETH_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.EIP1559,
 ];
 const OPETH_FEATURES = [
   ...ETH_FEATURES,
@@ -376,6 +379,7 @@ const OPETH_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.EIP1559,
 ];
 const ZKETH_FEATURES = [
   ...ETH_FEATURES,
@@ -383,6 +387,7 @@ const ZKETH_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
+  CoinFeature.EIP1559,
 ];
 const BERA_FEATURES = [
   ...ETH_FEATURES,
@@ -392,6 +397,7 @@ const BERA_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
+  CoinFeature.EIP1559,
 ];
 const OAS_FEATURES = [
   ...ETH_FEATURES,
@@ -401,6 +407,7 @@ const OAS_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.EIP1559,
 ];
 const COREDAO_FEATURES = [
   ...ETH_FEATURES,
@@ -410,7 +417,9 @@ const COREDAO_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.EIP1559,
   CoinFeature.STAKING,
+  CoinFeature.EIP1559,
 ];
 const APT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -586,6 +595,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.BULK_TRANSACTION,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+      CoinFeature.EIP1559,
     ]
   ), // we should probably refactor this into a eth() method
   account(
@@ -596,7 +606,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ETH,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.DEPRECATED]
+    [...ETH_FEATURES, CoinFeature.DEPRECATED, CoinFeature.EIP1559]
   ),
   account(
     '41b75ac4-46d6-4dac-b741-bf11406b142f',
@@ -617,6 +627,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.EIP1559,
     ]
   ),
   account(
@@ -642,6 +653,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.BULK_TRANSACTION,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+      CoinFeature.EIP1559,
     ]
   ),
   account(
@@ -1230,7 +1242,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.POLYGON,
     BaseUnit.ETH,
-    POLYGON_FEATURES
+    [...POLYGON_FEATURES, CoinFeature.EIP1559]
   ),
   account(
     'aa7b72d1-9197-492d-b2ca-2c9c9732115d',
@@ -1240,7 +1252,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.POLYGON,
     BaseUnit.ETH,
-    POLYGON_FEATURES
+    [...POLYGON_FEATURES, CoinFeature.EIP1559]
   ),
   account(
     'b5ba2fc6-706b-433f-9bcf-4ea4aaa09281',
@@ -1912,6 +1924,22 @@ export const coins = CoinMap.fromCoins([
     CoinKind.CRYPTO
   ),
   ofc('07083ea6-74ba-4da7-8cf3-031126a130a4', 'ofcton', 'Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
+  ofc(
+    '055691ec-f750-4349-b505-92954ca08257',
+    'ofccoredao',
+    'coredaochain',
+    18,
+    UnderlyingAsset.COREDAO,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'f17727ec-5d0b-4c5d-bbbc-cd93da537f40',
+    'ofctcoredao',
+    'Testnet coredao chain',
+    18,
+    UnderlyingAsset.COREDAO,
+    CoinKind.CRYPTO
+  ),
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
@@ -16184,6 +16212,24 @@ export const coins = CoinMap.fromCoins([
     8,
     '2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm', // https://solscan.io/token/2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm
     UnderlyingAsset['sol:turbo'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'e743ddc6-9d5e-41b6-9367-9d6e5f7dd7b4',
+    'sol:corn',
+    'Solanacorn',
+    7,
+    '6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok', // https://solscan.io/token/6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok
+    UnderlyingAsset['sol:corn'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '4eee379c-7f46-4f75-bb92-baf6583f0787',
+    'sol:yes',
+    'Yes Token',
+    9,
+    '32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9', // ttps://solscan.io/token/32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9
+    UnderlyingAsset['sol:yes'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
