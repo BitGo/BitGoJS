@@ -4,6 +4,7 @@ import { getDescriptorMapFromWallet, isDescriptorWallet } from '../../src/descri
 import { UtxoWallet } from '../../src/wallet';
 import { getDefaultXPubs, getDescriptorMap } from '../core/descriptor/descriptor.utils';
 import { toBip32Triple } from '../../src/keychains';
+import { policyAllowAll } from '../../src/descriptor/validatePolicy';
 
 describe('isDescriptorWalletData', function () {
   const descriptorMap = getDescriptorMap('Wsh2Of3');
@@ -21,7 +22,7 @@ describe('isDescriptorWalletData', function () {
 
     assert(isDescriptorWallet(wallet));
     assert.strictEqual(
-      getDescriptorMapFromWallet(wallet, toBip32Triple(getDefaultXPubs()), 'allowAll').size,
+      getDescriptorMapFromWallet(wallet, toBip32Triple(getDefaultXPubs()), policyAllowAll).size,
       descriptorMap.size
     );
   });
