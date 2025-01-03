@@ -16,7 +16,11 @@ export const NamedDescriptor = t.intersection(
   'NamedDescriptor'
 );
 
-export type NamedDescriptor = t.TypeOf<typeof NamedDescriptor>;
+export type NamedDescriptor<T = string> = {
+  name: string;
+  value: T;
+  signatures?: string[];
+};
 
 export function createNamedDescriptorWithSignature(
   name: string,
@@ -28,14 +32,19 @@ export function createNamedDescriptorWithSignature(
   return { name, value, signatures: [signature] };
 }
 
-export function assertHasValidSignature(namedDescriptor: NamedDescriptor, key: BIP32Interface): void {
-  if (namedDescriptor.signatures === undefined) {
-    throw new Error(`Descriptor ${namedDescriptor.name} does not have a signature`);
+export function hasValidSignature(descriptor: string | Descriptor, key: BIP32Interface, signatures: string[]): boolean {
+  if (typeof descriptor === 'string') {
+    descriptor = Descriptor.fromString(descriptor, 'derivable');
   }
-  const isValid = namedDescriptor.signatures.some((signature) => {
-    return verifyMessage(namedDescriptor.value, key, Buffer.from(signature, 'hex'), networks.bitcoin);
+
+  const message = descriptor.toString();
+  return signatures.some((signature) => {
+    return verifyMessage(message, key, Buffer.from(signature, 'hex'), networks.bitcoin);
   });
-  if (!isValid) {
+}
+
+export function assertHasValidSignature(namedDescriptor: NamedDescriptor, key: BIP32Interface): void {
+  if (!hasValidSignature(namedDescriptor.value, key, namedDescriptor.signatures ?? [])) {
     throw new Error(`Descriptor ${namedDescriptor.name} does not have a valid signature (key=${key.toBase58()})`);
   }
 }

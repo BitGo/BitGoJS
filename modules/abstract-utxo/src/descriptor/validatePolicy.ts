@@ -5,13 +5,13 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { DescriptorMap, toDescriptorMap } from '../core/descriptor';
 
 import { parseDescriptor } from './builder';
-import { NamedDescriptor } from './NamedDescriptor';
+import { hasValidSignature, NamedDescriptor } from './NamedDescriptor';
 
 export type KeyTriple = Triple<utxolib.BIP32Interface>;
 
 export interface DescriptorValidationPolicy {
   name: string;
-  validate(d: Descriptor, walletKeys: KeyTriple): boolean;
+  validate(d: Descriptor, walletKeys: KeyTriple, signatures: string[]): boolean;
 }
 
 export const policyAllowAll: DescriptorValidationPolicy = {
@@ -36,8 +36,8 @@ export function getValidatorDescriptorTemplate(name: string): DescriptorValidati
 export function getValidatorEvery(validators: DescriptorValidationPolicy[]): DescriptorValidationPolicy {
   return {
     name: 'every(' + validators.map((v) => v.name).join(',') + ')',
-    validate(d: Descriptor, walletKeys: KeyTriple): boolean {
-      return validators.every((v) => v.validate(d, walletKeys));
+    validate(d: Descriptor, walletKeys: KeyTriple, signatures: string[]): boolean {
+      return validators.every((v) => v.validate(d, walletKeys, signatures));
     },
   };
 }
@@ -45,14 +45,24 @@ export function getValidatorEvery(validators: DescriptorValidationPolicy[]): Des
 export function getValidatorSome(validators: DescriptorValidationPolicy[]): DescriptorValidationPolicy {
   return {
     name: 'some(' + validators.map((v) => v.name).join(',') + ')',
-    validate(d: Descriptor, walletKeys: KeyTriple): boolean {
-      return validators.some((v) => v.validate(d, walletKeys));
+    validate(d: Descriptor, walletKeys: KeyTriple, signatures: string[]): boolean {
+      return validators.some((v) => v.validate(d, walletKeys, signatures));
     },
   };
 }
 
 export function getValidatorOneOfTemplates(names: string[]): DescriptorValidationPolicy {
   return getValidatorSome(names.map(getValidatorDescriptorTemplate));
+}
+
+export function getValidatorSignedByUserKey(): DescriptorValidationPolicy {
+  return {
+    name: 'signedByUser',
+    validate(d: Descriptor, walletKeys: KeyTriple, signatures: string[]): boolean {
+      // the first key is the user key, by convention
+      return hasValidSignature(d, walletKeys[0], signatures);
+    },
+  };
 }
 
 export class DescriptorPolicyValidationError extends Error {
@@ -64,9 +74,10 @@ export class DescriptorPolicyValidationError extends Error {
 export function assertDescriptorPolicy(
   descriptor: Descriptor,
   policy: DescriptorValidationPolicy,
-  walletKeys: KeyTriple
+  walletKeys: KeyTriple,
+  signatures: string[]
 ): void {
-  if (!policy.validate(descriptor, walletKeys)) {
+  if (!policy.validate(descriptor, walletKeys, signatures)) {
     throw new DescriptorPolicyValidationError(descriptor, policy);
   }
 }
@@ -76,18 +87,25 @@ export function toDescriptorMapValidate(
   walletKeys: KeyTriple,
   policy: DescriptorValidationPolicy
 ): DescriptorMap {
-  const map = toDescriptorMap(descriptors);
-  for (const descriptor of map.values()) {
-    assertDescriptorPolicy(descriptor, policy, walletKeys);
-  }
-  return map;
+  return toDescriptorMap(
+    descriptors.map((namedDescriptor) => {
+      const d = Descriptor.fromString(namedDescriptor.value, 'derivable');
+      assertDescriptorPolicy(d, policy, walletKeys, namedDescriptor.signatures ?? []);
+      return { name: namedDescriptor.name, value: d };
+    })
+  );
 }
 
 export function getPolicyForEnv(env: EnvironmentName): DescriptorValidationPolicy {
   switch (env) {
     case 'adminProd':
     case 'prod':
-      return getValidatorOneOfTemplates(['Wsh2Of3', 'Wsh2Of3CltvDrop', 'ShWsh2Of3CltvDrop']);
+      return getValidatorSome([
+        // allow all 2-of-3-ish descriptors where the keys match the wallet keys
+        getValidatorOneOfTemplates(['Wsh2Of3', 'Wsh2Of3CltvDrop', 'ShWsh2Of3CltvDrop']),
+        // allow all descriptors signed by the user key
+        getValidatorSignedByUserKey(),
+      ]);
     default:
       return policyAllowAll;
   }
