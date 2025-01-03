@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.17.2...@bitgo/sdk-core@28.18.0) (2025-01-03)
+
+### Bug Fixes
+
+- allow locktime as build param ([b433fc0](https://github.com/BitGo/BitGoJS/commit/b433fc007b5c20c23d3bd63cec1dc55fef5a2318))
+- **sdk-core:** fix btc unstaking signing ([25160fb](https://github.com/BitGo/BitGoJS/commit/25160fb7ec6b96c680432906230c9903a22ccb51))
+- **sdk-core:** improve createUserKeychain ([8f429c1](https://github.com/BitGo/BitGoJS/commit/8f429c121940a1d827f2eb53bdbcf5dd1df03929))
+
+### Features
+
+- **sdk-core:** enable token enablements for multisig backing wallets ([db1d35d](https://github.com/BitGo/BitGoJS/commit/db1d35d134d8b4eec68d4b8fac7db9a087cb3714))
+
 ## [28.17.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.17.1...@bitgo/sdk-core@28.17.2) (2024-12-24)
 
 **Note:** Version bump only for package @bitgo/sdk-core

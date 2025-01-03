@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.16.0...@bitgo/statics@50.17.0) (2025-01-03)
+
+### Bug Fixes
+
+- **abstract-eth:** added eip1559 for hteth coin ([ea46725](https://github.com/BitGo/BitGoJS/commit/ea46725c6a30216603d3042e746717e6c739eeef))
+- **abstract-eth:** added eip1559 property to missing coins ([1a49dea](https://github.com/BitGo/BitGoJS/commit/1a49dea702d585eaf814214cfe84b159f7f10823))
+- **abstract-eth:** reorder coins in tests ([b23d244](https://github.com/BitGo/BitGoJS/commit/b23d2440d51c7c314c3157464145d657205b04c2))
+
+### Features
+
+- **abstract-eth:** added eip1559 property to statics ([a336f67](https://github.com/BitGo/BitGoJS/commit/a336f67216427ff881d6f895258f00e51fe39d14))
+- **abstract-eth:** added eip1559 property to statics ([c3fdc5f](https://github.com/BitGo/BitGoJS/commit/c3fdc5f9e60131fa1ec0c45491f5c3520e4d6953))
+- **statics:** add go account support for coredao ([fb359c5](https://github.com/BitGo/BitGoJS/commit/fb359c5a0de45654ec7902adf49978072e0d6666))
+- **statics:** onboard sol corn and yes token ([ba31ab3](https://github.com/BitGo/BitGoJS/commit/ba31ab3b82da67f823f92c1fcc679d149871cbdb))
+
 # [50.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.15.0...@bitgo/statics@50.16.0) (2024-12-24)
 
 ### Features
