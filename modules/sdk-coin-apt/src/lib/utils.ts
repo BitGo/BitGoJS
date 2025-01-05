@@ -3,7 +3,6 @@ import {
   Deserializer,
   Ed25519PublicKey,
   Hex,
-  RawTransaction,
   SignedTransaction,
   TransactionPayload,
   TransactionPayloadEntryFunction,
@@ -49,7 +48,7 @@ export class Utils implements BaseUtils {
     return this.isValidHex(txId, APT_TRANSACTION_ID_LENGTH);
   }
 
-  isValidHex(value: string, length: number) {
+  isValidHex(value: string, length: number): boolean {
     const regex = new RegExp(`^(0x|0X)[a-fA-F0-9]{${length}}$`);
     return regex.test(value);
   }
@@ -67,18 +66,20 @@ export class Utils implements BaseUtils {
     if (payload instanceof TransactionPayloadEntryFunction) {
       const entryFunction = payload.entryFunction;
       address = entryFunction.args[0].toString();
-      amount = entryFunction.args[1].toString();
+      const amountBuffer = Buffer.from(entryFunction.args[1].bcsToBytes());
+      amount = amountBuffer.readBigUint64LE().toString();
     }
     return { address, amount };
   }
 
   isValidRawTransaction(rawTransaction: string): boolean {
     try {
-      const rawTxn = this.deserializeRawTransaction(rawTransaction);
+      const signedTxn = this.deserializeSignedTransaction(rawTransaction);
+      const rawTxn = signedTxn.raw_txn;
       const senderAddress = rawTxn.sender.toString();
-      const trnRecipient = utils.getRecipientFromTransactionPayload(rawTxn.payload);
-      const recipientAddress = trnRecipient.address;
-      const recipientAmount = new BigNumber(trnRecipient.amount);
+      const recipient = utils.getRecipientFromTransactionPayload(rawTxn.payload);
+      const recipientAddress = recipient.address;
+      const recipientAmount = new BigNumber(recipient.amount);
       return (
         this.isValidAddress(senderAddress) && this.isValidAddress(recipientAddress) && !recipientAmount.isLessThan(0)
       );
@@ -97,15 +98,18 @@ export class Utils implements BaseUtils {
     }
   }
 
-  deserializeRawTransaction(rawTransaction: string): RawTransaction {
-    const signedTxn = this.deserializeSignedTransaction(rawTransaction);
-    return signedTxn.raw_txn;
-  }
-
   deserializeSignedTransaction(rawTransaction: string): SignedTransaction {
     const txnBytes = Hex.fromHexString(rawTransaction).toUint8Array();
     const deserializer = new Deserializer(txnBytes);
     return deserializer.deserialize(SignedTransaction);
+  }
+
+  getPublicKeyBufferFromHexString(publicKey: string): Buffer {
+    return Buffer.from(Hex.fromHexString(publicKey).toUint8Array());
+  }
+
+  castToNumber(value: bigint): number {
+    return new BigNumber(value.toString()).toNumber();
   }
 }
 

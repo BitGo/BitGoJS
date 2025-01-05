@@ -6,6 +6,7 @@ import { TransferTransaction } from './transaction/transferTransaction';
 export class TransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this.transaction = new TransferTransaction(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {

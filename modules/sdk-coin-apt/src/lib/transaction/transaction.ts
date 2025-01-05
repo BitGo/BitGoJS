@@ -7,14 +7,17 @@ import {
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { TransactionExplanation, TxData } from '../iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import {
   AccountAddress,
   AccountAuthenticatorEd25519,
+  Aptos,
+  APTOS_COIN,
+  AptosConfig,
   Ed25519PublicKey,
   Ed25519Signature,
   generateUserTransactionHash,
+  Network,
   RawTransaction,
   SignedTransaction,
   SimpleTransaction,
@@ -26,6 +29,12 @@ import utils from '../utils';
 export abstract class Transaction extends BaseTransaction {
   protected _rawTransaction: RawTransaction;
   protected _signature: Signature;
+  protected _sender: string;
+  protected _recipient: TransactionRecipient;
+  protected _sequenceNumber: number;
+  protected _maxGasAmount: number;
+  protected _gasUnitPrice: number;
+  protected _expirationTime: number;
 
   static DEFAULT_PUBLIC_KEY = Buffer.alloc(32);
   static DEFAULT_SIGNATURE = Buffer.alloc(64);
@@ -36,39 +45,60 @@ export abstract class Transaction extends BaseTransaction {
 
   /** @inheritDoc **/
   public get id(): string {
+    this.generateTxnId();
     return this._id ?? UNAVAILABLE_TEXT;
+  }
+
+  get sender(): string {
+    return this._sender;
+  }
+
+  set sender(value: string) {
+    this._sender = value;
+  }
+
+  get recipient(): TransactionRecipient {
+    return this._recipient;
+  }
+
+  set recipient(value: TransactionRecipient) {
+    this._recipient = value;
+  }
+
+  get sequenceNumber(): number {
+    return this._sequenceNumber;
+  }
+
+  set sequenceNumber(value: number) {
+    this._sequenceNumber = value;
+  }
+
+  get maxGasAmount(): number {
+    return this._maxGasAmount;
+  }
+
+  set maxGasAmount(value: number) {
+    this._maxGasAmount = value;
+  }
+
+  get gasUnitPrice(): number {
+    return this._gasUnitPrice;
+  }
+
+  set gasUnitPrice(value: number) {
+    this._gasUnitPrice = value;
+  }
+
+  get expirationTime(): number {
+    return this._expirationTime;
+  }
+
+  set expirationTime(value: number) {
+    this._expirationTime = value;
   }
 
   set transactionType(transactionType: TransactionType) {
     this._type = transactionType;
-  }
-
-  public get signablePayload(): Buffer {
-    const rawTxnHex = this._rawTransaction.bcsToHex().toString();
-    return Buffer.from(rawTxnHex, 'hex');
-  }
-
-  public get sender(): string {
-    return this._rawTransaction.sender.toString();
-  }
-
-  set sender(senderAddress: string) {
-    // Cannot assign to 'sender' because it is a read-only property in RawTransaction.
-    const { sequence_number, payload, max_gas_amount, gas_unit_price, expiration_timestamp_secs, chain_id } =
-      this._rawTransaction;
-    this._rawTransaction = new RawTransaction(
-      AccountAddress.fromString(senderAddress),
-      sequence_number,
-      payload,
-      max_gas_amount,
-      gas_unit_price,
-      expiration_timestamp_secs,
-      chain_id
-    );
-  }
-
-  public get recipient(): TransactionRecipient {
-    return utils.getRecipientFromTransactionPayload(this._rawTransaction.payload);
   }
 
   canSign(_key: BaseKey): boolean {
@@ -86,7 +116,7 @@ export abstract class Transaction extends BaseTransaction {
     let publicKeyBuffer = Transaction.DEFAULT_PUBLIC_KEY;
     let signatureBuffer = Transaction.DEFAULT_SIGNATURE;
     if (this._signature && this._signature.publicKey && this._signature.signature) {
-      publicKeyBuffer = Buffer.from(this._signature.publicKey.pub, 'hex');
+      publicKeyBuffer = utils.getPublicKeyBufferFromHexString(this._signature.publicKey.pub);
       signatureBuffer = this._signature.signature;
     }
     const publicKey = new Ed25519PublicKey(publicKeyBuffer);
@@ -96,86 +126,111 @@ export abstract class Transaction extends BaseTransaction {
     return signedTxn.toString();
   }
 
-  abstract toJson(): TxData;
-
   addSignature(publicKey: PublicKey, signature: Buffer): void {
-    const publicKeyBuffer = Buffer.from(publicKey.pub, 'hex');
-    if (!Transaction.DEFAULT_PUBLIC_KEY.equals(publicKeyBuffer) && !Transaction.DEFAULT_SIGNATURE.equals(signature)) {
-      this._signatures.push(signature.toString('hex'));
-      this._signature = { publicKey, signature };
-      this.serialize();
-    }
+    this._signatures = [signature.toString('hex')];
+    this._signature = { publicKey, signature };
   }
 
   async build(): Promise<void> {
+    await this.buildRawTransaction();
+    this.generateTxnId();
     this.loadInputsAndOutputs();
-    if (this._signature && this._signature.publicKey && this._signature.signature) {
-      const transaction = new SimpleTransaction(this._rawTransaction);
-      const publicKey = new Ed25519PublicKey(Buffer.from(this._signature.publicKey.pub, 'hex'));
-      const signature = new Ed25519Signature(this._signature.signature);
-      const senderAuthenticator = new AccountAuthenticatorEd25519(publicKey, signature);
-      this._id = generateUserTransactionHash({ transaction, senderAuthenticator });
-    }
   }
 
   loadInputsAndOutputs(): void {
-    const txRecipient = this.recipient;
     this._inputs = [
       {
         address: this.sender,
-        value: txRecipient.amount as string,
+        value: this.recipient.amount as string,
         coin: this._coinConfig.name,
       },
     ];
     this._outputs = [
       {
-        address: txRecipient.address,
-        value: txRecipient.amount as string,
+        address: this.recipient.address,
+        value: this.recipient.amount as string,
         coin: this._coinConfig.name,
       },
     ];
   }
 
   fromRawTransaction(rawTransaction: string): void {
+    let signedTxn: SignedTransaction;
     try {
-      const signedTxn = utils.deserializeSignedTransaction(rawTransaction);
-      this._rawTransaction = signedTxn.raw_txn;
+      signedTxn = utils.deserializeSignedTransaction(rawTransaction);
+    } catch (e) {
+      console.error('invalid raw transaction', e);
+      throw new Error('invalid raw transaction');
+    }
+    this.fromDeserializedSignedTransaction(signedTxn);
+  }
+
+  fromDeserializedSignedTransaction(signedTxn: SignedTransaction): void {
+    try {
+      const rawTxn = signedTxn.raw_txn;
+      this._sender = rawTxn.sender.toString();
+      this._recipient = utils.getRecipientFromTransactionPayload(rawTxn.payload);
+      this._sequenceNumber = utils.castToNumber(rawTxn.sequence_number);
+      this._maxGasAmount = utils.castToNumber(rawTxn.max_gas_amount);
+      this._gasUnitPrice = utils.castToNumber(rawTxn.gas_unit_price);
+      this._expirationTime = utils.castToNumber(rawTxn.expiration_timestamp_secs);
+      this._rawTransaction = rawTxn;
 
       this.loadInputsAndOutputs();
-
       const authenticator = signedTxn.authenticator as TransactionAuthenticatorEd25519;
-      const publicKey = Buffer.from(authenticator.public_key.toUint8Array());
       const signature = Buffer.from(authenticator.signature.toUint8Array());
-      this.addSignature({ pub: publicKey.toString() }, signature);
+      this.addSignature({ pub: authenticator.public_key.toString() }, signature);
     } catch (e) {
-      console.error('invalid raw transaction', e);
-      throw new Error('invalid raw transaction');
+      console.error('invalid signed transaction', e);
+      throw new Error('invalid signed transaction');
     }
   }
 
-  /** @inheritDoc */
-  explainTransaction(): TransactionExplanation {
-    const displayOrder = ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'];
-
-    const outputs: TransactionRecipient[] = [this.recipient];
-    const outputAmount = outputs[0].amount;
-    return {
-      displayOrder,
-      id: this.id,
-      outputs,
-      outputAmount,
-      changeOutputs: [],
-      changeAmount: '0',
-      fee: { fee: 'UNKNOWN' },
-    };
-  }
-
-  static deserializeRawTransaction(rawTransaction: string): RawTransaction {
+  /**
+   * Deserializes a signed transaction hex string
+   * @param {string} signedRawTransaction
+   * @returns {SignedTransaction} the aptos signed transaction
+   */
+  static deserializeSignedTransaction(signedRawTransaction: string): SignedTransaction {
     try {
-      return utils.deserializeRawTransaction(rawTransaction);
+      return utils.deserializeSignedTransaction(signedRawTransaction);
     } catch (e) {
       console.error('invalid raw transaction', e);
       throw new Error('invalid raw transaction');
     }
+  }
+
+  private async buildRawTransaction() {
+    const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
+    const aptos = new Aptos(new AptosConfig({ network }));
+    const senderAddress = AccountAddress.fromString(this._sender);
+    const recipientAddress = AccountAddress.fromString(this._recipient.address);
+
+    const simpleTxn = await aptos.transaction.build.simple({
+      sender: senderAddress,
+      data: {
+        function: '0x1::coin::transfer',
+        typeArguments: [APTOS_COIN],
+        functionArguments: [recipientAddress, this.recipient.amount],
+      },
+      options: {
+        maxGasAmount: this.maxGasAmount,
+        gasUnitPrice: this.gasUnitPrice,
+        expireTimestamp: this.expirationTime,
+        accountSequenceNumber: this.sequenceNumber,
+      },
+    });
+    this._rawTransaction = simpleTxn.rawTransaction;
+  }
+
+  private generateTxnId() {
+    if (!this._signature || !this._signature.publicKey || !this._signature.signature) {
+      return;
+    }
+    const transaction = new SimpleTransaction(this._rawTransaction);
+    const publicKey = new Ed25519PublicKey(utils.getPublicKeyBufferFromHexString(this._signature.publicKey.pub));
+    const signature = new Ed25519Signature(this._signature.signature);
+    const senderAuthenticator = new AccountAuthenticatorEd25519(publicKey, signature);
+    this._id = generateUserTransactionHash({ transaction, senderAuthenticator });
   }
 }

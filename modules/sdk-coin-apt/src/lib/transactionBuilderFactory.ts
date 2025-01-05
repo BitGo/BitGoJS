@@ -3,7 +3,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import utils from './utils';
 import { Transaction } from './transaction/transaction';
-import { RawTransaction } from '@aptos-labs/ts-sdk';
+import { SignedTransaction } from '@aptos-labs/ts-sdk';
 import { TransferTransaction } from './transaction/transferTransaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
@@ -11,16 +11,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
+
   /** @inheritdoc */
-  from(raw: string): TransactionBuilder {
-    // let builder: TransactionBuilder;
-    utils.validateRawTransaction(raw);
-    // const rawTxn = this.parseTransaction(raw);
+  from(signedRawTxn: string): TransactionBuilder {
+    utils.validateRawTransaction(signedRawTxn);
     try {
+      const signedTxn = this.parseTransaction(signedRawTxn);
       // Assumption: only a single transaction type exists
       // TODO: add txn type switch case
       const transferTx = new TransferTransaction(this._coinConfig);
-      transferTx.fromRawTransaction(raw);
+      transferTx.fromDeserializedSignedTransaction(signedTxn);
       return this.getTransferBuilder(transferTx);
     } catch (e) {
       throw e;
@@ -51,12 +51,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return builder;
   }
 
-  /** Parse the transaction from a raw transaction
+  /** Parse the transaction from a signed txn hex string
    *
-   * @param {string} rawTransaction - the raw tx
-   * @returns {Transaction} parsedtransaction
+   * @param {string} signedRawTransaction - the signed txn hex
+   * @returns {SignedTransaction} parsedtransaction
    */
-  private parseTransaction(rawTransaction: string): RawTransaction {
-    return Transaction.deserializeRawTransaction(rawTransaction);
+  private parseTransaction(signedRawTransaction: string): SignedTransaction {
+    return Transaction.deserializeSignedTransaction(signedRawTransaction);
   }
 }
