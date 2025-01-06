@@ -57,4 +57,12 @@ export const erc20Coins = [
     '0x77777777772cf0455fb38ee0e75f38034dfa50de',
     UnderlyingAsset['eth:xy']
   ),
+  erc20(
+    '72341268-f6b2-4be4-94f3-59d7e7be6f9d',
+    'eth:gousd',
+    'GoUSD',
+    6,
+    '0xF1F6b8CC3a0d544A40F1d29909396378370e6938',
+    UnderlyingAsset['eth:gousd']
+  ),
 ];
