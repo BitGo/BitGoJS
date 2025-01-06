@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^28.18.0",
+    "@bitgo/sdk-hmac": "^1.0.0",
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/unspents": "^0.47.17",
     "@bitgo/utxo-lib": "^11.2.1",

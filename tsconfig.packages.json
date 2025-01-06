@@ -200,6 +200,9 @@
       "path": "./modules/sdk-core"
     },
     {
+      "path": "./modules/sdk-hmac"
+    },
+    {
       "path": "./modules/sdk-lib-mpc"
     },
     {
