@@ -41,4 +41,20 @@ export const erc20Coins = [
     '0x584bc13c7d411c00c01a62e8019472de68768430',
     UnderlyingAsset['eth:hegic']
   ),
+  erc20(
+    'e5195aca-b807-4fb9-b8c3-b4440cb24f67',
+    'eth:xreth',
+    'Constellation Staked ETH',
+    18,
+    '0xBB22d59B73D7a6F3A8a83A214BECc67Eb3b511fE',
+    UnderlyingAsset['eth:xreth']
+  ),
+  erc20(
+    'e5195aca-b807-4fb9-b8c3-b4440cb24f67',
+    'eth:xy',
+    'XY Finance',
+    18,
+    '0x77777777772cf0455fB38eE0e75f38034dFa50DE',
+    UnderlyingAsset['eth:xy']
+  ),
 ];
