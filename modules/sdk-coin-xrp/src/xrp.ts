@@ -358,8 +358,33 @@ export class Xrp extends BaseCoin {
       throw new InvalidAddressError(`address verification failure: address "${address}" is not valid`);
     }
 
+    const accountInfoParams = {
+      method: 'account_info',
+      params: [
+        {
+          account: address,
+          ledger_index: 'current',
+          queue: true,
+          strict: true,
+          signer_lists: true,
+        },
+      ],
+    };
+
+    const accountInfo = (await this.bitgo.post(this.getRippledUrl()).send(accountInfoParams)).body;
+
+    if (accountInfo?.result?.account_data?.Flags == null) {
+      throw new Error('Invalid account information: Flags field is missing.');
+    }
+
+    const flags = xrpl.parseAccountRootFlags(accountInfo.result.account_data.Flags);
+
     const addressDetails = utils.getAddressDetails(address);
     const rootAddressDetails = utils.getAddressDetails(rootAddress);
+
+    if (flags.lsfRequireDestTag && addressDetails.destinationTag == null) {
+      throw new InvalidAddressError(`Invalid Address: Destination Tag is required for address "${address}".`);
+    }
 
     if (addressDetails.address !== rootAddressDetails.address) {
       throw new UnexpectedAddressError(
