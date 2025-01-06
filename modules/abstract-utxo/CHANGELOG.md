@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.9.0...@bitgo/abstract-utxo@9.10.0) (2025-01-03)
+
+### Features
+
+- **abstract-utxo:** sign descriptors when creating wallet ([079d9b9](https://github.com/BitGo/BitGoJS/commit/079d9b91281ee05b1140aaf8fbf0758627820bba))
+
 # [9.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.8.0...@bitgo/abstract-utxo@9.9.0) (2024-12-24)
 
 ### Features
