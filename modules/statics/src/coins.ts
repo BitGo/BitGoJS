@@ -19828,6 +19828,16 @@ export const coins = CoinMap.fromCoins([
     'ripple.com',
     UnderlyingAsset['xrp:rlusd']
   ),
+  txrpToken(
+    '155818c4-efda-4758-bb25-37c093b6dc02',
+    'txrp:xat',
+    'XRP ATL Token',
+    96,
+    'rHy7UVhwM7Xgo4SoUTf5hE5yWKZKPEkxcL',
+    '5841540000000000000000000000000000000000',
+    'xat.com',
+    UnderlyingAsset['txrp:xat']
+  ),
   suiToken(
     'f26941b7-1110-4aa7-a2bc-29807297a51c',
     'sui:deep',
