@@ -16232,6 +16232,24 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'a885f00b-d958-477d-9857-9d4f9c9bf66a',
+    'sol:ai16z',
+    'AI16Z',
+    9,
+    'HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC', // https://solscan.io/token/HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC
+    UnderlyingAsset['sol:ai16z'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '9f5d23da-9574-4377-aeaa-2bae4e0f7a33',
+    'sol:zerebro',
+    'ZEREBRO',
+    6,
+    '8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn', // https://solscan.io/token/8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn
+    UnderlyingAsset['sol:zerebro'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '4eee379c-7f46-4f75-bb92-baf6583f0787',
     'sol:yes',
     'Yes Token',
