@@ -4538,11 +4538,11 @@ export const coins = CoinMap.fromCoins([
   ),
   erc20(
     '5552fd84-9354-4776-873e-a0e40a6b1675',
-    'gousd',
+    'eth:gousd',
     'goUSD',
     6,
     '0xf1f6b8cc3a0d544a40f1d29909396378370e6938',
-    UnderlyingAsset.GOUSD
+    UnderlyingAsset['eth:gousd']
   ),
   erc20(
     '3628927c-05c7-4fba-9fc3-f3c17e261334',
