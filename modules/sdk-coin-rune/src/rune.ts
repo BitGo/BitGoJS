@@ -42,7 +42,7 @@ export class Rune extends CosmosCoin {
 
   /** @inheritDoc **/
   protected getPublicNodeUrl(): string {
-    return Environments[this.bitgo.getEnv()].coreumNodeUrl;
+    return Environments[this.bitgo.getEnv()].runeNodeUrl;
   }
 
   /** @inheritDoc **/

@@ -1,14 +1,17 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { NetworkType } from '@bitgo/statics';
+import { coins, NetworkType } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { Rune, Trune } from '../../src';
 import { RuneUtils } from '../../src/lib/utils';
 import { mainnetAddress } from '../resources/rune';
-import { TEST_SEND_TX, TEST_TX_WITH_MEMO, testnetAddress } from '../resources/trune';
+import { TEST_SEND_TX, TEST_TX_WITH_MEMO, testnetAddress, wrwUser } from '../resources/trune';
 const bech32 = require('bech32-buffer');
 import should = require('should');
+import { beforeEach } from 'mocha';
+import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
+import { GAS_AMOUNT } from '../../src/lib/constants';
 
 describe('Rune', function () {
   let bitgo: TestBitGoAPI;
@@ -263,6 +266,123 @@ describe('Rune', function () {
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
         .should.be.rejectedWith('Invalid transaction');
       stub.restore();
+    });
+  });
+
+  describe('Recover transaction: success path', () => {
+    const sandBox = sinon.createSandbox();
+    const coin = coins.get('tthorchain:rune');
+    const testBalance = '1500000';
+    const testAccountNumber = '123';
+    const testSequenceNumber = '0';
+    const testChainId = 'thorchain-stagenet-2';
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(Trune.prototype, 'getAccountBalance' as keyof Trune);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
+
+      const accountDetails = sandBox.stub(Trune.prototype, 'getAccountDetails' as keyof Trune);
+      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+
+      const chainId = sandBox.stub(Trune.prototype, 'getChainId' as keyof Trune);
+      chainId.withArgs().resolves(testChainId);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should recover funds for non-bitgo recoveries', async function () {
+      const res = await trune.recover({
+        userKey: wrwUser.userPrivateKey,
+        backupKey: wrwUser.backupPrivateKey,
+        bitgoKey: wrwUser.bitgoPublicKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: wrwUser.destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(trune.getAccountBalance);
+      sandBox.assert.calledOnce(trune.getAccountDetails);
+      sandBox.assert.calledOnce(trune.getChainId);
+
+      const truneTxn = new CosmosTransaction(coin, testnetUtils);
+      truneTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const truneTxnJson = truneTxn.toJson();
+      const sendMessage = truneTxnJson.sendMessages[0].value as SendMessage;
+      const balance = new BigNumber(testBalance);
+      const actualBalance = balance.minus(new BigNumber(GAS_AMOUNT));
+      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+    });
+  });
+
+  describe('Recover transaction: failure path', () => {
+    const sandBox = sinon.createSandbox();
+    const testZeroBalance = '0';
+    const testAccountNumber = '123';
+    const testSequenceNumber = '0';
+    const testChainId = 'thorchain-stagenet-2';
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(Trune.prototype, 'getAccountBalance' as keyof Trune);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testZeroBalance);
+
+      const accountDetails = sandBox.stub(Trune.prototype, 'getAccountDetails' as keyof Trune);
+      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+
+      const chainId = sandBox.stub(Trune.prototype, 'getChainId' as keyof Trune);
+      chainId.withArgs().resolves(testChainId);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should throw error if backupkey is not present', async function () {
+      await trune
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: wrwUser.destinationAddress,
+        })
+        .should.rejectedWith('missing backupKey');
+    });
+
+    it('should throw error if userkey is not present', async function () {
+      await trune
+        .recover({
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: wrwUser.destinationAddress,
+        })
+        .should.rejectedWith('missing userKey');
+    });
+
+    it('should throw error if wallet passphrase is not present', async function () {
+      await trune
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          recoveryDestination: wrwUser.destinationAddress,
+        })
+        .should.rejectedWith('missing wallet passphrase');
+    });
+
+    it('should throw error if there is no balance', async function () {
+      await trune
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: wrwUser.destinationAddress,
+        })
+        .should.rejectedWith('Did not have enough funds to recover');
     });
   });
 });
