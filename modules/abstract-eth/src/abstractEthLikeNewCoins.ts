@@ -2197,7 +2197,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       );
     }
 
-    if (impliedForwarderVersion === 0 || impliedForwarderVersion === 3 || impliedForwarderVersion === 6) {
+    if (impliedForwarderVersion === 0 || impliedForwarderVersion === 3 || impliedForwarderVersion === 5) {
       return true;
     } else {
       const ethNetwork = this.getNetwork();
