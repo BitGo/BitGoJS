@@ -21,17 +21,15 @@ import {
   makeRandomKey,
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
-import * as sjcl from '@bitgo/sjcl';
+import * as sdkHmac from '@bitgo/sdk-hmac';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { createHmac } from 'crypto';
 import { type Agent } from 'http';
 import debugLib from 'debug';
 import * as _ from 'lodash';
 import * as secp256k1 from 'secp256k1';
 import * as superagent from 'superagent';
-import * as urlLib from 'url';
 import {
   handleResponseError,
   handleResponseResult,
@@ -396,6 +394,7 @@ export class BitGoAPI implements BitGoBase {
           token: this._token,
           method,
           text: data || '',
+          authVersion: this._authVersion,
         });
         req.set('Auth-Timestamp', requestProperties.timestamp.toString());
 
@@ -420,7 +419,7 @@ export class BitGoAPI implements BitGoBase {
               return onfulfilled(response);
             }
 
-            const verifiedResponse = verifyResponse(this, this._token, method, req, response);
+            const verifiedResponse = verifyResponse(this, this._token, method, req, response, this._authVersion);
             return onfulfilled(verifiedResponse);
           }
         : null;
@@ -455,7 +454,7 @@ export class BitGoAPI implements BitGoBase {
    * @returns {*} - the result of the HMAC operation
    */
   calculateHMAC(key: string, message: string): string {
-    return createHmac('sha256', key).update(message).digest('hex');
+    return sdkHmac.calculateHMAC(key, message);
   }
 
   /**
@@ -467,83 +466,29 @@ export class BitGoAPI implements BitGoBase {
    * @param method request method
    * @returns {string}
    */
-  calculateHMACSubject({ urlPath, text, timestamp, statusCode, method }: CalculateHmacSubjectOptions): string {
-    const urlDetails = urlLib.parse(urlPath);
-    const queryPath = urlDetails.query && urlDetails.query.length > 0 ? urlDetails.path : urlDetails.pathname;
-    if (!_.isUndefined(statusCode) && _.isInteger(statusCode) && _.isFinite(statusCode)) {
-      if (this._authVersion === 3) {
-        return [method.toUpperCase(), timestamp, queryPath, statusCode, text].join('|');
-      }
-      return [timestamp, queryPath, statusCode, text].join('|');
-    }
-    if (this._authVersion === 3) {
-      return [method.toUpperCase(), timestamp, '3.0', queryPath, text].join('|');
-    }
-    return [timestamp, queryPath, text].join('|');
+  calculateHMACSubject(params: CalculateHmacSubjectOptions): string {
+    return sdkHmac.calculateHMACSubject({ ...params, authVersion: this._authVersion });
   }
 
   /**
    * Calculate the HMAC for an HTTP request
    */
-  calculateRequestHMAC({ url: urlPath, text, timestamp, token, method }: CalculateRequestHmacOptions): string {
-    const signatureSubject = this.calculateHMACSubject({ urlPath, text, timestamp, method });
-
-    // calculate the HMAC
-    return this.calculateHMAC(token, signatureSubject);
+  calculateRequestHMAC(params: CalculateRequestHmacOptions): string {
+    return sdkHmac.calculateRequestHMAC({ ...params, authVersion: this._authVersion });
   }
 
   /**
    * Calculate request headers with HMAC
    */
-  calculateRequestHeaders({ url, text, token, method }: CalculateRequestHeadersOptions): RequestHeaders {
-    const timestamp = Date.now();
-    const hmac = this.calculateRequestHMAC({ url, text, timestamp, token, method });
-
-    // calculate the SHA256 hash of the token
-    const hashDigest = sjcl.hash.sha256.hash(token);
-    const tokenHash = sjcl.codec.hex.fromBits(hashDigest);
-    return {
-      hmac,
-      timestamp,
-      tokenHash,
-    };
+  calculateRequestHeaders(params: CalculateRequestHeadersOptions): RequestHeaders {
+    return sdkHmac.calculateRequestHeaders({ ...params, authVersion: this._authVersion });
   }
 
   /**
    * Verify the HMAC for an HTTP response
    */
-  verifyResponse({
-    url: urlPath,
-    statusCode,
-    text,
-    timestamp,
-    token,
-    hmac,
-    method,
-  }: VerifyResponseOptions): VerifyResponseInfo {
-    const signatureSubject = this.calculateHMACSubject({
-      urlPath,
-      text,
-      timestamp,
-      statusCode,
-      method,
-    });
-
-    // calculate the HMAC
-    const expectedHmac = this.calculateHMAC(token, signatureSubject);
-
-    // determine if the response is still within the validity window (5 minute window)
-    const now = Date.now();
-    const isInResponseValidityWindow = timestamp >= now - 1000 * 60 * 5 && timestamp <= now;
-
-    // verify the HMAC and timestamp
-    return {
-      isValid: expectedHmac === hmac,
-      expectedHmac,
-      signatureSubject,
-      isInResponseValidityWindow,
-      verificationTime: now,
-    };
+  verifyResponse(params: VerifyResponseOptions): VerifyResponseInfo {
+    return sdkHmac.verifyResponse({ ...params, authVersion: this._authVersion });
   }
 
   /**
@@ -904,7 +849,7 @@ export class BitGoAPI implements BitGoBase {
         this._ecdhXprv = responseDetails.ecdhXprv;
 
         // verify the response's authenticity
-        verifyResponse(this, responseDetails.token, 'post', request, response);
+        verifyResponse(this, responseDetails.token, 'post', request, response, this._authVersion);
 
         // add the remaining component for easier access
         response.body.access_token = this._token;
@@ -1186,7 +1131,7 @@ export class BitGoAPI implements BitGoBase {
       }
 
       // verify the authenticity of the server's response before proceeding any further
-      verifyResponse(this, this._token, 'post', request, response);
+      verifyResponse(this, this._token, 'post', request, response, this._authVersion);
 
       const responseDetails = this.handleTokenIssuance(response.body);
       response.body.token = responseDetails.token;

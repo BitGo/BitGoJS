@@ -1,7 +1,16 @@
 import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { type Agent } from 'http';
-
+export {
+  supportedRequestMethods,
+  AuthVersion,
+  CalculateHmacSubjectOptions,
+  CalculateRequestHmacOptions,
+  CalculateRequestHeadersOptions,
+  RequestHeaders,
+  VerifyResponseOptions,
+  VerifyResponseInfo,
+} from '@bitgo/sdk-hmac';
 export interface BitGoAPIOptions {
   accessToken?: string;
   authVersion?: 2 | 3;
@@ -34,54 +43,6 @@ export interface AccessTokenOptions {
 
 export interface PingOptions {
   reqId?: IRequestTracer;
-}
-
-export const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
-
-export interface CalculateHmacSubjectOptions {
-  urlPath: string;
-  text: string;
-  timestamp: number;
-  method: (typeof supportedRequestMethods)[number];
-  statusCode?: number;
-}
-
-export interface CalculateRequestHmacOptions {
-  url: string;
-  text: string;
-  timestamp: number;
-  token: string;
-  method: (typeof supportedRequestMethods)[number];
-}
-
-export interface RequestHeaders {
-  hmac: string;
-  timestamp: number;
-  tokenHash: string;
-}
-
-export interface CalculateRequestHeadersOptions {
-  url: string;
-  text: string;
-  token: string;
-  method: (typeof supportedRequestMethods)[number];
-}
-
-export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
-  hmac: string;
-  url: string;
-  text: string;
-  timestamp: number;
-  method: (typeof supportedRequestMethods)[number];
-  statusCode?: number;
-}
-
-export interface VerifyResponseInfo {
-  isValid: boolean;
-  expectedHmac: string;
-  signatureSubject: string;
-  isInResponseValidityWindow: boolean;
-  verificationTime: number;
 }
 
 export interface AuthenticateOptions {

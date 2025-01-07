@@ -13,6 +13,9 @@
       "path": "../sdk-core"
     },
     {
+      "path": "../sdk-hmac"
+    },
+    {
       "path": "../utxo-lib"
     },
     {

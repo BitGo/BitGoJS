@@ -11,7 +11,7 @@ import querystring from 'querystring';
 
 import { ApiResponseError, BitGoRequest } from '@bitgo/sdk-core';
 
-import { VerifyResponseOptions } from './types';
+import { AuthVersion, VerifyResponseOptions } from './types';
 import { BitGoAPI } from './bitgoAPI';
 
 const debug = Debug('bitgo:api');
@@ -178,7 +178,8 @@ export function verifyResponse(
   token: string | undefined,
   method: VerifyResponseOptions['method'],
   req: superagent.SuperAgentRequest,
-  response: superagent.Response
+  response: superagent.Response,
+  authVersion: AuthVersion
 ): superagent.Response {
   // we can't verify the response if we're not authenticated
   if (!req.isV2Authenticated || !req.authenticationToken) {
@@ -193,6 +194,7 @@ export function verifyResponse(
     timestamp: response.header.timestamp,
     token: req.authenticationToken,
     method,
+    authVersion,
   });
 
   if (!verificationResponse.isValid) {

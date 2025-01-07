@@ -5,6 +5,13 @@ import * as sinon from 'sinon';
 import { BitGo } from '../../../src';
 
 describe('Auth', () => {
+  let sandbox;
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
   describe('Auth V3', () => {
     it('should set auth version to 3 when initializing a bitgo object with explicit auth version 3', () => {
       const bitgo = new BitGo({ authVersion: 3 });
@@ -74,7 +81,10 @@ describe('Auth', () => {
       const accessToken = `v2x${'0'.repeat(64)}`;
       const bitgo = new BitGo({ authVersion: 3, accessToken });
 
-      const calculateHMACSpy = sinon.spy(bitgo, 'calculateHMAC');
+      const crypto = require('crypto');
+      const createHmacSpy = sinon.spy(crypto, 'createHmac');
+      const updateSpy = sinon.spy(crypto.Hmac.prototype, 'update');
+
       const verifyResponseStub = sinon.stub(bitgo, 'verifyResponse').returns({
         isValid: true,
         isInResponseValidityWindow: true,
@@ -86,8 +96,10 @@ describe('Auth', () => {
       const scope = nock(url).get('/').reply(200);
 
       await bitgo.get(url).should.eventually.have.property('status', 200);
-      calculateHMACSpy.firstCall.calledWith(accessToken, sinon.match('3.0')).should.be.true();
-      calculateHMACSpy.restore();
+
+      createHmacSpy.firstCall.calledWith('sha256', accessToken).should.be.true();
+      updateSpy.firstCall.calledWith(sinon.match('3.0')).should.be.true();
+      createHmacSpy.restore();
       verifyResponseStub.restore();
       scope.done();
     });

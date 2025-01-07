@@ -1,0 +1,49 @@
+{
+  "name": "@bitgo/sdk-hmac",
+  "version": "1.0.0",
+  "description": "HMAC module for the BitGo SDK",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@bitgo/sjcl": "^1.0.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "sinon": "^6.3.5"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-hmac"
+  },
+  "files": [
+    "dist/src"
+  ],
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  }
+}
