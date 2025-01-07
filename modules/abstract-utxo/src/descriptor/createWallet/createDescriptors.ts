@@ -19,18 +19,20 @@ function createExternalInternalPair(
   if (userKey.isNeutered()) {
     throw new Error('User key must be private');
   }
-  return [
-    createNamedDescriptorWithSignature(
-      builder.name + '/external',
-      getDescriptorFromBuilder({ ...builder, path: '0/*' }),
-      userKey
-    ),
-    createNamedDescriptorWithSignature(
-      builder.name + '/internal',
-      getDescriptorFromBuilder({ ...builder, path: '1/*' }),
-      userKey
-    ),
-  ];
+  const external = createNamedDescriptorWithSignature(
+    builder.name + '/external',
+    getDescriptorFromBuilder({ ...builder, path: '0/*' }),
+    userKey
+  );
+  const internal = createNamedDescriptorWithSignature(
+    builder.name + '/internal',
+    getDescriptorFromBuilder({ ...builder, path: '1/*' }),
+    userKey
+  );
+  if (external.value === internal.value) {
+    throw new Error('External and internal descriptors must be different. Make to use the path in descriptor.');
+  }
+  return [external, internal];
 }
 
 /**
