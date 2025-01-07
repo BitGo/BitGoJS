@@ -1,7 +1,7 @@
 {
   "name": "@bitgo/sdk-hmac",
   "version": "1.0.0",
-  "description": "Split package for WASM code needed by sdk-lib-mpc",
+  "description": "HMAC module for the BitGo SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
@@ -27,7 +27,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/sdk-opensslbytes"
+    "directory": "modules/sdk-hmac"
   },
   "files": [
     "dist/src"
