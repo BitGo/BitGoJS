@@ -398,6 +398,7 @@ const BERA_FEATURES = [
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.EIP1559,
+  CoinFeature.STAKING,
 ];
 const OAS_FEATURES = [
   ...ETH_FEATURES,
