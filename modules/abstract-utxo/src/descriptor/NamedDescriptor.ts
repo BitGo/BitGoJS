@@ -24,9 +24,12 @@ export type NamedDescriptor<T = string> = {
 
 export function createNamedDescriptorWithSignature(
   name: string,
-  descriptor: Descriptor,
+  descriptor: string | Descriptor,
   signingKey: BIP32Interface
 ): NamedDescriptor {
+  if (typeof descriptor === 'string') {
+    descriptor = Descriptor.fromString(descriptor, 'derivable');
+  }
   const value = descriptor.toString();
   const signature = signMessage(value, signingKey, networks.bitcoin).toString('hex');
   return { name, value, signatures: [signature] };
