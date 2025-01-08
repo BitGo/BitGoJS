@@ -37,6 +37,9 @@
       "path": "../bitgo"
     },
     {
+      "path": "../abstract-utxo"
+    },
+    {
       "path": "../key-card"
     },
     {

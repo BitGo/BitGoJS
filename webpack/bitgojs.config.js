@@ -59,6 +59,7 @@ module.exports = {
   experiments: {
     backCompat: false,
     asyncWebAssembly: true,
+    syncWebAssembly: true,
   },
   optimization: {
     minimizer: [
