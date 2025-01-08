@@ -1756,6 +1756,9 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:tnsr'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken('41230415-d199-44ff-b25d-fb8fc7e7d0f8', 'ofcsol:giga', 'Gigachad', 5, UnderlyingAsset['sol:giga']),
+  ofcsolToken('895df245-0030-46f0-a113-21de232399ee', 'ofcsol:bome', 'Book Of Meme', 6, UnderlyingAsset['sol:bome']),
+  ofcsolToken('9ff1f4ec-d06f-4657-806c-220fb0d598e5', 'ofcsol:io', 'IONET', 8, UnderlyingAsset['sol:io']),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -13537,6 +13540,22 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['eth:virtual']
   ),
   ofcerc20('8f0d3af0-8f99-4860-88db-e9b52855262f', 'ofccore', 'cVault.finance', 18, UnderlyingAsset.CORE),
+  ofcerc20('6135770b-d8a6-4998-85f4-5efc7379695c', 'ofcena', 'Ethena', 18, UnderlyingAsset.ENA),
+  ofcerc20('fb61c76b-ee66-48b6-a0a2-6ec37d03c542', 'ofcusde', 'USDe', 18, UnderlyingAsset.USDE),
+  ofcerc20('4419a432-b655-4941-92f6-a8a8a405ee97', 'ofczro', 'LayerZero', 18, UnderlyingAsset.ZRO),
+  ofcerc20('799795f1-0294-4bb7-9ed1-d5d43fd03e8b', 'ofcsafe', 'SAFE', 18, UnderlyingAsset.SAFE),
+  ofcerc20('5d0f9251-58e1-44fa-b1d6-b87ed23586da', 'ofcmoca', 'Moca', 18, UnderlyingAsset.MOCA),
+  ofcerc20('309379dd-9a5a-47e4-b491-fdba4305b60f', 'ofciotx', 'IoTeX Network', 18, UnderlyingAsset.IOTX),
+  ofcerc20('68a59406-9c61-497e-9aaf-8d3312ff233a', 'ofcath', 'Aethir Token', 18, UnderlyingAsset.ATH),
+  ofcerc20('cfe9cf73-0212-4ebb-96a9-e3c01a9d9360', 'ofczbuv2', 'Zeebu (v2)', 18, UnderlyingAsset.ZBUV2),
+  ofcerc20('8c25dc2a-e8ee-4f7a-ab71-1f2dfc4d139a', 'ofcpeaq', 'peaq', 18, UnderlyingAsset.PEAQ),
+  ofcerc20('72e958a1-a36c-4c77-ad1e-008f6044b09c', 'ofcarkm', 'Arkham', 18, UnderlyingAsset.ARKM),
+  ofcerc20('e145b8b0-e16b-4691-a20b-b154c23bbf7a', 'ofcpha', 'Phala', 18, UnderlyingAsset.PHA),
+  ofcerc20('f2e783d0-3278-4660-be43-82b7961c21df', 'ofcgas', 'Gas DAO', 18, UnderlyingAsset.GAS),
+  ofcerc20('cf195e88-d5eb-4e20-aeca-6a02e845a561', 'ofcmask', 'Mask Network', 18, UnderlyingAsset.MASK),
+  ofcerc20('d3f81454-874d-44a2-96e9-2fa37b5311b3', 'ofceth:turbo', 'Turbo', 18, UnderlyingAsset['eth:turbo']),
+  ofcerc20('509e7614-4134-4f4a-b107-cd3b4783a558', 'ofceth:spx', 'SPX6900', 8, UnderlyingAsset['eth:spx']),
+  ofcerc20('2c863d38-6d3b-438a-983d-79f20aff030a', 'ofceth:kava', 'Kava', 6, UnderlyingAsset['eth:kava']),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
@@ -13628,6 +13647,22 @@ export const coins = CoinMap.fromCoins([
   ),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
+  ofcBscToken(
+    '7e8cb701-0f63-4105-be1d-8b20fd42b093',
+    'ofcbsc:cake',
+    'PancakeSwap Token',
+    18,
+    UnderlyingAsset['bsc:cake']
+  ),
+  ofcBscToken(
+    '66583648-3200-4221-a677-930973dbcd72',
+    'ofcbsc:twt',
+    'Trust Wallet Token',
+    18,
+    UnderlyingAsset['bsc:twt']
+  ),
+  ofcBscToken('822d85d7-f42d-40de-a14c-220a375eda3f', 'ofcbsc:sfp', 'SafePal Token', 18, UnderlyingAsset['bsc:sfp']),
+  ofcBscToken('10226e82-2fac-49f4-8ee0-e0f7affeaeec', 'ofcbsc:mask', 'Mask Network', 18, UnderlyingAsset['bsc:mask']),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
     'ofcpolygon:sbc',
@@ -13888,6 +13923,13 @@ export const coins = CoinMap.fromCoins([
     'COP Minteo',
     18,
     UnderlyingAsset['polygon:copm']
+  ),
+  ofcPolygonErc20(
+    'e5812e67-f82d-4f9f-9018-9ed20ba2f871',
+    'ofcpolygon:mask',
+    'Mask Network',
+    18,
+    UnderlyingAsset['polygon:mask']
   ),
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
