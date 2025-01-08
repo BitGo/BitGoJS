@@ -39,6 +39,12 @@ const Navbar = () => {
         Key Card
       </NavItem>
       <NavItem
+        activeRoute={pathname === '/wasm-miniscript'}
+        onClick={() => navigate('/wasm-miniscript')}
+      >
+        Wasm Miniscript
+      </NavItem>
+      <NavItem
         activeRoute={pathname === '/ecdsachallenge'}
         onClick={() => navigate('/ecdsachallenge')}
       >

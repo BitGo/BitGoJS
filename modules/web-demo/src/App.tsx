@@ -7,6 +7,9 @@ const BGComponent = lazy(() => import('@components/BitGoJS'));
 const BGApiComponent = lazy(() => import('@components/BitGoAPI'));
 const CoinsComponent = lazy(() => import('@components/Coins'));
 const KeyCardComponent = lazy(() => import('@components/KeyCard'));
+const WasmMiniscriptComponent = lazy(
+  () => import('@components/WasmMiniscript'),
+);
 const EcdsaChallengeComponent = lazy(
   () => import('@components/EcdsaChallenge'),
 );
@@ -24,6 +27,10 @@ const App = () => {
             <Route path="/bitgo-api" element={<BGApiComponent />} />
             <Route path="/coins" element={<CoinsComponent />} />
             <Route path="/keycard" element={<KeyCardComponent />} />
+            <Route
+              path="/wasm-miniscript"
+              element={<WasmMiniscriptComponent />}
+            />
             <Route
               path="/ecdsachallenge"
               element={<EcdsaChallengeComponent />}

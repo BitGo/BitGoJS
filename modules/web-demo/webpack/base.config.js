@@ -88,6 +88,10 @@ const rules = [
       emitFile: false,
     },
   },
+  {
+    test: /miniscript.*\.wasm$/,
+    type: 'webassembly/sync',
+  },
 ];
 
 const devRules = [

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@bitgo/key-card": "^0.23.43",
+    "@bitgo/abstract-utxo": "^9.10.0",
     "@bitgo/sdk-api": "^1.57.6",
     "@bitgo/sdk-coin-ada": "^4.5.3",
     "@bitgo/sdk-coin-algo": "^2.1.55",
