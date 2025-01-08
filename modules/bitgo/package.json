@@ -120,7 +120,7 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/public-types": "3.6.0",
+    "@bitgo/public-types": "4.9.2",
     "@bitgo/sdk-opensslbytes": "^2.0.0",
     "@bitgo/sdk-test": "^8.0.55",
     "@openpgp/web-stream-tools": "0.0.14",
@@ -129,7 +129,7 @@
     "@types/jasmine": "^3.5.12",
     "@types/lodash": "^4.14.121",
     "aws-sdk": "^2.1155.0",
-    "io-ts-types": "0.5.16",
+    "io-ts-types": "^0.5.16",
     "karma": "^5.1.1",
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^4.0.0",

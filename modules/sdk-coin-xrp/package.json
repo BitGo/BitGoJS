@@ -47,7 +47,7 @@
     "lodash": "^4.17.14",
     "ripple-binary-codec": "^2.1.0",
     "ripple-keypairs": "^2.0.0",
-    "xrpl": "^4.0.0"
+    "xrpl": "~4.0.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.56.8",
