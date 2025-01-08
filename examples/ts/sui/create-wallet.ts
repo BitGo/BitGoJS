@@ -1,5 +1,5 @@
 /**
- * Create a multi-sig SUI wallet at BitGo.
+ * Create a TSS SUI wallet at BitGo.
  * This makes use of the convenience function generateWallet
  * This tool will help you see how to use the BitGo API to easily create a wallet.
  *
@@ -8,21 +8,33 @@
 
 import { BitGo } from 'bitgo';
 import { GenerateWalletOptions } from '@bitgo/sdk-core';
+require('dotenv').config({ path: '../../../.env' });
+
 const bitgo = new BitGo({ env: 'test' });
 
 const coin = 'tsui';
 
 // TODO: set your access token here
-const accessToken = '';
+const accessToken = process.env.TESTNET_ACCESS_TOKEN!;
+
+const multisigType = 'tss';
+const type = 'cold';
+const coldDerivationSeed = '1';
 
 // TODO: set a label for your new wallet here
-const label = 'Test ' + coin + ' V2 Wallet - ' + new Date().getTime();
+const label = `${coin} ${multisigType} ${type} ${coldDerivationSeed}`;
 
 // TODO: set your passphrase for your new wallet here
-const passphrase = '';
+const passphrase = process.env.PASS;
 
 // TODO: set your enterprise here
-const enterprise = '';
+const enterprise = process.env.ENTERPRISE;
+
+// TODO: set your bitgo key ID here
+const bitgoKeyId = '';
+
+// TODO: set your common keychain here
+const commonKeychain = '';
 
 // Create the wallet
 async function createWallet() {
@@ -30,10 +42,13 @@ async function createWallet() {
 
   const walletOptions: GenerateWalletOptions = {
     label,
-    passphrase,
-    passcodeEncryptionCode: passphrase,
-    multisigType: 'tss',
+    multisigType,
+    type,
     enterprise,
+    coldDerivationSeed,
+    bitgoKeyId,
+    commonKeychain,
+    passphrase,
   };
 
   const wallet = await bitgo.coin(coin).wallets().generateWallet(walletOptions);
