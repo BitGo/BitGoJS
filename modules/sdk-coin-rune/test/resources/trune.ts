@@ -93,3 +93,15 @@ export const testnetCoinAmounts = {
   amount4: { amount: '-1', denom: 'rune' },
   amount5: { amount: '1000000000', denom: 'arune' },
 };
+
+export const wrwUser = {
+  senderAddress: 'sthor1gqek8kl5mr9c37rl8yp2mljne67jgaqm96jg2f',
+  destinationAddress: 'sthor1tl46dxfh3qupqxgap5vtpah4pxwn35j5tnjzls',
+  userPrivateKey:
+    '{"iv":"9rcHMytmmnHjG1llBoc49g==","v":1,"iter":10000,"ks":256,"ts":64,"mode" :"ccm","adata":"","cipher":"aes","salt":"8lFAwTrcCzQ=","ct":"1gMRC60nu01IYr jgir9GCuQNLMZC2vt/pFjgL+tV3K7/rviSguDsua133PkNEeuty1mZxNH2S1TKu1KxZJMlB+MAs vo7k9dIyCgQvkX/nbJFFaRrnLL55mcQe0PhCdVNRHx9doXMngRF+UqEMLD8F0HNE1+ZPGzsathH DLFPxLCRMrwA/Ss/LQowGiXo4WnzVK3MQcX6wdmZvfV+S3xswRjHkLvolVY3rVGP5PkU86Wwrmy e1CKM4hSGA8FModa718Svk7C+LHr0yOTuuPftXtH0fAPPo9KH7f+EbBWMJPQgjK8DW/z1xnDgLH dzhveyNPevqUqb3FEyutjow+KBkxl+xHqJ4gKcU9MLsghPMCy0zSq2kBbhlqWJ7XwduhHVGv2nT rlsEfh7Z0fbqZTX1RQ5AKZhSBFEqmq1hKxRlhVcr9KqBw814tIfdFD7nMgV7rz+3X8cJaK2tDXH 0QaY8bJGwxwH38FsfNevs8Qf2bx5VrD/Vw3wo0G5hJ7+TdPCrib8UWyxPGuruH7b8hwCUTZaq97 zkDp7c79BDWyH8ycTxQXjLPwb1CwpUiRDc6NHD2p3iGVaztMdQOMXmPeeMhBNGVI0MPAfSdcDip 2E5Ek0fwnI1mEuFjPMkc+VOlsVhlWfV/9Xpoh3NadPhqg3i9Cr2uNT/PSyHd/jpIqG5DlaaEvVD f7COqNvXX5Qqmlr9dL3R2cf0zP8TPImAlRfef4D8zatHtylKkImMc0JcdcXTzwU/5tf21o/Y701 DLYjwUUgqQ57ObHHNlSvmdIuO1rD5LAn96NAYNRStrENqmbibE5MsYrp9nPAprCNFnZR6UNpXwD hvq9gvxRG+PjmXGj0nuyR7cshxURLy0/p4tq7LkGjk4Gg31Mgk41lcYUW2tLuUbTYmpteu3Cdwe DFuLsfI1qZxKyr6V5Nse3ZAvnJLTZnQXiHOnc2y5/e53+MAVupXR7HZzx7SIJ+fqxpjxvccmgJC sWaPo+Lsx6KaSNkQGFMGuyZ87IEvm7vk2GyIP+FQUn4nmTdEDLzg7nNo+zf5WT4A6Yz3GNAa3Nh 2QHZSFGWcubOXDawh6lAjZ78GNK9yJDp22dJTmfZ+1TsVORpbZw="}',
+  backupPrivateKey:
+    '{"iv":"0EDqGU1yBE2PM4ry6TxARA==","v":1,"iter":10000,"ks":256,"ts":64,"mode" :"ccm","adata":"","cipher":"aes","salt":"a8T0fVVhTz0=","ct":"syCrJ+RD8oHZ4z jltLmyNS/VVmSLXLMAdnVnoPNEfFX9mIMAycYCajMR297l09fPsWWqDcDs0cSI0xNbnMjyW30b/ JOvQ33eaBSiyBr3vbmhaEFduZTUgOCNg/Js0cAkEkeE/KDkfOUB0HzfSEQb6m0eXmWgGSnySUOd TlZZ/thT7j2oPHVpPE52h6Yi3LS1Jkt3S7ySStXvG/4iurhcL32a32Fx3IQxs/bg8JBIGlRG644 aLttCJ+uPihaSISUGn1hh0iEz2ZAaCoCkq7oNPrK+pxHHOmbjxp6XpV67EmQ/JRfSt47eW3jC7A D+xaLLHspjQifp6ClZeHT2pBrkcWrZfr1uL5w3CKrXQeJ0pXUoRmJwGys4hm5Bzu4imANo+jd1+ wg73ByYQ5VwRhV1qhb82vUrQ0i4k5Gt2l6U2LZ/DMQiUbq7FdjYWqfZmk18GIZ6g3IPJtGjnA6x o8RTvkytMMv8btsx/aa6jE6EMeFtGzlhhJJunpcS4QG4IkIuyAjPafwOklEwXklZCLDpKdVYgTR RE0XHC0VXOGQwGUARzMZwQO5OaRyQkxtZ5/CawI5jrwMZP+bpC9dKzsGOXfSvvFsJWnkboXyy09 bFwTuKHx0ZILdA/8Xq5689YEmFljHTeQ0Es/q5y5kU+XzT4sjjgxz1qqhUJVh7wDwQevRDWTwGJ Lfi2AeLsv2f0PKiGTYJzQGSXUerhLMwhg3rXNfXGkrWSmEhJH/RsvF6CdaRKWxVd+k8K5ULLwK+ sdujA5murZ24KI5z0Yr9qW2TSsJRG3PS+ZH1q3VGYaz6k912QVzyvzds8+hfaHNtr6OGBWahGZo JchgnQHSfAZxOUz7K7WNzh934HK5+e11/lF/Fxssumz2OStFWI18oBB7/8YBi6PEp3sFddOQVSA BXRGuStolGna43nly4bavOic7XIoNHs61hynMeR6NcthsSrj5xZ6q36EqLdfkDImQvu+3BXClT7 Q4bdEfXm0t7Bgmid4NeJ1I3grXZMOmVbPgcypfxp2jrkjme/R0/eJL4B38WU2xjxDg+WlBGy8dA xg8ll+n2NkA7lvJz5NBDxbGHRAhtyVTF8YA+Oxps3rumIw=="}',
+  bitgoPublicKey:
+    '02d754ffd645ba3d87fbdeb3578dbc22fc252ebb299416434a7059d9638f52d11e0fd153d9d dfb2a193531ac5b7d3b223188a957de1312d3ede35305ee70b76376',
+  walletPassphrase: 'Ghghjkg!455544llll',
+};

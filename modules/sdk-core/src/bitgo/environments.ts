@@ -46,6 +46,7 @@ interface EnvironmentTemplate {
   beraNodeUrl: string;
   zetaNodeUrl: string;
   coreumNodeUrl: string;
+  runeNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
   tronNodes: {
@@ -142,6 +143,7 @@ const mainnetBase: EnvironmentTemplate = {
   beraNodeUrl: '', // TODO(WIN-693): update url when mainnet goes live
   zetaNodeUrl: 'https://zetachain.blockpi.network', // reference https://www.zetachain.com/docs/reference/api/
   coreumNodeUrl: 'https://full-node.mainnet-1.coreum.dev:1317',
+  runeNodeUrl: 'https://thornode.ninerealms.com',
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
@@ -193,6 +195,7 @@ const testnetBase: EnvironmentTemplate = {
   beraNodeUrl: '', // TODO(WIN-693): update url when testnet goes live
   zetaNodeUrl: 'https://rest.nodejumper.io/zetachaintestnet', // reference : https://www.zetachain.com/docs/reference/api/
   coreumNodeUrl: 'https://full-node.testnet-1.coreum.dev:1317',
+  runeNodeUrl: 'https://stagenet-thornode.ninerealms.com',
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
