@@ -1060,7 +1060,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ZETA,
     BaseUnit.ZETA,
-    ZETA_FEATURES
+    [...ZETA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT]
   ),
   account(
     '1aeb7754-1518-4aac-8cc0-e4bb07713a31',
@@ -1070,7 +1070,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ZETA,
     BaseUnit.ZETA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...ZETA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT]
   ),
   account(
     '5f9506c5-f10a-43c2-92d3-52941083bbc7',
@@ -2188,7 +2188,8 @@ export const coins = CoinMap.fromCoins([
     'Alchemy Pay',
     8,
     '0xed04915c23f00a313a544955524eb7dbd823143d',
-    UnderlyingAsset.ACH
+    UnderlyingAsset.ACH,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'd2d3040e-5455-4d1c-b9a4-0df429280f83',
@@ -2620,7 +2621,8 @@ export const coins = CoinMap.fromCoins([
     'Balancer',
     18,
     '0xba100000625a3754423978a60c9317c58a424e3d',
-    UnderlyingAsset.BAL
+    UnderlyingAsset.BAL,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'f510078f-007e-44ba-bf35-ed3e5da59947',
@@ -2759,7 +2761,8 @@ export const coins = CoinMap.fromCoins([
     'Biconomy',
     18,
     '0xf17e65822b568b3903685a7c9f496cf7656cc6c2',
-    UnderlyingAsset.BICO
+    UnderlyingAsset.BICO,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '6b636557-5397-4db6-bd5d-49f54857f237',
@@ -2799,7 +2802,8 @@ export const coins = CoinMap.fromCoins([
     'BitTorrent',
     18,
     '0xc669928185dbce49d2230cc9b0979be6dc797957',
-    UnderlyingAsset.BTT
+    UnderlyingAsset.BTT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '83214bf2-eec7-4225-b398-41e065e23311',
@@ -2848,7 +2852,8 @@ export const coins = CoinMap.fromCoins([
     'Bancor',
     18,
     '0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c',
-    UnderlyingAsset.BNT
+    UnderlyingAsset.BNT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'c8a5827b-412c-45c5-9a98-d33978cd3abb',
@@ -2889,7 +2894,8 @@ export const coins = CoinMap.fromCoins([
     'BarnBridge',
     18,
     '0x0391d2021f89dc339f60fff84546ea23e337750f',
-    UnderlyingAsset.BOND
+    UnderlyingAsset.BOND,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '6b0fabae-5d77-4f1f-ab2d-33094ef70b64',
@@ -2905,7 +2911,8 @@ export const coins = CoinMap.fromCoins([
     'SwissBorg Token',
     18,
     '0x64d0f55cd8c7133a9d7102b13987235f486f2224',
-    UnderlyingAsset.BORG
+    UnderlyingAsset.BORG,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '1ff8e770-33b9-4e62-9837-9eb26d67e191',
@@ -3161,7 +3168,8 @@ export const coins = CoinMap.fromCoins([
     'Celsius',
     4,
     '0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d',
-    UnderlyingAsset.CEL
+    UnderlyingAsset.CEL,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'a5dfdbdd-aff4-4a38-a798-37225afb2c8c',
@@ -3169,7 +3177,8 @@ export const coins = CoinMap.fromCoins([
     'Celer Network',
     18,
     '0x4f9254c83eb525f9fcf346490bbb3ed28a81c667',
-    UnderlyingAsset.CELR
+    UnderlyingAsset.CELR,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '9f27c36b-192b-46e6-9fd6-2c2b0634edf5',
@@ -3274,7 +3283,8 @@ export const coins = CoinMap.fromCoins([
     'Clover Token',
     18,
     '0x80c62fe4487e1351b47ba49809ebd60ed085bf52',
-    UnderlyingAsset.CLV
+    UnderlyingAsset.CLV,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '631e1421-4e36-45a4-8fd7-6240664f0a8f',
@@ -3282,7 +3292,8 @@ export const coins = CoinMap.fromCoins([
     'Changer',
     18,
     '0x5c1d9aa868a30795f92fae903edc9eff269044bf',
-    UnderlyingAsset.CNG
+    UnderlyingAsset.CNG,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'bf0522d4-d7e8-4390-af78-e983524a4ff4',
@@ -3387,7 +3398,8 @@ export const coins = CoinMap.fromCoins([
     'Cream',
     18,
     '0x2ba592f78db6436527729929aaf6c908497cb200',
-    UnderlyingAsset.CREAM
+    UnderlyingAsset.CREAM,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '4bc48062-4e23-4338-9337-418eea86665d',
@@ -3403,7 +3415,8 @@ export const coins = CoinMap.fromCoins([
     'Crypto.com Chain',
     8,
     '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b',
-    UnderlyingAsset.CRO
+    UnderlyingAsset.CRO,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '3e476749-4c03-4ab8-bf3a-e7353ba85a0f',
@@ -3486,7 +3499,8 @@ export const coins = CoinMap.fromCoins([
     'Civic',
     8,
     '0x41e5560054824ea6b0732e656e3ad64e20e94e45',
-    UnderlyingAsset.CVC
+    UnderlyingAsset.CVC,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '0c1b75bf-14fb-45e6-a794-bdb24693095d',
@@ -3503,7 +3517,8 @@ export const coins = CoinMap.fromCoins([
     'Covalent X Token',
     18,
     '0x7abc8a5768e6be61a6c693a6e4eacb5b60602c4d',
-    UnderlyingAsset.CXT
+    UnderlyingAsset.CXT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '605c10a7-7d5e-4674-bca5-72d0e8588652',
@@ -3602,7 +3617,8 @@ export const coins = CoinMap.fromCoins([
     'Dent',
     8,
     '0x3597bfd533a99c9aa083587b074434e61eb0a258',
-    UnderlyingAsset.DENT
+    UnderlyingAsset.DENT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'ebfd93a9-bdca-4e1f-8252-bbed553fed48',
@@ -3933,7 +3949,8 @@ export const coins = CoinMap.fromCoins([
     'Elrond Gold',
     18,
     '0xe3fb646fc31ca12657b17070bc31a52e323b8543',
-    UnderlyingAsset.EGLD
+    UnderlyingAsset.EGLD,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '43d681ad-0191-45f0-800e-b027f277e7d4',
@@ -3942,7 +3959,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xec53bf9167f50cdeb3ae105f56099aaab9061f83',
     UnderlyingAsset.EIGEN,
-    EIGEN_FEATURES
+    [...EIGEN_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT]
   ),
   erc20(
     'e7d90271-7d08-443a-9feb-37c83086d39c',
@@ -3950,7 +3967,8 @@ export const coins = CoinMap.fromCoins([
     'Aelf',
     18,
     '0xbf2179859fc6d5bee9bf9158632dc51678a4100e',
-    UnderlyingAsset.ELF
+    UnderlyingAsset.ELF,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'a2f990a7-5109-4d67-8042-69c341053394',
@@ -4389,7 +4407,8 @@ export const coins = CoinMap.fromCoins([
     'FTX Token',
     18,
     '0x50d1c9771902476076ecfc8b2a83ad6b9355a4c9',
-    UnderlyingAsset.FTT
+    UnderlyingAsset.FTT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'd7c330ea-7767-4737-8701-cc50c605bab9',
@@ -4534,7 +4553,8 @@ export const coins = CoinMap.fromCoins([
     'Golem',
     18,
     '0x7dd9c5cba05e151c895fde1cf355c9a1d5da6429',
-    UnderlyingAsset.GLM
+    UnderlyingAsset.GLM,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '5552fd84-9354-4776-873e-a0e40a6b1675',
@@ -4598,7 +4618,8 @@ export const coins = CoinMap.fromCoins([
     'Gnosis',
     18,
     '0x6810e776880c02933d47db1b9fc05908e5386b96',
-    UnderlyingAsset.GNO
+    UnderlyingAsset.GNO,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '55abd6de-6eab-4dc3-9706-aa255c1d4b5f',
@@ -4784,7 +4805,8 @@ export const coins = CoinMap.fromCoins([
     'Holo',
     18,
     '0x6c6ee5e31d828de241282b9606c8e98ea48526e2',
-    UnderlyingAsset.HOT
+    UnderlyingAsset.HOT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '4f0a0207-bf4d-4513-9cdb-0e5b015da24f',
@@ -4808,7 +4830,8 @@ export const coins = CoinMap.fromCoins([
     'Huobi Token',
     18,
     '0x6f259637dcd74c767781e37bc6133cd6a68aa161',
-    UnderlyingAsset.HT
+    UnderlyingAsset.HT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '674da130-7e33-44f6-a5d4-89fabe9fae20',
@@ -5093,7 +5116,8 @@ export const coins = CoinMap.fromCoins([
     'Keep',
     18,
     '0x85eee30c52b0b379b046fb0f85f4f3dc3009afec',
-    UnderlyingAsset.KEEP
+    UnderlyingAsset.KEEP,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'ba441f88-cd04-432c-866f-4d27ebfd4352',
@@ -5109,7 +5133,8 @@ export const coins = CoinMap.fromCoins([
     'Kin',
     18,
     '0x818fc6c2ec5986bc6e2cbf00939d90556ab12ce5',
-    UnderlyingAsset.KIN
+    UnderlyingAsset.KIN,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'dee18bce-9cd2-4d9b-8cc9-0c287a572043',
@@ -5255,7 +5280,8 @@ export const coins = CoinMap.fromCoins([
     'Bitfinex LEO',
     18,
     '0x2af5d2ad76741191d15dfe7bf6ac92d4bd912ca3',
-    UnderlyingAsset.LEO
+    UnderlyingAsset.LEO,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'adff71d0-118d-4baa-8dfe-69174293f1ae',
@@ -5533,7 +5559,8 @@ export const coins = CoinMap.fromCoins([
     'Mandala',
     18,
     '0x9d03393d297e42c135625d450c814892505f1a84',
-    UnderlyingAsset.MDX
+    UnderlyingAsset.MDX,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '4d88bb1f-b643-41f8-87ca-e01259903393',
@@ -5622,7 +5649,8 @@ export const coins = CoinMap.fromCoins([
     'Mirror Protocol',
     18,
     '0x09a3ecafa817268f77be1283176b946c4ff2e608',
-    UnderlyingAsset.MIR
+    UnderlyingAsset.MIR,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '6d781cdc-3bb0-4865-afa0-0aa61ccf49b2',
@@ -5886,7 +5914,8 @@ export const coins = CoinMap.fromCoins([
     'Numeraire',
     18,
     '0x1776e1f26f98b1a5df9cd347953a26dd3cb46671',
-    UnderlyingAsset.NMR
+    UnderlyingAsset.NMR,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '6da6a769-38cd-42fb-b8ae-30aa44ac3565',
@@ -5902,7 +5931,8 @@ export const coins = CoinMap.fromCoins([
     'NuCypher',
     18,
     '0x4fe83213d56308330ec302a8bd641f1d0113a4cc',
-    UnderlyingAsset.NU
+    UnderlyingAsset.NU,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'f3b3ea44-e236-4dd1-b005-605fff79f422',
@@ -5926,7 +5956,8 @@ export const coins = CoinMap.fromCoins([
     'Ocean Token',
     18,
     '0x7afebbb46fdb47ed17b22ed075cde2447694fb9e',
-    UnderlyingAsset.OCEAN
+    UnderlyingAsset.OCEAN,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '7b8d77a2-4843-4000-a91a-79ba70cc5b96',
@@ -5950,7 +5981,8 @@ export const coins = CoinMap.fromCoins([
     'Origin Token',
     18,
     '0x8207c1ffc5b6804f6024322ccf34f29c3541ae26',
-    UnderlyingAsset.OGN
+    UnderlyingAsset.OGN,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'f4a71d1f-b4df-4f76-ac39-8fab55a644e1',
@@ -5975,7 +6007,8 @@ export const coins = CoinMap.fromCoins([
     'Omni Network',
     18,
     '0x36e66fbbce51e4cd5bd3c62b637eb411b18949d4',
-    UnderlyingAsset.OMNI
+    UnderlyingAsset.OMNI,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'def47964-e90c-4862-a724-086e439d01de',
@@ -6082,7 +6115,8 @@ export const coins = CoinMap.fromCoins([
     'Orchid',
     18,
     '0x4575f41308ec1483f3d399aa9a2826d74da13deb',
-    UnderlyingAsset.OXT
+    UnderlyingAsset.OXT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '4210fe52-b2bf-4a86-9b87-61b8679edec7',
@@ -6366,7 +6400,8 @@ export const coins = CoinMap.fromCoins([
     'Polymath',
     18,
     '0x9992ec3cf6a55b00978cddf2b27bc6882d88d1ec',
-    UnderlyingAsset.POLY
+    UnderlyingAsset.POLY,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '4c6b7b60-9cd8-4d6d-9a6e-39db4b37be72',
@@ -6545,7 +6580,8 @@ export const coins = CoinMap.fromCoins([
     'Quant',
     18,
     '0x4a220e6096b25eadb88358cb44068a3248254675',
-    UnderlyingAsset.QNT
+    UnderlyingAsset.QNT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'c3961c7d-6788-45d0-9630-f413ce6e0889',
@@ -7155,7 +7191,8 @@ export const coins = CoinMap.fromCoins([
     'Status Network Token',
     18,
     '0x744d70fdbe2ba4cf95131626614a1763df805b9e',
-    UnderlyingAsset.SNT
+    UnderlyingAsset.SNT,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '87d5b533-816e-4680-9695-a8509b352ee0',
@@ -7441,7 +7478,8 @@ export const coins = CoinMap.fromCoins([
     'Telcoin',
     2,
     '0x467bccd9d29f223bce8043b84e8c8b282827790f',
-    UnderlyingAsset.TEL
+    UnderlyingAsset.TEL,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '8e1d91c3-9b23-4adf-82b3-6dd0f077c7b8',
@@ -8242,7 +8280,8 @@ export const coins = CoinMap.fromCoins([
     'Worldcoin',
     18,
     '0x163f8c2467924be0ae7b5347228cabf260318753',
-    UnderlyingAsset.WLD
+    UnderlyingAsset.WLD,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '9a5fada5-5f91-494b-bab5-8781d831fcd0',
@@ -8453,7 +8492,8 @@ export const coins = CoinMap.fromCoins([
     'YFII.Finance',
     18,
     '0xa1d0e215a23d7030842fc67ce582a6afa3ccab83',
-    UnderlyingAsset.YFII
+    UnderlyingAsset.YFII,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '5ec6eeae-88b2-41b4-9232-f1d1fe8cc3f8',
@@ -8469,7 +8509,8 @@ export const coins = CoinMap.fromCoins([
     'Yld',
     18,
     '0xf94b5c5651c888d928439ab6514b93944eee6f48',
-    UnderlyingAsset.YLD
+    UnderlyingAsset.YLD,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '82ebedfd-3f92-4ef9-854b-38be7d506d76',
@@ -8525,7 +8566,8 @@ export const coins = CoinMap.fromCoins([
     'Zilliqa',
     12,
     '0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27',
-    UnderlyingAsset.ZIL
+    UnderlyingAsset.ZIL,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '33f1ad20-0e5e-439b-bf8e-dee2e0bf42b1',
@@ -11340,7 +11382,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xae78736cd615f374d3085123a210448e74fc6393',
     UnderlyingAsset['RETH-ROCKET'],
-    RETH_ROCKET_FEATURES
+    [...RETH_ROCKET_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT]
   ),
   erc20(
     '588c7eb4-02fa-4a80-9a0d-158e53d10320',
