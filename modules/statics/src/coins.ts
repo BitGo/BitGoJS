@@ -426,11 +426,21 @@ const APT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
   CoinFeature.STAKING,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
   CoinFeature.SUPPORTS_TOKENS,
 ];
+
+const ICP_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+  CoinFeature.SUPPORTS_TOKENS,
+];
+
 const TAO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 
 const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
@@ -1441,6 +1451,28 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.TAO,
     BaseUnit.TAO,
     TAO_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    '35254b6a-5370-4e22-844b-be504b510103',
+    'icp',
+    'Internet Computer',
+    Networks.main.icp,
+    8,
+    UnderlyingAsset.ICP,
+    BaseUnit.ICP,
+    ICP_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    'ce572773-26c2-4038-a96d-26649a9a96df',
+    'ticp',
+    'Testnet Internet Computer',
+    Networks.test.icp,
+    8,
+    UnderlyingAsset.ICP,
+    BaseUnit.ICP,
+    ICP_FEATURES,
     KeyCurve.Ed25519
   ),
   erc20CompatibleAccountCoin(
