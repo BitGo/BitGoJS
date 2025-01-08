@@ -33,6 +33,7 @@ async function main() {
     label,
     passphrase,
     multisigType: 'tss',
+    enterprise: '',
   };
 
   const wallet = await bitgo.coin(coin).wallets().generateWallet(walletOptions);
