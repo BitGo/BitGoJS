@@ -1423,7 +1423,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '7aca10bf-79dd-428b-aeb6-54f03f9aec0f',
     'tapt',
-    'Testnet Apt',
+    'Testnet Aptos',
     Networks.test.apt,
     8,
     UnderlyingAsset.APT,
