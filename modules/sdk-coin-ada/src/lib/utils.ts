@@ -14,6 +14,8 @@ import {
 } from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { bech32 } from 'bech32';
+import base58 from 'bs58';
+import cbor from 'cbor';
 
 export const MIN_ADA_FOR_ONE_ASSET = '1500000';
 export const VOTE_ALWAYS_ABSTAIN = 'always-abstain';
@@ -149,26 +151,43 @@ export class Utils implements BaseUtils {
     const POINTER_ADDR_LEN = 52;
     const VALIDATOR_ADDR_LEN = 56;
 
-    // test if this is a bech32 address first
-    if (new RegExp(bech32PrefixList.join('|')).test(address)) {
+    //Check for Shelley-era (Bech32) addresses
+    if (new RegExp(`^(${bech32PrefixList.join('|')})`).test(address)) {
       try {
         const decodedBech = bech32.decode(address, 108);
         const wordLength = decodedBech.words.length;
-        if (!bech32PrefixList.includes(decodedBech.prefix)) {
-          return false;
+        if (
+          bech32PrefixList.includes(decodedBech.prefix) &&
+          (wordLength === BASE_ADDR_LEN ||
+            wordLength === REWARD_AND_ENTERPRISE_ADDR_LEN ||
+            wordLength === POINTER_ADDR_LEN)
+        ) {
+          return true;
         }
-        return (
-          wordLength === BASE_ADDR_LEN ||
-          wordLength === REWARD_AND_ENTERPRISE_ADDR_LEN ||
-          wordLength === POINTER_ADDR_LEN
-        );
-      } catch (err) {
-        return false;
+      } catch (e) {
+        console.log(`Address: ${address} failed Bech32 test with error: ${e}`);
       }
-    } else {
-      // maybe this is a validator address
-      return new RegExp(`^(?!pool)[a-z0-9]\{${VALIDATOR_ADDR_LEN}\}$`).test(address);
     }
+
+    //Check for Validator addresses
+    if (new RegExp(`^(?!pool)[a-z0-9]{${VALIDATOR_ADDR_LEN}}$`).test(address)) {
+      return true;
+    }
+
+    //Check for Byron-era (Base58 + CBOR)
+    try {
+      const decodedBase58 = base58.decode(address);
+
+      const cborData = cbor.decodeFirstSync(decodedBase58);
+
+      if (Array.isArray(cborData) && cborData.length >= 3) {
+        return true;
+      }
+    } catch (e) {
+      console.log(`Address: ${address} failed Base58 + CBOR test with error: ${e}`);
+    }
+
+    return false;
   }
 
   /** @inheritdoc */
