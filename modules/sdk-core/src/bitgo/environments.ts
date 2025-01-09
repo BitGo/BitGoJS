@@ -153,6 +153,8 @@ const mainnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: true,
   suiNodeUrl: 'https://fullnode.mainnet.sui.io',
   etcNodeUrl: 'https://etc.blockscout.com',
+  coredaoExplorerBaseUrl: 'https://scan.coredao.org/',
+  oasExplorerBaseUrl: 'https://explorer.oasys.games',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -205,6 +207,8 @@ const testnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: false,
   suiNodeUrl: 'https://fullnode.testnet.sui.io',
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
+  coredaoExplorerBaseUrl: 'https://scan.test.btcs.network',
+  oasExplorerBaseUrl: 'https://explorer.testnet.oasys.games',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
