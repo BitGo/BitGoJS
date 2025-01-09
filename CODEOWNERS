@@ -69,6 +69,7 @@
 /modules/sdk-coin-sol/ @BitGo/ethalt-team
 /modules/sdk-coin-stx/ @BitGo/ethalt-team
 /modules/sdk-coin-sui/ @BitGo/ethalt-team
+/modules/sdk-coin-tao/ @BitGo/ethalt-team
 /modules/sdk-coin-ton/ @BitGo/ethalt-team
 /modules/sdk-coin-trx/ @BitGo/ethalt-team
 /modules/sdk-coin-xlm/ @BitGo/ethalt-team

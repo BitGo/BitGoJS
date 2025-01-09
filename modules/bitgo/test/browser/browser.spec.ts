@@ -33,6 +33,8 @@ describe('Coins', () => {
       XrpToken: 1,
       Rune: 1,
       Trune: 1,
+      Tao: 1,
+      Ttao: 1,
     };
     Object.keys(BitGoJS.Coin)
       .filter((coinName) => !excludedKeys[coinName])

@@ -90,6 +90,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-sei /var/modules/sdk-coin-sei/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sol /var/modules/sdk-coin-sol/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-stx /var/modules/sdk-coin-stx/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sui /var/modules/sdk-coin-sui/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-tao /var/modules/sdk-coin-tao/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-tia /var/modules/sdk-coin-tia/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ton /var/modules/sdk-coin-ton/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-trx /var/modules/sdk-coin-trx/
@@ -166,6 +167,7 @@ cd /var/modules/sdk-coin-sei && yarn link && \
 cd /var/modules/sdk-coin-sol && yarn link && \
 cd /var/modules/sdk-coin-stx && yarn link && \
 cd /var/modules/sdk-coin-sui && yarn link && \
+cd /var/modules/sdk-coin-tao && yarn link && \
 cd /var/modules/sdk-coin-tia && yarn link && \
 cd /var/modules/sdk-coin-ton && yarn link && \
 cd /var/modules/sdk-coin-trx && yarn link && \
@@ -245,6 +247,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-sol && \
     yarn link @bitgo/sdk-coin-stx && \
     yarn link @bitgo/sdk-coin-sui && \
+    yarn link @bitgo/sdk-coin-tao && \
     yarn link @bitgo/sdk-coin-tia && \
     yarn link @bitgo/sdk-coin-ton && \
     yarn link @bitgo/sdk-coin-trx && \
