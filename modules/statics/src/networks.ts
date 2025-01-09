@@ -886,6 +886,18 @@ class Fiat extends Mainnet implements BaseNetwork {
   explorerUrl = undefined;
 }
 
+class Bittensor extends Mainnet implements AccountNetwork {
+  name = 'Tao';
+  family = CoinFamily.TAO;
+  explorerUrl = 'https://taostats.io/evm/tx/';
+}
+
+class BittensorTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Tao';
+  family = CoinFamily.TAO;
+  explorerUrl = 'https://explorer.finney.opentensor.ai/#/';
+}
+
 class Trx extends Mainnet implements TronNetwork {
   name = 'Trx';
   family = CoinFamily.TRX;
@@ -1195,6 +1207,7 @@ export const Networks = {
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
     susd: Object.freeze(new SUSD()),
+    tao: Object.freeze(new Bittensor()),
     tia: Object.freeze(new Tia()),
     ton: Object.freeze(new Ton()),
     trx: Object.freeze(new Trx()),
@@ -1259,6 +1272,7 @@ export const Networks = {
     stx: Object.freeze(new StxTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     coreum: Object.freeze(new CoreumTestnet()),
+    tao: Object.freeze(new BittensorTestnet()),
     tia: Object.freeze(new TiaTestnet()),
     ton: Object.freeze(new TonTestnet()),
     trx: Object.freeze(new TrxTestnet()),

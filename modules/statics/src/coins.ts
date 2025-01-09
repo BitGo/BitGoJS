@@ -430,6 +430,8 @@ const APT_FEATURES = [
   CoinFeature.BULK_STAKING_TRANSACTION,
   CoinFeature.SUPPORTS_TOKENS,
 ];
+const TAO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
+
 const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 const ETH_FEATURES_WITH_FRANKFURT_GERMANY = [...ETH_FEATURES_WITH_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY];
 const SOL_TOKEN_FEATURES_WITH_FRANKFURT = [
@@ -1416,6 +1418,28 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.APT,
     BaseUnit.APT,
     APT_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    'a08453f0-a3be-4875-b82b-6b0c9bfa53e6',
+    'tao',
+    'Bittensor',
+    Networks.main.tao,
+    9,
+    UnderlyingAsset.TAO,
+    BaseUnit.TAO,
+    TAO_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    '0f7a1a5b-7f34-4593-80bc-2fb4ea15ebfc',
+    'ttao',
+    'Testnet Bittensor',
+    Networks.test.tao,
+    9,
+    UnderlyingAsset.TAO,
+    BaseUnit.TAO,
+    TAO_FEATURES,
     KeyCurve.Ed25519
   ),
   erc20CompatibleAccountCoin(
