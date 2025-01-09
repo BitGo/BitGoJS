@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.14...@bitgo/sdk-coin-rune@1.1.15) (2025-01-09)
+
+### Bug Fixes
+
+- **sdk-coin-rune:** add native transaction fees for wallet recovery ([140f0ce](https://github.com/BitGo/BitGoJS/commit/140f0ce419a0a1093a463a0f955d094ee7c16334))
+
 ## [1.1.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.13...@bitgo/sdk-coin-rune@1.1.14) (2025-01-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-rune

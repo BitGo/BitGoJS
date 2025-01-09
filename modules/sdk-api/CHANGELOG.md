@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.58.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.57.6...@bitgo/sdk-api@1.58.0) (2025-01-09)
+
+### Features
+
+- adding support for non-bitgo recovery for coredao and oas ([37f5e49](https://github.com/BitGo/BitGoJS/commit/37f5e4996c115543d068750d633ea5c5ae723725))
+- move hmac fns to own package ([7466b99](https://github.com/BitGo/BitGoJS/commit/7466b99cf2b48e3a746ae082127d7e4f0f95bfef))
+
 ## [1.57.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.57.5...@bitgo/sdk-api@1.57.6) (2025-01-03)
 
 **Note:** Version bump only for package @bitgo/sdk-api

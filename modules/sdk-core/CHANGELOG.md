@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.18.0...@bitgo/sdk-core@28.19.0) (2025-01-09)
+
+### Features
+
+- adding support for non-bitgo recovery for coredao and oas ([37f5e49](https://github.com/BitGo/BitGoJS/commit/37f5e4996c115543d068750d633ea5c5ae723725))
+
 # [28.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.17.2...@bitgo/sdk-core@28.18.0) (2025-01-03)
 
 ### Bug Fixes

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.17.0...@bitgo/statics@50.18.0) (2025-01-09)
+
+### Bug Fixes
+
+- make contract address lowercase ([dbef63f](https://github.com/BitGo/BitGoJS/commit/dbef63fdc9620a99644eb7ceea9b0fe497d9ca52))
+
+### Features
+
+- adding support for non-bitgo recovery for coredao and oas ([37f5e49](https://github.com/BitGo/BitGoJS/commit/37f5e4996c115543d068750d633ea5c5ae723725))
+- **statics:** add new batch of tokens WIN-4114 ([1bd68a1](https://github.com/BitGo/BitGoJS/commit/1bd68a119b5d8614524da61d51fb8619ac13ba58))
+- **statics:** add staking feature to bera ([e406a75](https://github.com/BitGo/BitGoJS/commit/e406a7537e18e2b107113af8ce240fbd71916843))
+- **statics:** added ICP to statics ([78c2bbe](https://github.com/BitGo/BitGoJS/commit/78c2bbe53b14e063811a59bed5a656d19a399c49))
+- **statics:** onboard GoUSD token with eth prefix ([14e8ce2](https://github.com/BitGo/BitGoJS/commit/14e8ce2267c11865ce7bddd1f36f7c083190c3be))
+- **statics:** onboard new batch of tokens to go accounts ([ae681e8](https://github.com/BitGo/BitGoJS/commit/ae681e8311a3b9c0887ce9ff139d96ce2c1ee24b))
+- **statics:** ungate assets for frankfurt trust ([9ee9710](https://github.com/BitGo/BitGoJS/commit/9ee9710f7bc2ab134ba02e571a5e2652b5491c49))
+
 # [50.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.16.0...@bitgo/statics@50.17.0) (2025-01-03)
 
 ### Bug Fixes
