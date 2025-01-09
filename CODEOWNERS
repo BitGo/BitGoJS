@@ -45,6 +45,7 @@
 
 # All other coins
 /modules/abstract-cosmos/ @BitGo/ethalt-team
+/modules/abstract-substrate/ @BitGo/ethalt-team
 /modules/sdk-coin-ada/ @BitGo/ethalt-team
 /modules/sdk-coin-algo/ @BitGo/ethalt-team
 /modules/sdk-coin-apt/ @Bitgo/ethalt-team
