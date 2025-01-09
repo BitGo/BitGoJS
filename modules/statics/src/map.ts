@@ -56,6 +56,10 @@ export class CoinMap {
       421614: 'tarbeth',
       10: 'opeth',
       11155420: 'topeth',
+      1116: 'coredao',
+      1115: 'tcoredao',
+      248: 'oas',
+      9372: 'toas',
     };
     return ethLikeCoinFromChainId[chainId];
   }
