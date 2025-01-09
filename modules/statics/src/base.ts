@@ -51,6 +51,7 @@ export enum CoinFamily {
   FIAT = 'fiat',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
+  ICP = 'icp',
   INJECTIVE = 'injective',
   ISLM = 'islm',
   KAVA = 'kava',
@@ -360,6 +361,7 @@ export enum UnderlyingAsset {
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
+  ICP = 'icp',
   INJECTIVE = 'injective',
   ISLM = 'islm',
   KAVA = 'kava',
@@ -2457,6 +2459,7 @@ export enum BaseUnit {
   ISLM = 'aISLM',
   RUNE = 'rune',
   TAO = 'rao',
+  ICP = 'e8s',
 }
 
 export interface BaseCoinConstructorOptions {

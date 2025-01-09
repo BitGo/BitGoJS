@@ -163,6 +163,17 @@ class AptTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.aptoslabs.com/?network=testnet';
 }
 
+class Icp extends Mainnet implements AccountNetwork {
+  name = 'Internet Computer';
+  family = CoinFamily.ICP;
+  explorerUrl = 'https://www.icpexplorer.org'; //TODO(WIN-4242): update to the prod rosetta explorer url
+}
+
+class IcpTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Internet Computer';
+  family = CoinFamily.ICP;
+  explorerUrl = 'https://www.icpexplorer.org'; //TODO(WIN-4242): update to the test rosetta explorer url
+}
 class Arbitrum extends Mainnet implements EthereumNetwork {
   name = 'Arbitrum';
   family = CoinFamily.ARBETH;
@@ -1188,6 +1199,7 @@ export const Networks = {
     fiat: Object.freeze(new Fiat()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
+    icp: Object.freeze(new Icp()),
     injective: Object.freeze(new Injective()),
     islm: Object.freeze(new Islm()),
     kava: Object.freeze(new Kava()),
@@ -1249,6 +1261,7 @@ export const Networks = {
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
+    icp: Object.freeze(new IcpTestnet()),
     injective: Object.freeze(new InjectiveTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     kava: Object.freeze(new KavaTestnet()),
