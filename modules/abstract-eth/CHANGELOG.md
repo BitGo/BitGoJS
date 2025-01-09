@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.4.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.7...@bitgo/abstract-eth@22.4.8) (2025-01-09)
+
+### Bug Fixes
+
+- **abstract-eth:** skip derived address validation for v5 forwarder ([18650ac](https://github.com/BitGo/BitGoJS/commit/18650ac8ba0ce36a14058b4c5115125c58cdf85d))
+
 ## [22.4.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.6...@bitgo/abstract-eth@22.4.7) (2025-01-03)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

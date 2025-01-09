@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.6.10...@bitgo/sdk-coin-xrp@3.7.0) (2025-01-09)
+
+### Bug Fixes
+
+- mock bitgo.post for "verifyAddress should work" test ([eaa62ae](https://github.com/BitGo/BitGoJS/commit/eaa62ae4c26aed10a3fd3f57e32feda092ea132e))
+
+### Features
+
+- destination tag validation in xrp isWalletAddress ([436e08b](https://github.com/BitGo/BitGoJS/commit/436e08b6d04e9f0c5e61785cd2420d189835af34))
+
 ## [3.6.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.6.9...@bitgo/sdk-coin-xrp@3.6.10) (2025-01-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

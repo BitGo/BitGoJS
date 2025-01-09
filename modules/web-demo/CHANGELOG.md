@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@2.0.26...@bitgo/web-demo@2.1.0) (2025-01-09)
+
+### Features
+
+- add wasm miniscript to web demo ([0477848](https://github.com/BitGo/BitGoJS/commit/047784853c17511b5448a15045be461cda6e9359))
+
 ## [2.0.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@2.0.25...@bitgo/web-demo@2.0.26) (2025-01-03)
 
 **Note:** Version bump only for package @bitgo/web-demo

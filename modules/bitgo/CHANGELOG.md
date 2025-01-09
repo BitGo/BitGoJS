@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.22.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.21.0...bitgo@39.22.0) (2025-01-09)
+
+### Features
+
+- move hmac fns to own package ([7466b99](https://github.com/BitGo/BitGoJS/commit/7466b99cf2b48e3a746ae082127d7e4f0f95bfef))
+
 # [39.21.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.20.0...bitgo@39.21.0) (2025-01-03)
 
 ### Features

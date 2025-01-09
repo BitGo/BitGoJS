@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.10.0...@bitgo/abstract-utxo@9.11.0) (2025-01-09)
+
+### Bug Fixes
+
+- **abstract-utxo:** check if external and internal descriptors are different ([10a48c3](https://github.com/BitGo/BitGoJS/commit/10a48c3b90bb985206a3eb808e2f454e1d8e292a))
+
+### Features
+
+- **abstract-utxo:** allow signed descriptors in prod policy ([a19606a](https://github.com/BitGo/BitGoJS/commit/a19606aa68e527bb0457e926e2b263d18c7e0f45))
+- add example for createDescriptorWalletWithWalletPassphrase ([384ed92](https://github.com/BitGo/BitGoJS/commit/384ed9221c14eca4235b152d4a848d16d68aaf14))
+- export createNamedDescriptorWithSignature ([8856442](https://github.com/BitGo/BitGoJS/commit/885644217954e1a8d5736d11dff2aa171c1ace11))
+
 # [9.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.9.0...@bitgo/abstract-utxo@9.10.0) (2025-01-03)
 
 ### Features
