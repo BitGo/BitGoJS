@@ -68,6 +68,7 @@ export enum CoinFamily {
   SUI = 'sui',
   STX = 'stx',
   SUSD = 'susd',
+  TAO = 'tao',
   THOR = 'thor',
   TIA = 'tia', // Celestia
   TON = 'ton',
@@ -1483,6 +1484,7 @@ export enum UnderlyingAsset {
   SYNCH = 'synch',
   SYRUP = 'syrup',
   'SYNTH-SUSD' = 'synth-susd',
+  TAO = 'tao',
   THRESHOLD = 'threshold',
   THEU = 'theu',
   TAUD = 'taud',
@@ -2454,6 +2456,7 @@ export enum BaseUnit {
   TCOREUM = 'utestcore', // Coreum testnet uses different name for native coin
   ISLM = 'aISLM',
   RUNE = 'rune',
+  TAO = 'rao',
 }
 
 export interface BaseCoinConstructorOptions {
