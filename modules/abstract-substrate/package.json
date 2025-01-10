@@ -38,7 +38,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^28.18.0",
-    "@bitgo/statics": "^50.17.0"
+    "@bitgo/sdk-core": "^28.19.0",
+    "@bitgo/statics": "^50.18.0"
   }
 }
