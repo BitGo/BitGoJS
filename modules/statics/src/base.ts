@@ -2202,6 +2202,7 @@ export enum UnderlyingAsset {
   'tpolygon:pme' = 'tpolygon:pme',
   'tpolygon:xsgd' = 'tpolygon:xsgd',
   'tpolygon:terc18dp' = 'tpolygon:terc18dp',
+  'tpolygon:terc10dp' = 'tpolygon:terc10dp',
   'tpolygon:terc6dp' = 'tpolygon:terc6dp',
   'tpolygon:usdt' = 'tpolygon:usdt',
   'tpolygon:usdc' = 'tpolygon:usdc',

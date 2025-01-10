@@ -19548,6 +19548,15 @@ export const coins = CoinMap.fromCoins([
     POLYGON_TOKEN_FEATURES
   ),
   tpolygonErc20(
+    'fdc9e362-490e-4a4c-92d1-90fde39a0304',
+    'tpolygon:terc10dp',
+    'Test ERC20 Token 10 Decimals',
+    10,
+    '0x58a3cd99e4955af8935fd68a4f5036d43fd155ea',
+    UnderlyingAsset['tpolygon:terc10dp'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  tpolygonErc20(
     '00bc4884-8c13-4b71-90b2-73e8ef4ebda4',
     'tpolygon:terc6dp',
     'Test ERC Token 6 Decimals',
