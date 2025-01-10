@@ -15,6 +15,8 @@ import {
 } from '../utils';
 import { IRequestTracer } from '../../api';
 
+const debug = require('debug')('bitgo:tss:common');
+
 /**
  * Gets the latest Tx Request by id
  *
@@ -140,7 +142,26 @@ export async function sendSignatureShareV2(
   };
   const reqTracer = reqId || new RequestTracer();
   bitgo.setRequestTracer(reqTracer);
-  return bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
+
+  let attempts = 0;
+  const maxAttempts = 3;
+
+  while (attempts < maxAttempts) {
+    try {
+      return await bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
+    } catch (err) {
+      if (err?.status === 429) {
+        const sleepTime = 1000 * (attempts + 1);
+        debug(`MPC Signing rate limit error - retrying in ${sleepTime / 1000} seconds`);
+        // sleep for a bit before retrying
+        await new Promise((resolve) => setTimeout(resolve, sleepTime));
+        attempts++;
+      } else {
+        throw err;
+      }
+    }
+  }
+  return await bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
 }
 
 /**
