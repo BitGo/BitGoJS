@@ -45,7 +45,7 @@ async function main() {
             // here is a 2of3 multisig descriptor for the backup key and BitGo key
             descriptor.createNamedDescriptorWithSignature(
               'MultiSigWsh',
-              `wsh(multi(2,${xpubs.map((xpub) => `${xpub}/*`).join(',')})`,
+              `wsh(multi(2,${xpubs.map((xpub) => `${xpub}/*`).join(',')}))`,
               userKey
             ),
             // equivalent to the above, but returns two descriptors (external and internal)
