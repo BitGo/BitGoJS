@@ -157,7 +157,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   yfii: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   yld: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   zil: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-
+  sxp: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   injective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   opeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   'opeth:op': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
