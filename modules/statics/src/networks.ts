@@ -845,6 +845,18 @@ class RuneTestNet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://runescan.io/tx/?network=stagenet';
 }
 
+class Baby extends Mainnet implements AccountNetwork {
+  name = 'Babylon';
+  family = CoinFamily.BABY;
+  explorerUrl = 'https://babylon.explorers.guru/transaction/';
+}
+
+class BabyTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Babylon';
+  family = CoinFamily.BABY;
+  explorerUrl = 'https://testnet.babylon.explorers.guru/transaction/';
+}
+
 class Islm extends Mainnet implements AccountNetwork {
   name = 'Haqq';
   family = CoinFamily.ISLM;
@@ -1175,6 +1187,7 @@ export const Networks = {
     atom: Object.freeze(new Atom()),
     avalancheC: Object.freeze(new AvalancheC()),
     avalancheP: Object.freeze(new AvalancheP()),
+    baby: Object.freeze(new Baby()),
     basechain: Object.freeze(new BaseChain()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
@@ -1237,6 +1250,7 @@ export const Networks = {
     atom: Object.freeze(new AtomTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
     avalancheP: Object.freeze(new AvalanchePTestnet()),
+    baby: Object.freeze(new BabyTestnet()),
     basechain: Object.freeze(new BaseChainTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinPublicSignet: Object.freeze(new BitcoinPublicSignet()),

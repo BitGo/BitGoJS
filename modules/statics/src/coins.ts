@@ -1166,6 +1166,26 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
   ),
   account(
+    '12194de6-b68f-4dfb-b74c-b18b1fbb29d6',
+    'baby',
+    'Babylon',
+    Networks.main.baby,
+    6,
+    UnderlyingAsset.BABY,
+    BaseUnit.BABY,
+    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+  ),
+  account(
+    'ee22282b-c307-4861-b706-d9a178326ad5',
+    'tbaby',
+    'Testnet Babylon',
+    Networks.test.baby,
+    6,
+    UnderlyingAsset.BABY,
+    BaseUnit.BABY,
+    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+  ),
+  account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
     'islm',
     'Islamic Coin',
