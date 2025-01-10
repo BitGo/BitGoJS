@@ -1,0 +1,1 @@
+export { SubstrateCoin } from './abstractSubstrateCoin';

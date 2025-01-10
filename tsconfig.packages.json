@@ -5,6 +5,9 @@
       "path": "./modules/abstract-cosmos"
     },
     {
+      "path": "./modules/abstract-substrate"
+    },
+    {
       "path": "./modules/abstract-eth"
     },
     {
