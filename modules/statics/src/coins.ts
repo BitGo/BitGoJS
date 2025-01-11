@@ -7485,7 +7485,8 @@ export const coins = CoinMap.fromCoins([
     'Swipe',
     18,
     '0x8ce9137d39326ad0cd6491fb5cc0cba0e089b6a9',
-    UnderlyingAsset.SXP
+    UnderlyingAsset.SXP,
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'c00e568b-ef12-4137-adbb-45f979dff1c8',
