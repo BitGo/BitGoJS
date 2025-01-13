@@ -123,6 +123,9 @@ describe('signTxRequest:', function () {
         },
       ],
       curve: 'secp256k1',
+      config: {
+        rejectCurves: new Set(),
+      },
     });
     const constants = {
       mpc: {
@@ -238,6 +241,47 @@ describe('signTxRequest:', function () {
     nockPromises[1].isDone().should.be.true();
     nockPromises[2].isDone().should.be.true();
   });
+
+  it('successfully signs a txRequest for a dkls hot wallet after receiving multiple 429 errors', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey, 0, 3),
+      await nockTxRequestResponseSignatureShareRoundThree(txRequest),
+      await nockSendTxRequest(txRequest),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils.signTxRequest({
+      txRequest,
+      prv: userPrvBase64,
+      reqId,
+    });
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.true();
+    nockPromises[2].isDone().should.be.true();
+  });
+
+  it('fails to signs a txRequest for a dkls hot wallet after receiving over 3 429 errors', async function () {
+    const nockPromises = [
+      await nockTxRequestResponseSignatureShareRoundOne(bitgoParty, txRequest, bitgoGpgKey),
+      await nockTxRequestResponseSignatureShareRoundTwo(bitgoParty, txRequest, bitgoGpgKey, 0, 4),
+    ];
+    await Promise.all(nockPromises);
+
+    const userShare = fs.readFileSync(shareFiles[vector.party1]);
+    const userPrvBase64 = Buffer.from(userShare).toString('base64');
+    await tssUtils
+      .signTxRequest({
+        txRequest,
+        prv: userPrvBase64,
+        reqId,
+      })
+      .should.be.rejectedWith('Too many requests, slow down!');
+    nockPromises[0].isDone().should.be.true();
+    nockPromises[1].isDone().should.be.false();
+  });
 });
 
 export function getBitGoPartyGpgKeyPrv(key: openpgp.SerializedKeyPair<string>): DklsTypes.PartyGpgKey {
@@ -336,11 +380,27 @@ async function nockTxRequestResponseSignatureShareRoundTwo(
   bitgoSession: DklsDsg.Dsg,
   txRequest: TxRequest,
   bitgoGpgKey: openpgp.SerializedKeyPair<string>,
-  partyId: 0 | 1 = 0
+  partyId: 0 | 1 = 0,
+  rateLimitErrorCount = 0
 ): Promise<nock.Scope> {
   const transactions = getRoute('ecdsa');
-  return nock('https://bitgo.fakeurl')
-    .persist(true)
+  const scope = nock('https://bitgo.fakeurl');
+
+  if (rateLimitErrorCount > 0) {
+    scope
+      .post(
+        `/api/v2/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId + transactions}/sign`,
+        (body) => (JSON.parse(body.signatureShares[0].share) as MPCv2SignatureShareRound2Input).type === 'round2Input'
+      )
+      .times(rateLimitErrorCount)
+      .reply(429, {
+        error: 'Too many requests, slow down!',
+        name: 'TooManyRequests',
+        requestId: 'cm5qx01lh0013b2ek2sxl4w00',
+        context: {},
+      });
+  }
+  return scope
     .post(
       `/api/v2/wallet/${txRequest.walletId}/txrequests/${txRequest.txRequestId + transactions}/sign`,
       (body) => (JSON.parse(body.signatureShares[0].share) as MPCv2SignatureShareRound2Input).type === 'round2Input'
