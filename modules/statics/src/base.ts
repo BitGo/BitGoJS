@@ -2239,6 +2239,7 @@ export enum UnderlyingAsset {
   'arbeth:ldo' = 'arbeth:ldo',
   'arbeth:egp' = 'arbeth:egp',
   'arbeth:myrc' = 'arbeth:myrc',
+  'arbeth:gs' = 'arbeth:gs',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2271,11 +2272,13 @@ export enum UnderlyingAsset {
   'bera:bgt' = 'bera:bgt',
   'bera:honey' = 'bera:honey',
   'bera:usdc' = 'bera:usdc',
+  'bera:ibera' = 'bera:ibera',
 
   // bera testnet tokens
   'tbera:bgt' = 'tbera:bgt',
   'tbera:honey' = 'tbera:honey',
   'tbera:usdc' = 'tbera:usdc',
+  'tbera:ibera' = 'tbera:ibera',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
@@ -2373,6 +2376,10 @@ export enum UnderlyingAsset {
   'sol:yes' = 'sol:yes',
   'sol:ai16z' = 'sol:ai16z',
   'sol:zerebro' = 'sol:zerebro',
+  'sol:arc' = 'sol:arc',
+  'sol:nos' = 'sol:nos',
+  'sol:jlp' = 'sol:jlp',
+  'sol:grass' = 'sol:grass',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
@@ -2407,6 +2414,7 @@ export enum UnderlyingAsset {
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
+  'tsui:wal' = 'tsui:wal',
 }
 
 /**

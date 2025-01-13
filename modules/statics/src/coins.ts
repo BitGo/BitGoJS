@@ -2170,7 +2170,8 @@ export const coins = CoinMap.fromCoins([
     'SPX6900',
     8,
     '0xe0f63a424a4439cbe457d80e4f4b51ad25b2c56c',
-    UnderlyingAsset['eth:spx']
+    UnderlyingAsset['eth:spx'],
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     'a6c285f4-e39b-4e67-b266-749462e95487',
@@ -16373,7 +16374,7 @@ export const coins = CoinMap.fromCoins([
     8,
     'J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr', // https://solscan.io/token/J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr
     UnderlyingAsset['sol:spx'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
   solToken(
     '53e6b4e7-6ff6-40d5-8737-af2b31fa0bc0',
@@ -18409,6 +18410,42 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:drift'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'f4850473-2838-4e98-9a3f-435845d0f62d',
+    'sol:arc',
+    'AI Rig Complex',
+    6,
+    '61V8vBaqAGMpgDQi4JcAwo1dmBGHsyhzodcPqnEVpump',
+    UnderlyingAsset['sol:arc'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '6408895b-98c7-4d8b-bbce-1dc096420879',
+    'sol:nos',
+    'Nosana',
+    6,
+    'nosXBVoaCTtYdLvKY6Csb4AC8JCdQKKAaWYtx2ZMoo7',
+    UnderlyingAsset['sol:nos'],
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
+  ),
+  solToken(
+    '2cb7e50e-5896-4d3f-86de-341219bce370',
+    'sol:jlp',
+    'Jupiter Perps LP',
+    6,
+    '27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4',
+    UnderlyingAsset['sol:jlp'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '3e5126be-5f80-4f9f-831e-96631ce10484',
+    'sol:grass',
+    'Grass',
+    9,
+    'Grass7B4RdKfBCjTKgSqnXkqjwiGvQyFbuSCUJr3XXjs',
+    UnderlyingAsset['sol:grass'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -19821,6 +19858,14 @@ export const coins = CoinMap.fromCoins([
     '0x7e7a7c916c19a45769f6bdaf91087f93c6c12f78',
     UnderlyingAsset['arbeth:egp']
   ),
+  arbethErc20(
+    '8bd85fd9-cb21-4e9c-8dea-94a898062131',
+    'arbeth:gs',
+    'GammaSwap',
+    18,
+    '0xb08d8becab1bf76a9ce3d2d5fa946f65ec1d3e83',
+    UnderlyingAsset['arbeth:gs']
+  ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
     'tarbeth:link',
@@ -19963,6 +20008,15 @@ export const coins = CoinMap.fromCoins([
     '0xbda130737bdd9618301681329bf2e46a016ff9a0',
     UnderlyingAsset['bera:usdc']
   ),
+  beraErc20(
+    'd7b6efe9-4ce2-4f23-9a31-adba41900716',
+    'bera:ibera',
+    'Infrared Bera',
+    18,
+    // TODO: the mainnet contract address is still not available, adding placeholder here
+    '0x5bdc3cae6fb270ef07579c428bb630e73c8d623a',
+    UnderlyingAsset['bera:ibera']
+  ),
   tberaErc20(
     '24af5e18-ab4b-43e5-80db-0ddb9beb01b3',
     'tbera:bgt',
@@ -19986,6 +20040,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xd6d83af58a19cd14ef3cf6fe848c9a4d21e5727c',
     UnderlyingAsset['tbera:usdc']
+  ),
+  tberaErc20(
+    'f46242ce-dd4a-44c9-8b52-ef6dfaae1d79',
+    'tbera:ibera',
+    'Testnet Infrared Bera',
+    18,
+    '0x5bdc3cae6fb270ef07579c428bb630e73c8d623b',
+    UnderlyingAsset['tbera:ibera']
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
@@ -20157,6 +20219,17 @@ export const coins = CoinMap.fromCoins([
     'deep',
     'DEEP',
     UnderlyingAsset['tsui:deep'],
+    SUI_TOKEN_FEATURES
+  ),
+  tsuiToken(
+    '6ecd0f49-96dd-42eb-83d6-519e7dcddee2',
+    'tsui:wal',
+    'Walrus',
+    9,
+    '0x9f992cc2430a1f442ca7a5ca7638169f5d5c00e0ebc3977a65e9ac6e497fe5ef',
+    'wal',
+    'WAL',
+    UnderlyingAsset['tsui:wal'],
     SUI_TOKEN_FEATURES
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
