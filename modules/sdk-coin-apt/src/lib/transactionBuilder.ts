@@ -3,18 +3,23 @@ import {
   BaseKey,
   BaseTransactionBuilder,
   BuildTransactionError,
-  FeeOptions,
+  ParseTransactionError,
   PublicKey as BasePublicKey,
-  Signature,
+  Recipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { Transaction } from './transaction';
+import { Transaction } from './transaction/transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { GasData } from './types';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
-  private _signatures: Signature[] = [];
+
+  constructor(coinConfig: Readonly<CoinConfig>) {
+    super(coinConfig);
+  }
 
   // get and set region
   /**
@@ -32,6 +37,43 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = transaction;
   }
 
+  /**
+   * Sets the sender of this transaction.
+   *
+   * @param {string} senderAddress the account that is sending this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  sender(senderAddress: string): this {
+    this.validateAddress({ address: senderAddress });
+    this.transaction.sender = senderAddress;
+    return this;
+  }
+
+  recipient(recipient: Recipient): this {
+    this.validateAddress({ address: recipient.address });
+    this.validateValue(new BigNumber(recipient.amount));
+    this.transaction.recipient = recipient;
+    return this;
+  }
+
+  gasData(gasData: GasData): this {
+    this.validateGasData(gasData);
+    this.transaction.maxGasAmount = gasData.maxGasAmount;
+    this.transaction.gasUnitPrice = gasData.gasUnitPrice;
+    this.transaction.gasUsed = gasData.gasUsed ?? 0;
+    return this;
+  }
+
+  sequenceNumber(seqNo: number): TransactionBuilder {
+    this.transaction.sequenceNumber = seqNo;
+    return this;
+  }
+
+  expirationTime(expTimeSec: number): TransactionBuilder {
+    this.transaction.expirationTime = expTimeSec;
+    return this;
+  }
+
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     throw new Error('Method not implemented.');
@@ -39,33 +81,29 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    this._signatures.push({ publicKey, signature });
-  }
-
-  /**
-   * Sets the sender of this transaction.
-   * This account will be responsible for paying transaction fees.
-   *
-   * @param {string} senderAddress the account that is sending this transaction
-   * @returns {TransactionBuilder} This transaction builder
-   */
-  sender(senderAddress: string): this {
-    throw new Error('Method not implemented.');
-  }
-
-  fee(feeOptions: FeeOptions): this {
-    throw new Error('Method not implemented.');
+    this.transaction.addSignature(publicKey, signature);
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    throw new Error('Method not implemented.');
+    this.transaction.fromRawTransaction(rawTransaction);
+    this.transaction.transactionType = this.transactionType;
+    return this.transaction;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    throw new Error('Method not implemented.');
+    this.transaction.transactionType = this.transactionType;
+    await this.transaction.build();
+    return this.transaction;
   }
+
+  /**
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {Transaction} tx the transaction data
+   */
+  abstract initBuilder(tx: Transaction): void;
 
   // region Validators
   /** @inheritdoc */
@@ -82,18 +120,35 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: string): void {
-    throw new Error('Method not implemented.');
+    if (!rawTransaction) {
+      throw new ParseTransactionError('Invalid raw transaction: Undefined');
+    }
+    if (!utils.isValidRawTransaction(rawTransaction)) {
+      throw new ParseTransactionError('Invalid raw transaction');
+    }
   }
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
-    throw new Error('Method not implemented.');
+    if (!transaction) {
+      throw new Error('transaction not defined');
+    }
+    this.validateAddress({ address: transaction.sender });
+    this.validateAddress({ address: transaction.recipient.address });
+    this.validateValue(new BigNumber(transaction.recipient.amount));
   }
 
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
-    if (value.isLessThan(0)) {
+    if (value.isNaN()) {
+      throw new BuildTransactionError('Invalid amount format');
+    } else if (value.isLessThan(0)) {
       throw new BuildTransactionError('Value cannot be less than zero');
     }
+  }
+
+  private validateGasData(gasData: GasData): void {
+    this.validateValue(new BigNumber(gasData.maxGasAmount));
+    this.validateValue(new BigNumber(gasData.gasUnitPrice));
   }
 }
