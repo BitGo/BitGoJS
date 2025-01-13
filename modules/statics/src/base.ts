@@ -2433,7 +2433,7 @@ export enum BaseUnit {
   ATOM = 'uatom',
   APT = 'octa',
   ETH = 'wei',
-  BABY = 'ubaby',
+  BABY = 'ubbn',
   BTC = 'satoshi',
   BSC = 'jager',
   XLM = 'stroop',
