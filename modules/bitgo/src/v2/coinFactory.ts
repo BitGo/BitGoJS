@@ -53,6 +53,7 @@ import {
   Hash,
   Hbar,
   Hteth,
+  Icp,
   Injective,
   Islm,
   Lnbtc,
@@ -109,6 +110,7 @@ import {
   Thash,
   Thbar,
   Tia,
+  Ticp,
   Tinjective,
   Tislm,
   Tlnbtc,
@@ -184,6 +186,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('hteth', Hteth.createInstance);
   globalCoinFactory.register('lnbtc', Lnbtc.createInstance);
   globalCoinFactory.register('ltc', Ltc.createInstance);
+  globalCoinFactory.register('icp', Icp.createInstance);
   globalCoinFactory.register('injective', Injective.createInstance);
   globalCoinFactory.register('islm', Islm.createInstance);
   globalCoinFactory.register('near', Near.createInstance);
@@ -235,6 +238,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tfiatusd', TfiatUsd.createInstance);
   globalCoinFactory.register('thash', Thash.createInstance);
   globalCoinFactory.register('thbar', Thbar.createInstance);
+  globalCoinFactory.register('ticp', Ticp.createInstance);
   globalCoinFactory.register('tinjective', Tinjective.createInstance);
   globalCoinFactory.register('tislm', Tislm.createInstance);
   globalCoinFactory.register('tlnbtc', Tlnbtc.createInstance);

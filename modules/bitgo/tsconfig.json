@@ -154,6 +154,9 @@
       "path": "../sdk-coin-hbar"
     },
     {
+      "path": "../sdk-coin-icp"
+    },
+    {
       "path": "../sdk-coin-injective"
     },
     {

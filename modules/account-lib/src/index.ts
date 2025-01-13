@@ -143,6 +143,9 @@ export { Coredao };
 import * as Apt from '@bitgo/sdk-coin-apt';
 export { Apt };
 
+import * as Icp from '@bitgo/sdk-coin-icp';
+export { Icp };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -219,6 +222,8 @@ const coinBuilderMap = {
   tcoredao: Coredao.TransactionBuilder,
   apt: Apt.TransactionBuilder,
   tapt: Apt.TransactionBuilder,
+  icp: Icp.TransactionBuilder,
+  ticp: Icp.TransactionBuilder,
 };
 
 /**
