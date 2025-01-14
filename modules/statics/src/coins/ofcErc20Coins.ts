@@ -1266,7 +1266,7 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('uair')
   ),
   ofcerc20('e9f9fa6c-899b-4394-b06e-33d857fbbc5a', 'ofcubxt', 'UpBots', 18, underlyingAssetForSymbol('ubxt')),
-  ofcerc20('82f9a021-0c10-47d4-8096-c63b948ba663', 'ofcuco', 'UnirisToken', 18, underlyingAssetForSymbol('uco')),
+  ofcerc20('82f9a021-0c10-47d4-8096-c63b948ba663', 'ofcuco', 'ArchethicToken', 8, underlyingAssetForSymbol('uco')),
   ofcerc20(
     '127119dd-e4f8-48c5-a094-be883599ac00',
     'ofcuft',

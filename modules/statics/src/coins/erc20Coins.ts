@@ -5776,9 +5776,9 @@ export const erc20Coins = [
   erc20(
     '243053c9-e331-48f8-9f99-7af4e4f080c6',
     'uco',
-    'UnirisToken',
-    18,
-    '0x8a3d77e9d6968b780564936d15b09805827c21fa',
+    'Archethic Universal Coin',
+    8,
+    '0x1A688D3d294ee7BcC1f59011DE93d608Dc21c377',
     UnderlyingAsset.UCO
   ),
   erc20(
