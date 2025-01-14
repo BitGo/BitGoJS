@@ -91,3 +91,82 @@ export const UpdateLightningWallet = t.partial(
 );
 
 export type UpdateLightningWallet = t.TypeOf<typeof UpdateLightningWallet>;
+
+export const LndAmount = t.strict(
+  {
+    sat: t.string,
+    msat: t.string,
+  },
+  'LndAmount'
+);
+
+export type LndAmount = t.TypeOf<typeof LndAmount>;
+
+export const ChannelBalance = t.strict(
+  {
+    /** The balance on your side of the channel and what you the user can spend. */
+    localBalance: LndAmount,
+    /** The balance on the other side of the channel, what your channel partner can controls. */
+    remoteBalance: LndAmount,
+    /** Sum of local unsettled balances. */
+    unsettledLocalBalance: LndAmount,
+    /** Sum of remote unsettled balances. */
+    unsettledRemoteBalance: LndAmount,
+    /** Sum of local pending balances. */
+    pendingOpenLocalBalance: LndAmount,
+    /** Sum of local remote balances. */
+    pendingOpenRemoteBalance: LndAmount,
+  },
+  'ChannelBalance'
+);
+
+export type ChannelBalance = t.TypeOf<typeof ChannelBalance>;
+
+export const LndWalletBalance = t.strict(
+  {
+    /** Total balance, confirmed and unconfirmed */
+    totalBalance: t.string,
+    confirmedBalance: t.string,
+    unconfirmedBalance: t.string,
+  },
+  'LndWalletBalance'
+);
+
+export type LndWalletBalance = t.TypeOf<typeof LndWalletBalance>;
+
+/**
+ The balances as returned from lnd.
+
+ Wallet Balance
+ https://api.lightning.community/api/lnd/lightning/wallet-balance/index.html
+
+ Channel Balance
+ https://api.lightning.community/api/lnd/lightning/channel-balance/index.html
+ */
+export const LndBalance = t.strict(
+  {
+    offchain: ChannelBalance,
+    onchain: LndWalletBalance,
+  },
+  'LndBalance'
+);
+
+export type LndBalance = t.TypeOf<typeof LndBalance>;
+
+export const LndGetBalancesResponse = t.strict(
+  {
+    inboundBalance: t.string,
+    inboundPendingBalance: t.string,
+    inboundUnsettledBalance: t.string,
+    outboundBalance: t.string,
+    outboundPendingBalance: t.string,
+    outboundUnsettledBalance: t.string,
+    // wallet balances, names forced by type in AbstractCoin
+    spendableBalanceString: t.string,
+    balanceString: t.string,
+    confirmedBalanceString: t.string,
+  },
+  'LndGetBalancesResponse'
+);
+
+export type LndGetBalancesResponse = t.TypeOf<typeof LndGetBalancesResponse>;
