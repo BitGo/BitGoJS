@@ -20229,7 +20229,7 @@ export const coins = CoinMap.fromCoins([
     'wal',
     'WAL',
     UnderlyingAsset['tsui:wal'],
-    SUI_TOKEN_FEATURES
+    [...SUI_TOKEN_FEATURES, CoinFeature.STAKING]
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(
