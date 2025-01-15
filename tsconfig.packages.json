@@ -173,6 +173,9 @@
       "path": "./modules/sdk-coin-sui"
     },
     {
+      "path": "./modules/sdk-coin-tao"
+    },
+    {
       "path": "./modules/sdk-coin-tia"
     },
     {

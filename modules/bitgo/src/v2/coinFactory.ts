@@ -74,6 +74,7 @@ import {
   Sui,
   SuiToken,
   Susd,
+  Tao,
   Ton,
   Tada,
   Talgo,
@@ -124,6 +125,7 @@ import {
   Tstx,
   Tsui,
   Tsusd,
+  Ttao,
   Ttia,
   Tton,
   Ttrx,
@@ -197,6 +199,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('stx', Stx.createInstance);
   globalCoinFactory.register('sui', Sui.createInstance);
   globalCoinFactory.register('susd', Susd.createInstance);
+  globalCoinFactory.register('tao', Tao.createInstance);
   globalCoinFactory.register('tia', Tia.createInstance);
   globalCoinFactory.register('ton', Ton.createInstance);
   globalCoinFactory.register('talgo', Talgo.createInstance);
@@ -249,6 +252,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tstx', Tstx.createInstance);
   globalCoinFactory.register('tsui', Tsui.createInstance);
   globalCoinFactory.register('tsusd', Tsusd.createInstance);
+  globalCoinFactory.register('ttao', Ttao.createInstance);
   globalCoinFactory.register('ttia', Ttia.createInstance);
   globalCoinFactory.register('tton', Tton.createInstance);
   globalCoinFactory.register('ttrx', Ttrx.createInstance);
