@@ -166,6 +166,7 @@ export interface ListWalletOptions extends PaginationOptions {
   skip?: number;
   getbalances?: boolean;
   allTokens?: boolean;
+  skipReceiveAddress?: boolean;
 }
 
 export interface WalletShares {

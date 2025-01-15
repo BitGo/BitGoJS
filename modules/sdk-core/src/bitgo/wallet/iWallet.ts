@@ -700,7 +700,7 @@ export interface WalletData {
   coin: string;
   label: string;
   keys: string[];
-  receiveAddress: {
+  receiveAddress?: {
     address: string;
   };
   walletFlags?: {
@@ -813,7 +813,7 @@ export interface IWallet {
   multisigTypeVersion(): 'MPCv2' | undefined;
   label(): string;
   keyIds(): string[];
-  receiveAddress(): string;
+  receiveAddress(): string | undefined;
   migratedFrom(): string | undefined;
   tokenFlushThresholds(): any;
   coinSpecific(): WalletCoinSpecific | undefined;
