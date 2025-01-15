@@ -7835,7 +7835,7 @@ export const coins = CoinMap.fromCoins([
     '243053c9-e331-48f8-9f99-7af4e4f080c6',
     'uco',
     'Archethic Universal Coin',
-    18,
+    8,
     '0x1A688D3d294ee7BcC1f59011DE93d608Dc21c377',
     UnderlyingAsset.UCO
   ),
