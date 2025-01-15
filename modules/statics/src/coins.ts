@@ -426,7 +426,6 @@ const APT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
-  CoinFeature.MPCV2,
   CoinFeature.STAKING,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
