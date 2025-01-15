@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-zec",
-  "version": "2.1.8",
+  "version": "2.1.9",
   "description": "BitGo SDK coin library for Zcash",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,11 +40,11 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^9.11.0",
-    "@bitgo/sdk-core": "^28.19.0",
+    "@bitgo/abstract-utxo": "^9.11.1",
+    "@bitgo/sdk-core": "^28.19.1",
     "@bitgo/utxo-lib": "^11.2.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.58.0"
+    "@bitgo/sdk-api": "^1.58.1"
   }
 }

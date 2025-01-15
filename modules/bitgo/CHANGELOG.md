@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [39.22.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.22.0...bitgo@39.22.1) (2025-01-15)
+
+### Bug Fixes
+
+- **deps:** bump public-types library ([e8679cd](https://github.com/BitGo/BitGoJS/commit/e8679cd5cccd367d26946f2ab14b82a567e39107))
+- **root:** add retry mechanism for MPC sendSignatureShareV2 ([ef520da](https://github.com/BitGo/BitGoJS/commit/ef520da47bc84090b4401c5b672f4711835de60c))
+
 # [39.22.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.21.0...bitgo@39.22.0) (2025-01-09)
 
 ### Features
