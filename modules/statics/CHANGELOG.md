@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.18.0...@bitgo/statics@50.19.0) (2025-01-15)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** correcting fullname for aptos for test ([e7e239e](https://github.com/BitGo/BitGoJS/commit/e7e239e7bb80e1407c63481bf6f64354cbb4afa0))
+
+### Features
+
+- **statics:** add new batch of tokens ([8cee0b0](https://github.com/BitGo/BitGoJS/commit/8cee0b080efde965ab8d2544a4d2e7402387e68f))
+- **statics:** add new test polygon token with 10 dp ([2dbadb5](https://github.com/BitGo/BitGoJS/commit/2dbadb50f7da2b1621acca2b3a49ddb50c7ed21e))
+- **statics:** ungate assets for frankfurt trust ([4a7c7c5](https://github.com/BitGo/BitGoJS/commit/4a7c7c5de4316f6656ec3b82633177233314852e))
+
 # [50.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.17.0...@bitgo/statics@50.18.0) (2025-01-09)
 
 ### Bug Fixes

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.2.25...@bitgo/sdk-coin-etc@2.2.26) (2025-01-15)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-etc
+
 ## [2.2.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.2.24...@bitgo/sdk-coin-etc@2.2.25) (2025-01-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-etc
