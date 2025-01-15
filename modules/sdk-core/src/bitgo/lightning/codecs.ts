@@ -128,6 +128,8 @@ export const LndWalletBalance = t.strict(
     totalBalance: t.string,
     confirmedBalance: t.string,
     unconfirmedBalance: t.string,
+    lockedBalance: t.string,
+    reservedBalanceAnchorChan: t.string,
   },
   'LndWalletBalance'
 );
@@ -147,6 +149,7 @@ export const LndBalance = t.strict(
   {
     offchain: ChannelBalance,
     onchain: LndWalletBalance,
+    totalLimboBalance: t.string,
   },
   'LndBalance'
 );
