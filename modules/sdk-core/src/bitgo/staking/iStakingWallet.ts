@@ -115,6 +115,11 @@ export interface StakeOptions {
    * btc staking reward address
    */
   rewardAddress?: string;
+
+  /**
+   * ada vote delegation drep id
+   */
+  dRepId?: string;
 }
 
 export interface UnstakeOptions {
