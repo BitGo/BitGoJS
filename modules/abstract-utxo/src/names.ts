@@ -82,6 +82,19 @@ export function getChainFromNetwork(n: utxolib.Network): string {
   }
 }
 
+/**
+ * @param coinName - the name of the coin (e.g. 'btc', 'bch', 'ltc'). Also called 'chain' in some contexts.
+ * @returns the network for a coin. This is the mainnet network for the coin.
+ */
+export function getNetworkFromChain(coinName: string): utxolib.Network {
+  for (const network of utxolib.getNetworkList()) {
+    if (getChainFromNetwork(network) === coinName) {
+      return network;
+    }
+  }
+  throw new Error(`Unknown chain ${coinName}`);
+}
+
 export function getFullNameFromNetwork(n: utxolib.Network): string {
   const name = getNetworkName(n);
 
