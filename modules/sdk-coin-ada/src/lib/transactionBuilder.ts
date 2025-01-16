@@ -148,10 +148,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transactionOutputs.forEach((output) => {
       const amount = CardanoWasm.BigNum.from_str(output.amount);
       outputs.add(
-        CardanoWasm.TransactionOutput.new(
-          CardanoWasm.Address.from_bech32(output.address),
-          CardanoWasm.Value.new(amount)
-        )
+        CardanoWasm.TransactionOutput.new(util.getWalletAddress(output.address), CardanoWasm.Value.new(amount))
       );
       totalAmountToSend = totalAmountToSend.checked_add(amount);
     });
@@ -160,7 +157,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       // estimate fee
       // add extra output for the change
       if (this._changeAddress && this._senderBalance) {
-        const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+        const changeAddress = util.getWalletAddress(this._changeAddress);
         const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance);
 
         const adjustment = BigNum.from_str('2000000');
@@ -188,7 +185,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
               this._multiAssets.forEach((asset) => {
                 let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
                 // changeAddress is the root address, which is where we want the tokens assets to be sent to
-                const toAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+                const toAddress = util.getWalletAddress(this._changeAddress);
                 txOutputBuilder = txOutputBuilder.with_address(toAddress);
                 let txOutputAmountBuilder = txOutputBuilder.next();
                 const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
@@ -301,7 +298,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         const quantity = assets!.get(assetName);
         let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
         const outputAmount = CardanoWasm.BigNum.from_str(output.amount);
-        const toAddress = CardanoWasm.Address.from_bech32(output.address);
+        const toAddress = util.getWalletAddress(output.address);
         txOutputBuilder = txOutputBuilder.with_address(toAddress);
         let txOutputAmountBuilder = txOutputBuilder.next();
         const multiAsset = CardanoWasm.MultiAsset.new();
@@ -314,14 +311,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       } else {
         outputs.add(
           CardanoWasm.TransactionOutput.new(
-            CardanoWasm.Address.from_bech32(output.address),
+            util.getWalletAddress(output.address),
             CardanoWasm.Value.new(CardanoWasm.BigNum.from_str(output.amount))
           )
         );
       }
     });
     if (this._changeAddress && this._senderBalance) {
-      const changeAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+      const changeAddress = util.getWalletAddress(this._changeAddress);
       const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance);
 
       const adjustment = BigNum.from_str('2000000');
@@ -348,7 +345,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
             this._multiAssets.forEach((asset) => {
               let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
               // changeAddress is the root address, which is where we want the tokens assets to be sent to
-              const toAddress = CardanoWasm.Address.from_bech32(this._changeAddress);
+              const toAddress = util.getWalletAddress(this._changeAddress);
               txOutputBuilder = txOutputBuilder.with_address(toAddress);
               let txOutputAmountBuilder = txOutputBuilder.next();
               const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));

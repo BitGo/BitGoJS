@@ -8,7 +8,39 @@ import { Transaction } from '../../src/lib/transaction';
 
 describe('ADA Transaction Builder', async () => {
   const factory = new TransactionBuilderFactory(coins.get('tada'));
-  it('start and build an unsigned transfer tx', async () => {
+  it('start and build an unsigned transfer tx for byron address', async () => {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.input({
+      transaction_id: '1b53331e069a6e58fe77919d30c0cf299d13a2f5b3d9970ce473c1a66d71bf03',
+      transaction_index: 1,
+    });
+    const outputAmount = 200000000;
+    txBuilder.output({
+      address: testData.rawTxByron.outputAddress1.address,
+      amount: outputAmount.toString(),
+    });
+    const totalInput = 999600000;
+    txBuilder.changeAddress(testData.rawTxByron.outputAddress2.address, totalInput.toString());
+    txBuilder.ttl(800000000);
+    // txBuilder.fee('200000');
+    const tx = (await txBuilder.build()) as Transaction;
+    should.equal(tx.type, TransactionType.Send);
+    const txData = tx.toJson();
+    txData.witnesses.length.should.equal(0);
+    txData.certs.length.should.equal(0);
+    txData.withdrawals.length.should.equal(0);
+    txData.outputs.length.should.equal(2);
+    txData.outputs[0].address.should.equal(testData.rawTxByron.outputAddress1.address);
+    txData.outputs[1].address.should.equal(testData.rawTxByron.outputAddress2.address);
+    const fee = tx.getFee;
+    txData.outputs[1].amount.should.equal((totalInput - outputAmount - Number(fee)).toString());
+    fee.should.equal('167437');
+    txData.id.should.equal(testData.rawTxByron.txHash2);
+    const txBroadcast = tx.toBroadcastFormat();
+    should.equal(txBroadcast, testData.rawTxByron.unsignedTx2);
+  });
+
+  it('start and build an unsigned transfer tx for shelley address', async () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.input({
       transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
