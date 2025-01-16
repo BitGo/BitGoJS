@@ -5,8 +5,10 @@ import { BaseCoin, BitGoBase, common, MPCAlgorithm } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
+  RecoverOptions,
   recoveryBlockchainExplorerQuery,
   TransactionBuilder as EthLikeTransactionBuilder,
+  UnsignedSweepTxMPCv2,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
@@ -42,5 +44,9 @@ export class Oas extends AbstractEthLikeNewCoins {
     const apiToken = common.Environments[this.bitgo.getEnv()].oasExplorerApiToken;
     const explorerUrl = common.Environments[this.bitgo.getEnv()].oasExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
+  }
+
+  async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<UnsignedSweepTxMPCv2> {
+    return this.buildUnsignedSweepTxnMPCv2(params);
   }
 }
