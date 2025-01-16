@@ -1,6 +1,12 @@
 import { BaseCoin, BitGoBase, common, MPCAlgorithm } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeNewCoins, optionalDeps, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
+import {
+  AbstractEthLikeNewCoins,
+  optionalDeps,
+  RecoverOptions,
+  recoveryBlockchainExplorerQuery,
+  UnsignedSweepTxMPCv2,
+} from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 import BN from 'bn.js';
 
@@ -69,5 +75,9 @@ export class Coredao extends AbstractEthLikeNewCoins {
       nonce = Math.max(...backupKeyTxList.filter((tx) => tx.from === address).map((tx) => tx.nonce as number)) + 1;
     }
     return nonce;
+  }
+
+  async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<UnsignedSweepTxMPCv2> {
+    return this.buildUnsignedSweepTxnMPCv2(params);
   }
 }
