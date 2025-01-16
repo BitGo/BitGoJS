@@ -166,6 +166,10 @@ export interface ListWalletOptions extends PaginationOptions {
   skip?: number;
   getbalances?: boolean;
   allTokens?: boolean;
+  /**
+   * Optional property for receiving an address.
+   * If skipReceiveAddress is set to true, the receiveAddress property will not be returned in the wallet object.
+   */
   skipReceiveAddress?: boolean;
 }
 
