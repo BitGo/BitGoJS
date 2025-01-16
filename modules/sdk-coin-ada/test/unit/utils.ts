@@ -17,7 +17,7 @@ describe('utils', () => {
   it('should validate addresses correctly', () => {
     should.equal(Utils.default.isValidAddress(address.address1), true);
     should.equal(Utils.default.isValidAddress(address.address2), true);
-    should.equal(Utils.default.isValidAddress(address.address3), false);
+    should.equal(Utils.default.isValidAddress(address.address3), true);
     should.equal(Utils.default.isValidAddress(address.address4), true);
     should.equal(Utils.default.isValidAddress('dfjk35y'), false);
     should.equal(Utils.default.isValidAddress(undefined as unknown as string), false);
@@ -34,6 +34,14 @@ describe('utils', () => {
     should.equal(Utils.default.isValidAddress(address.address14), false);
     should.equal(Utils.default.isValidAddress(address.address15), false);
     should.equal(Utils.default.isValidAddress(address.address16), false);
+
+    // Byron addresses
+    should.equal(Utils.default.isValidAddress(address.byron1), true);
+    should.equal(Utils.default.isValidAddress(address.byron2), true);
+    should.equal(Utils.default.isValidAddress(address.byron3), true);
+    should.equal(Utils.default.isValidAddress(address.byron4), false);
+    should.equal(Utils.default.isValidAddress(address.byron5), false);
+    should.equal(Utils.default.isValidAddress(address.byron6), false);
   });
 
   it('should create stake and payment keys correctly', () => {
