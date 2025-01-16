@@ -56,6 +56,7 @@
     "@bitgo/sdk-coin-atom": "^13.1.15",
     "@bitgo/sdk-coin-avaxc": "^5.2.9",
     "@bitgo/sdk-coin-avaxp": "^5.0.58",
+    "@bitgo/sdk-coin-baby": "^1.0.0",
     "@bitgo/sdk-coin-bch": "^2.1.9",
     "@bitgo/sdk-coin-bcha": "^2.2.9",
     "@bitgo/sdk-coin-bera": "^2.3.3",

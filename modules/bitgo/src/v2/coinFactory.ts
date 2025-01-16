@@ -20,6 +20,7 @@ import {
   AvaxC,
   AvaxCToken,
   AvaxP,
+  Baby,
   Bch,
   Bera,
   BeraToken,
@@ -83,6 +84,7 @@ import {
   Tatom,
   TavaxC,
   TavaxP,
+  Tbaby,
   Tbch,
   Tbera,
   Tbld,
@@ -153,6 +155,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('atom', Atom.createInstance);
   globalCoinFactory.register('avaxc', AvaxC.createInstance);
   globalCoinFactory.register('avaxp', AvaxP.createInstance);
+  globalCoinFactory.register('baby', Baby.createInstance);
   globalCoinFactory.register('bch', Bch.createInstance);
   globalCoinFactory.register('bcha', Bcha.createInstance);
   globalCoinFactory.register('bera', Bera.createInstance);
@@ -209,6 +212,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tatom', Tatom.createInstance);
   globalCoinFactory.register('tavaxc', TavaxC.createInstance);
   globalCoinFactory.register('tavaxp', TavaxP.createInstance);
+  globalCoinFactory.register('tbaby', Tbaby.createInstance);
   globalCoinFactory.register('tbch', Tbch.createInstance);
   globalCoinFactory.register('tbcha', Tbcha.createInstance);
   globalCoinFactory.register('tbera', Tbera.createInstance);

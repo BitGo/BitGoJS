@@ -53,6 +53,7 @@
 /modules/sdk-coin-atom/ @BitGo/ethalt-team
 /modules/sdk-coin-avaxc/ @BitGo/ethalt-team
 /modules/sdk-coin-avaxp/ @BitGo/ethalt-team
+/modules/sdk-coin-baby/ @BitGo/ethalt-team
 /modules/sdk-coin-bera/ @BitGo/ethalt-team
 /modules/sdk-coin-bsc/ @BitGo/ethalt-team
 /modules/sdk-coin-coredao/ @BitGo/ethalt-team

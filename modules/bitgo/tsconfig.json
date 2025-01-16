@@ -61,9 +61,6 @@
       "path": "../sdk-api"
     },
     {
-      "path": "../sdk-hmac"
-    },
-    {
       "path": "../sdk-coin-ada"
     },
     {
@@ -83,6 +80,9 @@
     },
     {
       "path": "../sdk-coin-avaxp"
+    },
+    {
+      "path": "../sdk-coin-baby"
     },
     {
       "path": "../sdk-coin-bch"
@@ -230,6 +230,9 @@
     },
     {
       "path": "../sdk-core"
+    },
+    {
+      "path": "../sdk-hmac"
     },
     {
       "path": "../sdk-test"
