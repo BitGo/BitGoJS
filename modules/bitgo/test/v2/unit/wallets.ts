@@ -2075,4 +2075,28 @@ describe('V2 Wallets:', function () {
       });
     });
   });
+
+  describe('List Wallets:', function () {
+    it('should list wallets with skipReceiveAddress = true', async function () {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const basecoin = bitgo.coin('tbtc');
+      const wallets = basecoin.wallets();
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+
+      nock(bgUrl)
+        .get('/api/v2/tbtc/wallet')
+        .query({ skipReceiveAddress: true })
+        .reply(200, {
+          wallets: [
+            { id: 'wallet1', label: 'Test Wallet 1' },
+            { id: 'wallet2', label: 'Test Wallet 2' },
+          ],
+        });
+
+      const result = await wallets.list({ skipReceiveAddress: true });
+      result.wallets.should.have.length(2);
+      should.not.exist(result.wallets[0].receiveAddress());
+      should.not.exist(result.wallets[1].receiveAddress());
+    });
+  });
 });
