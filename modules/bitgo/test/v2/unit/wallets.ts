@@ -2098,5 +2098,27 @@ describe('V2 Wallets:', function () {
       should.not.exist(result.wallets[0].receiveAddress());
       should.not.exist(result.wallets[1].receiveAddress());
     });
+
+    it('should list wallets without skipReceiveAddress', async function () {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const basecoin = bitgo.coin('tbtc');
+      const wallets = basecoin.wallets();
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+
+      nock(bgUrl)
+        .get('/api/v2/tbtc/wallet')
+        .query({})
+        .reply(200, {
+          wallets: [
+            { id: 'wallet1', label: 'Test Wallet 1', receiveAddress: { address: 'address1' } },
+            { id: 'wallet2', label: 'Test Wallet 2', receiveAddress: { address: 'address2' } },
+          ],
+        });
+
+      const result = await wallets.list();
+      result.wallets.should.have.length(2);
+      should.exist(result.wallets[0].receiveAddress());
+      should.exist(result.wallets[1].receiveAddress());
+    });
   });
 });
