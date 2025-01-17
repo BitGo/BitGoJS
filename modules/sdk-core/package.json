@@ -61,7 +61,7 @@
     "ethereumjs-util": "7.1.5",
     "fp-ts": "^2.12.2",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
-    "io-ts-types": "^0.5.16",
+    "io-ts-types": "^0.5.19",
     "keccak": "3.0.3",
     "libsodium-wrappers-sumo": "^0.7.9",
     "lodash": "^4.17.15",
