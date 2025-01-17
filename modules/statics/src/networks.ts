@@ -1149,7 +1149,38 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
-
+class Flare extends Mainnet implements EthereumNetwork {
+  name = 'Flarechain';
+  family = CoinFamily.FLR;
+  explorerUrl = 'https://flare-explorer.flare.network/tx';
+  accountExplorerUrl = 'https://flare-explorer.flare.network/address';
+  chainId = 14;
+  nativeCoinOperationHashPrefix = '14';
+}
+class FlareTestnet extends Testnet implements EthereumNetwork {
+  name = 'FlarechainTestnet';
+  family = CoinFamily.FLR;
+  explorerUrl = 'https://coston2-explorer.flare.network/tx';
+  accountExplorerUrl = 'https://coston2-explorer.flare.network/address';
+  chainId = 114;
+  nativeCoinOperationHashPrefix = '114';
+}
+class Songbird extends Mainnet implements EthereumNetwork {
+  name = 'Songbirdchain';
+  family = CoinFamily.SGB;
+  explorerUrl = 'https://songbird-explorer.flare.network/tx';
+  accountExplorerUrl = 'https://songbird-explorer.flare.network/address';
+  chainId = 19;
+  nativeCoinOperationHashPrefix = '19';
+}
+class SongbirdTestnet extends Testnet implements EthereumNetwork {
+  name = 'SongbirdchainTestnet';
+  family = CoinFamily.SGB;
+  explorerUrl = 'https://coston-explorer.flare.network/tx';
+  accountExplorerUrl = 'https://coston-explorer.flare.network/address';
+  chainId = 16;
+  nativeCoinOperationHashPrefix = '16';
+}
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
   name = 'BaseChainTestnet';
   family = CoinFamily.BASEETH;
@@ -1210,6 +1241,7 @@ export const Networks = {
     ethereumClassic: Object.freeze(new EthereumClassic()),
     ethereumW: Object.freeze(new EthereumW()),
     fiat: Object.freeze(new Fiat()),
+    flr: Object.freeze(new Flare()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     icp: Object.freeze(new Icp()),
@@ -1227,6 +1259,7 @@ export const Networks = {
     rune: Object.freeze(new Rune()),
     stellar: Object.freeze(new Stellar()),
     sei: Object.freeze(new Sei()),
+    sgb: Object.freeze(new Songbird()),
     sol: Object.freeze(new Sol()),
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
@@ -1271,6 +1304,7 @@ export const Networks = {
     eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
+    flr: Object.freeze(new FlareTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hash: Object.freeze(new HashTestnet()),
@@ -1291,6 +1325,7 @@ export const Networks = {
     osmo: Object.freeze(new OsmoTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
     rune: Object.freeze(new RuneTestNet()),
+    sgb: Object.freeze(new SongbirdTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     sei: Object.freeze(new SeiTestnet()),
     sol: Object.freeze(new SolTestnet()),

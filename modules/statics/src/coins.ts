@@ -89,7 +89,17 @@ const ETC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.MULTISIG_COLD,
 ];
-
+const EVM_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.MPCV2,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.EIP1559,
+];
 const AVAXC_FEATURES = [
   ...ETH_FEATURES_WITH_MMI,
   CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -1426,6 +1436,46 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
     COREDAO_FEATURES
+  ),
+  account(
+    '202caf8f-4d43-4208-b206-8231f555c518',
+    'flr',
+    'flare',
+    Networks.main.flr,
+    18,
+    UnderlyingAsset.FLR,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '338fc340-08be-4796-9c04-96e5a5078393',
+    'tflr',
+    'Testnet flare chain',
+    Networks.test.flr,
+    18,
+    UnderlyingAsset.FLR,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '321a3168-4669-4ed0-a767-8f35111bb576',
+    'sgb',
+    'Songbird',
+    Networks.main.sgb,
+    18,
+    UnderlyingAsset.SGB,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    'c6b8f90b-1f89-4d26-b296-4097927f6b30',
+    'tsgb',
+    'Testnet songbird chain',
+    Networks.test.sgb,
+    18,
+    UnderlyingAsset.SGB,
+    BaseUnit.ETH,
+    EVM_FEATURES
   ),
   account(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',

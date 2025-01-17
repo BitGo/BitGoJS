@@ -50,6 +50,7 @@ export enum CoinFamily {
   ETC = 'etc',
   EOS = 'eos',
   FIAT = 'fiat',
+  FLR = 'flr',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   ICP = 'icp',
@@ -65,6 +66,7 @@ export enum CoinFamily {
   OPETH = 'opeth',
   OSMO = 'osmo',
   RBTC = 'rbtc',
+  SGB = 'sgb',
   SEI = 'sei',
   SOL = 'sol',
   SUI = 'sui',
@@ -359,6 +361,7 @@ export enum UnderlyingAsset {
   EURCV = 'eurcv',
   EUROC = 'euroc',
   EURR = 'eurr',
+  FLR = 'flr',
   GBP = 'gbp',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
@@ -376,6 +379,7 @@ export enum UnderlyingAsset {
   POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
   SEI = 'sei',
+  SGB = 'sgb',
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',

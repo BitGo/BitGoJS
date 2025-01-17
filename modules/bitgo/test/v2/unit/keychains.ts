@@ -77,6 +77,8 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.ZKETH && // TODO(WIN-1427): remove this once coin-specific module for zketh is added
         n.asset !== UnderlyingAsset.OAS && // TODO(WIN-3696): remove this once coin-specific module for oas is added
         n.asset !== UnderlyingAsset.COREDAO && // TODO(WIN-3696): remove this once coin-specific module for coredao is added
+        n.asset !== UnderlyingAsset.FLR && // TODO(WIN-4215): remove this once coin-specific module for FLR is added
+        n.asset !== UnderlyingAsset.SGB && // TODO(WIN-4216): remove this once coin-specific module for SGB is added
         n.asset !== UnderlyingAsset.RUNE &&
         n.asset !== UnderlyingAsset.BABY &&
         coinFamilyValues.includes(n.name)
