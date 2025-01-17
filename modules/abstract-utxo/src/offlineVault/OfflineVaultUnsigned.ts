@@ -3,7 +3,7 @@ import { Triple } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 
 export const XPubWithDerivationPath = t.intersection(
-  [t.type({ xpub: t.string }), t.partial({ derivationPath: t.string })],
+  [t.type({ xpub: t.string }), t.partial({ derivedFromParentWithSeed: t.string })],
   'XPubWithDerivationPath'
 );
 

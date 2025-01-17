@@ -42,6 +42,7 @@ import {
   BuildNftTransferDataOptions,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
+  DeriveKeyWithSeedOptions,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
@@ -418,7 +419,13 @@ export abstract class BaseCoin implements IBaseCoin {
    * @param seed
    * @returns {{key: string, derivationPath: string}}
    */
-  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { key: string; derivationPath: string } {
+  static deriveKeyWithSeedBip32(
+    key: utxolib.BIP32Interface,
+    seed: string
+  ): {
+    key: utxolib.BIP32Interface;
+    derivationPath: string;
+  } {
     function sha256(input) {
       return crypto.createHash('sha256').update(input).digest();
     }
@@ -428,11 +435,21 @@ export abstract class BaseCoin implements IBaseCoin {
       parseInt(derivationPathInput.slice(7, 14), 16),
     ];
     const derivationPath = 'm/999999/' + derivationPathParts.join('/');
-    const keyNode = bip32.fromBase58(key);
-    const derivedKeyNode = keyNode.derivePath(derivationPath);
     return {
-      key: derivedKeyNode.toBase58(),
-      derivationPath: derivationPath,
+      key: key.derivePath(derivationPath),
+      derivationPath,
+    };
+  }
+
+  /** {@see deriveKeyWithSeedBip32} */
+  deriveKeyWithSeed(params: DeriveKeyWithSeedOptions): {
+    key: string;
+    derivationPath: string;
+  } {
+    const { key, derivationPath } = BaseCoin.deriveKeyWithSeedBip32(bip32.fromBase58(params.key), params.seed);
+    return {
+      key: key.toBase58(),
+      derivationPath,
     };
   }
 

@@ -1,5 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface } from '@bitgo/utxo-lib';
+import { BaseCoin } from '@bitgo/sdk-core';
 
 import { getNetworkFromChain } from '../names';
 
@@ -14,11 +15,17 @@ function createHalfSignedFromPsbt(psbt: utxolib.Psbt): OfflineVaultHalfSigned {
   return { halfSigned: { txHex: psbt.toHex() } };
 }
 
-export function createHalfSigned(coin: string, prv: string | BIP32Interface, tx: unknown): OfflineVaultHalfSigned {
+export function createHalfSigned(
+  coin: string,
+  prv: string | BIP32Interface,
+  derivationId: string,
+  tx: unknown
+): OfflineVaultHalfSigned {
   const network = getNetworkFromChain(coin);
   if (typeof prv === 'string') {
     prv = utxolib.bip32.fromBase58(prv);
   }
+  prv = BaseCoin.deriveKeyWithSeedBip32(prv, derivationId).key;
   if (!OfflineVaultUnsigned.is(tx)) {
     throw new Error('unsupported transaction type');
   }

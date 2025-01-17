@@ -3,6 +3,7 @@ import assert from 'assert';
 import crypto from 'crypto';
 
 import * as t from 'io-ts';
+import { decodeOrElse } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { createHalfSigned } from '../../src/offlineVault';
@@ -14,8 +15,13 @@ function getFixturesNames(): string[] {
   return fs.readdirSync(__dirname + '/fixtures').filter((f) => f.endsWith('.json'));
 }
 
+const KeyPair = t.intersection([t.type({ xpub: t.string }), t.partial({ xprv: t.string })]);
+
+const KeyWithParent = t.intersection([KeyPair, t.partial({ parent: KeyPair })]);
+type KeyWithParent = t.TypeOf<typeof KeyWithParent>;
+
 const Fixture = t.type({
-  walletKeys: t.array(t.string),
+  walletKeys: t.array(KeyWithParent),
   response: t.unknown,
 });
 
@@ -23,10 +29,9 @@ type Fixture = t.TypeOf<typeof Fixture>;
 
 async function readFixture(name: string): Promise<Fixture> {
   const data = JSON.parse(await fs.promises.readFile(__dirname + '/fixtures/' + name, 'utf-8'));
-  if (!Fixture.is(data)) {
-    throw new Error(`Invalid fixture ${name}`);
-  }
-  return data;
+  return decodeOrElse('Fixture', Fixture, data, (e) => {
+    throw new Error(`failed to decode fixture ${name}: ${e}`);
+  });
 }
 
 function withRotatedXpubs(tx: DescriptorTransaction): DescriptorTransaction {
@@ -63,17 +68,30 @@ function withoutDescriptors(tx: DescriptorTransaction): DescriptorTransaction {
   };
 }
 
+function getDerivationId(v: DescriptorTransaction['xpubsWithDerivationPath']): string {
+  const id = v.user.derivedFromParentWithSeed;
+  assert(id);
+  return id;
+}
+
+function getRootPrv(walletKeys: KeyWithParent[]): utxolib.BIP32Interface {
+  assert(walletKeys[0]);
+  assert(walletKeys[0].parent);
+  assert(walletKeys[0].parent.xprv);
+  return utxolib.bip32.fromBase58(walletKeys[0].parent.xprv);
+}
+
 describe('OfflineVaultHalfSigned', function () {
   for (const fixtureName of getFixturesNames()) {
     it(`can sign fixture ${fixtureName}`, async function () {
       const { walletKeys, response } = await readFixture(fixtureName);
-      const prv = utxolib.bip32.fromBase58(walletKeys[0]);
-      createHalfSigned('btc', prv, response);
-
       assert(DescriptorTransaction.is(response));
+      const rootPrv = getRootPrv(walletKeys);
+      const derivationId = getDerivationId(response.xpubsWithDerivationPath);
+      createHalfSigned('btc', rootPrv, derivationId, response);
       const mutations = [withRotatedXpubs(response), withRandomXpubs(response), withoutDescriptors(response)];
       for (const mutation of mutations) {
-        assert.throws(() => createHalfSigned('btc', prv, mutation));
+        assert.throws(() => createHalfSigned('btc', rootPrv, derivationId, mutation));
       }
     });
   }
