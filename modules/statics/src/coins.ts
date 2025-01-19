@@ -18494,6 +18494,20 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:grass'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '732f22a5-8ffc-4722-a194-0fdb14caf448',
+    'sol:trump',
+    'OFFICIAL TRUMP',
+    6,
+    '6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN',
+    UnderlyingAsset['sol:trump'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
