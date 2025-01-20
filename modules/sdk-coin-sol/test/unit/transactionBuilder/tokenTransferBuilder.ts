@@ -452,26 +452,18 @@ describe('Sol Token Transfer Builder', () => {
         tokenName: nameUSDC,
       });
       txJson.instructionsData[2].type.should.equal('CreateAssociatedTokenAccount');
-      txJson.instructionsData[2].params.should.deepEqual({
+      txJson.instructionsData[3].params.should.deepEqual({
         mintAddress: mintUSDC,
         ataAddress: ataAddress2,
         ownerAddress: account2.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
       });
-      txJson.instructionsData.length.should.equal(7);
-      txJson.instructionsData[3].type.should.equal('TokenTransfer');
-      txJson.instructionsData[3].params.should.deepEqual({
-        fromAddress: walletPK,
-        toAddress: otherAccount.pub,
-        amount: amount,
-        tokenName: nameUSDC,
-        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
-      });
+      txJson.instructionsData.length.should.equal(8);
       txJson.instructionsData[4].type.should.equal('TokenTransfer');
       txJson.instructionsData[4].params.should.deepEqual({
         fromAddress: walletPK,
-        toAddress: account1.pub,
+        toAddress: otherAccount.pub,
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
@@ -479,13 +471,21 @@ describe('Sol Token Transfer Builder', () => {
       txJson.instructionsData[5].type.should.equal('TokenTransfer');
       txJson.instructionsData[5].params.should.deepEqual({
         fromAddress: walletPK,
+        toAddress: account1.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[6].type.should.equal('TokenTransfer');
+      txJson.instructionsData[6].params.should.deepEqual({
+        fromAddress: walletPK,
         toAddress: account2.pub,
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
       });
-      txJson.instructionsData[6].type.should.equal('Memo');
-      txJson.instructionsData[6].params.memo.should.equal(memo);
+      txJson.instructionsData[7].type.should.equal('Memo');
+      txJson.instructionsData[7].params.memo.should.equal(memo);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
