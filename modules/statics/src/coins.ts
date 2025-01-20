@@ -93,7 +93,6 @@ const EVM_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
-  CoinFeature.EVM_WALLET,
   CoinFeature.MPCV2,
   CoinFeature.EVM_WALLET,
   CoinFeature.BULK_TRANSACTION,
@@ -1436,6 +1435,46 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
     COREDAO_FEATURES
+  ),
+  account(
+    '0cdd9089-9ca6-41ea-ab2b-20211da4ac06',
+    'xdc',
+    'XDC',
+    Networks.main.xdc,
+    18,
+    UnderlyingAsset.XDC,
+    BaseUnit.ETH,
+    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+  ),
+  account(
+    'e6ecb22e-0ae8-463a-b2fb-61502fd54240',
+    'txdc',
+    'Testnet XDC chain',
+    Networks.test.xdc,
+    18,
+    UnderlyingAsset.XDC,
+    BaseUnit.ETH,
+    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+  ),
+  account(
+    '297edf01-b166-45fb-be6f-da6680635f72',
+    'wemix',
+    'Wemix',
+    Networks.main.wemix,
+    18,
+    UnderlyingAsset.WEMIX,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    'b18517e3-2fba-44df-be39-7ba062d14895',
+    'twemix',
+    'Testnet wemix chain',
+    Networks.test.wemix,
+    18,
+    UnderlyingAsset.WEMIX,
+    BaseUnit.ETH,
+    EVM_FEATURES
   ),
   account(
     '202caf8f-4d43-4208-b206-8231f555c518',

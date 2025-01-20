@@ -1149,6 +1149,38 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
+class Xdc extends Mainnet implements EthereumNetwork {
+  name = 'XdcChain';
+  family = CoinFamily.XDC;
+  explorerUrl = 'https://xdcscan.com/tx';
+  accountExplorerUrl = 'https://xdcscan.com/address';
+  chainId = 50;
+  nativeCoinOperationHashPrefix = '50';
+}
+class XdcTestnet extends Testnet implements EthereumNetwork {
+  name = 'XdcChainTestnet';
+  family = CoinFamily.XDC;
+  explorerUrl = 'https://testnet.xdcscan.com/tx';
+  accountExplorerUrl = 'https://testnet.xdcscan.com/address';
+  chainId = 51;
+  nativeCoinOperationHashPrefix = '51';
+}
+class Wemix extends Mainnet implements EthereumNetwork {
+  name = 'WemixChain';
+  family = CoinFamily.WEMIX;
+  explorerUrl = 'https://explorer.wemix.com/tx';
+  accountExplorerUrl = 'https://explorer.wemix.com/address';
+  chainId = 1111;
+  nativeCoinOperationHashPrefix = '1111';
+}
+class WemixTestnet extends Testnet implements EthereumNetwork {
+  name = 'WemixChainTestnet';
+  family = CoinFamily.WEMIX;
+  explorerUrl = 'https://explorer.test.wemix.com/tx';
+  accountExplorerUrl = 'https://explorer.test.wemix.com/address';
+  chainId = 1112;
+  nativeCoinOperationHashPrefix = '1112';
+}
 class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
@@ -1269,6 +1301,8 @@ export const Networks = {
     tia: Object.freeze(new Tia()),
     ton: Object.freeze(new Ton()),
     trx: Object.freeze(new Trx()),
+    wemix: Object.freeze(new Wemix()),
+    xdc: Object.freeze(new Xdc()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
     zCash: Object.freeze(new ZCash()),
@@ -1338,6 +1372,8 @@ export const Networks = {
     tia: Object.freeze(new TiaTestnet()),
     ton: Object.freeze(new TonTestnet()),
     trx: Object.freeze(new TrxTestnet()),
+    wemix: Object.freeze(new WemixTestnet()),
+    xdc: Object.freeze(new XdcTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
