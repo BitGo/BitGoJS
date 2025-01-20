@@ -154,6 +154,7 @@ cd /var/modules/sdk-coin-etc && yarn link && \
 cd /var/modules/sdk-coin-eth2 && yarn link && \
 cd /var/modules/sdk-coin-hash && yarn link && \
 cd /var/modules/sdk-coin-hbar && yarn link && \
+cd /var/modules/sdk-coin-icp && yarn link && \
 cd /var/modules/sdk-coin-injective && yarn link && \
 cd /var/modules/sdk-coin-islm && yarn link && \
 cd /var/modules/sdk-coin-near && yarn link && \
@@ -234,6 +235,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-eth2 && \
     yarn link @bitgo/sdk-coin-hash && \
     yarn link @bitgo/sdk-coin-hbar && \
+    yarn link @bitgo/sdk-coin-icp && \
     yarn link @bitgo/sdk-coin-injective && \
     yarn link @bitgo/sdk-coin-islm && \
     yarn link @bitgo/sdk-coin-near && \
@@ -275,9 +277,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 15 Jan 2025 12:14:19 GMT"
-LABEL version=10.6.8
-LABEL git_hash=cf0b3b3479e1744566865e5ab544c85d3fcdf159
+LABEL created="Mon, 20 Jan 2025 14:11:17 GMT"
+LABEL version=10.6.9
+LABEL git_hash=0ac3f4f1997fb2b28081f10e813f6790b2dc0b90
 #LABEL_END
 
 USER node
