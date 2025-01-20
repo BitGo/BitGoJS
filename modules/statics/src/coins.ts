@@ -18508,6 +18508,20 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
     ]
   ),
+  solToken(
+    '96ee9c77-8b26-4c1e-a665-eec036864f5c',
+    'sol:melania',
+    'Melania Meme',
+    6,
+    'FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P',
+    UnderlyingAsset['sol:melania'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
