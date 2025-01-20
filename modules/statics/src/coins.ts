@@ -13736,6 +13736,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('d3f81454-874d-44a2-96e9-2fa37b5311b3', 'ofceth:turbo', 'Turbo', 18, UnderlyingAsset['eth:turbo']),
   ofcerc20('509e7614-4134-4f4a-b107-cd3b4783a558', 'ofceth:spx', 'SPX6900', 8, UnderlyingAsset['eth:spx']),
   ofcerc20('2c863d38-6d3b-438a-983d-79f20aff030a', 'ofceth:kava', 'Kava', 6, UnderlyingAsset['eth:kava']),
+  ofcerc20('53a414b4-cefa-4a81-936c-9ecbb2da22cc', 'ofceth:gousd', 'goUSD', 6, UnderlyingAsset['eth:gousd']),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
@@ -15596,7 +15597,20 @@ export const coins = CoinMap.fromCoins([
     undefined,
     'hteth'
   ),
-
+  tofcerc20(
+    '0c90af13-2b65-4c13-ae1f-101531aa8e9b',
+    'ofctgousd',
+    'Holesky Testnet GoUSD',
+    6,
+    UnderlyingAsset.TGOUSD,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
   tofcArbethErc20(
     '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',
     'ofctarbeth:link',
