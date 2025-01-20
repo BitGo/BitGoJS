@@ -1547,6 +1547,7 @@ export enum UnderlyingAsset {
   TGBP = 'tgbp',
   TUSDS = 'tusds',
   TGOUSD = 'tgousd',
+  'hteth:gousd' = 'hteth:gousd',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
