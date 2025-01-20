@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.19.1...@bitgo/sdk-core@28.20.0) (2025-01-20)
+
+### Bug Fixes
+
+- **sdk-core:** add dRepId to StakingOptions ([2a7a77d](https://github.com/BitGo/BitGoJS/commit/2a7a77dd067e68262d42384528d7ace28bb45e9c))
+
+### Features
+
+- **sdk-core:** add static deriveKeyWithSeed implementation ([17f8547](https://github.com/BitGo/BitGoJS/commit/17f854759a557280619180108692729c3a4fb48f))
+- **sdk-core:** add WalletBalance codecs ([1d3f09d](https://github.com/BitGo/BitGoJS/commit/1d3f09da7fbcf1977a17c8f4f13ead7b8b583bb6))
+- **sdk-core:** return all fields in WalletBalance codecs ([db6c292](https://github.com/BitGo/BitGoJS/commit/db6c292c04d11f1c398ad5b41c157ab2d36ae605))
+
 ## [28.19.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.19.0...@bitgo/sdk-core@28.19.1) (2025-01-15)
 
 ### Bug Fixes

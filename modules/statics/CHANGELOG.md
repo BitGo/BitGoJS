@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.19.0...@bitgo/statics@50.20.0) (2025-01-20)
+
+### Bug Fixes
+
+- removal of MPCV2 feature from ICP ([cdcd5c1](https://github.com/BitGo/BitGoJS/commit/cdcd5c188bc1ec916216881e55f6bb28efd95d8b))
+- removing MPCV2 feature flag for apt ([19c0257](https://github.com/BitGo/BitGoJS/commit/19c0257c1945250b012cdce4ed496768b7dd948e))
+
+### Features
+
+- onboard hteth:gousd ([fde2848](https://github.com/BitGo/BitGoJS/commit/fde28487ba567581c9cf655e151c6612d7434288))
+- **statics:** add flr,sgb config ([b881454](https://github.com/BitGo/BitGoJS/commit/b8814548268f8de9b423e79abb10e30ccffebfa9))
+- **statics:** add sol:melania ([9afbcdd](https://github.com/BitGo/BitGoJS/commit/9afbcdd3eef638a6721bca592e5cf24eaace2550))
+- **statics:** add sol:trump token ([f209c9d](https://github.com/BitGo/BitGoJS/commit/f209c9dbfdc3e8aa5663d4c8218458281004c4ff))
+- **statics:** add staking feature to tsui:wal ([5b8b758](https://github.com/BitGo/BitGoJS/commit/5b8b758d7d2fbd0c489ef8452231b39af128f08d))
+- **statics:** add xdc, wemix config ([098c1ab](https://github.com/BitGo/BitGoJS/commit/098c1ab11765907477f3611e7c01346e3f9cf755))
+- **statics:** adding ofctgousd and ofceth:gousd in coins.ts ([9a0c62e](https://github.com/BitGo/BitGoJS/commit/9a0c62e9f5401bd3aa3c3bd331c75ac55d6daaba))
+- **statics:** onboard new ofc sol tokens ([2423405](https://github.com/BitGo/BitGoJS/commit/2423405430349359c2fa717796eaf1f4f2d01cdd))
+
 # [50.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.18.0...@bitgo/statics@50.19.0) (2025-01-15)
 
 ### Bug Fixes

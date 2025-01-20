@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.1.9...@bitgo/account-lib@24.2.0) (2025-01-20)
+
+### Features
+
+- **sdk-coin-icp:** added ICP skeleton code ([5215ce9](https://github.com/BitGo/BitGoJS/commit/5215ce9f27c90b88cc916accd32c906ab690cf51))
+
 ## [24.1.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.1.8...@bitgo/account-lib@24.1.9) (2025-01-15)
 
 **Note:** Version bump only for package @bitgo/account-lib

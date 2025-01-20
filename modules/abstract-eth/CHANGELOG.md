@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.4.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.9...@bitgo/abstract-eth@22.4.10) (2025-01-20)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
 ## [22.4.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.8...@bitgo/abstract-eth@22.4.9) (2025-01-15)
 
 **Note:** Version bump only for package @bitgo/abstract-eth
