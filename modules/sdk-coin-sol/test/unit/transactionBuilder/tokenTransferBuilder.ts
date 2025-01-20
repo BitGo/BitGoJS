@@ -305,11 +305,12 @@ describe('Sol Token Transfer Builder', () => {
       });
 
       const txJson = tx.toJson();
-      txJson.instructionsData.length.should.equal(4);
-      txJson.instructionsData[0].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
+      txJson.instructionsData.length.should.equal(5);
+      txJson.instructionsData[0].type.should.equal('SetPriorityFee');
       txJson.instructionsData[1].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
-      txJson.instructionsData[2].params.sourceAddress.should.equal(testData.tokenTransfers.sourceSRM);
-      txJson.instructionsData[3].params.sourceAddress.should.equal(testData.tokenTransfers.sourceRAY);
+      txJson.instructionsData[2].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
+      txJson.instructionsData[3].params.sourceAddress.should.equal(testData.tokenTransfers.sourceSRM);
+      txJson.instructionsData[4].params.sourceAddress.should.equal(testData.tokenTransfers.sourceRAY);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -356,25 +357,26 @@ describe('Sol Token Transfer Builder', () => {
         coin: nameUSDC,
       });
       const txJson = tx.toJson();
-      txJson.instructionsData.length.should.equal(3);
-      txJson.instructionsData[0].type.should.equal('CreateAssociatedTokenAccount');
-      txJson.instructionsData[0].params.should.deepEqual({
+      txJson.instructionsData.length.should.equal(4);
+      txJson.instructionsData[0].type.should.equal('SetPriorityFee');
+      txJson.instructionsData[1].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[1].params.should.deepEqual({
         mintAddress: mintUSDC,
         ataAddress: ataAddress,
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
       });
-      txJson.instructionsData[1].type.should.equal('TokenTransfer');
-      txJson.instructionsData[1].params.should.deepEqual({
+      txJson.instructionsData[2].type.should.equal('TokenTransfer');
+      txJson.instructionsData[2].params.should.deepEqual({
         fromAddress: walletPK,
         toAddress: otherAccount.pub,
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
       });
-      txJson.instructionsData[2].type.should.equal('Memo');
-      txJson.instructionsData[2].params.memo.should.equal(memo);
+      txJson.instructionsData[3].type.should.equal('Memo');
+      txJson.instructionsData[3].params.memo.should.equal(memo);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -431,17 +433,18 @@ describe('Sol Token Transfer Builder', () => {
         coin: nameUSDC,
       });
       const txJson = tx.toJson();
-      txJson.instructionsData.length.should.equal(7);
-      txJson.instructionsData[0].type.should.equal('CreateAssociatedTokenAccount');
-      txJson.instructionsData[0].params.should.deepEqual({
+      txJson.instructionsData.length.should.equal(8);
+      txJson.instructionsData[0].type.should.equal('SetPriorityFee');
+      txJson.instructionsData[1].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[1].params.should.deepEqual({
         mintAddress: mintUSDC,
         ataAddress: ataAddress,
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
       });
-      txJson.instructionsData[1].type.should.equal('CreateAssociatedTokenAccount');
-      txJson.instructionsData[1].params.should.deepEqual({
+      txJson.instructionsData[2].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[2].params.should.deepEqual({
         mintAddress: mintUSDC,
         ataAddress: ataAddress1,
         ownerAddress: account1.pub,
@@ -534,22 +537,15 @@ describe('Sol Token Transfer Builder', () => {
         coin: nameUSDC,
       });
       const txJson = tx.toJson();
-      txJson.instructionsData.length.should.equal(5);
-      txJson.instructionsData[0].type.should.equal('CreateAssociatedTokenAccount');
-      txJson.instructionsData[0].params.should.deepEqual({
+      txJson.instructionsData.length.should.equal(6);
+      txJson.instructionsData[0].type.should.equal('SetPriorityFee');
+      txJson.instructionsData[1].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[1].params.should.deepEqual({
         mintAddress: mintUSDC,
         ataAddress: ataAddress,
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
-      });
-      txJson.instructionsData[1].type.should.equal('TokenTransfer');
-      txJson.instructionsData[1].params.should.deepEqual({
-        fromAddress: walletPK,
-        toAddress: otherAccount.pub,
-        amount: amount,
-        tokenName: nameUSDC,
-        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
       });
       txJson.instructionsData[2].type.should.equal('TokenTransfer');
       txJson.instructionsData[2].params.should.deepEqual({
@@ -567,8 +563,16 @@ describe('Sol Token Transfer Builder', () => {
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
       });
-      txJson.instructionsData[4].type.should.equal('Memo');
-      txJson.instructionsData[4].params.memo.should.equal(memo);
+      txJson.instructionsData[4].type.should.equal('TokenTransfer');
+      txJson.instructionsData[4].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: otherAccount.pub,
+        amount: amount,
+        tokenName: nameUSDC,
+        sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+      });
+      txJson.instructionsData[5].type.should.equal('Memo');
+      txJson.instructionsData[5].params.memo.should.equal(memo);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);

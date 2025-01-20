@@ -10,7 +10,7 @@ import {
   validateOwnerAddress,
 } from './utils';
 import { InstructionBuilderTypes } from './constants';
-import { AtaInit, TokenAssociateRecipient, TokenTransfer } from './iface';
+import { AtaInit, TokenAssociateRecipient, TokenTransfer, SetPriorityFee } from './iface';
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
 import _ from 'lodash';
@@ -140,8 +140,12 @@ export class TokenTransferBuilder extends TransactionBuilder {
         };
       })
     );
+    const addPriorityFeeInstruction: SetPriorityFee = {
+      type: InstructionBuilderTypes.SetPriorityFee,
+      params: {},
+    };
     // order is important, createAtaInstructions must be before sendInstructions
-    this._instructionsData = [...createAtaInstructions, ...sendInstructions];
+    this._instructionsData = [addPriorityFeeInstruction, ...createAtaInstructions, ...sendInstructions];
     return await super.buildImplementation();
   }
 }

@@ -165,7 +165,7 @@ describe('Sol Transaction Builder', async () => {
     should.equal(builtTx.type, TransactionType.Send);
     should.equal(
       builtTx.id,
-      '335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf'
+      '2ticU4ZkEqdTHULr6LobTgWBhim6E7wSscDhM4gzyuGUmQyUwLYhoqaifuvwmNzzEf1T5aefVcgMQkSHdJ5nsrfZ'
     );
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
@@ -180,7 +180,7 @@ describe('Sol Transaction Builder', async () => {
       coin: 'tsol:usdc',
     });
     const jsonTx = builtTx.toJson();
-    jsonTx.id.should.equal('335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf');
+    jsonTx.id.should.equal('2ticU4ZkEqdTHULr6LobTgWBhim6E7wSscDhM4gzyuGUmQyUwLYhoqaifuvwmNzzEf1T5aefVcgMQkSHdJ5nsrfZ');
     jsonTx.feePayer.should.equal(testData.associatedTokenAccounts.accounts[0].pub);
     jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
     jsonTx.numSignatures.should.equal(1);
@@ -189,6 +189,10 @@ describe('Sol Transaction Builder', async () => {
       authWalletAddress: testData.associatedTokenAccounts.accounts[0].pub,
     });
     jsonTx.instructionsData.should.deepEqual([
+      {
+        params: {},
+        type: 'SetPriorityFee',
+      },
       {
         type: 'TokenTransfer',
         params: {
