@@ -10,7 +10,8 @@ import {
   toDescriptorMapValidate,
 } from '../../descriptor/validatePolicy';
 import { DescriptorMap } from '../../core/descriptor';
-import { signPsbt } from '../../transaction/descriptor';
+import { explainPsbt, signPsbt } from '../../transaction/descriptor';
+import { TransactionExplanation } from '../TransactionExplanation';
 
 export const DescriptorTransaction = t.intersection(
   [OfflineVaultSignable, t.type({ descriptors: t.array(NamedDescriptor) })],
@@ -40,4 +41,24 @@ export function getHalfSignedPsbt(
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
   signPsbt(psbt, descriptorMap, prv, { onUnknownInput: 'throw' });
   return psbt;
+}
+
+export function getTransactionExplanationFromPsbt(
+  tx: DescriptorTransaction,
+  network: utxolib.Network
+): TransactionExplanation {
+  const psbt = utxolib.bitgo.createPsbtDecode(tx.coinSpecific.txHex, network);
+  const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
+  const { outputs, changeOutputs, fee } = explainPsbt(psbt, descriptorMap);
+  return {
+    outputs,
+    changeOutputs,
+    fee: {
+      /* network fee */
+      fee,
+      /* TODO */
+      payGoFeeString: undefined,
+      payGoFeeAddress: undefined,
+    },
+  };
 }

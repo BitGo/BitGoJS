@@ -13,7 +13,9 @@ import {
 import { toAmountType } from '../../../src/transaction/descriptor/parseToAmountType';
 import { BaseOutput } from '../../../src';
 
-import { assertEqualFixture } from './fixtures.utils';
+import { getFixtureRoot } from './fixtures.utils';
+
+const { assertEqualFixture } = getFixtureRoot(__dirname + '/fixtures');
 
 type OutputWithValue<T = number | bigint | string> = {
   address?: string;
