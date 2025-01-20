@@ -236,6 +236,10 @@ export enum CoinFeature {
    */
   CUSTODY_BITGO_KOREA = 'custody-bitgo-korea',
   /**
+   * This coin supports custody in BitGo Dubai entities
+   */
+  CUSTODY_BITGO_MENA_FZE = 'custody-bitgo-mena-fze',
+  /**
    * This coin supports custody in BitGo Europe ApS entities
    */
   CUSTODY_BITGO_EUROPE_APS = 'custody-bitgo-europe-aps',
