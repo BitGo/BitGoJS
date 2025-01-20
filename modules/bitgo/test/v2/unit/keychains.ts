@@ -79,6 +79,8 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.COREDAO && // TODO(WIN-3696): remove this once coin-specific module for coredao is added
         n.asset !== UnderlyingAsset.FLR && // TODO(WIN-4215): remove this once coin-specific module for FLR is added
         n.asset !== UnderlyingAsset.SGB && // TODO(WIN-4216): remove this once coin-specific module for SGB is added
+        n.asset !== UnderlyingAsset.WEMIX && // TODO(WIN-4177): remove this once coin-specific module for WEMIX is added
+        n.asset !== UnderlyingAsset.XDC && // TODO(WIN-4173): remove this once coin-specific module for XDC is added
         n.asset !== UnderlyingAsset.RUNE &&
         n.asset !== UnderlyingAsset.BABY &&
         coinFamilyValues.includes(n.name)
