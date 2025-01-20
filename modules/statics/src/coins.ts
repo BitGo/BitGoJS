@@ -1883,6 +1883,21 @@ export const coins = CoinMap.fromCoins([
   ofcsolToken('41230415-d199-44ff-b25d-fb8fc7e7d0f8', 'ofcsol:giga', 'Gigachad', 5, UnderlyingAsset['sol:giga']),
   ofcsolToken('895df245-0030-46f0-a113-21de232399ee', 'ofcsol:bome', 'Book Of Meme', 6, UnderlyingAsset['sol:bome']),
   ofcsolToken('9ff1f4ec-d06f-4657-806c-220fb0d598e5', 'ofcsol:io', 'IONET', 8, UnderlyingAsset['sol:io']),
+  ofcsolToken(
+    '8c8b6013-90d2-4a61-b978-c05f655ffeb4',
+    'ofcsol:trump',
+    'OFFICIAL TRUMP',
+    6,
+    UnderlyingAsset['sol:trump']
+  ),
+  ofcsolToken('c22873cf-c1be-419e-865e-510c42f2943c', 'ofcsol:ai16z', 'AI16Z', 9, UnderlyingAsset['sol:ai16z']),
+  ofcsolToken(
+    '250a1d56-2286-4aa1-b1dd-0eb99db194ae',
+    'ofcsol:melania',
+    'Melania Meme',
+    6,
+    UnderlyingAsset['sol:melania']
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
