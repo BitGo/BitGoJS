@@ -12,7 +12,7 @@ export type XPubWithDerivationPath = t.TypeOf<typeof XPubWithDerivationPath>;
 /**
  * This is the transaction payload that is sent to the offline vault to sign.
  */
-export const OfflineVaultUnsigned = t.type(
+export const OfflineVaultSignable = t.type(
   {
     xpubsWithDerivationPath: t.type({
       user: XPubWithDerivationPath,
@@ -24,7 +24,7 @@ export const OfflineVaultUnsigned = t.type(
   'BaseTransaction'
 );
 
-export type OfflineVaultUnsigned = t.TypeOf<typeof OfflineVaultUnsigned>;
+export type OfflineVaultUnsigned = t.TypeOf<typeof OfflineVaultSignable>;
 
 type WithXpub = { xpub: string };
 type NamedKeys = { user: WithXpub; backup: WithXpub; bitgo: WithXpub };

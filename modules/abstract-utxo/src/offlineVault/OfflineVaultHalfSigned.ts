@@ -4,7 +4,7 @@ import { BaseCoin } from '@bitgo/sdk-core';
 
 import { getNetworkFromChain } from '../names';
 
-import { OfflineVaultUnsigned } from './OfflineVaultUnsigned';
+import { OfflineVaultSignable } from './OfflineVaultSignable';
 import { DescriptorTransaction, getHalfSignedPsbt } from './descriptor';
 
 export type OfflineVaultHalfSigned = {
@@ -26,7 +26,7 @@ export function createHalfSigned(
     prv = utxolib.bip32.fromBase58(prv);
   }
   prv = BaseCoin.deriveKeyWithSeedBip32(prv, derivationId).key;
-  if (!OfflineVaultUnsigned.is(tx)) {
+  if (!OfflineVaultSignable.is(tx)) {
     throw new Error('unsupported transaction type');
   }
   if (DescriptorTransaction.is(tx)) {

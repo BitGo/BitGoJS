@@ -2,7 +2,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as t from 'io-ts';
 
 import { NamedDescriptor } from '../../descriptor';
-import { OfflineVaultUnsigned, toKeyTriple } from '../OfflineVaultUnsigned';
+import { OfflineVaultSignable, toKeyTriple } from '../OfflineVaultSignable';
 import {
   getValidatorOneOfTemplates,
   getValidatorSignedByUserKey,
@@ -13,7 +13,7 @@ import { DescriptorMap } from '../../core/descriptor';
 import { signPsbt } from '../../transaction/descriptor';
 
 export const DescriptorTransaction = t.intersection(
-  [OfflineVaultUnsigned, t.type({ descriptors: t.array(NamedDescriptor) })],
+  [OfflineVaultSignable, t.type({ descriptors: t.array(NamedDescriptor) })],
   'DescriptorTransaction'
 );
 
