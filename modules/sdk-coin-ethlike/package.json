@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-ethlike",
-  "version": "1.1.40",
+  "version": "1.1.41",
   "description": "BitGo SDK coin library for EthLike coins",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,15 +40,15 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^22.4.9",
-    "@bitgo/sdk-core": "^28.19.1",
-    "@bitgo/statics": "^50.19.0",
+    "@bitgo/abstract-eth": "^22.4.10",
+    "@bitgo/sdk-core": "^28.20.0",
+    "@bitgo/statics": "^50.20.0",
     "@ethereumjs/common": "2.6.5",
     "ethereumjs-util": "7.1.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.58.1",
-    "@bitgo/sdk-test": "^8.0.64",
+    "@bitgo/sdk-api": "^1.58.2",
+    "@bitgo/sdk-test": "^8.0.65",
     "@bitgo/utxo-lib": "^11.2.1"
   }
 }
