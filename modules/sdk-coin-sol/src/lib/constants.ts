@@ -27,6 +27,7 @@ export enum ValidInstructionTypesEnum {
   Assign = 'Assign',
   Split = 'Split',
   Authorize = 'Authorize',
+  SetPriorityFee = 'SetPriorityFee',
 }
 
 // Internal instructions types
@@ -43,6 +44,7 @@ export enum InstructionBuilderTypes {
   TokenTransfer = 'TokenTransfer',
   StakingAuthorize = 'Authorize',
   StakingDelegate = 'Delegate',
+  SetPriorityFee = 'SetPriorityFee',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -62,6 +64,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Assign,
   ValidInstructionTypesEnum.Split,
   ValidInstructionTypesEnum.Authorize,
+  ValidInstructionTypesEnum.SetPriorityFee,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */

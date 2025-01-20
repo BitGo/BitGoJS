@@ -29,6 +29,7 @@ export type InstructionParams =
   | Nonce
   | Memo
   | WalletInit
+  | SetPriorityFee
   | Transfer
   | StakingActivate
   | StakingDeactivate
@@ -105,6 +106,11 @@ export interface StakingAuthorize {
   };
 }
 
+export interface SetPriorityFee {
+  type: InstructionBuilderTypes.SetPriorityFee;
+  params: Record<string, never>;
+}
+
 export interface AtaInit {
   type: InstructionBuilderTypes.CreateAssociatedTokenAccount;
   params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string; tokenName: string };
@@ -122,7 +128,8 @@ export type ValidInstructionTypes =
   | 'InitializeAssociatedTokenAccount'
   | 'CloseAssociatedTokenAccount'
   | DecodedCloseAccountInstruction
-  | 'TokenTransfer';
+  | 'TokenTransfer'
+  | 'SetPriorityFee';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

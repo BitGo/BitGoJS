@@ -142,7 +142,7 @@ describe('SOL util library', function () {
     it('should succeed for valid signature in a unsigned tx', function () {
       const signature = '335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf';
       Utils.verifySignature(
-        testData.TOKEN_TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
+        testData.TOKEN_TRANSFER_UNSIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE_OLD,
         signature,
         testData.associatedTokenAccounts.accounts[0].pub
       ).should.equal(true);
@@ -151,7 +151,7 @@ describe('SOL util library', function () {
     it('should succeed for valid signature in a signed tx', function () {
       const signature = '335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf';
       Utils.verifySignature(
-        testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE,
+        testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE_OLD,
         signature,
         testData.associatedTokenAccounts.accounts[0].pub
       ).should.equal(true);

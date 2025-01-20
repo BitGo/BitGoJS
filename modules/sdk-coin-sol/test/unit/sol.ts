@@ -945,7 +945,7 @@ describe('SOL:', function () {
           'fee',
           'memo',
         ],
-        id: '335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf',
+        id: '2ticU4ZkEqdTHULr6LobTgWBhim6E7wSscDhM4gzyuGUmQyUwLYhoqaifuvwmNzzEf1T5aefVcgMQkSHdJ5nsrfZ',
         type: 'Send',
         changeOutputs: [],
         changeAmount: '0',
@@ -1883,30 +1883,31 @@ describe('SOL:', function () {
       should.equal(tokenTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
 
       const instructionsData = tokenTxnJson.instructionsData as InstructionParams[];
-      should.equal(instructionsData.length, 3);
+      should.equal(instructionsData.length, 4);
       should.equal(instructionsData[0].type, 'NonceAdvance');
 
       const destinationUSDTTokenAccount = await getAssociatedTokenAccountAddress(
         usdtMintAddress,
         testData.keys.destinationPubKey
       );
-      should.equal(instructionsData[1].type, 'CreateAssociatedTokenAccount');
-      should.equal((instructionsData[1] as AtaInit).params.mintAddress, usdtMintAddress);
-      should.equal((instructionsData[1] as AtaInit).params.ataAddress, destinationUSDTTokenAccount);
-      should.equal((instructionsData[1] as AtaInit).params.ownerAddress, testData.keys.destinationPubKey);
-      should.equal((instructionsData[1] as AtaInit).params.tokenName, 'tsol:usdt');
-      should.equal((instructionsData[1] as AtaInit).params.payerAddress, testData.wrwUser.walletAddress0);
+      should.equal(instructionsData[1].type, 'SetPriorityFee');
+      should.equal(instructionsData[2].type, 'CreateAssociatedTokenAccount');
+      should.equal((instructionsData[2] as AtaInit).params.mintAddress, usdtMintAddress);
+      should.equal((instructionsData[2] as AtaInit).params.ataAddress, destinationUSDTTokenAccount);
+      should.equal((instructionsData[2] as AtaInit).params.ownerAddress, testData.keys.destinationPubKey);
+      should.equal((instructionsData[2] as AtaInit).params.tokenName, 'tsol:usdt');
+      should.equal((instructionsData[2] as AtaInit).params.payerAddress, testData.wrwUser.walletAddress0);
 
       const sourceUSDTTokenAccount = await getAssociatedTokenAccountAddress(
         usdtMintAddress,
         testData.wrwUser.walletAddress0
       );
-      should.equal(instructionsData[2].type, 'TokenTransfer');
-      should.equal((instructionsData[2] as TokenTransfer).params.fromAddress, testData.wrwUser.walletAddress0);
-      should.equal((instructionsData[2] as TokenTransfer).params.toAddress, destinationUSDTTokenAccount);
-      should.equal((instructionsData[2] as TokenTransfer).params.amount, '2000000000');
-      should.equal((instructionsData[2] as TokenTransfer).params.tokenName, 'tsol:usdt');
-      should.equal((instructionsData[2] as TokenTransfer).params.sourceAddress, sourceUSDTTokenAccount);
+      should.equal(instructionsData[3].type, 'TokenTransfer');
+      should.equal((instructionsData[3] as TokenTransfer).params.fromAddress, testData.wrwUser.walletAddress0);
+      should.equal((instructionsData[3] as TokenTransfer).params.toAddress, destinationUSDTTokenAccount);
+      should.equal((instructionsData[3] as TokenTransfer).params.amount, '2000000000');
+      should.equal((instructionsData[3] as TokenTransfer).params.tokenName, 'tsol:usdt');
+      should.equal((instructionsData[3] as TokenTransfer).params.sourceAddress, sourceUSDTTokenAccount);
 
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 7);
@@ -1940,7 +1941,7 @@ describe('SOL:', function () {
       should.equal(tokenTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
 
       const instructionsData = tokenTxnJson.instructionsData as TokenTransfer[];
-      should.equal(instructionsData.length, 2);
+      should.equal(instructionsData.length, 3);
       should.equal(instructionsData[0].type, 'NonceAdvance');
 
       const sourceUSDTTokenAccount = await getAssociatedTokenAccountAddress(
@@ -1951,12 +1952,13 @@ describe('SOL:', function () {
         usdtMintAddress,
         testData.keys.destinationPubKey2
       );
-      should.equal(instructionsData[1].type, 'TokenTransfer');
-      should.equal(instructionsData[1].params.fromAddress, testData.wrwUser.walletAddress0);
-      should.equal(instructionsData[1].params.toAddress, destinationUSDTTokenAccount);
-      should.equal(instructionsData[1].params.amount, '2000000000');
-      should.equal(instructionsData[1].params.tokenName, 'tsol:usdt');
-      should.equal(instructionsData[1].params.sourceAddress, sourceUSDTTokenAccount);
+      should.equal(instructionsData[1].type, 'SetPriorityFee');
+      should.equal(instructionsData[2].type, 'TokenTransfer');
+      should.equal(instructionsData[2].params.fromAddress, testData.wrwUser.walletAddress0);
+      should.equal(instructionsData[2].params.toAddress, destinationUSDTTokenAccount);
+      should.equal(instructionsData[2].params.amount, '2000000000');
+      should.equal(instructionsData[2].params.tokenName, 'tsol:usdt');
+      should.equal(instructionsData[2].params.sourceAddress, sourceUSDTTokenAccount);
 
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 7);
