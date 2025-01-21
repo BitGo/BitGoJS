@@ -1055,16 +1055,14 @@ class Berachain extends Mainnet implements EthereumNetwork {
 class BerachainTestnet extends Testnet implements EthereumNetwork {
   name = 'BerachainTestnet';
   family = CoinFamily.BERA;
-  explorerUrl = 'https://bartio.beratrail.io/tx/';
-  accountExplorerUrl = 'https://bartio.beratrail.io/address/';
-  chainId = 80084;
-  nativeCoinOperationHashPrefix = '80084';
-  tokenOperationHashPrefix = '80084-ERC20';
-  forwarderFactoryAddress = '0xccadf4198de4957d07d80673684ed19310579fc4';
-  forwarderImplementationAddress = '0xc75fb848eb0bb04e3faedbee0fc8144e8d62b83d';
-  walletFactoryAddress = '0x6e4a83086c6dd9fbce203c1ebb69eda1aba872d7';
-  walletImplementationAddress = '0xb8d48d310818b15a6960f9afbef49dc96d2bd2d3';
-  batcherContractAddress = '0xf499549720116c3dEA867D4fC279C43aCA172712';
+  explorerUrl = 'https://80000.testnet.routescan.io/tx/';
+  accountExplorerUrl = 'https://80000.testnet.routescan.io/address/';
+  chainId = 80000;
+  nativeCoinOperationHashPrefix = '80000';
+  tokenOperationHashPrefix = '80000-ERC20';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class Oas extends Mainnet implements EthereumNetwork {

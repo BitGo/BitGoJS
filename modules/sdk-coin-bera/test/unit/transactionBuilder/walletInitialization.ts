@@ -35,7 +35,7 @@ describe('Bera wallet initialization', function () {
       txJson.gasLimit.should.equal('6800000');
       txJson.gasPrice.should.equal('10000000000');
       should.equal(txJson.nonce, 1);
-      should.equal(txJson.chainId, '0x138d4');
+      should.equal(txJson.chainId, '0x13880');
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
 
@@ -44,7 +44,7 @@ describe('Bera wallet initialization', function () {
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0x79640186741285e6f3a325990cff9fc8475f5e35c8b2e1ee41e21be59897b905');
+      should.equal(newTx.id, '0x163072a22e955eda136e14ca223b83cd911808d9e42f1f06c0f747466a025a72');
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);
@@ -66,7 +66,7 @@ describe('Bera wallet initialization', function () {
       txJson.gasLimit.should.equal('6800000');
       txJson.gasPrice.should.equal('10000000000');
       should.equal(txJson.nonce, 0);
-      should.equal(txJson.chainId, '0x138d4');
+      should.equal(txJson.chainId, '0x13880');
     });
 
     it('an unsigned init transaction from serialized with 0-prefixed address', async () => {
@@ -103,7 +103,7 @@ describe('Bera wallet initialization', function () {
       txBuilder.owner('0x78caeb4527170e52f54d936e4eef6f83250e01bb');
       txBuilder.owner('0xb1938215967408fff7c59c77ae5e5283b55c8e26');
       const tx = await txBuilder.build();
-      should.equal(tx.toJson().v, '0x0271cb');
+      should.equal(tx.toJson().v, '0x027123');
     });
   });
 });

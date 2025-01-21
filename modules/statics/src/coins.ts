@@ -1326,7 +1326,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'ac3c225e-55a9-4236-b907-a4cccc30a2fd',
     'bera',
-    'berachain',
+    'Bera',
     Networks.main.bera,
     18,
     UnderlyingAsset.BERA,
