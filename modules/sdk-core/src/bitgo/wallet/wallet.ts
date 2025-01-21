@@ -306,8 +306,8 @@ export class Wallet implements IWallet {
   /**
    * Get a receive address for this wallet
    */
-  public receiveAddress(): string {
-    return this._wallet.receiveAddress.address;
+  public receiveAddress(): string | undefined {
+    return this._wallet.receiveAddress?.address;
   }
 
   /**
