@@ -120,6 +120,21 @@ export interface StakeOptions {
    * ada vote delegation drep id
    */
   dRepId?: string;
+
+  /**
+   * bera native staking operator
+   */
+  operator?: string;
+
+  /**
+   * bera native staking withdraw credentials
+   */
+  withdrawCredentials?: string;
+
+  /**
+   * bera native staking deposit signature
+   */
+  depositSignature?: string;
 }
 
 export interface UnstakeOptions {
