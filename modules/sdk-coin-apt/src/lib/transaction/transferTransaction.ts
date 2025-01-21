@@ -50,6 +50,7 @@ export class TransferTransaction extends Transaction {
       sequenceNumber: this.sequenceNumber,
       maxGasAmount: this.maxGasAmount,
       gasUnitPrice: this.gasUnitPrice,
+      gasUsed: this.gasUsed,
       expirationTime: this.expirationTime,
     };
   }

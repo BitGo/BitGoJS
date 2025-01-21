@@ -243,7 +243,7 @@ export abstract class Transaction extends BaseTransaction {
     this._rawTransaction = simpleTxn.rawTransaction;
   }
 
-  protected getFee(): string {
+  public getFee(): string {
     return new BigNumber(this.gasUsed).multipliedBy(this.gasUnitPrice).toString();
   }
 
