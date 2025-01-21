@@ -6,7 +6,9 @@ import { mockPsbtDefaultWithDescriptorTemplate } from '../../core/descriptor/psb
 import { getDescriptorMap } from '../../core/descriptor/descriptor.utils';
 import { getKeyTriple } from '../../core/key.utils';
 
-import { assertEqualFixture } from './fixtures.utils';
+import { getFixtureRoot } from './fixtures.utils';
+
+const { assertEqualFixture } = getFixtureRoot(__dirname + '/fixtures');
 
 function assertSignatureCount(expl: TransactionExplanation, signatures: number, inputSignatures: number[]) {
   assert.deepStrictEqual(expl.signatures, signatures);

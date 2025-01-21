@@ -6,13 +6,16 @@ import * as t from 'io-ts';
 import { decodeOrElse } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { createHalfSigned } from '../../src/offlineVault';
+import { createHalfSigned, getTransactionExplanation } from '../../src/offlineVault';
 import { DescriptorTransaction } from '../../src/offlineVault/descriptor';
+import { getFixtureRoot } from '../transaction/descriptor/fixtures.utils';
+
+const { assertEqualFixture } = getFixtureRoot(__dirname + '/fixtures');
 
 function getFixturesNames(): string[] {
   // I'm using sync here because mocha cannot do async setup
   // eslint-disable-next-line no-sync
-  return fs.readdirSync(__dirname + '/fixtures').filter((f) => f.endsWith('.json'));
+  return fs.readdirSync(__dirname + '/fixtures').filter((f) => f.endsWith('.json') && !f.endsWith('.explanation.json'));
 }
 
 const KeyPair = t.intersection([t.type({ xpub: t.string }), t.partial({ xprv: t.string })]);
@@ -93,6 +96,10 @@ describe('OfflineVaultHalfSigned', function () {
       for (const mutation of mutations) {
         assert.throws(() => createHalfSigned('btc', rootPrv, derivationId, mutation));
       }
+      await assertEqualFixture(
+        fixtureName.replace(/\.json$/, '.explanation.json'),
+        getTransactionExplanation('btc', response)
+      );
     });
   }
 });
