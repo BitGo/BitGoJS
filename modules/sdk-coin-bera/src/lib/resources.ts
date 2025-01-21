@@ -3,7 +3,7 @@ import { coins, EthereumNetwork } from '@bitgo/statics';
 
 export const testnetCommon = EthereumCommon.custom(
   {
-    name: 'Berachain bArtio',
+    name: 'Berachain cArtio',
     networkId: (coins.get('tbera').network as EthereumNetwork).chainId,
     chainId: (coins.get('tbera').network as EthereumNetwork).chainId,
   },

@@ -40,7 +40,7 @@ describe('Bera transaction builder send', () => {
       txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
       const tx = await txBuilder.build();
 
-      should.equal(tx.toJson().chainId, 0x138d4);
+      should.equal(tx.toJson().chainId, 0x13880);
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST_LEGACY);
       should.equal(tx.signature.length, 2);
       should.equal(tx.inputs.length, 1);
