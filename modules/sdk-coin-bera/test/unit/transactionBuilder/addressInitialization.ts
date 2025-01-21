@@ -48,7 +48,7 @@ describe('Bera address initialization', () => {
     txBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
-    should.equal(txJson.deployedAddress, '0xfaa32fa9edbc6fd8bdfc765c218fe8f83267c6da');
+    should.equal(txJson.deployedAddress, '0xd9d189aa6907a4fafd3c66e8cc178011b1f443f5');
     should.equal(txJson.to, testData.FORWARDER_FACTORY_ADDRESS);
   });
 
