@@ -11,13 +11,15 @@ import {
   Ed25519KeyHash,
   ScriptHash,
   DRepKind,
-  ByronAddress,
   Address,
   EnterpriseAddress,
   PointerAddress,
+  ByronAddress,
 } from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { bech32 } from 'bech32';
+import bs58 from 'bs58';
+import cbor from 'cbor';
 
 export const MIN_ADA_FOR_ONE_ASSET = '1500000';
 export const VOTE_ALWAYS_ABSTAIN = 'always-abstain';
@@ -178,7 +180,9 @@ export class Utils implements BaseUtils {
 
     //Check for Byron-era address
     try {
-      return ByronAddress.is_valid(address);
+      const decoded = bs58.decode(address);
+      const cborData = cbor.decodeFirstSync(decoded);
+      return Array.isArray(cborData) && cborData.length >= 2;
     } catch (e) {
       console.log(`Address: ${address} failed Byron test with error: ${e}`);
       console.log(e.stack);
