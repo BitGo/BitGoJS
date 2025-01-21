@@ -16,3 +16,4 @@ lab/
 modules/**/dist/
 modules/**/pack-scoped/
 coverage
+/.direnv/
