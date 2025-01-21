@@ -15623,6 +15623,20 @@ export const coins = CoinMap.fromCoins([
     undefined,
     'hteth'
   ),
+  tofcerc20(
+    'f0fdaaaa-7587-4cc4-a2b3-875085d81ac8',
+    'ofchteth:gousd',
+    'Holesky Testnet GoUSD',
+    6,
+    UnderlyingAsset['hteth:gousd'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
   tofcArbethErc20(
     '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',
     'ofctarbeth:link',
