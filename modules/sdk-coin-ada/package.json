@@ -47,6 +47,8 @@
     "@emurgo/cardano-serialization-lib-nodejs": "^12.0.1",
     "bech32": "^2.0.0",
     "bignumber.js": "^9.0.2",
+    "bs58": "^6.0.0",
+    "cbor": "^10.0.3",
     "lodash": "^4.17.21",
     "superagent": "^9.0.1",
     "tweetnacl": "^1.0.3"
