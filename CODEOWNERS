@@ -136,3 +136,5 @@
 /tsconfig.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /tsconfig.packages.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /.iyarc @BitGo/wallet-platform @BitGo/hsm @BitGo/velocity
+flake.nix @BitGo/wallet-platform @BitGo/hsm @BitGo/velocity
+flake.lock @BitGo/wallet-platform @BitGo/hsm @BitGo/velocity
