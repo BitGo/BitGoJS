@@ -614,11 +614,11 @@ describe('Sol Transfer Builder V2', () => {
       });
 
       const txJson = tx.toJson();
-      txJson.instructionsData.length.should.equal(4);
-      txJson.instructionsData[0].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
+      txJson.instructionsData.length.should.equal(5);
       txJson.instructionsData[1].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
-      txJson.instructionsData[2].params.sourceAddress.should.equal(testData.tokenTransfers.sourceSRM);
-      txJson.instructionsData[3].params.sourceAddress.should.equal(testData.tokenTransfers.sourceRAY);
+      txJson.instructionsData[2].params.sourceAddress.should.equal(testData.tokenTransfers.sourceUSDC);
+      txJson.instructionsData[3].params.sourceAddress.should.equal(testData.tokenTransfers.sourceSRM);
+      txJson.instructionsData[4].params.sourceAddress.should.equal(testData.tokenTransfers.sourceRAY);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
