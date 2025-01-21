@@ -22,6 +22,7 @@ export class Ada extends BaseCoin {
     CoinFeature.TRANSACTION_DATA,
     CoinFeature.REQUIRES_BIG_NUMBER,
     CoinFeature.CUSTODY_BITGO_TRUST,
+    CoinFeature.CUSTODY_BITGO_MENA_FZE,
     CoinFeature.STAKING,
     CoinFeature.BULK_TRANSACTION,
   ];

@@ -20,6 +20,7 @@ export class UtxoCoin extends BaseCoin {
     CoinFeature.CHILD_PAYS_FOR_PARENT,
     CoinFeature.CUSTODY,
     CoinFeature.CUSTODY_BITGO_TRUST,
+    CoinFeature.CUSTODY_BITGO_MENA_FZE,
     CoinFeature.MULTISIG_COLD,
     CoinFeature.PAYGO,
   ];
