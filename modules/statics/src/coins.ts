@@ -137,7 +137,12 @@ const XTZ_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.ENTERPRISE_PAYS_FEES,
-].filter((feature) => feature !== CoinFeature.CUSTODY && feature !== CoinFeature.CUSTODY_BITGO_TRUST);
+].filter(
+  (feature) =>
+    feature !== CoinFeature.CUSTODY &&
+    feature !== CoinFeature.CUSTODY_BITGO_TRUST &&
+    feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE
+);
 
 const XRP_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,

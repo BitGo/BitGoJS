@@ -34,6 +34,7 @@ export class AccountCoin extends BaseCoin {
     CoinFeature.TRANSACTION_DATA,
     CoinFeature.CUSTODY,
     CoinFeature.CUSTODY_BITGO_TRUST,
+    CoinFeature.CUSTODY_BITGO_MENA_FZE,
     CoinFeature.CUSTODY_BITGO_SINGAPORE,
     CoinFeature.CUSTODY_BITGO_KOREA,
     CoinFeature.CUSTODY_BITGO_EUROPE_APS,
