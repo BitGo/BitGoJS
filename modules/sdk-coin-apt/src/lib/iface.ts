@@ -19,5 +19,6 @@ export interface TransferTxData {
   sequenceNumber: number;
   maxGasAmount: number;
   gasUnitPrice: number;
+  gasUsed: number;
   expirationTime: number;
 }
