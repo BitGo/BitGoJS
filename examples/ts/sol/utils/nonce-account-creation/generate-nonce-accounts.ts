@@ -34,50 +34,53 @@ const accountsRequired = 5
 
 // For BitGo Test use solana 'devnet' network
 // For BitGo Prod use solana 'mainnet-beta' network
-const network: 'mainnet-beta' | 'devnet' = 'devnet'
+const network: 'mainnet-beta' | 'devnet' | 'testnet' = 'devnet';
 // For BitGo Test use 'tsol' coin
 // For BitGo Prod use 'sol' coin
-const coin = 'tsol'
+const coin = 'tsol';
 
 
 
 async function main() {
-  console.log(`Creating ${accountsRequired} nonce accounts`)
-  const mainAccountKeyPair: { address: string, privateKey: string } = JSON.parse(readFileSync('json/keypair.json').toString());
+  console.log(`Creating ${accountsRequired} nonce accounts`);
+  const mainAccountKeyPair: { address: string, privateKey: string } = JSON.parse(
+    readFileSync('json/keypair.json').toString()
+  );
   assert(mainAccountKeyPair.address, 'address is missing');
   assert(mainAccountKeyPair.privateKey, 'privateKey is missing');
   const nonceAddresses: Record<string, string[]> = JSON.parse(readFileSync('json/nonceAddresses.json').toString());
   nonceAddresses[mainAccountKeyPair.privateKey] = nonceAddresses[mainAccountKeyPair.privateKey] || [];
 
-  const connection = new Connection(
-    clusterApiUrl(network),
-    'confirmed',
-  );
+  const connection = new Connection(clusterApiUrl(network), 'confirmed');
 
-  const nonceMinRentBalance = await connection.getMinimumBalanceForRentExemption(
-    NONCE_ACCOUNT_LENGTH,
-  );
+  const nonceMinRentBalance = await connection.getMinimumBalanceForRentExemption(NONCE_ACCOUNT_LENGTH);
   const transactionFee = 10000; // fixed 10_000 lamports
 
   const mainAccountPublicKey = new PublicKey(mainAccountKeyPair.address);
 
-  console.log(`Checking main account balance for address ${mainAccountKeyPair.address}`)
-  const mainAccountBalance = await connection.getBalance(mainAccountPublicKey)
-  const requiredBalance = accountsRequired * (nonceMinRentBalance + transactionFee)
+  console.log(`Checking main account balance for address ${mainAccountKeyPair.address} | ${mainAccountPublicKey}`);
+  let mainAccountBalance = await connection.getBalance(mainAccountPublicKey);
+  const requiredBalance = accountsRequired * (nonceMinRentBalance + transactionFee);
+  console.log(`Main Balance : ${mainAccountBalance} | Req Balance : ${requiredBalance}`);
   // check if main account has enough balance to create nonce accounts
   if (mainAccountBalance < requiredBalance) {
     if (network === 'mainnet-beta') {
-      throw new Error(`Not enough balance to create all nonce accounts - current balance: ${getValueInSol(mainAccountBalance)} SOL - required balance ${getValueInSol(requiredBalance)} SOL`)
+      throw new Error(
+        `Not enough balance to create all nonce accounts - current balance: 
+        ${getValueInSol(mainAccountBalance)} SOL - required balance ${getValueInSol(requiredBalance)} SOL`
+      );
+    } else {
+      console.log('Requesting AirDrop...');
+      const airdrop = await connection.requestAirdrop(mainAccountPublicKey, 1 * LAMPORTS_PER_SOL);
+      await connection.confirmTransaction(airdrop);
+      mainAccountBalance = await connection.getBalance(mainAccountPublicKey);
+      console.log(`\tMain Balance : ${mainAccountBalance} | Req Balance : ${requiredBalance}`);
     }
-    else {
-      const airdrop = await connection.requestAirdrop(mainAccountPublicKey, 1 * LAMPORTS_PER_SOL)
-      await connection.confirmTransaction(airdrop)
-    };
   }
 
   for (let i = 0; i < accountsRequired; i++) {
-    console.log(`Creating nonce account ${i + 1} of ${accountsRequired}`)
-    const recentBlockhash = await connection.getRecentBlockhash();
+    console.log(`Creating nonce account ${i + 1} of ${accountsRequired}`);
+    const recentBlockhash = await connection.getLatestBlockhash();
 
     const nonceAccountKeyPair = new KeyPair().getKeys();
 
@@ -86,8 +89,8 @@ async function main() {
       .sender(mainAccountKeyPair.address)
       .address(nonceAccountKeyPair.pub)
       .amount(nonceMinRentBalance.toFixed());
-    txBuilder.sign({ key: mainAccountKeyPair.privateKey })
-    txBuilder.sign({ key: nonceAccountKeyPair.prv })
+    txBuilder.sign({ key: mainAccountKeyPair.privateKey });
+    txBuilder.sign({ key: nonceAccountKeyPair.prv });
 
     const tx = await txBuilder.build();
     const serializedTx = tx.toBroadcastFormat();
@@ -97,8 +100,7 @@ async function main() {
       await connection.confirmTransaction(txid);
       nonceAddresses[mainAccountKeyPair.privateKey].push(nonceAccountKeyPair.pub);
       console.log('Nonce account created: ' + nonceAccountKeyPair.pub);
-    }
-    catch (e) {
+    } catch (e) {
       console.log('Error creating nonce account for address: ' + nonceAccountKeyPair.pub)
       console.error(e);
     }
@@ -110,10 +112,9 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err)
-  process.exit(-1)
-})
-
+  console.error(err);
+  process.exit(-1);
+});
 
 // utils functions
 function getValueInSol(value: number) {
