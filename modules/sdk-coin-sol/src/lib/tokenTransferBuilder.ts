@@ -147,7 +147,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
       },
     };
 
-    if (!this._priorityFee) {
+    if (!this._priorityFee || this._priorityFee === BigInt(0)) {
       this._instructionsData = [...createAtaInstructions, ...sendInstructions];
     } else {
       // order is important, createAtaInstructions must be before sendInstructions
