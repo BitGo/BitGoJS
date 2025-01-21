@@ -2,8 +2,8 @@ import should from 'should';
 import * as bs58 from 'bs58';
 
 import { getBuilderFactory } from '../getBuilderFactory';
-import { KeyPair } from '../../../src';
-import { Eddsa, TransactionType } from '@bitgo/sdk-core';
+import { KeyPair, TokenTransferBuilder } from '../../../src';
+import { Eddsa, FeeOptions, TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../resources/sol';
 import BigNumber from 'bignumber.js';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
@@ -160,7 +160,14 @@ describe('Sol Transaction Builder', async () => {
   });
 
   it('build a send from raw token transaction', async () => {
-    const txBuilder = factory.from(testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
+    const txBuilder = factory.from(
+      testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE
+    ) as TokenTransferBuilder;
+    const prioFeeMicroLamports = '10000000';
+    const priorityFee: FeeOptions = {
+      amount: prioFeeMicroLamports,
+    };
+    txBuilder.setPriorityFee(priorityFee);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
     should.equal(
@@ -188,9 +195,12 @@ describe('Sol Transaction Builder', async () => {
       walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
       authWalletAddress: testData.associatedTokenAccounts.accounts[0].pub,
     });
+    const priorityFeeBigInt = BigInt(prioFeeMicroLamports);
     jsonTx.instructionsData.should.deepEqual([
       {
-        params: {},
+        params: {
+          fee: priorityFeeBigInt,
+        },
         type: 'SetPriorityFee',
       },
       {

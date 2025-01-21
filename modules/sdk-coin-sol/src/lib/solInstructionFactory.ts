@@ -94,10 +94,8 @@ function advanceNonceInstruction(data: Nonce): TransactionInstruction[] {
 }
 
 function fetchPriorityFeeInstruction(instructionToBuild: SetPriorityFee): TransactionInstruction[] {
-  // 200k * 10000000 microlamports => prio fee
-  // https://www.quicknode.com/gas-tracker/solana
   const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
-    microLamports: 10000000,
+    microLamports: instructionToBuild.params.fee,
   });
 
   return [addPriorityFee];

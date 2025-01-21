@@ -170,18 +170,19 @@ export class TransferBuilderV2 extends TransactionBuilder {
 
     let addPriorityFeeInstruction: SetPriorityFee;
     // If there are createAtaInstructions, then token is involved and we need to add a priority fee instruction
-    if (
+    if (!this._priorityFee) {
+      this._instructionsData = [...createAtaInstructions, ...sendInstructions];
+    } else if (
       createAtaInstructions.length !== 0 ||
       sendInstructions.some((instruction) => instruction.type === InstructionBuilderTypes.TokenTransfer)
     ) {
       addPriorityFeeInstruction = {
         type: InstructionBuilderTypes.SetPriorityFee,
-        params: {},
+        params: {
+          fee: this._priorityFee ?? BigInt(0),
+        },
       };
       this._instructionsData = [addPriorityFeeInstruction, ...createAtaInstructions, ...sendInstructions];
-    } else {
-      // order is important, createAtaInstructions must be before sendInstructions
-      this._instructionsData = [...createAtaInstructions, ...sendInstructions];
     }
 
     return await super.buildImplementation();
