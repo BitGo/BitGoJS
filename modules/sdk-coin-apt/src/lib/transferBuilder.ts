@@ -10,6 +10,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   protected get transactionType(): TransactionType {
+    console.log('temp');
     return TransactionType.Send;
   }
 
