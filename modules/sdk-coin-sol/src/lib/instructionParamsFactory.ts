@@ -13,6 +13,7 @@ import {
   StakeProgram,
   SystemInstruction,
   TransactionInstruction,
+  ComputeBudgetInstruction,
 } from '@solana/web3.js';
 
 import { NotSupported, TransactionType } from '@bitgo/sdk-core';
@@ -195,9 +196,12 @@ function parseSendInstructions(
         instructionData.push(ataClose);
         break;
       case ValidInstructionTypesEnum.SetPriorityFee:
+        const setComputeUnitPriceParams = ComputeBudgetInstruction.decodeSetComputeUnitPrice(instruction);
         const setPriorityFee: SetPriorityFee = {
           type: InstructionBuilderTypes.SetPriorityFee,
-          params: {},
+          params: {
+            fee: setComputeUnitPriceParams.microLamports,
+          },
         };
         instructionData.push(setPriorityFee);
         break;

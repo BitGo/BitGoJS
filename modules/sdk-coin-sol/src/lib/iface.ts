@@ -108,7 +108,9 @@ export interface StakingAuthorize {
 
 export interface SetPriorityFee {
   type: InstructionBuilderTypes.SetPriorityFee;
-  params: Record<string, never>;
+  params: {
+    fee: number | bigint;
+  };
 }
 
 export interface AtaInit {

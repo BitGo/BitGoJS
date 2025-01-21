@@ -2,6 +2,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils } from '../../../src';
 import should from 'should';
 import * as testData from '../../resources/sol';
+import { FeeOptions } from '@bitgo/sdk-core';
 
 describe('Sol Token Transfer Builder', () => {
   let ataAddress;
@@ -26,6 +27,10 @@ describe('Sol Token Transfer Builder', () => {
   const owner = testData.tokenTransfers.owner;
   const walletPK = testData.associatedTokenAccounts.accounts[0].pub;
   const walletSK = testData.associatedTokenAccounts.accounts[0].prv;
+  const prioFeeMicroLamports = '10000000';
+  const priorityFee: FeeOptions = {
+    amount: prioFeeMicroLamports,
+  };
   describe('Succeed', () => {
     before(async () => {
       ataAddress = await Utils.getAssociatedTokenAccountAddress(mintUSDC, otherAccount.pub);
@@ -37,6 +42,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.sender(walletPK);
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -60,6 +66,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
       txBuilder.sender(walletPK);
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -89,6 +96,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.sender(walletPK);
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -112,6 +120,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.nonce(recentBlockHash);
       txBuilder.sender(walletPK);
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -140,6 +149,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
       txBuilder.sign({ key: walletSK });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.id.should.not.equal(undefined);
       tx.inputs.length.should.equal(1);
@@ -177,6 +187,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.send({ address: account5.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
       txBuilder.sign({ key: authAccount.prv });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(6);
       tx.inputs[0].should.deepEqual({
@@ -259,6 +270,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.send({ address: account1.pub, amount, tokenName: nameUSDC });
       txBuilder.send({ address: account2.pub, amount, tokenName: nameSRM });
       txBuilder.send({ address: account3.pub, amount, tokenName: nameRAY });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(4);
       tx.inputs[0].should.deepEqual({
@@ -325,6 +337,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.nonce(recentBlockHash);
       txBuilder.sender(owner);
       txBuilder.send({ address: account1.pub, amount, tokenName: nameUSDC });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
 
       tx.outputs.should.deepEqual([
@@ -343,6 +356,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
       txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -399,6 +413,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
       txBuilder.createAssociatedTokenAccount({ ownerAddress: account1.pub, tokenName: nameUSDC });
       txBuilder.createAssociatedTokenAccount({ ownerAddress: account2.pub, tokenName: nameUSDC });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(3);
       tx.inputs[0].should.deepEqual({
@@ -503,6 +518,7 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
       txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
       txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(3);
       tx.inputs[0].should.deepEqual({
