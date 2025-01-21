@@ -1,3 +1,4 @@
+/.pre-commit-config.yaml
 node_modules/
 .idea/
 *.iml
