@@ -50,6 +50,7 @@ export enum CoinFamily {
   ETC = 'etc',
   EOS = 'eos',
   FIAT = 'fiat',
+  FLR = 'flr',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   ICP = 'icp',
@@ -65,6 +66,7 @@ export enum CoinFamily {
   OPETH = 'opeth',
   OSMO = 'osmo',
   RBTC = 'rbtc',
+  SGB = 'sgb',
   SEI = 'sei',
   SOL = 'sol',
   SUI = 'sui',
@@ -75,6 +77,8 @@ export enum CoinFamily {
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
+  WEMIX = 'wemix',
+  XDC = 'xdc',
   XLM = 'xlm',
   XRP = 'xrp',
   XTZ = 'xtz',
@@ -359,6 +363,7 @@ export enum UnderlyingAsset {
   EURCV = 'eurcv',
   EUROC = 'euroc',
   EURR = 'eurr',
+  FLR = 'flr',
   GBP = 'gbp',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
@@ -376,6 +381,7 @@ export enum UnderlyingAsset {
   POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
   SEI = 'sei',
+  SGB = 'sgb',
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',
@@ -383,7 +389,9 @@ export enum UnderlyingAsset {
   TON = 'ton',
   TRX = 'trx',
   USD = 'usd',
+  WEMIX = 'wemix',
   XLM = 'xlm',
+  XDC = 'xdc',
   XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
@@ -1539,6 +1547,7 @@ export enum UnderlyingAsset {
   TGBP = 'tgbp',
   TUSDS = 'tusds',
   TGOUSD = 'tgousd',
+  'hteth:gousd' = 'hteth:gousd',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
@@ -2380,6 +2389,8 @@ export enum UnderlyingAsset {
   'sol:nos' = 'sol:nos',
   'sol:jlp' = 'sol:jlp',
   'sol:grass' = 'sol:grass',
+  'sol:trump' = 'sol:trump',
+  'sol:melania' = 'sol:melania',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',

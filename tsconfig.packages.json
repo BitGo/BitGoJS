@@ -131,6 +131,9 @@
       "path": "./modules/sdk-coin-hbar"
     },
     {
+      "path": "./modules/sdk-coin-icp"
+    },
+    {
       "path": "./modules/sdk-coin-injective"
     },
     {
