@@ -170,7 +170,10 @@ export class TransferBuilderV2 extends TransactionBuilder {
 
     let addPriorityFeeInstruction: SetPriorityFee;
     // If there are createAtaInstructions, then token is involved and we need to add a priority fee instruction
-    if (createAtaInstructions.length !== 0) {
+    if (
+      createAtaInstructions.length !== 0 ||
+      sendInstructions.some((instruction) => instruction.type === InstructionBuilderTypes.TokenTransfer)
+    ) {
       addPriorityFeeInstruction = {
         type: InstructionBuilderTypes.SetPriorityFee,
         params: {},
