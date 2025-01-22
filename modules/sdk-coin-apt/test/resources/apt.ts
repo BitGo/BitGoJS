@@ -21,11 +21,6 @@ export const sender = {
 };
 
 export const sender2 = {
-  address: '0xc8f02d25aa698b3e9fbd8a08e8da4c8ee261832a25a4cde8731b5ec356537d09',
-  publicKey: '0x2121dcd098069ae535697dd019cfd8677ca7aba0adac1d1959cbce6dc54b1259',
-};
-
-export const sender3 = {
   address: '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449',
   publicKey: '0xf73836f42257240e43d439552471fc9dbcc3f1af5bd0b4ed83f44b5f66146442',
 };

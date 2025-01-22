@@ -135,10 +135,6 @@ export abstract class Transaction extends BaseTransaction {
     return this._feePayerAddress;
   }
 
-  set feePayerAddress(value: string) {
-    this._feePayerAddress = value;
-  }
-
   set transactionType(transactionType: TransactionType) {
     this._type = transactionType;
   }
@@ -235,15 +231,15 @@ export abstract class Transaction extends BaseTransaction {
       this._rawTransaction = rawTxn;
 
       this.loadInputsAndOutputs();
-      const authenticator = signedTxn.authenticator as any;
+      const authenticator = signedTxn.authenticator as TransactionAuthenticatorFeePayer;
       this._feePayerAddress = authenticator.fee_payer.address.toString();
-      const senderSignature = Buffer.from(authenticator.sender.signature.toUint8Array());
-      this.addSenderSignature({ pub: authenticator.sender.public_key.toString() }, senderSignature);
-      const feePayerSignature = Buffer.from(authenticator.fee_payer.authenticator.signature.toUint8Array());
-      this.addFeePayerSignature(
-        { pub: authenticator.fee_payer.authenticator.public_key.toString() },
-        feePayerSignature
-      );
+      const senderAuthenticator = authenticator.sender as AccountAuthenticatorEd25519;
+      const senderSignature = Buffer.from(senderAuthenticator.signature.toUint8Array());
+      this.addSenderSignature({ pub: senderAuthenticator.public_key.toString() }, senderSignature);
+
+      const feePayerAuthenticator = authenticator.fee_payer.authenticator as AccountAuthenticatorEd25519;
+      const feePayerSignature = Buffer.from(feePayerAuthenticator.signature.toUint8Array());
+      this.addFeePayerSignature({ pub: feePayerAuthenticator.public_key.toString() }, feePayerSignature);
     } catch (e) {
       console.error('invalid signed transaction', e);
       throw new Error('invalid signed transaction');
@@ -312,6 +308,7 @@ export abstract class Transaction extends BaseTransaction {
       !this._senderSignature ||
       !this._senderSignature.publicKey ||
       !this._senderSignature.signature ||
+      !this._feePayerSignature ||
       !this._feePayerSignature.publicKey ||
       !this._feePayerSignature.signature
     ) {

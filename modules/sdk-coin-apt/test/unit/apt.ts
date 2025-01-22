@@ -104,7 +104,7 @@ describe('APT:', function () {
   describe('Parse and Explain Transactions: ', () => {
     const transferInputsResponse = [
       {
-        address: testData.sender3.address,
+        address: testData.sender2.address,
         amount: testData.AMOUNT.toString(),
       },
     ];

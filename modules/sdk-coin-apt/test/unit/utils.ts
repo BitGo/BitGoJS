@@ -38,7 +38,7 @@ describe('Aptos util library', function () {
       const signedTxn: SignedTransaction = utils.deserializeSignedTransaction(testData.TRANSFER);
       const rawTx = signedTxn.raw_txn;
       const recipient = utils.getRecipientFromTransactionPayload(rawTx.payload);
-      should.equal(rawTx.sender.toString(), testData.sender3.address);
+      should.equal(rawTx.sender.toString(), testData.sender2.address);
       should.equal(rawTx.max_gas_amount, 200000);
       should.equal(rawTx.gas_unit_price, 100);
       should.equal(rawTx.sequence_number, 146);
