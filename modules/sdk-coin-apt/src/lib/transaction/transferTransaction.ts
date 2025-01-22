@@ -1,16 +1,11 @@
 import { Transaction } from './transaction';
 import { AptTransactionExplanation, TransferTxData } from '../iface';
 import { TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
-import { generateSigningMessage, RAW_TRANSACTION_SALT } from '@aptos-labs/ts-sdk';
 
 export class TransferTransaction extends Transaction {
   constructor(coinConfig) {
     super(coinConfig);
     this._type = TransactionType.Send;
-  }
-
-  public get signablePayload(): Buffer {
-    return Buffer.from(generateSigningMessage(this._rawTransaction.bcsToBytes(), RAW_TRANSACTION_SALT));
   }
 
   /** @inheritDoc */
@@ -52,6 +47,7 @@ export class TransferTransaction extends Transaction {
       gasUnitPrice: this.gasUnitPrice,
       gasUsed: this.gasUsed,
       expirationTime: this.expirationTime,
+      feePayer: this.feePayerAddress,
     };
   }
 }
