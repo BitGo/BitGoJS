@@ -16,7 +16,7 @@
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=18 <21"
+    "node": ">=14 <21"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,16 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^28.20.0",
-    "@bitgo/statics": "^50.20.0"
+    "@bitgo/statics": "^50.20.0",
+    "@polkadot/keyring": "13.2.3",
+    "@polkadot/types": "14.1.1",
+    "@polkadot/util": "13.2.3",
+    "@polkadot/util-crypto": "13.2.3",
+    "@substrate/txwrapper-core": "7.5.2",
+    "@substrate/txwrapper-polkadot": "7.5.2",
+    "bs58": "^4.0.1",
+    "hi-base32": "^0.5.1",
+    "lodash": "^4.17.15",
+    "tweetnacl": "^1.0.3"
   }
 }
