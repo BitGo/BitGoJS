@@ -1,7 +1,7 @@
 import * as testData from '../resources/apt';
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { SignedTransaction } from '@aptos-labs/ts-sdk';
+import { SignedTransaction, TransactionAuthenticatorFeePayer } from '@aptos-labs/ts-sdk';
 
 describe('Aptos util library', function () {
   describe('isValidAddress', function () {
@@ -36,6 +36,11 @@ describe('Aptos util library', function () {
   describe('isValidDeserialize', function () {
     it('should succeed to correctly deserialize serialized transaction', function () {
       const signedTxn: SignedTransaction = utils.deserializeSignedTransaction(testData.TRANSFER);
+      const authenticator = signedTxn.authenticator as TransactionAuthenticatorFeePayer;
+      should.equal(
+        authenticator.fee_payer.address.toString(),
+        '0xdbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f2'
+      );
       const rawTx = signedTxn.raw_txn;
       const recipient = utils.getRecipientFromTransactionPayload(rawTx.payload);
       should.equal(rawTx.sender.toString(), testData.sender2.address);
