@@ -80,8 +80,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritDoc */
-  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    this.transaction.addSignature(publicKey, signature);
+  addSenderSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this.transaction.addSenderSignature(publicKey, signature);
+  }
+
+  addFeePayerSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this.transaction.addFeePayerSignature(publicKey, signature);
   }
 
   /** @inheritdoc */
@@ -150,5 +154,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private validateGasData(gasData: GasData): void {
     this.validateValue(new BigNumber(gasData.maxGasAmount));
     this.validateValue(new BigNumber(gasData.gasUnitPrice));
+  }
+
+  addFeePayerAddress(address: string): void {
+    this.transaction.addFeePayerAddress(address);
   }
 }

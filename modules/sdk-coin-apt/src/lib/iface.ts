@@ -21,4 +21,5 @@ export interface TransferTxData {
   gasUnitPrice: number;
   gasUsed: number;
   expirationTime: number;
+  feePayer: string;
 }

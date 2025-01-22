@@ -20,6 +20,7 @@ describe('Apt Transfer Transaction', () => {
       });
       txBuilder.sequenceNumber(14);
       txBuilder.expirationTime(1736246155);
+      txBuilder.addFeePayerAddress(testData.feePayer.address);
       const tx = (await txBuilder.build()) as TransferTransaction;
       should.equal(tx.sender, testData.sender2.address);
       should.equal(tx.recipient.address, testData.recipients[0].address);
@@ -44,7 +45,7 @@ describe('Apt Transfer Transaction', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
       rawTx.should.equal(
-        '0xc8f02d25aa698b3e9fbd8a08e8da4c8ee261832a25a4cde8731b5ec356537d090e0000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220f7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad908e803000000000000400d03000000000064000000000000008b037d670000000002002000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+        '0xc8f02d25aa698b3e9fbd8a08e8da4c8ee261832a25a4cde8731b5ec356537d090e000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e73666572000220f7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad908e803000000000000400d03000000000064000000000000008b037d670000000002030020000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000dbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f2002000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
       );
     });
 
@@ -54,7 +55,7 @@ describe('Apt Transfer Transaction', () => {
       should.equal(tx.type, TransactionType.Send);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
-        address: testData.sender2.address,
+        address: testData.sender3.address,
         value: testData.recipients[0].amount,
         coin: 'tapt',
       });
@@ -64,11 +65,11 @@ describe('Apt Transfer Transaction', () => {
         value: testData.recipients[0].amount,
         coin: 'tapt',
       });
-      should.equal(tx.id, '0x43ea7697550d5effb68c47488fd32a7756ee418e8d2be7d6b7f634f3ac0d7766');
+      should.equal(tx.id, '0x9ec764992194c4b4095289a61073e91cf5404d5bedb5a42ab8bf16d07353332b');
       should.equal(tx.maxGasAmount, 200000);
       should.equal(tx.gasUnitPrice, 100);
-      should.equal(tx.sequenceNumber, 23);
-      should.equal(tx.expirationTime, 1735818272);
+      should.equal(tx.sequenceNumber, 146);
+      should.equal(tx.expirationTime, 1737528215);
       should.equal(tx.type, TransactionType.Send);
       const rawTx = tx.toBroadcastFormat();
       should.equal(utils.isValidRawTransaction(rawTx), true);
@@ -86,11 +87,12 @@ describe('Apt Transfer Transaction', () => {
       });
       txBuilder.sequenceNumber(14);
       txBuilder.expirationTime(1736246155);
+      txBuilder.addFeePayerAddress(testData.feePayer.address);
       const tx = (await txBuilder.build()) as TransferTransaction;
       const signablePayload = tx.signablePayload;
       should.equal(
         signablePayload.toString('hex'),
-        'b5e97db07fa0bd0e5598aa3643a9bc6f6693bddc1a9fec9e674a461eaa00b193c8f02d25aa698b3e9fbd8a08e8da4c8ee261832a25a4cde8731b5ec356537d090e0000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220f7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad908e803000000000000400d03000000000064000000000000008b037d670000000002'
+        '5efa3c4f02f83a0f4b2d69fc95c607cc02825cc4e7be536ef0992df050d9e67c01c8f02d25aa698b3e9fbd8a08e8da4c8ee261832a25a4cde8731b5ec356537d090e000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e73666572000220f7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad908e803000000000000400d03000000000064000000000000008b037d67000000000200dbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f2'
       );
     });
 
@@ -105,6 +107,7 @@ describe('Apt Transfer Transaction', () => {
       });
       txBuilder.sequenceNumber(14);
       txBuilder.expirationTime(1736246155);
+      txBuilder.addFeePayerAddress(testData.feePayer.address);
       const tx = (await txBuilder.build()) as TransferTransaction;
       const toJson = tx.toJson();
       should.equal(toJson.sender, testData.sender2.address);
@@ -116,22 +119,23 @@ describe('Apt Transfer Transaction', () => {
       should.equal(toJson.maxGasAmount, 200000);
       should.equal(toJson.gasUnitPrice, 100);
       should.equal(toJson.expirationTime, 1736246155);
+      should.equal(toJson.feePayer, testData.feePayer.address);
     });
 
     it('should build a signed tx and validate its toJson', async function () {
       const txBuilder = factory.from(testData.TRANSFER);
       const tx = (await txBuilder.build()) as TransferTransaction;
       const toJson = tx.toJson();
-      should.equal(toJson.id, '0x43ea7697550d5effb68c47488fd32a7756ee418e8d2be7d6b7f634f3ac0d7766');
-      should.equal(toJson.sender, '0xc8f02d25aa698b3e9fbd8a08e8da4c8ee261832a25a4cde8731b5ec356537d09');
+      should.equal(toJson.id, '0x9ec764992194c4b4095289a61073e91cf5404d5bedb5a42ab8bf16d07353332b');
+      should.equal(toJson.sender, '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449');
       should.deepEqual(toJson.recipient, {
         address: '0xf7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad9',
         amount: '1000',
       });
-      should.equal(toJson.sequenceNumber, 23);
+      should.equal(toJson.sequenceNumber, 146);
       should.equal(toJson.maxGasAmount, 200000);
       should.equal(toJson.gasUnitPrice, 100);
-      should.equal(toJson.expirationTime, 1735818272);
+      should.equal(toJson.expirationTime, 1737528215);
     });
   });
 
