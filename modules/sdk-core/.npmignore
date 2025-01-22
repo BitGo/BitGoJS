@@ -2,7 +2,6 @@
 .idea/
 .prettierrc.yml
 tsconfig.json
-src/
 test/
 scripts/
 .nyc_output
