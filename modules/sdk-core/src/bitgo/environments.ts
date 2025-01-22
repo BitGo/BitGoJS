@@ -58,6 +58,8 @@ interface EnvironmentTemplate {
   etcNodeUrl: string;
   coredaoExplorerBaseUrl?: string;
   coredaoExplorerApiToken?: string;
+  xdcExplorerBaseUrl?: string;
+  xdcExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
