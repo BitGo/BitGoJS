@@ -5,13 +5,13 @@
       "path": "./modules/abstract-cosmos"
     },
     {
-      "path": "./modules/abstract-substrate"
-    },
-    {
       "path": "./modules/abstract-eth"
     },
     {
       "path": "./modules/abstract-lightning"
+    },
+    {
+      "path": "./modules/abstract-substrate"
     },
     {
       "path": "./modules/abstract-utxo"
@@ -57,6 +57,9 @@
     },
     {
       "path": "./modules/sdk-coin-avaxp"
+    },
+    {
+      "path": "./modules/sdk-coin-baby"
     },
     {
       "path": "./modules/sdk-coin-bch"

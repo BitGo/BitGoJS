@@ -1,0 +1,55 @@
+{
+  "name": "@bitgo/sdk-coin-baby",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Babylon",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18 <21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-baby"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/abstract-cosmos": "^11.2.16",
+    "@bitgo/sdk-core": "^28.20.0",
+    "@bitgo/statics": "^50.20.0",
+    "@cosmjs/amino": "^0.29.5",
+    "@cosmjs/encoding": "^0.29.5",
+    "@cosmjs/stargate": "^0.29.5",
+    "bignumber.js": "^9.1.1"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.58.2",
+    "@bitgo/sdk-test": "^8.0.65"
+  }
+}
