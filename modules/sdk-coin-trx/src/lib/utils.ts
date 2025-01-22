@@ -1,6 +1,6 @@
 import assert from 'assert';
 import * as hex from '@stablelib/hex';
-import * as tronweb from 'tronweb';
+import * as tronweb from 'tronweb'; // TODO: kind of suspicious
 import { protocol } from '../../resources/protobuf/tron';
 
 import { UtilsError } from '@bitgo/sdk-core';

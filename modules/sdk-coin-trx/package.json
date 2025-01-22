@@ -55,6 +55,7 @@
     "lodash": "^4.17.14",
     "protobufjs": "7.2.5",
     "secp256k1": "5.0.1",
+    "ses": "^1.10.0",
     "superagent": "^9.0.1",
     "tronweb": "5.1.0"
   },
