@@ -16,9 +16,13 @@ import {
   DEFAULT_MAX_GAS_AMOUNT,
   Ed25519PublicKey,
   Ed25519Signature,
+  FeePayerRawTransaction,
+  generateSigningMessage,
   generateUserTransactionHash,
   Hex,
   Network,
+  RAW_TRANSACTION_SALT,
+  RAW_TRANSACTION_WITH_DATA_SALT,
   RawTransaction,
   SignedTransaction,
   SimpleTransaction,
@@ -284,6 +288,23 @@ export abstract class Transaction extends BaseTransaction {
 
   public getFee(): string {
     return new BigNumber(this.gasUsed).multipliedBy(this.gasUnitPrice).toString();
+  }
+
+  public get signablePayload(): Buffer {
+    return this.feePayerAddress ? this.getSignablePayloadWithFeePayer() : this.getSignablePayloadWithoutFeePayer();
+  }
+
+  private getSignablePayloadWithFeePayer(): Buffer {
+    const feePayerRawTxn = new FeePayerRawTransaction(
+      this._rawTransaction,
+      [],
+      AccountAddress.fromString(this._feePayerAddress)
+    );
+    return Buffer.from(generateSigningMessage(feePayerRawTxn.bcsToBytes(), RAW_TRANSACTION_WITH_DATA_SALT));
+  }
+
+  private getSignablePayloadWithoutFeePayer(): Buffer {
+    return Buffer.from(generateSigningMessage(this._rawTransaction.bcsToBytes(), RAW_TRANSACTION_SALT));
   }
 
   private generateTxnId() {
