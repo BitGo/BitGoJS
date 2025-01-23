@@ -63,6 +63,8 @@ interface EnvironmentTemplate {
   xdcExplorerApiToken?: string;
   flrExplorerBaseUrl?: string;
   flrExplorerApiToken?: string;
+  sgbExplorerBaseUrl?: string;
+  sgbExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
