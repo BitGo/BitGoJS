@@ -60,6 +60,7 @@
 /modules/sdk-coin-cspr/ @BitGo/ethalt-team
 /modules/sdk-coin-dot/ @BitGo/ethalt-team
 /modules/sdk-coin-eos/ @BitGo/ethalt-team
+/modules/sdk-coin-flr/ @BitGo/ethalt-team
 /modules/sdk-coin-ethlike/ @BitGo/ethalt-team
 /modules/sdk-coin-hbar/ @BitGo/ethalt-team
 /modules/sdk-coin-icp/ @BitGo/ethalt-team
@@ -68,12 +69,14 @@
 /modules/sdk-coin-opeth/ @BitGo/ethalt-team
 /modules/sdk-coin-polygon/ @BitGo/ethalt-team
 /modules/sdk-coin-rune/ @BitGo/ethalt-team
+/modules/sdk-coin-sgb/ @BitGo/ethalt-team
 /modules/sdk-coin-sol/ @BitGo/ethalt-team
 /modules/sdk-coin-stx/ @BitGo/ethalt-team
 /modules/sdk-coin-sui/ @BitGo/ethalt-team
 /modules/sdk-coin-tao/ @BitGo/ethalt-team
 /modules/sdk-coin-ton/ @BitGo/ethalt-team
 /modules/sdk-coin-trx/ @BitGo/ethalt-team
+/modules/sdk-coin-xdc/ @BitGo/ethalt-team
 /modules/sdk-coin-xlm/ @BitGo/ethalt-team
 /modules/sdk-coin-xrp/ @BitGo/ethalt-team
 /modules/sdk-coin-xtz/ @BitGo/ethalt-team
