@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-coreum",
-  "version": "21.0.30",
+  "version": "21.0.31",
   "description": "BitGo SDK coin library for Coreum",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,17 +40,18 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-cosmos": "^11.2.17",
-    "@bitgo/sdk-core": "^28.21.0",
+    "@bitgo/abstract-cosmos": "^11.2.18",
+    "@bitgo/sdk-core": "^28.21.1",
     "@bitgo/sdk-lib-mpc": "^10.1.0",
-    "@bitgo/statics": "^50.21.0",
+    "@bitgo/statics": "^50.21.1",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.58.3",
-    "@bitgo/sdk-test": "^8.0.66"
-  }
+    "@bitgo/sdk-api": "^1.58.4",
+    "@bitgo/sdk-test": "^8.0.67"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

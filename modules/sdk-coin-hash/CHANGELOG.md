@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.0.30...@bitgo/sdk-coin-hash@3.0.31) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-hash
+
 ## [3.0.30](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.0.29...@bitgo/sdk-coin-hash@3.0.30) (2025-01-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hash

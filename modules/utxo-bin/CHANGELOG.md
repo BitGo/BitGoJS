@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.5.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.5.6...@bitgo/utxo-bin@3.5.7) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/utxo-bin
+
 ## [3.5.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.5.5...@bitgo/utxo-bin@3.5.6) (2025-01-23)
 
 **Note:** Version bump only for package @bitgo/utxo-bin
