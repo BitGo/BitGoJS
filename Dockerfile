@@ -63,8 +63,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-baby /var/modules/sdk-coin-baby/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-baby /var/modules/sdk-coin-baby/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bera /var/modules/sdk-coin-bera/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsc /var/modules/sdk-coin-bsc/
@@ -142,8 +142,8 @@ cd /var/modules/sdk-coin-atom && yarn link && \
 cd /var/modules/abstract-cosmos && yarn link && \
 cd /var/modules/sdk-coin-avaxc && yarn link && \
 cd /var/modules/sdk-coin-avaxp && yarn link && \
-cd /var/modules/sdk-coin-baby && yarn link && \
 cd /var/modules/sdk-coin-eth && yarn link && \
+cd /var/modules/sdk-coin-baby && yarn link && \
 cd /var/modules/sdk-coin-bera && yarn link && \
 cd /var/modules/sdk-coin-bld && yarn link && \
 cd /var/modules/sdk-coin-bsc && yarn link && \
@@ -224,8 +224,8 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/abstract-cosmos && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
-    yarn link @bitgo/sdk-coin-baby && \
     yarn link @bitgo/sdk-coin-eth && \
+    yarn link @bitgo/sdk-coin-baby && \
     yarn link @bitgo/sdk-coin-bera && \
     yarn link @bitgo/sdk-coin-bld && \
     yarn link @bitgo/sdk-coin-bsc && \
@@ -280,9 +280,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Mon, 20 Jan 2025 14:11:17 GMT"
-LABEL version=10.6.9
-LABEL git_hash=0ac3f4f1997fb2b28081f10e813f6790b2dc0b90
+LABEL created="Thu, 23 Jan 2025 20:12:13 GMT"
+LABEL version=10.6.11
+LABEL git_hash=fba132f039d492cc4db687470404551a520d879f
 #LABEL_END
 
 USER node

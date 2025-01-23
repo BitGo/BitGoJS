@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/statics",
-  "version": "50.20.0",
+  "version": "50.21.1",
   "description": "dependency-free static configuration for the bitgo platform",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -36,5 +36,6 @@
     "extension": [
       ".ts"
     ]
-  }
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

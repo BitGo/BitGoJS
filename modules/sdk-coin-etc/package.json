@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-etc",
-  "version": "2.2.27",
+  "version": "2.2.29",
   "description": "BitGo SDK coin library for Ethereum classic",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,10 +40,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^22.4.10",
-    "@bitgo/sdk-coin-eth": "^24.2.49",
-    "@bitgo/sdk-core": "^28.20.0",
-    "@bitgo/statics": "^50.20.0",
+    "@bitgo/abstract-eth": "^22.4.12",
+    "@bitgo/sdk-coin-eth": "^24.2.51",
+    "@bitgo/sdk-core": "^28.21.1",
+    "@bitgo/statics": "^50.21.1",
     "@bitgo/utxo-lib": "^11.2.1",
     "@ethereumjs/common": "^2.6.5",
     "bignumber.js": "^9.1.1",
@@ -53,7 +53,8 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.58.2",
-    "@bitgo/sdk-test": "^8.0.65"
-  }
+    "@bitgo/sdk-api": "^1.58.4",
+    "@bitgo/sdk-test": "^8.0.67"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }
