@@ -61,6 +61,8 @@ interface EnvironmentTemplate {
   coredaoExplorerApiToken?: string;
   xdcExplorerBaseUrl?: string;
   xdcExplorerApiToken?: string;
+  flrExplorerBaseUrl?: string;
+  flrExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
