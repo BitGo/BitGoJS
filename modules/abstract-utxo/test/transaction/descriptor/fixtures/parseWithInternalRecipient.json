@@ -28,11 +28,5 @@
     }
   ],
   "implicitExternalSpendAmount": "400000",
-  "missingOutputs": [
-    {
-      "address": "bc1q2yau645jl7k577lmanqn9a0ulcgcqm0wrrmx09dppd3kcwguvyzqk86umj",
-      "amount": "400000",
-      "external": true
-    }
-  ]
+  "missingOutputs": []
 }
