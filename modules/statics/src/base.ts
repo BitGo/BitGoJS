@@ -1796,6 +1796,7 @@ export enum UnderlyingAsset {
   'eth:exrd' = 'eth:exrd',
   'eth:turbo' = 'eth:turbo',
   'eth:icnt' = 'eth:icnt',
+  'eth:god' = 'eth:god',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -1872,6 +1873,7 @@ export enum UnderlyingAsset {
   'avaxc:weth' = 'avaxc:weth',
   'avaxc:sbc' = 'avaxc:sbc',
   'avaxc:xsgd' = 'avaxc:xsgd',
+  'avaxc:ticov2' = 'avaxc:ticov2',
   'tavaxc:opm' = 'tavaxc:opm',
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   'tavaxc:xsgd' = 'tavaxc:xsgd',
@@ -2354,6 +2356,11 @@ export enum UnderlyingAsset {
   'sol:drift' = 'sol:drift',
   'sol:spx' = 'sol:spx',
   'sol:turbo' = 'sol:turbo',
+  'sol:fartcoin' = 'sol:fartcoin',
+  'sol:swarms' = 'sol:swarms',
+  'sol:nc' = 'sol:nc',
+  'sol:tai' = 'sol:tai',
+  'sol:pengu' = 'sol:pengu',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
@@ -2384,6 +2391,8 @@ export enum UnderlyingAsset {
   'sui:afsui' = 'sui:afsui',
   'sui:navx' = 'sui:navx',
   'sui:vsui' = 'sui:vsui',
+  'sui:send' = 'sui:send',
+  'sui:cetus' = 'sui:cetus',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',

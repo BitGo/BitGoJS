@@ -390,6 +390,8 @@ const BERA_FEATURES = [
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.BULK_TRANSACTION,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_GERMANY
 ];
 const OAS_FEATURES = [
   ...ETH_FEATURES,
@@ -441,6 +443,10 @@ const TIA_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
 const WCT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
+const BERA_BGT_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_GERMANY];
 
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
@@ -12057,6 +12063,14 @@ export const coins = CoinMap.fromCoins([
     '0xfd409bc96d126bc8a56479d4c7672015d539f96c',
     UnderlyingAsset['eth:vice']
   ),
+  erc20(
+    '60b28982-4036-448f-b449-597e0889a7b5',
+    'eth:god',
+    'GOD Coin',
+    18,
+    '0xb5130f4767ab0acc579f25a76e8f9e977cb3f948',
+    UnderlyingAsset['eth:god']
+  ),
 
   // End FTX missing ERC20 tokens
   celoToken(
@@ -16124,6 +16138,14 @@ export const coins = CoinMap.fromCoins([
     '0xba69b8aff564fe150ff7e2f965e0dba23b9d2571',
     UnderlyingAsset['avaxc:tico']
   ),
+  avaxErc20(
+    '2422f35e-a8cf-4fcb-a012-a40b1a5b731c',
+    'avaxc:ticov2',
+    'TICO',
+    18,
+    '0xedf647326007e64d94b0ee69743350f3736e392c',
+    UnderlyingAsset['avaxc:ticov2']
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',
@@ -18172,6 +18194,52 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sol:drift'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '616c6744-29ce-4eb7-9c6a-303f9c433d8e',
+    'sol:fartcoin',
+    'FARTCOIN',
+    6,
+    '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump',
+    UnderlyingAsset['sol:fartcoin'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '91850793-d317-46dc-a1c7-671b858680c2',
+    'sol:swarms',
+    'Swarms',
+    6,
+    '74SBV4zDXxTRgv1pEMoECskKBkZHc2yGPnc7GYVepump',
+    UnderlyingAsset['sol:swarms'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f3b97219-37dc-4899-b974-813aae9cf631',
+    'sol:nc',
+    'Nodecoin',
+    9,
+    'B89Hd5Juz7JP2dxCZXFJWk4tMTcbw7feDhuWGb3kq5qE',
+    UnderlyingAsset['sol:nc'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f2aa0d3d-9b44-4c48-aa24-7727a356491a',
+    'sol:tai',
+    'TARS AI',
+    9,
+    'Hax9LTgsQkze1YFychnBLtFH8gYbQKtKfWKKg2SP6gdD',
+    UnderlyingAsset['sol:tai'],
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
+  ),
+  solToken(
+    'e0524c5f-9616-4aff-b376-ac72ae65be6a',
+    'sol:pengu',
+    'Pudgy Penguins',
+    6,
+    '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
+    UnderlyingAsset['sol:pengu'],
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
+  ),
+  
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -19697,7 +19765,8 @@ export const coins = CoinMap.fromCoins([
     18,
     // TODO: the mainnet contract address is still not available, adding placeholder here
     '0xbda130737bdd9618301681329bf2e46a016ff9aa',
-    UnderlyingAsset['bera:bgt']
+    UnderlyingAsset['bera:bgt'],
+    BERA_BGT_FEATURES
   ),
   beraErc20(
     'ca86baf8-fcc6-40ff-9d65-08db513a131e',
@@ -19890,6 +19959,28 @@ export const coins = CoinMap.fromCoins([
     'vsui',
     'VSUI',
     UnderlyingAsset['sui:vsui'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '705d1458-d5e6-4eaa-8a34-51e65cc68dec',
+    'sui:send',
+    'Suilend',
+    6,
+    '0xb45fcfcc2cc07ce0702cc2d229621e046c906ef14d9b25e8e4d25f6e8763fef7',
+    'send',
+    'SEND',
+    UnderlyingAsset['sui:send'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '08eb85c1-19e6-41aa-9b16-8964d6aeba31',
+    'sui:cetus',
+    'Cetus',
+    9,
+    '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b',
+    'cetus',
+    'CETUS',
+    UnderlyingAsset['sui:cetus'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(
