@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.20.0...@bitgo/sdk-core@28.21.0) (2025-01-23)
+
+### Features
+
+- **sdk-coin-baby:** add SDK support for babylon ([932541b](https://github.com/BitGo/BitGoJS/commit/932541bad36f5fb3ca0a9a49a7b987ec1f4878a3))
+- **sdk-coin-flr:** add transaction builder ([3a69830](https://github.com/BitGo/BitGoJS/commit/3a69830ad63b6b6b0035a4a954fa834372239f16))
+- **sdk-coin-sgb:** add transaction builder ([bf2c507](https://github.com/BitGo/BitGoJS/commit/bf2c5079913e9cd3730a9b19e81a704f1db7e211))
+- **sdk-coin-xdc:** add transaction builder ([eebe928](https://github.com/BitGo/BitGoJS/commit/eebe92834192f8353c44a8ca4e35f5e4836cd8d9))
+- **sdk-core:** add backup codecs ([cddf32c](https://github.com/BitGo/BitGoJS/commit/cddf32ce50db91e094df613ca3026d425f0788b6))
+- **sdk-core:** add bera native staking fields ([d38db99](https://github.com/BitGo/BitGoJS/commit/d38db99c25fe887a720e8884bda8ab821f6070e6))
+- **sdk-core:** add skipReceiveAddress optional parameter IWallets::list in SDK ([f7eaefe](https://github.com/BitGo/BitGoJS/commit/f7eaefe66bd2171595f03e707ec7b4862edb945e))
+
 # [28.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.19.1...@bitgo/sdk-core@28.20.0) (2025-01-20)
 
 ### Bug Fixes

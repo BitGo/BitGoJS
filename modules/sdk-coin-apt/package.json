@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-apt",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "BitGo SDK coin library for APT (Aptos) coin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,14 +41,14 @@
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "1.33.1",
-    "@bitgo/sdk-core": "^28.20.0",
-    "@bitgo/statics": "^50.20.0",
+    "@bitgo/sdk-core": "^28.21.0",
+    "@bitgo/statics": "^50.21.0",
     "bignumber.js": "^9.1.2",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.58.2",
+    "@bitgo/sdk-api": "^1.58.3",
     "@bitgo/sdk-lib-mpc": "^10.1.0",
-    "@bitgo/sdk-test": "^8.0.65"
+    "@bitgo/sdk-test": "^8.0.66"
   }
 }

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.20.0...@bitgo/statics@50.21.0) (2025-01-23)
+
+### Features
+
+- add deprecated feature to gteth ([10acaef](https://github.com/BitGo/BitGoJS/commit/10acaef757227c31d976ee4c4f00db190b56e5d4))
+- **bitgo:** add bitgo mena fze entity ([76670a2](https://github.com/BitGo/BitGoJS/commit/76670a2fef42cbf35a8cbbf577f1f2d57f3178ac))
+- **statics:** adding ofchteth:gousd in coins.ts ([9919a0e](https://github.com/BitGo/BitGoJS/commit/9919a0ee46ef74e353ed0bf0cb20aee3d35b39cd))
+
 # [50.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.19.0...@bitgo/statics@50.20.0) (2025-01-20)
 
 ### Bug Fixes

@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.7.17...@bitgo/sdk-coin-sol@4.8.0) (2025-01-23)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** add priority instruction when token transfer ([701935a](https://github.com/BitGo/BitGoJS/commit/701935aba34a586d2f58c5c5542a396587f02c49))
+- **sdk-coin-sol:** update tests ([1e85dce](https://github.com/BitGo/BitGoJS/commit/1e85dce08f4511c0bed60a85e739dd08d29494f0))
+
+### Features
+
+- **sdk-coin-sol:** add prio fees for token txns ([90628d4](https://github.com/BitGo/BitGoJS/commit/90628d4908e5d4acc031e8793c358b6bf741167f))
+- **sdk-coin-sol:** fetch prio fees from WP ([7dd8807](https://github.com/BitGo/BitGoJS/commit/7dd8807cabb2ad0f8a800ff1b914b201a71ba074))
+- **sdk-coin-sol:** ignore zero value prio fee ([a6cd5ee](https://github.com/BitGo/BitGoJS/commit/a6cd5ee4dd486b71774d47b6c9763de2d1dcc13e))
+
 ## [4.7.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.7.16...@bitgo/sdk-coin-sol@4.7.17) (2025-01-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

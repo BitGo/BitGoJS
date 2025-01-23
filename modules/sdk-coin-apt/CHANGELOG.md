@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.4.1...@bitgo/sdk-coin-apt@1.5.0) (2025-01-23)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** aptos-labs version to 1.33.1 ([e991d8b](https://github.com/BitGo/BitGoJS/commit/e991d8b795e8de830e796f7d41a1d09a091880ee))
+- **sdk-coin-apt:** make transaction getFee() method public ([15433ba](https://github.com/BitGo/BitGoJS/commit/15433ba88da586bb7e289e11201fa27ae521f131))
+
+### Features
+
+- **sdk-coin-apt:** added logic for fee payer signing ([444b849](https://github.com/BitGo/BitGoJS/commit/444b849f01f0ebf7b24eeed01816007408bef0aa))
+
 ## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.4.0...@bitgo/sdk-coin-apt@1.4.1) (2025-01-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apt

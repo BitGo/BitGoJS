@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.6.0...@bitgo/sdk-coin-ada@4.6.1) (2025-01-23)
+
+### Bug Fixes
+
+- using base58 and cbor as byron validation for ui support ([fe6477c](https://github.com/BitGo/BitGoJS/commit/fe6477cb563eaf44ffd27d5310680a65479afd8a))
+
 # [4.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.5.5...@bitgo/sdk-coin-ada@4.6.0) (2025-01-20)
 
 ### Features
