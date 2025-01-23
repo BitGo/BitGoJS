@@ -60,9 +60,16 @@ describe('parse', function () {
   describe('toBase', function () {
     it('should return the correct BaseParsedTransactionOutputs', async function () {
       await assertEqualFixture('parseWithoutRecipients.json', toPlainObject(getBaseParsedTransaction([])));
-      await assertEqualFixture('parseWithRecipient.json', toPlainObject(getBaseParsedTransaction([psbt.txOutputs[0]])));
       await assertEqualFixture(
-        'parseWithRecipient.json',
+        'parseWithExternalRecipient.json',
+        toPlainObject(getBaseParsedTransaction([psbt.txOutputs[0]]))
+      );
+      await assertEqualFixture(
+        'parseWithInternalRecipient.json',
+        toPlainObject(getBaseParsedTransaction([psbt.txOutputs[1]]))
+      );
+      await assertEqualFixture(
+        'parseWithExternalRecipient.json',
         // max recipient: ignore actual value
         toPlainObject(getBaseParsedTransaction([toMaxOutput(psbt.txOutputs[0])]))
       );
