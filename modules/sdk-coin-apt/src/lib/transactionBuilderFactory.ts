@@ -1,4 +1,4 @@
-import { BaseTransactionBuilderFactory } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import utils from './utils';
@@ -17,14 +17,23 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     utils.validateRawTransaction(signedRawTxn);
     try {
       const signedTxn = this.parseTransaction(signedRawTxn);
-      // Assumption: only a single transaction type exists
-      // TODO: add txn type switch case
-      const transferTx = new TransferTransaction(this._coinConfig);
-      transferTx.fromDeserializedSignedTransaction(signedTxn);
-      return this.getTransferBuilder(transferTx);
+      const txnType = this.getTransactionTypeFromSignedTxn(signedTxn);
+      switch (txnType) {
+        case TransactionType.Send:
+          const transferTx = new TransferTransaction(this._coinConfig);
+          transferTx.fromDeserializedSignedTransaction(signedTxn);
+          return this.getTransferBuilder(transferTx);
+        default:
+          throw new InvalidTransactionError('Invalid transaction');
+      }
     } catch (e) {
       throw e;
     }
+  }
+
+  getTransactionTypeFromSignedTxn(signedTxn: SignedTransaction): TransactionType {
+    const rawTxn = signedTxn.raw_txn;
+    return utils.getTransactionTypeFromTransactionPayload(rawTxn.payload);
   }
 
   /** @inheritdoc */

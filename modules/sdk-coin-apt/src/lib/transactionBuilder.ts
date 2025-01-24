@@ -88,20 +88,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.addFeePayerSignature(publicKey, signature);
   }
 
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    this.transaction.fromRawTransaction(rawTransaction);
-    this.transaction.transactionType = this.transactionType;
-    return this.transaction;
-  }
-
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.transactionType = this.transactionType;
-    await this.transaction.build();
-    return this.transaction;
-  }
-
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
