@@ -159,4 +159,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   addFeePayerAddress(address: string): void {
     this.transaction.addFeePayerAddress(address);
   }
+
+  getFeePayerPubKey(): string {
+    return this.transaction.getFeePayerPubKey();
+  }
 }

@@ -177,6 +177,10 @@ export abstract class Transaction extends BaseTransaction {
     this._senderSignature = { publicKey, signature };
   }
 
+  getFeePayerPubKey(): string {
+    return this._feePayerSignature.publicKey.pub;
+  }
+
   addFeePayerSignature(publicKey: PublicKey, signature: Buffer): void {
     this._feePayerSignature = { publicKey, signature };
   }
