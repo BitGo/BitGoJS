@@ -55,12 +55,14 @@ export abstract class Transaction extends BaseTransaction {
     this._gasUsed = 0;
     this._expirationTime = Math.floor(Date.now() / 1e3) + SECONDS_PER_WEEK;
     this._sequenceNumber = 0;
+    this._sender = AccountAddress.ZERO.toString();
     this._senderSignature = {
       publicKey: {
         pub: Hex.fromHexInput(Transaction.EMPTY_PUBLIC_KEY).toString(),
       },
       signature: Transaction.EMPTY_SIGNATURE,
     };
+    this._feePayerAddress = AccountAddress.ZERO.toString();
     this._feePayerSignature = {
       publicKey: {
         pub: Hex.fromHexInput(Transaction.EMPTY_PUBLIC_KEY).toString(),
