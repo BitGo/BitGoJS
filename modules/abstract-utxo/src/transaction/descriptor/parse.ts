@@ -40,9 +40,8 @@ function parseOutputsWithPsbt(
   recipientOutputs: RecipientOutput[]
 ): ParsedOutputs {
   const parsed = coreDescriptors.parse(psbt, descriptorMap, psbt.network);
-  const externalOutputs = parsed.outputs.filter((o) => o.scriptId === undefined);
   const changeOutputs = parsed.outputs.filter((o) => o.scriptId !== undefined);
-  const outputDiffs = outputDifferencesWithExpected(externalOutputs, recipientOutputs);
+  const outputDiffs = outputDifferencesWithExpected(parsed.outputs, recipientOutputs);
   return {
     outputs: parsed.outputs,
     changeOutputs,
@@ -72,9 +71,11 @@ function toBaseOutputs(
 export type ParsedOutputsBigInt = BaseParsedTransactionOutputs<bigint, BaseOutput<bigint | 'max'>>;
 
 function toBaseParsedTransactionOutputs(
-  { outputs, changeOutputs, explicitExternalOutputs, implicitExternalOutputs, missingOutputs }: ParsedOutputs,
+  { outputs, changeOutputs, explicitOutputs, implicitOutputs, missingOutputs }: ParsedOutputs,
   network: utxolib.Network
 ): ParsedOutputsBigInt {
+  const explicitExternalOutputs = explicitOutputs.filter((o) => o.scriptId === undefined);
+  const implicitExternalOutputs = implicitOutputs.filter((o) => o.scriptId === undefined);
   return {
     outputs: toBaseOutputs(outputs, network),
     changeOutputs: toBaseOutputs(changeOutputs, network),

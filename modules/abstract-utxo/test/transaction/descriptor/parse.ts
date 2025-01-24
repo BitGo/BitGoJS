@@ -1,8 +1,11 @@
 import assert from 'assert';
 
-import { mockPsbtDefaultWithDescriptorTemplate } from '../../core/descriptor/psbt/mock.utils';
+import * as utxolib from '@bitgo/utxo-lib';
+import { Descriptor } from '@bitgo/wasm-miniscript';
+
+import { mockPsbtDefault } from '../../core/descriptor/psbt/mock.utils';
 import { ParsedOutputsBigInt, toBaseParsedTransactionOutputsFromPsbt } from '../../../src/transaction/descriptor/parse';
-import { getDefaultXPubs, getDescriptorMap } from '../../core/descriptor/descriptor.utils';
+import { getDefaultXPubs, getDescriptor, getDescriptorMap } from '../../core/descriptor/descriptor.utils';
 import { toPlainObject } from '../../core/toPlainObject.utils';
 import {
   AggregateValidationError,
@@ -12,6 +15,7 @@ import {
 } from '../../../src/transaction/descriptor/verifyTransaction';
 import { toAmountType } from '../../../src/transaction/descriptor/parseToAmountType';
 import { BaseOutput } from '../../../src';
+import { createAddressFromDescriptor } from '../../../src/core/descriptor';
 
 import { getFixtureRoot } from './fixtures.utils';
 
@@ -46,9 +50,23 @@ function toMaxOutput(output: OutputWithValue): OutputWithValue<'max'> {
 }
 
 describe('parse', function () {
-  const psbt = mockPsbtDefaultWithDescriptorTemplate('Wsh2Of3');
+  const descriptorSelf = getDescriptor('Wsh2Of3', getDefaultXPubs('a'));
+  const descriptorOther = getDescriptor('Wsh2Of3', getDefaultXPubs('b'));
+  const psbt = mockPsbtDefault({ descriptorSelf, descriptorOther });
 
-  function getBaseParsedTransaction(recipients: OutputWithValue[]): ParsedOutputsBigInt {
+  function recipient(descriptor: Descriptor, index: number, value = 1000) {
+    return { value, address: createAddressFromDescriptor(descriptor, index, utxolib.networks.bitcoin) };
+  }
+
+  function internalRecipient(index: number, value?: number): OutputWithValue {
+    return recipient(descriptorSelf, index, value);
+  }
+
+  function externalRecipient(index: number, value?: number): OutputWithValue {
+    return recipient(descriptorOther, index, value);
+  }
+
+  function getBaseParsedTransaction(psbt: utxolib.bitgo.UtxoPsbt, recipients: OutputWithValue[]): ParsedOutputsBigInt {
     return toBaseParsedTransactionOutputsFromPsbt(
       psbt,
       getDescriptorMap('Wsh2Of3', getDefaultXPubs('a')),
@@ -59,20 +77,30 @@ describe('parse', function () {
 
   describe('toBase', function () {
     it('should return the correct BaseParsedTransactionOutputs', async function () {
-      await assertEqualFixture('parseWithoutRecipients.json', toPlainObject(getBaseParsedTransaction([])));
-      await assertEqualFixture('parseWithRecipient.json', toPlainObject(getBaseParsedTransaction([psbt.txOutputs[0]])));
+      await assertEqualFixture('parseWithoutRecipients.json', toPlainObject(getBaseParsedTransaction(psbt, [])));
       await assertEqualFixture(
-        'parseWithRecipient.json',
+        'parseWithExternalRecipient.json',
+        toPlainObject(getBaseParsedTransaction(psbt, [psbt.txOutputs[0]]))
+      );
+      await assertEqualFixture(
+        'parseWithInternalRecipient.json',
+        toPlainObject(getBaseParsedTransaction(psbt, [psbt.txOutputs[1]]))
+      );
+      await assertEqualFixture(
+        'parseWithExternalRecipient.json',
         // max recipient: ignore actual value
-        toPlainObject(getBaseParsedTransaction([toMaxOutput(psbt.txOutputs[0])]))
+        toPlainObject(getBaseParsedTransaction(psbt, [toMaxOutput(psbt.txOutputs[0])]))
       );
     });
 
     function assertEqualValidationError(actual: unknown, expected: AggregateValidationError) {
+      function normErrors(e: Error[]): Error[] {
+        return e.map((e) => ({ ...e, stack: undefined }));
+      }
       if (actual instanceof AggregateValidationError) {
-        assert.deepStrictEqual(actual.errors, expected.errors);
+        assert.deepStrictEqual(normErrors(actual.errors), normErrors(expected.errors));
       } else {
-        throw new Error('unexpected error type');
+        throw new Error('unexpected error type: ' + actual);
       }
     }
 
@@ -83,35 +111,48 @@ describe('parse', function () {
       });
     }
 
-    it('should throw expected errors', function () {
-      assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction([])),
-        new AggregateValidationError([
-          new ErrorImplicitExternalOutputs([{ ...toBaseOutputBigInt(psbt.txOutputs[0]), external: true }]),
-        ])
-      );
+    function implicitOutputError(output: OutputWithValue, { external = true } = {}): ErrorImplicitExternalOutputs {
+      return new ErrorImplicitExternalOutputs([{ ...toBaseOutputBigInt(output), external }]);
+    }
 
-      assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction([])),
-        new AggregateValidationError([
-          new ErrorImplicitExternalOutputs([{ ...toBaseOutputBigInt(psbt.txOutputs[0]), external: true }]),
-        ])
-      );
+    function missingOutputError(output: OutputWithValue, { external = true } = {}): ErrorMissingOutputs {
+      return new ErrorMissingOutputs([{ ...toBaseOutputBigInt(output), external }]);
+    }
 
+    it('should throw expected error: no recipient requested', function () {
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction([psbt.txOutputs[1]])),
-        new AggregateValidationError([
-          new ErrorMissingOutputs([{ ...toBaseOutputBigInt(psbt.txOutputs[1]), external: true }]),
-          new ErrorImplicitExternalOutputs([{ ...toBaseOutputBigInt(psbt.txOutputs[0]), external: true }]),
-        ])
+        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [])),
+        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
       );
+    });
 
+    it('should throw expected error: only internal recipient requested', function () {
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction([toMaxOutput(psbt.txOutputs[1])])),
-        new AggregateValidationError([
-          new ErrorMissingOutputs([{ ...toBaseOutputBigInt(toMaxOutput(psbt.txOutputs[1])), external: true }]),
-          new ErrorImplicitExternalOutputs([{ ...toBaseOutputBigInt(psbt.txOutputs[0]), external: true }]),
-        ])
+        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [psbt.txOutputs[1]])),
+        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
+      );
+    });
+
+    it('should throw expected error: only internal max recipient requested', function () {
+      assertValidationError(
+        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [toMaxOutput(psbt.txOutputs[1])])),
+        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
+      );
+    });
+
+    it('should throw expected error: swapped recipient', function () {
+      const recipient = externalRecipient(99);
+      assertValidationError(
+        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [recipient])),
+        new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])])
+      );
+    });
+
+    it('should throw expected error: missing internal recipient', function () {
+      const recipient = internalRecipient(99);
+      assertValidationError(
+        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [recipient])),
+        new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])])
       );
     });
   });

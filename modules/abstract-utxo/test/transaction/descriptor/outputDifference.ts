@@ -76,8 +76,8 @@ describe('outputDifference', function () {
     ) {
       const result = outputDifferencesWithExpected(outputs, recipients);
       assert.deepStrictEqual(result, {
-        explicitExternalOutputs: expected.explicit,
-        implicitExternalOutputs: expected.implicit,
+        explicitOutputs: expected.explicit,
+        implicitOutputs: expected.implicit,
         missingOutputs: expected.missing,
       });
     }
