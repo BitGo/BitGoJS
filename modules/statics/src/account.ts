@@ -111,6 +111,10 @@ export interface SuiCoinConstructorOptions extends AccountConstructorOptions {
   symbol: string;
 }
 
+export interface AptCoinConstructorOptions extends AccountConstructorOptions {
+  fungibleAssetAddress: string;
+}
+
 type FiatCoinName = `fiat${string}` | `tfiat${string}`;
 export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
   name: FiatCoinName;
@@ -452,6 +456,23 @@ export class SuiCoin extends AccountCoinToken {
     this.packageId = options.packageId;
     this.module = options.module;
     this.symbol = options.symbol;
+  }
+}
+
+/**
+ * The Apt network supports tokens
+ * Apt tokens work similar to native Apt coin, but the token name is determined by
+ * the tokenAddress on the chain.
+ *
+ */
+export class AptCoin extends AccountCoinToken {
+  public fungibleAssetAddress: string;
+  constructor(options: AptCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.fungibleAssetAddress = options.fungibleAssetAddress;
   }
 }
 
@@ -2300,6 +2321,96 @@ export function tsuiToken(
     packageId,
     module,
     symbol,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for apt token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param fungibleAssetAddress Fungible asset address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to APT main network.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function aptToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  fungibleAssetAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.apt,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new AptCoin({
+      id,
+      name,
+      fullName,
+      network,
+      fungibleAssetAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.APT,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet apt token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param fungibleAssetAddress Fungible asset  of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the testnet APT network.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function taptToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  fungibleAssetAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.apt,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return aptToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    fungibleAssetAddress,
     asset,
     features,
     prefix,
