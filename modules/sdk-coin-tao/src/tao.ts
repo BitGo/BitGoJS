@@ -1,11 +1,8 @@
 import {
   BaseCoin,
   BitGoBase,
-  KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
-  SignedTransaction,
-  SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
@@ -28,23 +25,14 @@ export class Tao extends SubstrateCoin {
     return new Tao(bitgo, staticsCoin);
   }
 
-  /**
-   * Factor between the coin's base unit and its smallest subdivison
-   */
-  public getBaseFactor(): number {
-    return 1e9;
-  }
-
-  public getChain(): string {
-    return 'tap';
-  }
-
-  public getFullName(): string {
-    return 'Bittensor';
-  }
-
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+    const { txParams } = params;
+    if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
+      throw new Error(
+        `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+      );
+    }
+    return true;
   }
 
   isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
@@ -52,22 +40,6 @@ export class Tao extends SubstrateCoin {
   }
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new Error('Method not implemented.');
-  }
-
-  generateKeyPair(seed?: Buffer): KeyPair {
-    throw new Error('Method not implemented.');
-  }
-
-  isValidPub(pub: string): boolean {
-    throw new Error('Method not implemented.');
-  }
-
-  isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
-  }
-
-  signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    throw new Error('Method not implemented.');
+    return {};
   }
 }
