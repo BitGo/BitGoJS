@@ -17,7 +17,11 @@ function getScriptPubKeyLength(descType: string): number {
     case 'Pkh':
       return 25;
     case 'Wsh':
-      // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wsh
+    case 'Tr':
+      // P2WSH: https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wsh
+      // P2TR: https://github.com/bitcoin/bips/blob/58ffd93812ff25e87d53d1f202fbb389fdfb85bb/bip-0341.mediawiki#script-validation-rules
+      // > A Taproot output is a native SegWit output (see BIP141) with version number 1, and a 32-byte witness program.
+      // 32 bytes for the hash, 1 byte for the version, 1 byte for the push opcode
       return 34;
     case 'Bare':
       throw new Error('cannot determine scriptPubKey length for Bare descriptor');

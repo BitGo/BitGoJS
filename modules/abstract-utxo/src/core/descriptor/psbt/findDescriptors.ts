@@ -40,7 +40,7 @@ function findDescriptorForDerivationIndex(
 function getDerivationIndexFromPath(path: string): number {
   const indexStr = path.split('/').pop();
   if (!indexStr) {
-    throw new Error('Invalid derivation path');
+    throw new Error(`Invalid derivation path ${path}`);
   }
   const index = parseInt(indexStr, 10);
   if (index.toString() !== indexStr) {
@@ -84,14 +84,21 @@ export function findDescriptorForInput(
   if (!script) {
     throw new Error('Missing script');
   }
-  if (!input.bip32Derivation) {
-    throw new Error('Missing derivation paths');
+  if (input.bip32Derivation !== undefined) {
+    return findDescriptorForAnyDerivationPath(
+      script,
+      input.bip32Derivation.map((v) => v.path),
+      descriptorMap
+    );
   }
-  return findDescriptorForAnyDerivationPath(
-    script,
-    input.bip32Derivation.map((v) => v.path),
-    descriptorMap
-  );
+  if (input.tapBip32Derivation !== undefined) {
+    return findDescriptorForAnyDerivationPath(
+      script,
+      input.tapBip32Derivation.filter((v) => v.path !== '' && v.path !== 'm').map((v) => v.path),
+      descriptorMap
+    );
+  }
+  throw new Error('Missing derivation path');
 }
 
 /**
