@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.13.0...@bitgo/abstract-utxo@9.13.1) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
+# [9.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.12.0...@bitgo/abstract-utxo@9.13.0) (2025-01-23)
+
+### Bug Fixes
+
+- **abstract-utxo:** only include dist/src in package.json ([ae0c36a](https://github.com/BitGo/BitGoJS/commit/ae0c36a1579a7ec698ac09efc443dd75142212e9))
+
+### Features
+
+- **abstract-utxo:** export `offlineVault` module ([cf248c1](https://github.com/BitGo/BitGoJS/commit/cf248c191b5f3a77e7556ec3208ab39c2aa369ca))
+- add getTransactionExplanation ([8a53455](https://github.com/BitGo/BitGoJS/commit/8a53455a9246c814185f61d4115d745395fc8cd0))
+
+# [9.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.11.1...@bitgo/abstract-utxo@9.12.0) (2025-01-20)
+
+### Bug Fixes
+
+- **abstract-utxo:** improve createHalfSigned ([bac55b4](https://github.com/BitGo/BitGoJS/commit/bac55b4aa5a9c6624479e55424568a2bda32cac9))
+
+### Features
+
+- **abstract-utxo:** add descriptor support for offline vault ([7082893](https://github.com/BitGo/BitGoJS/commit/7082893036763d6c5bbe37236ebac68acd1976f5))
+
+## [9.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.11.0...@bitgo/abstract-utxo@9.11.1) (2025-01-15)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
 # [9.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.10.0...@bitgo/abstract-utxo@9.11.0) (2025-01-09)
 
 ### Bug Fixes

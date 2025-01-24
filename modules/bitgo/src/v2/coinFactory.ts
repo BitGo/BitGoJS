@@ -20,6 +20,7 @@ import {
   AvaxC,
   AvaxCToken,
   AvaxP,
+  Baby,
   Bch,
   Bera,
   BeraToken,
@@ -53,6 +54,7 @@ import {
   Hash,
   Hbar,
   Hteth,
+  Icp,
   Injective,
   Islm,
   Lnbtc,
@@ -74,6 +76,7 @@ import {
   Sui,
   SuiToken,
   Susd,
+  Tao,
   Ton,
   Tada,
   Talgo,
@@ -82,6 +85,7 @@ import {
   Tatom,
   TavaxC,
   TavaxP,
+  Tbaby,
   Tbch,
   Tbera,
   Tbld,
@@ -108,6 +112,7 @@ import {
   Thash,
   Thbar,
   Tia,
+  Ticp,
   Tinjective,
   Tislm,
   Tlnbtc,
@@ -124,6 +129,7 @@ import {
   Tstx,
   Tsui,
   Tsusd,
+  Ttao,
   Ttia,
   Tton,
   Ttrx,
@@ -151,6 +157,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('atom', Atom.createInstance);
   globalCoinFactory.register('avaxc', AvaxC.createInstance);
   globalCoinFactory.register('avaxp', AvaxP.createInstance);
+  globalCoinFactory.register('baby', Baby.createInstance);
   globalCoinFactory.register('bch', Bch.createInstance);
   globalCoinFactory.register('bcha', Bcha.createInstance);
   globalCoinFactory.register('bera', Bera.createInstance);
@@ -182,6 +189,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('hteth', Hteth.createInstance);
   globalCoinFactory.register('lnbtc', Lnbtc.createInstance);
   globalCoinFactory.register('ltc', Ltc.createInstance);
+  globalCoinFactory.register('icp', Icp.createInstance);
   globalCoinFactory.register('injective', Injective.createInstance);
   globalCoinFactory.register('islm', Islm.createInstance);
   globalCoinFactory.register('near', Near.createInstance);
@@ -197,6 +205,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('stx', Stx.createInstance);
   globalCoinFactory.register('sui', Sui.createInstance);
   globalCoinFactory.register('susd', Susd.createInstance);
+  globalCoinFactory.register('tao', Tao.createInstance);
   globalCoinFactory.register('tia', Tia.createInstance);
   globalCoinFactory.register('ton', Ton.createInstance);
   globalCoinFactory.register('talgo', Talgo.createInstance);
@@ -206,6 +215,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tatom', Tatom.createInstance);
   globalCoinFactory.register('tavaxc', TavaxC.createInstance);
   globalCoinFactory.register('tavaxp', TavaxP.createInstance);
+  globalCoinFactory.register('tbaby', Tbaby.createInstance);
   globalCoinFactory.register('tbch', Tbch.createInstance);
   globalCoinFactory.register('tbcha', Tbcha.createInstance);
   globalCoinFactory.register('tbera', Tbera.createInstance);
@@ -232,6 +242,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tfiatusd', TfiatUsd.createInstance);
   globalCoinFactory.register('thash', Thash.createInstance);
   globalCoinFactory.register('thbar', Thbar.createInstance);
+  globalCoinFactory.register('ticp', Ticp.createInstance);
   globalCoinFactory.register('tinjective', Tinjective.createInstance);
   globalCoinFactory.register('tislm', Tislm.createInstance);
   globalCoinFactory.register('tlnbtc', Tlnbtc.createInstance);
@@ -249,6 +260,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tstx', Tstx.createInstance);
   globalCoinFactory.register('tsui', Tsui.createInstance);
   globalCoinFactory.register('tsusd', Tsusd.createInstance);
+  globalCoinFactory.register('ttao', Ttao.createInstance);
   globalCoinFactory.register('ttia', Ttia.createInstance);
   globalCoinFactory.register('tton', Tton.createInstance);
   globalCoinFactory.register('ttrx', Ttrx.createInstance);

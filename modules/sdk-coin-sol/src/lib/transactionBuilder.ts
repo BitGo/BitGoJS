@@ -41,6 +41,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _signers: KeyPair[] = [];
   protected _memo?: string;
   protected _feePayer?: string;
+  protected _priorityFee: number | bigint;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -242,6 +243,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   fee(feeOptions: FeeOptions): this {
     this._lamportsPerSignature = Number(feeOptions.amount);
+    return this;
+  }
+
+  public setPriorityFee(feeOptions: FeeOptions): this {
+    this._priorityFee = BigInt(feeOptions.amount);
     return this;
   }
 

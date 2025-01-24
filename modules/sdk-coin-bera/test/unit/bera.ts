@@ -88,7 +88,7 @@ describe('Bera', function () {
       bera.should.be.an.instanceof(Bera);
       bera.getChain().should.equal('bera');
       bera.getFamily().should.equal('bera');
-      bera.getFullName().should.equal('berachain');
+      bera.getFullName().should.equal('Bera');
       bera.getBaseFactor().should.equal(1e18);
     });
 

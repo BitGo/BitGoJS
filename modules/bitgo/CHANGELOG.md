@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [39.24.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.24.0...bitgo@39.24.1) (2025-01-23)
+
+**Note:** Version bump only for package bitgo
+
+# [39.24.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.23.0...bitgo@39.24.0) (2025-01-23)
+
+### Features
+
+- **sdk-coin-baby:** add SDK support for babylon ([932541b](https://github.com/BitGo/BitGoJS/commit/932541bad36f5fb3ca0a9a49a7b987ec1f4878a3))
+
+# [39.23.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.22.1...bitgo@39.23.0) (2025-01-20)
+
+### Features
+
+- **sdk-coin-icp:** added ICP skeleton code ([5215ce9](https://github.com/BitGo/BitGoJS/commit/5215ce9f27c90b88cc916accd32c906ab690cf51))
+- **statics:** add flr,sgb config ([b881454](https://github.com/BitGo/BitGoJS/commit/b8814548268f8de9b423e79abb10e30ccffebfa9))
+- **statics:** add xdc, wemix config ([098c1ab](https://github.com/BitGo/BitGoJS/commit/098c1ab11765907477f3611e7c01346e3f9cf755))
+
+## [39.22.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.22.0...bitgo@39.22.1) (2025-01-15)
+
+### Bug Fixes
+
+- **deps:** bump public-types library ([e8679cd](https://github.com/BitGo/BitGoJS/commit/e8679cd5cccd367d26946f2ab14b82a567e39107))
+- **root:** add retry mechanism for MPC sendSignatureShareV2 ([ef520da](https://github.com/BitGo/BitGoJS/commit/ef520da47bc84090b4401c5b672f4711835de60c))
+
 # [39.22.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.21.0...bitgo@39.22.0) (2025-01-09)
 
 ### Features

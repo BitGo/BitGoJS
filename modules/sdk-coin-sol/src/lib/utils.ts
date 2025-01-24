@@ -51,6 +51,7 @@ import { ValidInstructionTypes } from './iface';
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
 const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
 const BASE_58_ENCONDING_REGEX = '[1-9A-HJ-NP-Za-km-z]';
+const COMPUTE_BUDGET = 'ComputeBudget111111111111111111111111111111';
 
 /** @inheritdoc */
 export function isValidAddress(address: string): boolean {
@@ -343,6 +344,8 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
           'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()
         );
       }
+    case COMPUTE_BUDGET:
+      return 'SetPriorityFee';
     default:
       throw new NotSupported(
         'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()

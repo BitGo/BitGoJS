@@ -61,10 +61,10 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-arbeth /var/modules/sdk-coin-arb
 COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
-COPY --from=builder /tmp/bitgo/modules/abstract-substrate /var/modules/abstract-substrate/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-baby /var/modules/sdk-coin-baby/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bera /var/modules/sdk-coin-bera/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsc /var/modules/sdk-coin-bsc/
@@ -77,6 +77,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-etc /var/modules/sdk-coin-etc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth2 /var/modules/sdk-coin-eth2/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hash /var/modules/sdk-coin-hash/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-icp /var/modules/sdk-coin-icp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-injective /var/modules/sdk-coin-injective/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-islm /var/modules/sdk-coin-islm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-near /var/modules/sdk-coin-near/
@@ -111,6 +112,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethlike /var/modules/sdk-coin-et
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethw /var/modules/sdk-coin-ethw/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-lnbtc /var/modules/sdk-coin-lnbtc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-tao /var/modules/sdk-coin-tao/
+COPY --from=builder /tmp/bitgo/modules/abstract-substrate /var/modules/abstract-substrate/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
 
@@ -137,10 +140,10 @@ cd /var/modules/sdk-coin-arbeth && yarn link && \
 cd /var/modules/abstract-eth && yarn link && \
 cd /var/modules/sdk-coin-atom && yarn link && \
 cd /var/modules/abstract-cosmos && yarn link && \
-cd /var/modules/abstract-substrate && yarn link && \
 cd /var/modules/sdk-coin-avaxc && yarn link && \
 cd /var/modules/sdk-coin-avaxp && yarn link && \
 cd /var/modules/sdk-coin-eth && yarn link && \
+cd /var/modules/sdk-coin-baby && yarn link && \
 cd /var/modules/sdk-coin-bera && yarn link && \
 cd /var/modules/sdk-coin-bld && yarn link && \
 cd /var/modules/sdk-coin-bsc && yarn link && \
@@ -153,6 +156,7 @@ cd /var/modules/sdk-coin-etc && yarn link && \
 cd /var/modules/sdk-coin-eth2 && yarn link && \
 cd /var/modules/sdk-coin-hash && yarn link && \
 cd /var/modules/sdk-coin-hbar && yarn link && \
+cd /var/modules/sdk-coin-icp && yarn link && \
 cd /var/modules/sdk-coin-injective && yarn link && \
 cd /var/modules/sdk-coin-islm && yarn link && \
 cd /var/modules/sdk-coin-near && yarn link && \
@@ -187,6 +191,8 @@ cd /var/modules/sdk-coin-ethlike && yarn link && \
 cd /var/modules/sdk-coin-ethw && yarn link && \
 cd /var/modules/sdk-coin-lnbtc && yarn link && \
 cd /var/modules/sdk-coin-ltc && yarn link && \
+cd /var/modules/sdk-coin-tao && yarn link && \
+cd /var/modules/abstract-substrate && yarn link && \
 cd /var/modules/sdk-coin-xlm && yarn link && \
 cd /var/modules/sdk-coin-zec && yarn link
 #COPY_END
@@ -216,10 +222,10 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/abstract-eth && \
     yarn link @bitgo/sdk-coin-atom && \
     yarn link @bitgo/abstract-cosmos && \
-    yarn link @bitgo/abstract-substrate && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
     yarn link @bitgo/sdk-coin-eth && \
+    yarn link @bitgo/sdk-coin-baby && \
     yarn link @bitgo/sdk-coin-bera && \
     yarn link @bitgo/sdk-coin-bld && \
     yarn link @bitgo/sdk-coin-bsc && \
@@ -232,6 +238,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-eth2 && \
     yarn link @bitgo/sdk-coin-hash && \
     yarn link @bitgo/sdk-coin-hbar && \
+    yarn link @bitgo/sdk-coin-icp && \
     yarn link @bitgo/sdk-coin-injective && \
     yarn link @bitgo/sdk-coin-islm && \
     yarn link @bitgo/sdk-coin-near && \
@@ -266,14 +273,16 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-ethw && \
     yarn link @bitgo/sdk-coin-lnbtc && \
     yarn link @bitgo/sdk-coin-ltc && \
+    yarn link @bitgo/sdk-coin-tao && \
+    yarn link @bitgo/abstract-substrate && \
     yarn link @bitgo/sdk-coin-xlm && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
 #LABEL_START
-LABEL created="Thu, 09 Jan 2025 18:39:00 GMT"
-LABEL version=10.6.7
-LABEL git_hash=a67d6d6aefb10365ec158c3cf23814b29d085bbc
+LABEL created="Thu, 23 Jan 2025 20:12:13 GMT"
+LABEL version=10.6.11
+LABEL git_hash=fba132f039d492cc4db687470404551a520d879f
 #LABEL_END
 
 USER node

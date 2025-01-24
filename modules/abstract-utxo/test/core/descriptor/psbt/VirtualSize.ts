@@ -1,11 +1,11 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
 import {
   getChangeOutputVSizesForDescriptor,
   getInputVSizesForDescriptors,
   getVirtualSize,
 } from '../../../../src/core/descriptor/VirtualSize';
-import { getDescriptor, getDescriptorMap } from '../descriptor.utils';
+import { DescriptorTemplate, getDescriptor, getDescriptorMap } from '../descriptor.utils';
 
 describe('VirtualSize', function () {
   describe('getInputVSizesForDescriptorWallet', function () {
@@ -38,29 +38,35 @@ describe('VirtualSize', function () {
     });
   });
 
-  describe('getVirtualSize', function () {
-    it('returns expected virtual size', function () {
-      assert.deepStrictEqual(
-        getVirtualSize(
-          {
-            inputs: [{ descriptorName: 'internal' }],
-            outputs: [{ script: Buffer.alloc(32) }],
-          },
-          getDescriptorMap('Wsh2Of3')
-        ),
-        157
-      );
+  function describeWithTemplate(t: DescriptorTemplate, inputSize: number, outputSize: number) {
+    describe(`getVirtualSize ${t}`, function () {
+      it('returns expected virtual size', function () {
+        assert.deepStrictEqual(
+          getVirtualSize(
+            {
+              inputs: [{ descriptorName: 'internal' }],
+              outputs: [{ script: Buffer.alloc(32) }],
+            },
+            getDescriptorMap(t)
+          ),
+          outputSize
+        );
 
-      const descriptor = getDescriptor('Wsh2Of3');
+        const descriptor = getDescriptor(t);
 
-      assert.deepStrictEqual(
-        getVirtualSize({
-          /* as proof we can pass 10_000 inputs */
-          inputs: Array.from({ length: 10_000 }).map(() => descriptor),
-          outputs: [{ script: Buffer.alloc(32) }],
-        }),
-        1_050_052
-      );
+        const nInputs = 10_000;
+        assert.deepStrictEqual(
+          getVirtualSize({
+            /* as proof we can pass 10_000 inputs */
+            inputs: Array.from({ length: nInputs }).map(() => descriptor),
+            outputs: [],
+          }),
+          inputSize * nInputs + 11
+        );
+      });
     });
-  });
+  }
+
+  describeWithTemplate('Wsh2Of3', 105, 157);
+  describeWithTemplate('Tr2Of3-NoKeyPath', 109, 161);
 });

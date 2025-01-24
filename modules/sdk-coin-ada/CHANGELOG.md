@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.6.1...@bitgo/sdk-coin-ada@4.6.2) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
+## [4.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.6.0...@bitgo/sdk-coin-ada@4.6.1) (2025-01-23)
+
+### Bug Fixes
+
+- using base58 and cbor as byron validation for ui support ([fe6477c](https://github.com/BitGo/BitGoJS/commit/fe6477cb563eaf44ffd27d5310680a65479afd8a))
+
+# [4.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.5.5...@bitgo/sdk-coin-ada@4.6.0) (2025-01-20)
+
+### Features
+
+- byron era support for ADA wallets ([d0e5da9](https://github.com/BitGo/BitGoJS/commit/d0e5da9939abac122a4f35198bba80562dcac00d))
+- util and txBuilder changes for byron address support ([3773ebf](https://github.com/BitGo/BitGoJS/commit/3773ebf932418c6dd2d4ad36fbd24e97cc6f62b5))
+
+## [4.5.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.5.4...@bitgo/sdk-coin-ada@4.5.5) (2025-01-15)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
 ## [4.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.5.3...@bitgo/sdk-coin-ada@4.5.4) (2025-01-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

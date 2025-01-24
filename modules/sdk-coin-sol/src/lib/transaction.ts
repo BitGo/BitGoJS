@@ -365,6 +365,8 @@ export class Transaction extends BaseTransaction {
           break;
         case InstructionBuilderTypes.StakingDelegate:
           break;
+        case InstructionBuilderTypes.SetPriorityFee:
+          break;
       }
     }
     this._outputs = outputs;

@@ -62,3 +62,4 @@ function describeCreatePsbt(t: DescriptorTemplate) {
 
 describeCreatePsbt('Wsh2Of3');
 describeCreatePsbt('ShWsh2Of3CltvDrop');
+describeCreatePsbt('Tr2Of3-NoKeyPath');

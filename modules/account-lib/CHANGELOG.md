@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.3.0...@bitgo/account-lib@24.3.1) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+# [24.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.2.0...@bitgo/account-lib@24.3.0) (2025-01-23)
+
+### Features
+
+- **sdk-coin-baby:** add SDK support for babylon ([932541b](https://github.com/BitGo/BitGoJS/commit/932541bad36f5fb3ca0a9a49a7b987ec1f4878a3))
+
+# [24.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.1.9...@bitgo/account-lib@24.2.0) (2025-01-20)
+
+### Features
+
+- **sdk-coin-icp:** added ICP skeleton code ([5215ce9](https://github.com/BitGo/BitGoJS/commit/5215ce9f27c90b88cc916accd32c906ab690cf51))
+
+## [24.1.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.1.8...@bitgo/account-lib@24.1.9) (2025-01-15)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
 ## [24.1.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.1.7...@bitgo/account-lib@24.1.8) (2025-01-09)
 
 **Note:** Version bump only for package @bitgo/account-lib

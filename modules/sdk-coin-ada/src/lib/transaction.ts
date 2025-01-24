@@ -148,7 +148,7 @@ export class Transaction extends BaseTransaction {
     for (let i = 0; i < this._transaction.body().outputs().len(); i++) {
       const output = this._transaction.body().outputs().get(i);
       result.outputs.push({
-        address: output.address().to_bech32(),
+        address: adaUtils.getAddressString(output.address()),
         amount: output.amount().coin().to_str(),
         multiAssets: output.amount().multiasset() || undefined,
       });
@@ -237,7 +237,7 @@ export class Transaction extends BaseTransaction {
     for (let i = 0; i < tx_outputs.len(); i++) {
       const output = tx_outputs.get(i);
       outputs.push({
-        address: output.address().to_bech32(),
+        address: adaUtils.getAddressString(output.address()),
         value: output.amount().coin().to_str(),
       });
     }

@@ -158,6 +158,11 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   yld: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   zil: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   sxp: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  bera: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY] },
+  tbera: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY] },
+  'sol:tai': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'sol:pengu': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'bera:bgt': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY] },
   injective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   opeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   'opeth:op': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -261,6 +266,20 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   'sol:wen': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   'sol:nos': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   'sol:spx': { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  'sol:trump': {
+    features: [
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ],
+  },
+  'sol:melania': {
+    features: [
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ],
+  },
   'xlm:ZUSD-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB': {
     features: [CoinFeature.CUSTODY_BITGO_FRANKFURT],
   },
@@ -601,10 +620,15 @@ coins.forEach((coin, coinName) => {
       it(`should return true for CUSTODY_BITGO_TRUST ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(true);
       });
+
+      it(`should return true for CUSTODY_BITGO_MENA_FZE ${coin.family} coin feature`, () => {
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(true);
+      });
     } else if (coin.family === CoinFamily.XTZ || coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
       it(`should return false for all custody ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(false);
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_GERMANY).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_SWITZERLAND).should.eql(false);
@@ -615,6 +639,7 @@ coins.forEach((coin, coinName) => {
         const coinSupportsCustody = coin.family !== CoinFamily.LNBTC;
         coin.features.includes(CoinFeature.CUSTODY).should.eql(coinSupportsCustody);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(coinSupportsCustody);
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(coinSupportsCustody);
       });
 
       it('should return false for all non-SD coin feature', () => {

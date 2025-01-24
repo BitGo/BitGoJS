@@ -13,6 +13,7 @@ import {
   SystemProgram,
   Transaction,
   TransactionInstruction,
+  ComputeBudgetProgram,
 } from '@solana/web3.js';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
@@ -31,6 +32,7 @@ import {
   TokenTransfer,
   Transfer,
   WalletInit,
+  SetPriorityFee,
 } from './iface';
 
 /**
@@ -65,6 +67,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return stakingAuthorizeInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingDelegate:
       return stakingDelegateInstruction(instructionToBuild);
+    case InstructionBuilderTypes.SetPriorityFee:
+      return fetchPriorityFeeInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -87,6 +91,14 @@ function advanceNonceInstruction(data: Nonce): TransactionInstruction[] {
     authorizedPubkey: new PublicKey(authWalletAddress),
   });
   return [nonceInstruction];
+}
+
+function fetchPriorityFeeInstruction(instructionToBuild: SetPriorityFee): TransactionInstruction[] {
+  const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports: instructionToBuild.params.fee,
+  });
+
+  return [addPriorityFee];
 }
 
 /**

@@ -104,6 +104,9 @@ export { Coreum };
 import * as Rune from '@bitgo/sdk-coin-rune';
 export { Rune };
 
+import * as Baby from '@bitgo/sdk-coin-baby';
+export { Baby };
+
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
@@ -142,6 +145,9 @@ export { Coredao };
 
 import * as Apt from '@bitgo/sdk-coin-apt';
 export { Apt };
+
+import * as Icp from '@bitgo/sdk-coin-icp';
+export { Icp };
 
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
@@ -219,6 +225,10 @@ const coinBuilderMap = {
   tcoredao: Coredao.TransactionBuilder,
   apt: Apt.TransactionBuilder,
   tapt: Apt.TransactionBuilder,
+  icp: Icp.TransactionBuilder,
+  ticp: Icp.TransactionBuilder,
+  baby: Baby.TransactionBuilder,
+  tbaby: Baby.TransactionBuilder,
 };
 
 /**

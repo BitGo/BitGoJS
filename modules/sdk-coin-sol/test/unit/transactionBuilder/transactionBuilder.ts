@@ -2,8 +2,8 @@ import should from 'should';
 import * as bs58 from 'bs58';
 
 import { getBuilderFactory } from '../getBuilderFactory';
-import { KeyPair } from '../../../src';
-import { Eddsa, TransactionType } from '@bitgo/sdk-core';
+import { KeyPair, TokenTransferBuilder } from '../../../src';
+import { Eddsa, FeeOptions, TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../resources/sol';
 import BigNumber from 'bignumber.js';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
@@ -160,12 +160,19 @@ describe('Sol Transaction Builder', async () => {
   });
 
   it('build a send from raw token transaction', async () => {
-    const txBuilder = factory.from(testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
+    const txBuilder = factory.from(
+      testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE
+    ) as TokenTransferBuilder;
+    const prioFeeMicroLamports = '10000000';
+    const priorityFee: FeeOptions = {
+      amount: prioFeeMicroLamports,
+    };
+    txBuilder.setPriorityFee(priorityFee);
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
     should.equal(
       builtTx.id,
-      '335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf'
+      '2ticU4ZkEqdTHULr6LobTgWBhim6E7wSscDhM4gzyuGUmQyUwLYhoqaifuvwmNzzEf1T5aefVcgMQkSHdJ5nsrfZ'
     );
     builtTx.inputs.length.should.equal(1);
     builtTx.inputs[0].should.deepEqual({
@@ -180,7 +187,7 @@ describe('Sol Transaction Builder', async () => {
       coin: 'tsol:usdc',
     });
     const jsonTx = builtTx.toJson();
-    jsonTx.id.should.equal('335sxAuVj5ucXqVWW82QwpFLArPbdD3gXfXr4KrxkLkUpmLB3Nwz2G82z2TqiDD7mNAAbHkcAqD5ycDZp1vVKtjf');
+    jsonTx.id.should.equal('2ticU4ZkEqdTHULr6LobTgWBhim6E7wSscDhM4gzyuGUmQyUwLYhoqaifuvwmNzzEf1T5aefVcgMQkSHdJ5nsrfZ');
     jsonTx.feePayer.should.equal(testData.associatedTokenAccounts.accounts[0].pub);
     jsonTx.nonce.should.equal('GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi');
     jsonTx.numSignatures.should.equal(1);
@@ -188,7 +195,14 @@ describe('Sol Transaction Builder', async () => {
       walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
       authWalletAddress: testData.associatedTokenAccounts.accounts[0].pub,
     });
+    const priorityFeeBigInt = BigInt(prioFeeMicroLamports);
     jsonTx.instructionsData.should.deepEqual([
+      {
+        params: {
+          fee: priorityFeeBigInt,
+        },
+        type: 'SetPriorityFee',
+      },
       {
         type: 'TokenTransfer',
         params: {

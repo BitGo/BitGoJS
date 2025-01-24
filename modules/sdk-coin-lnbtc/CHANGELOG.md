@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.40](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.1.39...@bitgo/sdk-coin-lnbtc@1.1.40) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-lnbtc
+
+## [1.1.39](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.1.38...@bitgo/sdk-coin-lnbtc@1.1.39) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-lnbtc
+
+## [1.1.38](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.1.37...@bitgo/sdk-coin-lnbtc@1.1.38) (2025-01-20)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-lnbtc
+
+## [1.1.37](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.1.36...@bitgo/sdk-coin-lnbtc@1.1.37) (2025-01-15)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-lnbtc
+
 ## [1.1.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.1.35...@bitgo/sdk-coin-lnbtc@1.1.36) (2025-01-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-lnbtc

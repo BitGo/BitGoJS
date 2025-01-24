@@ -19,6 +19,7 @@ import {
   ZkethERC20Token,
   SuiCoin,
   BeraERC20Token,
+  AptCoin,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -80,6 +81,10 @@ export type SuiTokenConfig = BaseNetworkConfig & {
   symbol: string;
 };
 
+export type AptTokenConfig = BaseNetworkConfig & {
+  fungibleAssetAddress: string;
+};
+
 export interface Tokens {
   bitcoin: {
     eth: {
@@ -139,6 +144,9 @@ export interface Tokens {
     bera: {
       tokens: EthLikeTokenConfig[];
     };
+    apt: {
+      tokens: AptTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -197,6 +205,9 @@ export interface Tokens {
     };
     bera: {
       tokens: EthLikeTokenConfig[];
+    };
+    apt: {
+      tokens: AptTokenConfig[];
     };
   };
 }
@@ -505,6 +516,20 @@ const formattedSuiTokens = coins.reduce((acc: SuiTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedAptTokens = coins.reduce((acc: AptTokenConfig[], coin) => {
+  if (coin instanceof AptCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      fungibleAssetAddress: coin.fungibleAssetAddress,
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -565,6 +590,9 @@ export const tokens: Tokens = {
     bera: {
       tokens: formattedBeraTokens.filter((token) => token.network === 'Mainnet'),
     },
+    apt: {
+      tokens: formattedAptTokens.filter((token) => token.network === 'Testnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -624,6 +652,9 @@ export const tokens: Tokens = {
     },
     bera: {
       tokens: formattedBeraTokens.filter((token) => token.network === 'Testnet'),
+    },
+    apt: {
+      tokens: formattedAptTokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };

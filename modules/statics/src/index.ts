@@ -20,5 +20,6 @@ export {
   TronErc20Coin,
   SuiCoin,
   XrpCoin,
+  AptCoin,
 } from './account';
 export { CoinMap } from './map';

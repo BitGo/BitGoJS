@@ -1,4 +1,4 @@
-import { AddressFormat, BaseUtils } from '@bitgo/sdk-core';
+import { AddressFormat, BaseUtils, InvalidAddressError } from '@bitgo/sdk-core';
 import {
   BaseAddress,
   PublicKey,
@@ -11,9 +11,15 @@ import {
   Ed25519KeyHash,
   ScriptHash,
   DRepKind,
+  Address,
+  EnterpriseAddress,
+  PointerAddress,
+  ByronAddress,
 } from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
 import { bech32 } from 'bech32';
+import bs58 from 'bs58';
+import cbor from 'cbor';
 
 export const MIN_ADA_FOR_ONE_ASSET = '1500000';
 export const VOTE_ALWAYS_ABSTAIN = 'always-abstain';
@@ -149,26 +155,40 @@ export class Utils implements BaseUtils {
     const POINTER_ADDR_LEN = 52;
     const VALIDATOR_ADDR_LEN = 56;
 
-    // test if this is a bech32 address first
-    if (new RegExp(bech32PrefixList.join('|')).test(address)) {
+    //Check for Shelley-era (Bech32) addresses
+    if (new RegExp(`^(${bech32PrefixList.join('|')})`).test(address)) {
       try {
         const decodedBech = bech32.decode(address, 108);
         const wordLength = decodedBech.words.length;
-        if (!bech32PrefixList.includes(decodedBech.prefix)) {
-          return false;
+        if (
+          bech32PrefixList.includes(decodedBech.prefix) &&
+          (wordLength === BASE_ADDR_LEN ||
+            wordLength === REWARD_AND_ENTERPRISE_ADDR_LEN ||
+            wordLength === POINTER_ADDR_LEN)
+        ) {
+          return true;
         }
-        return (
-          wordLength === BASE_ADDR_LEN ||
-          wordLength === REWARD_AND_ENTERPRISE_ADDR_LEN ||
-          wordLength === POINTER_ADDR_LEN
-        );
-      } catch (err) {
-        return false;
+      } catch (e) {
+        console.log(`Address: ${address} failed Bech32 test with error: ${e}`);
       }
-    } else {
-      // maybe this is a validator address
-      return new RegExp(`^(?!pool)[a-z0-9]\{${VALIDATOR_ADDR_LEN}\}$`).test(address);
     }
+
+    //Check for Validator addresses
+    if (new RegExp(`^(?!pool)[a-z0-9]{${VALIDATOR_ADDR_LEN}}$`).test(address)) {
+      return true;
+    }
+
+    //Check for Byron-era address
+    try {
+      const decoded = bs58.decode(address);
+      const cborData = cbor.decodeFirstSync(decoded);
+      return Array.isArray(cborData) && cborData.length >= 2;
+    } catch (e) {
+      console.log(`Address: ${address} failed Byron test with error: ${e}`);
+      console.log(e.stack);
+    }
+
+    return false;
   }
 
   /** @inheritdoc */
@@ -227,6 +247,62 @@ export class Utils implements BaseUtils {
       ? Buffer.from(serializedTx, 'hex')
       : Buffer.from(serializedTx, 'base64');
     return Buffer.from(CardanoTransaction.from_bytes(bufferRawTransaction).body().to_bytes()).toString('hex');
+  }
+
+  /**
+   * Decode wallet address from string.
+   * Attempts to decode as Shelley (bech32) first, then Byron (base58).
+   * @param {string} address - Valid Byron or Shelley-era address.
+   * @returns {Address} - Valid address object.
+   * @throws {InvalidAddressError} If the address is neither valid Shelley nor Byron.
+   */
+  getWalletAddress(address: string): Address {
+    if (!address || typeof address !== 'string') {
+      throw new InvalidAddressError('Provided address is not a valid string');
+    }
+
+    // Try decoding as a Shelley (bech32) address first
+    try {
+      return Address.from_bech32(address);
+    } catch (e) {
+      console.error(`Could not decode shelly address from string '${address}'`);
+    }
+
+    // Try decoding as a Byron (base58) address later
+    try {
+      return ByronAddress.from_base58(address).to_address();
+    } catch (e) {
+      console.error(`Could not decode byron address from string '${address}'`);
+    }
+    throw new InvalidAddressError('Provided string is not a valid Shelley or Byron address');
+  }
+
+  /**
+   * Decode address string from Address object.
+   * Attempts to decode as Shelley (bech32) first, then Byron (base58).
+   * @param {Address} address - Valid Address object
+   * @returns {string} - Valid Byron or Shelley-era address string.
+   * @throws {InvalidAddressError} If the Address object is neither valid Shelley nor Byron.
+   */
+  getAddressString(address: Address): string {
+    // Check all Shelley address types
+    if (
+      BaseAddress.from_address(address) ||
+      EnterpriseAddress.from_address(address) ||
+      RewardAddress.from_address(address) ||
+      PointerAddress.from_address(address)
+    ) {
+      return address.to_bech32();
+    }
+
+    // If not Shelley, try Byron
+    const byronAddress = ByronAddress.from_address(address);
+    if (byronAddress) {
+      return byronAddress.to_base58();
+    }
+
+    // If neither, it's invalid
+    throw new InvalidAddressError('Provided Address is not a valid Shelley or Byron address');
   }
 }
 

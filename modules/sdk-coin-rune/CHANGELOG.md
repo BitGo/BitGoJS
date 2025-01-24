@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.18...@bitgo/sdk-coin-rune@1.1.19) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-rune
+
+## [1.1.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.17...@bitgo/sdk-coin-rune@1.1.18) (2025-01-23)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-rune
+
+## [1.1.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.16...@bitgo/sdk-coin-rune@1.1.17) (2025-01-20)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-rune
+
+## [1.1.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.15...@bitgo/sdk-coin-rune@1.1.16) (2025-01-15)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-rune
+
 ## [1.1.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.14...@bitgo/sdk-coin-rune@1.1.15) (2025-01-09)
 
 ### Bug Fixes

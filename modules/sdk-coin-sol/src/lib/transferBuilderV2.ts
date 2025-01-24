@@ -11,7 +11,7 @@ import {
 } from './utils';
 import { BaseCoin as CoinConfig, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
-import { AtaInit, TokenAssociateRecipient, TokenTransfer, Transfer } from './iface';
+import { AtaInit, TokenAssociateRecipient, TokenTransfer, Transfer, SetPriorityFee } from './iface';
 import { InstructionBuilderTypes } from './constants';
 import _ from 'lodash';
 
@@ -167,8 +167,24 @@ export class TransferBuilderV2 extends TransactionBuilder {
         };
       })
     );
-    // order is important, createAtaInstructions must be before sendInstructions
-    this._instructionsData = [...createAtaInstructions, ...sendInstructions];
+
+    let addPriorityFeeInstruction: SetPriorityFee;
+    // If there are createAtaInstructions, then token is involved and we need to add a priority fee instruction
+    if (!this._priorityFee || this._priorityFee === BigInt(0)) {
+      this._instructionsData = [...createAtaInstructions, ...sendInstructions];
+    } else if (
+      createAtaInstructions.length !== 0 ||
+      sendInstructions.some((instruction) => instruction.type === InstructionBuilderTypes.TokenTransfer)
+    ) {
+      addPriorityFeeInstruction = {
+        type: InstructionBuilderTypes.SetPriorityFee,
+        params: {
+          fee: this._priorityFee ?? BigInt(0),
+        },
+      };
+      this._instructionsData = [addPriorityFeeInstruction, ...createAtaInstructions, ...sendInstructions];
+    }
+
     return await super.buildImplementation();
   }
 }

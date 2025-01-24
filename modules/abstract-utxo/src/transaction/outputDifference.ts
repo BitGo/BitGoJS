@@ -42,12 +42,12 @@ export function outputDifference<A extends ActualOutput | ExpectedOutput, B exte
 
 export type OutputDifferenceWithExpected<TActual extends ActualOutput, TExpected extends ExpectedOutput> = {
   /** These are the external outputs that were expected and found in the transaction. */
-  explicitExternalOutputs: TActual[];
+  explicitOutputs: TActual[];
   /**
    * These are the surprise external outputs that were not explicitly specified in the transaction.
    * They can be PayGo fees.
    */
-  implicitExternalOutputs: TActual[];
+  implicitOutputs: TActual[];
   /**
    * These are the outputs that were expected to be in the transaction but were not found.
    */
@@ -55,20 +55,20 @@ export type OutputDifferenceWithExpected<TActual extends ActualOutput, TExpected
 };
 
 /**
- * @param actualExternalOutputs - external outputs in the transaction
- * @param expectedExternalOutputs - external outputs that were expected to be in the transaction
+ * @param actualOutputs - external outputs in the transaction
+ * @param expectedOutputs - external outputs that were expected to be in the transaction
  * @returns the difference between the actual and expected external outputs
  */
 export function outputDifferencesWithExpected<TActual extends ActualOutput, TExpected extends ExpectedOutput>(
-  actualExternalOutputs: TActual[],
-  expectedExternalOutputs: TExpected[]
+  actualOutputs: TActual[],
+  expectedOutputs: TExpected[]
 ): OutputDifferenceWithExpected<TActual, TExpected> {
-  const implicitExternalOutputs = outputDifference(actualExternalOutputs, expectedExternalOutputs);
-  const explicitExternalOutputs = outputDifference(actualExternalOutputs, implicitExternalOutputs);
-  const missingOutputs = outputDifference(expectedExternalOutputs, actualExternalOutputs);
+  const implicitOutputs = outputDifference(actualOutputs, expectedOutputs);
+  const explicitOutputs = outputDifference(actualOutputs, implicitOutputs);
+  const missingOutputs = outputDifference(expectedOutputs, actualOutputs);
   return {
-    explicitExternalOutputs,
-    implicitExternalOutputs,
+    explicitOutputs,
+    implicitOutputs,
     missingOutputs,
   };
 }

@@ -1,0 +1,20 @@
+{
+  "outputs": [],
+  "changeOutputs": [
+    {
+      "address": "bc1q96awm56777g6enlzp6qskc2r6hjxvv5ay0d4vrf356nl0255s3xq94kt80",
+      "amount": "1000000"
+    },
+    {
+      "address": "bc1q96awm56777g6enlzp6qskc2r6hjxvv5ay0d4vrf356nl0255s3xq94kt80",
+      "amount": "2000000"
+    },
+    {
+      "address": "bc1qly6ftyymxjap6t9ff376j7ta32s4sxmzuu3ds2sr70rkg00v0exsm268t8",
+      "amount": "196995579"
+    }
+  ],
+  "fee": {
+    "fee": "4421"
+  }
+}

@@ -89,7 +89,16 @@ const ETC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.MULTISIG_COLD,
 ];
-
+const EVM_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.EIP1559,
+];
 const AVAXC_FEATURES = [
   ...ETH_FEATURES_WITH_MMI,
   CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -128,7 +137,12 @@ const XTZ_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.ENTERPRISE_PAYS_FEES,
-].filter((feature) => feature !== CoinFeature.CUSTODY && feature !== CoinFeature.CUSTODY_BITGO_TRUST);
+].filter(
+  (feature) =>
+    feature !== CoinFeature.CUSTODY &&
+    feature !== CoinFeature.CUSTODY_BITGO_TRUST &&
+    feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE
+);
 
 const XRP_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -399,6 +413,8 @@ const BERA_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.EIP1559,
   CoinFeature.STAKING,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
 ];
 const OAS_FEATURES = [
   ...ETH_FEATURES,
@@ -426,7 +442,6 @@ const APT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
-  CoinFeature.MPCV2,
   CoinFeature.STAKING,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
@@ -437,7 +452,6 @@ const ICP_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
-  CoinFeature.MPCV2,
   CoinFeature.SUPPORTS_TOKENS,
 ];
 
@@ -466,6 +480,11 @@ const TIA_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
 const WCT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
+const BERA_BGT_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+];
 
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
@@ -641,6 +660,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.EIP1559,
+      CoinFeature.DEPRECATED,
     ]
   ),
   account(
@@ -1372,7 +1392,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'ac3c225e-55a9-4236-b907-a4cccc30a2fd',
     'bera',
-    'berachain',
+    'Bera',
     Networks.main.bera,
     18,
     UnderlyingAsset.BERA,
@@ -1428,6 +1448,86 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
     COREDAO_FEATURES
+  ),
+  account(
+    '0cdd9089-9ca6-41ea-ab2b-20211da4ac06',
+    'xdc',
+    'XDC',
+    Networks.main.xdc,
+    18,
+    UnderlyingAsset.XDC,
+    BaseUnit.ETH,
+    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+  ),
+  account(
+    'e6ecb22e-0ae8-463a-b2fb-61502fd54240',
+    'txdc',
+    'Testnet XDC chain',
+    Networks.test.xdc,
+    18,
+    UnderlyingAsset.XDC,
+    BaseUnit.ETH,
+    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+  ),
+  account(
+    '297edf01-b166-45fb-be6f-da6680635f72',
+    'wemix',
+    'Wemix',
+    Networks.main.wemix,
+    18,
+    UnderlyingAsset.WEMIX,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    'b18517e3-2fba-44df-be39-7ba062d14895',
+    'twemix',
+    'Testnet wemix chain',
+    Networks.test.wemix,
+    18,
+    UnderlyingAsset.WEMIX,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '202caf8f-4d43-4208-b206-8231f555c518',
+    'flr',
+    'flare',
+    Networks.main.flr,
+    18,
+    UnderlyingAsset.FLR,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '338fc340-08be-4796-9c04-96e5a5078393',
+    'tflr',
+    'Testnet flare chain',
+    Networks.test.flr,
+    18,
+    UnderlyingAsset.FLR,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '321a3168-4669-4ed0-a767-8f35111bb576',
+    'sgb',
+    'Songbird',
+    Networks.main.sgb,
+    18,
+    UnderlyingAsset.SGB,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    'c6b8f90b-1f89-4d26-b296-4097927f6b30',
+    'tsgb',
+    'Testnet songbird chain',
+    Networks.test.sgb,
+    18,
+    UnderlyingAsset.SGB,
+    BaseUnit.ETH,
+    EVM_FEATURES
   ),
   account(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',
@@ -1835,6 +1935,21 @@ export const coins = CoinMap.fromCoins([
   ofcsolToken('41230415-d199-44ff-b25d-fb8fc7e7d0f8', 'ofcsol:giga', 'Gigachad', 5, UnderlyingAsset['sol:giga']),
   ofcsolToken('895df245-0030-46f0-a113-21de232399ee', 'ofcsol:bome', 'Book Of Meme', 6, UnderlyingAsset['sol:bome']),
   ofcsolToken('9ff1f4ec-d06f-4657-806c-220fb0d598e5', 'ofcsol:io', 'IONET', 8, UnderlyingAsset['sol:io']),
+  ofcsolToken(
+    '8c8b6013-90d2-4a61-b978-c05f655ffeb4',
+    'ofcsol:trump',
+    'OFFICIAL TRUMP',
+    6,
+    UnderlyingAsset['sol:trump']
+  ),
+  ofcsolToken('c22873cf-c1be-419e-865e-510c42f2943c', 'ofcsol:ai16z', 'AI16Z', 9, UnderlyingAsset['sol:ai16z']),
+  ofcsolToken(
+    '250a1d56-2286-4aa1-b1dd-0eb99db194ae',
+    'ofcsol:melania',
+    'Melania Meme',
+    6,
+    UnderlyingAsset['sol:melania']
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -12220,6 +12335,22 @@ export const coins = CoinMap.fromCoins([
     '0xfd409bc96d126bc8a56479d4c7672015d539f96c',
     UnderlyingAsset['eth:vice']
   ),
+  erc20(
+    '60b28982-4036-448f-b449-597e0889a7b5',
+    'eth:god',
+    'GOD Coin',
+    18,
+    '0xb5130f4767ab0acc579f25a76e8f9e977cb3f948',
+    UnderlyingAsset['eth:god']
+  ),
+  erc20(
+    '1edeae93-293e-4883-b007-83b5ae1ba3d4',
+    'eth:move',
+    'Movement Network',
+    8,
+    '0x3073f7aaa4db83f95e9fff17424f71d4751a3073',
+    UnderlyingAsset['eth:move']
+  ),
 
   // End FTX missing ERC20 tokens
   celoToken(
@@ -13634,6 +13765,7 @@ export const coins = CoinMap.fromCoins([
   ofcerc20('d3f81454-874d-44a2-96e9-2fa37b5311b3', 'ofceth:turbo', 'Turbo', 18, UnderlyingAsset['eth:turbo']),
   ofcerc20('509e7614-4134-4f4a-b107-cd3b4783a558', 'ofceth:spx', 'SPX6900', 8, UnderlyingAsset['eth:spx']),
   ofcerc20('2c863d38-6d3b-438a-983d-79f20aff030a', 'ofceth:kava', 'Kava', 6, UnderlyingAsset['eth:kava']),
+  ofcerc20('53a414b4-cefa-4a81-936c-9ecbb2da22cc', 'ofceth:gousd', 'goUSD', 6, UnderlyingAsset['eth:gousd']),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
@@ -14891,6 +15023,18 @@ export const coins = CoinMap.fromCoins([
     Networks.test.holesky
   ),
   terc20(
+    '49ff49ea-3355-4717-bbb0-5e8f5cae2202',
+    'hteth:gousd',
+    'Holesky Testnet GoUSD',
+    6,
+    '0x65c959b9184b4f8c8633646d5dfd049d2ebc251a',
+    UnderlyingAsset['hteth:gousd'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
     '30179af0-ca75-4cb1-99d9-028bc56bf10e',
     'tmsn',
     'meson.network-testnet',
@@ -15494,7 +15638,34 @@ export const coins = CoinMap.fromCoins([
     undefined,
     'hteth'
   ),
-
+  tofcerc20(
+    '0c90af13-2b65-4c13-ae1f-101531aa8e9b',
+    'ofctgousd',
+    'Holesky Testnet GoUSD',
+    6,
+    UnderlyingAsset.TGOUSD,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'f0fdaaaa-7587-4cc4-a2b3-875085d81ac8',
+    'ofchteth:gousd',
+    'Holesky Testnet GoUSD',
+    6,
+    UnderlyingAsset['hteth:gousd'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
   tofcArbethErc20(
     '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',
     'ofctarbeth:link',
@@ -16325,6 +16496,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xba69b8aff564fe150ff7e2f965e0dba23b9d2571',
     UnderlyingAsset['avaxc:tico']
+  ),
+  avaxErc20(
+    '2422f35e-a8cf-4fcb-a012-a40b1a5b731c',
+    'avaxc:ticov2',
+    'TICO',
+    18,
+    '0xedf647326007e64d94b0ee69743350f3736e392c',
+    UnderlyingAsset['avaxc:ticov2']
   ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
@@ -18411,6 +18590,52 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '616c6744-29ce-4eb7-9c6a-303f9c433d8e',
+    'sol:fartcoin',
+    'FARTCOIN',
+    6,
+    '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump',
+    UnderlyingAsset['sol:fartcoin'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '91850793-d317-46dc-a1c7-671b858680c2',
+    'sol:swarms',
+    'Swarms',
+    6,
+    '74SBV4zDXxTRgv1pEMoECskKBkZHc2yGPnc7GYVepump',
+    UnderlyingAsset['sol:swarms'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f3b97219-37dc-4899-b974-813aae9cf631',
+    'sol:nc',
+    'Nodecoin',
+    9,
+    'B89Hd5Juz7JP2dxCZXFJWk4tMTcbw7feDhuWGb3kq5qE',
+    UnderlyingAsset['sol:nc'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f2aa0d3d-9b44-4c48-aa24-7727a356491a',
+    'sol:tai',
+    'TARS AI',
+    9,
+    'Hax9LTgsQkze1YFychnBLtFH8gYbQKtKfWKKg2SP6gdD',
+    UnderlyingAsset['sol:tai'],
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
+  ),
+  solToken(
+    'e0524c5f-9616-4aff-b376-ac72ae65be6a',
+    'sol:pengu',
+    'Pudgy Penguins',
+    6,
+    '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
+    UnderlyingAsset['sol:pengu'],
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT
+  ),
+
+  solToken(
     'f4850473-2838-4e98-9a3f-435845d0f62d',
     'sol:arc',
     'AI Rig Complex',
@@ -18445,6 +18670,34 @@ export const coins = CoinMap.fromCoins([
     'Grass7B4RdKfBCjTKgSqnXkqjwiGvQyFbuSCUJr3XXjs',
     UnderlyingAsset['sol:grass'],
     SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '732f22a5-8ffc-4722-a194-0fdb14caf448',
+    'sol:trump',
+    'OFFICIAL TRUMP',
+    6,
+    '6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN',
+    UnderlyingAsset['sol:trump'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
+  solToken(
+    '96ee9c77-8b26-4c1e-a665-eec036864f5c',
+    'sol:melania',
+    'Melania Meme',
+    6,
+    'FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P',
+    UnderlyingAsset['sol:melania'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
   ),
 
   tsolToken(
@@ -19988,7 +20241,8 @@ export const coins = CoinMap.fromCoins([
     18,
     // TODO: the mainnet contract address is still not available, adding placeholder here
     '0xbda130737bdd9618301681329bf2e46a016ff9aa',
-    UnderlyingAsset['bera:bgt']
+    UnderlyingAsset['bera:bgt'],
+    BERA_BGT_FEATURES
   ),
   beraErc20(
     'ca86baf8-fcc6-40ff-9d65-08db513a131e',
@@ -20210,6 +20464,28 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sui:vsui'],
     SUI_TOKEN_FEATURES
   ),
+  suiToken(
+    '705d1458-d5e6-4eaa-8a34-51e65cc68dec',
+    'sui:send',
+    'Suilend',
+    6,
+    '0xb45fcfcc2cc07ce0702cc2d229621e046c906ef14d9b25e8e4d25f6e8763fef7',
+    'send',
+    'SEND',
+    UnderlyingAsset['sui:send'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '08eb85c1-19e6-41aa-9b16-8964d6aeba31',
+    'sui:cetus',
+    'Cetus',
+    9,
+    '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b',
+    'cetus',
+    'CETUS',
+    UnderlyingAsset['sui:cetus'],
+    SUI_TOKEN_FEATURES
+  ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
     'tsui:deep',
@@ -20230,7 +20506,7 @@ export const coins = CoinMap.fromCoins([
     'wal',
     'WAL',
     UnderlyingAsset['tsui:wal'],
-    SUI_TOKEN_FEATURES
+    [...SUI_TOKEN_FEATURES, CoinFeature.STAKING]
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(

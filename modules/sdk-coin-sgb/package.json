@@ -1,0 +1,53 @@
+{
+  "name": "@bitgo/sdk-coin-sgb",
+  "version": "1.1.1",
+  "description": "BitGo SDK coin library for Sgb",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18 <21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-sgb"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/abstract-eth": "^22.4.12",
+    "@bitgo/sdk-core": "^28.21.1",
+    "@bitgo/statics": "^50.21.1",
+    "@ethereumjs/common": "^2.6.5"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.58.4",
+    "@bitgo/sdk-test": "^8.0.67"
+  },
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+}

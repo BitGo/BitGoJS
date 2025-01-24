@@ -5,13 +5,13 @@
       "path": "./modules/abstract-cosmos"
     },
     {
-      "path": "./modules/abstract-substrate"
-    },
-    {
       "path": "./modules/abstract-eth"
     },
     {
       "path": "./modules/abstract-lightning"
+    },
+    {
+      "path": "./modules/abstract-substrate"
     },
     {
       "path": "./modules/abstract-utxo"
@@ -57,6 +57,9 @@
     },
     {
       "path": "./modules/sdk-coin-avaxp"
+    },
+    {
+      "path": "./modules/sdk-coin-baby"
     },
     {
       "path": "./modules/sdk-coin-bch"
@@ -128,6 +131,9 @@
       "path": "./modules/sdk-coin-hbar"
     },
     {
+      "path": "./modules/sdk-coin-icp"
+    },
+    {
       "path": "./modules/sdk-coin-injective"
     },
     {
@@ -171,6 +177,9 @@
     },
     {
       "path": "./modules/sdk-coin-sui"
+    },
+    {
+      "path": "./modules/sdk-coin-tao"
     },
     {
       "path": "./modules/sdk-coin-tia"

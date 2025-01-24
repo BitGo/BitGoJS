@@ -50,6 +50,7 @@ export enum CoinFamily {
   ETC = 'etc',
   EOS = 'eos',
   FIAT = 'fiat',
+  FLR = 'flr',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   ICP = 'icp',
@@ -65,6 +66,7 @@ export enum CoinFamily {
   OPETH = 'opeth',
   OSMO = 'osmo',
   RBTC = 'rbtc',
+  SGB = 'sgb',
   SEI = 'sei',
   SOL = 'sol',
   SUI = 'sui',
@@ -75,6 +77,8 @@ export enum CoinFamily {
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
+  WEMIX = 'wemix',
+  XDC = 'xdc',
   XLM = 'xlm',
   XRP = 'xrp',
   XTZ = 'xtz',
@@ -235,6 +239,10 @@ export enum CoinFeature {
    * This coin supports custody in BitGo Europe ApS entities
    */
   CUSTODY_BITGO_EUROPE_APS = 'custody-bitgo-europe-aps',
+  /**
+   * This coin supports custody in BitGo MENA FZE entities
+   */
+  CUSTODY_BITGO_MENA_FZE = 'custody-bitgo-mena-fze',
   /*
    * This coin has transactions that expire after a certain amount of time.
    */
@@ -359,6 +367,7 @@ export enum UnderlyingAsset {
   EURCV = 'eurcv',
   EUROC = 'euroc',
   EURR = 'eurr',
+  FLR = 'flr',
   GBP = 'gbp',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
@@ -376,6 +385,7 @@ export enum UnderlyingAsset {
   POLYGON = 'polygon',
   RBTC = 'rbtc', // RSK main coin
   SEI = 'sei',
+  SGB = 'sgb',
   SOL = 'sol',
   SUI = 'sui',
   STX = 'stx',
@@ -383,7 +393,9 @@ export enum UnderlyingAsset {
   TON = 'ton',
   TRX = 'trx',
   USD = 'usd',
+  WEMIX = 'wemix',
   XLM = 'xlm',
+  XDC = 'xdc',
   XRP = 'xrp',
   XTZ = 'xtz',
   ZEC = 'zec',
@@ -1539,6 +1551,7 @@ export enum UnderlyingAsset {
   TGBP = 'tgbp',
   TUSDS = 'tusds',
   TGOUSD = 'tgousd',
+  'hteth:gousd' = 'hteth:gousd',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
@@ -1808,8 +1821,10 @@ export enum UnderlyingAsset {
   'eth:exrd' = 'eth:exrd',
   'eth:turbo' = 'eth:turbo',
   'eth:icnt' = 'eth:icnt',
+  'eth:god' = 'eth:god',
   'eth:xreth' = 'eth:xreth',
   'eth:xy' = 'eth:xy',
+  'eth:move' = 'eth:move',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -1886,6 +1901,7 @@ export enum UnderlyingAsset {
   'avaxc:weth' = 'avaxc:weth',
   'avaxc:sbc' = 'avaxc:sbc',
   'avaxc:xsgd' = 'avaxc:xsgd',
+  'avaxc:ticov2' = 'avaxc:ticov2',
   'tavaxc:opm' = 'tavaxc:opm',
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   'tavaxc:xsgd' = 'tavaxc:xsgd',
@@ -2372,6 +2388,11 @@ export enum UnderlyingAsset {
   'sol:drift' = 'sol:drift',
   'sol:spx' = 'sol:spx',
   'sol:turbo' = 'sol:turbo',
+  'sol:fartcoin' = 'sol:fartcoin',
+  'sol:swarms' = 'sol:swarms',
+  'sol:nc' = 'sol:nc',
+  'sol:tai' = 'sol:tai',
+  'sol:pengu' = 'sol:pengu',
   'sol:corn' = 'sol:corn',
   'sol:yes' = 'sol:yes',
   'sol:ai16z' = 'sol:ai16z',
@@ -2380,6 +2401,8 @@ export enum UnderlyingAsset {
   'sol:nos' = 'sol:nos',
   'sol:jlp' = 'sol:jlp',
   'sol:grass' = 'sol:grass',
+  'sol:trump' = 'sol:trump',
+  'sol:melania' = 'sol:melania',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
@@ -2411,6 +2434,8 @@ export enum UnderlyingAsset {
   'sui:afsui' = 'sui:afsui',
   'sui:navx' = 'sui:navx',
   'sui:vsui' = 'sui:vsui',
+  'sui:send' = 'sui:send',
+  'sui:cetus' = 'sui:cetus',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
