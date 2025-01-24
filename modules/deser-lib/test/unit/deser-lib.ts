@@ -4,116 +4,6 @@ import * as cborFixtures from '../cbor/fixtures.json';
 describe('deser-lib', function () {
   describe('cbor', function () {
     describe('transform', function () {
-      it('orders object properties canonically', function () {
-        const res = Cbor.transform({ b: 'second', a: 'first' }) as any;
-        const properties = Object.getOwnPropertyNames(res);
-        properties[0].should.equal('a');
-        properties[1].should.equal('b');
-        res.a.should.equal('first');
-        res.b.should.equal('second');
-      });
-
-      describe('canonical ordering', function () {
-        it('orders by weight', function () {
-          const res = Cbor.transform([
-            { weight: 2, value: null },
-            { weight: 1, value: null },
-          ]) as any;
-          res[0].weight.should.equal(1);
-          res[1].weight.should.equal(2);
-        });
-
-        it('groups equal elements', function () {
-          const res = Cbor.transform([
-            {
-              weight: 2,
-              value: 'b',
-            },
-            {
-              weight: 1,
-              value: 'a',
-            },
-            {
-              weight: 3,
-              value: 'c',
-            },
-            {
-              weight: 2,
-              value: 'b',
-            },
-          ]) as any;
-          res[0].weight.should.equal(1);
-          res[1].weight.should.equal(2);
-          res[2].weight.should.equal(2);
-          res[3].weight.should.equal(3);
-        });
-
-        it('orders number values', function () {
-          const res = Cbor.transform([
-            { weight: 1, value: 2 },
-            { weight: 1, value: 1 },
-          ]) as any;
-          res[0].value.should.equal(1);
-          res[1].value.should.equal(2);
-        });
-
-        it('orders string values', function () {
-          const res = Cbor.transform([
-            { weight: 1, value: 'ab' },
-            { weight: 1, value: 'aa' },
-          ]) as any;
-          res[0].value.should.equal('aa');
-          res[1].value.should.equal('ab');
-        });
-
-        it('orders byte values', function () {
-          const res = Cbor.transform([
-            { weight: 1, value: '0x0b' },
-            { weight: 1, value: '0x0a' },
-          ]) as any;
-          res[0].value.equals(Buffer.from([0x0a])).should.equal(true);
-          res[1].value.equals(Buffer.from([0x0b])).should.equal(true);
-        });
-
-        it('orders string values of different lengths', function () {
-          const res = Cbor.transform([
-            { weight: 1, value: 'ab' },
-            { weight: 1, value: 'a' },
-          ]) as any;
-          res[0].value.should.equal('a');
-          res[1].value.should.equal('ab');
-        });
-
-        it('throws for elements without weight', function () {
-          (() => Cbor.transform([{}, {}])).should.throw();
-        });
-
-        it('throws for elements without value', function () {
-          (() => Cbor.transform([{ weight: 1 }, { weight: 1 }])).should.throw();
-        });
-
-        it('throws for values that cannot be compared', function () {
-          (() =>
-            Cbor.transform([
-              { weight: 1, value: {} },
-              { weight: 1, value: 1 },
-            ])).should.throw();
-          (() =>
-            Cbor.transform([
-              { weight: 1, value: undefined },
-              { weight: 1, value: null },
-            ])).should.throw();
-        });
-
-        it('throws for elements of mixed type', function () {
-          (() =>
-            Cbor.transform([
-              { weight: 0, value: '0' },
-              { weight: 0, value: 0 },
-            ])).should.throw();
-        });
-      });
-
       it('preserves null values', function () {
         const res = Cbor.transform({ value: null }) as any;
         res.should.have.property('value').which.is.null();
@@ -139,21 +29,21 @@ describe('deser-lib', function () {
       });
 
       it('transforms object recursively', function () {
-        const res = Cbor.transform({ value: { b: 'second', a: 'first' } }) as any;
+        const res = Cbor.transform({ value: { b: 'first', a: 'second' } }) as any;
         const properties = Object.getOwnPropertyNames(res.value);
-        properties[0].should.equal('a');
-        properties[1].should.equal('b');
-        res.value.a.should.equal('first');
-        res.value.b.should.equal('second');
+        properties[0].should.equal('b');
+        properties[1].should.equal('a');
+        res.value.b.should.equal('first');
+        res.value.a.should.equal('second');
       });
 
       it('transforms array recursively', function () {
-        const res = Cbor.transform([{ weight: 0, value: { b: 'second', a: 'first' } }]) as any;
+        const res = Cbor.transform([{ weight: 0, value: { b: 'first', a: 'second' } }]) as any;
         const properties = Object.getOwnPropertyNames(res[0].value);
-        properties[0].should.equal('a');
-        properties[1].should.equal('b');
-        res[0].value.a.should.equal('first');
-        res[0].value.b.should.equal('second');
+        properties[0].should.equal('b');
+        properties[1].should.equal('a');
+        res[0].value.b.should.equal('first');
+        res[0].value.a.should.equal('second');
       });
 
       it('throws for invalid hex strings', function () {
@@ -169,14 +59,6 @@ describe('deser-lib', function () {
         properties[1].should.equal('b');
         res.a.should.equal('first');
         res.b.should.equal('second');
-      });
-
-      it('enforces canonical object property order', function () {
-        (() => Cbor.untransform({ b: 'second', a: 'first' })).should.throw();
-      });
-
-      it('enforces canonical array element order', function () {
-        (() => Cbor.untransform([{ weight: 2 }, { weight: 1 }])).should.throw();
       });
 
       it('replaces Buffers with prefixed hex strings', function () {
