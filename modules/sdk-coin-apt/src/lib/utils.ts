@@ -72,7 +72,7 @@ export class Utils implements BaseUtils {
       throw new Error('Invalid Payload: Expected TransactionPayloadEntryFunction');
     }
     const entryFunction = payload.entryFunction;
-    const moduleIdentifier = entryFunction.module_name.name.identifier.trim();
+    const moduleIdentifier = entryFunction.module_name.name.identifier;
     switch (moduleIdentifier) {
       case APTOS_ACCOUNT_MODULE:
         return TransactionType.Send;

@@ -5,7 +5,7 @@ import { TransactionType } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
-import { FUNGIBLE_ASSET } from '../constants';
+import { FUNGIBLE_ASSET_TYPE_ARGUMENT } from '../constants';
 
 export class FungibleAssetTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -15,6 +15,12 @@ export class FungibleAssetTransactionBuilder extends TransactionBuilder {
 
   protected get transactionType(): TransactionType {
     return TransactionType.SendToken;
+  }
+  //TODO: Ticket: COIN-2941 : Check Statics based asset validation and if possible, implement it
+  assetId(assetId: string): TransactionBuilder {
+    this.validateAddress({ address: assetId });
+    this.transaction.assetId = assetId;
+    return this;
   }
 
   /** @inheritdoc */
@@ -32,7 +38,7 @@ export class FungibleAssetTransactionBuilder extends TransactionBuilder {
         !(payload instanceof TransactionPayloadEntryFunction) ||
         payload.entryFunction.args.length !== 3 ||
         payload.entryFunction.type_args.length !== 1 ||
-        FUNGIBLE_ASSET !== payload.entryFunction.type_args[0].toString()
+        FUNGIBLE_ASSET_TYPE_ARGUMENT !== payload.entryFunction.type_args[0].toString()
       ) {
         console.error('invalid transaction payload');
         return false;
