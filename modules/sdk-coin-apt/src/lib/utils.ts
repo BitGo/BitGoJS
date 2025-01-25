@@ -9,12 +9,21 @@ import {
 } from '@aptos-labs/ts-sdk';
 import {
   BaseUtils,
+  InvalidTransactionError,
   isValidEd25519PublicKey,
   isValidEd25519SecretKey,
   ParseTransactionError,
   TransactionRecipient,
+  TransactionType,
 } from '@bitgo/sdk-core';
-import { APT_ADDRESS_LENGTH, APT_BLOCK_ID_LENGTH, APT_SIGNATURE_LENGTH, APT_TRANSACTION_ID_LENGTH } from './constants';
+import {
+  APT_ADDRESS_LENGTH,
+  APT_BLOCK_ID_LENGTH,
+  APT_SIGNATURE_LENGTH,
+  APT_TRANSACTION_ID_LENGTH,
+  APTOS_ACCOUNT_MODULE,
+  FUNGIBLE_ASSET_MODULE,
+} from './constants';
 import BigNumber from 'bignumber.js';
 
 export class Utils implements BaseUtils {
@@ -70,6 +79,22 @@ export class Utils implements BaseUtils {
       amount = amountBuffer.readBigUint64LE().toString();
     }
     return { address, amount };
+  }
+
+  getTransactionTypeFromTransactionPayload(payload: TransactionPayload): TransactionType {
+    if (!(payload instanceof TransactionPayloadEntryFunction)) {
+      throw new Error('Invalid Payload: Expected TransactionPayloadEntryFunction');
+    }
+    const entryFunction = payload.entryFunction;
+    const moduleIdentifier = entryFunction.module_name.name.identifier.trim();
+    switch (moduleIdentifier) {
+      case APTOS_ACCOUNT_MODULE:
+        return TransactionType.Send;
+      case FUNGIBLE_ASSET_MODULE:
+        return TransactionType.SendToken;
+      default:
+        throw new InvalidTransactionError(`Invalid transaction: unable to fetch transaction type ${moduleIdentifier}`);
+    }
   }
 
   isValidRawTransaction(rawTransaction: string): boolean {
