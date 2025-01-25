@@ -1,11 +1,13 @@
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilder } from './transactionBuilder';
-import { TransferBuilder } from './transferBuilder';
+import { TransactionBuilder } from './transactionBuilder/transactionBuilder';
+import { TransferBuilder } from './transactionBuilder/transferBuilder';
 import utils from './utils';
 import { Transaction } from './transaction/transaction';
 import { SignedTransaction } from '@aptos-labs/ts-sdk';
 import { TransferTransaction } from './transaction/transferTransaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { FungibleAssetTransaction } from './transaction/fungibleAssetTransaction';
+import { FungibleAssetTransactionBuilder } from './transactionBuilder/fungibleAssetTransactionBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -14,7 +16,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   from(signedRawTxn: string): TransactionBuilder {
-    utils.validateRawTransaction(signedRawTxn);
     try {
       const signedTxn = this.parseTransaction(signedRawTxn);
       const txnType = this.getTransactionTypeFromSignedTxn(signedTxn);
@@ -23,6 +24,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const transferTx = new TransferTransaction(this._coinConfig);
           transferTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getTransferBuilder(transferTx);
+        case TransactionType.SendToken:
+          const fungibleTransferTokenTx = new FungibleAssetTransaction(this._coinConfig);
+          fungibleTransferTokenTx.fromDeserializedSignedTransaction(signedTxn);
+          return this.getFungibleAssetTransactionBuilder(fungibleTransferTokenTx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -39,6 +44,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getFungibleAssetTransactionBuilder(tx?: Transaction): FungibleAssetTransactionBuilder {
+    return this.initializeBuilder(tx, new FungibleAssetTransactionBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

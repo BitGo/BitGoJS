@@ -7,4 +7,8 @@ export const DEFAULT_GAS_UNIT_PRICE = 100;
 export const SECONDS_PER_WEEK = 7 * 24 * 60 * 60; // Days * Hours * Minutes * Seconds
 
 export const APTOS_ACCOUNT_MODULE = 'aptos_account';
-export const FUNGIBLE_ASSET_MODULE = 'fungible_asset';
+export const FUNGIBLE_ASSET_MODULE = 'primary_fungible_store';
+
+export const FUNGIBLE_ASSET_FUNCTION = '0x1::primary_fungible_store::transfer';
+
+export const FUNGIBLE_ASSET = '0x1::fungible_asset::Metadata';
