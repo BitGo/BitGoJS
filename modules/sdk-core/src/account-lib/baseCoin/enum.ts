@@ -76,6 +76,8 @@ export enum TransactionType {
   SendToken,
   // Setup a trustline with issuer of a token (eg. XRPL tokens)
   TrustLine,
+  // Send Non Fungible Token (e.g. APT NFTs)
+  SendNFT,
 }
 
 /**
