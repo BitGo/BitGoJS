@@ -21,6 +21,7 @@ import {
   solToken,
   stellarToken,
   suiToken,
+  aptToken,
   talgoToken,
   tarbethErc20,
   tavaxErc20,
@@ -42,6 +43,7 @@ import {
   tzkethErc20,
   xrpToken,
   zkethErc20,
+  taptToken,
 } from './account';
 import { Ada, ada } from './ada';
 import { avaxp } from './avaxp';
@@ -20507,6 +20509,22 @@ export const coins = CoinMap.fromCoins([
     'WAL',
     UnderlyingAsset['tsui:wal'],
     [...SUI_TOKEN_FEATURES, CoinFeature.STAKING]
+  ),
+  aptToken(
+    'e8bfdab3-4ef6-4b39-9450-d9cb59593f7a',
+    'apt:usdt',
+    'USD Tether',
+    6,
+    '0x357b0b74bc833e95a115ad22604854d6b0fca151cecd94111770e5d6ffc9dc2b',
+    UnderlyingAsset['tapt:usdt']
+  ),
+  taptToken(
+    '2695e728-96dd-46e6-9d01-bd0fdbe1ff38',
+    'tapt:usdt',
+    'USD Tether',
+    6,
+    '0x357b0b74bc833e95a115ad22604854d6b0fca151cecd94111770e5d6ffc9dc2b',
+    UnderlyingAsset['tapt:usdt']
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(
