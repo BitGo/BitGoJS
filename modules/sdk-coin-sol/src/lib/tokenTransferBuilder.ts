@@ -143,11 +143,11 @@ export class TokenTransferBuilder extends TransactionBuilder {
     const addPriorityFeeInstruction: SetPriorityFee = {
       type: InstructionBuilderTypes.SetPriorityFee,
       params: {
-        fee: this._priorityFee ?? BigInt(0),
+        fee: this._priorityFee,
       },
     };
 
-    if (!this._priorityFee || this._priorityFee === BigInt(0)) {
+    if (!this._priorityFee || this._priorityFee === Number(0)) {
       this._instructionsData = [...createAtaInstructions, ...sendInstructions];
     } else {
       // order is important, createAtaInstructions must be before sendInstructions

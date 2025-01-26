@@ -170,7 +170,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
 
     let addPriorityFeeInstruction: SetPriorityFee;
     // If there are createAtaInstructions, then token is involved and we need to add a priority fee instruction
-    if (!this._priorityFee || this._priorityFee === BigInt(0)) {
+    if (!this._priorityFee || this._priorityFee === Number(0)) {
       this._instructionsData = [...createAtaInstructions, ...sendInstructions];
     } else if (
       createAtaInstructions.length !== 0 ||
@@ -179,7 +179,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
       addPriorityFeeInstruction = {
         type: InstructionBuilderTypes.SetPriorityFee,
         params: {
-          fee: this._priorityFee ?? BigInt(0),
+          fee: this._priorityFee,
         },
       };
       this._instructionsData = [addPriorityFeeInstruction, ...createAtaInstructions, ...sendInstructions];
