@@ -41,7 +41,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _signers: KeyPair[] = [];
   protected _memo?: string;
   protected _feePayer?: string;
-  protected _priorityFee: number | bigint;
+  protected _priorityFee: number;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -247,7 +247,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   public setPriorityFee(feeOptions: FeeOptions): this {
-    this._priorityFee = BigInt(feeOptions.amount);
+    this._priorityFee = Number(feeOptions.amount);
     return this;
   }
 
