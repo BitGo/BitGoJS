@@ -14,6 +14,7 @@ import {
   Ada,
   Algo,
   Apt,
+  AptToken,
   Arbeth,
   ArbethToken,
   Atom,
@@ -351,6 +352,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   );
 
   XrpToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
+    globalCoinFactory.register(name, coinConstructor)
+  );
+
+  AptToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
     globalCoinFactory.register(name, coinConstructor)
   );
 }

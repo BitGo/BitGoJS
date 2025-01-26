@@ -2440,6 +2440,12 @@ export enum UnderlyingAsset {
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
   'tsui:wal' = 'tsui:wal',
+
+  // Apt tokens
+  'apt:usdt' = 'apt:usdt',
+
+  // Apt testnet tokens
+  'tapt:usdt' = 'tapt:usdt',
 }
 
 /**
