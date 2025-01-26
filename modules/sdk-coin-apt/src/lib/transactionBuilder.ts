@@ -27,6 +27,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected abstract get transactionType(): TransactionType;
 
+  type(type: TransactionType): this {
+    this._transaction.transactionType = type;
+    return this;
+  }
+
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
