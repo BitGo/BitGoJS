@@ -360,11 +360,13 @@ export type CreateKeychainParamsBase = {
 
 export type CreateBitGoKeychainParamsBase = Omit<CreateKeychainParamsBase, 'bitgoKeychain'>;
 
-export enum SignatureShareType {
-  USER = 'user',
-  BACKUP = 'backup',
-  BITGO = 'bitgo',
-}
+export const SignatureShareType = {
+  USER: 'user',
+  BACKUP: 'backup',
+  BITGO: 'bitgo',
+} as const;
+
+export type SignatureShareType = (typeof SignatureShareType)[keyof typeof SignatureShareType];
 
 interface ShareBaseRecord {
   from: SignatureShareType;
@@ -378,10 +380,13 @@ export interface SignatureShareRecord extends ShareBaseRecord {
   publicShare?: string;
 }
 
-export enum CommitmentType {
-  COMMITMENT = 'commitment',
-  DECOMMITMENT = 'decommitment',
-}
+export const CommitmentType = {
+  COMMITMENT: 'commitment',
+  DECOMMITMENT: 'decommitment',
+} as const;
+
+export type CommitmentType = (typeof CommitmentType)[keyof typeof CommitmentType];
+
 export interface CommitmentShareRecord extends ShareBaseRecord {
   type: CommitmentType;
 }
@@ -390,10 +395,13 @@ export interface ExchangeCommitmentResponse {
   commitmentShare: CommitmentShareRecord;
 }
 
-export enum EncryptedSignerShareType {
-  ENCRYPTED_SIGNER_SHARE = 'encryptedSignerShare',
-  ENCRYPTED_R_SHARE = 'encryptedRShare',
-}
+export const EncryptedSignerShareType = {
+  ENCRYPTED_SIGNER_SHARE: 'encryptedSignerShare',
+  ENCRYPTED_R_SHARE: 'encryptedRShare',
+} as const;
+
+export type EncryptedSignerShareType = (typeof EncryptedSignerShareType)[keyof typeof EncryptedSignerShareType];
+
 export interface EncryptedSignerShareRecord extends ShareBaseRecord {
   type: EncryptedSignerShareType;
 }
