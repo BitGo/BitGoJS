@@ -8,7 +8,7 @@ import { ParsedOutputsBigInt, toBaseParsedTransactionOutputsFromPsbt } from '../
 import { getDefaultXPubs, getDescriptor, getDescriptorMap } from '../../core/descriptor/descriptor.utils';
 import { toPlainObject } from '../../core/toPlainObject.utils';
 import {
-  AggregateValidationError,
+  ValidationError,
   getValidationErrors,
   ErrorImplicitExternalOutputs,
   ErrorMissingOutputs,
@@ -55,7 +55,10 @@ describe('parse', function () {
   const psbt = mockPsbtDefault({ descriptorSelf, descriptorOther });
 
   function recipient(descriptor: Descriptor, index: number, value = 1000) {
-    return { value, address: createAddressFromDescriptor(descriptor, index, utxolib.networks.bitcoin) };
+    return {
+      value,
+      address: createAddressFromDescriptor(descriptor, index, utxolib.networks.bitcoin),
+    };
   }
 
   function internalRecipient(index: number, value?: number): OutputWithValue {
@@ -93,22 +96,13 @@ describe('parse', function () {
       );
     });
 
-    function assertEqualValidationError(actual: unknown, expected: AggregateValidationError) {
-      function normErrors(e: Error[]): Error[] {
-        return e.map((e) => ({ ...e, stack: undefined }));
-      }
-      if (actual instanceof AggregateValidationError) {
-        assert.deepStrictEqual(normErrors(actual.errors), normErrors(expected.errors));
-      } else {
-        throw new Error('unexpected error type: ' + actual);
-      }
-    }
-
-    function assertValidationError(f: () => void, expected: AggregateValidationError) {
-      assert.throws(f, (err) => {
-        assertEqualValidationError(err, expected);
-        return true;
-      });
+    function assertValidationError(
+      psbt: utxolib.bitgo.UtxoPsbt,
+      recipients: OutputWithValue[],
+      expectedErrors: ValidationError[]
+    ) {
+      const parsed = getBaseParsedTransaction(psbt, recipients);
+      assert.deepStrictEqual(getValidationErrors(parsed), expectedErrors);
     }
 
     function implicitOutputError(output: OutputWithValue, { external = true } = {}): ErrorImplicitExternalOutputs {
@@ -120,40 +114,25 @@ describe('parse', function () {
     }
 
     it('should throw expected error: no recipient requested', function () {
-      assertValidationError(
-        () => getValidationErrors(getBaseParsedTransaction(psbt, [])),
-        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
-      );
+      assertValidationError(psbt, [], [implicitOutputError(psbt.txOutputs[0])]);
     });
 
     it('should throw expected error: only internal recipient requested', function () {
-      assertValidationError(
-        () => getValidationErrors(getBaseParsedTransaction(psbt, [psbt.txOutputs[1]])),
-        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
-      );
+      assertValidationError(psbt, [psbt.txOutputs[1]], [implicitOutputError(psbt.txOutputs[0])]);
     });
 
     it('should throw expected error: only internal max recipient requested', function () {
-      assertValidationError(
-        () => getValidationErrors(getBaseParsedTransaction(psbt, [toMaxOutput(psbt.txOutputs[1])])),
-        new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
-      );
+      assertValidationError(psbt, [toMaxOutput(psbt.txOutputs[1])], [implicitOutputError(psbt.txOutputs[0])]);
     });
 
     it('should throw expected error: swapped recipient', function () {
       const recipient = externalRecipient(99);
-      assertValidationError(
-        () => getValidationErrors(getBaseParsedTransaction(psbt, [recipient])),
-        new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])])
-      );
+      assertValidationError(psbt, [recipient], [missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])]);
     });
 
     it('should throw expected error: missing internal recipient', function () {
       const recipient = internalRecipient(99);
-      assertValidationError(
-        () => getValidationErrors(getBaseParsedTransaction(psbt, [recipient])),
-        new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])])
-      );
+      assertValidationError(psbt, [recipient], [missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])]);
     });
   });
 });

@@ -39,13 +39,13 @@ export class AggregateValidationError extends ValidationError {
     );
   }
 
-  static formatRecipients(recipients: ITransactionRecipient[]): string {
+  static formatRecipients(recipients: { address: string }[]): string {
     return recipients.map((r) => r.address).join(', ');
   }
 
   constructor(
     public parsedOutputs: ParsedOutputsBigInt,
-    public recipients: ITransactionRecipient[],
+    public recipients: { address: string }[],
     public errors: ValidationError[]
   ) {
     super(
