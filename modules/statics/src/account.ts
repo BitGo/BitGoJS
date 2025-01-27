@@ -112,7 +112,7 @@ export interface SuiCoinConstructorOptions extends AccountConstructorOptions {
 }
 
 export interface AptCoinConstructorOptions extends AccountConstructorOptions {
-  fungibleAssetAddress: string;
+  assetId: string;
 }
 
 type FiatCoinName = `fiat${string}` | `tfiat${string}`;
@@ -466,13 +466,13 @@ export class SuiCoin extends AccountCoinToken {
  *
  */
 export class AptCoin extends AccountCoinToken {
-  public fungibleAssetAddress: string;
+  public assetId: string;
   constructor(options: AptCoinConstructorOptions) {
     super({
       ...options,
     });
 
-    this.fungibleAssetAddress = options.fungibleAssetAddress;
+    this.assetId = options.assetId;
   }
 }
 
@@ -2337,7 +2337,7 @@ export function tsuiToken(
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param fungibleAssetAddress Fungible asset address of this token
+ * @param assetId Asset Id of this token i.e. the unique identifier of the token for all tokens - fungible, non-fungible and legacy
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix Optional token prefix. Defaults to empty string
  * @param suffix Optional token suffix. Defaults to token name.
@@ -2350,7 +2350,7 @@ export function aptToken(
   name: string,
   fullName: string,
   decimalPlaces: number,
-  fungibleAssetAddress: string,
+  assetId: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -2364,7 +2364,7 @@ export function aptToken(
       name,
       fullName,
       network,
-      fungibleAssetAddress,
+      assetId,
       prefix,
       suffix,
       features,
@@ -2384,7 +2384,7 @@ export function aptToken(
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param fungibleAssetAddress Fungible asset  of this token
+ * @param assetId Asset Id of this token i.e. the unique identifier of the token for all tokens - fungible, non-fungible and legacy
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix Optional token prefix. Defaults to empty string
  * @param suffix Optional token suffix. Defaults to token name.
@@ -2397,7 +2397,7 @@ export function taptToken(
   name: string,
   fullName: string,
   decimalPlaces: number,
-  fungibleAssetAddress: string,
+  assetId: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -2410,7 +2410,7 @@ export function taptToken(
     name,
     fullName,
     decimalPlaces,
-    fungibleAssetAddress,
+    assetId,
     asset,
     features,
     prefix,
