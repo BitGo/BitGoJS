@@ -44,7 +44,7 @@ export function untransform<T>(value: T): T | string {
     if (value.startsWith('0x')) {
       return '\\' + value;
     }
-  } else if (value instanceof Array && value.length > 1) {
+  } else if (value instanceof Array) {
     return value.map(untransform) as unknown as T;
   } else if (value instanceof Object) {
     const properties = Object.getOwnPropertyNames(value);
