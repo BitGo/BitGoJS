@@ -36,8 +36,8 @@ export class AptToken extends Apt {
     return this.tokenConfig.network;
   }
 
-  get fungibleAssestAddress(): string {
-    return this.tokenConfig.fungibleAssetAddress;
+  get assetId(): string {
+    return this.tokenConfig.assetId;
   }
 
   get decimalPlaces(): number {

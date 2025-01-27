@@ -27,6 +27,7 @@ describe('Apt Tokens', function () {
     aptTokenCoin.name.should.equal('USD Tether');
     aptTokenCoin.coin.should.equal('tapt');
     aptTokenCoin.network.should.equal('Testnet');
+    aptTokenCoin.assetId.should.equal('0xd5d0d561493ea2b9410f67da804653ae44e793c2423707d4f11edb2e38192050');
     aptTokenCoin.decimalPlaces.should.equal(6);
   });
 });

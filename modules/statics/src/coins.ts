@@ -20516,14 +20516,14 @@ export const coins = CoinMap.fromCoins([
     'USD Tether',
     6,
     '0x357b0b74bc833e95a115ad22604854d6b0fca151cecd94111770e5d6ffc9dc2b',
-    UnderlyingAsset['tapt:usdt']
+    UnderlyingAsset['apt:usdt']
   ),
   taptToken(
     '2695e728-96dd-46e6-9d01-bd0fdbe1ff38',
     'tapt:usdt',
     'USD Tether',
     6,
-    '0x357b0b74bc833e95a115ad22604854d6b0fca151cecd94111770e5d6ffc9dc2b',
+    '0xd5d0d561493ea2b9410f67da804653ae44e793c2423707d4f11edb2e38192050',
     UnderlyingAsset['tapt:usdt']
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
