@@ -4,35 +4,62 @@ import { ITransactionRecipient, VerifyTransactionOptions } from '@bitgo/sdk-core
 import { DescriptorMap } from '../../core/descriptor';
 import { AbstractUtxoCoin, BaseOutput, BaseParsedTransactionOutputs } from '../../abstractUtxoCoin';
 
-import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
+import { ParsedOutputsBigInt, toBaseParsedTransactionOutputsFromPsbt } from './parse';
 
 export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
   }
+
+  static formatOutputs(outputs: { address: string }[]): string {
+    return outputs.map((o) => o.address).join(', ');
+  }
 }
 
 export class ErrorMissingOutputs extends ValidationError {
   constructor(public missingOutputs: BaseOutput<bigint | 'max'>[]) {
-    super(`missing outputs (count=${missingOutputs.length})`);
+    super(`missing outputs (${ValidationError.formatOutputs(missingOutputs)})`);
   }
 }
 
 export class ErrorImplicitExternalOutputs extends ValidationError {
   constructor(public implicitExternalOutputs: BaseOutput<bigint | 'max'>[]) {
-    super(`unexpected implicit external outputs (count=${implicitExternalOutputs.length})`);
+    super(`unexpected implicit external outputs (${ValidationError.formatOutputs(implicitExternalOutputs)})`);
   }
 }
 
 export class AggregateValidationError extends ValidationError {
-  constructor(public errors: ValidationError[]) {
-    super(`aggregate validation error (count=${errors.length})`);
+  static formatParsedOutputs(parsedOutputs: ParsedOutputsBigInt): string {
+    return (
+      `outputs=${parsedOutputs.outputs.length}, ` +
+      `changeOutputs=${parsedOutputs.changeOutputs.length}, ` +
+      `explicitExternalOutputs=${parsedOutputs.explicitExternalOutputs.length}, ` +
+      `implicitExternalOutputs=${parsedOutputs.implicitExternalOutputs.length}, ` +
+      `missingOutputs=${parsedOutputs.missingOutputs.length}`
+    );
+  }
+
+  static formatRecipients(recipients: ITransactionRecipient[]): string {
+    return recipients.map((r) => r.address).join(', ');
+  }
+
+  constructor(
+    public parsedOutputs: ParsedOutputsBigInt,
+    public recipients: ITransactionRecipient[],
+    public errors: ValidationError[]
+  ) {
+    super(
+      `aggregate validation error (` +
+        `parsedOutputs=[${AggregateValidationError.formatParsedOutputs(parsedOutputs)}], ` +
+        `recipients=${AggregateValidationError.formatRecipients(recipients)}, ` +
+        `count=${errors.length})`
+    );
   }
 }
 
-export function assertExpectedOutputDifference(
+export function getValidationErrors(
   parsedOutputs: BaseParsedTransactionOutputs<bigint, BaseOutput<bigint | 'max'>>
-): void {
+): ValidationError[] {
   const errors: ValidationError[] = [];
   if (parsedOutputs.missingOutputs.length > 0) {
     errors.push(new ErrorMissingOutputs(parsedOutputs.missingOutputs));
@@ -41,11 +68,7 @@ export function assertExpectedOutputDifference(
     // FIXME: for paygo we need to relax this a little bit
     errors.push(new ErrorImplicitExternalOutputs(parsedOutputs.implicitExternalOutputs));
   }
-  if (errors.length > 0) {
-    // FIXME(BTC-1688): enable ES2021
-    // throw new AggregateError(errors);
-    throw new AggregateValidationError(errors);
-  }
+  return errors;
 }
 
 export function assertValidTransaction(
@@ -54,7 +77,11 @@ export function assertValidTransaction(
   recipients: ITransactionRecipient[],
   network: utxolib.Network
 ): void {
-  assertExpectedOutputDifference(toBaseParsedTransactionOutputsFromPsbt(psbt, descriptors, recipients, network));
+  const parsed = toBaseParsedTransactionOutputsFromPsbt(psbt, descriptors, recipients, network);
+  const errors = getValidationErrors(parsed);
+  if (errors.length > 0) {
+    throw new AggregateValidationError(parsed, recipients, errors);
+  }
 }
 
 /**

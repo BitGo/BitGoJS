@@ -9,7 +9,7 @@ import { getDefaultXPubs, getDescriptor, getDescriptorMap } from '../../core/des
 import { toPlainObject } from '../../core/toPlainObject.utils';
 import {
   AggregateValidationError,
-  assertExpectedOutputDifference,
+  getValidationErrors,
   ErrorImplicitExternalOutputs,
   ErrorMissingOutputs,
 } from '../../../src/transaction/descriptor/verifyTransaction';
@@ -121,21 +121,21 @@ describe('parse', function () {
 
     it('should throw expected error: no recipient requested', function () {
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [])),
+        () => getValidationErrors(getBaseParsedTransaction(psbt, [])),
         new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
       );
     });
 
     it('should throw expected error: only internal recipient requested', function () {
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [psbt.txOutputs[1]])),
+        () => getValidationErrors(getBaseParsedTransaction(psbt, [psbt.txOutputs[1]])),
         new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
       );
     });
 
     it('should throw expected error: only internal max recipient requested', function () {
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [toMaxOutput(psbt.txOutputs[1])])),
+        () => getValidationErrors(getBaseParsedTransaction(psbt, [toMaxOutput(psbt.txOutputs[1])])),
         new AggregateValidationError([implicitOutputError(psbt.txOutputs[0])])
       );
     });
@@ -143,7 +143,7 @@ describe('parse', function () {
     it('should throw expected error: swapped recipient', function () {
       const recipient = externalRecipient(99);
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [recipient])),
+        () => getValidationErrors(getBaseParsedTransaction(psbt, [recipient])),
         new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])])
       );
     });
@@ -151,7 +151,7 @@ describe('parse', function () {
     it('should throw expected error: missing internal recipient', function () {
       const recipient = internalRecipient(99);
       assertValidationError(
-        () => assertExpectedOutputDifference(getBaseParsedTransaction(psbt, [recipient])),
+        () => getValidationErrors(getBaseParsedTransaction(psbt, [recipient])),
         new AggregateValidationError([missingOutputError(recipient), implicitOutputError(psbt.txOutputs[0])])
       );
     });
