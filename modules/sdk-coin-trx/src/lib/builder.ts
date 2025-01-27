@@ -5,18 +5,20 @@ import 'ses';
 
 lockdown({ stackFiltering: 'verbose' });
 
-// export const getBuilder = (coinName: string): BaseBuilder => {
-//   return new WrappedBuilder(coins.get(coinName));
-// };
+/*
+Orginal function: 
 
-const unboxedGetBuilder = (coinName: string): BaseBuilder => {
+export const getBuilder = (coinName: string): BaseBuilder => {
   return new WrappedBuilder(coins.get(coinName));
 };
 
+*/
+
 const c = new Compartment({
-  getBuilder: harden(unboxedGetBuilder),
+  coins: harden(coins),
+  WrappedBuilder: harden(WrappedBuilder),
 });
 
 export const getBuilder = (coinName: string): BaseBuilder => {
-  return c.evaluate(`getBuilder('${coinName}')`);
+  return c.evaluate(`new WrappedBuilder(coins.get('${coinName}'))`);
 };
