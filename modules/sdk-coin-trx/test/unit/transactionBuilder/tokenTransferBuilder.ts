@@ -12,6 +12,7 @@ import {
   TOKEN_TXID,
   TOKEN_TX_CONTRACT_2,
 } from '../../resources';
+import { describe, it } from 'node:test';
 
 describe('TRX Token Transfer Builder', () => {
   const initTxBuilder = (amount = 1000000000) => {

@@ -14,4 +14,3 @@ lab/
 .env
 .yarn
 modules/**/dist/
-.aider*

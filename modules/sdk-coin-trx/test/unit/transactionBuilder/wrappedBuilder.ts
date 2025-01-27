@@ -4,6 +4,7 @@ import should from 'should';
 import { WrappedBuilder } from '../../../src';
 import { getBuilder } from '../../../src/lib/builder';
 import { PARTICIPANTS } from '../../resources';
+import { describe, it } from 'node:test';
 
 describe('Trx Contract call Builder', () => {
   const builder = getBuilder('ttrx') as WrappedBuilder;

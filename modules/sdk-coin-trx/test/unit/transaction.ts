@@ -2,6 +2,7 @@ import assert from 'assert';
 import { coins } from '@bitgo/statics';
 import { Interface, Transaction } from '../../src';
 import { UnsignedBuildTransaction } from '../resources';
+import { describe, it } from 'node:test';
 
 describe('Tron transactions', function () {
   describe('should parse', () => {

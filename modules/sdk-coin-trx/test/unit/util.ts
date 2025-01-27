@@ -3,6 +3,7 @@ import { Interface, Utils } from '../../src';
 
 import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../resources';
 import { tokenMainnetContractAddresses, tokenTestnetContractAddresses } from '../../src/lib/utils';
+import { describe, it } from 'node:test';
 
 describe('Util library should', function () {
   // arbitrary text

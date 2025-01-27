@@ -14,6 +14,7 @@ import {
   EXPIRATION,
   TX_CONTRACT,
 } from '../../resources';
+import { describe, it } from 'node:test';
 
 describe('Trx Contract call Builder', () => {
   const initTxBuilder = () => {

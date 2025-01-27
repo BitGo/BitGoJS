@@ -1,5 +1,6 @@
 import should from 'should';
 import { getBuilder } from '../../src/lib/builder';
+import { describe, it } from 'node:test';
 
 describe('Coin factory', () => {
   it('should instantiate TRX builder properly', () => {
