@@ -5,10 +5,10 @@ import { findDescriptorForInput, findDescriptorForOutput } from '../../../../src
 
 import { mockPsbt } from './mock.utils';
 
-function describeWithTemplates(tA: DescriptorTemplate, tB: DescriptorTemplate) {
-  describe(`parsePsbt [${tA},${tB}]`, function () {
-    const descriptorA = getDescriptor(tA, getDefaultXPubs('a'));
-    const descriptorB = getDescriptor(tB, getDefaultXPubs('b'));
+function describeWithTemplates(templateSelf: DescriptorTemplate, templateOther: DescriptorTemplate) {
+  describe(`parsePsbt [${templateSelf},${templateOther}]`, function () {
+    const descriptorA = getDescriptor(templateSelf, getDefaultXPubs('a'));
+    const descriptorB = getDescriptor(templateOther, getDefaultXPubs('b'));
     const descriptorMap = new Map([
       ['a', descriptorA],
       ['b', descriptorB],
@@ -41,3 +41,4 @@ function describeWithTemplates(tA: DescriptorTemplate, tB: DescriptorTemplate) {
 
 describeWithTemplates('Wsh2Of3', 'Wsh2Of3');
 describeWithTemplates('Wsh2Of3', 'Tr2Of3-NoKeyPath');
+describeWithTemplates('Tr2Of3-NoKeyPath', 'Tr2Of3-NoKeyPath');
