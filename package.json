@@ -65,7 +65,7 @@
     "@types/react-dom": "17.0.16",
     "@solana/web3.js": "1.95.8",
     "**/nise/**/path-to-regexp": "8.0.0",
-    "**/express/**/path-to-regexp": "0.1.10",
+    "**/express/**/path-to-regexp": "0.1.12",
     "buffer": "^6.0.3",
     "body-parser": "1.20.3",
     "degenerator": "5.0.0",
