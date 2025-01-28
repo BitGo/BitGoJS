@@ -1,23 +1,35 @@
-import { DefaultKeys, Ed25519KeyPair } from '@bitgo/sdk-core';
+import { DotAddressFormat } from '@bitgo/sdk-core';
+import { KeyPair } from '@bitgo/abstract-substrate';
+import { Keyring } from '@polkadot/keyring';
+import { createPair } from '@polkadot/keyring/pair';
+import { KeyringPair } from '@polkadot/keyring/types';
 
-export class KeyPair extends Ed25519KeyPair {
-  /** @inheritdoc */
-  getKeys(): DefaultKeys {
-    throw new Error('Method not implemented.');
+export class TaoKeyPair extends KeyPair {
+  TYPE = 'ed25519';
+  keyring = new Keyring({ type: TYPE });
+
+  /**
+   * Helper function to create the KeyringPair for signing a dot transaction.
+   *
+   * @returns {KeyringPair} dot KeyringPair
+   *
+   * @see https://polkadot.js.org/docs/api/start/keyring
+   */
+  protected createPolkadotPair(): KeyringPair {
+    const secretKey = this.keyPair.prv ? new Uint8Array(Buffer.from(this.keyPair.prv, 'hex')) : undefined;
+    const publicKey = new Uint8Array(Buffer.from(this.keyPair.pub, 'hex'));
+    return createPair({ toSS58: keyring.encodeAddress, type: TYPE }, { secretKey, publicKey });
   }
 
-  /** @inheritdoc */
-  recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    throw new Error('Method not implemented.');
-  }
+  /**
+   // https://wiki.polkadot.network/docs/learn-accounts#address-format
+   * Returns the address in either mainnet polkadot format (starts with 1)
+   * or substrate format used for westend (starts with 5)
+   */
+  getAddress(format: DotAddressFormat): string {
+    let encodedAddress = this.createPolkadotPair().address;
+    encodedAddress = keyring.encodeAddress(encodedAddress, format as number);
 
-  /** @inheritdoc */
-  recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
-    throw new Error('Method not implemented.');
-  }
-
-  /** @inheritdoc */
-  getAddress(): string {
-    throw new Error('Method not implemented.');
+    return encodedAddress;
   }
 }

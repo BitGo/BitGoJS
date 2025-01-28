@@ -7,7 +7,10 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { SubstrateCoin } from '@bitgo/abstract-substrate';
+import { SubstrateCoin, Utils } from '@bitgo/abstract-substrate';
+import { TaoKeyPair } from './lib';
+
+const utils = Utils.default;
 
 export class Tao extends SubstrateCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -41,5 +44,17 @@ export class Tao extends SubstrateCoin {
 
   parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     return {};
+  }
+
+  generateKeyPair(seed?: Buffer): TaoKeyPair {
+    const keyPair = seed ? utils.keyPairFromSeed(new Uint8Array(seed)) : new TaoKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
   }
 }
