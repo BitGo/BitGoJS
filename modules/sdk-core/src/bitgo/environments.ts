@@ -65,6 +65,8 @@ interface EnvironmentTemplate {
   flrExplorerApiToken?: string;
   sgbExplorerBaseUrl?: string;
   sgbExplorerApiToken?: string;
+  wemixExplorerBaseUrl?: string;
+  wemixExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
