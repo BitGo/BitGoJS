@@ -40,7 +40,7 @@ export interface VerifiedTransactionParameters {
 }
 
 export class Tao extends SubstrateCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  readonly staticsCoin?: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
 
@@ -48,14 +48,14 @@ export class Tao extends SubstrateCoin {
       throw new Error('missing required constructor parameter staticsCoin');
     }
 
-    this._staticsCoin = staticsCoin;
+    this.staticsCoin = staticsCoin;
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tao(bitgo, staticsCoin);
   }
 
-  verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txParams } = params;
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(
@@ -69,7 +69,7 @@ export class Tao extends SubstrateCoin {
     throw new Error('Method not implemented.');
   }
 
-  parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
+  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     return {};
   }
 

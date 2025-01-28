@@ -55,10 +55,6 @@ export class SubstrateCoin extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  // static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-  //   return new SubstrateCoin(bitgo, staticsCoin);
-  // }
-
   /**
    * Creates an instance of TransactionBuilderFactory for the coin specific sdk
    */
