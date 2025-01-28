@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.8.1...@bitgo/sdk-coin-sol@4.8.2) (2025-01-28)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** set prio fees as number ([603bdc1](https://github.com/BitGo/BitGoJS/commit/603bdc158f3005654ddf81a388644fcea37ef701))
+
 ## [4.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.8.0...@bitgo/sdk-coin-sol@4.8.1) (2025-01-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/deser-lib@1.7.0...@bitgo/deser-lib@1.7.1) (2025-01-28)
+
+**Note:** Version bump only for package @bitgo/deser-lib
+
 # 1.7.0 (2024-09-10)
 
 ### Bug Fixes

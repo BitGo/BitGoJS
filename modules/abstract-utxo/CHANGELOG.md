@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.13.1...@bitgo/abstract-utxo@9.14.0) (2025-01-28)
+
+### Bug Fixes
+
+- **abstract-utxo:** fix findDescriptorForOutput for taproot outputs ([758777c](https://github.com/BitGo/BitGoJS/commit/758777c94dbcc6d1008ecc36c11c2d45b2457d1b))
+- **abstract-utxo:** handle explicit internal recipients correctly ([74a940f](https://github.com/BitGo/BitGoJS/commit/74a940f300900ed824b757123f78f77d50123418))
+
+### Features
+
+- **abstract-utxo:** add createPsbt test for Tr2of3-NoKeyPath ([6034f43](https://github.com/BitGo/BitGoJS/commit/6034f4328b6bd910028f27c4f4da3e1cfb3d0351))
+- **abstract-utxo:** add support for taproot descriptors in findDescriptors ([898ecd8](https://github.com/BitGo/BitGoJS/commit/898ecd85bc4df50c2d0805fa197735b50f6ecbbf))
+- **abstract-utxo:** add support for taproot in descriptors testutils ([2717de0](https://github.com/BitGo/BitGoJS/commit/2717de05470fd4bfca3d28acc4ca548d0c208b50))
+- **abstract-utxo:** add support for taproot in VirtualSize ([1ea2143](https://github.com/BitGo/BitGoJS/commit/1ea214348e585096ee0cbfb29a865b853cc89325))
+- **abstract-utxo:** extend Tr2Of3 test for findDescriptors ([437eb7e](https://github.com/BitGo/BitGoJS/commit/437eb7e14e3aacebd17ae99948f0acbe706dd526))
+- **abstract-utxo:** test explicit internal recipients ([12281b2](https://github.com/BitGo/BitGoJS/commit/12281b22a7cf69df974f38d7b07854c7572874eb))
+
 ## [9.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.13.0...@bitgo/abstract-utxo@9.13.1) (2025-01-23)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.21.1...@bitgo/statics@50.22.0) (2025-01-28)
+
+### Features
+
+- onboard ENRON token: ([d31390c](https://github.com/BitGo/BitGoJS/commit/d31390c38996a53127e280263473a8134f6251e7))
+- **sdk-coin-apt:** add Apt Token Skeleton ([596f5e5](https://github.com/BitGo/BitGoJS/commit/596f5e506c61c7b93e8b0c24b8b29441ba3062ca))
+- **statics:** add Apt Token support ([db1111c](https://github.com/BitGo/BitGoJS/commit/db1111ca46f5c2191dba2ea9d08aeed555e7491f))
+- **statics:** add apt usdt token ([37224e8](https://github.com/BitGo/BitGoJS/commit/37224e89dbfb7e0173c4d5ab30ddbc3d45ea7aba))
+- **statics:** add new batch of tokens ([99c7d8e](https://github.com/BitGo/BitGoJS/commit/99c7d8e024c517db92f5f506db83209e6b5c7322))
+- **statics:** prod network config ([a52163f](https://github.com/BitGo/BitGoJS/commit/a52163f570bd7536baa679c7913cc5d0fadece13))
+
 ## [50.21.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.21.0...@bitgo/statics@50.21.1) (2025-01-23)
 
 **Note:** Version bump only for package @bitgo/statics
