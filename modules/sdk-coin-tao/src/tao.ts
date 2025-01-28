@@ -4,6 +4,7 @@ import {
   BitGoBase,
   ParsedTransaction,
   ParseTransactionOptions,
+  SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
@@ -112,7 +113,7 @@ export class Tao extends SubstrateCoin {
     return { txHex, prv };
   }
 
-  async signTransaction(params: SignTransactionOptions): Promise<SignTransactionResult> {
+  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     const { txHex, prv } = this.verifySignTransactionParams(params);
     const factory = this.getBuilder();
     const txBuilder = factory.from(txHex);
