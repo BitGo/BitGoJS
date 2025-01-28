@@ -1,16 +1,32 @@
-import { DotAddressFormat } from '@bitgo/sdk-core';
-import { KeyPair } from '@bitgo/abstract-substrate';
 import { Keyring } from '@polkadot/keyring';
 import { createPair } from '@polkadot/keyring/pair';
 import { KeyringPair } from '@polkadot/keyring/types';
+import {
+  DotAddressFormat,
+  DefaultKeys,
+  Ed25519KeyPair,
+  isBase58,
+  KeyPairOptions,
+  toHex,
+  toUint8Array,
+} from '@bitgo/sdk-core';
+import bs58 from 'bs58';
+import utils from './utils';
+import * as nacl from 'tweetnacl';
 
 const TYPE = 'ed25519';
 const keyring = new Keyring({ type: TYPE });
 
-export class TaoKeyPair extends KeyPair {
-  constructor(keyPair: KeyPair) {
-    super(keyPair);
+export class KeyPair extends Ed25519KeyPair {
+  /**
+   * Public constructor. By default, creates a key pair with a random master seed.
+   *
+   * @param { KeyPairOptions } source Either a master seed, a private key, or a public key
+   */
+  constructor(source?: KeyPairOptions) {
+    super(source);
   }
+
   /**
    * Helper function to create the KeyringPair for signing a dot transaction.
    *
@@ -34,5 +50,45 @@ export class TaoKeyPair extends KeyPair {
     encodedAddress = keyring.encodeAddress(encodedAddress, format as number);
 
     return encodedAddress;
+  }
+
+  /** @inheritdoc */
+  getKeys(): DefaultKeys {
+    const result: DefaultKeys = { pub: this.keyPair.pub };
+    if (this.keyPair.prv) {
+      result.prv = this.keyPair.prv;
+    }
+    return result;
+  }
+
+  /** @inheritdoc */
+  recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
+    const decodedSeed = utils.decodeSeed(prv);
+    const bufferFromSeed = Buffer.from(decodedSeed.seed);
+    return utils.keyPairFromSeed(bufferFromSeed).keyPair;
+  }
+
+  /** @inheritdoc */
+  recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
+    const publicKey = keyring.addFromPair({
+      // tss common pub is in base58 format and decodes to length of 32
+      publicKey: isBase58(pub, 32) ? new Uint8Array(bs58.decode(pub)) : new Uint8Array(Buffer.from(pub, 'hex')),
+      secretKey: new Uint8Array(),
+    }).publicKey;
+    return { pub: toHex(publicKey) };
+  }
+
+  /**
+   *  Sign the message in Uint8Array
+   *
+   * @param {Uint8Array} message to be signed
+   * @returns {Uint8Array} signed message
+   */
+  signMessageinUint8Array(message: Uint8Array): Uint8Array {
+    const { prv } = this.keyPair;
+    if (!prv) {
+      throw new Error('Missing private key');
+    }
+    return nacl.sign.detached(message, nacl.sign.keyPair.fromSeed(toUint8Array(prv)).secretKey);
   }
 }

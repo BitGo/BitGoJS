@@ -10,7 +10,7 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Interface, SubstrateCoin, Utils } from '@bitgo/abstract-substrate';
-import { TaoKeyPair } from './lib';
+import { KeyPair } from './lib';
 
 const utils = Utils.default;
 
@@ -73,8 +73,8 @@ export class Tao extends SubstrateCoin {
     return {};
   }
 
-  generateKeyPair(seed?: Buffer): TaoKeyPair {
-    const keyPair = seed ? utils.keyPairFromSeed(new Uint8Array(seed)) : new TaoKeyPair();
+  generateKeyPair(seed?: Buffer): KeyPair {
+    const keyPair = seed ? utils.keyPairFromSeed(new Uint8Array(seed)) : new KeyPair();
     const keys = keyPair.getKeys();
     if (!keys.prv) {
       throw new Error('Missing prv in key generation.');
@@ -116,7 +116,7 @@ export class Tao extends SubstrateCoin {
     const { txHex, prv } = this.verifySignTransactionParams(params);
     const factory = this.getBuilder();
     const txBuilder = factory.from(txHex);
-    const keyPair = new TaoKeyPair({ prv: prv });
+    const keyPair = new KeyPair({ prv: prv });
     const { referenceBlock, blockNumber, transactionVersion, sender } = params.txPrebuild.transaction;
 
     txBuilder
