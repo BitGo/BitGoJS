@@ -149,6 +149,18 @@ export { Apt };
 import * as Icp from '@bitgo/sdk-coin-icp';
 export { Icp };
 
+import * as Flr from '@bitgo/sdk-coin-flr';
+export { Flr };
+
+import * as Sgb from '@bitgo/sdk-coin-sgb';
+export { Sgb };
+
+import * as Xdc from '@bitgo/sdk-coin-xdc';
+export { Xdc };
+
+import * as Wemix from '@bitgo/sdk-coin-wemix';
+export { Wemix };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -229,6 +241,14 @@ const coinBuilderMap = {
   ticp: Icp.TransactionBuilder,
   baby: Baby.TransactionBuilder,
   tbaby: Baby.TransactionBuilder,
+  flr: Flr.TransactionBuilder,
+  tflr: Flr.TransactionBuilder,
+  sgb: Sgb.TransactionBuilder,
+  tsgb: Sgb.TransactionBuilder,
+  xdc: Xdc.TransactionBuilder,
+  txdc: Xdc.TransactionBuilder,
+  wemix: Wemix.TransactionBuilder,
+  twemix: Wemix.TransactionBuilder,
 };
 
 /**

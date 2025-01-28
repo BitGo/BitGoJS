@@ -125,6 +125,9 @@
       "path": "./modules/sdk-coin-ethw"
     },
     {
+      "path": "./modules/sdk-coin-flr"
+    },
+    {
       "path": "./modules/sdk-coin-hash"
     },
     {
@@ -150,6 +153,9 @@
     },
     {
       "path": "./modules/sdk-coin-oas"
+    },
+    {
+      "path": "./modules/sdk-coin-sgb"
     },
     {
       "path": "./modules/sdk-coin-opeth"
@@ -189,6 +195,12 @@
     },
     {
       "path": "./modules/sdk-coin-trx"
+    },
+    {
+      "path": "./modules/sdk-coin-wemix"
+    },
+    {
+      "path": "./modules/sdk-coin-xdc"
     },
     {
       "path": "./modules/sdk-coin-xlm"

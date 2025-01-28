@@ -47,6 +47,7 @@ import {
   Eth2,
   Ethw,
   EthLikeCoin,
+  Flr,
   TethLikeCoin,
   FiatEur,
   FiatGBP,
@@ -71,6 +72,7 @@ import {
   Rune,
   Rbtc,
   Sei,
+  Sgb,
   Sol,
   StellarToken,
   Stx,
@@ -107,6 +109,7 @@ import {
   Tetc,
   Teth,
   Teth2,
+  Tflr,
   TfiatEur,
   TfiatGBP,
   TfiatUsd,
@@ -125,21 +128,26 @@ import {
   Trbtc,
   Trune,
   Trx,
+  Tsgb,
   Tsei,
   Tsol,
   Tstx,
   Tsui,
   Tsusd,
+  Twemix,
   Ttao,
   Ttia,
   Tton,
   Ttrx,
   Txlm,
+  Txdc,
   Txrp,
   Txtz,
   Tzec,
   Tzeta,
   Tzketh,
+  Wemix,
+  Xdc,
   Xlm,
   Xrp,
   XrpToken,
@@ -184,6 +192,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('fiateur', FiatEur.createInstance);
   globalCoinFactory.register('fiatgbp', FiatGBP.createInstance);
   globalCoinFactory.register('fiatusd', FiatUsd.createInstance);
+  globalCoinFactory.register('flr', Flr.createInstance);
   globalCoinFactory.register('gteth', Gteth.createInstance);
   globalCoinFactory.register('hash', Hash.createInstance);
   globalCoinFactory.register('hbar', Hbar.createInstance);
@@ -202,6 +211,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('rbtc', Rbtc.createInstance);
   globalCoinFactory.register('thorchain:rune', Rune.createInstance);
   globalCoinFactory.register('sei', Sei.createInstance);
+  globalCoinFactory.register('sgb', Sgb.createInstance);
   globalCoinFactory.register('sol', Sol.createInstance);
   globalCoinFactory.register('stx', Stx.createInstance);
   globalCoinFactory.register('sui', Sui.createInstance);
@@ -241,6 +251,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tfiateur', TfiatEur.createInstance);
   globalCoinFactory.register('tfiatgbp', TfiatGBP.createInstance);
   globalCoinFactory.register('tfiatusd', TfiatUsd.createInstance);
+  globalCoinFactory.register('tflr', Tflr.createInstance);
   globalCoinFactory.register('thash', Thash.createInstance);
   globalCoinFactory.register('thbar', Thbar.createInstance);
   globalCoinFactory.register('ticp', Ticp.createInstance);
@@ -254,6 +265,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tosmo', Tosmo.createInstance);
   globalCoinFactory.register('tpolygon', Tpolygon.createInstance);
   globalCoinFactory.register('trbtc', Trbtc.createInstance);
+  globalCoinFactory.register('tsgb', Tsgb.createInstance);
   globalCoinFactory.register('tthorchain:rune', Trune.createInstance);
   globalCoinFactory.register('trx', Trx.createInstance);
   globalCoinFactory.register('tsei', Tsei.createInstance);
@@ -265,15 +277,19 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('ttia', Ttia.createInstance);
   globalCoinFactory.register('tton', Tton.createInstance);
   globalCoinFactory.register('ttrx', Ttrx.createInstance);
+  globalCoinFactory.register('txdc', Txdc.createInstance);
   globalCoinFactory.register('txlm', Txlm.createInstance);
   globalCoinFactory.register('txrp', Txrp.createInstance);
   globalCoinFactory.register('txtz', Txtz.createInstance);
   globalCoinFactory.register('tzec', Tzec.createInstance);
   globalCoinFactory.register('tzeta', Tzeta.createInstance);
   globalCoinFactory.register('tzketh', Tzketh.createInstance);
+  globalCoinFactory.register('twemix', Twemix.createInstance);
+  globalCoinFactory.register('xdc', Xdc.createInstance);
   globalCoinFactory.register('xlm', Xlm.createInstance);
   globalCoinFactory.register('xrp', Xrp.createInstance);
   globalCoinFactory.register('xtz', Xtz.createInstance);
+  globalCoinFactory.register('wemix', Wemix.createInstance);
   globalCoinFactory.register('zec', Zec.createInstance);
   globalCoinFactory.register('zeta', Zeta.createInstance);
   globalCoinFactory.register('zketh', Zketh.createInstance);
