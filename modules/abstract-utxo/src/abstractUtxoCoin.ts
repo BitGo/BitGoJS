@@ -74,7 +74,8 @@ import { toBip32Triple, UtxoKeychain, UtxoNamedKeychains } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
-import { UtxoWallet } from './wallet';
+import { isUtxoWalletData, UtxoWallet } from './wallet';
+import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
@@ -1094,6 +1095,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   async presignTransaction(params: PresignTransactionOptions): Promise<any> {
+    if (params.walletData && isUtxoWalletData(params.walletData) && isDescriptorWalletData(params.walletData)) {
+      return params;
+    }
     // In the case that we have a 'psbt-lite' transaction format, we want to indicate in signing to not fail
     const txHex = (params.txHex ?? params.txPrebuild?.txHex) as string;
     if (
