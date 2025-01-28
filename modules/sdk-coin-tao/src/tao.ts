@@ -42,7 +42,7 @@ export interface VerifiedTransactionParameters {
 export class Tao extends SubstrateCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo);
+    super(bitgo, staticsCoin);
 
     if (!staticsCoin) {
       throw new Error('missing required constructor parameter staticsCoin');
