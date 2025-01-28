@@ -148,6 +148,9 @@
       "path": "../sdk-coin-ethw"
     },
     {
+      "path": "../sdk-coin-flr"
+    },
+    {
       "path": "../sdk-coin-hash"
     },
     {
@@ -193,6 +196,9 @@
       "path": "../sdk-coin-sei"
     },
     {
+      "path": "../sdk-coin-sgb"
+    },
+    {
       "path": "../sdk-coin-sol"
     },
     {
@@ -214,7 +220,13 @@
       "path": "../sdk-coin-trx"
     },
     {
+      "path": "../sdk-coin-wemix"
+    },
+    {
       "path": "../sdk-coin-xlm"
+    },
+    {
+      "path": "../sdk-coin-xdc"
     },
     {
       "path": "../sdk-coin-xrp"
