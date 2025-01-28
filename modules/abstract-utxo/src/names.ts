@@ -1,5 +1,35 @@
 import * as utxolib from '@bitgo/utxo-lib';
 
+export const utxoCoinsMainnet = ['btc', 'bch', 'bcha', 'bsv', 'btg', 'dash', 'doge', 'ltc', 'zec'] as const;
+export const utxoCoinsTestnet = [
+  'tbtc',
+  'tbch',
+  'tbsv',
+  'tdash',
+  'tdoge',
+  'tltc',
+  'tzec',
+  'tbtcsig',
+  'tbtc4',
+  'tbtcbgsig',
+] as const;
+
+export type UtxoCoinNameMainnet = (typeof utxoCoinsMainnet)[number];
+export type UtxoCoinNameTestnet = (typeof utxoCoinsTestnet)[number];
+export type UtxoCoinName = UtxoCoinNameMainnet | UtxoCoinNameTestnet;
+
+export function isUtxoCoinNameMainnet(coinName: string): coinName is UtxoCoinNameMainnet {
+  return utxoCoinsMainnet.includes(coinName as UtxoCoinNameMainnet);
+}
+
+export function isUtxoCoinNameTestnet(coinName: string): coinName is UtxoCoinNameTestnet {
+  return utxoCoinsTestnet.includes(coinName as UtxoCoinNameTestnet);
+}
+
+export function isUtxoCoinName(coinName: string): coinName is UtxoCoinName {
+  return isUtxoCoinNameMainnet(coinName) || isUtxoCoinNameTestnet(coinName);
+}
+
 function getNetworkName(n: utxolib.Network): utxolib.NetworkName {
   const name = utxolib.getNetworkName(n);
   if (!name) {
@@ -12,7 +42,7 @@ function getNetworkName(n: utxolib.Network): utxolib.NetworkName {
  * @param n
  * @returns the family name for a network. Testnets and mainnets of the same coin share the same family name.
  */
-export function getFamilyFromNetwork(n: utxolib.Network): string {
+export function getFamilyFromNetwork(n: utxolib.Network): UtxoCoinNameMainnet {
   switch (getNetworkName(n)) {
     case 'bitcoin':
     case 'testnet':
