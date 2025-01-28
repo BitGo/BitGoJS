@@ -18,7 +18,7 @@
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=16 <21"
+    "node": ">=14 <21"
   },
   "repository": {
     "type": "git",
