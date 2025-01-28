@@ -80,7 +80,8 @@ export class TransferTransaction extends Transaction {
     const simpleTxn = await aptos.transaction.build.simple({
       sender: senderAddress,
       data: {
-        function: '0x1::aptos_account::transfer',
+        function: '0x1::aptos_account::transfer_coins',
+        typeArguments: ['0x1::aptos_coin::AptosCoin'],
         functionArguments: [recipientAddress, this.recipient.amount],
       },
       options: {
