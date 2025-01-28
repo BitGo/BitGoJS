@@ -16585,6 +16585,15 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'd6bee044-de5b-4ce2-8ed2-dbae6f23e728',
+    'sol:enron',
+    'Enron',
+    9,
+    'BktHEAc2WS8TQi2vmavn1rA4L1WJuwF3Vkk3DnwwARti', //https://solscan.io/token/BktHEAc2WS8TQi2vmavn1rA4L1WJuwF3Vkk3DnwwARti
+    UnderlyingAsset['sol:enron'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '9f5d23da-9574-4377-aeaa-2bae4e0f7a33',
     'sol:zerebro',
     'ZEREBRO',

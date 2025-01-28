@@ -2379,6 +2379,7 @@ export enum UnderlyingAsset {
   'sol:axs' = 'sol:axs',
   'sol:sand' = 'sol:sand',
   'sol:ens' = 'sol:ens',
+  'sol:enron' = 'sol:enron',
   'sol:jitosol' = 'sol:jitosol',
   'sol:zeus' = 'sol:zeus',
   'sol:kmno' = 'sol:kmno',
