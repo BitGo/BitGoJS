@@ -93,7 +93,15 @@ export class SubstrateCoin extends BaseCoin {
 
   /** @inheritDoc **/
   generateKeyPair(seed?: Buffer): SubstrateKeyPair {
-    throw new Error('Method not implemented.');
+    const keyPair = seed ? utils.keyPairFromSeed(new Uint8Array(seed)) : new SubstrateKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
   }
 
   /** @inheritDoc **/

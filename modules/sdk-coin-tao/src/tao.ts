@@ -10,9 +10,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Interface, KeyPair, SubstrateCoin, Utils } from '@bitgo/abstract-substrate';
-
-const utils = Utils.default;
+import { Interface, KeyPair, SubstrateCoin } from '@bitgo/abstract-substrate';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
@@ -73,17 +71,6 @@ export class Tao extends SubstrateCoin {
     return {};
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? utils.keyPairFromSeed(new Uint8Array(seed)) : new KeyPair();
-    const keys = keyPair.getKeys();
-    if (!keys.prv) {
-      throw new Error('Missing prv in key generation.');
-    }
-    return {
-      pub: keys.pub,
-      prv: keys.prv,
-    };
-  }
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
     const prv = params.prv;
 
