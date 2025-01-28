@@ -4,10 +4,13 @@ import { Keyring } from '@polkadot/keyring';
 import { createPair } from '@polkadot/keyring/pair';
 import { KeyringPair } from '@polkadot/keyring/types';
 
-export class TaoKeyPair extends KeyPair {
-  TYPE = 'ed25519';
-  keyring = new Keyring({ type: TYPE });
+const TYPE = 'ed25519';
+const keyring = new Keyring({ type: TYPE });
 
+export class TaoKeyPair extends KeyPair {
+  constructor(keyPair: KeyPair) {
+    super(keyPair);
+  }
   /**
    * Helper function to create the KeyringPair for signing a dot transaction.
    *

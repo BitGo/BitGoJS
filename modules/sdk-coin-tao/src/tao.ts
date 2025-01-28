@@ -1,8 +1,10 @@
+import * as _ from 'lodash';
 import {
   BaseCoin,
   BitGoBase,
   ParsedTransaction,
   ParseTransactionOptions,
+  SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
@@ -11,6 +13,31 @@ import { SubstrateCoin, Utils } from '@bitgo/abstract-substrate';
 import { TaoKeyPair } from './lib';
 
 const utils = Utils.default;
+
+export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
+
+export interface SignTransactionOptions extends BaseSignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string;
+}
+
+export interface TransactionPrebuild {
+  txHex: string;
+  transaction: Interface.TxData;
+}
+
+export interface ExplainTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  publicKey: string;
+  feeInfo: {
+    fee: string;
+  };
+}
+
+export interface VerifiedTransactionParameters {
+  txHex: string;
+  prv: string;
+}
 
 export class Tao extends SubstrateCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -56,5 +83,53 @@ export class Tao extends SubstrateCoin {
       pub: keys.pub,
       prv: keys.prv,
     };
+  }
+  verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
+    const prv = params.prv;
+
+    const txHex = params.txPrebuild.txHex;
+
+    if (!txHex) {
+      throw new Error('missing txPrebuild parameter');
+    }
+
+    if (!_.isString(txHex)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txHex}`);
+    }
+
+    if (!prv) {
+      throw new Error('missing prv parameter to sign transaction');
+    }
+
+    if (!_.isString(prv)) {
+      throw new Error(`prv must be a string, got type ${typeof prv}`);
+    }
+
+    if (!_.has(params, 'pubs')) {
+      throw new Error('missing public key parameter to sign transaction');
+    }
+
+    return { txHex, prv };
+  }
+
+  async signTransaction(params: SignTransactionOptions): Promise<SignTransactionResult> {
+    const { txHex, prv } = this.verifySignTransactionParams(params);
+    const factory = this.getBuilder();
+    const txBuilder = factory.from(txHex);
+    const keyPair = new TaoKeyPair({ prv: prv });
+    const { referenceBlock, blockNumber, transactionVersion, sender } = params.txPrebuild.transaction;
+
+    txBuilder
+      .validity({ firstValid: blockNumber, maxDuration: this.MAX_VALIDITY_DURATION })
+      .referenceBlock(referenceBlock)
+      .version(transactionVersion)
+      .sender({ address: sender })
+      .sign({ key: keyPair.getKeys().prv });
+    const transaction = await txBuilder.build();
+    if (!transaction) {
+      throw new Error('Invalid transaction');
+    }
+    const signedTxHex = transaction.toBroadcastFormat();
+    return { txHex: signedTxHex };
   }
 }

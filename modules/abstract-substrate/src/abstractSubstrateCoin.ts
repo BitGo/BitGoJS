@@ -12,7 +12,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { Interface, KeyPair as SubstrateKeyPair, Utils } from './lib';
+import { Interface, Utils } from './lib';
 
 const utils = Utils.default;
 
@@ -55,9 +55,9 @@ export class SubstrateCoin extends BaseCoin {
     this._staticsCoin = staticsCoin;
   }
 
-  static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new SubstrateCoin(bitgo, staticsCoin);
-  }
+  // static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
+  //   return new SubstrateCoin(bitgo, staticsCoin);
+  // }
 
   /**
    * Creates an instance of TransactionBuilderFactory for the coin specific sdk
@@ -162,23 +162,6 @@ export class SubstrateCoin extends BaseCoin {
 
   /** @inheritDoc **/
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    const { txHex, prv } = this.verifySignTransactionParams(params);
-    const factory = this.getBuilder();
-    const txBuilder = factory.from(txHex);
-    const keyPair = new SubstrateKeyPair({ prv: prv });
-    const { referenceBlock, blockNumber, transactionVersion, sender } = params.txPrebuild.transaction;
-
-    txBuilder
-      .validity({ firstValid: blockNumber, maxDuration: this.MAX_VALIDITY_DURATION })
-      .referenceBlock(referenceBlock)
-      .version(transactionVersion)
-      .sender({ address: sender })
-      .sign({ key: keyPair.getKeys().prv });
-    const transaction = await txBuilder.build();
-    if (!transaction) {
-      throw new Error('Invalid transaction');
-    }
-    const signedTxHex = transaction.toBroadcastFormat();
-    return { txHex: signedTxHex };
+    throw new Error('Method not implemented.');
   }
 }
