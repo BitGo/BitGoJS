@@ -9,7 +9,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { SubstrateCoin, Utils } from '@bitgo/abstract-substrate';
+import { Interface, SubstrateCoin, Utils } from '@bitgo/abstract-substrate';
 import { TaoKeyPair } from './lib';
 
 const utils = Utils.default;
