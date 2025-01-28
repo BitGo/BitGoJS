@@ -1,10 +1,11 @@
 import { DotAssetTypes, BaseUtils, DotAddressFormat, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
-import { decodeAddress, encodeAddress } from '@polkadot/keyring';
+import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
+import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload } from '@polkadot/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
-import { signatureVerify } from '@polkadot/util-crypto';
+import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { Args, BaseTxInfo, defineMethod, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { construct } from '@substrate/txwrapper-polkadot';
@@ -28,6 +29,7 @@ import {
   TxMethod,
   UnstakeBatchCallArgs,
 } from './iface';
+import { KeyPair } from '.';
 
 const PROXY_METHOD_ARG = 2;
 // map to retrieve the address encoding format when the key is the asset name
@@ -159,6 +161,19 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * keyPairFromSeed generates an object with secretKey and publicKey using the substrate sdk
+   * @param seed 32 bytes long seed
+   * @returns KeyPair
+   */
+  keyPairFromSeed(seed: Uint8Array): KeyPair {
+    const keyring = new Keyring({ type: 'ed25519' });
+    const keyringPair = keyring.addFromSeed(seed);
+    const pairJson = keyringPair.toJson();
+    const decodedKeyPair = decodePair('', base64Decode(pairJson.encoded), pairJson.encoding.type);
+    return new KeyPair({ prv: Buffer.from(decodedKeyPair.secretKey).toString('hex') });
+  }
+
+  /**
    * Signing function. Implement this on the OFFLINE signing device.
    *
    * @param {KeyringPair} pair - The signing pair.
@@ -199,6 +214,18 @@ export class Utils implements BaseUtils {
       metadataRpc,
       registry,
     });
+  }
+
+  /**
+   * Decodes the substrate address from the given format
+   *
+   * @param {string} address
+   * @param {number} [ss58Format]
+   * @returns {string}
+   */
+  decodeSubstrateAddress(address: string, ss58Format: number): string {
+    const keypair = new KeyPair({ pub: Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex') });
+    return keypair.getAddress(ss58Format);
   }
 
   /**
@@ -395,6 +422,17 @@ export class Utils implements BaseUtils {
       signature = signature.substr(2);
     }
     return signature;
+  }
+
+  /**
+   * Decodes the dot address from the given format
+   *
+   * @param {string} address
+   * @param {number} [ss58Format]
+   * @returns {KeyPair}
+   */
+  decodeSubstrateAddressToKeyPair(address: string, ss58Format?: number): KeyPair {
+    return new KeyPair({ pub: Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex') });
   }
 
   /**
