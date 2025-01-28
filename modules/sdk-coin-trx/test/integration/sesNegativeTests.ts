@@ -5,9 +5,9 @@ import { getBuilder } from '../../src/lib/builder';
 
 // Test to verify that monkey patching coins.get is blocked
 describe('SES Negative Tests', function () {
-  it('should block monkey patching coins.get', function () {
-    // Attempt to monkey patch coins.get
+  it('should block coins.get rewrite', function () {
     assert.throws(() => {
+      // Dynamically updating coins.get:
       coins.get = function (_key: string) {
         // MALICIOUS CODE
 
@@ -35,8 +35,10 @@ describe('SES Negative Tests', function () {
       getBuilder('trx');
     }, "TypeError: Cannot assign to read only property 'get' of object '[object Object]'");
   });
+
   it('should block prototype modification', function () {
     assert.throws(() => {
+      // Dynamically updating Array.prototype.push:
       Array.prototype.push = function () {
         // MALICIOUS CODE
 
