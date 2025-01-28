@@ -11,7 +11,6 @@ import {
   toUint8Array,
 } from '@bitgo/sdk-core';
 import bs58 from 'bs58';
-import utils from './utils';
 import * as nacl from 'tweetnacl';
 
 const TYPE = 'ed25519';
@@ -46,10 +45,6 @@ export abstract class KeyPair extends Ed25519KeyPair {
    * or substrate format used for westend (starts with 5)
    */
   getAddress(format: DotAddressFormat): string {
-    // let encodedAddress = this.createPolkadotPair().address;
-    // encodedAddress = keyring.encodeAddress(encodedAddress, format as number);
-
-    // return encodedAddress;
     throw new Error('Method not implemented.');
   }
 
@@ -60,13 +55,6 @@ export abstract class KeyPair extends Ed25519KeyPair {
       result.prv = this.keyPair.prv;
     }
     return result;
-  }
-
-  /** @inheritdoc */
-  recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
-    const decodedSeed = utils.decodeSeed(prv);
-    const bufferFromSeed = Buffer.from(decodedSeed.seed);
-    return utils.keyPairFromSeed(bufferFromSeed).keyPair;
   }
 
   /** @inheritdoc */
