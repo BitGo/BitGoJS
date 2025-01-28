@@ -2,7 +2,6 @@ import * as _ from 'lodash';
 import {
   BaseCoin,
   BitGoBase,
-  KeyPair,
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -12,7 +11,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { Interface, Utils } from './lib';
+import { Interface, Utils, KeyPair as SubstrateKeyPair } from './lib';
 
 const utils = Utils.default;
 
@@ -93,7 +92,7 @@ export class SubstrateCoin extends BaseCoin {
   }
 
   /** @inheritDoc **/
-  generateKeyPair(seed?: Buffer): KeyPair {
+  generateKeyPair(seed?: Buffer): SubstrateKeyPair {
     throw new Error('Method not implemented.');
   }
 
