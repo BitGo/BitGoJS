@@ -1584,7 +1584,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ICP,
     BaseUnit.ICP,
     ICP_FEATURES,
-    KeyCurve.Ed25519
+    KeyCurve.Secp256k1
   ),
   account(
     'ce572773-26c2-4038-a96d-26649a9a96df',
@@ -1595,7 +1595,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ICP,
     BaseUnit.ICP,
     ICP_FEATURES,
-    KeyCurve.Ed25519
+    KeyCurve.Secp256k1
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',

@@ -65,6 +65,7 @@ interface EnvironmentTemplate {
   flrExplorerApiToken?: string;
   sgbExplorerBaseUrl?: string;
   sgbExplorerApiToken?: string;
+  rosettaNodeURL: string;
   wemixExplorerBaseUrl?: string;
   wemixExplorerApiToken?: string;
 }
@@ -165,6 +166,7 @@ const mainnetBase: EnvironmentTemplate = {
   etcNodeUrl: 'https://etc.blockscout.com',
   coredaoExplorerBaseUrl: 'https://scan.coredao.org/',
   oasExplorerBaseUrl: 'https://explorer.oasys.games',
+  rosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -220,6 +222,7 @@ const testnetBase: EnvironmentTemplate = {
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
   coredaoExplorerBaseUrl: 'https://scan.test.btcs.network',
   oasExplorerBaseUrl: 'https://explorer.testnet.oasys.games',
+  rosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

@@ -1478,6 +1478,13 @@
     debug "^3.1.0"
     lodash.once "^4.1.1"
 
+"@dfinity/principal@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.npmjs.org/@dfinity/principal/-/principal-2.2.0.tgz#36bd46e9e4d9d96eee8288b0c68762299e081dcf"
+  integrity sha512-8Yxb/6B4BWvV64HJ7X8sbDjoBaEamAQgOZ0MK0I44lZiRHomAYeUJMrw3yBg9jI1T62lijLcl401FAXBOzciiQ==
+  dependencies:
+    "@noble/hashes" "^1.3.1"
+
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.7"
   resolved "https://registry.npmjs.org/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"

@@ -9,8 +9,11 @@ import {
   KeyPair,
   SignTransactionOptions,
   SignedTransaction,
+  Environments,
 } from '@bitgo/sdk-core';
+import { KeyPair as IcpKeyPair } from './lib/keyPair';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import utils from './lib/utils';
 
 /**
  * Class representing the Internet Computer (ICP) coin.
@@ -67,8 +70,20 @@ export class Icp extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
-    throw new Error('Method not implemented.');
+  /**
+   * Generate a new keypair for this coin.
+   * @param seed Seed from which the new keypair should be generated, otherwise a random seed is used
+   */
+  public generateKeyPair(seed?: Buffer): KeyPair {
+    const keyPair = seed ? new IcpKeyPair({ seed }) : new IcpKeyPair();
+    const keys = keyPair.getExtendedKeys();
+    if (!keys.xprv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.xpub,
+      prv: keys.xprv,
+    };
   }
 
   isValidAddress(address: string): boolean {
@@ -79,8 +94,8 @@ export class Icp extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  isValidPub(_: string): boolean {
-    throw new Error('Method not implemented.');
+  isValidPub(key: string): boolean {
+    return utils.isValidPublicKey(key);
   }
 
   isValidPrv(_: string): boolean {
@@ -95,5 +110,20 @@ export class Icp extends BaseCoin {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  private async getAddressFromPublicKey(hexEncodedPublicKey: string) {
+    const isKeyValid = this.isValidPub(hexEncodedPublicKey);
+    if (!isKeyValid) {
+      throw new Error('Public Key is not in a valid Hex Encoded Format');
+    }
+    const compressedKey = utils.compressPublicKey(hexEncodedPublicKey);
+    const KeyPair = new IcpKeyPair({ pub: compressedKey });
+    return KeyPair.getAddress();
+  }
+
+  /** @inheritDoc **/
+  protected getPublicNodeUrl(): string {
+    return Environments[this.bitgo.getEnv()].rosettaNodeURL;
   }
 }

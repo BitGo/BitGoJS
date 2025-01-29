@@ -41,7 +41,13 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^28.22.0",
-    "@bitgo/statics": "^50.22.0"
+    "@bitgo/statics": "^50.22.0",
+    "@bitgo/utxo-lib": "^11.2.1",
+    "@dfinity/agent": "^2.2.0",
+    "@dfinity/candid": "^2.2.0",
+    "@dfinity/principal": "^2.2.0",
+    "crc-32": "^1.2.2",
+    "elliptic": "^6.6.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.58.5",
