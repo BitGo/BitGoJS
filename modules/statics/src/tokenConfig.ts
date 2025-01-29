@@ -82,7 +82,7 @@ export type SuiTokenConfig = BaseNetworkConfig & {
 };
 
 export type AptTokenConfig = BaseNetworkConfig & {
-  fungibleAssetAddress: string;
+  assetId: string;
 };
 
 export interface Tokens {
@@ -523,7 +523,7 @@ const formattedAptTokens = coins.reduce((acc: AptTokenConfig[], coin) => {
       coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
       name: coin.fullName,
-      fungibleAssetAddress: coin.fungibleAssetAddress,
+      assetId: coin.assetId,
       decimalPlaces: coin.decimalPlaces,
     });
   }
