@@ -11,6 +11,18 @@ import {
 } from '@bitgo/public-types';
 import assert from 'assert';
 
+function partyIdToSignatureShareType(partyId: 0 | 1 | 2): SignatureShareType {
+  assert(partyId === 0 || partyId === 1 || partyId === 2, 'Invalid partyId for MPCv2 signing');
+  switch (partyId) {
+    case 0:
+      return SignatureShareType.USER;
+    case 1:
+      return SignatureShareType.BACKUP;
+    case 2:
+      return SignatureShareType.BITGO;
+  }
+}
+
 /**
  Helpers in this take care of all interaction with WP API's
 **/
@@ -18,7 +30,8 @@ import assert from 'assert';
 export async function getSignatureShareRoundOne(
   round1Message: DklsTypes.DeserializedBroadcastMessage,
   userGpgKey: openpgp.SerializedKeyPair<string>,
-  partyId: 0 | 1 = 0
+  partyId: 0 | 1 = 0,
+  otherSignerPartyId: 0 | 1 | 2 = 2
 ): Promise<SignatureShareRecord> {
   const serializedMessages = DklsTypes.serializeMessages({
     broadcastMessages: [round1Message],
@@ -45,8 +58,8 @@ export async function getSignatureShareRoundOne(
   };
   const serializedShare = JSON.stringify(share);
   return {
-    from: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
-    to: SignatureShareType.BITGO,
+    from: partyIdToSignatureShareType(partyId),
+    to: partyIdToSignatureShareType(otherSignerPartyId),
     share: serializedShare,
   };
 }
@@ -55,18 +68,19 @@ export async function getSignatureShareRoundTwo(
   userToBitGoMessages2: DklsTypes.DeserializedMessages,
   userToBitGoMessages3: DklsTypes.DeserializedMessages,
   userGpgKey: openpgp.SerializedKeyPair<string>,
-  bitgoGpgKey: openpgp.Key,
-  partyId: 0 | 1 = 0
+  otherPartyGpgKey: openpgp.Key,
+  partyId: 0 | 1 = 0,
+  otherSignerPartyId: 0 | 1 | 2 = 2
 ): Promise<SignatureShareRecord> {
   const userToBitGoEncryptedMsg2 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages2),
-    [getBitGoPartyGpgKey(bitgoGpgKey)],
+    [getBitGoPartyGpgKey(otherPartyGpgKey, otherSignerPartyId)],
     [getUserPartyGpgKey(userGpgKey, partyId)]
   );
 
   const userToBitGoEncryptedMsg3 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages3),
-    [getBitGoPartyGpgKey(bitgoGpgKey)],
+    [getBitGoPartyGpgKey(otherPartyGpgKey, otherSignerPartyId)],
     [getUserPartyGpgKey(userGpgKey, partyId)]
   );
   assert(userToBitGoEncryptedMsg2.p2pMessages.length, 'User to BitGo messages 2 not present.');
@@ -93,8 +107,8 @@ export async function getSignatureShareRoundTwo(
     },
   };
   return {
-    from: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
-    to: SignatureShareType.BITGO,
+    from: partyIdToSignatureShareType(partyId),
+    to: partyIdToSignatureShareType(otherSignerPartyId),
     share: JSON.stringify(share),
   };
 }
@@ -103,11 +117,12 @@ export async function getSignatureShareRoundThree(
   userToBitGoMessages4: DklsTypes.DeserializedMessages,
   userGpgKey: openpgp.SerializedKeyPair<string>,
   bitgoGpgKey: openpgp.Key,
-  partyId: 0 | 1 = 0
+  partyId: 0 | 1 = 0,
+  otherSignerPartyId: 0 | 1 | 2 = 2
 ): Promise<SignatureShareRecord> {
   const userToBitGoEncryptedMsg4 = await DklsComms.encryptAndAuthOutgoingMessages(
     DklsTypes.serializeMessages(userToBitGoMessages4),
-    [getBitGoPartyGpgKey(bitgoGpgKey)],
+    [getBitGoPartyGpgKey(bitgoGpgKey, otherSignerPartyId)],
     [getUserPartyGpgKey(userGpgKey, partyId)]
   );
   assert(MPCv2PartyFromStringOrNumber.is(userToBitGoEncryptedMsg4.broadcastMessages[0].from));
@@ -126,8 +141,8 @@ export async function getSignatureShareRoundThree(
     },
   };
   return {
-    from: partyId === 0 ? SignatureShareType.USER : SignatureShareType.BACKUP,
-    to: SignatureShareType.BITGO,
+    from: partyIdToSignatureShareType(partyId),
+    to: partyIdToSignatureShareType(otherSignerPartyId),
     share: JSON.stringify(share),
   };
 }
@@ -190,9 +205,9 @@ export async function verifyBitGoMessagesAndSignaturesRoundTwo(
   );
 }
 
-export function getBitGoPartyGpgKey(key: openpgp.Key): DklsTypes.PartyGpgKey {
+export function getBitGoPartyGpgKey(key: openpgp.Key, partyId: 0 | 1 | 2 = 2): DklsTypes.PartyGpgKey {
   return {
-    partyId: 2,
+    partyId: partyId,
     gpgKey: key.armor(),
   };
 }
