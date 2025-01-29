@@ -1,13 +1,14 @@
-import { TransactionBuilder } from './transactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { ProxyType } from './iface';
+import { NativeTransferBuilder } from './nativeTransferBuilder';
 
-export class TransferBuilder extends TransactionBuilder {
+export class TransferBuilder extends NativeTransferBuilder {
+  protected _amount: string;
+  protected _to: string;
+  protected _owner: string;
+  protected _forceProxyType: ProxyType;
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-  }
-
-  protected get transactionType(): TransactionType {
-    return TransactionType.Send;
   }
 }

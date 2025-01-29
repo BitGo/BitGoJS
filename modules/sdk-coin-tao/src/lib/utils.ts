@@ -1,4 +1,5 @@
 import { DotAssetTypes, BaseUtils, DotAddressFormat, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
 import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';
@@ -18,6 +19,7 @@ import {
   BatchArgs,
   BatchCallObject,
   HexString,
+  Material,
   ProxyArgs,
   ProxyCallArgs,
   StakeArgs,
@@ -30,6 +32,7 @@ import {
   UnstakeBatchCallArgs,
 } from './iface';
 import { KeyPair } from '.';
+import { mainnetMetadataRpc, westendMetadataRpc } from '../resources';
 
 const PROXY_METHOD_ARG = 2;
 // map to retrieve the address encoding format when the key is the asset name
@@ -435,6 +438,21 @@ export class Utils implements BaseUtils {
     return new KeyPair({ pub: Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex') });
   }
 
+  getMaterial(coinConfig: Readonly<CoinConfig>): Material {
+    const networkConfig = coinConfig.network as DotNetwork;
+    const { specName, specVersion, chainName, txVersion, genesisHash } = networkConfig;
+    const metadataRpc = networkConfig.specName === 'westend' ? westendMetadataRpc : mainnetMetadataRpc;
+
+    return {
+      specName,
+      specVersion,
+      chainName,
+      metadata: metadataRpc,
+      txVersion,
+      genesisHash,
+    } as Material;
+  }
+
   /**
    * Checks whether the given input is a hex string with with 0 value
    * used to check whether a given transaction is immortal or mortal
@@ -496,6 +514,18 @@ export class Utils implements BaseUtils {
    */
   isHexPrefixed(str: string): boolean {
     return str.slice(0, 2) === '0x';
+  }
+
+  /**
+   * Decodes the dot address from the given format
+   *
+   * @param {string} address
+   * @param {number} [ss58Format]
+   * @returns {string}
+   */
+  decodeDotAddress(address: string, ss58Format: number): string {
+    const keypair = new KeyPair({ pub: Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex') });
+    return keypair.getAddress(ss58Format);
   }
 }
 
