@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.25.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.24.1...bitgo@39.25.0) (2025-01-28)
+
+### Features
+
+- docker config for flr,sgb,xdc,wemix ([8b65d3f](https://github.com/BitGo/BitGoJS/commit/8b65d3fc66001b99b1135d1968546a55f1ae279d))
+- **statics:** add apt usdt token ([37224e8](https://github.com/BitGo/BitGoJS/commit/37224e89dbfb7e0173c4d5ab30ddbc3d45ea7aba))
+
 ## [39.24.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.24.0...bitgo@39.24.1) (2025-01-23)
 
 **Note:** Version bump only for package bitgo

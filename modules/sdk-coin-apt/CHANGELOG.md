@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.5.1...@bitgo/sdk-coin-apt@1.6.0) (2025-01-28)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** add getter for sender pubkey ([92a23c6](https://github.com/BitGo/BitGoJS/commit/92a23c67bea9e7843f73d6375fb096c9092ed175))
+- **sdk-coin-apt:** initialize fee payer address ([358822a](https://github.com/BitGo/BitGoJS/commit/358822a4bb53685755a71760ffee0bf11aa6193a))
+
+### Features
+
+- **sdk-coin-apt:** add Apt Token Skeleton ([596f5e5](https://github.com/BitGo/BitGoJS/commit/596f5e506c61c7b93e8b0c24b8b29441ba3062ca))
+- **sdk-coin-apt:** use transfer_coins method ([0857aea](https://github.com/BitGo/BitGoJS/commit/0857aeaab78e79e041be04081d3506ae4ead0427))
+- **statics:** add apt usdt token ([37224e8](https://github.com/BitGo/BitGoJS/commit/37224e89dbfb7e0173c4d5ab30ddbc3d45ea7aba))
+
 ## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.5.0...@bitgo/sdk-coin-apt@1.5.1) (2025-01-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apt

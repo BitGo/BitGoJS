@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.3.1...@bitgo/account-lib@24.4.0) (2025-01-28)
+
+### Features
+
+- docker config for flr,sgb,xdc,wemix ([8b65d3f](https://github.com/BitGo/BitGoJS/commit/8b65d3fc66001b99b1135d1968546a55f1ae279d))
+
 ## [24.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.3.0...@bitgo/account-lib@24.3.1) (2025-01-23)
 
 **Note:** Version bump only for package @bitgo/account-lib
