@@ -12,6 +12,7 @@ import {
   UnstakingProgrammableTransaction,
   SuiProgrammableTransaction,
   TokenTransferProgrammableTransaction,
+  WalrusStakingProgrammableTransaction,
 } from './iface';
 import { StakingTransaction } from './stakingTransaction';
 import { TransferTransaction } from './transferTransaction';
@@ -23,6 +24,8 @@ import { CustomTransaction } from './customTransaction';
 import { CustomTransactionBuilder } from './customTransactionBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { TokenTransferTransaction } from './tokenTransferTransaction';
+import { WalrusStakingBuilder } from './walrusStakingBuilder';
+import { WalrusStakingTransaction } from './walrusStakingTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -55,6 +58,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const tokenTransferTx = new TokenTransferTransaction(this._coinConfig);
           tokenTransferTx.fromRawTransaction(raw);
           return this.getTokenTransferBuilder(tokenTransferTx);
+        case SuiTransactionType.WalrusStakeWithPool:
+          const walrusStakeTx = new WalrusStakingTransaction(this._coinConfig);
+          walrusStakeTx.fromRawTransaction(raw);
+          return this.getWalrusStakingBuilder(walrusStakeTx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -86,6 +93,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTokenTransferBuilder(tx?: Transaction<TokenTransferProgrammableTransaction>): TokenTransferBuilder {
     return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getWalrusStakingBuilder(tx?: Transaction<WalrusStakingProgrammableTransaction>): WalrusStakingBuilder {
+    return this.initializeBuilder(tx, new WalrusStakingBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

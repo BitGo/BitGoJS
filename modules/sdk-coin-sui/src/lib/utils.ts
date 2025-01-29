@@ -14,7 +14,9 @@ import { BCS, fromB64 } from '@mysten/bcs';
 import {
   MethodNames,
   RequestAddStake,
+  RequestWalrusStakeWithPool,
   StakingProgrammableTransaction,
+  WalrusStakingProgrammableTransaction,
   SuiObjectInfo,
   SuiProgrammableTransaction,
   SuiTransaction,
@@ -195,6 +197,7 @@ export class Utils implements BaseUtils {
       case SuiTransactionType.TokenTransfer:
         return TransactionType.Send;
       case SuiTransactionType.AddStake:
+      case SuiTransactionType.WalrusStakeWithPool:
         return TransactionType.StakingAdd;
       case SuiTransactionType.WithdrawStake:
         return TransactionType.StakingWithdraw;
@@ -233,6 +236,8 @@ export class Utils implements BaseUtils {
           command.target.endsWith(MethodNames.PublicTransfer)
         ) {
           return SuiTransactionType.CustomTx;
+        } else if (command.target.endsWith(MethodNames.WalrusStakeWithPool)) {
+          return SuiTransactionType.WalrusStakeWithPool;
         } else {
           throw new InvalidTransactionError(`unsupported target method ${command.target}`);
         }
@@ -324,6 +329,29 @@ export class Utils implements BaseUtils {
         validatorAddress: address,
         amount: amounts[index],
       } as RequestAddStake;
+    });
+  }
+
+  getWalrusStakeWithPoolRequests(tx: WalrusStakingProgrammableTransaction): RequestWalrusStakeWithPool[] {
+    const amounts: number[] = [];
+    const addresses: string[] = [];
+    tx.transactions.forEach((transaction, i) => {
+      if (transaction.kind === 'SplitCoins') {
+        const amountInputIdx = ((transaction as SplitCoinsTransaction).amounts[0] as TransactionBlockInput).index;
+        amounts.push(utils.getAmount(tx.inputs[amountInputIdx] as TransactionBlockInput));
+      }
+      if (transaction.kind === 'MoveCall') {
+        const validatorAddressInputIdx = ((transaction as MoveCallTransaction).arguments[2] as TransactionBlockInput)
+          .index;
+        const validatorAddress = utils.getAddress(tx.inputs[validatorAddressInputIdx] as TransactionBlockInput);
+        addresses.push(validatorAddress);
+      }
+    });
+    return addresses.map((address, index) => {
+      return {
+        validatorAddress: address,
+        amount: amounts[index],
+      } as RequestWalrusStakeWithPool;
     });
   }
 
