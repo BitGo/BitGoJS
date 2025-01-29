@@ -3,13 +3,13 @@ import { coins } from '@bitgo/statics';
 import * as testData from '../../resources/apt';
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
-import { DigitalAssetTransaction } from '../../../src/lib/transaction/digitalAssetTransaction';
+import { DigitalAssetTransfer } from '../../../src/lib/transaction/digitalAssetTransfer';
 
 describe('Apt Digital Asset Transfer Builder', () => {
   const factory = getBuilderFactory('tapt');
   //TODO: change coin 'tapt' to digital asset (nft) when configured
   it('should build a digital asset transfer', async function () {
-    const digitalAssetTransfer = new DigitalAssetTransaction(coins.get('tapt'));
+    const digitalAssetTransfer = new DigitalAssetTransfer(coins.get('tapt'));
     const txBuilder = factory.getDigitalAssetTransactionBuilder(digitalAssetTransfer);
     txBuilder.sender(testData.sender2.address);
     txBuilder.recipient(testData.digitalTokenRecipients[0]);
@@ -21,7 +21,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
     txBuilder.sequenceNumber(14);
     txBuilder.expirationTime(1736246155);
     txBuilder.addFeePayerAddress(testData.feePayer.address);
-    const tx = (await txBuilder.build()) as DigitalAssetTransaction;
+    const tx = (await txBuilder.build()) as DigitalAssetTransfer;
     should.equal(tx.sender, testData.sender2.address);
     should.equal(tx.recipient.address, testData.digitalTokenRecipients[0].address);
     should.equal(tx.assetId, testData.digitalAssetAddress);
@@ -51,7 +51,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
 
   it('should build and send a signed tx', async function () {
     const txBuilder = factory.from(testData.DIGITAL_ASSET_TRANSFER);
-    const tx = (await txBuilder.build()) as DigitalAssetTransaction;
+    const tx = (await txBuilder.build()) as DigitalAssetTransfer;
     should.equal(tx.type, TransactionType.SendNFT);
     tx.inputs.length.should.equal(1);
     tx.inputs[0].should.deepEqual({
@@ -77,7 +77,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
   });
 
   it('should succeed to validate a valid signablePayload', async function () {
-    const transaction = new DigitalAssetTransaction(coins.get('tapt'));
+    const transaction = new DigitalAssetTransfer(coins.get('tapt'));
     const txBuilder = factory.getDigitalAssetTransactionBuilder(transaction);
     txBuilder.sender(testData.sender2.address);
     txBuilder.recipient(testData.digitalTokenRecipients[0]);
@@ -89,7 +89,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
     txBuilder.expirationTime(1736246155);
     txBuilder.assetId(testData.digitalAssetAddress);
     txBuilder.addFeePayerAddress(testData.feePayer.address);
-    const tx = (await txBuilder.build()) as DigitalAssetTransaction;
+    const tx = (await txBuilder.build()) as DigitalAssetTransfer;
     const signablePayload = tx.signablePayload;
     should.equal(
       signablePayload.toString('hex'),
@@ -98,7 +98,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
   });
 
   it('should build a unsigned tx and validate its toJson', async function () {
-    const transaction = new DigitalAssetTransaction(coins.get('tapt'));
+    const transaction = new DigitalAssetTransfer(coins.get('tapt'));
     const txBuilder = factory.getDigitalAssetTransactionBuilder(transaction);
     txBuilder.sender(testData.sender2.address);
     txBuilder.recipient(testData.digitalTokenRecipients[0]);
@@ -110,7 +110,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
     txBuilder.expirationTime(1736246155);
     txBuilder.assetId(testData.digitalAssetAddress);
     txBuilder.addFeePayerAddress(testData.feePayer.address);
-    const tx = (await txBuilder.build()) as DigitalAssetTransaction;
+    const tx = (await txBuilder.build()) as DigitalAssetTransfer;
     const toJson = tx.toJson();
     should.equal(toJson.sender, testData.sender2.address);
     should.deepEqual(toJson.recipient, {
@@ -127,7 +127,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
 
   it('should build a signed tx and validate its toJson', async function () {
     const txBuilder = factory.from(testData.DIGITAL_ASSET_TRANSFER);
-    const tx = (await txBuilder.build()) as DigitalAssetTransaction;
+    const tx = (await txBuilder.build()) as DigitalAssetTransfer;
     const toJson = tx.toJson();
     should.equal(toJson.id, '0xfb4f870c4ae1bc74f6ceff72d8ee92f109239be8e12ddb07ddf30d7e6bd30586');
     should.equal(toJson.sender, testData.sender2.address);

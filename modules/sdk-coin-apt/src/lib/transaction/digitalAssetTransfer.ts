@@ -21,7 +21,7 @@ import {
   DIGITAL_ASSET_TRANSFER_AMOUNT,
 } from '../constants';
 
-export class DigitalAssetTransaction extends Transaction {
+export class DigitalAssetTransfer extends Transaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._type = TransactionType.SendNFT;

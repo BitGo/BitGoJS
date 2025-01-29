@@ -1,16 +1,16 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { FungibleAssetTransaction } from '../transaction/fungibleAssetTransaction';
+import { FungibleAssetTransfer } from '../transaction/fungibleAssetTransfer';
 import { TransactionType } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
 import { FUNGIBLE_ASSET_TYPE_ARGUMENT } from '../constants';
 
-export class FungibleAssetTransactionBuilder extends TransactionBuilder {
+export class FungibleAssetTransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new FungibleAssetTransaction(_coinConfig);
+    this._transaction = new FungibleAssetTransfer(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {
@@ -24,7 +24,7 @@ export class FungibleAssetTransactionBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: FungibleAssetTransaction): void {
+  validateTransaction(transaction?: FungibleAssetTransfer): void {
     if (!transaction) {
       throw new Error('fungible asset transaction not defined');
     }
