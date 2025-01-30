@@ -1,4 +1,4 @@
-import { RequestAddStake, RequestWithdrawStakedSui } from '../../src/lib/iface';
+import { RequestAddStake, RequestWalrusStakeWithPool, RequestWithdrawStakedSui } from '../../src/lib/iface';
 import { DUMMY_SUI_GAS_PRICE } from '../../src/lib/constants';
 import { Recipient } from '@bitgo/sdk-core';
 import { SuiObjectRef } from '../../src/lib/mystenlab/types';
@@ -422,6 +422,17 @@ export const requestAddStakeMany: RequestAddStake[] = [
     validatorAddress: VALIDATOR_ADDRESS,
   },
 ];
+
+export const requestWalrusStakeWithPool: RequestWalrusStakeWithPool = {
+  amount: STAKING_AMOUNT,
+  validatorAddress: '0x255e8a2aeed1f9b9a7d15350af924038ea1e06e9a795fb2f43ec955e2dd19a9c',
+};
+
+export const walToken: SuiObjectRef = {
+  objectId: '0x3600ef1407c0be07fbd5d4f6e6c5162abaa4a7184876c98c19a4ffb514a1f380',
+  version: 335820047,
+  digest: '5gTbdQPyCptRHhRuqDeHAomz5dUcBUebWv2yZfHb3PEm',
+};
 
 export const requestWithdrawStakedSui: RequestWithdrawStakedSui = {
   stakedSui: {

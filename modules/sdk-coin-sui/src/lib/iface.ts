@@ -19,6 +19,7 @@ export enum SuiTransactionType {
   WithdrawStake = 'WithdrawStake',
   CustomTx = 'CustomTx',
   TokenTransfer = 'TokenTransfer',
+  WalrusStakeWithPool = 'WalrusStakeWithPool',
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
@@ -30,7 +31,8 @@ export type SuiProgrammableTransaction =
   | StakingProgrammableTransaction
   | UnstakingProgrammableTransaction
   | CustomProgrammableTransaction
-  | TokenTransferProgrammableTransaction;
+  | TokenTransferProgrammableTransaction
+  | WalrusStakingProgrammableTransaction;
 
 export interface TxData {
   id?: string;
@@ -78,6 +80,13 @@ export type TokenTransferProgrammableTransaction =
       transactions: TransactionType[];
     };
 
+export type WalrusStakingProgrammableTransaction =
+  | ProgrammableTransaction
+  | {
+      inputs: CallArg[] | TransactionBlockInput[];
+      transactions: TransactionType[];
+    };
+
 export interface SuiTransaction<T = SuiProgrammableTransaction> {
   id?: string;
   type: SuiTransactionType;
@@ -94,6 +103,11 @@ export interface RequestAddStake {
 export interface RequestWithdrawStakedSui {
   amount?: number;
   stakedSui: SuiObjectRef;
+}
+
+export interface RequestWalrusStakeWithPool {
+  amount: number;
+  validatorAddress: SuiAddress;
 }
 
 /**
@@ -124,6 +138,12 @@ export enum MethodNames {
    * @see https://github.com/MystenLabs/sui/blob/main/crates/sui-framework/docs/transfer.md#function-public_transfer
    */
   PublicTransfer = '::transfer::public_transfer',
+  /**
+   * Walrus stake with pool.
+   *
+   * @see https://github.com/MystenLabs/walrus-docs/blob/8ba15d67d7ed0e728077e1600866fddd46fd113b/contracts/walrus/sources/staking.move#L289
+   */
+  WalrusStakeWithPool = 'stake_with_pool',
 }
 
 export interface SuiObjectInfo extends SuiObjectRef {
