@@ -1,13 +1,16 @@
-import { BaseUtils } from '@bitgo/sdk-core';
+import { BaseUtils, ParseTransactionError } from '@bitgo/sdk-core';
 import elliptic from 'elliptic';
 import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
-
+import { IcpNetworkIdentifier } from './iface';
 const Secp256k1Curve = new elliptic.ec('secp256k1');
 
 export class Utils implements BaseUtils {
+  isValidPublicKey(key: string): boolean {
+    throw new Error('Method not implemented.');
+  }
   isValidAddress(address: string): boolean {
     throw new Error('Method not implemented.');
   }
@@ -16,7 +19,7 @@ export class Utils implements BaseUtils {
     throw new Error('Method not implemented.');
   }
 
-  isValidPublicKey(key: string): boolean {
+  static isValidPublicKey(key: string): boolean {
     const hexRegex = /^[0-9a-fA-F]+$/;
     if (!hexRegex.test(key)) return false;
 
@@ -38,20 +41,20 @@ export class Utils implements BaseUtils {
     throw new Error('Method not implemented.');
   }
 
-  getHeaders(): Record<string, string> {
+  static getHeaders(): Record<string, string> {
     return {
       'Content-Type': 'application/json',
     };
   }
 
-  getNetworkIdentifier(): Record<string, string> {
+  static getNetworkIdentifier(): IcpNetworkIdentifier {
     return {
       blockchain: 'Internet Computer',
       network: '00000000000000020101',
     };
   }
 
-  compressPublicKey(uncompressedKey: string): string {
+  public static compressPublicKey(uncompressedKey: string): string {
     if (!uncompressedKey.startsWith('04')) {
       throw new Error('Invalid uncompressed public key format');
     }
@@ -62,8 +65,20 @@ export class Utils implements BaseUtils {
     return prefix + xHex;
   }
 
-  getCurveType(): string {
+  static getCurveType(): string {
     return 'secp256k1';
+  }
+
+  static getTransactionType(): string {
+    return 'TRANSACTION';
+  }
+
+  static getFeeType(): string {
+    return 'FEE';
+  }
+
+  static getDecimalPrecision(): number {
+    return 8;
   }
 
   derivePrincipalFromPublicKey(publicKeyHex: string): DfinityPrincipal {
@@ -96,6 +111,22 @@ export class Utils implements BaseUtils {
 
     const accountIdBytes = Buffer.concat([checksum, sha224Hash]);
     return accountIdBytes.toString('hex');
+  }
+
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   *
+   * @param {string} rawTransaction - Transaction in base64 string  format
+   */
+  validateRawTransaction(rawTransaction: string): void {
+    if (!rawTransaction) {
+      throw new ParseTransactionError('Invalid raw transaction: Undefined');
+    }
+  }
+
+  //TODO(WIN-4242): update when rosetta node is available
+  public static getRosettaBaseUrl(): string {
+    return 'http://localhost:8081';
   }
 }
 

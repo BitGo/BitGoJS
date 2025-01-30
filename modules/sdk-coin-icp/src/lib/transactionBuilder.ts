@@ -1,16 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import {
-  BaseKey,
-  BaseTransaction,
-  PublicKey as BasePublicKey,
-  BaseTransactionBuilder,
-  BaseAddress,
-  Recipient,
-} from '@bitgo/sdk-core';
-import { TransferBuilder } from './transferBuilder';
+import { BaseKey, BaseTransaction, BaseTransactionBuilder, BaseAddress, Recipient } from '@bitgo/sdk-core';
+import { Transaction } from './transaction';
+import { IcpCombineApiPayload, IcpUnsignedTransaction } from './iface';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  protected _transfer: TransferBuilder;
+  protected _transaction: Transaction;
+  protected _unsignedTransaction: IcpUnsignedTransaction;
+  protected _combineApiPayload: IcpCombineApiPayload;
 
   protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -22,11 +18,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * add a signature to the transaction
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {Transaction} tx the transaction data
    */
-  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    throw new Error('method not implemented');
-  }
+  abstract initBuilder(tx: Transaction): void;
 
   /**
    * Sets the sender of this transaction.

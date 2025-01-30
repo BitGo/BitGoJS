@@ -13,7 +13,7 @@ import {
 } from '@bitgo/sdk-core';
 import { KeyPair as IcpKeyPair } from './lib/keyPair';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import utils from './lib/utils';
+import { Utils } from './lib/utils';
 
 /**
  * Class representing the Internet Computer (ICP) coin.
@@ -95,7 +95,7 @@ export class Icp extends BaseCoin {
   }
 
   isValidPub(key: string): boolean {
-    return utils.isValidPublicKey(key);
+    return Utils.isValidPublicKey(key);
   }
 
   isValidPrv(_: string): boolean {
@@ -117,13 +117,13 @@ export class Icp extends BaseCoin {
     if (!isKeyValid) {
       throw new Error('Public Key is not in a valid Hex Encoded Format');
     }
-    const compressedKey = utils.compressPublicKey(hexEncodedPublicKey);
+    const compressedKey = Utils.compressPublicKey(hexEncodedPublicKey);
     const KeyPair = new IcpKeyPair({ pub: compressedKey });
     return KeyPair.getAddress();
   }
 
   /** @inheritDoc **/
-  protected getPublicNodeUrl(): string {
+  public getPublicNodeUrl(): string {
     return Environments[this.bitgo.getEnv()].rosettaNodeURL;
   }
 }

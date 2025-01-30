@@ -47,7 +47,8 @@
     "@dfinity/candid": "^2.2.0",
     "@dfinity/principal": "^2.2.0",
     "crc-32": "^1.2.2",
-    "elliptic": "^6.6.1"
+    "elliptic": "^6.6.1",
+    "superagent": "^10.1.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.58.5",
