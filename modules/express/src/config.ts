@@ -41,6 +41,9 @@ export interface Config {
   signerMode?: boolean;
   signerFileSystemPath?: string;
   lightningSignerFileSystemPath?: string;
+  walletCacheMaxSize: number;
+  walletCacheTTL: number;
+  walletCacheEnabled: boolean;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -65,6 +68,9 @@ export const ArgConfig = (args): Partial<Config> => ({
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
   lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
+  walletCacheMaxSize: args.walletCacheMaxSize,
+  walletCacheTTL: args.walletCacheTTL,
+  walletCacheEnabled: args.walletCacheEnabled,
 });
 
 export const EnvConfig = (): Partial<Config> => ({
@@ -89,6 +95,9 @@ export const EnvConfig = (): Partial<Config> => ({
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
   lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
+  walletCacheEnabled: Boolean(readEnvVar('BITGO_WALLET_CACHE_ENABLED')),
+  walletCacheMaxSize: Number(readEnvVar('BITGO_WALLET_CACHE_MAX_SIZE')),
+  walletCacheTTL: Number(readEnvVar('BITGO_WALLET_CACHE_TTL_MS')),
 });
 
 export const DefaultConfig: Config = {
@@ -104,6 +113,9 @@ export const DefaultConfig: Config = {
   disableEnvCheck: true,
   timeout: 305 * 1000,
   authVersion: 2,
+  walletCacheEnabled: false,
+  walletCacheMaxSize: 10,
+  walletCacheTTL: 60_000,
 };
 
 /**
@@ -173,6 +185,9 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
     lightningSignerFileSystemPath: get('lightningSignerFileSystemPath'),
+    walletCacheEnabled: get('walletCacheEnabled'),
+    walletCacheMaxSize: get('walletCacheMaxSize'),
+    walletCacheTTL: get('walletCacheTTL'),
   };
 }
 
