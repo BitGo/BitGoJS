@@ -20513,7 +20513,7 @@ export const coins = CoinMap.fromCoins([
     'tsui:wal',
     'Walrus',
     9,
-    '0x9f992cc2430a1f442ca7a5ca7638169f5d5c00e0ebc3977a65e9ac6e497fe5ef',
+    '0x8190b041122eb492bf63cb464476bd68c6b7e570a4079645a8b28732b6197a82',
     'wal',
     'WAL',
     UnderlyingAsset['tsui:wal'],
