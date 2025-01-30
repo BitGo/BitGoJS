@@ -1,7 +1,6 @@
 import { coins } from '@bitgo/statics';
-import { TransactionBuilderFactory, TransferTransaction } from '../../src';
-import * as testData from '../resources/apt';
-import utils from '../../src/lib/utils';
+import { TransactionBuilderFactory, TransferTransaction } from '../../../src';
+import * as testData from '../../resources/apt';
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
 
@@ -43,7 +42,7 @@ describe('Apt Transfer Transaction', () => {
         coin: 'tapt',
       });
       const rawTx = tx.toBroadcastFormat();
-      should.equal(utils.isValidRawTransaction(rawTx), true);
+      should.equal(txBuilder.isValidRawTransaction(rawTx), true);
       rawTx.should.equal(
         '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a3724490e000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e740e7472616e736665725f636f696e73010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220f7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad908e803000000000000400d03000000000064000000000000008b037d670000000002030020000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000dbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f2002000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
       );
@@ -72,7 +71,7 @@ describe('Apt Transfer Transaction', () => {
       should.equal(tx.expirationTime, 1737528215);
       should.equal(tx.type, TransactionType.Send);
       const rawTx = tx.toBroadcastFormat();
-      should.equal(utils.isValidRawTransaction(rawTx), true);
+      should.equal(txBuilder.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.TRANSFER);
     });
 

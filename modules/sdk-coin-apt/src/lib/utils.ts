@@ -12,8 +12,6 @@ import {
   InvalidTransactionError,
   isValidEd25519PublicKey,
   isValidEd25519SecretKey,
-  ParseTransactionError,
-  TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
 import {
@@ -69,18 +67,6 @@ export class Utils implements BaseUtils {
     return accountAddress.toString();
   }
 
-  getRecipientFromTransactionPayload(payload: TransactionPayload): TransactionRecipient {
-    let address = 'INVALID';
-    let amount = '0';
-    if (payload instanceof TransactionPayloadEntryFunction) {
-      const entryFunction = payload.entryFunction;
-      address = entryFunction.args[0].toString();
-      const amountBuffer = Buffer.from(entryFunction.args[1].bcsToBytes());
-      amount = amountBuffer.readBigUint64LE().toString();
-    }
-    return { address, amount };
-  }
-
   getTransactionTypeFromTransactionPayload(payload: TransactionPayload): TransactionType {
     if (!(payload instanceof TransactionPayloadEntryFunction)) {
       throw new Error('Invalid Payload: Expected TransactionPayloadEntryFunction');
@@ -94,32 +80,6 @@ export class Utils implements BaseUtils {
         return TransactionType.SendToken;
       default:
         throw new InvalidTransactionError(`Invalid transaction: unable to fetch transaction type ${moduleIdentifier}`);
-    }
-  }
-
-  isValidRawTransaction(rawTransaction: string): boolean {
-    try {
-      const signedTxn = this.deserializeSignedTransaction(rawTransaction);
-      const rawTxn = signedTxn.raw_txn;
-      const senderAddress = rawTxn.sender.toString();
-      const recipient = utils.getRecipientFromTransactionPayload(rawTxn.payload);
-      const recipientAddress = recipient.address;
-      const recipientAmount = new BigNumber(recipient.amount);
-      return (
-        this.isValidAddress(senderAddress) && this.isValidAddress(recipientAddress) && !recipientAmount.isLessThan(0)
-      );
-    } catch (e) {
-      console.error('invalid raw transaction', e);
-      return false;
-    }
-  }
-
-  validateRawTransaction(rawTransaction: string): void {
-    if (!rawTransaction) {
-      throw new ParseTransactionError('Invalid raw transaction: Undefined');
-    }
-    if (!this.isValidRawTransaction(rawTransaction)) {
-      throw new ParseTransactionError('Invalid raw transaction');
     }
   }
 

@@ -12,7 +12,7 @@ export interface AptTransactionExplanation extends BaseTransactionExplanation {
 /**
  * The transaction data returned from the toJson() function of a transaction
  */
-export interface TransferTxData {
+export interface TxData {
   id: string;
   sender: string;
   recipient: TransactionRecipient;
@@ -22,4 +22,5 @@ export interface TransferTxData {
   gasUsed: number;
   expirationTime: number;
   feePayer: string;
+  assetId: string;
 }

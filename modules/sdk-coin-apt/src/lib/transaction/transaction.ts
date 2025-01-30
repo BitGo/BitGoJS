@@ -24,11 +24,12 @@ import {
   SignedTransaction,
   SimpleTransaction,
   TransactionAuthenticatorFeePayer,
+  TransactionPayload,
 } from '@aptos-labs/ts-sdk';
 import { DEFAULT_GAS_UNIT_PRICE, SECONDS_PER_WEEK, UNAVAILABLE_TEXT } from '../constants';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
-import { AptTransactionExplanation } from '../iface';
+import { AptTransactionExplanation, TxData } from '../iface';
 
 export abstract class Transaction extends BaseTransaction {
   protected _rawTransaction: RawTransaction;
@@ -42,6 +43,7 @@ export abstract class Transaction extends BaseTransaction {
   protected _gasUsed: number;
   protected _expirationTime: number;
   protected _feePayerAddress: string;
+  protected _assetId: string;
 
   static EMPTY_PUBLIC_KEY = Buffer.alloc(32);
   static EMPTY_SIGNATURE = Buffer.alloc(64);
@@ -54,6 +56,7 @@ export abstract class Transaction extends BaseTransaction {
     this._expirationTime = Math.floor(Date.now() / 1e3) + SECONDS_PER_WEEK;
     this._sequenceNumber = 0;
     this._sender = AccountAddress.ZERO.toString();
+    this._assetId = AccountAddress.ZERO.toString();
     this._senderSignature = {
       publicKey: {
         pub: Hex.fromHexInput(Transaction.EMPTY_PUBLIC_KEY).toString(),
@@ -139,6 +142,45 @@ export abstract class Transaction extends BaseTransaction {
     this._type = transactionType;
   }
 
+  get assetId(): string {
+    return this._assetId;
+  }
+
+  set assetId(value: string) {
+    this._assetId = value;
+  }
+
+  protected abstract buildRawTransaction(): void;
+
+  protected abstract parseTransactionPayload(payload: TransactionPayload): void;
+
+  fromDeserializedSignedTransaction(signedTxn: SignedTransaction): void {
+    try {
+      const rawTxn = signedTxn.raw_txn;
+      this.parseTransactionPayload(rawTxn.payload);
+      this._sender = rawTxn.sender.toString();
+      this._sequenceNumber = utils.castToNumber(rawTxn.sequence_number);
+      this._maxGasAmount = utils.castToNumber(rawTxn.max_gas_amount);
+      this._gasUnitPrice = utils.castToNumber(rawTxn.gas_unit_price);
+      this._expirationTime = utils.castToNumber(rawTxn.expiration_timestamp_secs);
+      this._rawTransaction = rawTxn;
+
+      this.loadInputsAndOutputs();
+      const authenticator = signedTxn.authenticator as TransactionAuthenticatorFeePayer;
+      this._feePayerAddress = authenticator.fee_payer.address.toString();
+      const senderAuthenticator = authenticator.sender as AccountAuthenticatorEd25519;
+      const senderSignature = Buffer.from(senderAuthenticator.signature.toUint8Array());
+      this.addSenderSignature({ pub: senderAuthenticator.public_key.toString() }, senderSignature);
+
+      const feePayerAuthenticator = authenticator.fee_payer.authenticator as AccountAuthenticatorEd25519;
+      const feePayerSignature = Buffer.from(feePayerAuthenticator.signature.toUint8Array());
+      this.addFeePayerSignature({ pub: feePayerAuthenticator.public_key.toString() }, feePayerSignature);
+    } catch (e) {
+      console.error('invalid signed transaction', e);
+      throw new Error('invalid signed transaction');
+    }
+  }
+
   canSign(_key: BaseKey): boolean {
     return false;
   }
@@ -212,8 +254,16 @@ export abstract class Transaction extends BaseTransaction {
     ];
   }
 
-  abstract fromRawTransaction(rawTransaction: string): void;
-
+  fromRawTransaction(rawTransaction: string): void {
+    let signedTxn: SignedTransaction;
+    try {
+      signedTxn = utils.deserializeSignedTransaction(rawTransaction);
+    } catch (e) {
+      console.error('invalid raw transaction', e);
+      throw new Error('invalid raw transaction');
+    }
+    this.fromDeserializedSignedTransaction(signedTxn);
+  }
   /**
    * Deserializes a signed transaction hex string
    * @param {string} signedRawTransaction
@@ -228,7 +278,20 @@ export abstract class Transaction extends BaseTransaction {
     }
   }
 
-  protected abstract buildRawTransaction(): void;
+  toJson(): TxData {
+    return {
+      id: this.id,
+      sender: this.sender,
+      recipient: this.recipient,
+      sequenceNumber: this.sequenceNumber,
+      maxGasAmount: this.maxGasAmount,
+      gasUnitPrice: this.gasUnitPrice,
+      gasUsed: this.gasUsed,
+      expirationTime: this.expirationTime,
+      feePayer: this.feePayerAddress,
+      assetId: this.assetId,
+    };
+  }
 
   public getFee(): string {
     return new BigNumber(this.gasUsed).multipliedBy(this.gasUnitPrice).toString();

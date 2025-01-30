@@ -8,11 +8,12 @@ import {
   Recipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { Transaction } from './transaction/transaction';
-import utils from './utils';
+import { Transaction } from '../transaction/transaction';
+import utils from '../utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { GasData } from './types';
+import { GasData } from '../types';
+import { TransactionPayload } from '@aptos-labs/ts-sdk';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -26,6 +27,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * The transaction type.
    */
   protected abstract get transactionType(): TransactionType;
+
+  /**
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {Transaction} tx the transaction data
+   */
+  initBuilder(tx: Transaction): void {
+    this._transaction = tx;
+  }
 
   /** @inheritdoc */
   protected get transaction(): Transaction {
@@ -74,6 +84,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  assetId(assetId: string): TransactionBuilder {
+    this.validateAddress({ address: assetId });
+    this.transaction.assetId = assetId;
+    return this;
+  }
+
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     throw new Error('Method not implemented.');
@@ -88,12 +104,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.addFeePayerSignature(publicKey, signature);
   }
 
-  /**
-   * Initialize the transaction builder fields using the decoded transaction data
-   *
-   * @param {Transaction} tx the transaction data
-   */
-  abstract initBuilder(tx: Transaction): void;
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: string): Transaction {
+    this.transaction.fromRawTransaction(rawTransaction);
+    this.transaction.transactionType = this.transactionType;
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    this.transaction.transactionType = this.transactionType;
+    await this.transaction.build();
+    return this.transaction;
+  }
 
   // region Validators
   /** @inheritdoc */
@@ -108,15 +131,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     throw new Error('Method not implemented.');
   }
 
-  /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    if (!rawTransaction) {
-      throw new ParseTransactionError('Invalid raw transaction: Undefined');
-    }
-    if (!utils.isValidRawTransaction(rawTransaction)) {
-      throw new ParseTransactionError('Invalid raw transaction');
-    }
-  }
+  protected abstract isValidTransactionPayload(payload: TransactionPayload);
 
   /** @inheritdoc */
   validateTransaction(transaction?: Transaction): void {
@@ -126,6 +141,28 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.validateAddress({ address: transaction.sender });
     this.validateAddress({ address: transaction.recipient.address });
     this.validateValue(new BigNumber(transaction.recipient.amount));
+  }
+
+  isValidRawTransaction(rawTransaction: string): boolean {
+    try {
+      const signedTxn = utils.deserializeSignedTransaction(rawTransaction);
+      const rawTxn = signedTxn.raw_txn;
+      const senderAddress = rawTxn.sender.toString();
+      return utils.isValidAddress(senderAddress) && this.isValidTransactionPayload(rawTxn.payload);
+    } catch (e) {
+      console.error('invalid raw transaction', e);
+      return false;
+    }
+  }
+
+  /** @inheritdoc */
+  validateRawTransaction(rawTransaction: string): void {
+    if (!rawTransaction) {
+      throw new ParseTransactionError('Invalid raw transaction: Undefined');
+    }
+    if (!this.isValidRawTransaction(rawTransaction)) {
+      throw new ParseTransactionError('Invalid raw transaction');
+    }
   }
 
   /** @inheritdoc */
