@@ -1085,6 +1085,9 @@ class Berachain extends Mainnet implements EthereumNetwork {
   chainId = 80094;
   nativeCoinOperationHashPrefix = '80094';
   tokenOperationHashPrefix = '80094-ERC20';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class BerachainTestnet extends Testnet implements EthereumNetwork {
