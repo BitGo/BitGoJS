@@ -36,7 +36,6 @@ import {
   Hbar as HbarUnit,
 } from '@hashgraph/sdk';
 import { PUBLIC_KEY_PREFIX } from './lib/keyPair';
-
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -87,9 +86,10 @@ export interface RecoveryOptions {
   maxFee?: string;
   nodeId?: string;
   startTime?: string;
+  tokenId?: string;
 }
 
-interface RecoveryInfo {
+export interface RecoveryInfo {
   id: string;
   tx: string;
   coin: string;
@@ -376,28 +376,42 @@ export class Hbar extends BaseCoin {
     }
 
     const { address: destinationAddress, memoId } = Utils.getAddressDetails(params.recoveryDestination);
-
+    const nodeId = params.nodeId ? params.nodeId : '0.0.3';
     const client = this.getHbarClient();
-
     const balance = await this.getAccountBalance(params.rootAddress, client);
+    const fee = params.maxFee ? params.maxFee : '10000000'; // default fee to 1 hbar
     const nativeBalance = HbarUnit.fromString(balance.hbars).toTinybars().toString();
-    const fee = params.maxFee ? params.maxFee : '10000000';
+    const spendableAmount = new BigNumber(nativeBalance).minus(fee);
 
-    if (new BigNumber(nativeBalance).isZero() || new BigNumber(nativeBalance).isLessThanOrEqualTo(fee)) {
-      throw new Error('Insufficient balance to recover, got balance: ' + nativeBalance + ' fee: ' + fee);
+    let txBuilder;
+    if (!params.tokenId) {
+      if (spendableAmount.isZero() || spendableAmount.isNegative()) {
+        throw new Error(`Insufficient balance to recover, got balance: ${nativeBalance} fee: ${fee}`);
+      }
+      txBuilder = this.getBuilderFactory().getTransferBuilder();
+      txBuilder.send({ address: destinationAddress, amount: spendableAmount.toString() });
+    } else {
+      if (spendableAmount.isNegative()) {
+        throw new Error(
+          `Insufficient native balance to recover tokens, got native balance: ${nativeBalance} fee: ${fee}`
+        );
+      }
+      const tokenBalance = balance.tokens.find((token) => token.tokenId === params.tokenId);
+      const token = Utils.getHederaTokenNameFromId(params.tokenId);
+      if (!token) {
+        throw new Error(`Unsupported token: ${params.tokenId}`);
+      }
+      if (!tokenBalance || new BigNumber(tokenBalance.balance).isZero()) {
+        throw new Error(`Insufficient balance to recover token: ${params.tokenId} for account: ${params.rootAddress}`);
+      }
+      txBuilder = this.getBuilderFactory().getTokenTransferBuilder();
+      txBuilder.send({ address: destinationAddress, amount: tokenBalance.balance, tokenName: token.name });
     }
 
-    const nodeId = params.nodeId ? params.nodeId : '0.0.3';
-
-    const spendableAmount = new BigNumber(nativeBalance).minus(fee).toString();
-
-    const txBuilder = this.getBuilderFactory().getTransferBuilder();
     txBuilder.node({ nodeId });
     txBuilder.fee({ fee });
     txBuilder.source({ address: params.rootAddress });
-    txBuilder.send({ address: destinationAddress, amount: spendableAmount });
     txBuilder.validDuration(180);
-
     if (memoId) {
       txBuilder.memo(memoId);
     }
