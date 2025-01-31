@@ -4,14 +4,14 @@ import { TransferTransaction } from '../../../src';
 import * as testData from '../../resources/apt';
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
-import { FungibleAssetTransaction } from '../../../src/lib/transaction/fungibleAssetTransaction';
+import { FungibleAssetTransfer } from '../../../src/lib/transaction/fungibleAssetTransfer';
 
 describe('Apt Token Transfer Builder', () => {
   const factory = getBuilderFactory('tapt:usdt');
 
   describe('Succeed', () => {
     it('should build a token transfer', async function () {
-      const fungibleTokenTransfer = new FungibleAssetTransaction(coins.get('tapt:usdt'));
+      const fungibleTokenTransfer = new FungibleAssetTransfer(coins.get('tapt:usdt'));
       const txBuilder = factory.getFungibleAssetTransactionBuilder(fungibleTokenTransfer);
       txBuilder.sender(testData.sender2.address);
       txBuilder.recipient(testData.fungibleTokenRecipients[0]);
@@ -23,7 +23,7 @@ describe('Apt Token Transfer Builder', () => {
       txBuilder.sequenceNumber(14);
       txBuilder.expirationTime(1736246155);
       txBuilder.addFeePayerAddress(testData.feePayer.address);
-      const tx = (await txBuilder.build()) as FungibleAssetTransaction;
+      const tx = (await txBuilder.build()) as FungibleAssetTransfer;
       should.equal(tx.sender, testData.sender2.address);
       should.equal(tx.recipient.address, testData.fungibleTokenRecipients[0].address);
       should.equal(tx.recipient.amount, testData.fungibleTokenRecipients[0].amount);
@@ -54,7 +54,7 @@ describe('Apt Token Transfer Builder', () => {
 
     it('should build and send a signed tx', async function () {
       const txBuilder = factory.from(testData.FUNGIBLE_TOKEN_TRANSFER);
-      const tx = (await txBuilder.build()) as FungibleAssetTransaction;
+      const tx = (await txBuilder.build()) as FungibleAssetTransfer;
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
         address: testData.sender2.address,
@@ -79,7 +79,7 @@ describe('Apt Token Transfer Builder', () => {
     });
 
     it('should succeed to validate a valid signablePayload', async function () {
-      const transaction = new FungibleAssetTransaction(coins.get('tapt'));
+      const transaction = new FungibleAssetTransfer(coins.get('tapt'));
       const txBuilder = factory.getFungibleAssetTransactionBuilder(transaction);
       txBuilder.sender(testData.sender2.address);
       txBuilder.recipient(testData.fungibleTokenRecipients[0]);
@@ -91,7 +91,7 @@ describe('Apt Token Transfer Builder', () => {
       txBuilder.expirationTime(1736246155);
       txBuilder.assetId(testData.fungibleTokenAddress.usdt);
       txBuilder.addFeePayerAddress(testData.feePayer.address);
-      const tx = (await txBuilder.build()) as FungibleAssetTransaction;
+      const tx = (await txBuilder.build()) as FungibleAssetTransfer;
       const signablePayload = tx.signablePayload;
       should.equal(
         signablePayload.toString('hex'),
@@ -100,7 +100,7 @@ describe('Apt Token Transfer Builder', () => {
     });
 
     it('should build a unsigned tx and validate its toJson', async function () {
-      const transaction = new FungibleAssetTransaction(coins.get('tapt'));
+      const transaction = new FungibleAssetTransfer(coins.get('tapt'));
       const txBuilder = factory.getFungibleAssetTransactionBuilder(transaction);
       txBuilder.sender(testData.sender2.address);
       txBuilder.recipient(testData.fungibleTokenRecipients[0]);
@@ -112,7 +112,7 @@ describe('Apt Token Transfer Builder', () => {
       txBuilder.expirationTime(1736246155);
       txBuilder.assetId(testData.fungibleTokenAddress.usdt);
       txBuilder.addFeePayerAddress(testData.feePayer.address);
-      const tx = (await txBuilder.build()) as FungibleAssetTransaction;
+      const tx = (await txBuilder.build()) as FungibleAssetTransfer;
       const toJson = tx.toJson();
       should.equal(toJson.sender, testData.sender2.address);
       should.deepEqual(toJson.recipient, {
@@ -129,7 +129,7 @@ describe('Apt Token Transfer Builder', () => {
 
     it('should build a signed tx and validate its toJson', async function () {
       const txBuilder = factory.from(testData.FUNGIBLE_TOKEN_TRANSFER);
-      const tx = (await txBuilder.build()) as FungibleAssetTransaction;
+      const tx = (await txBuilder.build()) as FungibleAssetTransfer;
       const toJson = tx.toJson();
       should.equal(toJson.id, '0x2dae2ecd096a212d6f565bd161c92f506cebb700aaf16c88bd3456b88d4c392a');
       should.equal(toJson.sender, testData.sender2.address);
@@ -168,7 +168,7 @@ describe('Apt Token Transfer Builder', () => {
       );
     });
     it('should fail for invalid fungible token address', async function () {
-      const transaction = new FungibleAssetTransaction(coins.get('tapt'));
+      const transaction = new FungibleAssetTransfer(coins.get('tapt'));
       const txBuilder = factory.getFungibleAssetTransactionBuilder(transaction);
       should(() => txBuilder.assetId('randomString')).throwError('Invalid address randomString');
     });

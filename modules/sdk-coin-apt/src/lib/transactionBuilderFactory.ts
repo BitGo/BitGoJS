@@ -6,10 +6,10 @@ import { Transaction } from './transaction/transaction';
 import { SignedTransaction } from '@aptos-labs/ts-sdk';
 import { TransferTransaction } from './transaction/transferTransaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { FungibleAssetTransaction } from './transaction/fungibleAssetTransaction';
-import { FungibleAssetTransactionBuilder } from './transactionBuilder/fungibleAssetTransactionBuilder';
-import { DigitalAssetTransaction } from './transaction/digitalAssetTransaction';
-import { DigitalAssetTransactionBuilder } from './transactionBuilder/digitalAssestTransactionBuilder';
+import { FungibleAssetTransfer } from './transaction/fungibleAssetTransfer';
+import { FungibleAssetTransferBuilder } from './transactionBuilder/fungibleAssetTransferBuilder';
+import { DigitalAssetTransfer } from './transaction/digitalAssetTransfer';
+import { DigitalAssetTransactionBuilder } from './transactionBuilder/digitalAssetTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -27,11 +27,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           transferTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getTransferBuilder(transferTx);
         case TransactionType.SendToken:
-          const fungibleTransferTokenTx = new FungibleAssetTransaction(this._coinConfig);
+          const fungibleTransferTokenTx = new FungibleAssetTransfer(this._coinConfig);
           fungibleTransferTokenTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getFungibleAssetTransactionBuilder(fungibleTransferTokenTx);
         case TransactionType.SendNFT:
-          const digitalAssetTransferTx = new DigitalAssetTransaction(this._coinConfig);
+          const digitalAssetTransferTx = new DigitalAssetTransfer(this._coinConfig);
           digitalAssetTransferTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getDigitalAssetTransactionBuilder(digitalAssetTransferTx);
         default:
@@ -53,8 +53,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getFungibleAssetTransactionBuilder(tx?: Transaction): FungibleAssetTransactionBuilder {
-    return this.initializeBuilder(tx, new FungibleAssetTransactionBuilder(this._coinConfig));
+  getFungibleAssetTransactionBuilder(tx?: Transaction): FungibleAssetTransferBuilder {
+    return this.initializeBuilder(tx, new FungibleAssetTransferBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

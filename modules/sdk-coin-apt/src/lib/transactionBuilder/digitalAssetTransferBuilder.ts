@@ -3,13 +3,13 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
-import { DigitalAssetTransaction } from '../transaction/digitalAssetTransaction';
+import { DigitalAssetTransfer } from '../transaction/digitalAssetTransfer';
 import { DIGITAL_ASSET_TYPE_ARGUMENT } from '../constants';
 
 export class DigitalAssetTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new DigitalAssetTransaction(_coinConfig);
+    this._transaction = new DigitalAssetTransfer(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {
@@ -23,7 +23,7 @@ export class DigitalAssetTransactionBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: DigitalAssetTransaction): void {
+  validateTransaction(transaction?: DigitalAssetTransfer): void {
     if (!transaction) {
       throw new Error('transaction not defined');
     }

@@ -15,7 +15,7 @@ import { InvalidTransactionError, TransactionRecipient, TransactionType } from '
 import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import { FUNGIBLE_ASSET_TYPE_ARGUMENT, FUNGIBLE_ASSET_TRANSFER_FUNCTION } from '../constants';
 
-export class FungibleAssetTransaction extends Transaction {
+export class FungibleAssetTransfer extends Transaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._type = TransactionType.SendToken;
