@@ -1,10 +1,7 @@
 import { BaseBuilder } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { WrappedBuilder } from './wrappedBuilder';
-import 'ses';
-
-lockdown({ stackFiltering: 'verbose' });
-
+import '../lockdown';
 /*
 Orginal function: 
 

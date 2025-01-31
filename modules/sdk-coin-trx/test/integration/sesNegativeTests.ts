@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { describe, it } from 'node:test';
-import { CoinFamily, CoinKind, coins, KeyCurve, NetworkType, UnderlyingAsset } from '@bitgo/statics';
+import { CoinFamily, CoinKind, CoinMap, KeyCurve, NetworkType, UnderlyingAsset } from '@bitgo/statics';
 import { getBuilder } from '../../src/lib/builder';
 
 // Test to verify that monkey patching coins.get is blocked
@@ -8,7 +8,7 @@ describe('SES Negative Tests', function () {
   it('should block coins.get rewrite', function () {
     assert.throws(() => {
       // Dynamically updating coins.get:
-      coins.get = function (_key: string) {
+      CoinMap.prototype.get = function (_key: string) {
         // MALICIOUS CODE
 
         return {
@@ -48,5 +48,16 @@ describe('SES Negative Tests', function () {
       const arr: number[] = [];
       arr.push(1);
     }, /Cannot assign to read only property 'push' of 'root.%ArrayPrototype%.push'/);
+  });
+
+  it('should block prototype modification', function () {
+    assert.throws(() => {
+      // Dynamically updating Array.prototype.push:
+      globalThis.testv.prototype.test = () => {
+        // MALICIOUS CODE
+        return 0;
+      };
+      globalThis.testv.prototype.test();
+    });
   });
 });
