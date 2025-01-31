@@ -3,7 +3,7 @@ import * as bs58 from 'bs58';
 
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, TokenTransferBuilder } from '../../../src';
-import { Eddsa, FeeOptions, TransactionType } from '@bitgo/sdk-core';
+import { Eddsa, TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../resources/sol';
 import BigNumber from 'bignumber.js';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
@@ -164,10 +164,9 @@ describe('Sol Transaction Builder', async () => {
       testData.TOKEN_TRANSFER_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE
     ) as TokenTransferBuilder;
     const prioFeeMicroLamports = '10000000';
-    const priorityFee: FeeOptions = {
-      amount: prioFeeMicroLamports,
-    };
-    txBuilder.setPriorityFee(priorityFee);
+    // We don't have to manually set the priority fee here as the raw txn already has the priority fee instruction;
+    // therefore once initBuilder is called (it's called within fromImplementation), it will set the txBuilder's priorityFee field
+    // which will then be used in txBuilder.build() by tokenTransferBuilder to add the set compute fee instruction
     const builtTx = await txBuilder.build();
     should.equal(builtTx.type, TransactionType.Send);
     should.equal(
