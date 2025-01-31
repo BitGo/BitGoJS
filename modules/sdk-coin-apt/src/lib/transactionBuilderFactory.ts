@@ -9,7 +9,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { FungibleAssetTransfer } from './transaction/fungibleAssetTransfer';
 import { FungibleAssetTransferBuilder } from './transactionBuilder/fungibleAssetTransferBuilder';
 import { DigitalAssetTransfer } from './transaction/digitalAssetTransfer';
-import { DigitalAssetTransactionBuilder } from './transactionBuilder/digitalAssetTransferBuilder';
+import { DigitalAssetTransferBuilder } from './transactionBuilder/digitalAssetTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -58,8 +58,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getDigitalAssetTransactionBuilder(tx?: Transaction): DigitalAssetTransactionBuilder {
-    return this.initializeBuilder(tx, new DigitalAssetTransactionBuilder(this._coinConfig));
+  getDigitalAssetTransactionBuilder(tx?: Transaction): DigitalAssetTransferBuilder {
+    return this.initializeBuilder(tx, new DigitalAssetTransferBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
