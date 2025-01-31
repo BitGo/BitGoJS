@@ -27,7 +27,7 @@ describe('APT:', function () {
   let newTxParams;
 
   const txPreBuild = {
-    txHex: testData.TRANSFER,
+    txHex: testData.TRANSACTION_USING_TRANSFER_COINS,
     txInfo: {},
   };
 
@@ -118,7 +118,7 @@ describe('APT:', function () {
 
     it('should parse a transfer transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({
-        txHex: testData.TRANSFER,
+        txHex: testData.TRANSACTION_USING_TRANSFER_COINS,
       });
 
       parsedTransaction.should.deepEqual({

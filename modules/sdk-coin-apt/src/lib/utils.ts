@@ -19,8 +19,9 @@ import {
   APT_BLOCK_ID_LENGTH,
   APT_SIGNATURE_LENGTH,
   APT_TRANSACTION_ID_LENGTH,
-  APTOS_ACCOUNT_MODULE,
-  FUNGIBLE_ASSET_MODULE,
+  COIN_TRANSFER_FUNCTION,
+  DIGITAL_ASSET_TRANSFER_FUNCTION,
+  FUNGIBLE_ASSET_TRANSFER_FUNCTION,
 } from './constants';
 import BigNumber from 'bignumber.js';
 
@@ -72,12 +73,17 @@ export class Utils implements BaseUtils {
       throw new Error('Invalid Payload: Expected TransactionPayloadEntryFunction');
     }
     const entryFunction = payload.entryFunction;
+    const moduleAddress = entryFunction.module_name.address.toString();
     const moduleIdentifier = entryFunction.module_name.name.identifier;
-    switch (moduleIdentifier) {
-      case APTOS_ACCOUNT_MODULE:
+    const functionIdentifier = entryFunction.function_name.identifier;
+    const uniqueIdentifier = `${moduleAddress}::${moduleIdentifier}::${functionIdentifier}`;
+    switch (uniqueIdentifier) {
+      case COIN_TRANSFER_FUNCTION:
         return TransactionType.Send;
-      case FUNGIBLE_ASSET_MODULE:
+      case FUNGIBLE_ASSET_TRANSFER_FUNCTION:
         return TransactionType.SendToken;
+      case DIGITAL_ASSET_TRANSFER_FUNCTION:
+        return TransactionType.SendNFT;
       default:
         throw new InvalidTransactionError(`Invalid transaction: unable to fetch transaction type ${moduleIdentifier}`);
     }

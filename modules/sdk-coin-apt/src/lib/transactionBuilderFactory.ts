@@ -8,6 +8,8 @@ import { TransferTransaction } from './transaction/transferTransaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { FungibleAssetTransaction } from './transaction/fungibleAssetTransaction';
 import { FungibleAssetTransactionBuilder } from './transactionBuilder/fungibleAssetTransactionBuilder';
+import { DigitalAssetTransaction } from './transaction/digitalAssetTransaction';
+import { DigitalAssetTransactionBuilder } from './transactionBuilder/digitalAssestTransactionBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -28,6 +30,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const fungibleTransferTokenTx = new FungibleAssetTransaction(this._coinConfig);
           fungibleTransferTokenTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getFungibleAssetTransactionBuilder(fungibleTransferTokenTx);
+        case TransactionType.SendNFT:
+          const digitalAssetTransferTx = new DigitalAssetTransaction(this._coinConfig);
+          digitalAssetTransferTx.fromDeserializedSignedTransaction(signedTxn);
+          return this.getDigitalAssetTransactionBuilder(digitalAssetTransferTx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -49,6 +55,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getFungibleAssetTransactionBuilder(tx?: Transaction): FungibleAssetTransactionBuilder {
     return this.initializeBuilder(tx, new FungibleAssetTransactionBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getDigitalAssetTransactionBuilder(tx?: Transaction): DigitalAssetTransactionBuilder {
+    return this.initializeBuilder(tx, new DigitalAssetTransactionBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
