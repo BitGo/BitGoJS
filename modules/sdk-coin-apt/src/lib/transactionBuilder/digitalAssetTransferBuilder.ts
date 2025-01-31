@@ -6,7 +6,7 @@ import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs
 import { DigitalAssetTransfer } from '../transaction/digitalAssetTransfer';
 import { DIGITAL_ASSET_TYPE_ARGUMENT } from '../constants';
 
-export class DigitalAssetTransactionBuilder extends TransactionBuilder {
+export class DigitalAssetTransferBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new DigitalAssetTransfer(_coinConfig);
