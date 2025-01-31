@@ -13,7 +13,7 @@ import {
 } from '@aptos-labs/ts-sdk';
 import { InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
-import { FUNGIBLE_ASSET, FUNGIBLE_ASSET_FUNCTION } from '../constants';
+import { FUNGIBLE_ASSET_TYPE_ARGUMENT, FUNGIBLE_ASSET_TRANSFER_FUNCTION } from '../constants';
 
 export class FungibleAssetTransaction extends Transaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
@@ -26,7 +26,7 @@ export class FungibleAssetTransaction extends Transaction {
       !(payload instanceof TransactionPayloadEntryFunction) ||
       payload.entryFunction.args.length !== 3 ||
       payload.entryFunction.type_args.length !== 1 ||
-      FUNGIBLE_ASSET !== payload.entryFunction.type_args[0].toString()
+      FUNGIBLE_ASSET_TYPE_ARGUMENT !== payload.entryFunction.type_args[0].toString()
     ) {
       throw new InvalidTransactionError('Invalid transaction payload');
     }
@@ -55,8 +55,8 @@ export class FungibleAssetTransaction extends Transaction {
     const simpleTxn = await aptos.transaction.build.simple({
       sender: senderAddress,
       data: {
-        function: FUNGIBLE_ASSET_FUNCTION,
-        typeArguments: [FUNGIBLE_ASSET],
+        function: FUNGIBLE_ASSET_TRANSFER_FUNCTION,
+        typeArguments: [FUNGIBLE_ASSET_TYPE_ARGUMENT],
         functionArguments: [fungibleTokenAddress, recipientAddress, this.recipient.amount],
         abi: faTransferAbi,
       },

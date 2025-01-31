@@ -84,11 +84,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  assetId(assetId: string): TransactionBuilder {
-    this.validateAddress({ address: assetId });
-    this.transaction.assetId = assetId;
-    return this;
-  }
+  abstract assetId(assetId: string): TransactionBuilder;
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
