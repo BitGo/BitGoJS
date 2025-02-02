@@ -76,6 +76,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.feePayer(txData.feePayer as string);
     this.nonce(txData.nonce, txData.durableNonce);
     this._instructionsData = instructionParamsFactory(tx.type, tx.solTransaction.instructions);
+    // Parse priority fee instruction data
+    const filteredPriorityFeeInstructionsData = txData.instructionsData.filter(
+      (data) => data.type === InstructionBuilderTypes.SetPriorityFee
+    );
 
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.Memo) {
@@ -86,6 +90,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       if (instruction.type === InstructionBuilderTypes.NonceAdvance) {
         const advanceNonceInstruction: Nonce = instruction;
         this.nonce(txData.nonce, advanceNonceInstruction.params);
+      }
+
+      // If prio fee instruction exists, set the priority fee variable
+      if (instruction.type === InstructionBuilderTypes.SetPriorityFee) {
+        const priorityFeeInstructionsData = filteredPriorityFeeInstructionsData[0];
+        this.setPriorityFee({ amount: Number(priorityFeeInstructionsData.params.fee) });
       }
     }
   }
