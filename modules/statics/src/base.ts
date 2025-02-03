@@ -1826,6 +1826,7 @@ export enum UnderlyingAsset {
   'eth:turbo' = 'eth:turbo',
   'eth:icnt' = 'eth:icnt',
   'eth:god' = 'eth:god',
+  'eth:sky' = 'eth:sky',
   'eth:xreth' = 'eth:xreth',
   'eth:xy' = 'eth:xy',
   'eth:move' = 'eth:move',
@@ -2082,6 +2083,7 @@ export enum UnderlyingAsset {
   'erc1155:polygontoken' = 'erc1155:polygontoken',
 
   // BSC Token BEP-20
+  'bsc:solv' = 'bsc:solv',
   'bsc:brise' = 'bsc:brise',
   'bsc:bsw' = 'bsc:bsw',
   'bsc:burger' = 'bsc:burger',
@@ -2240,6 +2242,7 @@ export enum UnderlyingAsset {
   'arbeth:usdt' = 'arbeth:usdt',
   'arbeth:arb' = 'arbeth:arb',
   'arbeth:sqd' = 'arbeth:sqd',
+  'arbeth:cbl' = 'arbeth:cbl',
   'arbeth:w' = 'arbeth:w',
   'arbeth:comp' = 'arbeth:comp',
   'arbeth:coti' = 'arbeth:coti',
@@ -2408,6 +2411,12 @@ export enum UnderlyingAsset {
   'sol:grass' = 'sol:grass',
   'sol:trump' = 'sol:trump',
   'sol:melania' = 'sol:melania',
+  'sol:ustry' = 'sol:ustry',
+  'sol:eurob' = 'sol:eurob',
+  'sol:tesouro' = 'sol:tesouro',
+  'sol:cetes' = 'sol:cetes',
+  'sol:gilts' = 'sol:gilts',
+  'sol:muskit' = 'sol:muskit',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
