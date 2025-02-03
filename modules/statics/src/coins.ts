@@ -143,7 +143,8 @@ const XTZ_FEATURES = [
   (feature) =>
     feature !== CoinFeature.CUSTODY &&
     feature !== CoinFeature.CUSTODY_BITGO_TRUST &&
-    feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE
+    feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE &&
+    feature !== CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE
 );
 
 const XRP_FEATURES = [
