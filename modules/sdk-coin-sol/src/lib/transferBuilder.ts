@@ -4,7 +4,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidAmount, validateAddress } from './utils';
 import { InstructionBuilderTypes } from './constants';
-import { Transfer } from './iface';
+import { Transfer, SetPriorityFee } from './iface';
 
 import assert from 'assert';
 
@@ -75,7 +75,18 @@ export class TransferBuilder extends TransactionBuilder {
         },
       };
     });
-    this._instructionsData = transferData;
+
+    if (!this._priorityFee || this._priorityFee === Number(0)) {
+      this._instructionsData = [...transferData];
+    } else {
+      const addPriorityFeeInstruction: SetPriorityFee = {
+        type: InstructionBuilderTypes.SetPriorityFee,
+        params: {
+          fee: this._priorityFee,
+        },
+      };
+      this._instructionsData = [addPriorityFeeInstruction, ...transferData];
+    }
 
     return await super.buildImplementation();
   }
