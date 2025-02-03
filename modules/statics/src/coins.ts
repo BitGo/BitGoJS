@@ -12346,6 +12346,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['eth:god']
   ),
   erc20(
+    'f106b4aa-1c9a-4d81-b580-1a02dabb8680',
+    'eth:sky',
+    'Sky',
+    18,
+    '0x56072c95faa701256059aa122697b133aded9279',
+    UnderlyingAsset['eth:sky']
+  ),
+  erc20(
     '1edeae93-293e-4883-b007-83b5ae1ba3d4',
     'eth:move',
     'Movement Network',
@@ -12370,6 +12378,15 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x2b9018ceb303d540bbf08de8e7de64fddd63396c',
     UnderlyingAsset['celo:pact']
+  ),
+  bscToken(
+    '9cab6783-f652-4cd2-8af2-a2ccf15f31c9',
+    'bsc:solv',
+    'SOLV Protocol',
+    9,
+    '0xabe8e5cabe24cb36df9540088fd7ce1175b9bc52',
+    UnderlyingAsset['bsc:solv'],
+    BSC_TOKEN_FEATURES
   ),
   bscToken(
     'b7540916-53ed-49e9-b8a4-8a853fd7d607',
@@ -18710,6 +18727,90 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
     ]
   ),
+  solToken(
+    '42b30171-13d3-4c18-befc-9643c701061f',
+    'sol:ustry',
+    'Etherfuse USTR',
+    6,
+    'USTRYnGgcHAhdWsanv8BG6vHGd4p7UGgoB9NRd8ei7j',
+    UnderlyingAsset['sol:ustry'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
+  solToken(
+    'b4e9b281-952e-4b75-8d57-8666e0b4a33e',
+    'sol:eurob',
+    'Etherfuse EUROB',
+    6,
+    'EuroszHk1AL7fHBBsxgeGHsamUqwBpb26oEyt9BcfZ6G',
+    UnderlyingAsset['sol:eurob'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
+  solToken(
+    'cf7d8a35-11ea-46dc-80a5-e0bed443a18c',
+    'sol:tesouro',
+    'Etherfuse TESOURO',
+    6,
+    'BRNTNaZeTJANz9PeuD8drNbBHwGgg7ZTjiQYrFgWQ48p',
+    UnderlyingAsset['sol:tesouro'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
+  solToken(
+    '694e2cc5-cc12-4fa9-9447-3904ac7a2c57',
+    'sol:cetes',
+    'Etherfuse CETES',
+    6,
+    'CETES7CKqqKQizuSN6iWQwmTeFRjbJR6Vw2XRKfEDR8f',
+    UnderlyingAsset['sol:cetes'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
+  solToken(
+    '6dd706b0-4764-48b1-b45d-e78a98e609b3',
+    'sol:gilts',
+    'Etherfuse GILTS',
+    6,
+    'GiLTSeSFnNse7xQVYeKdMyckGw66AoRmyggGg1NNd4yr',
+    UnderlyingAsset['sol:gilts'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
+  solToken(
+    '679055e6-e8cc-4b91-906c-0689de806a59',
+    'sol:muskit',
+    'Musk It',
+    6,
+    '9So52ugZh2BLBT3f7p61947q91uQh2DyvbfyMDeRpump',
+    UnderlyingAsset['sol:muskit'],
+    [
+      ...SOL_TOKEN_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+    ]
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
@@ -19969,6 +20070,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x1337420ded5adb9980cfc35f8f2b054ea86f8ab1',
     UnderlyingAsset['arbeth:sqd']
+  ),
+  arbethErc20(
+    'e3c7b25e-d9e4-45cd-a3c2-4abec8483489',
+    'arbeth:cbl',
+    'Credbull',
+    18,
+    '0xd6b3d81868770083307840f513a3491960b95cb6',
+    UnderlyingAsset['arbeth:cbl']
   ),
   arbethErc20(
     '5a160655-9d96-4fdd-a362-224026b7c1e8',
