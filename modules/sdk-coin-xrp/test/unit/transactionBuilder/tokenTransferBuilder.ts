@@ -8,7 +8,7 @@ describe('XRP Token Transfer Builder', () => {
 
   it('should build a token transfer', async function () {
     const txBuilder = factory.getTokenTransferBuilder();
-    const amount = (BigInt(25) * BigInt(10) ** BigInt(96)).toString();
+    const amount = '25000000000000000';
 
     txBuilder.to(testData.TEST_SINGLE_SIG_ACCOUNT.address);
     txBuilder.amount(amount);

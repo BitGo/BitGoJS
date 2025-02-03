@@ -8,7 +8,7 @@ describe('XRP Trustline Builder', () => {
 
   it('should build a TrustSet transaction', async function () {
     const txBuilder = factory.getTrustSetBuilder();
-    const amount = (BigInt(1000000000000) * BigInt(10) ** BigInt(96)).toString();
+    const amount = '1000000000000000000000000000';
 
     txBuilder.sender(utils.getAddressDetails(testData.TEST_MULTI_SIG_ACCOUNT.address).address);
     txBuilder.amount(amount);

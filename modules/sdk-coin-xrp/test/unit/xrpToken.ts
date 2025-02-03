@@ -22,11 +22,11 @@ describe('Xrp Tokens', function () {
     xrpTokenCoin.getChain().should.equal(tokenName);
     xrpTokenCoin.getBaseChain().should.equal('txrp');
     xrpTokenCoin.getFullName().should.equal('Xrp Token');
-    xrpTokenCoin.getBaseFactor().should.equal(1e96);
+    xrpTokenCoin.getBaseFactor().should.equal(1000000000000000);
     xrpTokenCoin.type.should.equal(tokenName);
     xrpTokenCoin.name.should.equal('RLUSD');
     xrpTokenCoin.coin.should.equal('txrp');
     xrpTokenCoin.network.should.equal('Testnet');
-    xrpTokenCoin.decimalPlaces.should.equal(96);
+    xrpTokenCoin.decimalPlaces.should.equal(15);
   });
 });

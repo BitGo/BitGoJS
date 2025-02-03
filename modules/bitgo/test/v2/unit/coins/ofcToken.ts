@@ -7,8 +7,8 @@ const PRECISION_6 = '1000000';
 const PRECISION_7 = '10000000';
 const PRECISION_8 = '100000000';
 const PRECISION_9 = '1000000000';
+const PRECISION_15 = '1000000000000000';
 const PRECISION_18 = '1000000000000000000';
-const PRECISION_96 = '9.999999999999999e+95';
 
 describe('OFC:', function () {
   let bitgo;
@@ -429,7 +429,7 @@ describe('OFC:', function () {
         const ofcCoin = bitgo.coin(tokenMain);
         ofcCoin.getChain().should.equal(tokenMain);
         ofcCoin.getFullName().should.equal('Ripple USD');
-        ofcCoin.getBaseFactor().should.equal(PRECISION_96);
+        ofcCoin.getBaseFactor().should.equal(PRECISION_15);
       });
     });
     describe('for test network', function () {
@@ -437,7 +437,7 @@ describe('OFC:', function () {
         const ofcCoin = bitgo.coin(tokenTest);
         ofcCoin.getChain().should.equal(tokenTest);
         ofcCoin.getFullName().should.equal('RLUSD');
-        ofcCoin.getBaseFactor().should.equal(PRECISION_96);
+        ofcCoin.getBaseFactor().should.equal(PRECISION_15);
       });
     });
   });
