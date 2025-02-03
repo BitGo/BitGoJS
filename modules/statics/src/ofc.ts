@@ -28,6 +28,7 @@ export class OfcCoin extends BaseCoin {
     CoinFeature.CUSTODY,
     CoinFeature.CUSTODY_BITGO_TRUST,
     CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
   ];
 
   // If set, this coin is the native address format for this token.

@@ -18,6 +18,7 @@ export class AVAXPCoin extends BaseCoin {
     CoinFeature.UNSPENT_MODEL,
     CoinFeature.CUSTODY_BITGO_TRUST,
     CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
     CoinFeature.CUSTODY_BITGO_GERMANY,
     CoinFeature.CUSTODY_BITGO_FRANKFURT,
     CoinFeature.MULTISIG_COLD,
