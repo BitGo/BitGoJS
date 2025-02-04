@@ -154,13 +154,17 @@ class AdaTestnet extends Testnet implements AdaNetwork {
 class Apt extends Mainnet implements AccountNetwork {
   name = 'Apt';
   family = CoinFamily.APT;
-  explorerUrl = 'https://explorer.aptoslabs.com/?network=mainnet';
+  explorerUrl = 'https://explorer.aptoslabs.com/txn/?network=mainnet';
+  accountExplorerUrl = 'https://explorer.aptoslabs.com/account/?network=mainnet';
+  blockExplorerUrl = 'https://explorer.aptoslabs.com/block/?network=mainnet';
 }
 
 class AptTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Apt';
   family = CoinFamily.APT;
-  explorerUrl = 'https://explorer.aptoslabs.com/?network=testnet';
+  explorerUrl = 'https://explorer.aptoslabs.com/txn/?network=testnet';
+  accountExplorerUrl = 'https://explorer.aptoslabs.com/account/?network=testnet';
+  blockExplorerUrl = 'https://explorer.aptoslabs.com/block/?network=testnet';
 }
 
 class Icp extends Mainnet implements AccountNetwork {
