@@ -460,6 +460,7 @@ const ICP_FEATURES = [
 const TAO_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD, CoinFeature.STAKING];
 
 const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+const ETH_FEATURES_WITH_GERMANY = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
 const ETH_FEATURES_WITH_FRANKFURT_GERMANY = [...ETH_FEATURES_WITH_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY];
 const SOL_TOKEN_FEATURES_WITH_FRANKFURT = [
   ...SOL_TOKEN_FEATURES,
@@ -12351,7 +12352,16 @@ export const coins = CoinMap.fromCoins([
     'Sky',
     18,
     '0x56072c95faa701256059aa122697b133aded9279',
-    UnderlyingAsset['eth:sky']
+    UnderlyingAsset['eth:sky'],
+    ETH_FEATURES_WITH_GERMANY
+  ),
+  erc20(
+    'c6ea07a4-4fda-4018-b2cf-967d4bf41255',
+    'eth:fuel',
+    'Fuel',
+    9,
+    '0x675b68aa4d9c2d3bb3f0397048e62e6b7192079c',
+    UnderlyingAsset['eth:fuel']
   ),
   erc20(
     '1edeae93-293e-4883-b007-83b5ae1ba3d4',
@@ -20359,8 +20369,7 @@ export const coins = CoinMap.fromCoins([
     'bera:bgt',
     'BGT Token',
     18,
-    // TODO: the mainnet contract address is still not available, adding placeholder here
-    '0xbda130737bdd9618301681329bf2e46a016ff9aa',
+    '0x656b95e550c07a9ffe548bd4085c72418ceb1dba',
     UnderlyingAsset['bera:bgt'],
     BERA_BGT_FEATURES
   ),
@@ -20369,9 +20378,9 @@ export const coins = CoinMap.fromCoins([
     'bera:honey',
     'Honey Token',
     18,
-    // TODO: the mainnet contract address is still not available, adding placeholder here, WIN-3597
-    '0xbda130737bdd9618301681329bf2e46a016ff9ab',
-    UnderlyingAsset['bera:honey']
+    '0xfcbd14dc51f0a4d49d5e53c2e0950e0bc26d0dce',
+    UnderlyingAsset['bera:honey'],
+    BERA_BGT_FEATURES
   ),
   beraErc20(
     '31cdb51f-3bcc-489e-8b35-8e074169c573',
