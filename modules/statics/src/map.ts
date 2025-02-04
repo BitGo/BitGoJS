@@ -60,6 +60,14 @@ export class CoinMap {
       1115: 'tcoredao',
       248: 'oas',
       9372: 'toas',
+      14: 'flr',
+      114: 'tflr',
+      19: 'sgb',
+      16: 'tsgb',
+      1111: 'wemix',
+      1112: 'twemix',
+      50: 'xdc',
+      51: 'txdc',
     };
     return ethLikeCoinFromChainId[chainId];
   }
