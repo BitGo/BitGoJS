@@ -146,6 +146,9 @@ export { Coredao };
 import * as Apt from '@bitgo/sdk-coin-apt';
 export { Apt };
 
+import * as Tao from '@bitgo/sdk-coin-tao';
+export { Tao };
+
 import * as Icp from '@bitgo/sdk-coin-icp';
 export { Icp };
 
