@@ -1827,6 +1827,7 @@ export enum UnderlyingAsset {
   'eth:icnt' = 'eth:icnt',
   'eth:god' = 'eth:god',
   'eth:sky' = 'eth:sky',
+  'eth:fuel' = 'eth:fuel',
   'eth:xreth' = 'eth:xreth',
   'eth:xy' = 'eth:xy',
   'eth:move' = 'eth:move',
