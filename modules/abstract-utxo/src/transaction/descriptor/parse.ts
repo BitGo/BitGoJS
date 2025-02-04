@@ -1,5 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { ITransactionRecipient } from '@bitgo/sdk-core';
+import * as coreDescriptors from '@bitgo/utxo-core/descriptor';
 
 import {
   AbstractUtxoCoin,
@@ -11,10 +12,10 @@ import {
 import { getKeySignatures, toBip32Triple, UtxoNamedKeychains } from '../../keychains';
 import { getDescriptorMapFromWallet, getPolicyForEnv } from '../../descriptor';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
-import * as coreDescriptors from '../../core/descriptor';
-import { ParsedOutput } from '../../core/descriptor/psbt/parse';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
 import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
+
+type ParsedOutput = coreDescriptors.psbt.ParsedOutput;
 
 export type RecipientOutput = Omit<ParsedOutput, 'value'> & {
   value: bigint | 'max';

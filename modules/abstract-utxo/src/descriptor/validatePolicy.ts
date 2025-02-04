@@ -1,8 +1,7 @@
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import { EnvironmentName, Triple } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-
-import { DescriptorMap, toDescriptorMap } from '../core/descriptor';
+import { DescriptorMap, toDescriptorMap } from '@bitgo/utxo-core/descriptor';
 
 import { parseDescriptor } from './builder';
 import { hasValidSignature, NamedDescriptor } from './NamedDescriptor';

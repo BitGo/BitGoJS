@@ -13,6 +13,12 @@
     "./testutil": "./dist/src/testutil/index.js",
     "./testutil/descriptor": "./dist/src/testutil/descriptor/index.js"
   },
+  "browser": {
+    ".": "./dist/src/index.js",
+    "./descriptor": "./dist/src/descriptor/index.js",
+    "./testutil": "./dist/src/testutil/index.js",
+    "./testutil/descriptor": "./dist/src/testutil/descriptor/index.js"
+  },
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",

@@ -53,7 +53,6 @@
     "@types/lodash": "^4.14.121",
     "@types/superagent": "4.1.15",
     "bignumber.js": "^9.0.2",
-    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
     "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3",
     "bluebird": "^3.5.3",
     "debug": "^3.1.0",

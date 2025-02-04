@@ -1,9 +1,9 @@
 import assert from 'assert';
 
+import { getFixture, getKeyTriple } from '@bitgo/utxo-core/testutil';
+
 import { assertHasValidSignature, createNamedDescriptorWithSignature } from '../../src/descriptor/NamedDescriptor';
-import { getKeyTriple } from '../core/key.utils';
 import { getDescriptorFromBuilder } from '../../src/descriptor/builder';
-import { getFixture } from '../core/fixtures.utils';
 
 describe('NamedDescriptor', function () {
   it('creates named descriptor with signature', async function () {

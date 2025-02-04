@@ -248,6 +248,9 @@
       "path": "./modules/utxo-bin"
     },
     {
+      "path": "./modules/utxo-core"
+    },
+    {
       "path": "./modules/utxo-lib"
     },
     {

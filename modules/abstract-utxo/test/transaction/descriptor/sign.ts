@@ -1,9 +1,9 @@
 import assert from 'assert';
 
-import { mockPsbtDefaultWithDescriptorTemplate } from '../../core/descriptor/psbt/mock.utils';
+import { getKeyTriple } from '@bitgo/utxo-core/testutil';
+import { getDescriptorMap, mockPsbtDefaultWithDescriptorTemplate } from '@bitgo/utxo-core/testutil/descriptor';
+
 import { signPsbt } from '../../../src/transaction/descriptor';
-import { getKeyTriple } from '../../core/key.utils';
-import { getDescriptorMap } from '../../core/descriptor/descriptor.utils';
 import { ErrorUnknownInput } from '../../../src/transaction/descriptor/signPsbt';
 
 describe('sign', function () {

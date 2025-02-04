@@ -1,9 +1,9 @@
 import assert from 'assert';
 
-import { getKeyTriple } from '../../core/key.utils';
+import { getFixture, getKeyTriple } from '@bitgo/utxo-core/testutil';
+
 import { assertHasValidSignature } from '../../../src/descriptor/NamedDescriptor';
 import { DefaultWsh2Of3 } from '../../../src/descriptor/createWallet';
-import { getFixture } from '../../core/fixtures.utils';
 
 describe('createDescriptors', function () {
   it('should create standard named descriptors', async function () {

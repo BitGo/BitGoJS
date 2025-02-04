@@ -3,7 +3,9 @@ import assert from 'assert';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import { Triple } from '@bitgo/sdk-core';
 import { BIP32Interface } from '@bitgo/utxo-lib';
+import { getKeyTriple } from '@bitgo/utxo-core/testutil';
 
+import { DescriptorTemplate, getDescriptor } from '../../../../utxo-core/src/testutil/descriptor/descriptors';
 import {
   assertDescriptorPolicy,
   DescriptorPolicyValidationError,
@@ -11,10 +13,7 @@ import {
   getPolicyForEnv,
   getValidatorDescriptorTemplate,
 } from '../../../src/descriptor/validatePolicy';
-import { DescriptorTemplate, getDescriptor } from '../../core/descriptor/descriptor.utils';
-import { getKeyTriple } from '../../core/key.utils';
-import { NamedDescriptor } from '../../../src/descriptor';
-import { createNamedDescriptorWithSignature } from '../../../src/descriptor/NamedDescriptor';
+import { NamedDescriptor, createNamedDescriptorWithSignature } from '../../../src/descriptor';
 
 function testAssertDescriptorPolicy(
   d: NamedDescriptor<string>,
