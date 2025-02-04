@@ -1,12 +1,18 @@
 {
-  "name": "@bitgo/abstract-utxo",
-  "version": "9.15.0",
-  "description": "BitGo SDK coin library for UTXO base implementation",
+  "name": "@bitgo/utxo-core",
+  "version": "1.0.0",
+  "description": "BitGo UTXO Core types",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "files": [
     "dist/src"
   ],
+  "exports": {
+    ".": "./dist/src/index.js",
+    "./descriptor": "./dist/src/descriptor/index.js",
+    "./testutil": "./dist/src/testutil/index.js",
+    "./testutil/descriptor": "./dist/src/testutil/descriptor/index.js"
+  },
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
@@ -19,13 +25,10 @@
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
-  "engines": {
-    "node": ">=18 <21"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/abstract-utxo"
+    "directory": "modules/utxo-core"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -42,24 +45,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/blockapis": "^1.10.9",
-    "@bitgo/sdk-api": "^1.58.6",
-    "@bitgo/sdk-core": "^28.23.0",
     "@bitgo/unspents": "^0.47.17",
     "@bitgo/utxo-lib": "^11.2.1",
-    "@bitgo/utxo-core": "^1.0.0",
     "@bitgo/wasm-miniscript": "^2.0.0-beta.2",
-    "@types/bluebird": "^3.5.25",
-    "@types/lodash": "^4.14.121",
-    "@types/superagent": "4.1.15",
-    "bignumber.js": "^9.0.2",
-    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
-    "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3",
-    "bluebird": "^3.5.3",
-    "debug": "^3.1.0",
-    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
-    "lodash": "^4.17.14",
-    "superagent": "^9.0.1"
+    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

@@ -21,6 +21,9 @@
     },
     {
       "path": "../utxo-lib"
+    },
+    {
+      "path": "../utxo-core"
     }
   ]
 }

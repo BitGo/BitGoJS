@@ -1,0 +1,184 @@
+{
+  "data": {
+    "inputs": [
+      {
+        "witnessUtxo": {
+          "script": "51201d8118efb49a67b85254e9f8c47550263cc40ea3a10021f030405903b8385bd1",
+          "value": "1000000"
+        },
+        "tapLeafScript": [
+          {
+            "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+            "script": "2085f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39ac20d5298e6df3cc36ef883e10698e31c4d39108bdad04066111b5bb70241373cd3eba209a50a261452c3233d75f3aaa79d7187b823050b329fa1c51d7d5e1067b9de406ba529c",
+            "leafVersion": 192
+          }
+        ],
+        "tapBip32Derivation": [
+          {
+            "masterFingerprint": "f4ac30dd",
+            "pubkey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+            "path": "",
+            "leafHashes": []
+          },
+          {
+            "masterFingerprint": "86ea6d35",
+            "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
+            "path": "0/0",
+            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+          },
+          {
+            "masterFingerprint": "96daa738",
+            "pubkey": "9a50a261452c3233d75f3aaa79d7187b823050b329fa1c51d7d5e1067b9de406",
+            "path": "0/0",
+            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+          },
+          {
+            "masterFingerprint": "702fc808",
+            "pubkey": "d5298e6df3cc36ef883e10698e31c4d39108bdad04066111b5bb70241373cd3e",
+            "path": "0/0",
+            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+          }
+        ],
+        "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+        "tapMerkleRoot": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416",
+        "tapScriptSig": [
+          {
+            "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
+            "signature": "71d6cee1576c2ae24b4c9aaf6908e87cfd1917ef95e4602ee575567a47432cfb86211ba27a149cc400e61f919263aea80a0a812816a64209829b85a2a539a907",
+            "leafHash": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
+          }
+        ]
+      },
+      {
+        "witnessUtxo": {
+          "script": "51207258acd89ad80d944a05a6f13dde2ac84fe0a74ac922a92dc92c5ee4bf6f1b5a",
+          "value": "1000000"
+        },
+        "tapLeafScript": [
+          {
+            "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+            "script": "204062b7c830cca69d5c808306526e7a980fbdb5356a8a5c9fd6549f2d1bf76e74ac20266670018fb65f1384da4e9b9b92c79d5c42d5f51c3ceb1e516babfb7595f243ba20d502c2c474f4874a96b544afa9f8a9aa49e03ca8fcf736b1a1d150a663db13a6ba529c",
+            "leafVersion": 192
+          }
+        ],
+        "tapBip32Derivation": [
+          {
+            "masterFingerprint": "702fc808",
+            "pubkey": "266670018fb65f1384da4e9b9b92c79d5c42d5f51c3ceb1e516babfb7595f243",
+            "path": "0/1",
+            "leafHashes": ["4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"]
+          },
+          {
+            "masterFingerprint": "86ea6d35",
+            "pubkey": "4062b7c830cca69d5c808306526e7a980fbdb5356a8a5c9fd6549f2d1bf76e74",
+            "path": "0/1",
+            "leafHashes": ["4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"]
+          },
+          {
+            "masterFingerprint": "f4ac30dd",
+            "pubkey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+            "path": "",
+            "leafHashes": []
+          },
+          {
+            "masterFingerprint": "96daa738",
+            "pubkey": "d502c2c474f4874a96b544afa9f8a9aa49e03ca8fcf736b1a1d150a663db13a6",
+            "path": "0/1",
+            "leafHashes": ["4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"]
+          }
+        ],
+        "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+        "tapMerkleRoot": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6",
+        "tapScriptSig": [
+          {
+            "pubkey": "4062b7c830cca69d5c808306526e7a980fbdb5356a8a5c9fd6549f2d1bf76e74",
+            "signature": "d754d1c25995ffc7ece06a710f4e2a2ba47d27b1f8b717b5c0b9d630dac3d13db6812ec2c81c767a5d0aeca6d4808c7f3ca4535d7b1acdd96cccb507ed03a26d",
+            "leafHash": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {},
+      {
+        "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+        "tapTree": {
+          "leaves": [
+            {
+              "depth": 0,
+              "leafVersion": 192,
+              "script": "2085f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39ac20d5298e6df3cc36ef883e10698e31c4d39108bdad04066111b5bb70241373cd3eba209a50a261452c3233d75f3aaa79d7187b823050b329fa1c51d7d5e1067b9de406ba529c"
+            }
+          ]
+        },
+        "tapBip32Derivation": [
+          {
+            "masterFingerprint": "f4ac30dd",
+            "pubkey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
+            "path": "",
+            "leafHashes": []
+          },
+          {
+            "masterFingerprint": "86ea6d35",
+            "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
+            "path": "0/0",
+            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+          },
+          {
+            "masterFingerprint": "96daa738",
+            "pubkey": "9a50a261452c3233d75f3aaa79d7187b823050b329fa1c51d7d5e1067b9de406",
+            "path": "0/0",
+            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+          },
+          {
+            "masterFingerprint": "702fc808",
+            "pubkey": "d5298e6df3cc36ef883e10698e31c4d39108bdad04066111b5bb70241373cd3e",
+            "path": "0/0",
+            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+          }
+        ]
+      }
+    ],
+    "globalMap": {
+      "unsignedTx": {
+        "tx": {
+          "version": 2,
+          "locktime": 0,
+          "ins": [
+            {
+              "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+              "index": 0,
+              "script": "",
+              "sequence": 4294967293,
+              "witness": []
+            },
+            {
+              "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+              "index": 1,
+              "script": "",
+              "sequence": 4294967293,
+              "witness": []
+            }
+          ],
+          "outs": [
+            {
+              "value": "400000",
+              "script": "5120d90d2a76df5d5e2e5e55752aa56dfd558812c6d58e7acfbe6a696c3ad5868d11"
+            },
+            {
+              "value": "400000",
+              "script": "51201d8118efb49a67b85254e9f8c47550263cc40ea3a10021f030405903b8385bd1"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "nonceStore": {
+    "nonces": []
+  },
+  "opts": {
+    "maximumFeeRate": 5000,
+    "bip32PathsAbsolute": false
+  }
+}
