@@ -240,6 +240,8 @@ const coinBuilderMap = {
   tcoredao: Coredao.TransactionBuilder,
   apt: Apt.TransactionBuilder,
   tapt: Apt.TransactionBuilder,
+  tao: Tao.TransactionBuilder,
+  ttao: Tao.TransactionBuilder,
   icp: Icp.TransactionBuilder,
   ticp: Icp.TransactionBuilder,
   baby: Baby.TransactionBuilder,
