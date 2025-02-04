@@ -1,0 +1,40 @@
+
+
+Ticket: PROJECT-NUMBER
+
+# Limit the subject line to no more than 72 characters, ends here ---> |
+#
+# Use https://www.conventionalcommits.org/en/v1.0.0/ which looks like:
+#
+# ```
+# <type>[optional scope]: <subject description>
+# 
+# [optional body]
+#
+# Ticket: <TICKET>
+#
+# [optional footer(s)]
+# ```
+#
+# The header line has a max length of 72 characters and each body
+# line has a max length of 100 characters.
+#
+# To run the linter locally, run `npm run commitlint`
+#
+# For more information, see https://bitgoinc.atlassian.net/l/cp/0f0tN39n
+#
+# Here is a quick-reference of valid types:
+#
+# | <type>   | Description: A change that...                  |
+# |----------|------------------------------------------------|
+# | feat     | Adds a new feature                             |
+# | fix      | Fixes a bug                                    |
+# | docs     | Modifies documentation                         |
+# | style    | Doesn't affect the behavior of code            |
+# | refactor | Modifies the layout or formatting of code      |
+# | perf     | Improves performance without altering behavior |
+# | test     | Adds tests or corrects existing tests          |
+# | build    | Modifies the build system                      |
+# | ci       | Modifies CI or scripts called by CI            |
+# | chore    | Doesn't modify source or test files            |
+# | revert   | Reverts a previous commit                      |

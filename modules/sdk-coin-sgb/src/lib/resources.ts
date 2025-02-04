@@ -8,7 +8,7 @@ export const testnetCommon = EthereumCommon.custom(
     chainId: (coins.get('tsgb').network as EthereumNetwork).chainId,
   },
   {
-    baseChain: 'sepolia',
+    baseChain: 'coston',
     hardfork: 'london',
     eips: [1559],
   }
