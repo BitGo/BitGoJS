@@ -1,6 +1,6 @@
-import { PolkadotSpecNameType } from '@bitgo/statics';
+import { BittensorSpecNameType } from '@bitgo/statics';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { getRegistry } from '@substrate/txwrapper-polkadot';
+import { getRegistry } from '@substrate/txwrapper-registry';
 import { Material } from './iface';
 
 export class SingletonRegistry {
@@ -12,7 +12,7 @@ export class SingletonRegistry {
       SingletonRegistry.material = material;
       SingletonRegistry.instance = getRegistry({
         chainName: material.chainName,
-        specName: material.specName as PolkadotSpecNameType,
+        specName: material.specName as BittensorSpecNameType,
         specVersion: material.specVersion,
         metadataRpc: material.metadata as `0x${string}`,
       });

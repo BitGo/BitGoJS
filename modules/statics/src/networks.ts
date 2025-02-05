@@ -73,6 +73,8 @@ export interface AccountNetwork extends BaseNetwork {
  */
 export type PolkadotSpecNameType = 'kusama' | 'polkadot' | 'westend' | 'statemint' | 'statemine';
 
+export type BittensorSpecNameType = 'kusama' | 'polkadot' | 'westend' | 'statemint' | 'statemine' | 'node-subtensor';
+
 export interface DotNetwork extends AccountNetwork {
   // some chains pay fees via an enterprise gas task. The account explorer url
   // is a url that can be used to look up the account for the gas tank on-chain.
@@ -923,6 +925,11 @@ class BittensorTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Tao';
   family = CoinFamily.TAO;
   explorerUrl = 'https://explorer.finney.opentensor.ai/#/';
+  specName = 'node-subtensor' as BittensorSpecNameType;
+  genesisHash = '0x8f9cf856bf558a14440e75569c9e58594757048d7b3a84b5d25f6bd978263105';
+  specVersion = 224;
+  chainName = 'bittensor';
+  txVersion = 1;
 }
 
 class Trx extends Mainnet implements TronNetwork {
