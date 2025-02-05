@@ -40,7 +40,9 @@ function parseOutputsWithPsbt(
   recipientOutputs: RecipientOutput[]
 ): ParsedOutputs {
   const parsed = coreDescriptors.parse(psbt, descriptorMap, psbt.network);
-  const changeOutputs = parsed.outputs.filter((o) => o.scriptId !== undefined);
+  const changeOutputs = parsed.outputs.filter(
+    (o) => o.scriptId !== undefined && !recipientOutputs.some((r) => r.address === o.address)
+  );
   const outputDiffs = outputDifferencesWithExpected(parsed.outputs, recipientOutputs);
   return {
     outputs: parsed.outputs,
