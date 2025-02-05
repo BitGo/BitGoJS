@@ -1095,7 +1095,7 @@ class Berachain extends Mainnet implements EthereumNetwork {
 }
 
 class BerachainTestnet extends Testnet implements EthereumNetwork {
-  name = 'BerachainTestnet';
+  name = 'BeraTestnet';
   family = CoinFamily.BERA;
   explorerUrl = 'https://80000.testnet.routescan.io/tx/';
   accountExplorerUrl = 'https://80000.testnet.routescan.io/address/';
@@ -1108,7 +1108,7 @@ class BerachainTestnet extends Testnet implements EthereumNetwork {
 }
 
 class Oas extends Mainnet implements EthereumNetwork {
-  name = 'Oaschain';
+  name = 'Oas';
   family = CoinFamily.OAS;
   explorerUrl = 'https://explorer.oasys.games/tx/';
   accountExplorerUrl = 'https://explorer.oasys.games/address/';
@@ -1120,7 +1120,7 @@ class Oas extends Mainnet implements EthereumNetwork {
 }
 
 class OasTestnet extends Testnet implements EthereumNetwork {
-  name = 'OaschainTestnet';
+  name = 'OasTestnet';
   family = CoinFamily.OAS;
   explorerUrl = 'https://explorer.testnet.oasys.games/tx/';
   accountExplorerUrl = 'https://explorer.testnet.oasys.games/address/';
@@ -1132,7 +1132,7 @@ class OasTestnet extends Testnet implements EthereumNetwork {
 }
 
 class Coredao extends Mainnet implements EthereumNetwork {
-  name = 'Coredaochain';
+  name = 'Coredao';
   family = CoinFamily.COREDAO;
   explorerUrl = 'https://scan.coredao.org/tx/';
   accountExplorerUrl = 'https://scan.coredao.org/address/';
@@ -1144,7 +1144,7 @@ class Coredao extends Mainnet implements EthereumNetwork {
 }
 
 class CoredaoTestnet extends Testnet implements EthereumNetwork {
-  name = 'CoredaochainTestnet';
+  name = 'CoredaoTestnet';
   family = CoinFamily.COREDAO;
   explorerUrl = 'https://scan.test.btcs.network/tx/';
   accountExplorerUrl = 'https://scan.test.btcs.network/address/';
