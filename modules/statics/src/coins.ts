@@ -20636,7 +20636,7 @@ export const coins = CoinMap.fromCoins([
     'wal',
     'WAL',
     UnderlyingAsset['tsui:wal'],
-    [...SUI_TOKEN_FEATURES, CoinFeature.STAKING]
+    [...SUI_TOKEN_FEATURES, CoinFeature.STAKING, CoinFeature.BULK_STAKING_TRANSACTION]
   ),
   aptToken(
     'e8bfdab3-4ef6-4b39-9450-d9cb59593f7a',
