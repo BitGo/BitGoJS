@@ -65,12 +65,6 @@ jobs:
       - name: Dependency Audit
         run: yarn run improved-yarn-audit --min-severity high
 
-      - name: Lint Source Code
-        run: yarn run lint
-
-      - name: Check Source Code Formatting
-        run: yarn run check-fmt
-
       - name: build packages
         env:
           # Workaround for https://github.com/nodejs/node/issues/51555
@@ -92,6 +86,44 @@ jobs:
       #   env:
       #     CODECOV_FLAG: unit
       #     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  code-quality:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: ['lint', 'format']
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup node 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-node18-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('package.json') }}
+
+      - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+        run: yarn install --with-frozen-lockfile --ignore-scripts
+
+      - name: Lint Source Code
+        if: matrix.check == 'lint'
+        run: yarn run lint
+
+      - name: Check Source Code Formatting
+        if: matrix.check == 'format'
+        run: yarn run check-fmt
 
   browser-test:
     runs-on: ubuntu-22.04
