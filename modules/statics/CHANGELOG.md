@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.22.0...@bitgo/statics@50.23.0) (2025-02-05)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** fix and addition of explorer url for aptos ([1984fb3](https://github.com/BitGo/BitGoJS/commit/1984fb3f698520b2dd27d8ef8646b40229c5cb32))
+- update xrpToken decimals ([3c5cc96](https://github.com/BitGo/BitGoJS/commit/3c5cc9608626f7e90fde73914ff4602a997e111d))
+
+### Features
+
+- **bitgo:** add bitgo custody mena fze entity ([2f9452c](https://github.com/BitGo/BitGoJS/commit/2f9452c7c11de559da627f195b3312c71bfa3f5d))
+- **sdk-coin-apt:** change fungibleAddress to assetId ([3c1bd56](https://github.com/BitGo/BitGoJS/commit/3c1bd56a05e20f1fc0bc3ad69227b021c972f919))
+- **sdk-coin-icp:** added address creation and validation logic ([5f28145](https://github.com/BitGo/BitGoJS/commit/5f28145a5a2268b4a76599b353c5a95cd409d286))
+- **statics:** add new batch of tokens ([2e79b89](https://github.com/BitGo/BitGoJS/commit/2e79b89877bc0976ad846e5ca378de547be4b085))
+- **statics:** add new batch of tokens ([fdde292](https://github.com/BitGo/BitGoJS/commit/fdde292a416df85568ea9461088004fbf5ee051a))
+- **statics:** enable btc mainnet staking feature ([a6dfa45](https://github.com/BitGo/BitGoJS/commit/a6dfa45ae313d1b3e0085be9154d53fc57461f09))
+
 # [50.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.21.1...@bitgo/statics@50.22.0) (2025-01-28)
 
 ### Features

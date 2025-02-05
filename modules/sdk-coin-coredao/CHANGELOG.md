@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@1.2.15...@bitgo/sdk-coin-coredao@1.3.0) (2025-02-05)
+
+### Features
+
+- adding overrides for coredao for non-bitgo recovery support through wrw ([0905dc6](https://github.com/BitGo/BitGoJS/commit/0905dc60b76f6cba605a832fc32711ed07245c71))
+
 ## [1.2.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@1.2.14...@bitgo/sdk-coin-coredao@1.2.15) (2025-01-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coredao
