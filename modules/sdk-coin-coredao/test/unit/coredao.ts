@@ -111,7 +111,7 @@ describe('Coredao', function () {
         eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
         gasLimit: 500000,
         replayProtectionOptions: {
-          chain: 1115,
+          chain: 1114,
           hardfork: 'london',
         },
       });
@@ -121,7 +121,7 @@ describe('Coredao', function () {
       const tx = FeeMarketEIP1559Transaction.fromSerializedTx(Buffer.from(stripHexPrefix(transaction.tx), 'hex'));
       tx.getSenderAddress().toString().should.equal(mockData.walletRootAddress);
       const jsonTx = tx.toJSON();
-      jsonTx.chainId?.should.equal('0x45b');
+      jsonTx.chainId?.should.equal('0x45a');
       jsonTx.to?.should.equal(mockData.recoveryDestination);
     });
   });

@@ -16,8 +16,8 @@ describe('Network Common Configuration', () => {
     const common = getCommon(NetworkType.TESTNET);
     should.equal(common.chainName(), 'coredao testnet');
     should.equal(common.hardfork(), 'london');
-    should.equal(common.chainIdBN().toString(), '1115');
-    should.equal(common.networkIdBN().toString(), '1115');
+    should.equal(common.chainIdBN().toString(), '1114');
+    should.equal(common.networkIdBN().toString(), '1114');
   });
 
   it('getCommon for invalid network', () => {

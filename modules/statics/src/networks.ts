@@ -1153,10 +1153,12 @@ class Coredao extends Mainnet implements EthereumNetwork {
 class CoredaoTestnet extends Testnet implements EthereumNetwork {
   name = 'CoredaoTestnet';
   family = CoinFamily.COREDAO;
-  explorerUrl = 'https://scan.test.btcs.network/tx/';
-  accountExplorerUrl = 'https://scan.test.btcs.network/address/';
-  chainId = 1115;
-  nativeCoinOperationHashPrefix = '1115';
+  explorerUrl = 'https://scan.test2.btcs.network/tx/';
+  accountExplorerUrl = 'https://scan.test2.btcs.network/address/';
+  chainId = 1114;
+  nativeCoinOperationHashPrefix = '1114';
+
+  // TODO (SC-1024) Update contract addresses to new testnet when they are deployed
   batcherContractAddress = '0xad7a34aa9c0c7cb2c4d1f07ce8d1d0530b07fe27';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';

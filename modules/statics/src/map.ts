@@ -57,7 +57,7 @@ export class CoinMap {
       10: 'opeth',
       11155420: 'topeth',
       1116: 'coredao',
-      1115: 'tcoredao',
+      1114: 'tcoredao',
       248: 'oas',
       9372: 'toas',
       14: 'flr',
