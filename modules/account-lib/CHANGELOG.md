@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.4.0...@bitgo/account-lib@24.5.0) (2025-02-05)
+
+### Features
+
+- **sdk-coin-tao:** add missing statics for tao ([422bb1a](https://github.com/BitGo/BitGoJS/commit/422bb1a6860ea7b90ed2ae09de55976cf0cc21f7))
+- **sdk-coin-tao:** add missing statics for tao ([70ef26f](https://github.com/BitGo/BitGoJS/commit/70ef26f5cf1de8ea4f5cbdf5bbff69fc869fa575))
+
 # [24.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.3.1...@bitgo/account-lib@24.4.0) (2025-01-28)
 
 ### Features

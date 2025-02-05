@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [39.25.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.25.0...bitgo@39.25.1) (2025-02-05)
+
+### Bug Fixes
+
+- update xrpToken decimals ([3c5cc96](https://github.com/BitGo/BitGoJS/commit/3c5cc9608626f7e90fde73914ff4602a997e111d))
+
 # [39.25.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.24.1...bitgo@39.25.0) (2025-01-28)
 
 ### Features

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.14.0...@bitgo/abstract-utxo@9.15.0) (2025-02-05)
+
+### Bug Fixes
+
+- **abstract-utxo:** fix presignTransaction for descriptor wallets ([2702580](https://github.com/BitGo/BitGoJS/commit/270258078224978b9e9d2aae80a58a2df6debea9))
+
+### Features
+
+- **abstract-utxo:** add isUtxoWalletData function ([5155cad](https://github.com/BitGo/BitGoJS/commit/5155cad3b50a5b9d80c6442befa2840bd8afec65))
+- **abstract-utxo:** add UtxoCoinName type ([7ca28b5](https://github.com/BitGo/BitGoJS/commit/7ca28b557c3a7edaf71fe42b1bdd92b709997f10))
+
 # [9.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.13.1...@bitgo/abstract-utxo@9.14.0) (2025-01-28)
 
 ### Bug Fixes

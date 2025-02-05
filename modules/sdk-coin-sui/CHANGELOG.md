@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.8.22...@bitgo/sdk-coin-sui@5.9.0) (2025-02-05)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add exports ([495f314](https://github.com/BitGo/BitGoJS/commit/495f314e7d9e97322744015e980c9614c5accd1d))
+
+### Features
+
+- **sdk-coin-sui:** walrus staking transaction builder ([8ffdaf0](https://github.com/BitGo/BitGoJS/commit/8ffdaf09832f0877c2b07529a79bb09cfd31df1c))
+
 ## [5.8.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.8.21...@bitgo/sdk-coin-sui@5.8.22) (2025-01-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

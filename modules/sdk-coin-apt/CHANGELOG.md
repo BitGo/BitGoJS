@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.6.0...@bitgo/sdk-coin-apt@1.7.0) (2025-02-05)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** exporting fungible and non fungible files ([e426aeb](https://github.com/BitGo/BitGoJS/commit/e426aebbbf45f5e837e868e6eaa139505c2ab8be))
+
+### Features
+
+- **sdk-coin-apt:** change fungibleAddress to assetId ([3c1bd56](https://github.com/BitGo/BitGoJS/commit/3c1bd56a05e20f1fc0bc3ad69227b021c972f919))
+- **sdk-coin-apt:** changing names of classes ([937b17c](https://github.com/BitGo/BitGoJS/commit/937b17cce52fdb68670577b1b8887cee586dc4e0))
+- **sdk-coin-apt:** fungible asset transfer transaction ([65cbd70](https://github.com/BitGo/BitGoJS/commit/65cbd7054728d50b1bb64f6229fd8465d8ac6b97))
+- **sdk-coin-apt:** legacy coin and aptos coin transfer changes ([9db8d65](https://github.com/BitGo/BitGoJS/commit/9db8d6519f3e77525f583398853e6b90f021c4e7))
+- **sdk-coin-apt:** non fungible asset transaction building ([eb84c77](https://github.com/BitGo/BitGoJS/commit/eb84c774cb3e22985a161460b39ab5e52a1af339))
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.5.1...@bitgo/sdk-coin-apt@1.6.0) (2025-01-28)
 
 ### Bug Fixes

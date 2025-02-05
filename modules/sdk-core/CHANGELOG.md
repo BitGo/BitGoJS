@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.22.0...@bitgo/sdk-core@28.23.0) (2025-02-05)
+
+### Features
+
+- adding overrides for coredao for non-bitgo recovery support through wrw ([0905dc6](https://github.com/BitGo/BitGoJS/commit/0905dc60b76f6cba605a832fc32711ed07245c71))
+- **sdk-coin-apt:** non fungible asset transaction building ([eb84c77](https://github.com/BitGo/BitGoJS/commit/eb84c774cb3e22985a161460b39ab5e52a1af339))
+- **sdk-coin-icp:** added address creation and validation logic ([5f28145](https://github.com/BitGo/BitGoJS/commit/5f28145a5a2268b4a76599b353c5a95cd409d286))
+- **sdk-core:** add invoice codecs ([ba62f5f](https://github.com/BitGo/BitGoJS/commit/ba62f5ff36710b94ded74852512e140a6e5326a9))
+- **sdk-core:** generalize getSignatureShareRoundX mpcv2 helpers ([fb43c7c](https://github.com/BitGo/BitGoJS/commit/fb43c7cf25887c1717a79e7640fac0ff75d2957a))
+
 # [28.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.21.1...@bitgo/sdk-core@28.22.0) (2025-01-28)
 
 ### Features

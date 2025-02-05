@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.8.2...@bitgo/sdk-coin-sol@4.8.3) (2025-02-05)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** set priority fee in initBuilder ([f770bd1](https://github.com/BitGo/BitGoJS/commit/f770bd1fd21558da52894106bf91f04d59aa8900))
+
 ## [4.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.8.1...@bitgo/sdk-coin-sol@4.8.2) (2025-01-28)
 
 ### Bug Fixes
