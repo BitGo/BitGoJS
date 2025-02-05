@@ -1750,7 +1750,7 @@ export class Wallet implements IWallet {
    */
   async prebuildTransaction(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
     if (this._wallet.multisigType === 'tss') {
-      return this.prebuildTransactionTss(params);
+      return this.prebuildTransactionTxRequests(params);
     }
 
     // Whitelist params to build tx
@@ -2491,7 +2491,7 @@ export class Wallet implements IWallet {
     }
 
     if (this._wallet.multisigType === 'tss') {
-      return this.sendManyTss(params);
+      return this.sendManyTxRequests(params);
     }
 
     const selectParams = _.pick(params, [...this.prebuildWhitelistedParams(), 'comment', 'otp', 'hop']);
@@ -2875,7 +2875,7 @@ export class Wallet implements IWallet {
         throw new Error('Consolidation request missing txRequestId.');
       }
 
-      return await this.sendManyTss(params);
+      return await this.sendManyTxRequests(params);
     }
 
     const signedPrebuild = (await this.prebuildAndSignTransaction(params)) as any;
@@ -3013,7 +3013,7 @@ export class Wallet implements IWallet {
     }
 
     if (this._wallet.multisigType === 'tss') {
-      return await this.sendManyTss(params);
+      return await this.sendManyTxRequests(params);
     } else {
       switch (this._wallet.type) {
         case 'hot':
@@ -3082,7 +3082,9 @@ export class Wallet implements IWallet {
    *
    * @param params prebuild transaction options
    */
-  private async prebuildTransactionTss(params: PrebuildTransactionOptions = {}): Promise<PrebuildTransactionResult> {
+  private async prebuildTransactionTxRequests(
+    params: PrebuildTransactionOptions = {}
+  ): Promise<PrebuildTransactionResult> {
     const reqId = params.reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
     const apiVersion = getTxRequestApiVersion(this, params.apiVersion);
@@ -3543,7 +3545,7 @@ export class Wallet implements IWallet {
    *
    * @param params send options
    */
-  private async sendManyTss(params: SendManyOptions = {}): Promise<any> {
+  private async sendManyTxRequests(params: SendManyOptions = {}): Promise<any> {
     params.apiVersion = getTxRequestApiVersion(this, params.apiVersion);
 
     const signedTransaction = (await this.prebuildAndSignTransaction(params)) as SignedTransactionRequest;
