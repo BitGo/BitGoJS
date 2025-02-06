@@ -174,7 +174,7 @@ export abstract class Transaction extends BaseTransaction {
 
       const feePayerAuthenticator = authenticator.fee_payer.authenticator as AccountAuthenticatorEd25519;
       const feePayerSignature = Buffer.from(feePayerAuthenticator.signature.toUint8Array());
-      this.addFeePayerSignature({ pub: feePayerAuthenticator.public_key.toString() }, feePayerSignature);
+      this.addFeePayerSignature({ pub: feePayerAuthenticator.public_key.toStringWithoutPrefix() }, feePayerSignature);
     } catch (e) {
       console.error('invalid signed transaction', e);
       throw new Error('invalid signed transaction');
