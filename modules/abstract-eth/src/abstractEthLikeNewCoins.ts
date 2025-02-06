@@ -68,6 +68,7 @@ import {
   TransactionBuilder,
   TransferBuilder,
 } from './lib';
+import { SendCrossChainRecoveryOptions } from './types';
 
 /**
  * The prebuilt hop transaction returned from the HSM
@@ -1318,6 +1319,58 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return {
       id: signedTx.toJson().id,
       tx: signedTx.toBroadcastFormat(),
+    };
+  }
+
+  async sendCrossChainRecoveryTransaction(
+    params: SendCrossChainRecoveryOptions
+  ): Promise<{ coin: string; txHex?: string; txid: string }> {
+    const buildResponse = await this.buildCrossChainRecoveryTransaction(params.recoveryId);
+    if (params.walletType === 'cold') {
+      return buildResponse;
+    }
+    if (!params.encryptedPrv) {
+      throw new Error('missing encryptedPrv');
+    }
+
+    let userKeyPrv;
+    try {
+      userKeyPrv = this.bitgo.decrypt({
+        input: params.encryptedPrv,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e.message}`);
+    }
+    const keyPair = new KeyPairLib({ prv: userKeyPrv });
+    const userSigningKey = keyPair.getKeys().prv;
+    if (!userSigningKey) {
+      throw new Error('no private key');
+    }
+
+    const txBuilder = this.getTransactionBuilder(params.common) as TransactionBuilder;
+    const txHex = buildResponse.txHex;
+    txBuilder.from(txHex);
+    txBuilder
+      .transfer()
+      .coin(this.staticsCoin?.name as string)
+      .key(userSigningKey);
+    const tx = await txBuilder.build();
+    const res = await this.bitgo
+      .post(this.bitgo.microservicesUrl(`/api/recovery/v1/crosschain/${params.recoveryId}/sign`))
+      .send({ txHex: tx.toBroadcastFormat() });
+    return {
+      coin: this.staticsCoin?.name as string,
+      txid: res.body.txid,
+    };
+  }
+
+  async buildCrossChainRecoveryTransaction(recoveryId: string): Promise<{ coin: string; txHex: string; txid: string }> {
+    const res = await this.bitgo.get(this.bitgo.microservicesUrl(`/api/recovery/v1/crosschain/${recoveryId}/buildtx`));
+    return {
+      coin: res.body.coin,
+      txHex: res.body.txHex,
+      txid: res.body.txid,
     };
   }
 
