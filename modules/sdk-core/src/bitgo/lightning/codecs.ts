@@ -2,8 +2,6 @@
 import * as t from 'io-ts';
 import { isIP } from 'net';
 import { NonEmptyString } from 'io-ts-types';
-import { BigIntFromString } from 'io-ts-types/BigIntFromString';
-import { DateFromISOString } from 'io-ts-types/DateFromISOString';
 
 export function getCodecPair<C extends t.Mixed>(
   innerCodec: C
@@ -213,7 +211,7 @@ export type InvoiceStatus = t.TypeOf<typeof InvoiceStatus>;
 export const CreateInvoiceBody = t.intersection(
   [
     t.type({
-      valueMsat: BigIntFromString,
+      valueMsat: t.string,
     }),
     t.partial({
       memo: t.string,
@@ -231,7 +229,7 @@ export type CreateInvoiceBody = t.TypeOf<typeof CreateInvoiceBody>;
 export const Invoice = t.intersection(
   [
     t.type({
-      valueMsat: BigIntFromString,
+      valueMsat: t.string,
       paymentHash: t.string,
       /** The BOLT #11 encoded invoice string */
       invoice: t.string,
@@ -252,7 +250,7 @@ export type Invoice = t.TypeOf<typeof Invoice>;
 export const InvoiceInfo = t.intersection(
   [
     t.type({
-      valueMsat: BigIntFromString,
+      valueMsat: t.string,
       paymentHash: t.string,
       invoice: t.string,
       walletId: t.string,
@@ -267,7 +265,7 @@ export const InvoiceInfo = t.intersection(
        * than the amount requested by the invoice, since lightning allows overpaying
        * (but not underpaying) invoices.
        */
-      amtPaidMsat: BigIntFromString,
+      amtPaidMsat: t.string,
     }),
   ],
   'InvoiceInfo'
@@ -278,8 +276,8 @@ export const InvoiceQuery = t.partial(
   {
     status: InvoiceStatus,
     limit: t.string,
-    startDate: DateFromISOString,
-    endDate: DateFromISOString,
+    startDate: t.string,
+    endDate: t.string,
   },
   'InvoiceQuery'
 );
