@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 
+import { getKeyTriple } from '@bitgo/utxo-core/testutil';
+
 import { parseDescriptor, DescriptorBuilder, getDescriptorFromBuilder } from '../../src/descriptor/builder';
-import { getKeyTriple } from '../core/key.utils';
 
 function getDescriptorBuilderForType(name: DescriptorBuilder['name']): DescriptorBuilder {
   const keys = getKeyTriple().map((k) => k.neutered());

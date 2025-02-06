@@ -7,6 +7,10 @@ import * as mpath from 'path';
 
 type FixtureEncoding = 'json' | 'hex';
 
+function isNodeJsError(e: unknown): e is NodeJS.ErrnoException {
+  return e instanceof Error && typeof (e as NodeJS.ErrnoException).code === 'string';
+}
+
 function fixtureEncoding(path: string): FixtureEncoding {
   if (path.endsWith('.json')) {
     return 'json';
@@ -51,7 +55,7 @@ export async function getFixture<T>(path: string, defaultValue?: T | (() => Prom
   try {
     await fs.promises.stat(mpath.dirname(path));
   } catch (e) {
-    if (e.code === 'ENOENT') {
+    if (isNodeJsError(e) && e.code === 'ENOENT') {
       throw new Error(`fixture directory ${mpath.dirname(path)} not found, please create it first`);
     }
     throw e;
@@ -62,7 +66,7 @@ export async function getFixture<T>(path: string, defaultValue?: T | (() => Prom
   try {
     return decodeFixture(await fs.promises.readFile(path, 'utf8'), encoding) as T;
   } catch (e) {
-    if (e.code === 'ENOENT') {
+    if (isNodeJsError(e) && e.code === 'ENOENT') {
       if (process.env.WRITE_FIXTURES === '0') {
         throw new Error(`fixture ${path} not found, WRITE_FIXTURES=0`);
       }

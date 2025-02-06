@@ -2,13 +2,13 @@ import assert from 'assert';
 
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { parse } from '../../../../src/core/descriptor';
-import { DescriptorTemplate, getDefaultXPubs, getDescriptorMap } from '../descriptor.utils';
-import { getFixture } from '../../fixtures.utils';
-import { ParsedDescriptorTransaction } from '../../../../src/core/descriptor/psbt/parse';
-import { toPlainObject } from '../../toPlainObject.utils';
+import { parse } from '../../../src/descriptor';
+import { DescriptorTemplate, getDefaultXPubs, getDescriptorMap } from '../../../src/testutil/descriptor/descriptors';
+import { getFixture } from '../../../src/testutil/fixtures.utils';
+import { ParsedDescriptorTransaction } from '../../../src/descriptor/psbt/parse';
+import { toPlainObject } from '../../../src/testutil/toPlainObject.utils';
 
-import { mockPsbtDefaultWithDescriptorTemplate } from './mock.utils';
+import { mockPsbtDefaultWithDescriptorTemplate } from '../../../src/testutil/descriptor/mock.utils';
 
 function normalize(parsed: ParsedDescriptorTransaction) {
   return toPlainObject(

@@ -1,9 +1,8 @@
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
-
-import { createScriptPubKeyFromDescriptor, createPsbt, PsbtParams } from '../../../../src/core/descriptor';
-import { DerivedDescriptorWalletOutput } from '../../../../src/core/descriptor/Output';
-import { DescriptorTemplate, getDefaultXPubs, getDescriptor } from '../descriptor.utils';
+import { PsbtParams, createPsbt, createScriptPubKeyFromDescriptor } from '../../descriptor';
+import { DerivedDescriptorWalletOutput } from '../../descriptor/Output';
+import { DescriptorTemplate, getDefaultXPubs, getDescriptor } from './descriptors';
 
 type MockOutputIdParams = { hash?: string; vout?: number };
 

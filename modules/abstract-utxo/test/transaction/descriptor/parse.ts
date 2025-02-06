@@ -2,11 +2,16 @@ import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
+import {
+  getDefaultXPubs,
+  getDescriptor,
+  getDescriptorMap,
+  mockPsbtDefault,
+} from '@bitgo/utxo-core/testutil/descriptor';
+import { toPlainObject } from '@bitgo/utxo-core/testutil';
+import { createAddressFromDescriptor } from '@bitgo/utxo-core/descriptor';
 
-import { mockPsbtDefault } from '../../core/descriptor/psbt/mock.utils';
 import { ParsedOutputsBigInt, toBaseParsedTransactionOutputsFromPsbt } from '../../../src/transaction/descriptor/parse';
-import { getDefaultXPubs, getDescriptor, getDescriptorMap } from '../../core/descriptor/descriptor.utils';
-import { toPlainObject } from '../../core/toPlainObject.utils';
 import {
   AggregateValidationError,
   assertExpectedOutputDifference,
@@ -15,7 +20,6 @@ import {
 } from '../../../src/transaction/descriptor/verifyTransaction';
 import { toAmountType } from '../../../src/transaction/descriptor/parseToAmountType';
 import { BaseOutput } from '../../../src';
-import { createAddressFromDescriptor } from '../../../src/core/descriptor';
 
 import { getFixtureRoot } from './fixtures.utils';
 

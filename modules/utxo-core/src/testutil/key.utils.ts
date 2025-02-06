@@ -1,8 +1,9 @@
 import * as crypto from 'crypto';
 
-import { Triple } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface } from '@bitgo/utxo-lib';
+
+export type Triple<T> = [T, T, T];
 
 export type KeyTriple = Triple<BIP32Interface>;
 

@@ -1,7 +1,7 @@
 import assert from 'assert';
 import path from 'path';
 
-import { getFixture, jsonNormalize } from '../../core/fixtures.utils';
+import { getFixture, jsonNormalize } from '@bitgo/utxo-core/testutil';
 
 interface FixtureRoot {
   assertEqualFixture(name: string, v: unknown): Promise<void>;

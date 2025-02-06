@@ -24,9 +24,10 @@
 /modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
 /modules/unspents/ @BitGo/btc-team
 /modules/utxo-bin/ @BitGo/btc-team
-/modules/utxo-staking/ @BitGo/btc-team
+/modules/utxo-core/ @BitGo/btc-team
 /modules/utxo-lib/ @BitGo/btc-team
 /modules/utxo-ord/ @BitGo/btc-team
+/modules/utxo-staking/ @BitGo/btc-team
 
 # Lightning coin modules
 /modules/abstract-lightning/ @BitGo/btc-team

@@ -1,7 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as t from 'io-ts';
 
-import { NamedDescriptor } from '../../descriptor';
+import { DescriptorMap, NamedDescriptor } from '../../descriptor';
 import { OfflineVaultSignable, toKeyTriple } from '../OfflineVaultSignable';
 import {
   getValidatorOneOfTemplates,
@@ -9,7 +9,6 @@ import {
   getValidatorSome,
   toDescriptorMapValidate,
 } from '../../descriptor/validatePolicy';
-import { DescriptorMap } from '../../core/descriptor';
 import { explainPsbt, signPsbt } from '../../transaction/descriptor';
 import { TransactionExplanation } from '../TransactionExplanation';
 

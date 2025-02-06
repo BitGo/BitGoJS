@@ -3,13 +3,13 @@ import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface } from '@bitgo/utxo-lib';
 
-import { DescriptorTemplate, getPsbtParams } from '../descriptor.utils';
-import { getFixture } from '../../fixtures.utils';
-import { finalizePsbt } from '../../../../src/core/descriptor';
-import { getKeyTriple } from '../../key.utils';
+import { DescriptorTemplate, getPsbtParams } from '../../../src/testutil/descriptor/descriptors';
+import { getFixture } from '../../../src/testutil/fixtures.utils';
+import { finalizePsbt } from '../../../src/descriptor';
+import { getKeyTriple } from '../../../src/testutil/key.utils';
 
-import { mockPsbtDefaultWithDescriptorTemplate } from './mock.utils';
-import { toPlainObjectFromPsbt, toPlainObjectFromTx } from './psbt.utils';
+import { mockPsbtDefaultWithDescriptorTemplate } from '../../../src/testutil/descriptor/mock.utils';
+import { toPlainObjectFromPsbt, toPlainObjectFromTx } from '../../../src/testutil/descriptor/psbt.utils';
 
 async function assertEqualsFixture(t: DescriptorTemplate, filename: string, value: unknown) {
   filename = __dirname + '/fixtures/' + t + '.' + filename;

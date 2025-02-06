@@ -5,6 +5,8 @@
     "rootDir": "./",
     "strictPropertyInitialization": false,
     "esModuleInterop": true,
+    "moduleResolution": "node16",
+    "module": "node16",
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
   "include": ["src/**/*", "test/**/*"],
@@ -21,6 +23,9 @@
     },
     {
       "path": "../utxo-lib"
+    },
+    {
+      "path": "../utxo-core"
     }
   ]
 }
