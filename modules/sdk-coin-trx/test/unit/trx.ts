@@ -1,11 +1,10 @@
 import assert from 'node:assert';
-import { afterEach, before, describe, it } from 'node:test';
+import { afterEach, before, describe, it, mock } from 'node:test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 import * as _ from 'lodash';
 import { Trx, Ttrx, Utils } from '../../src';
 import { signTxOptions, mockTx } from '../fixtures';
-import sinon from 'sinon';
 import {
   baseAddressBalance,
   SampleRawTokenSendTxn,
@@ -195,23 +194,30 @@ describe('TRON:', function () {
   });
 
   describe('Build Unsigned Sweep', () => {
-    const sandBox = sinon.createSandbox();
-
     afterEach(() => {
-      sandBox.restore();
-      sinon.restore();
+      mock.reset();
     });
 
     it('should recover trx from base address to recovery address', async function () {
-      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
-      // a little more than 2.1 TRX
-      accountBalance.withArgs(TestRecoverData.baseAddress).resolves(baseAddressBalance(3000000));
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.baseAddress) {
+          return Promise.resolve(baseAddressBalance(3000000));
+        }
+
+        return undefined;
+      });
+
       const baseAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.baseAddress);
       const destinationHex = Utils.getHexAddressFromBase58Address(TestRecoverData.recoveryDestination);
-      const createtransaction = sandBox.stub(Trx.prototype, 'getBuildTransaction' as keyof Trx);
-      createtransaction
-        .withArgs(destinationHex, baseAddrHex, 900000)
-        .resolves(creationTransaction(baseAddrHex, destinationHex, 900000));
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args.length > 0 && args[0] === destinationHex && args[1] === baseAddrHex && args[2] === 900000) {
+          return Promise.resolve(creationTransaction(baseAddrHex, destinationHex, 900000));
+        }
+
+        return undefined;
+      });
+
       const res = await basecoin.recover({
         userKey: TestRecoverData.userKey,
         backupKey: TestRecoverData.backupKey,
@@ -230,17 +236,28 @@ describe('TRON:', function () {
     });
 
     it('should recover trx from receive address to base address', async function () {
-      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
-      accountBalance.withArgs(TestRecoverData.baseAddress).resolves(baseAddressBalance(2000000));
-      accountBalance
-        .withArgs(TestRecoverData.firstReceiveAddress)
-        .resolves(receiveAddressBalance(102100000, TestRecoverData.firstReceiveAddress));
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.baseAddress) {
+          return Promise.resolve(baseAddressBalance(2000000));
+        }
+
+        if (args.length > 0 && args[0] === TestRecoverData.firstReceiveAddress) {
+          return Promise.resolve(receiveAddressBalance(102100000, TestRecoverData.firstReceiveAddress));
+        }
+
+        return undefined;
+      });
+
       const firstReceiveAddressHex = Utils.getHexAddressFromBase58Address(TestRecoverData.firstReceiveAddress);
       const baseAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.baseAddress);
-      const createtransaction = sandBox.stub(Trx.prototype, 'getBuildTransaction' as keyof Trx);
-      createtransaction
-        .withArgs(baseAddrHex, firstReceiveAddressHex, 100000000)
-        .resolves(creationTransaction(firstReceiveAddressHex, baseAddrHex, 100000000));
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args.length > 0 && args[0] === baseAddrHex && args[1] === firstReceiveAddressHex && args[2] === 100000000) {
+          return Promise.resolve(creationTransaction(firstReceiveAddressHex, baseAddrHex, 100000000));
+        }
+
+        return undefined;
+      });
 
       const res = await basecoin.recover({
         userKey: TestRecoverData.userKey,
@@ -260,20 +277,26 @@ describe('TRON:', function () {
     });
 
     it('should recover token from base address to recovery address', async function () {
-      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
-      // Minimum TRX balance to send erc20 tokens is 100 TRX
-      accountBalance.withArgs(TestRecoverData.baseAddress).resolves(
-        baseAddressBalance(100000000, [
-          {
-            TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id: '1000000000',
-          },
-          {
-            TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
-          },
-        ])
-      );
-      const rawTokenTxn = sandBox.stub(Trx.prototype, 'getTriggerSmartContractTransaction' as keyof Trx);
-      rawTokenTxn.withArgs().resolves(SampleRawTokenSendTxn);
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.baseAddress) {
+          return Promise.resolve(
+            baseAddressBalance(100000000, [
+              {
+                TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id: '1000000000',
+              },
+              {
+                TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
+              },
+            ])
+          );
+        }
+
+        return undefined;
+      });
+
+      mock.method(Trx.prototype as any, 'getTriggerSmartContractTransaction', (...args) => {
+        return Promise.resolve(SampleRawTokenSendTxn);
+      });
 
       const res = await basecoin.recover({
         userKey: TestRecoverData.userKey,
@@ -296,17 +319,23 @@ describe('TRON:', function () {
     });
 
     it('should throw if trx balance at base address is not sufficient to cover token send', async function () {
-      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
-      // 1 TRX is lower than the minimum TRX balance to send erc20 tokens which is 100 TRX
-      accountBalance.withArgs(TestRecoverData.baseAddress).resolves(
-        baseAddressBalance(1000000, [
-          {
-            TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
-          },
-        ])
-      );
-      const rawTokenTxn = sandBox.stub(Trx.prototype, 'getTriggerSmartContractTransaction' as keyof Trx);
-      rawTokenTxn.withArgs().resolves(SampleRawTokenSendTxn);
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.baseAddress) {
+          return Promise.resolve(
+            baseAddressBalance(1000000, [
+              {
+                TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs: '1100000000',
+              },
+            ])
+          );
+        }
+
+        return undefined;
+      });
+
+      mock.method(Trx.prototype as any, 'getTriggerSmartContractTransaction', (...args) => {
+        return Promise.resolve(SampleRawTokenSendTxn);
+      });
 
       await assert.rejects(
         basecoin.recover({
@@ -325,11 +354,8 @@ describe('TRON:', function () {
   });
 
   describe('Build Unsigned Consolidation Recoveries', () => {
-    const sandBox = sinon.createSandbox();
-
     afterEach(() => {
-      sandBox.restore();
-      sinon.restore();
+      mock.reset();
     });
 
     it('should throw if startingScanIndex is not ge to 1', async () => {
@@ -364,24 +390,33 @@ describe('TRON:', function () {
     });
 
     it('should build consolidate recoveries', async () => {
-      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
-      accountBalance
-        .withArgs(TestRecoverData.firstReceiveAddress)
-        .resolves(receiveAddressBalance(102100000, TestRecoverData.firstReceiveAddress));
-      accountBalance
-        .withArgs(TestRecoverData.secondReceiveAddress)
-        .resolves(receiveAddressBalance(50000000, TestRecoverData.secondReceiveAddress));
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.firstReceiveAddress) {
+          return Promise.resolve(receiveAddressBalance(102100000, TestRecoverData.firstReceiveAddress));
+        }
 
-      const createtransaction = sandBox.stub(Trx.prototype, 'getBuildTransaction' as keyof Trx);
+        if (args.length > 0 && args[0] === TestRecoverData.secondReceiveAddress) {
+          return Promise.resolve(receiveAddressBalance(50000000, TestRecoverData.secondReceiveAddress));
+        }
+
+        return undefined;
+      });
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args.length > 0 && args[0] === baseAddrHex && args[1] === firstReceiveAddrHex && args[2] === 100000000) {
+          return Promise.resolve(creationTransaction(firstReceiveAddrHex, baseAddrHex, 100000000));
+        }
+
+        if (args.length > 0 && args[0] === baseAddrHex && args[1] === secondReceiveAddrHex && args[2] === 47900000) {
+          return Promise.resolve(creationTransaction(secondReceiveAddrHex, baseAddrHex, 47900000));
+        }
+
+        return undefined;
+      });
+
       const firstReceiveAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.firstReceiveAddress);
       const secondReceiveAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.secondReceiveAddress);
       const baseAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.baseAddress);
-      createtransaction
-        .withArgs(baseAddrHex, firstReceiveAddrHex, 100000000)
-        .resolves(creationTransaction(firstReceiveAddrHex, baseAddrHex, 100000000));
-      createtransaction
-        .withArgs(baseAddrHex, secondReceiveAddrHex, 47900000)
-        .resolves(creationTransaction(secondReceiveAddrHex, baseAddrHex, 47900000));
 
       const res = await basecoin.recoverConsolidations({
         userKey: TestRecoverData.userKey,
@@ -411,24 +446,34 @@ describe('TRON:', function () {
     });
 
     it('should build consolidate token recoveries', async () => {
-      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
-      accountBalance.withArgs(TestRecoverData.firstReceiveAddress).resolves(
-        receiveAddressBalance(202100000, TestRecoverData.firstReceiveAddress, [
-          {
-            TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id: '1100000000',
-          },
-        ])
-      );
-      accountBalance
-        .withArgs(TestRecoverData.secondReceiveAddress)
-        .resolves(receiveAddressBalance(500, TestRecoverData.secondReceiveAddress));
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.firstReceiveAddress) {
+          return Promise.resolve(
+            receiveAddressBalance(202100000, TestRecoverData.firstReceiveAddress, [
+              {
+                TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id: '1100000000',
+              },
+            ])
+          );
+        }
 
-      const createtransaction = sandBox.stub(Trx.prototype, 'getBuildTransaction' as keyof Trx);
+        if (args.length > 0 && args[0] === TestRecoverData.secondReceiveAddress) {
+          return Promise.resolve(receiveAddressBalance(500, TestRecoverData.secondReceiveAddress));
+        }
+
+        return undefined;
+      });
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args.length > 0 && args[0] === baseAddrHex && args[1] === firstReceiveAddrHex && args[2] === 1100000000) {
+          return Promise.resolve(creationTransaction(firstReceiveAddrHex, baseAddrHex, 1100000000));
+        }
+
+        return undefined;
+      });
+
       const firstReceiveAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.firstReceiveAddress);
       const baseAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.baseAddress);
-      createtransaction
-        .withArgs(baseAddrHex, firstReceiveAddrHex, 1100000000)
-        .resolves(creationTransaction(firstReceiveAddrHex, baseAddrHex, 1100000000));
 
       const res = await basecoin.recoverConsolidations({
         userKey: TestRecoverData.userKey,
@@ -455,21 +500,28 @@ describe('TRON:', function () {
     });
 
     it('should skip building consolidate transaction if balance is lower than reserved fee', async () => {
-      const accountBalance = sandBox.stub(Trx.prototype, 'getAccountBalancesFromNode' as keyof Trx);
-      accountBalance
-        .withArgs(TestRecoverData.firstReceiveAddress)
-        .resolves(receiveAddressBalance(102100000, TestRecoverData.firstReceiveAddress));
-      // 2nd receive address balance a bit lower than 2.1 TRX
-      accountBalance
-        .withArgs(TestRecoverData.secondReceiveAddress)
-        .resolves(receiveAddressBalance(2000000, TestRecoverData.secondReceiveAddress));
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.firstReceiveAddress) {
+          return Promise.resolve(receiveAddressBalance(102100000, TestRecoverData.firstReceiveAddress));
+        }
 
-      const createtransaction = sandBox.stub(Trx.prototype, 'getBuildTransaction' as keyof Trx);
+        if (args.length > 0 && args[0] === TestRecoverData.secondReceiveAddress) {
+          return Promise.resolve(receiveAddressBalance(2000000, TestRecoverData.secondReceiveAddress));
+        }
+
+        return undefined;
+      });
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args.length > 0 && args[0] === baseAddrHex && args[1] === firstReceiveAddrHex && args[2] === 100000000) {
+          return Promise.resolve(creationTransaction(firstReceiveAddrHex, baseAddrHex, 100000000));
+        }
+
+        return undefined;
+      });
+
       const firstReceiveAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.firstReceiveAddress);
       const baseAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.baseAddress);
-      createtransaction
-        .withArgs(baseAddrHex, firstReceiveAddrHex, 100000000)
-        .resolves(creationTransaction(firstReceiveAddrHex, baseAddrHex, 100000000));
 
       const res = await basecoin.recoverConsolidations({
         userKey: TestRecoverData.userKey,
