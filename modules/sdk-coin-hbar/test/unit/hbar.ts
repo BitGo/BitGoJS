@@ -620,6 +620,7 @@ describe('Hedera Hashgraph:', function () {
     const balance = '1000000000';
     const formatBalanceResponse = (balance: string) =>
       new BigNumber(balance).dividedBy(basecoin.getBaseFactor()).toFixed(9) + ' ℏ';
+    const tokenId = '0.0.13078';
 
     describe('Non-BitGo', async function () {
       const sandBox = Sinon.createSandbox();
@@ -781,23 +782,144 @@ describe('Hedera Hashgraph:', function () {
           }
         );
       });
+
+      it('should build and sign the recovery tx for tokens', async function () {
+        const balance = '100';
+        const data = {
+          hbars: '1',
+          tokens: [{ tokenId: tokenId, balance: balance, decimals: 6 }],
+        };
+        const getBalanceStub = sandBox.stub(Hbar.prototype, 'getAccountBalance').resolves(data);
+
+        const recovery = await basecoin.recover({
+          userKey,
+          backupKey,
+          rootAddress,
+          walletPassphrase,
+          recoveryDestination: recoveryDestination + '?memoId=' + memo,
+          tokenId: tokenId,
+        });
+
+        recovery.should.not.be.undefined();
+        recovery.should.have.property('id');
+        recovery.should.have.property('tx');
+        recovery.should.have.property('coin', 'thbar');
+        recovery.should.have.property('nodeId', defaultNodeId);
+        getBalanceStub.callCount.should.equal(1);
+        const txBuilder = basecoin.getBuilderFactory().from(recovery.tx);
+        const tx = await txBuilder.build();
+        tx.toBroadcastFormat().should.equal(recovery.tx);
+        const txJson = tx.toJson();
+        txJson.amount.should.equal(balance);
+        txJson.to.should.equal(recoveryDestination);
+        txJson.from.should.equal(rootAddress);
+        txJson.fee.should.equal(defaultFee);
+        txJson.node.should.equal(defaultNodeId);
+        txJson.memo.should.equal(memo);
+        txJson.validDuration.should.equal(defaultValidDuration);
+        txJson.should.have.property('startTime');
+        recovery.should.have.property('startTime', txJson.startTime);
+        recovery.should.have.property('id', rootAddress + '@' + txJson.startTime);
+      });
+
+      it('should throw error for non supported invalid tokenId', async function () {
+        const invalidTokenId = 'randomstring';
+        const data = {
+          hbars: '1',
+          tokens: [{ tokenId: tokenId, balance: '100', decimals: 6 }],
+        };
+        sandBox.stub(Hbar.prototype, 'getAccountBalance').resolves(data);
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey,
+              backupKey,
+              rootAddress: rootAddress,
+              walletPassphrase,
+              recoveryDestination: recoveryDestination + '?memoId=' + memo,
+              tokenId: invalidTokenId,
+            });
+          },
+          { message: 'Unsupported token: ' + invalidTokenId }
+        );
+      });
+
+      it('should throw error for insufficient balance for tokenId if token balance not exist', async function () {
+        const data = {
+          hbars: '100',
+          tokens: [{ tokenId: 'randomString', balance: '100', decimals: 6 }],
+        };
+        sandBox.stub(Hbar.prototype, 'getAccountBalance').resolves(data);
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey,
+              backupKey,
+              rootAddress: rootAddress,
+              walletPassphrase,
+              recoveryDestination: recoveryDestination + '?memoId=' + memo,
+              tokenId: tokenId,
+            });
+          },
+          { message: 'Insufficient balance to recover token: ' + tokenId + ' for account: ' + rootAddress }
+        );
+      });
+
+      it('should throw error for insufficient balance for tokenId if token balance exist with 0 amount', async function () {
+        const data = {
+          hbars: '100',
+          tokens: [{ tokenId: 'randomString', balance: '0', decimals: 6 }],
+        };
+        sandBox.stub(Hbar.prototype, 'getAccountBalance').resolves(data);
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey,
+              backupKey,
+              rootAddress: rootAddress,
+              walletPassphrase,
+              recoveryDestination: recoveryDestination + '?memoId=' + memo,
+              tokenId: tokenId,
+            });
+          },
+          { message: 'Insufficient balance to recover token: ' + tokenId + ' for account: ' + rootAddress }
+        );
+      });
+
+      it('should throw error for insufficient native balance for token transfer', async function () {
+        const data = {
+          hbars: '0.01',
+          tokens: [{ tokenId: tokenId, balance: '10', decimals: 6 }],
+        };
+        sandBox.stub(Hbar.prototype, 'getAccountBalance').resolves(data);
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey,
+              backupKey,
+              rootAddress: rootAddress,
+              walletPassphrase,
+              recoveryDestination: recoveryDestination + '?memoId=' + memo,
+              tokenId: tokenId,
+            });
+          },
+          { message: 'Insufficient native balance to recover tokens, got native balance: 1000000 fee: ' + defaultFee }
+        );
+      });
     });
 
     describe('Unsigned Sweep', function () {
       const sandBox = Sinon.createSandbox();
       let getBalanceStub: SinonStub;
 
-      beforeEach(function () {
-        getBalanceStub = sandBox
-          .stub(Hbar.prototype, 'getAccountBalance')
-          .resolves({ hbars: formatBalanceResponse(balance), tokens: [] });
-      });
-
       afterEach(function () {
         sandBox.verifyAndRestore();
       });
 
       it('should build unsigned sweep tx', async function () {
+        getBalanceStub = sandBox
+          .stub(Hbar.prototype, 'getAccountBalance')
+          .resolves({ hbars: formatBalanceResponse(balance), tokens: [] });
         const startTime = (Date.now() / 1000 + 10).toFixed(); // timestamp in seconds, 10 seconds from now
         const expectedAmount = new BigNumber(balance).minus(defaultFee).toString();
 
@@ -832,6 +954,58 @@ describe('Hedera Hashgraph:', function () {
         const txJson = tx.toJson();
         txJson.id.should.equal(rootAddress + '@' + startTime + '.0');
         txJson.amount.should.equal(expectedAmount);
+        txJson.to.should.equal(recoveryDestination);
+        txJson.from.should.equal(rootAddress);
+        txJson.fee.should.equal(defaultFee);
+        txJson.node.should.equal(defaultNodeId);
+        txJson.memo.should.equal(memo);
+        txJson.validDuration.should.equal(defaultValidDuration);
+        txJson.startTime.should.equal(startTime + '.0');
+        txJson.validDuration.should.equal(defaultValidDuration);
+      });
+
+      it('should build unsigned sweep tx for tokens', async function () {
+        const balance = '100';
+        const data = {
+          hbars: '1',
+          tokens: [{ tokenId: tokenId, balance: balance, decimals: 6 }],
+        };
+        getBalanceStub = sandBox.stub(Hbar.prototype, 'getAccountBalance').resolves(data);
+        const startTime = (Date.now() / 1000 + 10).toFixed(); // timestamp in seconds, 10 seconds from now
+        const recovery = await basecoin.recover({
+          userKey: userPub,
+          backupKey: backupPub,
+          rootAddress,
+          bitgoKey,
+          recoveryDestination: recoveryDestination + '?memoId=' + memo,
+          startTime,
+          tokenId: tokenId,
+        });
+
+        getBalanceStub.callCount.should.equal(1);
+
+        recovery.should.not.be.undefined();
+        recovery.should.have.property('txHex');
+        recovery.should.have.property('id', rootAddress + '@' + startTime + '.0');
+        recovery.should.have.property('userKey', userPub);
+        recovery.should.have.property('backupKey', backupPub);
+        recovery.should.have.property('bitgoKey', bitgoKey);
+        recovery.should.have.property('address', rootAddress);
+        recovery.should.have.property('coin', 'thbar');
+        recovery.should.have.property('maxFee', defaultFee.toString());
+        recovery.should.have.property('recipients', [
+          { address: recoveryDestination, amount: balance, tokenName: 'thbar:usdc' },
+        ]);
+        recovery.should.have.property('amount', balance);
+        recovery.should.have.property('validDuration', defaultValidDuration);
+        recovery.should.have.property('nodeId', defaultNodeId);
+        recovery.should.have.property('memo', memo);
+        recovery.should.have.property('startTime', startTime + '.0');
+        const txBuilder = basecoin.getBuilderFactory().from(recovery.txHex);
+        const tx = await txBuilder.build();
+        const txJson = tx.toJson();
+        txJson.id.should.equal(rootAddress + '@' + startTime + '.0');
+        txJson.amount.should.equal(balance);
         txJson.to.should.equal(recoveryDestination);
         txJson.from.should.equal(rootAddress);
         txJson.fee.should.equal(defaultFee);
