@@ -257,9 +257,9 @@ export const InvoiceInfo = t.intersection(
       invoice: t.string,
       walletId: t.string,
       status: InvoiceStatus,
-      expiresAt: t.string,
-      createdAt: t.string,
-      updatedAt: t.string,
+      expiresAt: DateFromISOString,
+      createdAt: DateFromISOString,
+      updatedAt: DateFromISOString,
     }),
     t.partial({
       /**
