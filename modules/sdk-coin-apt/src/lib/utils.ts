@@ -43,6 +43,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
+    key = this.stripHexPrefix(key);
     return isValidEd25519PublicKey(key);
   }
 
@@ -101,6 +102,15 @@ export class Utils implements BaseUtils {
 
   castToNumber(value: bigint): number {
     return new BigNumber(value.toString()).toNumber();
+  }
+
+  /**
+   * Strip hex prefix
+   * @param str
+   * @returns hex string without 0x prefix
+   */
+  stripHexPrefix(str: string): string {
+    return str.replace(/^0x/i, '');
   }
 }
 

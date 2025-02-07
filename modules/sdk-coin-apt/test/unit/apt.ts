@@ -64,6 +64,13 @@ describe('APT:', function () {
     tapt.getBaseFactor().should.equal(1e8);
   });
 
+  it('is valid pub', function () {
+    // with 0x prefix
+    basecoin.isValidPub('0x9b4e96086d111500259f9b38680b0509a405c1904da18976455a20c691d3bb07').should.equal(true);
+    // without 0x prefix
+    basecoin.isValidPub('9b4e96086d111500259f9b38680b0509a405c1904da18976455a20c691d3bb07').should.equal(true);
+  });
+
   describe('Verify transaction: ', () => {
     it('should succeed to verify transaction', async function () {
       const txPrebuild = newTxPrebuild();
