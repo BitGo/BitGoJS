@@ -93,7 +93,7 @@
     "audit-dev": "yarn audit --group devDependencies ; test $? -lt 8",
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream",
-    "unit-test-changed": "lerna run unit-test --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream",
+    "unit-test-changed": "lerna run unit-test --since $(git merge-base HEAD~ origin/${GITHUB_REPO_BRANCH:-master}) --stream",
     "browser-tests": "lerna run --scope bitgo compile && lerna run --scope bitgo browser-test && lerna run --scope @bitgo/web-demo test",
     "gen-coverage-changed": "lerna run gen-coverage --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel",
     "coverage-changed": "lerna run upload-coverage --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel --",
