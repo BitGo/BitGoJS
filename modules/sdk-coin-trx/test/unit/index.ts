@@ -1,14 +1,15 @@
-import should from 'should';
+import assert from 'node:assert';
+import { describe, it } from 'node:test';
 import { getBuilder } from '../../src/lib/builder';
 
 describe('Coin factory', () => {
   it('should instantiate TRX builder properly', () => {
     const trxBuilder = getBuilder('trx');
-    should.exist(trxBuilder);
+    assert.ok(trxBuilder);
   });
 
   it('should instantiate TTRX builder properly', () => {
     const ttrxBuilder = getBuilder('ttrx');
-    should.exist(ttrxBuilder);
+    assert.ok(ttrxBuilder);
   });
 });

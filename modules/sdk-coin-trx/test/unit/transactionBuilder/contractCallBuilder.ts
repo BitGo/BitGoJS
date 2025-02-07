@@ -1,5 +1,5 @@
+import { describe, it } from 'node:test';
 import assert from 'assert';
-import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import { coins, TronNetwork } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
@@ -50,8 +50,8 @@ describe('Trx Contract call Builder', () => {
 
           let txJson = tx.toJson();
           let rawData = txJson.raw_data;
-          should.deepEqual(rawData.contract, TX_CONTRACT);
-          should.equal(txJson.signature.length, 0);
+          assert.deepStrictEqual(rawData.contract, TX_CONTRACT);
+          assert.equal(txJson.signature.length, 0);
 
           const txBuilder2 = getBuilder('ttrx').from(tx.toJson());
           txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
@@ -59,8 +59,8 @@ describe('Trx Contract call Builder', () => {
 
           txJson = tx2.toJson();
           rawData = txJson.raw_data;
-          should.deepEqual(rawData.contract, TX_CONTRACT);
-          should.equal(txJson.signature.length, 1);
+          assert.deepStrictEqual(rawData.contract, TX_CONTRACT);
+          assert.equal(txJson.signature.length, 1);
 
           const txBuilder3 = getBuilder('ttrx').from(tx2.toJson());
           txBuilder3.sign({ key: PARTICIPANTS.from.pk });
@@ -68,32 +68,32 @@ describe('Trx Contract call Builder', () => {
 
           txJson = tx3.toJson();
           rawData = txJson.raw_data;
-          should.deepEqual(rawData.contract, TX_CONTRACT);
-          should.equal(txJson.signature.length, 2);
+          assert.deepStrictEqual(rawData.contract, TX_CONTRACT);
+          assert.equal(txJson.signature.length, 2);
 
           const txBuilder4 = getBuilder('ttrx').from(tx3.toJson());
           txBuilder4.sign({ key: PARTICIPANTS.multisig.pk });
           const tx4 = await txBuilder4.build();
 
-          tx4.inputs.length.should.equal(1);
-          tx4.inputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          assert.equal(tx4.inputs.length, 1);
+          assert.equal(tx4.inputs[0].address, PARTICIPANTS.custodian.address);
           if (tx4.inputs[0].contractAddress) {
-            tx4.inputs[0].contractAddress.should.equal(CONTRACTS.factory);
+            assert.equal(tx4.inputs[0].contractAddress, CONTRACTS.factory);
           }
           if (tx4.inputs[0].data) {
-            tx4.inputs[0].data.should.equal('K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
+            assert.equal(tx4.inputs[0].data, 'K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
           }
-          tx4.inputs[0].value.should.equal('0');
-          tx4.outputs[0].value.should.equal('0');
-          tx4.outputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          assert.equal(tx4.inputs[0].value, '0');
+          assert.equal(tx4.outputs[0].value, '0');
+          assert.equal(tx4.outputs[0].address, PARTICIPANTS.custodian.address);
 
           txJson = tx4.toJson();
           rawData = txJson.raw_data;
-          should.deepEqual(rawData.contract, TX_CONTRACT);
-          should.equal(txJson.signature.length, 3);
-          should.equal(rawData.fee_limit, FEE_LIMIT);
-          should.equal(rawData.expiration, timestamp + EXPIRATION);
-          should.equal(rawData.timestamp, timestamp);
+          assert.deepStrictEqual(rawData.contract, TX_CONTRACT);
+          assert.equal(txJson.signature.length, 3);
+          assert.equal(rawData.fee_limit, FEE_LIMIT);
+          assert.equal(rawData.expiration, timestamp + EXPIRATION);
+          assert.equal(rawData.timestamp, timestamp);
         });
 
         it('an unsigned transaction from a string and from a JSON', async () => {
@@ -112,7 +112,7 @@ describe('Trx Contract call Builder', () => {
           txBuilder3.sign({ key: PARTICIPANTS.custodian.pk });
           const tx3 = await txBuilder3.build();
 
-          should.deepEqual(tx2, tx3);
+          assert.deepStrictEqual(tx2, tx3);
         });
 
         it('an unsigned transaction with extended duration', async () => {
@@ -130,20 +130,20 @@ describe('Trx Contract call Builder', () => {
           txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
           const tx2 = await txBuilder2.build();
 
-          tx2.inputs.length.should.equal(1);
-          tx2.inputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          assert.equal(tx2.inputs.length, 1);
+          assert.equal(tx2.inputs[0].address, PARTICIPANTS.custodian.address);
           if (tx2.inputs[0].contractAddress) {
-            tx2.inputs[0].contractAddress.should.equal(CONTRACTS.factory);
+            assert.equal(tx2.inputs[0].contractAddress, CONTRACTS.factory);
           }
           if (tx2.inputs[0].data) {
-            tx2.inputs[0].data.should.equal('K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
+            assert.equal(tx2.inputs[0].data, 'K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
           }
-          tx2.inputs[0].value.should.equal('0');
-          tx2.outputs[0].value.should.equal('0');
-          tx2.outputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          assert.equal(tx2.inputs[0].value, '0');
+          assert.equal(tx2.outputs[0].value, '0');
+          assert.equal(tx2.outputs[0].address, PARTICIPANTS.custodian.address);
 
           const txJson = tx2.toJson();
-          should.equal(txJson.raw_data.expiration, expiration + extension);
+          assert.equal(txJson.raw_data.expiration, expiration + extension);
         });
 
         it('a transaction with correct inputs', async () => {
@@ -154,18 +154,18 @@ describe('Trx Contract call Builder', () => {
           txBuilder.expiration(timestamp + 40000);
           const tx = (await txBuilder.build()) as Transaction;
 
-          tx.type.should.equal(TransactionType.ContractCall);
-          tx.inputs.length.should.equal(1);
-          tx.inputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          assert.equal(tx.type, TransactionType.ContractCall);
+          assert.equal(tx.inputs.length, 1);
+          assert.equal(tx.inputs[0].address, PARTICIPANTS.custodian.address);
           if (tx.inputs[0].contractAddress) {
-            tx.inputs[0].contractAddress.should.equal(CONTRACTS.factory);
+            assert.equal(tx.inputs[0].contractAddress, CONTRACTS.factory);
           }
           if (tx.inputs[0].data) {
-            tx.inputs[0].data.should.equal('K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
+            assert.equal(tx.inputs[0].data, 'K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
           }
-          tx.inputs[0].value.should.equal('0');
-          tx.outputs[0].value.should.equal('0');
-          tx.outputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          assert.equal(tx.inputs[0].value, '0');
+          assert.equal(tx.outputs[0].value, '0');
+          assert.equal(tx.outputs[0].address, PARTICIPANTS.custodian.address);
         });
       });
     });
@@ -195,7 +195,9 @@ describe('Trx Contract call Builder', () => {
 
         const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
         txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
-        txBuilder2.build().should.be.rejectedWith('Transaction signing did not return an additional signature.');
+        assert.rejects(txBuilder2.build(), {
+          message: 'Transaction signing did not return an additional signature.',
+        });
       });
 
       it('an invalid raw transaction', () => {
@@ -220,7 +222,7 @@ describe('Trx Contract call Builder', () => {
       txBuilder.expiration(expiration);
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.raw_data.expiration, expiration);
+      assert.equal(txJson.raw_data.expiration, expiration);
     });
 
     it('an expiration greater than one year', async () => {
@@ -377,22 +379,34 @@ describe('Trx Contract call Builder', () => {
 
     it('transaction mandatory fields', async () => {
       const txBuilder = (getBuilder('ttrx') as WrappedBuilder).getContractCallBuilder();
-      await txBuilder.build().should.be.rejectedWith('Missing parameter: data');
+      await assert.rejects(txBuilder.build(), {
+        message: 'Missing parameter: data',
+      });
 
       txBuilder.data(MINT_CONFIRM_DATA);
-      await txBuilder.build().should.be.rejectedWith('Missing parameter: source');
+      await assert.rejects(txBuilder.build(), {
+        message: 'Missing parameter: source',
+      });
 
       txBuilder.source({ address: PARTICIPANTS.custodian.address });
-      await txBuilder.build().should.be.rejectedWith('Missing parameter: contract address');
+      await assert.rejects(txBuilder.build(), {
+        message: 'Missing parameter: contract address',
+      });
 
       txBuilder.to({ address: CONTRACTS.factory });
-      await txBuilder.build().should.be.rejectedWith('Missing block reference information');
+      await assert.rejects(txBuilder.build(), {
+        message: 'Missing block reference information',
+      });
 
       txBuilder.block({ number: BLOCK_NUMBER, hash: BLOCK_HASH });
-      await txBuilder.build().should.be.rejectedWith('Missing fee');
+      await assert.rejects(txBuilder.build(), {
+        message: 'Missing fee',
+      });
 
       txBuilder.fee({ feeLimit: FEE_LIMIT });
-      await txBuilder.build().should.be.fulfilled;
+      assert.doesNotReject(() => {
+        return txBuilder.build();
+      });
     });
   });
 });
