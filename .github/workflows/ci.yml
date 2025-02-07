@@ -67,9 +67,6 @@ jobs:
           DISABLE_V8_COMPILE_CACHE: '1'
         run: yarn run postinstall
 
-      - name: Check Package Dependencies
-        run: yarn run check-deps
-
       - name: Unit Test
         run: yarn run unit-test-changed
         env:
@@ -88,7 +85,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: ['lint', 'format', 'commit-lint']
+        check: ['lint', 'format', 'commit-lint', 'dependencies']
     
     steps:
       - uses: actions/checkout@v4
@@ -126,6 +123,10 @@ jobs:
         run: |
           git fetch --unshallow origin $GITHUB_BASE_REF
           GITHUB_REPO_BRANCH=$GITHUB_BASE_REF yarn run check-commits
+
+      - name: Check Package Dependencies
+        if: matrix.check == 'dependencies'
+        run: yarn run check-deps
 
   browser-test:
     runs-on: ubuntu-22.04
