@@ -1,4 +1,5 @@
 import EthereumCommon from '@ethereumjs/common';
+import { coins, EthereumNetwork } from '@bitgo/statics';
 import { BN } from 'ethereumjs-util';
 
 export const baseChainCommon = EthereumCommon.custom({
@@ -7,6 +8,15 @@ export const baseChainCommon = EthereumCommon.custom({
   networkId: new BN(84531),
   defaultHardfork: 'london',
 });
+
+export function getCommon(coin: string): EthereumCommon {
+  return EthereumCommon.custom({
+    name: coins.get(coin).name,
+    networkId: (coins.get(coin).network as EthereumNetwork).chainId,
+    chainId: (coins.get(coin).network as EthereumNetwork).chainId,
+    defaultHardfork: 'london',
+  });
+}
 
 export const WALLET_FACTORY_ADDRESS = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
 

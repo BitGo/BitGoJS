@@ -8,11 +8,94 @@ import nock from 'nock';
 
 import { EthLikeCoin, TethLikeCoin, EthLikeTransactionBuilder } from '../../src';
 import { getBuilder } from '../getBuilder';
-import { baseChainCommon } from '../resources';
+import { baseChainCommon, getCommon } from '../resources';
 import * as mockData from '../fixtures/ethlikeCoin';
 
 nock.enableNetConnect();
 
+const coins = [
+  {
+    name: 'hteth',
+    common: getCommon('hteth'),
+  },
+  {
+    name: 'tarbeth',
+    common: getCommon('tarbeth'),
+  },
+];
+
+describe('EthLike coin tests', function () {
+  let bitgo: TestBitGoAPI;
+  let basecoin: TethLikeCoin;
+  coins.forEach((coin) => {
+    describe(coin.name, function () {
+      before(function () {
+        const env = 'test';
+        bitgo = TestBitGo.decorate(BitGoAPI, { env });
+        bitgo.safeRegister(coin.name, TethLikeCoin.createInstance);
+        bitgo.initializeTestVars();
+        basecoin = bitgo.coin(coin.name) as TethLikeCoin;
+      });
+
+      after(function () {
+        nock.cleanAll();
+      });
+
+      it('should instantiate a coin', function () {
+        basecoin.should.be.an.instanceof(TethLikeCoin);
+      });
+      it('should reject for missing encryptedPrv for hot wallet', async function () {
+        const recoveryId = '0x1234567890abcdef';
+        nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`)).get(`/${recoveryId}/buildtx`).reply(200, {
+          txHex: mockData.ccr[coin.name].txHex,
+        });
+        const walletPassphrase = TestBitGo.V2.TEST_RECOVERY_PASSCODE as string;
+        const params = {
+          recoveryId,
+          walletPassphrase,
+          common: coin.common,
+        };
+        await basecoin
+          .sendCrossChainRecoveryTransaction({ ...params, walletType: 'hot' })
+          .should.be.rejectedWith('missing encryptedPrv');
+      });
+      it('should send cross chain recovery transaction for hot wallet', async function () {
+        const recoveryId = '0x1234567890abcdef';
+        nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`)).get(`/${recoveryId}/buildtx`).reply(200, {
+          txHex: mockData.ccr[coin.name].txHex,
+        });
+        nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`)).post(`/${recoveryId}/sign`).reply(200, {
+          coin: coin.name,
+          txid: mockData.ccr[coin.name].txid,
+        });
+        const walletPassphrase = TestBitGo.V2.TEST_RECOVERY_PASSCODE as string;
+        const params = {
+          recoveryId,
+          walletPassphrase,
+          encryptedPrv: mockData.encryptedUserKey,
+          common: coin.common,
+        };
+        const result = await basecoin.sendCrossChainRecoveryTransaction({ ...params, walletType: 'hot' });
+        result.coin.should.equal(coin.name);
+        result.txid.should.equal(mockData.ccr[coin.name].txid);
+      });
+
+      it('should build txn for cross chain recovery for cold wallet', async function () {
+        const recoveryId = '0x1234567890abcdef';
+        nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`)).get(`/${recoveryId}/buildtx`).reply(200, {
+          txHex: mockData.ccr[coin.name].txHex,
+        });
+        const params = {
+          recoveryId,
+          common: coin.common,
+        };
+        const result = await basecoin.sendCrossChainRecoveryTransaction({ ...params, walletType: 'cold' });
+        assert(result.txHex);
+        result.txHex.should.equal(mockData.ccr[coin.name].txHex);
+      });
+    });
+  });
+});
 describe('EthLikeCoin', function () {
   let bitgo: TestBitGoAPI;
   const coinName = 'tbaseeth';
