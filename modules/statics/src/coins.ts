@@ -450,6 +450,7 @@ const APT_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.ENTERPRISE_PAYS_FEES,
 ];
 
 const ICP_FEATURES = [
