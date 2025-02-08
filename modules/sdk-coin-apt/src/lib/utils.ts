@@ -43,7 +43,6 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    key = this.stripHexPrefix(key);
     return isValidEd25519PublicKey(key);
   }
 
