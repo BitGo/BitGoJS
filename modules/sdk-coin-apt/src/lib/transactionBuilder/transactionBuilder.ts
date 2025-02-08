@@ -100,6 +100,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.addFeePayerSignature(publicKey, signature);
   }
 
+  setIsSimulateTxn(value: boolean): void {
+    this.transaction.isSimulateTxn = value;
+  }
+
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     this.transaction.fromRawTransaction(rawTransaction);
