@@ -65,7 +65,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
       value: testData.digitalTokenRecipients[0].amount,
       coin: 'tapt',
     });
-    should.equal(tx.id, '0xfb4f870c4ae1bc74f6ceff72d8ee92f109239be8e12ddb07ddf30d7e6bd30586');
+    should.equal(tx.id, '0x3a97bbf538a73f98625b65c770bbf69d032ac18cd028b871182a127f10ab5666');
     should.equal(tx.maxGasAmount, 200000);
     should.equal(tx.gasUnitPrice, 100);
     should.equal(tx.sequenceNumber, 171);
@@ -129,7 +129,7 @@ describe('Apt Digital Asset Transfer Builder', () => {
     const txBuilder = factory.from(testData.DIGITAL_ASSET_TRANSFER);
     const tx = (await txBuilder.build()) as DigitalAssetTransfer;
     const toJson = tx.toJson();
-    should.equal(toJson.id, '0xfb4f870c4ae1bc74f6ceff72d8ee92f109239be8e12ddb07ddf30d7e6bd30586');
+    should.equal(toJson.id, '0x3a97bbf538a73f98625b65c770bbf69d032ac18cd028b871182a127f10ab5666');
     should.equal(toJson.sender, testData.sender2.address);
     should.deepEqual(toJson.recipient, {
       address: testData.digitalTokenRecipients[0].address,

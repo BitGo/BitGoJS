@@ -152,7 +152,7 @@ describe('APT:', function () {
           'sender',
           'type',
         ],
-        id: '0x80a52dd5d4f712a80b77ad7b4a12a8e61b76243a546099b0ab9acfef4e9a4e31',
+        id: '0x249289a8178e4b9cdb89fad6e8e436ccc435753e4ea3c9d50e0c8b525582e90d',
         outputs: [
           {
             address: '0xf7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad9',

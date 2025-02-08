@@ -67,7 +67,7 @@ describe('Apt Token Transfer Builder', () => {
         value: testData.fungibleTokenRecipients[0].amount,
         coin: 'tapt:usdt',
       });
-      should.equal(tx.id, '0x2dae2ecd096a212d6f565bd161c92f506cebb700aaf16c88bd3456b88d4c392a');
+      should.equal(tx.id, '0x271da92f3dcd673a0bd28d26f8b49c1f0c6ead0f5be0fbab3e9412972e96d80b');
       should.equal(tx.maxGasAmount, 200000);
       should.equal(tx.gasUnitPrice, 100);
       should.equal(tx.sequenceNumber, 167);
@@ -131,7 +131,7 @@ describe('Apt Token Transfer Builder', () => {
       const txBuilder = factory.from(testData.FUNGIBLE_TOKEN_TRANSFER);
       const tx = (await txBuilder.build()) as FungibleAssetTransfer;
       const toJson = tx.toJson();
-      should.equal(toJson.id, '0x2dae2ecd096a212d6f565bd161c92f506cebb700aaf16c88bd3456b88d4c392a');
+      should.equal(toJson.id, '0x271da92f3dcd673a0bd28d26f8b49c1f0c6ead0f5be0fbab3e9412972e96d80b');
       should.equal(toJson.sender, testData.sender2.address);
       should.deepEqual(toJson.recipient, {
         address: testData.fungibleTokenRecipients[0].address,

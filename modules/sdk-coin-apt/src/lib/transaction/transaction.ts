@@ -353,11 +353,12 @@ export abstract class Transaction extends BaseTransaction {
       !this._senderSignature.signature ||
       !this._feePayerSignature ||
       !this._feePayerSignature.publicKey ||
-      !this._feePayerSignature.signature
+      !this._feePayerSignature.signature ||
+      !this._feePayerAddress
     ) {
       return;
     }
-    const transaction = new SimpleTransaction(this._rawTransaction);
+    const transaction = new SimpleTransaction(this._rawTransaction, AccountAddress.fromString(this._feePayerAddress));
     const senderPublicKey = new Ed25519PublicKey(utils.getBufferFromHexString(this._senderSignature.publicKey.pub));
     const senderSignature = new Ed25519Signature(this._senderSignature.signature);
     const senderAuthenticator = new AccountAuthenticatorEd25519(senderPublicKey, senderSignature);
