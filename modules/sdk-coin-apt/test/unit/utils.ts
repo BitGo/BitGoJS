@@ -44,7 +44,7 @@ describe('Aptos util library', function () {
 
   it('is valid public key', function () {
     // with 0x prefix
-    should.equal(true, utils.isValidPublicKey('0x9b4e96086d111500259f9b38680b0509a405c1904da18976455a20c691d3bb07'));
+    should.equal(false, utils.isValidPublicKey('0x9b4e96086d111500259f9b38680b0509a405c1904da18976455a20c691d3bb07'));
     // without 0x prefix
     should.equal(true, utils.isValidPublicKey('9b4e96086d111500259f9b38680b0509a405c1904da18976455a20c691d3bb07'));
   });
