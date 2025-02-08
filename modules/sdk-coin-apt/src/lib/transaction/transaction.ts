@@ -10,7 +10,9 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   AccountAddress,
+  AccountAuthenticator,
   AccountAuthenticatorEd25519,
+  AccountAuthenticatorNoAccountAuthenticator,
   DEFAULT_MAX_GAS_AMOUNT,
   Ed25519PublicKey,
   Ed25519Signature,
@@ -196,17 +198,25 @@ export abstract class Transaction extends BaseTransaction {
   }
 
   serialize(): string {
-    const senderPublicKeyBuffer = utils.getBufferFromHexString(this._senderSignature.publicKey.pub);
-    const senderPublicKey = new Ed25519PublicKey(senderPublicKeyBuffer);
+    let senderAuthenticator: AccountAuthenticator;
+    let feePayerAuthenticator: AccountAuthenticator;
+    if (
+      Transaction.EMPTY_SIGNATURE.equals(this._senderSignature.signature) ||
+      Transaction.EMPTY_SIGNATURE.equals(this._feePayerSignature.signature)
+    ) {
+      senderAuthenticator = new AccountAuthenticatorNoAccountAuthenticator();
+      feePayerAuthenticator = new AccountAuthenticatorNoAccountAuthenticator();
+    } else {
+      const senderPublicKeyBuffer = utils.getBufferFromHexString(this._senderSignature.publicKey.pub);
+      const senderPublicKey = new Ed25519PublicKey(senderPublicKeyBuffer);
+      const senderSignature = new Ed25519Signature(this._senderSignature.signature);
+      senderAuthenticator = new AccountAuthenticatorEd25519(senderPublicKey, senderSignature);
 
-    const senderSignature = new Ed25519Signature(this._senderSignature.signature);
-    const senderAuthenticator = new AccountAuthenticatorEd25519(senderPublicKey, senderSignature);
-
-    const feePayerPublicKeyBuffer = utils.getBufferFromHexString(this._feePayerSignature.publicKey.pub);
-    const feePayerPublicKey = new Ed25519PublicKey(feePayerPublicKeyBuffer);
-
-    const feePayerSignature = new Ed25519Signature(this._feePayerSignature.signature);
-    const feePayerAuthenticator = new AccountAuthenticatorEd25519(feePayerPublicKey, feePayerSignature);
+      const feePayerPublicKeyBuffer = utils.getBufferFromHexString(this._feePayerSignature.publicKey.pub);
+      const feePayerPublicKey = new Ed25519PublicKey(feePayerPublicKeyBuffer);
+      const feePayerSignature = new Ed25519Signature(this._feePayerSignature.signature);
+      feePayerAuthenticator = new AccountAuthenticatorEd25519(feePayerPublicKey, feePayerSignature);
+    }
 
     const txnAuthenticator = new TransactionAuthenticatorFeePayer(senderAuthenticator, [], [], {
       address: AccountAddress.fromString(this._feePayerAddress),
