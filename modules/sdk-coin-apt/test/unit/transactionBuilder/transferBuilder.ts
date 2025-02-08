@@ -65,7 +65,7 @@ describe('Apt Transfer Transaction', () => {
           value: testData.recipients[0].amount,
           coin: 'tapt',
         });
-        should.equal(tx.id, '0x80a52dd5d4f712a80b77ad7b4a12a8e61b76243a546099b0ab9acfef4e9a4e31');
+        should.equal(tx.id, '0x249289a8178e4b9cdb89fad6e8e436ccc435753e4ea3c9d50e0c8b525582e90d');
         should.equal(tx.maxGasAmount, 200000);
         should.equal(tx.gasUnitPrice, 100);
         should.equal(tx.sequenceNumber, 146);
@@ -126,7 +126,7 @@ describe('Apt Transfer Transaction', () => {
         const txBuilder = factory.from(testData.TRANSACTION_USING_TRANSFER_COINS);
         const tx = (await txBuilder.build()) as TransferTransaction;
         const toJson = tx.toJson();
-        should.equal(toJson.id, '0x80a52dd5d4f712a80b77ad7b4a12a8e61b76243a546099b0ab9acfef4e9a4e31');
+        should.equal(toJson.id, '0x249289a8178e4b9cdb89fad6e8e436ccc435753e4ea3c9d50e0c8b525582e90d');
         should.equal(toJson.sender, '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449');
         should.deepEqual(toJson.recipient, {
           address: '0xf7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad9',
