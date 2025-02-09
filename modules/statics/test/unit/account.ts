@@ -11,6 +11,7 @@ describe('XRP', () => {
       15,
       'issuer-address',
       'TST',
+      'issuer-address::TST',
       'www.example.com',
       UnderlyingAsset.XRP
     );
@@ -20,6 +21,7 @@ describe('XRP', () => {
     should(token.decimalPlaces).equal(15);
     should(token.issuerAddress).equal('issuer-address');
     should(token.currencyCode).equal('TST');
+    should(token.contractAddress).equal('issuer-address::TST');
     should(token.domain).equal('www.example.com');
     should(token.asset).equal(UnderlyingAsset.XRP);
     should(token.features).deepEqual(AccountCoin.DEFAULT_FEATURES);
@@ -38,6 +40,7 @@ describe('XRP', () => {
       15,
       'issuer-address',
       'TST',
+      'issuer-address::TST',
       'www.example.com',
       UnderlyingAsset.XRP
     );
@@ -47,6 +50,7 @@ describe('XRP', () => {
     should(token.decimalPlaces).equal(15);
     should(token.issuerAddress).equal('issuer-address');
     should(token.currencyCode).equal('TST');
+    should(token.contractAddress).equal('issuer-address::TST');
     should(token.domain).equal('www.example.com');
     should(token.asset).equal(UnderlyingAsset.XRP);
     should(token.features).deepEqual(AccountCoin.DEFAULT_FEATURES);

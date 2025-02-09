@@ -1652,6 +1652,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.USDC,
     '0.0.3',
     '0.0.456858',
+    '0.0.456858',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1662,6 +1663,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.XSGD,
     '0.0.3',
+    '0.0.1985922',
     '0.0.1985922',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1674,6 +1676,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BCT,
     '0.0.3',
     '0.0.1958126',
+    '0.0.1958126',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1685,6 +1688,7 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.CLXY,
     '0.0.3',
     '0.0.859814',
+    '0.0.859814',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1695,6 +1699,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.USDC,
     '0.0.3',
+    '0.0.13078',
     '0.0.13078',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -15837,6 +15842,7 @@ export const coins = CoinMap.fromCoins([
     'Chintai',
     8,
     'chexchexchex',
+    'chexchexchex',
     UnderlyingAsset.CHEX,
     AccountCoin.DEFAULT_FEATURES,
     '',
@@ -15847,6 +15853,7 @@ export const coins = CoinMap.fromCoins([
     'eos:IQ',
     'Everipedia',
     3,
+    'everipediaiq',
     'everipediaiq',
     UnderlyingAsset.IQ,
     AccountCoin.DEFAULT_FEATURES,
@@ -15859,6 +15866,7 @@ export const coins = CoinMap.fromCoins([
     'Box',
     6,
     'token.defi',
+    'token.defi',
     UnderlyingAsset.EOS_BOX,
     AccountCoin.DEFAULT_FEATURES,
     '',
@@ -15869,6 +15877,7 @@ export const coins = CoinMap.fromCoins([
     'eos:USDT',
     'EOS USDT',
     4,
+    'tethertether',
     'tethertether',
     UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES,
@@ -15881,6 +15890,7 @@ export const coins = CoinMap.fromCoins([
     'Chintai',
     8,
     'testtoken113',
+    'testtoken113',
     UnderlyingAsset.CHEX,
     AccountCoin.DEFAULT_FEATURES,
     '',
@@ -15891,6 +15901,7 @@ export const coins = CoinMap.fromCoins([
     'teos:IQ',
     'Everipedia',
     3,
+    'testtoken112',
     'testtoken112',
     UnderlyingAsset.IQ,
     AccountCoin.DEFAULT_FEATURES,
@@ -15903,6 +15914,7 @@ export const coins = CoinMap.fromCoins([
     'Box',
     6,
     'kvszn1xyz1bu',
+    'kvszn1xyz1bu',
     UnderlyingAsset.EOS_BOX,
     AccountCoin.DEFAULT_FEATURES,
     '',
@@ -15913,6 +15925,7 @@ export const coins = CoinMap.fromCoins([
     'teos:USDT',
     'Testnet EOS USDT',
     4,
+    'lionteste212',
     'lionteste212',
     UnderlyingAsset.USDT,
     AccountCoin.DEFAULT_FEATURES,
@@ -16584,6 +16597,7 @@ export const coins = CoinMap.fromCoins([
     'SPX6900',
     8,
     'J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr', // https://solscan.io/token/J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr
+    'J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr',
     UnderlyingAsset['sol:spx'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -16593,6 +16607,7 @@ export const coins = CoinMap.fromCoins([
     'Serum',
     8,
     '2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm', // https://solscan.io/token/2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm
+    '2Dyzu65QA9zdX1UeE7Gx71k7fiwyUK6sZdrvJ7auq5wm',
     UnderlyingAsset['sol:turbo'],
     SOL_TOKEN_FEATURES
   ),
@@ -16602,6 +16617,7 @@ export const coins = CoinMap.fromCoins([
     'Solanacorn',
     7,
     '6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok', // https://solscan.io/token/6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok
+    '6DSqVXg9WLTWgz6LACqxN757QdHe1sCqkUfojWmxWtok',
     UnderlyingAsset['sol:corn'],
     SOL_TOKEN_FEATURES
   ),
@@ -16611,6 +16627,7 @@ export const coins = CoinMap.fromCoins([
     'AI16Z',
     9,
     'HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC', // https://solscan.io/token/HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC
+    'HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC',
     UnderlyingAsset['sol:ai16z'],
     SOL_TOKEN_FEATURES
   ),
@@ -16620,6 +16637,7 @@ export const coins = CoinMap.fromCoins([
     'Enron',
     9,
     'BktHEAc2WS8TQi2vmavn1rA4L1WJuwF3Vkk3DnwwARti', //https://solscan.io/token/BktHEAc2WS8TQi2vmavn1rA4L1WJuwF3Vkk3DnwwARti
+    'BktHEAc2WS8TQi2vmavn1rA4L1WJuwF3Vkk3DnwwARti',
     UnderlyingAsset['sol:enron'],
     SOL_TOKEN_FEATURES
   ),
@@ -16629,6 +16647,7 @@ export const coins = CoinMap.fromCoins([
     'ZEREBRO',
     6,
     '8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn', // https://solscan.io/token/8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn
+    '8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn',
     UnderlyingAsset['sol:zerebro'],
     SOL_TOKEN_FEATURES
   ),
@@ -16638,6 +16657,7 @@ export const coins = CoinMap.fromCoins([
     'Yes Token',
     9,
     '32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9', // ttps://solscan.io/token/32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9
+    '32h846XXTSWGUaaKHMC5b2e39n1nwJD6UtDBppX5p4E9',
     UnderlyingAsset['sol:yes'],
     SOL_TOKEN_FEATURES
   ),
@@ -16647,6 +16667,7 @@ export const coins = CoinMap.fromCoins([
     'Book Of Meme',
     6,
     'ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82', // https://explorer.solana.com/address/ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82
+    'ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82',
     UnderlyingAsset['sol:bome'],
     SOL_TOKEN_FEATURES
   ),
@@ -16656,6 +16677,7 @@ export const coins = CoinMap.fromCoins([
     'Serum',
     6,
     'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt', // https://explorer.solana.com/address/SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt
+    'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt',
     UnderlyingAsset['sol:srm'],
     SOL_TOKEN_FEATURES
   ),
@@ -16665,6 +16687,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin',
     6,
     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+    'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     UnderlyingAsset['sol:usdc'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -16674,6 +16697,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped SOL',
     9,
     'So11111111111111111111111111111111111111112', // https://explorer.solana.com/address/So11111111111111111111111111111111111111112
+    'So11111111111111111111111111111111111111112',
     UnderlyingAsset['sol:wsol'],
     SOL_TOKEN_FEATURES
   ),
@@ -16683,6 +16707,7 @@ export const coins = CoinMap.fromCoins([
     'Raydium',
     6,
     '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R', // https://explorer.solana.com/address/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R
+    '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
     UnderlyingAsset['sol:ray'],
     SOL_TOKEN_FEATURES
   ),
@@ -16692,6 +16717,7 @@ export const coins = CoinMap.fromCoins([
     'GMT',
     9,
     '7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx', // https://explorer.solana.com/address/7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx
+    '7i5KKsX2weiTkry7jA4ZwSuXGhs5eJBEjY8vVxR4pfRx',
     UnderlyingAsset['sol:gmt'],
     SOL_TOKEN_FEATURES
   ),
@@ -16701,6 +16727,7 @@ export const coins = CoinMap.fromCoins([
     'USD Tether',
     6,
     'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // https://explorer.solana.com/address/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB
+    'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
     UnderlyingAsset['sol:usdt'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -16710,6 +16737,7 @@ export const coins = CoinMap.fromCoins([
     'GARI',
     9,
     'CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks', // https://explorer.solana.com/address/CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks
+    'CKaKtYvz6dKPyMvYq9Rh3UBrnNqYZAyd7iF4hJtjUvks',
     UnderlyingAsset['sol:gari'],
     SOL_TOKEN_FEATURES
   ),
@@ -16719,6 +16747,7 @@ export const coins = CoinMap.fromCoins([
     'ORCA',
     6,
     'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', // https://explorer.solana.com/address/orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE
+    'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
     UnderlyingAsset['sol:orca'],
     SOL_TOKEN_FEATURES
   ),
@@ -16728,6 +16757,7 @@ export const coins = CoinMap.fromCoins([
     'SOLEND',
     6,
     'SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp', // https://explorer.solana.com/address/SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp
+    'SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp',
     UnderlyingAsset['sol:slnd'],
     SOL_TOKEN_FEATURES
   ),
@@ -16736,6 +16766,7 @@ export const coins = CoinMap.fromCoins([
     'sol:akro-wormhole',
     'Akropolis (Wormhole)',
     8,
+    '12uHjozDVgyGWeLqQ8DMCRbig8amW5VmvZu3FdMMdcaG',
     '12uHjozDVgyGWeLqQ8DMCRbig8amW5VmvZu3FdMMdcaG',
     UnderlyingAsset.AKRO,
     SOL_TOKEN_FEATURES
@@ -16746,6 +16777,7 @@ export const coins = CoinMap.fromCoins([
     'Aleph.im v2 (Wormhole)',
     8,
     '3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x',
+    '3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x',
     UnderlyingAsset.ALEPH,
     SOL_TOKEN_FEATURES
   ),
@@ -16754,6 +16786,7 @@ export const coins = CoinMap.fromCoins([
     'sol:atlas',
     'Star Atlas',
     8,
+    'ATLASXmbPQxBUYbxPsV97usA3fPQYEqzQBUHgiFCUsXx',
     'ATLASXmbPQxBUYbxPsV97usA3fPQYEqzQBUHgiFCUsXx',
     UnderlyingAsset['sol:atlas'],
     SOL_TOKEN_FEATURES
@@ -16764,6 +16797,7 @@ export const coins = CoinMap.fromCoins([
     'BRZ',
     4,
     'FtgGSFADXBtroxq8VCausXRr2of47QBf5AS1NtZCu4GD',
+    'FtgGSFADXBtroxq8VCausXRr2of47QBf5AS1NtZCu4GD',
     UnderlyingAsset.BRZ,
     SOL_TOKEN_FEATURES
   ),
@@ -16772,6 +16806,7 @@ export const coins = CoinMap.fromCoins([
     'sol:c98',
     'Coin98',
     6,
+    'C98A4nkJXhpVZNAZdHUA95RpTF3T4whtQubL3YobiUX9',
     'C98A4nkJXhpVZNAZdHUA95RpTF3T4whtQubL3YobiUX9',
     UnderlyingAsset.C98,
     SOL_TOKEN_FEATURES
@@ -16782,6 +16817,7 @@ export const coins = CoinMap.fromCoins([
     'COPE',
     6,
     '8HGyAAB1yoM1ttS7pXjHMa3dukTFGQggnFFH3hJZgzQh',
+    '8HGyAAB1yoM1ttS7pXjHMa3dukTFGQggnFFH3hJZgzQh',
     UnderlyingAsset.COPE,
     SOL_TOKEN_FEATURES
   ),
@@ -16790,6 +16826,7 @@ export const coins = CoinMap.fromCoins([
     'sol:cream-wormhole',
     'Cream (Wormhole)',
     8,
+    'HihxL2iM6L6P1oqoSeiixdJ3PhPYNxvSKH9A2dDqLVDH',
     'HihxL2iM6L6P1oqoSeiixdJ3PhPYNxvSKH9A2dDqLVDH',
     UnderlyingAsset.CREAM,
     SOL_TOKEN_FEATURES
@@ -16800,6 +16837,7 @@ export const coins = CoinMap.fromCoins([
     'DeFi Land',
     9,
     'DFL1zNkaGPWm1BqAVqRjCZvHmwTFrEaJtbzJWgseoNJh',
+    'DFL1zNkaGPWm1BqAVqRjCZvHmwTFrEaJtbzJWgseoNJh',
     UnderlyingAsset.DFL,
     SOL_TOKEN_FEATURES
   ),
@@ -16808,6 +16846,7 @@ export const coins = CoinMap.fromCoins([
     'sol:fida',
     'Bonfida',
     6,
+    'EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp',
     'EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp',
     UnderlyingAsset.FIDA,
     SOL_TOKEN_FEATURES
@@ -16818,6 +16857,7 @@ export const coins = CoinMap.fromCoins([
     'Frontier Token (Wormhole)',
     8,
     'A9ik2NrpKRRG2snyTjofZQcTuav9yH3mNVHLsLiDQmYt',
+    'A9ik2NrpKRRG2snyTjofZQcTuav9yH3mNVHLsLiDQmYt',
     UnderlyingAsset.FRONT,
     SOL_TOKEN_FEATURES
   ),
@@ -16826,6 +16866,7 @@ export const coins = CoinMap.fromCoins([
     'sol:ftt-wormhole',
     'FTT (Wormhole)',
     8,
+    'EzfgjvkSwthhgHaceR3LnKXUoRkP6NUhfghdaHAj1tUv',
     'EzfgjvkSwthhgHaceR3LnKXUoRkP6NUhfghdaHAj1tUv',
     UnderlyingAsset.FTT,
     SOL_TOKEN_FEATURES
@@ -16836,6 +16877,7 @@ export const coins = CoinMap.fromCoins([
     'Genopets',
     9,
     'GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz',
+    'GENEtH5amGSi8kHAtQoezp1XEXwZJ8vcuePYnXdKrMYz',
     UnderlyingAsset.GENE,
     SOL_TOKEN_FEATURES
   ),
@@ -16844,6 +16886,7 @@ export const coins = CoinMap.fromCoins([
     'sol:gst',
     'GST',
     9,
+    'AFbX8oGjGpmVFywbVouvhQSRmiW2aR1mohfahi4Y2AdB',
     'AFbX8oGjGpmVFywbVouvhQSRmiW2aR1mohfahi4Y2AdB',
     UnderlyingAsset.GST,
     SOL_TOKEN_FEATURES
@@ -16854,6 +16897,7 @@ export const coins = CoinMap.fromCoins([
     'Hubble Protocol Token',
     6,
     'HBB111SCo9jkCejsZfz8Ec8nH7T6THF8KEKSnvwT6XK6',
+    'HBB111SCo9jkCejsZfz8Ec8nH7T6THF8KEKSnvwT6XK6',
     UnderlyingAsset.HBB,
     SOL_TOKEN_FEATURES
   ),
@@ -16862,6 +16906,7 @@ export const coins = CoinMap.fromCoins([
     'sol:holy',
     'HOLY',
     6,
+    '3GECTP7H4Tww3w8jEPJCJtXUtXxiZty31S9szs84CcwQ',
     '3GECTP7H4Tww3w8jEPJCJtXUtXxiZty31S9szs84CcwQ',
     UnderlyingAsset.HOLY,
     SOL_TOKEN_FEATURES
@@ -16872,6 +16917,7 @@ export const coins = CoinMap.fromCoins([
     'Hxro (Wormhole)',
     8,
     'HxhWkVpk5NS4Ltg5nij2G671CKXFRKPK8vy271Ub4uEK',
+    'HxhWkVpk5NS4Ltg5nij2G671CKXFRKPK8vy271Ub4uEK',
     UnderlyingAsset.HXRO,
     SOL_TOKEN_FEATURES
   ),
@@ -16880,6 +16926,7 @@ export const coins = CoinMap.fromCoins([
     'sol:kin',
     'Kin',
     5,
+    'kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6',
     'kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6',
     UnderlyingAsset['sol:kin'],
     SOL_TOKEN_FEATURES
@@ -16890,6 +16937,7 @@ export const coins = CoinMap.fromCoins([
     'Only1',
     9,
     '3bRTivrVsitbmCTGtqwp7hxXPsybkjn4XLNtPsHqa3zR',
+    '3bRTivrVsitbmCTGtqwp7hxXPsybkjn4XLNtPsHqa3zR',
     UnderlyingAsset.LIKE,
     SOL_TOKEN_FEATURES
   ),
@@ -16898,6 +16946,7 @@ export const coins = CoinMap.fromCoins([
     'sol:link-wormhole',
     'Chainlink (Wormhole)',
     8,
+    '2wpTofQ8SkACrkZWrZDjXPitYa8AwWgX8AfxdeBRRVLX',
     '2wpTofQ8SkACrkZWrZDjXPitYa8AwWgX8AfxdeBRRVLX',
     UnderlyingAsset.LINK,
     SOL_TOKEN_FEATURES
@@ -16908,6 +16957,7 @@ export const coins = CoinMap.fromCoins([
     'MAPS',
     6,
     'MAPS41MDahZ9QdKXhVa4dWB9RuyfV4XqhyAZ8XcYepb',
+    'MAPS41MDahZ9QdKXhVa4dWB9RuyfV4XqhyAZ8XcYepb',
     UnderlyingAsset.MAPS,
     SOL_TOKEN_FEATURES
   ),
@@ -16916,6 +16966,7 @@ export const coins = CoinMap.fromCoins([
     'sol:math-wormhole',
     'Math (Wormhole)',
     8,
+    'CaGa7pddFXS65Gznqwp42kBhkJQdceoFVT7AQYo8Jr8Q',
     'CaGa7pddFXS65Gznqwp42kBhkJQdceoFVT7AQYo8Jr8Q',
     UnderlyingAsset.MATH,
     SOL_TOKEN_FEATURES
@@ -16926,6 +16977,7 @@ export const coins = CoinMap.fromCoins([
     'MonkeyBucks',
     6,
     'Fm9rHUTF5v3hwMLbStjZXqNBBoZyGriQaFM6sTFz3K8A',
+    'Fm9rHUTF5v3hwMLbStjZXqNBBoZyGriQaFM6sTFz3K8A',
     UnderlyingAsset.MBS,
     SOL_TOKEN_FEATURES
   ),
@@ -16934,6 +16986,7 @@ export const coins = CoinMap.fromCoins([
     'sol:media',
     'Media Network',
     6,
+    'ETAtLmCmsoiEEKfNrHKJ2kYy3MoABhU6NQvpSfij5tDs',
     'ETAtLmCmsoiEEKfNrHKJ2kYy3MoABhU6NQvpSfij5tDs',
     UnderlyingAsset.MEDIA,
     SOL_TOKEN_FEATURES
@@ -16944,6 +16997,7 @@ export const coins = CoinMap.fromCoins([
     'Mercurial',
     6,
     'MERt85fc5boKw3BW1eYdxonEuJNvXbiMbs6hvheau5K',
+    'MERt85fc5boKw3BW1eYdxonEuJNvXbiMbs6hvheau5K',
     UnderlyingAsset.MER,
     SOL_TOKEN_FEATURES
   ),
@@ -16952,6 +17006,7 @@ export const coins = CoinMap.fromCoins([
     'sol:mngo',
     'Mango',
     6,
+    'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac',
     'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac',
     UnderlyingAsset.MNGO,
     SOL_TOKEN_FEATURES
@@ -16962,6 +17017,7 @@ export const coins = CoinMap.fromCoins([
     'Marinade Staked SOL',
     9,
     'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
+    'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
     UnderlyingAsset.MSOL,
     SOL_TOKEN_FEATURES
   ),
@@ -16970,6 +17026,7 @@ export const coins = CoinMap.fromCoins([
     'sol:oxy',
     'Oxygen Protocol',
     6,
+    'z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M',
     'z3dn17yLaGMKffVogeFHQ9zWVcXgqgf3PQnDsNs2g6M',
     UnderlyingAsset.OXY,
     SOL_TOKEN_FEATURES
@@ -16980,6 +17037,7 @@ export const coins = CoinMap.fromCoins([
     'Star Atlas DAO',
     8,
     'poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk',
+    'poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk',
     UnderlyingAsset.POLIS,
     SOL_TOKEN_FEATURES
   ),
@@ -16988,6 +17046,7 @@ export const coins = CoinMap.fromCoins([
     'sol:port',
     'Port Finance',
     6,
+    'PoRTjZMPXb9T7dyU7tpLEZRQj7e6ssfAE62j2oQuc6y',
     'PoRTjZMPXb9T7dyU7tpLEZRQj7e6ssfAE62j2oQuc6y',
     UnderlyingAsset.PORT,
     SOL_TOKEN_FEATURES
@@ -16998,6 +17057,7 @@ export const coins = CoinMap.fromCoins([
     'PRISM',
     6,
     'PRSMNsEPqhGVCH1TtWiJqPjJyh2cKrLostPZTNy1o5x',
+    'PRSMNsEPqhGVCH1TtWiJqPjJyh2cKrLostPZTNy1o5x',
     UnderlyingAsset.PRISM,
     SOL_TOKEN_FEATURES
   ),
@@ -17006,6 +17066,7 @@ export const coins = CoinMap.fromCoins([
     'sol:psy',
     'PsyOptions',
     6,
+    'PsyFiqqjiv41G7o5SMRzDJCu4psptThNR2GtfeGHfSq',
     'PsyFiqqjiv41G7o5SMRzDJCu4psptThNR2GtfeGHfSq',
     UnderlyingAsset.PSY,
     SOL_TOKEN_FEATURES
@@ -17016,6 +17077,7 @@ export const coins = CoinMap.fromCoins([
     'Realy Token',
     9,
     'AD27ov5fVU2XzwsbvnFvb1JpCBaCB5dRXrczV9CqSVGb',
+    'AD27ov5fVU2XzwsbvnFvb1JpCBaCB5dRXrczV9CqSVGb',
     UnderlyingAsset.REAL,
     SOL_TOKEN_FEATURES
   ),
@@ -17024,6 +17086,7 @@ export const coins = CoinMap.fromCoins([
     'sol:seco',
     'SECO',
     6,
+    '7CnFGR9mZWyAtWxPcVuTewpyC3A3MDW4nLsu5NY6PDbd',
     '7CnFGR9mZWyAtWxPcVuTewpyC3A3MDW4nLsu5NY6PDbd',
     UnderlyingAsset.SECO,
     SOL_TOKEN_FEATURES
@@ -17034,6 +17097,7 @@ export const coins = CoinMap.fromCoins([
     'Solrise Foundation',
     6,
     'SLRSSpSLUTP7okbCUBYStWCo1vUgyt775faPqz8HUMr',
+    'SLRSSpSLUTP7okbCUBYStWCo1vUgyt775faPqz8HUMr',
     UnderlyingAsset.SLRS,
     SOL_TOKEN_FEATURES
   ),
@@ -17042,6 +17106,7 @@ export const coins = CoinMap.fromCoins([
     'sol:sny',
     'Synthetify',
     6,
+    '4dmKkXNHdgYsXqBHCuMikNQWwVomZURhYvkkX5c4pQ7y',
     '4dmKkXNHdgYsXqBHCuMikNQWwVomZURhYvkkX5c4pQ7y',
     UnderlyingAsset.SNY,
     SOL_TOKEN_FEATURES
@@ -17052,6 +17117,7 @@ export const coins = CoinMap.fromCoins([
     'StarLaunch',
     6,
     'HCgybxq5Upy8Mccihrp7EsmwwFqYZtrHrsmsKwtGXLgW',
+    'HCgybxq5Upy8Mccihrp7EsmwwFqYZtrHrsmsKwtGXLgW',
     UnderlyingAsset.STARS,
     SOL_TOKEN_FEATURES
   ),
@@ -17060,6 +17126,7 @@ export const coins = CoinMap.fromCoins([
     'sol:sushi-wormhole',
     'Sushiswap (Wormhole)',
     8,
+    'ChVzxWRmrTeSgwd3Ui3UumcN8KX7VK3WaD4KGeSKpypj',
     'ChVzxWRmrTeSgwd3Ui3UumcN8KX7VK3WaD4KGeSKpypj',
     UnderlyingAsset.SUSHI,
     SOL_TOKEN_FEATURES
@@ -17070,6 +17137,7 @@ export const coins = CoinMap.fromCoins([
     'Swipe (Wormhole)',
     8,
     '3CyiEDRehaGufzkpXJitCP5tvh7cNhRqd9rPBxZrgK5z',
+    '3CyiEDRehaGufzkpXJitCP5tvh7cNhRqd9rPBxZrgK5z',
     UnderlyingAsset.SXP,
     SOL_TOKEN_FEATURES
   ),
@@ -17078,6 +17146,7 @@ export const coins = CoinMap.fromCoins([
     'sol:tryb',
     'BLira',
     6,
+    'A94X2fRy3wydNShU4dRaDyap2UuoeWJGWyATtyp61WZf',
     'A94X2fRy3wydNShU4dRaDyap2UuoeWJGWyATtyp61WZf',
     UnderlyingAsset.TRYB,
     SOL_TOKEN_FEATURES
@@ -17088,6 +17157,7 @@ export const coins = CoinMap.fromCoins([
     'Tulip',
     6,
     'TuLipcqtGVXP9XR62wM8WWCm6a9vhLs7T1uoWBk6FDs',
+    'TuLipcqtGVXP9XR62wM8WWCm6a9vhLs7T1uoWBk6FDs',
     UnderlyingAsset.TULIP,
     SOL_TOKEN_FEATURES
   ),
@@ -17096,6 +17166,7 @@ export const coins = CoinMap.fromCoins([
     'sol:ubxt-wormhole',
     'UpBots (Wormhole)',
     8,
+    'FTtXEUosNn6EKG2SQtfbGuYB4rBttreQQcoWn1YDsuTq',
     'FTtXEUosNn6EKG2SQtfbGuYB4rBttreQQcoWn1YDsuTq',
     UnderlyingAsset.UBXT,
     SOL_TOKEN_FEATURES
@@ -17106,6 +17177,7 @@ export const coins = CoinMap.fromCoins([
     'Uniswap (Wormhole)',
     8,
     '8FU95xFJhUUkyyCLU13HSzDLs7oC4QZdXQHL6SCeab36',
+    '8FU95xFJhUUkyyCLU13HSzDLs7oC4QZdXQHL6SCeab36',
     UnderlyingAsset.UNI,
     SOL_TOKEN_FEATURES
   ),
@@ -17114,6 +17186,7 @@ export const coins = CoinMap.fromCoins([
     'sol:bat-wormhole',
     'Basic Attention Token (Wormhole)',
     8,
+    'EPeUFDgHRxs9xxEPVaL6kfGQvCon7jmAWKVUHuux1Tpz',
     'EPeUFDgHRxs9xxEPVaL6kfGQvCon7jmAWKVUHuux1Tpz',
     UnderlyingAsset.BAT,
     SOL_TOKEN_FEATURES
@@ -17124,6 +17197,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped Ether (Wormhole)',
     8,
     '7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs',
+    '7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs',
     UnderlyingAsset.WETH,
     SOL_TOKEN_FEATURES
   ),
@@ -17132,6 +17206,7 @@ export const coins = CoinMap.fromCoins([
     'sol:yfi-wormhole',
     'Yearn.finance (Wormhole)',
     8,
+    'BXZX2JRJFjvKazM1ibeDFxgAngKExb74MRXzXKvgikxX',
     'BXZX2JRJFjvKazM1ibeDFxgAngKExb74MRXzXKvgikxX',
     UnderlyingAsset.YFI,
     SOL_TOKEN_FEATURES
@@ -17142,6 +17217,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped Aave',
     6,
     'dK83wTVypEpa1pqiBbHY3MNuUnT3ADUZM4wk9VZXZEc',
+    'dK83wTVypEpa1pqiBbHY3MNuUnT3ADUZM4wk9VZXZEc',
     UnderlyingAsset.WAAVE,
     SOL_TOKEN_FEATURES
   ),
@@ -17150,6 +17226,7 @@ export const coins = CoinMap.fromCoins([
     'sol:aave-wormhole',
     'Aave Token (Wormhole)',
     8,
+    '3vAs4D1WE6Na4tCgt4BApgFfENbm8WY7q4cSPD1yM4Cg',
     '3vAs4D1WE6Na4tCgt4BApgFfENbm8WY7q4cSPD1yM4Cg',
     UnderlyingAsset.AAVE,
     SOL_TOKEN_FEATURES
@@ -17160,6 +17237,7 @@ export const coins = CoinMap.fromCoins([
     'Almond',
     6,
     'ALMmmmbt5KNrPPUBFE4dAKUKSPWTop5s3kUGCdF69gmw',
+    'ALMmmmbt5KNrPPUBFE4dAKUKSPWTop5s3kUGCdF69gmw',
     UnderlyingAsset.ALM,
     SOL_TOKEN_FEATURES
   ),
@@ -17168,6 +17246,7 @@ export const coins = CoinMap.fromCoins([
     'sol:apt',
     'Apricot',
     6,
+    'APTtJyaRX5yGTsJU522N4VYWg3vCvSb65eam5GrPT5Rt',
     'APTtJyaRX5yGTsJU522N4VYWg3vCvSb65eam5GrPT5Rt',
     UnderlyingAsset.APT,
     SOL_TOKEN_FEATURES
@@ -17178,6 +17257,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped AVAX (Wormhole)',
     8,
     'KgV1GvrHQmRBY8sHQQeUKwTm2r2h8t4C8qt12Cw1HVE',
+    'KgV1GvrHQmRBY8sHQQeUKwTm2r2h8t4C8qt12Cw1HVE',
     UnderlyingAsset.WAVAX,
     SOL_TOKEN_FEATURES
   ),
@@ -17186,6 +17266,7 @@ export const coins = CoinMap.fromCoins([
     'sol:bchbear',
     'BCHBEAR',
     6,
+    '2VTAVf1YCwamD3ALMdYHRMV5vPUCXdnatJH5f1khbmx6',
     '2VTAVf1YCwamD3ALMdYHRMV5vPUCXdnatJH5f1khbmx6',
     UnderlyingAsset.BCHBEAR,
     SOL_TOKEN_FEATURES
@@ -17196,6 +17277,7 @@ export const coins = CoinMap.fromCoins([
     'BEAR',
     6,
     '45vwTZSDFBiqCMRdtK4xiLCHEov8LJRW8GwnofG8HYyH',
+    '45vwTZSDFBiqCMRdtK4xiLCHEov8LJRW8GwnofG8HYyH',
     UnderlyingAsset.BEAR,
     SOL_TOKEN_FEATURES
   ),
@@ -17204,6 +17286,7 @@ export const coins = CoinMap.fromCoins([
     'sol:bvol',
     'BVOL',
     6,
+    '91z91RukFM16hyEUCXuwMQwp2BW3vanNG5Jh5yj6auiJ',
     '91z91RukFM16hyEUCXuwMQwp2BW3vanNG5Jh5yj6auiJ',
     UnderlyingAsset.BVOL,
     SOL_TOKEN_FEATURES
@@ -17214,6 +17297,7 @@ export const coins = CoinMap.fromCoins([
     'Cashio Dollar',
     6,
     'CASHVDm2wsJXfhj6VWxb7GiMdoLc17Du7paH4bNr5woT',
+    'CASHVDm2wsJXfhj6VWxb7GiMdoLc17Du7paH4bNr5woT',
     UnderlyingAsset.CASH,
     SOL_TOKEN_FEATURES
   ),
@@ -17222,6 +17306,7 @@ export const coins = CoinMap.fromCoins([
     'sol:ccai',
     'Aldrin',
     9,
+    'E5ndSkaB17Dm7CsD22dvcjfrYSDLCxFcMd6z8ddCk5wp',
     'E5ndSkaB17Dm7CsD22dvcjfrYSDLCxFcMd6z8ddCk5wp',
     UnderlyingAsset.CCAI,
     SOL_TOKEN_FEATURES
@@ -17232,6 +17317,7 @@ export const coins = CoinMap.fromCoins([
     'Celsius (Wormhole)',
     4,
     'nRtfwU9G82CSHhHGJNxFhtn7FLvWP2rqvQvje1WtL69',
+    'nRtfwU9G82CSHhHGJNxFhtn7FLvWP2rqvQvje1WtL69',
     UnderlyingAsset.CEL,
     SOL_TOKEN_FEATURES
   ),
@@ -17240,6 +17326,7 @@ export const coins = CoinMap.fromCoins([
     'sol:cmfi',
     'Compendium Finance',
     6,
+    '5Wsd311hY8NXQhkt9cWHwTnqafk7BGEbLu8Py3DSnPAr',
     '5Wsd311hY8NXQhkt9cWHwTnqafk7BGEbLu8Py3DSnPAr',
     UnderlyingAsset.CMFI,
     SOL_TOKEN_FEATURES
@@ -17250,6 +17337,7 @@ export const coins = CoinMap.fromCoins([
     'Compound (Wormhole)',
     8,
     'AwEauVaTMQRB71WeDnwf1DWSBxaMKjEPuxyLr1uixFom',
+    'AwEauVaTMQRB71WeDnwf1DWSBxaMKjEPuxyLr1uixFom',
     UnderlyingAsset.COMP,
     SOL_TOKEN_FEATURES
   ),
@@ -17258,6 +17346,7 @@ export const coins = CoinMap.fromCoins([
     'sol:cwar',
     'Cryowar Token',
     9,
+    'HfYFjMKNZygfMC8LsQ8LtpPsPxEJoXJx4M6tqi75Hajo',
     'HfYFjMKNZygfMC8LsQ8LtpPsPxEJoXJx4M6tqi75Hajo',
     UnderlyingAsset.CWAR,
     SOL_TOKEN_FEATURES
@@ -17268,6 +17357,7 @@ export const coins = CoinMap.fromCoins([
     'Phantasia',
     6,
     'FANTafPFBAt93BNJVpdu25pGPmca3RfwdsDsRrT3LX1r',
+    'FANTafPFBAt93BNJVpdu25pGPmca3RfwdsDsRrT3LX1r',
     UnderlyingAsset.FANT,
     SOL_TOKEN_FEATURES
   ),
@@ -17276,6 +17366,7 @@ export const coins = CoinMap.fromCoins([
     'sol:grt-wormhole',
     'Graph Token (Wormhole)',
     8,
+    'HGsLG4PnZ28L8A4R5nPqKgZd86zUUdmfnkTRnuFJ5dAX',
     'HGsLG4PnZ28L8A4R5nPqKgZd86zUUdmfnkTRnuFJ5dAX',
     UnderlyingAsset.GRT,
     SOL_TOKEN_FEATURES
@@ -17286,6 +17377,7 @@ export const coins = CoinMap.fromCoins([
     'IBlive',
     6,
     '5TY71D29Cyuk9UrsSxLXw2quJBpS7xDDFuFu2K9W7Wf9',
+    '5TY71D29Cyuk9UrsSxLXw2quJBpS7xDDFuFu2K9W7Wf9',
     UnderlyingAsset.IBVOL,
     SOL_TOKEN_FEATURES
   ),
@@ -17294,6 +17386,7 @@ export const coins = CoinMap.fromCoins([
     'sol:1inch-wormhole',
     '1INCH Token (Wormhole)',
     8,
+    'AjkPkq3nsyDe1yKcbyZT7N4aK4Evv9om9tzhQD3wsRC',
     'AjkPkq3nsyDe1yKcbyZT7N4aK4Evv9om9tzhQD3wsRC',
     UnderlyingAsset['1INCH'],
     SOL_TOKEN_FEATURES
@@ -17304,6 +17397,7 @@ export const coins = CoinMap.fromCoins([
     'Jet Protocol',
     9,
     'JET6zMJWkCN9tpRT2v2jfAmm5VnQFDpUBCyaKojmGtz',
+    'JET6zMJWkCN9tpRT2v2jfAmm5VnQFDpUBCyaKojmGtz',
     UnderlyingAsset['sol:jet'],
     SOL_TOKEN_FEATURES
   ),
@@ -17312,6 +17406,7 @@ export const coins = CoinMap.fromCoins([
     'sol:keep-wormhole',
     'KEEP Token (Wormhole)',
     8,
+    '64L6o4G2H7Ln1vN7AHZsUMW4pbFciHyuwn4wUdSbcFxh',
     '64L6o4G2H7Ln1vN7AHZsUMW4pbFciHyuwn4wUdSbcFxh',
     UnderlyingAsset.KEEP,
     SOL_TOKEN_FEATURES
@@ -17322,6 +17417,7 @@ export const coins = CoinMap.fromCoins([
     'Kitty Coin',
     9,
     '6XWfkyg5mzGtKNftSDgYjyoPyUsLRf2rafj95XSFSFrr',
+    '6XWfkyg5mzGtKNftSDgYjyoPyUsLRf2rafj95XSFSFrr',
     UnderlyingAsset.KITTY,
     SOL_TOKEN_FEATURES
   ),
@@ -17330,6 +17426,7 @@ export const coins = CoinMap.fromCoins([
     'sol:luna-wormhole',
     'LUNA (Wormhole)',
     6,
+    'F6v4wfAdJB8D8p77bMXZgYt8TDKsYxLYxH5AFhUkYx9W',
     'F6v4wfAdJB8D8p77bMXZgYt8TDKsYxLYxH5AFhUkYx9W',
     UnderlyingAsset.LUNA,
     SOL_TOKEN_FEATURES
@@ -17340,6 +17437,7 @@ export const coins = CoinMap.fromCoins([
     'MEAN',
     6,
     'MEANeD3XDdUmNMsRGjASkSWdC8prLYsoRJ61pPeHctD',
+    'MEANeD3XDdUmNMsRGjASkSWdC8prLYsoRJ61pPeHctD',
     UnderlyingAsset.MEAN,
     SOL_TOKEN_FEATURES
   ),
@@ -17348,6 +17446,7 @@ export const coins = CoinMap.fromCoins([
     'sol:mnde',
     'Marinade',
     9,
+    'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey',
     'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey',
     UnderlyingAsset.MNDE,
     SOL_TOKEN_FEATURES
@@ -17358,6 +17457,7 @@ export const coins = CoinMap.fromCoins([
     'Parrot USD',
     6,
     'Ea5SjE2Y6yvCeW5dYTn7PYMuW5ikXkvbGdcmSnXeaLjS',
+    'Ea5SjE2Y6yvCeW5dYTn7PYMuW5ikXkvbGdcmSnXeaLjS',
     UnderlyingAsset.PAI,
     SOL_TOKEN_FEATURES
   ),
@@ -17366,6 +17466,7 @@ export const coins = CoinMap.fromCoins([
     'sol:paxg-wormhole',
     'Paxos Gold (Wormhole)',
     8,
+    'C6oFsE8nXRDThzrMEQ5SxaNFGKoyyfWDDVPw37JKvPTe',
     'C6oFsE8nXRDThzrMEQ5SxaNFGKoyyfWDDVPw37JKvPTe',
     UnderlyingAsset.PAXG,
     SOL_TOKEN_FEATURES
@@ -17376,6 +17477,7 @@ export const coins = CoinMap.fromCoins([
     'Perpetual (Wormhole)',
     8,
     '9BsnSWDPfbusseZfnXyZ3un14CyPMZYvsKjWY3Y8Gbqn',
+    '9BsnSWDPfbusseZfnXyZ3un14CyPMZYvsKjWY3Y8Gbqn',
     UnderlyingAsset.PERP,
     SOL_TOKEN_FEATURES
   ),
@@ -17384,6 +17486,7 @@ export const coins = CoinMap.fromCoins([
     'sol:prt',
     'PRT (Parrot Protocol)',
     6,
+    'PRT88RkA4Kg5z7pKnezeNH4mafTvtQdfFgpQTGRjz44',
     'PRT88RkA4Kg5z7pKnezeNH4mafTvtQdfFgpQTGRjz44',
     UnderlyingAsset.PRT,
     SOL_TOKEN_FEATURES
@@ -17394,6 +17497,7 @@ export const coins = CoinMap.fromCoins([
     'renDOGE',
     8,
     'ArUkYE2XDKzqy77PRRGjo4wREWwqk6RXTfM9NeqzPvjU',
+    'ArUkYE2XDKzqy77PRRGjo4wREWwqk6RXTfM9NeqzPvjU',
     UnderlyingAsset.RENDOGE,
     SOL_TOKEN_FEATURES
   ),
@@ -17402,6 +17506,7 @@ export const coins = CoinMap.fromCoins([
     'sol:rsr-wormhole',
     'Reserve Rights (Wormhole)',
     8,
+    'DkbE8U4gSRuGHcVMA1LwyZPYUjYbfEbjW8DMR3iSXBzr',
     'DkbE8U4gSRuGHcVMA1LwyZPYUjYbfEbjW8DMR3iSXBzr',
     UnderlyingAsset.RSR,
     SOL_TOKEN_FEATURES
@@ -17412,6 +17517,7 @@ export const coins = CoinMap.fromCoins([
     'Run Token',
     9,
     '6F9XriABHfWhit6zmMUYAQBSy6XK5VF1cHXuW5LDpRtC',
+    '6F9XriABHfWhit6zmMUYAQBSy6XK5VF1cHXuW5LDpRtC',
     UnderlyingAsset.RUN,
     SOL_TOKEN_FEATURES
   ),
@@ -17420,6 +17526,7 @@ export const coins = CoinMap.fromCoins([
     'sol:samo',
     'Samoyed Coin',
     9,
+    '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
     '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
     UnderlyingAsset.SAMO,
     SOL_TOKEN_FEATURES
@@ -17430,6 +17537,7 @@ export const coins = CoinMap.fromCoins([
     'Saber Protocol Token',
     6,
     'Saber2gLauYim4Mvftnrasomsv6NvAuncvMEZwcLpD1',
+    'Saber2gLauYim4Mvftnrasomsv6NvAuncvMEZwcLpD1',
     UnderlyingAsset.SBR,
     SOL_TOKEN_FEATURES
   ),
@@ -17438,6 +17546,7 @@ export const coins = CoinMap.fromCoins([
     'sol:sbriou',
     'Saber IOU Token (Liquidity Mining Rewards)',
     6,
+    'iouQcQBAiEXe6cKLS85zmZxUqaCqBdeHFpqKoSz615u',
     'iouQcQBAiEXe6cKLS85zmZxUqaCqBdeHFpqKoSz615u',
     UnderlyingAsset.SBRIOU,
     SOL_TOKEN_FEATURES
@@ -17448,6 +17557,7 @@ export const coins = CoinMap.fromCoins([
     'Socean staked SOL',
     9,
     '5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm',
+    '5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm',
     UnderlyingAsset.SCNSOL,
     SOL_TOKEN_FEATURES
   ),
@@ -17456,6 +17566,7 @@ export const coins = CoinMap.fromCoins([
     'sol:shdw',
     'Shadow Token',
     9,
+    'SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y',
     'SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y',
     UnderlyingAsset.SHDW,
     SOL_TOKEN_FEATURES
@@ -17466,6 +17577,7 @@ export const coins = CoinMap.fromCoins([
     'Solice',
     6,
     'METAmTMXwdb8gYzyCPfXXFmZZw4rUsXX58PNsDg7zjL',
+    'METAmTMXwdb8gYzyCPfXXFmZZw4rUsXX58PNsDg7zjL',
     UnderlyingAsset.SLC,
     SOL_TOKEN_FEATURES
   ),
@@ -17474,6 +17586,7 @@ export const coins = CoinMap.fromCoins([
     'sol:step',
     'Step',
     9,
+    'StepAscQoEioFxxWGnh2sLBDFp9d8rvKz2Yp39iDpyT',
     'StepAscQoEioFxxWGnh2sLBDFp9d8rvKz2Yp39iDpyT',
     UnderlyingAsset.STEP,
     SOL_TOKEN_FEATURES
@@ -17484,6 +17597,7 @@ export const coins = CoinMap.fromCoins([
     'Sunny Governance Token',
     6,
     'SUNNYWgPQmFxe9wTZzNK7iPnJ3vYDrkgnxJRJm1s3ag',
+    'SUNNYWgPQmFxe9wTZzNK7iPnJ3vYDrkgnxJRJm1s3ag',
     UnderlyingAsset.SUNNY,
     SOL_TOKEN_FEATURES
   ),
@@ -17492,6 +17606,7 @@ export const coins = CoinMap.fromCoins([
     'sol:susd',
     'Solcasino USD',
     9,
+    '21jZ1ESEFYh9SBwjT5gqE3jHv3JnaGhgvypLTR96QXW9',
     '21jZ1ESEFYh9SBwjT5gqE3jHv3JnaGhgvypLTR96QXW9',
     UnderlyingAsset.SUSD,
     SOL_TOKEN_FEATURES
@@ -17502,6 +17617,7 @@ export const coins = CoinMap.fromCoins([
     'Solvent',
     6,
     'svtMpL5eQzdmB3uqK9NXaQkq8prGZoKQFNVJghdWCkV',
+    'svtMpL5eQzdmB3uqK9NXaQkq8prGZoKQFNVJghdWCkV',
     UnderlyingAsset.SVT,
     SOL_TOKEN_FEATURES
   ),
@@ -17510,6 +17626,7 @@ export const coins = CoinMap.fromCoins([
     'sol:tryb-2',
     'TRYB',
     6,
+    '6ry4WBDvAwAnrYJVv6MCog4J8zx6S3cPgSqnTsDZ73AR',
     '6ry4WBDvAwAnrYJVv6MCog4J8zx6S3cPgSqnTsDZ73AR',
     UnderlyingAsset.TRYB2,
     SOL_TOKEN_FEATURES
@@ -17520,6 +17637,7 @@ export const coins = CoinMap.fromCoins([
     'USDH Hubble Stablecoin',
     6,
     'USDH1SM1ojwWUga67PGrgFWUHibbjqMvuMaDkRJTgkX',
+    'USDH1SM1ojwWUga67PGrgFWUHibbjqMvuMaDkRJTgkX',
     UnderlyingAsset.USDH,
     SOL_TOKEN_FEATURES
   ),
@@ -17528,6 +17646,7 @@ export const coins = CoinMap.fromCoins([
     'sol:uxp',
     'UXP Governance Token',
     9,
+    'UXPhBoR3qG4UCiGNJfV7MqhHyFqKN68g45GoYvAeL2M',
     'UXPhBoR3qG4UCiGNJfV7MqhHyFqKN68g45GoYvAeL2M',
     UnderlyingAsset.UXP,
     SOL_TOKEN_FEATURES
@@ -17538,6 +17657,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped BNB (Wormhole)',
     8,
     '9gP2kCy3wA1ctvYWQk75guqXuHfrEomqydHLtcTCqiLa',
+    '9gP2kCy3wA1ctvYWQk75guqXuHfrEomqydHLtcTCqiLa',
     UnderlyingAsset.WBNB,
     SOL_TOKEN_FEATURES
   ),
@@ -17546,6 +17666,7 @@ export const coins = CoinMap.fromCoins([
     'sol:wdaiv2-wormhole',
     'Dai Stablecoin (Wormhole)',
     8,
+    'EjmyN6qEC1Tf1JxiG1ae7UTJhUxSwk1TCWNWqxWV4J6o',
     'EjmyN6qEC1Tf1JxiG1ae7UTJhUxSwk1TCWNWqxWV4J6o',
     UnderlyingAsset.WDAIV2,
     SOL_TOKEN_FEATURES
@@ -17556,6 +17677,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin (Wormhole)',
     6,
     'A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM',
+    'A9mUU4qviSctJVPJdBJWkb28deg915LYJKrzQ19ji3FM',
     UnderlyingAsset.WUSDCV2,
     SOL_TOKEN_FEATURES
   ),
@@ -17564,6 +17686,7 @@ export const coins = CoinMap.fromCoins([
     'sol:usdtv2-wormhole',
     'Tether USD (Wormhole)',
     6,
+    'Dn4noZ5jgGfkntzcQSUZ8czkreiZ1ForXYoV2H8Dm7S1',
     'Dn4noZ5jgGfkntzcQSUZ8czkreiZ1ForXYoV2H8Dm7S1',
     UnderlyingAsset.WUSDTV2,
     SOL_TOKEN_FEATURES
@@ -17574,6 +17697,7 @@ export const coins = CoinMap.fromCoins([
     'Synthetic USD',
     6,
     '83LGLCm7QKpYZbX8q4W2kYWbtt8NJBwbVwEepzkVnJ9y',
+    '83LGLCm7QKpYZbX8q4W2kYWbtt8NJBwbVwEepzkVnJ9y',
     UnderlyingAsset.XUSD,
     SOL_TOKEN_FEATURES
   ),
@@ -17582,6 +17706,7 @@ export const coins = CoinMap.fromCoins([
     'sol:zbc',
     'ZEBEC',
     9,
+    'zebeczgi5fSEtbpfQKVZKCJ3WgYXxjkMUkNNx7fLKAF',
     'zebeczgi5fSEtbpfQKVZKCJ3WgYXxjkMUkNNx7fLKAF',
     UnderlyingAsset.ZBC,
     SOL_TOKEN_FEATURES
@@ -17592,6 +17717,7 @@ export const coins = CoinMap.fromCoins([
     'Blocto Token',
     8,
     'BLT1noyNr3GttckEVrtcfC6oyK6yV1DpPgSyXbncMwef',
+    'BLT1noyNr3GttckEVrtcfC6oyK6yV1DpPgSyXbncMwef',
     UnderlyingAsset.BLT,
     SOL_TOKEN_FEATURES
   ),
@@ -17600,6 +17726,7 @@ export const coins = CoinMap.fromCoins([
     'sol:elu',
     'Elumia Crowns',
     9,
+    '4tJZhSdGePuMEfZQ3h5LaHjTPsw1iWTRFTojnZcwsAU6',
     '4tJZhSdGePuMEfZQ3h5LaHjTPsw1iWTRFTojnZcwsAU6',
     UnderlyingAsset.ELU,
     SOL_TOKEN_FEATURES
@@ -17610,6 +17737,7 @@ export const coins = CoinMap.fromCoins([
     'IP3',
     9,
     '3uejHm24sWmniGA5m4j4S1DVuGqzYBR5DJpevND4mivq',
+    '3uejHm24sWmniGA5m4j4S1DVuGqzYBR5DJpevND4mivq',
     UnderlyingAsset.IP3,
     SOL_TOKEN_FEATURES
   ),
@@ -17618,6 +17746,7 @@ export const coins = CoinMap.fromCoins([
     'sol:jsol',
     'JPOOL Solana Token',
     9,
+    '7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn',
     '7Q2afV64in6N6SeZsAAB81TJzwDoD6zpqmHkzi9Dcavn',
     UnderlyingAsset.JSOL,
     SOL_TOKEN_FEATURES
@@ -17628,6 +17757,7 @@ export const coins = CoinMap.fromCoins([
     'Kotaro Chips',
     9,
     'ChywntqwNRzaoWYUcDQ3iALqcwSAVtjM2dPshz5AETMm',
+    'ChywntqwNRzaoWYUcDQ3iALqcwSAVtjM2dPshz5AETMm',
     UnderlyingAsset.KTRC,
     SOL_TOKEN_FEATURES
   ),
@@ -17636,6 +17766,7 @@ export const coins = CoinMap.fromCoins([
     'sol:mplx',
     'Metaplex Token',
     6,
+    'METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m',
     'METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m',
     UnderlyingAsset['sol:mplx'],
     SOL_TOKEN_FEATURES
@@ -17646,6 +17777,7 @@ export const coins = CoinMap.fromCoins([
     'NOVA FINANCE',
     9,
     'BDrL8huis6S5tpmozaAaT5zhE5A7ZBAB2jMMvpKEeF8A',
+    'BDrL8huis6S5tpmozaAaT5zhE5A7ZBAB2jMMvpKEeF8A',
     UnderlyingAsset.NOVA,
     SOL_TOKEN_FEATURES
   ),
@@ -17654,6 +17786,7 @@ export const coins = CoinMap.fromCoins([
     'sol:slcl',
     'Solcial token',
     9,
+    'SLCLww7nc1PD2gQPQdGayHviVVcpMthnqUz2iWKhNQV',
     'SLCLww7nc1PD2gQPQdGayHviVVcpMthnqUz2iWKhNQV',
     UnderlyingAsset.SLCL,
     SOL_TOKEN_FEATURES
@@ -17664,6 +17797,7 @@ export const coins = CoinMap.fromCoins([
     'Lido Staked SOL',
     9,
     '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
+    '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
     UnderlyingAsset.STSOL,
     SOL_TOKEN_FEATURES
   ),
@@ -17672,6 +17806,7 @@ export const coins = CoinMap.fromCoins([
     'sol:psol',
     'pSOL (Parrot SOL)',
     9,
+    '9EaLkQrbjmbbuZG9Wdpo8qfNUEjHATJFSycEmw6f1rGX',
     '9EaLkQrbjmbbuZG9Wdpo8qfNUEjHATJFSycEmw6f1rGX',
     UnderlyingAsset.PSOL,
     SOL_TOKEN_FEATURES
@@ -17682,6 +17817,7 @@ export const coins = CoinMap.fromCoins([
     'TOKAMAK ON SOLANA',
     9,
     'TKMKgSh3aADsmjr4yFWG52tkCQvmDxsQC1he1aBsi65',
+    'TKMKgSh3aADsmjr4yFWG52tkCQvmDxsQC1he1aBsi65',
     UnderlyingAsset.TKMK,
     SOL_TOKEN_FEATURES
   ),
@@ -17690,6 +17826,7 @@ export const coins = CoinMap.fromCoins([
     'sol:bbsamo',
     'BabySamoio',
     1,
+    '7ViSurf5Ve2a8qDWFYsfU8GFmRttQvS5paJ8L94QZgo7',
     '7ViSurf5Ve2a8qDWFYsfU8GFmRttQvS5paJ8L94QZgo7',
     UnderlyingAsset.BBSAMO,
     SOL_TOKEN_FEATURES
@@ -17700,6 +17837,7 @@ export const coins = CoinMap.fromCoins([
     'Solend SOL',
     9,
     '5h6ssFpeDeRbzsEHDbTQNH7nVGgsKrZydxdSTnLm6QdV',
+    '5h6ssFpeDeRbzsEHDbTQNH7nVGgsKrZydxdSTnLm6QdV',
     UnderlyingAsset.CSOL,
     SOL_TOKEN_FEATURES
   ),
@@ -17708,6 +17846,7 @@ export const coins = CoinMap.fromCoins([
     'sol:rin',
     'Aldrin',
     9,
+    'E5ndSkaB17Dm7CsD22dvcjfrYSDLCxFcMd6z8ddCk5wp',
     'E5ndSkaB17Dm7CsD22dvcjfrYSDLCxFcMd6z8ddCk5wp',
     UnderlyingAsset.ALDRIN,
     SOL_TOKEN_FEATURES
@@ -17718,6 +17857,7 @@ export const coins = CoinMap.fromCoins([
     'tuPOLIS',
     8,
     '658FZo9B4HgKxsKsM7cUHN7jfNFgC7YftusWWYWc4piD',
+    '658FZo9B4HgKxsKsM7cUHN7jfNFgC7YftusWWYWc4piD',
     UnderlyingAsset.TUPOLIS,
     SOL_TOKEN_FEATURES
   ),
@@ -17726,6 +17866,7 @@ export const coins = CoinMap.fromCoins([
     'sol:xaury',
     'Aurory',
     9,
+    'xAURp5XmAG7772mfkSy6vRAjGK9JofYjc3dmQDWdVDP',
     'xAURp5XmAG7772mfkSy6vRAjGK9JofYjc3dmQDWdVDP',
     UnderlyingAsset.XAURY,
     SOL_TOKEN_FEATURES
@@ -17736,6 +17877,7 @@ export const coins = CoinMap.fromCoins([
     'SCOPE',
     6,
     '5HbkoVbaMnJYEuiTqeC7cBMSK2zG2MFfoxc9e6VkWPQS',
+    '5HbkoVbaMnJYEuiTqeC7cBMSK2zG2MFfoxc9e6VkWPQS',
     UnderlyingAsset.SCOPE,
     SOL_TOKEN_FEATURES
   ),
@@ -17744,6 +17886,7 @@ export const coins = CoinMap.fromCoins([
     'sol:tusrm',
     'tuSRM',
     6,
+    '4QSK13NTKxTBExbMjHFsj3QfHBn4Hfp3DGLSba8GvFvh',
     '4QSK13NTKxTBExbMjHFsj3QfHBn4Hfp3DGLSba8GvFvh',
     UnderlyingAsset.TUSRM,
     SOL_TOKEN_FEATURES
@@ -17754,6 +17897,7 @@ export const coins = CoinMap.fromCoins([
     'LQID',
     6,
     'A6aY2ceogBz1VaXBxm1j2eJuNZMRqrWUAnKecrMH85zj',
+    'A6aY2ceogBz1VaXBxm1j2eJuNZMRqrWUAnKecrMH85zj',
     UnderlyingAsset.LQID,
     SOL_TOKEN_FEATURES
   ),
@@ -17762,6 +17906,7 @@ export const coins = CoinMap.fromCoins([
     'sol:vi',
     'VI',
     9,
+    '7zBWymxbZt7PVHQzfi3i85frc1YRiQc23K7bh3gos8ZC',
     '7zBWymxbZt7PVHQzfi3i85frc1YRiQc23K7bh3gos8ZC',
     UnderlyingAsset.VI,
     SOL_TOKEN_FEATURES
@@ -17772,6 +17917,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped XRP (Sollet)',
     6,
     'Ga2AXHpfAF6mv2ekZwcsJFqu7wB4NV331qNH7fW9Nst8',
+    'Ga2AXHpfAF6mv2ekZwcsJFqu7wB4NV331qNH7fW9Nst8',
     UnderlyingAsset['xrp-sollet'],
     SOL_TOKEN_FEATURES
   ),
@@ -17780,6 +17926,7 @@ export const coins = CoinMap.fromCoins([
     'sol:aury',
     'Aurory',
     9,
+    'AURYydfxJib1ZkTir1Jn1J9ECYUtjb6rKQVmtYaixWPP',
     'AURYydfxJib1ZkTir1Jn1J9ECYUtjb6rKQVmtYaixWPP',
     UnderlyingAsset['aury'],
     SOL_TOKEN_FEATURES
@@ -17790,6 +17937,7 @@ export const coins = CoinMap.fromCoins([
     'Decimated',
     9,
     'BiDB55p4G3n1fGhwKFpxsokBMqgctL4qnZpDH1bVQxMD',
+    'BiDB55p4G3n1fGhwKFpxsokBMqgctL4qnZpDH1bVQxMD',
     UnderlyingAsset['dio'],
     SOL_TOKEN_FEATURES
   ),
@@ -17798,6 +17946,7 @@ export const coins = CoinMap.fromCoins([
     'sol:sol-perp',
     'Perp',
     6,
+    'D68NB5JkzvyNCZAvi6EGtEcGvSoRNPanU9heYTAUFFRa',
     'D68NB5JkzvyNCZAvi6EGtEcGvSoRNPanU9heYTAUFFRa',
     UnderlyingAsset['sol-perp'],
     SOL_TOKEN_FEATURES
@@ -17808,6 +17957,7 @@ export const coins = CoinMap.fromCoins([
     'Wootrade Network',
     6,
     'E5rk3nmgLUuKUiS94gg4bpWwWwyjCMtddsAXkTFLtHEy',
+    'E5rk3nmgLUuKUiS94gg4bpWwWwyjCMtddsAXkTFLtHEy',
     UnderlyingAsset['sol-woo'],
     SOL_TOKEN_FEATURES
   ),
@@ -17816,6 +17966,7 @@ export const coins = CoinMap.fromCoins([
     'sol:sol-weth',
     'WETH (alcorbridge.in)',
     9,
+    '8kVHYoueJAaZtTqtqK5McRJSqX1yXii1epuxrW6jfsrD',
     '8kVHYoueJAaZtTqtqK5McRJSqX1yXii1epuxrW6jfsrD',
     UnderlyingAsset['sol-weth'],
     SOL_TOKEN_FEATURES
@@ -17826,6 +17977,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped Bitcoin (Sollet)',
     6,
     '9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E',
+    '9n4nbM75f5Ui33ZbPYXn59EwSgE8CGsHtAeTH5YFeJ9E',
     UnderlyingAsset['btc-sollet'],
     SOL_TOKEN_FEATURES
   ),
@@ -17834,6 +17986,7 @@ export const coins = CoinMap.fromCoins([
     'sol:eth-sollet',
     'Wrapped Ethereum (Sollet)',
     6,
+    '2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk',
     '2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk',
     UnderlyingAsset['eth-sollet'],
     SOL_TOKEN_FEATURES
@@ -17844,6 +17997,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped FTT (Sollet)',
     6,
     'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
+    'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
     UnderlyingAsset.FTT,
     SOL_TOKEN_FEATURES
   ),
@@ -17852,6 +18006,7 @@ export const coins = CoinMap.fromCoins([
     'sol:srm-wormhole',
     'Serum (Wormhole)',
     6,
+    'xnorPhAzWXUczCP3KjU5yDxmKKZi5cSbxytQ1LgE3kG',
     'xnorPhAzWXUczCP3KjU5yDxmKKZi5cSbxytQ1LgE3kG',
     UnderlyingAsset.SRM,
     SOL_TOKEN_FEATURES
@@ -17862,6 +18017,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin (PoS) (Wormhole)',
     6,
     'E2VmbootbVCBkMNNxKQgCLMS1X3NoGMaYAsufaAsf7M',
+    'E2VmbootbVCBkMNNxKQgCLMS1X3NoGMaYAsufaAsf7M',
     UnderlyingAsset.WUSDC,
     SOL_TOKEN_FEATURES
   ),
@@ -17870,6 +18026,7 @@ export const coins = CoinMap.fromCoins([
     'sol:wusdc-wormhole',
     'USD Coin (Wormhole)',
     6,
+    'FVsXUnbhifqJ4LiXQEbpUtXVdB8T5ADLKqSs5t1oc54F',
     'FVsXUnbhifqJ4LiXQEbpUtXVdB8T5ADLKqSs5t1oc54F',
     UnderlyingAsset.WUSDC,
     SOL_TOKEN_FEATURES
@@ -17880,6 +18037,7 @@ export const coins = CoinMap.fromCoins([
     'Hedget (Wormhole)',
     6,
     '2ueY1bLcPHfuFzEJq7yN1V2Wrpu8nkun9xG2TVCE1mhD',
+    '2ueY1bLcPHfuFzEJq7yN1V2Wrpu8nkun9xG2TVCE1mhD',
     UnderlyingAsset.HGET,
     SOL_TOKEN_FEATURES
   ),
@@ -17888,6 +18046,7 @@ export const coins = CoinMap.fromCoins([
     'sol:ust-wormhole',
     'UST (Wormhole)',
     6,
+    '9vMJfxuKxXBoEa7rM12mYLMwTacLMLDJqHozw96WQL8i',
     '9vMJfxuKxXBoEa7rM12mYLMwTacLMLDJqHozw96WQL8i',
     UnderlyingAsset.UST,
     SOL_TOKEN_FEATURES
@@ -17898,6 +18057,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped FTT (Wormhole)',
     9,
     'GbBWwtYTMPis4VHb8MrBbdibPhn28TSrLB53KvUmb7Gi',
+    'GbBWwtYTMPis4VHb8MrBbdibPhn28TSrLB53KvUmb7Gi',
     UnderlyingAsset.WFFT,
     SOL_TOKEN_FEATURES
   ),
@@ -17906,6 +18066,7 @@ export const coins = CoinMap.fromCoins([
     'sol:inj-wormhole',
     'Injective Token (Wormhole)',
     8,
+    'Hgtvu9gsDTzUpBn69WjrhMyzaQhrAM9piTsezmZVQP6Z',
     'Hgtvu9gsDTzUpBn69WjrhMyzaQhrAM9piTsezmZVQP6Z',
     UnderlyingAsset.INJ,
     SOL_TOKEN_FEATURES
@@ -17916,6 +18077,7 @@ export const coins = CoinMap.fromCoins([
     'LuaToken (Wormhole)',
     8,
     '5Wc4U1ZoQRzF4tPdqKQzBwRSjYe8vEf3EvZMuXgtKUW6',
+    '5Wc4U1ZoQRzF4tPdqKQzBwRSjYe8vEf3EvZMuXgtKUW6',
     UnderlyingAsset.LUA,
     SOL_TOKEN_FEATURES
   ),
@@ -17924,6 +18086,7 @@ export const coins = CoinMap.fromCoins([
     'sol:ldo-wormhole',
     'Lido DAO Token (Wormhole)',
     8,
+    'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
     'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
     UnderlyingAsset.LDO,
     SOL_TOKEN_FEATURES
@@ -17934,6 +18097,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped BTC (Wormhole)',
     8,
     '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh',
+    '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh',
     UnderlyingAsset.WBTC,
     SOL_TOKEN_FEATURES
   ),
@@ -17942,6 +18106,7 @@ export const coins = CoinMap.fromCoins([
     'sol:cho-wormhole',
     'choise.com Token (Wormhole)',
     8,
+    '59McpTVgyGsSu5eQutvcKLFu7wrFe3ZkE2qdAi3HnvBn',
     '59McpTVgyGsSu5eQutvcKLFu7wrFe3ZkE2qdAi3HnvBn',
     UnderlyingAsset.CHO,
     SOL_TOKEN_FEATURES
@@ -17952,6 +18117,7 @@ export const coins = CoinMap.fromCoins([
     'Helium Network Token',
     8,
     'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
+    'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
     UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
@@ -17960,6 +18126,7 @@ export const coins = CoinMap.fromCoins([
     'sol:qcad',
     'QCAD',
     2,
+    'EeBX9JLdvsp4HnBbMgC1HnAjBkBQxgxtWxspcCLtT6ci',
     'EeBX9JLdvsp4HnBbMgC1HnAjBkBQxgxtWxspcCLtT6ci',
     UnderlyingAsset['sol:qcad'],
     SOL_TOKEN_FEATURES
@@ -17970,6 +18137,7 @@ export const coins = CoinMap.fromCoins([
     '3uejH-USDC (Atrix)',
     6,
     '8Vu7Y3xZg75sUYiNxDi5zRFamtDGn7afMoFVpaeoy4Fj',
+    '8Vu7Y3xZg75sUYiNxDi5zRFamtDGn7afMoFVpaeoy4Fj',
     UnderlyingAsset['3uejh-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -17978,6 +18146,7 @@ export const coins = CoinMap.fromCoins([
     'sol:3uejh-usdc-ray',
     '3uejH-USDC (Raydium)',
     9,
+    '5Xn6kWHwnQiL5JRFHqZhF9qDE4gWkhCCUomccfak6Pqd',
     '5Xn6kWHwnQiL5JRFHqZhF9qDE4gWkhCCUomccfak6Pqd',
     UnderlyingAsset['3uejh-usdc'],
     SOL_TOKEN_FEATURES
@@ -17988,6 +18157,7 @@ export const coins = CoinMap.fromCoins([
     'AVAX-USDC (Atrix)',
     6,
     '9Q2Jcc2Xpjr5QExCezwBTKnRyXRfvtyEFTNssYPKrZSP',
+    '9Q2Jcc2Xpjr5QExCezwBTKnRyXRfvtyEFTNssYPKrZSP',
     UnderlyingAsset['avax-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -17996,6 +18166,7 @@ export const coins = CoinMap.fromCoins([
     'sol:bop-usdc',
     'BOP-USDC (Atrix)',
     6,
+    'FuTJE1yfz5u17T7gpqyMuUaCnnzLTes8R5QjXpMd8f1P',
     'FuTJE1yfz5u17T7gpqyMuUaCnnzLTes8R5QjXpMd8f1P',
     UnderlyingAsset['bop-usdc'],
     SOL_TOKEN_FEATURES
@@ -18006,6 +18177,7 @@ export const coins = CoinMap.fromCoins([
     'CROWN Token',
     9,
     'GDfnEsia2WLAW5t8yx2X5j2mkfA74i5kwGdDuZHt7XmG',
+    'GDfnEsia2WLAW5t8yx2X5j2mkfA74i5kwGdDuZHt7XmG',
     UnderlyingAsset['sol:crown'],
     SOL_TOKEN_FEATURES
   ),
@@ -18014,6 +18186,7 @@ export const coins = CoinMap.fromCoins([
     'sol:elu-usdt',
     'ELU-USDT (Raydium)',
     9,
+    '6DGD2tQaPPaupNKYJhp3JpqSHnY1mUqTMQsVqCASriau',
     '6DGD2tQaPPaupNKYJhp3JpqSHnY1mUqTMQsVqCASriau',
     UnderlyingAsset['elu-usdt'],
     SOL_TOKEN_FEATURES
@@ -18024,6 +18197,7 @@ export const coins = CoinMap.fromCoins([
     'FIDA-USDC (Atrix)',
     6,
     '22DFMbkx4jHgaEjKz2D4yaq51YS2LXcQ7GFJT9RDrmJz',
+    '22DFMbkx4jHgaEjKz2D4yaq51YS2LXcQ7GFJT9RDrmJz',
     UnderlyingAsset['fida-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18032,6 +18206,7 @@ export const coins = CoinMap.fromCoins([
     'sol:fida-usdt',
     'FIDA-USDT (Atrix)',
     6,
+    '4aN1Vrq1F292EbZ8cW2SbTby7bCG1Ubqh1sLoFrj8Rkf',
     '4aN1Vrq1F292EbZ8cW2SbTby7bCG1Ubqh1sLoFrj8Rkf',
     UnderlyingAsset['fida-usdt'],
     SOL_TOKEN_FEATURES
@@ -18042,6 +18217,7 @@ export const coins = CoinMap.fromCoins([
     'FTT-FTT (Atrix)',
     6,
     'HCygAsuXLXyb8Krf88wXi8k3VqJi4qLXJxk9YfojFPEj',
+    'HCygAsuXLXyb8Krf88wXi8k3VqJi4qLXJxk9YfojFPEj',
     UnderlyingAsset['ftt-ftt'],
     SOL_TOKEN_FEATURES
   ),
@@ -18050,6 +18226,7 @@ export const coins = CoinMap.fromCoins([
     'sol:link-usdc',
     'LINK-USDC (Atrix)',
     6,
+    '3rAjv5d83R47t5TyTjZTbWAKdFY8tb1jYgt44hEiyRhd',
     '3rAjv5d83R47t5TyTjZTbWAKdFY8tb1jYgt44hEiyRhd',
     UnderlyingAsset['link-usdc'],
     SOL_TOKEN_FEATURES
@@ -18060,6 +18237,7 @@ export const coins = CoinMap.fromCoins([
     'LQID-USDC (Atrix)',
     6,
     '2dHFjKHdmXLMmZQrF4nuxn3V175XQNCR4kcDBHuiQ4So',
+    '2dHFjKHdmXLMmZQrF4nuxn3V175XQNCR4kcDBHuiQ4So',
     UnderlyingAsset['lqid-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18068,6 +18246,7 @@ export const coins = CoinMap.fromCoins([
     'sol:maticpo-usdc',
     'MATICPO-USDC (Atrix)',
     6,
+    'qxWs2xtSZ3ojvhaNiZ48NGRzNjZQU9K46ZmHu6inrc9',
     'qxWs2xtSZ3ojvhaNiZ48NGRzNjZQU9K46ZmHu6inrc9',
     UnderlyingAsset['maticpo-usdc'],
     SOL_TOKEN_FEATURES
@@ -18078,6 +18257,7 @@ export const coins = CoinMap.fromCoins([
     'MSOL-SOL (Atrix)',
     6,
     '5Ho7kHt8vahC2zW6p99y3ENXWp1s2vSbFKWUPwdoPVEC',
+    '5Ho7kHt8vahC2zW6p99y3ENXWp1s2vSbFKWUPwdoPVEC',
     UnderlyingAsset['msol-sol'],
     SOL_TOKEN_FEATURES
   ),
@@ -18086,6 +18266,7 @@ export const coins = CoinMap.fromCoins([
     'sol:msol-usdc',
     'MSOL-USDC (Aldrin)',
     0,
+    'H37kHxy82uLoF8t86wK414KzpVJy7uVJ9Kvt5wYsTGPh',
     'H37kHxy82uLoF8t86wK414KzpVJy7uVJ9Kvt5wYsTGPh',
     UnderlyingAsset['msol-usdc'],
     SOL_TOKEN_FEATURES
@@ -18096,6 +18277,7 @@ export const coins = CoinMap.fromCoins([
     'PRISM-USDC (Raydium)',
     6,
     '3baYkTcudvSFMe25UpZcBfdp4FA5kL2E4pfaeJ8AiYJB',
+    '3baYkTcudvSFMe25UpZcBfdp4FA5kL2E4pfaeJ8AiYJB',
     UnderlyingAsset['prism-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18104,6 +18286,7 @@ export const coins = CoinMap.fromCoins([
     'sol:pyth',
     'Pyth',
     6,
+    'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',
     'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',
     UnderlyingAsset['sol:pyth'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
@@ -18114,6 +18297,7 @@ export const coins = CoinMap.fromCoins([
     'Bonk',
     5,
     'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+    'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
     UnderlyingAsset['sol:bonk'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -18122,6 +18306,7 @@ export const coins = CoinMap.fromCoins([
     'sol:jto',
     'Jito',
     9,
+    'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
     'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
     UnderlyingAsset['jto'],
     SOL_TOKEN_FEATURES
@@ -18132,6 +18317,7 @@ export const coins = CoinMap.fromCoins([
     'Jupiter',
     6,
     'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
+    'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
     UnderlyingAsset['jup'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -18140,6 +18326,7 @@ export const coins = CoinMap.fromCoins([
     'sol:honey',
     'HONEY',
     9,
+    '4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy',
     '4vMsoUT2BWatFweudnQM1xedRLfJgJ7hswhcpz4xgBTy',
     UnderlyingAsset['sol:honey'],
     SOL_TOKEN_FEATURES
@@ -18150,6 +18337,7 @@ export const coins = CoinMap.fromCoins([
     'dogwifhat',
     6,
     'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
+    'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
     UnderlyingAsset['wif'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -18158,6 +18346,7 @@ export const coins = CoinMap.fromCoins([
     'sol:natix',
     'NATIX Network ',
     6,
+    'FRySi8LPkuByB7VPSCCggxpewFUeeJiwEGRKKuhwpKcX',
     'FRySi8LPkuByB7VPSCCggxpewFUeeJiwEGRKKuhwpKcX',
     UnderlyingAsset['natix'],
     SOL_TOKEN_FEATURES
@@ -18168,6 +18357,7 @@ export const coins = CoinMap.fromCoins([
     'Kalisten ',
     9,
     '3swraHsc77KMg1tFvwH3tfYcd8SWr5fcUhtmRxjavG7H',
+    '3swraHsc77KMg1tFvwH3tfYcd8SWr5fcUhtmRxjavG7H',
     UnderlyingAsset['sol:ks'],
     SOL_TOKEN_FEATURES
   ),
@@ -18176,6 +18366,7 @@ export const coins = CoinMap.fromCoins([
     'sol:apusdt',
     'Wrapped USDT (Allbridge from Polygon)',
     6,
+    'DNhZkUaxHXYvpxZ7LNnHtss8sQgdAfd1ZYS1fB7LKWUZ',
     'DNhZkUaxHXYvpxZ7LNnHtss8sQgdAfd1ZYS1fB7LKWUZ',
     UnderlyingAsset['sol:apusdt'],
     SOL_TOKEN_FEATURES
@@ -18186,6 +18377,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped CUSD (Allbridge from Celo)',
     9,
     'EwxNF8g9UfmsJVcZFTpL9Hx5MCkoQFoJi6XNWzKf1j8e',
+    'EwxNF8g9UfmsJVcZFTpL9Hx5MCkoQFoJi6XNWzKf1j8e',
     UnderlyingAsset['sol:acusd'],
     SOL_TOKEN_FEATURES
   ),
@@ -18194,6 +18386,7 @@ export const coins = CoinMap.fromCoins([
     'sol:solink',
     'Wrapped Chainlink (Sollet)',
     6,
+    'CWE8jPTUYhdCTZYWPTe1o5DFqfdjzWKc9WKz6rSjQUdG',
     'CWE8jPTUYhdCTZYWPTe1o5DFqfdjzWKc9WKz6rSjQUdG',
     UnderlyingAsset['sol:solink'],
     SOL_TOKEN_FEATURES
@@ -18204,6 +18397,7 @@ export const coins = CoinMap.fromCoins([
     'Blockasset',
     6,
     'NFTUkR4u7wKxy9QLaX2TGvd9oZSWoMo4jqSJqdMb7Nk',
+    'NFTUkR4u7wKxy9QLaX2TGvd9oZSWoMo4jqSJqdMb7Nk',
     UnderlyingAsset['sol:block'],
     SOL_TOKEN_FEATURES
   ),
@@ -18212,6 +18406,7 @@ export const coins = CoinMap.fromCoins([
     'sol:w',
     'Wormhole Token',
     6,
+    '85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ',
     '85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ',
     UnderlyingAsset['W'],
     SOL_TOKEN_FEATURES
@@ -18222,6 +18417,7 @@ export const coins = CoinMap.fromCoins([
     'Helium Mobile',
     6,
     'mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6',
+    'mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6',
     UnderlyingAsset['mobile'],
     SOL_TOKEN_FEATURES
   ),
@@ -18230,6 +18426,7 @@ export const coins = CoinMap.fromCoins([
     'sol:sbc',
     'Stable Coin',
     9,
+    'DBAzBUXaLj1qANCseUPZz4sp9F8d2sc78C4vKjhbTGMA',
     'DBAzBUXaLj1qANCseUPZz4sp9F8d2sc78C4vKjhbTGMA',
     UnderlyingAsset['sol:sbc'],
     SOL_TOKEN_FEATURES
@@ -18240,6 +18437,7 @@ export const coins = CoinMap.fromCoins([
     'RENDOGE-USDC (Atrix)',
     6,
     'AdP5rgP2cbcG6vib14MRGJZULAAswGLx4desPSMxfzZB',
+    'AdP5rgP2cbcG6vib14MRGJZULAAswGLx4desPSMxfzZB',
     UnderlyingAsset['rendoge-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18248,6 +18446,7 @@ export const coins = CoinMap.fromCoins([
     'sol:shdw-usdc-ray',
     'SHDW-USDC (Raydium)',
     9,
+    'BeSq84RRsqQMKonw89mfYDg2dBcVc52LGN3zG6muFczu',
     'BeSq84RRsqQMKonw89mfYDg2dBcVc52LGN3zG6muFczu',
     UnderlyingAsset['shdw-usdc'],
     SOL_TOKEN_FEATURES
@@ -18258,6 +18457,7 @@ export const coins = CoinMap.fromCoins([
     'SHDW-USDC (Atrix)',
     6,
     '63F79Xww6UTSJbPiJeuJ6Yn1yRZUzUAqLddbavPiRG6r',
+    '63F79Xww6UTSJbPiJeuJ6Yn1yRZUzUAqLddbavPiRG6r',
     UnderlyingAsset['shdw-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18266,6 +18466,7 @@ export const coins = CoinMap.fromCoins([
     'sol:sol-wtust',
     'SOL-wtUST (Atrix)',
     6,
+    '8DUT2gszpXrGjYaJfH6cutUGLCUCDA4zd68dWsxXcF1y',
     '8DUT2gszpXrGjYaJfH6cutUGLCUCDA4zd68dWsxXcF1y',
     UnderlyingAsset['sol-wtust'],
     SOL_TOKEN_FEATURES
@@ -18276,6 +18477,7 @@ export const coins = CoinMap.fromCoins([
     'SRM-USDC (Atrix)',
     6,
     'Ck9t5PgHSxm3TAcwHB7Ncw1HvGGRwRehdWLzSanUtxzJ',
+    'Ck9t5PgHSxm3TAcwHB7Ncw1HvGGRwRehdWLzSanUtxzJ',
     UnderlyingAsset['srm-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18284,6 +18486,7 @@ export const coins = CoinMap.fromCoins([
     'sol:srmet-srm',
     'SRMet-SRM (Atrix)',
     6,
+    'E5LLJLgiyQ1QmMAci7efsPXjSxXGfncWrBB6kJ1GaaBT',
     'E5LLJLgiyQ1QmMAci7efsPXjSxXGfncWrBB6kJ1GaaBT',
     UnderlyingAsset['srmet-srm'],
     SOL_TOKEN_FEATURES
@@ -18294,6 +18497,7 @@ export const coins = CoinMap.fromCoins([
     'SUSHI-USDC (Atrix)',
     6,
     'Fv1LohviCN4qRzmEUqqJdWd7B5zLxrGEQ7dXADyXdcvA',
+    'Fv1LohviCN4qRzmEUqqJdWd7B5zLxrGEQ7dXADyXdcvA',
     UnderlyingAsset['sushi-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18302,6 +18506,7 @@ export const coins = CoinMap.fromCoins([
     'sol:sushi-usdc-ray',
     'SUSHI-USDC (Raydium)',
     8,
+    '3wVrtQZsiDNp5yTPyfEzQHPU6iuJoMmpnWg6CTt4V8sR',
     '3wVrtQZsiDNp5yTPyfEzQHPU6iuJoMmpnWg6CTt4V8sR',
     UnderlyingAsset['sushi-usdc'],
     SOL_TOKEN_FEATURES
@@ -18312,6 +18517,7 @@ export const coins = CoinMap.fromCoins([
     'tuAtlas (Tulip)',
     8,
     '9eGNc4BZCAgpTSEjbu7ACCLjpnZh1WSdts3y4nMik4e7',
+    '9eGNc4BZCAgpTSEjbu7ACCLjpnZh1WSdts3y4nMik4e7',
     UnderlyingAsset['tuatlas'],
     SOL_TOKEN_FEATURES
   ),
@@ -18320,6 +18526,7 @@ export const coins = CoinMap.fromCoins([
     'sol:tucope',
     'tuCOPE (Tulip)',
     6,
+    '8cm7UrBiDQ4C1ntQSCZfHSWKUizdW31ddTQGNY6Lym3B',
     '8cm7UrBiDQ4C1ntQSCZfHSWKUizdW31ddTQGNY6Lym3B',
     UnderlyingAsset['tucope'],
     SOL_TOKEN_FEATURES
@@ -18330,6 +18537,7 @@ export const coins = CoinMap.fromCoins([
     'tuLIKE (Tulip)',
     9,
     'DRu91PV94sb6kX6HwMGnGM8TuHrjycS4FmJNRWEgyw6n',
+    'DRu91PV94sb6kX6HwMGnGM8TuHrjycS4FmJNRWEgyw6n',
     UnderlyingAsset['tulike'],
     SOL_TOKEN_FEATURES
   ),
@@ -18338,6 +18546,7 @@ export const coins = CoinMap.fromCoins([
     'sol:tureal',
     'tuREAL (Tulip)',
     6,
+    '8B1mqpvZYmpjAXVPBevaQBPbnufLz7ZZTBH6tgMVYCWe',
     '8B1mqpvZYmpjAXVPBevaQBPbnufLz7ZZTBH6tgMVYCWe',
     UnderlyingAsset['tureal'],
     SOL_TOKEN_FEATURES
@@ -18348,6 +18557,7 @@ export const coins = CoinMap.fromCoins([
     'tuSAMO (Tulip)',
     9,
     'CEqYVZCL7sHQ8gChh1yL3uajc2UDs6DXuYjPZyRox6MC',
+    'CEqYVZCL7sHQ8gChh1yL3uajc2UDs6DXuYjPZyRox6MC',
     UnderlyingAsset['tusamo'],
     SOL_TOKEN_FEATURES
   ),
@@ -18356,6 +18566,7 @@ export const coins = CoinMap.fromCoins([
     'sol:usdt-usdc',
     'USDT-USDC (Atrix)',
     6,
+    '4jL2htQtstTzatmtJL85M6z89E238ozg5eUa9u54Qyxb',
     '4jL2htQtstTzatmtJL85M6z89E238ozg5eUa9u54Qyxb',
     UnderlyingAsset['usdt-usdc'],
     SOL_TOKEN_FEATURES
@@ -18366,6 +18577,7 @@ export const coins = CoinMap.fromCoins([
     'wbWBNB-USDC (Atrix)',
     6,
     'B8ruZRLvFzk5fF3jBNp5RpT5sNrd3sasgfSyEuTbzZqk',
+    'B8ruZRLvFzk5fF3jBNp5RpT5sNrd3sasgfSyEuTbzZqk',
     UnderlyingAsset['wbwbnb-usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18374,6 +18586,7 @@ export const coins = CoinMap.fromCoins([
     'sol:wheth-usdc',
     'whETH-USDC (Atrix)',
     6,
+    'AW7jJo1Mu6Ht6kgT5RpwGYjpsXEQbEeXpLdKkViotiWU',
     'AW7jJo1Mu6Ht6kgT5RpwGYjpsXEQbEeXpLdKkViotiWU',
     UnderlyingAsset['wheth-usdc'],
     SOL_TOKEN_FEATURES
@@ -18384,6 +18597,7 @@ export const coins = CoinMap.fromCoins([
     'wtUST-USDT (Atrix)',
     6,
     '4G6Z1HQcTVE22NgSiZk6JbwiN55KD9Dk2k4Rx6HTnZEm',
+    '4G6Z1HQcTVE22NgSiZk6JbwiN55KD9Dk2k4Rx6HTnZEm',
     UnderlyingAsset['wtust-usdt'],
     SOL_TOKEN_FEATURES
   ),
@@ -18392,6 +18606,7 @@ export const coins = CoinMap.fromCoins([
     'sol:xcope-usdc',
     'XCOPE-USDC (Raydium)',
     0,
+    '2Vyyeuyd15Gp8aH6uKE72c4hxc8TVSLibxDP9vzspQWG',
     '2Vyyeuyd15Gp8aH6uKE72c4hxc8TVSLibxDP9vzspQWG',
     UnderlyingAsset['xcope-usdc'],
     SOL_TOKEN_FEATURES
@@ -18402,6 +18617,7 @@ export const coins = CoinMap.fromCoins([
     'Whole Earth Coin',
     9,
     '6y8W5YwAuzostqrS4YDJufBvksosfSi47Pd8U4A5vrBC',
+    '6y8W5YwAuzostqrS4YDJufBvksosfSi47Pd8U4A5vrBC',
     UnderlyingAsset['sol:wec'],
     SOL_TOKEN_FEATURES
   ),
@@ -18410,6 +18626,7 @@ export const coins = CoinMap.fromCoins([
     'sol:render',
     'Render Token',
     8,
+    'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
     'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
     UnderlyingAsset['sol:render'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT_GERMANY
@@ -18420,6 +18637,7 @@ export const coins = CoinMap.fromCoins([
     'Wen',
     5,
     'WENWENvqqNya429ubCdR81ZmD69brwQaaBYY6p3LCpk',
+    'WENWENvqqNya429ubCdR81ZmD69brwQaaBYY6p3LCpk',
     UnderlyingAsset['sol:wen'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -18428,6 +18646,7 @@ export const coins = CoinMap.fromCoins([
     'sol:mew',
     'cat in a dogs world',
     5,
+    'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5',
     'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5',
     UnderlyingAsset['sol:mew'],
     SOL_TOKEN_FEATURES
@@ -18438,6 +18657,7 @@ export const coins = CoinMap.fromCoins([
     'PayPal USD',
     6,
     '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
+    '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
     UnderlyingAsset['sol:pyusd'],
     SOL_TOKEN_FEATURES
   ),
@@ -18446,6 +18666,7 @@ export const coins = CoinMap.fromCoins([
     'sol:moveusd',
     'MoveMoney USD',
     6,
+    '3AdhVEX6k85yNivHVXDEiY3WyP2WgFQTUZCahGaeC2qm',
     '3AdhVEX6k85yNivHVXDEiY3WyP2WgFQTUZCahGaeC2qm',
     UnderlyingAsset['sol:moveusd'],
     SOL_TOKEN_FEATURES
@@ -18456,6 +18677,7 @@ export const coins = CoinMap.fromCoins([
     'Dexlab',
     6,
     'GsNzxJfFn6zQdJGeYsupJWzUAm57Ba7335mfhWvFiE9Z',
+    'GsNzxJfFn6zQdJGeYsupJWzUAm57Ba7335mfhWvFiE9Z',
     UnderlyingAsset['sol:dxl'],
     SOL_TOKEN_FEATURES
   ),
@@ -18464,6 +18686,7 @@ export const coins = CoinMap.fromCoins([
     'sol:mother',
     'Mother Iggy',
     6,
+    '3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN',
     '3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN',
     UnderlyingAsset['sol:mother'],
     SOL_TOKEN_FEATURES
@@ -18474,6 +18697,7 @@ export const coins = CoinMap.fromCoins([
     'Wrapped ROSE',
     8,
     'S3SQfD6RheMXQ3EEYn1Z5sJsbtwfXdt7tSAVXPQFtYo',
+    'S3SQfD6RheMXQ3EEYn1Z5sJsbtwfXdt7tSAVXPQFtYo',
     UnderlyingAsset['sol:wrose'],
     SOL_TOKEN_FEATURES
   ),
@@ -18482,6 +18706,7 @@ export const coins = CoinMap.fromCoins([
     'sol:mdt',
     'Measurable Data Token',
     8,
+    '8Wqbst4qAN2FqBCCh5gdXq2WJ7vTNWEY4oNLrpUg7Tya',
     '8Wqbst4qAN2FqBCCh5gdXq2WJ7vTNWEY4oNLrpUg7Tya',
     UnderlyingAsset['sol:mdt'],
     SOL_TOKEN_FEATURES
@@ -18492,6 +18717,7 @@ export const coins = CoinMap.fromCoins([
     'IONET',
     8,
     'BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K',
+    'BZLbGTNCSFfoth2GYDtwr7e4imWzpR5jqcUuGEwr646K',
     UnderlyingAsset['sol:io'],
     SOL_TOKEN_FEATURES
   ),
@@ -18500,6 +18726,7 @@ export const coins = CoinMap.fromCoins([
     'sol:aave',
     'Aave',
     8,
+    '3vAs4D1WE6Na4tCgt4BApgFfENbm8WY7q4cSPD1yM4Cg',
     '3vAs4D1WE6Na4tCgt4BApgFfENbm8WY7q4cSPD1yM4Cg',
     UnderlyingAsset['sol:aave'],
     SOL_TOKEN_FEATURES
@@ -18510,6 +18737,7 @@ export const coins = CoinMap.fromCoins([
     'LIDO DAO',
     8,
     'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
+    'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
     UnderlyingAsset['sol:ldo'],
     SOL_TOKEN_FEATURES
   ),
@@ -18518,6 +18746,7 @@ export const coins = CoinMap.fromCoins([
     'sol:gt',
     'Gate Token',
     8,
+    'ABAq2R9gSpDDGguQxBk4u13s4ZYW6zbwKVBx15mCMG8',
     'ABAq2R9gSpDDGguQxBk4u13s4ZYW6zbwKVBx15mCMG8',
     UnderlyingAsset['sol:gt'],
     SOL_TOKEN_FEATURES
@@ -18528,6 +18757,7 @@ export const coins = CoinMap.fromCoins([
     'POPCAT',
     9,
     '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
+    '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
     UnderlyingAsset['sol:popcat'],
     SOL_TOKEN_FEATURES
   ),
@@ -18536,6 +18766,7 @@ export const coins = CoinMap.fromCoins([
     'sol:axs',
     'Axie Infinity',
     8,
+    'HysWcbHiYY9888pHbaqhwLYZQeZrcQMXKQWRqS7zcPK5',
     'HysWcbHiYY9888pHbaqhwLYZQeZrcQMXKQWRqS7zcPK5',
     UnderlyingAsset['sol:axs'],
     SOL_TOKEN_FEATURES
@@ -18546,6 +18777,7 @@ export const coins = CoinMap.fromCoins([
     'Sand',
     8,
     '49c7WuCZkQgc3M4qH8WuEUNXfgwupZf1xqWkDQ7gjRGt',
+    '49c7WuCZkQgc3M4qH8WuEUNXfgwupZf1xqWkDQ7gjRGt',
     UnderlyingAsset['sol:sand'],
     SOL_TOKEN_FEATURES
   ),
@@ -18554,6 +18786,7 @@ export const coins = CoinMap.fromCoins([
     'sol:ens',
     'Ethereum Name Service',
     8,
+    'CLQsDGoGibdNPnVCFp8BAsN2unvyvb41Jd5USYwAnzAg',
     'CLQsDGoGibdNPnVCFp8BAsN2unvyvb41Jd5USYwAnzAg',
     UnderlyingAsset['sol:ens'],
     SOL_TOKEN_FEATURES
@@ -18564,6 +18797,7 @@ export const coins = CoinMap.fromCoins([
     'Jito Staked SOL',
     9,
     'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
     UnderlyingAsset['sol:jitosol'],
     SOL_TOKEN_FEATURES
   ),
@@ -18572,6 +18806,7 @@ export const coins = CoinMap.fromCoins([
     'sol:zeus',
     'ZEUS Network',
     6,
+    'ZEUS1aR7aX8DFFJf5QjWj2ftDDdNTroMNGo8YoQm3Gq',
     'ZEUS1aR7aX8DFFJf5QjWj2ftDDdNTroMNGo8YoQm3Gq',
     UnderlyingAsset['sol:zeus'],
     SOL_TOKEN_FEATURES
@@ -18582,6 +18817,7 @@ export const coins = CoinMap.fromCoins([
     'Kamino',
     6,
     'KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS',
+    'KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS',
     UnderlyingAsset['sol:kmno'],
     SOL_TOKEN_FEATURES
   ),
@@ -18590,6 +18826,7 @@ export const coins = CoinMap.fromCoins([
     'sol:goat',
     'Goatseus Maximus',
     6,
+    'CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump',
     'CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump',
     UnderlyingAsset['sol:goat'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
@@ -18600,6 +18837,7 @@ export const coins = CoinMap.fromCoins([
     'Gigachad',
     5,
     '63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9',
+    '63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9',
     UnderlyingAsset['sol:giga'],
     SOL_TOKEN_FEATURES
   ),
@@ -18608,6 +18846,7 @@ export const coins = CoinMap.fromCoins([
     'sol:tnsr',
     'Tensor',
     9,
+    'TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6',
     'TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6',
     UnderlyingAsset['sol:tnsr'],
     SOL_TOKEN_FEATURES
@@ -18618,6 +18857,7 @@ export const coins = CoinMap.fromCoins([
     'Solayer SOL',
     9,
     'sSo14endRuUbvQaJS3dq36Q829a3A6BEfoeeRGJywEh',
+    'sSo14endRuUbvQaJS3dq36Q829a3A6BEfoeeRGJywEh',
     UnderlyingAsset['sol:ssol'],
     SOL_TOKEN_FEATURES
   ),
@@ -18626,6 +18866,7 @@ export const coins = CoinMap.fromCoins([
     'sol:drift',
     'Drift',
     6,
+    'DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7',
     'DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7',
     UnderlyingAsset['sol:drift'],
     SOL_TOKEN_FEATURES
@@ -18636,6 +18877,7 @@ export const coins = CoinMap.fromCoins([
     'FARTCOIN',
     6,
     '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump',
+    '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump',
     UnderlyingAsset['sol:fartcoin'],
     SOL_TOKEN_FEATURES
   ),
@@ -18644,6 +18886,7 @@ export const coins = CoinMap.fromCoins([
     'sol:swarms',
     'Swarms',
     6,
+    '74SBV4zDXxTRgv1pEMoECskKBkZHc2yGPnc7GYVepump',
     '74SBV4zDXxTRgv1pEMoECskKBkZHc2yGPnc7GYVepump',
     UnderlyingAsset['sol:swarms'],
     SOL_TOKEN_FEATURES
@@ -18654,6 +18897,7 @@ export const coins = CoinMap.fromCoins([
     'Nodecoin',
     9,
     'B89Hd5Juz7JP2dxCZXFJWk4tMTcbw7feDhuWGb3kq5qE',
+    'B89Hd5Juz7JP2dxCZXFJWk4tMTcbw7feDhuWGb3kq5qE',
     UnderlyingAsset['sol:nc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18663,6 +18907,7 @@ export const coins = CoinMap.fromCoins([
     'TARS AI',
     9,
     'Hax9LTgsQkze1YFychnBLtFH8gYbQKtKfWKKg2SP6gdD',
+    'Hax9LTgsQkze1YFychnBLtFH8gYbQKtKfWKKg2SP6gdD',
     UnderlyingAsset['sol:tai'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
@@ -18671,6 +18916,7 @@ export const coins = CoinMap.fromCoins([
     'sol:pengu',
     'Pudgy Penguins',
     6,
+    '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
     '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
     UnderlyingAsset['sol:pengu'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
@@ -18682,6 +18928,7 @@ export const coins = CoinMap.fromCoins([
     'AI Rig Complex',
     6,
     '61V8vBaqAGMpgDQi4JcAwo1dmBGHsyhzodcPqnEVpump',
+    '61V8vBaqAGMpgDQi4JcAwo1dmBGHsyhzodcPqnEVpump',
     UnderlyingAsset['sol:arc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18690,6 +18937,7 @@ export const coins = CoinMap.fromCoins([
     'sol:nos',
     'Nosana',
     6,
+    'nosXBVoaCTtYdLvKY6Csb4AC8JCdQKKAaWYtx2ZMoo7',
     'nosXBVoaCTtYdLvKY6Csb4AC8JCdQKKAaWYtx2ZMoo7',
     UnderlyingAsset['sol:nos'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
@@ -18700,6 +18948,7 @@ export const coins = CoinMap.fromCoins([
     'Jupiter Perps LP',
     6,
     '27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4',
+    '27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4',
     UnderlyingAsset['sol:jlp'],
     SOL_TOKEN_FEATURES
   ),
@@ -18709,6 +18958,7 @@ export const coins = CoinMap.fromCoins([
     'Grass',
     9,
     'Grass7B4RdKfBCjTKgSqnXkqjwiGvQyFbuSCUJr3XXjs',
+    'Grass7B4RdKfBCjTKgSqnXkqjwiGvQyFbuSCUJr3XXjs',
     UnderlyingAsset['sol:grass'],
     SOL_TOKEN_FEATURES
   ),
@@ -18717,6 +18967,7 @@ export const coins = CoinMap.fromCoins([
     'sol:trump',
     'OFFICIAL TRUMP',
     6,
+    '6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN',
     '6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN',
     UnderlyingAsset['sol:trump'],
     [
@@ -18732,6 +18983,7 @@ export const coins = CoinMap.fromCoins([
     'Melania Meme',
     6,
     'FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P',
+    'FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P',
     UnderlyingAsset['sol:melania'],
     [
       ...SOL_TOKEN_FEATURES,
@@ -18745,6 +18997,7 @@ export const coins = CoinMap.fromCoins([
     'sol:ustry',
     'Etherfuse USTR',
     6,
+    'USTRYnGgcHAhdWsanv8BG6vHGd4p7UGgoB9NRd8ei7j',
     'USTRYnGgcHAhdWsanv8BG6vHGd4p7UGgoB9NRd8ei7j',
     UnderlyingAsset['sol:ustry'],
     [
@@ -18760,6 +19013,7 @@ export const coins = CoinMap.fromCoins([
     'Etherfuse EUROB',
     6,
     'EuroszHk1AL7fHBBsxgeGHsamUqwBpb26oEyt9BcfZ6G',
+    'EuroszHk1AL7fHBBsxgeGHsamUqwBpb26oEyt9BcfZ6G',
     UnderlyingAsset['sol:eurob'],
     [
       ...SOL_TOKEN_FEATURES,
@@ -18773,6 +19027,7 @@ export const coins = CoinMap.fromCoins([
     'sol:tesouro',
     'Etherfuse TESOURO',
     6,
+    'BRNTNaZeTJANz9PeuD8drNbBHwGgg7ZTjiQYrFgWQ48p',
     'BRNTNaZeTJANz9PeuD8drNbBHwGgg7ZTjiQYrFgWQ48p',
     UnderlyingAsset['sol:tesouro'],
     [
@@ -18788,6 +19043,7 @@ export const coins = CoinMap.fromCoins([
     'Etherfuse CETES',
     6,
     'CETES7CKqqKQizuSN6iWQwmTeFRjbJR6Vw2XRKfEDR8f',
+    'CETES7CKqqKQizuSN6iWQwmTeFRjbJR6Vw2XRKfEDR8f',
     UnderlyingAsset['sol:cetes'],
     [
       ...SOL_TOKEN_FEATURES,
@@ -18802,6 +19058,7 @@ export const coins = CoinMap.fromCoins([
     'Etherfuse GILTS',
     6,
     'GiLTSeSFnNse7xQVYeKdMyckGw66AoRmyggGg1NNd4yr',
+    'GiLTSeSFnNse7xQVYeKdMyckGw66AoRmyggGg1NNd4yr',
     UnderlyingAsset['sol:gilts'],
     [
       ...SOL_TOKEN_FEATURES,
@@ -18815,6 +19072,7 @@ export const coins = CoinMap.fromCoins([
     'sol:muskit',
     'Musk It',
     6,
+    '9So52ugZh2BLBT3f7p61947q91uQh2DyvbfyMDeRpump',
     '9So52ugZh2BLBT3f7p61947q91uQh2DyvbfyMDeRpump',
     UnderlyingAsset['sol:muskit'],
     [
@@ -18831,6 +19089,7 @@ export const coins = CoinMap.fromCoins([
     'Serum',
     9,
     'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
+    'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
     UnderlyingAsset['tsol:srm'],
     SOL_TOKEN_FEATURES
   ),
@@ -18839,6 +19098,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:usdc',
     'USD Coin',
     9,
+    'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
     'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
     UnderlyingAsset['tsol:usdc'],
     SOL_TOKEN_FEATURES
@@ -18849,6 +19109,7 @@ export const coins = CoinMap.fromCoins([
     'USD Coin V2',
     6,
     '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+    '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
     UnderlyingAsset['tsol:usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -18857,6 +19118,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:ray',
     'Raydium',
     9,
+    '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
     '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
     UnderlyingAsset['tsol:ray'],
     SOL_TOKEN_FEATURES
@@ -18867,6 +19129,7 @@ export const coins = CoinMap.fromCoins([
     'GMT',
     9,
     '64bco36MjrZ8K26FXZGoSrnDFDSCZhvJGfQ5ywLRFUpF',
+    '64bco36MjrZ8K26FXZGoSrnDFDSCZhvJGfQ5ywLRFUpF',
     UnderlyingAsset['tsol:gmt'],
     SOL_TOKEN_FEATURES
   ),
@@ -18875,6 +19138,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:usdt',
     'USD Tether',
     9,
+    '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C',
     UnderlyingAsset['tsol:usdt'],
     SOL_TOKEN_FEATURES
@@ -18885,6 +19149,7 @@ export const coins = CoinMap.fromCoins([
     'GARI',
     9,
     'Aub3Nun71bD5B98JQAivGtEdwCuFJVvZVXKkcVJkuzgh',
+    'Aub3Nun71bD5B98JQAivGtEdwCuFJVvZVXKkcVJkuzgh',
     UnderlyingAsset['tsol:gari'],
     SOL_TOKEN_FEATURES
   ),
@@ -18894,6 +19159,7 @@ export const coins = CoinMap.fromCoins([
     'ORCA',
     9,
     '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h',
+    '4yQY4kNGCCM5rCWiQMWHFe5q3b5o7AqGWbx3XyeTti5h',
     UnderlyingAsset['tsol:orca'],
     SOL_TOKEN_FEATURES
   ),
@@ -18902,6 +19168,7 @@ export const coins = CoinMap.fromCoins([
     'tsol:slnd',
     'SOLEND',
     9,
+    'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
     'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
     UnderlyingAsset['tsol:slnd'],
     SOL_TOKEN_FEATURES
@@ -20442,6 +20709,7 @@ export const coins = CoinMap.fromCoins([
     15,
     'rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
     'TST',
+    'rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd::TST',
     'xrpl.org',
     UnderlyingAsset['txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd']
   ),
@@ -20452,6 +20720,7 @@ export const coins = CoinMap.fromCoins([
     15,
     'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
     '524C555344000000000000000000000000000000',
+    'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV::524C555344000000000000000000000000000000',
     'ripple.com',
     UnderlyingAsset['txrp:rlusd']
   ),
@@ -20462,6 +20731,7 @@ export const coins = CoinMap.fromCoins([
     15,
     'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
     '524C555344000000000000000000000000000000',
+    'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De::524C555344000000000000000000000000000000',
     'ripple.com',
     UnderlyingAsset['xrp:rlusd']
   ),
@@ -20472,6 +20742,7 @@ export const coins = CoinMap.fromCoins([
     15,
     'rHy7UVhwM7Xgo4SoUTf5hE5yWKZKPEkxcL',
     '5841540000000000000000000000000000000000',
+    'rHy7UVhwM7Xgo4SoUTf5hE5yWKZKPEkxcL::5841540000000000000000000000000000000000',
     'xat.com',
     UnderlyingAsset['txrp:xat']
   ),
@@ -20483,6 +20754,7 @@ export const coins = CoinMap.fromCoins([
     '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270',
     'deep',
     'DEEP',
+    '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP',
     UnderlyingAsset['sui:deep'],
     SUI_TOKEN_FEATURES
   ),
@@ -20494,6 +20766,7 @@ export const coins = CoinMap.fromCoins([
     '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178',
     'ns',
     'NS',
+    '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS',
     UnderlyingAsset['sui:suins'],
     SUI_TOKEN_FEATURES
   ),
@@ -20505,6 +20778,7 @@ export const coins = CoinMap.fromCoins([
     '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a',
     'fdusd',
     'FDUSD',
+    '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
     UnderlyingAsset['sui:fdusd'],
     SUI_TOKEN_FEATURES
   ),
@@ -20516,6 +20790,7 @@ export const coins = CoinMap.fromCoins([
     '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7',
     'usdc',
     'USDC',
+    '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
     UnderlyingAsset['sui:usdc'],
     SUI_TOKEN_FEATURES
   ),
@@ -20527,6 +20802,7 @@ export const coins = CoinMap.fromCoins([
     '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf',
     'wusdc',
     'WUSDC',
+    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::wusdc::WUSDC',
     UnderlyingAsset['sui:wusdc'],
     SUI_TOKEN_FEATURES
   ),
@@ -20538,6 +20814,7 @@ export const coins = CoinMap.fromCoins([
     '0x7016aae72cfc67f2fadf55769c0a7dd54291a583b63051a5ed71081cce836ac6',
     'sca',
     'SCA',
+    '0x7016aae72cfc67f2fadf55769c0a7dd54291a583b63051a5ed71081cce836ac6::sca::SCA',
     UnderlyingAsset['sui:sca'],
     SUI_TOKEN_FEATURES
   ),
@@ -20549,6 +20826,7 @@ export const coins = CoinMap.fromCoins([
     '0x46fbe54691b27d7abd2c9e5a01088913531f241b98f3c2351f8215e45cc17a4c',
     'times',
     'TIMES',
+    '0x46fbe54691b27d7abd2c9e5a01088913531f241b98f3c2351f8215e45cc17a4c::times::TIMES',
     UnderlyingAsset['sui:times'],
     SUI_TOKEN_FEATURES
   ),
@@ -20560,6 +20838,7 @@ export const coins = CoinMap.fromCoins([
     '0x76cb819b01abed502bee8a702b4c2d547532c12f25001c9dea795a5e631c26f1',
     'fud',
     'FUD',
+    '0x76cb819b01abed502bee8a702b4c2d547532c12f25001c9dea795a5e631c26f1::fud::FUD',
     UnderlyingAsset['sui:fud'],
     SUI_TOKEN_FEATURES
   ),
@@ -20571,6 +20850,7 @@ export const coins = CoinMap.fromCoins([
     '0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc',
     'afsui',
     'AFSUI',
+    '0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc::afsui::AFSUI',
     UnderlyingAsset['sui:afsui'],
     SUI_TOKEN_FEATURES
   ),
@@ -20582,6 +20862,7 @@ export const coins = CoinMap.fromCoins([
     '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5',
     'navx',
     'NAVX',
+    '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX',
     UnderlyingAsset['sui:navx'],
     SUI_TOKEN_FEATURES
   ),
@@ -20593,6 +20874,7 @@ export const coins = CoinMap.fromCoins([
     '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55',
     'vsui',
     'VSUI',
+    '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::vsui::VSUI',
     UnderlyingAsset['sui:vsui'],
     SUI_TOKEN_FEATURES
   ),
@@ -20604,6 +20886,7 @@ export const coins = CoinMap.fromCoins([
     '0xb45fcfcc2cc07ce0702cc2d229621e046c906ef14d9b25e8e4d25f6e8763fef7',
     'send',
     'SEND',
+    '0xb45fcfcc2cc07ce0702cc2d229621e046c906ef14d9b25e8e4d25f6e8763fef7::send::SEND',
     UnderlyingAsset['sui:send'],
     SUI_TOKEN_FEATURES
   ),
@@ -20615,6 +20898,7 @@ export const coins = CoinMap.fromCoins([
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b',
     'cetus',
     'CETUS',
+    '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS',
     UnderlyingAsset['sui:cetus'],
     SUI_TOKEN_FEATURES
   ),
@@ -20626,6 +20910,7 @@ export const coins = CoinMap.fromCoins([
     '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8',
     'deep',
     'DEEP',
+    '0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8::deep::DEEP',
     UnderlyingAsset['tsui:deep'],
     SUI_TOKEN_FEATURES
   ),
@@ -20637,6 +20922,7 @@ export const coins = CoinMap.fromCoins([
     '0x8190b041122eb492bf63cb464476bd68c6b7e570a4079645a8b28732b6197a82',
     'wal',
     'WAL',
+    '0x8190b041122eb492bf63cb464476bd68c6b7e570a4079645a8b28732b6197a82::wal::WAL',
     UnderlyingAsset['tsui:wal'],
     [...SUI_TOKEN_FEATURES, CoinFeature.STAKING, CoinFeature.BULK_STAKING_TRANSACTION]
   ),

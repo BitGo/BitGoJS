@@ -12,6 +12,11 @@ import {
   NetworkType,
   UnderlyingAsset,
   UtxoCoin,
+  SuiCoin,
+  HederaToken,
+  EosCoin,
+  SolCoin,
+  XrpCoin,
 } from '../../src';
 import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
@@ -728,6 +733,59 @@ describe('ERC20 Coins', () => {
         acc[address] = { name: token.name, network: token.network };
         return acc;
       }, {});
+  });
+});
+
+describe('Token contract address field defaults', () => {
+  describe('Sui tokens', function () {
+    it('have `contractAddress` === `PackageId::Module::Symbol`', () => {
+      coins
+        .filter((coin) => coin.family === CoinFamily.SUI && coin instanceof SuiCoin)
+        .forEach((coin) => {
+          const suiToken = coin as SuiCoin;
+          suiToken.contractAddress.should.eql(`${suiToken.packageId}::${suiToken.module}::${suiToken.symbol}`);
+        });
+    });
+  });
+  describe('Hedera tokens', function () {
+    it('have `contractAddress` === `tokenId`', () => {
+      coins
+        .filter((coin) => coin.family === CoinFamily.HBAR && coin instanceof HederaToken)
+        .forEach((coin) => {
+          const hederaToken = coin as HederaToken;
+          hederaToken.contractAddress.should.eql(hederaToken.tokenId);
+        });
+    });
+  });
+  describe('EOS tokens', function () {
+    it('have `contractAddress` === `contractName`', () => {
+      coins
+        .filter((coin) => coin.family === CoinFamily.EOS && coin instanceof EosCoin)
+        .forEach((coin) => {
+          const eosToken = coin as EosCoin;
+          eosToken.contractAddress.should.eql(eosToken.contractName);
+        });
+    });
+  });
+  describe('Sol tokens', function () {
+    it('have `contractAddress` === `tokenAddress`', () => {
+      coins
+        .filter((coin) => coin.family === CoinFamily.SOL && coin instanceof SolCoin)
+        .forEach((coin) => {
+          const solToken = coin as SolCoin;
+          solToken.contractAddress.should.eql(solToken.tokenAddress);
+        });
+    });
+  });
+  describe('XRP tokens', function () {
+    it('have `contractAddress` === `issuerAddress::currencyCode`', () => {
+      coins
+        .filter((coin) => coin.family === CoinFamily.XRP && coin instanceof XrpCoin)
+        .forEach((coin) => {
+          const xrpToken = coin as XrpCoin;
+          xrpToken.contractAddress.should.eql(`${xrpToken.issuerAddress}::${xrpToken.currencyCode}`);
+        });
+    });
   });
 });
 

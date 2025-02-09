@@ -81,6 +81,7 @@ export interface HederaCoinConstructorOptions extends AccountConstructorOptions 
 export interface HederaTokenConstructorOptions extends AccountConstructorOptions {
   nodeAccountId: string;
   tokenId: string;
+  contractAddress: string;
 }
 
 export interface AlgoCoinConstructorOptions extends AccountConstructorOptions {
@@ -89,10 +90,12 @@ export interface AlgoCoinConstructorOptions extends AccountConstructorOptions {
 
 export interface EosCoinConstructorOptions extends AccountConstructorOptions {
   contractName: string;
+  contractAddress: string;
 }
 
 export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
+  contractAddress: string;
 }
 
 export interface AdaCoinConstructorOptions extends AccountConstructorOptions {
@@ -104,12 +107,14 @@ export interface XrpCoinConstructorOptions extends AccountConstructorOptions {
   issuerAddress: string;
   currencyCode: string;
   domain: string;
+  contractAddress: string;
 }
 
 export interface SuiCoinConstructorOptions extends AccountConstructorOptions {
   packageId: string;
   module: string;
   symbol: string;
+  contractAddress: string;
 }
 
 export interface AptCoinConstructorOptions extends AccountConstructorOptions {
@@ -271,6 +276,7 @@ export class HederaCoin extends AccountCoinToken {
 export class HederaToken extends AccountCoinToken {
   public nodeAccountId: string;
   public tokenId: string;
+  public contractAddress: string;
 
   constructor(options: HederaTokenConstructorOptions) {
     super({
@@ -279,6 +285,7 @@ export class HederaToken extends AccountCoinToken {
 
     this.nodeAccountId = options.nodeAccountId;
     this.tokenId = options.tokenId;
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -315,12 +322,14 @@ export class AlgoCoin extends AccountCoinToken {
  */
 export class EosCoin extends AccountCoinToken {
   public contractName: string;
+  public contractAddress: string;
   constructor(options: EosCoinConstructorOptions) {
     super({
       ...options,
     });
 
     this.contractName = options.contractName;
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -332,12 +341,14 @@ export class EosCoin extends AccountCoinToken {
  */
 export class SolCoin extends AccountCoinToken {
   public tokenAddress: string;
+  public contractAddress: string;
   constructor(options: SolCoinConstructorOptions) {
     super({
       ...options,
     });
 
     this.tokenAddress = options.tokenAddress;
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -429,6 +440,7 @@ export class XrpCoin extends AccountCoinToken {
   public issuerAddress: string;
   public currencyCode: string;
   public domain: string;
+  public contractAddress: string;
   constructor(options: XrpCoinConstructorOptions) {
     super({
       ...options,
@@ -441,6 +453,7 @@ export class XrpCoin extends AccountCoinToken {
     this.domain = options.domain as string;
     this.currencyCode = options.currencyCode;
     this.issuerAddress = options.issuerAddress;
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -448,6 +461,7 @@ export class SuiCoin extends AccountCoinToken {
   public packageId: string;
   public module: string;
   public symbol: string;
+  public contractAddress: string;
 
   constructor(options: SuiCoinConstructorOptions) {
     super({
@@ -457,6 +471,7 @@ export class SuiCoin extends AccountCoinToken {
     this.packageId = options.packageId;
     this.module = options.module;
     this.symbol = options.symbol;
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -1234,6 +1249,7 @@ export function hederaCoin(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param nodeAccountId node account Id from which the transaction will be sent
  * @param tokenId The unique identifier of this token
+ * @param contractAddress Contract address of this token, same as tokenId
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Hedera mainnet.
@@ -1249,6 +1265,7 @@ export function hederaToken(
   asset: UnderlyingAsset,
   nodeAccountId = '0.0.3',
   tokenId: string,
+  contractAddress: string,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
@@ -1263,6 +1280,7 @@ export function hederaToken(
       asset,
       nodeAccountId,
       tokenId,
+      contractAddress,
       features,
       prefix,
       suffix,
@@ -1366,6 +1384,7 @@ export function talgoToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractName Contract address of this token
+ * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -1379,6 +1398,7 @@ export function eosToken(
   fullName: string,
   decimalPlaces: number,
   contractName: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -1393,6 +1413,7 @@ export function eosToken(
       fullName,
       network,
       contractName,
+      contractAddress,
       prefix,
       suffix,
       features,
@@ -1412,6 +1433,7 @@ export function eosToken(
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractName Contract address of this token
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -1425,13 +1447,26 @@ export function teosToken(
   fullName: string,
   decimalPlaces: number,
   contractName: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.eos
 ) {
-  return eosToken(id, name, fullName, decimalPlaces, contractName, asset, features, prefix, suffix, network);
+  return eosToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    contractName,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }
 
 /**
@@ -1442,6 +1477,7 @@ export function teosToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param tokenAddress Token address of this token
+ * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -1455,6 +1491,7 @@ export function solToken(
   fullName: string,
   decimalPlaces: number,
   tokenAddress: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
   prefix = '',
@@ -1469,6 +1506,7 @@ export function solToken(
       fullName,
       network,
       tokenAddress,
+      contractAddress,
       prefix,
       suffix,
       features,
@@ -1501,13 +1539,26 @@ export function tsolToken(
   fullName: string,
   decimalPlaces: number,
   tokenAddress: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.sol
 ) {
-  return solToken(id, name, fullName, decimalPlaces, tokenAddress, asset, features, prefix, suffix, network);
+  return solToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    tokenAddress,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }
 
 /**
@@ -2138,6 +2189,7 @@ export function tberaErc20(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param issuerAddress: The address of the issuer of the token,
  * @param currencyCode The token symbol. Example: USD, BTC, ETH, etc.
+ * @param contractAddress Contract address of this token formed with `issuerAddress::currencyCode`
  * @param domain? the domain of the issuer of the token,
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -2153,6 +2205,7 @@ export function xrpToken(
   decimalPlaces: number,
   issuerAddress: string,
   currencyCode: string,
+  contractAddress: string,
   domain = '',
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
@@ -2169,6 +2222,7 @@ export function xrpToken(
       network,
       issuerAddress,
       currencyCode,
+      contractAddress,
       domain,
       prefix,
       suffix,
@@ -2191,6 +2245,7 @@ export function xrpToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param issuerAddress: The address of the issuer of the token,
  * @param currencyCode The token symbol. Example: USD, BTC, ETH, etc.
+ * @param contractAddress Contract address of this token formed with `issuerAddress::currencyCode`
  * @param domain? the domain of the issuer of the token,
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -2205,6 +2260,7 @@ export function txrpToken(
   decimalPlaces: number,
   issuerAddress: string,
   currencyCode: string,
+  contractAddress: string,
   domain = '',
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
@@ -2219,6 +2275,7 @@ export function txrpToken(
     decimalPlaces,
     issuerAddress,
     currencyCode,
+    contractAddress,
     domain,
     asset,
     features,
@@ -2238,6 +2295,7 @@ export function txrpToken(
  * @param packageId PackageId of this token
  * @param module The module of the package with id `packageId`
  * @param symbol Identifies the coin defined in the module `module` of the package with id `packageId`
+ * @param contractAddress Contract address of this token formed with `packageId::module::symbol`
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -2253,6 +2311,7 @@ export function suiToken(
   packageId: string,
   module: string,
   symbol: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -2269,6 +2328,7 @@ export function suiToken(
       packageId,
       module,
       symbol,
+      contractAddress,
       prefix,
       suffix,
       features,
@@ -2291,6 +2351,7 @@ export function suiToken(
  * @param packageId PackageId of this token
  * @param module The module of the package with id `packageId`
  * @param symbol Identifies the coin defined in the module `module` of the package with id `packageId`
+ * @param contractAddress Contract address of this token formed with `packageId::module::symbol`
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
  * @param prefix? Optional token prefix. Defaults to empty string
@@ -2307,6 +2368,7 @@ export function tsuiToken(
   packageId: string,
   module: string,
   symbol: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -2322,6 +2384,7 @@ export function tsuiToken(
     packageId,
     module,
     symbol,
+    contractAddress,
     asset,
     features,
     prefix,
