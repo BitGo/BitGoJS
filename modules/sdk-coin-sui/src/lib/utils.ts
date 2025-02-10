@@ -15,8 +15,10 @@ import {
   MethodNames,
   RequestAddStake,
   RequestWalrusStakeWithPool,
+  RequestWalrusWithdrawStake,
   StakingProgrammableTransaction,
   WalrusStakingProgrammableTransaction,
+  WalrusWithdrawStakeProgrammableTransaction,
   SuiObjectInfo,
   SuiProgrammableTransaction,
   SuiTransaction,
@@ -199,7 +201,10 @@ export class Utils implements BaseUtils {
       case SuiTransactionType.AddStake:
       case SuiTransactionType.WalrusStakeWithPool:
         return TransactionType.StakingAdd;
+      case SuiTransactionType.WalrusRequestWithdrawStake:
+        return TransactionType.StakingDeactivate;
       case SuiTransactionType.WithdrawStake:
+      case SuiTransactionType.WalrusWithdrawStake:
         return TransactionType.StakingWithdraw;
       case SuiTransactionType.CustomTx:
         return TransactionType.CustomTx;
@@ -238,6 +243,13 @@ export class Utils implements BaseUtils {
           return SuiTransactionType.CustomTx;
         } else if (command.target.endsWith(MethodNames.WalrusStakeWithPool)) {
           return SuiTransactionType.WalrusStakeWithPool;
+        } else if (
+          command.target.endsWith(MethodNames.WalrusRequestWithdrawStake) ||
+          command.target.endsWith(MethodNames.WalrusSplitStakedWal)
+        ) {
+          return SuiTransactionType.WalrusRequestWithdrawStake;
+        } else if (command.target.endsWith(MethodNames.WalrusWithdrawStake)) {
+          return SuiTransactionType.WalrusWithdrawStake;
         } else {
           throw new InvalidTransactionError(`unsupported target method ${command.target}`);
         }
@@ -353,6 +365,47 @@ export class Utils implements BaseUtils {
         amount: amounts[index],
       } as RequestWalrusStakeWithPool;
     });
+  }
+
+  getWalrusWithdrawStakeRequests(tx: WalrusWithdrawStakeProgrammableTransaction): RequestWalrusWithdrawStake {
+    let amount: number | undefined = undefined;
+    let stakedWal: SuiObjectRef;
+    let stakedWalInputIdx = -1;
+
+    // TS won't let us use filter
+    const moveCalls: MoveCallTransaction[] = [];
+    tx.transactions.forEach((transaction) => {
+      if (transaction.kind === 'MoveCall') {
+        moveCalls.push(transaction);
+      }
+    });
+
+    if (moveCalls.length === 1) {
+      // This is either request_withdraw full or withdraw full (either way, no amount)
+      stakedWalInputIdx = ((moveCalls[0] as MoveCallTransaction).arguments[1] as TransactionBlockInput).index;
+    } else if (moveCalls.length === 2) {
+      // This is request_withdraw partial
+      const amountInputIdx = ((moveCalls[0] as MoveCallTransaction).arguments[1] as TransactionBlockInput).index;
+      amount = utils.getAmount(tx.inputs[amountInputIdx] as TransactionBlockInput);
+
+      stakedWalInputIdx = ((moveCalls[0] as MoveCallTransaction).arguments[0] as TransactionBlockInput).index;
+    } else {
+      throw new InvalidTransactionError('Invalid number of MoveCall transactions');
+    }
+
+    let input = tx.inputs[stakedWalInputIdx];
+    if ('value' in input) {
+      input = input.value;
+    }
+    if ('Object' in input && isImmOrOwnedObj(input.Object)) {
+      stakedWal = utils.normalizeSuiObjectRef(input.Object.ImmOrOwned as SuiObjectRef);
+    } else {
+      throw new InvalidTransactionError(
+        `Expected StakedWal object at input index ${stakedWalInputIdx}, found ${input}`
+      );
+    }
+
+    return { amount, stakedWal };
   }
 
   getAmount(input: SuiJsonValue | TransactionBlockInput): number {

@@ -190,6 +190,12 @@ export abstract class Transaction<T> extends BaseTransaction {
     if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.WalrusStakeWithPool)) {
       return SuiTransactionType.WalrusStakeWithPool;
     }
+    if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.WalrusRequestWithdrawStake)) {
+      return SuiTransactionType.WalrusRequestWithdrawStake;
+    }
+    if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.WalrusWithdrawStake)) {
+      return SuiTransactionType.WalrusWithdrawStake;
+    }
     if (transactions.some((tx) => utils.getSuiTransactionType(tx) === SuiTransactionType.AddStake)) {
       return SuiTransactionType.AddStake;
     }
