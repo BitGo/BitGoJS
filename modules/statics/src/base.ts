@@ -324,6 +324,10 @@ export enum CoinFeature {
    * This coin supports EIP1559 proposal for transaction fee
    */
   EIP1559 = 'EIP1559',
+  /**
+   * Fees for transactions of TSS wallet of this coin would be paid by the Enterprise i.e. Gas Tank
+   */
+  TSS_ENTERPRISE_PAYS_FEES = 'tss-enterprise-pays-fees',
 }
 
 /**
