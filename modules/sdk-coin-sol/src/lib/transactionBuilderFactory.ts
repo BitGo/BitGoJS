@@ -2,6 +2,7 @@ import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { CloseAtaBuilder } from './closeAtaBuilder';
+import { JupiterSwapBuilder } from './jupiterSwapBuilder';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
@@ -40,6 +41,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           } else {
             return this.getTokenTransferBuilder(tx);
           }
+        case TransactionType.JupiterSwap:
+          return this.getJupiterBuilder(tx);
         case TransactionType.WalletInitialization:
           return this.getWalletInitializationBuilder(tx);
         case TransactionType.StakingActivate:
@@ -173,6 +176,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getCloseAtaInitializationBuilder(tx?: Transaction): CloseAtaBuilder {
     return this.initializeBuilder(tx, new CloseAtaBuilder(this._coinConfig));
+  }
+
+  getJupiterBuilder(tx?: Transaction): JupiterSwapBuilder {
+    return this.initializeBuilder(tx, new JupiterSwapBuilder(this._coinConfig));
   }
 
   /**

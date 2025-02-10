@@ -4713,7 +4713,7 @@
 
 "@solana/spl-token@0.3.1":
   version "0.3.1"
-  resolved "https://registry.npmjs.org/@solana/spl-token/-/spl-token-0.3.1.tgz"
+  resolved "https://registry.npmjs.org/@solana/spl-token/-/spl-token-0.3.1.tgz#20ba93f8e86b0913e6bfa49fc0708f7fd3bdaf5e"
   integrity sha512-26/0XlW5Lyeu3CUlBGt+0o3l4H6AJtRtMMtsxhcKj+DwfGg+QMnPl/exTmZLEsymsn03PFhogd97v5fJXhYeow==
   dependencies:
     "@solana/buffer-layout" "^4.0.0"

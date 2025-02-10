@@ -28,6 +28,12 @@ export enum ValidInstructionTypesEnum {
   Split = 'Split',
   Authorize = 'Authorize',
   SetPriorityFee = 'SetPriorityFee',
+  SetPriorityFeeLimit = 'SetPriorityFeeLimit',
+  CreateAssociatedToken = 'CreateAssociatedToken',
+  CreateAssociatedTokenIdempotent = 'CreateAssociatedTokenIdempotent',
+  RecoverNestedAssociatedToken = 'RecoverNestedAssociatedToken',
+  Jupiter = 'Jupiter',
+  SyncNative = 'SyncNative',
 }
 
 // Internal instructions types
@@ -45,6 +51,12 @@ export enum InstructionBuilderTypes {
   StakingAuthorize = 'Authorize',
   StakingDelegate = 'Delegate',
   SetPriorityFee = 'SetPriorityFee',
+  SetPriorityFeeLimit = 'SetPriorityFeeLimit',
+  CreateAssociatedToken = 'CreateAssociatedToken',
+  CreateAssociatedTokenIdempotent = 'CreateAssociatedTokenIdempotent',
+  RecoverNestedAssociatedToken = 'RecoverNestedAssociatedToken',
+  Jupiter = 'Jupiter',
+  SyncNative = 'SyncNative',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -65,6 +77,12 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Split,
   ValidInstructionTypesEnum.Authorize,
   ValidInstructionTypesEnum.SetPriorityFee,
+  ValidInstructionTypesEnum.SetPriorityFeeLimit,
+  ValidInstructionTypesEnum.CreateAssociatedToken,
+  ValidInstructionTypesEnum.CreateAssociatedTokenIdempotent,
+  ValidInstructionTypesEnum.RecoverNestedAssociatedToken,
+  ValidInstructionTypesEnum.Jupiter,
+  ValidInstructionTypesEnum.SyncNative,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */

@@ -10,6 +10,7 @@ import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bit
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   decodeCloseAccountInstruction,
+  decodeSyncNativeInstruction,
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
@@ -52,6 +53,7 @@ const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/prog
 const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
 const BASE_58_ENCONDING_REGEX = '[1-9A-HJ-NP-Za-km-z]';
 const COMPUTE_BUDGET = 'ComputeBudget111111111111111111111111111111';
+const JUPITER = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4';
 
 /** @inheritdoc */
 export function isValidAddress(address: string): boolean {
@@ -273,6 +275,9 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.StakingAuthorizeRaw;
   }
   validateIntructionTypes(instructions);
+  if (instructions.some((instruction) => getInstructionType(instruction) === 'Jupiter')) {
+    return TransactionType.JupiterSwap;
+  }
   // check if deactivate instruction does not exist because deactivate can be include a transfer instruction
   if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length == 0) {
     for (const instruction of instructions) {
@@ -330,22 +335,43 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
         }
       } catch (e) {
         // ignore error and default to TokenTransfer
-        return 'TokenTransfer';
+      }
+      try {
+        const decodedInstruction2 = decodeSyncNativeInstruction(instruction);
+        if (decodedInstruction2 && decodedInstruction2.data.instruction === 17) {
+          return 'SyncNative';
+        }
+      } catch (e) {
+        // ignore error and default to TokenTransfer
       }
       return 'TokenTransfer';
     case StakeProgram.programId.toString():
       return StakeInstruction.decodeInstructionType(instruction);
     case ASSOCIATED_TOKEN_PROGRAM_ID.toString():
-      // TODO: change this when @spl-token supports decoding associated token instructions
       if (instruction.data.length === 0) {
         return 'InitializeAssociatedTokenAccount';
-      } else {
-        throw new NotSupported(
-          'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()
-        );
       }
+      const data = 'data' in instruction ? instruction.data : instruction;
+      if (data[0] === 0) {
+        return 'CreateAssociatedToken';
+      }
+      if (data[0] === 1) {
+        return 'CreateAssociatedTokenIdempotent';
+      }
+      if (data[0] === 2) {
+        return 'RecoverNestedAssociatedToken';
+      }
+      throw new NotSupported(
+        'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()
+      );
     case COMPUTE_BUDGET:
+      const data2 = 'data' in instruction ? instruction.data : instruction;
+      if (data2[0] === 2) {
+        return 'SetPriorityFeeLimit';
+      }
       return 'SetPriorityFee';
+    case JUPITER:
+      return 'Jupiter';
     default:
       throw new NotSupported(
         'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()
