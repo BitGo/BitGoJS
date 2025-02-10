@@ -67,6 +67,27 @@
       "rules": {
         "no-undef": "off"
       }
+    },
+    {
+      // rule to restrict sinon imports
+      "files": ["**/*.ts", "**/*.js"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": ["sinon"],
+            "patterns": ["sinon/*"]
+          }
+        ],
+        "no-restricted-globals": [
+          "error",
+          {
+            "name": "require",
+            "message": "Requiring sinon is not allowed. Instead use the Node.js native test runner node:test",
+            "importNames": ["sinon"]
+          }
+        ]
+      }
     }
   ]
 }
