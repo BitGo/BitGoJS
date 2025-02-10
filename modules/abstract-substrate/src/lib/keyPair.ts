@@ -1,21 +1,8 @@
-import { Keyring } from '@polkadot/keyring';
-import { createPair } from '@polkadot/keyring/pair';
-import { KeyringPair } from '@polkadot/keyring/types';
-import {
-  DotAddressFormat,
-  DefaultKeys,
-  Ed25519KeyPair,
-  isBase58,
-  KeyPairOptions,
-  toHex,
-  toUint8Array,
-} from '@bitgo/sdk-core';
+import { encodeAddress, Keyring } from '@polkadot/keyring';
+import { AddressFormat, DefaultKeys, Ed25519KeyPair, isBase58, KeyPairOptions, toHex } from '@bitgo/sdk-core';
 import bs58 from 'bs58';
 import utils from './utils';
-import * as nacl from 'tweetnacl';
-
-const TYPE = 'ed25519';
-const keyring = new Keyring({ type: TYPE });
+import { KeyCurve } from '@bitgo/statics';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -25,31 +12,6 @@ export class KeyPair extends Ed25519KeyPair {
    */
   constructor(source?: KeyPairOptions) {
     super(source);
-  }
-
-  /**
-   * Helper function to create the KeyringPair for signing a dot transaction.
-   *
-   * @returns {KeyringPair} dot KeyringPair
-   *
-   * @see https://polkadot.js.org/docs/api/start/keyring
-   */
-  protected createPolkadotPair(): KeyringPair {
-    const secretKey = this.keyPair.prv ? new Uint8Array(Buffer.from(this.keyPair.prv, 'hex')) : undefined;
-    const publicKey = new Uint8Array(Buffer.from(this.keyPair.pub, 'hex'));
-    return createPair({ toSS58: keyring.encodeAddress, type: TYPE }, { secretKey, publicKey });
-  }
-
-  /**
-   // https://wiki.polkadot.network/docs/learn-accounts#address-format
-   * Returns the address in either mainnet polkadot format (starts with 1)
-   * or substrate format used for westend (starts with 5)
-   */
-  getAddress(format: DotAddressFormat): string {
-    let encodedAddress = this.createPolkadotPair().address;
-    encodedAddress = keyring.encodeAddress(encodedAddress, format as number);
-
-    return encodedAddress;
   }
 
   /** @inheritdoc */
@@ -70,7 +32,7 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
-    const publicKey = keyring.addFromPair({
+    const publicKey = new Keyring({ type: KeyCurve.Ed25519 }).addFromPair({
       // tss common pub is in base58 format and decodes to length of 32
       publicKey: isBase58(pub, 32) ? new Uint8Array(bs58.decode(pub)) : new Uint8Array(Buffer.from(pub, 'hex')),
       secretKey: new Uint8Array(),
@@ -78,17 +40,7 @@ export class KeyPair extends Ed25519KeyPair {
     return { pub: toHex(publicKey) };
   }
 
-  /**
-   *  Sign the message in Uint8Array
-   *
-   * @param {Uint8Array} message to be signed
-   * @returns {Uint8Array} signed message
-   */
-  signMessageinUint8Array(message: Uint8Array): Uint8Array {
-    const { prv } = this.keyPair;
-    if (!prv) {
-      throw new Error('Missing private key');
-    }
-    return nacl.sign.detached(message, nacl.sign.keyPair.fromSeed(toUint8Array(prv)).secretKey);
+  getAddress(format: AddressFormat): string {
+    return encodeAddress(this.keyPair.pub, 42);
   }
 }

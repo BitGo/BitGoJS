@@ -1,6 +1,5 @@
-import { SubstrateSpecNameType } from '@bitgo/statics';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { getRegistry } from '@substrate/txwrapper-registry';
+import { getRegistry } from '@substrate/txwrapper-polkadot';
 import { Material } from './iface';
 
 export class SingletonRegistry {
@@ -12,7 +11,7 @@ export class SingletonRegistry {
       SingletonRegistry.material = material;
       SingletonRegistry.instance = getRegistry({
         chainName: material.chainName,
-        specName: material.specName as SubstrateSpecNameType,
+        specName: material.specName,
         specVersion: material.specVersion,
         metadataRpc: material.metadata as `0x${string}`,
       });

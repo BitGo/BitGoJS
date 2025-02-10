@@ -1,42 +1,20 @@
-import { DotAssetTypes, BaseUtils, DotAddressFormat, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
+import { BaseUtils, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { createTypeUnsafe, GenericCall, GenericExtrinsic, GenericExtrinsicPayload } from '@polkadot/types';
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
-import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
+import { base64Decode } from '@polkadot/util-crypto';
 import { Args, BaseTxInfo, defineMethod, OptionsWithMeta, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { construct } from '@substrate/txwrapper-polkadot';
 import bs58 from 'bs58';
 import base32 from 'hi-base32';
-import * as _ from 'lodash';
 import nacl from 'tweetnacl';
-import {
-  AddProxyBatchCallArgs,
-  BatchArgs,
-  BatchCallObject,
-  HexString,
-  ProxyArgs,
-  ProxyCallArgs,
-  StakeArgs,
-  StakeBatchCallArgs,
-  StakeMoreArgs,
-  StakeMoreCallArgs,
-  TransferAllArgs,
-  TransferArgs,
-  TxMethod,
-  UnstakeBatchCallArgs,
-} from './iface';
+import { Material, TransferAllArgs, TransferArgs, TxMethod } from './iface';
 import { KeyPair } from '.';
-
-const PROXY_METHOD_ARG = 2;
-// map to retrieve the address encoding format when the key is the asset name
-const coinToAddressMap = new Map<DotAssetTypes, DotAddressFormat>([
-  ['dot', DotAddressFormat.polkadot],
-  ['tdot', DotAddressFormat.substrate],
-]);
+import { HexString } from '@polkadot/util/types';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -84,24 +62,20 @@ export class Utils implements BaseUtils {
     return [64, 65, 66].includes(signatureU8a.length);
   }
 
-  /**
-   * Verifies the signature on a given message
-   *
-   * @param {string} signedMessage the signed message for the signature
-   * @param {string} signature the signature to verify
-   * @param {string} address the address of the signer
-   * @returns {boolean} whether the signature is valid or not
-   */
-  verifySignature(signedMessage: string, signature: string, address: string): boolean {
-    const publicKey = decodeAddress(address);
-    const hexPublicKey = u8aToHex(publicKey);
-
-    return signatureVerify(signedMessage, signature, hexPublicKey).isValid;
-  }
-
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     return isHex(txId, 256);
+  }
+
+  isValidAmount(amount: string | number | bigint): boolean {
+    try {
+      if (BigInt(amount) < 0n) {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /**
@@ -115,49 +89,6 @@ export class Utils implements BaseUtils {
     return {
       seed: Buffer.from(decoded),
     };
-  }
-
-  /**
-   * Helper function to capitalize the first letter of a string
-   *
-   * @param {string} val
-   * @returns {string}
-   */
-  capitalizeFirstLetter(val: string): string {
-    return val.charAt(0).toUpperCase() + val.slice(1);
-  }
-
-  /**
-   * Helper function to decode the internal method hex in case of a proxy transaction
-   *
-   * @param {string | UnsignedTransaction} tx
-   * @param { metadataRpc: string; registry: TypeRegistry } options
-   * @returns {TransferArgs}
-   */
-  decodeCallMethod(
-    tx: string | UnsignedTransaction,
-    options: { metadataRpc: string; registry: TypeRegistry }
-  ): TransferArgs {
-    const { registry } = options;
-    let methodCall: GenericCall | GenericExtrinsic;
-    if (typeof tx === 'string') {
-      try {
-        const payload: GenericExtrinsicPayload = createTypeUnsafe(registry, 'ExtrinsicPayload', [
-          tx,
-          { version: EXTRINSIC_VERSION },
-        ]);
-        methodCall = createTypeUnsafe(registry, 'Call', [payload.method]);
-      } catch (e) {
-        methodCall = registry.createType('Extrinsic', hexToU8a(tx), {
-          isSigned: true,
-        });
-      }
-    } else {
-      methodCall = registry.createType('Call', tx.method);
-    }
-    const method = methodCall.args[PROXY_METHOD_ARG];
-    const decodedArgs = method.toJSON() as unknown as ProxyCallArgs;
-    return decodedArgs.args;
   }
 
   /**
@@ -223,18 +154,6 @@ export class Utils implements BaseUtils {
    * @param {number} [ss58Format]
    * @returns {string}
    */
-  decodeSubstrateAddress(address: string, ss58Format: number): string {
-    const keypair = new KeyPair({ pub: Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex') });
-    return keypair.getAddress(ss58Format);
-  }
-
-  /**
-   * Decodes the substrate address from the given format
-   *
-   * @param {string} address
-   * @param {number} [ss58Format]
-   * @returns {string}
-   */
   encodeSubstrateAddress(address: string, ss58Format?: number): string {
     return encodeAddress(address, ss58Format);
   }
@@ -253,155 +172,12 @@ export class Utils implements BaseUtils {
     return (payload as DecodedSigningPayload).blockHash !== undefined;
   }
 
-  isProxyTransfer(arg: TxMethod['args']): arg is ProxyArgs {
-    return (arg as ProxyArgs).real !== undefined;
-  }
-
   isTransfer(arg: TxMethod['args']): arg is TransferArgs {
     return (arg as TransferArgs).dest?.id !== undefined && (arg as TransferArgs).value !== undefined;
   }
 
   isTransferAll(arg: TxMethod['args']): arg is TransferAllArgs {
     return (arg as TransferAllArgs).dest?.id !== undefined && (arg as TransferAllArgs).keepAlive !== undefined;
-  }
-
-  /**
-   * Returns true if arg is of type BatchArgs, false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type BatchArgs, false otherwise.
-   */
-  isBatch(arg: TxMethod['args']): arg is BatchArgs {
-    return (arg as BatchArgs).calls !== undefined;
-  }
-
-  /**
-   * Returns true if arg is of type BatchArgs and the calls of the batch are staking calls: a stake
-   * call (bond) followed by an add proxy call (addProxy), false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type BatchArgs and the calls of the batch are staking calls: a stake
-   * call (bond) followed by an add proxy call (addProxy), false otherwise.
-   */
-  isStakingBatch(arg: TxMethod['args']): arg is BatchArgs {
-    const calls = (arg as BatchArgs).calls;
-    if (calls !== undefined) {
-      return (
-        calls.length === 2 &&
-        (this.isStakeBatchCallArgs(calls[0].args) || this.isBondBatchExtra(calls[0].args)) &&
-        this.isAddProxyBatchCallArgs(calls[1].args)
-      );
-    }
-    return false;
-  }
-
-  /**
-   * Returns true if arg is of type StakeBatchCallArgs, false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type StakeBatchCallArgs, false otherwise.
-   */
-  isStakeBatchCallArgs(arg: BatchCallObject['args']): arg is StakeBatchCallArgs {
-    return (arg as StakeBatchCallArgs).value !== undefined && (arg as StakeBatchCallArgs).payee !== undefined;
-  }
-
-  /**
-   * Returns true if arg is of type AddProxyBatchCallArgs, false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type AddProxyBatchCallArgs, false otherwise.
-   */
-  isAddProxyBatchCallArgs(arg: BatchCallObject['args']): arg is AddProxyBatchCallArgs {
-    return (
-      (arg as AddProxyBatchCallArgs).delegate !== undefined &&
-      (arg as AddProxyBatchCallArgs).proxy_type !== undefined &&
-      (arg as AddProxyBatchCallArgs).delay !== undefined
-    );
-  }
-
-  /**
-   * Returns true if arg is of type BatchArgs and the calls of the batch are unstaking calls: a remove
-   * proxy call (removeProxy), followed by a chill call, and an unstake call (unbond), false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type BatchArgs and the calls of the batch are unstaking calls: a remove
-   * proxy call (removeProxy), followed by a chill call, and an unstake call (unbond), false otherwise.
-   */
-  isUnstakingBatch(arg: TxMethod['args']): arg is BatchArgs {
-    const calls = (arg as BatchArgs).calls;
-    if (calls !== undefined) {
-      return (
-        calls.length === 3 &&
-        this.isRemoveProxyBatchCallArgs(calls[0].args) &&
-        _.isEmpty(calls[1].args) &&
-        this.isUnstakeBatchCallArgs(calls[2].args)
-      );
-    }
-    return false;
-  }
-
-  /**
-   * Returns true if arg is of type AddProxyBatchCallArgs, false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type AddProxyBatchCallArgs, false otherwise.
-   */
-  isRemoveProxyBatchCallArgs(arg: BatchCallObject['args']): arg is AddProxyBatchCallArgs {
-    return (
-      (arg as AddProxyBatchCallArgs).delegate !== undefined &&
-      (arg as AddProxyBatchCallArgs).proxy_type !== undefined &&
-      (arg as AddProxyBatchCallArgs).delay !== undefined
-    );
-  }
-
-  /**
-   * Returns true if arg is of type UnstakeBatchCallArgs, false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type UnstakeBatchCallArgs, false otherwise.
-   */
-  isUnstakeBatchCallArgs(arg: BatchCallObject['args']): arg is UnstakeBatchCallArgs {
-    return (arg as UnstakeBatchCallArgs).value !== undefined;
-  }
-
-  /**
-   * Returns true if arg is of type StakeArgs, false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type StakeArgs, false otherwise.
-   */
-  isBond(arg: TxMethod['args']): arg is StakeArgs {
-    return (arg as StakeArgs).value !== undefined && (arg as StakeArgs).payee !== undefined;
-  }
-
-  /**
-   * Returns true if arg is of type StakeMoreArgs, false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type StakeMoreArgs, false otherwise.
-   */
-  isBondExtra(arg: TxMethod['args'] | BatchCallObject['args']): arg is StakeMoreArgs {
-    return (arg as StakeMoreArgs).maxAdditional !== undefined;
-  }
-
-  /**
-   * Returns true if arg is of type StakeMoreArgs, false otherwise.
-   *
-   * @param arg The object to test.
-   *
-   * @return true if arg is of type StakeMoreArgs, false otherwise.
-   */
-  isBondBatchExtra(arg: BatchCallObject['args']): arg is StakeMoreCallArgs {
-    return (arg as StakeMoreCallArgs).max_additional !== undefined;
   }
 
   /**
@@ -435,6 +211,10 @@ export class Utils implements BaseUtils {
     return new KeyPair({ pub: Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex') });
   }
 
+  getMaterial(coinConfig: Readonly<CoinConfig>): Material {
+    throw new Error('Method not implemented.');
+  }
+
   /**
    * Checks whether the given input is a hex string with with 0 value
    * used to check whether a given transaction is immortal or mortal
@@ -449,8 +229,8 @@ export class Utils implements BaseUtils {
    * since substrate addresses differ depending on the network
    * @param networkCoinName
    */
-  getAddressFormat(networkCoinName: DotAssetTypes): DotAddressFormat {
-    return coinToAddressMap.get(networkCoinName) as DotAddressFormat;
+  getAddressFormat(network: NetworkType): number {
+    return 42;
   }
 
   /**
@@ -496,6 +276,18 @@ export class Utils implements BaseUtils {
    */
   isHexPrefixed(str: string): boolean {
     return str.slice(0, 2) === '0x';
+  }
+
+  /**
+   * Decodes the dot address from the given format
+   *
+   * @param {string} address
+   * @param {number} [ss58Format]
+   * @returns {string}
+   */
+  decodeDotAddress(address: string, ss58Format: number): string {
+    // TODO: fix
+    return Buffer.from(decodeAddress(address, undefined, ss58Format)).toString('hex');
   }
 }
 

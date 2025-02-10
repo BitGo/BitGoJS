@@ -8,9 +8,11 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  KeyPair,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Interface, KeyPair, SubstrateCoin } from '@bitgo/abstract-substrate';
+import { Interface, SubstrateCoin } from '@bitgo/abstract-substrate';
+import { KeyPair as SubstrateKeyPair } from './lib';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
@@ -103,11 +105,11 @@ export class Tao extends SubstrateCoin {
     const { txHex, prv } = this.verifySignTransactionParams(params);
     const factory = this.getBuilder();
     const txBuilder = factory.from(txHex);
-    const keyPair = new KeyPair({ prv: prv });
+    const keyPair = new SubstrateKeyPair({ prv: prv });
     const { referenceBlock, blockNumber, transactionVersion, sender } = params.txPrebuild.transaction;
 
     txBuilder
-      .validity({ firstValid: blockNumber, maxDuration: this.MAX_VALIDITY_DURATION })
+      .validity({ firstValid: blockNumber, maxDuration: this.getMaxValidityDurationBlocks() })
       .referenceBlock(referenceBlock)
       .version(transactionVersion)
       .sender({ address: sender })
@@ -118,5 +120,31 @@ export class Tao extends SubstrateCoin {
     }
     const signedTxHex = transaction.toBroadcastFormat();
     return { txHex: signedTxHex };
+  }
+
+  /**
+   * Generate ed25519 key pair
+   *
+   * @param seed
+   * @returns {Object} object with generated pub, prv
+   */
+  generateKeyPair(seed?: Buffer): KeyPair {
+    const keyPair = seed ? new SubstrateKeyPair({ seed }) : new SubstrateKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
+  }
+
+  getMaxValidityDurationBlocks(): number {
+    return 2400;
+  }
+
+  getSS58Format(): number {
+    return 42;
   }
 }
