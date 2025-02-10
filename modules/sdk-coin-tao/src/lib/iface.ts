@@ -3,6 +3,7 @@ import { PolkadotSpecNameType } from '@bitgo/statics';
 import { BaseTxInfo, TypeRegistry, DecodedUnsignedTx } from '@substrate/txwrapper-core/lib/types';
 
 export { HexString } from '@polkadot/util/types';
+export { StakeTransactionSchema } from './txnSchema';
 
 /**
  * Section names for the transaction methods.
