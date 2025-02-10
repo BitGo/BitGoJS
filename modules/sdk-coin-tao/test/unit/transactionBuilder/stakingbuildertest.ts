@@ -5,6 +5,10 @@ import { spy, assert as SinonAssert } from 'sinon';
 import { StakingBuilder } from '../../../src/lib/stakingBuilder';
 import utils from '../../../src/lib/utils';
 import { buildTestConfig } from './base';
+import { ApiPromise, WsProvider, Keyring } from '@polkadot/api';
+import { cryptoWaitReady } from '@polkadot/util-crypto';
+import fs from 'fs';
+import path from 'path';
 
 describe('Tao Stake Builder', () => {
   const referenceBlock = '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d';
@@ -12,11 +16,27 @@ describe('Tao Stake Builder', () => {
   const specVersion = 9430;
   const txVersion = 22;
   let builder: StakingBuilder;
+  let api: ApiPromise;
+  let sender: { address: string; publicKey: string };
 
-  const sender = {
-    address: '5FvSWbV4hGC7GvXQKKtiVmmHSH3JELK8R3JS8Z5adnACFBwh',
-    publicKey: '0x1234567890abcdef',
-  };
+  before(async () => {
+    const wsProvider = new WsProvider('wss://test.finney.opentensor.ai:443');
+    api = await ApiPromise.create({ provider: wsProvider });
+    const metadata = await api.rpc.state.getMetadata();
+
+    const dir = path.join(__dirname, 'staking');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+    fs.writeFileSync(path.join(dir, 'metadata.json'), JSON.stringify(metadata.toJSON(), null, 2));
+
+    await cryptoWaitReady();
+    const keyring = new Keyring({ type: 'sr25519' });
+    const coldKeyPair = keyring.addFromUri(
+      'reform pilot adult shoe bread snack attend sample panel time jewel distance'
+    );
+    sender = { address: coldKeyPair.address, publicKey: coldKeyPair.publicKey.toString() };
+  });
 
   beforeEach(() => {
     const config = buildTestConfig();
@@ -84,7 +104,7 @@ describe('Tao Stake Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'chainName');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -112,12 +132,13 @@ describe('Tao Stake Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'chainName');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from('0x1234567890abcdef');
+      const rawSignedTx = '0x...'; // Replace with a valid raw signed transaction
+      builder.from(rawSignedTx);
       builder.validity({ firstValid: 3933 }).referenceBlock(referenceBlock);
 
       const tx = await builder.build();
@@ -133,12 +154,13 @@ describe('Tao Stake Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'chainName');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from('0x1234567890abcdef');
+      const rawUnsignedTx = '0x...'; // Replace with a valid raw unsigned transaction
+      builder.from(rawUnsignedTx);
       builder.sender({ address: sender.address }).validity({ firstValid: 3933, maxDuration: 64 });
 
       const tx = await builder.build();
@@ -154,7 +176,7 @@ describe('Tao Stake Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'chainName');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
     });
   });
@@ -182,11 +204,11 @@ describe('Tao Stake Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'chainName');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
 
       const txHex = tx.toBroadcastFormat();
-      should.deepEqual('0x1234567890abcdef', txHex);
+      should.deepEqual(txHex, '0x1c0406010284d717');
     });
 
     it('should build an unsigned stake more transaction', async () => {
@@ -210,15 +232,19 @@ describe('Tao Stake Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'chainName');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
 
       const txHex = tx.toBroadcastFormat();
-      should.deepEqual('0x1234567890abcdef', txHex);
+      should.deepEqual(
+        txHex,
+        '0x1806010284d717d501210300d624000016000000e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d'
+      );
     });
 
     it('should build from a stake more raw signed tx', async () => {
-      builder.from('0x1234567890abcdef');
+      const rawSignedTx = '0x...'; // Replace with a valid raw signed transaction
+      builder.from(rawSignedTx);
       builder.validity({ firstValid: 3933, maxDuration: 64 }).referenceBlock(referenceBlock);
 
       const tx = await builder.build();
@@ -232,15 +258,16 @@ describe('Tao Stake Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'chainName');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
 
       const txHex = tx.toBroadcastFormat();
-      should.deepEqual('0x1234567890abcdef', txHex);
+      should.deepEqual(txHex, '0x1c0406010284d717');
     });
 
     it('should build from a stake more raw unsigned tx', async () => {
-      builder.from('0x1234567890abcdef');
+      const rawUnsignedTx = '0x...'; // Replace with a valid raw unsigned transaction
+      builder.from(rawUnsignedTx);
       builder.sender({ address: sender.address }).validity({ firstValid: 3933, maxDuration: 64 });
 
       const tx = await builder.build();
@@ -254,11 +281,14 @@ describe('Tao Stake Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'chainName');
+      should.deepEqual(txJson.chainName, 'Westend');
       should.deepEqual(txJson.eraPeriod, 64);
 
       const txHex = tx.toBroadcastFormat();
-      should.deepEqual('0x1234567890abcdef', txHex);
+      should.deepEqual(
+        txHex,
+        '0x1806010284d717d501210300d624000016000000e143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d'
+      );
     });
   });
 });
