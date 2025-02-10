@@ -1,4 +1,3 @@
-// test/unit/transactionBuilder/stakingbuildertest.ts
 import assert from 'assert';
 import should from 'should';
 import { spy, assert as SinonAssert } from 'sinon';
@@ -64,7 +63,7 @@ describe('Tao Stake Builder', function () {
         .addSignature({ pub: sender.publicKey }, Buffer.from('0x1234567890abcdef', 'hex'));
 
       const tx = await builder.build();
-      // console.log(tx.toBroadcastFormat());
+      console.log(tx.toBroadcastFormat());
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '100000000');
       should.deepEqual(txJson.controller, sender.address);
