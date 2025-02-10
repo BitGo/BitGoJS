@@ -1,4 +1,9 @@
-import { RequestAddStake, RequestWalrusStakeWithPool, RequestWithdrawStakedSui } from '../../src/lib/iface';
+import {
+  RequestAddStake,
+  RequestWalrusStakeWithPool,
+  RequestWalrusWithdrawStake,
+  RequestWithdrawStakedSui,
+} from '../../src/lib/iface';
 import { DUMMY_SUI_GAS_PRICE } from '../../src/lib/constants';
 import { Recipient } from '@bitgo/sdk-core';
 import { SuiObjectRef } from '../../src/lib/mystenlab/types';
@@ -426,6 +431,23 @@ export const requestAddStakeMany: RequestAddStake[] = [
 export const requestWalrusStakeWithPool: RequestWalrusStakeWithPool = {
   amount: STAKING_AMOUNT,
   validatorAddress: '0x255e8a2aeed1f9b9a7d15350af924038ea1e06e9a795fb2f43ec955e2dd19a9c',
+};
+
+export const requestWalrusWithdrawPartial: RequestWalrusWithdrawStake = {
+  amount: STAKING_AMOUNT,
+  stakedWal: {
+    objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+    version: 1121,
+    digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
+  },
+};
+
+export const requestWalrusWithdrawFull: RequestWalrusWithdrawStake = {
+  stakedWal: {
+    objectId: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
+    version: 1121,
+    digest: 'EZ5yqap5XJJy9KhnW3dsbE73UmC5bd1KBEx7eQ5k4HNT',
+  },
 };
 
 export const walToken: SuiObjectRef = {

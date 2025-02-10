@@ -13,6 +13,7 @@ import {
   SuiProgrammableTransaction,
   TokenTransferProgrammableTransaction,
   WalrusStakingProgrammableTransaction,
+  WalrusWithdrawStakeProgrammableTransaction,
 } from './iface';
 import { StakingTransaction } from './stakingTransaction';
 import { TransferTransaction } from './transferTransaction';
@@ -26,6 +27,8 @@ import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { TokenTransferTransaction } from './tokenTransferTransaction';
 import { WalrusStakingBuilder } from './walrusStakingBuilder';
 import { WalrusStakingTransaction } from './walrusStakingTransaction';
+import { WalrusWithdrawStakeBuilder } from './walrusWithdrawStakeBuilder';
+import { WalrusWithdrawStakeTransaction } from './walrusWithdrawStakeTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -62,6 +65,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const walrusStakeTx = new WalrusStakingTransaction(this._coinConfig);
           walrusStakeTx.fromRawTransaction(raw);
           return this.getWalrusStakingBuilder(walrusStakeTx);
+        case SuiTransactionType.WalrusRequestWithdrawStake:
+        case SuiTransactionType.WalrusWithdrawStake:
+          const walrusRequestWithdrawStakeTransaction = new WalrusWithdrawStakeTransaction(this._coinConfig);
+          walrusRequestWithdrawStakeTransaction.fromRawTransaction(raw);
+          return this.getWalrusRequestWithdrawStakeBuilder(walrusRequestWithdrawStakeTransaction);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -98,6 +106,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getWalrusStakingBuilder(tx?: Transaction<WalrusStakingProgrammableTransaction>): WalrusStakingBuilder {
     return this.initializeBuilder(tx, new WalrusStakingBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getWalrusRequestWithdrawStakeBuilder(
+    tx?: Transaction<WalrusWithdrawStakeProgrammableTransaction>
+  ): WalrusWithdrawStakeBuilder {
+    return this.initializeBuilder(tx, new WalrusWithdrawStakeBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
