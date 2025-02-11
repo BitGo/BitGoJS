@@ -12,7 +12,7 @@ import {
   TransactionType,
   ValidityWindow,
 } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, PolkadotSpecNameType } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { decode } from '@substrate/txwrapper-polkadot';
@@ -344,7 +344,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     chainName: string,
     nonce: number,
     specVersion: number,
-    specName: PolkadotSpecNameType,
+    specName: string,
     transactionVersion: number,
     eraPeriod: number | undefined,
     tip: number | undefined
