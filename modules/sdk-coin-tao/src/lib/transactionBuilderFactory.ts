@@ -1,22 +1,20 @@
 import { BaseTransactionBuilderFactory, NotImplementedError, NotSupported } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { decode } from '@substrate/txwrapper-polkadot';
-import { Material, MethodNames } from './iface';
-import { SingletonRegistry } from './singletonRegistry';
+import { SingletonRegistry, TransactionBuilder, Interface } from './';
 import { TransferBuilder } from './transferBuilder';
-import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
-  protected _material: Material;
+  protected _material: Interface.Material;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._material = utils.getMaterial(_coinConfig);
+    this._material = utils.getMaterial(_coinConfig.network.type);
   }
 
   getTransferBuilder(): TransferBuilder {
-    return new TransferBuilder(this._coinConfig).material(this._material);
+    return new TransferBuilder(this._coinConfig);
   }
 
   getWalletInitializationBuilder(): void {
@@ -29,7 +27,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return builder;
   }
 
-  material(material: Material): this {
+  material(material: Interface.Material): this {
     this._material = material;
     return this;
   }
@@ -42,11 +40,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     });
 
     const methodName = decodedTxn.method?.name;
-    if (
-      methodName === MethodNames.TransferKeepAlive ||
-      methodName === MethodNames.TransferAll ||
-      methodName === MethodNames.Proxy
-    ) {
+    if (methodName === Interface.MethodNames.TransferKeepAlive || methodName === Interface.MethodNames.TransferAll) {
       return this.getTransferBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
