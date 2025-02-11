@@ -239,7 +239,7 @@ export const Invoice = t.intersection(
       walletId: t.string,
       status: InvoiceStatus,
       /** A date in ISO format representing when this invoice expires. */
-      expiresAt: t.string,
+      expiresAt: DateFromISOString,
     }),
     t.partial({
       memo: t.string,
