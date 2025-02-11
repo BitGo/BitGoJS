@@ -1,14 +1,12 @@
-import { BaseAddress, DotAssetTypes, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { methods } from '@substrate/txwrapper-polkadot';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import BigNumber from 'bignumber.js';
-import { MethodNames, ProxyArgs, ProxyType, TransferAllArgs, TransferArgs } from './iface';
-import { getAddress } from './iface_utils';
-import { SingletonRegistry } from './singletonRegistry';
+import { MethodNames, TransferAllArgs, TransferArgs } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
-import { ProxyTransactionSchema, TransferAllTransactionSchema, TransferTransactionSchema } from './txnSchema';
+import { TransferAllTransactionSchema, TransferTransactionSchema } from './txnSchema';
 import utils from './utils';
 
 export abstract class NativeTransferBuilder extends TransactionBuilder {
@@ -16,8 +14,6 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
   protected _keepAddressAlive = true;
   protected _amount: string;
   protected _to: string;
-  protected _owner: string;
-  protected _forceProxyType: ProxyType;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -54,18 +50,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       );
     }
 
-    if (!this._owner) {
-      return transferTx;
-    }
-    return methods.proxy.proxy(
-      {
-        real: this._owner,
-        forceProxyType: this._forceProxyType,
-        call: transferTx.method,
-      },
-      baseTxInfo.baseTxInfo,
-      baseTxInfo.options
-    );
+    return transferTx;
   }
 
   protected get transactionType(): TransactionType {
@@ -120,35 +105,6 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
     return this;
   }
 
-  /**
-   *
-   * The real address of the original tx
-   *
-   * @param {BaseAddress} real
-   * @returns {TransferBuilder} This builder.
-   *
-   * @see https://wiki.polkadot.network/docs/learn-proxies#why-use-a-proxy
-   */
-  owner(owner: BaseAddress): this {
-    this.validateAddress({ address: owner.address });
-    this._owner = owner.address;
-    return this;
-  }
-
-  /**
-   *
-   * The proxy type to execute
-   *
-   * @param {proxyType} forceProxyType
-   * @returns {TransferBuilder} This builder.
-   *
-   * @see https://wiki.polkadot.network/docs/learn-proxies#proxy-types
-   */
-  forceProxyType(forceProxyType: ProxyType): this {
-    this._forceProxyType = forceProxyType;
-    return this;
-  }
-
   /** @inheritdoc */
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx, rawTransaction: string): void {
     if (decodedTxn.method?.name === MethodNames.TransferKeepAlive) {
@@ -158,20 +114,6 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       const validationResult = TransferTransactionSchema.validate({ amount, to });
       if (validationResult.error) {
         throw new InvalidTransactionError(`Transfer Transaction validation failed: ${validationResult.error.message}`);
-      }
-    } else if (decodedTxn.method?.name === MethodNames.Proxy) {
-      const txMethod = decodedTxn.method.args as unknown as ProxyArgs;
-      const real = getAddress(txMethod);
-      const forceProxyType = txMethod.forceProxyType;
-      const decodedCall = utils.decodeCallMethod(rawTransaction, {
-        registry: SingletonRegistry.getInstance(this._material),
-        metadataRpc: this._material.metadata,
-      });
-      const amount = `${decodedCall.value}`;
-      const to = decodedCall.dest.id;
-      const validationResult = ProxyTransactionSchema.validate({ real, forceProxyType, amount, to });
-      if (validationResult.error) {
-        throw new InvalidTransactionError(`Proxy Transaction validation failed: ${validationResult.error.message}`);
       }
     }
   }
@@ -183,45 +125,14 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       const txMethod = this._method.args as TransferArgs;
       this.amount(txMethod.value);
       this.to({
-        address: utils.decodeDotAddress(
-          txMethod.dest.id,
-          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
-        ),
+        address: utils.decodeSubstrateAddress(txMethod.dest.id, this.getAddressFormat()),
       });
     } else if (this._method?.name === MethodNames.TransferAll) {
       this._sweepFreeBalance = true;
       const txMethod = this._method.args as TransferAllArgs;
       this.sweep(txMethod.keepAlive);
       this.to({
-        address: utils.decodeDotAddress(
-          txMethod.dest.id,
-          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
-        ),
-      });
-    } else if (this._method?.name === MethodNames.Proxy) {
-      const txMethod = this._method.args as ProxyArgs;
-      this.owner({
-        address: utils.decodeDotAddress(
-          getAddress(txMethod),
-          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
-        ),
-      });
-      this.forceProxyType(txMethod.forceProxyType);
-      const decodedCall = utils.decodeCallMethod(rawTransaction, {
-        registry: SingletonRegistry.getInstance(this._material),
-        metadataRpc: this._material.metadata,
-      });
-      if (!decodedCall.value || !decodedCall.dest) {
-        throw new InvalidTransactionError(
-          `Invalid Proxy Transaction Method: ${this._method?.name}. Expected transferKeepAlive`
-        );
-      }
-      this.amount(`${decodedCall.value}`);
-      this.to({
-        address: utils.decodeDotAddress(
-          decodedCall.dest.id,
-          utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)
-        ),
+        address: utils.decodeSubstrateAddress(txMethod.dest.id, this.getAddressFormat()),
       });
     } else {
       throw new InvalidTransactionError(
@@ -234,23 +145,19 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   validateTransaction(_: Transaction): void {
     super.validateTransaction(_);
-    this.validateFields(this._to, this._amount, this._owner, this._forceProxyType);
+    this.validateFields(this._to, this._amount);
   }
 
-  private validateFields(to: string, amount: string, real?: string, forceProxyType?: string): void {
+  private validateFields(to: string, amount: string): void {
     let validationResult;
-    if (forceProxyType) {
-      validationResult = ProxyTransactionSchema.validate({ to, amount, real, forceProxyType });
-    } else if (this._sweepFreeBalance) {
+    if (this._sweepFreeBalance) {
       validationResult = TransferAllTransactionSchema.validate({ to });
     } else {
       validationResult = TransferTransactionSchema.validate({ amount, to });
     }
 
     if (validationResult.error) {
-      throw new InvalidTransactionError(
-        `Proxy/TransferAll/TransferKeepAlive Transaction validation failed: ${validationResult.error.message}`
-      );
+      throw new InvalidTransactionError(`Transaction validation failed: ${validationResult.error.message}`);
     }
   }
 }

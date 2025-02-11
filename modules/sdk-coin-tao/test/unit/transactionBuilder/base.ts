@@ -5,9 +5,9 @@ import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
 import { KeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from '../../../src/lib';
-import { Material } from '../../../src/lib/iface';
-import utils from '../../../src/lib/utils';
-import { accounts, chainName, genesisHash, rawTx, specName, specVersion } from '../../resources';
+import { Interface, utils } from '../../../src/';
+import { accounts, rawTx } from '../../resources';
+import { testnetMaterial } from '../../../src/resources';
 
 export interface TestDotNetwork extends DotNetwork {
   genesisHash: string;
@@ -20,6 +20,10 @@ export const buildTestConfig = (): Readonly<CoinConfig> => {
 };
 
 class StubTransactionBuilder extends TransactionBuilder {
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
+    this.material(utils.getMaterial(_coinConfig.network.type));
+  }
   protected validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx): void {
     return;
   }
@@ -67,12 +71,12 @@ class StubTransactionBuilder extends TransactionBuilder {
     return this._transaction;
   }
 
-  getMaterial(): Material {
+  getMaterial(): Interface.Material {
     return this._material;
   }
 }
 
-describe('Dot Transfer Builder Base', () => {
+describe('TAO Transfer Builder Base', () => {
   let builder: StubTransactionBuilder;
 
   const sender = accounts.account1;
@@ -137,7 +141,7 @@ describe('Dot Transfer Builder Base', () => {
   describe('build base transaction', () => {
     it('should build validate base fields', async () => {
       builder
-        .material(utils.getMaterial(buildTestConfig()))
+        .material(utils.getMaterial(buildTestConfig().network.type))
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -148,16 +152,16 @@ describe('Dot Transfer Builder Base', () => {
 
     it('should build a base transaction on testnet', async () => {
       const material = builder.getMaterial();
-      should.deepEqual(material.specName, specName);
-      should.deepEqual(material.genesisHash, genesisHash);
-      should.deepEqual(material.specVersion, specVersion);
-      should.deepEqual(material.chainName, chainName);
+      should.deepEqual(material.specName, testnetMaterial.specName);
+      should.deepEqual(material.genesisHash, testnetMaterial.genesisHash);
+      should.deepEqual(material.specVersion, testnetMaterial.specVersion);
+      should.deepEqual(material.chainName, testnetMaterial.chainName);
     });
 
     it('should build from raw signed tx', async () => {
       builder.from(rawTx.transfer.signed);
-      should.deepEqual(builder.getSender(), sender.address);
-      should.deepEqual(builder.getNonce(), 200);
+      should.deepEqual(builder.getSender(), '5H56KVtb3sSMxuhFsH51iFi1gei7tnBQjpVmj6hu9tK7CBDR');
+      should.deepEqual(builder.getNonce(), 17);
       should.deepEqual(builder.getEraPeriod(), 64);
       should.deepEqual(builder.getTip(), undefined);
     });
@@ -166,9 +170,9 @@ describe('Dot Transfer Builder Base', () => {
       builder.from(rawTx.transfer.unsigned);
       should.deepEqual(
         builder.getReferenceBlock(),
-        '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d'
+        '0xcfe3aab1066cbb67f3d004051bf07323f2eab4b4f5ba76e5a1c37f391f89b016'
       );
-      should.deepEqual(builder.getNonce(), 200);
+      should.deepEqual(builder.getNonce(), 17);
       should.deepEqual(builder.getEraPeriod(), 64);
       should.deepEqual(builder.getTip(), undefined);
     });

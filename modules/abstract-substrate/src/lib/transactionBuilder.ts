@@ -1,13 +1,12 @@
 import {
   BaseAddress,
   BaseKey,
+  PublicKey as BasePublicKey,
   BaseTransactionBuilder,
   BuildTransactionError,
-  DotAssetTypes,
   FeeOptions,
   InvalidTransactionError,
   isValidEd25519Seed,
-  PublicKey as BasePublicKey,
   SequenceId,
   Signature,
   TransactionType,
@@ -19,6 +18,7 @@ import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate
 import { decode } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
+import { DEFAULT_SUBSTRATE_PREFIX } from './constants';
 import { AddressValidationError, InvalidFeeError } from './errors';
 import { CreateBaseTxInfo, Material, TxMethod } from './iface';
 import { KeyPair } from './keyPair';
@@ -40,7 +40,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _eraPeriod?: number;
   protected _registry: TypeRegistry;
   protected _method?: TxMethod;
-  protected __material?: Material;
+  protected _material: Material;
   // signatures that will be used to sign a transaction when building
   // not the same as the _signatures in transaction which is the signature in
   // string hex format used for validation after we call .build()
@@ -134,20 +134,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  /**
-   * The current version for transaction format.
-   *
-   * @param {number} transactionVersion
-   * @returns {TransactionBuilder} This transaction builder.
-   *
-   * @see https://wiki.polkadot.network/docs/build-transaction-construction
-   * @deprecated This field was added in material data.
-   */
-  version(transactionVersion: number): this {
-    // this._transactionVersion = transactionVersion;
-    return this;
-  }
-
   private method(method: TxMethod): this {
     this._method = method;
     return this;
@@ -162,18 +148,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @see https://wiki.polkadot.network/docs/build-transaction-construction
    */
   material(material: Material): this {
-    this.__material = material;
+    this._material = material;
     this._registry = SingletonRegistry.getInstance(material);
     return this;
-  }
-
-  protected get _material(): Material {
-    if (!this.__material) {
-      const m = utils.getMaterial(this._coinConfig);
-      this.material(m);
-      return m;
-    }
-    return this.__material;
   }
 
   /** @inheritdoc */
@@ -196,7 +173,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.referenceBlock(decodedTxn.blockHash);
     } else {
       const keypair = utils.decodeSubstrateAddressToKeyPair(decodedTxn.address);
-      this.sender({ address: keypair.getAddress(utils.getAddressFormat(this._coinConfig.name as DotAssetTypes)) });
+      this.sender({ address: keypair.getAddress(this.getAddressFormat()) });
       const edSignature = utils.recoverSignatureFromRawTx(rawTransaction, { registry: this._registry });
       this.addSignature(keypair.getKeys(), Buffer.from(edSignature, 'hex'));
     }
@@ -408,5 +385,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected signImplementation({ key }: BaseKey): Transaction {
     this._keyPair = new KeyPair({ prv: key });
     return this._transaction;
+  }
+
+  protected getAddressFormat(): number {
+    return DEFAULT_SUBSTRATE_PREFIX;
   }
 }

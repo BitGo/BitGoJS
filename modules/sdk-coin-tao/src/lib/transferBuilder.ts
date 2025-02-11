@@ -1,14 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { ProxyType } from './iface';
-import { NativeTransferBuilder } from './nativeTransferBuilder';
+import { TransferBuilder as SubstrateTransferBuilder } from '@bitgo/abstract-substrate';
+import utils from './utils';
 
-export class TransferBuilder extends NativeTransferBuilder {
-  protected _amount: string;
-  protected _to: string;
-  protected _owner: string;
-  protected _forceProxyType: ProxyType;
-
+export class TransferBuilder extends SubstrateTransferBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this.material(utils.getMaterial(_coinConfig.network.type));
   }
 }
