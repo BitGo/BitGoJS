@@ -451,8 +451,8 @@ export class XrpCoin extends AccountCoinToken {
     }
 
     this.domain = options.domain as string;
-    this.currencyCode = options.currencyCode;
-    this.issuerAddress = options.issuerAddress;
+    this.issuerAddress = options.contractAddress.split('::')[0];
+    this.currencyCode = options.contractAddress.split('::')[1];
     this.contractAddress = options.contractAddress;
   }
 }

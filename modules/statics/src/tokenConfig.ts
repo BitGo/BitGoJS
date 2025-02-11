@@ -73,6 +73,7 @@ export type XrpTokenConfig = BaseNetworkConfig & {
   issuerAddress: string;
   currencyCode: string;
   domain?: string;
+  contractAddress: string;
 };
 
 export type SuiTokenConfig = BaseNetworkConfig & {
@@ -495,6 +496,7 @@ const formattedXrpTokens = coins.reduce((acc: XrpTokenConfig[], coin) => {
       issuerAddress: coin.issuerAddress,
       currencyCode: coin.currencyCode,
       domain: coin.domain,
+      contractAddress: coin.contractAddress,
     });
   }
   return acc;

@@ -44,6 +44,10 @@ export class XrpToken extends Xrp {
     return this.tokenConfig.currencyCode;
   }
 
+  get contractAddress(): string {
+    return this.tokenConfig.contractAddress;
+  }
+
   get domain(): string {
     return this.tokenConfig.domain || '';
   }

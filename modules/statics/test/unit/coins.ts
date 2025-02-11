@@ -787,6 +787,17 @@ describe('Token contract address field defaults', () => {
         });
     });
   });
+  it('have issuerAddress and currencyCode formed from contractAddress', () => {
+    coins
+      .filter((coin) => coin.family === CoinFamily.XRP && coin instanceof XrpCoin)
+      .forEach((coin) => {
+        const xrpToken = coin as XrpCoin;
+        xrpToken.contractAddress.split('::')[0].should.not.be.empty();
+        xrpToken.contractAddress.split('::')[1].should.not.be.empty();
+        xrpToken.issuerAddress.should.eql(xrpToken.contractAddress.split('::')[0]);
+        xrpToken.currencyCode.should.eql(xrpToken.contractAddress.split('::')[1]);
+      });
+  });
 });
 
 describe('Cold Wallet Features', () => {

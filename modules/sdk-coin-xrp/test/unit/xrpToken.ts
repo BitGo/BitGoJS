@@ -28,5 +28,10 @@ describe('Xrp Tokens', function () {
     xrpTokenCoin.coin.should.equal('txrp');
     xrpTokenCoin.network.should.equal('Testnet');
     xrpTokenCoin.decimalPlaces.should.equal(15);
+    xrpTokenCoin.contractAddress.should.equal(
+      'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV::524C555344000000000000000000000000000000'
+    );
+    xrpTokenCoin.issuerAddress.should.equal('rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV');
+    xrpTokenCoin.currencyCode.should.equal('524C555344000000000000000000000000000000');
   });
 });
