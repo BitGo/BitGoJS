@@ -16,5 +16,7 @@ export { TokenTransferTransaction } from './tokenTransferTransaction';
 export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { WalrusStakingTransaction } from './walrusStakingTransaction';
 export { WalrusStakingBuilder } from './walrusStakingBuilder';
+export { WalrusWithdrawStakeTransaction } from './walrusWithdrawStakeTransaction';
+export { WalrusWithdrawStakeBuilder } from './walrusWithdrawStakeBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Interface, Utils };
