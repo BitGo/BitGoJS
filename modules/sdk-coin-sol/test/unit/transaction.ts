@@ -3,7 +3,7 @@ import should from 'should';
 import { coins } from '@bitgo/statics';
 import { KeyPair, Transaction } from '../../src/lib';
 import * as testData from '../resources/sol';
-import { PublicKey, Transaction as SolTransaction, TransactionMessage } from '@solana/web3.js';
+import { PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
 import { getBuilderFactory } from './getBuilderFactory';
 
 describe('Sol Transaction', () => {
@@ -21,57 +21,6 @@ describe('Sol Transaction', () => {
       tx.solTransaction = new SolTransaction();
       tx.solTransaction.recentBlockhash = testData.blockHashes.validBlockHashes[0];
       should(() => tx.toJson()).throwError('Invalid transaction, transaction type not supported: undefined');
-    });
-
-    it('do something for jupiter tx', async function () {
-      const selling = { address: 'So11111111111111111111111111111111111111112', decimals: 9 };
-      const buying = { address: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', decimals: 6 };
-      const sellingAmount = 0.01;
-
-      const quoteResponse = await (
-        await fetch(
-          `https://api.jup.ag/swap/v1/quote?inputMint=${selling.address}&outputMint=${buying.address}&amount=${
-            sellingAmount * Math.pow(10, selling.decimals)
-          }&onlyDirectRoutes=true&asLegacyTransaction=true`
-        )
-      ).json();
-      console.log('quoteResponse', JSON.stringify(quoteResponse, null, 2));
-
-      const swapResponse = await (
-        await fetch('https://api.jup.ag/swap/v1/swap', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            quoteResponse,
-            userPublicKey: '3wxBJB1gkkvkd9mwoi3fjsUMSfvh22CAWhG83JtDGXz3',
-            dynamicComputeUnitLimit: false,
-            dynamicSlippage: true,
-            prioritizationFeeLamports: {
-              priorityLevelWithMaxLamports: {
-                maxLamports: 1000000,
-                priorityLevel: 'veryHigh',
-              },
-            },
-            asLegacyTransaction: true,
-          }),
-        })
-      ).json();
-      console.log('swapResponse', swapResponse);
-
-      const transactionBase64 = swapResponse.swapTransaction;
-      console.log('transactionBase64', transactionBase64);
-
-      const transaction = SolTransaction.from(Buffer.from(transactionBase64, 'base64'));
-      const message = transaction.compileMessage(); // Returns a Message object
-      console.log('message', message);
-
-      const transactionMessage = TransactionMessage.decompile(message);
-      console.log('transactionMessage', transactionMessage);
-
-      const tx = new Transaction(coin);
-      tx.fromRawTransaction(transactionBase64);
     });
 
     it('succeed for a unsigned transfer tx', () => {

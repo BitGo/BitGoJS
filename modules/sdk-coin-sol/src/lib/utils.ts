@@ -10,6 +10,7 @@ import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bit
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   decodeCloseAccountInstruction,
+  decodeSyncNativeInstruction,
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token';
@@ -58,7 +59,6 @@ const JUPITER = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4';
 export function identifyAssociatedTokenInstruction2(
   instruction: { data: Uint8Array } | Uint8Array
 ): ValidInstructionTypes {
-
   throw new Error('The provided instruction could not be identified as a associatedToken instruction.');
 }
 /** @inheritdoc */
@@ -338,7 +338,14 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
         }
       } catch (e) {
         // ignore error and default to TokenTransfer
-        return 'TokenTransfer';
+      }
+      try {
+        const decodedInstruction2 = decodeSyncNativeInstruction(instruction);
+        if (decodedInstruction2 && decodedInstruction2.data.instruction === 17) {
+          return 'SyncNative';
+        }
+      } catch (e) {
+        // ignore error and default to TokenTransfer
       }
       return 'TokenTransfer';
     case StakeProgram.programId.toString():
