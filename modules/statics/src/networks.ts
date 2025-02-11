@@ -1178,6 +1178,9 @@ class XdcTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://testnet.xdcscan.com/address';
   chainId = 51;
   nativeCoinOperationHashPrefix = '51';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class Wemix extends Mainnet implements EthereumNetwork {
   name = 'WemixChain';
@@ -1194,6 +1197,9 @@ class WemixTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.test.wemix.com/address';
   chainId = 1112;
   nativeCoinOperationHashPrefix = '1112';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
@@ -1210,6 +1216,9 @@ class FlareTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://coston2-explorer.flare.network/address';
   chainId = 114;
   nativeCoinOperationHashPrefix = '114';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class Songbird extends Mainnet implements EthereumNetwork {
   name = 'Songbirdchain';
@@ -1226,6 +1235,9 @@ class SongbirdTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://coston-explorer.flare.network/address';
   chainId = 16;
   nativeCoinOperationHashPrefix = '16';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
   name = 'BaseChainTestnet';
