@@ -1201,7 +1201,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     'ee22282b-c307-4861-b706-d9a178326ad5',
@@ -1211,7 +1211,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
