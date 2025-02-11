@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-ton",
-  "version": "3.4.21",
+  "version": "3.4.22",
   "description": "BitGo SDK coin library for Ton",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,9 +40,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^28.23.0",
+    "@bitgo/sdk-core": "^28.24.0",
     "@bitgo/sdk-lib-mpc": "^10.1.0",
-    "@bitgo/statics": "^50.23.0",
+    "@bitgo/statics": "^50.24.0",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
     "lodash": "^4.17.21",
@@ -50,8 +50,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.58.6",
-    "@bitgo/sdk-test": "^8.0.69"
+    "@bitgo/sdk-api": "^1.58.7",
+    "@bitgo/sdk-test": "^8.0.70"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

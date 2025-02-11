@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.3.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.21...@bitgo/sdk-coin-stx@3.3.22) (2025-02-11)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-stx
+
 ## [3.3.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.20...@bitgo/sdk-coin-stx@3.3.21) (2025-02-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.7.0...@bitgo/sdk-coin-apt@1.7.1) (2025-02-11)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** generate txn hash ([a70f5ac](https://github.com/BitGo/BitGoJS/commit/a70f5ace1726a3482b98eaa8ca9eb762599f0198))
+- **sdk-coin-apt:** read 64 bit little endian amount ([977310b](https://github.com/BitGo/BitGoJS/commit/977310b060f75da245d395690ed4cfbffc1f3675))
+- **sdk-coin-apt:** stip hex prefix ([2a1e789](https://github.com/BitGo/BitGoJS/commit/2a1e78919eedeef3b6ad2e905c258cd1e418ef9f))
+- **sdk-coin-apt:** strip hex prefix from public key ([f2c44f7](https://github.com/BitGo/BitGoJS/commit/f2c44f73ebe5265f1a961c894b73171b3c297a70))
+- **sdk-coin-apt:** use NoAccountAuthenticator for transaction simulation ([7ff087c](https://github.com/BitGo/BitGoJS/commit/7ff087ca104ac47b8e370c2114631754be47404f))
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.6.0...@bitgo/sdk-coin-apt@1.7.0) (2025-02-05)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.9.0...@bitgo/sdk-coin-sui@5.10.0) (2025-02-11)
+
+### Features
+
+- **sdk-coin-sui:** walrus unstaking tx support ([d3892e0](https://github.com/BitGo/BitGoJS/commit/d3892e0da5c5a3c86b6444d6abd9a925f26c0dcd))
+
 # [5.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.8.22...@bitgo/sdk-coin-sui@5.9.0) (2025-02-05)
 
 ### Bug Fixes

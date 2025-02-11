@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.26.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.25.1...bitgo@39.26.0) (2025-02-11)
+
+### Features
+
+- add skeleton for v2 lightning ([5bd613e](https://github.com/BitGo/BitGoJS/commit/5bd613e8569a399d16cf136e4291c58c550e45ce))
+
 ## [39.25.1](https://github.com/BitGo/BitGoJS/compare/bitgo@39.25.0...bitgo@39.25.1) (2025-02-05)
 
 ### Bug Fixes
