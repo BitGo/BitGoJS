@@ -33,11 +33,13 @@ export class OfcCoin extends BaseCoin {
 
   // If set, this coin is the native address format for this token.
   public readonly addressCoin?: string;
+  public readonly minimumDenomination: number;
 
   constructor(options: OfcConstructorOptions) {
     const { addressCoin, ...baseOptions } = options;
     super(baseOptions);
     this.addressCoin = addressCoin;
+    this.minimumDenomination = Math.pow(10, this.decimalPlaces);
   }
 
   protected requiredFeatures(): Set<CoinFeature> {

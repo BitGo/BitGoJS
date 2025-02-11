@@ -338,6 +338,7 @@ export enum CoinFeature {
  * asset for which the coin is a unit of account.
  */
 export enum UnderlyingAsset {
+  INVALID_UNKNOWN = 'invalid_asset_type',
   ADA = 'ada',
   ALGO = 'algo',
   APE = 'ape',
