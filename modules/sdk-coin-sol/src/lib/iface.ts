@@ -112,6 +112,12 @@ export interface SetPriorityFee {
     fee: number | bigint;
   };
 }
+export interface SetPriorityFeeLimit {
+  type: InstructionBuilderTypes.SetPriorityFeeLimit;
+  params: {
+    fee: number | bigint;
+  };
+}
 
 export interface AtaInit {
   type: InstructionBuilderTypes.CreateAssociatedTokenAccount;
@@ -132,9 +138,11 @@ export type ValidInstructionTypes =
   | DecodedCloseAccountInstruction
   | 'TokenTransfer'
   | 'SetPriorityFee'
+  | 'SetPriorityFeeLimit'
   | 'CreateAssociatedToken'
   | 'CreateAssociatedTokenIdempotent'
-  | 'RecoverNestedAssociatedToken';
+  | 'RecoverNestedAssociatedToken'
+  | 'Jupiter';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

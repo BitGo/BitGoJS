@@ -35,6 +35,7 @@ import {
   Transfer,
   WalletInit,
   SetPriorityFee,
+  SetPriorityFeeLimit,
 } from './iface';
 import { getInstructionType } from './utils';
 
@@ -116,8 +117,10 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
  */
 function parseSendInstructions(
   instructions: TransactionInstruction[]
-): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee> {
-  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee> = [];
+): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | SetPriorityFeeLimit> {
+  const instructionData: Array<
+    Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | SetPriorityFeeLimit
+  > = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -204,6 +207,16 @@ function parseSendInstructions(
           },
         };
         instructionData.push(setPriorityFee);
+        break;
+      case ValidInstructionTypesEnum.SetPriorityFeeLimit:
+        const setComputeUnitPriceParams2 = ComputeBudgetInstruction.decodeSetComputeUnitLimit(instruction);
+        const setPriorityFee2: SetPriorityFeeLimit = {
+          type: InstructionBuilderTypes.SetPriorityFeeLimit,
+          params: {
+            fee: setComputeUnitPriceParams2.units,
+          },
+        };
+        instructionData.push(setPriorityFee2);
         break;
       default:
         throw new NotSupported(
