@@ -2140,6 +2140,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.COREDAO,
     CoinKind.CRYPTO
   ),
+  ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
+  tofc(
+    '6d2fcabc-5c58-4964-a4c9-d9d5c338a88a',
+    'ofctbera',
+    'Testnet Berachain',
+    18,
+    UnderlyingAsset.BERA,
+    CoinKind.CRYPTO
+  ),
   tofc(
     'f17727ec-5d0b-4c5d-bbbc-cd93da537f40',
     'ofctcoredao',
