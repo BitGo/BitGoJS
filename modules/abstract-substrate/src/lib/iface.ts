@@ -3,7 +3,6 @@ import {
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { PolkadotSpecNameType } from '@bitgo/statics';
 import { BaseTxInfo, DecodedUnsignedTx, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 
 export { HexString } from '@polkadot/util/types';
@@ -112,7 +111,7 @@ export enum TransactionTypes {
 export interface Material {
   genesisHash: string;
   chainName: string;
-  specName: PolkadotSpecNameType;
+  specName: string;
   specVersion: number;
   txVersion: number;
   metadata: `0x${string}`;
