@@ -54,6 +54,7 @@ COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
 COPY --from=builder /tmp/bitgo/modules/sdk-hmac /var/modules/sdk-hmac/
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
+COPY --from=builder /tmp/bitgo/modules/utxo-core /var/modules/utxo-core/
 COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-apt /var/modules/sdk-coin-apt/
@@ -137,6 +138,7 @@ cd /var/modules/blockapis && yarn link && \
 cd /var/modules/sdk-api && yarn link && \
 cd /var/modules/sdk-hmac && yarn link && \
 cd /var/modules/unspents && yarn link && \
+cd /var/modules/utxo-core && yarn link && \
 cd /var/modules/account-lib && yarn link && \
 cd /var/modules/sdk-coin-algo && yarn link && \
 cd /var/modules/sdk-coin-apt && yarn link && \
@@ -223,6 +225,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-api && \
     yarn link @bitgo/sdk-hmac && \
     yarn link @bitgo/unspents && \
+    yarn link @bitgo/utxo-core && \
     yarn link @bitgo/account-lib && \
     yarn link @bitgo/sdk-coin-algo && \
     yarn link @bitgo/sdk-coin-apt && \
@@ -292,9 +295,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 05 Feb 2025 01:26:16 GMT"
-LABEL version=10.6.13
-LABEL git_hash=060d16601145c1b549f1e17676870f4ccfb68433
+LABEL created="Tue, 11 Feb 2025 17:38:58 GMT"
+LABEL version=10.6.14
+LABEL git_hash=a95964e29d990bc5dc45d2140d657219afb11cbd
 #LABEL_END
 
 USER node

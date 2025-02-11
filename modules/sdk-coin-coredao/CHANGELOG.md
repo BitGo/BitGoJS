@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@1.3.0...@bitgo/sdk-coin-coredao@1.4.0) (2025-02-11)
+
+### Features
+
+- **statics:** migrate sdk config to test2 ([3f294e8](https://github.com/BitGo/BitGoJS/commit/3f294e83f3b21844eb6b0a90cd69bd01e641f0da))
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@1.2.15...@bitgo/sdk-coin-coredao@1.3.0) (2025-02-05)
 
 ### Features

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.23.0...@bitgo/sdk-core@28.24.0) (2025-02-11)
+
+### Bug Fixes
+
+- **sdk-core:** use DateFromISOString in invoice expiry ([080eb32](https://github.com/BitGo/BitGoJS/commit/080eb320f0d25775c18d5c9b263a4805ae5a5844))
+
+### Features
+
+- add skeleton for v2 lightning ([5bd613e](https://github.com/BitGo/BitGoJS/commit/5bd613e8569a399d16cf136e4291c58c550e45ce))
+
 # [28.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.22.0...@bitgo/sdk-core@28.23.0) (2025-02-05)
 
 ### Features

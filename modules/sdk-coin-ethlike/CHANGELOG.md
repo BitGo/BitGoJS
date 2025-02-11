@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@1.1.45...@bitgo/sdk-coin-ethlike@1.2.0) (2025-02-11)
+
+### Features
+
+- **abstract-eth:** add method to build and send ccr recovery txn ([0221896](https://github.com/BitGo/BitGoJS/commit/022189691a2f9a1ce2aa5ca84ddcc1042fd25e66))
+
 ## [1.1.45](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@1.1.44...@bitgo/sdk-coin-ethlike@1.1.45) (2025-02-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ethlike

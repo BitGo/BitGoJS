@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.5.0...@bitgo/account-lib@24.5.1) (2025-02-11)
+
+### Bug Fixes
+
+- **sdk-coin-tao:** fix coinBuilderMap for tao ([b592e09](https://github.com/BitGo/BitGoJS/commit/b592e098544b447e946c1d4432a442f9bb1ab6d3))
+
 # [24.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.4.0...@bitgo/account-lib@24.5.0) (2025-02-05)
 
 ### Features
