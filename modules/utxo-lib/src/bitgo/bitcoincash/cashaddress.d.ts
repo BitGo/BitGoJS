@@ -7,3 +7,4 @@ declare module 'cashaddress' {
     hash: Buffer;
   };
 }
+// test
