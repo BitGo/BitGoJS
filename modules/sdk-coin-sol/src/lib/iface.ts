@@ -131,7 +131,10 @@ export type ValidInstructionTypes =
   | 'CloseAssociatedTokenAccount'
   | DecodedCloseAccountInstruction
   | 'TokenTransfer'
-  | 'SetPriorityFee';
+  | 'SetPriorityFee'
+  | 'CreateAssociatedToken'
+  | 'CreateAssociatedTokenIdempotent'
+  | 'RecoverNestedAssociatedToken';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

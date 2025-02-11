@@ -63,7 +63,6 @@
     "@types/keyv": "3.1.4",
     "@types/react": "17.0.24",
     "@types/react-dom": "17.0.16",
-    "@solana/web3.js": "1.95.8",
     "**/nise/**/path-to-regexp": "8.0.0",
     "**/express/**/path-to-regexp": "0.1.12",
     "buffer": "^6.0.3",
