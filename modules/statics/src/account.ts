@@ -284,7 +284,7 @@ export class HederaToken extends AccountCoinToken {
     });
 
     this.nodeAccountId = options.nodeAccountId;
-    this.tokenId = options.tokenId;
+    this.tokenId = options.contractAddress;
     this.contractAddress = options.contractAddress;
   }
 }

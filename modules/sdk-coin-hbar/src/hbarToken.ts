@@ -40,6 +40,18 @@ export class HbarToken extends Hbar {
     return this.tokenConfig.decimalPlaces;
   }
 
+  get nodeAccountId(): string {
+    return this.tokenConfig.nodeAccountId;
+  }
+
+  get tokenId(): string {
+    return this.tokenConfig.tokenId;
+  }
+
+  get contractAddress(): string {
+    return this.tokenConfig.contractAddress;
+  }
+
   getChain(): string {
     return this.tokenConfig.type;
   }
