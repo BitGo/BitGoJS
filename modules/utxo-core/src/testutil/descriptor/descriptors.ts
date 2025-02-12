@@ -1,8 +1,11 @@
+import assert from 'assert';
+
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import { BIP32Interface } from '@bitgo/utxo-lib';
 
 import { DescriptorMap, PsbtParams } from '../../descriptor';
 import { getKeyTriple, Triple, KeyTriple } from '../key.utils';
+import { DescriptorNode, MiniscriptNode, formatNode } from '../../descriptor/formatNode';
 
 export function getDefaultXPubs(seed?: string): Triple<string> {
   return getKeyTriple(seed).map((k) => k.neutered().toBase58()) as Triple<string>;
@@ -54,13 +57,7 @@ function toXPub(k: BIP32Interface | string): string {
   return k.neutered().toBase58();
 }
 
-function multi(
-  prefix: 'multi' | 'multi_a',
-  m: number,
-  n: number,
-  keys: BIP32Interface[] | string[],
-  path: string
-): string {
+function multi(m: number, n: number, keys: BIP32Interface[] | string[], path: string): [number, ...string[]] {
   if (n < m) {
     throw new Error(`Cannot create ${m} of ${n} multisig`);
   }
@@ -68,15 +65,15 @@ function multi(
     throw new Error(`Not enough keys for ${m} of ${n} multisig: keys.length=${keys.length}`);
   }
   keys = keys.slice(0, n);
-  return prefix + `(${m},${keys.map((k) => `${toXPub(k)}/${path}`).join(',')})`;
+  return [m, ...keys.map((k) => `${toXPub(k)}/${path}`)];
 }
 
-function multiWsh(m: number, n: number, keys: BIP32Interface[] | string[], path: string): string {
-  return multi('multi', m, n, keys, path);
+function multiWsh(m: number, n: number, keys: BIP32Interface[] | string[], path: string): MiniscriptNode {
+  return { multi: multi(m, n, keys, path) };
 }
 
-function multiTap(m: number, n: number, keys: BIP32Interface[] | string[], path: string): string {
-  return multi('multi_a', m, n, keys, path);
+function multiTap(m: number, n: number, keys: BIP32Interface[] | string[], path: string): MiniscriptNode {
+  return { multi_a: multi(m, n, keys, path) };
 }
 
 export function getPsbtParams(t: DescriptorTemplate): Partial<PsbtParams> {
@@ -90,21 +87,34 @@ export function getPsbtParams(t: DescriptorTemplate): Partial<PsbtParams> {
   }
 }
 
-export function getDescriptorString(
+function getDescriptorNode(
   template: DescriptorTemplate,
   keys: KeyTriple | string[] = getDefaultXPubs(),
   path = '0/*'
-): string {
+): DescriptorNode {
   switch (template) {
     case 'Wsh2Of3':
-      return `wsh(${multiWsh(2, 3, keys, path)})`;
+      return {
+        wsh: multiWsh(2, 3, keys, path),
+      };
     case 'ShWsh2Of3CltvDrop':
       const { locktime } = getPsbtParams(template);
-      return `sh(wsh(and_v(r:after(${locktime}),${multiWsh(2, 3, keys, path)})))`;
+      assert(locktime);
+      return {
+        sh: {
+          wsh: {
+            and_v: [{ 'r:after': locktime }, multiWsh(2, 3, keys, path)],
+          },
+        },
+      };
     case 'Wsh2Of2':
-      return `wsh(${multiWsh(2, 2, keys, path)})`;
+      return {
+        wsh: multiWsh(2, 2, keys, path),
+      };
     case 'Tr2Of3-NoKeyPath':
-      return `tr(${getUnspendableKey()},${multiTap(2, 3, keys, path)})`;
+      return {
+        tr: [getUnspendableKey(), multiTap(2, 3, keys, path)],
+      };
   }
   throw new Error(`Unknown descriptor template: ${template}`);
 }
@@ -114,7 +124,7 @@ export function getDescriptor(
   keys: KeyTriple | string[] = getDefaultXPubs(),
   path = '0/*'
 ): Descriptor {
-  return Descriptor.fromString(getDescriptorString(template, keys, path), 'derivable');
+  return Descriptor.fromString(formatNode(getDescriptorNode(template, keys, path)), 'derivable');
 }
 
 export function getDescriptorMap(

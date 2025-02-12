@@ -7,3 +7,4 @@ export { createAddressFromDescriptor, createScriptPubKeyFromDescriptor } from '.
 export { createPsbt, finalizePsbt, parse } from './psbt';
 export { toDescriptorMap } from './DescriptorMap';
 export { toDerivedDescriptorWalletOutput } from './Output';
+export * from './formatNode';

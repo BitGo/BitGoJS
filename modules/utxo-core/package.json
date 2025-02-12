@@ -27,7 +27,7 @@
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "test": "npm run unit-test",
-    "unit-test": "mocha --recursive test/"
+    "unit-test": "mocha --recursive test/ && tstyche"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -56,5 +56,8 @@
     "@bitgo/wasm-miniscript": "^2.0.0-beta.2",
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4"
   },
-  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "devDependencies": {
+    "tstyche": "^3.5.0"
+  }
 }
