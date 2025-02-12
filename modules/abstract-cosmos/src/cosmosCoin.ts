@@ -134,38 +134,46 @@ export class CosmosCoin extends BaseCoin {
    */
   async recover(params: RecoveryOptions): Promise<CosmosLikeCoinRecoveryOutput> {
     // Step 1: Check if params contains the required parameters
-
     if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
 
-    if (!params.userKey) {
-      throw new Error('missing userKey');
-    }
+    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
-    if (!params.backupKey) {
-      throw new Error('missing backupKey');
-    }
-
-    if (!params.walletPassphrase) {
-      throw new Error('missing wallet passphrase');
-    }
-
-    // Step 2: Fetch the bitgo key from params
-    const userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
-
-    const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
-      userKey,
-      backupKey,
-      params.walletPassphrase
-    ); // baseAddress is not extracted
-    // Step 3: Instantiate the ECDSA signer and fetch the address details
+    let senderAddress: string;
+    let publicKey: string | undefined;
+    let userKeyShare, backupKeyShare, commonKeyChain;
     const MPC = new Ecdsa();
-    const chainId = await this.getChainId();
-    const publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
-    const senderAddress = this.getAddressFromPublicKey(publicKey);
+    // Step 2: Fetch the bitgo key from params if not unsigned sweep
+    if (!isUnsignedSweep) {
+      if (!params.userKey) {
+        throw new Error('missing userKey');
+      }
 
+      if (!params.backupKey) {
+        throw new Error('missing backupKey');
+      }
+
+      if (!params.walletPassphrase) {
+        throw new Error('missing wallet passphrase');
+      }
+
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
+
+      ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+        userKey,
+        backupKey,
+        params.walletPassphrase
+      ));
+      publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
+      senderAddress = this.getAddressFromPublicKey(publicKey);
+    } else {
+      senderAddress = params.rootAddress as string;
+    }
+
+    // Step 3: Instantiate the ECDSA signer and fetch the address details
+    const chainId = await this.getChainId();
     // Step 4: Fetch account details such as accountNo, balance and check for sufficient funds once gasAmount has been deducted
     const [accountNumber, sequenceNo] = await this.getAccountDetails(senderAddress);
     const balance = new BigNumber(await this.getAccountBalance(senderAddress));
@@ -180,7 +188,7 @@ export class CosmosCoin extends BaseCoin {
       throw new Error('Did not have enough funds to recover');
     }
 
-    // Step 5: Once sufficient funds are present, construct the recover tx messsage
+    // Step 5: Once sufficient funds are present, construct the recover tx message
     const amount: Coin[] = [
       {
         denom: this.getDenomination(),
@@ -200,20 +208,34 @@ export class CosmosCoin extends BaseCoin {
     txnBuilder
       .messages(sendMessage)
       .gasBudget(gasBudget)
-      .publicKey(publicKey)
       .sequence(Number(sequenceNo))
       .accountNumber(Number(accountNumber))
       .chainId(chainId);
+
+    if (publicKey) {
+      txnBuilder.publicKey(publicKey);
+    }
+
     const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction;
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     const signableHex = unsignedTransaction.signablePayload.toString('hex');
 
-    // Step 7: Sign the tx
+    // Check if unsigned sweep is requested
+    if (isUnsignedSweep) {
+      return {
+        signableHex: signableHex,
+      };
+    }
+
+    // Step 7: Sign the tx for non-BitGo recovery
     const message = unsignedTransaction.signablePayload;
     const messageHash = (utils.getHashFunction() || createHash('sha256')).update(message).digest();
 
     const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
 
+    if (!publicKey) {
+      throw new Error('publicKey is undefined');
+    }
     const signableBuffer = Buffer.from(signableHex, 'hex');
     MPC.verify(signableBuffer, signature, this.getHashFunction());
     const cosmosKeyPair = this.getKeyPair(publicKey);
