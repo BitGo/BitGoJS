@@ -52,6 +52,10 @@ export class SuiToken extends Sui {
     return this.tokenConfig.decimalPlaces;
   }
 
+  get contractAddress(): string {
+    return this.tokenConfig.contractAddress;
+  }
+
   getChain(): string {
     return this.tokenConfig.type;
   }
