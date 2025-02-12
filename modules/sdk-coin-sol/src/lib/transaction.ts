@@ -227,6 +227,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.StakingDelegate:
           this.setTransactionType(TransactionType.StakingDelegate);
           break;
+        case TransactionType.JupiterSwap:
+          this.setTransactionType(TransactionType.JupiterSwap);
+          break;
       }
       if (transactionType !== TransactionType.StakingAuthorizeRaw) {
         this.loadInputsAndOutputs();

@@ -5,9 +5,9 @@ import * as testData from '../resources/sol';
 import { Transaction as SolTransaction } from '@solana/web3.js';
 import { getBuilderFactory } from './getBuilderFactory';
 import * as bs58 from 'bs58';
+const SOLANA_RPC_URL = 'https://api.mainnet-beta.solana.com';
 
 describe('Sol Transaction', () => {
-  //const coin = coins.get('tsol');
   const walletKeyPair = new KeyPair(testData.authAccount);
   const wallet = walletKeyPair.getKeys();
 
@@ -54,36 +54,23 @@ describe('Sol Transaction', () => {
     const transaction = SolTransaction.from(Buffer.from(transactionBase64, 'base64'));
     transaction.serialize({ requireAllSignatures: false, verifySignatures: false });
 
-    // console.log('transaction', transaction.instructions);
-
-    // const tx = new Transaction(coin);
-    // tx.fromRawTransaction(
-    //     transaction.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64')
-    // );
-
-    // const tx1 = transaction.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64');
-
     const factory = getBuilderFactory('tsol');
-    const txBuilder = factory.getTransferBuilderV2();
+    const txBuilder = factory.getJupiterBuilder();
     txBuilder.from(transactionBase64);
 
     const txUnsigned = await txBuilder.build();
     txBuilder.sign({ key: wallet.prv });
     const tx = await txBuilder.build();
-    //const txJson = tx.toJson();
     const rawTx = tx.toBroadcastFormat();
     should.equal(Utils.isValidRawTransaction(rawTx), true);
 
     const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
     const signed = tx.signature[0];
 
-    // console.log('Unsigned Transaction:', txUnsigned.toJson());
-    // console.log('Rebuilt Transaction:', tx2.toJson());
-
     should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
     should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
 
-    const txBuilder2 = factory.getTransferBuilderV2();
+    const txBuilder2 = factory.getJupiterBuilder();
     txBuilder2.from(transactionBase64);
     await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
 
@@ -92,5 +79,33 @@ describe('Sol Transaction', () => {
 
     const rawSignedTx = signedTx.toBroadcastFormat();
     should.equal(rawSignedTx, rawTx);
+
+    await broadcastTransaction(rawSignedTx);
   });
 });
+
+async function broadcastTransaction(signedTx) {
+  try {
+    console.log('Broadcasting transaction...');
+
+    const response = await fetch(SOLANA_RPC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'sendTransaction',
+        params: [signedTx, { encoding: 'base64', maxRetries: 3 }],
+      }),
+    });
+    const result = await response.json();
+
+    if (result.error) {
+      console.error('Transaction failed:', result.error);
+    } else {
+      console.log('Transaction successfully broadcasted! Tx ID:', result.result);
+    }
+  } catch (error) {
+    console.error('Error sending transaction:', error);
+  }
+}

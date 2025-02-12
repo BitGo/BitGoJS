@@ -281,6 +281,9 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.StakingAuthorizeRaw;
   }
   validateIntructionTypes(instructions);
+  if (instructions.some((instruction) => getInstructionType(instruction) === 'Jupiter')) {
+    return TransactionType.JupiterSwap;
+  }
   // check if deactivate instruction does not exist because deactivate can be include a transfer instruction
   if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length == 0) {
     for (const instruction of instructions) {

@@ -74,6 +74,8 @@ export function instructionParamsFactory(
       return parseStakingAuthorizeRawInstructions(instructions);
     case TransactionType.StakingDelegate:
       return parseStakingDelegateInstructions(instructions);
+    case TransactionType.JupiterSwap:
+      return parseSendInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
