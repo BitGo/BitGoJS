@@ -62,17 +62,7 @@ export const ofcErc20Coins = [
   ofcerc20('a0eb6fcf-584c-4b9d-8872-e0c6d0e31635', 'ofcctsi', 'Cartesi', 18, UnderlyingAsset.CTSI),
   ofcerc20('65d62bc2-da9a-4cf4-8055-950c30cf7007', 'ofccvc', 'Civic', 8, UnderlyingAsset.CVC),
   ofcerc20('a9da25db-54b2-4747-b689-dff98b53914b', 'ofccvx', 'Convex Finance', 18, UnderlyingAsset.CVX),
-  ofcerc20(
-    '847caaf2-f113-4bea-84cd-b381f0b3a0f4',
-    'ofcdai',
-    'Dai',
-    18,
-    UnderlyingAsset.DAI,
-    undefined,
-    undefined,
-    undefined,
-    'SAI'
-  ),
+  ofcerc20('847caaf2-f113-4bea-84cd-b381f0b3a0f4', 'ofcdai', 'Dai', 18, UnderlyingAsset.DAI),
   ofcerc20('3ffbfd6d-adf6-499e-a6ba-b1888b7f08db', 'ofcdao', 'DAO Maker', 18, UnderlyingAsset.DAO),
   ofcerc20('5b5f980a-d38f-431a-bfdf-0378881c0bcd', 'ofcdent', 'Dent', 8, UnderlyingAsset.DENT),
   ofcerc20('8a2e92c4-4808-44a0-860b-4fbfbd8ffdcb', 'ofcdep', 'Deap Coin', 18, UnderlyingAsset.DEP),
