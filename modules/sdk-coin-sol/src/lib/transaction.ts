@@ -166,8 +166,19 @@ export class Transaction extends BaseTransaction {
     try {
       // Based on the recomendation encoding found here https://docs.solana.com/developing/clients/jsonrpc-api#sendtransaction
       // We use base64 encoding
-      return this._solTransaction.serialize({ requireAllSignatures }).toString('base64');
+      // console.log("Instructions Before Serialization:", this._solTransaction.instructions.map(i => i.programId.toBase58()));
+      // console.log("Total Instructions Count:", this._solTransaction.instructions.length);
+
+      const hi = this._solTransaction.serialize({ requireAllSignatures });
+
+      // const deserializedTx = SolTransaction.from(hi);
+
+      // console.log("Instructions After Serialization:", deserializedTx.instructions.map(i => i.programId.toBase58()));
+      // console.log("Total Instructions Count After:", deserializedTx.instructions.length);
+
+      return hi.toString('base64');
     } catch (e) {
+      // console.log(e);
       throw e;
     }
   }

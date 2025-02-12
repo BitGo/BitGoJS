@@ -24,7 +24,9 @@ describe('Sol Staking Delegate Builder', () => {
       const txUnsigned = await txBuilder.build();
       txBuilder.sign({ key: wallet.prv });
       const tx = await txBuilder.build();
+      console.log(tx.signature);
       const txJson = tx.toJson();
+      console.log(txJson);
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       txJson.instructionsData.should.deepEqual([
@@ -40,7 +42,10 @@ describe('Sol Staking Delegate Builder', () => {
       should.equal(rawTx, testData.STAKING_DELEGATE_SIGNED_TX);
 
       const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
+      console.log(tx2.toJson());
+      console.log('signature', tx2.signature);
       const signed = tx.signature[0];
+      console.log(signed);
 
       should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
       should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));

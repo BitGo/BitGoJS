@@ -191,18 +191,34 @@ function parseSendInstructions(
         };
         instructionData.push(tokenTransfer);
         break;
-      case ValidInstructionTypesEnum.CreateAssociatedTokenIdempotent:
+      case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
         const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
         const mintTokenName = findTokenName(mintAddress);
 
-        const ataIdempotent: AtaIdempotent = {
-          type: InstructionBuilderTypes.CreateAssociatedTokenIdempotent,
+        const ataInit: AtaInit = {
+          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
             mintAddress,
             ataAddress: instruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
             ownerAddress: instruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
             payerAddress: instruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
             tokenName: mintTokenName,
+          },
+        };
+        instructionData.push(ataInit);
+        break;
+      case ValidInstructionTypesEnum.CreateAssociatedTokenIdempotent:
+        const mintAddress1 = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
+        const mintTokenName1 = findTokenName(mintAddress1);
+
+        const ataIdempotent: AtaIdempotent = {
+          type: InstructionBuilderTypes.CreateAssociatedTokenIdempotent,
+          params: {
+            mintAddress: mintAddress1,
+            ataAddress: instruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
+            ownerAddress: instruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
+            payerAddress: instruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
+            tokenName: mintTokenName1,
           },
         };
         instructionData.push(ataIdempotent);
@@ -253,7 +269,7 @@ function parseSendInstructions(
       case ValidInstructionTypesEnum.Jupiter:
         const jupiter: Jupiter = {
           type: InstructionBuilderTypes.Jupiter,
-          params: { rawInstruction: instruction }, // Store raw instruction
+          params: { rawInstruction: instruction },
         };
         instructionData.push(jupiter);
         break;
@@ -670,6 +686,7 @@ function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array
 
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
+    console.log('type', type);
     switch (type) {
       case ValidInstructionTypesEnum.Memo:
         memo = { type: InstructionBuilderTypes.Memo, params: { memo: instruction.data.toString() } };
