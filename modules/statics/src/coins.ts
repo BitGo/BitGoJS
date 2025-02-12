@@ -3431,9 +3431,7 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359',
     UnderlyingAsset.DAI,
-    ETH_FEATURES_WITH_FRANKFURT,
-    undefined,
-    'SAI'
+    ETH_FEATURES_WITH_FRANKFURT
   ),
   erc20(
     '51ff3f92-371e-4069-85dc-7ee15836a0a5',
