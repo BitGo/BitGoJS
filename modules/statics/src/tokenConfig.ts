@@ -67,7 +67,11 @@ export type OfcTokenConfig = BaseTokenConfig & {
   isFiat: boolean;
 };
 
-export type HbarTokenConfig = BaseNetworkConfig;
+export type HbarTokenConfig = BaseNetworkConfig & {
+  nodeAccountId: string;
+  tokenId: string;
+  contractAddress: string;
+};
 
 export type XrpTokenConfig = BaseNetworkConfig & {
   issuerAddress: string;
