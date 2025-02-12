@@ -25,7 +25,7 @@ describe('Coredao', function () {
       coredao.should.be.an.instanceof(Coredao);
       coredao.getChain().should.equal('coredao');
       coredao.getFamily().should.equal('coredao');
-      coredao.getFullName().should.equal('coredaochain');
+      coredao.getFullName().should.equal('Core');
       coredao.getBaseFactor().should.equal(1e18);
       coredao.supportsTss().should.equal(true);
       coredao.allowsAccountConsolidations().should.equal(false);
@@ -37,7 +37,7 @@ describe('Coredao', function () {
       tcoredao.should.be.an.instanceof(Tcoredao);
       tcoredao.getChain().should.equal('tcoredao');
       tcoredao.getFamily().should.equal('coredao');
-      tcoredao.getFullName().should.equal('Testnet coredao chain');
+      tcoredao.getFullName().should.equal('Testnet Core');
       tcoredao.getBaseFactor().should.equal(1e18);
       tcoredao.supportsTss().should.equal(true);
       tcoredao.allowsAccountConsolidations().should.equal(false);

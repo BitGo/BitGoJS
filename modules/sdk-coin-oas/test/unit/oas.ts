@@ -21,7 +21,7 @@ describe('OASYS chain', function () {
       oas.should.be.an.instanceof(Oas);
       oas.getChain().should.equal('oas');
       oas.getFamily().should.equal('oas');
-      oas.getFullName().should.equal('oaschain');
+      oas.getFullName().should.equal('Oasys');
       oas.getBaseFactor().should.equal(1e18);
       oas.supportsTss().should.equal(true);
       oas.allowsAccountConsolidations().should.equal(false);
@@ -33,7 +33,7 @@ describe('OASYS chain', function () {
       toas.should.be.an.instanceof(Toas);
       toas.getChain().should.equal('toas');
       toas.getFamily().should.equal('oas');
-      toas.getFullName().should.equal('Testnet oaschain');
+      toas.getFullName().should.equal('Testnet Oasys');
       toas.getBaseFactor().should.equal(1e18);
       toas.supportsTss().should.equal(true);
       toas.allowsAccountConsolidations().should.equal(false);
