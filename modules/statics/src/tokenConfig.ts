@@ -455,6 +455,9 @@ const formattedHbarTokens = coins.reduce((acc: HbarTokenConfig[], coin) => {
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
       name: coin.fullName,
       decimalPlaces: coin.decimalPlaces,
+      nodeAccountId: coin.nodeAccountId,
+      tokenId: coin.tokenId,
+      contractAddress: coin.contractAddress,
     });
   }
   return acc;
