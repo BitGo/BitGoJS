@@ -45,6 +45,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:iris']
   ),
   erc20(
+    '2b715a62-6527-4586-9aa9-39c3ef154972',
+    'eth:mon',
+    'Mon',
+    18,
+    '0xc555d625828c4527d477e595ff1dd5801b4a600e', // https://etherscan.io/token/0xc555d625828c4527d477e595ff1dd5801b4a600e
+    UnderlyingAsset['eth:mon']
+  ),
+  erc20(
     'a214db0d-a25b-485f-a8fc-b7970cb4d500',
     'eth:hard',
     'Kava Lend',
