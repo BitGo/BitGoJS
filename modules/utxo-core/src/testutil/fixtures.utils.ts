@@ -5,7 +5,7 @@
 import * as fs from 'fs';
 import * as mpath from 'path';
 
-type FixtureEncoding = 'json' | 'hex';
+type FixtureEncoding = 'json' | 'hex' | 'txt';
 
 function isNodeJsError(e: unknown): e is NodeJS.ErrnoException {
   return e instanceof Error && typeof (e as NodeJS.ErrnoException).code === 'string';
@@ -18,6 +18,9 @@ function fixtureEncoding(path: string): FixtureEncoding {
   if (path.endsWith('.hex')) {
     return 'hex';
   }
+  if (path.endsWith('.txt')) {
+    return 'txt';
+  }
   throw new Error(`unknown fixture encoding for ${path}`);
 }
 
@@ -27,6 +30,8 @@ function decodeFixture(raw: string, encoding: FixtureEncoding): unknown {
       return JSON.parse(raw);
     case 'hex':
       return Buffer.from(raw, 'hex');
+    case 'txt':
+      return raw;
   }
 }
 
@@ -39,6 +44,11 @@ function encodeFixture(value: unknown, encoding: FixtureEncoding): string {
         throw new Error(`expected Buffer, got ${typeof value}`);
       }
       return value.toString('hex');
+    case 'txt':
+      if (typeof value !== 'string') {
+        throw new Error(`expected string, got ${typeof value}`);
+      }
+      return value;
   }
 }
 
