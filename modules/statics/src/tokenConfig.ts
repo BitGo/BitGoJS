@@ -84,6 +84,7 @@ export type SuiTokenConfig = BaseNetworkConfig & {
   packageId: string;
   module: string;
   symbol: string;
+  contractAddress: string;
 };
 
 export type AptTokenConfig = BaseNetworkConfig & {
@@ -520,6 +521,7 @@ const formattedSuiTokens = coins.reduce((acc: SuiTokenConfig[], coin) => {
       packageId: coin.packageId,
       module: coin.module,
       symbol: coin.symbol,
+      contractAddress: coin.contractAddress,
     });
   }
   return acc;
