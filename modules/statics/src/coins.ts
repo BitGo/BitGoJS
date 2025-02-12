@@ -1080,7 +1080,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '7482e3f1-5bf8-45a6-9d98-69e0506602d2',
     'oas',
-    'oaschain',
+    'Oasys',
     Networks.main.oas,
     18,
     UnderlyingAsset.OAS,
@@ -1090,7 +1090,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'b5316b57-8aa3-4f0b-9736-96b7838dbde8',
     'toas',
-    'Testnet oaschain',
+    'Testnet Oasys',
     Networks.test.oas,
     18,
     UnderlyingAsset.OAS,
@@ -1100,7 +1100,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'bac24d8c-0f8f-4530-a63c-bc52458acf95',
     'coredao',
-    'coredaochain',
+    'Core',
     Networks.main.coredao,
     18,
     UnderlyingAsset.COREDAO,
@@ -1110,7 +1110,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'd1d5e492-be8c-4b60-b2ab-3ed26b7dd8c8',
     'tcoredao',
-    'Testnet coredao chain',
+    'Testnet Core',
     Networks.test.coredao,
     18,
     UnderlyingAsset.COREDAO,

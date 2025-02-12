@@ -1089,7 +1089,7 @@ class ZkSyncTestnet extends Testnet implements EthereumNetwork {
 }
 
 class Berachain extends Mainnet implements EthereumNetwork {
-  name = 'Berachain';
+  name = 'Bera';
   family = CoinFamily.BERA;
   explorerUrl = 'https://80094.routescan.io/tx/';
   accountExplorerUrl = 'https://80094.routescan.io/address/';
