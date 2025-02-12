@@ -3,11 +3,10 @@ import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface } from '@bitgo/utxo-lib';
 
-import { DescriptorTemplate, getPsbtParams } from '../../../src/testutil/descriptor/descriptors';
+import { DescriptorTemplate, getDescriptor, getPsbtParams } from '../../../src/testutil/descriptor/descriptors';
 import { getFixture } from '../../../src/testutil/fixtures.utils';
 import { finalizePsbt } from '../../../src/descriptor';
 import { getKeyTriple } from '../../../src/testutil/key.utils';
-
 import { mockPsbtDefaultWithDescriptorTemplate } from '../../../src/testutil/descriptor/mock.utils';
 import { toPlainObjectFromPsbt, toPlainObjectFromTx } from '../../../src/testutil/descriptor/psbt.utils';
 
@@ -28,7 +27,7 @@ async function assertEqualsFixture(t: DescriptorTemplate, filename: string, valu
     return assert.deepStrictEqual(toPlainObjectFromTx(value), await getFixture(filename, toPlainObjectFromTx(value)));
   }
 
-  throw new Error(`unknown value type: ${typeof value}`);
+  assert.deepStrictEqual(value, await getFixture(filename, value));
 }
 
 function describeCreatePsbt(t: DescriptorTemplate) {
@@ -42,6 +41,16 @@ function describeCreatePsbt(t: DescriptorTemplate) {
       }
       return cloned;
     }
+
+    it('creates expected descriptors', async function () {
+      const descriptor0 = getDescriptor(t).atDerivationIndex(0);
+      await assertEqualsFixture(t, 'descriptors.json', {
+        index: 0,
+        descriptor: descriptor0.toString(),
+        scriptPubkey: Buffer.from(descriptor0.scriptPubkey()).toString('hex'),
+        node: descriptor0.node(),
+      });
+    });
 
     it('creates psbt with expected properties', async function () {
       const psbt = mockPsbtDefaultWithDescriptorTemplate(t, getPsbtParams(t));

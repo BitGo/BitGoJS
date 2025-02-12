@@ -1,0 +1,23 @@
+{
+  "index": 0,
+  "descriptor": "wsh(multi(2,xpub661MyMwAqRbcFXS2qwsTkaFc7PEpwDXWgY1Hx2MS7XywhW24sTjQzxiUgnGNW5v6DsW9Z8JcAqf8a22v21jDSA3DwLbbpt2ra3WbP83QNvP/0/0,xpub661MyMwAqRbcGfiaWcoeKLerFu3qRfy6zSYAwnmxSKW8JSauRajFsAsRHs2pV4q5rxkb4ynx4Bm8t54McTCp8V27s7XsdpD8T4s56etpjro/0/0,xpub661MyMwAqRbcH4HzWiCwmYajy1SXZngxHvpYDNEX4xjrDAneAm6rnpPuPPXcBRsSgxupDBmH2tzPHkikNrnLbsvTHemPFHSFbZxonZcCwFi/0/0))#ctqx3wks",
+  "scriptPubkey": "0020e958ec29c98ca10323ac1d9948ee37cfd5087886c2dc6a4131a30d5b252973ac",
+  "node": {
+    "Wsh": {
+      "Ms": {
+        "Multi": [
+          2,
+          {
+            "XPub": "xpub661MyMwAqRbcFXS2qwsTkaFc7PEpwDXWgY1Hx2MS7XywhW24sTjQzxiUgnGNW5v6DsW9Z8JcAqf8a22v21jDSA3DwLbbpt2ra3WbP83QNvP/0/0"
+          },
+          {
+            "XPub": "xpub661MyMwAqRbcGfiaWcoeKLerFu3qRfy6zSYAwnmxSKW8JSauRajFsAsRHs2pV4q5rxkb4ynx4Bm8t54McTCp8V27s7XsdpD8T4s56etpjro/0/0"
+          },
+          {
+            "XPub": "xpub661MyMwAqRbcH4HzWiCwmYajy1SXZngxHvpYDNEX4xjrDAneAm6rnpPuPPXcBRsSgxupDBmH2tzPHkikNrnLbsvTHemPFHSFbZxonZcCwFi/0/0"
+          }
+        ]
+      }
+    }
+  }
+}

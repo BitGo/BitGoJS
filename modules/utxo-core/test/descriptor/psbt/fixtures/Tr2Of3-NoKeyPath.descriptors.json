@@ -1,0 +1,26 @@
+{
+  "index": 0,
+  "descriptor": "tr(50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0,multi_a(2,xpub661MyMwAqRbcFXS2qwsTkaFc7PEpwDXWgY1Hx2MS7XywhW24sTjQzxiUgnGNW5v6DsW9Z8JcAqf8a22v21jDSA3DwLbbpt2ra3WbP83QNvP/0/0,xpub661MyMwAqRbcGfiaWcoeKLerFu3qRfy6zSYAwnmxSKW8JSauRajFsAsRHs2pV4q5rxkb4ynx4Bm8t54McTCp8V27s7XsdpD8T4s56etpjro/0/0,xpub661MyMwAqRbcH4HzWiCwmYajy1SXZngxHvpYDNEX4xjrDAneAm6rnpPuPPXcBRsSgxupDBmH2tzPHkikNrnLbsvTHemPFHSFbZxonZcCwFi/0/0))#82q34xv2",
+  "scriptPubkey": "51207e8c409f0ab01197f9676efc3a9505f1f09ed0f21693e46a3aa3b6b54d437aa2",
+  "node": {
+    "Tr": {
+      "internalKey": {
+        "Single": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+      },
+      "tree": {
+        "MultiA": [
+          2,
+          {
+            "XPub": "xpub661MyMwAqRbcFXS2qwsTkaFc7PEpwDXWgY1Hx2MS7XywhW24sTjQzxiUgnGNW5v6DsW9Z8JcAqf8a22v21jDSA3DwLbbpt2ra3WbP83QNvP/0/0"
+          },
+          {
+            "XPub": "xpub661MyMwAqRbcGfiaWcoeKLerFu3qRfy6zSYAwnmxSKW8JSauRajFsAsRHs2pV4q5rxkb4ynx4Bm8t54McTCp8V27s7XsdpD8T4s56etpjro/0/0"
+          },
+          {
+            "XPub": "xpub661MyMwAqRbcH4HzWiCwmYajy1SXZngxHvpYDNEX4xjrDAneAm6rnpPuPPXcBRsSgxupDBmH2tzPHkikNrnLbsvTHemPFHSFbZxonZcCwFi/0/0"
+          }
+        ]
+      }
+    }
+  }
+}
