@@ -154,7 +154,7 @@ const mainnetBase: EnvironmentTemplate = {
   zetaNodeUrl: 'https://zetachain.blockpi.network', // reference https://www.zetachain.com/docs/reference/api/
   coreumNodeUrl: 'https://full-node.mainnet-1.coreum.dev:1317',
   runeNodeUrl: 'https://thornode.ninerealms.com',
-  babyNodeUrl: 'https://babylon.explorers.guru/',
+  babyNodeUrl: '', // TODO(COIN-2758) update url when mainnet goes live
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   tronNodes: {
@@ -210,7 +210,7 @@ const testnetBase: EnvironmentTemplate = {
   zetaNodeUrl: 'https://rest.nodejumper.io/zetachaintestnet', // reference : https://www.zetachain.com/docs/reference/api/
   coreumNodeUrl: 'https://full-node.testnet-1.coreum.dev:1317',
   runeNodeUrl: 'https://stagenet-thornode.ninerealms.com',
-  babyNodeUrl: 'https://testnet.babylon.explorers.guru/',
+  babyNodeUrl: 'https://babylon-testnet-api.nodes.guru/',
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   tronNodes: {
