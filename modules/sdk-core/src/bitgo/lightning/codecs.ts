@@ -71,28 +71,16 @@ export const WatchOnly = t.type({
 
 export type WatchOnly = t.TypeOf<typeof WatchOnly>;
 
-export const LightningWalletCoinSpecific = getCodecPair(
-  t.partial({
-    encryptedSignerAdminMacaroon: t.string,
-    signerIP: IPAddress,
-    signerTlsCert: t.string,
-    encryptedSignerTlsKey: t.string,
-    watchOnly: WatchOnly,
-    encryptedSignerMacaroon: t.string,
-  })
-);
+export const UpdateLightningWalletSignedRequest = t.partial({
+  encryptedSignerMacaroon: t.string,
+  encryptedSignerAdminMacaroon: t.string,
+  signerIp: t.string,
+  encryptedSignerTlsKey: t.string,
+  signerTlsCert: t.string,
+  watchOnlyAccounts: WatchOnly,
+});
 
-export type LightningWalletCoinSpecific = t.TypeOf<typeof LightningWalletCoinSpecific>;
-
-export const UpdateLightningWallet = t.partial(
-  {
-    coinSpecific: LightningWalletCoinSpecific,
-    signature: t.string,
-  },
-  'UpdateLightningWallet'
-);
-
-export type UpdateLightningWallet = t.TypeOf<typeof UpdateLightningWallet>;
+export type UpdateLightningWalletSignedRequest = t.TypeOf<typeof UpdateLightningWalletSignedRequest>;
 
 export const LndAmount = t.strict(
   {
