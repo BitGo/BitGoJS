@@ -12050,7 +12050,14 @@ export const coins = CoinMap.fromCoins([
     '0x3073f7aaa4db83f95e9fff17424f71d4751a3073',
     UnderlyingAsset['eth:move']
   ),
-
+  erc20(
+    '2b715a62-6527-4586-9aa9-39c3ef154972',
+    'eth:mon',
+    'Mon',
+    18,
+    '0xc555d625828c4527d477e595ff1dd5801b4a600e', // https://etherscan.io/token/0xc555d625828c4527d477e595ff1dd5801b4a600e
+    UnderlyingAsset['eth:mon']
+  ),
   // End FTX missing ERC20 tokens
   celoToken(
     '1a9935a6-54d2-4988-97ff-d871338e29b5',
@@ -16289,6 +16296,26 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '08ba2640-c8a6-466f-9225-e706a750a465',
+    'sol:virtual',
+    'Virtual Protocol',
+    9,
+    '3iQL8BFS2vE7mww4ehAqQHAsbmRNCrPxizWAT2Zfyr9y', // https://solscan.io/token/3iQL8BFS2vE7mww4ehAqQHAsbmRNCrPxizWAT2Zfyr9y
+    '3iQL8BFS2vE7mww4ehAqQHAsbmRNCrPxizWAT2Zfyr9y',
+    UnderlyingAsset['sol:virtual'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '2d3009df-9534-43c7-8661-e3fe00a023f5',
+    'sol:nyan',
+    'NYAN',
+    9,
+    'NYANpAp9Cr7YarBNrby7Xx4xU6No6JKTBuohNA3yscP', // https://solscan.io/token/NYANpAp9Cr7YarBNrby7Xx4xU6No6JKTBuohNA3yscP
+    'NYANpAp9Cr7YarBNrby7Xx4xU6No6JKTBuohNA3yscP',
+    UnderlyingAsset['sol:nyan'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     'aa540cc1-4019-48ca-8da4-fa9f6abf195f',
     'sol:mngo',
     'Mango',
@@ -19547,6 +19574,15 @@ export const coins = CoinMap.fromCoins([
     POLYGON_TOKEN_FEATURES
   ),
   tpolygonErc20(
+    'e988a1a1-e22e-4649-986e-7718e503f047',
+    'tpolygon:testcopm',
+    'Test ERC20 Token 10 Decimals',
+    18,
+    '0x866022aa0489bd84fd2b3e0320ba988d9385d439', // https://polygonscan.com/token/0x866022aa0489bd84fd2B3e0320bA988d9385d439
+    UnderlyingAsset['tpolygon:testcopm'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  tpolygonErc20(
     '00bc4884-8c13-4b71-90b2-73e8ef4ebda4',
     'tpolygon:terc6dp',
     'Test ERC Token 6 Decimals',
@@ -19953,8 +19989,7 @@ export const coins = CoinMap.fromCoins([
     'bera:ibera',
     'Infrared Bera',
     18,
-    // TODO: the mainnet contract address is still not available, adding placeholder here
-    '0x5bdc3cae6fb270ef07579c428bb630e73c8d623a',
+    '0x9b6761bf2397bb5a6624a856cc84a3a14dcd3fe5',
     UnderlyingAsset['bera:ibera']
   ),
   tberaErc20(
