@@ -1,0 +1,6 @@
+node_modules
+.idea
+public
+dist
+test/unit/babylon/vendor
+

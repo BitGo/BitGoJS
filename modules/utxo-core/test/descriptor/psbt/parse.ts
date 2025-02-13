@@ -7,7 +7,6 @@ import { DescriptorTemplate, getDefaultXPubs, getDescriptorMap } from '../../../
 import { getFixture } from '../../../src/testutil/fixtures.utils';
 import { ParsedDescriptorTransaction } from '../../../src/descriptor/psbt/parse';
 import { toPlainObject } from '../../../src/testutil/toPlainObject.utils';
-
 import { mockPsbtDefaultWithDescriptorTemplate } from '../../../src/testutil/descriptor/mock.utils';
 
 function normalize(parsed: ParsedDescriptorTransaction) {

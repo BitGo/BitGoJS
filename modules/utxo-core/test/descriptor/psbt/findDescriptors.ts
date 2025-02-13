@@ -2,7 +2,6 @@ import * as assert from 'assert';
 
 import { DescriptorTemplate, getDefaultXPubs, getDescriptor } from '../../../src/testutil/descriptor/descriptors';
 import { findDescriptorForInput, findDescriptorForOutput } from '../../../src/descriptor/psbt/findDescriptors';
-
 import { mockPsbt } from '../../../src/testutil/descriptor/mock.utils';
 
 function describeWithTemplates(templateSelf: DescriptorTemplate, templateOther: DescriptorTemplate) {
