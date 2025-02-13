@@ -52,6 +52,14 @@ export class EosToken extends Eos {
     return this.tokenConfig.decimalPlaces;
   }
 
+  get contractName() {
+    return this.tokenConfig.contractName;
+  }
+
+  get contractAddress() {
+    return this.tokenConfig.contractAddress;
+  }
+
   getChain() {
     return this.tokenConfig.type;
   }
