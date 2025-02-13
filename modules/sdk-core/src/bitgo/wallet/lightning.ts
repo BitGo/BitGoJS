@@ -110,10 +110,6 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
   }
 
   async updateWalletCoinSpecific(params: UpdateLightningWalletSignedRequest, passphrase: string): Promise<unknown> {
-    decodeOrElse(UpdateLightningWalletSignedRequest.name, UpdateLightningWalletSignedRequest, params, (errors) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new Error(`Invalid params for lightning specific update wallet: ${errors}`);
-    });
     const { userAuthKey } = await this.getLightningAuthKeychains();
     const signature = createMessageSignature(
       params,
