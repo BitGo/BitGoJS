@@ -6,13 +6,18 @@
     "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
     "allowJs": false,
     "strict": true,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "moduleResolution": "node16",
+    "module": "node16"
   },
   "include": ["src/**/*", "bin/**/*", "test/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {
       "path": "../utxo-lib"
+    },
+    {
+      "path": "../utxo-core"
     }
   ]
 }
