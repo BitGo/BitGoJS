@@ -11,9 +11,8 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
-    "unit-test": "mocha"
+    "unit-test": "mocha --recursive test"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
