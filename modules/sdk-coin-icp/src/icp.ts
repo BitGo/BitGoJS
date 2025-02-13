@@ -113,13 +113,7 @@ export class Icp extends BaseCoin {
   }
 
   private async getAddressFromPublicKey(hexEncodedPublicKey: string) {
-    const isKeyValid = this.isValidPub(hexEncodedPublicKey);
-    if (!isKeyValid) {
-      throw new Error('Public Key is not in a valid Hex Encoded Format');
-    }
-    const compressedKey = utils.compressPublicKey(hexEncodedPublicKey);
-    const KeyPair = new IcpKeyPair({ pub: compressedKey });
-    return KeyPair.getAddress();
+    return utils.getAddressFromPublicKey(hexEncodedPublicKey);
   }
 
   /** @inheritDoc **/

@@ -4,6 +4,7 @@ import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
+import { KeyPair as IcpKeyPair } from './keyPair';
 
 const Secp256k1Curve = new elliptic.ec('secp256k1');
 
@@ -96,6 +97,16 @@ export class Utils implements BaseUtils {
 
     const accountIdBytes = Buffer.concat([checksum, sha224Hash]);
     return accountIdBytes.toString('hex');
+  }
+
+  async getAddressFromPublicKey(hexEncodedPublicKey: string): Promise<string> {
+    const isKeyValid = this.isValidPublicKey(hexEncodedPublicKey);
+    if (!isKeyValid) {
+      throw new Error('Public Key is not in a valid Hex Encoded Format');
+    }
+    const compressedKey = this.compressPublicKey(hexEncodedPublicKey);
+    const KeyPair = new IcpKeyPair({ pub: compressedKey });
+    return KeyPair.getAddress();
   }
 }
 

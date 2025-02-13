@@ -1,5 +1,6 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import utils from '../../src/lib/utils';
 
 import { Icp, Ticp } from '../../src/index';
 import nock from 'nock';
@@ -63,6 +64,17 @@ describe('Internet computer', function () {
 
     it('should throw an error when invalid public key is provided', async function () {
       await basecoin
+        .getAddressFromPublicKey(invalidPublicKey)
+        .should.be.rejectedWith(`Public Key is not in a valid Hex Encoded Format`);
+    });
+
+    it('should return valid address from a valid hex encoded public key', async function () {
+      const accountID = await utils.getAddressFromPublicKey(hexEncodedPublicKey);
+      accountID.should.deepEqual(validAccountID);
+    });
+
+    it('should throw an error when invalid public key is provided', async function () {
+      await utils
         .getAddressFromPublicKey(invalidPublicKey)
         .should.be.rejectedWith(`Public Key is not in a valid Hex Encoded Format`);
     });
