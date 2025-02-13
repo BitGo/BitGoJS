@@ -54,12 +54,15 @@ import {
   handleUnlockLightningWallet,
 } from './lightning/lightningSignerRoutes';
 import { ProxyAgent } from 'proxy-agent';
+import LRUCache from './LRUCache';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
 const debug = debugLib('bitgo:express');
 
 const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
+
+const walletCache = new LRUCache<string, Wallet>();
 
 function handlePing(req: express.Request, res: express.Response, next: express.NextFunction) {
   return req.bitgo.ping();
@@ -916,13 +919,26 @@ async function handleV2SendOne(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const reqId = new RequestTracer();
-  const wallet = await coin.wallets().get({ id: req.params.id, reqId });
+  const cachedWallet = walletCache.get(req.params.id);
+  let wallet: Wallet;
+
+  if (cachedWallet) {
+    wallet = cachedWallet;
+  } else {
+    wallet = await coin.wallets().get({ id: req.params.id, reqId });
+
+    if (req.config.walletCacheEnabled) {
+      walletCache.set(req.params.id, wallet);
+    }
+  }
+
   req.body.reqId = reqId;
 
   let result;
   try {
     result = await wallet.send(createSendParams(req));
   } catch (err) {
+    walletCache.delete(req.params.id);
     err.status = 400;
     throw err;
   }
