@@ -30,7 +30,7 @@
     "@bitgo/statics": "^50.24.0",
     "@bitgo/unspents": "^0.47.17",
     "@bitgo/utxo-lib": "^11.2.1",
-    "@bitgo/wasm-miniscript": "^1.8.0",
+    "@bitgo/wasm-miniscript": "^2.0.0-beta.3",
     "archy": "^1.0.0",
     "bech32": "^2.0.0",
     "bitcoinjs-lib": "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.2",
