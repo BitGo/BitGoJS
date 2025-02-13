@@ -2,12 +2,7 @@ import * as t from 'io-ts';
 import assert from 'assert';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
-import {
-  IPAddress,
-  LightningAuthKeychain,
-  LightningKeychain,
-  UpdateLightningWalletSignedRequest,
-} from '../../../../src';
+import { IPAddress, LightningAuthKeychain, LightningKeychain, UpdateLightningWallet } from '../../../../src';
 
 function describeCodec(c: t.Type<any>, valid: unknown[], invalid: unknown[]) {
   describe('Codec ' + c.name, function () {
@@ -101,24 +96,36 @@ describe('Codecs', function () {
   );
 
   describeCodec(
-    UpdateLightningWalletSignedRequest,
+    UpdateLightningWallet,
     [
       {
-        encryptedSignerAdminMacaroon: 'encryptedSignerAdminMacaroon',
-        signerIp: '127.0.0.1',
-        signerTlsCert: 'signerTlsCert',
-        encryptedSignerTlsKey: 'encryptedSignerTlsKey',
-        watchOnly: {
-          master_key_birthday_timestamp: 'master_key_birthday_timestamp',
-          master_key_fingerprint: 'master_key_fingerprint',
-          accounts: [{ purpose: 1, coin_type: 1, account: 1, xpub: 'xpub' }],
+        coinSpecific: {
+          lnbtc: {
+            encryptedSignerAdminMacaroon: 'encryptedSignerAdminMacaroon',
+            signerIP: '127.0.0.1',
+            signerTlsCert: 'signerTlsCert',
+            encryptedSignerTlsKey: 'encryptedSignerTlsKey',
+            watchOnly: {
+              master_key_birthday_timestamp: 'master_key_birthday_timestamp',
+              master_key_fingerprint: 'master_key_fingerprint',
+              accounts: [{ purpose: 1, coin_type: 1, account: 1, xpub: 'xpub' }],
+            },
+            encryptedSignerMacaroon: 'encryptedSignerMacaroon',
+          },
         },
-        encryptedSignerMacaroon: 'encryptedSignerMacaroon',
       },
       {
-        encryptedSignerAdminMacaroon: 'encryptedSignerAdminMacaroon',
+        coinSpecific: {
+          tlnbtc: {
+            encryptedSignerAdminMacaroon: 'encryptedSignerAdminMacaroon',
+          },
+        },
       },
-      {},
+      {
+        coinSpecific: {
+          tlnbtc: {},
+        },
+      },
     ],
     [null, 'abg', 1]
   );

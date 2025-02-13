@@ -1,10 +1,15 @@
 import * as express from 'express';
 import {
   decodeOrElse,
+  createMessageSignature,
   getUtxolibNetwork,
   signerMacaroonPermissions,
   createWatchOnly,
   addIPCaveatToMacaroon,
+  getLightningAuthKeychains,
+  getLightningKeychain,
+  updateLightningWallet,
+  LightningWalletCoinSpecific,
   isLightningCoinName,
   deriveLightningServiceSharedSecret,
 } from '@bitgo/sdk-core';
@@ -22,12 +27,12 @@ import { LndSignerClient } from './lndSignerClient';
 type Decrypt = (params: { input: string; password: string }) => string;
 
 async function createSignerMacaroon(
-  watchOnlyIp: string,
+  watchOnlyIP: string,
   header: { adminMacaroonHex: string },
   lndSignerClient: LndSignerClient
 ) {
   const { macaroon } = await lndSignerClient.bakeMacaroon({ permissions: signerMacaroonPermissions }, header);
-  const macaroonBase64 = addIPCaveatToMacaroon(Buffer.from(macaroon, 'hex').toString('base64'), watchOnlyIp);
+  const macaroonBase64 = addIPCaveatToMacaroon(Buffer.from(macaroon, 'hex').toString('base64'), watchOnlyIP);
   return Buffer.from(macaroonBase64, 'base64').toString('hex');
 }
 
@@ -53,7 +58,7 @@ function getMacaroonRootKey(passphrase: string, nodeAuthEncryptedPrv: string, de
  * Handle the request to initialise remote signer LND for a wallet.
  */
 export async function handleInitLightningWallet(req: express.Request): Promise<unknown> {
-  const { walletId, passphrase, signerTlsKey, signerTlsCert, signerIp, expressIp } = decodeOrElse(
+  const { walletId, passphrase, signerTlsKey, signerTlsCert, signerIP, expressIP } = decodeOrElse(
     InitLightningWalletRequest.name,
     InitLightningWalletRequest,
     req.body,
@@ -72,10 +77,10 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
   }
   const coin = bitgo.coin(coinName);
 
-  const lightningWallet = (await coin.wallets().get({ id: walletId })).lightningV2();
+  const wallet = await coin.wallets().get({ id: walletId });
 
-  const userKey = await lightningWallet.getLightningKeychain();
-  const { nodeAuthKey } = await lightningWallet.getLightningAuthKeychains();
+  const userKey = await getLightningKeychain(wallet);
+  const { userAuthKey, nodeAuthKey } = await getLightningAuthKeychains(wallet);
 
   const network = getUtxolibNetwork(coin.getChain());
   const signerRootKey = getSignerRootKey(passphrase, userKey.encryptedPrv, network, bitgo.decrypt);
@@ -89,28 +94,38 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
 
   const encryptedSignerAdminMacaroon = bitgo.encrypt({
     password: passphrase,
-    input: addIPCaveatToMacaroon(adminMacaroon, expressIp),
+    input: addIPCaveatToMacaroon(adminMacaroon, expressIP),
   });
-  const watchOnlyAccounts = createWatchOnly(signerRootKey, network);
-  const encryptedSignerTlsKey = signerTlsKey ? bitgo.encrypt({ password: passphrase, input: signerTlsKey }) : undefined;
+  const encryptedSignerTlsKey = bitgo.encrypt({ password: passphrase, input: signerTlsKey });
+  const watchOnly = createWatchOnly(signerRootKey, network);
 
-  return await lightningWallet.updateWalletCoinSpecific(
-    {
+  const coinSpecific = {
+    [coin.getChain()]: {
       encryptedSignerAdminMacaroon,
-      signerIp,
+      signerIP,
       signerTlsCert,
-      watchOnlyAccounts,
-      ...(encryptedSignerTlsKey && { encryptedSignerTlsKey }),
+      encryptedSignerTlsKey,
+      watchOnly,
     },
-    passphrase
+  };
+
+  if (!LightningWalletCoinSpecific.is(coinSpecific)) {
+    throw new Error('Invalid lightning wallet coin specific data');
+  }
+
+  const signature = createMessageSignature(
+    coinSpecific,
+    bitgo.decrypt({ password: passphrase, input: userAuthKey.encryptedPrv })
   );
+
+  return await updateLightningWallet(wallet, { coinSpecific, signature });
 }
 
 /**
  * Handle the request to create a signer macaroon from remote signer LND for a wallet.
  */
 export async function handleCreateSignerMacaroon(req: express.Request): Promise<unknown> {
-  const { walletId, passphrase, watchOnlyIp } = decodeOrElse(
+  const { walletId, passphrase, watchOnlyIP } = decodeOrElse(
     CreateSignerMacaroonRequest.name,
     CreateSignerMacaroonRequest,
     req.body,
@@ -130,7 +145,6 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   const coin = bitgo.coin(coinName);
 
   const wallet = await coin.wallets().get({ id: walletId });
-  const lightningWallet = wallet.lightningV2();
 
   const encryptedSignerAdminMacaroon = wallet.coinSpecific()?.encryptedSignerAdminMacaroon;
   if (!encryptedSignerAdminMacaroon) {
@@ -138,10 +152,10 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   }
   const adminMacaroon = bitgo.decrypt({ password: passphrase, input: encryptedSignerAdminMacaroon });
 
-  const { userAuthKey } = await lightningWallet.getLightningAuthKeychains();
+  const { userAuthKey } = await getLightningAuthKeychains(wallet);
 
   const signerMacaroon = await createSignerMacaroon(
-    watchOnlyIp,
+    watchOnlyIP,
     { adminMacaroonHex: Buffer.from(adminMacaroon, 'base64').toString('hex') },
     lndSignerClient
   );
@@ -152,12 +166,20 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
     password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
     input: signerMacaroon,
   });
-  return await lightningWallet.updateWalletCoinSpecific(
-    {
+
+  const coinSpecific = {
+    [coin.getChain()]: {
       encryptedSignerMacaroon,
     },
-    passphrase
-  );
+  };
+
+  if (!LightningWalletCoinSpecific.is(coinSpecific)) {
+    throw new Error('Invalid lightning wallet coin specific data');
+  }
+
+  const signature = createMessageSignature(coinSpecific, userAuthXprv);
+
+  return await updateLightningWallet(wallet, { coinSpecific, signature });
 }
 
 /**

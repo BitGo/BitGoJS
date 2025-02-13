@@ -38,50 +38,42 @@ describe('Lightning signer routes', () => {
     }
   });
 
-  for (const includingOptionalFields of [true, false]) {
-    it(`should initialize lightning signer wallet ${
-      includingOptionalFields ? 'with' : 'without'
-    } optional fields`, async () => {
-      const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
-      const wpWalletnock = nock(bgUrl).get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200, apiData.wallet);
+  it('should initialize lightning signer wallet', async () => {
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
+    const wpWalletnock = nock(bgUrl).get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200, apiData.wallet);
 
-      const wpKeychainNocks = [
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userKey.id}`).reply(200, apiData.userKey),
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
-      ];
+    const wpKeychainNocks = [
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userKey.id}`).reply(200, apiData.userKey),
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
+    ];
 
-      const signerInitWalletNock = nock(lightningSignerConfigs.fakeid.url)
-        .post(`/v1/initwallet`)
-        .reply(200, signerApiData.initWallet);
+    const signerInitWalletNock = nock(lightningSignerConfigs.fakeid.url)
+      .post(`/v1/initwallet`)
+      .reply(200, signerApiData.initWallet);
 
-      const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
+    const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
 
-      const req = {
-        bitgo: bitgo,
-        body: includingOptionalFields
-          ? apiData.initWalletRequestBody
-          : { ...apiData.initWalletRequestBody, signerTlsKey: undefined },
-        params: {
-          coin: 'tlnbtc',
-        },
-        config: {
-          lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
-        },
-      } as unknown as express.Request;
+    const req = {
+      bitgo: bitgo,
+      body: apiData.initWalletRequestBody,
+      params: {
+        coin: 'tlnbtc',
+      },
+      config: {
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      },
+    } as unknown as express.Request;
 
-      await handleInitLightningWallet(req);
+    await handleInitLightningWallet(req);
 
-      wpWalletUpdateNock.done();
-      signerInitWalletNock.done();
-      wpKeychainNocks.forEach((s) => s.done());
-      wpWalletnock.done();
-      readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
-      readFileStub.restore();
-    });
-  }
+    wpWalletUpdateNock.done();
+    signerInitWalletNock.done();
+    wpKeychainNocks.forEach((s) => s.done());
+    wpWalletnock.done();
+    readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
+    readFileStub.restore();
+  });
 
   it('should get signer wallet state', async () => {
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
@@ -113,8 +105,6 @@ describe('Lightning signer routes', () => {
     const wpWalletnock = nock(bgUrl).get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200, apiData.wallet);
 
     const wpKeychainNocks = [
-      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
-      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
       nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
       nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
     ];

@@ -33,10 +33,10 @@ export function verifyMessageSignature(
  */
 export function createMessageSignature(
   message: Signable,
-  xprv: string,
+  prv: string,
   network: utxolib.Network = utxolib.networks.bitcoin
 ): string {
   const requestString = JSON.stringify(canonicalizeObject(message));
-  const prvKey = utxolib.bip32.fromBase58(xprv, network);
+  const prvKey = utxolib.bip32.fromBase58(prv, network);
   return signMessage(requestString, prvKey, network).toString('hex');
 }

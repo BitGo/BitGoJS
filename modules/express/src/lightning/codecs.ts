@@ -33,19 +33,15 @@ export const GetWalletStateResponse = t.type(
 
 export type GetWalletStateResponse = t.TypeOf<typeof GetWalletStateResponse>;
 
-export const InitLightningWalletRequest = t.intersection(
-  [
-    t.strict({
-      walletId: t.string,
-      passphrase: t.string,
-      signerIp: IPAddress,
-      signerTlsCert: t.string,
-      expressIp: IPAddress,
-    }),
-    t.partial({
-      signerTlsKey: t.string,
-    }),
-  ],
+export const InitLightningWalletRequest = t.strict(
+  {
+    walletId: t.string,
+    passphrase: t.string,
+    signerIP: IPAddress,
+    signerTlsCert: t.string,
+    signerTlsKey: t.string,
+    expressIP: IPAddress,
+  },
   'InitLightningWalletRequest'
 );
 
@@ -55,7 +51,7 @@ export const CreateSignerMacaroonRequest = t.strict(
   {
     walletId: t.string,
     passphrase: t.string,
-    watchOnlyIp: IPAddress,
+    watchOnlyIP: IPAddress,
   },
   'CreateSignerMacaroonRequest'
 );
