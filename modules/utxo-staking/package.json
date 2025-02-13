@@ -11,9 +11,8 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
-    "unit-test": "mocha"
+    "unit-test": "mocha --recursive test"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -40,6 +39,7 @@
     ]
   },
   "dependencies": {
+    "@bitgo/utxo-core": "^1.1.0",
     "@bitgo/unspents": "^0.47.17",
     "@bitgo/utxo-lib": "^11.2.1",
     "@bitgo/wasm-miniscript": "^2.0.0-beta.3"

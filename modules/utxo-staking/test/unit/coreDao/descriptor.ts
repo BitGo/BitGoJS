@@ -1,10 +1,12 @@
 import * as assert from 'assert';
+
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
+import { getFixture } from '@bitgo/utxo-core/testutil';
 
-import { createMultiSigDescriptor } from '../../../src/coreDao/descriptor';
-import { finalizePsbt, getFixture, updateInputWithDescriptor } from './utils';
-import { decodeTimelock } from '../../../src/coreDao';
+import { createMultiSigDescriptor, decodeTimelock } from '../../../src/coreDao';
+
+import { finalizePsbt, updateInputWithDescriptor } from './utils';
 
 describe('descriptor', function () {
   const baseFixturePath = 'test/fixtures/coreDao/descriptor/';
