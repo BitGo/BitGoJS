@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
+
 import { buildFixedWalletStakingPsbt } from '../../src';
 
 describe('transactions', function () {

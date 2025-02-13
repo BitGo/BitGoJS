@@ -1,4 +1,8 @@
 import assert from 'assert';
+
+import { testutil } from '@bitgo/utxo-lib';
+import { getFixture } from '@bitgo/utxo-core/testutil';
+
 import {
   CORE_DAO_MAINNET_CHAIN_ID,
   CORE_DAO_SATOSHI_PLUS_IDENTIFIER,
@@ -8,8 +12,6 @@ import {
   parseCoreDaoOpReturnOutputScript,
   toString,
 } from '../../../src/coreDao';
-import { testutil } from '@bitgo/utxo-lib';
-import { getFixture } from '@bitgo/utxo-core/testutil';
 
 describe('OP_RETURN', function () {
   const validVersion = 2;
