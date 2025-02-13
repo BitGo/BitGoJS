@@ -328,7 +328,7 @@ export class EosCoin extends AccountCoinToken {
       ...options,
     });
 
-    this.contractName = options.contractName;
+    this.contractName = options.contractAddress;
     this.contractAddress = options.contractAddress;
   }
 }

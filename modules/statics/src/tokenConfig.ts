@@ -44,7 +44,10 @@ export interface BaseContractAddressConfig extends BaseNetworkConfig {
 export type AvaxcTokenConfig = BaseContractAddressConfig;
 export type CeloTokenConfig = BaseContractAddressConfig;
 export type EthLikeTokenConfig = BaseContractAddressConfig;
-export type EosTokenConfig = BaseContractAddressConfig;
+export type EosTokenConfig = BaseContractAddressConfig & {
+  contractName: string;
+  contractAddress: string;
+};
 export type Erc20TokenConfig = BaseContractAddressConfig;
 export type TrxTokenConfig = BaseContractAddressConfig;
 export type StellarTokenConfig = BaseNetworkConfig;
@@ -328,6 +331,8 @@ const formattedEosTokens = coins.reduce((acc: EosTokenConfig[], coin) => {
       name: coin.fullName,
       tokenContractAddress: coin.contractName.toString().toLowerCase(),
       decimalPlaces: coin.decimalPlaces,
+      contractName: coin.contractName,
+      contractAddress: coin.contractAddress,
     });
   }
   return acc;

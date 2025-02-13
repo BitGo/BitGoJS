@@ -33,6 +33,10 @@ describe('EOS Token:', function () {
     eosTokenCoin.coin.should.equal('teos');
     eosTokenCoin.decimalPlaces.should.equal(8);
     eosTokenCoin.tokenContractAddress.should.equal('testtoken113');
+    eosTokenCoin.contractName.should.equal('testtoken113');
+    eosTokenCoin.contractAddress.should.equal('testtoken113');
+    eosTokenCoin.tokenContractAddress.should.equal(eosTokenCoin.contractName);
+    eosTokenCoin.tokenContractAddress.should.equal(eosTokenCoin.contractAddress);
   });
 
   describe('verify transaction', function () {
