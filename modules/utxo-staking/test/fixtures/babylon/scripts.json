@@ -1,0 +1,120 @@
+{
+  "builder": {
+    "stakerKey": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+    "finalityProviderKeys": [
+      "55ede96d004a0207db6495bf3c6bd406d667b835198778e4a1ae3d103de166e0"
+    ],
+    "covenantKeys": [
+      "2f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832b",
+      "4d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7"
+    ],
+    "covenantThreshold": 2,
+    "stakingTimeLock": 100,
+    "unbondingTimeLock": 200
+  },
+  "scripts": {
+    "timelockScript": {
+      "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad0164b2",
+      "miniscript": "and_v(v:pk(7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9),older(100))",
+      "miniscriptAst": {
+        "and_v": [
+          {
+            "v:pk": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9"
+          },
+          {
+            "older": 100
+          }
+        ]
+      },
+      "scriptASM": [
+        "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+        "OP_CHECKSIGVERIFY",
+        "64",
+        "OP_CHECKSEQUENCEVERIFY"
+      ]
+    },
+    "unbondingScript": {
+      "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad202f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832bac204d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7ba529c",
+      "miniscript": "and_v(v:pk(7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9),multi_a(2,2f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832b,4d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7))",
+      "miniscriptAst": {
+        "and_v": [
+          {
+            "v:pk": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9"
+          },
+          {
+            "multi_a": [
+              2,
+              "2f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832b",
+              "4d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7"
+            ]
+          }
+        ]
+      },
+      "scriptASM": [
+        "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+        "OP_CHECKSIGVERIFY",
+        "2f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832b",
+        "OP_CHECKSIG",
+        "4d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7",
+        "OP_2",
+        "OP_NUMEQUAL"
+      ]
+    },
+    "slashingScript": {
+      "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad2055ede96d004a0207db6495bf3c6bd406d667b835198778e4a1ae3d103de166e0ad202f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832bac204d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7ba529c",
+      "miniscript": "and_v(and_v(v:pk(7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9),v:pk(55ede96d004a0207db6495bf3c6bd406d667b835198778e4a1ae3d103de166e0)),multi_a(2,2f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832b,4d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7))",
+      "miniscriptAst": {
+        "and_v": [
+          {
+            "and_v": [
+              {
+                "v:pk": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9"
+              },
+              {
+                "v:pk": "55ede96d004a0207db6495bf3c6bd406d667b835198778e4a1ae3d103de166e0"
+              }
+            ]
+          },
+          {
+            "multi_a": [
+              2,
+              "2f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832b",
+              "4d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7"
+            ]
+          }
+        ]
+      },
+      "scriptASM": [
+        "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+        "OP_CHECKSIGVERIFY",
+        "55ede96d004a0207db6495bf3c6bd406d667b835198778e4a1ae3d103de166e0",
+        "OP_CHECKSIGVERIFY",
+        "2f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832b",
+        "OP_CHECKSIG",
+        "4d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7",
+        "OP_2",
+        "OP_NUMEQUAL"
+      ]
+    },
+    "unbondingTimelockScript": {
+      "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad02c800b2",
+      "miniscript": "and_v(v:pk(7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9),older(200))",
+      "miniscriptAst": {
+        "and_v": [
+          {
+            "v:pk": "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9"
+          },
+          {
+            "older": 200
+          }
+        ]
+      },
+      "scriptASM": [
+        "7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9",
+        "OP_CHECKSIGVERIFY",
+        "c800",
+        "OP_CHECKSEQUENCEVERIFY"
+      ]
+    }
+  }
+}

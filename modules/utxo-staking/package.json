@@ -42,6 +42,6 @@
     "@bitgo/utxo-core": "^1.0.0",
     "@bitgo/unspents": "^0.47.17",
     "@bitgo/utxo-lib": "^11.2.1",
-    "@bitgo/wasm-miniscript": "^2.0.0-beta.2"
+    "@bitgo/wasm-miniscript": "^2.0.0-beta.3"
   }
 }
