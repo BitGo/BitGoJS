@@ -7,7 +7,6 @@ import { DescriptorTemplate, getPsbtParams } from '../../../src/testutil/descrip
 import { getFixture } from '../../../src/testutil/fixtures.utils';
 import { finalizePsbt } from '../../../src/descriptor';
 import { getKeyTriple } from '../../../src/testutil/key.utils';
-
 import { mockPsbtDefaultWithDescriptorTemplate } from '../../../src/testutil/descriptor/mock.utils';
 import { toPlainObjectFromPsbt, toPlainObjectFromTx } from '../../../src/testutil/descriptor/psbt.utils';
 
