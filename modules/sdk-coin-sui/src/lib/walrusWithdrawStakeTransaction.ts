@@ -94,7 +94,7 @@ export class WalrusWithdrawStakeTransaction extends Transaction<WalrusWithdrawSt
     switch (this.type) {
       case TransactionType.StakingDeactivate:
         return this.explainRequestWithdrawStakedWalTransaction(result, explanationResult);
-      case TransactionType.StakingClaim:
+      case TransactionType.StakingWithdraw:
         return this.explainWithdrawStakedWalTransaction(result, explanationResult);
 
       default:
