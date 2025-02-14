@@ -388,6 +388,7 @@ export const ICP_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
   CoinFeature.SUPPORTS_TOKENS,
 ];
 
