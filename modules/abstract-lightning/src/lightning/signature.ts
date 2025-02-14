@@ -1,6 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import * as sdkcore from '@bitgo/sdk-core';
 import { canonicalizeObject, Signable } from './signableJson';
-import { signMessage, verifyMessage } from '../bip32util';
 
 /**
  * Verifies a signature for a given message.
@@ -20,7 +20,7 @@ export function verifyMessageSignature(
   const messageString = JSON.stringify(canonicalizeObject(message));
   const pubKey = utxolib.bip32.fromBase58(pub, network).publicKey;
   const signatureBuffer = Buffer.from(signature, 'hex');
-  return verifyMessage(messageString, pubKey, signatureBuffer, network);
+  return sdkcore.verifyMessage(messageString, pubKey, signatureBuffer, network);
 }
 
 /**
@@ -38,5 +38,5 @@ export function createMessageSignature(
 ): string {
   const requestString = JSON.stringify(canonicalizeObject(message));
   const prvKey = utxolib.bip32.fromBase58(xprv, network);
-  return signMessage(requestString, prvKey, network).toString('hex');
+  return sdkcore.signMessage(requestString, prvKey, network).toString('hex');
 }

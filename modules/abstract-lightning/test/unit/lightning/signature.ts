@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { createMessageSignature, verifyMessageSignature } from '../../../../src/bitgo/lightning';
+import { createMessageSignature, verifyMessageSignature } from '../../../src/lightning';
 import crypto from 'crypto';
 
 type Request = {

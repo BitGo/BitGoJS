@@ -111,8 +111,6 @@ import { TxSendBody } from '@bitgo/public-types';
 import { AddressBook, IAddressBook } from '../address-book';
 import { IRequestTracer } from '../../api';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
-import { ILightningWallet, SelfCustodialLightningWallet } from './lightning';
-import { isLightningCoinName } from '../lightning';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -3075,16 +3073,6 @@ export class Wallet implements IWallet {
       throw new Error(`Lightning not supported for ${this.coin()}`);
     }
     return new Lightning(this.bitgo, this);
-  }
-
-  /**
-   * Return a lightwallet instance if the coin supports it
-   */
-  public lightningV2(): ILightningWallet {
-    if (!isLightningCoinName(this.baseCoin.getChain())) {
-      throw new Error(`Lightning not supported for ${this.coin()}`);
-    }
-    return new SelfCustodialLightningWallet(this);
   }
 
   /* MARK: TSS Helpers */

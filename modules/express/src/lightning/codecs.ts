@@ -1,6 +1,6 @@
 /* eslint-disable no-redeclare */
 import * as t from 'io-ts';
-import { IPAddress } from '@bitgo/sdk-core';
+import { IPAddress } from '@bitgo/abstract-lightning';
 
 export const LightningSignerConfig = t.type({
   url: t.string,

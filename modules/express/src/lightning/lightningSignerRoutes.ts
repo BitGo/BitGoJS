@@ -1,13 +1,14 @@
 import * as express from 'express';
+import { decodeOrElse } from '@bitgo/sdk-core';
 import {
-  decodeOrElse,
   getUtxolibNetwork,
   signerMacaroonPermissions,
   createWatchOnly,
   addIPCaveatToMacaroon,
   isLightningCoinName,
   deriveLightningServiceSharedSecret,
-} from '@bitgo/sdk-core';
+  getLightningWallet,
+} from '@bitgo/abstract-lightning';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Buffer } from 'buffer';
 
@@ -72,7 +73,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
   }
   const coin = bitgo.coin(coinName);
 
-  const lightningWallet = (await coin.wallets().get({ id: walletId })).lightningV2();
+  const lightningWallet = getLightningWallet(await coin.wallets().get({ id: walletId }));
 
   const userKey = await lightningWallet.getLightningKeychain();
   const { nodeAuthKey } = await lightningWallet.getLightningAuthKeychains();
@@ -130,7 +131,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   const coin = bitgo.coin(coinName);
 
   const wallet = await coin.wallets().get({ id: walletId });
-  const lightningWallet = wallet.lightningV2();
+  const lightningWallet = getLightningWallet(wallet);
 
   const encryptedSignerAdminMacaroon = wallet.coinSpecific()?.encryptedSignerAdminMacaroon;
   if (!encryptedSignerAdminMacaroon) {

@@ -13,9 +13,9 @@ import {
   createWatchOnly,
   addIPCaveatToMacaroon,
   deriveLightningServiceSharedSecret,
-} from './../../../../src/bitgo/lightning/lightningUtils';
+} from '../../../src/lightning';
 
-import { getSharedSecret } from '../../../../src';
+import * as sdkcore from '@bitgo/sdk-core';
 
 describe('lightning utils', function () {
   [
@@ -90,7 +90,7 @@ describe('lightning utils', function () {
       'xprv9s21ZrQH143K4NPkV8riiTnFf72MRyQDVHMmmpekGF1w5QkS2MfTei9KXYvrZVMop4zQ4arnzSF7TRp3Cy73AWaDdADiYMCi5qpYW1bUa5m';
     const lightningServicePubKey = getStaticsLightningNetwork('tlnbtc').lightningServicePubKey;
 
-    const expectedSecret = getSharedSecret(
+    const expectedSecret = sdkcore.getSharedSecret(
       utxolib.bip32.fromBase58(userAuthXprv),
       Buffer.from(lightningServicePubKey, 'hex')
     );

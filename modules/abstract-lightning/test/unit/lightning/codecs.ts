@@ -7,7 +7,7 @@ import {
   LightningAuthKeychain,
   LightningKeychain,
   UpdateLightningWalletSignedRequest,
-} from '../../../../src';
+} from '../../../src/lightning';
 
 function describeCodec(c: t.Type<any>, valid: unknown[], invalid: unknown[]) {
   describe('Codec ' + c.name, function () {

@@ -1,4 +1,4 @@
-import { IWallet } from './iWallet';
+import * as sdkcore from '@bitgo/sdk-core';
 import {
   createMessageSignature,
   LightningAuthKeychain,
@@ -6,7 +6,6 @@ import {
   unwrapLightningCoinSpecific,
   UpdateLightningWalletSignedRequest,
 } from '../lightning';
-import { decodeOrElse } from '../utils';
 
 export interface ILightningWallet {
   /**
@@ -50,9 +49,9 @@ export interface ILightningWallet {
 }
 
 export class SelfCustodialLightningWallet implements ILightningWallet {
-  public wallet: IWallet;
+  public wallet: sdkcore.IWallet;
 
-  constructor(wallet: IWallet) {
+  constructor(wallet: sdkcore.IWallet) {
     const coin = wallet.baseCoin;
     if (coin.getFamily() !== 'lnbtc') {
       throw new Error(`Invalid coin to update lightning wallet: ${coin.getFamily()}`);
@@ -74,7 +73,7 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
       throw new Error(`Invalid number of key in lightning wallet: ${keyIds.length}`);
     }
     const keychain = await this.wallet.baseCoin.keychains().get({ id: keyIds[0] });
-    return decodeOrElse(LightningKeychain.name, LightningKeychain, keychain, (_) => {
+    return sdkcore.decodeOrElse(LightningKeychain.name, LightningKeychain, keychain, (_) => {
       // DON'T throw errors from decodeOrElse. It could leak sensitive information.
       throw new Error(`Invalid user key`);
     });
@@ -91,7 +90,7 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
     const coin = this.wallet.baseCoin;
     const keychains = await Promise.all(authKeyIds.map((id) => coin.keychains().get({ id })));
     const authKeychains = keychains.map((keychain) => {
-      return decodeOrElse(LightningAuthKeychain.name, LightningAuthKeychain, keychain, (_) => {
+      return sdkcore.decodeOrElse(LightningAuthKeychain.name, LightningAuthKeychain, keychain, (_) => {
         // DON'T throw errors from decodeOrElse. It could leak sensitive information.
         throw new Error(`Invalid lightning auth key: ${keychain?.id}`);
       });
@@ -110,10 +109,15 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
   }
 
   async updateWalletCoinSpecific(params: UpdateLightningWalletSignedRequest, passphrase: string): Promise<unknown> {
-    decodeOrElse(UpdateLightningWalletSignedRequest.name, UpdateLightningWalletSignedRequest, params, (errors) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new Error(`Invalid params for lightning specific update wallet: ${errors}`);
-    });
+    sdkcore.decodeOrElse(
+      UpdateLightningWalletSignedRequest.name,
+      UpdateLightningWalletSignedRequest,
+      params,
+      (errors) => {
+        // DON'T throw errors from decodeOrElse. It could leak sensitive information.
+        throw new Error(`Invalid params for lightning specific update wallet: ${errors}`);
+      }
+    );
     const { userAuthKey } = await this.getLightningAuthKeychains();
     const signature = createMessageSignature(
       params,

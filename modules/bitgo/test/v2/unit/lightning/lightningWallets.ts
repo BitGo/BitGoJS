@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import * as nock from 'nock';
 import { BaseCoin } from '@bitgo/sdk-core';
+import { getLightningWallet } from '@bitgo/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
 
@@ -219,7 +220,7 @@ describe('Lightning wallets', function () {
     };
 
     it('should get lightning key', async function () {
-      const wallet = new Wallet(bitgo, basecoin, walletData).lightningV2();
+      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
 
       const keyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/abc')
@@ -231,7 +232,7 @@ describe('Lightning wallets', function () {
     });
 
     it('should get lightning auth keys', async function () {
-      const wallet = new Wallet(bitgo, basecoin, walletData).lightningV2();
+      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
 
       const userAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
@@ -248,7 +249,7 @@ describe('Lightning wallets', function () {
     });
 
     it('should fail to get lightning key for invalid number of keys', async function () {
-      const wallet = new Wallet(bitgo, basecoin, { ...walletData, keys: [] }).lightningV2();
+      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, { ...walletData, keys: [] }));
       await assert.rejects(
         async () => await wallet.getLightningKeychain(),
         /Error: Invalid number of key in lightning wallet: 0/
@@ -256,7 +257,9 @@ describe('Lightning wallets', function () {
     });
 
     it('should fail to get lightning auth keys for invalid number of keys', async function () {
-      const wallet = new Wallet(bitgo, basecoin, { ...walletData, coinSpecific: { keys: ['def'] } }).lightningV2();
+      const wallet = getLightningWallet(
+        new Wallet(bitgo, basecoin, { ...walletData, coinSpecific: { keys: ['def'] } })
+      );
       await assert.rejects(
         async () => await wallet.getLightningAuthKeychains(),
         /Error: Invalid number of auth keys in lightning wallet: 1/
@@ -264,7 +267,7 @@ describe('Lightning wallets', function () {
     });
 
     it('should fail to get lightning key for invalid response', async function () {
-      const wallet = new Wallet(bitgo, basecoin, walletData).lightningV2();
+      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
 
       nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/abc')
@@ -274,7 +277,7 @@ describe('Lightning wallets', function () {
     });
 
     it('should fail to get lightning auth keys for invalid response', async function () {
-      const wallet = new Wallet(bitgo, basecoin, walletData).lightningV2();
+      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
 
       nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
@@ -354,7 +357,7 @@ describe('Lightning wallets', function () {
     };
 
     it('should update wallet', async function () {
-      const wallet = new Wallet(bitgo, basecoin, walletData).lightningV2();
+      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
 
       const userAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
