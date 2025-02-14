@@ -3836,6 +3836,26 @@ export const coins = CoinMap.fromCoins([
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
   solToken(
+    '08ba2640-c8a6-466f-9225-e706a750a465',
+    'sol:virtual',
+    'Virtual Protocol',
+    9,
+    '3iQL8BFS2vE7mww4ehAqQHAsbmRNCrPxizWAT2Zfyr9y', // https://solscan.io/token/3iQL8BFS2vE7mww4ehAqQHAsbmRNCrPxizWAT2Zfyr9y
+    '3iQL8BFS2vE7mww4ehAqQHAsbmRNCrPxizWAT2Zfyr9y',
+    UnderlyingAsset['sol:virtual'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '2d3009df-9534-43c7-8661-e3fe00a023f5',
+    'sol:nyan',
+    'NYAN',
+    9,
+    'NYANpAp9Cr7YarBNrby7Xx4xU6No6JKTBuohNA3yscP', // https://solscan.io/token/NYANpAp9Cr7YarBNrby7Xx4xU6No6JKTBuohNA3yscP
+    'NYANpAp9Cr7YarBNrby7Xx4xU6No6JKTBuohNA3yscP',
+    UnderlyingAsset['sol:nyan'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '53e6b4e7-6ff6-40d5-8737-af2b31fa0bc0',
     'sol:turbo',
     'Serum',
@@ -7422,6 +7442,15 @@ export const coins = CoinMap.fromCoins([
     POLYGON_TOKEN_FEATURES
   ),
   tpolygonErc20(
+    'e988a1a1-e22e-4649-986e-7718e503f047',
+    'tpolygon:testcopm',
+    'Test ERC20 Token 10 Decimals',
+    18,
+    '0x866022aa0489bd84fd2b3e0320ba988d9385d439', // https://polygonscan.com/token/0x866022aa0489bd84fd2B3e0320bA988d9385d439
+    UnderlyingAsset['tpolygon:testcopm'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  tpolygonErc20(
     '9da1d62e-2220-4974-a9d9-191c34dfda4e',
     'tpolygon:link',
     'Polygon Test LINK',
@@ -7900,8 +7929,7 @@ export const coins = CoinMap.fromCoins([
     'bera:ibera',
     'Infrared Bera',
     18,
-    // TODO: the mainnet contract address is still not available, adding placeholder here
-    '0x5bdc3cae6fb270ef07579c428bb630e73c8d623a',
+    '0x9b6761bf2397bb5a6624a856cc84a3a14dcd3fe5',
     UnderlyingAsset['bera:ibera']
   ),
   tberaErc20(
