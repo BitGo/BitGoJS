@@ -1,4 +1,5 @@
 import { BIP32Interface } from '@bitgo/utxo-lib';
+import { ast } from '@bitgo/wasm-miniscript';
 
 /**
  * Script type for a descriptor.
@@ -39,13 +40,13 @@ export function createMultiSigDescriptor(
     throw new Error(`locktime (${locktime}) must be greater than 0`);
   }
   const keys = orderedKeys.map((key) => asDescriptorKey(key, neutered));
-  const inner = `and_v(r:after(${locktime}),multi(${m},${keys.join(',')}))`;
+  const inner: ast.MiniscriptNode = { and_v: [{ 'r:after': locktime }, { multi: [m, ...keys] }] };
   switch (scriptType) {
     case 'sh':
-      return `sh(${inner})`;
+      return ast.formatNode({ sh: inner });
     case 'sh-wsh':
-      return `sh(wsh(${inner}))`;
+      return ast.formatNode({ sh: { wsh: inner } });
     case 'wsh':
-      return `wsh(${inner})`;
+      return ast.formatNode({ wsh: inner });
   }
 }
