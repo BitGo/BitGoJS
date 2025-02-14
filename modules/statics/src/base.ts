@@ -1836,6 +1836,7 @@ export enum UnderlyingAsset {
   'eth:xreth' = 'eth:xreth',
   'eth:xy' = 'eth:xy',
   'eth:move' = 'eth:move',
+  'eth:mon' = 'eth:mon',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2236,6 +2237,7 @@ export enum UnderlyingAsset {
   'tpolygon:terc6dp' = 'tpolygon:terc6dp',
   'tpolygon:usdt' = 'tpolygon:usdt',
   'tpolygon:usdc' = 'tpolygon:usdc',
+  'tpolygon:testcopm' = 'tpolygon:testcopm',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
@@ -2410,6 +2412,8 @@ export enum UnderlyingAsset {
   'sol:corn' = 'sol:corn',
   'sol:yes' = 'sol:yes',
   'sol:ai16z' = 'sol:ai16z',
+  'sol:nyan' = 'sol:nyan',
+  'sol:virtual' = 'sol:virtual',
   'sol:zerebro' = 'sol:zerebro',
   'sol:arc' = 'sol:arc',
   'sol:nos' = 'sol:nos',
