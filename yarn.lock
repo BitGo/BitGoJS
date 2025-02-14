@@ -886,10 +886,10 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
-"@bitgo/wasm-miniscript@^2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-miniscript/-/wasm-miniscript-2.0.0-beta.3.tgz#f52f9fa411f4f13527c960842f81729133aa6810"
-  integrity sha512-9JWfizfdpSExQ5qDkMlZAR0UbonKILPwDXM+iqiBKIRGwlYak071lX9sfGPWoRuo7g72gU//s7AiZc6kZqgetw==
+"@bitgo/wasm-miniscript@^2.0.0-beta.4":
+  version "2.0.0-beta.4"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-miniscript/-/wasm-miniscript-2.0.0-beta.4.tgz#6897327a0e6007cfa02081a02cba8b442e318dc5"
+  integrity sha512-lZCSo3NY/vb1hagU3J7fIdv7GhCGYb/INCdAi6ogDXBzWDl3tloviCZ9DXCNPXc7lbj8mVr3GR8zAFkPTQ0xEw==
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"

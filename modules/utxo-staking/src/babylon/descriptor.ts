@@ -1,5 +1,4 @@
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
-import { MiniscriptNode } from '@bitgo/wasm-miniscript/dist/node/js/ast';
 
 export function getUnspendableKey(): string {
   // https://github.com/babylonlabs-io/btc-staking-ts/blob/v0.4.0-rc.2/src/constants/internalPubkey.ts
@@ -7,7 +6,7 @@ export function getUnspendableKey(): string {
 }
 
 // Helper functions for creating miniscript nodes
-function pk(b: Buffer): MiniscriptNode {
+function pk(b: Buffer): ast.MiniscriptNode {
   return { 'v:pk': b.toString('hex') };
 }
 
@@ -15,11 +14,11 @@ function sortedKeys(keys: Buffer[]): Buffer[] {
   return keys.sort((a, b) => a.compare(b));
 }
 
-function multi_a(threshold: number, keys: Buffer[]): { multi_a: [number, ...string[]] } {
-  return { multi_a: [threshold, ...sortedKeys(keys).map((k) => k.toString('hex'))] };
+function multiArgs(threshold: number, keys: Buffer[]): [number, ...string[]] {
+  return [threshold, ...sortedKeys(keys).map((k) => k.toString('hex'))];
 }
 
-function taprootScriptOnlyFromAst(n: ast.MiniscriptNode): Descriptor {
+function taprootScriptOnlyFromAst(n: ast.TapTreeNode): Descriptor {
   return Descriptor.fromString(ast.formatNode({ tr: [getUnspendableKey(), n] }), 'definite');
 }
 
@@ -33,35 +32,34 @@ export class BabylonDescriptorBuilder {
     public unbondingTimeLock: number
   ) {}
 
-  getTimelockMiniscript(): MiniscriptNode {
+  getTimelockMiniscript(): ast.MiniscriptNode {
     return { and_v: [pk(this.stakerKey), { older: this.stakingTimeLock }] };
   }
 
-  getUnbondingMiniscript(): MiniscriptNode {
-    return { and_v: [pk(this.stakerKey), multi_a(this.covenantThreshold, this.covenantKeys)] };
+  getUnbondingMiniscript(): ast.MiniscriptNode {
+    return { and_v: [pk(this.stakerKey), { multi_a: multiArgs(this.covenantThreshold, this.covenantKeys) }] };
   }
 
-  getSlashingMiniscript(): MiniscriptNode {
+  getSlashingMiniscript(): ast.MiniscriptNode {
     return {
       and_v: [
         {
-          and_v: [pk(this.stakerKey), { 'v:multi_a': multi_a(1, this.finalityProviderKeys).multi_a }],
+          and_v: [pk(this.stakerKey), { 'v:multi_a': multiArgs(1, this.finalityProviderKeys) }],
         },
-        multi_a(this.covenantThreshold, this.covenantKeys),
+        { multi_a: multiArgs(this.covenantThreshold, this.covenantKeys) },
       ],
     };
   }
 
-  getUnbondingTimelockMiniscript(): MiniscriptNode {
+  getUnbondingTimelockMiniscript(): ast.MiniscriptNode {
     return { and_v: [pk(this.stakerKey), { older: this.unbondingTimeLock }] };
   }
 
   getStakingDescriptor(): Descriptor {
-    const a = ast.formatNode(this.getSlashingMiniscript());
-    const b = ast.formatNode(this.getUnbondingMiniscript());
-    const c = ast.formatNode(this.getTimelockMiniscript());
-    const desc = `tr(${getUnspendableKey()},{${a},{${b},${c}}})`;
-    return Descriptor.fromString(desc, 'definite');
+    return taprootScriptOnlyFromAst([
+      this.getSlashingMiniscript(),
+      [this.getUnbondingMiniscript(), this.getTimelockMiniscript()],
+    ]);
   }
 
   getSlashingDescriptor(): Descriptor {
@@ -69,9 +67,6 @@ export class BabylonDescriptorBuilder {
   }
 
   getUnbondingDescriptor(): Descriptor {
-    const a = ast.formatNode(this.getSlashingMiniscript());
-    const b = ast.formatNode(this.getUnbondingTimelockMiniscript());
-    const desc = `tr(${getUnspendableKey()},{${a},${b}})`;
-    return Descriptor.fromString(desc, 'definite');
+    return taprootScriptOnlyFromAst([this.getSlashingMiniscript(), this.getUnbondingTimelockMiniscript()]);
   }
 }
