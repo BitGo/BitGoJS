@@ -140,17 +140,17 @@ export class TokenTransferBuilder extends TransactionBuilder {
         };
       })
     );
-    const addPriorityFeeInstruction: SetPriorityFee = {
-      type: InstructionBuilderTypes.SetPriorityFee,
-      params: {
-        fee: this._priorityFee,
-      },
-    };
 
+    // order is important, createAtaInstructions must be before sendInstructions
     if (!this._priorityFee || this._priorityFee === Number(0)) {
       this._instructionsData = [...createAtaInstructions, ...sendInstructions];
     } else {
-      // order is important, createAtaInstructions must be before sendInstructions
+      const addPriorityFeeInstruction: SetPriorityFee = {
+        type: InstructionBuilderTypes.SetPriorityFee,
+        params: {
+          fee: this._priorityFee,
+        },
+      };
       this._instructionsData = [addPriorityFeeInstruction, ...createAtaInstructions, ...sendInstructions];
     }
     return await super.buildImplementation();
