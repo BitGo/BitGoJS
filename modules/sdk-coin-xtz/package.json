@@ -48,7 +48,7 @@
     "@taquito/signer": "6.3.5-beta.0",
     "bignumber.js": "^9.0.0",
     "bs58check": "^2.1.2",
-    "elliptic": "^6.5.2",
+    "elliptic": "^6.6.1",
     "libsodium-wrappers": "^0.7.6",
     "lodash": "^4.17.15"
   },
