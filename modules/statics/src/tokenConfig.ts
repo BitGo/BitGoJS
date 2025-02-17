@@ -54,6 +54,7 @@ export type StellarTokenConfig = BaseNetworkConfig;
 
 export type SolTokenConfig = BaseNetworkConfig & {
   tokenAddress: string;
+  contractAddress: string;
 };
 
 export type AdaTokenConfig = BaseNetworkConfig & {
@@ -434,6 +435,7 @@ const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
       name: coin.fullName,
       tokenAddress: coin.tokenAddress,
       decimalPlaces: coin.decimalPlaces,
+      contractAddress: coin.contractAddress,
     });
   }
   return acc;
