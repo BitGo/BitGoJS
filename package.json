@@ -82,7 +82,8 @@
     "secp256k1": "5.0.1",
     "socks": "2.7.3",
     "web3-utils": "4.2.1",
-    "@polkadot/api": "14.1.1"
+    "@polkadot/api": "14.1.1",
+    "elliptic": "^6.6.1"
   },
   "workspaces": [
     "modules/*"
