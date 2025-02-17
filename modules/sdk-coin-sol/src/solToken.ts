@@ -53,6 +53,10 @@ export class SolToken extends Sol {
     return this.tokenConfig.decimalPlaces;
   }
 
+  get contractAddress() {
+    return this.tokenConfig.tokenAddress;
+  }
+
   getChain() {
     return this.tokenConfig.type;
   }

@@ -347,7 +347,7 @@ export class SolCoin extends AccountCoinToken {
       ...options,
     });
 
-    this.tokenAddress = options.tokenAddress;
+    this.tokenAddress = options.contractAddress;
     this.contractAddress = options.contractAddress;
   }
 }
