@@ -33,7 +33,7 @@ describe('sgb', function () {
       tsgb.should.be.an.instanceof(Tsgb);
       tsgb.getChain().should.equal('tsgb');
       tsgb.getFamily().should.equal('sgb');
-      tsgb.getFullName().should.equal('Testnet songbird chain');
+      tsgb.getFullName().should.equal('Testnet songbird');
       tsgb.getBaseFactor().should.equal(1e18);
       tsgb.supportsTss().should.equal(true);
       tsgb.allowsAccountConsolidations().should.equal(false);

@@ -33,7 +33,7 @@ describe('xdc', function () {
       txdc.should.be.an.instanceof(Txdc);
       txdc.getChain().should.equal('txdc');
       txdc.getFamily().should.equal('xdc');
-      txdc.getFullName().should.equal('Testnet XDC chain');
+      txdc.getFullName().should.equal('Testnet XDC');
       txdc.getBaseFactor().should.equal(1e18);
       txdc.supportsTss().should.equal(true);
       txdc.allowsAccountConsolidations().should.equal(false);
