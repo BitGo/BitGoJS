@@ -37,7 +37,7 @@ describe('Internet computer', function () {
     icp.supportsTss().should.equal(true);
 
     ticp.getChain().should.equal('ticp');
-    ticp.getFamily().should.equal('ticp');
+    ticp.getFamily().should.equal('icp');
     ticp.getFullName().should.equal('Testnet Internet Computer');
     ticp.getBaseFactor().should.equal(1e8);
     icp.supportsTss().should.equal(true);
@@ -76,7 +76,7 @@ describe('Internet computer', function () {
     it('should throw an error when invalid public key is provided', async function () {
       await basecoin
         .getAddressFromPublicKey(invalidPublicKey)
-        .should.be.rejectedWith(`Public Key is not in a valid Hex Encoded Format`);
+        .should.be.rejectedWith(`Invalid hex-encoded public key format.`);
     });
 
     it('should return valid address from a valid hex encoded public key', async function () {
@@ -87,7 +87,7 @@ describe('Internet computer', function () {
     it('should throw an error when invalid public key is provided', async function () {
       await utils
         .getAddressFromPublicKey(invalidPublicKey)
-        .should.be.rejectedWith(`Public Key is not in a valid Hex Encoded Format`);
+        .should.be.rejectedWith(`Invalid hex-encoded public key format.`);
     });
   });
   describe('Generate wallet key pair: ', () => {
