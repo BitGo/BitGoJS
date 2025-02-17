@@ -99,8 +99,10 @@ export function getPolicyForEnv(env: EnvironmentName): DescriptorValidationPolic
     case 'adminProd':
     case 'prod':
       return getValidatorSome([
-        // allow all 2-of-3-ish descriptors where the keys match the wallet keys
-        getValidatorOneOfTemplates(['Wsh2Of3', 'Wsh2Of3CltvDrop']),
+        // allow 2-of-3-ish descriptor groups where the keys match the wallet keys
+        getValidatorDescriptorTemplate('Wsh2Of3'),
+        // allow descriptor groups where all keys match the wallet keys plus OP_DROP (coredao staking)
+        getValidatorDescriptorTemplate('Wsh2Of3CltvDrop'),
         // allow all descriptors signed by the user key
         getValidatorSignedByUserKey(),
       ]);

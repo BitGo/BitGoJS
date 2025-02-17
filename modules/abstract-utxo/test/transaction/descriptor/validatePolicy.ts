@@ -35,9 +35,13 @@ function testAssertDescriptorPolicy(
 
 describe('assertDescriptorPolicy', function () {
   const keys = getKeyTriple();
-  function getNamedDescriptor(name: DescriptorTemplate): NamedDescriptor {
+  function getNamedDescriptorSigned(name: DescriptorTemplate): NamedDescriptor {
     return createNamedDescriptorWithSignature(name, getDescriptor(name), keys[0]);
   }
+  function getNamedDescriptor(name: DescriptorTemplate): NamedDescriptor {
+    return stripSignature(getNamedDescriptorSigned(name));
+  }
+
   function stripSignature(d: NamedDescriptor): NamedDescriptor {
     return { ...d, signatures: undefined };
   }
@@ -47,11 +51,26 @@ describe('assertDescriptorPolicy', function () {
 
     // prod does only allow Wsh2Of3-ish descriptors
     testAssertDescriptorPolicy([getNamedDescriptor('Wsh2Of3')], getPolicyForEnv('prod'), keys, null);
+    testAssertDescriptorPolicy([getNamedDescriptor('Wsh2Of3CltvDrop')], getPolicyForEnv('prod'), keys, null);
+
+    // does not allow mixed descriptors
+    testAssertDescriptorPolicy(
+      [getNamedDescriptor('Wsh2Of3'), getNamedDescriptor('Wsh2Of3CltvDrop')],
+      getPolicyForEnv('prod'),
+      keys,
+      new DescriptorPolicyValidationError(
+        [
+          toNamedDescriptorNative(getNamedDescriptor('Wsh2Of3'), 'derivable'),
+          toNamedDescriptorNative(getNamedDescriptor('Wsh2Of3CltvDrop'), 'derivable'),
+        ],
+        getPolicyForEnv('prod')
+      )
+    );
 
     // prod only allows other descriptors if they are signed by the user key
-    testAssertDescriptorPolicy([getNamedDescriptor('Wsh2Of2')], getPolicyForEnv('prod'), keys, null);
+    testAssertDescriptorPolicy([getNamedDescriptorSigned('Wsh2Of2')], getPolicyForEnv('prod'), keys, null);
     testAssertDescriptorPolicy(
-      [stripSignature(getNamedDescriptor('Wsh2Of2'))],
+      [getNamedDescriptor('Wsh2Of2')],
       getPolicyForEnv('prod'),
       keys,
       new DescriptorPolicyValidationError(
