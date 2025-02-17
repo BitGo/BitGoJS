@@ -47,7 +47,7 @@ export type DescriptorTemplate =
    * an OP_DROP (requiring a miniscript extension).
    * It is basically what is used in CoreDao staking transactions.
    */
-  | 'ShWsh2Of3CltvDrop';
+  | 'Wsh2Of3CltvDrop';
 
 function toXPub(k: BIP32Interface | string, path: string): string {
   if (typeof k === 'string') {
@@ -73,7 +73,7 @@ export function getPsbtParams(t: DescriptorTemplate): Partial<PsbtParams> {
     case 'Wsh2Of2':
     case 'Tr2Of3-NoKeyPath':
       return {};
-    case 'ShWsh2Of3CltvDrop':
+    case 'Wsh2Of3CltvDrop':
       return { locktime: 1 };
   }
 }
@@ -88,14 +88,12 @@ function getDescriptorNode(
       return {
         wsh: { multi: multiArgs(2, 3, keys, path) },
       };
-    case 'ShWsh2Of3CltvDrop':
+    case 'Wsh2Of3CltvDrop':
       const { locktime } = getPsbtParams(template);
       assert(locktime);
       return {
-        sh: {
-          wsh: {
-            and_v: [{ 'r:after': locktime }, { multi: multiArgs(2, 3, keys, path) }],
-          },
+        wsh: {
+          and_v: [{ 'r:after': locktime }, { multi: multiArgs(2, 3, keys, path) }],
         },
       };
     case 'Wsh2Of2':
