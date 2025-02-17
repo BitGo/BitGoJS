@@ -11,7 +11,6 @@ import {
   SignedTransaction,
   Environments,
 } from '@bitgo/sdk-core';
-import { KeyPair as IcpKeyPair } from './lib/keyPair';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import utils from './lib/utils';
 
@@ -75,15 +74,7 @@ export class Icp extends BaseCoin {
    * @param seed Seed from which the new keypair should be generated, otherwise a random seed is used
    */
   public generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new IcpKeyPair({ seed }) : new IcpKeyPair();
-    const keys = keyPair.getExtendedKeys();
-    if (!keys.xprv) {
-      throw new Error('Missing prv in key generation.');
-    }
-    return {
-      pub: keys.xpub,
-      prv: keys.xprv,
-    };
+    return utils.generateKeyPair(seed);
   }
 
   isValidAddress(address: string): boolean {
@@ -98,8 +89,8 @@ export class Icp extends BaseCoin {
     return utils.isValidPublicKey(key);
   }
 
-  isValidPrv(_: string): boolean {
-    throw new Error('Method not implemented.');
+  isValidPrv(key: string): boolean {
+    return utils.isValidPrivateKey(key);
   }
 
   /** @inheritDoc */

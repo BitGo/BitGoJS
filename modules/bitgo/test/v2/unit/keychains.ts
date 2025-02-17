@@ -83,6 +83,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.XDC && // TODO(WIN-4173): remove this once coin-specific module for XDC is added
         n.asset !== UnderlyingAsset.RUNE &&
         n.asset !== UnderlyingAsset.BABY &&
+        n.asset !== UnderlyingAsset.ICP &&
         coinFamilyValues.includes(n.name)
     );
 
