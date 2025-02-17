@@ -25,23 +25,35 @@ export class Utils implements BaseUtils {
     }
 
     const pubKeyBytes = this.hexToBytes(hexStr);
-    const firstByte = pubKeyBytes[0];
-    return (
-      (pubKeyBytes.length === 33 && (firstByte === 2 || firstByte === 3)) ||
-      (pubKeyBytes.length === 65 && firstByte === 4)
-    );
+
+    if (pubKeyBytes.length === 33 && (pubKeyBytes[0] === 2 || pubKeyBytes[0] === 3)) {
+      return true;
+    } else if (pubKeyBytes.length === 65 && pubKeyBytes[0] === 4) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   isValidLength(hexStr: string): boolean {
-    return hexStr.length / 2 === 33 || hexStr.length / 2 === 65;
+    const byteLength = hexStr.length / 2; // Convert hex length to byte length
+    if (byteLength === 33 || byteLength === 65) {
+      return true;
+    }
+
+    return false;
   }
 
   isValidHex(hexStr: string): boolean {
-    return /^([0-9a-fA-F]{2})+$/.test(hexStr);
+    return /^[0-9a-fA-F]+$/.test(hexStr);
   }
 
   hexToBytes(hex: string): Uint8Array {
-    return new Uint8Array(Buffer.from(hex, 'hex'));
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    }
+    return bytes;
   }
 
   /** @inheritdoc */

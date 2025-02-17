@@ -30,9 +30,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
     } else if (isSeed(source)) {
       this.hdNode = bip32.fromSeed(source.seed);
     } else if (isPrivateKey(source)) {
-      super.recordKeysFromPrivateKey(source.prv);
+      this.recordKeysFromPrivateKey(source.prv);
     } else if (isPublicKey(source)) {
-      super.recordKeysFromPublicKey(source.pub);
+      this.recordKeysFromPublicKey(source.pub);
     } else {
       throw new Error('Invalid key pair options');
     }
