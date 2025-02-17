@@ -33,7 +33,7 @@ describe('wemix', function () {
       twemix.should.be.an.instanceof(Twemix);
       twemix.getChain().should.equal('twemix');
       twemix.getFamily().should.equal('wemix');
-      twemix.getFullName().should.equal('Testnet wemix chain');
+      twemix.getFullName().should.equal('Testnet wemix');
       twemix.getBaseFactor().should.equal(1e18);
       twemix.supportsTss().should.equal(true);
       twemix.allowsAccountConsolidations().should.equal(false);

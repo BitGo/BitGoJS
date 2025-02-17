@@ -1089,7 +1089,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'e6ecb22e-0ae8-463a-b2fb-61502fd54240',
     'txdc',
-    'Testnet XDC chain',
+    'Testnet XDC',
     Networks.test.xdc,
     18,
     UnderlyingAsset.XDC,
@@ -1109,7 +1109,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'b18517e3-2fba-44df-be39-7ba062d14895',
     'twemix',
-    'Testnet wemix chain',
+    'Testnet wemix',
     Networks.test.wemix,
     18,
     UnderlyingAsset.WEMIX,
@@ -1119,7 +1119,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '202caf8f-4d43-4208-b206-8231f555c518',
     'flr',
-    'flare',
+    'Flare',
     Networks.main.flr,
     18,
     UnderlyingAsset.FLR,
@@ -1129,7 +1129,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '338fc340-08be-4796-9c04-96e5a5078393',
     'tflr',
-    'Testnet flare chain',
+    'Testnet flare',
     Networks.test.flr,
     18,
     UnderlyingAsset.FLR,
@@ -1149,7 +1149,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'c6b8f90b-1f89-4d26-b296-4097927f6b30',
     'tsgb',
-    'Testnet songbird chain',
+    'Testnet songbird',
     Networks.test.sgb,
     18,
     UnderlyingAsset.SGB,
