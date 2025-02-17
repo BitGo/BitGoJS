@@ -76,7 +76,7 @@ describe('Internet computer', function () {
     it('should throw an error when invalid public key is provided', async function () {
       await basecoin
         .getAddressFromPublicKey(invalidPublicKey)
-        .should.be.rejectedWith(`Public Key is not in a valid Hex Encoded Format`);
+        .should.be.rejectedWith(`Invalid hex-encoded public key format.`);
     });
 
     it('should return valid address from a valid hex encoded public key', async function () {
@@ -87,7 +87,7 @@ describe('Internet computer', function () {
     it('should throw an error when invalid public key is provided', async function () {
       await utils
         .getAddressFromPublicKey(invalidPublicKey)
-        .should.be.rejectedWith(`Public Key is not in a valid Hex Encoded Format`);
+        .should.be.rejectedWith(`Invalid hex-encoded public key format.`);
     });
   });
   describe('Generate wallet key pair: ', () => {
