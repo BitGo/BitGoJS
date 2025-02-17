@@ -1,65 +1,23 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
-import { BaseKey, Recipient, TransactionType, BaseTransaction } from '@bitgo/sdk-core';
+import { TransactionType, BaseTransaction, BaseAddress } from '@bitgo/sdk-core';
+import { Utils } from './utils';
+import BigNumber from 'bignumber.js';
 
 export class TransferBuilder extends TransactionBuilder {
-  protected _recipients: Recipient[];
+  protected _utils: Utils;
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
+  validateValue(value: BigNumber): void {
+    throw new Error('Method not implemented.');
+  }
+
+  constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
     super(_coinConfig);
+    this._utils = utils;
   }
 
   protected get transactionType(): TransactionType {
     return TransactionType.Send;
-  }
-
-  send(recipients: Recipient[]): this {
-    this.validateRecipients(recipients);
-    this._recipients = recipients;
-    return this;
-  }
-
-  /** @inheritdoc */
-  validateTransaction(): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  sign(key: BaseKey): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<BaseTransaction> {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * Initialize the transaction builder fields using the decoded transaction data
-   */
-  initBuilder(): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * Validates all fields are defined
-   */
-  private validateTransactionFields(): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * Build transfer programmable transaction
-   *
-   * @protected
-   */
-  protected buildIcpTransaction(): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  TransactionBuilder(): void {
-    throw new Error('method not implemented');
   }
 
   /** @inheritdoc */
@@ -70,5 +28,13 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   get transaction(): BaseTransaction {
     throw new Error('method not implemented');
+  }
+
+  validateAddress(address: BaseAddress, addressFormat?: string): void {
+    throw new Error('Method not implemented.');
+  }
+
+  validateRawTransaction(rawTransaction: any): void {
+    throw new Error('Invalid raw transaction');
   }
 }
