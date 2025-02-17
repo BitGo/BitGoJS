@@ -2788,7 +2788,6 @@ export const coins = CoinMap.fromCoins([
     'USDC',
     6,
     UnderlyingAsset['algo:USDC-31566704'],
-    'https://allo.info/asset/31566704/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDC'
@@ -2800,7 +2799,6 @@ export const coins = CoinMap.fromCoins([
     'Algorand USDT',
     6,
     UnderlyingAsset['algo:USDt-312769'],
-    'https://allo.info/asset/312769/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDt'
@@ -2812,7 +2810,6 @@ export const coins = CoinMap.fromCoins([
     'MCAU',
     5,
     UnderlyingAsset['algo:MCAU-6547014'],
-    'https://allo.info/asset/6547014/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'MCAU'
@@ -2824,7 +2821,6 @@ export const coins = CoinMap.fromCoins([
     'VCAD',
     2,
     UnderlyingAsset['algo:VCAD-438505559'],
-    'https://allo.info/asset/438505559/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'VCAD'
@@ -2836,7 +2832,6 @@ export const coins = CoinMap.fromCoins([
     'QCAD',
     2,
     UnderlyingAsset['algo:QCAD-84507107'],
-    'https://allo.info/asset/84507107/token',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'QCAD'
@@ -3005,7 +3000,6 @@ export const coins = CoinMap.fromCoins([
     'USDC',
     6,
     UnderlyingAsset['talgo:USDC-10458941'],
-    'https://someurl.com/',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDC'
@@ -3017,7 +3011,6 @@ export const coins = CoinMap.fromCoins([
     'Testnet Algorand USDT',
     6,
     UnderlyingAsset['talgo:USDt-180447'],
-    'https://someurl.com/',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USDt'
@@ -3029,7 +3022,6 @@ export const coins = CoinMap.fromCoins([
     'Unison',
     2,
     UnderlyingAsset['talgo:USON-16026728'],
-    'https://someurl.com/',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'USON'
@@ -3041,7 +3033,6 @@ export const coins = CoinMap.fromCoins([
     'Sparrow',
     4,
     UnderlyingAsset['talgo:SPRW-16026732'],
-    'https://someurl.sparrow.com/',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'SPRW'
@@ -3053,7 +3044,6 @@ export const coins = CoinMap.fromCoins([
     'Kalki',
     8,
     UnderlyingAsset['talgo:KAL-16026733'],
-    'https://someurl.kalki.com/',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'KAL'
@@ -3065,7 +3055,6 @@ export const coins = CoinMap.fromCoins([
     'JPT',
     6,
     UnderlyingAsset['talgo:JPT-162085446'],
-    'https://www.cav3.sg',
     AccountCoin.DEFAULT_FEATURES,
     '',
     'JPT'

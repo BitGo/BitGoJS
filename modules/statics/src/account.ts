@@ -84,10 +84,6 @@ export interface HederaTokenConstructorOptions extends AccountConstructorOptions
   contractAddress: string;
 }
 
-export interface AlgoCoinConstructorOptions extends AccountConstructorOptions {
-  tokenURL: string;
-}
-
 export interface EosCoinConstructorOptions extends AccountConstructorOptions {
   contractName: string;
   contractAddress: string;
@@ -296,21 +292,10 @@ export class HederaToken extends AccountCoinToken {
  *
  */
 export class AlgoCoin extends AccountCoinToken {
-  public tokenURL: string;
-  constructor(options: AlgoCoinConstructorOptions) {
+  constructor(options: AccountConstructorOptions) {
     super({
       ...options,
     });
-
-    if (options.tokenURL) {
-      try {
-        new URL(options.tokenURL);
-      } catch (ex) {
-        throw new InvalidDomainError(options.name, options.tokenURL);
-      }
-    }
-
-    this.tokenURL = options.tokenURL;
   }
 }
 
@@ -1302,7 +1287,6 @@ export function hederaToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param tokenURL Optional asset Url for more informationa about the asset
  * See https://developer.algorand.org/docs/reference/transactions/#url
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -1317,7 +1301,6 @@ export function algoToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  tokenURL = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
@@ -1332,7 +1315,6 @@ export function algoToken(
       fullName,
       decimalPlaces,
       asset,
-      tokenURL: tokenURL,
       features,
       prefix,
       suffix,
@@ -1353,7 +1335,6 @@ export function algoToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param tokenURL Optional asset Url for more informationa about the asset
  * See https://developer.algorand.org/docs/reference/transactions/#url
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -1367,13 +1348,12 @@ export function talgoToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  tokenURL = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.algorand
 ): Readonly<AlgoCoin> {
-  return algoToken(id, name, alias, fullName, decimalPlaces, asset, tokenURL, features, prefix, suffix, network);
+  return algoToken(id, name, alias, fullName, decimalPlaces, asset, features, prefix, suffix, network);
 }
 
 /**
