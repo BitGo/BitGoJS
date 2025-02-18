@@ -1,6 +1,6 @@
+import { describe, it } from 'node:test';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
-import should from 'should';
 import { WrappedBuilder } from '../../../src';
 import { getBuilder } from '../../../src/lib/builder';
 import { PARTICIPANTS } from '../../resources';
@@ -10,7 +10,7 @@ describe('Trx Contract call Builder', () => {
 
   describe('Should validate ', () => {
     it('a valid address', () => {
-      should.doesNotThrow(() => builder.validateAddress({ address: PARTICIPANTS.custodian.address }));
+      assert.doesNotThrow(() => builder.validateAddress({ address: PARTICIPANTS.custodian.address }));
     });
 
     it('an empty address', () => {
@@ -42,7 +42,7 @@ describe('Trx Contract call Builder', () => {
 
     it('a valid value', () => {
       const value = new BigNumber('13456');
-      should.doesNotThrow(() => builder.validateValue(value));
+      assert.doesNotThrow(() => builder.validateValue(value));
     });
 
     it('a negative value', () => {

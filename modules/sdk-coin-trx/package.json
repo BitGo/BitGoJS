@@ -14,7 +14,7 @@
     "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
     "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
-    "unit-test": "mocha",
+    "unit-test": "yarn run build && node --test",
     "gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/protobuf/tron.js ./resources/protobuf/Discover.proto ./resources/protobuf/Contract.proto ./resources/protobuf/tron.proto",
     "gen-protobufts": "pbts -o ./resources/protobuf/tron.d.ts ./resources/protobuf/tron.js"
   },
