@@ -2460,6 +2460,7 @@ export enum UnderlyingAsset {
   'sui:vsui' = 'sui:vsui',
   'sui:send' = 'sui:send',
   'sui:cetus' = 'sui:cetus',
+  'sui:wal' = 'sui:wal',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
