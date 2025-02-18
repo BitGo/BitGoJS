@@ -94,7 +94,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
 
   const encryptedSignerAdminMacaroon = bitgo.encrypt({
     password: passphrase,
-    input: addIPCaveatToMacaroon(adminMacaroon, expressIP),
+    input: expressIP ? addIPCaveatToMacaroon(adminMacaroon, expressIP) : adminMacaroon,
   });
   const encryptedSignerTlsKey = bitgo.encrypt({ password: passphrase, input: signerTlsKey });
   const watchOnly = createWatchOnly(signerRootKey, network);
