@@ -8153,6 +8153,18 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['sui:cetus'],
     SUI_TOKEN_FEATURES
   ),
+  suiToken(
+    '9b6a8372-5d8a-41d1-8074-d53e59b2e513',
+    'sui:wal',
+    'Walrus',
+    9,
+    '0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59',
+    'wal',
+    'WAL',
+    '0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL',
+    UnderlyingAsset['sui:wal'],
+    SUI_TOKEN_FEATURES
+  ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
     'tsui:deep',
