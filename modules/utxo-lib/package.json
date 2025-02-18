@@ -60,7 +60,6 @@
     "create-hash": "^1.2.0",
     "create-hmac": "^1.1.7",
     "ecpair": "npm:@bitgo/ecpair@2.1.0-rc.0",
-    "elliptic": "^6.6.1",
     "fastpriorityqueue": "^0.7.1",
     "typeforce": "^1.11.3",
     "varuint-bitcoin": "^1.1.2"
@@ -71,6 +70,7 @@
     "@types/node": "^16.18.46",
     "axios": "^1.6.0",
     "debug": "^3.1.0",
+    "elliptic": "^6.6.1",
     "fs-extra": "^9.1.0"
   },
   "lint-staged": {
