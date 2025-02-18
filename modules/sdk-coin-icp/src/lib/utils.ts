@@ -1,14 +1,19 @@
-import { BaseUtils, KeyPair } from '@bitgo/sdk-core';
 import { secp256k1 } from '@noble/curves/secp256k1';
+import { BaseUtils, KeyPair, ParseTransactionError } from '@bitgo/sdk-core';
 import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
+import { IcpNetworkIdentifier, IcpTransactionData } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    if (!address) {
+      return false;
+    }
+    const hexRegex = /^[0-9a-fA-F]{64}$/;
+    return hexRegex.test(address);
   }
 
   isValidTransactionId(txId: string): boolean {
@@ -33,6 +38,18 @@ export class Utils implements BaseUtils {
     } else {
       return false;
     }
+  }
+
+  getTransactionType(): string {
+    return 'TRANSACTION';
+  }
+
+  getFeeType(): string {
+    return 'FEE';
+  }
+
+  getDecimalPrecision(): number {
+    return 8;
   }
 
   isValidLength(hexStr: string): boolean {
@@ -84,7 +101,7 @@ export class Utils implements BaseUtils {
     };
   }
 
-  getNetworkIdentifier(): Record<string, string> {
+  getNetworkIdentifier(): IcpNetworkIdentifier {
     return {
       blockchain: 'Internet Computer',
       network: '00000000000000020101',
@@ -161,6 +178,26 @@ export class Utils implements BaseUtils {
       pub: keys.pub,
       prv: keys.prv,
     };
+  }
+
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   *
+   * @param {string} transactionData - Transaction data in JSON format
+   */
+  validateRawTransaction(transactionData: IcpTransactionData): void {
+    if (!transactionData) {
+      throw new ParseTransactionError('Invalid transaction data');
+    }
+    if (!this.isValidPublicKey(transactionData.senderPublicKeyHex)) {
+      throw new ParseTransactionError('Invalid sender public key');
+    }
+    if (!this.isValidAddress(transactionData.senderAddress)) {
+      throw new ParseTransactionError('Invalid sender address');
+    }
+    if (!this.isValidAddress(transactionData.receiverAddress)) {
+      throw new ParseTransactionError('Invalid receiver address');
+    }
   }
 }
 
