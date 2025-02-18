@@ -1,22 +1,16 @@
 import { BaseKey, DotAddressFormat, Eddsa, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, coins, DotNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
 import { KeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from '../../../src/lib';
 import { Interface, utils } from '../../../src/';
-import { accounts, rawTx } from '../../resources';
+import { accounts, testTx } from '../../resources';
 import { testnetMaterial } from '../../../src/resources';
 
-export interface TestDotNetwork extends DotNetwork {
-  genesisHash: string;
-  specVersion: number;
-  metadataRpc: `0x${string}`;
-}
-
 export const buildTestConfig = (): Readonly<CoinConfig> => {
-  return coins.get('tdot');
+  return coins.get('ttao');
 };
 
 class StubTransactionBuilder extends TransactionBuilder {
@@ -159,20 +153,17 @@ describe('TAO Transfer Builder Base', () => {
     });
 
     it('should build from raw signed tx', async () => {
-      builder.from(rawTx.transfer.signed);
-      should.deepEqual(builder.getSender(), '5H56KVtb3sSMxuhFsH51iFi1gei7tnBQjpVmj6hu9tK7CBDR');
-      should.deepEqual(builder.getNonce(), 17);
+      builder.from(testTx.transfer.signedHex);
+      should.deepEqual(builder.getSender(), testTx.transfer.sender);
+      should.deepEqual(builder.getNonce(), testTx.transfer.nonce);
       should.deepEqual(builder.getEraPeriod(), 64);
       should.deepEqual(builder.getTip(), undefined);
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(rawTx.transfer.unsigned);
-      should.deepEqual(
-        builder.getReferenceBlock(),
-        '0xcfe3aab1066cbb67f3d004051bf07323f2eab4b4f5ba76e5a1c37f391f89b016'
-      );
-      should.deepEqual(builder.getNonce(), 17);
+      builder.from(testTx.transfer.unsignedHex);
+      should.deepEqual(builder.getReferenceBlock(), testTx.transfer.blockHash);
+      should.deepEqual(builder.getNonce(), testTx.transfer.nonce);
       should.deepEqual(builder.getEraPeriod(), 64);
       should.deepEqual(builder.getTip(), undefined);
     });
