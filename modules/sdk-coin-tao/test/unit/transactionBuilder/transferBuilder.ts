@@ -7,6 +7,8 @@ import { utils } from '../../../src';
 import { accounts, rawTx, chainName, genesisHash, mockTssSignature } from '../../resources';
 import { buildTestConfig } from './base';
 import { testnetMaterial } from '../../../src/resources';
+import { coins } from '@bitgo/statics';
+import { TransactionBuilderFactory } from "@bitgo/sdk-coin-tao";
 
 describe('Tao Transfer Builder', () => {
   let builder: TransferBuilder;
@@ -24,6 +26,12 @@ describe('Tao Transfer Builder', () => {
 
   describe('setter validation', () => {
     it('should validate to address', () => {
+      const coin = coins.get('tao');
+      const factory = new TransactionBuilderFactory(coin);
+      // signed
+      factory.from(
+        '0x55028400aaa34f9f3c1f685e2bac444a4e2d50d302a16f0550f732dd799f854dda7ec772013c7faf171926bc568de06a38aaa15c86231bfabd2d561cc9107a95b5bea53943b01dd19f790956e6b84bda1eb44cd00ac11cecf76488d15beacb0c88d91a448e74009105000007028a90be061598f4b592afbd546bcb6beadb3c02f5c129df2e11b698f9543dbd41000000e1f50500000000'
+      );
       const spy = sinon.spy(builder, 'validateAddress');
       assert.throws(
         () => builder.to({ address: 'asd' }),
