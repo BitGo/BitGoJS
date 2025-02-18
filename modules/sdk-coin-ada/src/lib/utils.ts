@@ -180,6 +180,12 @@ export class Utils implements BaseUtils {
 
     //Check for Byron-era address
     try {
+      // Reject Daedalus wallet addresses (Byron-era addresses starting with "DdzFF")
+      if (address.startsWith('DdzFF')) {
+        console.log(`Rejecting Daedalus wallet address: ${address}`);
+        return false;
+      }
+
       const decoded = bs58.decode(address);
       const cborData = cbor.decodeFirstSync(decoded);
       return Array.isArray(cborData) && cborData.length >= 2;
@@ -270,6 +276,11 @@ export class Utils implements BaseUtils {
 
     // Try decoding as a Byron (base58) address later
     try {
+      // Reject Daedalus wallet addresses (Byron-era addresses starting with "DdzFF")
+      if (address.startsWith('DdzFF')) {
+        throw new InvalidAddressError('Provided string is a Daedalus address');
+      }
+
       return ByronAddress.from_base58(address).to_address();
     } catch (e) {
       console.error(`Could not decode byron address from string '${address}'`);
@@ -295,9 +306,12 @@ export class Utils implements BaseUtils {
       return address.to_bech32();
     }
 
-    // If not Shelley, try Byron
     const byronAddress = ByronAddress.from_address(address);
+    // Reject Daedalus wallet addresses (Byron-era addresses starting with "DdzFF")
     if (byronAddress) {
+      if (byronAddress.to_base58().startsWith('DdzFF')) {
+        throw new InvalidAddressError('Provided address is a Daedalus address');
+      }
       return byronAddress.to_base58();
     }
 

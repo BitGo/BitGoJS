@@ -23,7 +23,7 @@ export const address = {
   byron3:
     '37btjrVyb4KEB2STADSsj3MYSAdj52X5FrFWpw2r7Wmj2GDzXjFRsHWuZqrw7zSkwopv8Ci3VWeg6bisU9dgJxW5hb2MZYeduNKbQJrqz3zVBsu9nT', // Valid Byron testnet
   byron4: 'Ae2tdPwUPE_invalid_address', // Invalid Byron (malformed Base58)
-  byron5: 'DdzFFzCqr_invalid_base58', // Invalid Byron (malformed Base58)
+  byron5: 'DdzFFzCqrhsfZHjaBunVySZBU8i9Zom7Gujham6Jz8scCcAdkDmEbD9XSdXKdBiPoa1fjgL4ksGjQXD8ZkSNHGJfT25ieA9rWNCSA5qc', // Invalid Daedalus type)
   byron6: '37btjrVyb4KDX_invalid_CBOR', // Invalid CBOR structure
 };
 
