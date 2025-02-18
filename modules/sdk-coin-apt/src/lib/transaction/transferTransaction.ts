@@ -11,6 +11,7 @@ import {
 
 import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import { APTOS_COIN, COIN_TRANSFER_FUNCTION } from '../constants';
+import utils from '../utils';
 
 export class TransferTransaction extends Transaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
@@ -34,12 +35,7 @@ export class TransferTransaction extends Transaction {
     }
     this._assetId = entryFunction.type_args[0].toString();
     this._recipient.address = entryFunction.args[0].toString();
-    const amountBuffer = Buffer.from(entryFunction.args[1].bcsToBytes());
-
-    const low = BigInt(amountBuffer.readUint32LE());
-    const high = BigInt(amountBuffer.readUint32LE(4));
-    const amount = (high << BigInt(32)) + low;
-    this._recipient.amount = amount.toString();
+    this._recipient.amount = utils.getAmountFromPayloadArgs(entryFunction.args[1].bcsToBytes());
   }
 
   protected async buildRawTransaction(): Promise<void> {
