@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor, DescriptorPkType } from '@bitgo/wasm-miniscript';
 import { BIP32Interface, networks } from '@bitgo/utxo-lib';
 import { signMessage, verifyMessage } from '@bitgo/sdk-core';
 
@@ -22,6 +22,8 @@ export type NamedDescriptor<T = string> = {
   signatures?: string[];
 };
 
+export type NamedDescriptorNative = NamedDescriptor<Descriptor>;
+
 export function createNamedDescriptorWithSignature(
   name: string,
   descriptor: string | Descriptor,
@@ -33,6 +35,10 @@ export function createNamedDescriptorWithSignature(
   const value = descriptor.toString();
   const signature = signMessage(value, signingKey, networks.bitcoin).toString('hex');
   return { name, value, signatures: [signature] };
+}
+
+export function toNamedDescriptorNative(e: NamedDescriptor, pkType: DescriptorPkType): NamedDescriptorNative {
+  return { ...e, value: Descriptor.fromString(e.value, pkType) };
 }
 
 export function hasValidSignature(descriptor: string | Descriptor, key: BIP32Interface, signatures: string[]): boolean {
