@@ -2,6 +2,7 @@ import {
   BaseCoin,
   BitGoBase,
   KeyPair,
+  MethodNotImplementedError,
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -85,7 +86,7 @@ export class SubstrateCoin extends BaseCoin {
 
   /** @inheritDoc **/
   isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented');
+    throw new MethodNotImplementedError();
   }
 
   /** @inheritDoc **/
