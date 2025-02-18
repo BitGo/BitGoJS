@@ -1685,8 +1685,23 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
 }
 
 export function setupLightningRoutes(app: express.Application, config: Config): void {
-  app.post('/api/v2/:coin/initwallet', parseBody, prepareBitGo(config), promiseWrapper(handleInitLightningWallet));
-  app.post('/api/v2/:coin/signermacaroon', parseBody, prepareBitGo(config), promiseWrapper(handleCreateSignerMacaroon));
-  app.post('/api/v2/:coin/unlockwallet', parseBody, prepareBitGo(config), promiseWrapper(handleUnlockLightningWallet));
+  app.post(
+    '/api/v2/:coin/wallet/:id/initwallet',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleInitLightningWallet)
+  );
+  app.post(
+    '/api/v2/:coin/wallet/:id/signermacaroon',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleCreateSignerMacaroon)
+  );
+  app.post(
+    '/api/v2/:coin/wallet/:id/unlockwallet',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleUnlockLightningWallet)
+  );
   app.get('/api/v2/:coin/wallet/:id/state', prepareBitGo(config), promiseWrapper(handleGetLightningWalletState));
 }

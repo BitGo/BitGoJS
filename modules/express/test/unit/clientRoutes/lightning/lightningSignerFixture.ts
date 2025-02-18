@@ -1,6 +1,5 @@
 export const apiData = {
   initWalletRequestBody: {
-    walletId: 'fakeid',
     passphrase: 'password123',
     expressIP: '127.0.0.1',
     signerIP: '127.0.0.1',
@@ -10,12 +9,10 @@ export const apiData = {
       'LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUFFamQ0Qng3M3VPYllGSW42VlZpZTJmeG9lbXVYZFBob2FkS2JscHpnaTBvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFclA0d2NXWFEwUWFFazhsVFNVTXBCa1d3ditFbXE1M3I5ZVJ5UlQ5NGRkZ1VHS1MwWVErSQpiZzFseVBRU3hiN0dXYloyWG9GUFdiK1VOM0lFMVlMQ2tRPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=',
   },
   signerMacaroonRequestBody: {
-    walletId: 'fakeid',
     passphrase: 'password123',
     watchOnlyIP: '127.0.0.1',
   },
   unlockWalletRequestBody: {
-    walletId: 'fakeid',
     passphrase: 'password123',
   },
   wallet: {

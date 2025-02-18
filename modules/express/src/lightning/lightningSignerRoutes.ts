@@ -58,7 +58,7 @@ function getMacaroonRootKey(passphrase: string, nodeAuthEncryptedPrv: string, de
  * Handle the request to initialise remote signer LND for a wallet.
  */
 export async function handleInitLightningWallet(req: express.Request): Promise<unknown> {
-  const { walletId, passphrase, signerTlsKey, signerTlsCert, signerIP, expressIP } = decodeOrElse(
+  const { passphrase, signerTlsKey, signerTlsCert, signerIP, expressIP } = decodeOrElse(
     InitLightningWalletRequest.name,
     InitLightningWalletRequest,
     req.body,
@@ -68,9 +68,11 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     }
   );
 
-  const lndSignerClient = await LndSignerClient.create(walletId, req.config);
-
   const bitgo = req.bitgo;
+  const walletId = req.params.id;
+  if (typeof walletId !== 'string') {
+    throw new Error(`Invalid wallet id: ${walletId}`);
+  }
   const coinName = req.params.coin;
   if (!isLightningCoinName(coinName)) {
     throw new Error(`Invalid coin to initialise lightning wallet: ${coinName}`);
@@ -78,6 +80,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
   const coin = bitgo.coin(coinName);
 
   const wallet = await coin.wallets().get({ id: walletId });
+  const lndSignerClient = await LndSignerClient.create(walletId, req.config);
 
   const userKey = await getLightningKeychain(wallet);
   const { userAuthKey, nodeAuthKey } = await getLightningAuthKeychains(wallet);
@@ -96,7 +99,10 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     password: passphrase,
     input: expressIP ? addIPCaveatToMacaroon(adminMacaroon, expressIP) : adminMacaroon,
   });
-  const encryptedSignerTlsKey = bitgo.encrypt({ password: passphrase, input: signerTlsKey });
+  const encryptedSignerTlsKey = bitgo.encrypt({
+    password: passphrase,
+    input: signerTlsKey,
+  });
   const watchOnly = createWatchOnly(signerRootKey, network);
 
   const coinSpecific = {
@@ -125,7 +131,11 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
  * Handle the request to create a signer macaroon from remote signer LND for a wallet.
  */
 export async function handleCreateSignerMacaroon(req: express.Request): Promise<unknown> {
-  const { walletId, passphrase, watchOnlyIP } = decodeOrElse(
+  const walletId = req.params.id;
+  if (typeof walletId !== 'string') {
+    throw new Error(`Invalid wallet id: ${walletId}`);
+  }
+  const { passphrase, watchOnlyIP } = decodeOrElse(
     CreateSignerMacaroonRequest.name,
     CreateSignerMacaroonRequest,
     req.body,
@@ -150,7 +160,10 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   if (!encryptedSignerAdminMacaroon) {
     throw new Error('Missing encryptedSignerAdminMacaroon in wallet');
   }
-  const adminMacaroon = bitgo.decrypt({ password: passphrase, input: encryptedSignerAdminMacaroon });
+  const adminMacaroon = bitgo.decrypt({
+    password: passphrase,
+    input: encryptedSignerAdminMacaroon,
+  });
 
   const { userAuthKey } = await getLightningAuthKeychains(wallet);
 
@@ -160,7 +173,10 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
     lndSignerClient
   );
 
-  const userAuthXprv = bitgo.decrypt({ password: passphrase, input: userAuthKey.encryptedPrv });
+  const userAuthXprv = bitgo.decrypt({
+    password: passphrase,
+    input: userAuthKey.encryptedPrv,
+  });
 
   const encryptedSignerMacaroon = bitgo.encrypt({
     password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
@@ -203,7 +219,7 @@ export async function handleGetLightningWalletState(req: express.Request): Promi
  * Handle the request to unlock a wallet in the signer.
  */
 export async function handleUnlockLightningWallet(req: express.Request): Promise<void> {
-  const { walletId, passphrase } = decodeOrElse(
+  const { passphrase } = decodeOrElse(
     UnlockLightningWalletRequest.name,
     UnlockLightningWalletRequest,
     req.body,
@@ -218,6 +234,10 @@ export async function handleUnlockLightningWallet(req: express.Request): Promise
     throw new Error(`Invalid coin to unlock lightning wallet: ${coinName}`);
   }
 
+  const walletId = req.params.id;
+  if (typeof walletId !== 'string') {
+    throw new Error(`Invalid wallet id: ${walletId}`);
+  }
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
   return await lndSignerClient.unlockWallet({ wallet_password: passphrase });
 }
