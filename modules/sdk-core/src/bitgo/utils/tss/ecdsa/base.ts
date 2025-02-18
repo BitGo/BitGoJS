@@ -1,4 +1,4 @@
-import { ec } from 'elliptic';
+import { secp256k1 } from '@noble/curves/secp256k1';
 
 import { IBaseCoin } from '../../../baseCoin';
 import baseTSSUtils from '../baseTSSUtils';
@@ -34,9 +34,12 @@ export class BaseEcdsaUtils extends baseTSSUtils<KeyShare> {
 
   static validateCommonKeychainPublicKey(commonKeychain: string) {
     const pub = BaseEcdsaUtils.getPublicKeyFromCommonKeychain(commonKeychain);
-    const secp256k1 = new ec('secp256k1');
-    const key = secp256k1.keyFromPublic(pub, 'hex');
-    return key.getPublic().encode('hex', false).slice(2);
+    try {
+      const point = secp256k1.ProjectivePoint.fromHex(pub);
+      return point.toHex(false).slice(2);
+    } catch (e) {
+      throw new Error('Invalid commonKeychain, error: ' + e.message);
+    }
   }
 
   /**

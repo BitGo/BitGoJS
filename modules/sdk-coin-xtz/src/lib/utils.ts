@@ -1,7 +1,7 @@
 import { isValidXpub, SigningError } from '@bitgo/sdk-core';
 import { InMemorySigner } from '@taquito/signer';
 import * as base58check from 'bs58check';
-import { ec as EC } from 'elliptic';
+import { secp256k1 } from '@noble/curves/secp256k1';
 import sodium from 'libsodium-wrappers';
 import { HashType, SignResponse } from './iface';
 import { KeyPair } from './keyPair';
@@ -101,9 +101,8 @@ export async function verifySignature(
   signature: string,
   watermark: Uint8Array = DEFAULT_WATERMARK
 ): Promise<boolean> {
-  const rawPublicKey = decodeKey(publicKey, hashTypes.sppk);
-  const ec = new EC('secp256k1');
-  const key = ec.keyFromPublic(rawPublicKey);
+  const rawPublicKey = decodeKey(publicKey, hashTypes.sppk).toString('hex');
+  const key = secp256k1.ProjectivePoint.fromHex(rawPublicKey);
 
   const messageBuffer = Uint8Array.from(Buffer.from(message, 'hex'));
   // Tezos signatures always have a watermark
@@ -115,7 +114,7 @@ export async function verifySignature(
   const bytesHash = Buffer.from(sodium.crypto_generichash(32, messageWithWatermark));
 
   const rawSignature = decodeSignature(signature, hashTypes.sig);
-  return key.verify(bytesHash, { r: rawSignature.slice(0, 32), s: rawSignature.slice(32, 64) });
+  return secp256k1.verify(rawSignature, bytesHash, key.toHex());
 }
 
 /**

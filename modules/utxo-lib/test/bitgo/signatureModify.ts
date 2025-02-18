@@ -1,12 +1,14 @@
 /* eslint-disable no-redeclare */
 import { script, ScriptSignature, TxOutput } from 'bitcoinjs-lib';
 import { isPlaceholderSignature, parseSignatureScript, UtxoTransaction } from '../../src/bitgo';
+import { secp256k1 } from '@noble/curves/secp256k1';
 
-const BN = require('bn.js');
-const EC = require('elliptic').ec;
-const secp256k1 = new EC('secp256k1');
-const n = secp256k1.curve.n;
-const nDiv2 = n.shrn(1);
+const n = BigInt(secp256k1.CURVE.n);
+const nDiv2 = n / BigInt(2);
+
+function bytesToBigInt(bytes: Uint8Array): bigint {
+  return BigInt(`0x${Buffer.from(bytes).toString('hex')}`);
+}
 
 function changeSignatureToHighS(signatureBuffer: Buffer): Buffer {
   if (!script.isCanonicalScriptSignature(signatureBuffer)) {
@@ -21,16 +23,19 @@ function changeSignatureToHighS(signatureBuffer: Buffer): Buffer {
     throw new Error(`invalid scalar length`);
   }
 
-  let ss = new BN(s);
+  let ss = bytesToBigInt(s);
 
-  if (ss.cmp(nDiv2) > 0) {
+  if (ss > nDiv2) {
     throw new Error(`signature already has high s value`);
   }
 
   // convert to high-S
-  ss = n.sub(ss);
+  ss = n - ss;
 
-  const newSig = ScriptSignature.encode(Buffer.concat([r, ss.toArrayLike(Buffer, 'be', 32)]), hashType);
+  const newSig = ScriptSignature.encode(
+    Buffer.concat([r, Buffer.from(ss.toString(16).padStart(64, '0'), 'hex')]),
+    hashType
+  );
   if (!script.isCanonicalScriptSignature(newSig)) {
     throw new Error(`newSig not canonical`);
   }

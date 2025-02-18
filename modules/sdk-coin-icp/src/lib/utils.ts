@@ -1,12 +1,10 @@
 import { BaseUtils, KeyPair } from '@bitgo/sdk-core';
-import elliptic from 'elliptic';
+import { secp256k1 } from '@noble/curves/secp256k1';
 import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
 import { KeyPair as IcpKeyPair } from './keyPair';
-
-const Secp256k1Curve = new elliptic.ec('secp256k1');
 
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
@@ -102,11 +100,9 @@ export class Utils implements BaseUtils {
   }
 
   derivePrincipalFromPublicKey(publicKeyHex: string): DfinityPrincipal {
-    const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
-
     try {
-      const ellipticKey = Secp256k1Curve.keyFromPublic(publicKeyBuffer);
-      const uncompressedPublicKeyHex = ellipticKey.getPublic(false, 'hex');
+      const point = secp256k1.ProjectivePoint.fromHex(publicKeyHex);
+      const uncompressedPublicKeyHex = point.toHex(false);
       const derEncodedKey = agent.wrapDER(Buffer.from(uncompressedPublicKeyHex, 'hex'), agent.SECP256K1_OID);
       const principalId = DfinityPrincipal.selfAuthenticating(Buffer.from(derEncodedKey));
       const principal = DfinityPrincipal.fromUint8Array(principalId.toUint8Array());
