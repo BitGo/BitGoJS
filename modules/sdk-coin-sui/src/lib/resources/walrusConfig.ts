@@ -13,7 +13,7 @@ export const WALRUS_TESTNET_CONFIG = {
     mutable: true,
   } as SharedObjectRef,
 
-  WALRUS_PKG_ID: '0x795ddbc26b8cfff2551f45e198b87fc19473f2df50f995376b924ac80e56f88b',
+  WALRUS_PKG_ID: '0x883b27de942203191726d6722dc097b6d5499234be2aa22c3872849c45fdd712',
   WALRUS_STAKING_MODULE_NAME: 'staking',
   WALRUS_STAKE_WITH_POOL_FUN_NAME: 'stake_with_pool',
 
