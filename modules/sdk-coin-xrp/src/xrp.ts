@@ -109,6 +109,11 @@ export class Xrp extends BaseCoin {
     return this.bitgo.get(this.url('/public/feeinfo')).result();
   }
 
+  /** @inheritdoc */
+  valuelessTransferAllowed(): boolean {
+    return true;
+  }
+
   public getTokenEnablementConfig(): TokenEnablementConfig {
     return {
       requiresTokenEnablement: true,
