@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.5.9...@bitgo/utxo-bin@3.6.0) (2025-02-19)
+
+### Bug Fixes
+
+- **root:** bump elliptic to 6.6.1 ([f588850](https://github.com/BitGo/BitGoJS/commit/f588850a3817db709213c3d44451b1ed93d8ac86))
+
+### Features
+
+- **utxo-core:** update descriptor test util to use AST types ([d29e0dc](https://github.com/BitGo/BitGoJS/commit/d29e0dcb09352f2ba9910d224ac3ac9c92cc9e81))
+
 ## [3.5.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.5.9...@bitgo/utxo-bin@3.5.10) (2025-02-11)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.3...@bitgo/abstract-substrate@1.1.5) (2025-02-19)
+
+### Bug Fixes
+
+- **abstract-substrate:** fix abstract-substrate implementation ([1c986da](https://github.com/BitGo/BitGoJS/commit/1c986daa817353ca522c0e8e72e67a6dffa00fac))
+- **abstract-substrate:** fix Material specName type ([2971d82](https://github.com/BitGo/BitGoJS/commit/2971d82879879c04190b45454a21f48473d13181))
+- **abstract-substrate:** use correct error for isWalletAddress ([f50c557](https://github.com/BitGo/BitGoJS/commit/f50c557df66a331b30c1a790884ab1d69b635390))
+
 ## [1.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.3...@bitgo/abstract-substrate@1.1.4) (2025-02-11)
 
 ### Bug Fixes

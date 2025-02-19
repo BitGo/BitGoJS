@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.2.1...@bitgo/utxo-lib@11.2.2) (2025-02-19)
+
+### Bug Fixes
+
+- **root:** bump elliptic to 6.6.1 ([f588850](https://github.com/BitGo/BitGoJS/commit/f588850a3817db709213c3d44451b1ed93d8ac86))
+
 ## [11.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.2.0...@bitgo/utxo-lib@11.2.1) (2024-12-03)
 
 ### Bug Fixes

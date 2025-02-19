@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-oas@1.1.18...@bitgo/sdk-coin-oas@2.0.0) (2025-02-19)
+
+### Bug Fixes
+
+- name for bera, coredao, oas ([719dde5](https://github.com/BitGo/BitGoJS/commit/719dde54d9966ceca297b5e2a10fab51a0af6edc))
+
+### BREAKING CHANGES
+
+- changing the name for bera, coredao and oas
+  Ticket: WIN-4509
+
 ## [1.1.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-oas@1.1.17...@bitgo/sdk-coin-oas@1.1.18) (2025-02-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-oas

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.14...@bitgo/abstract-eth@22.6.0) (2025-02-19)
+
+### Features
+
+- **abstract-eth:** add method to build and send ccr recovery txn ([0221896](https://github.com/BitGo/BitGoJS/commit/022189691a2f9a1ce2aa5ca84ddcc1042fd25e66))
+
 # [22.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.4.14...@bitgo/abstract-eth@22.5.0) (2025-02-11)
 
 ### Features

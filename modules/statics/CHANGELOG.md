@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.23.0...@bitgo/statics@51.0.0) (2025-02-19)
+
+### Bug Fixes
+
+- display name correction for xdc,flr,sgb,wemix ([b50ea6a](https://github.com/BitGo/BitGoJS/commit/b50ea6ad6723e755ac8e5c61380ffe5735d74a4b))
+- name for bera, coredao, oas ([719dde5](https://github.com/BitGo/BitGoJS/commit/719dde54d9966ceca297b5e2a10fab51a0af6edc))
+- name for bera, coredao, oas ([9a80203](https://github.com/BitGo/BitGoJS/commit/9a802033b9cf84466be1f131f8b385b8f94cc616))
+- **statics:** enable bulk withdrawal for babylon ([aa137f0](https://github.com/BitGo/BitGoJS/commit/aa137f01f0557da9572ff551d8502978db26252b))
+- **statics:** use DAI as display instead of SAI ([c99e425](https://github.com/BitGo/BitGoJS/commit/c99e4258a059e52e086321ca0c15ee36e2942df4))
+- testnet fix for sgb, flr ([2fc6a58](https://github.com/BitGo/BitGoJS/commit/2fc6a58f71ddebf7d13c21563f6f376bbfb003cd))
+
+### chore
+
+- **sdk-coin-algo:** remove tokenurl from coin statics ([2e5c7aa](https://github.com/BitGo/BitGoJS/commit/2e5c7aa540e0048ba7539d7787ee51f12393d638))
+
+### Features
+
+- onboard tokens ([8f1ecc7](https://github.com/BitGo/BitGoJS/commit/8f1ecc79f5f7ee5e82941b5701ed05d91204e6f6))
+- **sdk-coin-apt:** enterprise pays fee flag addition ([2ae8b71](https://github.com/BitGo/BitGoJS/commit/2ae8b7101378f0da6e638bc224e7dea8699b2863))
+- **sdk-coin-tao:** add network to ttao ([79ad572](https://github.com/BitGo/BitGoJS/commit/79ad5722b1b3b4ee08119d3c9a71f881e74095dc))
+- **statics:** add go account support for bera coin ([5f3c3e2](https://github.com/BitGo/BitGoJS/commit/5f3c3e2f9be619622a8b9c837577707b1309a76e))
+- **statics:** add go account support for oas ([dd3e2e6](https://github.com/BitGo/BitGoJS/commit/dd3e2e67accb3adc6664c89cf3948e6c89dac87b))
+- **statics:** add sui:wal token ([620a92b](https://github.com/BitGo/BitGoJS/commit/620a92b576f2fabe94ab0103ac930d7fe86bfa5c))
+- **statics:** addition of new coin feature for tss wallets ([43edfb6](https://github.com/BitGo/BitGoJS/commit/43edfb631e2a1d40be7bed616092032213a46294))
+- **statics:** enable bulk withdrawal for thorchain rune ([326cc2b](https://github.com/BitGo/BitGoJS/commit/326cc2b5fd5664aa50b68754685f2794addc2896))
+- **statics:** migrate sdk config to test2 ([3f294e8](https://github.com/BitGo/BitGoJS/commit/3f294e83f3b21844eb6b0a90cd69bd01e641f0da))
+- **statics:** walrus bulk staking support ([eeb1d52](https://github.com/BitGo/BitGoJS/commit/eeb1d523c366e231950f71c60e71427545e69991))
+
+### BREAKING CHANGES
+
+- **sdk-coin-algo:** tokenurl is removed from coin statics
+- changing the name for bera, coredao and oas
+  Ticket: WIN-4509
+
 # [50.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.23.0...@bitgo/statics@50.24.0) (2025-02-11)
 
 ### Bug Fixes

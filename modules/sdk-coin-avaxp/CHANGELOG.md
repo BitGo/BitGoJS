@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.65](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.64...@bitgo/sdk-coin-avaxp@5.0.65) (2025-02-19)
+
+### Bug Fixes
+
+- **root:** bump elliptic to 6.6.1 ([f588850](https://github.com/BitGo/BitGoJS/commit/f588850a3817db709213c3d44451b1ed93d8ac86))
+
 ## [5.0.64](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.63...@bitgo/sdk-coin-avaxp@5.0.64) (2025-02-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

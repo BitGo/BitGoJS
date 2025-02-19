@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.15.0...@bitgo/abstract-utxo@9.17.0) (2025-02-19)
+
+### Features
+
+- **abstract-utxo:** add multiple descriptor validation support ([512782b](https://github.com/BitGo/BitGoJS/commit/512782b2da40b8e1b057ef64a2dbc408d6234f84))
+- **abstract-utxo:** allow only same-type descriptors in prod ([417276e](https://github.com/BitGo/BitGoJS/commit/417276e5b72c29e1a583dc790e083e55b322b3dc))
+- **utxo-core:** add new module for UTXO types and functions ([7046b8a](https://github.com/BitGo/BitGoJS/commit/7046b8a53d6b56982d4813fae620eb4b03bbd208))
+- **utxo-core:** update descriptor test util to use AST types ([d29e0dc](https://github.com/BitGo/BitGoJS/commit/d29e0dcb09352f2ba9910d224ac3ac9c92cc9e81))
+
 # [9.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.15.0...@bitgo/abstract-utxo@9.16.0) (2025-02-11)
 
 ### Features

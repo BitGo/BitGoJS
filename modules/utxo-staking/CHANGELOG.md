@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.5.0...@bitgo/utxo-staking@1.6.0) (2025-02-19)
+
+### Features
+
+- **utxo-staking:** add testnet params and descriptor builder for Babylon ([b0764bb](https://github.com/BitGo/BitGoJS/commit/b0764bb644ad2313ac19ddd4210f340fbf9b60f1))
+- **utxo-staking:** add vendored btc-staking-ts 0.4.0-rc.2 ([607fd3e](https://github.com/BitGo/BitGoJS/commit/607fd3eaea6508668ae42dbe9c5d2444d12ec245))
+- **utxo-staking:** enable import ordering rule ([0f8b127](https://github.com/BitGo/BitGoJS/commit/0f8b1273a6e5683610a7131de828d6e21a5a4bc4))
+- **utxo-staking:** export babylon staking module ([4e86a2c](https://github.com/BitGo/BitGoJS/commit/4e86a2c06fe68a5592aa937399a0e5aa6648e24e))
+- **utxo-staking:** migrate test utils to utxo-core ([4395971](https://github.com/BitGo/BitGoJS/commit/4395971fcc21afaf55727f6badb26335c91cde19))
+- **utxo-staking:** simplify mocha config and test scripts ([44b3d7c](https://github.com/BitGo/BitGoJS/commit/44b3d7c0ae0cc1d0c4b49f5fcbeabc21cfb7effa))
+- **utxo-staking:** use miniscript AST for descriptor creation ([bc0fb09](https://github.com/BitGo/BitGoJS/commit/bc0fb096ce29dae1e6cde984f3d54f9a292d4996))
+- **utxo-staking:** use TapTreeNode type for Babylon descriptor ([79f9c5c](https://github.com/BitGo/BitGoJS/commit/79f9c5c8e8650b494ec1afa2fa215328d3d1facb))
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.3.5...@bitgo/utxo-staking@1.5.0) (2024-12-17)
 
 ### Features

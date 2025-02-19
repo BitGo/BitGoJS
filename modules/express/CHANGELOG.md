@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.6.14...@bitgo/express@10.7.0) (2025-02-19)
+
+### Features
+
+- make expressip macaroon caveat optional ([1d2bd03](https://github.com/BitGo/BitGoJS/commit/1d2bd033073209fea1353bea44d55ad5078296b4))
+- **sdk-core:** move lightning specific wallet functions ([e63129d](https://github.com/BitGo/BitGoJS/commit/e63129dfe0e910ed44fe80bdf42dba5edc7e76a5))
+
 ## [10.6.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.6.13...@bitgo/express@10.6.14) (2025-02-11)
 
 **Note:** Version bump only for package @bitgo/express
