@@ -66,6 +66,7 @@ describe('Lightning signer routes', () => {
           : { ...apiData.initWalletRequestBody, signerTlsKey: undefined },
         params: {
           coin: 'tlnbtc',
+          id: 'fakeid',
         },
         config: {
           lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
@@ -130,6 +131,7 @@ describe('Lightning signer routes', () => {
       body: apiData.signerMacaroonRequestBody,
       params: {
         coin: 'tlnbtc',
+        id: 'fakeid',
       },
       config: {
         lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
@@ -156,6 +158,7 @@ describe('Lightning signer routes', () => {
       body: apiData.unlockWalletRequestBody,
       params: {
         coin: 'tlnbtc',
+        id: 'fakeid',
       },
       config: {
         lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
