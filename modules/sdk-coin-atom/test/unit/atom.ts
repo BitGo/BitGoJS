@@ -476,6 +476,30 @@ describe('ATOM', function () {
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
     });
 
+    it('should recover funds for Unsigned Sweep Transaction', async function () {
+      const res = await basecoin.recover({
+        userKey: wrwUser.userKey,
+        backupKey: wrwUser.backupKey,
+        bitgoKey: wrwUser.bitgoKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(basecoin.getAccountBalance);
+      sandBox.assert.calledOnce(basecoin.getAccountDetails);
+      sandBox.assert.calledOnce(basecoin.getChainId);
+
+      const unsignedSweepTxnDeserialize = new CosmosTransaction(coin, utils);
+      unsignedSweepTxnDeserialize.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
+      const sendMessage = unsignedSweepTxnJson.sendMessages[0].value as SendMessage;
+      const balance = new BigNumber(testBalance);
+      const gasAmount = new BigNumber(GAS_AMOUNT);
+      const actualBalance = balance.minus(gasAmount);
+      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+    });
+
     it('should redelegate funds to new validator', async function () {
       const res = await basecoin.redelegate({
         userKey: wrwUser.userKey,

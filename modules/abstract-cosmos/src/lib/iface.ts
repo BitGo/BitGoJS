@@ -30,13 +30,16 @@ export interface SendMessage {
 export interface RecoveryOptions {
   userKey?: string; // Box A
   backupKey?: string; // Box B
+  bitgoKey?: string;
+  rootAddress?: string;
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase?: string;
 }
 
 export interface CosmosLikeCoinRecoveryOutput {
-  serializedTx: string;
+  serializedTx?: string;
+  signableHex?: string;
 }
 
 export interface DelegateOrUndelegeteMessage {
