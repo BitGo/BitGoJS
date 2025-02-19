@@ -15,13 +15,24 @@ import {
 export interface ILightningWallet {
   /**
    * Creates a lightning invoice
-   * @param params Invoice parameters (to be defined)
+   * @param {object} params Invoice parameters
+   * @param {bigint} params.valueMsat The value of the invoice in millisatoshis
+   * @param {string} [params.memo] A memo or description for the invoice
+   * @param {number} [params.expiry] The expiry time of the invoice in seconds
+   * @returns {Promise<LightningInvoice>} A promise that resolves to the created invoice
    */
   createInvoice(params: CreateInvoiceRequest): Promise<LightningInvoice>;
 
   /**
    * Lists current lightning invoices
-   * @param params Invoice parameters (to be defined)
+   * @param {object} params Invoice query parameters
+   * @param {string} [params.status] The status of the invoice
+   *  - open: The invoice is open and awaiting payment
+   *  - settled: The invoice has been paid
+   *  - canceled: The invoice has been canceled
+   * @param {string} [params.limit] The maximum number of invoices to return
+   * @param {Date} [params.startDate] The start date for the query
+   * @param {Date} [params.endDate] The end date for the query
    */
   listInvoices(params: GetInvoicesQuery): Promise<InvoiceInfo[]>;
 
@@ -75,9 +86,9 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
       .post(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice`))
       .send(CreateInvoiceRequest.encode(params))
       .result();
-    return sdkcore.decodeOrElse(LightningInvoice.name, LightningInvoice, createInvoiceResponse, (_) => {
+    return sdkcore.decodeOrElse(LightningInvoice.name, LightningInvoice, createInvoiceResponse, (error) => {
       // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new Error(`Invalid create invoice response`);
+      throw new Error(`Invalid create invoice response ${error}`);
     });
   }
 
@@ -91,8 +102,8 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
       .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice`))
       .query(GetInvoicesQuery.encode(params))
       .result();
-    return sdkcore.decodeOrElse(returnCodec.name, returnCodec, createInvoiceResponse, (_) => {
-      throw new Error(`Invalid list invoices response`);
+    return sdkcore.decodeOrElse(returnCodec.name, returnCodec, createInvoiceResponse, (error) => {
+      throw new Error(`Invalid list invoices response ${error}`);
     });
   }
 
