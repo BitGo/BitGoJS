@@ -2,6 +2,7 @@ import { strict as assert } from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';
 import { Wallet } from '@bitgo/sdk-core';
+import { getLightningWallet } from '@bitgo/abstract-lightning';
 
 describe('LightningV2 Wallet:', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
@@ -18,8 +19,8 @@ describe('LightningV2 Wallet:', function () {
       coin: 'tlntc',
     });
 
-    assert(lnbtcWallet.lightningV2(), 'lnbtc wallet should support lightningV2');
-    assert(tlntcWallet.lightningV2(), 'tlnbtc wallet should support lightningV2');
+    assert(getLightningWallet(lnbtcWallet), 'lnbtc wallet should support lightningV2');
+    assert(getLightningWallet(tlntcWallet), 'tlnbtc wallet should support lightningV2');
   });
 
   it('should throw error when creating lightningV2 wallet for unsupported coins', function () {
@@ -29,7 +30,7 @@ describe('LightningV2 Wallet:', function () {
     });
 
     assert.throws(() => {
-      btcWallet.lightningV2();
+      getLightningWallet(btcWallet);
     }, /Lightning not supported for btc/);
   });
 });

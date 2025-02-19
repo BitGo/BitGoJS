@@ -71,33 +71,21 @@ export const WatchOnly = t.type({
 
 export type WatchOnly = t.TypeOf<typeof WatchOnly>;
 
-export const LightningWalletCoinSpecific = getCodecPair(
-  t.partial({
-    encryptedSignerAdminMacaroon: t.string,
-    signerIP: IPAddress,
-    signerTlsCert: t.string,
-    encryptedSignerTlsKey: t.string,
-    watchOnly: WatchOnly,
-    encryptedSignerMacaroon: t.string,
-  })
-);
+export const UpdateLightningWalletSignedRequest = t.partial({
+  encryptedSignerMacaroon: t.string,
+  encryptedSignerAdminMacaroon: t.string,
+  signerIp: t.string,
+  encryptedSignerTlsKey: t.string,
+  signerTlsCert: t.string,
+  watchOnlyAccounts: WatchOnly,
+});
 
-export type LightningWalletCoinSpecific = t.TypeOf<typeof LightningWalletCoinSpecific>;
-
-export const UpdateLightningWallet = t.partial(
-  {
-    coinSpecific: LightningWalletCoinSpecific,
-    signature: t.string,
-  },
-  'UpdateLightningWallet'
-);
-
-export type UpdateLightningWallet = t.TypeOf<typeof UpdateLightningWallet>;
+export type UpdateLightningWalletSignedRequest = t.TypeOf<typeof UpdateLightningWalletSignedRequest>;
 
 export const LndAmount = t.strict(
   {
-    sat: t.string,
-    msat: t.string,
+    sat: BigIntFromString,
+    msat: BigIntFromString,
   },
   'LndAmount'
 );
@@ -127,11 +115,11 @@ export type ChannelBalance = t.TypeOf<typeof ChannelBalance>;
 export const LndWalletBalance = t.strict(
   {
     /** Total balance, confirmed and unconfirmed */
-    totalBalance: t.string,
-    confirmedBalance: t.string,
-    unconfirmedBalance: t.string,
-    lockedBalance: t.string,
-    reservedBalanceAnchorChan: t.string,
+    totalBalance: BigIntFromString,
+    confirmedBalance: BigIntFromString,
+    unconfirmedBalance: BigIntFromString,
+    lockedBalance: BigIntFromString,
+    reservedBalanceAnchorChan: BigIntFromString,
   },
   'LndWalletBalance'
 );
@@ -151,7 +139,7 @@ export const LndBalance = t.strict(
   {
     offchain: ChannelBalance,
     onchain: LndWalletBalance,
-    totalLimboBalance: t.string,
+    totalLimboBalance: BigIntFromString,
   },
   'LndBalance'
 );
@@ -160,16 +148,16 @@ export type LndBalance = t.TypeOf<typeof LndBalance>;
 
 export const LndGetBalancesResponse = t.strict(
   {
-    inboundBalance: t.string,
-    inboundPendingBalance: t.string,
-    inboundUnsettledBalance: t.string,
-    outboundBalance: t.string,
-    outboundPendingBalance: t.string,
-    outboundUnsettledBalance: t.string,
+    inboundBalance: BigIntFromString,
+    inboundPendingBalance: BigIntFromString,
+    inboundUnsettledBalance: BigIntFromString,
+    outboundBalance: BigIntFromString,
+    outboundPendingBalance: BigIntFromString,
+    outboundUnsettledBalance: BigIntFromString,
     // wallet balances, names forced by type in AbstractCoin
-    spendableBalanceString: t.string,
-    balanceString: t.string,
-    confirmedBalanceString: t.string,
+    spendableBalanceString: BigIntFromString,
+    balanceString: BigIntFromString,
+    confirmedBalanceString: BigIntFromString,
   },
   'LndGetBalancesResponse'
 );

@@ -37,6 +37,7 @@
     "fmt": "yarn prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
+    "@bitgo/abstract-lightning": "^1.2.44",
     "@bitgo/sdk-core": "^28.25.0",
     "@bitgo/utxo-lib": "^11.2.2",
     "argparse": "^1.0.10",

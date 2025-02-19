@@ -3,7 +3,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { importMacaroon, bytesToBase64 } from 'macaroon';
 import * as bs58check from 'bs58check';
 import { WatchOnly, WatchOnlyAccount } from './codecs';
-import { getSharedSecret } from '../ecdh';
+import * as sdkcore from '@bitgo/sdk-core';
 
 // https://github.com/lightningnetwork/lnd/blob/master/docs/remote-signing.md#the-signer-node
 export const signerMacaroonPermissions = [
@@ -204,5 +204,5 @@ export function createWatchOnly(signerRootKey: string, network: utxolib.Network)
 export function deriveLightningServiceSharedSecret(coinName: 'lnbtc' | 'tlnbtc', userAuthXprv: string): Buffer {
   const publicKey = Buffer.from(getStaticsLightningNetwork(coinName).lightningServicePubKey, 'hex');
   const userAuthHdNode = utxolib.bip32.fromBase58(userAuthXprv);
-  return getSharedSecret(userAuthHdNode, publicKey);
+  return sdkcore.getSharedSecret(userAuthHdNode, publicKey);
 }

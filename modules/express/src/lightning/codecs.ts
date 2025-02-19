@@ -1,6 +1,6 @@
 /* eslint-disable no-redeclare */
 import * as t from 'io-ts';
-import { IPAddress } from '@bitgo/sdk-core';
+import { IPAddress } from '@bitgo/abstract-lightning';
 
 export const LightningSignerConfig = t.type({
   url: t.string,
@@ -33,19 +33,22 @@ export const GetWalletStateResponse = t.type(
 
 export type GetWalletStateResponse = t.TypeOf<typeof GetWalletStateResponse>;
 
-export const InitLightningWalletRequest = t.intersection([
-  t.strict(
-    {
+export const InitLightningWalletRequest = t.intersection(
+  [
+    t.strict({
       walletId: t.string,
       passphrase: t.string,
-      signerIP: IPAddress,
+      signerIp: IPAddress,
       signerTlsCert: t.string,
+      expressIp: IPAddress,
+    }),
+    t.partial({
       signerTlsKey: t.string,
-    },
-    'InitLightningWalletRequest'
-  ),
-  t.partial({ expressIP: IPAddress }),
-]);
+      expressIp: IPAddress,
+    }),
+  ],
+  'InitLightningWalletRequest'
+);
 
 export type InitLightningWalletRequest = t.TypeOf<typeof InitLightningWalletRequest>;
 
@@ -53,7 +56,7 @@ export const CreateSignerMacaroonRequest = t.strict(
   {
     walletId: t.string,
     passphrase: t.string,
-    watchOnlyIP: IPAddress,
+    watchOnlyIp: IPAddress,
   },
   'CreateSignerMacaroonRequest'
 );

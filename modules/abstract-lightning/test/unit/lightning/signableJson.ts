@@ -1,4 +1,4 @@
-import { canonicalizeObject } from '../../../../src/bitgo/lightning';
+import { canonicalizeObject } from '../../../src/lightning';
 import assert from 'assert';
 
 describe('canonicalizeObject', function () {

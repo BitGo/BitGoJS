@@ -6,6 +6,8 @@
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
+    "test": "yarn unit-test",
+    "unit-test": "nyc -- mocha --recursive test",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
@@ -38,7 +40,13 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^28.25.0",
-    "@bitgo/utxo-lib": "^11.2.2"
+    "@bitgo/utxo-lib": "^11.2.2",
+    "@bitgo/statics": "^51.0.0",
+    "fp-ts": "^2.12.2",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "io-ts-types": "^0.5.16",
+    "bs58check": "^2.1.2",
+    "macaroon": "^3.0.4"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }
