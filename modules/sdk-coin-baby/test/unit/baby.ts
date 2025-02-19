@@ -44,11 +44,19 @@ describe('Babylon', function () {
       const addressDetails = basecoin.getAddressDetails(address.validMemoIdAddress);
       addressDetails.address.should.equal(address.validMemoIdAddress.split('?')[0]);
       addressDetails.memoId.should.equal('2');
+
+      const addressDetails2 = basecoin.getAddressDetails(address.validMemoIdAddress2);
+      addressDetails2.address.should.equal(address.validMemoIdAddress2.split('?')[0]);
+      addressDetails2.memoId.should.equal('xyz123');
     });
 
     it('should throw on invalid memo id address', () => {
       (() => {
         basecoin.getAddressDetails(address.invalidMemoIdAddress);
+      }).should.throw();
+
+      (() => {
+        basecoin.getAddressDetails(address.invalidMemoIdAddress2);
       }).should.throw();
     });
 
@@ -79,7 +87,7 @@ describe('Babylon', function () {
       should.equal(utils.isValidAddress(undefined as unknown as string), false);
       should.equal(utils.isValidAddress(''), false);
       should.equal(utils.isValidAddress(address.validMemoIdAddress), true);
-      should.equal(utils.isValidAddress(address.invalidMemoIdAddress), false);
+      should.equal(utils.isValidAddress(address.validMemoIdAddress2), true);
       should.equal(utils.isValidAddress(address.multipleMemoIdAddress), false);
     });
     it('should validate validator addresses correctly', () => {

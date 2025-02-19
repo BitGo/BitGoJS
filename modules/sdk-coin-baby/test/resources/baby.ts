@@ -170,7 +170,9 @@ export const address = {
   validatorAddress4: 'bbnvaloper1rlrjlm6rec6h2nvzakyj39d5fv7p7vgs3kq472',
   noMemoIdAddress: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
   validMemoIdAddress: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=2',
-  invalidMemoIdAddress: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=xyz',
+  validMemoIdAddress2: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=xyz123',
+  invalidMemoIdAddress: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=-1',
+  invalidMemoIdAddress2: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=1.23',
   multipleMemoIdAddress: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=3&memoId=12',
 };
 

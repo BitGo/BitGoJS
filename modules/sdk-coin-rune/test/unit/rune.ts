@@ -1,7 +1,9 @@
+import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins, NetworkType } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
+import { beforeEach } from 'mocha';
 import sinon from 'sinon';
 import { Rune, Trune } from '../../src';
 import { RuneUtils } from '../../src/lib/utils';
@@ -9,8 +11,6 @@ import { mainnetAddress } from '../resources/rune';
 import { TEST_SEND_TX, TEST_TX_WITH_MEMO, testnetAddress, wrwUser } from '../resources/trune';
 const bech32 = require('bech32-buffer');
 import should = require('should');
-import { beforeEach } from 'mocha';
-import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 
 describe('Rune', function () {
   let bitgo: TestBitGoAPI;
@@ -62,15 +62,6 @@ describe('Rune', function () {
       testnetAddressDetails.memoId.should.equal('2');
     });
 
-    it('should throw on invalid memo id address', () => {
-      (() => {
-        rune.getAddressDetails(mainnetAddress.invalidMemoIdAddress);
-      }).should.throw();
-      (() => {
-        trune.getAddressDetails(testnetAddress.invalidMemoIdAddress);
-      }).should.throw();
-    });
-
     it('should throw on multiple memo id address', () => {
       (() => {
         rune.getAddressDetails(mainnetAddress.multipleMemoIdAddress);
@@ -112,7 +103,6 @@ describe('Rune', function () {
       should.equal(mainnetUtils.isValidAddress(undefined as unknown as string), false);
       should.equal(mainnetUtils.isValidAddress(''), false);
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.validMemoIdAddress), true);
-      should.equal(mainnetUtils.isValidAddress(mainnetAddress.invalidMemoIdAddress), false);
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.multipleMemoIdAddress), false);
 
       should.equal(testnetUtils.isValidAddress(testnetAddress.address1), true);
@@ -123,7 +113,6 @@ describe('Rune', function () {
       should.equal(testnetUtils.isValidAddress(undefined as unknown as string), false);
       should.equal(testnetUtils.isValidAddress(''), false);
       should.equal(testnetUtils.isValidAddress(testnetAddress.validMemoIdAddress), true);
-      should.equal(testnetUtils.isValidAddress(testnetAddress.invalidMemoIdAddress), false);
       should.equal(testnetUtils.isValidAddress(testnetAddress.multipleMemoIdAddress), false);
     });
 
