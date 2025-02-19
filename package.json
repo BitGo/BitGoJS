@@ -83,7 +83,8 @@
     "socks": "2.7.3",
     "web3-utils": "4.2.1",
     "@polkadot/api": "14.1.1",
-    "elliptic": "^6.6.1"
+    "elliptic": "^6.6.1",
+    "@webassemblyjs/wasm-parser": "1.14.1"
   },
   "workspaces": [
     "modules/*"
