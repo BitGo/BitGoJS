@@ -41,7 +41,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^28.25.0",
     "@bitgo/utxo-lib": "^11.2.2",
-    "@bitgo/statics": "^50.24.0",
+    "@bitgo/statics": "^51.0.0",
     "fp-ts": "^2.12.2",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "io-ts-types": "^0.5.16",
