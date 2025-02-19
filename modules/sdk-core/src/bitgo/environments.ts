@@ -201,7 +201,7 @@ const testnetBase: EnvironmentTemplate = {
   adaNodeUrl: 'https://preprod.koios.rest/api/v0',
   hashNodeUrl: 'https://api.test.provenance.io',
   injNodeUrl: 'https://testnet.sentry.lcd.injective.network', // COIN-1219 : reference  https://docs.injective.network/develop/public-endpoints/#testnet
-  atomNodeUrl: 'https://rest.sentry-02.theta-testnet.polypore.xyz/',
+  atomNodeUrl: 'https://rest.provider-sentry-02.ics-testnet.polypore.xyz/',
   osmoNodeUrl: 'https://lcd.osmotest5.osmosis.zone',
   tiaNodeUrl: 'https://api-mocha.pops.one',
   seiNodeUrl: 'https://rest.atlantic-2.seinetwork.io',
