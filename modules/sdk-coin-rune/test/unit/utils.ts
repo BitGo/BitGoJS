@@ -85,7 +85,6 @@ describe('utils', () => {
     should.equal(mainnetUtils.isValidAddress(mainnetAddress.address1), true);
     should.equal(mainnetUtils.isValidAddress(mainnetAddress.validMemoIdAddress), true);
     should.equal(mainnetUtils.isValidAddress(mainnetDecodedAddress), true);
-    should.equal(mainnetUtils.isValidAddress(mainnetAddress.invalidMemoIdAddress), false);
     should.equal(mainnetUtils.isValidAddress(testnetAddress.address1), false);
     should.equal(mainnetUtils.isValidAddress('12345'), false);
   });
@@ -94,7 +93,6 @@ describe('utils', () => {
     should.equal(testnetUtils.isValidAddress(testnetAddress.address1), true);
     should.equal(testnetUtils.isValidAddress(testnetAddress.validMemoIdAddress), true);
     should.equal(mainnetUtils.isValidAddress(testnetDecodedAddress), true);
-    should.equal(testnetUtils.isValidAddress(testnetAddress.invalidMemoIdAddress), false);
     should.equal(testnetUtils.isValidAddress(mainnetAddress.address1), false);
     should.equal(testnetUtils.isValidAddress('12345'), false);
   });

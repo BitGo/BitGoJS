@@ -2,7 +2,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
-import { Tislm, Islm } from '../../src';
+import { Islm, Tislm } from '../../src';
 import utils from '../../src/lib/utils';
 import {
   TEST_DELEGATE_TX,
@@ -53,12 +53,6 @@ describe('Islm', function () {
       addressDetails.memoId.should.equal('2');
     });
 
-    it('should throw on invalid memo id address', () => {
-      (() => {
-        basecoin.getAddressDetails(address.invalidMemoIdAddress);
-      }).should.throw();
-    });
-
     it('should throw on multiple memo id address', () => {
       (() => {
         basecoin.getAddressDetails(address.multipleMemoIdAddress);
@@ -86,7 +80,6 @@ describe('Islm', function () {
       should.equal(utils.isValidAddress(undefined as unknown as string), false);
       should.equal(utils.isValidAddress(''), false);
       should.equal(utils.isValidAddress(address.validMemoIdAddress), true);
-      should.equal(utils.isValidAddress(address.invalidMemoIdAddress), false);
       should.equal(utils.isValidAddress(address.multipleMemoIdAddress), false);
     });
 

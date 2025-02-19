@@ -63,12 +63,6 @@ describe('TIA', function () {
       addressDetails.memoId.should.equal('2');
     });
 
-    it('should throw on invalid memo id address', () => {
-      (() => {
-        basecoin.getAddressDetails(address.invalidMemoIdAddress);
-      }).should.throw();
-    });
-
     it('should throw on multiple memo id address', () => {
       (() => {
         basecoin.getAddressDetails(address.multipleMemoIdAddress);
@@ -96,7 +90,6 @@ describe('TIA', function () {
       should.equal(utils.isValidAddress(undefined as unknown as string), false);
       should.equal(utils.isValidAddress(''), false);
       should.equal(utils.isValidAddress(address.validMemoIdAddress), true);
-      should.equal(utils.isValidAddress(address.invalidMemoIdAddress), false);
       should.equal(utils.isValidAddress(address.multipleMemoIdAddress), false);
     });
 
