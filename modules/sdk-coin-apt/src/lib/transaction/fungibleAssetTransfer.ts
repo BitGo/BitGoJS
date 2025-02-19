@@ -14,6 +14,7 @@ import {
 import { InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import { FUNGIBLE_ASSET_TYPE_ARGUMENT, FUNGIBLE_ASSET_TRANSFER_FUNCTION } from '../constants';
+import utils from '../utils';
 
 export class FungibleAssetTransfer extends Transaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
@@ -36,8 +37,7 @@ export class FungibleAssetTransfer extends Transaction {
     }
     this._assetId = entryFunction.args[0].toString();
     this._recipient.address = entryFunction.args[1].toString();
-    const amountBuffer = Buffer.from(entryFunction.args[2].bcsToBytes());
-    this._recipient.amount = amountBuffer.readBigUint64LE().toString();
+    this._recipient.amount = utils.getAmountFromPayloadArgs(entryFunction.args[2].bcsToBytes());
   }
 
   protected async buildRawTransaction(): Promise<void> {

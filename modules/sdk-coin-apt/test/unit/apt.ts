@@ -123,6 +123,20 @@ describe('APT:', function () {
       },
     ];
 
+    const transferFungibleInputResponse = [
+      {
+        address: testData.fungibleSender.address,
+        amount: testData.FUNGIBLE_TOKEN_AMOUNT.toString(),
+      },
+    ];
+
+    const tranferFungibleOutputResponse = [
+      {
+        address: testData.fungibleTokenRecipients[1].address,
+        amount: testData.fungibleTokenRecipients[1].amount,
+      },
+    ];
+
     it('should parse a transfer transaction', async function () {
       const parsedTransaction = await basecoin.parseTransaction({
         txHex: testData.TRANSACTION_USING_TRANSFER_COINS,
@@ -131,6 +145,17 @@ describe('APT:', function () {
       parsedTransaction.should.deepEqual({
         inputs: transferInputsResponse,
         outputs: transferOutputsResponse,
+      });
+    });
+
+    it('should parse signed fungible transaction, only work if amount parsing correctly done from payload', async function () {
+      const parsedTransaction = await basecoin.parseTransaction({
+        txHex: testData.FUNGIBLE_SERIALIZED_TX_HEX,
+      });
+
+      parsedTransaction.should.deepEqual({
+        inputs: transferFungibleInputResponse,
+        outputs: tranferFungibleOutputResponse,
       });
     });
 

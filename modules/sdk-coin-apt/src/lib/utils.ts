@@ -111,6 +111,14 @@ export class Utils implements BaseUtils {
   stripHexPrefix(str: string): string {
     return str.replace(/^0x/i, '');
   }
+
+  getAmountFromPayloadArgs(amountArg: Uint8Array): string {
+    const amountBuffer = Buffer.from(amountArg);
+    const low = BigInt(amountBuffer.readUint32LE());
+    const high = BigInt(amountBuffer.readUint32LE(4));
+    const amount = (high << BigInt(32)) + low;
+    return amount.toString();
+  }
 }
 
 const utils = new Utils();
