@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.27.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.26.0...bitgo@39.27.0) (2025-02-19)
+
+### Features
+
+- **sdk-core:** move lightning specific wallet functions ([e63129d](https://github.com/BitGo/BitGoJS/commit/e63129dfe0e910ed44fe80bdf42dba5edc7e76a5))
+
 # [39.26.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.25.1...bitgo@39.26.0) (2025-02-11)
 
 ### Features

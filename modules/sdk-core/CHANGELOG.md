@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [28.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.23.0...@bitgo/sdk-core@28.25.0) (2025-02-19)
+
+### Bug Fixes
+
+- **root:** bump elliptic to 6.6.1 ([f588850](https://github.com/BitGo/BitGoJS/commit/f588850a3817db709213c3d44451b1ed93d8ac86))
+- **sdk-core:** use DateFromISOString in invoice expiry ([080eb32](https://github.com/BitGo/BitGoJS/commit/080eb320f0d25775c18d5c9b263a4805ae5a5844))
+- update babyNodeUrl for testnet ([ec7bbe4](https://github.com/BitGo/BitGoJS/commit/ec7bbe406053485afad4f84b4746982c65d086bc))
+
+### Features
+
+- add skeleton for v2 lightning ([5bd613e](https://github.com/BitGo/BitGoJS/commit/5bd613e8569a399d16cf136e4291c58c550e45ce))
+- **sdk-core:** move lightning specific wallet functions ([e63129d](https://github.com/BitGo/BitGoJS/commit/e63129dfe0e910ed44fe80bdf42dba5edc7e76a5))
+- **sdk-core:** validate update lightning wallet params ([c20ea1f](https://github.com/BitGo/BitGoJS/commit/c20ea1fb7adc59c38babad5d8b70770bff9af744))
+
 # [28.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.23.0...@bitgo/sdk-core@28.24.0) (2025-02-11)
 
 ### Bug Fixes

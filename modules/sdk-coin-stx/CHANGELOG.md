@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.3.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.22...@bitgo/sdk-coin-stx@3.3.23) (2025-02-19)
+
+### Bug Fixes
+
+- **root:** bump elliptic to 6.6.1 ([f588850](https://github.com/BitGo/BitGoJS/commit/f588850a3817db709213c3d44451b1ed93d8ac86))
+
 ## [3.3.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.21...@bitgo/sdk-coin-stx@3.3.22) (2025-02-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

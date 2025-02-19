@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.10.0...@bitgo/sdk-coin-sui@5.11.0) (2025-02-19)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** add exports for wal unstaking ([5a32ceb](https://github.com/BitGo/BitGoJS/commit/5a32cebabc1449cc01d26dd0ae0902dc338016b8))
+- **sdk-coin-sui:** update transaction explanation switch statement ([0b6dde2](https://github.com/BitGo/BitGoJS/commit/0b6dde21ed1eda1388ba87717e07e50ba5e61e48))
+
+### Features
+
+- **sdk-coin-sui:** update package id ([afa60ee](https://github.com/BitGo/BitGoJS/commit/afa60ee801ff1243a9010a3b57c7693de355eb97))
+
 # [5.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.9.0...@bitgo/sdk-coin-sui@5.10.0) (2025-02-11)
 
 ### Features
