@@ -1251,7 +1251,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     8,
     UnderlyingAsset.HBAR,
-    '0.0.3',
     HBAR_FEATURES
   ),
   hederaCoin(
@@ -1261,7 +1260,6 @@ export const coins = CoinMap.fromCoins([
     Networks.test.hedera,
     8,
     UnderlyingAsset.HBAR,
-    '0.0.3',
     HBAR_FEATURES
   ),
   hederaToken(
@@ -1271,7 +1269,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     6,
     UnderlyingAsset.USDC,
-    '0.0.3',
     '0.0.456858',
     '0.0.456858',
     AccountCoin.DEFAULT_FEATURES
@@ -1283,7 +1280,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     6,
     UnderlyingAsset.XSGD,
-    '0.0.3',
     '0.0.1985922',
     '0.0.1985922',
     AccountCoin.DEFAULT_FEATURES
@@ -1295,7 +1291,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     2,
     UnderlyingAsset.BCT,
-    '0.0.3',
     '0.0.1958126',
     '0.0.1958126',
     AccountCoin.DEFAULT_FEATURES
@@ -1307,7 +1302,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     6,
     UnderlyingAsset.CLXY,
-    '0.0.3',
     '0.0.859814',
     '0.0.859814',
     AccountCoin.DEFAULT_FEATURES
@@ -1319,7 +1313,6 @@ export const coins = CoinMap.fromCoins([
     Networks.test.hedera,
     6,
     UnderlyingAsset.USDC,
-    '0.0.3',
     '0.0.13078',
     '0.0.13078',
     AccountCoin.DEFAULT_FEATURES

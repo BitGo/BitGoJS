@@ -1,5 +1,5 @@
 import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
-import { DOMAIN_PATTERN } from './constants';
+import { DOMAIN_PATTERN, HEDERA_NODE_ACCCOUNT_ID } from './constants';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
 
@@ -1199,7 +1199,6 @@ export function hederaCoin(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  nodeAccountId = '0.0.3',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
@@ -1212,7 +1211,7 @@ export function hederaCoin(
       fullName,
       decimalPlaces,
       asset,
-      nodeAccountId,
+      nodeAccountId: HEDERA_NODE_ACCCOUNT_ID,
       features,
       prefix,
       suffix,
@@ -1248,7 +1247,6 @@ export function hederaToken(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  nodeAccountId = '0.0.3',
   tokenId: string,
   contractAddress: string,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
@@ -1263,7 +1261,7 @@ export function hederaToken(
       fullName,
       decimalPlaces,
       asset,
-      nodeAccountId,
+      nodeAccountId: HEDERA_NODE_ACCCOUNT_ID,
       tokenId,
       contractAddress,
       features,
