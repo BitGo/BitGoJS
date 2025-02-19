@@ -13,7 +13,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { KeyPair as AptKeyPair, TransactionBuilderFactory, TransferTransaction } from './lib';
+import { KeyPair as AptKeyPair, Transaction, TransactionBuilderFactory, TransferTransaction } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
@@ -72,10 +72,14 @@ export class Apt extends BaseCoin {
     return true;
   }
 
+  getTransaction(coinConfig: Readonly<StaticsBaseCoin>): Transaction {
+    return new TransferTransaction(coinConfig);
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const coinConfig = coins.get(this.getChain());
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
-    const transaction = new TransferTransaction(coinConfig);
+    const transaction = this.getTransaction(coinConfig);
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
