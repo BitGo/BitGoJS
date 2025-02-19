@@ -1166,16 +1166,16 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
 class Xdc extends Mainnet implements EthereumNetwork {
   name = 'XdcChain';
   family = CoinFamily.XDC;
-  explorerUrl = 'https://xdcscan.com/tx';
-  accountExplorerUrl = 'https://xdcscan.com/address';
+  explorerUrl = 'https://xdcscan.com/tx/';
+  accountExplorerUrl = 'https://xdcscan.com/address/';
   chainId = 50;
   nativeCoinOperationHashPrefix = '50';
 }
 class XdcTestnet extends Testnet implements EthereumNetwork {
   name = 'XdcChainTestnet';
   family = CoinFamily.XDC;
-  explorerUrl = 'https://testnet.xdcscan.com/tx';
-  accountExplorerUrl = 'https://testnet.xdcscan.com/address';
+  explorerUrl = 'https://testnet.xdcscan.com/tx/';
+  accountExplorerUrl = 'https://testnet.xdcscan.com/address/';
   chainId = 51;
   nativeCoinOperationHashPrefix = '51';
   batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
@@ -1185,16 +1185,16 @@ class XdcTestnet extends Testnet implements EthereumNetwork {
 class Wemix extends Mainnet implements EthereumNetwork {
   name = 'WemixChain';
   family = CoinFamily.WEMIX;
-  explorerUrl = 'https://explorer.wemix.com/tx';
-  accountExplorerUrl = 'https://explorer.wemix.com/address';
+  explorerUrl = 'https://explorer.wemix.com/tx/';
+  accountExplorerUrl = 'https://explorer.wemix.com/address/';
   chainId = 1111;
   nativeCoinOperationHashPrefix = '1111';
 }
 class WemixTestnet extends Testnet implements EthereumNetwork {
   name = 'WemixChainTestnet';
   family = CoinFamily.WEMIX;
-  explorerUrl = 'https://explorer.test.wemix.com/tx';
-  accountExplorerUrl = 'https://explorer.test.wemix.com/address';
+  explorerUrl = 'https://explorer.test.wemix.com/tx/';
+  accountExplorerUrl = 'https://explorer.test.wemix.com/address/';
   chainId = 1112;
   nativeCoinOperationHashPrefix = '1112';
   batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
@@ -1204,16 +1204,16 @@ class WemixTestnet extends Testnet implements EthereumNetwork {
 class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
-  explorerUrl = 'https://flare-explorer.flare.network/tx';
-  accountExplorerUrl = 'https://flare-explorer.flare.network/address';
+  explorerUrl = 'https://flare-explorer.flare.network/tx/';
+  accountExplorerUrl = 'https://flare-explorer.flare.network/address/';
   chainId = 14;
   nativeCoinOperationHashPrefix = '14';
 }
 class FlareTestnet extends Testnet implements EthereumNetwork {
   name = 'FlarechainTestnet';
   family = CoinFamily.FLR;
-  explorerUrl = 'https://coston2-explorer.flare.network/tx';
-  accountExplorerUrl = 'https://coston2-explorer.flare.network/address';
+  explorerUrl = 'https://coston2-explorer.flare.network/tx/';
+  accountExplorerUrl = 'https://coston2-explorer.flare.network/address/';
   chainId = 114;
   nativeCoinOperationHashPrefix = '114';
   batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
@@ -1223,16 +1223,16 @@ class FlareTestnet extends Testnet implements EthereumNetwork {
 class Songbird extends Mainnet implements EthereumNetwork {
   name = 'Songbirdchain';
   family = CoinFamily.SGB;
-  explorerUrl = 'https://songbird-explorer.flare.network/tx';
-  accountExplorerUrl = 'https://songbird-explorer.flare.network/address';
+  explorerUrl = 'https://songbird-explorer.flare.network/tx/';
+  accountExplorerUrl = 'https://songbird-explorer.flare.network/address/';
   chainId = 19;
   nativeCoinOperationHashPrefix = '19';
 }
 class SongbirdTestnet extends Testnet implements EthereumNetwork {
   name = 'SongbirdchainTestnet';
   family = CoinFamily.SGB;
-  explorerUrl = 'https://coston-explorer.flare.network/tx';
-  accountExplorerUrl = 'https://coston-explorer.flare.network/address';
+  explorerUrl = 'https://coston-explorer.flare.network/tx/';
+  accountExplorerUrl = 'https://coston-explorer.flare.network/address/';
   chainId = 16;
   nativeCoinOperationHashPrefix = '16';
   batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
