@@ -3000,7 +3000,7 @@ export const erc20Coins = [
   erc20(
     '108a64ac-9be8-4bf9-a683-3f30d49708de',
     'inst',
-    'Instadapp',
+    'Fluid',
     18,
     '0x6f40d4a6237c257fff2db00fa0510deeecd303eb',
     UnderlyingAsset.INST
