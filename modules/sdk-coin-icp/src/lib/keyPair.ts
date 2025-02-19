@@ -1,16 +1,16 @@
 import {
   DefaultKeys,
-  isPrivateKey,
-  isPublicKey,
-  isSeed,
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
+  isSeed,
+  isPrivateKey,
+  isPublicKey,
 } from '@bitgo/sdk-core';
+import utils from './utils';
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
-import utils from './utils';
 
-const DEFAULT_SEED_SIZE_BYTES = 32;
+const DEFAULT_SEED_SIZE_BYTES = 16;
 
 /**
  * ICP keys and address management.
@@ -19,7 +19,8 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    *
-   * @param {KeyPairOptions} source Either a master seed, a private key, or a public key
+   * @param { KeyPairOptions } source Either a master seed, a private key (extended or raw), or a public key
+   *     (extended, compressed, or uncompressed)
    */
   constructor(source?: KeyPairOptions) {
     super(source);

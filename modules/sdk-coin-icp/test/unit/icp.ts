@@ -46,11 +46,17 @@ describe('Internet computer', function () {
   describe('Address creation', () => {
     const hexEncodedPublicKey =
       '047a83e378053f87b49aeae53b3ed274c8b2ffbe59d9a51e3c4d850ca8ac1684f7131b778317c0db04de661c7d08321d60c0507868af41fe3150d21b3c6c757367';
-    const invalidPublicKey = '02a83e378053f87b49aeae53b3ed274c8b2ffbe59d9a51e3c4d850ca8ac1684f7';
+    const hexEncodedPublicKey2 = '02ad010ce68b75266c723bf25fbe3a0c48eb29f14b25925b06b7f5026a0f12702e';
+    const invalidPublicKey = 'invalid-public-key';
     const validAccountID = '8b84c3a3529d02a9decb5b1a27e7c8d886e17e07ea0a538269697ef09c2a27b4';
+    const validAccountID2 = '2b9b89604362e185544c8bba76cadff1a3af26e1467e8530d13743a08a52dd7b';
 
     it('should return true when validating a hex encoded public key', function () {
       basecoin.isValidPub(hexEncodedPublicKey).should.equal(true);
+    });
+
+    it('should return true when validating a hex encoded public key with 33 bytes ', function () {
+      basecoin.isValidPub(hexEncodedPublicKey2).should.equal(true);
     });
 
     it('should return false when validating a invalid public key', function () {
@@ -60,6 +66,11 @@ describe('Internet computer', function () {
     it('should return valid address from a valid hex encoded public key', async function () {
       const accountID = await basecoin.getAddressFromPublicKey(hexEncodedPublicKey);
       accountID.should.deepEqual(validAccountID);
+    });
+
+    it('should return valid address from a valid hex encoded public key with 33 bytes', async function () {
+      const accountID = await basecoin.getAddressFromPublicKey(hexEncodedPublicKey2);
+      accountID.should.deepEqual(validAccountID2);
     });
 
     it('should throw an error when invalid public key is provided', async function () {
@@ -77,6 +88,20 @@ describe('Internet computer', function () {
       await utils
         .getAddressFromPublicKey(invalidPublicKey)
         .should.be.rejectedWith(`Public Key is not in a valid Hex Encoded Format`);
+    });
+  });
+  describe('Generate wallet key pair: ', () => {
+    it('should generate key pair', () => {
+      const kp = basecoin.generateKeyPair();
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      basecoin.isValidPrv(kp.prv).should.equal(true);
+    });
+
+    it('should generate key pair from seed', () => {
+      const seed = Buffer.from('9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60', 'hex');
+      const kp = basecoin.generateKeyPair(seed);
+      basecoin.isValidPub(kp.pub).should.equal(true);
+      basecoin.isValidPrv(kp.prv).should.equal(true);
     });
   });
 });
