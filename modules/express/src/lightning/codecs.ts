@@ -39,7 +39,6 @@ export const InitLightningWalletRequest = t.intersection(
       passphrase: t.string,
       signerIp: IPAddress,
       signerTlsCert: t.string,
-      expressIp: IPAddress,
     }),
     t.partial({
       signerTlsKey: t.string,
