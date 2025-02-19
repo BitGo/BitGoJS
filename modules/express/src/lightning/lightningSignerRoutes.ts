@@ -19,6 +19,7 @@ import {
   UnlockLightningWalletRequest,
 } from './codecs';
 import { LndSignerClient } from './lndSignerClient';
+import { ApiResponseError } from '../errors';
 
 type Decrypt = (params: { input: string; password: string }) => string;
 
@@ -38,7 +39,10 @@ function getSignerRootKey(
   network: utxolib.Network,
   decrypt: Decrypt
 ) {
-  const userMainnetPrv = decrypt({ password: passphrase, input: userMainnetEncryptedPrv });
+  const userMainnetPrv = decrypt({
+    password: passphrase,
+    input: userMainnetEncryptedPrv,
+  });
   return utxolib.bitgo.keyutil.convertExtendedKeyNetwork(userMainnetPrv, utxolib.networks.bitcoin, network);
 }
 
@@ -57,13 +61,13 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
   const bitgo = req.bitgo;
   const coinName = req.params.coin;
   if (!isLightningCoinName(coinName)) {
-    throw new Error(`Invalid coin to initialise lightning wallet: ${coinName}`);
+    throw new ApiResponseError(`Invalid coin ${coinName}. This is not a lightning coin.`, 400);
   }
   const coin = bitgo.coin(coinName);
 
   const walletId = req.params.id;
   if (typeof walletId !== 'string') {
-    throw new Error(`Invalid wallet id: ${walletId}`);
+    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
 
   const { passphrase, signerTlsKey, signerTlsCert, signerIp, expressIp } = decodeOrElse(
@@ -72,7 +76,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     req.body,
     (_) => {
       // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new Error('Invalid request body to initialise lightning wallet');
+      throw new ApiResponseError('Invalid request body to initialize lightning wallet', 400);
     }
   );
 
@@ -118,12 +122,12 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   const bitgo = req.bitgo;
   const coinName = req.params.coin;
   if (!isLightningCoinName(coinName)) {
-    throw new Error(`Invalid coin to create signer macaroon: ${coinName}`);
+    throw new ApiResponseError(`Invalid coin to create signer macaroon: ${coinName}. Must be a lightning coin.`, 400);
   }
   const coin = bitgo.coin(coinName);
   const walletId = req.params.id;
   if (typeof walletId !== 'string') {
-    throw new Error(`Invalid wallet id: ${walletId}`);
+    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
 
   const { passphrase, watchOnlyIp } = decodeOrElse(
@@ -132,7 +136,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
     req.body,
     (_) => {
       // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new Error('Invalid request body to create signer macaroon');
+      throw new ApiResponseError('Invalid request body to create signer macaroon', 400);
     }
   );
 
@@ -143,7 +147,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
 
   const encryptedSignerAdminMacaroon = wallet.coinSpecific()?.encryptedSignerAdminMacaroon;
   if (!encryptedSignerAdminMacaroon) {
-    throw new Error('Missing encryptedSignerAdminMacaroon in wallet');
+    throw new ApiResponseError('Missing encryptedSignerAdminMacaroon in wallet', 400);
   }
   const adminMacaroon = bitgo.decrypt({
     password: passphrase,
@@ -181,11 +185,11 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
 export async function handleGetLightningWalletState(req: express.Request): Promise<GetWalletStateResponse> {
   const coinName = req.params.coin;
   if (!isLightningCoinName(coinName)) {
-    throw new Error(`Invalid coin to get lightning wallet state: ${coinName}`);
+    throw new ApiResponseError(`Invalid coin to get lightning wallet state: ${coinName}`, 400);
   }
   const walletId = req.params.id;
   if (typeof walletId !== 'string') {
-    throw new Error(`Invalid wallet id: ${walletId}`);
+    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
 
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
@@ -198,11 +202,11 @@ export async function handleGetLightningWalletState(req: express.Request): Promi
 export async function handleUnlockLightningWallet(req: express.Request): Promise<void> {
   const coinName = req.params.coin;
   if (!isLightningCoinName(coinName)) {
-    throw new Error(`Invalid coin to unlock lightning wallet: ${coinName}`);
+    throw new ApiResponseError(`Invalid coin to unlock lightning wallet: ${coinName}`, 400);
   }
   const walletId = req.params.id;
   if (typeof walletId !== 'string') {
-    throw new Error(`Invalid wallet id: ${walletId}`);
+    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
 
   const { passphrase } = decodeOrElse(
@@ -211,7 +215,7 @@ export async function handleUnlockLightningWallet(req: express.Request): Promise
     req.body,
     (_) => {
       // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new Error('Invalid request body to unlock lightning wallet');
+      throw new ApiResponseError('Invalid request body to unlock lightning wallet', 400);
     }
   );
 
