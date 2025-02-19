@@ -4,6 +4,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseTxInfo, DecodedUnsignedTx, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
+import { Args } from '@substrate/txwrapper-core/lib/types/method';
 
 export { HexString } from '@polkadot/util/types';
 
@@ -30,6 +31,8 @@ export enum MethodNames {
    * @see https://polkadot.js.org/docs/substrate/extrinsics/#transferkeepalivedest-multiaddress-value-compactu128
    */
   TransferKeepAlive = 'transferKeepAlive',
+  AddStake = 'addStake',
+  RemoveStake = 'removeStake',
 }
 
 /**
@@ -53,6 +56,8 @@ export interface TxData {
   eraPeriod?: number;
   payee?: string;
   keepAlive?: boolean;
+  netuid?: number;
+  hotkey?: string;
 }
 
 /**
@@ -71,11 +76,25 @@ export interface TransferAllArgs {
   keepAlive: boolean;
 }
 
+// export type AnotherArgs = Args & Record<string, any>;
+
+export interface AddStakeArgs extends Args {
+  amountStaked: number;
+  hotkey: string;
+  netuid: number;
+}
+
+export interface RemoveStakeArgs extends Args {
+  amountUnstaked: number;
+  hotkey: string;
+  netuid: number;
+}
+
 /**
  * Decoded TxMethod from a transaction hex
  */
 export interface TxMethod {
-  args: TransferArgs | TransferAllArgs;
+  args: TransferArgs | TransferAllArgs | AddStakeArgs | RemoveStakeArgs;
   name: MethodNames;
   pallet: string;
 }

@@ -14,7 +14,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   getTransferBuilder(): TransferBuilder {
-    return new TransferBuilder(this._coinConfig);
+    return new TransferBuilder(this._coinConfig).material(this._material);
   }
 
   getWalletInitializationBuilder(): void {

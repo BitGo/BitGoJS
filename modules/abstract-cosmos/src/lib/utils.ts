@@ -825,13 +825,21 @@ export class CosmosUtils implements BaseUtils {
    * @returns true if memo id is valid
    */
   isValidMemoId(memoId: string): boolean {
-    let memoIdNumber: BigNumber;
-    try {
-      memoIdNumber = new BigNumber(memoId);
-    } catch (e) {
+    // Allow alphanumeric memo IDs (including uppercase and lowercase letters)
+    const alphanumericRegex = /^[0-9a-zA-Z]+$/;
+
+    // Check if the memoId is alphanumeric
+    if (!alphanumericRegex.test(memoId)) {
       return false;
     }
-    return memoIdNumber.gte(0) && memoIdNumber.isInteger();
+
+    // If the memoId is purely numeric, ensure it is a positive integer
+    if (/^\d+$/.test(memoId)) {
+      const memoIdNumber = new BigNumber(memoId);
+      return memoIdNumber.gte(0) && memoIdNumber.isInteger();
+    }
+
+    return true;
   }
 
   /**

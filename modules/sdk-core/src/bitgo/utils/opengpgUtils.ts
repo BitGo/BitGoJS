@@ -132,13 +132,13 @@ export async function verifySharedDataProof(
   const senderPubKey = await pgp.readKey({ armoredKey: senderPubKeyArm });
   const signedKey = await pgp.readKey({ armoredKey: keyWithNotation });
   if (
-    !(await verifyPrimaryUserWrapper(signedKey, senderPubKey, true).then((values) =>
+    !(await verifyPrimaryUserWrapper(signedKey, senderPubKey, false).then((values) =>
       _.some(values, (value) => value.valid)
     ))
   ) {
     return false;
   }
-  const primaryUser = await signedKey.getPrimaryUser();
+  const primaryUser = await signedKey.getPrimaryUser(null as unknown as undefined);
   const anyInvalidProof = _.some(
     // @ts-ignore
     primaryUser.user.otherCertifications[0].rawNotations,
@@ -165,7 +165,7 @@ export async function createSharedDataProof(
   const dateTime = new Date();
   // UserId Packet.
   const userIdPkt = new pgp.UserIDPacket();
-  const primaryUser = await publicKeyToCert.getPrimaryUser();
+  const primaryUser = await publicKeyToCert.getPrimaryUser(null as unknown as undefined);
   // @ts-ignore
   userIdPkt.userID = primaryUser.user.userID.userID;
   // Signature packet.

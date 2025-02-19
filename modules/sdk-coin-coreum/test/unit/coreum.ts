@@ -71,15 +71,6 @@ describe('Coreum', function () {
       testnetAddressDetails.memoId.should.equal('2');
     });
 
-    it('should throw on invalid memo id address', () => {
-      (() => {
-        coreum.getAddressDetails(mainnetAddress.invalidMemoIdAddress);
-      }).should.throw();
-      (() => {
-        tcoreum.getAddressDetails(testnetAddress.invalidMemoIdAddress);
-      }).should.throw();
-    });
-
     it('should throw on multiple memo id address', () => {
       (() => {
         coreum.getAddressDetails(mainnetAddress.multipleMemoIdAddress);
@@ -121,7 +112,6 @@ describe('Coreum', function () {
       should.equal(mainnetUtils.isValidAddress(undefined as unknown as string), false);
       should.equal(mainnetUtils.isValidAddress(''), false);
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.validMemoIdAddress), true);
-      should.equal(mainnetUtils.isValidAddress(mainnetAddress.invalidMemoIdAddress), false);
       should.equal(mainnetUtils.isValidAddress(mainnetAddress.multipleMemoIdAddress), false);
 
       should.equal(testnetUtils.isValidAddress(testnetAddress.address1), true);
@@ -132,7 +122,6 @@ describe('Coreum', function () {
       should.equal(testnetUtils.isValidAddress(undefined as unknown as string), false);
       should.equal(testnetUtils.isValidAddress(''), false);
       should.equal(testnetUtils.isValidAddress(testnetAddress.validMemoIdAddress), true);
-      should.equal(testnetUtils.isValidAddress(testnetAddress.invalidMemoIdAddress), false);
       should.equal(testnetUtils.isValidAddress(testnetAddress.multipleMemoIdAddress), false);
     });
 

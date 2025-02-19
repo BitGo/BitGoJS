@@ -5,6 +5,7 @@ import * as assert from 'assert';
 
 import { openpgpUtils } from '@bitgo/sdk-core';
 import { ecc as secp256k1 } from '@bitgo/utxo-lib';
+import * as sinon from 'sinon';
 
 const sodium = require('libsodium-wrappers-sumo');
 
@@ -180,6 +181,24 @@ describe('OpenGPG Utils Tests', function () {
       dataToProofArray[0].value = 'tampered data';
       isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, proof, dataToProofArray);
       isValid.should.be.false();
+    });
+
+    it('should be able verify data proof if created in the future', async function () {
+      const sharedData1 = crypto.randomBytes(32).toString('hex');
+      const sharedData2 = crypto.randomBytes(32).toString('hex');
+      const dataToProofArray = [
+        { name: 's1', value: sharedData1 },
+        { name: 's2', value: sharedData2 },
+      ];
+      const proof = await openpgpUtils.createSharedDataProof(
+        senderKey.privateKey,
+        otherKey.publicKey,
+        dataToProofArray
+      );
+      const clock = sinon.useFakeTimers(new Date('2001-02-14T12:00:00Z').getTime());
+      const isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, proof, dataToProofArray);
+      isValid.should.be.true();
+      clock.restore();
     });
   });
 

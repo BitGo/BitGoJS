@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-avaxp",
-  "version": "5.0.65",
+  "version": "5.0.66",
   "description": "BitGo's SDK coin library for avaxp coin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -43,19 +43,20 @@
     ]
   },
   "devDependencies": {
+    "@bitgo/sdk-api": "^1.58.9",
+    "@bitgo/sdk-test": "^8.0.72",
     "@bitgo/sdk-api": "^1.58.8",
     "@bitgo/sdk-test": "^8.0.71",
-    "@types/elliptic": "^6.4.18"
   },
   "dependencies": {
     "@bitgo-forks/avalanchejs": "4.1.0-alpha.1",
-    "@bitgo/sdk-core": "^28.25.0",
-    "@bitgo/statics": "^51.0.0",
+    "@bitgo/sdk-core": "^29.0.0",
+    "@bitgo/statics": "^51.0.1",
     "@bitgo/utxo-lib": "^11.2.2",
+    "@noble/curves": "1.8.1",
     "avalanche": "3.15.3",
     "bignumber.js": "^9.0.0",
     "create-hash": "^1.2.0",
-    "elliptic": "^6.6.1",
     "ethereumjs-util": "7.1.5",
     "lodash": "^4.17.14",
     "safe-buffer": "^5.2.1"

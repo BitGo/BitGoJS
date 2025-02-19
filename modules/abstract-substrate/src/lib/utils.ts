@@ -13,7 +13,7 @@ import bs58 from 'bs58';
 import base32 from 'hi-base32';
 import nacl from 'tweetnacl';
 import { KeyPair } from '.';
-import { HexString, Material, TransferAllArgs, TransferArgs, TxMethod } from './iface';
+import { HexString, Material, TransferAllArgs, TransferArgs, TxMethod, AddStakeArgs } from './iface';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -237,6 +237,11 @@ export class Utils implements BaseUtils {
 
   getMaterial(networkType: NetworkType): Material {
     throw new Error('Method not implemented.');
+  }
+
+  //add stake
+  isaddStake(arg: TxMethod['args']): arg is AddStakeArgs {
+    return (arg as AddStakeArgs).hotkey !== undefined && (arg as AddStakeArgs).netuid !== undefined;
   }
 }
 

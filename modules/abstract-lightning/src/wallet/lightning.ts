@@ -1,18 +1,40 @@
 import * as sdkcore from '@bitgo/sdk-core';
+import * as t from 'io-ts';
 import {
   createMessageSignature,
   LightningAuthKeychain,
   LightningKeychain,
   unwrapLightningCoinSpecific,
   UpdateLightningWalletSignedRequest,
+  CreateInvoiceRequest,
+  GetInvoicesQuery,
+  LightningInvoice,
+  InvoiceInfo,
 } from '../lightning';
 
 export interface ILightningWallet {
   /**
    * Creates a lightning invoice
-   * @param params Invoice parameters (to be defined)
+   * @param {object} params Invoice parameters
+   * @param {bigint} params.valueMsat The value of the invoice in millisatoshis
+   * @param {string} [params.memo] A memo or description for the invoice
+   * @param {number} [params.expiry] The expiry time of the invoice in seconds
+   * @returns {Promise<LightningInvoice>} A promise that resolves to the created invoice
    */
-  createInvoice(params: unknown): Promise<unknown>;
+  createInvoice(params: CreateInvoiceRequest): Promise<LightningInvoice>;
+
+  /**
+   * Lists current lightning invoices
+   * @param {object} params Invoice query parameters
+   * @param {string} [params.status] The status of the invoice
+   *  - open: The invoice is open and awaiting payment
+   *  - settled: The invoice has been paid
+   *  - canceled: The invoice has been canceled
+   * @param {string} [params.limit] The maximum number of invoices to return
+   * @param {Date} [params.startDate] The start date for the query
+   * @param {Date} [params.endDate] The end date for the query
+   */
+  listInvoices(params: GetInvoicesQuery): Promise<InvoiceInfo[]>;
 
   /**
    * Pay a lightning invoice
@@ -59,12 +81,30 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
     this.wallet = wallet;
   }
 
-  async createInvoice(params: unknown): Promise<unknown> {
-    throw new Error('Method not implemented.');
+  async createInvoice(params: CreateInvoiceRequest): Promise<LightningInvoice> {
+    const createInvoiceResponse = await this.wallet.bitgo
+      .post(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice`))
+      .send(CreateInvoiceRequest.encode(params))
+      .result();
+    return sdkcore.decodeOrElse(LightningInvoice.name, LightningInvoice, createInvoiceResponse, (error) => {
+      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
+      throw new Error(`Invalid create invoice response ${error}`);
+    });
   }
 
   async payInvoice(params: unknown): Promise<unknown> {
     throw new Error('Method not implemented.');
+  }
+
+  async listInvoices(params: GetInvoicesQuery): Promise<InvoiceInfo[]> {
+    const returnCodec = t.array(InvoiceInfo);
+    const createInvoiceResponse = await this.wallet.bitgo
+      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice`))
+      .query(GetInvoicesQuery.encode(params))
+      .result();
+    return sdkcore.decodeOrElse(returnCodec.name, returnCodec, createInvoiceResponse, (error) => {
+      throw new Error(`Invalid list invoices response ${error}`);
+    });
   }
 
   async getLightningKeychain(): Promise<LightningKeychain> {
@@ -74,7 +114,6 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
     }
     const keychain = await this.wallet.baseCoin.keychains().get({ id: keyIds[0] });
     return sdkcore.decodeOrElse(LightningKeychain.name, LightningKeychain, keychain, (_) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
       throw new Error(`Invalid user key`);
     });
   }

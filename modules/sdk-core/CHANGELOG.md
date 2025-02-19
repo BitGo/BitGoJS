@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [29.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.25.0...@bitgo/sdk-core@29.0.0) (2025-02-20)
+
+### Bug Fixes
+
+- fix the atom public rest endpoint ([e6973d4](https://github.com/BitGo/BitGoJS/commit/e6973d442b6bb5f887747d8b231155f40bb3f3c0))
+
+### Features
+
+- **abstract-lightning:** move lnv2 logic from sdk-core ([5c9114d](https://github.com/BitGo/BitGoJS/commit/5c9114d6a4dbdd5a130bde7cb897ff6f1f8132e0))
+- **sdk-coin-apt:** recommend min gas tank balance for next 1000 txns ([74071ab](https://github.com/BitGo/BitGoJS/commit/74071aba4c0754242fc96f7334cec74edba6c73b))
+
+### BREAKING CHANGES
+
+- **abstract-lightning:** Lightning v2
+
 # [28.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.23.0...@bitgo/sdk-core@28.25.0) (2025-02-19)
 
 ### Bug Fixes

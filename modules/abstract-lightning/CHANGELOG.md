@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@1.2.44...@bitgo/abstract-lightning@2.0.0) (2025-02-20)
+
+### Features
+
+- **abstract-lightning:** move lnv2 logic from sdk-core ([5c9114d](https://github.com/BitGo/BitGoJS/commit/5c9114d6a4dbdd5a130bde7cb897ff6f1f8132e0))
+- **abstract-lightning:** wire up lnv2 invoices ([dba5411](https://github.com/BitGo/BitGoJS/commit/dba5411dea805ab3bf5e3937736d5c0d6f166e49))
+
+### BREAKING CHANGES
+
+- **abstract-lightning:** Lightning v2
+
 ## [1.2.44](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@1.2.42...@bitgo/abstract-lightning@1.2.44) (2025-02-19)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

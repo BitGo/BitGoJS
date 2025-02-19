@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.3.1...@bitgo/sdk-coin-tao@1.3.2) (2025-02-20)
+
+### Bug Fixes
+
+- **sdk-coin-tao:** allow consolidations ([0e374cf](https://github.com/BitGo/BitGoJS/commit/0e374cfabd366438cc2abfe9d0967854bf03cd03))
+
 ## [1.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.3.0...@bitgo/sdk-coin-tao@1.3.1) (2025-02-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tao

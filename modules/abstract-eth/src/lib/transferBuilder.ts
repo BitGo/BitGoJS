@@ -106,6 +106,11 @@ export class TransferBuilder {
     return this;
   }
 
+  setCoinUsesNonPackedEncodingForTxData(isCoinUsesNonPackedEncodingForTxData: boolean): TransferBuilder {
+    this._coinUsesNonPackedEncodingForTxData = isCoinUsesNonPackedEncodingForTxData;
+    return this;
+  }
+
   signAndBuild(chainId: string, coinUsesNonPackedEncodingForTxData?: boolean): string {
     this._chainId = chainId;
 
@@ -149,7 +154,7 @@ export class TransferBuilder {
    *
    * @returns {string} the operation hash
    */
-  private getOperationHash(): string {
+  public getOperationHash(): string {
     const operationData = this.getOperationData();
     let operationHash: string;
 

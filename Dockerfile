@@ -38,6 +38,7 @@ COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
 COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
 
 #COPY_START
+COPY --from=builder /tmp/bitgo/modules/abstract-lightning /var/modules/abstract-lightning/
 COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
 COPY --from=builder /tmp/bitgo/modules/bls-dkg /var/modules/bls-dkg/
 COPY --from=builder /tmp/bitgo/modules/sdk-lib-mpc /var/modules/sdk-lib-mpc/
@@ -48,7 +49,6 @@ COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
 COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
 COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
 COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
-COPY --from=builder /tmp/bitgo/modules/abstract-lightning /var/modules/abstract-lightning/
 COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
@@ -122,7 +122,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
 
-RUN cd /var/modules/sdk-core && yarn link && \
+RUN cd /var/modules/abstract-lightning && yarn link && \
+cd /var/modules/sdk-core && yarn link && \
 cd /var/modules/bls-dkg && yarn link && \
 cd /var/modules/sdk-lib-mpc && yarn link && \
 cd /var/modules/sdk-opensslbytes && yarn link && \
@@ -132,7 +133,6 @@ cd /var/modules/utxo-lib && yarn link && \
 cd /var/modules/blake2b && yarn link && \
 cd /var/modules/blake2b-wasm && yarn link && \
 cd /var/modules/bitgo && yarn link && \
-cd /var/modules/abstract-lightning && yarn link && \
 cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/blockapis && yarn link && \
 cd /var/modules/sdk-api && yarn link && \
@@ -209,6 +209,7 @@ cd /var/modules/sdk-coin-zec && yarn link
 
 #LINK_START
 RUN cd /var/bitgo-express && \
+    yarn link @bitgo/abstract-lightning && \
     yarn link @bitgo/sdk-core && \
     yarn link @bitgo/bls-dkg && \
     yarn link @bitgo/sdk-lib-mpc && \
@@ -219,7 +220,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/blake2b && \
     yarn link @bitgo/blake2b-wasm && \
     yarn link bitgo && \
-    yarn link @bitgo/abstract-lightning && \
     yarn link @bitgo/abstract-utxo && \
     yarn link @bitgo/blockapis && \
     yarn link @bitgo/sdk-api && \
@@ -295,9 +295,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 19 Feb 2025 13:38:58 GMT"
-LABEL version=10.7.0
-LABEL git_hash=db6c3b685bd685c8a649d4002a03461ec529dc1c
+LABEL created="Thu, 20 Feb 2025 13:57:47 GMT"
+LABEL version=11.0.0
+LABEL git_hash=469eab4beb54ca705626534535fa32bad6756c11
 #LABEL_END
 
 USER node
