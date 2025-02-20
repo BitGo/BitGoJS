@@ -11,16 +11,13 @@ export class Transaction extends BaseTransaction {
   protected _signedTransaction: string;
   protected _utils: Utils;
 
-  get icpTransaction(): IcpTransaction {
-    return this._icpTransaction;
+  constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
+    super(_coinConfig);
+    this._utils = utils;
   }
 
   set icpTransaction(value: IcpTransaction) {
     this._icpTransaction = value;
-  }
-
-  get payloadsData(): PayloadsData {
-    return this._payloadsData;
   }
 
   set payloadsData(value: PayloadsData) {
@@ -29,15 +26,6 @@ export class Transaction extends BaseTransaction {
 
   set signedTransaction(value: string) {
     this._signedTransaction = value;
-  }
-
-  constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
-    super(_coinConfig);
-    this._utils = utils;
-  }
-
-  get icpTransactionData(): IcpTransactionData {
-    return this._icpTransactionData;
   }
 
   set icpTransactionData(value: IcpTransactionData) {
@@ -89,18 +77,4 @@ export class Transaction extends BaseTransaction {
       return false;
     }
   }
-
-  // /** @inheritdoc */
-  // canSign(key: BaseKey): boolean {
-  //   try {
-  //     const keyPair = new KeyPair({ prv: key.key });
-  //     const publicKey = keyPair.getPublicKey();
-  //     if (this._icpTransactionData.senderPublicKeyHex !== publicKey.toString('hex')) {
-  //       return false;
-  //     }
-  //     return true;
-  //   } catch {
-  //     return false;
-  //   }
-  // }
 }

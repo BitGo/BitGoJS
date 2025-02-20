@@ -15,13 +15,6 @@ export class TransferBuilder extends TransactionBuilder {
     return TransactionType.Send;
   }
 
-  /**
-   * Initialize the transaction builder fields using the decoded transaction data
-   */
-  initBuilder(): void {
-    throw new Error('method not implemented');
-  }
-
   /** @inheritdoc */
   fromImplementation(): BaseTransaction {
     throw new Error('method not implemented');
@@ -34,5 +27,9 @@ export class TransferBuilder extends TransactionBuilder {
 
   validateAddress(address: BaseAddress, addressFormat?: string): void {
     throw new Error('Method not implemented.');
+  }
+
+  validateRawTransaction(rawTransaction: any): void {
+    throw new Error('Invalid raw transaction');
   }
 }

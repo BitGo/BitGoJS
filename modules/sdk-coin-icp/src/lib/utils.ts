@@ -72,6 +72,13 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * gets the gas data of this transaction.
+   */
+  gasData(): string {
+    return '-10000';
+  }
+
+  /**
    * Checks if the provided address is a valid hexadecimal string.
    *
    * @param {string} address - The address to validate.

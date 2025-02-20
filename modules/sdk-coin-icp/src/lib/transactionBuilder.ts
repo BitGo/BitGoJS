@@ -1,13 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import {
-  BaseKey,
-  BaseTransaction,
-  BaseTransactionBuilder,
-  Recipient,
-  BuildTransactionError,
-  SigningError,
-} from '@bitgo/sdk-core';
+import { BaseKey, BaseTransaction, BaseTransactionBuilder, BuildTransactionError, SigningError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { IcpMetadata, IcpNetworkIdentifier, IcpOperation, IcpPublicKey, IcpTransaction } from './iface';
 import utils from './utils';
@@ -174,7 +167,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       type: utils.getFeeType(),
       account: { address: this._sender },
       amount: {
-        value: this.gasData(),
+        value: utils.gasData(),
         currency: {
           symbol: this._coinConfig.family,
           decimals: this._coinConfig.decimalPlaces,
@@ -238,34 +231,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this._transaction;
   }
 
-  /**
-   * gets the gas data of this transaction.
-   */
-  gasData(): string {
-    return '-10000';
-  }
-
-  /**
-   * validates the recipients of the transaction
-   */
-  validateRecipients(recipients: Recipient[]): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * validates the gas data of the transaction
-   */
-  validateGasData(): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * validates the gas price of the transaction
-   */
-  validateGasPrice(gasPrice: number): void {
-    throw new Error('method not implemented');
-  }
-
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
     if (!key || !key.key) {
@@ -274,17 +239,5 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!utils.isValidPrivateKey(key.key)) {
       throw new SigningError('Invalid private key');
     }
-  }
-
-  /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * Validates the specific transaction builder internally
-   */
-  validateDecodedTransaction(): void {
-    throw new Error('method not implemented');
   }
 }
