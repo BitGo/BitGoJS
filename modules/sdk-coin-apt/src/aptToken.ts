@@ -1,6 +1,7 @@
 import { Apt } from './apt';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { AptTokenConfig, coins, tokens } from '@bitgo/statics';
+import { AptTokenConfig, BaseCoin as StaticsBaseCoin, coins, tokens } from '@bitgo/statics';
+import { FungibleAssetTransfer, Transaction } from './lib';
 
 export class AptToken extends Apt {
   public readonly tokenConfig: AptTokenConfig;
@@ -14,7 +15,6 @@ export class AptToken extends Apt {
   static createTokenConstructor(config: AptTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new AptToken(bitgo, config);
   }
-
   static createTokenConstructors(): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
     for (const token of [...tokens.bitcoin.apt.tokens, ...tokens.testnet.apt.tokens]) {
@@ -42,6 +42,10 @@ export class AptToken extends Apt {
 
   get decimalPlaces(): number {
     return this.tokenConfig.decimalPlaces;
+  }
+
+  getTransaction(coinConfig: Readonly<StaticsBaseCoin>): Transaction {
+    return new FungibleAssetTransfer(coinConfig);
   }
 
   getChain(): string {
