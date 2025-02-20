@@ -860,7 +860,6 @@
 "@bitgo/public-types@4.17.0":
   version "4.17.0"
   resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-4.17.0.tgz#ea6c0b808f2d43a75f1bc79fd4a8013ff0f66d26"
-  integrity sha512-BNWHzXIjqpiV05xQSGtJYEXcQhgB1g5955wvNo6N1i5SEP6DhJ9Ng/5Xyl2oWvcX3IBODIHMt8+hYnN+vMWi9A==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
