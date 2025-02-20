@@ -63,7 +63,7 @@ export class Coredao extends AbstractEthLikeNewCoins {
     if (!result || !Array.isArray(result.result)) {
       throw new Error('Unable to find next nonce from the explorer, got: ' + JSON.stringify(result));
     }
-    const backupKeyTxList = result.result;
+    const backupKeyTxList = result.result.filter((tx) => tx.from === address);
     if (backupKeyTxList.length > 0) {
       // Calculate last nonce used
       nonce = Math.max(...backupKeyTxList.filter((tx) => tx.from === address).map((tx) => tx.nonce as number)) + 1;
