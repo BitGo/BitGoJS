@@ -1,5 +1,10 @@
 import { TransactionType } from '@bitgo/sdk-core';
 
+export const RequestType = {
+  CALL: 'call',
+  READ_STATE: 'read_state',
+};
+
 export interface IcpTransactionData {
   readonly senderAddress: string;
   readonly receiverAddress: string;
@@ -60,32 +65,8 @@ export interface IcpTransaction {
   metadata: IcpMetadata;
 }
 
-export interface IcpUnsignedTransaction {
-  unsigned_transaction: string;
-  payloads: IcpPayload[];
-}
-
-export interface IcpPayload {
-  account_identifier: IcpAccountIdentifier;
-  hex_bytes: string;
-  signature_type: string;
-}
-
 export interface IcpAccountIdentifier {
   address: string;
-}
-
-export interface IcpSignature {
-  signing_payload: IcpPayload;
-  signature_type: string;
-  public_key: IcpPublicKey;
-  hex_bytes: string;
-}
-
-export interface IcpCombineApiPayload {
-  network_identifier: IcpNetworkIdentifier;
-  unsigned_transaction: string;
-  signatures: IcpSignature[];
 }
 
 export interface SendArgs {
@@ -108,12 +89,6 @@ export interface SigningPayload {
   hex_bytes: string;
   signature_type: string;
 }
-
-export const RequestType = {
-  CALL: 'call',
-  READ_STATE: 'read_state',
-};
-
 export interface PayloadsData {
   payloads: SigningPayload[];
   unsigned_transaction: string;

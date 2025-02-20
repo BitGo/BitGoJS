@@ -68,7 +68,7 @@ export class SignedTransactionBuilder {
         const readState = utils.makeReadStateFromUpdate(update);
 
         const transaction_signature = signaturesBySigData.get(
-          utils.blobToHex(utils.makeSignatureData(utils.HttpCanisterUpdateId(update)))
+          utils.blobToHex(utils.makeSignatureData(utils.generateHttpCanisterUpdateId(update)))
         );
 
         const readStateSignature = signaturesBySigData.get(
