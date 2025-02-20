@@ -57,11 +57,15 @@ describe('APT:', function () {
     apt.getFamily().should.equal('apt');
     apt.getFullName().should.equal('Aptos');
     apt.getBaseFactor().should.equal(1e8);
+    apt.getGasTankLowBalanceAlertThresholdFactor().should.equal(200);
+    apt.getGasTankMinBalanceRecommendationFactor().should.equal(1000);
 
     tapt.getChain().should.equal('tapt');
     tapt.getFamily().should.equal('apt');
     tapt.getFullName().should.equal('Testnet Aptos');
     tapt.getBaseFactor().should.equal(1e8);
+    tapt.getGasTankLowBalanceAlertThresholdFactor().should.equal(200);
+    tapt.getGasTankMinBalanceRecommendationFactor().should.equal(1000);
   });
 
   it('is valid pub', function () {

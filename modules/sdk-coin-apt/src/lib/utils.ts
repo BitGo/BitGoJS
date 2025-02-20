@@ -22,6 +22,7 @@ import {
   COIN_TRANSFER_FUNCTION,
   DIGITAL_ASSET_TRANSFER_FUNCTION,
   FUNGIBLE_ASSET_TRANSFER_FUNCTION,
+  SECONDS_PER_WEEK,
 } from './constants';
 import BigNumber from 'bignumber.js';
 
@@ -118,6 +119,14 @@ export class Utils implements BaseUtils {
     const high = BigInt(amountBuffer.readUint32LE(4));
     const amount = (high << BigInt(32)) + low;
     return amount.toString();
+  }
+
+  /**
+   * Returns the Aptos transaction expiration timestamp in seconds.
+   * It is set to 1 week from now.
+   */
+  getTxnExpirationTimestamp(): number {
+    return Math.floor(Date.now() / 1e3) + SECONDS_PER_WEEK;
   }
 }
 
