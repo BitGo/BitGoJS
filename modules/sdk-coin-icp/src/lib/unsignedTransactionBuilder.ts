@@ -31,7 +31,7 @@ export class UnsignedTransactionBuilder {
     const updates: [() => string, HttpCanisterUpdate][] = [];
     updates.push([utils.getTransactionType, update]);
     const txn = { updates, ingressExpiries };
-    const unsignedTransaction = utils.cbor_encode(txn);
+    const unsignedTransaction = utils.cborEncode(txn);
     const payloads: SigningPayload[] = [];
     this.getPayloads(
       payloads,

@@ -1,10 +1,19 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { BaseKey, BaseTransaction, BaseTransactionBuilder, Recipient, BuildTransactionError } from '@bitgo/sdk-core';
+import {
+  BaseKey,
+  BaseTransaction,
+  BaseTransactionBuilder,
+  Recipient,
+  BuildTransactionError,
+  SigningError,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { IcpMetadata, IcpNetworkIdentifier, IcpOperation, IcpPublicKey, IcpTransaction } from './iface';
 import utils from './utils';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
+import { SignedTransactionBuilder } from './signedTransactionBuilder';
+import { KeyPair } from './keyPair';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -192,11 +201,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction.icpTransaction = icpTransactionData;
   }
 
-  /** @inheritdoc */
-  protected signImplementation(key: BaseKey): BaseTransaction {
-    throw new Error('method not implemented');
-  }
-
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
@@ -210,6 +214,28 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._receiverId = icpTransactionData.receiverAddress;
     this._publicKey = icpTransactionData.senderPublicKeyHex;
     this._amount = icpTransactionData.amount;
+  }
+
+  /** @inheritdoc */
+  sign(key: BaseKey): void {
+    this.validateKey(key);
+    if (!this.transaction.canSign(key)) {
+      throw new SigningError('Private key cannot sign the transaction');
+    }
+
+    this.transaction = this.signImplementation(key);
+  }
+
+  /** @inheritdoc */
+  protected signImplementation(key: BaseKey): BaseTransaction {
+    const keyPair = new KeyPair({ prv: key.key });
+    const keys = keyPair.getKeys();
+    if (!keys.prv || this._publicKey !== keys.pub) {
+      throw new SigningError('invalid private key');
+    }
+    const signedTransactionBuilder = new SignedTransactionBuilder(this._transaction.payloadsData, keys.pub, keys.prv);
+    this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
+    return this._transaction;
   }
 
   /**
@@ -242,7 +268,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    throw new Error('method not implemented');
+    if (!key || !key.key) {
+      throw new SigningError('Key is required');
+    }
+    if (!utils.isValidPrivateKey(key.key)) {
+      throw new SigningError('Invalid private key');
+    }
   }
 
   /** @inheritdoc */

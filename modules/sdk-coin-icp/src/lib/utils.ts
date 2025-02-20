@@ -52,7 +52,7 @@ export class Utils implements BaseUtils {
    * @param {any} value
    * @returns {Buffer}
    */
-  cbor_encode(value) {
+  cborEncode(value) {
     const cborData = encode(value);
     return Buffer.from(cborData).toString('hex');
   }
@@ -62,12 +62,7 @@ export class Utils implements BaseUtils {
   }
 
   isValidLength(hexStr: string): boolean {
-    const byteLength = hexStr.length / 2; // Convert hex length to byte length
-    if (byteLength === 33 || byteLength === 65) {
-      return true;
-    }
-
-    return false;
+    return hexStr.length / 2 === 33 || hexStr.length / 2 === 65;
   }
 
   isValidHex(hexStr: string): boolean {

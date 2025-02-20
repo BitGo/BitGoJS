@@ -2,11 +2,13 @@ import { BaseKey, BaseTransaction, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { IcpTransaction, IcpTransactionData, PayloadsData } from './iface';
 import { Utils } from './utils';
+import { KeyPair } from './keyPair';
 
 export class Transaction extends BaseTransaction {
   protected _icpTransactionData: IcpTransactionData;
   protected _icpTransaction: IcpTransaction;
   protected _payloadsData: PayloadsData;
+  protected _signedTransaction: string;
   protected _utils: Utils;
 
   get icpTransaction(): IcpTransaction {
@@ -23,6 +25,10 @@ export class Transaction extends BaseTransaction {
 
   set payloadsData(value: PayloadsData) {
     this._payloadsData = value;
+  }
+
+  set signedTransaction(value: string) {
+    this._signedTransaction = value;
   }
 
   constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
@@ -72,6 +78,29 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
-    return true;
+    try {
+      const keyPair = new KeyPair({ prv: key.key });
+      const publicKey = keyPair.getPublicKey({ compressed: true });
+      if (this._icpTransactionData.senderPublicKeyHex !== Buffer.from(publicKey).toString('hex')) {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
+
+  // /** @inheritdoc */
+  // canSign(key: BaseKey): boolean {
+  //   try {
+  //     const keyPair = new KeyPair({ prv: key.key });
+  //     const publicKey = keyPair.getPublicKey();
+  //     if (this._icpTransactionData.senderPublicKeyHex !== publicKey.toString('hex')) {
+  //       return false;
+  //     }
+  //     return true;
+  //   } catch {
+  //     return false;
+  //   }
+  // }
 }
