@@ -11,7 +11,7 @@ function pk(b: Buffer): ast.MiniscriptNode {
 }
 
 function sortedKeys(keys: Buffer[]): Buffer[] {
-  return keys.sort((a, b) => a.compare(b));
+  return [...keys].sort((a, b) => a.compare(b));
 }
 
 function multiArgs(threshold: number, keys: Buffer[]): [number, ...string[]] {
