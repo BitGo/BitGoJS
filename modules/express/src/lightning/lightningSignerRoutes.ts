@@ -91,7 +91,9 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
   const macaroonRootKey = getMacaroonRootKey(passphrase, nodeAuthKey.encryptedPrv, bitgo.decrypt);
 
   const { admin_macaroon: adminMacaroon } = await lndSignerClient.initWallet({
-    wallet_password: passphrase,
+    // The passphrase at LND can only accommodate a base64 character set
+    // For more information, see BTC-1851
+    wallet_password: Buffer.from(passphrase).toString('base64'),
     extended_master_key: signerRootKey,
     macaroon_root_key: macaroonRootKey,
   });
@@ -220,5 +222,9 @@ export async function handleUnlockLightningWallet(req: express.Request): Promise
   );
 
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
-  return await lndSignerClient.unlockWallet({ wallet_password: passphrase });
+  // The passphrase at LND can only accommodate a base64 character set
+  // For more information, see BTC-1851
+  return await lndSignerClient.unlockWallet({
+    wallet_password: Buffer.from(passphrase).toString('base64'),
+  });
 }
