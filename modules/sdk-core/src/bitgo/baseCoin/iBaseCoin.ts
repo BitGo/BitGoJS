@@ -544,4 +544,6 @@ export interface IBaseCoin {
   getHashFunction(): Hash;
   broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult>;
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void;
+  getGasTankLowBalanceAlertThresholdFactor(): number;
+  getGasTankMinBalanceRecommendationFactor(): number;
 }

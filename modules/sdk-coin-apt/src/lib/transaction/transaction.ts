@@ -28,7 +28,7 @@ import {
   TransactionAuthenticatorFeePayer,
   TransactionPayload,
 } from '@aptos-labs/ts-sdk';
-import { DEFAULT_GAS_UNIT_PRICE, SECONDS_PER_WEEK, UNAVAILABLE_TEXT } from '../constants';
+import { DEFAULT_GAS_UNIT_PRICE, UNAVAILABLE_TEXT } from '../constants';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
 import { AptTransactionExplanation, TxData } from '../iface';
@@ -56,7 +56,7 @@ export abstract class Transaction extends BaseTransaction {
     this._maxGasAmount = DEFAULT_MAX_GAS_AMOUNT;
     this._gasUnitPrice = DEFAULT_GAS_UNIT_PRICE;
     this._gasUsed = 0;
-    this._expirationTime = Math.floor(Date.now() / 1e3) + SECONDS_PER_WEEK;
+    this._expirationTime = utils.getTxnExpirationTimestamp();
     this._sequenceNumber = 0;
     this._sender = AccountAddress.ZERO.toString();
     this._assetId = AccountAddress.ZERO.toString();
