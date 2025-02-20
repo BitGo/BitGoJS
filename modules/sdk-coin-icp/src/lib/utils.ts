@@ -11,6 +11,8 @@ import { decode, encode } from 'cbor-x';
 import js_sha256 from 'js-sha256';
 const { ec: EC } = elliptic;
 
+const Secp256k1Curve = new elliptic.ec('secp256k1');
+
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
     if (!address) {

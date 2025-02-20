@@ -42,6 +42,25 @@ export class Transaction extends BaseTransaction {
     return this._icpTransactionData.transactionType;
   }
 
+  fromRawTransaction(rawTransaction: string): void {
+    try {
+      const parsedTx = JSON.parse(rawTransaction);
+      this._icpTransactionData = {
+        senderAddress: parsedTx.address,
+        receiverAddress: parsedTx.externalOutputs[0].address,
+        amount: parsedTx.inputAmount,
+        fee: parsedTx.fee,
+        senderPublicKeyHex: parsedTx.senderPublicKey,
+        memo: parsedTx.seqno,
+        transactionType: parsedTx.type,
+        expireTime: parsedTx.expireTime,
+      };
+      this._utils.validateRawTransaction(this._icpTransactionData);
+    } catch (error) {
+      throw new Error('Invalid raw transaction format: ' + error.message);
+    }
+  }
+
   toJson(): void {
     throw new Error('Method not implemented.');
   }

@@ -33,7 +33,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {TransactionBuilder} builder - the builder to be initialized
    * @returns {TransactionBuilder} the builder initialized
    */
-  private initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
+  private static initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
     if (tx) {
       builder.initBuilder(tx);
     }
@@ -42,7 +42,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig, new Utils()));
+    return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig, new Utils()));
   }
 
   /** @inheritdoc */
