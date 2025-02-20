@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/statics",
-  "version": "51.0.0",
+  "version": "51.0.1",
   "description": "dependency-free static configuration for the bitgo platform",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",

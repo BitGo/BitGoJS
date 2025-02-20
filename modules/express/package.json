@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/express",
-  "version": "10.7.0",
+  "version": "11.0.0",
   "private": true,
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
@@ -37,11 +37,11 @@
     "fmt": "yarn prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
-    "@bitgo/abstract-lightning": "^1.2.44",
-    "@bitgo/sdk-core": "^28.25.0",
+    "@bitgo/abstract-lightning": "^2.0.0",
+    "@bitgo/sdk-core": "^29.0.0",
     "@bitgo/utxo-lib": "^11.2.2",
     "argparse": "^1.0.10",
-    "bitgo": "^39.27.0",
+    "bitgo": "^40.0.0",
     "bluebird": "^3.5.3",
     "body-parser": "^1.20.3",
     "connect-timeout": "^1.9.0",
@@ -57,7 +57,7 @@
   "devDependencies": {
     "@bitgo/public-types": "4.9.2",
     "@bitgo/sdk-lib-mpc": "^10.1.0",
-    "@bitgo/sdk-test": "^8.0.71",
+    "@bitgo/sdk-test": "^8.0.72",
     "@types/argparse": "^1.0.36",
     "@types/bluebird": "^3.5.25",
     "@types/body-parser": "^1.17.0",
