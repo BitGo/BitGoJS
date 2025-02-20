@@ -1,15 +1,195 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey, BaseTransaction, BaseTransactionBuilder, BaseAddress, Recipient } from '@bitgo/sdk-core';
+import BigNumber from 'bignumber.js';
+import { BaseKey, BaseTransaction, BaseTransactionBuilder, Recipient, BuildTransactionError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { IcpCombineApiPayload, IcpUnsignedTransaction } from './iface';
+import { IcpMetadata, IcpNetworkIdentifier, IcpOperation, IcpPublicKey, IcpTransaction } from './iface';
+import utils from './utils';
+import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
-  protected _unsignedTransaction: IcpUnsignedTransaction;
-  protected _combineApiPayload: IcpCombineApiPayload;
+  private _sender: string;
+  private _publicKey: string;
+  private _memo: number;
+  private _receiverId: string;
+  private _amount: string;
 
   protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._transaction = new Transaction(_coinConfig, utils);
+  }
+
+  /**
+   * Sets the public key and the address of the sender of this transaction.
+   *
+   * @param {string} address the account that is sending this transaction
+   * @param {string} pubKey the public key that is sending this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public sender(address: string, pubKey: string): this {
+    if (!address || !utils.isValidAddress(address.toString())) {
+      throw new BuildTransactionError('Invalid or missing address, got: ' + address);
+    }
+    if (!pubKey || !utils.isValidPublicKey(pubKey)) {
+      throw new BuildTransactionError('Invalid or missing pubKey, got: ' + pubKey);
+    }
+    this._sender = address;
+    this._publicKey = pubKey;
+    return this;
+  }
+
+  /**
+   * Set the memo
+   *
+   * @param {number} memo - number that can be only used once
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public memo(memo: number): this {
+    if (memo < 0) {
+      throw new BuildTransactionError(`Invalid memo: ${memo}`);
+    }
+    this._memo = memo;
+    return this;
+  }
+
+  /**
+   * Sets the account Id of the receiver of this transaction.
+   *
+   * @param {string} accountId the account id of the account that is receiving this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public receiverId(accountId: string): this {
+    if (!accountId || !utils.isValidAddress(accountId)) {
+      throw new BuildTransactionError('Invalid or missing accountId for receiver, got: ' + accountId);
+    }
+    this._receiverId = accountId;
+    return this;
+  }
+
+  /**
+   * Sets the amount of this transaction.
+   *
+   * @param {string} value the amount to be sent in yocto (1 Near = 1e24 yoctos)
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public amount(value: string): this {
+    this.validateValue(new BigNumber(value));
+    this._amount = value;
+    return this;
+  }
+
+  /** @inheritdoc */
+  public validateValue(value: BigNumber): void {
+    if (value.isLessThanOrEqualTo(0)) {
+      throw new BuildTransactionError('Value cannot be less than zero');
+    }
+  }
+
+  public validateFee(fee: string): void {
+    if (new BigNumber(fee).isEqualTo(0)) {
+      throw new BuildTransactionError('Fee equal to zero');
+    }
+  }
+
+  public validateMemo(memo: number): void {
+    if (memo < 0) {
+      throw new BuildTransactionError('Invalid memo');
+    }
+  }
+
+  public validateExpireTime(expireTime: number): void {
+    if (expireTime < Date.now() * 1_000_000) {
+      throw new BuildTransactionError('Invalid expire time');
+    }
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction: Transaction): void {
+    utils.isValidAddress(transaction.icpTransactionData.senderAddress);
+    utils.isValidAddress(transaction.icpTransactionData.receiverAddress);
+    utils.isValidPublicKey(transaction.icpTransactionData.senderPublicKeyHex);
+    this.validateValue(new BigNumber(transaction.icpTransactionData.amount));
+    this.validateFee(transaction.icpTransactionData.fee);
+    this.validateMemo(transaction.icpTransactionData.memo);
+    this.validateExpireTime(transaction.icpTransactionData.expireTime);
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    this.buildIcpTransactionData();
+    const unsignedTransactionBuilder = new UnsignedTransactionBuilder(this._transaction.icpTransaction);
+    const payloadsData = await unsignedTransactionBuilder.getUnsignedTransaction();
+    this._transaction.payloadsData = payloadsData;
+    return this._transaction;
+  }
+
+  protected buildIcpTransactionData(): void {
+    const networkIdentifier: IcpNetworkIdentifier = {
+      blockchain: this._coinConfig.fullName,
+      network: utils.getNetwork(),
+    };
+
+    const publicKey: IcpPublicKey = {
+      hex_bytes: this._publicKey,
+      curve_type: utils.getCurveType(),
+    };
+
+    const senderOperation: IcpOperation = {
+      operation_identifier: { index: 0 },
+      type: utils.getTransactionType(),
+      account: { address: this._sender },
+      amount: {
+        value: `-${this._amount}`,
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+
+    const receiverOperation: IcpOperation = {
+      operation_identifier: { index: 1 },
+      type: utils.getTransactionType(),
+      account: { address: this._receiverId },
+      amount: {
+        value: this._amount,
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+
+    const feeOperation: IcpOperation = {
+      operation_identifier: { index: 2 },
+      type: utils.getFeeType(),
+      account: { address: this._sender },
+      amount: {
+        value: this.gasData(),
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+
+    const currentTime = Date.now() * 1000_000;
+    const ingressStartTime = currentTime;
+    const ingressEndTime = ingressStartTime + 5 * 60 * 1000_000_000; // 5 mins in nanoseconds
+    const metaData: IcpMetadata = {
+      created_at_time: currentTime,
+      memo: this._memo,
+      ingress_start: ingressStartTime,
+      ingress_end: ingressEndTime,
+    };
+
+    const icpTransactionData: IcpTransaction = {
+      network_identifier: networkIdentifier,
+      public_keys: [publicKey],
+      operations: [senderOperation, receiverOperation, feeOperation],
+      metadata: metaData,
+    };
+    this._transaction.icpTransaction = icpTransactionData;
   }
 
   /** @inheritdoc */
@@ -22,18 +202,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @param {Transaction} tx the transaction data
    */
-  abstract initBuilder(tx: Transaction): void;
+  initBuilder(tx: Transaction): void {
+    this._transaction = tx;
+    const icpTransactionData = tx.icpTransactionData;
+    this._sender = icpTransactionData.senderAddress;
+    this._memo = icpTransactionData.memo;
+    this._receiverId = icpTransactionData.receiverAddress;
+    this._publicKey = icpTransactionData.senderPublicKeyHex;
+    this._amount = icpTransactionData.amount;
+  }
 
   /**
    * gets the gas data of this transaction.
    */
-  gasData(): this {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  validateAddress(address: BaseAddress, addressFormat?: string): void {
-    throw new Error('method not implemented');
+  gasData(): string {
+    return '-10000';
   }
 
   /**
@@ -67,20 +250,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     throw new Error('method not implemented');
   }
 
-  /** @inheritdoc */
-  validateValue(): void {
-    throw new Error('method not implemented');
-  }
-
   /**
    * Validates the specific transaction builder internally
    */
   validateDecodedTransaction(): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  validateTransaction(): void {
     throw new Error('method not implemented');
   }
 }

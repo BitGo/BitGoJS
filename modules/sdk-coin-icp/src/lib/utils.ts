@@ -1,11 +1,15 @@
 import { secp256k1 } from '@noble/curves/secp256k1';
+import elliptic from 'elliptic';
 import { BaseUtils, KeyPair, ParseTransactionError } from '@bitgo/sdk-core';
 import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
-import { IcpNetworkIdentifier, IcpTransactionData } from './iface';
+import { HttpCanisterUpdate, IcpTransactionData, RequestType } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
+import { decode, encode } from 'cbor-x';
+import js_sha256 from 'js-sha256';
+const { ec: EC } = elliptic;
 
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
@@ -30,26 +34,29 @@ export class Utils implements BaseUtils {
     }
 
     const pubKeyBytes = this.hexToBytes(hexStr);
-
-    if (pubKeyBytes.length === 33 && (pubKeyBytes[0] === 2 || pubKeyBytes[0] === 3)) {
-      return true;
-    } else if (pubKeyBytes.length === 65 && pubKeyBytes[0] === 4) {
-      return true;
-    } else {
-      return false;
-    }
+    const firstByte = pubKeyBytes[0];
+    return (
+      (pubKeyBytes.length === 33 && (firstByte === 2 || firstByte === 3)) ||
+      (pubKeyBytes.length === 65 && firstByte === 4)
+    );
   }
 
   getTransactionType(): string {
     return 'TRANSACTION';
   }
 
-  getFeeType(): string {
-    return 'FEE';
+  /**
+   *
+   * @param {any} value
+   * @returns {Buffer}
+   */
+  cbor_encode(value) {
+    const cborData = encode(value);
+    return Buffer.from(cborData).toString('hex');
   }
 
-  getDecimalPrecision(): number {
-    return 8;
+  getFeeType(): string {
+    return 'FEE';
   }
 
   isValidLength(hexStr: string): boolean {
@@ -62,7 +69,7 @@ export class Utils implements BaseUtils {
   }
 
   isValidHex(hexStr: string): boolean {
-    return /^[0-9a-fA-F]+$/.test(hexStr);
+    return /^([0-9a-fA-F]{2})+$/.test(hexStr);
   }
 
   hexToBytes(hex: string): Uint8Array {
@@ -101,11 +108,8 @@ export class Utils implements BaseUtils {
     };
   }
 
-  getNetworkIdentifier(): IcpNetworkIdentifier {
-    return {
-      blockchain: 'Internet Computer',
-      network: '00000000000000020101',
-    };
+  getNetwork(): string {
+    return '00000000000000020101';
   }
 
   compressPublicKey(uncompressedKey: string): string {
@@ -139,6 +143,20 @@ export class Utils implements BaseUtils {
     } catch (error) {
       throw new Error(`Failed to process the public key: ${error.message}`);
     }
+  }
+
+  getPublicKeyInDERFormat(publicKeyHex: string): Uint8Array {
+    const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
+    const ellipticKey = Secp256k1Curve.keyFromPublic(publicKeyBuffer);
+    const uncompressedPublicKeyHex = ellipticKey.getPublic(false, 'hex');
+    const derEncodedKey = agent.wrapDER(Buffer.from(uncompressedPublicKeyHex, 'hex'), agent.SECP256K1_OID);
+    return derEncodedKey;
+  }
+
+  getPrincipalIdFromPublicKey(publicKeyHex: string): DfinityPrincipal {
+    const derEncodedKey = this.getPublicKeyInDERFormat(publicKeyHex);
+    const principalId = DfinityPrincipal.selfAuthenticating(Buffer.from(derEncodedKey));
+    return principalId;
   }
 
   fromPrincipal(principal: DfinityPrincipal, subAccount: Uint8Array = new Uint8Array(32)): string {
@@ -198,6 +216,223 @@ export class Utils implements BaseUtils {
     if (!this.isValidAddress(transactionData.receiverAddress)) {
       throw new ParseTransactionError('Invalid receiver address');
     }
+  }
+
+  /**
+   *
+   * @param {object} update
+   * @returns {Buffer}
+   */
+  HttpCanisterUpdateId(update: HttpCanisterUpdate): Buffer {
+    return this.HttpCanisterUpdateRepresentationIndependentHash(update);
+  }
+
+  /**
+   *
+   * @param {object} update
+   * @returns {Buffer}
+   */
+  HttpCanisterUpdateRepresentationIndependentHash(update: HttpCanisterUpdate): Buffer {
+    return this.hashOfMap({
+      request_type: RequestType.CALL,
+      canister_id: update.canister_id,
+      method_name: update.method_name,
+      arg: update.arg,
+      ingress_expiry: update.ingress_expiry,
+      sender: update.sender,
+    });
+  }
+
+  /**
+   *
+   * @param {object} map
+   * @returns {Buffer}
+   */
+  hashOfMap(map: Record<string, any>): Buffer {
+    const hashes: Buffer[] = [];
+    for (const key in map) {
+      hashes.push(this.hashKeyVal(key, map[key]));
+    }
+    hashes.sort((buf0, buf1) => buf0.compare(buf1));
+    return this.sha256(hashes);
+  }
+
+  /**
+   *
+   * @param {string} key
+   * @param {string|Buffer|BigInt} val
+   * @returns {Buffer}
+   */
+  hashKeyVal(key: string, val: string | Buffer | BigInt): Buffer {
+    return Buffer.concat([this.hashString(key), this.hashVal(val)]);
+  }
+
+  /**
+   *
+   * @param {string} value
+   * @returns {Buffer}
+   */
+  hashString(value: string): Buffer {
+    return this.sha256([Buffer.from(value)]);
+  }
+
+  /**
+   *
+   * @param {BigInt} n
+   * @returns {Buffer}
+   */
+  hashU64(n: bigint): Buffer {
+    const buf = Buffer.allocUnsafe(10);
+    let i = 0;
+    while (true) {
+      const byte = Number(n & BigInt(0x7f));
+      n >>= BigInt(7);
+      if (n === BigInt(0)) {
+        buf[i] = byte;
+        break;
+      } else {
+        buf[i] = byte | 0x80;
+        ++i;
+      }
+    }
+    return this.hashBytes(buf.subarray(0, i + 1));
+  }
+
+  /**
+   *
+   * @param {Array<any>} elements
+   * @returns {Buffer}
+   */
+  hashArray(elements: Array<any>): Buffer {
+    return this.sha256(elements.map(this.hashVal));
+  }
+
+  /**
+   *
+   * @param {string|Buffer|BigInt} val
+   * @returns {Buffer}
+   */
+  hashVal(val: string | Buffer | BigInt): Buffer {
+    if (typeof val === 'string') {
+      return this.hashString(val);
+    }
+    if (Buffer.isBuffer(val)) {
+      return this.hashBytes(val);
+    }
+    if (typeof val === 'bigint') {
+      return this.hashU64(val);
+    }
+    if (typeof val === 'number') {
+      return this.hashU64(BigInt(val));
+    }
+    if (Array.isArray(val)) {
+      return this.hashArray(val);
+    }
+    throw new Error(`hashVal(${val}) unsupported`);
+  }
+
+  /**
+   *
+   * @param {Buffer} value
+   * @returns {Buffer}
+   */
+  hashBytes(value: Buffer): Buffer {
+    return this.sha256([value]);
+  }
+
+  /**
+   *
+   * @param {Array<Buffer>} chunks
+   * @returns {Buffer}
+   */
+  sha256(chunks: Array<Buffer>): Buffer {
+    const hasher = js_sha256.sha256.create();
+    chunks.forEach((chunk) => hasher.update(chunk));
+    return Buffer.from(hasher.arrayBuffer());
+  }
+
+  blobFromHex(hex: string): Buffer {
+    return Buffer.from(hex, 'hex');
+  }
+
+  blobToHex(blob: Buffer): string {
+    return blob.toString('hex');
+  }
+
+  /**
+   *
+   * @param {Buffer} buffer
+   * @returns {any}
+   */
+  cborDecode(buffer: Buffer): any {
+    const res = decode(buffer);
+    return res;
+  }
+
+  getDomainICRequest(): Buffer {
+    return Buffer.from('\x0Aic-request');
+  }
+
+  /**
+   *
+   * @param {Buffer} messageId
+   * @returns {Buffer}
+   */
+  makeSignatureData(messageId: Buffer): Buffer {
+    return Buffer.concat([this.getDomainICRequest(), messageId]);
+  }
+
+  /**
+   *
+   * @param {object} update
+   * @returns {object}
+   */
+  makeReadStateFromUpdate(update: HttpCanisterUpdate): Record<string, any> {
+    return {
+      sender: update.sender,
+      paths: [[Buffer.from('request_status'), this.HttpCanisterUpdateId(update)]],
+      ingress_expiry: update.ingress_expiry,
+    };
+  }
+
+  /**
+   *
+   * @param {object} readState
+   * @returns {Buffer}
+   */
+  HttpReadStateRepresentationIndependentHash(readState: Record<string, any>): Buffer {
+    return this.hashOfMap({
+      request_type: RequestType.READ_STATE,
+      ingress_expiry: readState.ingress_expiry,
+      paths: readState.paths,
+      sender: readState.sender,
+    });
+  }
+
+  getSignatureType(): string {
+    return 'ecdsa';
+  }
+
+  getSignatures(payloadsData: Record<string, any>, senderPublicKey: string, senderPrivateKey: string): void {
+    return payloadsData.payloads.map((payload) => ({
+      signing_payload: payload,
+      signature_type: payload.signature_type,
+      public_key: {
+        hex_bytes: senderPublicKey,
+        curve_type: this.getCurveType(),
+      },
+      hex_bytes: this.signPayload(senderPrivateKey, payload.hex_bytes),
+    }));
+  }
+
+  signPayload(privateKey: string, payloadHex: string): string {
+    const ec = new EC('secp256k1');
+    const key = ec.keyFromPrivate(privateKey);
+    const payloadHash = crypto.createHash('sha256').update(Buffer.from(payloadHex, 'hex')).digest('hex');
+    const signature = key.sign(payloadHash);
+    const r = signature.r.toArray('be', 32);
+    const s = signature.s.toArray('be', 32);
+    return Buffer.concat([Buffer.from(r), Buffer.from(s)]).toString('hex');
   }
 }
 

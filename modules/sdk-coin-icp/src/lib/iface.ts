@@ -6,11 +6,9 @@ export interface IcpTransactionData {
   readonly amount: string;
   readonly fee: string;
   readonly senderPublicKeyHex: string;
-  readonly sequenceNumber: number;
+  readonly memo: number;
   readonly transactionType: TransactionType;
   readonly expireTime: number;
-  readonly coin: string;
-  readonly id: string;
 }
 
 export interface IcpNetworkIdentifier {
@@ -88,4 +86,35 @@ export interface IcpCombineApiPayload {
   network_identifier: IcpNetworkIdentifier;
   unsigned_transaction: string;
   signatures: IcpSignature[];
+}
+
+export interface SendArgs {
+  memo: { memo: number };
+  payment: { receiverGets: { e8s: number } };
+  maxFee: { e8s: number };
+  to: { hash: Buffer };
+  createdAtTime: { timestampNanos: number };
+}
+
+export interface HttpCanisterUpdate {
+  canister_id: Uint8Array;
+  method_name: string;
+  arg: Uint8Array;
+  sender: Uint8Array;
+  ingress_expiry: bigint;
+}
+export interface SigningPayload {
+  account_identifier: IcpAccountIdentifier;
+  hex_bytes: string;
+  signature_type: string;
+}
+
+export const RequestType = {
+  CALL: 'call',
+  READ_STATE: 'read_state',
+};
+
+export interface PayloadsData {
+  payloads: SigningPayload[];
+  unsigned_transaction: string;
 }
