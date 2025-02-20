@@ -39,3 +39,15 @@ export const TransferTransactionSchema = joi.object({
 export const TransferAllTransactionSchema = joi.object({
   to: addressSchema.required(),
 });
+
+export const StakeTransactionSchema = joi.object({
+  amount: joi.string().required(),
+  hotkey: joi.string().required(),
+  netuid: joi.string().required(),
+});
+
+export const UnstakeTransactionSchema = joi.object({
+  amount: joi.string().required(),
+  hotkey: joi.string().required(),
+  netuid: joi.string().required(),
+});
