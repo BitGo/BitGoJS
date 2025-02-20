@@ -164,7 +164,7 @@ const mainnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: true,
   suiNodeUrl: 'https://fullnode.mainnet.sui.io',
   etcNodeUrl: 'https://etc.blockscout.com',
-  coredaoExplorerBaseUrl: 'https://app.coredao.org/',
+  coredaoExplorerBaseUrl: 'https://openapi.coredao.org',
   oasExplorerBaseUrl: 'https://explorer.oasys.games',
   rosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
 };
@@ -220,7 +220,7 @@ const testnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: false,
   suiNodeUrl: 'https://fullnode.testnet.sui.io',
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
-  coredaoExplorerBaseUrl: 'https://app.test.btcs.network',
+  coredaoExplorerBaseUrl: 'https://api.test2.btcs.network',
   oasExplorerBaseUrl: 'https://explorer.testnet.oasys.games',
   rosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
 };

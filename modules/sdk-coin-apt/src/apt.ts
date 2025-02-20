@@ -183,16 +183,6 @@ export class Apt extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  /** @inheritDoc */
-  getGasTankLowBalanceAlertThresholdFactor(): number {
-    return 200;
-  }
-
-  /** @inheritDoc */
-  getGasTankMinBalanceRecommendationFactor(): number {
-    return 1000;
-  }
-
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
   }

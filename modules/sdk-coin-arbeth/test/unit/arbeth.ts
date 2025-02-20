@@ -106,8 +106,6 @@ describe('Arbitrum', function () {
       arbeth.getFamily().should.equal('arbeth');
       arbeth.getFullName().should.equal('Arbitrum Ethereum (L2 Chain)');
       arbeth.getBaseFactor().should.equal(1e18);
-      arbeth.getGasTankLowBalanceAlertThresholdFactor().should.equal(2);
-      arbeth.getGasTankMinBalanceRecommendationFactor().should.equal(10);
     });
 
     it('should return the right info for tarbeth', function () {
@@ -118,8 +116,6 @@ describe('Arbitrum', function () {
       tarbeth.getFamily().should.equal('arbeth');
       tarbeth.getFullName().should.equal('Testnet Arbitrum Ethereum (L2 Chain)');
       tarbeth.getBaseFactor().should.equal(1e18);
-      tarbeth.getGasTankLowBalanceAlertThresholdFactor().should.equal(2);
-      tarbeth.getGasTankMinBalanceRecommendationFactor().should.equal(10);
     });
   });
 

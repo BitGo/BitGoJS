@@ -43,11 +43,11 @@
     "@bitgo/sdk-core": "^29.0.0",
     "@bitgo/statics": "^51.0.1",
     "@bitgo/utxo-lib": "^11.2.2",
+    "@noble/curves": "1.8.1",
     "@stacks/network": "^4.3.0",
     "@stacks/transactions": "2.0.1",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",
-    "elliptic": "^6.6.1",
     "ethereumjs-util": "7.1.5",
     "lodash": "^4.17.15"
   },

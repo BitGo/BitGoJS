@@ -599,20 +599,4 @@ export abstract class BaseCoin implements IBaseCoin {
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
     return;
   }
-
-  /**
-   * Gets the multiplying factor of fee estimate to alert for low fee address balance
-   * i.e. alert threshold balance = factor * fee estimate
-   */
-  getGasTankLowBalanceAlertThresholdFactor(): number {
-    return 2;
-  }
-
-  /**
-   * Gets the multiplying factor of fee estimate for recommending the fee address min. balance
-   * i.e. recommended min. balance = factor * fee estimate
-   */
-  getGasTankMinBalanceRecommendationFactor(): number {
-    return 10;
-  }
 }
