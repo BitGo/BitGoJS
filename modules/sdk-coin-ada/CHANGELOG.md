@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.6.6...@bitgo/sdk-coin-ada@4.7.0) (2025-02-20)
+
+### Features
+
+- remove deadalus address support from ADA wallets ([9175976](https://github.com/BitGo/BitGoJS/commit/91759763c0fe2516c5697b6d3fb9720cbf5aa676))
+
 ## [4.6.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.6.5...@bitgo/sdk-coin-ada@4.6.6) (2025-02-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

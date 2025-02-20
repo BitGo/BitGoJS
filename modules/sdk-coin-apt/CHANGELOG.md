@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.7.2...@bitgo/sdk-coin-apt@1.8.0) (2025-02-20)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** correction 64 bit LE to two buffer of 32 bits ([2165171](https://github.com/BitGo/BitGoJS/commit/21651716d9704ffc0e66072b6bafc3e7bd996aec))
+- **sdk-coin-apt:** fetch correction transaction ([a8e9db2](https://github.com/BitGo/BitGoJS/commit/a8e9db23326a680b5e78162c21d508edf00d3f07))
+
+### Features
+
+- **sdk-coin-apt:** recommend min gas tank balance for next 1000 txns ([74071ab](https://github.com/BitGo/BitGoJS/commit/74071aba4c0754242fc96f7334cec74edba6c73b))
+
 ## [1.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.7.1...@bitgo/sdk-coin-apt@1.7.2) (2025-02-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apt
