@@ -51,7 +51,7 @@ export type CreateInvoiceRequest = t.TypeOf<typeof CreateInvoiceRequest>;
 
 export const GetInvoicesQuery = t.partial({
   status: InvoiceStatus,
-  limit: t.string,
+  limit: BigIntFromString,
   startDate: DateFromISOString,
   endDate: DateFromISOString,
 });
