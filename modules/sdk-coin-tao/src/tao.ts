@@ -49,4 +49,8 @@ export class Tao extends SubstrateCoin {
   getMaxValidityDurationBlocks(): number {
     return 2400;
   }
+
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
 }
