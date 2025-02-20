@@ -26,7 +26,7 @@ import {
   TransactionVersion,
   validateStacksAddress,
 } from '@stacks/transactions';
-import { ec } from 'elliptic';
+import { secp256k1 } from '@noble/curves/secp256k1';
 import * as _ from 'lodash';
 import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsError } from '@bitgo/sdk-core';
 import { AddressDetails, SendParams } from './iface';
@@ -157,11 +157,9 @@ export function isValidPublicKey(pub: string): boolean {
   if (!allHexChars(pub)) return false;
 
   // validate the public key
-  const secp256k1 = new ec('secp256k1');
   try {
-    const keyPair = secp256k1.keyFromPublic(Buffer.from(pub, 'hex'));
-    const { result } = keyPair.validate();
-    return result;
+    secp256k1.ProjectivePoint.fromHex(pub);
+    return true;
   } catch (e) {
     return false;
   }

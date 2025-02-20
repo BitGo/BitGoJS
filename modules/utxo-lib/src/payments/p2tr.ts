@@ -5,7 +5,7 @@ import { networks } from '../networks';
 import { script as bscript, Payment, PaymentOpts, lazy } from 'bitcoinjs-lib';
 import * as taproot from '../taproot';
 import { musig } from '../noble_ecc';
-import * as necc from '@noble/secp256k1';
+import { secp256k1 as necc } from '@noble/curves/secp256k1';
 
 const typef = require('typeforce');
 const OPS = bscript.OPS;
@@ -24,7 +24,7 @@ const EMPTY_BUFFER = Buffer.alloc(0);
 function isPlainPubkey(pubKey: Uint8Array): boolean {
   if (pubKey.length !== 33) return false;
   try {
-    return !!necc.Point.fromHex(pubKey);
+    return !!necc.ProjectivePoint.fromHex(pubKey);
   } catch (e) {
     return false;
   }

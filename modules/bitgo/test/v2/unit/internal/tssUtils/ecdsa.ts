@@ -1674,7 +1674,7 @@ describe('TSS Ecdsa Utils:', async function () {
         '!@#$^0c70545b519bb7bbc7195fd4b7d5bfc873bfd38b18596e4b47a05b6a88d552e2e8319cb31e279b99dbe54115a983d35e86679af96d81b7478d1df368f76a8'; // 129 chars
       should(() =>
         ECDSAUtils.EcdsaUtils.validateCommonKeychainPublicKey(commonKeychainWithInvalidCharacters)
-      ).throwError('Unknown point format');
+      ).throwError(/^Invalid commonKeychain, error:/);
     });
   });
 

@@ -22,7 +22,7 @@ import { Signature } from 'avalanche/dist/common';
 import { Credential } from 'avalanche/dist/common/credentials';
 import { NodeIDStringToBuffer } from 'avalanche/dist/utils';
 import * as createHash from 'create-hash';
-import { ec } from 'elliptic';
+import { secp256k1 } from '@noble/curves/secp256k1';
 import { ADDRESS_SEPARATOR, DeprecatedOutput, DeprecatedTx, Output } from './iface';
 
 export class Utils implements BaseUtils {
@@ -101,15 +101,12 @@ export class Utils implements BaseUtils {
       if (pub.length === 66 && firstByte !== '02' && firstByte !== '03') return false;
 
       if (!this.allHexChars(pub)) return false;
-
       pubBuf = BufferAvax.from(pub, 'hex');
     }
     // validate the public key
-    const secp256k1 = new ec('secp256k1');
     try {
-      const keyPair = secp256k1.keyFromPublic(pubBuf);
-      const { result } = keyPair.validate();
-      return result;
+      secp256k1.ProjectivePoint.fromHex(pubBuf.toString('hex'));
+      return true;
     } catch (e) {
       return false;
     }

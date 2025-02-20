@@ -1,6 +1,6 @@
 import * as paillierBigint from 'paillier-bigint';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
-import * as secp from '@noble/secp256k1';
+import { secp256k1 as secp } from '@noble/curves/secp256k1';
 import { createHash, Hash, randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
@@ -1369,7 +1369,7 @@ export default class Ecdsa {
       Ecdsa.curve.pointAdd(hexToBigInt(oShare.Gamma), hexToBigInt(dShare.Gamma)),
       Ecdsa.curve.scalarInvert(delta)
     );
-    const pointR = secp.Point.fromHex(bigIntToBufferBE(R, 32));
+    const pointR = secp.ProjectivePoint.fromHex(bigIntToBufferBE(R, 32));
     const r = pointR.x;
 
     const s = Ecdsa.curve.scalarAdd(
@@ -1410,7 +1410,7 @@ export default class Ecdsa {
    */
   generateVAProofs(M: Buffer, vaShare: VAShare): VAShareWithProofs {
     const s = hexToBigInt(vaShare.s);
-    const R = bigIntFromU8ABE(secp.Point.fromHex(vaShare.R).toRawBytes(true));
+    const R = bigIntFromU8ABE(secp.ProjectivePoint.fromHex(vaShare.R).toRawBytes(true));
 
     const proofContext = createHash('sha256').update(M).update(bigIntToBufferBE(R, Ecdsa.curve.pointBytes)).digest();
 
