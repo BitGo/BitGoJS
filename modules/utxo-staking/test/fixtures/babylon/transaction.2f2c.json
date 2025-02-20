@@ -1,0 +1,26 @@
+{
+  "transaction": {
+    "version": 2,
+    "locktime": 0,
+    "ins": [
+      {
+        "hash": "1111111111111111111111111111111111111111111111111111111111111111",
+        "index": 0,
+        "script": "",
+        "sequence": 4294967295,
+        "witness": []
+      }
+    ],
+    "outs": [
+      {
+        "script": "5120230320466c8eb821585e10e1ca35f98ea064aea8d972db994a50ce14a5d49689",
+        "value": 1111
+      },
+      {
+        "script": "5120230320466c8eb821585e10e1ca35f98ea064aea8d972db994a50ce14a5d49689",
+        "value": 20751
+      }
+    ]
+  },
+  "fee": 360
+}
