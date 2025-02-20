@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@2.1.8...@bitgo/web-demo@2.1.9) (2025-02-20)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
 ## [2.1.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@2.1.6...@bitgo/web-demo@2.1.8) (2025-02-19)
 
 **Note:** Version bump only for package @bitgo/web-demo

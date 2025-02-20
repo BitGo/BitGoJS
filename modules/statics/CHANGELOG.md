@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [51.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.0.0...@bitgo/statics@51.0.1) (2025-02-20)
+
+### Bug Fixes
+
+- add additional slash so txn can be viewed directly ([e9de644](https://github.com/BitGo/BitGoJS/commit/e9de6443ce35f401f7a097560be56ded45ad25ed))
+
 # [51.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@50.23.0...@bitgo/statics@51.0.0) (2025-02-19)
 
 ### Bug Fixes

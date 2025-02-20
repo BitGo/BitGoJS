@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.2.0...@bitgo/utxo-core@1.3.0) (2025-02-20)
+
+### Features
+
+- **utxo-core:** add output utilities for transaction building ([678906f](https://github.com/BitGo/BitGoJS/commit/678906fe9ee15db40fa83473572a524ac0f438d9))
+
 # 1.2.0 (2025-02-19)
 
 ### Features

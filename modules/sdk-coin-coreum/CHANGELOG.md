@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [21.0.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.0.35...@bitgo/sdk-coin-coreum@21.0.36) (2025-02-20)
+
+### Bug Fixes
+
+- address validation for cosmos like coins ([2912eab](https://github.com/BitGo/BitGoJS/commit/2912eabf6a1dbc7cde3715352c3849f550b5b6ec))
+
 ## [21.0.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coreum@21.0.34...@bitgo/sdk-coin-coreum@21.0.35) (2025-02-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coreum
