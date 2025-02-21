@@ -257,6 +257,11 @@ export const SUI_TOKEN_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.BULK_TRANSACTION,
 ];
+export const SUI_TOKEN_FEATURES_STAKING = [
+  ...SUI_TOKEN_FEATURES,
+  CoinFeature.STAKING,
+  CoinFeature.BULK_STAKING_TRANSACTION,
+];
 export const TRX_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
