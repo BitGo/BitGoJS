@@ -265,7 +265,7 @@ export type InvoiceInfo = t.TypeOf<typeof InvoiceInfo>;
 export const InvoiceQuery = t.partial(
   {
     status: InvoiceStatus,
-    limit: t.string,
+    limit: BigIntFromString,
     startDate: DateFromISOString,
     endDate: DateFromISOString,
   },

@@ -206,7 +206,7 @@ describe('Lightning wallets', function () {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const query = { status: 'open', startDate: new Date() } as GetInvoicesQuery;
+      const query = { status: 'open', startDate: new Date(), limit: 100n } as GetInvoicesQuery;
       const listInvoicesNock = nock(bgUrl)
         .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/lightning/invoice`)
         .query(GetInvoicesQuery.encode(query))
