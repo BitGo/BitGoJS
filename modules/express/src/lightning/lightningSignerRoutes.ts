@@ -1,3 +1,4 @@
+import { isIP } from 'net';
 import * as express from 'express';
 import { decodeOrElse } from '@bitgo/sdk-core';
 import {
@@ -70,7 +71,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
 
-  const { passphrase, signerTlsKey, signerTlsCert, signerIp, expressIp } = decodeOrElse(
+  const { passphrase, signerTlsKey, signerTlsCert, signerHost, expressHost } = decodeOrElse(
     InitLightningWalletRequest.name,
     InitLightningWalletRequest,
     req.body,
@@ -100,7 +101,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
 
   const encryptedSignerAdminMacaroon = bitgo.encrypt({
     password: passphrase,
-    input: expressIp ? addIPCaveatToMacaroon(adminMacaroon, expressIp) : adminMacaroon,
+    input: expressHost && !!isIP(expressHost) ? addIPCaveatToMacaroon(adminMacaroon, expressHost) : adminMacaroon,
   });
   const watchOnlyAccounts = createWatchOnly(signerRootKey, network);
   const encryptedSignerTlsKey = signerTlsKey ? bitgo.encrypt({ password: passphrase, input: signerTlsKey }) : undefined;
@@ -108,7 +109,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
   return await lightningWallet.updateWalletCoinSpecific(
     {
       encryptedSignerAdminMacaroon,
-      signerIp,
+      signerHost,
       signerTlsCert,
       watchOnlyAccounts,
       ...(encryptedSignerTlsKey && { encryptedSignerTlsKey }),
@@ -141,6 +142,10 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
       throw new ApiResponseError('Invalid request body to create signer macaroon', 400);
     }
   );
+
+  if (!isIP(watchOnlyIp)) {
+    throw new ApiResponseError(`Invalid IP address: ${watchOnlyIp}`, 400);
+  }
 
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
 

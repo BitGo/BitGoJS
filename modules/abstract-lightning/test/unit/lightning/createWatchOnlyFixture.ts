@@ -1,6 +1,6 @@
-import { WatchOnlyAccount } from '../../../src/lightning';
-
 // https://github.com/lightningnetwork/lnd/blob/master/docs/remote-signing.md#example-initialization-script
+import { WatchOnlyAccount } from '../../../src';
+
 export const signerRootKey =
   'tprv8ZgxMBicQKsPe6jS4vDm2n7s42Q6MpvghUQqMmSKG7bTZvGKtjrcU3PGzMNG37yzxywrcdvgkwrr8eYXJmbwdvUNVT4Ucv7ris4jvA7BUmg';
 

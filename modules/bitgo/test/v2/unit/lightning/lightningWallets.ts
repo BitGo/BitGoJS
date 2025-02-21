@@ -3,12 +3,12 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import * as nock from 'nock';
 import { BaseCoin } from '@bitgo/sdk-core';
 import {
-  CreateInvoiceRequest,
-  LightningInvoice,
+  CreateInvoiceBody,
   getLightningWallet,
+  Invoice,
   InvoiceInfo,
+  InvoiceQuery,
   SelfCustodialLightningWallet,
-  GetInvoicesQuery,
 } from '@bitgo/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
@@ -206,10 +206,10 @@ describe('Lightning wallets', function () {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const query = { status: 'open', startDate: new Date(), limit: 100n } as GetInvoicesQuery;
+      const query = { status: 'open', startDate: new Date(), limit: 100n } as InvoiceQuery;
       const listInvoicesNock = nock(bgUrl)
         .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/lightning/invoice`)
-        .query(GetInvoicesQuery.encode(query))
+        .query(InvoiceQuery.encode(query))
         .reply(200, [InvoiceInfo.encode(invoice)]);
       const invoiceResponse = await wallet.listInvoices(query);
       assert.strictEqual(invoiceResponse.length, 1);
@@ -226,12 +226,12 @@ describe('Lightning wallets', function () {
     });
 
     it('should create invoice', async function () {
-      const createInvoice: CreateInvoiceRequest = {
+      const createInvoice: CreateInvoiceBody = {
         valueMsat: 1000n,
         memo: 'test invoice',
         expiry: 100,
       };
-      const invoice: LightningInvoice = {
+      const invoice: Invoice = {
         invoice: 'tlnabc',
         paymentHash: '123',
         expiresAt: new Date(),
@@ -242,16 +242,16 @@ describe('Lightning wallets', function () {
       const createInvoiceNock = nock(bgUrl)
         .post(
           `/api/v2/${coinName}/wallet/${wallet.wallet.id()}/lightning/invoice`,
-          CreateInvoiceRequest.encode(createInvoice)
+          CreateInvoiceBody.encode(createInvoice)
         )
-        .reply(200, LightningInvoice.encode(invoice));
+        .reply(200, Invoice.encode(invoice));
       const createInvoiceResponse = await wallet.createInvoice(createInvoice);
       assert.deepStrictEqual(createInvoiceResponse, invoice);
       createInvoiceNock.done();
     });
 
     it('createInvoice should throw error if wp response is invalid', async function () {
-      const createInvoice: CreateInvoiceRequest = {
+      const createInvoice: CreateInvoiceBody = {
         valueMsat: 1000n,
         memo: 'test invoice',
         expiry: 100,
@@ -434,7 +434,7 @@ describe('Lightning wallets', function () {
     const params = {
       encryptedSignerMacaroon: 'test encryptedSignerMacaroon',
       encryptedSignerAdminMacaroon: 'test encryptedSignerAdminMacaroon',
-      signerIp: 'test signerIp',
+      signerHost: '1.1.1.1',
       encryptedSignerTlsKey: 'test encryptedSignerTlsKey',
       signerTlsCert: 'test signerTlsCert',
       watchOnlyAccounts,

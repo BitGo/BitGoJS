@@ -2,12 +2,7 @@ import * as t from 'io-ts';
 import assert from 'assert';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
-import {
-  IPAddress,
-  LightningAuthKeychain,
-  LightningKeychain,
-  UpdateLightningWalletSignedRequest,
-} from '../../../src/lightning';
+import { LightningAuthKeychain, LightningKeychain, UpdateLightningWalletSignedRequest } from '../../../src/codecs';
 
 function describeCodec(c: t.Type<any>, valid: unknown[], invalid: unknown[]) {
   describe('Codec ' + c.name, function () {
@@ -33,12 +28,6 @@ function describeCodec(c: t.Type<any>, valid: unknown[], invalid: unknown[]) {
 }
 
 describe('Codecs', function () {
-  describeCodec(
-    IPAddress,
-    ['127.0.0.1', '0:0:0:0:0:0:0:1', '::1', '172.20.0.2', '2001:0000:130F:0000:0000:09C0:876A:130B'],
-    [null, {}, 'abg', '127.0.0.257', '::89999999999', '', 'a', 1]
-  );
-
   describeCodec(
     LightningKeychain,
     [
@@ -105,7 +94,7 @@ describe('Codecs', function () {
     [
       {
         encryptedSignerAdminMacaroon: 'encryptedSignerAdminMacaroon',
-        signerIp: '127.0.0.1',
+        signerHost: '127.0.0.1',
         signerTlsCert: 'signerTlsCert',
         encryptedSignerTlsKey: 'encryptedSignerTlsKey',
         watchOnly: {
