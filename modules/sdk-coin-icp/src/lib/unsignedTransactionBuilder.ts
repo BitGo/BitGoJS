@@ -1,4 +1,4 @@
-import { IcpTransaction, SendArgs, HttpCanisterUpdate, SigningPayload, PayloadsData } from './iface';
+import { IcpTransaction, SendArgs, HttpCanisterUpdate, SigningPayload, PayloadsData, SignatureType } from './iface';
 import protobuf from 'protobufjs';
 import utils from './utils';
 
@@ -33,13 +33,7 @@ export class UnsignedTransactionBuilder {
     const txn = { updates, ingressExpiries };
     const unsignedTransaction = utils.cborEncode(txn);
     const payloads: SigningPayload[] = [];
-    this.getPayloads(
-      payloads,
-      ingressExpiries,
-      this._icpTransactionPayload.operations[0].account.address,
-      update,
-      utils.getSignatureType()
-    );
+    this.getPayloads(payloads, ingressExpiries, this._icpTransactionPayload.operations[0].account.address, update);
     const payloadsData = {
       payloads: payloads,
       unsigned_transaction: unsignedTransaction,
@@ -51,15 +45,14 @@ export class UnsignedTransactionBuilder {
     payloads: SigningPayload[],
     ingressExpiries: bigint[],
     accountAddress: string,
-    update: HttpCanisterUpdate,
-    signatureType: string
+    update: HttpCanisterUpdate
   ): SigningPayload[] {
     for (const ingressExpiry of ingressExpiries) {
       const clonedUpdate: HttpCanisterUpdate = {
-        canister_id: update.canister_id,
+        canister_id: Buffer.from(update.canister_id),
         method_name: update.method_name,
-        arg: update.arg,
-        sender: update.sender,
+        arg: new Uint8Array(update.arg),
+        sender: new Uint8Array(update.sender),
         ingress_expiry: ingressExpiry,
       };
 
@@ -67,7 +60,7 @@ export class UnsignedTransactionBuilder {
       const transactionPayload: SigningPayload = {
         hex_bytes: utils.blobToHex(utils.makeSignatureData(representationIndependentHash)),
         account_identifier: { address: accountAddress },
-        signature_type: signatureType,
+        signature_type: SignatureType.ECDSA,
       };
       payloads.push(transactionPayload);
 
@@ -76,7 +69,7 @@ export class UnsignedTransactionBuilder {
       const readStatePayload: SigningPayload = {
         hex_bytes: utils.blobToHex(utils.makeSignatureData(readStateMessageId)),
         account_identifier: { address: accountAddress },
-        signature_type: signatureType,
+        signature_type: SignatureType.ECDSA,
       };
       payloads.push(readStatePayload);
     }
@@ -84,10 +77,10 @@ export class UnsignedTransactionBuilder {
     return payloads;
   }
 
-  getIngressExpiries(ingressStartTime: number, ingressEndTime: number, interval: number): bigint[] {
+  getIngressExpiries(ingressStartTime: number | BigInt, ingressEndTime: number | BigInt, interval: number): bigint[] {
     const ingressExpiries: bigint[] = [];
 
-    for (let now = ingressStartTime; now < ingressEndTime; now += interval) {
+    for (let now = Number(ingressStartTime); now < Number(ingressEndTime); now += interval) {
       const ingressExpiry = BigInt(now + (MAX_INGRESS_TTL - PERMITTED_DRIFT));
       ingressExpiries.push(ingressExpiry);
     }
@@ -95,7 +88,7 @@ export class UnsignedTransactionBuilder {
     return ingressExpiries;
   }
 
-  getSendArgs(memo: number, created_at_time: number, amount: string, fee: string, receiver: string): SendArgs {
+  getSendArgs(memo: number | BigInt, created_at_time: number, amount: string, fee: string, receiver: string): SendArgs {
     const sendArgs: SendArgs = {
       memo: { memo: memo },
       payment: { receiverGets: { e8s: Number(amount) } },

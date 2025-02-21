@@ -12,7 +12,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _sender: string;
   private _publicKey: string;
-  private _memo: number;
+  private _memo: number | BigInt;
   private _receiverId: string;
   private _amount: string;
 
@@ -93,14 +93,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  public validateMemo(memo: number): void {
-    if (memo < 0) {
+  public validateMemo(memo: number | BigInt): void {
+    if (Number(memo) < 0) {
       throw new BuildTransactionError('Invalid memo');
     }
   }
 
-  public validateExpireTime(expireTime: number): void {
-    if (expireTime < Date.now() * 1_000_000) {
+  public validateExpireTime(expireTime: number | BigInt): void {
+    if (Number(expireTime) < Date.now() * 1000_000) {
       throw new BuildTransactionError('Invalid expire time');
     }
   }
@@ -113,7 +113,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.validateValue(new BigNumber(transaction.icpTransactionData.amount));
     this.validateFee(transaction.icpTransactionData.fee);
     this.validateMemo(transaction.icpTransactionData.memo);
-    this.validateExpireTime(transaction.icpTransactionData.expireTime);
+    this.validateExpireTime(transaction.icpTransactionData.expiryTime);
   }
 
   /** @inheritdoc */

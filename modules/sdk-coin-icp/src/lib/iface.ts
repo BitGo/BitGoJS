@@ -1,9 +1,13 @@
 import { TransactionType } from '@bitgo/sdk-core';
 
-export const RequestType = {
-  CALL: 'call',
-  READ_STATE: 'read_state',
-};
+export enum RequestType {
+  CALL = 'call',
+  READ_STATE = 'read_state',
+}
+
+export enum SignatureType {
+  ECDSA = 'ecdsa',
+}
 
 export interface IcpTransactionData {
   readonly senderAddress: string;
@@ -11,9 +15,9 @@ export interface IcpTransactionData {
   readonly amount: string;
   readonly fee: string;
   readonly senderPublicKeyHex: string;
-  readonly memo: number;
+  readonly memo: number | BigInt; // memo in string is not accepted by ICP chain.
   readonly transactionType: TransactionType;
-  readonly expireTime: number;
+  readonly expiryTime: number | BigInt;
 }
 
 export interface IcpNetworkIdentifier {
@@ -53,9 +57,9 @@ export interface IcpOperation {
 
 export interface IcpMetadata {
   created_at_time: number;
-  memo: number;
-  ingress_start: number;
-  ingress_end: number;
+  memo: number | BigInt; // memo in string is not accepted by ICP chain.
+  ingress_start: number | BigInt; // it should be nano seconds
+  ingress_end: number | BigInt; // it should be nano seconds
 }
 
 export interface IcpTransaction {
@@ -70,7 +74,7 @@ export interface IcpAccountIdentifier {
 }
 
 export interface SendArgs {
-  memo: { memo: number };
+  memo: { memo: number | BigInt };
   payment: { receiverGets: { e8s: number } };
   maxFee: { e8s: number };
   to: { hash: Buffer };
@@ -84,11 +88,13 @@ export interface HttpCanisterUpdate {
   sender: Uint8Array;
   ingress_expiry: bigint;
 }
+
 export interface SigningPayload {
   account_identifier: IcpAccountIdentifier;
   hex_bytes: string;
-  signature_type: string;
+  signature_type: SignatureType;
 }
+
 export interface PayloadsData {
   payloads: SigningPayload[];
   unsigned_transaction: string;

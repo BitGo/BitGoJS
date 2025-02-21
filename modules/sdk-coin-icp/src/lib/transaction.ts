@@ -47,7 +47,7 @@ export class Transaction extends BaseTransaction {
         senderPublicKeyHex: parsedTx.senderPublicKey,
         memo: parsedTx.seqno,
         transactionType: parsedTx.type,
-        expireTime: parsedTx.expireTime,
+        expiryTime: parsedTx.expiryTime,
       };
       this._utils.validateRawTransaction(this._icpTransactionData);
     } catch (error) {

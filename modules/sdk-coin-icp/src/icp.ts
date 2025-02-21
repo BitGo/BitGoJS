@@ -54,7 +54,7 @@ export class Icp extends BaseCoin {
   }
 
   getNetwork(): string {
-    return '00000000000000020101';
+    return '00000000000000020100';
   }
 
   getBaseFactor(): number {

@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import crc32 from 'crc-32';
 import { HttpCanisterUpdate, IcpTransactionData, RequestType } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
-import { decode, encode } from 'cbor-x';
+import { decode, encode } from 'cbor-x'; // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
 import js_sha256 from 'js-sha256';
 import { secp256k1 } from '@noble/curves/secp256k1';
 
@@ -56,15 +56,6 @@ export class Utils implements BaseUtils {
    */
   getCurveType(): string {
     return 'secp256k1';
-  }
-
-  /**
-   * Retrieves the type of signature used.
-   *
-   * @returns {string} The signature type, which is 'ecdsa'.
-   */
-  getSignatureType(): string {
-    return 'ecdsa';
   }
 
   /**
