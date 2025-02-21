@@ -1,5 +1,3 @@
-import { secp256k1 } from '@noble/curves/secp256k1';
-import elliptic from 'elliptic';
 import { BaseUtils, KeyPair, ParseTransactionError } from '@bitgo/sdk-core';
 import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
@@ -9,9 +7,7 @@ import { HttpCanisterUpdate, IcpTransactionData, RequestType } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 import { decode, encode } from 'cbor-x';
 import js_sha256 from 'js-sha256';
-const { ec: EC } = elliptic;
-
-const Secp256k1Curve = new elliptic.ec('secp256k1');
+import { secp256k1 } from '@noble/curves/secp256k1';
 
 export class Utils implements BaseUtils {
   isValidTransactionId(txId: string): boolean {
@@ -234,8 +230,8 @@ export class Utils implements BaseUtils {
    */
   getPublicKeyInDERFormat(publicKeyHex: string): Uint8Array {
     const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
-    const ellipticKey = Secp256k1Curve.keyFromPublic(publicKeyBuffer);
-    const uncompressedPublicKeyHex = ellipticKey.getPublic(false, 'hex');
+    const ellipticKey = secp256k1.ProjectivePoint.fromHex(publicKeyBuffer.toString('hex'));
+    const uncompressedPublicKeyHex = ellipticKey.toHex(false);
     const derEncodedKey = agent.wrapDER(Buffer.from(uncompressedPublicKeyHex, 'hex'), agent.SECP256K1_OID);
     return derEncodedKey;
   }
@@ -572,12 +568,10 @@ export class Utils implements BaseUtils {
    * @returns {string} The signature of the payload, in hexadecimal format.
    */
   signPayload(privateKey: string, payloadHex: string): string {
-    const ec = new EC('secp256k1');
-    const key = ec.keyFromPrivate(privateKey);
     const payloadHash = crypto.createHash('sha256').update(Buffer.from(payloadHex, 'hex')).digest('hex');
-    const signature = key.sign(payloadHash);
-    const r = signature.r.toArray('be', 32);
-    const s = signature.s.toArray('be', 32);
+    const signature = secp256k1.sign(payloadHash, privateKey);
+    const r = Buffer.from(signature.r.toString(16).padStart(64, '0'), 'hex');
+    const s = Buffer.from(signature.s.toString(16).padStart(64, '0'), 'hex');
     return Buffer.concat([Buffer.from(r), Buffer.from(s)]).toString('hex');
   }
 }

@@ -1,10 +1,6 @@
 import { PayloadsData, RequestType } from './iface';
-import crypto from 'crypto';
-import elliptic from 'elliptic';
 import utils from './utils';
 import assert from 'assert';
-
-const { ec: EC } = elliptic;
 
 export class SignedTransactionBuilder {
   protected _payloadsData: PayloadsData;
@@ -30,13 +26,7 @@ export class SignedTransactionBuilder {
   }
 
   signPayload(payloadHex: string): string {
-    const ec = new EC('secp256k1');
-    const key = ec.keyFromPrivate(this._privateKey);
-    const payloadHash = crypto.createHash('sha256').update(Buffer.from(payloadHex, 'hex')).digest('hex');
-    const signature = key.sign(payloadHash);
-    const r = signature.r.toArray('be', 32);
-    const s = signature.s.toArray('be', 32);
-    return Buffer.concat([Buffer.from(r), Buffer.from(s)]).toString('hex');
+    return utils.signPayload(payloadHex, this._privateKey);
   }
 
   getSignTransaction(): any {
