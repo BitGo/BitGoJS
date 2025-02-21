@@ -49,6 +49,7 @@ export async function encryptAndDetachSignData(
       showVersion: false,
       showComment: false,
     },
+    date: null as unknown as undefined,
   });
   const signature = await pgp.sign({
     message,
@@ -89,6 +90,7 @@ export async function decryptAndVerifySignedData(
       showComment: false,
     },
     format: 'binary',
+    date: null as unknown as undefined,
   });
   const verificationResult = await pgp.verify({
     message: await pgp.createMessage({ binary: decryptedMessage.data }),
