@@ -56,6 +56,7 @@ export interface TxData {
   eraPeriod?: number;
   payee?: string;
   keepAlive?: boolean;
+  netuid?: number;
 }
 
 /**
