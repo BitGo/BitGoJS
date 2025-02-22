@@ -857,10 +857,10 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@4.9.2":
-  version "4.9.2"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-4.9.2.tgz#0e0ee6311fbfd4bdc17ee06421e64578d66c9a0f"
-  integrity sha512-yVP/duh0ION0pfSVMJt24qCQ66Vxjlg7eP9iewlaDpod1q1aGX4m0sP9GNcAWSVBHo1S0+r9YgWZIdcB/DHxTg==
+"@bitgo/public-types@4.17.0":
+  version "4.17.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-4.17.0.tgz#ea6c0b808f2d43a75f1bc79fd4a8013ff0f66d26"
+  integrity sha512-BNWHzXIjqpiV05xQSGtJYEXcQhgB1g5955wvNo6N1i5SEP6DhJ9Ng/5Xyl2oWvcX3IBODIHMt8+hYnN+vMWi9A==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
