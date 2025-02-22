@@ -13,7 +13,7 @@ import bs58 from 'bs58';
 import base32 from 'hi-base32';
 import nacl from 'tweetnacl';
 import { KeyPair } from '.';
-import { HexString, Material, TransferAllArgs, TransferArgs, TxMethod } from './iface';
+import { HexString, Material, TransferAllArgs, TransferArgs, TxMethod, AddStakeArgs, RemoveStakeArgs } from './iface';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -193,6 +193,22 @@ export class Utils implements BaseUtils {
 
   isTransferAll(arg: TxMethod['args']): arg is TransferAllArgs {
     return (arg as TransferAllArgs).dest?.id !== undefined && (arg as TransferAllArgs).keepAlive !== undefined;
+  }
+
+  isAddStake(arg: TxMethod['args']): arg is AddStakeArgs {
+    return (
+      (arg as AddStakeArgs).amountStaked !== undefined &&
+      (arg as AddStakeArgs).hotkey !== undefined &&
+      (arg as AddStakeArgs).netuid !== undefined
+    );
+  }
+
+  isRemoveStake(arg: TxMethod['args']): arg is RemoveStakeArgs {
+    return (
+      (arg as RemoveStakeArgs).amountUnstaked !== undefined &&
+      (arg as RemoveStakeArgs).hotkey !== undefined &&
+      (arg as RemoveStakeArgs).netuid !== undefined
+    );
   }
 
   /**
