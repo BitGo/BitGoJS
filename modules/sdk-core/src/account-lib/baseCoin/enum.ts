@@ -78,6 +78,8 @@ export enum TransactionType {
   TrustLine,
   // Send Non Fungible Token (e.g. APT NFTs)
   SendNFT,
+  // Jupiter Swap Transaction
+  JupiterSwap,
 }
 
 /**

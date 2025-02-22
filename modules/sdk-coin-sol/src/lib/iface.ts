@@ -1,6 +1,12 @@
 import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
-import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
+import {
+  Blockhash,
+  StakeInstructionType,
+  SystemInstructionType,
+  TransactionInstruction,
+  TransactionSignature,
+} from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
@@ -30,15 +36,19 @@ export type InstructionParams =
   | Memo
   | WalletInit
   | SetPriorityFee
+  | SetPriorityFeeLimit
   | Transfer
   | StakingActivate
   | StakingDeactivate
   | StakingWithdraw
   | AtaInit
+  | AtaIdempotent
   | AtaClose
   | TokenTransfer
   | StakingAuthorize
-  | StakingDelegate;
+  | StakingDelegate
+  | Jupiter
+  | SyncNative;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -112,15 +122,36 @@ export interface SetPriorityFee {
     fee: number | bigint;
   };
 }
+export interface SetPriorityFeeLimit {
+  type: InstructionBuilderTypes.SetPriorityFeeLimit;
+  params: {
+    fee: number | bigint;
+  };
+}
 
 export interface AtaInit {
   type: InstructionBuilderTypes.CreateAssociatedTokenAccount;
   params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string; tokenName: string };
 }
 
+export interface AtaIdempotent {
+  type: InstructionBuilderTypes.CreateAssociatedTokenIdempotent;
+  params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string; tokenName: string };
+}
+
 export interface AtaClose {
   type: InstructionBuilderTypes.CloseAssociatedTokenAccount;
   params: { accountAddress: string; destinationAddress: string; authorityAddress: string };
+}
+
+export interface SyncNative {
+  type: InstructionBuilderTypes.SyncNative;
+  params: { accountAddress: string };
+}
+
+export interface Jupiter {
+  type: InstructionBuilderTypes.Jupiter;
+  params: { rawInstruction: TransactionInstruction };
 }
 
 export type ValidInstructionTypes =
@@ -131,7 +162,13 @@ export type ValidInstructionTypes =
   | 'CloseAssociatedTokenAccount'
   | DecodedCloseAccountInstruction
   | 'TokenTransfer'
-  | 'SetPriorityFee';
+  | 'SetPriorityFee'
+  | 'SetPriorityFeeLimit'
+  | 'CreateAssociatedToken'
+  | 'CreateAssociatedTokenIdempotent'
+  | 'RecoverNestedAssociatedToken'
+  | 'Jupiter'
+  | 'SyncNative';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

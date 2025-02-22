@@ -2,6 +2,7 @@ import { coins, SolCoin } from '@bitgo/statics';
 import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
+  createSyncNativeInstruction,
   createTransferCheckedInstruction,
 } from '@solana/spl-token';
 import {
@@ -33,6 +34,10 @@ import {
   Transfer,
   WalletInit,
   SetPriorityFee,
+  SetPriorityFeeLimit,
+  AtaIdempotent,
+  SyncNative,
+  Jupiter,
 } from './iface';
 
 /**
@@ -69,6 +74,14 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return stakingDelegateInstruction(instructionToBuild);
     case InstructionBuilderTypes.SetPriorityFee:
       return fetchPriorityFeeInstruction(instructionToBuild);
+    case InstructionBuilderTypes.SetPriorityFeeLimit:
+      return fetchPriorityFeeLimitInstruction(instructionToBuild);
+    case InstructionBuilderTypes.CreateAssociatedTokenIdempotent:
+      return fetchCreateAssociatedTokenIdempotentInstruction(instructionToBuild);
+    case InstructionBuilderTypes.SyncNative:
+      return fetchSyncNativeInstruction(instructionToBuild);
+    case InstructionBuilderTypes.Jupiter:
+      return fetchJupiterInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -99,6 +112,57 @@ function fetchPriorityFeeInstruction(instructionToBuild: SetPriorityFee): Transa
   });
 
   return [addPriorityFee];
+}
+
+function fetchPriorityFeeLimitInstruction(instructionToBuild: SetPriorityFeeLimit): TransactionInstruction[] {
+  assert(instructionToBuild.params.fee, 'Missing fee param');
+
+  const addPriorityFeeLimit = ComputeBudgetProgram.setComputeUnitLimit({
+    units: instructionToBuild.params.fee as number,
+  });
+
+  return [addPriorityFeeLimit];
+}
+
+function fetchCreateAssociatedTokenIdempotentInstruction(data: AtaIdempotent): TransactionInstruction[] {
+  const {
+    params: { mintAddress, ataAddress, ownerAddress, payerAddress },
+  } = data;
+
+  assert(mintAddress, 'Missing mintAddress param');
+  assert(ataAddress, 'Missing ataAddress param');
+  assert(ownerAddress, 'Missing ownerAddress param');
+  assert(payerAddress, 'Missing payerAddress param');
+
+  const associatedTokenAccountIdempotentInstruction = createAssociatedTokenAccountInstruction(
+    new PublicKey(payerAddress),
+    new PublicKey(ataAddress),
+    new PublicKey(ownerAddress),
+    new PublicKey(mintAddress)
+  );
+
+  return [associatedTokenAccountIdempotentInstruction];
+}
+
+function fetchSyncNativeInstruction(data: SyncNative): TransactionInstruction[] {
+  const {
+    params: { accountAddress },
+  } = data;
+
+  assert(accountAddress, 'Missing accountAddress param');
+  const syncNativeInstruction = createSyncNativeInstruction(new PublicKey(accountAddress));
+
+  return [syncNativeInstruction];
+}
+
+function fetchJupiterInstruction(data: Jupiter): TransactionInstruction[] {
+  const {
+    params: { rawInstruction },
+  } = data;
+
+  assert(rawInstruction, 'Missing rawInstruction param');
+
+  return [rawInstruction];
 }
 
 /**

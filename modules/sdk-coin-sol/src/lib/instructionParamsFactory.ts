@@ -22,6 +22,7 @@ import assert from 'assert';
 import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
 import {
   AtaClose,
+  AtaIdempotent,
   AtaInit,
   InstructionParams,
   Memo,
@@ -35,6 +36,9 @@ import {
   Transfer,
   WalletInit,
   SetPriorityFee,
+  SetPriorityFeeLimit,
+  Jupiter,
+  SyncNative,
 } from './iface';
 import { getInstructionType } from './utils';
 
@@ -70,6 +74,8 @@ export function instructionParamsFactory(
       return parseStakingAuthorizeRawInstructions(instructions);
     case TransactionType.StakingDelegate:
       return parseStakingDelegateInstructions(instructions);
+    case TransactionType.JupiterSwap:
+      return parseJupiterInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -116,8 +122,10 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
  */
 function parseSendInstructions(
   instructions: TransactionInstruction[]
-): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee> {
-  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee> = [];
+): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaIdempotent | AtaClose | SetPriorityFee> {
+  const instructionData: Array<
+    Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaIdempotent | AtaClose | SetPriorityFee
+  > = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -788,6 +796,161 @@ function parseStakingAuthorizeRawInstructions(instructions: TransactionInstructi
       custodianAddress: authorize.keys[4].pubkey.toString(),
     },
   });
+  return instructionData;
+}
+
+function parseJupiterInstructions(
+  instructions: TransactionInstruction[]
+): Array<
+  | Jupiter
+  | Transfer
+  | TokenTransfer
+  | AtaInit
+  | AtaIdempotent
+  | AtaClose
+  | SyncNative
+  | SetPriorityFee
+  | SetPriorityFeeLimit
+> {
+  const instructionData: Array<
+    | Jupiter
+    | Transfer
+    | TokenTransfer
+    | AtaInit
+    | AtaIdempotent
+    | AtaClose
+    | SyncNative
+    | SetPriorityFee
+    | SetPriorityFeeLimit
+  > = [];
+
+  for (const instruction of instructions) {
+    const type = getInstructionType(instruction);
+    switch (type) {
+      case ValidInstructionTypesEnum.Transfer:
+        const transferInstruction = SystemInstruction.decodeTransfer(instruction);
+        const transfer: Transfer = {
+          type: InstructionBuilderTypes.Transfer,
+          params: {
+            fromAddress: transferInstruction.fromPubkey.toString(),
+            toAddress: transferInstruction.toPubkey.toString(),
+            amount: transferInstruction.lamports.toString(),
+          },
+        };
+        instructionData.push(transfer);
+        break;
+
+      case ValidInstructionTypesEnum.TokenTransfer:
+        const tokenTransferInstruction = decodeTransferCheckedInstruction(instruction);
+        const tokenName = findTokenName(tokenTransferInstruction.keys.mint.pubkey.toString());
+        const tokenTransfer: TokenTransfer = {
+          type: InstructionBuilderTypes.TokenTransfer,
+          params: {
+            fromAddress: tokenTransferInstruction.keys.owner.pubkey.toString(),
+            toAddress: tokenTransferInstruction.keys.destination.pubkey.toString(),
+            amount: tokenTransferInstruction.data.amount.toString(),
+            tokenName,
+            sourceAddress: tokenTransferInstruction.keys.source.pubkey.toString(),
+          },
+        };
+        instructionData.push(tokenTransfer);
+        break;
+
+      case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
+        const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
+        const mintTokenName = findTokenName(mintAddress);
+
+        const ataInit: AtaInit = {
+          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          params: {
+            mintAddress,
+            ataAddress: instruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
+            ownerAddress: instruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
+            payerAddress: instruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
+            tokenName: mintTokenName,
+          },
+        };
+        instructionData.push(ataInit);
+        break;
+
+      case ValidInstructionTypesEnum.CreateAssociatedTokenIdempotent:
+        const mintAddress1 = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
+        const mintTokenName1 = findTokenName(mintAddress1);
+
+        const ataIdempotent: AtaIdempotent = {
+          type: InstructionBuilderTypes.CreateAssociatedTokenIdempotent,
+          params: {
+            mintAddress: mintAddress1,
+            ataAddress: instruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
+            ownerAddress: instruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
+            payerAddress: instruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
+            tokenName: mintTokenName1,
+          },
+        };
+        instructionData.push(ataIdempotent);
+        break;
+
+      case ValidInstructionTypesEnum.CloseAssociatedTokenAccount:
+        const accountAddress = instruction.keys[closeAtaInstructionKeysIndexes.AccountAddress].pubkey.toString();
+        const destinationAddress =
+          instruction.keys[closeAtaInstructionKeysIndexes.DestinationAddress].pubkey.toString();
+        const authorityAddress = instruction.keys[closeAtaInstructionKeysIndexes.AuthorityAddress].pubkey.toString();
+
+        const ataClose: AtaClose = {
+          type: InstructionBuilderTypes.CloseAssociatedTokenAccount,
+          params: {
+            accountAddress,
+            destinationAddress,
+            authorityAddress,
+          },
+        };
+        instructionData.push(ataClose);
+        break;
+
+      case ValidInstructionTypesEnum.SyncNative:
+        const syncNative: SyncNative = {
+          type: InstructionBuilderTypes.SyncNative,
+          params: { accountAddress: instruction.keys[0].pubkey.toString() },
+        };
+        instructionData.push(syncNative);
+        break;
+
+      case ValidInstructionTypesEnum.SetPriorityFee:
+        const setComputeUnitPriceParams = ComputeBudgetInstruction.decodeSetComputeUnitPrice(instruction);
+        const setPriorityFee: SetPriorityFee = {
+          type: InstructionBuilderTypes.SetPriorityFee,
+          params: {
+            fee: setComputeUnitPriceParams.microLamports,
+          },
+        };
+        instructionData.push(setPriorityFee);
+        break;
+
+      case ValidInstructionTypesEnum.SetPriorityFeeLimit:
+        const setComputeUnitPriceParams2 = ComputeBudgetInstruction.decodeSetComputeUnitLimit(instruction);
+        const setPriorityFeeLimit: SetPriorityFeeLimit = {
+          type: InstructionBuilderTypes.SetPriorityFeeLimit,
+          params: {
+            fee: setComputeUnitPriceParams2.units,
+          },
+        };
+        instructionData.push(setPriorityFeeLimit);
+        break;
+
+      case ValidInstructionTypesEnum.Jupiter:
+        const jupiterTx: Jupiter = {
+          type: InstructionBuilderTypes.Jupiter,
+          params: { rawInstruction: instruction },
+        };
+        instructionData.push(jupiterTx);
+        break;
+
+      default:
+        throw new NotSupported(
+          'Invalid transaction, instruction type not supported for Jupiter: ' + getInstructionType(instruction)
+        );
+    }
+  }
   return instructionData;
 }
 
