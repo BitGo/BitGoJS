@@ -8,6 +8,7 @@ export { UtxoCoin } from './utxo';
 export { LightningCoin } from './lightning';
 export {
   AccountCoin,
+  GasTankAccountCoin,
   CeloCoin,
   ContractAddressDefinedToken,
   Erc20Coin,

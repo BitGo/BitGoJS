@@ -18,7 +18,7 @@ import {
   Network,
 } from '@aptos-labs/ts-sdk';
 import utils from '../../src/lib/utils';
-import { coins } from '@bitgo/statics';
+import { coins, GasTankAccountCoin } from '@bitgo/statics';
 
 describe('APT:', function () {
   let bitgo: TestBitGoAPI;
@@ -52,6 +52,8 @@ describe('APT:', function () {
   it('should return the right info', function () {
     const apt = bitgo.coin('apt');
     const tapt = bitgo.coin('tapt');
+    const aptStatics = coins.get('apt') as GasTankAccountCoin;
+    const taptStatics = coins.get('tapt') as GasTankAccountCoin;
 
     apt.getChain().should.equal('apt');
     apt.getFamily().should.equal('apt');
@@ -62,6 +64,11 @@ describe('APT:', function () {
     tapt.getFamily().should.equal('apt');
     tapt.getFullName().should.equal('Testnet Aptos');
     tapt.getBaseFactor().should.equal(1e8);
+
+    aptStatics.gasTankLowBalanceAlertFactor.should.equal(400);
+    taptStatics.gasTankLowBalanceAlertFactor.should.equal(400);
+    aptStatics.gasTankMinBalanceRecommendationFactor.should.equal(1000);
+    taptStatics.gasTankMinBalanceRecommendationFactor.should.equal(1000);
   });
 
   it('is valid pub', function () {

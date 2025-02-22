@@ -12,6 +12,7 @@ import {
   erc20CompatibleAccountCoin,
   erc721,
   fiat,
+  gasTankAccount,
   hederaCoin,
   hederaToken,
   nonstandardToken,
@@ -1156,7 +1157,7 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.ETH,
     EVM_FEATURES
   ),
-  account(
+  gasTankAccount(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',
     'apt',
     'Aptos',
@@ -1165,9 +1166,11 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.APT,
     BaseUnit.APT,
     APT_FEATURES,
-    KeyCurve.Ed25519
+    KeyCurve.Ed25519,
+    400,
+    1000
   ),
-  account(
+  gasTankAccount(
     '7aca10bf-79dd-428b-aeb6-54f03f9aec0f',
     'tapt',
     'Testnet Aptos',
@@ -1176,7 +1179,9 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.APT,
     BaseUnit.APT,
     APT_FEATURES,
-    KeyCurve.Ed25519
+    KeyCurve.Ed25519,
+    400,
+    1000
   ),
   account(
     'a08453f0-a3be-4875-b82b-6b0c9bfa53e6',
