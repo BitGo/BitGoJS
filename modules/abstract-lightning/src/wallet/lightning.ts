@@ -1,4 +1,13 @@
 import * as sdkcore from '@bitgo/sdk-core';
+import {
+  PendingApprovalData,
+  PendingApprovals,
+  RequestTracer,
+  RequestType,
+  TxRequest,
+  commonTssMethods,
+  TxRequestState,
+} from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 import { createMessageSignature, unwrapLightningCoinSpecific } from '../lightning';
 import {
@@ -8,8 +17,18 @@ import {
   InvoiceQuery,
   LightningAuthKeychain,
   LightningKeychain,
+  SubmitPaymentParams,
   UpdateLightningWalletSignedRequest,
 } from '../codecs';
+import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
+
+export type PayInvoiceResponse = {
+  txRequestId: string;
+  txRequestState: TxRequestState;
+  pendingApproval?: PendingApprovalData;
+  // Absent if there's a pending approval
+  status?: string;
+};
 
 export interface ILightningWallet {
   /**
@@ -38,8 +57,9 @@ export interface ILightningWallet {
   /**
    * Pay a lightning invoice
    * @param params Payment parameters (to be defined)
+   * @param passphrase wallet passphrase to decrypt the user auth key
    */
-  payInvoice(params: unknown): Promise<unknown>;
+  payInvoice(params: unknown, passphrase: string): Promise<PayInvoiceResponse>;
 
   /**
    * Get the lightning keychain for the given wallet.
@@ -91,8 +111,57 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
     });
   }
 
-  async payInvoice(params: unknown): Promise<unknown> {
-    throw new Error('Method not implemented.');
+  async payInvoice(params: SubmitPaymentParams, passphrase: string): Promise<PayInvoiceResponse> {
+    const reqId = new RequestTracer();
+    this.wallet.bitgo.setRequestTracer(reqId);
+
+    const { userAuthKey } = await this.getLightningAuthKeychains();
+    const signature = createMessageSignature(
+      t.exact(LightningPaymentRequest).encode(params),
+      this.wallet.bitgo.decrypt({ password: passphrase, input: userAuthKey.encryptedPrv })
+    );
+
+    const paymentIntent: LightningPaymentIntent = {
+      comment: params.comment,
+      sequenceId: params.sequenceId,
+      intentType: 'payment',
+      signedRequest: {
+        invoice: params.invoice,
+        amountMsat: params.amountMsat,
+        feeLimitMsat: params.feeLimitMsat,
+        feeLimitRatio: params.feeLimitRatio,
+      },
+      signature,
+    };
+
+    const transactionRequestCreate = (await this.wallet.bitgo
+      .post(this.wallet.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
+      .send(LightningPaymentIntent.encode(paymentIntent))
+      .result()) as TxRequest;
+
+    if (transactionRequestCreate.state === 'pendingApproval') {
+      const pendingApprovals = new PendingApprovals(this.wallet.bitgo, this.wallet.baseCoin);
+      const pendingApproval = await pendingApprovals.get({ id: transactionRequestCreate.pendingApprovalId });
+      return {
+        pendingApproval: pendingApproval.toJSON(),
+        txRequestId: transactionRequestCreate.txRequestId,
+        txRequestState: transactionRequestCreate.state,
+      };
+    }
+
+    const transactionRequestSend = await commonTssMethods.sendTxRequest(
+      this.wallet.bitgo,
+      this.wallet.id(),
+      transactionRequestCreate.txRequestId,
+      RequestType.tx,
+      reqId
+    );
+
+    return {
+      txRequestId: transactionRequestCreate.txRequestId,
+      txRequestState: transactionRequestSend.state,
+      status: transactionRequestSend.transactions?.[0]?.unsignedTx.coinSpecific?.status as string,
+    };
   }
 
   async listInvoices(params: InvoiceQuery): Promise<InvoiceInfo[]> {

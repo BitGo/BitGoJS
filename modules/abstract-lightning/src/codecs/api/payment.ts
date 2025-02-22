@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 import { BigIntFromString } from 'io-ts-types/BigIntFromString';
 import { DateFromISOString } from 'io-ts-types/DateFromISOString';
+import { LightningPaymentRequest, optionalString } from '@bitgo/public-types';
 
 // codecs for lightning wallet payment related apis
 
@@ -84,3 +85,13 @@ export const PaymentQuery = t.partial(
   'PaymentQuery'
 );
 export type PaymentQuery = t.TypeOf<typeof PaymentQuery>;
+
+export const SubmitPaymentParams = t.intersection([
+  LightningPaymentRequest,
+  t.type({
+    sequenceId: optionalString,
+    comment: optionalString,
+  }),
+]);
+
+export type SubmitPaymentParams = t.TypeOf<typeof SubmitPaymentParams>;
