@@ -13,7 +13,7 @@ import bs58 from 'bs58';
 import base32 from 'hi-base32';
 import nacl from 'tweetnacl';
 import { KeyPair } from '.';
-import { HexString, Material, TransferAllArgs, TransferArgs, TxMethod } from './iface';
+import { HexString, Material, TransferAllArgs, TransferArgs, TxMethod, RemoveStakeArgs } from './iface';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -195,6 +195,9 @@ export class Utils implements BaseUtils {
     return (arg as TransferAllArgs).dest?.id !== undefined && (arg as TransferAllArgs).keepAlive !== undefined;
   }
 
+  isUnstake(arg: TxMethod['args']): arg is RemoveStakeArgs {
+    return (arg as RemoveStakeArgs).hotkey !== undefined && (arg as RemoveStakeArgs).netuid !== undefined;
+  }
   /**
    * extracts and returns the signature in hex format given a raw signed transaction
    *
