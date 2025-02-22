@@ -168,6 +168,17 @@ export class Transaction extends BaseTransaction {
       } else {
         throw new ParseTransactionError(`Serializing unknown Transfer type parameters`);
       }
+    } else if (this.type === TransactionType.StakingActivate) {
+      // fill this up
+      const txMethod = decodedTx.method.args;
+      if (utils.isaddStake(txMethod)) {
+        const keypairDest = new KeyPair({
+          pub: Buffer.from(decodeAddress(txMethod.hotkey)).toString('hex'),
+        });
+        result.to = keypairDest.getAddress(this.getAddressFormat());
+        result.amount = txMethod.amountStaked.toString();
+        result.netuid = txMethod.netuid;
+      }
     }
 
     return result;
