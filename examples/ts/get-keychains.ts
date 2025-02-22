@@ -1,22 +1,22 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import {Btc} from "@bitgo/sdk-coin-btc";
+import {Apt} from "@bitgo/sdk-coin-apt";
 require('dotenv').config({ path: '../../.env' });
 
-const ACCESS_TOKEN = '<YOUR_ACCESS_TOKEN>';
+const ACCESS_TOKEN = 'v2x14105d160d00c498c44d7f9de6a85ae6c2737784431c9889afbc51b0e277c212';
 
 const bitgo = new BitGoAPI({
   accessToken: ACCESS_TOKEN,
   env: 'prod',
 });
 
-const coin = 'btc';
-bitgo.register(coin, Btc.createInstance);
+const coin = 'apt';
+bitgo.register(coin, Apt.createInstance);
 
 async function main() {
-  const keys= [
-    "65f09e34244e2f7ac804251494e530e1",
-    "65f09e3572c880cb959b423f1d987cbf",
-    "65f09e37e19cf9bba3339920aa83273f"
+  const keys = [
+    "67a534f4031246be079182fd6b29f539",
+    "67a534f4031246be079183023d29a5ab",
+    "67a534f4031246be079182f7613b9a93"
   ]
   for (const id of keys) {
     const key = await bitgo.coin(coin).keychains().get({ id });
