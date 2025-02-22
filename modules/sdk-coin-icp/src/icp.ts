@@ -53,6 +53,10 @@ export class Icp extends BaseCoin {
     return 'Internet Computer';
   }
 
+  getNetwork(): string {
+    return '00000000000000020100';
+  }
+
   getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }

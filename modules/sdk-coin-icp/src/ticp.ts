@@ -52,4 +52,8 @@ export class Ticp extends Icp {
   public getFullName(): string {
     return 'Testnet Internet Computer';
   }
+
+  getNetwork(): string {
+    return '00000000000000020101';
+  }
 }

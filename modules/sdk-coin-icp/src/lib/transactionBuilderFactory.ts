@@ -1,5 +1,9 @@
-import { BaseTransactionBuilderFactory } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { Transaction } from './transaction';
+import { TransactionBuilder } from './transactionBuilder';
+import { TransferBuilder } from './transferBuilder';
+import { Utils } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -7,44 +11,42 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(): void {
-    throw new Error('method not implemented');
+  from(rawTransaction: string): TransactionBuilder {
+    const transaction = new Transaction(this._coinConfig, new Utils());
+    transaction.fromRawTransaction(rawTransaction);
+    try {
+      switch (transaction.icpTransactionType) {
+        case TransactionType.Send:
+          return this.getTransferBuilder(transaction);
+        default:
+          throw new InvalidTransactionError('Invalid transaction');
+      }
+    } catch (e) {
+      throw new InvalidTransactionError('Invalid transaction: ' + e.message);
+    }
+  }
+
+  /**
+   * Initialize the builder with the given transaction
+   *
+   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
+   * @param {TransactionBuilder} builder - the builder to be initialized
+   * @returns {TransactionBuilder} the builder initialized
+   */
+  private static initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
+    if (tx) {
+      builder.initBuilder(tx);
+    }
+    return builder;
   }
 
   /** @inheritdoc */
-  getTransferBuilder(): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  getStakingBuilder(): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  getUnstakingBuilder(): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  getCustomTransactionBuilder(): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  getTokenTransferBuilder(): void {
-    throw new Error('method not implemented');
+  getTransferBuilder(tx?: Transaction): TransferBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig, new Utils()));
   }
 
   /** @inheritdoc */
   getWalletInitializationBuilder(): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * Parse the transaction from a raw transaction
-   */
-  private parseTransaction(rawTransaction: string): void {
     throw new Error('method not implemented');
   }
 }
