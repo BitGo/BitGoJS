@@ -66,6 +66,13 @@ export class AccountCoin extends BaseCoin {
   }
 }
 
+export interface GasTankAccountConstructorOptions extends AccountConstructorOptions {
+  // low gas tank balance alert threshold is calculated as (feeEstimate x gasTankLowBalanceAlertFactor)
+  gasTankLowBalanceAlertFactor: number;
+  // min gas tank balance recommendation is calculated as (feeEstimate x gasTankMinBalanceRecommendationFactor)
+  gasTankMinBalanceRecommendationFactor: number;
+}
+
 export interface Erc20ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
 }
@@ -131,6 +138,18 @@ export class AccountCoinToken extends AccountCoin {
     super({
       ...options,
     });
+  }
+}
+
+export class GasTankAccountCoin extends AccountCoin {
+  public gasTankLowBalanceAlertFactor: number;
+  public gasTankMinBalanceRecommendationFactor: number;
+  constructor(options: GasTankAccountConstructorOptions) {
+    super({
+      ...options,
+    });
+    this.gasTankLowBalanceAlertFactor = options.gasTankLowBalanceAlertFactor;
+    this.gasTankMinBalanceRecommendationFactor = options.gasTankMinBalanceRecommendationFactor;
   }
 }
 
@@ -543,6 +562,60 @@ export function account(
       isToken,
       asset,
       primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for gas tank account coin instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param baseUnit
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param gasTankLowBalanceAlertFactor Low gas tank balance alert threshold = (feeEstimate x gasTankLowBalanceAlertFactor)
+ * @param gasTankMinBalanceRecommendationFactor Min gas tank balance recommendation = (feeEstimate x gasTankMinBalanceRecommendationFactor)
+ * @param prefix Optional coin prefix. Defaults to empty string
+ * @param suffix Optional coin suffix. Defaults to coin name.
+ * @param isToken Whether or not this account coin is a token of another coin
+ */
+export function gasTankAccount(
+  id: string,
+  name: string,
+  fullName: string,
+  network: AccountNetwork,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  baseUnit: BaseUnit,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  gasTankLowBalanceAlertFactor = 2,
+  gasTankMinBalanceRecommendationFactor = 10,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  isToken = false
+) {
+  return Object.freeze(
+    new GasTankAccountCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      baseUnit,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      primaryKeyCurve,
+      gasTankLowBalanceAlertFactor,
+      gasTankMinBalanceRecommendationFactor,
     })
   );
 }
