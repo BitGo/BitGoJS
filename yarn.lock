@@ -5168,7 +5168,7 @@
     "@types/expect" "^1.20.4"
     "@types/node" "*"
 
-"@types/elliptic@^6.4.12", "@types/elliptic@^6.4.9":
+"@types/elliptic@^6.4.12", "@types/elliptic@^6.4.18", "@types/elliptic@^6.4.9":
   version "6.4.18"
   resolved "https://registry.npmjs.org/@types/elliptic/-/elliptic-6.4.18.tgz#bc96e26e1ccccbabe8b6f0e409c85898635482e1"
   integrity sha512-UseG6H5vjRiNpQvrhy4VF/JXdA3V/Fp5amvveaL+fs28BZ6xIKJBPnUPRlEaZpysD9MbpfaLi8lbl7PGUAkpWw==

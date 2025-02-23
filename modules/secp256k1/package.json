@@ -39,6 +39,7 @@
     "ecpair": "npm:@bitgo/ecpair@2.1.0-rc.0"
   },
   "devDependencies": {
+    "@types/elliptic": "^6.4.18",
     "@types/node": "^16.18.46"
   },
   "lint-staged": {
