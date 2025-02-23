@@ -487,18 +487,21 @@ export function getSolTokenFromTokenName(tokenName: string): Readonly<SolCoin> |
 
 /**
  * Get the solana associated token account address
- * @param tokenAddress The token address
+ * @param tokenAddress token mint address
  * @param ownerAddress The owner of the associated token account
  * @returns The associated token account address
  * */
-export async function getAssociatedTokenAccountAddress(tokenAddress: string, ownerAddress: string): Promise<string> {
+export async function getAssociatedTokenAccountAddress(
+  tokenMintAddress: string,
+  ownerAddress: string
+): Promise<string> {
   const ownerPublicKey = new PublicKey(ownerAddress);
 
   // tokenAddress are not on ed25519 curve, so they can't be used as ownerAddress
   if (!PublicKey.isOnCurve(ownerPublicKey.toBuffer())) {
     throw new UtilsError('Invalid ownerAddress - address off ed25519 curve, got: ' + ownerAddress);
   }
-  const ataAddress = await getAssociatedTokenAddress(new PublicKey(tokenAddress), ownerPublicKey);
+  const ataAddress = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), ownerPublicKey);
   return ataAddress.toString();
 }
 
