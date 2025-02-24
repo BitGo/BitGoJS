@@ -1,3 +1,4 @@
 .nyc_output/
 dist/
+test/fixtures
 test/unit/babylon/vendor/btc-staking-ts
