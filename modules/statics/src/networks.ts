@@ -918,7 +918,7 @@ class Fiat extends Mainnet implements BaseNetwork {
 class Bittensor extends Mainnet implements AccountNetwork {
   name = 'Tao';
   family = CoinFamily.TAO;
-  explorerUrl = 'https://taostats.io/evm/tx/';
+  explorerUrl = 'https://taostats.io/extrinsic/';
 }
 
 class BittensorTestnet extends Testnet implements AccountNetwork {
