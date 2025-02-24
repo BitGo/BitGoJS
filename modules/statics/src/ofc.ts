@@ -1276,3 +1276,109 @@ export function tofcTronToken(
     })
   );
 }
+
+/**
+ * Factory function for ofc aptos token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param features
+ * @param prefix
+ * @param suffix
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param isToken
+ * @param addressCoin
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+
+export function ofcaptToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = [...OfcCoin.DEFAULT_FEATURES, CoinFeature.TSS_ENTERPRISE_PAYS_FEES], // TSS_ENTERPRISE_PAYS_FEE is a mandatory field for APTOS being a TSS & having Gas tank as fee payer
+  kind: CoinKind = CoinKind.CRYPTO,
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.main.ofc,
+  isToken = true,
+  addressCoin = 'apt',
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.APT,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet ofc aptos token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param features
+ * @param prefix
+ * @param suffix
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @param isToken
+ * @param addressCoin
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+
+export function tofcaptToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = [...OfcCoin.DEFAULT_FEATURES, CoinFeature.TSS_ENTERPRISE_PAYS_FEES], // TSS_ENTERPRISE_PAYS_FEE is a mandatory field for APTOS being a TSS & having Gas tank as fee payer
+  kind: CoinKind = CoinKind.CRYPTO,
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.test.ofc,
+  isToken = true,
+  addressCoin = 'tapt',
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      addressCoin,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.APT,
+    })
+  );
+}
