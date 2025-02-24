@@ -6,10 +6,11 @@ import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { DescriptorTemplate, getDescriptor, getPsbtParams } from '../../../src/testutil/descriptor';
 import { getFixture } from '../../../src/testutil/fixtures.utils';
-import { finalizePsbt, PsbtParams, parse, DescriptorMap } from '../../../src/descriptor';
+import { PsbtParams, parse, DescriptorMap } from '../../../src/descriptor';
 import { getKeyTriple } from '../../../src/testutil/key.utils';
 import { mockPsbtDefault } from '../../../src/testutil/descriptor/mock.utils';
 import { toPlainObjectFromPsbt, toPlainObjectFromTx } from '../../../src/testutil/descriptor/psbt.utils';
+import { toUtxoPsbt, toWrappedPsbt } from '../../../src/descriptor/psbt';
 
 function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {
@@ -60,16 +61,17 @@ function getStages(
 ): Record<string, FixtureStage> {
   return Object.fromEntries(
     stages.map((stage) => {
-      const psbtStage = psbt.clone();
+      const psbtStageWrapped = toWrappedPsbt(psbt);
       for (const key of stage.keys) {
-        psbtStage.signAllInputsHD(key);
+        psbtStageWrapped.signWithXprv(key.toBase58());
       }
+      const psbtStage = toUtxoPsbt(psbtStageWrapped, utxolib.networks.bitcoin);
       let psbtFinal: utxolib.bitgo.UtxoPsbt | undefined;
       let networkTx: utxolib.bitgo.UtxoTransaction<bigint> | undefined;
       let networkTxBuffer: Buffer | undefined;
       if (stage.final) {
-        psbtFinal = psbtStage.clone();
-        finalizePsbt(psbtFinal);
+        psbtStageWrapped.finalize();
+        psbtFinal = toUtxoPsbt(psbtStageWrapped, utxolib.networks.bitcoin);
         networkTx = psbtFinal.extractTransaction();
         networkTxBuffer = networkTx.toBuffer();
       }
