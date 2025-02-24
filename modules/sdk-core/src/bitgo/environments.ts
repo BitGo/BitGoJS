@@ -166,6 +166,10 @@ const mainnetBase: EnvironmentTemplate = {
   etcNodeUrl: 'https://etc.blockscout.com',
   coredaoExplorerBaseUrl: 'https://app.coredao.org/',
   oasExplorerBaseUrl: 'https://explorer.oasys.games',
+  flrExplorerBaseUrl: 'https://flare-explorer.flare.network',
+  xdcExplorerBaseUrl: 'https://api-xdc.blocksscan.io',
+  wemixExplorerBaseUrl: 'https://api.wemixscan.com',
+  sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
   rosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
 };
 
@@ -222,6 +226,10 @@ const testnetBase: EnvironmentTemplate = {
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
   coredaoExplorerBaseUrl: 'https://app.test.btcs.network',
   oasExplorerBaseUrl: 'https://explorer.testnet.oasys.games',
+  wemixExplorerBaseUrl: 'https://api-testnet.wemixscan.com',
+  flrExplorerBaseUrl: 'https://coston2-explorer.flare.network',
+  xdcExplorerBaseUrl: 'https://api-apothem.xdcscan.io',
+  sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
   rosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
 };
 
