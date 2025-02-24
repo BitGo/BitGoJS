@@ -236,6 +236,13 @@
               "script": "51201d8118efb49a67b85254e9f8c47550263cc40ea3a10021f030405903b8385bd1",
               "value": "1000000"
             },
+            "tapScriptSig": [
+              {
+                "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
+                "leafHash": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416",
+                "signature": "12e2f2830c76798e4b43e01c506d051d4ada368b63ce528156949718ccca92e41066ace1116b5e3e812c11d16cbe0763022b6736e23141c92def7efe70bcc205"
+              }
+            ],
             "tapLeafScript": [
               {
                 "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
@@ -276,20 +283,20 @@
               }
             ],
             "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
-            "tapMerkleRoot": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416",
-            "tapScriptSig": [
-              {
-                "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
-                "signature": "12e2f2830c76798e4b43e01c506d051d4ada368b63ce528156949718ccca92e41066ace1116b5e3e812c11d16cbe0763022b6736e23141c92def7efe70bcc205",
-                "leafHash": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
-              }
-            ]
+            "tapMerkleRoot": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
           },
           {
             "witnessUtxo": {
               "script": "51207258acd89ad80d944a05a6f13dde2ac84fe0a74ac922a92dc92c5ee4bf6f1b5a",
               "value": "1000000"
             },
+            "tapScriptSig": [
+              {
+                "pubkey": "4062b7c830cca69d5c808306526e7a980fbdb5356a8a5c9fd6549f2d1bf76e74",
+                "leafHash": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6",
+                "signature": "349f010af4e3d1b6e4edbd2ce3e92faccdf562b5907a00f4be38578749f88776bb7afbfa58be02ccfaccbdc6bd76bc8dacf5e10053dd17b10227ebdf72d3bc5c"
+              }
+            ],
             "tapLeafScript": [
               {
                 "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
@@ -330,14 +337,7 @@
               }
             ],
             "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
-            "tapMerkleRoot": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6",
-            "tapScriptSig": [
-              {
-                "pubkey": "4062b7c830cca69d5c808306526e7a980fbdb5356a8a5c9fd6549f2d1bf76e74",
-                "signature": "349f010af4e3d1b6e4edbd2ce3e92faccdf562b5907a00f4be38578749f88776bb7afbfa58be02ccfaccbdc6bd76bc8dacf5e10053dd17b10227ebdf72d3bc5c",
-                "leafHash": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
-              }
-            ]
+            "tapMerkleRoot": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
           }
         ],
         "outputs": [
@@ -478,6 +478,18 @@
               "script": "51201d8118efb49a67b85254e9f8c47550263cc40ea3a10021f030405903b8385bd1",
               "value": "1000000"
             },
+            "tapScriptSig": [
+              {
+                "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
+                "leafHash": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416",
+                "signature": "12e2f2830c76798e4b43e01c506d051d4ada368b63ce528156949718ccca92e41066ace1116b5e3e812c11d16cbe0763022b6736e23141c92def7efe70bcc205"
+              },
+              {
+                "pubkey": "d5298e6df3cc36ef883e10698e31c4d39108bdad04066111b5bb70241373cd3e",
+                "leafHash": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416",
+                "signature": "d68a61118f97d38b5606955942908c9b90256901e95061ad769c8eac0ad946fae22a20033b04bac42917690d180ffb1ecba5190cd419a30f3203234a170ed7aa"
+              }
+            ],
             "tapLeafScript": [
               {
                 "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
@@ -518,25 +530,25 @@
               }
             ],
             "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
-            "tapMerkleRoot": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416",
-            "tapScriptSig": [
-              {
-                "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
-                "signature": "12e2f2830c76798e4b43e01c506d051d4ada368b63ce528156949718ccca92e41066ace1116b5e3e812c11d16cbe0763022b6736e23141c92def7efe70bcc205",
-                "leafHash": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
-              },
-              {
-                "pubkey": "d5298e6df3cc36ef883e10698e31c4d39108bdad04066111b5bb70241373cd3e",
-                "signature": "d68a61118f97d38b5606955942908c9b90256901e95061ad769c8eac0ad946fae22a20033b04bac42917690d180ffb1ecba5190cd419a30f3203234a170ed7aa",
-                "leafHash": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
-              }
-            ]
+            "tapMerkleRoot": "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
           },
           {
             "witnessUtxo": {
               "script": "51207258acd89ad80d944a05a6f13dde2ac84fe0a74ac922a92dc92c5ee4bf6f1b5a",
               "value": "1000000"
             },
+            "tapScriptSig": [
+              {
+                "pubkey": "266670018fb65f1384da4e9b9b92c79d5c42d5f51c3ceb1e516babfb7595f243",
+                "leafHash": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6",
+                "signature": "f298a47beb05cf76f5ab47110237d150bc81542547486f9705f094cc4c32c9667c054ff3efc97dd66523778f270e1a1187274ced7017f0b6bfeba40479c660b6"
+              },
+              {
+                "pubkey": "4062b7c830cca69d5c808306526e7a980fbdb5356a8a5c9fd6549f2d1bf76e74",
+                "leafHash": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6",
+                "signature": "349f010af4e3d1b6e4edbd2ce3e92faccdf562b5907a00f4be38578749f88776bb7afbfa58be02ccfaccbdc6bd76bc8dacf5e10053dd17b10227ebdf72d3bc5c"
+              }
+            ],
             "tapLeafScript": [
               {
                 "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
@@ -577,19 +589,7 @@
               }
             ],
             "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
-            "tapMerkleRoot": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6",
-            "tapScriptSig": [
-              {
-                "pubkey": "4062b7c830cca69d5c808306526e7a980fbdb5356a8a5c9fd6549f2d1bf76e74",
-                "signature": "349f010af4e3d1b6e4edbd2ce3e92faccdf562b5907a00f4be38578749f88776bb7afbfa58be02ccfaccbdc6bd76bc8dacf5e10053dd17b10227ebdf72d3bc5c",
-                "leafHash": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
-              },
-              {
-                "pubkey": "266670018fb65f1384da4e9b9b92c79d5c42d5f51c3ceb1e516babfb7595f243",
-                "signature": "f298a47beb05cf76f5ab47110237d150bc81542547486f9705f094cc4c32c9667c054ff3efc97dd66523778f270e1a1187274ced7017f0b6bfeba40479c660b6",
-                "leafHash": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
-              }
-            ]
+            "tapMerkleRoot": "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
           }
         ],
         "outputs": [

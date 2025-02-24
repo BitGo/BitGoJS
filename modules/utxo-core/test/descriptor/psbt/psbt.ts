@@ -130,3 +130,12 @@ function describeCreatePsbt2Of3(t: DescriptorTemplate) {
 describeCreatePsbt2Of3('Wsh2Of3');
 describeCreatePsbt2Of3('Wsh2Of3CltvDrop');
 describeCreatePsbt2Of3('Tr2Of3-NoKeyPath');
+describeCreatePsbt('Tr1Of3-NoKeyPath-Tree', {
+  descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree', selfKeys),
+  psbtParams: getPsbtParams('Tr1Of3-NoKeyPath-Tree'),
+  stages: [
+    { name: 'unsigned', keys: [] },
+    { name: 'signedA', keys: selfKeys.slice(0, 1) },
+    { name: 'signedB', keys: selfKeys.slice(1, 2), final: true },
+  ],
+});
