@@ -44,7 +44,12 @@ export class BabylonDescriptorBuilder {
     return {
       and_v: [
         {
-          and_v: [pk(this.stakerKey), { 'v:multi_a': multiArgs(1, this.finalityProviderKeys) }],
+          and_v: [
+            pk(this.stakerKey),
+            this.finalityProviderKeys.length === 1
+              ? { 'v:pk': this.finalityProviderKeys[0].toString('hex') }
+              : { 'v:multi_a': multiArgs(1, this.finalityProviderKeys) },
+          ],
         },
         { multi_a: multiArgs(this.covenantThreshold, this.covenantKeys) },
       ],
