@@ -151,8 +151,8 @@ export class Transaction extends BaseTransaction {
       tip: decodedTx.tip ? Number(decodedTx.tip) : 0,
     };
 
+    const txMethod = decodedTx.method.args;
     if (this.type === TransactionType.Send) {
-      const txMethod = decodedTx.method.args;
       if (utils.isTransfer(txMethod)) {
         const keypairDest = new KeyPair({
           pub: Buffer.from(decodeAddress(txMethod.dest.id)).toString('hex'),
@@ -168,6 +168,26 @@ export class Transaction extends BaseTransaction {
       } else {
         throw new ParseTransactionError(`Serializing unknown Transfer type parameters`);
       }
+    } else if (this.type === TransactionType.StakingActivate) {
+      if (utils.isAddStake(txMethod)) {
+        const keypairDest = new KeyPair({
+          pub: Buffer.from(decodeAddress(txMethod.hotkey)).toString('hex'),
+        });
+        // hotkey address of validator
+        result.to = keypairDest.getAddress(this.getAddressFormat());
+        result.amount = txMethod.amountStaked.toString();
+        result.netuid = txMethod.netuid;
+      }
+    } else if (this.type === TransactionType.StakingDeactivate) {
+      if (utils.isRemoveStake(txMethod)) {
+        const keypairDest = new KeyPair({
+          pub: Buffer.from(decodeAddress(txMethod.hotkey)).toString('hex'),
+        });
+        // hotkey address of validator
+        result.to = keypairDest.getAddress(this.getAddressFormat());
+        result.amount = txMethod.amountUnstaked.toString();
+        result.netuid = txMethod.netuid;
+      }
     }
 
     return result;
@@ -179,6 +199,30 @@ export class Transaction extends BaseTransaction {
       outputs: [
         {
           address: json.to?.toString() || '',
+          amount: json.amount?.toString() || '',
+        },
+      ],
+    };
+  }
+
+  explainStakeTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    return {
+      ...explanationResult,
+      outputs: [
+        {
+          address: json.to?.toString() || '',
+          amount: json.amount?.toString() || '',
+        },
+      ],
+    };
+  }
+
+  explainUnstakeTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+    return {
+      ...explanationResult,
+      outputs: [
+        {
+          address: json.sender.toString() || '',
           amount: json.amount?.toString() || '',
         },
       ],
@@ -205,6 +249,10 @@ export class Transaction extends BaseTransaction {
     switch (this.type) {
       case TransactionType.Send:
         return this.explainTransferTransaction(result, explanationResult);
+      case TransactionType.StakingActivate:
+        return this.explainStakeTransaction(result, explanationResult);
+      case TransactionType.StakingDeactivate:
+        return this.explainUnstakeTransaction(result, explanationResult);
       default:
         throw new InvalidTransactionError('Transaction type not supported');
     }
@@ -225,6 +273,10 @@ export class Transaction extends BaseTransaction {
 
     if (this.type === TransactionType.Send) {
       this.decodeInputsAndOutputsForSend(decodedTx);
+    } else if (this.type === TransactionType.StakingActivate) {
+      this.decodeInputsAndOutputsForStakingActivate(decodedTx);
+    } else if (this.type === TransactionType.StakingDeactivate) {
+      this.decodeInputsAndOutputsForStakingDeactivate(decodedTx);
     }
   }
 
@@ -261,6 +313,70 @@ export class Transaction extends BaseTransaction {
     this._inputs = [
       {
         address: from,
+        value,
+        coin: this._coinConfig.name,
+      },
+    ];
+  }
+
+  private decodeInputsAndOutputsForStakingActivate(decodedTx: DecodedTx) {
+    const txMethod = decodedTx.method.args;
+    let to: string;
+    let value: string;
+    let from: string;
+    if (utils.isAddStake(txMethod)) {
+      const keypairDest = new KeyPair({
+        pub: Buffer.from(decodeAddress(txMethod.hotkey)).toString('hex'),
+      });
+      to = keypairDest.getAddress(this.getAddressFormat());
+      value = txMethod.amountStaked.toString();
+      from = decodedTx.address;
+    } else {
+      throw new ParseTransactionError(`Loading inputs of unknown StakingActivate type parameters`);
+    }
+    this._outputs = [
+      {
+        address: to,
+        value,
+        coin: this._coinConfig.name,
+      },
+    ];
+
+    this._inputs = [
+      {
+        address: from,
+        value,
+        coin: this._coinConfig.name,
+      },
+    ];
+  }
+
+  private decodeInputsAndOutputsForStakingDeactivate(decodedTx: DecodedTx) {
+    const txMethod = decodedTx.method.args;
+    let to: string;
+    let value: string;
+    let from: string;
+    if (utils.isRemoveStake(txMethod)) {
+      const keypairDest = new KeyPair({
+        pub: Buffer.from(decodeAddress(txMethod.hotkey)).toString('hex'),
+      });
+      to = keypairDest.getAddress(this.getAddressFormat());
+      value = txMethod.amountUnstaked.toString();
+      from = decodedTx.address;
+    } else {
+      throw new ParseTransactionError(`Loading inputs of unknown StakingDeactivate type parameters`);
+    }
+    this._outputs = [
+      {
+        address: from,
+        value,
+        coin: this._coinConfig.name,
+      },
+    ];
+
+    this._inputs = [
+      {
+        address: to,
         value,
         coin: this._coinConfig.name,
       },
