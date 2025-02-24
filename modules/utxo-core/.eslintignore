@@ -3,4 +3,5 @@ node_modules
 public
 dist
 test/unit/babylon/vendor
+test/descriptor/psbt/fixtures
 
