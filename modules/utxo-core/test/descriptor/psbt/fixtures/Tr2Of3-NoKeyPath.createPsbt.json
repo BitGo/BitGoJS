@@ -24,19 +24,25 @@
             "masterFingerprint": "86ea6d35",
             "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
             "path": "m/0/0",
-            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+            "leafHashes": [
+              "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
+            ]
           },
           {
             "masterFingerprint": "96daa738",
             "pubkey": "9a50a261452c3233d75f3aaa79d7187b823050b329fa1c51d7d5e1067b9de406",
             "path": "m/0/0",
-            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+            "leafHashes": [
+              "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
+            ]
           },
           {
             "masterFingerprint": "702fc808",
             "pubkey": "d5298e6df3cc36ef883e10698e31c4d39108bdad04066111b5bb70241373cd3e",
             "path": "m/0/0",
-            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+            "leafHashes": [
+              "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
+            ]
           }
         ],
         "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
@@ -59,13 +65,17 @@
             "masterFingerprint": "702fc808",
             "pubkey": "266670018fb65f1384da4e9b9b92c79d5c42d5f51c3ceb1e516babfb7595f243",
             "path": "m/0/1",
-            "leafHashes": ["4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"]
+            "leafHashes": [
+              "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
+            ]
           },
           {
             "masterFingerprint": "86ea6d35",
             "pubkey": "4062b7c830cca69d5c808306526e7a980fbdb5356a8a5c9fd6549f2d1bf76e74",
             "path": "m/0/1",
-            "leafHashes": ["4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"]
+            "leafHashes": [
+              "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
+            ]
           },
           {
             "masterFingerprint": "f4ac30dd",
@@ -77,7 +87,9 @@
             "masterFingerprint": "96daa738",
             "pubkey": "d502c2c474f4874a96b544afa9f8a9aa49e03ca8fcf736b1a1d150a663db13a6",
             "path": "m/0/1",
-            "leafHashes": ["4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"]
+            "leafHashes": [
+              "4b67eca4ce07266e5fa17d6276fc6fe244a384baeb087983d3500199ec8931b6"
+            ]
           }
         ],
         "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
@@ -108,19 +120,25 @@
             "masterFingerprint": "86ea6d35",
             "pubkey": "85f9fc63871a4f7e7877923a162c3f14fbaed12fab925e341173cff43eb93c39",
             "path": "m/0/0",
-            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+            "leafHashes": [
+              "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
+            ]
           },
           {
             "masterFingerprint": "96daa738",
             "pubkey": "9a50a261452c3233d75f3aaa79d7187b823050b329fa1c51d7d5e1067b9de406",
             "path": "m/0/0",
-            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+            "leafHashes": [
+              "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
+            ]
           },
           {
             "masterFingerprint": "702fc808",
             "pubkey": "d5298e6df3cc36ef883e10698e31c4d39108bdad04066111b5bb70241373cd3e",
             "path": "m/0/0",
-            "leafHashes": ["649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"]
+            "leafHashes": [
+              "649630c71a6826ae30a736fbb585330dce430fa5683c3f8a8b04cce0c4d7b416"
+            ]
           }
         ]
       }

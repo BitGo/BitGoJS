@@ -1321,7 +1321,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   clone(): this {
-    return super.clone() as this;
+    return UtxoPsbt.fromBuffer(this.toBuffer(), { network: this.network }) as this;
   }
 
   extractTransaction(disableFeeCheck = true): UtxoTransaction<bigint> {

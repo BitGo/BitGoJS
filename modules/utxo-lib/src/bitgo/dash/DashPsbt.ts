@@ -27,4 +27,8 @@ export class DashPsbt extends UtxoPsbt<DashTransaction<bigint>> {
     this.tx.extraPayload = extraPayload;
     return this;
   }
+
+  clone(): this {
+    return new DashPsbt({ network: this.network }, super.clone().data) as this;
+  }
 }

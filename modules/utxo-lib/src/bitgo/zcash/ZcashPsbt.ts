@@ -157,4 +157,8 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
     typeforce(types.UInt32, expiryHeight);
     this.setPropertyCheckSignatures('expiryHeight', expiryHeight);
   }
+
+  clone(): this {
+    return ZcashPsbt.fromBuffer(this.toBuffer(), { network: this.network }) as this;
+  }
 }

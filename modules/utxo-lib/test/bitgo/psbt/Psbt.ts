@@ -96,14 +96,17 @@ const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: Bi
 const psbtOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
 
 describe('Psbt Misc', function () {
-  it('fail to finalise p2tr sighash mismatch', function () {
-    const psbt = testutil.constructPsbt(
+  function getTestPsbt() {
+    return testutil.constructPsbt(
       [{ scriptType: 'p2tr', value: BigInt(1000) }],
       [{ scriptType: 'p2sh', value: BigInt(900) }],
       network,
       rootWalletKeys,
       'fullsigned'
     );
+  }
+  it('fail to finalise p2tr sighash mismatch', function () {
+    const psbt = getTestPsbt();
     assert(psbt.validateSignaturesOfAllInputs());
     const tapScriptSig = psbt.data.inputs[0].tapScriptSig;
     assert(tapScriptSig);
@@ -934,7 +937,11 @@ function testUtxoPsbt(coinNetwork: Network) {
 
     it('should be able to clone psbt', async function () {
       const clone = psbt.clone();
+      assert(clone instanceof psbt.constructor, `Expected clone to be instance of ${psbt.constructor.name}`);
       assert.deepStrictEqual(clone.toBuffer(), psbt.toBuffer());
+      assert.deepStrictEqual(clone.clone().toBuffer(), psbt.toBuffer());
+      assert.strictEqual(clone.network, psbt.network);
+      assert.strictEqual(clone.clone().network, psbt.network);
     });
 
     it('should be able to round-trip', async function () {
