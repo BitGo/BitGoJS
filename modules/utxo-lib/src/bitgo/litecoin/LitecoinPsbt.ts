@@ -15,4 +15,8 @@ export class LitecoinPsbt extends UtxoPsbt<LitecoinTransaction<bigint>> {
       data || new PsbtBase(new PsbtTransaction({ tx: new LitecoinTransaction<bigint>(opts.network) }))
     );
   }
+
+  clone(): this {
+    return new LitecoinPsbt({ network: this.network }, super.clone().data) as this;
+  }
 }
