@@ -136,8 +136,7 @@ export default class Eddsa {
             uShare.i
           );
         } catch (err) {
-          // TODO(BG-61036): Fix Verification
-          // throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
+          throw new Error(`Could not verify share from participant ${share.j}. Verification error: ${err}`);
         }
       }
     }
