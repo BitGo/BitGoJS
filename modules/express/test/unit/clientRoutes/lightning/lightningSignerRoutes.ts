@@ -63,7 +63,7 @@ describe('Lightning signer routes', () => {
         bitgo: bitgo,
         body: includingOptionalFields
           ? apiData.initWalletRequestBody
-          : { ...apiData.initWalletRequestBody, signerTlsKey: undefined },
+          : { ...apiData.initWalletRequestBody, expressHost: undefined },
         params: {
           coin: 'tlnbtc',
           id: 'fakeid',
@@ -84,6 +84,49 @@ describe('Lightning signer routes', () => {
     });
   }
 
+  for (const includingOptionalFields of [true, false]) {
+    it(`should create signer macaroon ${includingOptionalFields ? 'with' : 'without'} optional fields`, async () => {
+      const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
+      const wpWalletnock = nock(bgUrl).get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200, apiData.wallet);
+
+      const wpKeychainNocks = [
+        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
+        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
+        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
+        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
+      ];
+
+      const signerMacaroon = nock(lightningSignerConfigs.fakeid.url)
+        .post(`/v1/macaroon`)
+        .reply(200, signerApiData.bakeMacaroon);
+
+      const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
+
+      const req = {
+        bitgo: bitgo,
+        body: includingOptionalFields
+          ? apiData.signerMacaroonRequestBody
+          : { ...apiData.signerMacaroonRequestBody, watchOnlyIp: undefined },
+        params: {
+          coin: 'tlnbtc',
+          id: 'fakeid',
+        },
+        config: {
+          lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+        },
+      } as unknown as express.Request;
+
+      await handleCreateSignerMacaroon(req);
+
+      wpWalletUpdateNock.done();
+      signerMacaroon.done();
+      wpKeychainNocks.forEach((s) => s.done());
+      wpWalletnock.done();
+      readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
+      readFileStub.restore();
+    });
+  }
+
   it('should get signer wallet state', async () => {
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
     const walletStateNock = nock(lightningSignerConfigs.fakeid.url)
@@ -92,7 +135,6 @@ describe('Lightning signer routes', () => {
 
     const req = {
       bitgo: bitgo,
-      body: apiData.signerMacaroonRequestBody,
       params: {
         coin: 'tlnbtc',
         id: apiData.wallet.id,
@@ -105,45 +147,6 @@ describe('Lightning signer routes', () => {
     await handleGetLightningWalletState(req);
 
     walletStateNock.done();
-    readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
-    readFileStub.restore();
-  });
-
-  it('should create signer macaroon', async () => {
-    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
-    const wpWalletnock = nock(bgUrl).get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200, apiData.wallet);
-
-    const wpKeychainNocks = [
-      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
-      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
-      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
-      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
-    ];
-
-    const signerMacaroon = nock(lightningSignerConfigs.fakeid.url)
-      .post(`/v1/macaroon`)
-      .reply(200, signerApiData.bakeMacaroon);
-
-    const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
-
-    const req = {
-      bitgo: bitgo,
-      body: apiData.signerMacaroonRequestBody,
-      params: {
-        coin: 'tlnbtc',
-        id: 'fakeid',
-      },
-      config: {
-        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
-      },
-    } as unknown as express.Request;
-
-    await handleCreateSignerMacaroon(req);
-
-    wpWalletUpdateNock.done();
-    signerMacaroon.done();
-    wpKeychainNocks.forEach((s) => s.done());
-    wpWalletnock.done();
     readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
     readFileStub.restore();
   });
