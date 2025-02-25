@@ -237,6 +237,10 @@ export class BitGoAPI implements BitGoBase {
       'bscscanApiToken',
       'coredaoExplorerApiToken',
       'oasExplorerApiToken',
+      'sgbExplorerApiToken',
+      'flrExplorerApiToken',
+      'xdcExplorerApiToken',
+      'wemixExplorerApiToken',
     ];
 
     Object.keys(params).forEach((key) => {
