@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.1.22...@bitgo/sdk-coin-atom@13.3.0) (2025-02-25)
+
+### Bug Fixes
+
+- address validation for cosmos like coins ([2912eab](https://github.com/BitGo/BitGoJS/commit/2912eabf6a1dbc7cde3715352c3849f550b5b6ec))
+
+### Features
+
+- **abstract-cosmos:** add unsigned sweep recovery for cosmos ([e2d1d07](https://github.com/BitGo/BitGoJS/commit/e2d1d0787a375d6ae8493961b607a9cea9d2f29a))
+
 # [13.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.1.22...@bitgo/sdk-coin-atom@13.2.0) (2025-02-20)
 
 ### Bug Fixes

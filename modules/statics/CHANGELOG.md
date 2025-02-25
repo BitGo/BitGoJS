@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.0.0...@bitgo/statics@51.1.0) (2025-02-25)
+
+### Bug Fixes
+
+- add additional slash so txn can be viewed directly ([e9de644](https://github.com/BitGo/BitGoJS/commit/e9de6443ce35f401f7a097560be56ded45ad25ed))
+
+### Features
+
+- change instadapp name to fluid ([da57c7b](https://github.com/BitGo/BitGoJS/commit/da57c7be0a915234ce1c88d184506f1ff331fe28))
+- **sdk-coin-apt:** ofc coins including apt ([2ea0428](https://github.com/BitGo/BitGoJS/commit/2ea04282ff4cf682234d1fc35f91ed49a47db3ea))
+- **statics:** add GasTankAccountCoin ([b031d23](https://github.com/BitGo/BitGoJS/commit/b031d234e9acc38f3244c0407715a709a8aa28ab))
+
 ## [51.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.0.0...@bitgo/statics@51.0.1) (2025-02-20)
 
 ### Bug Fixes

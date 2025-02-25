@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.3.0...@bitgo/sdk-coin-icp@1.5.0) (2025-02-25)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
+### Features
+
+- **sdk-coin-icp:** refactor key pair generation to use utility function ([93d84d4](https://github.com/BitGo/BitGoJS/commit/93d84d48a3e6287959626e69bcce1c430d82df7a))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.3.0...@bitgo/sdk-coin-icp@1.4.0) (2025-02-20)
 
 ### Features
