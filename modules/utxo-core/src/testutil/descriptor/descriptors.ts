@@ -40,6 +40,7 @@ function toDescriptorMap(v: Record<string, string>): DescriptorMap {
 
 export type DescriptorTemplate =
   | 'Wsh2Of3'
+  | 'Tr1Of3-NoKeyPath-Tree'
   | 'Tr2Of3-NoKeyPath'
   | 'Wsh2Of2'
   /*
@@ -71,6 +72,7 @@ export function getPsbtParams(t: DescriptorTemplate): Partial<PsbtParams> {
   switch (t) {
     case 'Wsh2Of3':
     case 'Wsh2Of2':
+    case 'Tr1Of3-NoKeyPath-Tree':
     case 'Tr2Of3-NoKeyPath':
       return {};
     case 'Wsh2Of3CltvDrop':
@@ -103,6 +105,13 @@ function getDescriptorNode(
     case 'Tr2Of3-NoKeyPath':
       return {
         tr: [getUnspendableKey(), { multi_a: multiArgs(2, 3, keys, path) }],
+      };
+    case 'Tr1Of3-NoKeyPath-Tree':
+      return {
+        tr: [
+          getUnspendableKey(),
+          [{ pk: toXPub(keys[0], path) }, [{ pk: toXPub(keys[1], path) }, { pk: toXPub(keys[2], path) }]],
+        ],
       };
   }
   throw new Error(`Unknown descriptor template: ${template}`);
