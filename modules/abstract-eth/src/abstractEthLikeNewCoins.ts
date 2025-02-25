@@ -41,7 +41,7 @@ import {
   EthereumNetwork as EthLikeNetwork,
   ethGasConfigs,
 } from '@bitgo/statics';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import type * as EthLikeCommon from '@ethereumjs/common';
 import type * as EthLikeTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';

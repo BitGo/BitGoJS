@@ -4,7 +4,7 @@
 import * as secp256k1 from 'secp256k1';
 import { randomBytes } from 'crypto';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { bip32, networks } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import * as request from 'superagent';
 import {
   BaseCoin,
@@ -354,7 +354,7 @@ export class Trx extends BaseCoin {
       throw new Error('invalid xpub');
     }
 
-    const publicKey = bip32.fromBase58(xpub, networks.bitcoin).publicKey;
+    const publicKey = bip32.fromBase58(xpub).publicKey;
     return Buffer.from(secp256k1.publicKeyConvert(publicKey, false /* compressed */)).toString('hex');
   }
 
@@ -379,7 +379,7 @@ export class Trx extends BaseCoin {
       throw new Error('invalid xprv');
     }
 
-    const hdNode = bip32.fromBase58(xprv, networks.bitcoin);
+    const hdNode = bip32.fromBase58(xprv);
     if (!hdNode.privateKey) {
       throw new Error('no privateKey');
     }

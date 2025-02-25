@@ -14,7 +14,7 @@ import {
   verify,
 } from 'openpgp';
 import * as _ from 'lodash';
-import { ecc as secp256k1 } from '@bitgo/utxo-lib';
+import { ecc as secp256k1 } from '@bitgo/secp256k1';
 import { BitGoBase } from '../bitgoBase';
 import crypto from 'crypto';
 

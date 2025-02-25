@@ -20,7 +20,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';
 import { Buffer } from 'buffer';
