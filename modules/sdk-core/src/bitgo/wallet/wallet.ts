@@ -3686,7 +3686,7 @@ export class Wallet implements IWallet {
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
     // we ignore this check with if customSigningFunction is provided
     //  which means that the user is handling the signing in external signing mode
-    if (keychains[0].encryptedPrv && !customSigningFunction && walletPassphrase) {
+    if (!customSigningFunction && keychains?.[0]?.encryptedPrv && walletPassphrase) {
       if (!decryptKeychainPrivateKey(this.bitgo, keychains[0], walletPassphrase)) {
         const error: Error & { code?: string } = new Error(
           `unable to decrypt keychain with the given wallet passphrase`
