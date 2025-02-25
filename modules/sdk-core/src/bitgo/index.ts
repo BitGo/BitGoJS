@@ -22,6 +22,7 @@ export * from './recovery';
 export * from './staking';
 export * from './trading';
 export * from './tss';
+export { sendSignatureShare } from './tss';
 export * from './types';
 export * from './utils';
 export * from './wallet';

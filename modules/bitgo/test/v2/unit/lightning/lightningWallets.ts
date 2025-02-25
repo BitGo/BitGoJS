@@ -1,14 +1,19 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import * as nock from 'nock';
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
 import {
   CreateInvoiceBody,
   getLightningWallet,
   Invoice,
   InvoiceInfo,
   InvoiceQuery,
+  LndCreatePaymentResponse,
   SelfCustodialLightningWallet,
+  SubmitPaymentParams,
 } from '@bitgo/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
@@ -19,6 +24,32 @@ describe('Lightning wallets', function () {
   let basecoin: BaseCoin;
   let wallets: Wallets;
   let bgUrl: string;
+
+  const userAuthKey = {
+    id: 'def',
+    pub: 'xpub661MyMwAqRbcGYjYsnsDj1SHdiXynWEXNnfNgMSpokN54FKyMqbu7rWEfVNDs6uAJmz86UVFtq4sefhQpXZhSAzQcL9zrEPtiLNNZoeSxCG',
+    encryptedPrv:
+      '{"iv":"zYhhaNdW0wPfJEoBjZ4pvg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"tgAMua9jjhw=","ct":"HcrbxQvNlWG5tLMndYzdNCYa1l+1h7o+vSsweA0+q1le3tWt6jLUJSEjZN+JI8lTZ2KPFQgLulQQhsUa+ytUCBi0vSgjF7x7CprT7l2Cfjkew00XsEd7wnmtJUsrQk8m69Co7tIRA3oEgzrnYwy4qOM81lbNNyQ="}',
+    source: 'user',
+    coinSpecific: {
+      tlnbtc: {
+        purpose: 'userAuth',
+      },
+    },
+  };
+
+  const nodeAuthKey = {
+    id: 'ghi',
+    pub: 'xpub661MyMwAqRbcG9xnTnAnRbJPo3MAHyRtH4zeehN8exYk4VFz5buepUzebhix33BKhS5Eb4V3LEfW5pYiSR8qmaEnyrpeghhKY8JfzAsUDpq',
+    encryptedPrv:
+      '{"iv":"bH6eGbnl9x8PZECPrgvcng==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"o8yknV6nTI8=","ct":"nGyzAToIzYkQeIdcVafoWHtMx7+Fgj0YldCme3WA1yxJAA0QulZVhblMZN/7efCRIumA0NNmpH7dxH6n8cVlz/Z+RUgC2q9lgvZKUoJcYNTjWUfkmkJutXX2tr8yVxm+eC/hnRiyfVLZ2qPxctvDlBVBfgLuPyc="}',
+    source: 'user',
+    coinSpecific: {
+      tlnbtc: {
+        purpose: 'nodeAuth',
+      },
+    },
+  };
 
   before(function () {
     bitgo.initializeTestVars();
@@ -191,7 +222,7 @@ describe('Lightning wallets', function () {
     let wallet: SelfCustodialLightningWallet;
     beforeEach(function () {
       wallet = getLightningWallet(
-        new Wallet(bitgo, basecoin, { id: 'walletId', coin: 'tlnbtc' })
+        new Wallet(bitgo, basecoin, { id: 'walletId', coin: 'tlnbtc', coinSpecific: { keys: ['def', 'ghi'] } })
       ) as SelfCustodialLightningWallet;
     });
 
@@ -261,6 +292,140 @@ describe('Lightning wallets', function () {
         .reply(200, { valueMsat: '1000' });
       await assert.rejects(async () => await wallet.createInvoice(createInvoice), /Invalid create invoice response/);
       createInvoiceNock.done();
+    });
+
+    it('should pay invoice', async function () {
+      const params: SubmitPaymentParams = {
+        invoice: 'lnbc1...',
+        amountMsat: 1000n,
+        feeLimitMsat: 100n,
+        feeLimitRatio: 0.1,
+        sequenceId: '123',
+        comment: 'test payment',
+      };
+
+      const txRequestResponse = {
+        txRequestId: 'txReq123',
+        state: 'delivered',
+      };
+
+      const lndResponse: LndCreatePaymentResponse = {
+        status: 'settled',
+        paymentHash: 'paymentHash123',
+        amountMsat: params.amountMsat.toString(),
+        feeMsat: params.feeLimitMsat.toString(),
+        paymentPreimage: 'preimage123',
+      };
+
+      const finalPaymentResponse = {
+        txRequestId: 'txReq123',
+        state: 'delivered',
+        transactions: [
+          {
+            unsignedTx: {
+              coinSpecific: {
+                ...lndResponse,
+              },
+            },
+          },
+        ],
+      };
+
+      const createTxRequestNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
+        .reply(200, txRequestResponse);
+
+      const sendTxRequestNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transactions/0/send`)
+        .reply(200, finalPaymentResponse);
+
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(200, userAuthKey);
+      const nodeAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKey);
+
+      const response = await wallet.payInvoice(params, 'password123');
+      assert.strictEqual(response.txRequestId, 'txReq123');
+      assert.strictEqual(response.txRequestState, 'delivered');
+      assert.strictEqual(
+        response.paymentStatus.status,
+        finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.status
+      );
+      assert.strictEqual(
+        response.paymentStatus.paymentHash,
+        finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.paymentHash
+      );
+      assert.strictEqual(
+        response.paymentStatus.amountMsat,
+        finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.amountMsat
+      );
+      assert.strictEqual(
+        response.paymentStatus.feeMsat,
+        finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.feeMsat
+      );
+      assert.strictEqual(
+        response.paymentStatus.paymentPreimage,
+        finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.paymentPreimage
+      );
+
+      createTxRequestNock.done();
+      sendTxRequestNock.done();
+      userAuthKeyNock.done();
+      nodeAuthKeyNock.done();
+    });
+
+    it('should handle pending approval when paying invoice', async function () {
+      const params: SubmitPaymentParams = {
+        invoice: 'lnbc1...',
+        amountMsat: 1000n,
+        feeLimitMsat: 100n,
+        feeLimitRatio: 0.1,
+        sequenceId: '123',
+        comment: 'test payment',
+      };
+
+      const txRequestResponse = {
+        txRequestId: 'txReq123',
+        state: 'pendingApproval',
+        pendingApprovalId: 'approval123',
+      };
+
+      const pendingApprovalData: PendingApprovalData = {
+        id: 'approval123',
+        state: State.PENDING,
+        creator: 'user123',
+        info: {
+          type: Type.TRANSACTION_REQUEST,
+        },
+      };
+
+      const createTxRequestNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
+        .reply(200, txRequestResponse);
+
+      const getPendingApprovalNock = nock(bgUrl)
+        .get(`/api/v2/${coinName}/pendingapprovals/${txRequestResponse.pendingApprovalId}`)
+        .reply(200, pendingApprovalData);
+
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(200, userAuthKey);
+      const nodeAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKey);
+
+      const response = await wallet.payInvoice(params, 'password123');
+      assert.strictEqual(response.txRequestId, 'txReq123');
+      assert.strictEqual(response.txRequestState, 'pendingApproval');
+      assert(response.pendingApproval);
+      assert.strictEqual(response.status, undefined);
+
+      createTxRequestNock.done();
+      getPendingApprovalNock.done();
+      userAuthKeyNock.done();
+      nodeAuthKeyNock.done();
     });
   });
 
@@ -384,32 +549,6 @@ describe('Lightning wallets', function () {
       coin: coinName,
       keys: ['abc'],
       coinSpecific: { keys: ['def', 'ghi'] },
-    };
-
-    const userAuthKey = {
-      id: 'def',
-      pub: 'xpub661MyMwAqRbcGYjYsnsDj1SHdiXynWEXNnfNgMSpokN54FKyMqbu7rWEfVNDs6uAJmz86UVFtq4sefhQpXZhSAzQcL9zrEPtiLNNZoeSxCG',
-      encryptedPrv:
-        '{"iv":"zYhhaNdW0wPfJEoBjZ4pvg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"tgAMua9jjhw=","ct":"HcrbxQvNlWG5tLMndYzdNCYa1l+1h7o+vSsweA0+q1le3tWt6jLUJSEjZN+JI8lTZ2KPFQgLulQQhsUa+ytUCBi0vSgjF7x7CprT7l2Cfjkew00XsEd7wnmtJUsrQk8m69Co7tIRA3oEgzrnYwy4qOM81lbNNyQ="}',
-      source: 'user',
-      coinSpecific: {
-        tlnbtc: {
-          purpose: 'userAuth',
-        },
-      },
-    };
-
-    const nodeAuthKey = {
-      id: 'ghi',
-      pub: 'xpub661MyMwAqRbcG9xnTnAnRbJPo3MAHyRtH4zeehN8exYk4VFz5buepUzebhix33BKhS5Eb4V3LEfW5pYiSR8qmaEnyrpeghhKY8JfzAsUDpq',
-      encryptedPrv:
-        '{"iv":"bH6eGbnl9x8PZECPrgvcng==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"o8yknV6nTI8=","ct":"nGyzAToIzYkQeIdcVafoWHtMx7+Fgj0YldCme3WA1yxJAA0QulZVhblMZN/7efCRIumA0NNmpH7dxH6n8cVlz/Z+RUgC2q9lgvZKUoJcYNTjWUfkmkJutXX2tr8yVxm+eC/hnRiyfVLZ2qPxctvDlBVBfgLuPyc="}',
-      source: 'user',
-      coinSpecific: {
-        tlnbtc: {
-          purpose: 'nodeAuth',
-        },
-      },
     };
 
     const watchOnlyAccounts = {
