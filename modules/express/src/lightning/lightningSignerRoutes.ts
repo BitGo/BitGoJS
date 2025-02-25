@@ -71,7 +71,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
 
-  const { passphrase, signerTlsKey, signerTlsCert, signerHost, expressHost } = decodeOrElse(
+  const { passphrase, expressHost } = decodeOrElse(
     InitLightningWalletRequest.name,
     InitLightningWalletRequest,
     req.body,
