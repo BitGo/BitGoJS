@@ -36,11 +36,8 @@ export const InitLightningWalletRequest = t.intersection(
   [
     t.strict({
       passphrase: t.string,
-      signerHost: t.string,
-      signerTlsCert: t.string,
     }),
     t.partial({
-      signerTlsKey: t.string,
       expressHost: t.string,
     }),
   ],
@@ -49,11 +46,15 @@ export const InitLightningWalletRequest = t.intersection(
 
 export type InitLightningWalletRequest = t.TypeOf<typeof InitLightningWalletRequest>;
 
-export const CreateSignerMacaroonRequest = t.strict(
-  {
-    passphrase: t.string,
-    watchOnlyIp: t.string,
-  },
+export const CreateSignerMacaroonRequest = t.intersection(
+  [
+    t.strict({
+      passphrase: t.string,
+    }),
+    t.partial({
+      watchOnlyIp: t.string,
+    }),
+  ],
   'CreateSignerMacaroonRequest'
 );
 
