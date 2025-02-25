@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import _ from 'lodash';
 import request from 'superagent';
 import {

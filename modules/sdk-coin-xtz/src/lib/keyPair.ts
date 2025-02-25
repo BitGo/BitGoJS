@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import blake2b from '@bitgo/blake2b';
-import { bip32, ECPair } from '@bitgo/utxo-lib';
+import { bip32, ECPair } from '@bitgo/secp256k1';
 import {
   DefaultKeys,
   isPrivateKey,

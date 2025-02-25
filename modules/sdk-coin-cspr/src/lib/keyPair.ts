@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import {
   KeyPairOptions,
   isPrivateKey,

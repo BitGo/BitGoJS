@@ -1,4 +1,4 @@
-import { bip32, BIP32Interface, ECPair, ECPairInterface } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface, ECPair, ECPairInterface } from '@bitgo/secp256k1';
 import * as Crypto from '../util/crypto';
 import { KeyPairOptions, ExtendedKeys } from './iface';
 import { BaseKeyPair } from './baseKeyPair';
