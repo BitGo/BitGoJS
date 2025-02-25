@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import EthereumCommon from '@ethereumjs/common';
+import type * as EthLikeCommon from '@ethereumjs/common';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
@@ -58,6 +58,7 @@ export interface ExplainTransactionOptions {
     txHex: string;
   };
   feeInfo: TransactionFee;
+  common?: EthLikeCommon.default;
 }
 
 export interface HalfSignedEthLikeTransaction extends HalfSignedAccountTransaction {
@@ -195,7 +196,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     if (!txHex || !params.feeInfo) {
       throw new Error('missing explain tx parameters');
     }
-    const txBuilder = this.getTransactionBuilder();
+    const txBuilder = this.getTransactionBuilder(params.common);
     txBuilder.from(txHex);
     const tx = await txBuilder.build();
     const outputs = tx.outputs.map((output) => {
@@ -224,5 +225,5 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * Create a new transaction builder for the current chain
    * @return a new transaction builder
    */
-  protected abstract getTransactionBuilder(common?: EthereumCommon): TransactionBuilder;
+  protected abstract getTransactionBuilder(common?: EthLikeCommon.default): TransactionBuilder;
 }
