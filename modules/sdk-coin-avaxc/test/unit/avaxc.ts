@@ -3,7 +3,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { AvaxC, TavaxC, TransactionBuilder } from '../../src';
 import { getBuilder } from './getBuilder';
 import * as secp256k1 from 'secp256k1';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import * as nock from 'nock';
 import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { Eth, optionalDeps } from '@bitgo/sdk-coin-eth';

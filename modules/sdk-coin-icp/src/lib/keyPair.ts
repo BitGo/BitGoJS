@@ -7,7 +7,7 @@ import {
   isPublicKey,
 } from '@bitgo/sdk-core';
 import utils from './utils';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes } from 'crypto';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;

@@ -3,7 +3,7 @@
  */
 import type * as EthLikeCommon from '@ethereumjs/common';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes } from 'crypto';
 import {
   BaseCoin,

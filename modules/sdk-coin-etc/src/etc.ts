@@ -15,7 +15,7 @@ import { BaseCoin, BitGoBase, common, getIsUnsignedSweep, Util, Recipient } from
 import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork as EthLikeNetwork, ethGasConfigs } from '@bitgo/statics';
 import { TransactionBuilder, KeyPair as KeyPairLib, TransferBuilder } from './lib';
 import * as _ from 'lodash';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import { BigNumber } from 'bignumber.js';
 import { Buffer } from 'buffer';
 import request from 'superagent';

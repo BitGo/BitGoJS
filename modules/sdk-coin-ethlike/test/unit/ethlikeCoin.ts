@@ -3,7 +3,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { common, FullySignedTransaction, HalfSignedTransaction, TransactionType } from '@bitgo/sdk-core';
 import { OfflineVaultTxInfo } from '@bitgo/abstract-eth';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import nock from 'nock';
 
 import { EthLikeCoin, TethLikeCoin, EthLikeTransactionBuilder } from '../../src';
