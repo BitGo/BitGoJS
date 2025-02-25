@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [30.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.25.0...@bitgo/sdk-core@30.0.0) (2025-02-25)
+
+### Bug Fixes
+
+- fix the atom public rest endpoint ([e6973d4](https://github.com/BitGo/BitGoJS/commit/e6973d442b6bb5f887747d8b231155f40bb3f3c0))
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+- **sdk-core:** ed tss bug fix ([e424f44](https://github.com/BitGo/BitGoJS/commit/e424f447ec9966e77ee8fc34f8535996b30bbb29))
+- **sdk-lib-mpc:** fix time warp during decrypting comms in MPCv2 ([c060690](https://github.com/BitGo/BitGoJS/commit/c060690105001cb9c532d39461d175b109f11a71))
+- updating coredao api url ([9f79847](https://github.com/BitGo/BitGoJS/commit/9f79847f2f961be1b0bf9d9ef85267f1893b5899))
+
+### Features
+
+- **abstract-lightning:** move lnv2 logic from sdk-core ([5c9114d](https://github.com/BitGo/BitGoJS/commit/5c9114d6a4dbdd5a130bde7cb897ff6f1f8132e0))
+- **sdk-coin-apt:** recommend min gas tank balance for next 1000 txns ([74071ab](https://github.com/BitGo/BitGoJS/commit/74071aba4c0754242fc96f7334cec74edba6c73b))
+
+### BREAKING CHANGES
+
+- **abstract-lightning:** Lightning v2
+
 # [29.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.25.0...@bitgo/sdk-core@29.0.0) (2025-02-20)
 
 ### Bug Fixes

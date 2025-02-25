@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-eth",
-  "version": "22.6.1",
+  "version": "22.6.2",
   "description": "BitGo SDK coin library for ETH base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,9 +40,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^29.0.0",
-    "@bitgo/statics": "^51.0.1",
-    "@bitgo/utxo-lib": "^11.2.2",
+    "@bitgo/sdk-core": "^30.0.0",
+    "@bitgo/statics": "^51.1.0",
+    "@bitgo/utxo-lib": "^11.2.3",
     "@ethereumjs/common": "^2.6.5",
     "@ethereumjs/tx": "^3.3.0",
     "@metamask/eth-sig-util": "^5.0.2",
@@ -58,8 +58,8 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.58.9",
-    "@bitgo/sdk-test": "^8.0.72",
+    "@bitgo/sdk-api": "^1.59.0",
+    "@bitgo/sdk-test": "^8.0.73",
     "@types/keccak": "^3.0.5"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

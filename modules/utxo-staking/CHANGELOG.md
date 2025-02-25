@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.6.0...@bitgo/utxo-staking@1.7.0) (2025-02-25)
+
+### Bug Fixes
+
+- **utxo-staking:** avoid mutating input array in sortedKeys ([17f6e5d](https://github.com/BitGo/BitGoJS/commit/17f6e5de5f16d0356075816ba3f204b8612ce641))
+
+### Features
+
+- **utxo-staking:** add single key finality provider script generation ([0fe5393](https://github.com/BitGo/BitGoJS/commit/0fe539359f01c204d34cfe86f208cdc2697bcb7d))
+- **utxo-staking:** exclude test fixtures from prettier formatting ([7cf7bdc](https://github.com/BitGo/BitGoJS/commit/7cf7bdcc57bc5ee09be387abcf5ae119889f44db))
+
 ## [1.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.6.0...@bitgo/utxo-staking@1.6.1) (2025-02-20)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

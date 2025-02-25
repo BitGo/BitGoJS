@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [18.1.53](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.1.51...@bitgo/sdk-coin-opeth@18.1.53) (2025-02-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-opeth
+
 ## [18.1.52](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.1.51...@bitgo/sdk-coin-opeth@18.1.52) (2025-02-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-opeth

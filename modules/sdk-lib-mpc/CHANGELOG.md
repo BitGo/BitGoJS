@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [10.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.1.0...@bitgo/sdk-lib-mpc@10.1.1) (2025-02-25)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+- **sdk-lib-mpc:** fix time warp during decrypting comms in MPCv2 ([c060690](https://github.com/BitGo/BitGoJS/commit/c060690105001cb9c532d39461d175b109f11a71))
+
 # [10.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.0.1...@bitgo/sdk-lib-mpc@10.1.0) (2024-11-01)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.66](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.1.64...@bitgo/sdk-coin-xtz@2.1.66) (2025-02-25)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
 ## [2.1.65](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.1.64...@bitgo/sdk-coin-xtz@2.1.65) (2025-02-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

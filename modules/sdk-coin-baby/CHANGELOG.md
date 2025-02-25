@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.1.5...@bitgo/sdk-coin-baby@1.1.7) (2025-02-25)
+
+### Bug Fixes
+
+- address validation for cosmos like coins ([2912eab](https://github.com/BitGo/BitGoJS/commit/2912eabf6a1dbc7cde3715352c3849f550b5b6ec))
+
 ## [1.1.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.1.5...@bitgo/sdk-coin-baby@1.1.6) (2025-02-20)
 
 ### Bug Fixes
