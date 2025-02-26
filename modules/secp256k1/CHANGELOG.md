@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.3.1...@bitgo/secp256k1@1.3.2) (2025-02-26)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
 ## [1.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.2.0...@bitgo/secp256k1@1.3.1) (2025-02-19)
 
 ### Bug Fixes

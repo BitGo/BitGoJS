@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-islm@2.1.16...@bitgo/sdk-coin-islm@2.1.18) (2025-02-26)
+
+### Bug Fixes
+
+- address validation for cosmos like coins ([2912eab](https://github.com/BitGo/BitGoJS/commit/2912eabf6a1dbc7cde3715352c3849f550b5b6ec))
+
 ## [2.1.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-islm@2.1.16...@bitgo/sdk-coin-islm@2.1.17) (2025-02-20)
 
 ### Bug Fixes

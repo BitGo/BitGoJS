@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.23...@bitgo/sdk-coin-rune@1.1.25) (2025-02-26)
+
+### Bug Fixes
+
+- address validation for cosmos like coins ([2912eab](https://github.com/BitGo/BitGoJS/commit/2912eabf6a1dbc7cde3715352c3849f550b5b6ec))
+
 ## [1.1.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.23...@bitgo/sdk-coin-rune@1.1.24) (2025-02-20)
 
 ### Bug Fixes
