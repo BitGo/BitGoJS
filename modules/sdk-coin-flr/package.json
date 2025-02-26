@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-flr",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "BitGo SDK coin library for Flr",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,14 +40,14 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^22.6.1",
-    "@bitgo/sdk-core": "^29.0.0",
-    "@bitgo/statics": "^51.0.1",
+    "@bitgo/abstract-eth": "^22.6.2",
+    "@bitgo/sdk-core": "^30.0.0",
+    "@bitgo/statics": "^51.1.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.58.9",
-    "@bitgo/sdk-test": "^8.0.72"
+    "@bitgo/sdk-api": "^1.59.0",
+    "@bitgo/sdk-test": "^8.0.73"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

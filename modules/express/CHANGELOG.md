@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.7.0...@bitgo/express@12.0.0) (2025-02-26)
+
+### Bug Fixes
+
+- **express:** correct parsing of initwallet ([9e9601d](https://github.com/BitGo/BitGoJS/commit/9e9601d3bdd5f03a9177babbac47a63360c5a546))
+
+### Features
+
+- **abstract-lightning:** add codecs for more lightning apis ([1b6d238](https://github.com/BitGo/BitGoJS/commit/1b6d238a3538f7059ce773f8bd218ad8b723f17c))
+- **abstract-lightning:** move lnv2 logic from sdk-core ([5c9114d](https://github.com/BitGo/BitGoJS/commit/5c9114d6a4dbdd5a130bde7cb897ff6f1f8132e0))
+- **express:** move walletId to the path ([1c6b555](https://github.com/BitGo/BitGoJS/commit/1c6b55575c5e75b1292a73f346a8d2db658743d0))
+
+### BREAKING CHANGES
+
+- **abstract-lightning:** Lightning v2
+- **express:** changed path for lightning apis
+
+TICKET: BTC-1846
+
+- **abstract-lightning:** Lightning v2
+
 # [11.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.7.0...@bitgo/express@11.0.0) (2025-02-20)
 
 ### Bug Fixes

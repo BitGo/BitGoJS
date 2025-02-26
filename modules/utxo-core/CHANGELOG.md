@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.2.0...@bitgo/utxo-core@1.4.0) (2025-02-26)
+
+### Bug Fixes
+
+- **utxo-lib:** fix psbt clone to preserve network and class type ([d5c4e52](https://github.com/BitGo/BitGoJS/commit/d5c4e5236662441322a974b9aa706a2d31b6b2c3))
+
+### Features
+
+- **utxo-core:** add output utilities for transaction building ([678906f](https://github.com/BitGo/BitGoJS/commit/678906fe9ee15db40fa83473572a524ac0f438d9))
+- **utxo-core:** add taproot 1-of-3 descriptor template ([b394636](https://github.com/BitGo/BitGoJS/commit/b3946364a16ab461b5ada77d4c7576a381b1171e))
+- **utxo-core:** use wrapped psbt for test stages ([0133ac9](https://github.com/BitGo/BitGoJS/commit/0133ac9f3c64a6c8f7c8fbd905ac182267ff12cc))
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.2.0...@bitgo/utxo-core@1.3.0) (2025-02-20)
 
 ### Features
