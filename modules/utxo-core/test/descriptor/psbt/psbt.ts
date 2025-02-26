@@ -4,13 +4,16 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, ECPair, ECPairInterface } from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { DescriptorTemplate, getDescriptor, getPsbtParams } from '../../../src/testutil/descriptor';
-import { getFixture } from '../../../src/testutil/fixtures.utils';
-import { PsbtParams, parse, DescriptorMap } from '../../../src/descriptor';
-import { getKeyTriple } from '../../../src/testutil/key.utils';
-import { mockPsbtDefault } from '../../../src/testutil/descriptor/mock.utils';
-import { toPlainObjectFromPsbt, toPlainObjectFromTx } from '../../../src/testutil/descriptor/psbt.utils';
-import { toUtxoPsbt, toWrappedPsbt } from '../../../src/descriptor/psbt';
+import { PsbtParams, parse, DescriptorMap, toUtxoPsbt, toWrappedPsbt } from '../../../src/descriptor';
+import { getFixture, getKeyTriple } from '../../../src/testutil';
+import {
+  DescriptorTemplate,
+  getDescriptor,
+  getPsbtParams,
+  mockPsbtDefault,
+  toPlainObjectFromPsbt,
+  toPlainObjectFromTx,
+} from '../../../src/testutil/descriptor';
 
 function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {

@@ -4,7 +4,7 @@ import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { ast, Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
-import { psbt as descriptorPsbt, createAddressFromDescriptor } from '@bitgo/utxo-core/descriptor';
+import { createAddressFromDescriptor, toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
 import { getFixture, getKey, toPlainObject } from '@bitgo/utxo-core/testutil';
 
 import { BabylonDescriptorBuilder, finalityBabylonProvider0, testnetStakingParams } from '../../../src/babylon';
@@ -80,7 +80,7 @@ function getSigned(
   descriptor: Descriptor,
   signers: ECPairInterface[]
 ): bitcoinjslib.Transaction {
-  const wrappedPsbt = descriptorPsbt.toWrappedPsbt(psbt.toBuffer());
+  const wrappedPsbt = toWrappedPsbt(psbt.toBuffer());
   const signedInputs = psbt.data.inputs.flatMap((input, i) => {
     assert(input.witnessUtxo);
     if (Buffer.from(descriptor.scriptPubkey()).equals(input.witnessUtxo.script)) {
