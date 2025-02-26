@@ -1161,8 +1161,8 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.APT,
     APT_FEATURES,
     KeyCurve.Ed25519,
-    400,
-    1000
+    80,
+    200
   ),
   gasTankAccount(
     '7aca10bf-79dd-428b-aeb6-54f03f9aec0f',
@@ -1174,8 +1174,8 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.APT,
     APT_FEATURES,
     KeyCurve.Ed25519,
-    400,
-    1000
+    80,
+    200
   ),
   account(
     'a08453f0-a3be-4875-b82b-6b0c9bfa53e6',

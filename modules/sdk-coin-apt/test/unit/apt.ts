@@ -65,10 +65,10 @@ describe('APT:', function () {
     tapt.getFullName().should.equal('Testnet Aptos');
     tapt.getBaseFactor().should.equal(1e8);
 
-    aptStatics.gasTankLowBalanceAlertFactor.should.equal(400);
-    taptStatics.gasTankLowBalanceAlertFactor.should.equal(400);
-    aptStatics.gasTankMinBalanceRecommendationFactor.should.equal(1000);
-    taptStatics.gasTankMinBalanceRecommendationFactor.should.equal(1000);
+    aptStatics.gasTankLowBalanceAlertFactor.should.equal(80);
+    taptStatics.gasTankLowBalanceAlertFactor.should.equal(80);
+    aptStatics.gasTankMinBalanceRecommendationFactor.should.equal(200);
+    taptStatics.gasTankMinBalanceRecommendationFactor.should.equal(200);
   });
 
   it('is valid pub', function () {
