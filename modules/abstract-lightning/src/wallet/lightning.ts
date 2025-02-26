@@ -57,10 +57,15 @@ export interface ILightningWallet {
 
   /**
    * Pay a lightning invoice
-   * @param params Payment parameters (to be defined)
-   * @param passphrase wallet passphrase to decrypt the user auth key
+   * @param {SubmitPaymentParams} params - Payment parameters
+   * @param {string} params.invoice - The invoice to pay
+   * @param {string} params.amountMsat - The amount to pay in millisatoshis
+   * @param {string} params.passphrase - The wallet passphrase
+   * @param {string} [params.sequenceId] - Optional sequence ID for the respective payment transfer
+   * @param {string} [params.comment] - Optional comment for the respective payment transfer
+   * @returns {Promise<PayInvoiceResponse>} Payment result containing transaction request details and payment status
    */
-  payInvoice(params: unknown, passphrase: string): Promise<PayInvoiceResponse>;
+  payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse>;
 
   /**
    * Get the lightning keychain for the given wallet.
@@ -112,14 +117,14 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
     });
   }
 
-  async payInvoice(params: SubmitPaymentParams, passphrase: string): Promise<PayInvoiceResponse> {
+  async payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse> {
     const reqId = new RequestTracer();
     this.wallet.bitgo.setRequestTracer(reqId);
 
     const { userAuthKey } = await this.getLightningAuthKeychains();
     const signature = createMessageSignature(
       t.exact(LightningPaymentRequest).encode(params),
-      this.wallet.bitgo.decrypt({ password: passphrase, input: userAuthKey.encryptedPrv })
+      this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
     );
 
     const paymentIntent: LightningPaymentIntent = {

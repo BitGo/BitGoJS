@@ -142,12 +142,12 @@ describe('Lightning Invoice Routes', () => {
 
       should(result).deepEqual(expectedResponse);
       should(payInvoiceStub).be.calledOnce();
-      const [firstArg, secondArg] = payInvoiceStub.getCall(0).args;
+      const [firstArg] = payInvoiceStub.getCall(0).args;
 
       // we decode the amountMsat string to bigint, it should be in bigint format when passed to payInvoice
       should(firstArg).have.property('amountMsat', BigInt(10000));
       should(firstArg).have.property('invoice', inputParams.invoice);
-      should(secondArg).equal('wallet-password-12345');
+      should(firstArg).have.property('passphrase', 'wallet-password-12345');
     });
 
     it('should throw an error if the passphrase is missing in the request params', async () => {
@@ -162,7 +162,7 @@ describe('Lightning Invoice Routes', () => {
       });
       req.bitgo = bitgo;
 
-      await should(handlePayLightningInvoice(req)).be.rejectedWith('Missing wallet passphrase');
+      await should(handlePayLightningInvoice(req)).be.rejectedWith('Invalid request body to pay lightning invoice');
     });
 
     it('should throw an error if the invoice is missing in the request params', async () => {

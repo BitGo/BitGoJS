@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-
 import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import * as nock from 'nock';
@@ -302,6 +299,7 @@ describe('Lightning wallets', function () {
         feeLimitRatio: 0.1,
         sequenceId: '123',
         comment: 'test payment',
+        passphrase: 'password123',
       };
 
       const txRequestResponse = {
@@ -312,8 +310,8 @@ describe('Lightning wallets', function () {
       const lndResponse: LndCreatePaymentResponse = {
         status: 'settled',
         paymentHash: 'paymentHash123',
-        amountMsat: params.amountMsat.toString(),
-        feeMsat: params.feeLimitMsat.toString(),
+        amountMsat: params.amountMsat !== undefined ? params.amountMsat.toString() : undefined,
+        feeMsat: params.feeLimitMsat !== undefined ? params.feeLimitMsat.toString() : undefined,
         paymentPreimage: 'preimage123',
       };
 
@@ -346,9 +344,10 @@ describe('Lightning wallets', function () {
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
 
-      const response = await wallet.payInvoice(params, 'password123');
+      const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
+      assert(response.paymentStatus);
       assert.strictEqual(
         response.paymentStatus.status,
         finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.status
@@ -384,6 +383,7 @@ describe('Lightning wallets', function () {
         feeLimitRatio: 0.1,
         sequenceId: '123',
         comment: 'test payment',
+        passphrase: 'password123',
       };
 
       const txRequestResponse = {
@@ -416,11 +416,11 @@ describe('Lightning wallets', function () {
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
 
-      const response = await wallet.payInvoice(params, 'password123');
+      const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'pendingApproval');
       assert(response.pendingApproval);
-      assert.strictEqual(response.status, undefined);
+      assert.strictEqual(response.paymentStatus, undefined);
 
       createTxRequestNock.done();
       getPendingApprovalNock.done();
