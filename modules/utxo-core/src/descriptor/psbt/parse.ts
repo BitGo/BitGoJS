@@ -7,7 +7,7 @@ import { getVirtualSize } from '../VirtualSize';
 import { findDescriptorForInput, findDescriptorForOutput } from './findDescriptors';
 import { assertSatisfiable } from './assertSatisfiable';
 
-export type ScriptId = { descriptor: Descriptor; index: number };
+export type ScriptId = { descriptor: Descriptor; index: number | undefined };
 
 export type ParsedInput = {
   address: string;
@@ -46,15 +46,15 @@ export function parse(
     if (!input.witnessUtxo.value) {
       throw new Error('invalid input: no value');
     }
-    const descriptorWithIndex = findDescriptorForInput(input, descriptorMap);
-    if (!descriptorWithIndex) {
+    const scriptId = findDescriptorForInput(input, descriptorMap);
+    if (!scriptId) {
       throw new Error('invalid input: no descriptor found');
     }
-    assertSatisfiable(psbt, inputIndex, descriptorWithIndex.descriptor);
+    assertSatisfiable(psbt, inputIndex, scriptId.descriptor);
     return {
       address: utxolib.address.fromOutputScript(input.witnessUtxo.script, network),
       value: input.witnessUtxo.value,
-      scriptId: descriptorWithIndex,
+      scriptId: scriptId,
     };
   });
   const outputs = psbt.txOutputs.map((output, i): ParsedOutput => {
