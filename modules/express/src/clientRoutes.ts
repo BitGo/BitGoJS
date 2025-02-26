@@ -53,6 +53,7 @@ import {
   handleInitLightningWallet,
   handleUnlockLightningWallet,
 } from './lightning/lightningSignerRoutes';
+import { handleCreateLightningInvoice, handlePayLightningInvoice } from './lightning/lightningInvoiceRoutes';
 import { ProxyAgent } from 'proxy-agent';
 
 const { version } = require('bitgo/package.json');
@@ -1704,4 +1705,16 @@ export function setupLightningRoutes(app: express.Application, config: Config): 
     promiseWrapper(handleUnlockLightningWallet)
   );
   app.get('/api/v2/:coin/wallet/:id/state', prepareBitGo(config), promiseWrapper(handleGetLightningWalletState));
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/invoice',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleCreateLightningInvoice)
+  );
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/pay',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handlePayLightningInvoice)
+  );
 }

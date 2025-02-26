@@ -10,7 +10,7 @@ import {
   toFixedOutputs,
   isInternalOutput,
   isExternalOutput,
-} from '../../src/descriptor/Output';
+} from '../../src/descriptor';
 
 describe('Output', function () {
   const oBigInt = { value: 1n };

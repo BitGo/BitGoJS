@@ -5,7 +5,7 @@ import * as coreDescriptors from '@bitgo/utxo-core/descriptor';
 import { toExtendedAddressFormat } from '../recipient';
 import { TransactionExplanation } from '../../abstractUtxoCoin';
 
-function toRecipient(output: coreDescriptors.psbt.ParsedOutput, network: utxolib.Network): ITransactionRecipient {
+function toRecipient(output: coreDescriptors.ParsedOutput, network: utxolib.Network): ITransactionRecipient {
   return {
     address: toExtendedAddressFormat(output.script, network),
     amount: output.value.toString(),

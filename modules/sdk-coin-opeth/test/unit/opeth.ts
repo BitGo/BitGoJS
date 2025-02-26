@@ -1,5 +1,5 @@
 import * as should from 'should';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import nock from 'nock';
 import { common, FullySignedTransaction, TransactionType, Wallet } from '@bitgo/sdk-core';

@@ -1,16 +1,19 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface } from '@bitgo/utxo-lib';
+import { BIP32Interface, ECPair, ECPairInterface } from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { DescriptorTemplate, getDescriptor, getPsbtParams } from '../../../src/testutil/descriptor';
-import { getFixture } from '../../../src/testutil/fixtures.utils';
-import { PsbtParams, parse, DescriptorMap } from '../../../src/descriptor';
-import { getKeyTriple } from '../../../src/testutil/key.utils';
-import { mockPsbtDefault } from '../../../src/testutil/descriptor/mock.utils';
-import { toPlainObjectFromPsbt, toPlainObjectFromTx } from '../../../src/testutil/descriptor/psbt.utils';
-import { toUtxoPsbt, toWrappedPsbt } from '../../../src/descriptor/psbt';
+import { PsbtParams, parse, DescriptorMap, toUtxoPsbt, toWrappedPsbt } from '../../../src/descriptor';
+import { getFixture, getKeyTriple } from '../../../src/testutil';
+import {
+  DescriptorTemplate,
+  getDescriptor,
+  getPsbtParams,
+  mockPsbtDefault,
+  toPlainObjectFromPsbt,
+  toPlainObjectFromTx,
+} from '../../../src/testutil/descriptor';
 
 function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {
@@ -46,7 +49,22 @@ async function assertEqualsFixture(t: string, filename: string, value: unknown) 
 const selfKeys = getKeyTriple('a');
 const otherKeys = getKeyTriple('b');
 
-type PsbtStage = { name: string; keys: BIP32Interface[]; final?: boolean };
+function toPlain(k: BIP32Interface): ECPairInterface {
+  assert.ok(k.privateKey);
+  return ECPair.fromPrivateKey(k.privateKey);
+}
+
+function isBIP32Interface(k: BIP32Interface | ECPairInterface): k is BIP32Interface {
+  const { name } = k.constructor;
+  assert(name === 'BIP32' || name === 'ECPair');
+  return k.constructor.name === 'BIP32';
+}
+
+type PsbtStage = {
+  name: string;
+  keys: (BIP32Interface | ECPairInterface)[];
+  final?: boolean;
+};
 
 type FixtureStage = {
   psbt: utxolib.bitgo.UtxoPsbt;
@@ -63,7 +81,12 @@ function getStages(
     stages.map((stage) => {
       const psbtStageWrapped = toWrappedPsbt(psbt);
       for (const key of stage.keys) {
-        psbtStageWrapped.signWithXprv(key.toBase58());
+        if (isBIP32Interface(key)) {
+          psbtStageWrapped.signWithXprv(key.toBase58());
+        } else {
+          assert(key.privateKey);
+          psbtStageWrapped.signWithPrv(key.privateKey);
+        }
       }
       const psbtStage = toUtxoPsbt(psbtStageWrapped, utxolib.networks.bitcoin);
       let psbtFinal: utxolib.bitgo.UtxoPsbt | undefined;
@@ -134,10 +157,19 @@ describeCreatePsbt2Of3('Wsh2Of3CltvDrop');
 describeCreatePsbt2Of3('Tr2Of3-NoKeyPath');
 describeCreatePsbt('Tr1Of3-NoKeyPath-Tree', {
   descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree', selfKeys),
-  psbtParams: getPsbtParams('Tr1Of3-NoKeyPath-Tree'),
+  psbtParams: {},
   stages: [
     { name: 'unsigned', keys: [] },
     { name: 'signedA', keys: selfKeys.slice(0, 1) },
     { name: 'signedB', keys: selfKeys.slice(1, 2), final: true },
+  ],
+});
+describeCreatePsbt('Tr1Of3-NoKeyPath-Tree-PlainKeys', {
+  descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree-Plain', selfKeys),
+  psbtParams: {},
+  stages: [
+    { name: 'unsigned', keys: [] },
+    { name: 'signedA', keys: selfKeys.slice(0, 1).map(toPlain) },
+    { name: 'signedB', keys: selfKeys.slice(1, 2).map(toPlain), final: true },
   ],
 });

@@ -2,7 +2,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
 import nock from 'nock';
 import sinon from 'sinon';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import {
   common,

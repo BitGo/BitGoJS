@@ -43,6 +43,7 @@
     "@bitgo/abstract-eth": "^22.6.2",
     "@bitgo/sdk-core": "^30.0.0",
     "@bitgo/statics": "^51.1.0",
+    "@bitgo/secp256k1": "^1.3.1",
     "@ethereumjs/common": "2.6.5",
     "ethereumjs-util": "7.1.5"
   },

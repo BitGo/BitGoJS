@@ -1,7 +1,7 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { common, ECDSAMethodTypes, FullySignedTransaction, Recipient, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import nock from 'nock';
 import * as secp256k1 from 'secp256k1';
 import * as should from 'should';

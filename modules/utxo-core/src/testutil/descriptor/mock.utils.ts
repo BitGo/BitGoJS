@@ -52,6 +52,10 @@ type MockOutput = {
   external?: boolean;
 };
 
+function tryDeriveAtIndex(descriptor: Descriptor, index: number): Descriptor {
+  return descriptor.hasWildcard() ? descriptor.atDerivationIndex(index) : descriptor;
+}
+
 export function mockPsbt(
   inputs: MockInput[],
   outputs: MockOutput[],
@@ -59,9 +63,9 @@ export function mockPsbt(
 ): utxolib.bitgo.UtxoPsbt {
   return createPsbt(
     { ...params, network: params.network ?? utxolib.networks.bitcoin },
-    inputs.map((i) => mockDerivedDescriptorWalletOutput(i.descriptor.atDerivationIndex(i.index), i)),
+    inputs.map((i) => mockDerivedDescriptorWalletOutput(tryDeriveAtIndex(i.descriptor, i.index), i)),
     outputs.map((o) => {
-      const derivedDescriptor = o.descriptor.atDerivationIndex(o.index);
+      const derivedDescriptor = tryDeriveAtIndex(o.descriptor, o.index);
       return {
         script: createScriptPubKeyFromDescriptor(derivedDescriptor),
         value: o.value,
