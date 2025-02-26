@@ -5,7 +5,7 @@ import {
   getInputVSizesForDescriptors,
   getVirtualSize,
 } from '../../../src/descriptor/VirtualSize';
-import { DescriptorTemplate, getDescriptor, getDescriptorMap } from '../../../src/testutil/descriptor/descriptors';
+import { DescriptorTemplate, getDescriptor, getDescriptorMap } from '../../../src/testutil/descriptor';
 
 describe('VirtualSize', function () {
   describe('getInputVSizesForDescriptorWallet', function () {
