@@ -79,6 +79,7 @@ import {
   TRX_FEATURES,
   SEI_FEATURES,
   COSMOS_SIDECHAIN_FEATURES,
+  COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
   ATOM_FEATURES,
   INJECTIVE_FEATURES,
   TIA_FEATURES,
@@ -615,7 +616,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.OSMO,
     BaseUnit.OSMO,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'd813e9c9-f9b9-4d10-a4e2-57d9e3b65e2c',
@@ -625,7 +626,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.OSMO,
     BaseUnit.OSMO,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '6e35c0dc-7ee8-4273-985d-254aa3641c9d',
@@ -655,7 +656,7 @@ export const coins = CoinMap.fromCoins([
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'feadf3d5-5a9a-427e-8144-7a5085b4d258',
@@ -665,7 +666,7 @@ export const coins = CoinMap.fromCoins([
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '36700514-fa3c-42d8-9503-98cdcab0b3c3',
@@ -675,7 +676,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BLD,
     BaseUnit.BLD,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'e093184f-4134-455f-b870-da0bac213f00',
@@ -685,7 +686,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BLD,
     BaseUnit.BLD,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '4777265e-37f4-44d8-bccd-13e56189fcae',
@@ -815,7 +816,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'ee22282b-c307-4861-b706-d9a178326ad5',
@@ -825,7 +826,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
