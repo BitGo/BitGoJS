@@ -1,7 +1,9 @@
+import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions, VirtualSizes } from '@bitgo/unspents';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { DescriptorMap } from './DescriptorMap';
+import { findDescriptorForInput } from './psbt';
 
 function getScriptPubKeyLength(descType: string): number {
   // See https://bitcoinops.org/en/tools/calc-size/
@@ -104,4 +106,16 @@ export function getVirtualSize(
   }, 0);
   // we will just assume that we have at least one segwit input
   return inputVSize + outputVSize + VirtualSizes.txSegOverheadVSize;
+}
+
+export function getVirtualSizeEstimateForPsbt(psbt: utxolib.Psbt, descriptorMap: DescriptorMap): number {
+  const inputs = psbt.data.inputs.map((i) => {
+    const result = findDescriptorForInput(i, descriptorMap);
+    if (!result) {
+      throw new Error('Could not find descriptor for input');
+    }
+    return result.descriptor;
+  });
+  const outputs = psbt.txOutputs.map((o) => ({ script: o.script }));
+  return getVirtualSize({ inputs, outputs });
 }

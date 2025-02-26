@@ -4,8 +4,17 @@ import {
   getChangeOutputVSizesForDescriptor,
   getInputVSizesForDescriptors,
   getVirtualSize,
+  getVirtualSizeEstimateForPsbt,
 } from '../../../src/descriptor/VirtualSize';
-import { DescriptorTemplate, getDescriptor, getDescriptorMap } from '../../../src/testutil/descriptor';
+import {
+  DescriptorTemplate,
+  getDefaultXPubs,
+  getDescriptor,
+  getDescriptorMap,
+  mockPsbtDefault,
+} from '../../../src/testutil/descriptor';
+import { getKeyTriple } from '../../../src/testutil';
+import { finalizePsbt } from '../../../src/descriptor';
 
 describe('VirtualSize', function () {
   describe('getInputVSizesForDescriptorWallet', function () {
@@ -45,11 +54,11 @@ describe('VirtualSize', function () {
           getVirtualSize(
             {
               inputs: [{ descriptorName: 'internal' }],
-              outputs: [{ script: Buffer.alloc(32) }],
+              outputs: [{ script: Buffer.alloc(34) }],
             },
             getDescriptorMap(t)
           ),
-          outputSize
+          inputSize + outputSize + 11
         );
 
         const descriptor = getDescriptor(t);
@@ -65,8 +74,28 @@ describe('VirtualSize', function () {
         );
       });
     });
+
+    describe(`getVirtualSizeForPsbt ${t}`, function () {
+      const keys = getKeyTriple('a');
+      const descriptorSelf = getDescriptor(
+        t,
+        keys.map((k) => k.neutered().toBase58())
+      );
+      const descriptorOther = getDescriptor(t, getDefaultXPubs('b'));
+      it('returns expected virtual size', function () {
+        const psbt = mockPsbtDefault({ descriptorSelf, descriptorOther });
+        const descriptorMap = new Map([['internal', descriptorSelf]]);
+        const expectedVirtualSize = inputSize * 2 + outputSize * 2 + 11;
+        assert.deepStrictEqual(getVirtualSizeEstimateForPsbt(psbt, descriptorMap), expectedVirtualSize);
+        psbt.signAllInputsHD(keys[0]);
+        psbt.signAllInputsHD(keys[1]);
+        finalizePsbt(psbt);
+        // TODO(BTC-1797): figure out why we overestimate by 1
+        assert.strictEqual(psbt.extractTransaction().virtualSize(), expectedVirtualSize - 1);
+      });
+    });
   }
 
-  describeWithTemplate('Wsh2Of3', 105, 157);
-  describeWithTemplate('Tr2Of3-NoKeyPath', 109, 161);
+  describeWithTemplate('Wsh2Of3', 105, 43);
+  describeWithTemplate('Tr2Of3-NoKeyPath', 109, 43);
 });
