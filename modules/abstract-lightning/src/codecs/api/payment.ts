@@ -88,7 +88,7 @@ export type PaymentQuery = t.TypeOf<typeof PaymentQuery>;
 
 export const SubmitPaymentParams = t.intersection([
   LightningPaymentRequest,
-  t.type({
+  t.partial({
     sequenceId: optionalString,
     comment: optionalString,
   }),

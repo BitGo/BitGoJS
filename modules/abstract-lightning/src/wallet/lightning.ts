@@ -104,7 +104,7 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
   async createInvoice(params: CreateInvoiceBody): Promise<Invoice> {
     const createInvoiceResponse = await this.wallet.bitgo
       .post(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice`))
-      .send(CreateInvoiceBody.encode(params))
+      .send(t.exact(CreateInvoiceBody).encode(params))
       .result();
     return sdkcore.decodeOrElse(Invoice.name, Invoice, createInvoiceResponse, (error) => {
       // DON'T throw errors from decodeOrElse. It could leak sensitive information.
