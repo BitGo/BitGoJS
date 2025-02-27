@@ -42,7 +42,7 @@
     "@bitgo/unspents": "^0.47.19",
     "@bitgo/utxo-core": "^1.4.0",
     "@bitgo/utxo-lib": "^11.2.3",
-    "@bitgo/wasm-miniscript": "2.0.0-beta.6"
+    "@bitgo/wasm-miniscript": "2.0.0-beta.7"
   },
   "devDependencies": {
     "bip174": "=2.1.1",
