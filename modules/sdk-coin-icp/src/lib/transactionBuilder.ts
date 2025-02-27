@@ -1,22 +1,18 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { BaseKey, BaseTransaction, BaseTransactionBuilder, BuildTransactionError, SigningError } from '@bitgo/sdk-core';
+import { BaseKey, BaseTransactionBuilder, BuildTransactionError, SigningError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { CurveType, IcpMetadata, IcpOperation, IcpPublicKey, IcpTransaction, OperationType } from './iface';
 import utils from './utils';
-import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
-import { SignedTransactionBuilder } from './signedTransactionBuilder';
-import { KeyPair } from './keyPair';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
-  private _sender: string;
-  private _publicKey: string;
-  private _memo: number | BigInt;
-  private _receiverId: string;
-  private _amount: string;
+  protected _sender: string;
+  protected _publicKey: string;
+  protected _memo: number | BigInt;
+  protected _receiverId: string;
+  protected _amount: string;
 
-  protected constructor(_coinConfig: Readonly<CoinConfig>) {
+  constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new Transaction(_coinConfig, utils);
   }
@@ -80,93 +76,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  /** @inheritdoc */
-  validateTransaction(transaction: Transaction): void {
-    if (!utils.isValidAddress(transaction.icpTransactionData.senderAddress)) {
-      throw new BuildTransactionError('Invalid sender address');
-    }
-    if (!utils.isValidAddress(transaction.icpTransactionData.receiverAddress)) {
-      throw new BuildTransactionError('Invalid receiver address');
-    }
-    if (!utils.isValidPublicKey(transaction.icpTransactionData.senderPublicKeyHex)) {
-      throw new BuildTransactionError('Invalid sender public key');
-    }
-    utils.validateValue(new BigNumber(transaction.icpTransactionData.amount));
-    utils.validateFee(transaction.icpTransactionData.fee);
-    utils.validateMemo(transaction.icpTransactionData.memo);
-    utils.validateExpireTime(transaction.icpTransactionData.expiryTime);
-  }
-
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    this.validateTransaction(this._transaction);
-    this.buildIcpTransactionData();
-    const unsignedTransactionBuilder = new UnsignedTransactionBuilder(this._transaction.icpTransaction);
-    const payloadsData = await unsignedTransactionBuilder.getUnsignedTransaction();
-    this._transaction.payloadsData = payloadsData;
-    return this._transaction;
-  }
-
-  protected buildIcpTransactionData(): void {
-    const publicKey: IcpPublicKey = {
-      hex_bytes: this._publicKey,
-      curve_type: CurveType.SECP256K1,
-    };
-
-    const senderOperation: IcpOperation = {
-      type: OperationType.TRANSACTION,
-      account: { address: this._sender },
-      amount: {
-        value: `-this._amount`,
-        currency: {
-          symbol: this._coinConfig.family,
-          decimals: this._coinConfig.decimalPlaces,
-        },
-      },
-    };
-
-    const receiverOperation: IcpOperation = {
-      type: OperationType.TRANSACTION,
-      account: { address: this._receiverId },
-      amount: {
-        value: this._amount,
-        currency: {
-          symbol: this._coinConfig.family,
-          decimals: this._coinConfig.decimalPlaces,
-        },
-      },
-    };
-
-    const feeOperation: IcpOperation = {
-      type: OperationType.FEE,
-      account: { address: this._sender },
-      amount: {
-        value: utils.gasData(),
-        currency: {
-          symbol: this._coinConfig.family,
-          decimals: this._coinConfig.decimalPlaces,
-        },
-      },
-    };
-
-    const currentTime = Date.now() * 1000_000;
-    const ingressStartTime = currentTime;
-    const ingressEndTime = ingressStartTime + 5 * 60 * 1000_000_000; // 5 mins in nanoseconds
-    const metaData: IcpMetadata = {
-      created_at_time: currentTime,
-      memo: this._memo,
-      ingress_start: ingressStartTime,
-      ingress_end: ingressEndTime,
-    };
-
-    const icpTransactionData: IcpTransaction = {
-      public_keys: [publicKey],
-      operations: [senderOperation, receiverOperation, feeOperation],
-      metadata: metaData,
-    };
-    this._transaction.icpTransaction = icpTransactionData;
-  }
-
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
@@ -180,31 +89,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._receiverId = icpTransactionData.receiverAddress;
     this._publicKey = icpTransactionData.senderPublicKeyHex;
     this._amount = icpTransactionData.amount;
-  }
-
-  /** @inheritdoc */
-  sign(key: BaseKey): void {
-    this.validateKey(key);
-    if (!this.transaction.canSign(key)) {
-      throw new SigningError('Private key cannot sign the transaction');
-    }
-
-    this.transaction = this.signImplementation(key);
-  }
-
-  /** @inheritdoc */
-  protected signImplementation(key: BaseKey): BaseTransaction {
-    const keyPair = new KeyPair({ prv: key.key });
-    const keys = keyPair.getKeys();
-    if (!keys.prv || this._publicKey !== keys.pub) {
-      throw new SigningError('invalid private key');
-    }
-    const signedTransactionBuilder = new SignedTransactionBuilder(
-      this._transaction.unsignedTransaction,
-      this._transaction.signaturePayload
-    );
-    this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
-    return this._transaction;
   }
 
   /** @inheritdoc */

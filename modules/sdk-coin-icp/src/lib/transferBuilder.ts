@@ -1,9 +1,20 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
-import { TransactionType, BaseTransaction, BaseAddress, BaseKey } from '@bitgo/sdk-core';
+import {
+  TransactionType,
+  BaseTransaction,
+  BaseAddress,
+  BaseKey,
+  SigningError,
+  BuildTransactionError,
+} from '@bitgo/sdk-core';
 import { Utils } from './utils';
 import BigNumber from 'bignumber.js';
 import { Transaction } from './transaction';
+import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
+import { CurveType, IcpMetadata, IcpOperation, IcpPublicKey, IcpTransaction, OperationType } from './iface';
+import { SignedTransactionBuilder } from './signedTransactionBuilder';
+import { KeyPair } from './keyPair';
 
 export class TransferBuilder extends TransactionBuilder {
   protected _utils: Utils;
@@ -24,14 +35,108 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    const tx = await super.buildImplementation();
-    return tx;
+    this.validateTransaction(this._transaction);
+    this.buildIcpTransactionData();
+    const unsignedTransactionBuilder = new UnsignedTransactionBuilder(this._transaction.icpTransaction);
+    const payloadsData = await unsignedTransactionBuilder.getUnsignedTransaction();
+    this._transaction.payloadsData = payloadsData;
+    return this._transaction;
+  }
+
+  protected buildIcpTransactionData(): void {
+    const publicKey: IcpPublicKey = {
+      hex_bytes: this._publicKey,
+      curve_type: CurveType.SECP256K1,
+    };
+
+    const senderOperation: IcpOperation = {
+      type: OperationType.TRANSACTION,
+      account: { address: this._sender },
+      amount: {
+        value: `-this._amount`,
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+
+    const receiverOperation: IcpOperation = {
+      type: OperationType.TRANSACTION,
+      account: { address: this._receiverId },
+      amount: {
+        value: this._amount,
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+
+    const feeOperation: IcpOperation = {
+      type: OperationType.FEE,
+      account: { address: this._sender },
+      amount: {
+        value: this._utils.gasData(),
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+
+    const currentTime = Date.now() * 1000_000;
+    const ingressStartTime = currentTime;
+    const ingressEndTime = ingressStartTime + 5 * 60 * 1000_000_000; // 5 mins in nanoseconds
+    const metaData: IcpMetadata = {
+      created_at_time: currentTime,
+      memo: this._memo,
+      ingress_start: ingressStartTime,
+      ingress_end: ingressEndTime,
+    };
+
+    const icpTransactionData: IcpTransaction = {
+      public_keys: [publicKey],
+      operations: [senderOperation, receiverOperation, feeOperation],
+      metadata: metaData,
+    };
+    this._transaction.icpTransaction = icpTransactionData;
   }
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): BaseTransaction {
-    const tx = super.signImplementation(key);
-    return tx;
+    this.validateKey(key);
+    if (!this.transaction.canSign(key)) {
+      throw new SigningError('Private key cannot sign the transaction');
+    }
+    const keyPair = new KeyPair({ prv: key.key });
+    const keys = keyPair.getKeys();
+    if (!keys.prv || this._publicKey !== keys.pub) {
+      throw new SigningError('invalid private key');
+    }
+    const signedTransactionBuilder = new SignedTransactionBuilder(
+      this._transaction.unsignedTransaction,
+      this._transaction.signaturePayload
+    );
+    this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction: Transaction): void {
+    if (!this._utils.isValidAddress(transaction.icpTransactionData.senderAddress)) {
+      throw new BuildTransactionError('Invalid sender address');
+    }
+    if (!this._utils.isValidAddress(transaction.icpTransactionData.receiverAddress)) {
+      throw new BuildTransactionError('Invalid receiver address');
+    }
+    if (!this._utils.isValidPublicKey(transaction.icpTransactionData.senderPublicKeyHex)) {
+      throw new BuildTransactionError('Invalid sender public key');
+    }
+    this._utils.validateValue(new BigNumber(transaction.icpTransactionData.amount));
+    this._utils.validateFee(transaction.icpTransactionData.fee);
+    this._utils.validateMemo(transaction.icpTransactionData.memo);
+    this._utils.validateExpireTime(transaction.icpTransactionData.expiryTime);
   }
 
   validateValue(value: BigNumber): void {

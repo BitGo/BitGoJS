@@ -102,24 +102,21 @@ export class Transaction extends BaseTransaction {
     if (!this._icpTransactionData) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    let type: BitGoTransactionType | undefined;
     switch (this._icpTransactionData.transactionType) {
       case OperationType.TRANSACTION:
-        type = BitGoTransactionType.Send;
-        break;
+        return {
+          id: this._id,
+          sender: this._icpTransactionData.senderAddress,
+          senderPublicKey: this._icpTransactionData.senderPublicKeyHex,
+          recipient: this._icpTransactionData.receiverAddress,
+          memo: this._icpTransactionData.memo,
+          feeAmount: this._icpTransactionData.fee,
+          expirationTime: this._icpTransactionData.expiryTime,
+          type: BitGoTransactionType.Send,
+        };
       default:
         throw new Error('Unsupported transaction type');
     }
-    return {
-      id: this._id,
-      sender: this._icpTransactionData.senderAddress,
-      senderPublicKey: this._icpTransactionData.senderPublicKeyHex,
-      recipient: this._icpTransactionData.receiverAddress,
-      memo: this._icpTransactionData.memo,
-      feeAmount: this._icpTransactionData.fee,
-      expirationTime: this._icpTransactionData.expiryTime,
-      type: type,
-    };
   }
 
   /** @inheritDoc */
