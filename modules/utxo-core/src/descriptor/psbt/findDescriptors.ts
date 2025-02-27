@@ -136,10 +136,12 @@ export function findDescriptorForOutput(
   script: Buffer,
   output: PsbtOutput,
   descriptorMap: DescriptorMap
-): DescriptorWithIndex | undefined {
+): DescriptorWithIndex | DescriptorWithoutIndex | undefined {
   const derivationPaths = getDerivationPaths(output);
-  if (!derivationPaths) {
-    return undefined;
-  }
-  return findDescriptorForAnyDerivationPath(script, derivationPaths, descriptorMap);
+  return (
+    findDescriptorWithoutDerivation(script, descriptorMap) ??
+    (derivationPaths === undefined
+      ? undefined
+      : findDescriptorForAnyDerivationPath(script, derivationPaths, descriptorMap))
+  );
 }

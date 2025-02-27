@@ -243,10 +243,13 @@
         {
           "address": "bc1parc3pw8wu3dl9lluyw0wlmq20ngtm24d4r27e2wpeq3djq88tvashcams9",
           "script": "5120e8f110b8eee45bf2fffc239eefec0a7cd0bdaaada8d5eca9c1c822d900e75b3b",
-          "value": "400000"
+          "value": "400000",
+          "scriptId": {
+            "descriptor": "tr(50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0,{pk(3569e37b7d247ddc6500f4927c5412783e810d2bad44d8c57dffba8118e03ebb),{pk(28fa10584d2e1f7833e943827812608b9a1c5e4ec789762d6a90b4d1f1339201),pk(78426026dde1e26b926b9aa4e3efd3d9df45d594bf738748c1d0cb0a2bbf0580)}})#50gkv3dy"
+          }
         }
       ],
-      "spendAmount": "800000",
+      "spendAmount": "400000",
       "minerFee": "1200000",
       "virtualSize": 279
     }
@@ -509,10 +512,13 @@
         {
           "address": "bc1parc3pw8wu3dl9lluyw0wlmq20ngtm24d4r27e2wpeq3djq88tvashcams9",
           "script": "5120e8f110b8eee45bf2fffc239eefec0a7cd0bdaaada8d5eca9c1c822d900e75b3b",
-          "value": "400000"
+          "value": "400000",
+          "scriptId": {
+            "descriptor": "tr(50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0,{pk(3569e37b7d247ddc6500f4927c5412783e810d2bad44d8c57dffba8118e03ebb),{pk(28fa10584d2e1f7833e943827812608b9a1c5e4ec789762d6a90b4d1f1339201),pk(78426026dde1e26b926b9aa4e3efd3d9df45d594bf738748c1d0cb0a2bbf0580)}})#50gkv3dy"
+          }
         }
       ],
-      "spendAmount": "800000",
+      "spendAmount": "400000",
       "minerFee": "1200000",
       "virtualSize": 279
     }
@@ -775,10 +781,13 @@
         {
           "address": "bc1parc3pw8wu3dl9lluyw0wlmq20ngtm24d4r27e2wpeq3djq88tvashcams9",
           "script": "5120e8f110b8eee45bf2fffc239eefec0a7cd0bdaaada8d5eca9c1c822d900e75b3b",
-          "value": "400000"
+          "value": "400000",
+          "scriptId": {
+            "descriptor": "tr(50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0,{pk(3569e37b7d247ddc6500f4927c5412783e810d2bad44d8c57dffba8118e03ebb),{pk(28fa10584d2e1f7833e943827812608b9a1c5e4ec789762d6a90b4d1f1339201),pk(78426026dde1e26b926b9aa4e3efd3d9df45d594bf738748c1d0cb0a2bbf0580)}})#50gkv3dy"
+          }
         }
       ],
-      "spendAmount": "800000",
+      "spendAmount": "400000",
       "minerFee": "1200000",
       "virtualSize": 279
     },

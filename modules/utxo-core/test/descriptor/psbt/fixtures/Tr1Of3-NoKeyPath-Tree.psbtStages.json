@@ -252,7 +252,7 @@
           }
         }
       ],
-      "spendAmount": "800000",
+      "spendAmount": "400000",
       "minerFee": "1200000",
       "virtualSize": 279
     }
@@ -524,7 +524,7 @@
           }
         }
       ],
-      "spendAmount": "800000",
+      "spendAmount": "400000",
       "minerFee": "1200000",
       "virtualSize": 279
     }
@@ -796,7 +796,7 @@
           }
         }
       ],
-      "spendAmount": "800000",
+      "spendAmount": "400000",
       "minerFee": "1200000",
       "virtualSize": 279
     },
