@@ -75,7 +75,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   public amount(value: string): this {
-    this.validateValue(new BigNumber(value));
+    utils.validateValue(new BigNumber(value));
     this._amount = value;
     return this;
   }
