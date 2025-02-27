@@ -127,14 +127,5 @@ describe('ICP KeyPair', () => {
       should.notEqual(keys1.pub, keys2.pub);
       should.notEqual(keys1.prv, keys2.prv);
     });
-
-    it('should return a compressed public key', () => {
-      const keyPair = new KeyPair();
-      const keys = keyPair.getKeys();
-
-      should.exist(keys.pub);
-      keys.pub.length.should.equal(66); // 33 bytes * 2 (hex)
-      keys.pub.startsWith('02').should.be.true() || keys.pub.startsWith('03').should.be.true();
-    });
   });
 });

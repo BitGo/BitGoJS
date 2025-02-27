@@ -68,14 +68,12 @@ export class Transaction extends BaseTransaction {
       const parsedTx = JSON.parse(rawTransaction);
       switch (parsedTx.type) {
         case OperationType.TRANSACTION:
-          const keyPair = new KeyPair({ prv: parsedTx.address });
-          const senderPublicKeyHex = keyPair.getPublicKey({ compressed: true }).toString('hex');
           this._icpTransactionData = {
             senderAddress: parsedTx.address,
             receiverAddress: parsedTx.externalOutputs[0].address,
             amount: parsedTx.spendAmountString,
-            fee: parsedTx.fee,
-            senderPublicKeyHex: senderPublicKeyHex,
+            fee: this._utils.gasData(),
+            senderPublicKeyHex: parsedTx.senderKey,
             memo: parsedTx.seqno,
             transactionType: parsedTx.type,
             expiryTime: parsedTx.expiryTime,
@@ -103,7 +101,7 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   toJson(): TxData {
     if (!this._icpTransactionData) {
-      throw new Error('Empty transaction');
+      throw new InvalidTransactionError('Empty transaction');
     }
     let type: BitGoTransactionType | undefined;
     switch (this._icpTransactionData.transactionType) {
@@ -142,7 +140,7 @@ export class Transaction extends BaseTransaction {
       type: result.type,
     };
 
-    switch (this.type) {
+    switch (explanationResult.type) {
       case TransactionType.Send:
         return this.explainTransferTransaction(explanationResult);
       default:
