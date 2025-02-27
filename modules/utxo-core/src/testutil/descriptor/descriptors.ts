@@ -134,21 +134,12 @@ function getDescriptorNode(
   throw new Error(`Unknown descriptor template: ${template}`);
 }
 
-function getDescriptorType(template: DescriptorTemplate): 'derivable' | 'definite' {
-  switch (template) {
-    case 'Tr1Of3-NoKeyPath-Tree-Plain':
-      return 'definite';
-    default:
-      return 'derivable';
-  }
-}
-
 export function getDescriptor(
   template: DescriptorTemplate,
   keys: KeyTriple | string[] = getDefaultXPubs(),
   path = '0/*'
 ): Descriptor {
-  return Descriptor.fromString(ast.formatNode(getDescriptorNode(template, keys, path)), getDescriptorType(template));
+  return Descriptor.fromStringDetectType(ast.formatNode(getDescriptorNode(template, keys, path)));
 }
 
 export function getDescriptorMap(
