@@ -52,13 +52,32 @@ export const WatchOnly = t.type({
 
 export type WatchOnly = t.TypeOf<typeof WatchOnly>;
 
-export const UpdateLightningWalletSignedRequest = t.partial({
-  encryptedSignerMacaroon: t.string,
-  encryptedSignerAdminMacaroon: t.string,
+const CommonLightningUpdateWalletFields = t.partial({
   signerHost: t.string,
-  encryptedSignerTlsKey: t.string,
   signerTlsCert: t.string,
   watchOnlyAccounts: WatchOnly,
 });
 
-export type UpdateLightningWalletSignedRequest = t.TypeOf<typeof UpdateLightningWalletSignedRequest>;
+export const UpdateLightningWalletEncryptedRequest = t.intersection([
+  CommonLightningUpdateWalletFields,
+  t.partial({
+    encryptedSignerMacaroon: t.string,
+    encryptedSignerAdminMacaroon: t.string,
+    encryptedSignerTlsKey: t.string,
+  }),
+]);
+
+export const UpdateLightningWalletClientRequest = t.intersection([
+  CommonLightningUpdateWalletFields,
+  t.type({
+    passphrase: t.string,
+  }),
+  t.partial({
+    signerMacaroon: t.string,
+    signerAdminMacaroon: t.string,
+    signerTlsKey: t.string,
+  }),
+]);
+
+export type UpdateLightningWalletEncryptedRequest = t.TypeOf<typeof UpdateLightningWalletEncryptedRequest>;
+export type UpdateLightningWalletClientRequest = t.TypeOf<typeof UpdateLightningWalletClientRequest>;
