@@ -1,7 +1,6 @@
 import * as execa from 'execa';
 import { readFileSync, readdirSync, writeFileSync, statSync } from 'fs';
 import * as path from 'path';
-import { get as httpGet } from 'https';
 import { inc } from 'semver';
 
 let lernaModules: string[] = [];
@@ -73,22 +72,15 @@ const replacePackageScopes = () => {
 /**
  * Makes an HTTP request to fetch all the dist tags for a given package.
  */
-const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
-  return new Promise((resolve, reject) => {
-    httpGet(`https://registry.npmjs.org/-/package/${packageName}/dist-tags`, (res) => {
-      if (res.statusCode !== 200) {
-        return reject(new Error(`Failed to fetch dist-tags for ${packageName}`));
-      }
-      let data = '';
-      res.on('data', (d) => {
-        data += d;
-      });
-      res.on('end', () => {
-        const tags: Record<string, string> = JSON.parse(data);
-        resolve(tags);
-      });
-    });
-  });
+type DistTags = Record<string, string>;
+const getDistTags = async (packageName: string): Promise<DistTags> => {
+  console.log(`Fetching dist tags for ${packageName}`);
+  const url = `https://registry.npmjs.org/-/package/${packageName}/dist-tags`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed ${url}: ${response.status} ${response.statusText} ${await response.text()}`);
+  }
+  return response.json();
 };
 
 // modules/bitgo is the only package we publish without an `@bitgo` prefix, so
@@ -130,20 +122,41 @@ function compareversion(version1, version2) {
   return result;
 }
 
+async function getDistTagsForModules(moduleLocations: string[]): Promise<(DistTags | undefined)[]> {
+  return await Promise.all(
+    moduleLocations.map(async (modulePath) => {
+      const moduleName: string = JSON.parse(
+        readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' })
+      ).name;
+      switch (moduleName) {
+        case '@bitgo-beta/express':
+        case '@bitgo-beta/web-demo':
+        case '@bitgo-beta/sdk-test':
+          console.warn(`Skipping ${moduleName} as it's not published to npm`);
+          return undefined;
+      }
+      try {
+        return await getDistTags(moduleName);
+      } catch (e) {
+        console.warn(`Failed to fetch dist tags for ${moduleName}`, e);
+        return undefined;
+      }
+    })
+  );
+}
+
 /**
  * increment the version based on the preid. default to `beta`
  *
  * @param {String | undefined} preid
  */
 const incrementVersions = async (preid = 'beta') => {
+  const distTags = await getDistTagsForModules(lernaModuleLocations);
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     try {
       const modulePath = lernaModuleLocations[i];
+      const tags = distTags[i];
       const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
-      const tags = await getDistTags(json.name).catch((e) => {
-        console.warn(`Couldn't fetch dist-tags for ${json.name}`, e);
-        return undefined;
-      });
 
       let prevTag: string | undefined = undefined;
 
