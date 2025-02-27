@@ -22,10 +22,10 @@ describe('Tao Unstake Builder', function () {
     it('should validate stake amount', function () {
       const spyValidateValue = spy(builder, 'validateValue');
       assert.throws(
-        () => builder.amount(-1),
+        () => builder.amount('-1'),
         (e: Error) => e.message === 'Value cannot be less than zero'
       );
-      should.doesNotThrow(() => builder.amount(1000));
+      should.doesNotThrow(() => builder.amount('1000'));
       SinonAssert.calledTwice(spyValidateValue);
     });
     it('should validate hotkey address', function () {
@@ -42,9 +42,9 @@ describe('Tao Unstake Builder', function () {
   describe('build unstake transaction', function () {
     it('should build a unstake transaction', async function () {
       builder
-        .amount(50000000000000)
+        .amount('50000000000000')
         .hotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
-        .netuid(0)
+        .netuid('0')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock(referenceBlock)
@@ -71,9 +71,9 @@ describe('Tao Unstake Builder', function () {
 
     it('should build an unsigned unstake transaction', async function () {
       builder
-        .amount(50000000000000)
+        .amount('50000000000000')
         .hotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
-        .netuid(0)
+        .netuid('0')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock(referenceBlock)

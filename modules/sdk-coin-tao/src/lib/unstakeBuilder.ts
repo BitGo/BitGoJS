@@ -5,9 +5,9 @@ import { InvalidTransactionError, TransactionType, BaseAddress } from '@bitgo/sd
 import { Transaction, TransactionBuilder, Interface, Schema } from '@bitgo/abstract-substrate';
 
 export class UnstakeBuilder extends TransactionBuilder {
-  protected _amount: number;
+  protected _amount: string;
   protected _hotkey: string;
-  protected _netuid: number;
+  protected _netuid: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -40,12 +40,12 @@ export class UnstakeBuilder extends TransactionBuilder {
   /**
    * The amount to unstake.
    *
-   * @param {number} amount to unstake
+   * @param {string} amount to unstake
    * @returns {UnstakeBuilder} This unstaking builder.
    *
    * @see https://wiki.polkadot.network/docs/learn-nominator#required-minimum-stake
    */
-  amount(amount: number): this {
+  amount(amount: string): this {
     this.validateValue(new BigNumber(amount));
     this._amount = amount;
     return this;
@@ -67,10 +67,10 @@ export class UnstakeBuilder extends TransactionBuilder {
 
   /**
    * Netuid of the subnet (root network is 0)
-   * @param {number} netuid
+   * @param {string} netuid
    * @returns {UnstakeBuilder} This unstaking builder
    */
-  netuid(netuid: number): this {
+  netuid(netuid: string): this {
     this._netuid = netuid;
     return this;
   }
@@ -97,11 +97,11 @@ export class UnstakeBuilder extends TransactionBuilder {
 
   /**
    * Helper method to validate whether unstake params have the correct type and format
-   * @param {number} amountUnstaked amount to unstake
+   * @param {string} amountUnstaked amount to unstake
    * @param {string} hotkey hotkey address of the validator
-   * @param {number} netuid netuid of the subnet
+   * @param {string} netuid netuid of the subnet
    */
-  private validateFields(amountUnstaked: number, hotkey: string, netuid: number): void {
+  private validateFields(amountUnstaked: string, hotkey: string, netuid: string): void {
     const validationResult = Schema.UnstakeTransactionSchema.validate({
       amountUnstaked,
       hotkey,
