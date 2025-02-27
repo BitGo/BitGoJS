@@ -74,8 +74,11 @@ const replacePackageScopes = () => {
  * Makes an HTTP request to fetch all the dist tags for a given package.
  */
 const getDistTags = async (packageName: string): Promise<Record<string, string>> => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     httpGet(`https://registry.npmjs.org/-/package/${packageName}/dist-tags`, (res) => {
+      if (res.statusCode !== 200) {
+        return reject(new Error(`Failed to fetch dist-tags for ${packageName}`));
+      }
       let data = '';
       res.on('data', (d) => {
         data += d;
@@ -137,11 +140,14 @@ const incrementVersions = async (preid = 'beta') => {
     try {
       const modulePath = lernaModuleLocations[i];
       const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
-      const tags = await getDistTags(json.name);
+      const tags = await getDistTags(json.name).catch((e) => {
+        console.warn(`Couldn't fetch dist-tags for ${json.name}`, e);
+        return undefined;
+      });
 
       let prevTag: string | undefined = undefined;
 
-      if (typeof tags !== 'string') {
+      if (typeof tags === 'object') {
         if (tags[preid]) {
           const version = tags[preid].split('-');
           const latest = tags?.latest?.split('-') ?? ['0.0.0'];
