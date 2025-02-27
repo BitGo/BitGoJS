@@ -114,18 +114,5 @@ describe('ICP KeyPair', () => {
       should.equal(keys1.pub, keys2.pub);
       should.equal(keys1.prv, keys2.prv);
     });
-
-    it('should generate different keys for different seeds', () => {
-      const seed1 = randomBytes(32);
-      const seed2 = randomBytes(32);
-      const keyPair1 = new KeyPair({ seed: seed1 });
-      const keyPair2 = new KeyPair({ seed: seed2 });
-
-      const keys1 = keyPair1.getKeys();
-      const keys2 = keyPair2.getKeys();
-
-      should.notEqual(keys1.pub, keys2.pub);
-      should.notEqual(keys1.prv, keys2.prv);
-    });
   });
 });

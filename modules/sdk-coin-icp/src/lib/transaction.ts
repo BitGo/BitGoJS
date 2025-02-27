@@ -16,11 +16,10 @@ import {
   TxData,
   IcpTransactionExplanation,
   SignedTransactionRequest,
-  NetworkID,
+  Network,
 } from './iface';
 import { Utils } from './utils';
 import { KeyPair } from './keyPair';
-import BigNumber from 'bignumber.js';
 
 export class Transaction extends BaseTransaction {
   protected _icpTransactionData: IcpTransactionData;
@@ -126,18 +125,18 @@ export class Transaction extends BaseTransaction {
   /** @inheritDoc */
   explainTransaction(): IcpTransactionExplanation {
     const result = this.toJson();
-    const displayOrder = ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'];
+    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'];
     const outputs: TransactionRecipient[] = [];
 
-    const explanationResult: IcpTransactionExplanation = {
+    const explanationResult = {
       displayOrder,
       id: this.id,
       outputs,
       outputAmount: '0',
-      changeOutputs: [],
-      changeAmount: '0',
-      fee: { fee: this._icpTransactionData.fee },
+      fee: { fee: '0' },
       type: result.type,
+      changeOutputs: [], // account based does not use change outputs
+      changeAmount: '0', // account base does not make change
     };
 
     switch (explanationResult.type) {
@@ -155,12 +154,10 @@ export class Transaction extends BaseTransaction {
    * @returns {IcpTransactionExplanation} The extended explanation result including the output amount and recipients.
    */
   explainTransferTransaction(explanationResult: IcpTransactionExplanation): IcpTransactionExplanation {
+    explanationResult.fee = { fee: this.icpTransactionData.fee };
     const recipients = this._utils.getRecipients(this.icpTransactionData);
-    const outputs: TransactionRecipient[] = recipients.map((recipient) => recipient);
-    const outputAmountBN = recipients.reduce(
-      (accumulator, current) => accumulator.plus(current.amount),
-      new BigNumber(0)
-    );
+    const outputs: TransactionRecipient[] = [recipients];
+    const outputAmountBN = recipients.address;
     const outputAmount = outputAmountBN.toString();
 
     return {
@@ -183,10 +180,10 @@ export class Transaction extends BaseTransaction {
       signed_transaction: this._signedTransaction,
       network_identifier: {
         blockchain: this._coinConfig.fullName,
-        network: NetworkID.MAINNET,
+        network: Network.ID,
       },
     };
-    return Buffer.from(JSON.stringify(transaction)).toString('base64');
+    return JSON.stringify(transaction);
   }
 
   /** @inheritdoc */

@@ -6,6 +6,7 @@ import {
 export enum RequestType {
   CALL = 'call',
   READ_STATE = 'read_state',
+  REQUEST_STATUS = 'request_status',
 }
 
 export enum SignatureType {
@@ -25,8 +26,8 @@ export enum MethodName {
   SEND_PB = 'send_pb', // send_pb is the method name for ICP transfer transaction
 }
 
-export enum NetworkID {
-  MAINNET = '00000000000000020101', // ICP does not have different network IDs for mainnet and testnet
+export enum Network {
+  ID = '00000000000000020101', // ICP does not have different network IDs for mainnet and testnet
 }
 
 export interface IcpTransactionData {

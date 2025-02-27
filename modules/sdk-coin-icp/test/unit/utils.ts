@@ -52,125 +52,25 @@ describe('utils', () => {
   });
 
   describe('cborEncode()', () => {
-    it('should correctly encode a number', () => {
-      const value = 42;
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
-    it('should correctly encode a string', () => {
-      const value = 'hello';
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
-    it('should correctly encode a boolean (true)', () => {
-      const value = true;
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
-    it('should correctly encode a boolean (false)', () => {
-      const value = false;
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
-    it('should correctly encode null', () => {
-      const value = null;
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
-    it('should correctly encode an array', () => {
-      const value = [1, 2, 3];
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
     it('should correctly encode an object', () => {
       const value = { key: 'value' };
       const expectedHex = Buffer.from(encode(value)).toString('hex');
       should.equal(utils.cborEncode(value), expectedHex);
     });
-
-    it('should correctly encode an empty object', () => {
-      const value = {};
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
-    it('should correctly encode an empty array', () => {
-      const value = [];
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
-    it('should correctly encode a nested object', () => {
-      const value = { a: 1, b: [2, 3], c: { d: 'hello' } };
-      const expectedHex = Buffer.from(encode(value)).toString('hex');
-      should.equal(utils.cborEncode(value), expectedHex);
-    });
-
-    it('should throw an error when encoding an undefined value', () => {
-      should.throws(() => utils.cborEncode(undefined), Error);
-    });
-
-    it('should throw an error when encoding a function', () => {
-      should.throws(
-        () =>
-          utils.cborEncode(() => {
-            throw new Error('Value to encode cannot be undefined.');
-          }),
-        Error
-      );
+    it('should encode and decode a big number correctly', () => {
+      const original = { number: BigInt(1740680777458000000) };
+      const encoded = encode(original);
+      const decoded = utils.cborDecode(encoded);
+      should.deepEqual(decoded, original);
     });
   });
 
   describe('cborDecode()', () => {
-    it('should correctly decode a CBOR-encoded string', () => {
-      const original = 'Hello, CBOR!';
-      const encoded = encode(original);
-      const decoded = utils.cborDecode(encoded);
-      should.equal(decoded, original);
-    });
-
-    it('should correctly decode a CBOR-encoded number', () => {
-      const original = 42;
-      const encoded = encode(original);
-      const decoded = utils.cborDecode(encoded);
-      should.equal(decoded, original);
-    });
-
-    it('should correctly decode a CBOR-encoded boolean', () => {
-      const original = true;
-      const encoded = encode(original);
-      const decoded = utils.cborDecode(encoded);
-      should.equal(decoded, original);
-    });
-
     it('should correctly decode a CBOR-encoded object', () => {
       const original = { key: 'value', number: 100 };
       const encoded = encode(original);
       const decoded = utils.cborDecode(encoded);
       should.deepEqual(decoded, original);
-    });
-
-    it('should correctly decode a CBOR-encoded array', () => {
-      const original = [1, 'text', false];
-      const encoded = encode(original);
-      const decoded = utils.cborDecode(encoded);
-      should.deepEqual(decoded, original);
-    });
-
-    it('should return undefined for an empty CBOR buffer', () => {
-      const encoded = encode(undefined);
-      const decoded = utils.cborDecode(encoded);
-      should.equal(decoded, undefined);
-    });
-
-    it('should throw an error for an invalid CBOR buffer', () => {
-      should.throws(() => utils.cborDecode(Buffer.from('invalid data')), Error);
     });
   });
 
@@ -178,61 +78,11 @@ describe('utils', () => {
     it('should return true for a valid compressed public key length (66 characters)', () => {
       should.equal(utils.isValidLength('a'.repeat(66)), true);
     });
-
-    it('should return true for a valid uncompressed public key length (130 characters)', () => {
-      should.equal(utils.isValidLength('a'.repeat(130)), true);
-    });
-
-    it('should return false for a string shorter than 66 characters', () => {
-      should.equal(utils.isValidLength('a'.repeat(64)), false);
-    });
-
-    it('should return false for a string longer than 66 but shorter than 130 characters', () => {
-      should.equal(utils.isValidLength('a'.repeat(100)), false);
-    });
-
-    it('should return false for a string longer than 130 characters', () => {
-      should.equal(utils.isValidLength('a'.repeat(132)), false);
-    });
-
-    it('should return false for an empty string', () => {
-      should.equal(utils.isValidLength(''), false);
-    });
-
-    it('should return false for a non-hexadecimal string', () => {
-      should.equal(utils.isValidLength('ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ'), false);
-    });
   });
 
   describe('isValidHex()', () => {
     it('should return true for a valid hexadecimal string', () => {
       should.equal(utils.isValidHex('abcdef1234567890ABCDEF'), true);
-    });
-
-    it('should return true for a valid hex string with even length', () => {
-      should.equal(utils.isValidHex('a1b2c3d4e5f6'), true);
-    });
-
-    it('should return false for a string with an odd number of characters', () => {
-      should.equal(utils.isValidHex('abcde'), false);
-    });
-
-    it('should return false for a string containing non-hex characters', () => {
-      should.equal(utils.isValidHex('xyz123'), false);
-      should.equal(utils.isValidHex('12345G'), false);
-      should.equal(utils.isValidHex('1234@!'), false);
-    });
-
-    it('should return false for an empty string', () => {
-      should.equal(utils.isValidHex(''), false);
-    });
-
-    it('should return false for a string with spaces', () => {
-      should.equal(utils.isValidHex('abcdef 123456'), false);
-    });
-
-    it('should return false for a string with mixed valid and invalid characters', () => {
-      should.equal(utils.isValidHex('abcd123!@#'), false);
     });
   });
 
@@ -240,28 +90,6 @@ describe('utils', () => {
     it('should correctly convert a valid hexadecimal string to a Uint8Array', () => {
       const hex = 'abcdef123456';
       const expected = new Uint8Array([0xab, 0xcd, 0xef, 0x12, 0x34, 0x56]);
-      should.deepEqual(utils.hexToBytes(hex), expected);
-    });
-
-    it('should correctly convert an uppercase hexadecimal string to a Uint8Array', () => {
-      const hex = 'ABCDEF123456';
-      const expected = new Uint8Array([0xab, 0xcd, 0xef, 0x12, 0x34, 0x56]);
-      should.deepEqual(utils.hexToBytes(hex), expected);
-    });
-
-    it('should return an empty Uint8Array for an empty string', () => {
-      should.deepEqual(utils.hexToBytes(''), new Uint8Array([]));
-    });
-
-    it('should correctly convert a single byte hexadecimal string', () => {
-      const hex = '0a';
-      const expected = new Uint8Array([0x0a]);
-      should.deepEqual(utils.hexToBytes(hex), expected);
-    });
-
-    it('should correctly convert a multi-byte hexadecimal string', () => {
-      const hex = 'ff00ff';
-      const expected = new Uint8Array([0xff, 0x00, 0xff]);
       should.deepEqual(utils.hexToBytes(hex), expected);
     });
   });

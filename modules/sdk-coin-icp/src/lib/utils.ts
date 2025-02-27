@@ -11,21 +11,24 @@ import BigNumber from 'bignumber.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
 
 export class Utils implements BaseUtils {
+  /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     throw new Error('Method not implemented.');
   }
 
+  /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
     throw new Error('Method not implemented.');
   }
 
+  /** @inheritdoc */
   isValidSignature(signature: string): boolean {
     throw new Error('Method not implemented.');
   }
-
   /**
    * gets the gas data of this transaction.
    */
+  //TODO to moved to a config and eventually to an API for dynamic value
   gasData(): string {
     return '-10000';
   }
@@ -509,7 +512,7 @@ export class Utils implements BaseUtils {
   makeReadStateFromUpdate(update: HttpCanisterUpdate): ReadState {
     return {
       sender: update.sender,
-      paths: [[Buffer.from('request_status'), this.generateHttpCanisterUpdateId(update)]],
+      paths: [[Buffer.from(RequestType.REQUEST_STATUS), this.generateHttpCanisterUpdateId(update)]],
       ingress_expiry: update.ingress_expiry,
     };
   }
@@ -535,13 +538,11 @@ export class Utils implements BaseUtils {
    * @param {IcpTransactionData} icpTransactionData - The ICP transaction data containing the receiver's address and amount.
    * @returns {Recipient[]} An array containing a single recipient object with the receiver's address and amount.
    */
-  getRecipients(icpTransactionData: IcpTransactionData): Recipient[] {
-    return [
-      {
-        address: icpTransactionData.receiverAddress,
-        amount: icpTransactionData.amount,
-      },
-    ];
+  getRecipients(icpTransactionData: IcpTransactionData): Recipient {
+    return {
+      address: icpTransactionData.receiverAddress,
+      amount: icpTransactionData.amount,
+    };
   }
 }
 

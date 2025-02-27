@@ -27,10 +27,6 @@ export class SignedTransactionBuilder {
     for (const sig of combineRequest.signatures) {
       signatureMap.set(sig.signing_payload.hex_bytes, sig);
     }
-    /*{
-    string: SIGNATURE
-    }
-    */
     const unsignedTransaction = utils.cborDecode(
       utils.blobFromHex(combineRequest.unsigned_transaction)
     ) as cborUnsignedTransaction;
