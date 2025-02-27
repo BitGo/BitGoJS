@@ -4,7 +4,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, ECPair, ECPairInterface } from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { PsbtParams, parse, DescriptorMap, toUtxoPsbt, toWrappedPsbt } from '../../../src/descriptor';
+import { PsbtParams, parse, toUtxoPsbt, toWrappedPsbt, ParsedDescriptorTransaction } from '../../../src/descriptor';
 import { getFixture, getKeyTriple } from '../../../src/testutil';
 import {
   DescriptorTemplate,
@@ -74,7 +74,7 @@ type FixtureStage = {
 
 function getStages(
   psbt: utxolib.bitgo.UtxoPsbt,
-  descriptorMap: DescriptorMap,
+  parsed: ParsedDescriptorTransaction,
   stages: PsbtStage[]
 ): Record<string, FixtureStage> {
   return Object.fromEntries(
@@ -102,7 +102,7 @@ function getStages(
         stage.name,
         {
           psbt: psbtStage,
-          parsed: parse(psbtStage, descriptorMap, utxolib.networks.bitcoin),
+          parsed,
           psbtFinal,
           networkTx,
           networkTxBuffer,
@@ -131,11 +131,10 @@ function describeCreatePsbt(
         descriptorOther: getDescriptor('Wsh2Of3', otherKeys),
         params: psbtParams,
       });
-      await assertEqualsFixture(
-        name,
-        'psbtStages.json',
-        getStages(psbtUnsigned, new Map([['self', descriptorSelf]]), stages)
-      );
+      const descriptorMap = new Map([['self', descriptorSelf]]);
+      const parsed = parse(psbtUnsigned, descriptorMap, utxolib.networks.bitcoin);
+      assert.strictEqual(parsed.spendAmount, psbtUnsigned.txOutputs[1].value);
+      await assertEqualsFixture(name, 'psbtStages.json', getStages(psbtUnsigned, parsed, stages));
     });
   });
 }

@@ -54,24 +54,24 @@ export function parse(
     return {
       address: utxolib.address.fromOutputScript(input.witnessUtxo.script, network),
       value: input.witnessUtxo.value,
-      scriptId: scriptId,
+      scriptId,
     };
   });
   const outputs = psbt.txOutputs.map((output, i): ParsedOutput => {
     if (output.value === undefined) {
       throw new Error('invalid output: no value');
     }
-    const descriptorWithIndex = findDescriptorForOutput(output.script, psbt.data.outputs[i], descriptorMap);
+    const scriptId = findDescriptorForOutput(output.script, psbt.data.outputs[i], descriptorMap);
     return {
       address: output.address,
       script: output.script,
       value: output.value,
-      scriptId: descriptorWithIndex,
+      scriptId,
     };
   });
   const inputAmount = sum(...inputs.map((input) => input.value));
   const outputSum = sum(...outputs.map((output) => output.value));
-  const spendAmount = sum(...outputs.filter((output) => !('descriptor' in output)).map((output) => output.value));
+  const spendAmount = sum(...outputs.filter((output) => !output.scriptId).map((output) => output.value));
   const minerFee = inputAmount - outputSum;
   return {
     inputs,
