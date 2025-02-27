@@ -204,7 +204,7 @@ export async function handleGetLightningWalletState(req: express.Request): Promi
 /**
  * Handle the request to unlock a wallet in the signer.
  */
-export async function handleUnlockLightningWallet(req: express.Request): Promise<void> {
+export async function handleUnlockLightningWallet(req: express.Request): Promise<{ message: string }> {
   const coinName = req.params.coin;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin to unlock lightning wallet: ${coinName}`, 400);
@@ -227,7 +227,8 @@ export async function handleUnlockLightningWallet(req: express.Request): Promise
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
   // The passphrase at LND can only accommodate a base64 character set
   // For more information, see BTC-1851
-  return await lndSignerClient.unlockWallet({
+  await lndSignerClient.unlockWallet({
     wallet_password: Buffer.from(passphrase).toString('base64'),
   });
+  return { message: 'ok' };
 }
