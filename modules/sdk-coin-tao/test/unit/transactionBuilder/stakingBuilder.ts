@@ -22,10 +22,10 @@ describe('Tao Stake Builder', function () {
     it('should validate stake amount', function () {
       const spyValidateValue = spy(builder, 'validateValue');
       assert.throws(
-        () => builder.amount(-1),
+        () => builder.amount('-1'),
         (e: Error) => e.message === 'Value cannot be less than zero'
       );
-      should.doesNotThrow(() => builder.amount(1000));
+      should.doesNotThrow(() => builder.amount('1000'));
       SinonAssert.calledTwice(spyValidateValue);
     });
 
@@ -43,9 +43,9 @@ describe('Tao Stake Builder', function () {
   describe('build stake transaction', function () {
     it('should build a stake transaction', async function () {
       builder
-        .amount(50000000)
+        .amount('9007199254740995')
         .hotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
-        .netuid(0)
+        .netuid('0')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock(referenceBlock)
@@ -55,7 +55,7 @@ describe('Tao Stake Builder', function () {
 
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.amount, '50000000');
+      should.deepEqual(txJson.amount, '9007199254740995');
       should.deepEqual(txJson.to, '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT');
       should.deepEqual(txJson.netuid, '0');
       should.deepEqual(txJson.sender, sender.address);
@@ -72,9 +72,9 @@ describe('Tao Stake Builder', function () {
 
     it('should build an unsigned stake transaction', async function () {
       builder
-        .amount(50000000)
+        .amount('50000000')
         .hotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
-        .netuid(0)
+        .netuid('0')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock(referenceBlock)

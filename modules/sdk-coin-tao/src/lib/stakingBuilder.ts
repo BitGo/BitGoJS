@@ -5,9 +5,9 @@ import { InvalidTransactionError, TransactionType, BaseAddress } from '@bitgo/sd
 import { Transaction, TransactionBuilder, Interface, Schema } from '@bitgo/abstract-substrate';
 
 export class StakingBuilder extends TransactionBuilder {
-  protected _amount: number;
+  protected _amount: string;
   protected _hotkey: string;
-  protected _netuid: number;
+  protected _netuid: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -38,12 +38,12 @@ export class StakingBuilder extends TransactionBuilder {
 
   /**
    * Set the amount to stake
-   * @param {number} amount to stake
+   * @param {string} amount to stake
    * @returns {StakingBuilder} This staking builder.
    *
    * @see https://wiki.polkadot.network/docs/learn-nominator#required-minimum-stake
    */
-  amount(amount: number): this {
+  amount(amount: string): this {
     this.validateValue(new BigNumber(amount));
     this._amount = amount;
     return this;
@@ -64,10 +64,10 @@ export class StakingBuilder extends TransactionBuilder {
 
   /**
    * Set netuid of the subnet (root network is 0)
-   * @param {number} netuid of subnet
+   * @param {string} netuid of subnet
    * @returns {StakingBuilder} This staking builder.
    */
-  netuid(netuid: number): this {
+  netuid(netuid: string): this {
     this._netuid = netuid;
     return this;
   }
@@ -94,11 +94,11 @@ export class StakingBuilder extends TransactionBuilder {
 
   /**
    * Helper method to validate whether stake params have the correct type and format
-   * @param {number} amountStaked amount to stake
+   * @param {string} amountStaked amount to stake
    * @param {string} hotkey hotkey address of the validator
-   * @param {number} netuid netuid of the subnet
+   * @param {string} netuid netuid of the subnet
    */
-  private validateFields(amountStaked: number, hotkey: string, netuid: number): void {
+  private validateFields(amountStaked: string, hotkey: string, netuid: string): void {
     const validationResult = Schema.StakeTransactionSchema.validate({
       amountStaked,
       hotkey,
