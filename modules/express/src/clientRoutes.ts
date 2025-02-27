@@ -1656,6 +1656,21 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     promiseWrapper(handleNetworkV1EnterpriseClientConnections)
   );
 
+  // lightning - create invoice
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/invoice',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleCreateLightningInvoice)
+  );
+  // lightning - pay invoice
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/pay',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handlePayLightningInvoice)
+  );
+
   // everything else should use the proxy handler
   if (config.disableProxy !== true) {
     app.use(
@@ -1705,16 +1720,4 @@ export function setupLightningRoutes(app: express.Application, config: Config): 
     promiseWrapper(handleUnlockLightningWallet)
   );
   app.get('/api/v2/:coin/wallet/:id/state', prepareBitGo(config), promiseWrapper(handleGetLightningWalletState));
-  app.post(
-    '/api/v2/:coin/wallet/:id/lightning/invoice',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleCreateLightningInvoice)
-  );
-  app.post(
-    '/api/v2/:coin/wallet/:id/lightning/pay',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handlePayLightningInvoice)
-  );
 }

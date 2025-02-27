@@ -6,39 +6,26 @@ import { decodeOrElse } from '@bitgo/sdk-core';
 export async function handleCreateLightningInvoice(req: express.Request): Promise<any> {
   const bitgo = req.bitgo;
 
-  try {
-    const params = decodeOrElse(CreateInvoiceBody.name, CreateInvoiceBody, req.body, (error) => {
-      throw new ApiResponseError(`Invalid request body to create lightning invoice: ${error}`, 400);
-    });
+  const params = decodeOrElse(CreateInvoiceBody.name, CreateInvoiceBody, req.body, (error) => {
+    throw new ApiResponseError(`Invalid request body to create lightning invoice: ${error}`, 400);
+  });
 
-    const coin = bitgo.coin(req.params.coin);
-    const wallet = await coin.wallets().get({ id: req.params.id });
-    const lightningWallet = getLightningWallet(wallet);
+  const coin = bitgo.coin(req.params.coin);
+  const wallet = await coin.wallets().get({ id: req.params.id });
+  const lightningWallet = getLightningWallet(wallet);
 
-    return await lightningWallet.createInvoice(params);
-  } catch (err) {
-    throw new ApiResponseError(err.message, 400);
-  }
+  return await lightningWallet.createInvoice(params);
 }
 
 export async function handlePayLightningInvoice(req: express.Request): Promise<any> {
   const bitgo = req.bitgo;
-  const { passphrase } = req.body;
-  if (passphrase === undefined) {
-    throw new ApiResponseError('Missing wallet passphrase', 400);
-  }
+  const params = decodeOrElse(SubmitPaymentParams.name, SubmitPaymentParams, req.body, (error) => {
+    throw new ApiResponseError(`Invalid request body to pay lightning invoice`, 400);
+  });
 
-  try {
-    const params = decodeOrElse(SubmitPaymentParams.name, SubmitPaymentParams, req.body, (error) => {
-      throw new ApiResponseError(`Invalid request body to pay lightning invoice: ${error}`, 400);
-    });
+  const coin = bitgo.coin(req.params.coin);
+  const wallet = await coin.wallets().get({ id: req.params.id });
+  const lightningWallet = getLightningWallet(wallet);
 
-    const coin = bitgo.coin(req.params.coin);
-    const wallet = await coin.wallets().get({ id: req.params.id });
-    const lightningWallet = getLightningWallet(wallet);
-
-    return await lightningWallet.payInvoice(params, passphrase);
-  } catch (err) {
-    throw new ApiResponseError(err.message, 400);
-  }
+  return await lightningWallet.payInvoice(params);
 }
