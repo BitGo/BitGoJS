@@ -269,7 +269,14 @@ export interface WalletCoinSpecific {
    * Lightning coin specific data starts
    */
   keys?: string[];
-  encryptedSignerAdminMacaroon?: string;
+  encryptedSignerAdminMacaroon?: string | null;
+  encryptedSignerMacaroon?: string | null;
+  watchOnlyExternalIp?: string | null;
+  signerHost?: string | null;
+  encryptedSignerTlsKey?: string | null;
+  signerTlsCert?: string | null;
+  watchOnlyAccounts?: Record<string, unknown> | null;
+  signedUserAuthKey?: string;
   /**
    * Lightning coin specific data ends
    */

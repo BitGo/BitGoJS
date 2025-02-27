@@ -84,47 +84,60 @@ describe('Lightning signer routes', () => {
     });
   }
 
-  for (const includingOptionalFields of [true, false]) {
-    it(`should create signer macaroon ${includingOptionalFields ? 'with' : 'without'} optional fields`, async () => {
-      const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
-      const wpWalletnock = nock(bgUrl).get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200, apiData.wallet);
+  for (const addIpCaveatToMacaroon of [true, false]) {
+    for (const includeWatchOnlyIp of [true, false]) {
+      it(`create signer macaroon ${addIpCaveatToMacaroon ? 'with' : 'without'} including IP caveat when it ${
+        includeWatchOnlyIp ? 'does' : `doesn't`
+      } exist`, async () => {
+        const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
+        const wpWalletnock = nock(bgUrl)
+          .get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`)
+          .reply(200, {
+            ...apiData.wallet,
+            ...(includeWatchOnlyIp ? {} : { watchOnlyExternalIp: null }),
+          });
 
-      const wpKeychainNocks = [
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
-        nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
-      ];
+        const wpKeychainNocks = [
+          nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
+          nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
+          nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
+          nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
+        ];
 
-      const signerMacaroon = nock(lightningSignerConfigs.fakeid.url)
-        .post(`/v1/macaroon`)
-        .reply(200, signerApiData.bakeMacaroon);
+        const signerMacaroon = nock(lightningSignerConfigs.fakeid.url)
+          .post(`/v1/macaroon`)
+          .reply(200, signerApiData.bakeMacaroon);
 
-      const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
+        const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
 
-      const req = {
-        bitgo: bitgo,
-        body: includingOptionalFields
-          ? apiData.signerMacaroonRequestBody
-          : { ...apiData.signerMacaroonRequestBody, watchOnlyIp: undefined },
-        params: {
-          coin: 'tlnbtc',
-          id: 'fakeid',
-        },
-        config: {
-          lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
-        },
-      } as unknown as express.Request;
+        const req = {
+          bitgo: bitgo,
+          body: { ...apiData.signerMacaroonRequestBody, addIpCaveatToMacaroon },
+          params: {
+            coin: 'tlnbtc',
+            id: 'fakeid',
+          },
+          config: {
+            lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+          },
+        } as unknown as express.Request;
 
-      await handleCreateSignerMacaroon(req);
+        try {
+          await handleCreateSignerMacaroon(req);
+        } catch (e) {
+          if (!includeWatchOnlyIp || addIpCaveatToMacaroon) {
+            throw e;
+          }
+        }
 
-      wpWalletUpdateNock.done();
-      signerMacaroon.done();
-      wpKeychainNocks.forEach((s) => s.done());
-      wpWalletnock.done();
-      readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
-      readFileStub.restore();
-    });
+        wpWalletUpdateNock.done();
+        signerMacaroon.done();
+        wpKeychainNocks.forEach((s) => s.done());
+        wpWalletnock.done();
+        readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
+        readFileStub.restore();
+      });
+    }
   }
 
   it('should get signer wallet state', async () => {

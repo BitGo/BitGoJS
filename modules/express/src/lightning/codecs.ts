@@ -46,15 +46,11 @@ export const InitLightningWalletRequest = t.intersection(
 
 export type InitLightningWalletRequest = t.TypeOf<typeof InitLightningWalletRequest>;
 
-export const CreateSignerMacaroonRequest = t.intersection(
-  [
-    t.strict({
-      passphrase: t.string,
-    }),
-    t.partial({
-      watchOnlyIp: t.string,
-    }),
-  ],
+export const CreateSignerMacaroonRequest = t.type(
+  {
+    passphrase: t.string,
+    addIpCaveatToMacaroon: t.boolean,
+  },
   'CreateSignerMacaroonRequest'
 );
 

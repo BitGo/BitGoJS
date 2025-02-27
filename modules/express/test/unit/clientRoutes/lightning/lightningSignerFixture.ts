@@ -5,7 +5,6 @@ export const apiData = {
   },
   signerMacaroonRequestBody: {
     passphrase: 'password123',
-    watchOnlyIp: '127.0.0.1',
   },
   unlockWalletRequestBody: {
     passphrase: 'password123',
@@ -16,6 +15,7 @@ export const apiData = {
     keys: ['abc'],
     coinSpecific: {
       keys: ['def', 'ghi'],
+      watchOnlyExternalIp: '1.2.3.4',
       encryptedSignerAdminMacaroon:
         '{"iv":"mf/5PSEGdLTKlc8t1IwOBA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"mZcamRzITwg=","ct":"KCCc+/ly37EZPRoVBgE9T2mAUufWuqmtSadZAAcECevmNbGgGtAhi7P8/zpge49EdsKOP1Mx1DkwnZBMqCVQBTIWZO4XrFI+OOI0YWDrJIaGcnXDFgZWCbgGaomzYNRvt3EoJ1+yMn1EsYdFYgM0NBS0YsvNHx6PsK2eSLpAK2UrhHAkm9X2uhVRMOjjiGr0UW6r4BKuzxCA06fKKQk6bb8LEF54EZFwigjLSztebW5ivNVT/6MxMnjlO7YPW1ClwM9cqJy1oNLUuRK1vnr6hHCas+3F0PCt5XhJJlsgsm1Vz45wWEGdZiyb0XbqOKHyxCI2WOF5Nj1ALiA0D4o9bqfzasNgrvYlMJ4Ld7ayHDtfhiFve/cUZkcQdVqNbS1TPuyvYT8vPKmL5JwuABoTkLH2LtBOh0afz9UFZajo7pxmJ9TtN+B+/GUoiR9v4e2Jw+IpMIIv3ATMqQl9Kot6yefiuP+1DfYNBPvcUqJMc8ibpP56BUA0qWLoAIg5DoocoMybXi0+eA1S0c8Lhe0PsA=="}',
     },
