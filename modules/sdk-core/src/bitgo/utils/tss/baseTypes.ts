@@ -4,6 +4,7 @@ import { KeychainsTriplet, ParsedTransaction } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
+import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { KeyShare } from './ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
@@ -450,7 +451,7 @@ export interface BitgoGPGPublicKey {
 
 export interface MPCTx {
   serializedTx: string;
-  scanIndex: number;
+  scanIndex?: number;
   coin?: string;
   signableHex?: string;
   derivationPath?: string;
@@ -537,11 +538,12 @@ interface SignatureShare {
 
 interface Ovc {
   eddsaSignature: Signature;
+  ecdsaSignature?: EcdsaSignature;
 }
 
 export interface MPCTxs {
   transactions: MPCTx[];
-  lastScanIndex: number;
+  lastScanIndex?: number;
 }
 
 export interface OvcInput {
