@@ -23,4 +23,6 @@ export const omniConfig = {
   walletPassphrase,
   walletId,
   otp,
+  MEMPOOL_PREFIX: env === 'test' ? 'testnet4/' : '',
+  OMNI_PREFIX: Buffer.from('6f6d6e69', 'hex'),
 };
