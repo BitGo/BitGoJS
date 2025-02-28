@@ -40,7 +40,7 @@ export class UnsignedTransactionBuilder {
     const update = await this.getUpdate(sendArgs, this._icpTransactionPayload.public_keys[0].hex_bytes);
     const updates: [string, HttpCanisterUpdate][] = [];
     updates.push([OperationType.TRANSACTION, update]);
-    const txn = { updates, ingressExpiries };
+    const txn = { updates: updates, ingress_expiries: ingressExpiries };
     const unsignedTransaction = utils.cborEncode(txn);
     const payloads: SigningPayload[] = [];
     this.getPayloads(payloads, ingressExpiries, this._icpTransactionPayload.operations[0].account.address, update);
@@ -102,7 +102,7 @@ export class UnsignedTransactionBuilder {
     const sendArgs: SendArgs = {
       memo: { memo: memo },
       payment: { receiverGets: { e8s: Number(amount) } },
-      maxFee: { e8s: Number(fee) },
+      maxFee: { e8s: -Number(fee) },
       to: { hash: Buffer.from(receiver, 'hex') },
       createdAtTime: { timestampNanos: Number(created_at_time) },
     };
@@ -110,8 +110,8 @@ export class UnsignedTransactionBuilder {
   }
 
   async toArg(args: SendArgs): Promise<Uint8Array> {
-    const root = await protobuf.load(PROTOPATH);
-    const SendRequestMessage = root.lookupType('SendRequest');
+    const root = (await protobuf.load(PROTOPATH)) as unknown as { SendRequest: protobuf.Type };
+    const SendRequestMessage = root.SendRequest;
     const errMsg = SendRequestMessage.verify(args);
     if (errMsg) throw new Error(errMsg);
 
@@ -129,7 +129,7 @@ export class UnsignedTransactionBuilder {
       method_name: MethodName.SEND_PB,
       arg: args,
       sender: senderBlob,
-      ingress_expiry: BigInt(0),
+      ingress_expiry: 0n,
     };
     return update;
   }

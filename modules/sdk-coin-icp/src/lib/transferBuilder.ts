@@ -91,15 +91,8 @@ export class TransferBuilder extends TransactionBuilder {
       },
     };
 
-    const currentTime = Date.now() * 1000_000;
-    const ingressStartTime = currentTime;
-    const ingressEndTime = ingressStartTime + 5 * 60 * 1000_000_000; // 5 mins in nanoseconds
-    const metaData: IcpMetadata = {
-      created_at_time: currentTime,
-      memo: this._memo,
-      ingress_start: ingressStartTime,
-      ingress_end: ingressEndTime,
-    };
+    const { metaData, ingressEndTime }: { metaData: IcpMetadata; ingressEndTime: number | BigInt } =
+      this._utils.getMetaData(this._memo);
 
     const icpTransaction: IcpTransaction = {
       public_keys: [publicKey],

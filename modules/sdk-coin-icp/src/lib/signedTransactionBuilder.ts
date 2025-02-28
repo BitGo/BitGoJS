@@ -30,11 +30,11 @@ export class SignedTransactionBuilder {
     const unsignedTransaction = utils.cborDecode(
       utils.blobFromHex(combineRequest.unsigned_transaction)
     ) as cborUnsignedTransaction;
-    assert(combineRequest.signatures.length === unsignedTransaction.ingressExpiries.length * 2);
+    assert(combineRequest.signatures.length === unsignedTransaction.ingress_expiries.length * 2);
     assert(unsignedTransaction.updates.length === 1);
     const envelopes = this.getEnvelopes(unsignedTransaction, signatureMap);
     const envelopRequests = { requests: envelopes };
-    const signedTransaction = utils.blobToHex(Buffer.from(utils.cborEncode(envelopRequests)));
+    const signedTransaction = utils.cborEncode(envelopRequests);
     return signedTransaction;
   }
 
@@ -45,7 +45,7 @@ export class SignedTransactionBuilder {
     const envelopes: [string, RequestEnvelope[]][] = [];
     for (const [reqType, update] of unsignedTransaction.updates) {
       const requestEnvelopes: RequestEnvelope[] = [];
-      for (const ingressExpiry of unsignedTransaction.ingressExpiries) {
+      for (const ingressExpiry of unsignedTransaction.ingress_expiries) {
         update.ingress_expiry = ingressExpiry;
 
         const readState = utils.makeReadStateFromUpdate(update);

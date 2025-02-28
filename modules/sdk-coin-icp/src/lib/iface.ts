@@ -3,10 +3,11 @@ import {
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
 
+export const REQUEST_STATUS = 'request_status';
+
 export enum RequestType {
   CALL = 'call',
   READ_STATE = 'read_state',
-  REQUEST_STATUS = 'request_status',
 }
 
 export enum SignatureType {
@@ -119,7 +120,7 @@ export interface Signatures {
 
 export interface cborUnsignedTransaction {
   updates: [string, HttpCanisterUpdate][];
-  ingressExpiries: bigint[];
+  ingress_expiries: bigint[];
 }
 
 export interface ReadState {
@@ -142,11 +143,8 @@ export interface UpdateEnvelope {
 }
 
 export interface ReadStateEnvelope {
-  content: {
+  content: ReadState & {
     request_type: RequestType;
-    sender: Uint8Array;
-    paths: Array<[Uint8Array, Uint8Array]>;
-    ingress_expiry: bigint;
   };
   sender_pubkey: Uint8Array;
   sender_sig: Uint8Array;

@@ -57,6 +57,7 @@ describe('utils', () => {
       const expectedHex = Buffer.from(encode(value)).toString('hex');
       should.equal(utils.cborEncode(value), expectedHex);
     });
+
     it('should encode and decode a big number correctly', () => {
       const original = { number: BigInt(1740680777458000000) };
       const encoded = encode(original);

@@ -3,12 +3,14 @@ import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
-import { HttpCanisterUpdate, IcpTransactionData, ReadState, RequestType, Signatures } from './iface';
+import { HttpCanisterUpdate, IcpTransactionData, ReadState, RequestType, Signatures, IcpMetadata } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 import { decode, encode } from 'cbor-x'; // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
 import js_sha256 from 'js-sha256';
 import BigNumber from 'bignumber.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
+
+export const REQUEST_STATUS = 'request_status';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -25,10 +27,11 @@ export class Utils implements BaseUtils {
   isValidSignature(signature: string): boolean {
     throw new Error('Method not implemented.');
   }
+
   /**
    * gets the gas data of this transaction.
    */
-  //TODO to moved to a config and eventually to an API for dynamic value
+  //TODO WIN-4242: to moved to a config and eventually to an API for dynamic value
   gasData(): string {
     return '-10000';
   }
@@ -277,7 +280,7 @@ export class Utils implements BaseUtils {
   }
 
   validateMemo(memo: number | BigInt): void {
-    if (Number(memo) < 0) {
+    if (Number(memo) < 0 || Number(memo) === null || Number(memo) === undefined || Number.isNaN(Number(memo))) {
       throw new BuildTransactionError('Invalid memo');
     }
   }
@@ -514,7 +517,7 @@ export class Utils implements BaseUtils {
   makeReadStateFromUpdate(update: HttpCanisterUpdate): ReadState {
     return {
       sender: update.sender,
-      paths: [[Buffer.from(RequestType.REQUEST_STATUS), this.generateHttpCanisterUpdateId(update)]],
+      paths: [[Buffer.from(REQUEST_STATUS), this.generateHttpCanisterUpdateId(update)]],
       ingress_expiry: update.ingress_expiry,
     };
   }
@@ -555,6 +558,19 @@ export class Utils implements BaseUtils {
     return signatureMap.get(
       utils.blobToHex(utils.makeSignatureData(utils.HttpReadStateRepresentationIndependentHash(readState)))
     );
+  }
+
+  getMetaData(memo: number | BigInt): { metaData: IcpMetadata; ingressEndTime: number | BigInt } {
+    const currentTime = Date.now() * 1000000;
+    const ingressStartTime = currentTime;
+    const ingressEndTime = ingressStartTime + 5 * 60 * 1000000000; // 5 mins in nanoseconds
+    const metaData: IcpMetadata = {
+      created_at_time: currentTime,
+      memo: memo,
+      ingress_start: ingressStartTime,
+      ingress_end: ingressEndTime,
+    };
+    return { metaData, ingressEndTime };
   }
 }
 

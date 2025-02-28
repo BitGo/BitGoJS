@@ -83,7 +83,7 @@ export class Transaction extends BaseTransaction {
             senderAddress: parsedTx.address,
             receiverAddress: parsedTx.externalOutputs[0].address,
             amount: parsedTx.spendAmountString,
-            fee: this._utils.gasData(),
+            fee: parsedTx.fee,
             senderPublicKeyHex: parsedTx.senderKey,
             memo: parsedTx.seqno,
             transactionType: parsedTx.type,
@@ -145,7 +145,7 @@ export class Transaction extends BaseTransaction {
       fee: { fee: '0' },
       type: result.type,
       changeOutputs: [], // account based does not use change outputs
-      changeAmount: '0', // account base does not make change
+      changeAmount: '0', // account based does not make change
     };
 
     switch (explanationResult.type) {
