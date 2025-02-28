@@ -38,6 +38,16 @@ describe('Tao Stake Builder', function () {
       should.doesNotThrow(() => builder.hotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' }));
       SinonAssert.calledTwice(spyValidateAddress);
     });
+
+    it('should validate netuid', function () {
+      const spyValidateNetuid = spy(builder, 'validateNetuid');
+      assert.throws(
+        () => builder.netuid('1'),
+        (e: Error) => e.message === 'Only root network netuid(0) is supported'
+      );
+      should.doesNotThrow(() => builder.netuid('0'));
+      SinonAssert.calledTwice(spyValidateNetuid);
+    });
   });
 
   describe('build stake transaction', function () {

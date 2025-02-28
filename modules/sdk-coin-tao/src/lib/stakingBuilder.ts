@@ -68,6 +68,7 @@ export class StakingBuilder extends TransactionBuilder {
    * @returns {StakingBuilder} This staking builder.
    */
   netuid(netuid: string): this {
+    this.validateNetuid(netuid);
     this._netuid = netuid;
     return this;
   }

@@ -256,6 +256,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /**
+   * Helper method to check whether netuid is 0 (only root network is supported now)
+   * @param {string} netduid of the subnet
+   */
+  public validateNetuid(netduid: string) {
+    const netuidBigNumber = new BigNumber(netduid);
+    if (!netuidBigNumber.isZero()) {
+      throw new BuildTransactionError('Only root network netuid(0) is supported');
+    }
+  }
+
   /** @inheritdoc */
   validateKey({ key }: BaseKey): void {
     let isValidPrivateKeyFromBytes;
