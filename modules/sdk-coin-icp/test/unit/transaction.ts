@@ -55,6 +55,16 @@ describe('ICP Transaction', () => {
       explain.outputs[0].address.should.equal(accounts.account2.address);
       explain.fee.fee.should.equal('-10000');
       explain.changeAmount.should.equal('0');
+      if (explain.displayOrder !== undefined) {
+        explain.displayOrder.should.deepEqual([
+          'id',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+        ]);
+      }
       if (explain.type !== undefined) {
         explain.type.should.equal(BitGoTransactionType.Send);
       }

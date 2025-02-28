@@ -10,8 +10,9 @@ import {
 } from './iface';
 import protobuf from 'protobufjs';
 import utils from './utils';
+import * as path from 'path';
 
-const PROTOPATH = './message.proto';
+const PROTOPATH = path.join(__dirname, 'message.proto');
 const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
 const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
 const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // Uint8Array value for "00000000000000020101" and the string value is "ryjl3-tyaaa-aaaaa-aaaba-cai"
@@ -60,8 +61,8 @@ export class UnsignedTransactionBuilder {
       const clonedUpdate: HttpCanisterUpdate = {
         canister_id: Buffer.from(update.canister_id),
         method_name: update.method_name,
-        arg: new Uint8Array(update.arg),
-        sender: new Uint8Array(update.sender),
+        arg: update.arg,
+        sender: update.sender,
         ingress_expiry: ingressExpiry,
       };
 
@@ -120,7 +121,7 @@ export class UnsignedTransactionBuilder {
 
   async getUpdate(sendArgs: SendArgs, publicKeyHex: string): Promise<HttpCanisterUpdate> {
     const principalId = utils.getPrincipalIdFromPublicKey(publicKeyHex).toUint8Array();
-    const senderBlob = principalId;
+    const senderBlob = Buffer.from(principalId);
     const canisterIdBuffer = Buffer.from(LEDGER_CANISTER_ID);
     const args = await this.toArg(sendArgs);
     const update: HttpCanisterUpdate = {

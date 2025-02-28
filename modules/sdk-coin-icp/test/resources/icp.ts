@@ -1,4 +1,4 @@
-import { OperationType } from '../../src/lib/iface';
+import { OperationType, SignatureType } from '../../src/lib/iface';
 
 export const accounts = {
   account1: {
@@ -99,3 +99,108 @@ export const rawTransaction = {
   id: '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw',
   expiryTime: Date.now() * 1000_000 + 5 * 60 * 1000_000_000,
 };
+
+export const signatures = [
+  {
+    signing_payload: {
+      account_identifier: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      hex_bytes: '0a69632d72657175657374b2131c069040ccd4aceac295f53159d8d9a786cdab5c4ebdd2ed47a83e1902eb',
+      signature_type: SignatureType.ECDSA,
+    },
+    signature_type: SignatureType.ECDSA,
+    public_key: {
+      hex_bytes:
+        '042ab77b959e28c4fa47fa8fb9e57cec3d66df5684d076ac2e4c5f28fd69a23dd31a59f908c8add51eab3530b4ac5d015166eaf2198c52fa9a8df7cfaeb8fdb7d4',
+      curve_type: 'secp256k1',
+    },
+    hex_bytes:
+      'e9b37dfd8ae85414d8b371c0a324a4fb65a1cbd6189f02f8a86a7b963ec8f7f2fdfedc836caabb26b1db0312d08150da5c31591c02db4c945e98094f052f44d8',
+  },
+  {
+    signing_payload: {
+      account_identifier: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      hex_bytes: '0a69632d72657175657374d7e6bf08c4c0c783b481c8dae7d8cf39bec7e2a198d6950312bb99c23498973e',
+      signature_type: SignatureType.ECDSA,
+    },
+    signature_type: SignatureType.ECDSA,
+    public_key: {
+      hex_bytes:
+        '042ab77b959e28c4fa47fa8fb9e57cec3d66df5684d076ac2e4c5f28fd69a23dd31a59f908c8add51eab3530b4ac5d015166eaf2198c52fa9a8df7cfaeb8fdb7d4',
+      curve_type: 'secp256k1',
+    },
+    hex_bytes:
+      'ff3b75750106ee6e911de6cf039224cd9f623c65c5ba3cebb18e66d969ec6be3bd4292d96f4807c980e513d5676fb680ddfd44c71063ef57f868a098b3163406',
+  },
+  {
+    signing_payload: {
+      account_identifier: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      hex_bytes: '0a69632d7265717565737432a1939ab22a9b08e131d5dc3ed5704bca08c7ab97144871d08e5f4d83e9cbd9',
+      signature_type: SignatureType.ECDSA,
+    },
+    signature_type: SignatureType.ECDSA,
+    public_key: {
+      hex_bytes:
+        '042ab77b959e28c4fa47fa8fb9e57cec3d66df5684d076ac2e4c5f28fd69a23dd31a59f908c8add51eab3530b4ac5d015166eaf2198c52fa9a8df7cfaeb8fdb7d4',
+      curve_type: 'secp256k1',
+    },
+    hex_bytes:
+      '8bad0e718c71bac77129c01376b5767f4e0b0aed31a0d0ec4f1c10be2e79825ac3624f2f98b5fc763eec9f572840c11c3eb8f096d9cc5ea130ab4e4160ed0d99',
+  },
+  {
+    signing_payload: {
+      account_identifier: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      hex_bytes: '0a69632d7265717565737429fa34da10b70a79abede2965312487d39063b56f2eeeee60dc4cd0fe25d78c2',
+      signature_type: SignatureType.ECDSA,
+    },
+    signature_type: SignatureType.ECDSA,
+    public_key: {
+      hex_bytes:
+        '042ab77b959e28c4fa47fa8fb9e57cec3d66df5684d076ac2e4c5f28fd69a23dd31a59f908c8add51eab3530b4ac5d015166eaf2198c52fa9a8df7cfaeb8fdb7d4',
+      curve_type: 'secp256k1',
+    },
+    hex_bytes:
+      'afe95a736a0162dd4335d2f4fb9e8dbd952e589511431fd6f8e72adf673ee697522651d670621522ed128ac7c7da5ca4df5175186f5419492eb70b4a0a41ed42',
+  },
+  {
+    signing_payload: {
+      account_identifier: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      hex_bytes: '0a69632d72657175657374dd33e62262d41d19c74828331fc27d96df83bd343cc638f9daee28c14b562acd',
+      signature_type: SignatureType.ECDSA,
+    },
+    signature_type: SignatureType.ECDSA,
+    public_key: {
+      hex_bytes:
+        '042ab77b959e28c4fa47fa8fb9e57cec3d66df5684d076ac2e4c5f28fd69a23dd31a59f908c8add51eab3530b4ac5d015166eaf2198c52fa9a8df7cfaeb8fdb7d4',
+      curve_type: 'secp256k1',
+    },
+    hex_bytes:
+      'fbe7577ecbc45dcd605367b58a6046061219230617c5aaaff2913abe0f5b7000b8159c0b879536771f132ccda5c514765f98bc77fe79454e2fbffd2dca641279',
+  },
+  {
+    signing_payload: {
+      account_identifier: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      hex_bytes: '0a69632d7265717565737476cd4d6b83e5a8526a59a32c8ebf6835f05d87adb2719eba4bf3621de6b199af',
+      signature_type: SignatureType.ECDSA,
+    },
+    signature_type: SignatureType.ECDSA,
+    public_key: {
+      hex_bytes:
+        '042ab77b959e28c4fa47fa8fb9e57cec3d66df5684d076ac2e4c5f28fd69a23dd31a59f908c8add51eab3530b4ac5d015166eaf2198c52fa9a8df7cfaeb8fdb7d4',
+      curve_type: 'secp256k1',
+    },
+    hex_bytes:
+      '6f05a9764e9311417e6abdbd4c1d0532311bf2c65cd5907b7180149e306bfed530d6742e7274bdf50f195405a3326c4ba6538c0cf348dea199785ecfe637f147',
+  },
+];

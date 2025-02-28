@@ -30,7 +30,7 @@ export class SignedTransactionBuilder {
     const unsignedTransaction = utils.cborDecode(
       utils.blobFromHex(combineRequest.unsigned_transaction)
     ) as cborUnsignedTransaction;
-    assert(combineRequest.signatures.length === unsignedTransaction.ingress_expiries.length * 2);
+    assert(combineRequest.signatures.length === unsignedTransaction.ingressExpiries.length * 2);
     assert(unsignedTransaction.updates.length === 1);
     const envelopes = this.getEnvelopes(unsignedTransaction, signatureMap);
     const envelopRequests = { requests: envelopes };
@@ -45,30 +45,25 @@ export class SignedTransactionBuilder {
     const envelopes: [string, RequestEnvelope[]][] = [];
     for (const [reqType, update] of unsignedTransaction.updates) {
       const requestEnvelopes: RequestEnvelope[] = [];
-      for (const ingressExpiry of unsignedTransaction.ingress_expiries) {
+      for (const ingressExpiry of unsignedTransaction.ingressExpiries) {
         update.ingress_expiry = ingressExpiry;
 
         const readState = utils.makeReadStateFromUpdate(update);
-
-        const transaction_signature = signatureMap.get(
-          utils.blobToHex(utils.makeSignatureData(utils.generateHttpCanisterUpdateId(update)))
-        );
-        if (!transaction_signature) {
+        const transactionSignature = utils.getTransactionSignature(signatureMap, update);
+        if (!transactionSignature) {
           throw new Error('Transaction signature is undefined');
         }
 
-        const readStateSignature = signatureMap.get(
-          utils.blobToHex(utils.makeSignatureData(utils.HttpReadStateRepresentationIndependentHash(readState)))
-        );
+        const readStateSignature = utils.getReadStateSignature(signatureMap, readState);
         if (!readStateSignature) {
           throw new Error('read state signature is undefined');
         }
 
-        const pk_der = utils.getPublicKeyInDERFormat(transaction_signature.public_key.hex_bytes);
+        const pk_der = utils.getPublicKeyInDERFormat(transactionSignature.public_key.hex_bytes);
         const updateEnvelope: UpdateEnvelope = {
           content: { request_type: RequestType.CALL, ...update },
           sender_pubkey: pk_der,
-          sender_sig: utils.blobFromHex(transaction_signature.hex_bytes),
+          sender_sig: utils.blobFromHex(transactionSignature.hex_bytes),
         };
 
         const readStateEnvelope: ReadStateEnvelope = {

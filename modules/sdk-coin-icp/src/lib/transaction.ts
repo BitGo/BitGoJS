@@ -38,6 +38,10 @@ export class Transaction extends BaseTransaction {
     return this._icpTransactionData;
   }
 
+  set icpTransactionData(icpTransactionData: IcpTransactionData) {
+    this._icpTransactionData = icpTransactionData;
+  }
+
   get icpTransaction(): IcpTransaction {
     return this._icpTransaction;
   }
@@ -58,8 +62,16 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = signature;
   }
 
+  get signedTransaction(): string {
+    return this._signedTransaction;
+  }
+
   set payloadsData(payloadsData: PayloadsData) {
     this._payloadsData = payloadsData;
+  }
+
+  get payloadsData(): PayloadsData {
+    return this._payloadsData;
   }
 
   fromRawTransaction(rawTransaction: string): void {
@@ -154,7 +166,7 @@ export class Transaction extends BaseTransaction {
     explanationResult.fee = { fee: this.icpTransactionData.fee };
     const recipients = this._utils.getRecipients(this.icpTransactionData);
     const outputs: TransactionRecipient[] = [recipients];
-    const outputAmountBN = recipients.address;
+    const outputAmountBN = recipients.amount;
     const outputAmount = outputAmountBN.toString();
 
     return {
@@ -188,7 +200,11 @@ export class Transaction extends BaseTransaction {
     try {
       const keyPair = new KeyPair({ prv: key.key });
       const publicKeyHex = keyPair.getPublicKey({ compressed: true }).toString('hex');
-      return this._icpTransactionData.senderPublicKeyHex === publicKeyHex;
+      const uncompressedPublicKeyHex = keyPair.getPublicKey({ compressed: false }).toString('hex');
+      return (
+        this.icpTransactionData.senderPublicKeyHex === publicKeyHex ||
+        this.icpTransactionData.senderPublicKeyHex === uncompressedPublicKeyHex
+      );
     } catch (error) {
       return false;
     }

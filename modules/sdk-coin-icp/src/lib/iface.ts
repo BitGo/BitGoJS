@@ -119,7 +119,7 @@ export interface Signatures {
 
 export interface cborUnsignedTransaction {
   updates: [string, HttpCanisterUpdate][];
-  ingress_expiries: bigint[];
+  ingressExpiries: bigint[];
 }
 
 export interface ReadState {

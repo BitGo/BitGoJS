@@ -1,20 +1,21 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
-import {
-  TransactionType,
-  BaseTransaction,
-  BaseAddress,
-  BaseKey,
-  SigningError,
-  BuildTransactionError,
-} from '@bitgo/sdk-core';
+import { BaseTransaction, BaseKey, SigningError, BuildTransactionError } from '@bitgo/sdk-core';
 import { Utils } from './utils';
-import BigNumber from 'bignumber.js';
 import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
-import { CurveType, IcpMetadata, IcpOperation, IcpPublicKey, IcpTransaction, OperationType } from './iface';
+import {
+  CurveType,
+  IcpMetadata,
+  IcpOperation,
+  IcpPublicKey,
+  IcpTransaction,
+  IcpTransactionData,
+  OperationType,
+} from './iface';
 import { SignedTransactionBuilder } from './signedTransactionBuilder';
 import { KeyPair } from './keyPair';
+import assert from 'assert';
 
 export class TransferBuilder extends TransactionBuilder {
   protected _utils: Utils;
@@ -44,6 +45,11 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   protected buildIcpTransactionData(): void {
+    assert(this._sender, new BuildTransactionError('sender is required before building'));
+    assert(this._publicKey, new BuildTransactionError('sender public key is required before building'));
+    assert(this._amount, new BuildTransactionError('amount is required before building'));
+    assert(this._receiverId, new BuildTransactionError('receiver is required before building'));
+    assert(this._memo, new BuildTransactionError('memo is required before building'));
     const publicKey: IcpPublicKey = {
       hex_bytes: this._publicKey,
       curve_type: CurveType.SECP256K1,
@@ -53,7 +59,7 @@ export class TransferBuilder extends TransactionBuilder {
       type: OperationType.TRANSACTION,
       account: { address: this._sender },
       amount: {
-        value: `-this._amount`,
+        value: `-${this._amount}`,
         currency: {
           symbol: this._coinConfig.family,
           decimals: this._coinConfig.decimalPlaces,
@@ -95,12 +101,23 @@ export class TransferBuilder extends TransactionBuilder {
       ingress_end: ingressEndTime,
     };
 
-    const icpTransactionData: IcpTransaction = {
+    const icpTransaction: IcpTransaction = {
       public_keys: [publicKey],
       operations: [senderOperation, receiverOperation, feeOperation],
       metadata: metaData,
     };
-    this._transaction.icpTransaction = icpTransactionData;
+    const icpTransactionData: IcpTransactionData = {
+      senderAddress: this._sender,
+      receiverAddress: this._receiverId,
+      amount: this._amount,
+      fee: this._utils.gasData(),
+      senderPublicKeyHex: this._publicKey,
+      memo: this._memo,
+      transactionType: OperationType.TRANSACTION,
+      expiryTime: ingressEndTime,
+    };
+    this._transaction.icpTransactionData = icpTransactionData;
+    this._transaction.icpTransaction = icpTransaction;
   }
 
   /** @inheritdoc */
@@ -111,7 +128,7 @@ export class TransferBuilder extends TransactionBuilder {
     }
     const keyPair = new KeyPair({ prv: key.key });
     const keys = keyPair.getKeys();
-    if (!keys.prv || this._publicKey !== keys.pub) {
+    if (!keys.prv) {
       throw new SigningError('invalid private key');
     }
     const signedTransactionBuilder = new SignedTransactionBuilder(
@@ -120,48 +137,5 @@ export class TransferBuilder extends TransactionBuilder {
     );
     this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
     return this._transaction;
-  }
-
-  /** @inheritdoc */
-  validateTransaction(transaction: Transaction): void {
-    if (!this._utils.isValidAddress(transaction.icpTransactionData.senderAddress)) {
-      throw new BuildTransactionError('Invalid sender address');
-    }
-    if (!this._utils.isValidAddress(transaction.icpTransactionData.receiverAddress)) {
-      throw new BuildTransactionError('Invalid receiver address');
-    }
-    if (!this._utils.isValidPublicKey(transaction.icpTransactionData.senderPublicKeyHex)) {
-      throw new BuildTransactionError('Invalid sender public key');
-    }
-    this._utils.validateValue(new BigNumber(transaction.icpTransactionData.amount));
-    this._utils.validateFee(transaction.icpTransactionData.fee);
-    this._utils.validateMemo(transaction.icpTransactionData.memo);
-    this._utils.validateExpireTime(transaction.icpTransactionData.expiryTime);
-  }
-
-  validateValue(value: BigNumber): void {
-    throw new Error('Method not implemented.');
-  }
-
-  protected get transactionType(): TransactionType {
-    return TransactionType.Send;
-  }
-
-  /** @inheritdoc */
-  fromImplementation(): BaseTransaction {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  get transaction(): BaseTransaction {
-    throw new Error('method not implemented');
-  }
-
-  validateAddress(address: BaseAddress, addressFormat?: string): void {
-    throw new Error('Method not implemented.');
-  }
-
-  validateRawTransaction(rawTransaction: any): void {
-    throw new Error('Invalid raw transaction');
   }
 }

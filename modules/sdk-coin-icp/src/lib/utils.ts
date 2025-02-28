@@ -3,7 +3,7 @@ import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
-import { HttpCanisterUpdate, IcpTransactionData, ReadState, RequestType } from './iface';
+import { HttpCanisterUpdate, IcpTransactionData, ReadState, RequestType, Signatures } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 import { decode, encode } from 'cbor-x'; // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
 import js_sha256 from 'js-sha256';
@@ -347,10 +347,12 @@ export class Utils implements BaseUtils {
    * @param {Record<string, unknown>} map - The map object to hash.
    * @returns {Buffer} - The resulting hash as a Buffer.
    */
-  hashOfMap(map: Record<string, unknown>): Buffer {
-    const hashes = Object.entries(map)
-      .map(([key, value]) => this.hashKeyVal(key, value as string | BigInt | Buffer))
-      .sort(Buffer.compare);
+  hashOfMap(map: Record<string, any>): Buffer {
+    const hashes: Buffer[] = [];
+    for (const key in map) {
+      hashes.push(this.hashKeyVal(key, map[key]));
+    }
+    hashes.sort((buf0, buf1) => buf0.compare(buf1));
     return this.sha256(hashes);
   }
 
@@ -361,7 +363,7 @@ export class Utils implements BaseUtils {
    * @param {string | Buffer | BigInt} val - The value to hash.
    * @returns {Buffer} - The resulting hash as a Buffer.
    */
-  hashKeyVal(key: string, val: string | Buffer | BigInt): Buffer {
+  hashKeyVal(key: string, val: any): Buffer {
     const keyHash = this.hashString(key);
     const valHash = this.hashVal(val);
     return Buffer.concat([keyHash, valHash]);
@@ -419,13 +421,13 @@ export class Utils implements BaseUtils {
    */
   hashVal(val: string | Buffer | BigInt | number | Array<unknown>): Buffer {
     if (typeof val === 'string') {
-      return this.hashString(val);
+      return utils.hashString(val);
     } else if (Buffer.isBuffer(val)) {
-      return this.hashBytes(val);
+      return utils.hashBytes(val);
     } else if (typeof val === 'bigint' || typeof val === 'number') {
-      return this.hashU64(BigInt(val));
+      return utils.hashU64(BigInt(val));
     } else if (Array.isArray(val)) {
-      return this.hashArray(val);
+      return utils.hashArray(val);
     } else {
       throw new Error(`Unsupported value type for hashing: ${typeof val}`);
     }
@@ -543,6 +545,16 @@ export class Utils implements BaseUtils {
       address: icpTransactionData.receiverAddress,
       amount: icpTransactionData.amount,
     };
+  }
+
+  getTransactionSignature(signatureMap: Map<string, Signatures>, update: HttpCanisterUpdate): Signatures | undefined {
+    return signatureMap.get(utils.blobToHex(utils.makeSignatureData(utils.generateHttpCanisterUpdateId(update))));
+  }
+
+  getReadStateSignature(signatureMap: Map<string, Signatures>, readState: ReadState): Signatures | undefined {
+    return signatureMap.get(
+      utils.blobToHex(utils.makeSignatureData(utils.HttpReadStateRepresentationIndependentHash(readState)))
+    );
   }
 }
 

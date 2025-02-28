@@ -1,8 +1,9 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { BaseKey, BaseTransactionBuilder, BuildTransactionError, SigningError } from '@bitgo/sdk-core';
+import { BaseKey, BaseTransactionBuilder, BuildTransactionError, SigningError, BaseAddress } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import utils from './utils';
+import { IcpTransactionData } from './iface';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -64,6 +65,35 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  /** @inheritdoc */
+  get transaction(): Transaction {
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
+  get transactionType(): string {
+    return this._transaction.icpTransactionData.transactionType;
+  }
+
+  /** @inheritdoc */
+  fromImplementation(rawTransaction: IcpTransactionData): Transaction {
+    this.validateRawTransaction(rawTransaction);
+    this.buildImplementation();
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction: Transaction): void {
+    if (!transaction || !transaction.icpTransactionData) {
+      return;
+    }
+    utils.validateRawTransaction(transaction.icpTransactionData);
+  }
+
   /**
    * Sets the amount of this transaction.
    *
@@ -74,6 +104,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     utils.validateValue(new BigNumber(value));
     this._amount = value;
     return this;
+  }
+
+  validateValue(value: BigNumber): void {
+    utils.validateValue(new BigNumber(value));
   }
 
   /**
@@ -99,5 +133,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!utils.isValidPrivateKey(key.key)) {
       throw new SigningError('Invalid private key');
     }
+  }
+
+  validateAddress(address: BaseAddress): void {
+    if (!utils.isValidAddress(address.address)) {
+      throw new BuildTransactionError('Invalid address');
+    }
+  }
+
+  validateRawTransaction(rawTransaction: IcpTransactionData): void {
+    utils.validateRawTransaction(rawTransaction);
   }
 }
