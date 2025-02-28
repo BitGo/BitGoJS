@@ -774,6 +774,30 @@ export const erc20Coins = [
     UnderlyingAsset.BID
   ),
   erc20(
+    '03675fb9-f2d4-4049-a9e6-92461bd63319',
+    'eth:block',
+    'Block Protocol',
+    18,
+    '0x8fc17671d853341d9e8b001f5fc3c892d09cb53a',
+    UnderlyingAsset['eth:block']
+  ),
+  erc20(
+    'baa60978-c470-4acc-925e-250d8acb6009',
+    'eth:bito',
+    'BitoPro Coin',
+    18,
+    '0x93b1e78a3e652cd2e71c4a767595b77282344932',
+    UnderlyingAsset['eth:bito']
+  ),
+  erc20(
+    '4a037650-323d-4361-93b1-d569976c0e30',
+    'eth:ultra',
+    'Ultra',
+    6,
+    '0x50293dd8889b931eb3441d2664dce8396640b419',
+    UnderlyingAsset['eth:ultra']
+  ),
+  erc20(
     'bcb2af13-b64d-403a-bb61-1990e6286fcd',
     'bidl',
     'Blockbid Liquidity',

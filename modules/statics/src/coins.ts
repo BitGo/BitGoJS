@@ -1329,7 +1329,7 @@ export const coins = CoinMap.fromCoins([
   celoToken(
     '8aaeda16-50fa-49cf-beb8-80077b408eb0',
     'celo:pact',
-    'ImpactMarket',
+    'Pact',
     18,
     '0x2b9018ceb303d540bbf08de8e7de64fddd63396c',
     UnderlyingAsset['celo:pact']
@@ -2287,6 +2287,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xb08d8becab1bf76a9ce3d2d5fa946f65ec1d3e83',
     UnderlyingAsset['arbeth:gs']
+  ),
+  arbethErc20(
+    'e4e52bd4-33f0-4fdd-9fc7-5b2fe232e8ae',
+    'arb:vchf',
+    'VNX Franc',
+    18,
+    '0x02cea97794d2cfb5f560e1ff4e9c59d1bec75969',
+    UnderlyingAsset['arb:vchf']
+  ),
+  arbethErc20(
+    'b6d3265c-fd83-4e75-b46a-db3f068536c4',
+    'arb:veur',
+    'VNX Euro',
+    18,
+    '0x4883c8f0529f37e40ebea870f3c13cdfad5d01f8',
+    UnderlyingAsset['arb:veur']
   ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',

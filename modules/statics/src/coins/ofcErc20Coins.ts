@@ -1617,6 +1617,21 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('drgnbull')
   ),
   ofcerc20(
+    '06c266d3-de33-438d-a9c5-b610b4a1de7d',
+    'ofceth:block',
+    'Block Protocol',
+    18,
+    underlyingAssetForSymbol('eth:block')
+  ),
+  ofcerc20(
+    '593ae9a1-ab69-423a-b9a2-1980a0c50f97',
+    'ofceth:bito',
+    'BitoPro Coin',
+    18,
+    underlyingAssetForSymbol('eth:bito')
+  ),
+  ofcerc20('29a9b457-bead-43db-86e4-2ae58ac9c9bb', 'ofceth:ultra', 'Ultra', 6, underlyingAssetForSymbol('eth:ultra')),
+  ofcerc20(
     '80ea04b1-fc40-4938-bd88-322abad68a98',
     'ofceosbear',
     '3X Short EOS Token',
