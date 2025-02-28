@@ -19,6 +19,7 @@ import assert from 'assert';
 import { getBuilder } from './getBuilder';
 import * as testData from '../resources/eth';
 import * as mockData from '../fixtures/eth';
+import should from 'should';
 
 nock.enableNetConnect();
 
@@ -869,6 +870,157 @@ describe('ETH:', function () {
         intendedChain: 'tarbeth',
       });
       assert(spy.returned(true));
+    });
+
+    describe('Non-BitGo Recovery for Hot Wallets (MPCv2)', function () {
+      const baseUrl = 'https://api-holesky.etherscan.io';
+      let bitgo: TestBitGoAPI;
+      let basecoin: Hteth;
+
+      before(function () {
+        bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+        basecoin = bitgo.coin('hteth') as Hteth;
+      });
+
+      it('should build a recovery transaction for MPCv2 kind of hot wallets', async function () {
+        nock(baseUrl)
+          .get('/api')
+          .query(mockData.getTxListRequest(mockData.getNonBitGoRecoveryForHotWalletsMPCv2().bitgoFeeAddress))
+          .reply(200, mockData.getTxListResponse);
+
+        nock(baseUrl)
+          .get('/api')
+          .query(mockData.getBalanceRequest(mockData.getNonBitGoRecoveryForHotWalletsMPCv2().bitgoFeeAddress))
+          .reply(200, mockData.getBalanceResponse);
+
+        nock(baseUrl)
+          .get('/api')
+          .query(mockData.getBalanceRequest(mockData.getNonBitGoRecoveryForHotWalletsMPCv2().walletContractAddress))
+          .reply(200, mockData.getBalanceResponse);
+
+        nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+
+        const params = mockData.getNonBitGoRecoveryForHotWalletsMPCv2();
+
+        const transaction = await (basecoin as AbstractEthLikeNewCoins).recover({
+          userKey: params.userKey,
+          backupKey: params.backupKey,
+          walletPassphrase: params.walletPassphrase,
+          walletContractAddress: params.walletContractAddress,
+          bitgoFeeAddress: params.bitgoFeeAddress,
+          recoveryDestination: params.recoveryDestination,
+          eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+          gasLimit: 500000,
+          bitgoDestinationAddress: params.bitgoDestinationAddress,
+          intendedChain: params.intendedChain,
+        });
+
+        should.exist(transaction);
+        transaction.should.have.property('txHex');
+      });
+
+      it('should throw an error for invalid user key', async function () {
+        const params = mockData.getInvalidNonBitGoRecoveryParams();
+
+        await assert.rejects(
+          async () => {
+            await (basecoin as AbstractEthLikeNewCoins).recover({
+              userKey: params.userKey,
+              backupKey: params.backupKey,
+              walletPassphrase: params.walletPassphrase,
+              walletContractAddress: params.walletContractAddress,
+              bitgoFeeAddress: params.bitgoFeeAddress,
+              recoveryDestination: params.recoveryDestination,
+              eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+              gasLimit: 500000,
+              bitgoDestinationAddress: params.bitgoDestinationAddress,
+              intendedChain: params.intendedChain,
+            });
+          },
+          Error,
+          'user key is invalid'
+        );
+      });
+    });
+
+    describe('Build Unsigned Sweep for Self-Custody Cold Wallets (MPCv2)', function () {
+      const baseUrl = 'https://api-holesky.etherscan.io';
+      let bitgo: TestBitGoAPI;
+      let basecoin: Hteth;
+
+      before(function () {
+        bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+        basecoin = bitgo.coin('hteth') as Hteth;
+      });
+
+      it('should generate an unsigned sweep without derivation path', async function () {
+        nock(baseUrl)
+          .get('/api')
+          .query(
+            mockData.getTxListRequest(mockData.getBuildUnsignedSweepForSelfCustodyColdWalletsMPCv2().bitgoFeeAddress)
+          )
+          .reply(200, mockData.getTxListResponse);
+
+        nock(baseUrl)
+          .get('/api')
+          .query(
+            mockData.getBalanceRequest(mockData.getBuildUnsignedSweepForSelfCustodyColdWalletsMPCv2().bitgoFeeAddress)
+          )
+          .reply(200, mockData.getBalanceResponse);
+
+        nock(baseUrl)
+          .get('/api')
+          .query(
+            mockData.getBalanceRequest(
+              mockData.getBuildUnsignedSweepForSelfCustodyColdWalletsMPCv2().walletContractAddress
+            )
+          )
+          .reply(200, mockData.getBalanceResponse);
+
+        nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+
+        const params = mockData.getBuildUnsignedSweepForSelfCustodyColdWalletsMPCv2();
+
+        const sweepResult = await (basecoin as AbstractEthLikeNewCoins).recover({
+          userKey: params.userKey,
+          backupKey: params.backupKey,
+          walletPassphrase: params.walletPassphrase,
+          walletContractAddress: params.walletContractAddress,
+          bitgoFeeAddress: params.bitgoFeeAddress,
+          recoveryDestination: params.recoveryDestination,
+          eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+          gasLimit: 500000,
+          bitgoDestinationAddress: params.bitgoDestinationAddress,
+          intendedChain: params.intendedChain,
+        });
+
+        should.exist(sweepResult);
+        sweepResult.should.have.property('txHex');
+      });
+
+      it('should throw an error for invalid address', async function () {
+        const params = mockData.getBuildUnsignedSweepForSelfCustodyColdWalletsMPCv2();
+        params.address = 'invalidAddress';
+
+        await assert.rejects(
+          async () => {
+            await (basecoin as AbstractEthLikeNewCoins).recover({
+              userKey: params.userKey,
+              backupKey: params.backupKey,
+              walletPassphrase: params.walletPassphrase,
+              walletContractAddress: params.walletContractAddress,
+              bitgoFeeAddress: params.bitgoFeeAddress,
+              recoveryDestination: params.recoveryDestination,
+              eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+              gasLimit: 500000,
+              bitgoDestinationAddress: params.bitgoDestinationAddress,
+              intendedChain: params.intendedChain,
+            });
+          },
+          Error,
+          'Error: invalid address'
+        );
+      });
     });
   });
 });
