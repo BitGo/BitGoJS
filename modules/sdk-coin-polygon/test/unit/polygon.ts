@@ -9,7 +9,7 @@ import * as should from 'should';
 import { Polygon, Tpolygon, TransactionBuilder, TransferBuilder } from '../../src';
 import { getBuilder } from '../getBuilder';
 import * as mockData from '../fixtures/polygon';
-import { OfflineVaultTxInfo, optionalDeps } from '@bitgo/abstract-eth';
+import { OfflineVaultTxInfo, optionalDeps, UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
 import * as sjcl from '@bitgo/sjcl';
 
 nock.enableNetConnect();
@@ -757,7 +757,7 @@ describe('Polygon', function () {
     });
 
     it('should construct an unsigned sweep tx with TSS', async function () {
-      const backupKeyAddress = '0xe7406dc43d13f698fb41a345c7783d39a4c2d191';
+      const backupKeyAddress = '0xa91e1059953d7ef2adbbca4b688bfe22866fbcee';
       nock(baseUrl)
         .get('/api')
         .query(mockData.getTxListRequest(backupKeyAddress))
@@ -769,8 +769,10 @@ describe('Polygon', function () {
 
       const basecoin = bitgo.coin('tpolygon') as Polygon;
 
-      const userKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
-      const backupKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
+      const userKey =
+        '0234eb39b22fed523ece7c78da29ba1f1de5b64a6e48013e0914de793bc1df0570e779de04758732734d97e54b782c8b336283811af6a2c57bd81438798e1c2446';
+      const backupKey =
+        '0234eb39b22fed523ece7c78da29ba1f1de5b64a6e48013e0914de793bc1df0570e779de04758732734d97e54b782c8b336283811af6a2c57bd81438798e1c2446';
 
       const recoveryParams = {
         userKey: userKey,
@@ -789,18 +791,22 @@ describe('Polygon', function () {
 
       const transaction = (await basecoin.recover(recoveryParams)) as OfflineVaultTxInfo;
       should.exist(transaction);
-      transaction.should.have.property('tx');
-      transaction.should.have.property('expireTime');
-      transaction.should.have.property('gasLimit');
-      transaction.gasLimit.should.equal('500000');
-      transaction.should.have.property('gasPrice');
-      transaction.gasPrice.should.equal('20000000000');
-      transaction.should.have.property('recipient');
-      const recipient = (transaction as any).recipient as Recipient;
-      recipient.should.have.property('address');
-      recipient.address.should.equal('0xac05da78464520aa7c9d4c19bd7a440b111b3054');
-      recipient.should.have.property('amount');
-      recipient.amount.should.equal('9989999999999999928');
+
+      const output = transaction as unknown as UnsignedSweepTxMPCv2;
+      output.should.have.property('txRequests');
+      output.txRequests.should.have.length(1);
+      output.txRequests[0].should.have.property('transactions');
+      output.txRequests[0].transactions.should.have.length(1);
+      output.txRequests[0].should.have.property('walletCoin');
+      output.txRequests[0].transactions[0].should.have.property('unsignedTx');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('serializedTxHex');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('signableHex');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('derivationPath');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('feeInfo');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('parsedTx');
+      const parsedTx = output.txRequests[0].transactions[0].unsignedTx.parsedTx as { spendAmount: string };
+      parsedTx.should.have.property('spendAmount');
+      (output.txRequests[0].transactions[0].unsignedTx.parsedTx as { outputs: any[] }).should.have.property('outputs');
     });
 
     it('should be able to second sign', async function () {
