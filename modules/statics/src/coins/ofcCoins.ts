@@ -724,6 +724,13 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:cake']
   ),
   ofcBscToken(
+    'fae56463-dc06-42cd-ad8b-5b4f6bbabffc',
+    'ofcbsc:usd1',
+    'World Liberty Financial USD',
+    18,
+    UnderlyingAsset['bsc:usd1']
+  ),
+  ofcBscToken(
     '66583648-3200-4221-a677-930973dbcd72',
     'ofcbsc:twt',
     'Trust Wallet Token',
