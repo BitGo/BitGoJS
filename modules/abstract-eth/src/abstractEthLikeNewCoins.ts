@@ -95,8 +95,8 @@ interface HopParams {
     gasPriceMax: number;
     userReqSig: string;
     paymentId: string;
+    gasLimit: number;
   };
-  gasLimit: number;
 }
 
 export interface EIP1559 {
@@ -2030,8 +2030,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         gasPriceMax,
         userReqSig,
         paymentId,
+        gasLimit,
       },
-      gasLimit,
     };
   }
 

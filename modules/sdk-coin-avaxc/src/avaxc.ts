@@ -1104,8 +1104,8 @@ export class AvaxC extends AbstractEthLikeNewCoins {
         userReqSig,
         gasPriceMax,
         paymentId,
+        gasLimit,
       },
-      gasLimit,
     };
   }
 

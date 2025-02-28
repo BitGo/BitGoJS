@@ -103,8 +103,8 @@ export interface HopParams {
     gasPriceMax: number;
     userReqSig: string;
     paymentId: string;
+    gasLimit: number;
   };
-  gasLimit: number;
 }
 
 /**
