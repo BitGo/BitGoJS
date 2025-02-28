@@ -7,7 +7,6 @@ import {
   createWatchOnly,
   addIPCaveatToMacaroon,
   isLightningCoinName,
-  deriveLightningServiceSharedSecret,
   getLightningWallet,
 } from '@bitgo/abstract-lightning';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -101,19 +100,12 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     macaroon_root_key: macaroonRootKey,
   });
 
-  const encryptedSignerAdminMacaroon = bitgo.encrypt({
-    password: passphrase,
-    input: expressHost && !!isIP(expressHost) ? addIPCaveatToMacaroon(adminMacaroon, expressHost) : adminMacaroon,
+  return await lightningWallet.updateWalletCoinSpecific({
+    signerAdminMacaroon:
+      expressHost && !!isIP(expressHost) ? addIPCaveatToMacaroon(adminMacaroon, expressHost) : adminMacaroon,
+    watchOnlyAccounts: createWatchOnly(signerRootKey, network),
+    passphrase,
   });
-  const watchOnlyAccounts = createWatchOnly(signerRootKey, network);
-
-  return await lightningWallet.updateWalletCoinSpecific(
-    {
-      encryptedSignerAdminMacaroon,
-      watchOnlyAccounts,
-    },
-    passphrase
-  );
 }
 
 /**
@@ -167,29 +159,16 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
     input: encryptedSignerAdminMacaroon,
   });
 
-  const { userAuthKey } = await lightningWallet.getLightningAuthKeychains();
-
   const signerMacaroon = await createSignerMacaroon(
     lndSignerClient,
     { adminMacaroonHex: Buffer.from(adminMacaroon, 'base64').toString('hex') },
     watchOnlyIp
   );
 
-  const userAuthXprv = bitgo.decrypt({
-    password: passphrase,
-    input: userAuthKey.encryptedPrv,
+  return await lightningWallet.updateWalletCoinSpecific({
+    signerMacaroon,
+    passphrase,
   });
-
-  const encryptedSignerMacaroon = bitgo.encrypt({
-    password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
-    input: signerMacaroon,
-  });
-  return await lightningWallet.updateWalletCoinSpecific(
-    {
-      encryptedSignerMacaroon,
-    },
-    passphrase
-  );
 }
 
 /**

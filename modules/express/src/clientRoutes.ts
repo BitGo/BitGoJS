@@ -54,7 +54,12 @@ import {
   handleUnlockLightningWallet,
 } from './lightning/lightningSignerRoutes';
 import { handleCreateLightningInvoice, handlePayLightningInvoice } from './lightning/lightningInvoiceRoutes';
+import {
+  handleListLightningInvoices,
+  handleUpdateLightningWalletCoinSpecific,
+} from './lightning/lightningWalletRoutes';
 import { ProxyAgent } from 'proxy-agent';
+import { isLightningCoinName } from '@bitgo/abstract-lightning';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -1005,6 +1010,23 @@ export async function handleV2EnableTokens(req: express.Request) {
 }
 
 /**
+ * Handle Update Wallet
+ * @param req
+ */
+async function handleWalletUpdate(req: express.Request): Promise<unknown> {
+  // If it's a lightning coin, use the lightning-specific handler
+  if (isLightningCoinName(req.params.coin)) {
+    return handleUpdateLightningWalletCoinSpecific(req);
+  }
+
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  // For non-lightning coins, directly update the wallet
+  const wallet = await coin.wallets().get({ id: req.params.id });
+  return await bitgo.put(wallet.url()).send(req.body).result();
+}
+
+/**
  * handle any other API call
  * @param req
  * @param res
@@ -1554,6 +1576,8 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
 
+  app.put('/api/v2/:coin/wallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleWalletUpdate));
+
   // create address
   app.post('/api/v2/:coin/wallet/:id/address', parseBody, prepareBitGo(config), promiseWrapper(handleV2CreateAddress));
 
@@ -1669,6 +1693,12 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     parseBody,
     prepareBitGo(config),
     promiseWrapper(handlePayLightningInvoice)
+  );
+  // lightning - list invoices
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/invoices',
+    prepareBitGo(config),
+    promiseWrapper(handleListLightningInvoices)
   );
 
   // everything else should use the proxy handler

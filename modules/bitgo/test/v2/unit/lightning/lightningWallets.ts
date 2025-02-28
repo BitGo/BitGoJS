@@ -11,6 +11,7 @@ import {
   LndCreatePaymentResponse,
   SelfCustodialLightningWallet,
   SubmitPaymentParams,
+  UpdateLightningWalletClientRequest,
 } from '@bitgo/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
@@ -569,16 +570,6 @@ describe('Lightning wallets', function () {
         },
       ],
     };
-
-    const params = {
-      encryptedSignerMacaroon: 'test encryptedSignerMacaroon',
-      encryptedSignerAdminMacaroon: 'test encryptedSignerAdminMacaroon',
-      signerHost: '1.1.1.1',
-      encryptedSignerTlsKey: 'test encryptedSignerTlsKey',
-      signerTlsCert: 'test signerTlsCert',
-      watchOnlyAccounts,
-    };
-
     it('should update wallet', async function () {
       const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
 
@@ -588,12 +579,43 @@ describe('Lightning wallets', function () {
       const nodeAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
-      const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${walletData.id}`).reply(200);
+      let capturedBody;
+      const wpWalletUpdateNock = nock(bgUrl)
+        .put(`/api/v2/tlnbtc/wallet/${walletData.id}`)
+        .reply(function (uri, requestBody) {
+          capturedBody = requestBody;
+          return [200];
+        });
 
-      await assert.doesNotReject(async () => await wallet.updateWalletCoinSpecific(params, 'password123'));
-      userAuthKeyNock.done();
-      nodeAuthKeyNock.done();
-      wpWalletUpdateNock.done();
+      const params: UpdateLightningWalletClientRequest = {
+        signerMacaroon: 'signerMacaroon',
+        signerAdminMacaroon: 'signerAdminMacaroon',
+        signerTlsKey: 'signerTlsKey',
+        signerTlsCert: 'signerTlsCert',
+        watchOnlyAccounts,
+        passphrase: 'password123',
+      };
+
+      await assert.doesNotReject(async () => await wallet.updateWalletCoinSpecific(params));
+      assert(userAuthKeyNock.isDone());
+      assert(nodeAuthKeyNock.isDone());
+      assert(wpWalletUpdateNock.isDone());
+
+      // Verify structure and required fields
+      assert.ok(capturedBody.coinSpecific?.tlnbtc?.signedRequest, 'signedRequest should exist');
+      const signedRequest = capturedBody.coinSpecific.tlnbtc.signedRequest;
+
+      assert.ok(signedRequest.signerTlsCert, 'signerTlsCert should exist');
+      assert.ok(signedRequest.watchOnlyAccounts, 'watchOnlyAccounts should exist');
+      assert.ok(signedRequest.encryptedSignerTlsKey, 'encryptedSignerTlsKey should exist');
+      assert.ok(signedRequest.encryptedSignerAdminMacaroon, 'encryptedSignerAdminMacaroon should exist');
+      assert.ok(signedRequest.encryptedSignerMacaroon, 'encryptedSignerMacaroon should exist');
+
+      // Verify signature exists
+      assert.ok(capturedBody.coinSpecific.tlnbtc.signature, 'signature should exist');
+
+      // we should not pass passphrase to the backend
+      assert.strictEqual(signedRequest.passphrase, undefined, 'passphrase should not exist in request');
     });
   });
 });

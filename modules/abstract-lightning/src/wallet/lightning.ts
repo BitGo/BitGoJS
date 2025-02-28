@@ -9,7 +9,7 @@ import {
   TxRequestState,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
-import { createMessageSignature, unwrapLightningCoinSpecific } from '../lightning';
+import { createMessageSignature, deriveLightningServiceSharedSecret, unwrapLightningCoinSpecific } from '../lightning';
 import {
   CreateInvoiceBody,
   Invoice,
@@ -19,7 +19,8 @@ import {
   LightningKeychain,
   LndCreatePaymentResponse,
   SubmitPaymentParams,
-  UpdateLightningWalletSignedRequest,
+  UpdateLightningWalletClientRequest,
+  UpdateLightningWalletEncryptedRequest,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -80,19 +81,19 @@ export interface ILightningWallet {
   /**
    * Updates the coin-specific configuration for a Lightning Wallet.
    *
-   * @param {UpdateLightningWalletSignedRequest} params - The parameters containing the updated wallet-specific details.
+   * @param {UpdateLightningWalletClientRequest} params - The parameters containing the updated wallet-specific details.
    *   - `encryptedSignerMacaroon` (optional): This macaroon is used by the watch-only node to ask the signer node to sign transactions.
    *     Encrypted with ECDH secret key from private key of wallet's user auth key and public key of lightning service.
    *   - `encryptedSignerAdminMacaroon` (optional): Generated when initializing the wallet of the signer node.
    *     Encrypted with client's wallet passphrase.
    *   - `signerHost` (optional): The host address of the Lightning signer node.
    *   - `encryptedSignerTlsKey` (optional): The wallet passphrase encrypted TLS key of the signer.
+   *   - `passphrase` (required): The wallet passphrase.
    *   - `signerTlsCert` (optional): The TLS certificate of the signer.
    *   - `watchOnlyAccounts` (optional): These are the accounts used to initialize the watch-only wallet.
-   * @param {string} passphrase - wallet passphrase.
    * @returns {Promise<unknown>} A promise resolving to the updated wallet response or throwing an error if the update fails.
    */
-  updateWalletCoinSpecific(params: UpdateLightningWalletSignedRequest, passphrase: string): Promise<unknown>;
+  updateWalletCoinSpecific(params: UpdateLightningWalletClientRequest): Promise<unknown>;
 }
 
 export class SelfCustodialLightningWallet implements ILightningWallet {
@@ -225,24 +226,65 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
     return { userAuthKey, nodeAuthKey };
   }
 
-  async updateWalletCoinSpecific(params: UpdateLightningWalletSignedRequest, passphrase: string): Promise<unknown> {
+  private encryptWalletUpdateRequest(
+    params: UpdateLightningWalletClientRequest,
+    userAuthKey: LightningAuthKeychain
+  ): UpdateLightningWalletEncryptedRequest {
+    const coinName = this.wallet.coin() as 'tlnbtc' | 'lnbtc';
+
+    const requestWithEncryption: Partial<UpdateLightningWalletClientRequest & UpdateLightningWalletEncryptedRequest> = {
+      ...params,
+    };
+
+    const userAuthXprv = this.wallet.bitgo.decrypt({
+      password: params.passphrase,
+      input: userAuthKey.encryptedPrv,
+    });
+
+    if (params.signerTlsKey) {
+      requestWithEncryption.encryptedSignerTlsKey = this.wallet.bitgo.encrypt({
+        password: params.passphrase,
+        input: params.signerTlsKey,
+      });
+    }
+
+    if (params.signerAdminMacaroon) {
+      requestWithEncryption.encryptedSignerAdminMacaroon = this.wallet.bitgo.encrypt({
+        password: params.passphrase,
+        input: params.signerAdminMacaroon,
+      });
+    }
+
+    if (params.signerMacaroon) {
+      requestWithEncryption.encryptedSignerMacaroon = this.wallet.bitgo.encrypt({
+        password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
+        input: params.signerMacaroon,
+      });
+    }
+
+    return t.exact(UpdateLightningWalletEncryptedRequest).encode(requestWithEncryption);
+  }
+
+  async updateWalletCoinSpecific(params: UpdateLightningWalletClientRequest): Promise<unknown> {
     sdkcore.decodeOrElse(
-      UpdateLightningWalletSignedRequest.name,
-      UpdateLightningWalletSignedRequest,
+      UpdateLightningWalletClientRequest.name,
+      UpdateLightningWalletClientRequest,
       params,
       (errors) => {
         // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-        throw new Error(`Invalid params for lightning specific update wallet: ${errors}`);
+        throw new Error(`Invalid params for lightning specific update wallet`);
       }
     );
+
     const { userAuthKey } = await this.getLightningAuthKeychains();
+    const updateRequestWithEncryption = this.encryptWalletUpdateRequest(params, userAuthKey);
     const signature = createMessageSignature(
-      params,
-      this.wallet.bitgo.decrypt({ password: passphrase, input: userAuthKey.encryptedPrv })
+      updateRequestWithEncryption,
+      this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
     );
     const coinSpecific = {
       [this.wallet.coin()]: {
-        signedRequest: params,
+        signedRequest: updateRequestWithEncryption,
         signature,
       },
     };
