@@ -371,6 +371,22 @@ export const ofcCoins = [
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
+    '8c7a1521-aabb-4a3d-9239-2e9b89015ed8',
+    'ofcsol:veur',
+    'VNX Euro',
+    9,
+    UnderlyingAsset['sol:veur'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'f7c2a134-b706-4875-ac58-88132882ef64',
+    'ofcsol:vchf',
+    'VNX Swiss Franc',
+    9,
+    UnderlyingAsset['sol:vchf'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
     '84b18d96-b8c3-4315-a500-fe624e3b5dfe',
     'ofcsol:kin',
     'Kin',
@@ -647,6 +663,14 @@ export const ofcCoins = [
     UnderlyingAsset['arbeth:usdc']
   ),
   ofcArbethErc20(
+    'cb8b1d90-f1e4-45e2-b760-1d073c7edccc',
+    'ofcarbeth:vchf',
+    'VNX Franc',
+    18,
+    UnderlyingAsset['arb:vchf']
+  ),
+  ofcArbethErc20('8087ff3d-3157-43b8-b6d1-a9e62a12b3ec', 'ofcarbeth:veur', 'VNX Euro', 18, UnderlyingAsset['arb:veur']),
+  ofcArbethErc20(
     '4834e014-0282-4e27-ad9c-c4a4468ce732',
     'ofcarbeth:usdt',
     'Tether USD',
@@ -713,6 +737,13 @@ export const ofcCoins = [
     'Test Chainlink',
     18,
     UnderlyingAsset['avaxc:link']
+  ),
+  ofcAvaxErc20(
+    '49608052-e4ea-4623-9732-595368ff053b',
+    'ofcavaxc:shrap',
+    'Shrapnel',
+    18,
+    UnderlyingAsset['avaxc:shrap']
   ),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
@@ -815,6 +846,27 @@ export const ofcCoins = [
     'Wrapped BTC',
     8,
     UnderlyingAsset['polygon:wbtc']
+  ),
+  ofcPolygonErc20(
+    '6fb5df7d-95a1-47a8-b733-3bc99a82ce22',
+    'ofcpolygon:mv',
+    'GensoKishi Metaverse',
+    18,
+    UnderlyingAsset['polygon:mv']
+  ),
+  ofcPolygonErc20(
+    '24fbf402-9446-4eee-ace1-94fef6983bfb',
+    'ofcpolygon:bid',
+    'BidNow',
+    18,
+    UnderlyingAsset['polygon:bid']
+  ),
+  ofcPolygonErc20(
+    '6d951280-8086-41fe-bf48-7985b425dead',
+    'ofcpolygon:tcs',
+    'TCS Token',
+    18,
+    UnderlyingAsset['polygon:tcs']
   ),
   ofcPolygonErc20(
     '82855675-ecfa-4acb-a489-8d7b826d2783',

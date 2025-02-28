@@ -904,6 +904,33 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(
+    '324a80f1-41e0-4455-80cb-ca20aa80250c',
+    'polygon:mv',
+    'GensoKishi Metaverse',
+    18,
+    '0xa3c322ad15218fbfaed26ba7f616249f7705d945',
+    UnderlyingAsset['polygon:mv'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
+    '8cc4931e-0eeb-464f-934f-a65a5178b35b',
+    'polygon:bid',
+    'BidNow',
+    18,
+    '0xae337601df74fdab7262e169af274e36ec45d5d8',
+    UnderlyingAsset['polygon:bid'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
+    'c29c0597-08d9-46bf-bb8d-f9ae6c7ece92',
+    'polygon:tcs',
+    'TCS Token',
+    18,
+    '0x2f697bc31895ea05e6a364cedc8a76ff3467d32f',
+    UnderlyingAsset['polygon:tcs'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
     'eac8b635-e692-40f7-bf22-0197ae5e11f8',
     'polygon:vanry',
     'Vanar Chain Token',

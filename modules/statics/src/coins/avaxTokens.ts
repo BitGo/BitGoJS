@@ -396,6 +396,14 @@ export const avaxTokens = [
     UnderlyingAsset['avaxc:uni.e']
   ),
   avaxErc20(
+    '87d87c72-5058-42b7-a47a-0cf617d14d7d',
+    'avaxc:shrap',
+    'Shrapnel',
+    18,
+    '0xd402298a793948698b9a63311404fbeee944eafd',
+    UnderlyingAsset['avaxc:shrap']
+  ),
+  avaxErc20(
     '506cdbc3-b042-462f-8334-d4fba5ddaff0',
     'avaxc:sb',
     'Snowbank',

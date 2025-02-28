@@ -1318,6 +1318,26 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '0f0ced04-88dd-4ef9-a1e7-9249eece302d',
+    'sol:vchf',
+    'VNX Swiss Franc',
+    9,
+    'ahhdru5yzdjvkkr3wbnudaymvql2ucjmq63szlfhsch',
+    'ahhdru5yzdjvkkr3wbnudaymvql2ucjmq63szlfhsch',
+    UnderlyingAsset['sol:vchf'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '33f2cc02-ea7f-4a6a-b88d-1a28917a7203',
+    'sol:veur',
+    'VNX Euro',
+    9,
+    'c4kkr9nzu3vbyedcgutu6Lkmi6mkz81sx6grmk5px519',
+    'c4kkr9nzu3vbyedcgutu6Lkmi6mkz81sx6grmk5px519',
+    UnderlyingAsset['sol:veur'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '8111aef5-0548-4e07-8f86-5984cd983aa4',
     'sol:tusrm',
     'tuSRM',
