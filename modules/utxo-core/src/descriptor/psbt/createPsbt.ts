@@ -1,7 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { DerivedDescriptorWalletOutput, Output, WithOptDescriptor } from '../Output';
+import { DerivedDescriptorWalletOutput, WithOptDescriptor } from '../Output';
+import { Output } from '../../Output';
 
 import { toUtxoPsbt, toWrappedPsbt } from './wrap';
 import { assertSatisfiable } from './assertSatisfiable';
