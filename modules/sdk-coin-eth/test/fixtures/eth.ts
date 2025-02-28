@@ -220,3 +220,69 @@ export const getContractCallResponse = {
   result: '0x0000000000000000000000000000000000000000000000000000000000002a7f',
   id: 1,
 };
+
+// Define configuration values for test
+const TEST_ETH_WALLET_FIRST_ADDRESS = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e'; // Example of address on test network
+const TEST_RECOVERY_PASSCODE = 'oPXkPN5Q0c8i44i0'; // Example of a test password
+
+export function getNonBitGoRecoveryForHotWalletsMPCv2(intendedChain = 'tarbeth'): any {
+  return {
+    userKey:
+      '{"iv":"VFZ3jvXhxo1Z+Yaf2MtZnA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+      ':"ccm","adata":"","cipher":"aes","salt":"p+fkHuLa/8k=","ct":"hYG7pvljLIgCjZ\n' +
+      '53PBlCde5KZRmlUKKHLtDMk+HJfuU46hW+x+C9WsIAO4gFPnTCvFVmQ8x7czCtcNFub5AO2otOG\n' +
+      'OsX4GE2gXOEmCl1TpWwwNhm7yMUjGJUpgW6ZZgXSXdDitSKi4V/hk78SGSzjFOBSPYRa6I="}\n',
+    backupKey:
+      '{"iv":"VFZ3jvXhxo1Z+Yaf2MtZnA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+      ':"ccm","adata":"","cipher":"aes","salt":"p+fkHuLa/8k=","ct":"hYG7pvljLIgCjZ\n' +
+      '53PBlCde5KZRmlUKKHLtDMk+HJfuU46hW+x+C9WsIAO4gFPnTCvFVmQ8x7czCtcNFub5AO2otOG\n' +
+      'OsX4GE2gXOEmCl1TpWwwNhm7yMUjGJUpgW6ZZgXSXdDitSKi4V/hk78SGSzjFOBSPYRa6I="}\n',
+    bitgoKey:
+      '0x0472243651eaba6cae0391a3a65478ca5b91c299a49c15e9498ca910a52c499a3618115cc749034b0409066031000a79909c9854a50a0ef5219918f9818a60439b',
+    walletPassphrase: TEST_RECOVERY_PASSCODE,
+    walletContractAddress: TEST_ETH_WALLET_FIRST_ADDRESS,
+    bitgoFeeAddress: '0x33a42faea3c6e87021347e51700b48aaf49aa1e7',
+    recoveryDestination: '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560',
+    bitgoDestinationAddress: '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14',
+    eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+    gasLimit: 500000,
+    intendedChain: intendedChain,
+  };
+}
+
+export function getBuildUnsignedSweepForSelfCustodyColdWalletsMPCv2(intendedChain = 'tarbeth'): any {
+  const address = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
+  const destination = '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14';
+  return {
+    userKey:
+      '{"iv":"VFZ3jvXhxo1Z+Yaf2MtZnA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+      ':"ccm","adata":"","cipher":"aes","salt":"p+fkHuLa/8k=","ct":"hYG7pvljLIgCjZ\n' +
+      '53PBlCde5KZRmlUKKHLtDMk+HJfuU46hW+x+C9WsIAO4gFPnTCvFVmQ8x7czCtcNFub5AO2otOG\n' +
+      'OsX4GE2gXOEmCl1TpWwwNhm7yMUjGJUpgW6ZZgXSXdDitSKi4V/hk78SGSzjFOBSPYRa6I="}\n',
+    backupKey:
+      '{"iv":"VFZ3jvXhxo1Z+Yaf2MtZnA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+      ':"ccm","adata":"","cipher":"aes","salt":"p+fkHuLa/8k=","ct":"hYG7pvljLIgCjZ\n' +
+      '53PBlCde5KZRmlUKKHLtDMk+HJfuU46hW+x+C9WsIAO4gFPnTCvFVmQ8x7czCtcNFub5AO2otOG\n' +
+      'OsX4GE2gXOEmCl1TpWwwNhm7yMUjGJUpgW6ZZgXSXdDitSKi4V/hk78SGSzjFOBSPYRa6I="}\n', // Same as user key for cold wallet
+    bitgoKey:
+      '0x0472243651eaba6cae0391a3a65478ca5b91c299a49c15e9498ca910a52c499a3618115cc749034b0409066031000a79909c9854a50a0ef5219918f9818a60439b',
+    walletPassphrase: TEST_RECOVERY_PASSCODE,
+    walletContractAddress: TEST_ETH_WALLET_FIRST_ADDRESS,
+    bitgoFeeAddress: '0x33a42faea3c6e87021347e51700b48aaf49aa1e7',
+    recoveryDestination: '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560',
+    bitgoDestinationAddress: '0xE5986CE4490Deb67d2950562Ceb930Ddf9be7a14',
+    eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+    gasLimit: 500000,
+    intendedChain: intendedChain,
+    address: address,
+    amount: '100000000000000000', // 0.1 ETH
+    destination: destination,
+  };
+}
+
+export function getInvalidNonBitGoRecoveryParams(): any {
+  return {
+    ...getNonBitGoRecoveryForHotWalletsMPCv2(),
+    userKey: 'invalidUserKey',
+  };
+}

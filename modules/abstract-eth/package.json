@@ -43,6 +43,7 @@
     "@bitgo/sdk-core": "^31.0.0",
     "@bitgo/secp256k1": "^1.3.3",
     "@bitgo/statics": "^51.2.0",
+    "@bitgo/sdk-lib-mpc": "^10.1.1",
     "@ethereumjs/common": "^2.6.5",
     "@ethereumjs/tx": "^3.3.0",
     "@metamask/eth-sig-util": "^5.0.2",
