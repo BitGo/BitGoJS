@@ -50,6 +50,7 @@ interface EnvironmentTemplate {
   babyNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
+  substrateNodeUrls: string[];
   tronNodes: {
     full: string;
     solidity: string;
@@ -157,6 +158,7 @@ const mainnetBase: EnvironmentTemplate = {
   babyNodeUrl: '', // TODO(COIN-2758) update url when mainnet goes live
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
+  substrateNodeUrls: ['dummy-link'], // TODO: fix the link
   tronNodes: {
     full: 'https://api.trongrid.io',
     solidity: 'https://api.trongrid.io',
@@ -217,6 +219,7 @@ const testnetBase: EnvironmentTemplate = {
   babyNodeUrl: 'https://babylon-testnet-api.nodes.guru/',
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
+  substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
   tronNodes: {
     full: 'https://api.shasta.trongrid.io',
     solidity: 'https://api.shasta.trongrid.io',
