@@ -1,34 +1,15 @@
-import * as execa from 'execa';
-import { readFileSync, readdirSync, writeFileSync, statSync } from 'fs';
+import { readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
 import * as path from 'path';
 import { inc } from 'semver';
+import { changeScopeInFile, getLernaModules } from './changePackageScope';
 
 let lernaModules: string[] = [];
 let lernaModuleLocations: string[] = [];
 let TARGET_SCOPE = '@bitgo-beta';
 let filesChanged = 0;
 
-/**
- * Create a function which can run lerna commands
- * @param {String} lernaPath - path to lerna binary
- * @returns {function(string, string[], Object.<string, string>): Promise<string>}
- */
-function getLernaRunner(lernaPath: string) {
-  return async (command: string, args: string[] = [], options = {}) => {
-    const { stdout } = await execa(lernaPath, [command, ...args], options);
-    return stdout;
-  };
-}
-
-const getLernaModules = async (): Promise<void> => {
-  const { stdout: lernaBinary } = await execa('yarn', ['bin', 'lerna'], { cwd: process.cwd() });
-
-  const lerna = getLernaRunner(lernaBinary);
-  const modules: Array<{ name: string; location: string }> = JSON.parse(
-    await lerna('list', ['--loglevel', 'silent', '--json', '--all'])
-  );
-  lernaModules = modules.map(({ name }) => name);
-  lernaModuleLocations = modules.map(({ location }) => location);
+const setLernaModules = async (): Promise<void> => {
+  ({ lernaModules, lernaModuleLocations } = await getLernaModules());
 };
 
 const walk = (dir: string): string[] => {
@@ -50,23 +31,12 @@ const walk = (dir: string): string[] => {
   return results;
 };
 
-const changeScopeInFile = (filePath: string): void => {
-  const oldContent = readFileSync(filePath, { encoding: 'utf8' });
-  let newContent = oldContent;
-  lernaModules.forEach((moduleName) => {
-    const newName = `${moduleName.replace('@bitgo/', `${TARGET_SCOPE}/`)}`;
-    newContent = newContent.replace(new RegExp(moduleName, 'g'), newName);
-  });
-  if (newContent !== oldContent) {
-    writeFileSync(filePath, newContent, { encoding: 'utf-8' });
-    ++filesChanged;
-  }
-};
-
 const replacePackageScopes = () => {
   // replace all @bitgo packages & source code with alternate SCOPE
   const filePaths = [...walk(path.join(__dirname, '../', 'modules')), ...walk(path.join(__dirname, '../', 'webpack'))];
-  filePaths.forEach((file) => changeScopeInFile(file));
+  filePaths.forEach((file) => {
+    filesChanged += changeScopeInFile(file, lernaModules, TARGET_SCOPE);
+  });
 };
 
 /**
@@ -213,7 +183,7 @@ const getArgs = () => {
 
 const main = async (preid?: string) => {
   getArgs();
-  await getLernaModules();
+  await setLernaModules();
   replacePackageScopes();
   replaceBitGoPackageScope();
   await incrementVersions(preid);
