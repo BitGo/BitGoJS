@@ -11,6 +11,7 @@ import {
 import * as t from 'io-ts';
 import { createMessageSignature, deriveLightningServiceSharedSecret, unwrapLightningCoinSpecific } from '../lightning';
 import {
+  BackupResponse,
   CreateInvoiceBody,
   Invoice,
   InvoiceInfo,
@@ -94,6 +95,12 @@ export interface ILightningWallet {
    * @returns {Promise<unknown>} A promise resolving to the updated wallet response or throwing an error if the update fails.
    */
   updateWalletCoinSpecific(params: UpdateLightningWalletClientRequest): Promise<unknown>;
+
+  /**
+   * Get the channel backup for the given wallet.
+   * @returns {Promise<BackupResponse>} A promise resolving to the channel backup
+   */
+  getChannelBackup(): Promise<BackupResponse>;
 }
 
 export class SelfCustodialLightningWallet implements ILightningWallet {
@@ -289,5 +296,14 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
       },
     };
     return await this.wallet.bitgo.put(this.wallet.url()).send({ coinSpecific }).result();
+  }
+
+  async getChannelBackup(): Promise<BackupResponse> {
+    const backupResponse = await this.wallet.bitgo
+      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/backup`))
+      .result();
+    return sdkcore.decodeOrElse(BackupResponse.name, BackupResponse, backupResponse, (error) => {
+      throw new Error(`Invalid backup response: ${error}`);
+    });
   }
 }

@@ -60,6 +60,7 @@ import {
 } from './lightning/lightningWalletRoutes';
 import { ProxyAgent } from 'proxy-agent';
 import { isLightningCoinName } from '@bitgo/abstract-lightning';
+import { handleGetChannelBackup } from './lightning/lightningBackupRoutes';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -1700,7 +1701,8 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     prepareBitGo(config),
     promiseWrapper(handleListLightningInvoices)
   );
-
+  // lightning - backup
+  app.get('/api/v2/:coin/wallet/:id/lightning/backup', prepareBitGo(config), promiseWrapper(handleGetChannelBackup));
   // everything else should use the proxy handler
   if (config.disableProxy !== true) {
     app.use(
@@ -1730,7 +1732,7 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
   );
 }
 
-export function setupLightningRoutes(app: express.Application, config: Config): void {
+export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {
   app.post(
     '/api/v2/:coin/wallet/:id/initwallet',
     parseBody,
