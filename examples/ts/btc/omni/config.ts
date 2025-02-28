@@ -1,5 +1,6 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Btc, Tbtc4 } from '@bitgo/sdk-coin-btc';
+import * as utxolib from '@bitgo/utxo-lib';
 
 const env = 'test' as 'test' | 'prod';
 
@@ -17,6 +18,7 @@ sdk.authenticateWithAccessToken({ accessToken });
 export const omniConfig = {
   env,
   coin: env === 'test' ? 'tbtc4' : 'btc',
+  network: env === 'test' ? utxolib.networks.bitcoinTestnet4 : utxolib.networks.bitcoin,
   sdk,
   walletPassphrase,
   walletId,
