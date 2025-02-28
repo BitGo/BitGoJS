@@ -3,7 +3,7 @@
  */
 import { coins, EthLikeTokenConfig, tokens, EthereumNetwork as EthLikeNetwork, ethGasConfigs } from '@bitgo/statics';
 import _ from 'lodash';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import { BigNumber } from 'bignumber.js';
 
 import { BitGoBase, CoinConstructor, NamedCoinConstructor, getIsUnsignedSweep, Util } from '@bitgo/sdk-core';

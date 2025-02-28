@@ -145,6 +145,11 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       chaincode: bitGoToUserPrivateShare.slice(64),
     };
 
+    const bitGoToBackupShare = bitgoKeyShares.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup');
+    if (bitGoToBackupShare) {
+      assert(bitGoToBackupShare.vssProof === bitGoToUserShare.vssProof, 'VSS proofs to user and backup do not match');
+    }
+
     // TODO(BG-47170): use tss.createCombinedKey helper when signatures are supported
     const userCombined = MPC.keyCombine(userKeyShare.uShare, [backupKeyShare.yShares[1], bitgoToUser]);
     const commonKeychain = userCombined.pShare.y + userCombined.pShare.chaincode;
@@ -222,6 +227,11 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       u: bitGoToBackupPrivateShare.slice(0, 64),
       chaincode: bitGoToBackupPrivateShare.slice(64),
     };
+
+    const bitGoToUserShare = bitgoKeyShares.find((keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'user');
+    if (bitGoToUserShare) {
+      assert(bitGoToUserShare.vssProof === bitGoToBackupShare.vssProof, 'VSS proofs to user and backup do not match');
+    }
 
     // TODO(BG-47170): use tss.createCombinedKey helper when signatures are supported
     const backupCombined = MPC.keyCombine(backupKeyShare.uShare, [userKeyShare.yShares[2], bitgoToBackup]);

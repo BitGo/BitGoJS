@@ -3,7 +3,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { common, FullySignedTransaction, HalfSignedTransaction, TransactionType } from '@bitgo/sdk-core';
 import { OfflineVaultTxInfo } from '@bitgo/abstract-eth';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import nock from 'nock';
 
 import { EthLikeCoin, TethLikeCoin, EthLikeTransactionBuilder } from '../../src';
@@ -211,6 +211,40 @@ describe('EthLikeCoin', function () {
     })) as FullySignedTransaction;
 
     assert(fullSignedTxn.txHex);
+  });
+
+  describe('explainTransaction', function () {
+    const txHex = mockData.ccr[coinName].txHex;
+    const feeInfo = {
+      fee: '1000000000',
+      gasLimit: '100000',
+    };
+
+    it('should explain transaction when common is provided', async function () {
+      const explanation = await basecoin.explainTransaction({
+        txHex,
+        feeInfo,
+        common: baseChainCommon,
+      });
+
+      explanation.should.have.property('id');
+      explanation.should.have.property('outputs');
+      explanation.should.have.property('outputAmount');
+      explanation.should.have.property('changeOutputs');
+      explanation.should.have.property('changeAmount');
+      explanation.should.have.property('fee');
+      explanation.fee.should.equal(feeInfo);
+      explanation.outputs.should.be.an.Array();
+    });
+
+    it('should fail to explain transaction when common is not provided', async function () {
+      await basecoin
+        .explainTransaction({
+          txHex,
+          feeInfo,
+        })
+        .should.be.rejectedWith('Common must be provided for EthLikeTransactionBuilder');
+    });
   });
 
   describe('Recovery', function () {

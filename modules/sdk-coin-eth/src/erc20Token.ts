@@ -15,7 +15,7 @@ import { BigNumber } from 'bignumber.js';
 
 import { coins, EthLikeTokenConfig, Erc20TokenConfig, tokens } from '@bitgo/statics';
 import { CoinNames } from '@bitgo/abstract-eth';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import * as _ from 'lodash';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';

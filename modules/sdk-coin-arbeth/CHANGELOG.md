@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@21.0.58...@bitgo/sdk-coin-arbeth@21.2.0) (2025-02-26)
+
+### Features
+
+- **sdk-coin-apt:** recommend min gas tank balance for next 1000 txns ([74071ab](https://github.com/BitGo/BitGoJS/commit/74071aba4c0754242fc96f7334cec74edba6c73b))
+
 # [21.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@21.0.58...@bitgo/sdk-coin-arbeth@21.1.0) (2025-02-20)
 
 ### Features

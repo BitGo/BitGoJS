@@ -2693,6 +2693,55 @@ describe('V2 Wallet:', function () {
         });
       });
 
+      it('should build an enable token transaction for cold wallets', async function () {
+        const recipients = [];
+        const tokenName = 'tcoin:tokenName';
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        txRequest.walletType = 'cold';
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients,
+          intentType: 'createAccount',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+          tokenName,
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'enabletoken',
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+          tokenName,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+            type: 'enabletoken',
+            tokenName,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
       it('should fail for non-transfer transaction types', async function () {
         await tssSolWallet
           .prebuildTransaction({

@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { DescriptorMap, psbt } from '@bitgo/utxo-core/descriptor';
+import { DescriptorMap, findDescriptorForInput } from '@bitgo/utxo-core/descriptor';
 
 export class ErrorUnknownInput extends Error {
   constructor(public vin: number) {
@@ -31,7 +31,7 @@ export function signPsbt(
   }
 ): void {
   for (const [vin, input] of tx.data.inputs.entries()) {
-    if (!psbt.findDescriptorForInput(input, descriptorMap)) {
+    if (!findDescriptorForInput(input, descriptorMap)) {
       switch (params.onUnknownInput) {
         case 'skip':
           continue;

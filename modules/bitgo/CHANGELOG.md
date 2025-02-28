@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [41.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.27.0...bitgo@41.0.0) (2025-02-26)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+- **sdk-lib-mpc:** fix time warp during decrypting comms in MPCv2 ([c060690](https://github.com/BitGo/BitGoJS/commit/c060690105001cb9c532d39461d175b109f11a71))
+
+### Features
+
+- **abstract-lightning:** add codecs for more lightning apis ([1b6d238](https://github.com/BitGo/BitGoJS/commit/1b6d238a3538f7059ce773f8bd218ad8b723f17c))
+- **abstract-lightning:** move lnv2 logic from sdk-core ([5c9114d](https://github.com/BitGo/BitGoJS/commit/5c9114d6a4dbdd5a130bde7cb897ff6f1f8132e0))
+- **abstract-lightning:** wire up lnv2 invoices ([dba5411](https://github.com/BitGo/BitGoJS/commit/dba5411dea805ab3bf5e3937736d5c0d6f166e49))
+- **sdk-coin-icp:** refactor key pair generation to use utility function ([93d84d4](https://github.com/BitGo/BitGoJS/commit/93d84d48a3e6287959626e69bcce1c430d82df7a))
+
+### BREAKING CHANGES
+
+- **abstract-lightning:** Lightning v2
+- **abstract-lightning:** Lightning v2
+
 # [40.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.27.0...bitgo@40.0.0) (2025-02-20)
 
 ### Features

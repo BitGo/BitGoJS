@@ -112,6 +112,7 @@ export class BitGoAPI implements BitGoBase {
   protected readonly _baseUrl: string;
   protected readonly _baseApiUrl: string;
   protected readonly _baseApiUrlV2: string;
+  protected readonly _baseApiUrlV3: string;
   protected readonly _env: EnvironmentName;
   protected readonly _authVersion: Exclude<BitGoAPIOptions['authVersion'], undefined> = 2;
   protected _hmacVerification = true;
@@ -237,6 +238,10 @@ export class BitGoAPI implements BitGoBase {
       'bscscanApiToken',
       'coredaoExplorerApiToken',
       'oasExplorerApiToken',
+      'sgbExplorerApiToken',
+      'flrExplorerApiToken',
+      'xdcExplorerApiToken',
+      'wemixExplorerApiToken',
     ];
 
     Object.keys(params).forEach((key) => {
@@ -249,6 +254,7 @@ export class BitGoAPI implements BitGoBase {
 
     this._baseApiUrl = this._baseUrl + '/api/v1';
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
+    this._baseApiUrlV3 = this._baseUrl + '/api/v3';
     this._token = params.accessToken;
     this._userAgent = params.userAgent || 'BitGoJS-api/' + this.version();
     this._reqId = undefined;
@@ -537,7 +543,7 @@ export class BitGoAPI implements BitGoBase {
    * @param version
    */
   url(path: string, version = 1): string {
-    const baseUrl = version === 2 ? this._baseApiUrlV2 : this._baseApiUrl;
+    const baseUrl = version === 3 ? this._baseApiUrlV3 : version === 2 ? this._baseApiUrlV2 : this._baseApiUrl;
     return baseUrl + path;
   }
 

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.3.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.23...@bitgo/sdk-coin-stx@3.3.25) (2025-02-26)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
 ## [3.3.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.23...@bitgo/sdk-coin-stx@3.3.24) (2025-02-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

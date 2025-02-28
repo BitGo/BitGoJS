@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as CsprLib from './lib';
-import { ECPair } from '@bitgo/utxo-lib';
+import { ECPair } from '@bitgo/secp256k1';
 import BigNumber from 'bignumber.js';
 
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';

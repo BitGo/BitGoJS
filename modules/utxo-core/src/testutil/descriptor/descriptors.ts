@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
-import { BIP32Interface } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 
 import { DescriptorMap, PsbtParams } from '../../descriptor';
 import { getKeyTriple, Triple, KeyTriple } from '../key.utils';
@@ -40,6 +40,9 @@ function toDescriptorMap(v: Record<string, string>): DescriptorMap {
 
 export type DescriptorTemplate =
   | 'Wsh2Of3'
+  | 'Tr1Of3-NoKeyPath-Tree'
+  // no xpubs, just plain keys
+  | 'Tr1Of3-NoKeyPath-Tree-Plain'
   | 'Tr2Of3-NoKeyPath'
   | 'Wsh2Of2'
   /*
@@ -56,6 +59,20 @@ function toXPub(k: BIP32Interface | string, path: string): string {
   return k.neutered().toBase58() + '/' + path;
 }
 
+function toPlain(k: BIP32Interface | string, { xonly = false } = {}): string {
+  if (typeof k === 'string') {
+    if (k.startsWith('xpub') || k.startsWith('xprv')) {
+      return toPlain(bip32.fromBase58(k), { xonly });
+    }
+    return k;
+  }
+  return k.publicKey.subarray(xonly ? 1 : 0).toString('hex');
+}
+
+function toXOnly(k: BIP32Interface | string): string {
+  return toPlain(k, { xonly: true });
+}
+
 function multiArgs(m: number, n: number, keys: BIP32Interface[] | string[], path: string): [number, ...string[]] {
   if (n < m) {
     throw new Error(`Cannot create ${m} of ${n} multisig`);
@@ -69,12 +86,10 @@ function multiArgs(m: number, n: number, keys: BIP32Interface[] | string[], path
 
 export function getPsbtParams(t: DescriptorTemplate): Partial<PsbtParams> {
   switch (t) {
-    case 'Wsh2Of3':
-    case 'Wsh2Of2':
-    case 'Tr2Of3-NoKeyPath':
-      return {};
     case 'Wsh2Of3CltvDrop':
       return { locktime: 1 };
+    default:
+      return {};
   }
 }
 
@@ -104,6 +119,17 @@ function getDescriptorNode(
       return {
         tr: [getUnspendableKey(), { multi_a: multiArgs(2, 3, keys, path) }],
       };
+    case 'Tr1Of3-NoKeyPath-Tree':
+      return {
+        tr: [
+          getUnspendableKey(),
+          [{ pk: toXPub(keys[0], path) }, [{ pk: toXPub(keys[1], path) }, { pk: toXPub(keys[2], path) }]],
+        ],
+      };
+    case 'Tr1Of3-NoKeyPath-Tree-Plain':
+      return {
+        tr: [getUnspendableKey(), [{ pk: toXOnly(keys[0]) }, [{ pk: toXOnly(keys[1]) }, { pk: toXOnly(keys[2]) }]]],
+      };
   }
   throw new Error(`Unknown descriptor template: ${template}`);
 }
@@ -113,7 +139,7 @@ export function getDescriptor(
   keys: KeyTriple | string[] = getDefaultXPubs(),
   path = '0/*'
 ): Descriptor {
-  return Descriptor.fromString(ast.formatNode(getDescriptorNode(template, keys, path)), 'derivable');
+  return Descriptor.fromStringDetectType(ast.formatNode(getDescriptorNode(template, keys, path)));
 }
 
 export function getDescriptorMap(

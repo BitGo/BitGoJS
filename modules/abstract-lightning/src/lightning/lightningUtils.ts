@@ -2,8 +2,8 @@ import * as statics from '@bitgo/statics';
 import * as utxolib from '@bitgo/utxo-lib';
 import { importMacaroon, bytesToBase64 } from 'macaroon';
 import * as bs58check from 'bs58check';
-import { WatchOnly, WatchOnlyAccount } from './codecs';
 import * as sdkcore from '@bitgo/sdk-core';
+import { WatchOnly, WatchOnlyAccount } from '../codecs';
 
 // https://github.com/lightningnetwork/lnd/blob/master/docs/remote-signing.md#the-signer-node
 export const signerMacaroonPermissions = [

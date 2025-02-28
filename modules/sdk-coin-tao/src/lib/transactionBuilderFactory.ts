@@ -4,6 +4,8 @@ import { decode } from '@substrate/txwrapper-polkadot';
 import { SingletonRegistry, TransactionBuilder, Interface } from './';
 import { TransferBuilder } from './transferBuilder';
 import utils from './utils';
+import { StakingBuilder } from './stakingBuilder';
+import { UnstakeBuilder } from './unstakeBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected _material: Interface.Material;
@@ -15,6 +17,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTransferBuilder(): TransferBuilder {
     return new TransferBuilder(this._coinConfig).material(this._material);
+  }
+
+  getStakingBuilder(): StakingBuilder {
+    return new StakingBuilder(this._coinConfig).material(this._material);
+  }
+
+  getUnstakingBuilder(): UnstakeBuilder {
+    return new UnstakeBuilder(this._coinConfig).material(this._material);
   }
 
   getWalletInitializationBuilder(): void {
@@ -42,6 +52,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     const methodName = decodedTxn.method?.name;
     if (methodName === Interface.MethodNames.TransferKeepAlive || methodName === Interface.MethodNames.TransferAll) {
       return this.getTransferBuilder();
+    } else if (methodName === Interface.MethodNames.AddStake) {
+      return this.getStakingBuilder();
+    } else if (methodName === Interface.MethodNames.RemoveStake) {
+      return this.getUnstakingBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }

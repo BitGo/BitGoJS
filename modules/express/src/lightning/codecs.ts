@@ -1,6 +1,5 @@
 /* eslint-disable no-redeclare */
 import * as t from 'io-ts';
-import { IPAddress } from '@bitgo/abstract-lightning';
 
 export const LightningSignerConfig = t.type({
   url: t.string,
@@ -37,12 +36,9 @@ export const InitLightningWalletRequest = t.intersection(
   [
     t.strict({
       passphrase: t.string,
-      signerIp: IPAddress,
-      signerTlsCert: t.string,
     }),
     t.partial({
-      signerTlsKey: t.string,
-      expressIp: IPAddress,
+      expressHost: t.string,
     }),
   ],
   'InitLightningWalletRequest'
@@ -50,10 +46,10 @@ export const InitLightningWalletRequest = t.intersection(
 
 export type InitLightningWalletRequest = t.TypeOf<typeof InitLightningWalletRequest>;
 
-export const CreateSignerMacaroonRequest = t.strict(
+export const CreateSignerMacaroonRequest = t.type(
   {
     passphrase: t.string,
-    watchOnlyIp: IPAddress,
+    addIpCaveatToMacaroon: t.boolean,
   },
   'CreateSignerMacaroonRequest'
 );

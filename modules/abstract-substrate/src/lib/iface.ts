@@ -56,6 +56,7 @@ export interface TxData {
   eraPeriod?: number;
   payee?: string;
   keepAlive?: boolean;
+  netuid?: string;
 }
 
 /**
@@ -75,15 +76,15 @@ export interface TransferAllArgs {
 }
 
 export interface AddStakeArgs extends Args {
-  amountStaked: number;
+  amountStaked: string;
   hotkey: string;
-  netuid: number;
+  netuid: string;
 }
 
 export interface RemoveStakeArgs extends Args {
-  amountUnstaked: number;
+  amountUnstaked: string;
   hotkey: string;
-  netuid: number;
+  netuid: string;
 }
 
 /**

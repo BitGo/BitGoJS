@@ -14,6 +14,28 @@ import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { DescriptorMap } from '../DescriptorMap';
 
+type DescriptorWithoutIndex = { descriptor: Descriptor; index: undefined };
+
+/**
+ * Find a definite descriptor in the descriptor map that matches the given script.
+ * @param script
+ * @param descriptorMap
+ */
+function findDescriptorWithoutDerivation(
+  script: Buffer,
+  descriptorMap: DescriptorMap
+): DescriptorWithoutIndex | undefined {
+  for (const descriptor of descriptorMap.values()) {
+    if (!descriptor.hasWildcard()) {
+      if (Buffer.from(descriptor.scriptPubkey()).equals(script)) {
+        return { descriptor, index: undefined };
+      }
+    }
+  }
+
+  return undefined;
+}
+
 type DescriptorWithIndex = { descriptor: Descriptor; index: number };
 
 /**
@@ -29,7 +51,7 @@ function findDescriptorForDerivationIndex(
   descriptorMap: DescriptorMap
 ): DescriptorWithIndex | undefined {
   for (const descriptor of descriptorMap.values()) {
-    if (Buffer.from(descriptor.atDerivationIndex(index).scriptPubkey()).equals(script)) {
+    if (descriptor.hasWildcard() && Buffer.from(descriptor.atDerivationIndex(index).scriptPubkey()).equals(script)) {
       return { descriptor, index };
     }
   }
@@ -92,16 +114,16 @@ function getDerivationPaths(v: WithBip32Derivation | WithTapBip32Derivation): st
 export function findDescriptorForInput(
   input: PsbtInput,
   descriptorMap: DescriptorMap
-): DescriptorWithIndex | undefined {
+): DescriptorWithIndex | DescriptorWithoutIndex | undefined {
   const script = input.witnessUtxo?.script;
   if (!script) {
     throw new Error('Missing script');
   }
-  const derivationPaths = getDerivationPaths(input);
-  if (!derivationPaths) {
-    throw new Error('Missing derivation paths');
-  }
-  return findDescriptorForAnyDerivationPath(script, derivationPaths, descriptorMap);
+  const derivationPaths = getDerivationPaths(input) ?? [];
+  return (
+    findDescriptorWithoutDerivation(script, descriptorMap) ??
+    findDescriptorForAnyDerivationPath(script, derivationPaths, descriptorMap)
+  );
 }
 
 /**
@@ -114,10 +136,12 @@ export function findDescriptorForOutput(
   script: Buffer,
   output: PsbtOutput,
   descriptorMap: DescriptorMap
-): DescriptorWithIndex | undefined {
+): DescriptorWithIndex | DescriptorWithoutIndex | undefined {
   const derivationPaths = getDerivationPaths(output);
-  if (!derivationPaths) {
-    return undefined;
-  }
-  return findDescriptorForAnyDerivationPath(script, derivationPaths, descriptorMap);
+  return (
+    findDescriptorWithoutDerivation(script, descriptorMap) ??
+    (derivationPaths === undefined
+      ? undefined
+      : findDescriptorForAnyDerivationPath(script, derivationPaths, descriptorMap))
+  );
 }

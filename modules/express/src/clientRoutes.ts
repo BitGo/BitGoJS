@@ -53,6 +53,7 @@ import {
   handleInitLightningWallet,
   handleUnlockLightningWallet,
 } from './lightning/lightningSignerRoutes';
+import { handleCreateLightningInvoice, handlePayLightningInvoice } from './lightning/lightningInvoiceRoutes';
 import { ProxyAgent } from 'proxy-agent';
 
 const { version } = require('bitgo/package.json');
@@ -1653,6 +1654,21 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     parseBody,
     prepareBitGo(config),
     promiseWrapper(handleNetworkV1EnterpriseClientConnections)
+  );
+
+  // lightning - create invoice
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/invoice',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleCreateLightningInvoice)
+  );
+  // lightning - pay invoice
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/pay',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handlePayLightningInvoice)
   );
 
   // everything else should use the proxy handler

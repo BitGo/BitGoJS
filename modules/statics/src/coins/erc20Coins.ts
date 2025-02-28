@@ -3000,7 +3000,7 @@ export const erc20Coins = [
   erc20(
     '108a64ac-9be8-4bf9-a683-3f30d49708de',
     'inst',
-    'Instadapp',
+    'Fluid',
     18,
     '0x6f40d4a6237c257fff2db00fa0510deeecd303eb',
     UnderlyingAsset.INST
@@ -10170,6 +10170,14 @@ export const erc20Coins = [
     8,
     '0x3073f7aaa4db83f95e9fff17424f71d4751a3073',
     UnderlyingAsset['eth:move']
+  ),
+  erc20(
+    'af4043a2-3944-4194-877f-553fe2c8be75',
+    'eth:usd1',
+    'World Liberty Financial USD',
+    18,
+    '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
+    UnderlyingAsset['eth:usd1']
   ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
