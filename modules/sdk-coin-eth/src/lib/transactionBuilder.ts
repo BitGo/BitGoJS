@@ -10,6 +10,7 @@ import { ERC721TransferBuilder, ERC1155TransferBuilder } from './transferBuilder
  */
 export class TransactionBuilder extends EthLikeTransactionBuilder {
   protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
+  private _signatures: any;
   /**
    * Public constructor.
    *
@@ -47,5 +48,10 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
       }
     }
     return this._transfer;
+  }
+
+  addSignature(publicKey, signature) {
+    this._signatures = [];
+    this._signatures.push({ publicKey, signature });
   }
 }
