@@ -1,11 +1,11 @@
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
 
-export function createScriptPubKeyFromDescriptor(descriptor: Descriptor, index?: number): Buffer {
+export function createScriptPubKeyFromDescriptor(descriptor: Descriptor, index: number | undefined): Buffer {
   if (index === undefined) {
     return Buffer.from(descriptor.scriptPubkey());
   }
-  return createScriptPubKeyFromDescriptor(descriptor.atDerivationIndex(index));
+  return createScriptPubKeyFromDescriptor(descriptor.atDerivationIndex(index), undefined);
 }
 
 export function createAddressFromDescriptor(

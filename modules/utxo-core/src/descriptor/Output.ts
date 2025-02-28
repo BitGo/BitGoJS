@@ -1,9 +1,11 @@
+import assert from 'assert';
+
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { getFixedOutputSum, MaxOutput, Output, PrevOutput } from '../Output';
 
 import { DescriptorMap } from './DescriptorMap';
-import { createScriptPubKeyFromDescriptor } from './address';
+import { getDescriptorAtIndexCheckScript } from './derive';
 
 export type WithDescriptor<T> = T & {
   descriptor: Descriptor;
@@ -31,7 +33,7 @@ export function getExternalFixedAmount(outputs: WithOptDescriptor<Output | MaxOu
 
 export type DescriptorWalletOutput = PrevOutput & {
   descriptorName: string;
-  descriptorIndex: number;
+  descriptorIndex: number | undefined;
 };
 
 export type DerivedDescriptorWalletOutput = WithDescriptor<PrevOutput>;
@@ -44,17 +46,17 @@ export function toDerivedDescriptorWalletOutput(
   if (!descriptor) {
     throw new Error(`Descriptor not found: ${output.descriptorName}`);
   }
-  const derivedDescriptor = descriptor.atDerivationIndex(output.descriptorIndex);
-  const script = createScriptPubKeyFromDescriptor(derivedDescriptor);
-  if (!script.equals(output.witnessUtxo.script)) {
-    throw new Error(
-      `Script mismatch: descriptor ${output.descriptorName} ${descriptor.toString()} script=${script.toString('hex')}`
-    );
-  }
+  assert(descriptor instanceof Descriptor);
+  const descriptorAtIndex = getDescriptorAtIndexCheckScript(
+    descriptor,
+    output.descriptorIndex,
+    output.witnessUtxo.script,
+    output.descriptorName
+  );
   return {
     hash: output.hash,
     index: output.index,
     witnessUtxo: output.witnessUtxo,
-    descriptor: descriptor.atDerivationIndex(output.descriptorIndex),
+    descriptor: descriptorAtIndex,
   };
 }
