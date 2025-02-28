@@ -2218,6 +2218,7 @@ export enum UnderlyingAsset {
   'bsc:kmd' = 'bsc:kmd',
   'bsc:farm' = 'bsc:farm',
   'bsc:lina' = 'bsc:lina',
+  'bsc:usd1' = 'bsc:usd1',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
