@@ -63,4 +63,25 @@ describe('ICP Transaction Builder', async () => {
     const signedTxn = txBuilder.transaction.signedTransaction;
     signedTxn.should.be.a.String();
   });
+
+  it('should build a signed txn and give txn in broadcast format', async () => {
+    sinon.stub(Utils, 'getTransactionSignature').returns(testData.signatures[0]);
+    sinon.stub(Utils, 'getReadStateSignature').returns(testData.signatures[1]);
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+    txBuilder.receiverId(testData.accounts.account2.address);
+    txBuilder.amount('10');
+    txBuilder.memo(123456);
+    await txBuilder.build();
+    const txn = txBuilder.transaction;
+    txn.addSignature(testData.signatures);
+    txBuilder.sign({ key: testData.accounts.account1.secretKey });
+    const signedTxn = txBuilder.transaction.signedTransaction;
+    signedTxn.should.be.a.String();
+    const broadcastTxn = txBuilder.transaction.toBroadcastFormat();
+    broadcastTxn.should.be.a.String();
+    const broadcastTxnObj = JSON.parse(broadcastTxn);
+    should.equal(broadcastTxnObj.signed_transaction, signedTxn);
+    should.equal(broadcastTxnObj.network_identifier.network, '00000000000000020101');
+  });
 });
