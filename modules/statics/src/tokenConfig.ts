@@ -609,7 +609,7 @@ export const tokens: Tokens = {
       tokens: formattedBeraTokens.filter((token) => token.network === 'Mainnet'),
     },
     apt: {
-      tokens: formattedAptTokens.filter((token) => token.network === 'Testnet'),
+      tokens: formattedAptTokens.filter((token) => token.network === 'Mainnet'),
     },
   },
   // network name for test environments

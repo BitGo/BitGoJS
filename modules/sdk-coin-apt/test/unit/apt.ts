@@ -1,7 +1,7 @@
 import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Apt, Tapt, TransferTransaction } from '../../src';
+import { Apt, AptToken, Tapt, TransferTransaction } from '../../src';
 import * as testData from '../resources/apt';
 import _ from 'lodash';
 import sinon from 'sinon';
@@ -18,7 +18,7 @@ import {
   Network,
 } from '@aptos-labs/ts-sdk';
 import utils from '../../src/lib/utils';
-import { coins, GasTankAccountCoin } from '@bitgo/statics';
+import { AptCoin, coins, GasTankAccountCoin } from '@bitgo/statics';
 
 describe('APT:', function () {
   let bitgo: TestBitGoAPI;
@@ -39,6 +39,7 @@ describe('APT:', function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('apt', Apt.createInstance);
     bitgo.safeRegister('tapt', Tapt.createInstance);
+    bitgo.safeRegister('apt:usdt', AptToken.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tapt');
     newTxPrebuild = () => {
@@ -52,6 +53,7 @@ describe('APT:', function () {
   it('should return the right info', function () {
     const apt = bitgo.coin('apt');
     const tapt = bitgo.coin('tapt');
+    const aptUsdt = bitgo.coin('apt:usdt');
     const aptStatics = coins.get('apt') as GasTankAccountCoin;
     const taptStatics = coins.get('tapt') as GasTankAccountCoin;
 
@@ -69,6 +71,13 @@ describe('APT:', function () {
     taptStatics.gasTankLowBalanceAlertFactor.should.equal(80);
     aptStatics.gasTankMinBalanceRecommendationFactor.should.equal(200);
     taptStatics.gasTankMinBalanceRecommendationFactor.should.equal(200);
+
+    aptUsdt.getFamily().should.equal('apt');
+    aptUsdt.getChain().should.equal('apt');
+    const aptUsdtStatics = aptUsdt.getConfig() as AptCoin;
+    aptUsdtStatics.fullName.should.equal('USD Tether');
+    aptUsdtStatics.assetId.should.equal('0x357b0b74bc833e95a115ad22604854d6b0fca151cecd94111770e5d6ffc9dc2b');
+    aptUsdtStatics.decimalPlaces.should.equal(6);
   });
 
   it('is valid pub', function () {
