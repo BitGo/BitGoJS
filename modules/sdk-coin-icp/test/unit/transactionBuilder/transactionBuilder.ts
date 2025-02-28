@@ -9,7 +9,13 @@ describe('ICP Transaction Builder', async () => {
   const factory = getBuilderFactory('ticp');
 
   beforeEach(function (done) {
+    sinon.stub(Utils, 'getTransactionSignature').returns(testData.signatures[0]);
+    sinon.stub(Utils, 'getReadStateSignature').returns(testData.signatures[1]);
     done();
+  });
+
+  afterEach(function () {
+    sinon.restore();
   });
 
   it('start and build a transfer tx', async () => {
@@ -49,8 +55,6 @@ describe('ICP Transaction Builder', async () => {
   });
 
   it('should build a txn and sign', async () => {
-    sinon.stub(Utils, 'getTransactionSignature').returns(testData.signatures[0]);
-    sinon.stub(Utils, 'getReadStateSignature').returns(testData.signatures[1]);
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
     txBuilder.receiverId(testData.accounts.account2.address);
@@ -65,8 +69,6 @@ describe('ICP Transaction Builder', async () => {
   });
 
   it('should build a signed txn and give txn in broadcast format', async () => {
-    sinon.stub(Utils, 'getTransactionSignature').returns(testData.signatures[0]);
-    sinon.stub(Utils, 'getReadStateSignature').returns(testData.signatures[1]);
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
     txBuilder.receiverId(testData.accounts.account2.address);
