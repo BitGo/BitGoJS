@@ -33,7 +33,7 @@ export function mockDerivedDescriptorWalletOutput(
     hash,
     index: vout,
     witnessUtxo: {
-      script: createScriptPubKeyFromDescriptor(descriptor),
+      script: createScriptPubKeyFromDescriptor(descriptor, undefined),
       value,
     },
     descriptor,
@@ -67,7 +67,7 @@ export function mockPsbt(
     outputs.map((o) => {
       const derivedDescriptor = tryDeriveAtIndex(o.descriptor, o.index);
       return {
-        script: createScriptPubKeyFromDescriptor(derivedDescriptor),
+        script: createScriptPubKeyFromDescriptor(derivedDescriptor, undefined),
         value: o.value,
         descriptor: o.external ? undefined : derivedDescriptor,
       };
