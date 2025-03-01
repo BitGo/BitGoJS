@@ -12,7 +12,7 @@ describe('Tao Transaction Builder Factory', function () {
   // TODO: BG-43197 & STLX-14374
   xdescribe('parse generic builders', function () {
     before(function () {
-      factory = new TransactionBuilderFactory(coins.get('tdot'));
+      factory = new TransactionBuilderFactory(coins.get('ttao'));
     });
 
     [{ type: 'transfer', builder: TransferBuilder }].forEach((txn) => {
