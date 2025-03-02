@@ -100,6 +100,7 @@ import {
   ZETA_FEATURES,
   WCT_FEATURES,
   BERA_BGT_FEATURES,
+  SUI_TOKEN_FEATURES_STAKING,
 } from './coinFeatures';
 
 export const coins = CoinMap.fromCoins([
@@ -2696,7 +2697,7 @@ export const coins = CoinMap.fromCoins([
     'WAL',
     '0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL',
     UnderlyingAsset['sui:wal'],
-    SUI_TOKEN_FEATURES
+    SUI_TOKEN_FEATURES_STAKING
   ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
@@ -2720,7 +2721,7 @@ export const coins = CoinMap.fromCoins([
     'WAL',
     '0x8190b041122eb492bf63cb464476bd68c6b7e570a4079645a8b28732b6197a82::wal::WAL',
     UnderlyingAsset['tsui:wal'],
-    [...SUI_TOKEN_FEATURES, CoinFeature.STAKING, CoinFeature.BULK_STAKING_TRANSACTION]
+    SUI_TOKEN_FEATURES_STAKING
   ),
   aptToken(
     'e8bfdab3-4ef6-4b39-9450-d9cb59593f7a',
