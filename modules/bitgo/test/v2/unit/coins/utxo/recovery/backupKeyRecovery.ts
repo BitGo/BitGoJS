@@ -271,7 +271,7 @@ function run(
 
     it((params.hasKrsOutput ? 'has' : 'has no') + ' key recovery service output', function () {
       const outs = recoveryTx instanceof utxolib.bitgo.UtxoPsbt ? recoveryTx.getUnsignedTx().outs : recoveryTx.outs;
-      outs.length.should.eql(params.hasKrsOutput && params.krsProvider === 'keyternal' ? 2 : 1);
+      outs.length.should.eql(1);
       const outputAddresses = outs.map((o) => utxolib.address.fromOutputScript(o.script, recoveryTx.network));
       outputAddresses
         .includes(keyRecoveryServiceAddress)
@@ -310,7 +310,7 @@ utxoCoins.forEach((coin) => {
           krsProvider: krsProvider,
           hasUserSignature: true,
           hasBackupSignature: false,
-          hasKrsOutput: true,
+          hasKrsOutput: false,
         },
         [scriptType, 'keyRecoveryService']
       );

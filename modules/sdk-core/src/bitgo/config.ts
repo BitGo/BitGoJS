@@ -13,11 +13,8 @@ export type KrsProvider = {
 export const krsProviders: Record<string, KrsProvider> = {
   keyternal: {
     feeType: 'flatUsd',
-    feeAmount: 99,
+    feeAmount: 0,
     supportedCoins: ['btc', 'eth'],
-    feeAddresses: {
-      btc: '', // TODO [BG-6965] Get address from Keyternal - recovery will fail for now until Keyternal is ready
-    },
   },
   bitgoKRSv2: {
     feeType: 'flatUsd',
