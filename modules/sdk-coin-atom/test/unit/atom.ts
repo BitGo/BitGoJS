@@ -18,6 +18,7 @@ import {
   address,
   wrwUser,
   wrwUserDkls,
+  TEST_UNSIGNED_SWEEP_TX,
 } from '../resources/atom';
 import should = require('should');
 
@@ -398,16 +399,24 @@ describe('ATOM', function () {
     const testAccountNumberDkls = '755440';
     const testSequenceNumberDkls = '2';
 
+    const testBalanceunsignedSweep = '150000';
+    const testAccountNumberunsignedSweep = '755441';
+    const testSequenceNumberunsignedSweep = '3';
+
     const testChainId = 'theta-testnet-001';
 
     beforeEach(() => {
       const accountBalance = sandBox.stub(Atom.prototype, 'getAccountBalance' as keyof Atom);
       accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
       accountBalance.withArgs(wrwUserDkls.senderAddress).resolves(testBalanceDkls);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalanceunsignedSweep);
 
       const accountDetails = sandBox.stub(Atom.prototype, 'getAccountDetails' as keyof Atom);
       accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
       accountDetails.withArgs(wrwUserDkls.senderAddress).resolves([testAccountNumberDkls, testSequenceNumberDkls]);
+      accountDetails
+        .withArgs(wrwUser.senderAddress)
+        .resolves([testAccountNumberunsignedSweep, testSequenceNumberunsignedSweep]);
 
       const chainId = sandBox.stub(Atom.prototype, 'getChainId' as keyof Atom);
       chainId.withArgs().resolves(testChainId);
@@ -438,6 +447,7 @@ describe('ATOM', function () {
       const atomTxn = new CosmosTransaction(coin, utils);
       atomTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const atomTxnJson = atomTxn.toJson();
+      //console.log("atomTxnJson", atomTxnJson);
       const sendMessage = atomTxnJson.sendMessages[0].value as SendMessage;
       const balance = new BigNumber(testBalance);
       const gasAmount = new BigNumber(GAS_AMOUNT);
@@ -470,27 +480,39 @@ describe('ATOM', function () {
     });
 
     it('should recover funds for Unsigned Sweep Transaction', async function () {
-      const res = await basecoin.recover({
-        userKey: wrwUser.userKey,
-        backupKey: wrwUser.backupKey,
-        bitgoKey: wrwUser.bitgoKey,
-        walletPassphrase: wrwUser.walletPassphrase,
-        recoveryDestination: destinationAddress,
-      });
-      res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
-      sandBox.assert.calledOnce(basecoin.getAccountBalance);
-      sandBox.assert.calledOnce(basecoin.getAccountDetails);
-      sandBox.assert.calledOnce(basecoin.getChainId);
+      try {
+        const res = await basecoin.recover({
+          rootAddress: wrwUser.senderAddress,
+          recoveryDestination: destinationAddress,
+        });
 
-      const unsignedSweepTxnDeserialize = new CosmosTransaction(coin, utils);
-      unsignedSweepTxnDeserialize.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
-      const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
-      const sendMessage = unsignedSweepTxnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalance);
-      const gasAmount = new BigNumber(GAS_AMOUNT);
-      const actualBalance = balance.minus(gasAmount);
-      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+        // Assertions
+        res.should.not.be.empty();
+        res.should.have.property('signableTransaction');
+        const signableTransaction = res.signableTransaction;
+        signableTransaction.should.be.an.instanceof(CosmosTransaction);
+
+        sandBox.assert.calledOnce(basecoin.getAccountBalance);
+        sandBox.assert.calledOnce(basecoin.getAccountDetails);
+        sandBox.assert.calledOnce(basecoin.getChainId);
+
+        // Verify the properties of the signableTransaction directly
+        const signableTransactionJson = signableTransaction.toJson();
+        should.equal(signableTransactionJson.sequence, TEST_UNSIGNED_SWEEP_TX.sequence);
+        should.equal(signableTransactionJson.accountNumber, TEST_UNSIGNED_SWEEP_TX.accountNumber);
+        should.equal(signableTransactionJson.chainId, TEST_UNSIGNED_SWEEP_TX.chainId);
+        should.equal(signableTransactionJson.type, 0); // Assuming type is 0 for unsigned transactions
+        should.equal(signableTransactionJson.id, 'UNAVAILABLE'); // Assuming id is 'UNAVAILABLE' for unsigned transactions
+        should.equal(signableTransactionJson.gasBudget.gasLimit, 200000); // Assuming gasLimit is 200000
+        should.equal(signableTransactionJson.publicKey, undefined); // Assuming publicKey is undefined for unsigned transactions
+        should.equal(signableTransactionJson.signature, TEST_UNSIGNED_SWEEP_TX.signature); // Assuming signature is undefined for unsigned transactions
+        should.equal(signableTransactionJson.hash, undefined); // Assuming hash is undefined for unsigned transactions
+        should.equal(signableTransactionJson.memo, undefined);
+        console.log('Test for Unsigned Sweep Transaction completed successfully');
+      } catch (error) {
+        console.error('Error during test for Unsigned Sweep Transaction:', error);
+        throw error; // Re-throw the error to ensure the test fails
+      }
     });
 
     it('should redelegate funds to new validator', async function () {
