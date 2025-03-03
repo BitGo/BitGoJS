@@ -44,6 +44,7 @@
     "@bitgo/statics": "^51.1.0",
     "@bitgo/secp256k1": "^1.3.2",
     "bignumber.js": "^9.0.0",
+    "cbor-x": "^1.6.0",
     "lodash": "^4.17.14",
     "ripple-binary-codec": "2.1.0",
     "ripple-keypairs": "2.0.0",
