@@ -57,6 +57,10 @@ import { handleCreateLightningInvoice, handlePayLightningInvoice } from './light
 import {
   handleListLightningInvoices,
   handleUpdateLightningWalletCoinSpecific,
+  handleListLightningTransactions,
+  handleGetLightningTransaction,
+  handleGetLightningInvoice,
+  handleGetLightningPayment,
 } from './lightning/lightningWalletRoutes';
 import { ProxyAgent } from 'proxy-agent';
 import { isLightningCoinName } from '@bitgo/abstract-lightning';
@@ -1712,6 +1716,31 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
     app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
   }
+
+  // lightning - transactions for a wallet with optional query parameters (blockHeight, limit, startDate, endDate)
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/transaction',
+    prepareBitGo(config),
+    promiseWrapper(handleListLightningTransactions)
+  );
+  // lightning - transaction details by transaction ID
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/transaction/:txid',
+    prepareBitGo(config),
+    promiseWrapper(handleGetLightningTransaction)
+  );
+  // lightning - invoice details by payment hash
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/invoice/:paymentHash',
+    prepareBitGo(config),
+    promiseWrapper(handleGetLightningInvoice)
+  );
+  // lightning - payment details by payment hash
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/payment/:paymentHash',
+    prepareBitGo(config),
+    promiseWrapper(handleGetLightningPayment)
+  );
 }
 
 export function setupSigningRoutes(app: express.Application, config: Config): void {

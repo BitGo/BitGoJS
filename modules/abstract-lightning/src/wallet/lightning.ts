@@ -7,6 +7,7 @@ import {
   TxRequest,
   commonTssMethods,
   TxRequestState,
+  decodeOrElse,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 import { createMessageSignature, deriveLightningServiceSharedSecret, unwrapLightningCoinSpecific } from '../lightning';
@@ -21,6 +22,9 @@ import {
   SubmitPaymentParams,
   UpdateLightningWalletClientRequest,
   UpdateLightningWalletEncryptedRequest,
+  Transaction,
+  TransactionQuery,
+  PaymentInfo,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -94,6 +98,37 @@ export interface ILightningWallet {
    * @returns {Promise<unknown>} A promise resolving to the updated wallet response or throwing an error if the update fails.
    */
   updateWalletCoinSpecific(params: UpdateLightningWalletClientRequest): Promise<unknown>;
+
+  /**
+   * Get transaction details by ID
+   * @param {string} txId - Transaction ID to lookup
+   * @returns {Promise<Transaction>} Transaction details
+   * @throws {InvalidTxId} When transaction ID is not valid
+   */
+  getTransaction(txId: string): Promise<Transaction>;
+
+  /**
+   * List transactions for a wallet with optional filtering
+   * @param {TransactionQuery} params - Query parameters for filtering transactions
+   * @returns {Promise<Transaction[]>} List of transactions
+   */
+  listTransactions(params: TransactionQuery): Promise<Transaction[]>;
+
+  /**
+   * Get payment details by payment hash
+   * @param {string} paymentHash - Payment hash to lookup
+   * @returns {Promise<PaymentInfo>} Payment details
+   * @throws {InvalidPaymentHash} When payment hash is not valid
+   */
+  getPayment(paymentHash: string): Promise<PaymentInfo>;
+
+  /**
+   * Get invoice details by payment hash
+   * @param {string} paymentHash - Payment hash to lookup
+   * @returns {Promise<InvoiceInfo>} Invoice details
+   * @throws {InvalidPaymentHash} When payment hash is not valid
+   */
+  getInvoice(paymentHash: string): Promise<InvoiceInfo>;
 }
 
 export class SelfCustodialLightningWallet implements ILightningWallet {
@@ -289,5 +324,42 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
       },
     };
     return await this.wallet.bitgo.put(this.wallet.url()).send({ coinSpecific }).result();
+  }
+
+  async getTransaction(txId: string): Promise<Transaction> {
+    const response = await this.wallet.bitgo
+      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/tx/${txId}`))
+      .result();
+    return decodeOrElse(Transaction.name, Transaction, response, (error) => {
+      throw new Error(`Invalid transaction response: ${error}`);
+    });
+  }
+
+  async listTransactions(params: TransactionQuery): Promise<Transaction[]> {
+    const response = await this.wallet.bitgo
+      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/tx`))
+      .query(TransactionQuery.encode(params))
+      .result();
+    return decodeOrElse(t.array(Transaction).name, t.array(Transaction), response, (error) => {
+      throw new Error(`Invalid transaction list response: ${error}`);
+    });
+  }
+
+  async getPayment(paymentHash: string): Promise<PaymentInfo> {
+    const response = await this.wallet.bitgo
+      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/payment/${paymentHash}`))
+      .result();
+    return decodeOrElse(PaymentInfo.name, PaymentInfo, response, (error) => {
+      throw new Error(`Invalid payment response: ${error}`);
+    });
+  }
+
+  async getInvoice(paymentHash: string): Promise<InvoiceInfo> {
+    const response = await this.wallet.bitgo
+      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice/${paymentHash}`))
+      .result();
+    return decodeOrElse(InvoiceInfo.name, InvoiceInfo, response, (error) => {
+      throw new Error(`Invalid get invoice response ${error}`);
+    });
   }
 }
