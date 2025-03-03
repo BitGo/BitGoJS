@@ -7,6 +7,7 @@ import {
   handleGetLightningTransaction,
   handleGetLightningInvoice,
   handleGetLightningPayment,
+  handleListLightningPayments,
 } from '../../../src/lightning/lightningWalletRoutes';
 import { BitGo } from 'bitgo';
 import { InvoiceInfo, PaymentInfo, Transaction } from '@bitgo/abstract-lightning';
@@ -521,6 +522,115 @@ describe('Lightning Wallet Routes', () => {
           should(error.status).equal(400);
           should(error.message).equal('Missing required parameter: paymentHash');
         });
+    });
+  });
+
+  describe('List Lightning Payments', () => {
+    it('should successfully list lightning payments', async () => {
+      const query = {
+        status: 'settled',
+        limit: '25',
+        startDate: '2024-01-01T00:00:00.000Z',
+        endDate: '2024-01-31T00:00:00.000Z',
+      };
+
+      const mockPayments: PaymentInfo[] = [
+        {
+          paymentHash: 'hash123',
+          walletId: 'wallet123',
+          txRequestId: 'txRequest123',
+          status: 'settled',
+          invoice: 'invoice123',
+          feeLimitMsat: 1000n,
+          destination: 'dest123',
+          updatedAt: new Date('2024-01-15'),
+          createdAt: new Date('2024-01-15'),
+          amountMsat: 10000n,
+        },
+        {
+          paymentHash: 'hash456',
+          walletId: 'wallet123',
+          txRequestId: 'txRequest456',
+          status: 'settled',
+          invoice: 'invoice456',
+          feeLimitMsat: 2000n,
+          destination: 'dest456',
+          updatedAt: new Date('2024-01-16'),
+          createdAt: new Date('2024-01-16'),
+          amountMsat: 20000n,
+        },
+      ];
+
+      const listPaymentsSpy = sinon.stub().resolves(mockPayments);
+      const mockLightningWallet = {
+        listPayments: listPaymentsSpy,
+      };
+
+      const proxyquire = require('proxyquire');
+      const lightningRoutes = proxyquire('../../../src/lightning/lightningWalletRoutes', {
+        '@bitgo/abstract-lightning': {
+          getLightningWallet: () => mockLightningWallet,
+        },
+      });
+
+      const req = mockRequestObject({
+        params: { id: 'testWalletId', coin },
+        query: query,
+        bitgo,
+      });
+
+      const result = await lightningRoutes.handleListLightningPayments(req);
+
+      should(result).deepEqual(mockPayments);
+      should(listPaymentsSpy).be.calledOnce();
+      const [firstArg] = listPaymentsSpy.getCall(0).args;
+      should(firstArg).have.property('status', 'settled');
+      should(firstArg).have.property('limit', BigInt(25));
+      should(firstArg.startDate).be.instanceOf(Date);
+      should(firstArg.endDate).be.instanceOf(Date);
+    });
+
+    it('should handle invalid query parameters', async () => {
+      const invalidQuery = {
+        status: 'invalidStatus',
+        limit: 'notANumber',
+      };
+
+      const req = mockRequestObject({
+        params: { id: 'testWalletId', coin },
+        query: invalidQuery,
+        bitgo,
+      });
+
+      await should(handleListLightningPayments(req))
+        .be.rejectedWith(ApiResponseError)
+        .then((error) => {
+          should(error.status).equal(400);
+          should(error.message).containEql('Invalid query parameters for listing lightning payments');
+        });
+    });
+
+    it('should handle service errors', async () => {
+      const serviceError = new Error('Service error');
+      const listPaymentsSpy = sinon.stub().rejects(serviceError);
+      const mockLightningWallet = {
+        listPayments: listPaymentsSpy,
+      };
+
+      const proxyquire = require('proxyquire');
+      const lightningRoutes = proxyquire('../../../src/lightning/lightningWalletRoutes', {
+        '@bitgo/abstract-lightning': {
+          getLightningWallet: () => mockLightningWallet,
+        },
+      });
+
+      const req = mockRequestObject({
+        params: { id: 'testWalletId', coin },
+        query: {},
+        bitgo,
+      });
+
+      await should(lightningRoutes.handleListLightningPayments(req)).be.rejectedWith(serviceError);
     });
   });
 });
