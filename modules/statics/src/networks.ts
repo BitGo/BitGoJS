@@ -172,7 +172,7 @@ class AptTestnet extends Testnet implements AccountNetwork {
 class Icp extends Mainnet implements AccountNetwork {
   name = 'Internet Computer';
   family = CoinFamily.ICP;
-  explorerUrl = 'https://www.icpexplorer.org'; //TODO(WIN-4242): update to the prod rosetta explorer url
+  explorerUrl = 'https://www.icpexplorer.org'; //TODO(WIN-4242): update to the prod rosetta explorer url test
 }
 
 class IcpTestnet extends Testnet implements AccountNetwork {
