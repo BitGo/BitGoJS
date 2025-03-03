@@ -1686,27 +1686,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     promiseWrapper(handleNetworkV1EnterpriseClientConnections)
   );
 
-  // lightning - create invoice
-  app.post(
-    '/api/v2/:coin/wallet/:id/lightning/invoice',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleCreateLightningInvoice)
-  );
-  // lightning - pay invoice
-  app.post(
-    '/api/v2/:coin/wallet/:id/lightning/pay',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handlePayLightningInvoice)
-  );
-  // lightning - list invoices
-  app.get(
-    '/api/v2/:coin/wallet/:id/lightning/invoices',
-    prepareBitGo(config),
-    promiseWrapper(handleListLightningInvoices)
-  );
-
   // everything else should use the proxy handler
   if (config.disableProxy !== true) {
     app.use(
@@ -1719,32 +1698,59 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
   }
 
-  // lightning - transactions for a wallet with optional query parameters (blockHeight, limit, startDate, endDate)
-  app.get(
-    '/api/v2/:coin/wallet/:id/lightning/transaction',
+  // lightning - create invoice
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/invoice',
+    parseBody,
     prepareBitGo(config),
-    promiseWrapper(handleListLightningTransactions)
+    promiseWrapper(handleCreateLightningInvoice)
   );
-  // lightning - transaction details by transaction ID
-  app.get(
-    '/api/v2/:coin/wallet/:id/lightning/transaction/:txid',
-    prepareBitGo(config),
-    promiseWrapper(handleGetLightningTransaction)
-  );
-  // lightning - invoice details by payment hash
+  // lightning - get invoice
   app.get(
     '/api/v2/:coin/wallet/:id/lightning/invoice/:paymentHash',
     prepareBitGo(config),
     promiseWrapper(handleGetLightningInvoice)
   );
-  // lightning - payment details by payment hash
+
+  // lightning - list invoices
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/invoices',
+    prepareBitGo(config),
+    promiseWrapper(handleListLightningInvoices)
+  );
+
+  // lightning - pay invoice
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/pay',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handlePayLightningInvoice)
+  );
+
+  // lightning - get payment
   app.get(
     '/api/v2/:coin/wallet/:id/lightning/payment/:paymentHash',
     prepareBitGo(config),
     promiseWrapper(handleGetLightningPayment)
   );
+
   //lightning - list payments
   app.get('/api/v2/:coin/wallet/:id/lightning/payment', promiseWrapper(handleListLightningPayments));
+
+  // lightning - get transaction
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/transaction/:txid',
+    prepareBitGo(config),
+    promiseWrapper(handleGetLightningTransaction)
+  );
+
+  // lightning - list transactions
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/transaction',
+    prepareBitGo(config),
+    promiseWrapper(handleListLightningTransactions)
+  );
+
   // lightning - backup
   app.get('/api/v2/:coin/wallet/:id/lightning/backup', prepareBitGo(config), promiseWrapper(handleGetChannelBackup));
 }
