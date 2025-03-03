@@ -24,6 +24,7 @@ import { SignTransactionOptions, VerifiedTransactionParameters, Material } from 
 import utils from './lib/utils';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import BigNumber from 'bignumber.js';
+import { ApiPromise } from '@polkadot/api';
 
 export class SubstrateCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -180,27 +181,26 @@ export class SubstrateCoin extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  // TODO: Implement this method for TAO
-  getAddressFromPublicKey(Pubkey: string): string {
+  protected getAddressFromPublicKey(Pubkey: string): string {
+    return new SubstrateKeyPair({ pub: Pubkey }).getAddress(this.getAddressFormat());
+  }
+
+  protected async getInitializedNodeAPI(): Promise<ApiPromise> {
     throw new Error('Method not implemented.');
   }
 
-  // TODO: Implement this method for TAO
   protected async getAccountInfo(walletAddr: string): Promise<{ nonce: number; freeBalance: number }> {
     throw new Error('Method not implemented.');
   }
 
-  // TODO: Implement this method for TAO
   protected async getFee(destAddr: string, srcAddr: string, amount: number): Promise<number> {
     throw new Error('Method not implemented.');
   }
 
-  // TODO: Implement this method for TAO
   protected async getHeaderInfo(): Promise<{ headerNumber: number; headerHash: string }> {
     throw new Error('Method not implemented.');
   }
 
-  // TODO: Implement this method for TAO
   protected async getMaterial(): Promise<Material> {
     throw new Error('Method not implemented.');
   }
