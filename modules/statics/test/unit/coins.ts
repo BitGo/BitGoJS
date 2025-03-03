@@ -685,7 +685,6 @@ coins.forEach((coin, coinName) => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_GERMANY).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_SWITZERLAND).should.eql(false);
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_FRANKFURT).should.eql(false);
       });
     } else {
       it('should return true for CUSTODY and CUSTODY_BITGO_TRUST coin feature', () => {
@@ -700,7 +699,6 @@ coins.forEach((coin, coinName) => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_GERMANY).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_SWITZERLAND).should.eql(false);
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_FRANKFURT).should.eql(false);
       });
     }
   });
