@@ -47,9 +47,6 @@
     "@dfinity/candid": "^2.2.0",
     "@dfinity/principal": "^2.2.0",
     "bignumber.js": "^9.1.1",
-    "cbor-x": "^1.6.0",
-    "js-sha256": "^0.11.0",
-    "protobufjs": "^7.4.0",
     "@noble/curves": "1.8.1",
     "crc-32": "^1.2.2"
   },
