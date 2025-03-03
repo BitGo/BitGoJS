@@ -10,20 +10,39 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 const RECEIVE_ADDRESS = '';
 const SEND_ADDRESS = '';
-const AMOUNT = 729100000n;
 const ASSET_ID = 31;
 
 async function getWallet() {
   return await omniConfig.sdk.coin(omniConfig.coin).wallets().get({ id: omniConfig.walletId });
 }
 
+/**
+ * Send an omni asset to a receiver. This function is used when you have sent an omni asset to a BitGo BTC wallet
+ * and need to manually recover it
+ * This function assumes that:
+ *   - Your address has a single unspent that is large enough to cover the transaction
+ *   - The receiver address is a legacy address, otherwise the transaction will not be recognized by the omni explorer
+ * @param wallet - The wallet to send the omni asset from.
+ * @param receiver - The address to send the omni asset to (legacy address required).
+ * @param sender - The address to send the omni asset from (legacy address required).
+ * @param omniBaseAmount - The amount of the omni asset to send
+ *   with respect to its smallest unit (e.g., microcents for USDT).
+ *   Can be found at https://api.omniexplorer.info/v1/transaction/tx/{prev_txid}
+ *   by multiplying `amount` by 10e8 if `divisible` is true.
+ *   If `divisible` is false, `amount` is the amount of the omni asset to send
+ * @param assetId - The id of the omni asset to send.
+ *   Can be found at https://api.omniexplorer.info/v1/transaction/tx/{prev_txid}
+ *   by looking at the `propertyid` field.
+ *   This is 31 for USDT.
+ * @param feeRateSatPerKB - The fee rate to use for the transaction, in satoshis per kilobyte.
+ */
 async function sendOmniAsset(
   wallet: Wallet,
   receiver: string,
   sender: string,
-  amountMicroCents: bigint,
+  omniBaseAmount: bigint,
   assetId = 31,
-  feeRate = 20_000
+  feeRateSatPerKB = 20_000
 ) {
   if (!['1', 'n', 'm'].includes(receiver.slice(0, 1))) {
     throw new Error(
@@ -40,7 +59,7 @@ async function sendOmniAsset(
   const assetHex = Buffer.alloc(4);
   assetHex.writeUInt32BE(assetId);
   const amountHex = Buffer.alloc(8);
-  amountHex.writeBigUInt64BE(amountMicroCents);
+  amountHex.writeBigUInt64BE(omniBaseAmount);
   const omniScript = Buffer.concat([omniConfig.OMNI_PREFIX, transactionType, assetHex, amountHex]);
   const output = utxolib.payments.embed({ data: [omniScript], network: omniConfig.network }).output;
   if (!output) {
@@ -63,7 +82,7 @@ async function sendOmniAsset(
       },
     ],
     isReplaceableByFee: true,
-    feeRate,
+    feeRate: feeRateSatPerKB,
     walletPassphrase: omniConfig.walletPassphrase,
     // we must send change to our input address to ensure that omni won't
     // accidentally send our asset to the change address instead of the recipient
@@ -84,7 +103,7 @@ async function main() {
 
   const wallet = await getWallet();
   // we multiply feeRate by 1000 because mempool returns sat/vB and BitGo uses sat/kvB
-  await sendOmniAsset(wallet, RECEIVE_ADDRESS, SEND_ADDRESS, AMOUNT, ASSET_ID, feeRate * 1000);
+  await sendOmniAsset(wallet, RECEIVE_ADDRESS, SEND_ADDRESS, 729100000n, ASSET_ID, feeRate * 1000);
 }
 
 main().catch((e) => {
