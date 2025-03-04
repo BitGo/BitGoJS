@@ -4335,9 +4335,9 @@ describe('V2 Wallet:', function () {
       _.isMatch(initiateTxBody, {
         hopParams: {
           gasPriceMax: 7187500000,
+          gasLimit: 500000,
         },
         type: 'Export',
-        gasLimit: 500000,
         recipients: [
           {
             amount: '10000000000000000',
