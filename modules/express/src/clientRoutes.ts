@@ -57,9 +57,15 @@ import { handleCreateLightningInvoice, handlePayLightningInvoice } from './light
 import {
   handleListLightningInvoices,
   handleUpdateLightningWalletCoinSpecific,
+  handleListLightningTransactions,
+  handleGetLightningTransaction,
+  handleGetLightningInvoice,
+  handleGetLightningPayment,
+  handleListLightningPayments,
 } from './lightning/lightningWalletRoutes';
 import { ProxyAgent } from 'proxy-agent';
 import { isLightningCoinName } from '@bitgo/abstract-lightning';
+import { handleGetChannelBackup } from './lightning/lightningBackupRoutes';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -1680,27 +1686,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     promiseWrapper(handleNetworkV1EnterpriseClientConnections)
   );
 
-  // lightning - create invoice
-  app.post(
-    '/api/v2/:coin/wallet/:id/lightning/invoice',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleCreateLightningInvoice)
-  );
-  // lightning - pay invoice
-  app.post(
-    '/api/v2/:coin/wallet/:id/lightning/pay',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handlePayLightningInvoice)
-  );
-  // lightning - list invoices
-  app.get(
-    '/api/v2/:coin/wallet/:id/lightning/invoices',
-    prepareBitGo(config),
-    promiseWrapper(handleListLightningInvoices)
-  );
-
   // everything else should use the proxy handler
   if (config.disableProxy !== true) {
     app.use(
@@ -1712,6 +1697,62 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
     app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
   }
+
+  // lightning - create invoice
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/invoice',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleCreateLightningInvoice)
+  );
+  // lightning - get invoice
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/invoice/:paymentHash',
+    prepareBitGo(config),
+    promiseWrapper(handleGetLightningInvoice)
+  );
+
+  // lightning - list invoices
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/invoices',
+    prepareBitGo(config),
+    promiseWrapper(handleListLightningInvoices)
+  );
+
+  // lightning - pay invoice
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/pay',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handlePayLightningInvoice)
+  );
+
+  // lightning - get payment
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/payment/:paymentHash',
+    prepareBitGo(config),
+    promiseWrapper(handleGetLightningPayment)
+  );
+
+  //lightning - list payments
+  app.get('/api/v2/:coin/wallet/:id/lightning/payment', promiseWrapper(handleListLightningPayments));
+
+  // lightning - get transaction
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/transaction/:txid',
+    prepareBitGo(config),
+    promiseWrapper(handleGetLightningTransaction)
+  );
+
+  // lightning - list transactions
+  app.get(
+    '/api/v2/:coin/wallet/:id/lightning/transaction',
+    prepareBitGo(config),
+    promiseWrapper(handleListLightningTransactions)
+  );
+
+  // lightning - backup
+  app.get('/api/v2/:coin/wallet/:id/lightning/backup', prepareBitGo(config), promiseWrapper(handleGetChannelBackup));
 }
 
 export function setupSigningRoutes(app: express.Application, config: Config): void {
@@ -1730,7 +1771,7 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
   );
 }
 
-export function setupLightningRoutes(app: express.Application, config: Config): void {
+export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {
   app.post(
     '/api/v2/:coin/wallet/:id/initwallet',
     parseBody,
