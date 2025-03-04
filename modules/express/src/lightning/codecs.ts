@@ -82,3 +82,21 @@ export const UnlockLightningWalletRequest = t.strict(
 );
 
 export type UnlockLightningWalletRequest = t.TypeOf<typeof UnlockLightningWalletRequest>;
+
+export const TransactionParams = t.type(
+  {
+    txid: t.string,
+  },
+  'TransactionParams'
+);
+
+export type TransactionParams = t.TypeOf<typeof TransactionParams>;
+
+export const PaymentHashParams = t.type(
+  {
+    paymentHash: t.string,
+  },
+  'PaymentHashParams'
+);
+
+export type PaymentHashParams = t.TypeOf<typeof PaymentHashParams>;

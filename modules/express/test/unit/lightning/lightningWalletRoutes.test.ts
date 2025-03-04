@@ -391,7 +391,9 @@ describe('Lightning Wallet Routes', () => {
         .be.rejectedWith(ApiResponseError)
         .then((error) => {
           should(error.status).equal(400);
-          should(error.message).equal('Missing required parameter: txid');
+          should(error.message).equal(
+            "Invalid transaction parameters: Invalid value 'undefined' supplied to TransactionParams.txid, expected string."
+          );
         });
     });
 
@@ -465,7 +467,9 @@ describe('Lightning Wallet Routes', () => {
         .be.rejectedWith(ApiResponseError)
         .then((error) => {
           should(error.status).equal(400);
-          should(error.message).equal('Missing required parameter: paymentHash');
+          should(error.message).equal(
+            "Invalid invoice parameters: Invalid value 'undefined' supplied to PaymentHashParams.paymentHash, expected string."
+          );
         });
     });
   });
@@ -520,7 +524,9 @@ describe('Lightning Wallet Routes', () => {
         .be.rejectedWith(ApiResponseError)
         .then((error) => {
           should(error.status).equal(400);
-          should(error.message).equal('Missing required parameter: paymentHash');
+          should(error.message).equal(
+            "Invalid payment parameters: Invalid value 'undefined' supplied to PaymentHashParams.paymentHash, expected string."
+          );
         });
     });
   });
