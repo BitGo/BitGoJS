@@ -1784,7 +1784,7 @@ export const coins = CoinMap.fromCoins([
     GENERIC_TOKEN_FEATURES,
     '',
     '',
-    Networks.test.goerli
+    Networks.test.holesky
   ),
   terc721(
     'e795fc78-b8a7-47a1-8294-5ecbe8a74c3a',
