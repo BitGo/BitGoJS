@@ -116,6 +116,82 @@ describe('With the handler to sign an arbitrary payload in external signing mode
     );
     readFileStub.restore();
     envStub.restore();
+    signMessageStub.restore();
+  });
+
+  it('should use wallet passphrase from request body', async () => {
+    const stubbedSignature = Buffer.from('mysign');
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
+
+    const signMessageStub = sinon.stub(Coin.Ofc.prototype, 'signMessage').resolves(stubbedSignature);
+
+    const stubbedSigHex = stubbedSignature.toString('hex');
+
+    const expectedResponse = {
+      payload: JSON.stringify(payload),
+      signature: stubbedSigHex,
+    };
+
+    const req = {
+      bitgo,
+      body: {
+        walletId,
+        payload,
+        walletPassphrase: walletPassword,
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as Request;
+
+    await handleV2OFCSignPayloadInExtSigningMode(req).should.be.resolvedWith(expectedResponse);
+    readFileStub.should.be.calledOnceWith('signerFileSystemPath');
+    signMessageStub.should.be.calledOnceWith(
+      sinon.match({
+        prv: secret,
+      })
+    );
+    readFileStub.restore();
+    signMessageStub.restore();
+  });
+
+  it('should prioritize request body passphrase over environment variable', async () => {
+    const stubbedSignature = Buffer.from('mysign');
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
+    const envStub = sinon
+      .stub(process, 'env')
+      .value({ WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE: walletPassword });
+
+    const signMessageStub = sinon.stub(Coin.Ofc.prototype, 'signMessage').resolves(stubbedSignature);
+
+    const stubbedSigHex = stubbedSignature.toString('hex');
+
+    const expectedResponse = {
+      payload: JSON.stringify(payload),
+      signature: stubbedSigHex,
+    };
+    const req = {
+      bitgo,
+      body: {
+        walletId,
+        payload,
+        walletPassphrase: walletPassword,
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as Request;
+
+    await handleV2OFCSignPayloadInExtSigningMode(req).should.be.resolvedWith(expectedResponse);
+    readFileStub.should.be.calledOnceWith('signerFileSystemPath');
+    signMessageStub.should.be.calledOnceWith(
+      sinon.match({
+        prv: secret,
+      })
+    );
+    readFileStub.restore();
+    envStub.restore();
+    signMessageStub.restore();
   });
 
   describe('With invalid setup', () => {
@@ -205,6 +281,28 @@ describe('With the handler to sign an arbitrary payload in external signing mode
 
       readFileStub.restore();
       envStub.restore();
+    });
+
+    it('should throw error when trying to decrypt with invalid wallet passphrase in body', async () => {
+      const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
+
+      const req = {
+        bitgo,
+        body: {
+          walletId,
+          payload,
+          walletPassphrase: 'invalidPassphrase',
+        },
+        config: {
+          signerFileSystemPath: 'signerFileSystemPath',
+        },
+      } as unknown as Request;
+
+      await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
+        "Error when trying to decrypt private key: CORRUPT: password error - ccm: tag doesn't match"
+      );
+
+      readFileStub.restore();
     });
   });
 });

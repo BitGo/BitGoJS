@@ -60,9 +60,14 @@ An example is provided in the file. To run the file, use the command:
 yarn ts-node <path/to/fetchEncryptedPrivKeys.ts>
 ```
 
-### Wallet passphrase environment variable
+### Wallet passphrase
+In order for the external signer instance of BitGo Express to decrypt the private key, the wallet passphrase is required. This can be supplied by one of the below methods.
 
-In order for the external signer instance of BitGo Express to decrypt the private key, the wallet passphrase must be set as an environment variable in the format `WALLET_<walletId>_PASSPHRASE`. Note that the wallet passphrase must be set for each wallet.
+#### Sending as a body parameter (recommended)
+Set the parameter `walletPassphrase: <YOUR_WALLET_PASSPHRASE>` (without <>) in POST requests to the endpoint `/api/v2/ofc/signPayload`.
+
+#### Set as environment variable
+Set as an environment variable in the format `WALLET_<walletId>_PASSPHRASE`. Note that the wallet passphrase must be set for each wallet.
 The environment variable can be set using `export`. For example, the wallet passphrases for the private keys above can be set with the following:
 
 ```

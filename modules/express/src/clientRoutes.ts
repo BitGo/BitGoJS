@@ -552,6 +552,7 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
 ): Promise<{ payload: string; signature: string }> {
   const walletId = req.body.walletId;
   const payload = req.body.payload;
+  const bodyWalletPassphrase = req.body.walletPassphrase;
   const ofcCoinName = 'ofc';
 
   if (!payload) {
@@ -562,8 +563,8 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
     throw new ApiResponseError('Missing required field: walletId', 400);
   }
 
-  // fetch the password for the given walletId from the env. This is required for decrypting the private key that belongs to that wallet.
-  const walletPw = getWalletPwFromEnv(walletId);
+  // fetch the password for the given walletId from the body or the env. This is required for decrypting the private key that belongs to that wallet.
+  const walletPw = bodyWalletPassphrase || getWalletPwFromEnv(walletId);
 
   const { signerFileSystemPath } = req.config;
   if (!signerFileSystemPath) {
@@ -599,6 +600,7 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
 export async function handleV2OFCSignPayload(req: express.Request): Promise<{ payload: string; signature: string }> {
   const walletId = req.body.walletId;
   const payload = req.body.payload;
+  const bodyWalletPassphrase = req.body.walletPassphrase;
   const ofcCoinName = 'ofc';
 
   // If the externalSignerUrl is set, forward the request to the express server hosted on the externalSignerUrl
@@ -634,7 +636,7 @@ export async function handleV2OFCSignPayload(req: express.Request): Promise<{ pa
     throw new ApiResponseError(`Could not find OFC wallet ${walletId}`, 404);
   }
 
-  const walletPassphrase = getWalletPwFromEnv(wallet.id());
+  const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
   const tradingAccount = wallet.toTradingAccount();
   const stringifiedPayload = JSON.stringify(req.body.payload);
   const signature = await tradingAccount.signPayload({
