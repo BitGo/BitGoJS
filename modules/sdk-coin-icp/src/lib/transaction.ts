@@ -17,6 +17,10 @@ import {
   IcpTransactionExplanation,
   SignedTransactionRequest,
   Network,
+  CborUnsignedTransaction,
+  HttpCanisterUpdate,
+  ParsedTransaction,
+  IcpOperation,
 } from './iface';
 import { Utils } from './utils';
 import { KeyPair } from './keyPair';
@@ -208,5 +212,65 @@ export class Transaction extends BaseTransaction {
     } catch (error) {
       return false;
     }
+  }
+
+  async parseUnsignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
+    const unsignedTransaction = this._utils.cborDecode(
+      this._utils.blobFromHex(rawTransaction)
+    ) as CborUnsignedTransaction;
+    const update = unsignedTransaction.updates[0];
+    const httpCanisterUpdate = update[1] as HttpCanisterUpdate;
+    const senderPrincipal = this._utils.convertSenderBlobToPrincipal(httpCanisterUpdate.sender);
+    const ACCOUNT_ID_PREFIX = this._utils.getAccountIdPrefix();
+    const subAccount = new Uint8Array(32);
+    const senderAccount = this._utils.getAccountIdFromPrincipalBytes(
+      ACCOUNT_ID_PREFIX,
+      Buffer.from(senderPrincipal),
+      subAccount
+    );
+    const args = await this._utils.fromArgs(httpCanisterUpdate.arg);
+    const senderOperation: IcpOperation = {
+      type: OperationType.TRANSACTION,
+      account: { address: senderAccount },
+      amount: {
+        value: `-${args.payment.receiverGets.e8s.toString()}`,
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+    const receiverOperation: IcpOperation = {
+      type: OperationType.TRANSACTION,
+      account: { address: args.to.hash.toString('hex') },
+      amount: {
+        value: args.payment.receiverGets.e8s.toString(),
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+
+    const feeOperation: IcpOperation = {
+      type: OperationType.FEE,
+      account: { address: senderAccount },
+      amount: {
+        value: `-${args.maxFee.e8s.toString()}`,
+        currency: {
+          symbol: this._coinConfig.family,
+          decimals: this._coinConfig.decimalPlaces,
+        },
+      },
+    };
+    const parsedTxn: ParsedTransaction = {
+      operations: [senderOperation, receiverOperation, feeOperation],
+      metadata: {
+        created_at_time: args.createdAtTime.timestampNanos,
+        memo: Number(args.memo.memo),
+      },
+      account_identifier_signers: [],
+    };
+    return parsedTxn;
   }
 }

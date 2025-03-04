@@ -8,9 +8,7 @@ import {
   OperationType,
   MethodName,
 } from './iface';
-import protobuf from 'protobufjs';
 import utils from './utils';
-import { protoDefinition } from './protoDefinition';
 
 const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
 const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
@@ -25,8 +23,8 @@ export class UnsignedTransactionBuilder {
   async getUnsignedTransaction(): Promise<PayloadsData> {
     const interval = MAX_INGRESS_TTL - PERMITTED_DRIFT - 120 * 1000_000_000; // 120 seconds in milliseconds
     const ingressExpiries = this.getIngressExpiries(
-      this._icpTransactionPayload.metadata.ingress_start,
-      this._icpTransactionPayload.metadata.ingress_end,
+      this._icpTransactionPayload.metadata.ingress_start!,
+      this._icpTransactionPayload.metadata.ingress_end!,
       interval
     );
     const sendArgs = this.getSendArgs(
@@ -108,20 +106,11 @@ export class UnsignedTransactionBuilder {
     return sendArgs;
   }
 
-  async toArg(args: SendArgs): Promise<Uint8Array> {
-    const root = await protobuf.parse(protoDefinition).root;
-    const SendRequestMessage = root.lookupType('SendRequest');
-    const errMsg = SendRequestMessage.verify(args);
-    if (errMsg) throw new Error(errMsg);
-    const message = SendRequestMessage.create(args);
-    return SendRequestMessage.encode(message).finish();
-  }
-
   async getUpdate(sendArgs: SendArgs, publicKeyHex: string): Promise<HttpCanisterUpdate> {
     const principalId = utils.getPrincipalIdFromPublicKey(publicKeyHex).toUint8Array();
     const senderBlob = Buffer.from(principalId);
     const canisterIdBuffer = Buffer.from(LEDGER_CANISTER_ID);
-    const args = await this.toArg(sendArgs);
+    const args = await utils.toArg(sendArgs);
     const update: HttpCanisterUpdate = {
       canister_id: canisterIdBuffer,
       method_name: MethodName.SEND_PB,

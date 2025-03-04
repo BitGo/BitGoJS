@@ -4,7 +4,7 @@ import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { Utils } from './utils';
-import { OperationType } from './iface';
+import { OperationType, ParsedTransaction } from './iface';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -46,12 +46,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig, new Utils()));
   }
 
-  //TODO WIN-4723 need to implement the following method
-  /**
-   * Parse the transaction from a raw transaction
-   */
-  private parseTransaction(rawTransaction: string): void {
-    throw new Error('method not implemented');
+  parseTransaction(rawTransaction: string): Promise<ParsedTransaction> {
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Transaction is empty');
+    }
+    const transaction = new Transaction(this._coinConfig, new Utils());
+    return transaction.parseUnsignedTransaction(rawTransaction);
   }
 
   /** @inheritdoc */
