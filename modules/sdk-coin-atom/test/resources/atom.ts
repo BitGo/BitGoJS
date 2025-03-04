@@ -494,3 +494,36 @@ export const wrwUserDkls = {
     '7a24333f8383c158b2e5fc9882e5acf0bb2a85a481cf150a5e94b6a',
   walletPassphrase: '#Bondiola1234',
 };
+
+export const TEST_UNSIGNED_SWEEP_TX = {
+  hash: 'B7E846004999A3D9C1F09A253C61E41FC5711C2228E18E8488B2F5FE1FE9F4D3',
+  signature: null, // Unsigned transaction
+  pubKey: 'Ah0Xud1r7fdljxs/dx9Rud1Un55KArr94VMtAMoUXBsO',
+  privateKey: 'cGQSjk/xusPlqScte8OnHMAaW7Zjt1wu7R6W4eYzLUg=',
+  unsignedTxBase64:
+    'CpIBCo8BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm8KLWNvc21vczFzbWVma3E5eWF4Z3c5YzlmaHltNnFzcDc0NnE4ODRjemVhY24zMhItY29zbW9zMTZnaG45YzZmNXl1YTA5enF3N3k3OTRtdmMzMGg0eTRtZDdja3VrGg8KBXVhdG9tEgYxMDAwMDASZApOCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAh0Xud1r7fdljxs/dx9Rud1Un55KArr94VMtAMoUXBsOEgQKAggBEhIKDAoFdWF0b20SAzcwMBDAmgwaQKZAQv4NnqpEcy6f8XPT8Oc6Nv/Ywp3ifs7x9C2/syBqEKjTQEeXlNxk40fYpyX6YpK6a0GIKDsXU+zp1iLA3Z8=',
+  sender: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+  recipient: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+  chainId: 'theta-testnet-001',
+  accountNumber: 755441,
+  sequence: 3,
+  sendAmount: '50000',
+  feeAmount: '100000',
+  sendMessage: {
+    typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+    value: {
+      amount: [
+        {
+          denom: 'uatom',
+          amount: '50000',
+        },
+      ],
+      toAddress: 'cosmos16ghn9c6f5yua09zqw7y794mvc30h4y4md7ckuk',
+      fromAddress: 'cosmos1smefkq9yaxgw9c9fhym6qsp746q884czeacn32',
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'uatom', amount: '100000' }],
+    gasLimit: 200000,
+  },
+};

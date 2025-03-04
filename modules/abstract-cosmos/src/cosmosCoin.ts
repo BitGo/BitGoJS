@@ -170,12 +170,14 @@ export class CosmosCoin extends BaseCoin {
       senderAddress = this.getAddressFromPublicKey(publicKey);
     } else {
       senderAddress = params.rootAddress as string;
+      publicKey = params.bitgoKey as string;
     }
 
     // Step 3: Instantiate the ECDSA signer and fetch the address details
     const chainId = await this.getChainId();
     // Step 4: Fetch account details such as accountNo, balance and check for sufficient funds once gasAmount has been deducted
     const [accountNumber, sequenceNo] = await this.getAccountDetails(senderAddress);
+    console.log('accountnumber:', accountNumber, 'sequenceNo:', sequenceNo);
     const balance = new BigNumber(await this.getAccountBalance(senderAddress));
     const gasBudget: FeeData = {
       amount: [{ denom: this.getDenomination(), amount: this.getGasAmountDetails().gasAmount }],
@@ -210,23 +212,19 @@ export class CosmosCoin extends BaseCoin {
       .gasBudget(gasBudget)
       .sequence(Number(sequenceNo))
       .accountNumber(Number(accountNumber))
-      .chainId(chainId);
-
-    if (publicKey) {
-      txnBuilder.publicKey(publicKey);
-    }
-
+      .chainId(chainId)
+      .publicKey(publicKey);
     const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction;
-    let serializedTx = unsignedTransaction.toBroadcastFormat();
-    const signableHex = unsignedTransaction.signablePayload.toString('hex');
 
     // Check if unsigned sweep is requested
     if (isUnsignedSweep) {
       return {
-        signableHex: signableHex,
+        signableTransaction: unsignedTransaction,
       };
     }
 
+    let serializedTx = unsignedTransaction.toBroadcastFormat();
+    const signableHex = unsignedTransaction.signablePayload.toString('hex');
     // Step 7: Sign the tx for non-BitGo recovery
     const message = unsignedTransaction.signablePayload;
     const messageHash = (utils.getHashFunction() || createHash('sha256')).update(message).digest();
