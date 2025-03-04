@@ -129,6 +129,7 @@ export const ofcCoins = [
   ),
   ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('ecc046f9-eb9c-479d-943f-9fe0633ea212', 'ofcoas', 'oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
+  ofc('24c3b525-b5d3-45c0-9280-599db27c0fab', 'ofctao', 'Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
   tofc('81bd0c13-6531-42b9-a58a-b1e65d239f6f', 'ofctoas', 'Testnet oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   tofc(
     '6d2fcabc-5c58-4964-a4c9-d9d5c338a88a',
@@ -290,6 +291,7 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
+  tofc('d7ec69dc-619d-4c10-b269-75c2327bd69d', 'ofcttao', 'Testnet Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
   ofcsolToken(
     '7d1b17b3-d606-4ba7-82dc-3e3a0eede46a',
     'ofcsol:wsol',
