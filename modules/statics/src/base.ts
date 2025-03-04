@@ -344,13 +344,10 @@ export enum UnderlyingAsset {
   APE = 'ape',
   API3 = 'api3',
   ARBETH = 'arbeth',
-  'arb:veur' = 'arb:veur',
-  'arb:vchf' = 'arb:vchf',
   BASEETH = 'baseeth',
   ATOM = 'atom',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
-  'avaxc:shrap' = 'avaxc:shrap',
   AXL = 'AXL',
   AXLV2 = 'axlv2',
   BABY = 'baby',
@@ -1984,6 +1981,7 @@ export enum UnderlyingAsset {
   'avaxc:wrose' = 'avaxc:wrose',
   'avaxc:swap' = 'avaxc:swap',
   'avaxc:tico' = 'avaxc:tico',
+  'avaxc:shrap' = 'avaxc:shrap',
   // End FTX missing AVAXC tokens
 
   // polygon Token ERC-20
@@ -2284,6 +2282,8 @@ export enum UnderlyingAsset {
   'arbeth:egp' = 'arbeth:egp',
   'arbeth:myrc' = 'arbeth:myrc',
   'arbeth:gs' = 'arbeth:gs',
+  'arbeth:veur' = 'arbeth:veur',
+  'arbeth:vchf' = 'arbeth:vchf',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
