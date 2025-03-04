@@ -3,3 +3,4 @@ export * from './stx';
 export * from './tstx';
 export * from './types';
 export * from './register';
+export * from './sip10Token';

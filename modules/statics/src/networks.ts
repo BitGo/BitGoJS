@@ -878,7 +878,7 @@ class IslmTestnet extends Testnet implements AccountNetwork {
 class Stx extends Mainnet implements StacksNetwork {
   name = 'Stx';
   family = CoinFamily.STX;
-  explorerUrl = 'https://explorer.stacks.co/txid/';
+  explorerUrl = 'https://explorer.hiro.so/txid/';
   sendmanymemoContractAddress = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE';
   stakingContractAddress = 'SP000000000000000000002Q6VF78';
 }
@@ -886,7 +886,7 @@ class Stx extends Mainnet implements StacksNetwork {
 class StxTestnet extends Testnet implements StacksNetwork {
   name = 'StxTestnet';
   family = CoinFamily.STX;
-  explorerUrl = 'https://explorer.stacks.co/txid/?chain=testnet';
+  explorerUrl = 'https://explorer.hiro.so/txid/?chain=testnet';
   sendmanymemoContractAddress = 'ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B';
   stakingContractAddress = 'ST000000000000000000002AMW42H';
 }
