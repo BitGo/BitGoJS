@@ -20,8 +20,8 @@ async function getWallet() {
  * Send an omni asset to a receiver. This function is used when you have sent an omni asset to a BitGo BTC wallet
  * and need to manually recover it
  * This function assumes that:
- *   - Your address has a single unspent that is large enough to cover the transaction
- *   - The receiver address is a legacy address, otherwise the transaction will not be recognized by the omni explorer
+ *   - Your address has at least one unspent that is large enough to cover the transaction
+ *   - The receiver address is a legacy or wrapped segwit ([reference](https://developers.bitgo.com/coins/address-types)) address, otherwise the transaction will not be recognized by the omni explorer.
  * @param wallet - The wallet to send the omni asset from.
  * @param receiver - The address to send the omni asset to (legacy address required).
  * @param sender - The address to send the omni asset from (legacy address required).
@@ -44,9 +44,9 @@ async function sendOmniAsset(
   assetId = 31,
   feeRateSatPerKB = 20_000
 ) {
-  if (!['1', 'n', 'm'].includes(receiver.slice(0, 1))) {
+  if (!['1', '3', 'n', 'm'].includes(receiver.slice(0, 1))) {
     throw new Error(
-      'Omni has only been verified to work with legacy addresses - use other address formats at your own risk'
+      'Omni has only been verified to work with legacy and wrapped segwit addresses - use other address formats at your own risk'
     );
   }
 
