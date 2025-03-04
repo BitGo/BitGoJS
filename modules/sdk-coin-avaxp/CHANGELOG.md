@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.68](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.65...@bitgo/sdk-coin-avaxp@5.0.68) (2025-03-04)
+
+### Bug Fixes
+
+- dependency fixes for secp256 lib ([826db0b](https://github.com/BitGo/BitGoJS/commit/826db0b5481435bb38b251e8bb5ba8ce9f78d017))
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
 ## [5.0.67](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.65...@bitgo/sdk-coin-avaxp@5.0.67) (2025-02-26)
 
 ### Bug Fixes

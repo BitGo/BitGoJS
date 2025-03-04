@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.1.44...@bitgo/sdk-coin-lnbtc@1.2.0) (2025-03-04)
+
+### Features
+
+- add express endpoints for lightning invoice ([563c250](https://github.com/BitGo/BitGoJS/commit/563c250f1c028f10a3a0662c9faae900d6ee137c))
+
 ## [1.1.46](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-lnbtc@1.1.44...@bitgo/sdk-coin-lnbtc@1.1.46) (2025-02-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-lnbtc

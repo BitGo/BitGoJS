@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.2.0...@bitgo/utxo-core@1.5.0) (2025-03-04)
+
+### Bug Fixes
+
+- **utxo-core:** identify internal/external output correctly ([45a1b29](https://github.com/BitGo/BitGoJS/commit/45a1b296bd7e8b79ad38a79bd4e00a0eaa1bf2e3))
+- **utxo-lib:** fix psbt clone to preserve network and class type ([d5c4e52](https://github.com/BitGo/BitGoJS/commit/d5c4e5236662441322a974b9aa706a2d31b6b2c3))
+
+### Features
+
+- **utxo-core:** add BIP65 CLTV locktime encoding functions ([f3ace39](https://github.com/BitGo/BitGoJS/commit/f3ace391ca2f1169b0f57fdb4e927aabd8cb970f))
+- **utxo-core:** add dust threshold calculations for UTXO coins ([f1b5c2d](https://github.com/BitGo/BitGoJS/commit/f1b5c2db131f558d806c5e0ccb48a9250a1d5a28))
+- **utxo-core:** add output utilities for transaction building ([678906f](https://github.com/BitGo/BitGoJS/commit/678906fe9ee15db40fa83473572a524ac0f438d9))
+- **utxo-core:** add PSBT virtual size estimation ([bf51d1d](https://github.com/BitGo/BitGoJS/commit/bf51d1d8412a1e64fceca1a4ca523a0371a8cddf))
+- **utxo-core:** add support for descriptors with plain keys ([52616ac](https://github.com/BitGo/BitGoJS/commit/52616acf94b189732ad8ae9ae89b91637ada1545))
+- **utxo-core:** add taproot 1-of-3 descriptor template ([b394636](https://github.com/BitGo/BitGoJS/commit/b3946364a16ab461b5ada77d4c7576a381b1171e))
+- **utxo-core:** add VirtualSize export ([a80b121](https://github.com/BitGo/BitGoJS/commit/a80b121e7d9aed446e7dcc216411ffc76c634a75))
+- **utxo-core:** auto-detect descriptor type from string ([1dc56bb](https://github.com/BitGo/BitGoJS/commit/1dc56bb831721ff93e89d9ec096b1de04de94047))
+- **utxo-core:** export dustThreshold utils ([4ab3d9d](https://github.com/BitGo/BitGoJS/commit/4ab3d9de7f8750e54197e6deef4f95950fc868fc))
+- **utxo-core:** simplify module exports ([ea7cd0f](https://github.com/BitGo/BitGoJS/commit/ea7cd0f90977894c25fc0734386b9e8d27465fd5))
+- **utxo-core:** use wrapped psbt for test stages ([0133ac9](https://github.com/BitGo/BitGoJS/commit/0133ac9f3c64a6c8f7c8fbd905ac182267ff12cc))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.2.0...@bitgo/utxo-core@1.4.0) (2025-02-26)
 
 ### Bug Fixes

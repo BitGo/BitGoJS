@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.3.10...@bitgo/sdk-coin-bera@2.3.13) (2025-03-04)
+
+### Bug Fixes
+
+- dependency fixes for secp256 lib ([826db0b](https://github.com/BitGo/BitGoJS/commit/826db0b5481435bb38b251e8bb5ba8ce9f78d017))
+
 ## [2.3.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.3.10...@bitgo/sdk-coin-bera@2.3.12) (2025-02-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bera

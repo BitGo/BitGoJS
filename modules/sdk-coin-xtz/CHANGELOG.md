@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.1.64...@bitgo/sdk-coin-xtz@2.2.0) (2025-03-04)
+
+### Bug Fixes
+
+- dependency fixes for secp256 lib ([826db0b](https://github.com/BitGo/BitGoJS/commit/826db0b5481435bb38b251e8bb5ba8ce9f78d017))
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
+### Features
+
+- **sdk-coin-icp:** implemented transaction builder and validations for ICP ([ecf68b8](https://github.com/BitGo/BitGoJS/commit/ecf68b8f671944992a16e0eca77ef200e83c520c))
+
 ## [2.1.66](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.1.64...@bitgo/sdk-coin-xtz@2.1.66) (2025-02-26)
 
 ### Bug Fixes

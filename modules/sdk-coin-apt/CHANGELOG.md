@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.7.2...@bitgo/sdk-coin-apt@1.10.0) (2025-03-04)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** correction 64 bit LE to two buffer of 32 bits ([2165171](https://github.com/BitGo/BitGoJS/commit/21651716d9704ffc0e66072b6bafc3e7bd996aec))
+- **sdk-coin-apt:** fetch correction transaction ([a8e9db2](https://github.com/BitGo/BitGoJS/commit/a8e9db23326a680b5e78162c21d508edf00d3f07))
+- **statics:** mainnet apt token registration ([88c5b19](https://github.com/BitGo/BitGoJS/commit/88c5b19f5f80e2991f9e78d6821e0e5ba87b3f04))
+- **statics:** modify gas tank factor ([4c00d68](https://github.com/BitGo/BitGoJS/commit/4c00d681687c8edc061a6d048cd367240425eabf))
+
+### Features
+
+- **sdk-coin-apt:** recommend min gas tank balance for next 1000 txns ([74071ab](https://github.com/BitGo/BitGoJS/commit/74071aba4c0754242fc96f7334cec74edba6c73b))
+- **statics:** add GasTankAccountCoin ([b031d23](https://github.com/BitGo/BitGoJS/commit/b031d234e9acc38f3244c0407715a709a8aa28ab))
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.7.2...@bitgo/sdk-coin-apt@1.9.0) (2025-02-26)
 
 ### Bug Fixes

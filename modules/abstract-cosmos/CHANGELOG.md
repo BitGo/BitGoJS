@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.2.22...@bitgo/abstract-cosmos@11.5.0) (2025-03-04)
+
+### Bug Fixes
+
+- address validation for cosmos like coins ([2912eab](https://github.com/BitGo/BitGoJS/commit/2912eabf6a1dbc7cde3715352c3849f550b5b6ec))
+- dependency fixes for secp256 lib ([826db0b](https://github.com/BitGo/BitGoJS/commit/826db0b5481435bb38b251e8bb5ba8ce9f78d017))
+
+### Features
+
+- **abstract-cosmos:** add unsigned sweep recovery for cosmos ([e2d1d07](https://github.com/BitGo/BitGoJS/commit/e2d1d0787a375d6ae8493961b607a9cea9d2f29a))
+
 # [11.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.2.22...@bitgo/abstract-cosmos@11.4.0) (2025-02-26)
 
 ### Bug Fixes

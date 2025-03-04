@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [42.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.27.0...bitgo@42.0.0) (2025-03-04)
+
+### Bug Fixes
+
+- **abstract-eth:** gasLimit for hop txn ([4ce0180](https://github.com/BitGo/BitGoJS/commit/4ce01809b424936919fc30bd6d717b4629a5c2f5))
+- enable tokens for cold wallet ([544733c](https://github.com/BitGo/BitGoJS/commit/544733cdfb3bb64cd283c3f7e4f1f96d2bf9ba3c))
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+- **sdk-lib-mpc:** fix time warp during decrypting comms in MPCv2 ([c060690](https://github.com/BitGo/BitGoJS/commit/c060690105001cb9c532d39461d175b109f11a71))
+
+### Features
+
+- **abstract-lightning:** add codecs for more lightning apis ([1b6d238](https://github.com/BitGo/BitGoJS/commit/1b6d238a3538f7059ce773f8bd218ad8b723f17c))
+- **abstract-lightning:** move lnv2 logic from sdk-core ([5c9114d](https://github.com/BitGo/BitGoJS/commit/5c9114d6a4dbdd5a130bde7cb897ff6f1f8132e0))
+- **abstract-lightning:** wire up lnv2 invoices ([dba5411](https://github.com/BitGo/BitGoJS/commit/dba5411dea805ab3bf5e3937736d5c0d6f166e49))
+- add express endpoints for lightning invoice ([01d89de](https://github.com/BitGo/BitGoJS/commit/01d89de0aaa33d47953edd3aede9b8161b734195))
+- add support to create lightning payments ([ffa5e71](https://github.com/BitGo/BitGoJS/commit/ffa5e71f12b640d9e5bffd41fd47cc144858d09d))
+- remove requirement fee for keyternal ([4b3c1e6](https://github.com/BitGo/BitGoJS/commit/4b3c1e6c8f54dd72a6061c91ac67e2c61e3ccefc))
+- **sdk-coin-icp:** implemented transaction builder and validations for ICP ([ecf68b8](https://github.com/BitGo/BitGoJS/commit/ecf68b8f671944992a16e0eca77ef200e83c520c))
+- **sdk-coin-icp:** refactor key pair generation to use utility function ([93d84d4](https://github.com/BitGo/BitGoJS/commit/93d84d48a3e6287959626e69bcce1c430d82df7a))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** when we have a pending approval for a hop txn
+  when approved the txn is using gasLimit provided by hop params
+  which is not expected, this commit fixes it
+
+TICKET: COIN-3249
+
+- **abstract-lightning:** Lightning v2
+- **abstract-lightning:** Lightning v2
+
 # [41.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.27.0...bitgo@41.0.0) (2025-02-26)
 
 ### Bug Fixes

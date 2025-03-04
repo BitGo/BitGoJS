@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.7.0...@bitgo/express@13.0.0) (2025-03-04)
+
+### Bug Fixes
+
+- dependency fixes for secp256 lib ([826db0b](https://github.com/BitGo/BitGoJS/commit/826db0b5481435bb38b251e8bb5ba8ce9f78d017))
+- **express:** correct parsing of initwallet ([9e9601d](https://github.com/BitGo/BitGoJS/commit/9e9601d3bdd5f03a9177babbac47a63360c5a546))
+
+### Features
+
+- **abstract-lightning:** add codecs for more lightning apis ([1b6d238](https://github.com/BitGo/BitGoJS/commit/1b6d238a3538f7059ce773f8bd218ad8b723f17c))
+- **abstract-lightning:** move lnv2 logic from sdk-core ([5c9114d](https://github.com/BitGo/BitGoJS/commit/5c9114d6a4dbdd5a130bde7cb897ff6f1f8132e0))
+- add express endpoints for lightning ([97a163d](https://github.com/BitGo/BitGoJS/commit/97a163dc2465fc3b64a8993ca0099431df2583d6))
+- add express endpoints for lightning ([d431322](https://github.com/BitGo/BitGoJS/commit/d431322aa8d76df8f88867c554df61574fd25b7a))
+- add express endpoints for lightning invoice ([01d89de](https://github.com/BitGo/BitGoJS/commit/01d89de0aaa33d47953edd3aede9b8161b734195))
+- add express endpoints for lightning invoice ([563c250](https://github.com/BitGo/BitGoJS/commit/563c250f1c028f10a3a0662c9faae900d6ee137c))
+- add proxyquire dev import ([112da17](https://github.com/BitGo/BitGoJS/commit/112da17a52fe68b7a6808daa47f96e17addef4de))
+- **express:** decouple signer node data update from init wallet ([a99c309](https://github.com/BitGo/BitGoJS/commit/a99c3091ae7fa07aaeb5a60ae75996995bd95c37))
+- **express:** get watch only external ip from wallet ([993d175](https://github.com/BitGo/BitGoJS/commit/993d17514047115d8144d6bd685220a00b3bb77a))
+- **express:** move walletId to the path ([1c6b555](https://github.com/BitGo/BitGoJS/commit/1c6b55575c5e75b1292a73f346a8d2db658743d0))
+- refactor of api sequence ([7da9e7d](https://github.com/BitGo/BitGoJS/commit/7da9e7d13a57255bc10161378880015e3da50e88))
+- updating api handlers to use codec ([d3244aa](https://github.com/BitGo/BitGoJS/commit/d3244aa13a9b254442e9a87dfea17dc949b7b04c))
+
+### BREAKING CHANGES
+
+- **abstract-lightning:** Lightning v2
+- **express:** changed path for lightning apis
+
+TICKET: BTC-1846
+
+- **abstract-lightning:** Lightning v2
+
 # [12.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.7.0...@bitgo/express@12.0.0) (2025-02-26)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.38](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.0.35...@bitgo/sdk-coin-hash@3.0.38) (2025-03-04)
+
+### Bug Fixes
+
+- address validation for cosmos like coins ([2912eab](https://github.com/BitGo/BitGoJS/commit/2912eabf6a1dbc7cde3715352c3849f550b5b6ec))
+
 ## [3.0.37](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.0.35...@bitgo/sdk-coin-hash@3.0.37) (2025-02-26)
 
 ### Bug Fixes
