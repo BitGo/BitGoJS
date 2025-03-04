@@ -1,97 +1,147 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import {
-  BaseKey,
-  BaseTransaction,
-  PublicKey as BasePublicKey,
-  BaseTransactionBuilder,
-  BaseAddress,
-  Recipient,
-} from '@bitgo/sdk-core';
-import { TransferBuilder } from './transferBuilder';
+import BigNumber from 'bignumber.js';
+import { BaseKey, BaseTransactionBuilder, BuildTransactionError, SigningError, BaseAddress } from '@bitgo/sdk-core';
+import { Transaction } from './transaction';
+import utils from './utils';
+import { IcpTransactionData } from './iface';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  protected _transfer: TransferBuilder;
+  protected _transaction: Transaction;
+  protected _sender: string;
+  protected _publicKey: string;
+  protected _memo: number | BigInt;
+  protected _receiverId: string;
+  protected _amount: string;
 
-  protected constructor(_coinConfig: Readonly<CoinConfig>) {
+  constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._transaction = new Transaction(_coinConfig, utils);
+  }
+
+  /**
+   * Sets the public key and the address of the sender of this transaction.
+   *
+   * @param {string} address the account that is sending this transaction
+   * @param {string} pubKey the public key that is sending this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public sender(address: string, pubKey: string): this {
+    if (!address || !utils.isValidAddress(address.toString())) {
+      throw new BuildTransactionError('Invalid or missing address, got: ' + address);
+    }
+    if (!pubKey || !utils.isValidPublicKey(pubKey)) {
+      throw new BuildTransactionError('Invalid or missing pubKey, got: ' + pubKey);
+    }
+    this._sender = address;
+    this._publicKey = pubKey;
+    return this;
+  }
+
+  /**
+   * Set the memo
+   *
+   * @param {number} memo - number that to be used as memo
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public memo(memo: number): this {
+    if (memo < 0) {
+      throw new BuildTransactionError(`Invalid memo: ${memo}`);
+    }
+    this._memo = memo;
+    return this;
+  }
+
+  /**
+   * Sets the account Id of the receiver of this transaction.
+   *
+   * @param {string} accountId the account id of the account that is receiving this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public receiverId(accountId: string): this {
+    if (!accountId || !utils.isValidAddress(accountId)) {
+      throw new BuildTransactionError('Invalid or missing accountId for receiver, got: ' + accountId);
+    }
+    this._receiverId = accountId;
+    return this;
   }
 
   /** @inheritdoc */
-  protected signImplementation(key: BaseKey): BaseTransaction {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * add a signature to the transaction
-   */
-  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * Sets the sender of this transaction.
-   */
-  sender(senderAddress: string): this {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * gets the gas data of this transaction.
-   */
-  gasData(): this {
-    throw new Error('method not implemented');
+  get transaction(): Transaction {
+    return this._transaction;
   }
 
   /** @inheritdoc */
-  validateAddress(address: BaseAddress, addressFormat?: string): void {
-    throw new Error('method not implemented');
+  set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
+  get transactionType(): string {
+    return this._transaction.icpTransactionData.transactionType;
+  }
+
+  /** @inheritdoc */
+  fromImplementation(rawTransaction: IcpTransactionData): Transaction {
+    this.validateRawTransaction(rawTransaction);
+    this.buildImplementation();
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction: Transaction): void {
+    if (!transaction || !transaction.icpTransactionData) {
+      return;
+    }
+    utils.validateRawTransaction(transaction.icpTransactionData);
   }
 
   /**
-   * validates the recipients of the transaction
+   * Sets the amount of this transaction.
+   *
+   * @param {string} value the amount to be sent in e8s (1 ICP = 1e8 e8s)
+   * @returns {TransactionBuilder} This transaction builder
    */
-  validateRecipients(recipients: Recipient[]): void {
-    throw new Error('method not implemented');
+  public amount(value: string): this {
+    utils.validateValue(new BigNumber(value));
+    this._amount = value;
+    return this;
+  }
+
+  validateValue(value: BigNumber): void {
+    utils.validateValue(new BigNumber(value));
   }
 
   /**
-   * validates the gas data of the transaction
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {Transaction} tx the transaction data
    */
-  validateGasData(): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * validates the gas price of the transaction
-   */
-  validateGasPrice(gasPrice: number): void {
-    throw new Error('method not implemented');
+  initBuilder(tx: Transaction): void {
+    this._transaction = tx;
+    const icpTransactionData = tx.icpTransactionData;
+    this._sender = icpTransactionData.senderAddress;
+    this._memo = icpTransactionData.memo;
+    this._receiverId = icpTransactionData.receiverAddress;
+    this._publicKey = icpTransactionData.senderPublicKeyHex;
+    this._amount = icpTransactionData.amount;
   }
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    throw new Error('method not implemented');
+    if (!key || !key.key) {
+      throw new SigningError('Key is required');
+    }
+    if (!utils.isValidPrivateKey(key.key)) {
+      throw new SigningError('Invalid private key');
+    }
   }
 
-  /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    throw new Error('method not implemented');
+  validateAddress(address: BaseAddress): void {
+    if (!utils.isValidAddress(address.address)) {
+      throw new BuildTransactionError('Invalid address');
+    }
   }
 
-  /** @inheritdoc */
-  validateValue(): void {
-    throw new Error('method not implemented');
-  }
-
-  /**
-   * Validates the specific transaction builder internally
-   */
-  validateDecodedTransaction(): void {
-    throw new Error('method not implemented');
-  }
-
-  /** @inheritdoc */
-  validateTransaction(): void {
-    throw new Error('method not implemented');
+  validateRawTransaction(rawTransaction: IcpTransactionData): void {
+    utils.validateRawTransaction(rawTransaction);
   }
 }

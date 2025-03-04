@@ -1,20 +1,20 @@
 import {
   BaseCoin,
-  BitGoBase,
   BaseTransactionBuilder,
-  KeyPair as SdkCoreKeyPair,
+  BitGoBase,
   MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
+  KeyPair as SdkCoreKeyPair,
   SignedTransaction,
+  TransactionExplanation,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  TransactionExplanation,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
-import BigNumber from 'bignumber.js';
 import { bip32 } from '@bitgo/secp256k1';
-import { Interface, Utils, KeyPair, TransactionBuilder } from './lib';
+import { CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import BigNumber from 'bignumber.js';
+import { Interface, KeyPair, TransactionBuilder, Utils } from './lib';
 
 export class Xtz extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -170,7 +170,8 @@ export class Xtz extends BaseCoin {
    */
   async signMessage(key: SdkCoreKeyPair, message: string | Buffer): Promise<Buffer> {
     const keyPair = new KeyPair({ prv: key.prv });
-    const messageHex = message instanceof Buffer ? message.toString('hex') : Buffer.from(message).toString('hex');
+    const messageHex =
+      message instanceof Buffer ? message.toString('hex') : Buffer.from(message as string, 'utf-8').toString('hex');
     const signatureData = await Utils.sign(keyPair, messageHex);
     return Buffer.from(signatureData.sig);
   }

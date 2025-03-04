@@ -30,13 +30,6 @@ export class Ticp extends Icp {
     return 'ticp';
   }
 
-  /**
-   * Identifier for the blockchain family
-   */
-  getFamily(): string {
-    return 'ticp';
-  }
-
   getBaseFactor(): number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
