@@ -31,13 +31,13 @@ describe('Internet computer', function () {
     const ticp = bitgo.coin('ticp');
 
     icp.getChain().should.equal('icp');
-    icp.getFamily().should.equal('icp');
+    icp.getFamily().should.equal('ICP');
     icp.getFullName().should.equal('Internet Computer');
     icp.getBaseFactor().should.equal(1e8);
     icp.supportsTss().should.equal(true);
 
     ticp.getChain().should.equal('ticp');
-    ticp.getFamily().should.equal('icp');
+    ticp.getFamily().should.equal('ICP');
     ticp.getFullName().should.equal('Testnet Internet Computer');
     ticp.getBaseFactor().should.equal(1e8);
     icp.supportsTss().should.equal(true);
