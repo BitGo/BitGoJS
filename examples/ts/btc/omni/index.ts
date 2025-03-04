@@ -11,6 +11,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 const RECEIVE_ADDRESS = '';
 const SEND_ADDRESS = '';
 const ASSET_ID = 31;
+const BASE_AMOUNT = 729100000n; // this is currently 7.291 USDT
 
 async function getWallet() {
   return await omniConfig.sdk.coin(omniConfig.coin).wallets().get({ id: omniConfig.walletId });
@@ -103,7 +104,7 @@ async function main() {
 
   const wallet = await getWallet();
   // we multiply feeRate by 1000 because mempool returns sat/vB and BitGo uses sat/kvB
-  await sendOmniAsset(wallet, RECEIVE_ADDRESS, SEND_ADDRESS, 729100000n, ASSET_ID, feeRate * 1000);
+  await sendOmniAsset(wallet, RECEIVE_ADDRESS, SEND_ADDRESS, BASE_AMOUNT, ASSET_ID, feeRate * 1000);
 }
 
 main().catch((e) => {
