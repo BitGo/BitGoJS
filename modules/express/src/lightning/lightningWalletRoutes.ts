@@ -10,6 +10,7 @@ import {
   PaymentQuery,
 } from '@bitgo/abstract-lightning';
 import { decodeOrElse } from '@bitgo/sdk-core';
+import { TransactionParams, PaymentHashParams } from './codecs';
 
 export async function handleListLightningInvoices(req: express.Request): Promise<unknown> {
   const bitgo = req.bitgo;
@@ -60,48 +61,43 @@ export async function handleListLightningTransactions(req: express.Request): Pro
 
 export async function handleGetLightningTransaction(req: express.Request): Promise<Transaction> {
   const bitgo = req.bitgo;
-  const txId = req.params.txid;
-
-  if (!txId) {
-    throw new ApiResponseError('Missing required parameter: txid', 400);
-  }
+  const params = decodeOrElse('TransactionParams', TransactionParams, req.params, (error) => {
+    throw new ApiResponseError(`Invalid transaction parameters: ${error}`, 400);
+  });
 
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
   const lightningWallet = getLightningWallet(wallet);
 
-  return await lightningWallet.getTransaction(txId);
+  return await lightningWallet.getTransaction(params.txid);
 }
 
 export async function handleGetLightningInvoice(req: express.Request): Promise<unknown> {
   const bitgo = req.bitgo;
-  const paymentHash = req.params.paymentHash;
-
-  if (!paymentHash) {
-    throw new ApiResponseError('Missing required parameter: paymentHash', 400);
-  }
+  const params = decodeOrElse('PaymentHashParams', PaymentHashParams, req.params, (error) => {
+    throw new ApiResponseError(`Invalid invoice parameters: ${error}`, 400);
+  });
 
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
   const lightningWallet = getLightningWallet(wallet);
 
-  return await lightningWallet.getInvoice(paymentHash);
+  return await lightningWallet.getInvoice(params.paymentHash);
 }
 
 export async function handleGetLightningPayment(req: express.Request): Promise<PaymentInfo> {
   const bitgo = req.bitgo;
-  const paymentHash = req.params.paymentHash;
-
-  if (!paymentHash) {
-    throw new ApiResponseError('Missing required parameter: paymentHash', 400);
-  }
+  const params = decodeOrElse('PaymentHashParams', PaymentHashParams, req.params, (error) => {
+    throw new ApiResponseError(`Invalid payment parameters: ${error}`, 400);
+  });
 
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
   const lightningWallet = getLightningWallet(wallet);
 
-  return await lightningWallet.getPayment(paymentHash);
+  return await lightningWallet.getPayment(params.paymentHash);
 }
+
 export async function handleListLightningPayments(req: express.Request): Promise<PaymentInfo[]> {
   const bitgo = req.bitgo;
   const params = decodeOrElse(PaymentQuery.name, PaymentQuery, req.query, (error) => {
