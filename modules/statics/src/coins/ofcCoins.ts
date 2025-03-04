@@ -667,9 +667,15 @@ export const ofcCoins = [
     'ofcarbeth:vchf',
     'VNX Franc',
     18,
-    UnderlyingAsset['arb:vchf']
+    UnderlyingAsset['arbeth:vchf']
   ),
-  ofcArbethErc20('8087ff3d-3157-43b8-b6d1-a9e62a12b3ec', 'ofcarbeth:veur', 'VNX Euro', 18, UnderlyingAsset['arb:veur']),
+  ofcArbethErc20(
+    '8087ff3d-3157-43b8-b6d1-a9e62a12b3ec',
+    'ofcarbeth:veur',
+    'VNX Euro',
+    18,
+    UnderlyingAsset['arbeth:veur']
+  ),
   ofcArbethErc20(
     '4834e014-0282-4e27-ad9c-c4a4468ce732',
     'ofcarbeth:usdt',
