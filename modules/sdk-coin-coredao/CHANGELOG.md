@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.0.0...@bitgo/sdk-coin-coredao@2.0.3) (2025-03-04)
+
+### Bug Fixes
+
+- update getAddressNonce logic in coredao ([a1138da](https://github.com/BitGo/BitGoJS/commit/a1138dab0064e9e6ee76b4014f87c6391165bc96))
+- updating coredao api url ([9f79847](https://github.com/BitGo/BitGoJS/commit/9f79847f2f961be1b0bf9d9ef85267f1893b5899))
+
 ## [2.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.0.0...@bitgo/sdk-coin-coredao@2.0.2) (2025-02-26)
 
 ### Bug Fixes

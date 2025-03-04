@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [23.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.6.0...@bitgo/abstract-eth@23.0.0) (2025-03-04)
+
+### Bug Fixes
+
+- **abstract-eth:** gasLimit for hop txn ([4ce0180](https://github.com/BitGo/BitGoJS/commit/4ce01809b424936919fc30bd6d717b4629a5c2f5))
+- dependency fixes for secp256 lib ([826db0b](https://github.com/BitGo/BitGoJS/commit/826db0b5481435bb38b251e8bb5ba8ce9f78d017))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** when we have a pending approval for a hop txn
+  when approved the txn is using gasLimit provided by hop params
+  which is not expected, this commit fixes it
+
+TICKET: COIN-3249
+
 ## [22.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@22.6.0...@bitgo/abstract-eth@22.6.2) (2025-02-26)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

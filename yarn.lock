@@ -7851,6 +7851,13 @@ cbor-x@1.5.9:
   optionalDependencies:
     cbor-extract "^2.2.0"
 
+cbor-x@^1.5.9:
+  version "1.6.0"
+  resolved "https://registry.npmjs.org/cbor-x/-/cbor-x-1.6.0.tgz#89c35d2d805efc30e09a28349425cc05d57aacd7"
+  integrity sha512-0kareyRwHSkL6ws5VXHEf8uY1liitysCVJjlmhaLG+IXLqhSaOO+t63coaso7yjwEzWZzLy8fJo06gZDVQM9Qg==
+  optionalDependencies:
+    cbor-extract "^2.2.0"
+
 cbor@^10.0.3:
   version "10.0.3"
   resolved "https://registry.npmjs.org/cbor/-/cbor-10.0.3.tgz#202d79cd696f408700af51b0c9771577048a860e"
@@ -8654,7 +8661,7 @@ cosmjs-types@^0.6.1:
     long "^4.0.0"
     protobufjs "~6.11.2"
 
-crc-32@^1.2.0, crc-32@^1.2.2:
+crc-32@^1.2.0:
   version "1.2.2"
   resolved "https://registry.npmjs.org/crc-32/-/crc-32-1.2.2.tgz#3cad35a934b8bf71f25ca524b6da51fb7eace2ff"
   integrity sha512-ROmzCKrTnOwybPcJApAA6WBWij23HVfGVNKqqrZpuyZOHqK2CwHSvpGuyt/UNNvaIjEd8X5IFGp4Mh+Ie1IHJQ==

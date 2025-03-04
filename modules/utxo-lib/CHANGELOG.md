@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.2.2...@bitgo/utxo-lib@11.2.4) (2025-03-04)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+- **utxo-lib:** fix psbt clone to preserve network and class type ([d5c4e52](https://github.com/BitGo/BitGoJS/commit/d5c4e5236662441322a974b9aa706a2d31b6b2c3))
+- **utxo-lib:** move @noble/secp256k1 from devDependencies to dependencies ([033877f](https://github.com/BitGo/BitGoJS/commit/033877f2d882a39aae591fdab505395b81c600d2))
+
 ## [11.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.2.2...@bitgo/utxo-lib@11.2.3) (2025-02-26)
 
 ### Bug Fixes

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.5...@bitgo/abstract-substrate@1.3.0) (2025-03-04)
+
+### Bug Fixes
+
+- **sdk-coin-tao:** change amount and netuid type to string ([bbb92aa](https://github.com/BitGo/BitGoJS/commit/bbb92aa3e9def1e6260a074761cdf4a38888ebd6))
+
+### Features
+
+- **abstract-substrate:** add common types to abstract-substrate ([6298a42](https://github.com/BitGo/BitGoJS/commit/6298a42c0b476e87b3a5e0a3cd5e57cc5c262f50))
+- **abstract-substrate:** add missing methods for TAO stake/unstake ([635854c](https://github.com/BitGo/BitGoJS/commit/635854cbd04f473c20d20820d03d1b82f8d013e9))
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.5...@bitgo/abstract-substrate@1.2.0) (2025-02-26)
 
 ### Features

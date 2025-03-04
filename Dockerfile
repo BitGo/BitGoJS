@@ -43,6 +43,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
 COPY --from=builder /tmp/bitgo/modules/bls-dkg /var/modules/bls-dkg/
 COPY --from=builder /tmp/bitgo/modules/sdk-lib-mpc /var/modules/sdk-lib-mpc/
 COPY --from=builder /tmp/bitgo/modules/sdk-opensslbytes /var/modules/sdk-opensslbytes/
+COPY --from=builder /tmp/bitgo/modules/secp256k1 /var/modules/secp256k1/
 COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
 COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
 COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
@@ -127,6 +128,7 @@ cd /var/modules/sdk-core && yarn link && \
 cd /var/modules/bls-dkg && yarn link && \
 cd /var/modules/sdk-lib-mpc && yarn link && \
 cd /var/modules/sdk-opensslbytes && yarn link && \
+cd /var/modules/secp256k1 && yarn link && \
 cd /var/modules/sjcl && yarn link && \
 cd /var/modules/statics && yarn link && \
 cd /var/modules/utxo-lib && yarn link && \
@@ -214,6 +216,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/bls-dkg && \
     yarn link @bitgo/sdk-lib-mpc && \
     yarn link @bitgo/sdk-opensslbytes && \
+    yarn link @bitgo/secp256k1 && \
     yarn link @bitgo/sjcl && \
     yarn link @bitgo/statics && \
     yarn link @bitgo/utxo-lib && \
@@ -295,9 +298,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 26 Feb 2025 03:40:57 GMT"
-LABEL version=12.0.0
-LABEL git_hash=fe3b7697acb46f16e7445d0ebf3d93098e781653
+LABEL created="Tue, 04 Mar 2025 17:08:29 GMT"
+LABEL version=13.0.0
+LABEL git_hash=52a2157ce9ebd8bb0294609693a5724d6c24b8a9
 #LABEL_END
 
 USER node

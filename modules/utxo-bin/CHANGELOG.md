@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.6.0...@bitgo/utxo-bin@3.6.3) (2025-03-04)
+
+### Bug Fixes
+
+- **root:** replace elliptic with noble/curves/secp256k1 ([50a208d](https://github.com/BitGo/BitGoJS/commit/50a208d68d8b313ccb9b8e638212f61617daf92a))
+
 ## [3.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.6.0...@bitgo/utxo-bin@3.6.2) (2025-02-26)
 
 ### Bug Fixes

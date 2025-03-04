@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.0.0...@bitgo/statics@51.2.0) (2025-03-04)
+
+### Bug Fixes
+
+- add additional slash so txn can be viewed directly ([e9de644](https://github.com/BitGo/BitGoJS/commit/e9de6443ce35f401f7a097560be56ded45ad25ed))
+- **statics:** add APT_FEATURES into apt token ([d0a3e49](https://github.com/BitGo/BitGoJS/commit/d0a3e49f90708aad3a9ad03af23f1ceca478246c))
+- **statics:** mainnet apt token registration ([88c5b19](https://github.com/BitGo/BitGoJS/commit/88c5b19f5f80e2991f9e78d6821e0e5ba87b3f04))
+- **statics:** modify gas tank factor ([4c00d68](https://github.com/BitGo/BitGoJS/commit/4c00d681687c8edc061a6d048cd367240425eabf))
+- **statics:** remove staking feature from unsupported cosmos like coins ([1ae0416](https://github.com/BitGo/BitGoJS/commit/1ae041689174de8085a31c86a01a87ec64ae515f))
+
+### Features
+
+- change instadapp name to fluid ([da57c7b](https://github.com/BitGo/BitGoJS/commit/da57c7be0a915234ce1c88d184506f1ff331fe28))
+- **sdk-coin-apt:** ofc coins including apt ([2ea0428](https://github.com/BitGo/BitGoJS/commit/2ea04282ff4cf682234d1fc35f91ed49a47db3ea))
+- **statics:** add GasTankAccountCoin ([b031d23](https://github.com/BitGo/BitGoJS/commit/b031d234e9acc38f3244c0407715a709a8aa28ab))
+- **statics:** add list of gatekept coins and tokens ([d9a91ae](https://github.com/BitGo/BitGoJS/commit/d9a91ae1d0d30cad372aba9c073f0c224e9390bb))
+- **statics:** bsc:usd1 trump token ([f3aa9a8](https://github.com/BitGo/BitGoJS/commit/f3aa9a8d74f01aa6c5b3b4fc61dd21bcda3f090f))
+- **statics:** onboard eth:usd1 token ([802cb44](https://github.com/BitGo/BitGoJS/commit/802cb4429aec6ed6aea4eceb317c14d9ffad8173))
+- **statics:** prod enable sui:wal staking ([14754b5](https://github.com/BitGo/BitGoJS/commit/14754b50094d71c4063e898cae804d2a1e394e9f))
+
 # [51.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.0.0...@bitgo/statics@51.1.0) (2025-02-26)
 
 ### Bug Fixes

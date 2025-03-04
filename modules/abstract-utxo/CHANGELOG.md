@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.17.0...@bitgo/abstract-utxo@9.18.0) (2025-03-04)
+
+### Features
+
+- **utxo-core:** simplify module exports ([ea7cd0f](https://github.com/BitGo/BitGoJS/commit/ea7cd0f90977894c25fc0734386b9e8d27465fd5))
+
 ## [9.17.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.17.0...@bitgo/abstract-utxo@9.17.2) (2025-02-26)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo
