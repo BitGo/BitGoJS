@@ -26,6 +26,8 @@ import {
   MPCUnsignedTx,
   MPCSweepRecoveryOptions,
   MPCTxs,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
@@ -117,6 +119,11 @@ export class Dot extends BaseCoin {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   getMPCAlgorithm(): MPCAlgorithm {

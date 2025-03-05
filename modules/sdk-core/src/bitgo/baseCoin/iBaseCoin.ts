@@ -16,6 +16,13 @@ import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
 import { MPCTx, PopulatedIntent } from '../utils';
 
+export const multisigTypes = {
+  onchain: 'onchain',
+  tss: 'tss',
+} as const;
+
+export type MultisigType = keyof typeof multisigTypes;
+
 export interface Output extends ITransactionRecipient {
   address: string;
   // of form coin:token
@@ -485,6 +492,8 @@ export interface IBaseCoin {
   allowsAccountConsolidations(): boolean;
   getTokenEnablementConfig(): TokenEnablementConfig;
   supportsTss(): boolean;
+  supportsMultisig(): boolean;
+  getDefaultMultisigType(): MultisigType | undefined;
   supportsDeriveKeyWithSeed(): boolean;
   isEVM(): boolean;
   supportsBlsDkg(): boolean;

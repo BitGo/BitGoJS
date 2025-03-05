@@ -40,6 +40,8 @@ import {
   TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -186,6 +188,11 @@ export class Sol extends BaseCoin {
 
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   getMPCAlgorithm(): MPCAlgorithm {

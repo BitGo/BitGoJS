@@ -11,7 +11,16 @@ import {
   SignedTransaction,
   SignTransactionOptions,
 } from '@bitgo/abstract-eth';
-import { BaseCoin, BitGoBase, common, getIsUnsignedSweep, Util, Recipient } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  BitGoBase,
+  common,
+  getIsUnsignedSweep,
+  Util,
+  Recipient,
+  MultisigType,
+  multisigTypes,
+} from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork as EthLikeNetwork, ethGasConfigs } from '@bitgo/statics';
 import { TransactionBuilder, KeyPair as KeyPairLib, TransferBuilder } from './lib';
 import * as _ from 'lodash';
@@ -47,6 +56,16 @@ export class Etc extends AbstractEthLikeCoin {
       valid = false;
     }
     return valid;
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig() {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   /**

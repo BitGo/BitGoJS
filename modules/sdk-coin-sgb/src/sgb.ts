@@ -6,7 +6,7 @@
  * @coinWebsite https://songbird-explorer.flare.network
  */
 
-import { BaseCoin, BitGoBase, common, MPCAlgorithm } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
@@ -27,6 +27,11 @@ export class Sgb extends AbstractEthLikeNewCoins {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   /** @inheritDoc */

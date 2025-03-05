@@ -11,6 +11,8 @@ import {
   SignTransactionOptions,
   SignedTransaction,
   Environments,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import utils from './lib/utils';
@@ -97,6 +99,11 @@ export class Icp extends BaseCoin {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   /** @inheritDoc */

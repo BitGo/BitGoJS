@@ -34,6 +34,8 @@ import {
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
   NotSupported,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { toBitgoRequest } from '@bitgo/sdk-api';
 import { getStellarKeys } from './getStellarKeys';
@@ -295,6 +297,16 @@ export class Xlm extends BaseCoin {
 
   supportsDeriveKeyWithSeed(): boolean {
     return false;
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   /**

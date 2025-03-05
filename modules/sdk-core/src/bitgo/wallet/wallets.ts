@@ -242,6 +242,11 @@ export class Wallets implements IWallets {
   async generateWallet(
     params: GenerateWalletOptions = {}
   ): Promise<WalletWithKeychains | LightningWalletWithKeychains> {
+    // Assign the default multiSig type value based on the coin
+    if (!params.multisigType) {
+      params.multisigType = this.baseCoin.getDefaultMultisigType();
+    }
+
     if (this.baseCoin.getFamily() === 'lnbtc') {
       const options = decodeOrElse(
         GenerateLightningWalletOptionsCodec.name,
