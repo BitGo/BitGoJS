@@ -1,4 +1,4 @@
-import { IcpMetadata, OperationType } from '../../src/lib/iface';
+import { IcpMetadata, OperationType, IcpAccount } from '../../src/lib/iface';
 
 export const accounts = {
   account1: {
@@ -307,7 +307,56 @@ export const ParsedUnsignedTransaction = {
       },
     },
   ],
-  account_identifier_signers: [],
+  account_identifier_signers: [] as IcpAccount[],
+  metadata: {
+    created_at_time: 1740739880079000064,
+    memo: 1234,
+  },
+};
+
+export const ParsedSignedTransaction = {
+  operations: [
+    {
+      type: 'TRANSACTION',
+      account: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      amount: {
+        value: '-10',
+        currency: {
+          symbol: 'icp',
+          decimals: 8,
+        },
+      },
+    },
+    {
+      type: 'TRANSACTION',
+      account: {
+        address: 'c3d30f404955975adaba89f2e1ebc75c1f44a6a204578afce8f3780d64fe252e',
+      },
+      amount: {
+        value: '10',
+        currency: {
+          symbol: 'icp',
+          decimals: 8,
+        },
+      },
+    },
+    {
+      type: 'FEE',
+      account: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      amount: {
+        value: '-10000',
+        currency: {
+          symbol: 'icp',
+          decimals: 8,
+        },
+      },
+    },
+  ],
+  account_identifier_signers: [{ address: accounts.account1.address }] as IcpAccount[],
   metadata: {
     created_at_time: 1740739880079000064,
     memo: 1234,
