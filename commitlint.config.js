@@ -28,6 +28,7 @@ module.exports = {
         'CR-',
         'CS-',
         'CSI-',
+        'DE-',
         'DES-',
         'DO-',
         'DOS-',

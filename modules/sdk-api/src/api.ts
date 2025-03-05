@@ -50,7 +50,13 @@ export function handleResponseResult<ResponseResultType>(
 ): (res: superagent.Response) => ResponseResultType {
   return function (res: superagent.Response): ResponseResultType {
     if (_.isNumber(res.status) && res.status >= 200 && res.status < 300) {
-      return optionalField ? res.body[optionalField] : res.body;
+      return (
+        // If there's an optional field and the body is non-nullish with that property, return it;
+        // otherwise return the body if available; if not, return the text; and finally fallback to the entire response.
+        (optionalField && res.body && res.body[optionalField] !== undefined ? res.body[optionalField] : res.body) ??
+        res.text ??
+        res
+      );
     }
     throw errFromResponse(res);
   };
