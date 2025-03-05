@@ -1,6 +1,6 @@
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { accounts, IcpTransactionData } from '../resources/icp';
+import { accounts, IcpTransactionData, blockHashes, TransactionHashes } from '../resources/icp';
 import { encode } from 'cbor-x';
 import { randomBytes } from 'crypto';
 
@@ -22,6 +22,22 @@ describe('utils', () => {
       should.equal(utils.isValidAddress(accounts.errorsAccounts.account4.address), false);
       should.equal(utils.isValidAddress(accounts.errorsAccounts.account5.address), false);
       should.equal(utils.isValidAddress(accounts.errorsAccounts.account6.address), false);
+    });
+  });
+
+  describe('isValidBlockId()', () => {
+    it('should validate block hashes correctly', () => {
+      should.equal(utils.isValidBlockId(blockHashes.validHashes.block1), true);
+      should.equal(utils.isValidBlockId(blockHashes.validHashes.block2), true);
+      should.equal(utils.isValidBlockId(blockHashes.validHashes.block3), true);
+    });
+  });
+
+  describe('isValidTransactionId()', () => {
+    it('should validate transaction hashes correctly', () => {
+      should.equal(utils.isValidBlockId(TransactionHashes.validHashes.txId1), true);
+      should.equal(utils.isValidBlockId(TransactionHashes.validHashes.txId2), true);
+      should.equal(utils.isValidBlockId(TransactionHashes.validHashes.txId3), true);
     });
   });
 

@@ -70,6 +70,22 @@ export const accounts = {
   },
 };
 
+export const blockHashes = {
+  validHashes: {
+    block1: 'ddd1f3bcc1aae4a61af0f44415d9610889b9231ad4ee9a42935efe80dbb007a2',
+    block2: '3ca42afc8d0507282ce48ac942397f4691ce26d41fd37967cf0cf9021ed39da2',
+    block3: 'e768ce1d1923d6819f25ff91dc996f2b505f031945768af124632cc226db7307',
+  },
+};
+
+export const TransactionHashes = {
+  validHashes: {
+    txId1: '4e1577f120f29dd68cdd2235e6574c12b9dc73724177269c254571e044936bbe',
+    txId2: '02d71df6e694aec6b51577f2adb299e1a677e56c47c62d6da7c78e91740cb207',
+    txId3: '70879bb9a9852d663860b01f44bdf86bbc3cd0b1d4f156793028f4bcd638ebac',
+  },
+};
+
 export const IcpTransactionData = {
   senderAddress: accounts.account1.address,
   receiverAddress: accounts.account2.address,
