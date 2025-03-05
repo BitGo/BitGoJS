@@ -106,6 +106,7 @@ function run(
     hasUserSignature: boolean;
     hasBackupSignature: boolean;
     hasKrsOutput?: boolean;
+    feeRate?: number;
   },
   tags: string[] = []
 ) {
@@ -326,6 +327,19 @@ utxoCoins.forEach((coin) => {
         hasBackupSignature: true,
       },
       [scriptType, 'fullSignedRecovery']
+    );
+
+    run(
+      coin,
+      scriptType,
+      walletKeys,
+      {
+        keys: getKeysForFullSignedRecovery(walletKeys.triple, walletPassphrase),
+        hasUserSignature: true,
+        hasBackupSignature: true,
+        feeRate: 2,
+      },
+      [scriptType, 'fullSignedRecovery', 'fixedFeeRate']
     );
 
     {

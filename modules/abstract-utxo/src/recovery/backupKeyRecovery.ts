@@ -122,6 +122,7 @@ export interface RecoverParams {
   apiKey?: string;
   userKeyPath?: string;
   recoveryProvider?: RecoveryProvider;
+  feeRate?: number;
 }
 
 function getFormattedAddress(coin: AbstractUtxoCoin, address: MultiSigAddress) {
@@ -290,6 +291,10 @@ export async function backupKeyRecovery(
     throw new Error('scan must be a positive integer');
   }
 
+  if (params.feeRate !== undefined && (!Number.isFinite(params.feeRate) || params.feeRate <= 0)) {
+    throw new Error('feeRate must be a positive number');
+  }
+
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
   const responseTxFormat = isUnsignedSweep || !isKrsRecovery || params.krsProvider === 'keyternal' ? 'legacy' : 'psbt';
@@ -335,7 +340,8 @@ export async function backupKeyRecovery(
   // xpubs can become handy for many things.
   utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
   const txInfo = {} as BackupKeyRecoveryTransansaction;
-  const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
+  const feePerByte: number =
+    params.feeRate !== undefined ? params.feeRate : await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
 
   // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees.
   const extraOutputSize = isKrsRecovery ? VirtualSizes.txP2wshOutputSize : 0;
