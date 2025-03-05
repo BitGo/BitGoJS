@@ -568,6 +568,11 @@ export class Hbar extends BaseCoin {
     return false;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   public getTokenEnablementConfig(): TokenEnablementConfig {
     return {
       requiresTokenEnablement: true,

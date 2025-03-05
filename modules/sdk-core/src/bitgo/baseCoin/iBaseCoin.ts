@@ -484,6 +484,7 @@ export interface IBaseCoin {
   allowsAccountConsolidations(): boolean;
   getTokenEnablementConfig(): TokenEnablementConfig;
   supportsTss(): boolean;
+  supportsMultisig(): boolean;
   supportsDeriveKeyWithSeed(): boolean;
   isEVM(): boolean;
   supportsBlsDkg(): boolean;

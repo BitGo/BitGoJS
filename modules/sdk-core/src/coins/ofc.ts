@@ -58,6 +58,11 @@ export class Ofc extends BaseCoin {
     return 'Offchain';
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   /**
    * Return whether the given m of n wallet signers/ key amounts are valid for the coin
    */

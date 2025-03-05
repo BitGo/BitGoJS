@@ -39,6 +39,13 @@ import { WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 import { TssSettings } from '@bitgo/public-types';
 
+const multisigTypes = {
+  onchain: 'onchain',
+  tss: 'tss',
+} as const;
+
+type MultisigType = keyof typeof multisigTypes;
+
 /**
  * Check if a wallet is a WalletWithKeychains
  */
@@ -241,6 +248,11 @@ export class Wallets implements IWallets {
   async generateWallet(
     params: GenerateWalletOptions = {}
   ): Promise<WalletWithKeychains | LightningWalletWithKeychains> {
+    // Assign the default multiSig type value based on the coin
+    if (!params.multisigType) {
+      params.multisigType = this.getDefaultMultisigType(this.baseCoin);
+    }
+
     if (this.baseCoin.getFamily() === 'lnbtc') {
       const options = decodeOrElse(
         GenerateLightningWalletOptionsCodec.name,
@@ -601,6 +613,20 @@ export class Wallets implements IWallets {
 
       return result;
     }
+  }
+
+  /**
+   * Determine the multisig type based on the coin's capabilities.
+   * @param baseCoin
+   * @returns {string | undefined}
+   */
+  private getDefaultMultisigType(baseCoin: IBaseCoin): MultisigType | undefined {
+    if (baseCoin.supportsMultisig()) {
+      return multisigTypes.onchain;
+    } else if (baseCoin.supportsTss()) {
+      return multisigTypes.tss;
+    }
+    return undefined;
   }
 
   /**

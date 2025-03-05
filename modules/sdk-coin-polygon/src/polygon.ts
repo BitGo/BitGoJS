@@ -49,6 +49,11 @@ export class Polygon extends AbstractEthLikeNewCoins {
     return true;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';

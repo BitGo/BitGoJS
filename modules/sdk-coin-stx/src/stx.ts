@@ -46,6 +46,11 @@ export class Stx extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txParams } = params;
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
