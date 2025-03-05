@@ -225,7 +225,7 @@ export class Transaction extends BaseTransaction {
     const subAccount = new Uint8Array(32);
     const senderAccount = this._utils.getAccountIdFromPrincipalBytes(
       ACCOUNT_ID_PREFIX,
-      Buffer.from(senderPrincipal),
+      Buffer.from(senderPrincipal.buffer),
       subAccount
     );
     const args = await this._utils.fromArgs(httpCanisterUpdate.arg);
