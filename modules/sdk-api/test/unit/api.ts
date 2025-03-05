@@ -1,7 +1,70 @@
 import * as assert from 'assert';
-import { handleResponseError } from '../../src';
+import { handleResponseError, handleResponseResult } from '../../src';
 
 describe('bitgo:api unit tests', function () {
+  describe('handleResponseResult', function () {
+    it('should return text for text-based responses', function () {
+      const csvText = `transactionId,date,amount,currency,status
+        12345,2025-01-15,100.00,USD,completed
+        67890,2025-01-22,50.50,EUR,completed
+        13579,2025-02-10,200.00,USD,pending
+        24680,2025-02-28,75.25,BTC,completed`;
+
+      const response: any = {
+        status: 200,
+        header: { 'content-type': 'text/csv' },
+        text: csvText,
+      };
+
+      const result = handleResponseResult()(response);
+      assert.strictEqual(result, response.text);
+    });
+
+    it('should parse JSON response and return the entire body if no field is specified', function () {
+      const response: any = {
+        status: 200,
+        header: { 'content-type': 'application/json' },
+        body: { foo: 'bar', baz: 123 },
+      };
+
+      const result = handleResponseResult()(response);
+      assert.deepStrictEqual(result, response.body);
+    });
+
+    it('should parse JSON response and return the specified field if provided', function () {
+      const response: any = {
+        status: 200,
+        header: { 'content-type': 'application/json' },
+        body: { foo: 'bar', baz: 123 },
+      };
+
+      const result = handleResponseResult('foo')(response);
+      assert.strictEqual(result, 'bar');
+    });
+
+    it('should return the entire response for non-JSON and non-text responses', function () {
+      const response: any = {
+        status: 200,
+        header: { 'content-type': 'image/png' },
+        blob: 'abcdefghijk',
+      };
+
+      const result = handleResponseResult()(response);
+      assert.strictEqual(result, response);
+    });
+
+    it('should return the full body if this field exists', function () {
+      const response: any = {
+        status: 200,
+        header: { 'content-type': 'application/octet-stream' },
+        body: { irrelevant: true },
+      };
+
+      const result = handleResponseResult()(response);
+      assert.strictEqual(result, response.body);
+    });
+  });
+
   describe('handleResponseError', function () {
     it('should re-throw an error without response property', function () {
       const originalError = new Error('Han shot first');
