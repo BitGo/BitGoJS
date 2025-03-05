@@ -2249,6 +2249,7 @@ export enum UnderlyingAsset {
   'tpolygon:usdt' = 'tpolygon:usdt',
   'tpolygon:usdc' = 'tpolygon:usdc',
   'tpolygon:testcopm' = 'tpolygon:testcopm',
+  'tpolygon:BitGoTest' = 'tpolygon:BitGoTest',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',
