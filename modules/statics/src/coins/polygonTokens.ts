@@ -1111,4 +1111,13 @@ export const polygonTokens = [
     UnderlyingAsset['tpolygon:terc6dp'],
     POLYGON_TOKEN_FEATURES
   ),
+  tpolygonErc20(
+    '4a8ca8ef-007f-4107-8ccd-6155ce8a777c',
+    'tpolygon:BitGoTest',
+    'Test BitGo Token',
+    18,
+    '0xb99d708377a552ea5b7ffb14fa2cec9a21403d6f',
+    UnderlyingAsset['tpolygon:BitGoTest'],
+    POLYGON_TOKEN_FEATURES
+  ),
 ];
