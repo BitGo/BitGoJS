@@ -11041,7 +11041,11 @@ export const erc20Coins = [
     'Test Ripple USD',
     18,
     '0xe101fb315a64cda9944e570a7bffafe60b994b1d',
-    UnderlyingAsset.RLUSD
+    UnderlyingAsset.RLUSD,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
   ),
   terc20(
     '34dd36d9-18f9-4c99-b96e-d5c29ae2a4cd',
@@ -11049,7 +11053,11 @@ export const erc20Coins = [
     'Test Eigen',
     18,
     '0x3b78576f7d6837500ba3de27a60c7f594934027e',
-    UnderlyingAsset.TEIGEN
+    UnderlyingAsset.TEIGEN,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
   ),
   terc20(
     '49fde5ac-1204-4c5c-b62b-cc1363592193',
@@ -11057,7 +11065,11 @@ export const erc20Coins = [
     'Test EigenInu',
     18,
     '0xdeeeee2b48c121e6728ed95c860e296177849932',
-    UnderlyingAsset.TEINU
+    UnderlyingAsset.TEINU,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
   ),
   terc20(
     '031e6052-ed7a-42cf-a6e6-2107d8e448ed',
