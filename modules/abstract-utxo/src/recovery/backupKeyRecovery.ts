@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Dimensions, VirtualSizes } from '@bitgo/unspents';
+import { Dimensions } from '@bitgo/unspents';
 import {
   BitGoBase,
   ErrorNoInputToRecover,
@@ -344,9 +344,8 @@ export async function backupKeyRecovery(
     params.feeRate !== undefined ? params.feeRate : await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
 
   // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees.
-  const extraOutputSize = isKrsRecovery ? VirtualSizes.txP2wshOutputSize : 0;
-  const dimensions = Dimensions.fromPsbt(psbt);
-  const approximateFee = BigInt((dimensions.getVSize() + extraOutputSize) * feePerByte);
+  const dimensions = Dimensions.fromPsbt(psbt).plus(isKrsRecovery ? Dimensions.SingleOutput.p2wsh : Dimensions.ZERO);
+  const approximateFee = BigInt(dimensions.getVSize() * feePerByte);
 
   txInfo.inputs =
     responseTxFormat === 'legacy'
