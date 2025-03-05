@@ -1,25 +1,26 @@
 import {
-  Erc20Coin,
-  StellarCoin,
+  AdaCoin,
+  AlgoCoin,
+  AptCoin,
+  ArbethERC20Token,
+  AvaxERC20Token,
+  BeraERC20Token,
+  BscCoin,
   CeloCoin,
   EosCoin,
-  AvaxERC20Token,
-  AlgoCoin,
-  SolCoin,
-  HederaToken,
-  PolygonERC20Token,
-  BscCoin,
-  AdaCoin,
-  Erc721Coin,
   Erc1155Coin,
+  Erc20Coin,
+  Erc721Coin,
+  HederaToken,
+  OpethERC20Token,
+  PolygonERC20Token,
+  Sip10Token,
+  SolCoin,
+  StellarCoin,
+  SuiCoin,
   TronErc20Coin,
   XrpCoin,
-  ArbethERC20Token,
-  OpethERC20Token,
   ZkethERC20Token,
-  SuiCoin,
-  BeraERC20Token,
-  AptCoin,
 } from './account';
 import { CoinFamily, CoinKind } from './base';
 import { coins } from './coins';
@@ -95,6 +96,10 @@ export type AptTokenConfig = BaseNetworkConfig & {
   assetId: string;
 };
 
+export type Sip10TokenConfig = BaseContractAddressConfig & {
+  contractName: string;
+};
+
 export interface Tokens {
   bitcoin: {
     eth: {
@@ -157,6 +162,9 @@ export interface Tokens {
     apt: {
       tokens: AptTokenConfig[];
     };
+    stx: {
+      tokens: Sip10TokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -218,6 +226,9 @@ export interface Tokens {
     };
     apt: {
       tokens: AptTokenConfig[];
+    };
+    stx: {
+      tokens: Sip10TokenConfig[];
     };
   };
 }
@@ -548,6 +559,21 @@ const formattedAptTokens = coins.reduce((acc: AptTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedSip10Tokens = coins.reduce((acc: Sip10TokenConfig[], coin) => {
+  if (coin instanceof Sip10Token) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'stx' : 'tstx',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      contractName: coin.contractName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -611,6 +637,9 @@ export const tokens: Tokens = {
     apt: {
       tokens: formattedAptTokens.filter((token) => token.network === 'Mainnet'),
     },
+    stx: {
+      tokens: formattedSip10Tokens.filter((token) => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -673,6 +702,9 @@ export const tokens: Tokens = {
     },
     apt: {
       tokens: formattedAptTokens.filter((token) => token.network === 'Testnet'),
+    },
+    stx: {
+      tokens: formattedSip10Tokens.filter((token) => token.network === 'Testnet'),
     },
   },
 };

@@ -195,6 +195,7 @@ export const STX_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.STAKING,
+  CoinFeature.SUPPORTS_TOKENS,
 ];
 export const NEAR_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
