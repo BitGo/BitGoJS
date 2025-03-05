@@ -1,5 +1,5 @@
 import {
-  cborUnsignedTransaction,
+  CborUnsignedTransaction,
   RequestType,
   Signatures,
   UpdateEnvelope,
@@ -29,7 +29,7 @@ export class SignedTransactionBuilder {
     }
     const unsignedTransaction = utils.cborDecode(
       utils.blobFromHex(combineRequest.unsigned_transaction)
-    ) as cborUnsignedTransaction;
+    ) as CborUnsignedTransaction;
     assert(combineRequest.signatures.length === unsignedTransaction.ingress_expiries.length * 2);
     assert(unsignedTransaction.updates.length === 1);
     const envelopes = this.getEnvelopes(unsignedTransaction, signatureMap);
@@ -39,7 +39,7 @@ export class SignedTransactionBuilder {
   }
 
   getEnvelopes(
-    unsignedTransaction: cborUnsignedTransaction,
+    unsignedTransaction: CborUnsignedTransaction,
     signatureMap: Map<string, Signatures>
   ): [string, RequestEnvelope[]][] {
     const envelopes: [string, RequestEnvelope[]][] = [];

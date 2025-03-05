@@ -3,12 +3,22 @@ import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
-import { HttpCanisterUpdate, IcpTransactionData, ReadState, RequestType, Signatures, IcpMetadata } from './iface';
+import {
+  HttpCanisterUpdate,
+  IcpTransactionData,
+  ReadState,
+  RequestType,
+  Signatures,
+  IcpMetadata,
+  SendArgs,
+} from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 import { decode, encode } from 'cbor-x'; // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
 import js_sha256 from 'js-sha256';
 import BigNumber from 'bignumber.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
+import protobuf from 'protobufjs';
+import { protoDefinition } from './protoDefinition';
 
 export const REQUEST_STATUS = 'request_status';
 
@@ -219,14 +229,19 @@ export class Utils implements BaseUtils {
    * @returns {string} The hexadecimal string representation of the account ID.
    */
   fromPrincipal(principal: DfinityPrincipal, subAccount: Uint8Array = new Uint8Array(32)): string {
-    const ACCOUNT_ID_PREFIX = Buffer.from([0x0a, ...Buffer.from('account-id')]);
     const principalBytes = Buffer.from(principal.toUint8Array());
-    const combinedBytes = Buffer.concat([ACCOUNT_ID_PREFIX, principalBytes, subAccount]);
+    return this.getAccountIdFromPrincipalBytes(this.getAccountIdPrefix(), principalBytes, subAccount);
+  }
 
+  getAccountIdFromPrincipalBytes(
+    ACCOUNT_ID_PREFIX: Buffer<ArrayBuffer>,
+    principalBytes: Buffer<Uint8Array<ArrayBufferLike>>,
+    subAccount: Uint8Array<ArrayBufferLike>
+  ): string {
+    const combinedBytes = Buffer.concat([ACCOUNT_ID_PREFIX, principalBytes, subAccount]);
     const sha224Hash = crypto.createHash('sha224').update(combinedBytes).digest();
     const checksum = Buffer.alloc(4);
     checksum.writeUInt32BE(crc32.buf(sha224Hash) >>> 0, 0);
-
     const accountIdBytes = Buffer.concat([checksum, sha224Hash]);
     return accountIdBytes.toString('hex');
   }
@@ -571,6 +586,43 @@ export class Utils implements BaseUtils {
       ingress_end: ingressEndTime,
     };
     return { metaData, ingressEndTime };
+  }
+
+  convertSenderBlobToPrincipal(senderBlob: Uint8Array): Uint8Array {
+    const MAX_LENGTH_IN_BYTES = 29;
+    if (senderBlob.length > MAX_LENGTH_IN_BYTES) {
+      throw new Error('Bytes too long for a valid Principal');
+    }
+    const principalBytes = new Uint8Array(MAX_LENGTH_IN_BYTES);
+    principalBytes.set(senderBlob.slice(0, senderBlob.length));
+    return principalBytes;
+  }
+
+  async fromArgs(arg: Uint8Array): Promise<SendArgs> {
+    const root = protobuf.parse(protoDefinition).root;
+    const SendRequestMessage = root.lookupType('SendRequest');
+    const args = SendRequestMessage.decode(arg) as unknown as SendArgs;
+    const transformedArgs: SendArgs = {
+      memo: { memo: BigInt(args.memo.memo.toString()) },
+      payment: { receiverGets: { e8s: args.payment.receiverGets.e8s } },
+      maxFee: { e8s: args.maxFee.e8s },
+      to: { hash: Buffer.from(args.to.hash) },
+      createdAtTime: { timestampNanos: BigNumber(args.createdAtTime.timestampNanos.toString()).toNumber() },
+    };
+    return transformedArgs;
+  }
+
+  async toArg(args: SendArgs): Promise<Uint8Array> {
+    const root = protobuf.parse(protoDefinition).root;
+    const SendRequestMessage = root.lookupType('SendRequest');
+    const errMsg = SendRequestMessage.verify(args);
+    if (errMsg) throw new Error(errMsg);
+    const message = SendRequestMessage.create(args);
+    return SendRequestMessage.encode(message).finish();
+  }
+
+  getAccountIdPrefix(): Buffer<ArrayBuffer> {
+    return Buffer.from([0x0a, ...Buffer.from('account-id')]);
   }
 }
 

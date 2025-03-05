@@ -28,6 +28,12 @@ describe('ICP Transaction Builder', async () => {
     sinon.restore();
   });
 
+  it('should parse an unsigned transaction', async () => {
+    const parsedUnsignedTxn = await factory.parseTransaction(testData.payloadsData.unsigned_transaction);
+    txn.should.be.an.Object();
+    should.deepEqual(parsedUnsignedTxn, testData.ParsedUnsignedTransaction);
+  });
+
   it('start and build a transfer tx', async () => {
     const icpTransaction = txBuilder.transaction.icpTransaction;
     const payloadsData = txBuilder.transaction.payloadsData;

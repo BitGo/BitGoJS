@@ -70,13 +70,19 @@ export interface IcpOperation {
 export interface IcpMetadata {
   created_at_time: number;
   memo: number | BigInt; // memo in string is not accepted by ICP chain.
-  ingress_start: number | BigInt; // it should be nano seconds
-  ingress_end: number | BigInt; // it should be nano seconds
+  ingress_start?: number | BigInt; // it should be nano seconds
+  ingress_end?: number | BigInt; // it should be nano seconds
 }
 
 export interface IcpTransaction {
   public_keys: IcpPublicKey[];
   operations: IcpOperation[];
+  metadata: IcpMetadata;
+}
+
+export interface ParsedTransaction {
+  operations: IcpOperation[];
+  account_identifier_signers: IcpAccount[];
   metadata: IcpMetadata;
 }
 
@@ -118,7 +124,7 @@ export interface Signatures {
   hex_bytes: string;
 }
 
-export interface cborUnsignedTransaction {
+export interface CborUnsignedTransaction {
   updates: [string, HttpCanisterUpdate][];
   ingress_expiries: bigint[];
 }

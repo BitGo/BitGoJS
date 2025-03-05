@@ -46,7 +46,7 @@ export class Icp extends BaseCoin {
   }
 
   getFamily(): string {
-    return 'icp';
+    return this._staticsCoin.family;
   }
 
   getFullName(): string {
