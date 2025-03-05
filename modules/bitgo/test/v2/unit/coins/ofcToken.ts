@@ -63,10 +63,10 @@ describe('OFC:', function () {
     teth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   });
 
-  it('test crypto coins for ofcgteth', function () {
-    const gteth = bitgo.coin('ofcgteth');
-    gteth.getChain().should.equal('ofcgteth');
-    gteth.getFullName().should.equal('Test Goerli Ether');
+  it('test crypto coins for ofchteth', function () {
+    const gteth = bitgo.coin('ofchteth');
+    gteth.getChain().should.equal('ofchteth');
+    gteth.getFullName().should.equal('Test Holesky Ether');
     gteth.getBaseFactor().should.equal(PRECISION_18);
     gteth.isValidAddress('0x801b2954117cf3439479df391bed2f472e4bd4b8').should.be.true;
     gteth.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
