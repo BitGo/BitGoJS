@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { VirtualSizes } from '@bitgo/unspents';
+import { Dimensions, VirtualSizes } from '@bitgo/unspents';
 import {
   BitGoBase,
   ErrorNoInputToRecover,
@@ -122,6 +122,7 @@ export interface RecoverParams {
   apiKey?: string;
   userKeyPath?: string;
   recoveryProvider?: RecoveryProvider;
+  feeRate?: number;
 }
 
 function getFormattedAddress(coin: AbstractUtxoCoin, address: MultiSigAddress) {
@@ -290,6 +291,10 @@ export async function backupKeyRecovery(
     throw new Error('scan must be a positive integer');
   }
 
+  if (params.feeRate !== undefined && (!Number.isFinite(params.feeRate) || params.feeRate <= 0)) {
+    throw new Error('feeRate must be a positive number');
+  }
+
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
   const responseTxFormat = isUnsignedSweep || !isKrsRecovery || params.krsProvider === 'keyternal' ? 'legacy' : 'psbt';
@@ -335,14 +340,13 @@ export async function backupKeyRecovery(
   // xpubs can become handy for many things.
   utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
   const txInfo = {} as BackupKeyRecoveryTransansaction;
-  const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
+  const feePerByte: number =
+    params.feeRate !== undefined ? params.feeRate : await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
 
-  // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees. Use p2wsh outputs because
-  // they are the largest outputs and thus the most conservative estimate to use in calculating fees. Also use
-  // segwit overhead size and p2sh inputs for the same reason.
-  const outputSize = (isKrsRecovery ? 2 : 1) * VirtualSizes.txP2wshOutputSize;
-  const approximateSize = VirtualSizes.txSegOverheadVSize + outputSize + VirtualSizes.txP2shInputSize * unspents.length;
-  const approximateFee = BigInt(approximateSize * feePerByte);
+  // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees.
+  const extraOutputSize = isKrsRecovery ? VirtualSizes.txP2wshOutputSize : 0;
+  const dimensions = Dimensions.fromPsbt(psbt);
+  const approximateFee = BigInt((dimensions.getVSize() + extraOutputSize) * feePerByte);
 
   txInfo.inputs =
     responseTxFormat === 'legacy'
@@ -452,7 +456,7 @@ export async function v1BackupKeyRecovery(
     throw new Error('invalid recoveryDestination');
   }
 
-  const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
+  const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
   const v1wallet = await bitgo.wallets().get({ id: params.walletId });
   return await v1wallet.recover({
     ...params,
