@@ -10203,6 +10203,14 @@ export const erc20Coins = [
     '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
     UnderlyingAsset['eth:usd1']
   ),
+  erc20(
+    '92e8151c-28f1-4017-b6d3-92aaf1e026f1',
+    'eth:gomining',
+    'GoMining Token',
+    18,
+    '0x7Ddc52c4De30e94Be3A6A0A2b259b2850f421989',
+    UnderlyingAsset['eth:gomining']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
