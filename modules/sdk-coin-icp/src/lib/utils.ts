@@ -24,16 +24,6 @@ export const REQUEST_STATUS = 'request_status';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
-  isValidTransactionId(txId: string): boolean {
-    throw new Error('Method not implemented.');
-  }
-
-  /** @inheritdoc */
-  isValidBlockId(hash: string): boolean {
-    throw new Error('Method not implemented.');
-  }
-
-  /** @inheritdoc */
   isValidSignature(signature: string): boolean {
     throw new Error('Method not implemented.');
   }
@@ -53,7 +43,7 @@ export class Utils implements BaseUtils {
    * @returns {boolean} - Returns `true` if the address is a valid 64-character hexadecimal string, otherwise `false`.
    */
   isValidAddress(address: string): boolean {
-    return typeof address === 'string' && /^[0-9a-fA-F]{64}$/.test(address);
+    return this.isValidHash(address);
   }
 
   /**
@@ -623,6 +613,27 @@ export class Utils implements BaseUtils {
 
   getAccountIdPrefix(): Buffer<ArrayBuffer> {
     return Buffer.from([0x0a, ...Buffer.from('account-id')]);
+  }
+
+  /** @inheritdoc */
+  isValidBlockId(hash: string): boolean {
+    // ICP block hashes are 64-character hexadecimal strings
+    return this.isValidHash(hash);
+  }
+
+  /**
+   * Returns whether or not the string is a valid ICP hash
+   *
+   * @param {string} hash - string to validate
+   * @returns {boolean}
+   */
+  isValidHash(hash: string): boolean {
+    return typeof hash === 'string' && /^[0-9a-fA-F]{64}$/.test(hash);
+  }
+
+  /** @inheritdoc */
+  isValidTransactionId(txId: string): boolean {
+    return this.isValidHash(txId);
   }
 }
 
