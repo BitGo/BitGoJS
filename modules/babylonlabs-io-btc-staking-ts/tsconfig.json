@@ -7,10 +7,13 @@
     "strict": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "declaration": true
+    "declaration": true,
+    "composite": true,
+    "outDir": "./build",
   },
   "exclude": [
     "node_modules",
+    "build",
     "dist",
     "**/*.test.ts"
   ]

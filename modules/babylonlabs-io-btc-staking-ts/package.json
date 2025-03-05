@@ -1,20 +1,20 @@
 {
-  "name": "@babylonlabs-io/btc-staking-ts",
-  "version": "0.4.0-canary.13",
+  "name": "@bitgo/babylonlabs-io-btc-staking-ts",
+  "version": "0.4.0-bitgo.1",
   "description": "Library exposing methods for the creation and consumption of Bitcoin transactions pertaining to Babylon's Bitcoin Staking protocol.",
   "module": "dist/index.js",
   "main": "dist/index.cjs",
   "typings": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
   "scripts": {
-    "generate-types": "dts-bundle-generator -o ./dist/index.d.ts ./src/index.ts",
+    "generate-types": "dts-bundle-generator -o ./dist/index.d.cts ./src/index.ts --no-check",
     "build": "node build.js && npm run generate-types",
-    "format": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "format:fix": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "lint": "eslint ./src --fix",
     "prepare": "husky",
     "prepublishOnly": "npm run build",
-    "test": "jest --verbose",
     "version:canary": "npm version prerelease --preid=canary"
   },
   "files": [
@@ -27,49 +27,20 @@
     "btc-staking"
   ],
   "engines": {
-    "node": "22.3.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "prettier --write",
-      "eslint --fix"
-    ],
-    "tests/**/*.ts": [
-      "prettier --write",
-      "eslint --fix"
-    ]
+    "node": ">=18 <=20"
   },
   "author": "Babylon Labs Ltd.",
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.30",
-    "@typescript-eslint/parser": "^7.4.0",
     "dts-bundle-generator": "^9.3.1",
-    "ecpair": "^2.1.0",
-    "esbuild": "^0.20.2",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "husky": "^9.0.11",
-    "jest": "^29.7.0",
-    "lint-staged": "^15.2.7",
-    "prettier": "^3.2.5",
-    "prettier-plugin-organize-imports": "^3.2.4",
-    "ts-jest": "^29.1.4",
-    "typescript": "^5.4.5",
-    "typescript-eslint": "^7.4.0"
+    "esbuild": "^0.20.2"
   },
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "0.0.3-canary.5",
     "@bitcoin-js/tiny-secp256k1-asmjs": "2.2.3",
     "@cosmjs/encoding": "^0.33.0",
-    "bitcoinjs-lib": "6.1.5"
+    "bitcoinjs-lib": "^6.1.7",
+    "bip174": "=2.1.1"
   },
   "publishConfig": {
     "access": "public"
