@@ -30,29 +30,49 @@
       "data": {
         "inputs": [
           {
-            "unknownKeyVals": [],
-            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
             "witnessUtxo": {
-              "value": 55555,
-              "script": "5120788d73d75d7dd88d3612f7a91d5b3d6ad4778d8b49176f9539d322980b2f4fd7"
+              "script": "5120788d73d75d7dd88d3612f7a91d5b3d6ad4778d8b49176f9539d322980b2f4fd7",
+              "value": "55555"
             },
             "tapLeafScript": [
               {
-                "leafVersion": 192,
+                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac068cc9790c0627bc8f28afd009b31974a2fce5ea4fe2ed4dd8b65c8feda196875c1d262cfe1f3b746337f6766e31854333d370f733bd845727aaed2baebc7a552",
                 "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad021027b2",
-                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac068cc9790c0627bc8f28afd009b31974a2fce5ea4fe2ed4dd8b65c8feda196875c1d262cfe1f3b746337f6766e31854333d370f733bd845727aaed2baebc7a552"
+                "leafVersion": 192
               }
-            ]
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
           }
         ],
         "outputs": [
-          {
-            "unknownKeyVals": []
-          }
+          {}
         ],
         "globalMap": {
-          "unsignedTx": {}
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "a999d7bc6af1a17cd4e70d0fd875a1734152dfb55f9166240f35965c79fa36c2",
+                  "index": 0,
+                  "script": "",
+                  "sequence": 10000,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "55267",
+                  "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+                }
+              ]
+            }
+          }
         }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
       }
     },
     "fee": 288
@@ -84,29 +104,49 @@
       "data": {
         "inputs": [
           {
-            "unknownKeyVals": [],
-            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
             "witnessUtxo": {
-              "value": 53555,
-              "script": "5120dec7bc887b110e2c10f1c9a2212cd961e95184870c91d88c9a3727f4ef4c303c"
+              "script": "5120dec7bc887b110e2c10f1c9a2212cd961e95184870c91d88c9a3727f4ef4c303c",
+              "value": "53555"
             },
             "tapLeafScript": [
               {
-                "leafVersion": 192,
+                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0c1d262cfe1f3b746337f6766e31854333d370f733bd845727aaed2baebc7a552",
                 "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad02f003b2",
-                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0c1d262cfe1f3b746337f6766e31854333d370f733bd845727aaed2baebc7a552"
+                "leafVersion": 192
               }
-            ]
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
           }
         ],
         "outputs": [
-          {
-            "unknownKeyVals": []
-          }
+          {}
         ],
         "globalMap": {
-          "unsignedTx": {}
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "4c2a294c5e31886937d0985e69e65314419e8866e5ab859cb2903cbe420a555a",
+                  "index": 0,
+                  "script": "",
+                  "sequence": 1008,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "53267",
+                  "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+                }
+              ]
+            }
+          }
         }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
       }
     },
     "fee": 288
@@ -116,32 +156,54 @@
       "data": {
         "inputs": [
           {
-            "unknownKeyVals": [],
-            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
             "witnessUtxo": {
-              "value": 53555,
-              "script": "5120dec7bc887b110e2c10f1c9a2212cd961e95184870c91d88c9a3727f4ef4c303c"
+              "script": "5120dec7bc887b110e2c10f1c9a2212cd961e95184870c91d88c9a3727f4ef4c303c",
+              "value": "53555"
             },
             "tapLeafScript": [
               {
-                "leafVersion": 192,
+                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac04dc5f7d3676ac2eabc7c787dfd6084ec280ab8d971de668a83be41700def7f2b",
                 "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad20850854d26df93570748d94e3da361f134c522f7970bd7f8701a164547308a900ad2004e2b2468fe224659eb9dc5bd0a9cc1b4878b64f40c67c951610320bce78dfd1ac202f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832bba204d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7ba205e14742c0943fa66799f699a0ef98cf2b7cd223ddbb61f6878999182bbcc4700ba2064d55d591c5d416f713df9e15afd32e9ff2441cf276b2f90e5b3085163ca7a6bba206672282496e17eccaae560aac4d9fe85d8c166a4aa43f51fa8963c80a165831fba207939bcf0084cff0fe5c88a1748c1d97d63ff9ae6423a98dca65d974bb9123ce0ba209f66599cde7f3c3fefb6b96509e472f8a9e2caf8793b9b673fcb4067ef888f50ba20f0638e4817559347e67a07b56a6cb824d455fba42a8c8c95171c397540c51789ba569c",
-                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac04dc5f7d3676ac2eabc7c787dfd6084ec280ab8d971de668a83be41700def7f2b"
+                "leafVersion": 192
               }
-            ]
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
           }
         ],
         "outputs": [
-          {
-            "unknownKeyVals": []
-          },
-          {
-            "unknownKeyVals": []
-          }
+          {},
+          {}
         ],
         "globalMap": {
-          "unsignedTx": {}
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "4c2a294c5e31886937d0985e69e65314419e8866e5ab859cb2903cbe420a555a",
+                  "index": 0,
+                  "script": "",
+                  "sequence": 4294967295,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "2677",
+                  "script": "00145be12624d08a2b424095d7c07221c33450d14bf1"
+                },
+                {
+                  "value": "45878",
+                  "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46"
+                }
+              ]
+            }
+          }
         }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
       }
     },
     "fee": 5000
@@ -151,29 +213,49 @@
       "data": {
         "inputs": [
           {
-            "unknownKeyVals": [],
-            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
             "witnessUtxo": {
-              "value": 45878,
-              "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46"
+              "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46",
+              "value": "45878"
             },
             "tapLeafScript": [
               {
-                "leafVersion": 192,
+                "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
                 "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad02f003b2",
-                "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+                "leafVersion": 192
               }
-            ]
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
           }
         ],
         "outputs": [
-          {
-            "unknownKeyVals": []
-          }
+          {}
         ],
         "globalMap": {
-          "unsignedTx": {}
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "264b3381598865054722ba6679f12405e06305dc4dd5ad1a6f7c330c28670163",
+                  "index": 1,
+                  "script": "",
+                  "sequence": 1008,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "45590",
+                  "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+                }
+              ]
+            }
+          }
         }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
       }
     },
     "fee": 288
@@ -183,32 +265,54 @@
       "data": {
         "inputs": [
           {
-            "unknownKeyVals": [],
-            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
             "witnessUtxo": {
-              "value": 55555,
-              "script": "5120788d73d75d7dd88d3612f7a91d5b3d6ad4778d8b49176f9539d322980b2f4fd7"
+              "script": "5120788d73d75d7dd88d3612f7a91d5b3d6ad4778d8b49176f9539d322980b2f4fd7",
+              "value": "55555"
             },
             "tapLeafScript": [
               {
-                "leafVersion": 192,
+                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac04e9d38ba2696952c3a326cd821c319173cbe70ff9393f732b44d13aee3add4c0",
                 "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad20850854d26df93570748d94e3da361f134c522f7970bd7f8701a164547308a900ad2004e2b2468fe224659eb9dc5bd0a9cc1b4878b64f40c67c951610320bce78dfd1ac202f3432bf9054e482041b890e084bc1a34cfbc0b63aded113bfa36b6f2402832bba204d7e91e4a0ab0526a387684db1628b535e6b66046aaa7d1b583b93c5a16e1ac7ba205e14742c0943fa66799f699a0ef98cf2b7cd223ddbb61f6878999182bbcc4700ba2064d55d591c5d416f713df9e15afd32e9ff2441cf276b2f90e5b3085163ca7a6bba206672282496e17eccaae560aac4d9fe85d8c166a4aa43f51fa8963c80a165831fba207939bcf0084cff0fe5c88a1748c1d97d63ff9ae6423a98dca65d974bb9123ce0ba209f66599cde7f3c3fefb6b96509e472f8a9e2caf8793b9b673fcb4067ef888f50ba20f0638e4817559347e67a07b56a6cb824d455fba42a8c8c95171c397540c51789ba569c",
-                "controlBlock": "c150929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac04e9d38ba2696952c3a326cd821c319173cbe70ff9393f732b44d13aee3add4c0"
+                "leafVersion": 192
               }
-            ]
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
           }
         ],
         "outputs": [
-          {
-            "unknownKeyVals": []
-          },
-          {
-            "unknownKeyVals": []
-          }
+          {},
+          {}
         ],
         "globalMap": {
-          "unsignedTx": {}
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "a999d7bc6af1a17cd4e70d0fd875a1734152dfb55f9166240f35965c79fa36c2",
+                  "index": 0,
+                  "script": "",
+                  "sequence": 4294967295,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "2777",
+                  "script": "00145be12624d08a2b424095d7c07221c33450d14bf1"
+                },
+                {
+                  "value": "47778",
+                  "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46"
+                }
+              ]
+            }
+          }
         }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
       }
     },
     "fee": 5000
@@ -218,29 +322,49 @@
       "data": {
         "inputs": [
           {
-            "unknownKeyVals": [],
-            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
             "witnessUtxo": {
-              "value": 47778,
-              "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46"
+              "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46",
+              "value": "47778"
             },
             "tapLeafScript": [
               {
-                "leafVersion": 192,
+                "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0",
                 "script": "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad02f003b2",
-                "controlBlock": "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
+                "leafVersion": 192
               }
-            ]
+            ],
+            "tapInternalKey": "50929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0"
           }
         ],
         "outputs": [
-          {
-            "unknownKeyVals": []
-          }
+          {}
         ],
         "globalMap": {
-          "unsignedTx": {}
+          "unsignedTx": {
+            "tx": {
+              "version": 2,
+              "locktime": 0,
+              "ins": [
+                {
+                  "hash": "afdab314f4798317b427a227da4767e0a1c46a37cc14e33e34979aa1eff10ccd",
+                  "index": 1,
+                  "script": "",
+                  "sequence": 1008,
+                  "witness": []
+                }
+              ],
+              "outs": [
+                {
+                  "value": "47490",
+                  "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+                }
+              ]
+            }
+          }
         }
+      },
+      "opts": {
+        "maximumFeeRate": 5000
       }
     },
     "fee": 288

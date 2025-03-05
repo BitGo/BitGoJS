@@ -8,6 +8,7 @@ import { createAddressFromDescriptor, toWrappedPsbt } from '@bitgo/utxo-core/des
 import { getFixture, getKey, toPlainObject } from '@bitgo/utxo-core/testutil';
 
 import { BabylonDescriptorBuilder, finalityBabylonProvider0, testnetStakingParams } from '../../../src/babylon';
+import { normalize } from '../fixtures.utils';
 
 import * as vendor from './vendor/btc-staking-ts/src';
 import * as vendorStaking from './vendor/btc-staking-ts/src/staking';
@@ -206,7 +207,7 @@ async function assertScriptsEqualFixture(
 }
 
 async function assertTransactionEqualsFixture(fixtureName: string, tx: unknown): Promise<void> {
-  await assertEqualsFixture(fixtureName, toPlainObject(tx));
+  await assertEqualsFixture(fixtureName, normalize(tx));
 }
 
 function assertEqualsMiniscript(script: Buffer, miniscript: ast.MiniscriptNode): void {
