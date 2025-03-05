@@ -26,7 +26,7 @@ type Decrypt = (params: { input: string; password: string }) => string;
 async function createSignerMacaroon(
   lndSignerClient: LndSignerClient,
   header: { adminMacaroonHex: string },
-  watchOnlyIp?: string
+  watchOnlyIp: string | undefined | null
 ): Promise<string> {
   const { macaroon } = await lndSignerClient.bakeMacaroon({ permissions: signerMacaroonPermissions }, header);
   const macaroonBase64 = watchOnlyIp
@@ -134,16 +134,15 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   );
 
   const wallet = await coin.wallets().get({ id: walletId });
-  const watchOnlyExternalIp = wallet.coinSpecific()?.watchOnlyExternalIp;
-  if (!watchOnlyExternalIp && addIpCaveatToMacaroon) {
+  const watchOnlyIp = wallet.coinSpecific()?.watchOnlyExternalIp;
+  if (!watchOnlyIp && addIpCaveatToMacaroon) {
     throw new ApiResponseError(
       'Cannot create signer macaroon because the external IP is not set. This can take some time. Contact support@bitgo.com if longer than 24 hours.',
       400
     );
   }
-  const watchOnlyIp = watchOnlyExternalIp === null ? undefined : watchOnlyExternalIp;
 
-  if (watchOnlyIp !== undefined && !isIP(watchOnlyIp)) {
+  if (watchOnlyIp && !isIP(watchOnlyIp)) {
     throw new ApiResponseError(`Invalid IP address: ${watchOnlyIp}. Contact support@bitgo.com`, 500);
   }
 
@@ -162,7 +161,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   const signerMacaroon = await createSignerMacaroon(
     lndSignerClient,
     { adminMacaroonHex: Buffer.from(adminMacaroon, 'base64').toString('hex') },
-    watchOnlyIp
+    addIpCaveatToMacaroon ? watchOnlyIp : null
   );
 
   return await lightningWallet.updateWalletCoinSpecific({
