@@ -18,6 +18,9 @@
     },
     {
       "path": "../utxo-core"
+    },
+    {
+      "path": "../babylonlabs-io-btc-staking-ts"
     }
   ]
 }

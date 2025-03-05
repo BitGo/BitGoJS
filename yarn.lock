@@ -853,6 +853,13 @@
   dependencies:
     "@bufbuild/protobuf" "^2.2.0"
 
+"@babylonlabs-io/babylon-proto-ts@^0.0.3-canary.6":
+  version "0.0.3"
+  resolved "https://registry.npmjs.org/@babylonlabs-io/babylon-proto-ts/-/babylon-proto-ts-0.0.3.tgz#f46b9869072893ec55ad5a05c59fe5fe97ce9ed8"
+  integrity sha512-K5M0DWuHuAANVQZezlV/aiEgPhEYU+H5dF78+jNawSzDHmX3OiwgQeqIHh+Kx+BLZVpVjMaPFqezrXipoyGN6g==
+  dependencies:
+    "@bufbuild/protobuf" "^2.2.0"
+
 "@bitcoin-js/tiny-secp256k1-asmjs@2.2.3":
   version "2.2.3"
   resolved "https://registry.npmjs.org/@bitcoin-js/tiny-secp256k1-asmjs/-/tiny-secp256k1-asmjs-2.2.3.tgz#b9306766f4f338a0957297481bbbc1511b8c500a"

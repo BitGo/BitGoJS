@@ -1,5 +1,6 @@
 import assert from 'assert';
 
+import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ECPairInterface } from '@bitgo/utxo-lib';
@@ -9,10 +10,6 @@ import { getFixture, getKey, toPlainObject } from '@bitgo/utxo-core/testutil';
 
 import { BabylonDescriptorBuilder, finalityBabylonProvider0, testnetStakingParams } from '../../../src/babylon';
 import { normalize } from '../fixtures.utils';
-
-import * as vendor from './vendor/btc-staking-ts/src';
-import * as vendorStaking from './vendor/btc-staking-ts/src/staking';
-import * as vendorUtilsStaking from './vendor/btc-staking-ts/src/utils/staking';
 
 bitcoinjslib.initEccLib(utxolib.ecc);
 
@@ -100,7 +97,7 @@ function getSigned(
 }
 
 function getStakingTransactionTreeVendor(
-  builder: vendorStaking.Staking,
+  builder: vendor.Staking,
   amount: number,
   utxos: vendor.UTXO[],
   feeRateSatB: number,
@@ -288,15 +285,15 @@ function describeWithKeys(
 
     it('matches output scripts', function () {
       assertEqualOutputScript(
-        vendorUtilsStaking.deriveStakingOutputInfo(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
+        vendor.deriveStakingOutputInfo(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
         descriptorBuilder.getStakingDescriptor()
       );
       assertEqualOutputScript(
-        vendorUtilsStaking.deriveSlashingOutput(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
+        vendor.deriveSlashingOutput(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
         descriptorBuilder.getSlashingDescriptor()
       );
       assertEqualOutputScript(
-        vendorUtilsStaking.deriveUnbondingOutputInfo(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
+        vendor.deriveUnbondingOutputInfo(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
         descriptorBuilder.getUnbondingDescriptor()
       );
     });
@@ -341,7 +338,7 @@ function describeWithKeys(
 
         const finalityProvider = finalityProviderKeys[0];
 
-        const vendorStakingTxBuilder = new vendorStaking.Staking(
+        const vendorStakingTxBuilder = new vendor.Staking(
           bitcoinjslib.networks.bitcoin,
           {
             address: changeAddress,
