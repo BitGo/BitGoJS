@@ -335,7 +335,7 @@ export async function backupKeyRecovery(
   // xpubs can become handy for many things.
   utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
   const txInfo = {} as BackupKeyRecoveryTransansaction;
-  const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
+  const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
 
   // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees.
   const extraOutputSize = isKrsRecovery ? VirtualSizes.txP2wshOutputSize : 0;
@@ -450,7 +450,7 @@ export async function v1BackupKeyRecovery(
     throw new Error('invalid recoveryDestination');
   }
 
-  const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
+  const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
   const v1wallet = await bitgo.wallets().get({ id: params.walletId });
   return await v1wallet.recover({
     ...params,
