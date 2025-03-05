@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { VirtualSizes } from '@bitgo/unspents';
+import { Dimensions, VirtualSizes } from '@bitgo/unspents';
 import {
   BitGoBase,
   ErrorNoInputToRecover,
@@ -337,12 +337,10 @@ export async function backupKeyRecovery(
   const txInfo = {} as BackupKeyRecoveryTransansaction;
   const feePerByte: number = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
 
-  // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees. Use p2wsh outputs because
-  // they are the largest outputs and thus the most conservative estimate to use in calculating fees. Also use
-  // segwit overhead size and p2sh inputs for the same reason.
-  const outputSize = (isKrsRecovery ? 2 : 1) * VirtualSizes.txP2wshOutputSize;
-  const approximateSize = VirtualSizes.txSegOverheadVSize + outputSize + VirtualSizes.txP2shInputSize * unspents.length;
-  const approximateFee = BigInt(approximateSize * feePerByte);
+  // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees.
+  const extraOutputSize = isKrsRecovery ? VirtualSizes.txP2wshOutputSize : 0;
+  const dimensions = Dimensions.fromPsbt(psbt);
+  const approximateFee = BigInt((dimensions.getVSize() + extraOutputSize) * feePerByte);
 
   txInfo.inputs =
     responseTxFormat === 'legacy'
