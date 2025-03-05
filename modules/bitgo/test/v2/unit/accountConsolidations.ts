@@ -83,6 +83,46 @@ describe('Account Consolidations:', function () {
           sinon.restore();
         });
 
+        it('should use params.apiVersion if specified', async function () {
+          const scope = nock(bgUrl)
+            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`, { apiVersion: 'lite' })
+            .reply(200, fixtures.buildAccountConsolidation);
+          const sendAccountConsolidationStub = sinon
+            .stub(wallet, 'sendAccountConsolidation')
+            .resolves(fixtures.signedAccountConsolidationBuilds);
+          sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([]);
+
+          wallet.tssUtils = {
+            supportedTxRequestVersions: () => ['lite', 'full'],
+          };
+
+          const params = { apiVersion: 'lite' };
+          await wallet.sendAccountConsolidations(params);
+          sinon.assert.calledWith(sendAccountConsolidationStub, sinon.match({ apiVersion: 'lite' }));
+
+          scope.isDone().should.be.True();
+        });
+
+        it('should use apiVersion full for the transaction if it is supported and no apiVersion is passed', async function () {
+          const scope = nock(bgUrl)
+            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`, { apiVersion: 'full' })
+            .reply(200, fixtures.buildAccountConsolidation);
+          const sendAccountConsolidationStub = sinon
+            .stub(wallet, 'sendAccountConsolidation')
+            .resolves(fixtures.signedAccountConsolidationBuilds);
+          sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([]);
+
+          wallet.tssUtils = {
+            supportedTxRequestVersions: () => ['lite', 'full'],
+          };
+
+          const params = {};
+          await wallet.sendAccountConsolidations(params);
+          sinon.assert.calledWith(sendAccountConsolidationStub, sinon.match({ apiVersion: 'full' }));
+
+          scope.isDone().should.be.True();
+        });
+
         it('should utilize codec for custodial consolidation', async function () {
           const custodialWallet = new Wallet(bitgo, basecoin, {
             id: '5f4168f4403d0c5c1c3bdd15486e757f',
