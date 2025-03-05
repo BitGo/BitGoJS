@@ -160,6 +160,11 @@ export class Trx extends BaseCoin {
     return true;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Trx(bitgo, staticsCoin);
   }

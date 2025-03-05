@@ -80,6 +80,11 @@ export class Eth extends AbstractEthLikeNewCoins {
     return true;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
   }

@@ -185,6 +185,14 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * Flag indicating if this coin supports MultiSig wallets.
+   * @return {boolean} True if MultiSig wallets can be created for this coin
+   */
+  supportsMultisig(): boolean {
+    return false;
+  }
+
+  /**
    * Flag indicating if the coin supports deriving a key with a seed (keyID)
    * to the user/backup keys.
    */

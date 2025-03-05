@@ -51,4 +51,9 @@ export class Arbeth extends AbstractEthLikeNewCoins {
     }
     return userGasLimit;
   }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
 }

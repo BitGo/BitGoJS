@@ -133,6 +133,11 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     return false;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   generateKeyPair(seed?: Buffer): KeyPair {
     const avaxKeyPair = seed ? new AvaxcKeyPair({ seed }) : new AvaxcKeyPair();
     const extendedKeys = avaxKeyPair.getExtendedKeys();

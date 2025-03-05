@@ -114,6 +114,11 @@ export class Xrp extends BaseCoin {
     return true;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   public getTokenEnablementConfig(): TokenEnablementConfig {
     return {
       requiresTokenEnablement: true,
