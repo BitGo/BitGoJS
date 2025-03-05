@@ -2898,6 +2898,10 @@ export class Wallet implements IWallet {
       throw new Error(`${this.baseCoin.getFullName()} does not allow account consolidations.`);
     }
 
+    const apiVersion =
+      params.apiVersion ??
+      (this.tssUtils && this.tssUtils.supportedTxRequestVersions().includes('full') ? 'full' : undefined);
+
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
     await this.getKeychainsAndValidatePassphrase({
       reqId: params.reqId,
@@ -2906,13 +2910,14 @@ export class Wallet implements IWallet {
     });
 
     // this gives us a set of account consolidation transactions
-    const unsignedBuilds = await this.buildAccountConsolidations(params);
+    const unsignedBuilds = await this.buildAccountConsolidations({ ...params, apiVersion: apiVersion });
     if (unsignedBuilds && unsignedBuilds.length > 0) {
       const successfulTxs: any[] = [];
       const failedTxs = new Array<Error>();
       for (const unsignedBuild of unsignedBuilds) {
         // fold any of the parameters we used to build this transaction into the unsignedBuild
         const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = Object.assign({}, params);
+        unsignedBuildWithOptions.apiVersion = apiVersion;
         unsignedBuildWithOptions.prebuildTx = unsignedBuild;
         try {
           const sendTx = await this.sendAccountConsolidation(unsignedBuildWithOptions);
