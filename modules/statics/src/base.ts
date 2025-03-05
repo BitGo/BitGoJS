@@ -1848,6 +1848,8 @@ export enum UnderlyingAsset {
   'eth:move' = 'eth:move',
   'eth:mon' = 'eth:mon',
   'eth:usd1' = 'eth:usd1',
+  'eth:ibtc' = 'eth:ibtc',
+  'eth:pyr' = 'eth:pyr',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2487,6 +2489,7 @@ export enum UnderlyingAsset {
 
   // Apt tokens
   'apt:usdt' = 'apt:usdt',
+  'apt:usdc' = 'apt:usdc',
 
   // Apt testnet tokens
   'tapt:usdt' = 'tapt:usdt',

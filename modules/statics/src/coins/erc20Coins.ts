@@ -10203,6 +10203,22 @@ export const erc20Coins = [
     '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
     UnderlyingAsset['eth:usd1']
   ),
+  erc20(
+    'e811d594-de4f-48b0-9b6b-47e8b4ba7dda',
+    'eth:ibtc',
+    'Token iBTC',
+    8,
+    '0x20157dbabb84e3bbfe68c349d0d44e48ae7b5ad2',
+    UnderlyingAsset['eth:ibtc']
+  ),
+  erc20(
+    'e036704f-1b00-4d9c-83ac-da4cf0452a8a',
+    'eth:pyr',
+    'Vulcan Forged ',
+    18,
+    '0x430ef9263e76dae63c84292c3409d61c598e9682',
+    UnderlyingAsset['eth:pyr']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
