@@ -370,6 +370,15 @@ export class CosmosUtils implements BaseUtils {
   }
 
   /**
+   * Gets the send messages used in the final step of encoding a transaction. This allows for any final processing needed.
+   * @param {CosmosLikeTransaction} cosmosLikeTransaction transaction to get send messages from
+   * @returns {Any[]} processed send messages
+   */
+  getSendMessagesForEncodingTx(cosmosLikeTransaction: CosmosLikeTransaction): Any[] {
+    return cosmosLikeTransaction.sendMessages as unknown as Any[];
+  }
+
+  /**
    * Creates a txRaw from an cosmos like transaction @see CosmosLikeTransaction
    * @Precondition cosmosLikeTransaction.publicKey must be defined
    * @param {CosmosLikeTransaction} cosmosLikeTransaction
@@ -380,7 +389,7 @@ export class CosmosUtils implements BaseUtils {
       throw new Error('publicKey is required to create a txRaw');
     }
     const encodedPublicKey: Any = this.getEncodedPubkey(cosmosLikeTransaction.publicKey);
-    const messages = cosmosLikeTransaction.sendMessages as unknown as Any[];
+    const messages = this.getSendMessagesForEncodingTx(cosmosLikeTransaction);
     let txBodyValue;
     if (cosmosLikeTransaction.memo) {
       txBodyValue = {
