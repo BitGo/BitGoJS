@@ -1,4 +1,4 @@
-import { IcpMetadata, OperationType } from '../../src/lib/iface';
+import { IcpMetadata, OperationType, IcpAccount } from '../../src/lib/iface';
 
 export const accounts = {
   account1: {
@@ -307,7 +307,7 @@ export const ParsedUnsignedTransaction = {
       },
     },
   ],
-  account_identifier_signers: [],
+  account_identifier_signers: [] as IcpAccount[],
   metadata: {
     created_at_time: 1740739880079000064,
     memo: 1234,

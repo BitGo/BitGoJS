@@ -21,6 +21,7 @@ import {
   HttpCanisterUpdate,
   ParsedTransaction,
   IcpOperation,
+  IcpAccount,
 } from './iface';
 import { Utils } from './utils';
 import { KeyPair } from './keyPair';
@@ -214,12 +215,19 @@ export class Transaction extends BaseTransaction {
     }
   }
 
-  async parseUnsignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
+  async parseUnsignedTransaction(rawTransaction: string, signed: boolean): Promise<ParsedTransaction> {
     const unsignedTransaction = this._utils.cborDecode(
       this._utils.blobFromHex(rawTransaction)
     ) as cborUnsignedTransaction;
     const update = unsignedTransaction.updates[0];
     const httpCanisterUpdate = update[1] as HttpCanisterUpdate;
+    return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, signed);
+  }
+
+  private async getParsedTransactionFromUpdate(
+    httpCanisterUpdate: HttpCanisterUpdate,
+    signed: boolean
+  ): Promise<ParsedTransaction> {
     const senderPrincipal = this._utils.convertSenderBlobToPrincipal(httpCanisterUpdate.sender);
     const ACCOUNT_ID_PREFIX = Buffer.from([0x0a, ...Buffer.from('account-id')]);
     const subAccount = new Uint8Array(32);
@@ -263,14 +271,27 @@ export class Transaction extends BaseTransaction {
         },
       },
     };
+    const accountIdentifierSigners: IcpAccount[] = [];
+    if (signed) {
+      accountIdentifierSigners.push({ address: senderAccount });
+    }
     const parsedTxn: ParsedTransaction = {
       operations: [senderOperation, receiverOperation, feeOperation],
       metadata: {
         created_at_time: args.createdAtTime.timestampNanos,
         memo: Number(args.memo.memo),
       },
-      account_identifier_signers: [],
+      account_identifier_signers: accountIdentifierSigners,
     };
     return parsedTxn;
+  }
+
+  async parseSignedTransaction(rawTransaction: string, signed: boolean): Promise<ParsedTransaction> {
+    const signedTransaction = this._utils.cborDecode(this._utils.blobFromHex(rawTransaction));
+    const signedTransactionTyped = signedTransaction as { requests: any[] };
+    const envelopes = signedTransactionTyped.requests[0][1];
+    const updates = envelopes.map((envelope) => envelope.update);
+    const httpCanisterUpdate = updates[0].content as HttpCanisterUpdate;
+    return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, signed);
   }
 }
