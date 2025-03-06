@@ -31,6 +31,7 @@ import {
   CustomMPCv2SigningRound3GeneratingFunction,
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
+import { PublicKey } from '@solana/web3.js';
 import * as bodyParser from 'body-parser';
 import * as debugLib from 'debug';
 import * as express from 'express';
@@ -372,6 +373,15 @@ function handleV2VerifyAddress(req: express.Request): { isValid: boolean } {
     return {
       isValid: coin.isValidAddress(req.body.address, !!req.body.supportOldScriptHashVersion),
     };
+  }
+
+  if (coin instanceof Coin.Sol) {
+    const pubKey = new PublicKey(req.body.address);
+    if (!PublicKey.isOnCurve(pubKey.toBuffer())) {
+      return {
+        isValid: false,
+      };
+    }
   }
 
   return {
