@@ -219,13 +219,13 @@ export class Utils implements BaseUtils {
    * @returns {string} The hexadecimal string representation of the account ID.
    */
   fromPrincipal(principal: DfinityPrincipal, subAccount: Uint8Array = new Uint8Array(32)): string {
-    const principalBytes = Buffer.from(principal.toUint8Array());
+    const principalBytes = Buffer.from(principal.toUint8Array().buffer);
     return this.getAccountIdFromPrincipalBytes(this.getAccountIdPrefix(), principalBytes, subAccount);
   }
 
   getAccountIdFromPrincipalBytes(
     ACCOUNT_ID_PREFIX: Buffer<ArrayBuffer>,
-    principalBytes: Buffer<Uint8Array<ArrayBufferLike>>,
+    principalBytes: Buffer<ArrayBufferLike>,
     subAccount: Uint8Array<ArrayBufferLike>
   ): string {
     const combinedBytes = Buffer.concat([ACCOUNT_ID_PREFIX, principalBytes, subAccount]);
