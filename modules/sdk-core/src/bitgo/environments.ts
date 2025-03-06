@@ -158,7 +158,7 @@ const mainnetBase: EnvironmentTemplate = {
   babyNodeUrl: '', // TODO(COIN-2758) update url when mainnet goes live
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
-  substrateNodeUrls: ['dummy-link'], // TODO: fix the link
+  substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
   tronNodes: {
     full: 'https://api.trongrid.io',
     solidity: 'https://api.trongrid.io',
