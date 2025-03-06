@@ -29,9 +29,15 @@ describe('ICP Transaction Builder', async () => {
   });
 
   it('should parse an unsigned transaction', async () => {
-    const parsedUnsignedTxn = await factory.parseTransaction(testData.payloadsData.unsigned_transaction);
+    const parsedUnsignedTxn = await factory.parseTransaction(testData.payloadsData.unsigned_transaction, false);
     txn.should.be.an.Object();
     should.deepEqual(parsedUnsignedTxn, testData.ParsedUnsignedTransaction);
+  });
+
+  it('should parse an signed transaction', async () => {
+    const parsedSignedTxn = await factory.parseTransaction(testData.signedTransaction, true);
+    txn.should.be.an.Object();
+    should.deepEqual(parsedSignedTxn, testData.ParsedSignedTransaction);
   });
 
   it('start and build a transfer tx', async () => {
