@@ -28,6 +28,7 @@
 /modules/utxo-lib/ @BitGo/btc-team
 /modules/utxo-ord/ @BitGo/btc-team
 /modules/utxo-staking/ @BitGo/btc-team
+/modules/babylonlabs-io-btc-staking-ts @BitGo/btc-team
 
 # Lightning coin modules
 /modules/abstract-lightning/ @BitGo/btc-team
