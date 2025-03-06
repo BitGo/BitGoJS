@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.18.0...@bitgo/abstract-utxo@9.19.0) (2025-03-06)
+
+### Features
+
+- allow a custom fee rate for utxo recovery ([411c666](https://github.com/BitGo/BitGoJS/commit/411c666462975c49db7e1fd77af478aee843f13b))
+- use dimensions to estimate transaction size ([750f92e](https://github.com/BitGo/BitGoJS/commit/750f92e665149e94853bb2b2705ff0353d7a10ae))
+
 # [9.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.17.0...@bitgo/abstract-utxo@9.18.0) (2025-03-04)
 
 ### Features

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.0.0...@bitgo/express@13.1.0) (2025-03-06)
+
+### Bug Fixes
+
+- **express:** add ip caveat when flag is true ([1fed2dc](https://github.com/BitGo/BitGoJS/commit/1fed2dca7b53bc17803ba3a8e20bfbd4588e6677))
+
+### Features
+
+- **express:** take walletPassphrase as body parameter for /api/v2/ofc/signPayload ([ac17c31](https://github.com/BitGo/BitGoJS/commit/ac17c31b9d9470c2200db20218dccac702d3fe44))
+
 # [13.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@10.7.0...@bitgo/express@13.0.0) (2025-03-04)
 
 ### Bug Fixes

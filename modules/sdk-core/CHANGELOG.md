@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [31.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@31.0.0...@bitgo/sdk-core@31.1.0) (2025-03-06)
+
+### Bug Fixes
+
+- **abstract-substrate:** add substrate mainnet link ([7320d6d](https://github.com/BitGo/BitGoJS/commit/7320d6d7c4835c98317c4dd0f076b4b3b5824834))
+- default to api version full if none specified ([9dca67f](https://github.com/BitGo/BitGoJS/commit/9dca67f435ef011ab75e9b90713a7a2dbb5de6d8))
+
+### Features
+
+- **abstract-substrate:** add wrw for tao ([9f30890](https://github.com/BitGo/BitGoJS/commit/9f3089000330d47696ab057891cd8d1083004a2a))
+
 # [31.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@28.25.0...@bitgo/sdk-core@31.0.0) (2025-03-04)
 
 ### Bug Fixes

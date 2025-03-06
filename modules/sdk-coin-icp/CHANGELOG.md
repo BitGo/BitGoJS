@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.6.0...@bitgo/sdk-coin-icp@1.7.0) (2025-03-06)
+
+### Bug Fixes
+
+- **sdk-coin-icp:** correct buffer handling for sender principal and principal conversion ([b51b93c](https://github.com/BitGo/BitGoJS/commit/b51b93c0335b52293f2f3686a408c2cd7eba0fa6))
+
+### Features
+
+- **sdk-coin-icp:** add validation for ICP block hashes ([3037e1e](https://github.com/BitGo/BitGoJS/commit/3037e1e5c4c5a28d26ceb71bd2665976f526f7b5))
+- **sdk-coin-icp:** implemented parsedTransaction for unsigned txn ([ffc2370](https://github.com/BitGo/BitGoJS/commit/ffc237069fc4061fe979cf7c1bd633e10b6f4453))
+- **sdk-coin-icp:** implemented transaction parsing for signed txn ([f2d4f73](https://github.com/BitGo/BitGoJS/commit/f2d4f738128af157124707fc42855f801c724b6e))
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.3.0...@bitgo/sdk-coin-icp@1.6.0) (2025-03-04)
 
 ### Bug Fixes

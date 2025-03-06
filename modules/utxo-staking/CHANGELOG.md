@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.8.0...@bitgo/utxo-staking@1.9.0) (2025-03-06)
+
+### Features
+
+- **utxo-staking:** add normalize helper for test fixtures ([b2266d8](https://github.com/BitGo/BitGoJS/commit/b2266d8264b7579ebd505cb7c723389439f65849))
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.6.0...@bitgo/utxo-staking@1.8.0) (2025-03-04)
 
 ### Bug Fixes

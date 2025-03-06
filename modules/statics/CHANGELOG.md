@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.2.0...@bitgo/statics@51.3.0) (2025-03-06)
+
+### Bug Fixes
+
+- **statics:** fix testnet tokens config details ([162b7c5](https://github.com/BitGo/BitGoJS/commit/162b7c5ee1927c43bf242eb742324dfb5f5b029e))
+
+### Features
+
+- add ofc tao ([982de1c](https://github.com/BitGo/BitGoJS/commit/982de1cd75e1bfa123f42fab0b93b7f5283f8728))
+- new feature for coins supporting alphanumeric memo id ([a2685fe](https://github.com/BitGo/BitGoJS/commit/a2685fe85d3ca957cb25a466bb1028068ea6d829))
+- **sdk-coin-stx:** add SIP10 skeleton ([1710f38](https://github.com/BitGo/BitGoJS/commit/1710f38296e836264b72dda0d6b04c0ee09cf293))
+
 # [51.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.0.0...@bitgo/statics@51.2.0) (2025-03-04)
 
 ### Bug Fixes

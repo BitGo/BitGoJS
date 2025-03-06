@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.39](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sei@3.0.38...@bitgo/sdk-coin-sei@3.0.39) (2025-03-06)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sei
+
 ## [3.0.38](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sei@3.0.35...@bitgo/sdk-coin-sei@3.0.38) (2025-03-04)
 
 ### Bug Fixes

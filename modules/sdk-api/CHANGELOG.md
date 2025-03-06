@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.61.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.60.0...@bitgo/sdk-api@1.61.0) (2025-03-06)
+
+### Features
+
+- **sdk-api:** update sdk to support non-json response ([567b4ae](https://github.com/BitGo/BitGoJS/commit/567b4ae9553c22eaa35aca6459a54270fa85c6a6))
+
 # [1.60.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.58.8...@bitgo/sdk-api@1.60.0) (2025-03-04)
 
 ### Features

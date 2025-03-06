@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.26...@bitgo/sdk-coin-stx@3.4.0) (2025-03-06)
+
+### Features
+
+- **sdk-coin-stx:** add SIP10 skeleton ([1710f38](https://github.com/BitGo/BitGoJS/commit/1710f38296e836264b72dda0d6b04c0ee09cf293))
+
 ## [3.3.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.23...@bitgo/sdk-coin-stx@3.3.26) (2025-03-04)
 
 ### Bug Fixes

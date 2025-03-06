@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.5.0...@bitgo/sdk-coin-tao@1.6.0) (2025-03-06)
+
+### Features
+
+- **abstract-substrate:** add wrw for tao ([9f30890](https://github.com/BitGo/BitGoJS/commit/9f3089000330d47696ab057891cd8d1083004a2a))
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.3.1...@bitgo/sdk-coin-tao@1.5.0) (2025-03-04)
 
 ### Bug Fixes
