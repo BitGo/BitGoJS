@@ -4,6 +4,7 @@ import { BabylonDescriptorBuilder } from './descriptor';
 
 // Source: https://github.com/babylonlabs-io/babylon/blob/v1.99.0-snapshot.250211/app/upgrades/v1/testnet/btcstaking_params.go#L149-L159
 export const testnetStakingParams = {
+  version: 5 /* it's the sixth element in the array */,
   covenant_pks: [
     'fa9d882d45f4060bdb8042183828cd87544f1ea997380e586cab77d5fd698737',
     '0aee0509b16db71c999238a4827db945526859b13c95487ab46725357c9a9f25',

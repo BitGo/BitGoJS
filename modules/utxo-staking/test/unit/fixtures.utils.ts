@@ -10,6 +10,9 @@ export function normalize(v: unknown): unknown {
   if (v instanceof Descriptor) {
     return v.toString();
   }
+  if (v instanceof Uint8Array) {
+    v = Buffer.from(v);
+  }
   if (v instanceof Buffer) {
     return v.toString('hex');
   }

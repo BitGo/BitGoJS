@@ -5,41 +5,22 @@ import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { ast, Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
-import { createAddressFromDescriptor, toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
-import { getFixture, getKey, toPlainObject } from '@bitgo/utxo-core/testutil';
+import { createAddressFromDescriptor } from '@bitgo/utxo-core/descriptor';
+import { getFixture, toPlainObject } from '@bitgo/utxo-core/testutil';
 
 import { BabylonDescriptorBuilder, finalityBabylonProvider0, testnetStakingParams } from '../../../src/babylon';
 import { normalize } from '../fixtures.utils';
 
+import { getSignedExtract } from './transaction.utils';
+import { fromXOnlyPublicKey, getECKey, getECKeys, getXOnlyPubkey } from './key.utils';
+import { getVendorMsgCreateBtcDelegation } from './vendor.utils';
+
 bitcoinjslib.initEccLib(utxolib.ecc);
 
-function getECKey(seed: string): ECPairInterface {
-  const { privateKey } = getKey(seed);
-  assert(privateKey);
-  return utxolib.ECPair.fromPrivateKey(privateKey);
-}
-
-function getECKeys(key: string, count: number): ECPairInterface[] {
-  return Array.from({ length: count }, (_, i) => getECKey(`${key}${i}`));
-}
-
-function getXOnlyPubkey(key: ECPairInterface): Buffer {
-  return key.publicKey.subarray(1);
-}
-
-function fromXOnlyPublicKey(key: Buffer): ECPairInterface {
-  for (const prefix of [0x02, 0x03]) {
-    try {
-      return utxolib.ECPair.fromPublicKey(Buffer.concat([Buffer.from([prefix]), key]));
-    } catch {
-      continue;
-    }
-  }
-  throw new Error('Invalid x-only public key');
-}
-
-function getTestnetStakingParams(): vendor.StakingParams {
+function getTestnetStakingParams(): vendor.VersionedStakingParams {
   return {
+    version: testnetStakingParams.version,
+    btcActivationHeight: testnetStakingParams.btc_activation_height,
     covenantNoCoordPks: testnetStakingParams.covenant_pks,
     covenantQuorum: testnetStakingParams.covenant_quorum,
     unbondingTime: testnetStakingParams.unbonding_time_blocks,
@@ -73,29 +54,6 @@ type TransactionTree = {
   slashingWithdraw: PsbtWithFee | undefined;
 };
 
-function getSigned(
-  psbt: bitcoinjslib.Psbt,
-  descriptor: Descriptor,
-  signers: ECPairInterface[]
-): bitcoinjslib.Transaction {
-  const wrappedPsbt = toWrappedPsbt(psbt.toBuffer());
-  const signedInputs = psbt.data.inputs.flatMap((input, i) => {
-    assert(input.witnessUtxo);
-    if (Buffer.from(descriptor.scriptPubkey()).equals(input.witnessUtxo.script)) {
-      wrappedPsbt.updateInputWithDescriptor(i, descriptor);
-      const signResults = signers.map((signer) => {
-        assert(signer.privateKey);
-        return wrappedPsbt.signWithPrv(signer.privateKey);
-      });
-      return [[i, signResults]];
-    }
-    return [];
-  });
-  assert(signedInputs.length > 0);
-  wrappedPsbt.finalize();
-  return bitcoinjslib.Psbt.fromBuffer(Buffer.from(wrappedPsbt.serialize())).extractTransaction();
-}
-
 function getStakingTransactionTreeVendor(
   builder: vendor.Staking,
   amount: number,
@@ -119,14 +77,14 @@ function getStakingTransactionTreeVendor(
   const signSequence = signers ? [signers.staker, signers.finalityProvider, ...signers.covenant] : undefined;
   const unbondingSlashingWithdraw = signSequence
     ? builder.createWithdrawSlashingPsbt(
-        getSigned(unbondingSlashing.psbt, descriptorBuilder.getUnbondingDescriptor(), signSequence),
+        getSignedExtract(unbondingSlashing.psbt, descriptorBuilder.getUnbondingDescriptor(), signSequence),
         feeRateSatB
       )
     : undefined;
   const slashing = builder.createStakingOutputSlashingPsbt(staking.transaction);
   const slashingWithdraw = signSequence
     ? builder.createWithdrawSlashingPsbt(
-        getSigned(slashing.psbt, descriptorBuilder.getStakingDescriptor(), signSequence),
+        getSignedExtract(slashing.psbt, descriptorBuilder.getStakingDescriptor(), signSequence),
         feeRateSatB
       )
     : undefined;
@@ -143,7 +101,7 @@ function getStakingTransactionTreeVendor(
   };
 }
 
-function getTestnetStakingParamsWithCovenant(covenantKeys: ECPairInterface[]): vendor.StakingParams {
+function getTestnetStakingParamsWithCovenant(covenantKeys: ECPairInterface[]): vendor.VersionedStakingParams {
   return {
     ...getTestnetStakingParams(),
     covenantNoCoordPks: covenantKeys.map((pk) => getXOnlyPubkey(pk).toString('hex')),
@@ -189,6 +147,7 @@ function parseScripts(scripts: unknown) {
 }
 
 async function assertEqualsFixture(fixtureName: string, value: unknown): Promise<void> {
+  value = normalize(value);
   assert.deepStrictEqual(await getFixture(fixtureName, value), value);
 }
 
@@ -245,7 +204,7 @@ function describeWithKeys(
   tag: string,
   finalityProviderKeys: ECPairInterface[],
   covenantKeys: ECPairInterface[],
-  stakingParams: vendor.StakingParams,
+  stakingParams: vendor.VersionedStakingParams,
   { signIntermediateTxs = false } = {}
 ) {
   const stakerKey = getECKey('staker');
@@ -331,13 +290,13 @@ function describeWithKeys(
         ]);
       });
 
+      if (finalityProviderKeys.length !== 1) {
+        return;
+      }
+
+      const finalityProvider = finalityProviderKeys[0];
+
       it('has expected transactions (vendorStaking.Staking)', async function (this: Mocha.Context) {
-        if (finalityProviderKeys.length !== 1) {
-          this.skip();
-        }
-
-        const finalityProvider = finalityProviderKeys[0];
-
         const vendorStakingTxBuilder = new vendor.Staking(
           bitcoinjslib.networks.bitcoin,
           {
@@ -366,6 +325,22 @@ function describeWithKeys(
         );
         await assertTransactionEqualsFixture(`test/fixtures/babylon/txTree.${tag}.json`, txTree);
       });
+
+      it('creates MsgCreateBTCDelegation', async function () {
+        await assertEqualsFixture(
+          `test/fixtures/babylon/msgCreateBTCDelegation.${tag}.json`,
+          await getVendorMsgCreateBtcDelegation(
+            stakerKey,
+            finalityProvider,
+            descriptorBuilder,
+            stakingParams,
+            changeAddress,
+            amount,
+            utxo,
+            feeRateSatB
+          )
+        );
+      });
     });
   });
 }
@@ -373,7 +348,7 @@ function describeWithKeys(
 function describeWithKeysFromStakingParams(
   tag: string,
   finalityProviderKeys: ECPairInterface[],
-  stakingParams: vendor.StakingParams
+  stakingParams: vendor.VersionedStakingParams
 ) {
   describeWithKeys(
     tag,
