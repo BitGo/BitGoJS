@@ -328,6 +328,11 @@ export enum CoinFeature {
    * Fees for transactions of TSS wallet of this coin would be paid by the Enterprise i.e. Gas Tank
    */
   TSS_ENTERPRISE_PAYS_FEES = 'tss-enterprise-pays-fees',
+
+  /**
+   * This coin supports alphanumeric memo id
+   */
+  ALPHANUMERIC_MEMO_ID = 'alphanumeric-memo-id',
 }
 
 /**
