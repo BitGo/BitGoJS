@@ -996,7 +996,7 @@ export const bscTokens = [
   bscToken(
     '56dc1700-3e19-4fcc-9ea0-df2fd8addac0',
     'bsc:usd1',
-    'World Liberty Financial USD',
+    'USD1',
     18,
     '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
     UnderlyingAsset['bsc:usd1'],

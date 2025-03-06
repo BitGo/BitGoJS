@@ -10198,7 +10198,7 @@ export const erc20Coins = [
   erc20(
     'af4043a2-3944-4194-877f-553fe2c8be75',
     'eth:usd1',
-    'World Liberty Financial USD',
+    'USD1',
     18,
     '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
     UnderlyingAsset['eth:usd1']

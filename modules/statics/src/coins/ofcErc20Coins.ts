@@ -2943,13 +2943,7 @@ export const ofcErc20Coins = [
     6,
     underlyingAssetForSymbol('eth:rtbl')
   ),
-  ofcerc20(
-    '2bd66ef0-5767-4739-baf4-0eb862e5675e',
-    'ofceth:usd1',
-    'World Liberty Financial USD',
-    18,
-    underlyingAssetForSymbol('eth:usd1')
-  ),
+  ofcerc20('2bd66ef0-5767-4739-baf4-0eb862e5675e', 'ofceth:usd1', 'USD1', 18, underlyingAssetForSymbol('eth:usd1')),
   ofcerc20(
     '80bfa43e-f01c-42bd-bd14-269b88948bbf',
     'ofceth:usdg',
