@@ -1095,6 +1095,13 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['tpolygon:xsgd']
   ),
+  tofcPolygonErc20(
+    '6ea455da-2784-4717-a4f6-22b440465546',
+    'ofctpolygon:testcopm',
+    'TESTCOP Minteo',
+    18,
+    UnderlyingAsset['tpolygon:testcopm']
+  ),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
