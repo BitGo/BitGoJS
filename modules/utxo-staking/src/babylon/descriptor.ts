@@ -4,6 +4,7 @@
  */
 
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
+import { StakingParams } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 export function getUnspendableKey(): string {
   // https://github.com/babylonlabs-io/btc-staking-ts/blob/v0.4.0-rc.2/src/constants/internalPubkey.ts
@@ -36,6 +37,37 @@ export class BabylonDescriptorBuilder {
     public stakingTimeLock: number,
     public unbondingTimeLock: number
   ) {}
+
+  static fromParams(
+    params: {
+      stakerKey: Buffer;
+      finalityProviderKeys: Buffer[];
+    } & StakingParams
+  ): BabylonDescriptorBuilder {
+    /*
+
+  const stakerKey = getECKey('staker');
+  const covenantThreshold = stakingParams.covenantQuorum;
+  const stakingTimelock = stakingParams.minStakingTimeBlocks;
+  const unbondingTimelock = stakingParams.unbondingTime;
+  const vendorBuilder = new vendor.StakingScriptData(
+    getXOnlyPubkey(stakerKey),
+    finalityProviderKeys.map(getXOnlyPubkey),
+    covenantKeys.map(getXOnlyPubkey),
+    covenantThreshold,
+    stakingTimelock,
+    unbondingTimelock
+  );
+     */
+    return new BabylonDescriptorBuilder(
+      params.stakerKey,
+      params.finalityProviderKeys,
+      params.covenantNoCoordPks.map((k) => Buffer.from(k, 'hex')),
+      params.covenantQuorum,
+      params.minStakingTimeBlocks,
+      params.unbondingTime
+    );
+  }
 
   getTimelockMiniscript(): ast.MiniscriptNode {
     return { and_v: [pk(this.stakerKey), { older: this.stakingTimeLock }] };

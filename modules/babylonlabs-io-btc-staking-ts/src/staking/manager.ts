@@ -661,7 +661,7 @@ export class BabylonBtcStakingManager {
    * @param inclusionProof - The inclusion proof of the staking transaction.
    * @returns The protobuf message.
    */
-  private async createBtcDelegationMsg(
+  public async createBtcDelegationMsg(
     stakingInstance: Staking,
     stakingInput: StakingInputs,
     stakingTx: Transaction,
