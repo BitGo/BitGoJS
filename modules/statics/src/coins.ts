@@ -50,6 +50,7 @@ import { utxoCoins } from './utxo';
 import { lightningCoins } from './lightning';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
+import { sip10Tokens } from './coins/sip10Tokens';
 import {
   ETH_FEATURES,
   ETH_FEATURES_WITH_STAKING_AND_MMI,
@@ -114,6 +115,7 @@ export const coins = CoinMap.fromCoins([
   ...bscTokens,
   ...polygonTokens,
   ...solTokens,
+  ...sip10Tokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',

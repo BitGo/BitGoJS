@@ -199,6 +199,11 @@ export const STX_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
 ];
+export const STX_TOKEN_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.ALPHANUMERIC_MEMO_ID,
+];
 export const NEAR_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.TSS,
