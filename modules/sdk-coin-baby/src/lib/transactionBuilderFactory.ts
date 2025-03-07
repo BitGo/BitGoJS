@@ -10,6 +10,9 @@ import {
 } from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { EpochedStakingActivateBuilder } from './EpochedStakingActivateBuilder';
+import { EpochedStakingDeactivateBuilder } from './EpochedStakingDeactivateBuilder';
+import { EpochedStakingRedelegateBuilder } from './EpochedStakingRedelegateBuilder';
 import utils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
@@ -49,11 +52,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
   /** @inheritdoc */
   getStakingActivateBuilder(tx?: CosmosTransaction): StakingActivateBuilder {
-    return this.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(tx, new EpochedStakingActivateBuilder(this._coinConfig, utils));
   }
   /** @inheritdoc */
   getStakingDeactivateBuilder(tx?: CosmosTransaction): StakingDeactivateBuilder {
-    return this.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(tx, new EpochedStakingDeactivateBuilder(this._coinConfig, utils));
   }
   /** @inheritdoc */
   getStakingWithdrawRewardsBuilder(tx?: CosmosTransaction): StakingWithdrawRewardsBuilder {
@@ -65,7 +68,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   getStakingRedelegateBuilder(tx?: CosmosTransaction): StakingRedelegateBuilder {
-    return this.initializeBuilder(tx, new StakingRedelegateBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(tx, new EpochedStakingRedelegateBuilder(this._coinConfig, utils));
   }
 
   /** @inheritdoc */

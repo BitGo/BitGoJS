@@ -43,10 +43,13 @@
     "@bitgo/abstract-cosmos": "^11.5.1",
     "@bitgo/sdk-core": "^31.1.0",
     "@bitgo/statics": "^51.3.0",
+    "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
+    "@cosmjs/proto-signing": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
-    "bignumber.js": "^9.1.1"
+    "bignumber.js": "^9.1.1",
+    "cosmjs-types": "^0.6.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.61.0",
