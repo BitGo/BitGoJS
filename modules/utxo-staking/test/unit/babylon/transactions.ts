@@ -8,12 +8,16 @@ import { ast, Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 import { createAddressFromDescriptor } from '@bitgo/utxo-core/descriptor';
 import { getFixture, toPlainObject } from '@bitgo/utxo-core/testutil';
 
-import { BabylonDescriptorBuilder, finalityBabylonProvider0, testnetStakingParams } from '../../../src/babylon';
+import {
+  BabylonDescriptorBuilder,
+  finalityBabylonProvider0,
+  getSignedPsbt,
+  testnetStakingParams,
+} from '../../../src/babylon';
 import { normalize } from '../fixtures.utils';
 
-import { getSignedExtract } from './transaction.utils';
 import { fromXOnlyPublicKey, getECKey, getECKeys, getXOnlyPubkey } from './key.utils';
-import { getVendorMsgCreateBtcDelegation } from './vendor.utils';
+import { getBitGoUtxoStakingMsgCreateBtcDelegation, getVendorMsgCreateBtcDelegation } from './vendor.utils';
 
 bitcoinjslib.initEccLib(utxolib.ecc);
 
@@ -77,14 +81,18 @@ function getStakingTransactionTreeVendor(
   const signSequence = signers ? [signers.staker, signers.finalityProvider, ...signers.covenant] : undefined;
   const unbondingSlashingWithdraw = signSequence
     ? builder.createWithdrawSlashingPsbt(
-        getSignedExtract(unbondingSlashing.psbt, descriptorBuilder.getUnbondingDescriptor(), signSequence),
+        getSignedPsbt(unbondingSlashing.psbt, descriptorBuilder.getUnbondingDescriptor(), signSequence, {
+          finalize: true,
+        }).extractTransaction(),
         feeRateSatB
       )
     : undefined;
   const slashing = builder.createStakingOutputSlashingPsbt(staking.transaction);
   const slashingWithdraw = signSequence
     ? builder.createWithdrawSlashingPsbt(
-        getSignedExtract(slashing.psbt, descriptorBuilder.getStakingDescriptor(), signSequence),
+        getSignedPsbt(slashing.psbt, descriptorBuilder.getStakingDescriptor(), signSequence, {
+          finalize: true,
+        }).extractTransaction(),
         feeRateSatB
       )
     : undefined;
@@ -327,19 +335,26 @@ function describeWithKeys(
       });
 
       it('creates MsgCreateBTCDelegation', async function () {
-        await assertEqualsFixture(
-          `test/fixtures/babylon/msgCreateBTCDelegation.${tag}.json`,
-          await getVendorMsgCreateBtcDelegation(
-            stakerKey,
-            finalityProvider,
-            descriptorBuilder,
-            stakingParams,
-            changeAddress,
-            amount,
-            utxo,
-            feeRateSatB
-          )
-        );
+        type F = typeof getVendorMsgCreateBtcDelegation;
+        const fVendor: F = getVendorMsgCreateBtcDelegation;
+        const fBitGo: F = getBitGoUtxoStakingMsgCreateBtcDelegation;
+
+        for (const f of [fVendor, fBitGo]) {
+          await assertEqualsFixture(
+            `test/fixtures/babylon/msgCreateBTCDelegation.${tag}.json`,
+            await f(
+              bitcoinjslib.networks.bitcoin,
+              stakerKey,
+              finalityProvider,
+              descriptorBuilder,
+              stakingParams,
+              changeAddress,
+              amount,
+              utxo,
+              feeRateSatB
+            )
+          );
+        }
       });
     });
   });
