@@ -37,13 +37,31 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Checks if the provided address is a valid hexadecimal string.
+   * Checks if the provided address is a valid ICP address.
    *
    * @param {string} address - The address to validate.
-   * @returns {boolean} - Returns `true` if the address is a valid 64-character hexadecimal string, otherwise `false`.
+   * @returns {boolean} - Returns `true` if the address is valid, otherwise `false`.
    */
   isValidAddress(address: string): boolean {
-    return this.isValidHash(address);
+    const rootAddress = this.validateMemoAndReturnRootAddress(address);
+    return rootAddress !== undefined && this.isValidHash(rootAddress);
+  }
+
+  /**
+   * Validates the memo ID in the address and returns the root address.
+   *
+   * @param {string} address - The address to validate and extract the root address from.
+   * @returns {string | undefined} - The root address if valid, otherwise `undefined`.
+   */
+  validateMemoAndReturnRootAddress(address: string): string | undefined {
+    if (!address) {
+      return undefined;
+    }
+    const [rootAddress, memoId] = address.split('?memoId=');
+    if (memoId && this.validateMemo(BigInt(memoId))) {
+      return rootAddress;
+    }
+    return address;
   }
 
   /**
@@ -268,32 +286,48 @@ export class Utils implements BaseUtils {
     return { pub, prv };
   }
 
-  validateFee(fee: string): void {
-    if (new BigNumber(fee).isEqualTo(0)) {
-      throw new BuildTransactionError('Fee equal to zero');
+  /**
+   * Validates the provided fee.
+   *
+   * @param {string} fee - The fee to validate.
+   * @throws {BuildTransactionError} - If the fee is zero or invalid.
+   */
+  validateFee(fee: string): boolean {
+    const feeValue = new BigNumber(fee);
+    if (feeValue.isZero()) {
+      throw new BuildTransactionError('Fee cannot be zero');
     }
-    if (fee !== this.gasData()) {
-      throw new BuildTransactionError('Invalid fee value');
-    }
+    return true;
   }
 
   /** @inheritdoc */
-  validateValue(value: BigNumber): void {
+  validateValue(value: BigNumber): boolean {
     if (value.isLessThanOrEqualTo(0)) {
       throw new BuildTransactionError('amount cannot be less than or equal to zero');
     }
+    return true;
   }
 
-  validateMemo(memo: number | BigInt): void {
-    if (Number(memo) < 0 || Number(memo) === null || Number(memo) === undefined || Number.isNaN(Number(memo))) {
+  /**
+   * Validates the provided memo.
+   *
+   * @param {number | BigInt} memo - The memo to validate.
+   * @returns {boolean} - Returns `true` if the memo is valid.
+   * @throws {BuildTransactionError} - If the memo is invalid.
+   */
+  validateMemo(memo: number | BigInt): boolean {
+    const memoNumber = Number(memo);
+    if (memoNumber < 0 || Number.isNaN(memoNumber)) {
       throw new BuildTransactionError('Invalid memo');
     }
+    return true;
   }
 
-  validateExpireTime(expireTime: number | BigInt): void {
+  validateExpireTime(expireTime: number | BigInt): boolean {
     if (Number(expireTime) < Date.now() * 1000_000) {
       throw new BuildTransactionError('Invalid expiry time');
     }
+    return true;
   }
 
   /**
