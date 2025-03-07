@@ -49,6 +49,11 @@ export class Xtz extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise

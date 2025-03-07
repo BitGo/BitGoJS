@@ -32,4 +32,9 @@ export class Zketh extends AbstractEthLikeNewCoins {
     const explorerUrl = common.Environments[this.bitgo.getEnv()].zksyncExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string);
   }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
 }

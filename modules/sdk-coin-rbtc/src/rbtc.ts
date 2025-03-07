@@ -22,6 +22,11 @@ export class Rbtc extends AbstractEthLikeCoin {
     return valid;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig() {
+    return true;
+  }
+
   protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
   }

@@ -58,6 +58,11 @@ export class AvaxP extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   /**
    * Check if staking txn is valid, based on expected tx params.
    *

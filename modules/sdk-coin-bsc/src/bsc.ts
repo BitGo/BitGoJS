@@ -26,6 +26,11 @@ export class Bsc extends AbstractEthLikeNewCoins {
     return true;
   }
 
+  /** {@inheritDoc} */
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';

@@ -230,6 +230,11 @@ export class Eos extends BaseCoin {
     return 4;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig() {
+    return true;
+  }
+
   /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
