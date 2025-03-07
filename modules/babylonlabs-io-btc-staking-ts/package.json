@@ -36,7 +36,7 @@
     "esbuild": "^0.20.2"
   },
   "dependencies": {
-    "@babylonlabs-io/babylon-proto-ts": "0.0.3-canary.5",
+    "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "@bitcoin-js/tiny-secp256k1-asmjs": "2.2.3",
     "@cosmjs/encoding": "^0.33.0",
     "bitcoinjs-lib": "^6.1.7",

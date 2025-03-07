@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@bitgo/babylonlabs-io-btc-staking-ts": "^0.4.0-bitgo.1",
-    "@babylonlabs-io/babylon-proto-ts": "^0.0.3-canary.6",
+    "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "bitcoinjs-lib": "^6.1.7"
   }
 }
