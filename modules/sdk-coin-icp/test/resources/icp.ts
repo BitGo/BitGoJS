@@ -34,7 +34,7 @@ export const accounts = {
   account6: {
     secretKey: '8d08c0393b707cd90c37213025fe7ed13c05b267d946ca1b6e0fd3b0e47ec188',
     publicKey: '02ad010ce68b75266c723bf25fbe3a0c48eb29f14b25925b06b7f5026a0f12702e',
-    address: '2b9b89604362e185544c8bba76cadff1a3af26e1467e8530d13743a08a52dd7b',
+    address: '2b9b89604362e185544c8bba76cadff1a3af26e1467e8530d13743a08a52dd7b?memoId=0',
   },
   errorsAccounts: {
     account1: {
