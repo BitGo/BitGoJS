@@ -23,6 +23,16 @@ export interface DelegationRequest {
   validator: string;
 }
 
+export type CoredaoParams = {
+  expireAt: string;
+  rewardAddress: string;
+};
+
+export type BabylonParams = {
+  duration: string;
+  rewardAddress: string;
+};
+
 /**
  * Represents the options for staking.
  * @typedef {Object} StakeOptions
@@ -115,6 +125,18 @@ export interface StakeOptions {
    * btc staking reward address
    */
   rewardAddress?: string;
+
+  /**
+   * btc babylon staking params
+   */
+
+  babylon?: BabylonParams;
+
+  /**
+   * btc coredao staking params
+   */
+
+  coredao?: CoredaoParams;
 
   /**
    * ada vote delegation drep id
