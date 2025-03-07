@@ -134,14 +134,11 @@ describe('Lightning Wallet Routes', () => {
       };
 
       const updateStub = sinon.stub().resolves(expectedResponse);
-      const mockLightningWallet = {
-        updateWalletCoinSpecific: updateStub,
-      };
 
       const proxyquire = require('proxyquire');
       const lightningRoutes = proxyquire('../../../src/lightning/lightningWalletRoutes', {
         '@bitgo/abstract-lightning': {
-          getLightningWallet: () => mockLightningWallet,
+          updateWalletCoinSpecific: updateStub,
         },
       });
 
@@ -155,10 +152,12 @@ describe('Lightning Wallet Routes', () => {
 
       should(result).deepEqual(expectedResponse);
       should(updateStub).be.calledOnce();
-      const [firstArg] = updateStub.getCall(0).args;
-      should(firstArg).have.property('signerMacaroon', 'encrypted-macaroon-data');
-      should(firstArg).have.property('signerHost', 'signer.example.com');
-      should(firstArg).have.property('passphrase', 'wallet-password-123');
+      const args = updateStub.getCall(0).args;
+      should(args?.length).greaterThanOrEqual(2);
+      const secondArg = args[1];
+      should(secondArg).have.property('signerMacaroon', 'encrypted-macaroon-data');
+      should(secondArg).have.property('signerHost', 'signer.example.com');
+      should(secondArg).have.property('passphrase', 'wallet-password-123');
     });
 
     it('should throw error when passphrase is missing', async () => {

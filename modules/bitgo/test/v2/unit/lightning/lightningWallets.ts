@@ -9,9 +9,12 @@ import {
   InvoiceInfo,
   InvoiceQuery,
   LndCreatePaymentResponse,
-  SelfCustodialLightningWallet,
+  LightningWallet,
   SubmitPaymentParams,
   UpdateLightningWalletClientRequest,
+  getLightningKeychain,
+  getLightningAuthKeychains,
+  updateWalletCoinSpecific,
 } from '@bitgo/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
@@ -217,11 +220,11 @@ describe('Lightning wallets', function () {
   });
 
   describe('invoices', function () {
-    let wallet: SelfCustodialLightningWallet;
+    let wallet: LightningWallet;
     beforeEach(function () {
       wallet = getLightningWallet(
         new Wallet(bitgo, basecoin, { id: 'walletId', coin: 'tlnbtc', coinSpecific: { keys: ['def', 'ghi'] } })
-      ) as SelfCustodialLightningWallet;
+      ) as LightningWallet;
     });
 
     it('should list invoices', async function () {
@@ -470,19 +473,19 @@ describe('Lightning wallets', function () {
     };
 
     it('should get lightning key', async function () {
-      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
+      const wallet = new Wallet(bitgo, basecoin, walletData);
 
       const keyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/abc')
         .reply(200, userKeyData);
 
-      const key = await wallet.getLightningKeychain();
+      const key = await getLightningKeychain(wallet);
       assert.deepStrictEqual(key, userKeyData);
       keyNock.done();
     });
 
     it('should get lightning auth keys', async function () {
-      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
+      const wallet = new Wallet(bitgo, basecoin, walletData);
 
       const userAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
@@ -491,7 +494,7 @@ describe('Lightning wallets', function () {
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKeyData);
 
-      const { userAuthKey, nodeAuthKey } = await wallet.getLightningAuthKeychains();
+      const { userAuthKey, nodeAuthKey } = await getLightningAuthKeychains(wallet);
       assert.deepStrictEqual(userAuthKey, userAuthKeyData);
       assert.deepStrictEqual(nodeAuthKey, nodeAuthKeyData);
       userAuthKeyNock.done();
@@ -499,35 +502,33 @@ describe('Lightning wallets', function () {
     });
 
     it('should fail to get lightning key for invalid number of keys', async function () {
-      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, { ...walletData, keys: [] }));
+      const wallet = new Wallet(bitgo, basecoin, { ...walletData, keys: [] });
       await assert.rejects(
-        async () => await wallet.getLightningKeychain(),
+        async () => await getLightningKeychain(wallet),
         /Error: Invalid number of key in lightning wallet: 0/
       );
     });
 
     it('should fail to get lightning auth keys for invalid number of keys', async function () {
-      const wallet = getLightningWallet(
-        new Wallet(bitgo, basecoin, { ...walletData, coinSpecific: { keys: ['def'] } })
-      );
+      const wallet = new Wallet(bitgo, basecoin, { ...walletData, coinSpecific: { keys: ['def'] } });
       await assert.rejects(
-        async () => await wallet.getLightningAuthKeychains(),
+        async () => await getLightningAuthKeychains(wallet),
         /Error: Invalid number of auth keys in lightning wallet: 1/
       );
     });
 
     it('should fail to get lightning key for invalid response', async function () {
-      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
+      const wallet = new Wallet(bitgo, basecoin, walletData);
 
       nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/abc')
         .reply(200, { ...userKeyData, source: 'backup' });
 
-      await assert.rejects(async () => await wallet.getLightningKeychain(), /Error: Invalid user key/);
+      await assert.rejects(async () => await getLightningKeychain(wallet), /Error: Invalid user key/);
     });
 
     it('should fail to get lightning auth keys for invalid response', async function () {
-      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
+      const wallet = new Wallet(bitgo, basecoin, walletData);
 
       nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
@@ -538,7 +539,7 @@ describe('Lightning wallets', function () {
         .reply(200, nodeAuthKeyData);
 
       await assert.rejects(
-        async () => await wallet.getLightningAuthKeychains(),
+        async () => await getLightningAuthKeychains(wallet),
         /Error: Invalid lightning auth key: def/
       );
     });
@@ -571,7 +572,7 @@ describe('Lightning wallets', function () {
       ],
     };
     it('should update wallet', async function () {
-      const wallet = getLightningWallet(new Wallet(bitgo, basecoin, walletData));
+      const wallet = new Wallet(bitgo, basecoin, walletData);
 
       const userAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
@@ -596,7 +597,7 @@ describe('Lightning wallets', function () {
         passphrase: 'password123',
       };
 
-      await assert.doesNotReject(async () => await wallet.updateWalletCoinSpecific(params));
+      await assert.doesNotReject(async () => await updateWalletCoinSpecific(wallet, params));
       assert(userAuthKeyNock.isDone());
       assert(nodeAuthKeyNock.isDone());
       assert(wpWalletUpdateNock.isDone());
