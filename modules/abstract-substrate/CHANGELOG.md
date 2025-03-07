@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.3.0...@bitgo/abstract-substrate@1.4.0) (2025-03-06)
+
+### Features
+
+- **abstract-substrate:** add wrw for tao ([9f30890](https://github.com/BitGo/BitGoJS/commit/9f3089000330d47696ab057891cd8d1083004a2a))
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.1.5...@bitgo/abstract-substrate@1.3.0) (2025-03-04)
 
 ### Bug Fixes

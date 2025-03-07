@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [42.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@42.0.0...bitgo@42.1.0) (2025-03-06)
+
+### Bug Fixes
+
+- default to api version full if none specified ([9dca67f](https://github.com/BitGo/BitGoJS/commit/9dca67f435ef011ab75e9b90713a7a2dbb5de6d8))
+
+### Features
+
+- allow a custom fee rate for utxo recovery ([411c666](https://github.com/BitGo/BitGoJS/commit/411c666462975c49db7e1fd77af478aee843f13b))
+- use dimensions to estimate transaction size ([750f92e](https://github.com/BitGo/BitGoJS/commit/750f92e665149e94853bb2b2705ff0353d7a10ae))
+
 # [42.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@39.27.0...bitgo@42.0.0) (2025-03-04)
 
 ### Bug Fixes

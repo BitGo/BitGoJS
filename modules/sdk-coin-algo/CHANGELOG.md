@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.68](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.1.67...@bitgo/sdk-coin-algo@2.1.68) (2025-03-06)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-algo
+
 ## [2.1.67](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.1.64...@bitgo/sdk-coin-algo@2.1.67) (2025-03-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-algo
