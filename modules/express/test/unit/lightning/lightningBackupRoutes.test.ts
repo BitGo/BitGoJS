@@ -1,8 +1,8 @@
+import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as should from 'should';
 import * as express from 'express';
-import { handleGetChannelBackup } from '../../../src/lightning/lightningBackupRoutes';
-import { BackupResponse } from '@bitgo/abstract-lightning';
+import { BackupResponse, CustodialLightningWallet, SelfCustodialLightningWallet } from '@bitgo/abstract-lightning';
 import { BitGo } from 'bitgo';
 
 describe('Lightning Backup Routes', () => {
@@ -32,16 +32,50 @@ describe('Lightning Backup Routes', () => {
         multiChanBackup: 'base64EncodedBackupData',
       };
 
-      const getBackupStub = sinon.stub().resolves(expectedResponse);
-      const mockLightningWallet = {
-        getChannelBackup: getBackupStub,
-      };
-
       const walletStub = {
+        type: () => 'hot',
         baseCoin: {
-          getChain: () => 'tlnbtc',
+          getFamily: () => 'lnbtc',
         },
       };
+
+      const mockLightningWallet = new SelfCustodialLightningWallet(walletStub as any);
+
+      sinon.stub(mockLightningWallet, 'getChannelBackup').resolves(expectedResponse);
+
+      const coinStub = {
+        wallets: () => ({ get: sinon.stub().resolves(walletStub) }),
+      };
+      const stubBitgo = sinon.createStubInstance(BitGo as any, { coin: coinStub });
+
+      const proxyquire = require('proxyquire');
+      const lightningRoutes = proxyquire('../../../src/lightning/lightningBackupRoutes', {
+        '@bitgo/abstract-lightning': {
+          getLightningWallet: () => mockLightningWallet, // Return the proper instance
+        },
+      });
+
+      const req = mockRequestObject({
+        params: { id: 'testWalletId', coin },
+        bitgo: stubBitgo,
+      });
+
+      const result = await lightningRoutes.handleGetChannelBackup(req);
+
+      should(result).deepEqual(expectedResponse);
+      should(mockLightningWallet.getChannelBackup).be.calledOnce();
+    });
+
+    it('should fails to get channel backup for custodial lightning', async () => {
+      const walletStub = {
+        type: () => 'custodial',
+        baseCoin: {
+          getFamily: () => 'lnbtc',
+        },
+      };
+
+      const mockLightningWallet = new CustodialLightningWallet(walletStub as any);
+
       const coinStub = {
         wallets: () => ({ get: sinon.stub().resolves(walletStub) }),
       };
@@ -59,26 +93,10 @@ describe('Lightning Backup Routes', () => {
         bitgo: stubBitgo,
       });
 
-      const result = await lightningRoutes.handleGetChannelBackup(req);
-
-      should(result).deepEqual(expectedResponse);
-      should(getBackupStub).be.calledOnce();
-    });
-
-    it('should handle wallet not found error', async () => {
-      const coinStub = {
-        wallets: () => ({
-          get: sinon.stub().rejects(new Error('Wallet not found')),
-        }),
-      };
-      const stubBitgo = sinon.createStubInstance(BitGo as any, { coin: coinStub });
-
-      const req = mockRequestObject({
-        params: { id: 'nonexistentWalletId', coin },
-        bitgo: stubBitgo,
-      });
-
-      await should(handleGetChannelBackup(req)).be.rejectedWith('Wallet not found');
+      assert.rejects(
+        async () => await lightningRoutes.handleGetChannelBackup(req),
+        `wallet testWalletId is not self custodial lightning`
+      );
     });
   });
 });

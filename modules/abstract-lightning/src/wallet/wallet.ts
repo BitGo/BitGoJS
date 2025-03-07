@@ -1,14 +1,22 @@
 import * as sdkcore from '@bitgo/sdk-core';
-import { isLightningCoinName } from '../lightning';
-import { ILightningWallet, SelfCustodialLightningWallet } from './lightning';
+import { SelfCustodialLightningWallet } from './selfCustodialLightning';
+import { CustodialLightningWallet } from './custodialLightning';
+import { ILightningWallet } from './lightning';
 
 /**
- * Return a lightwallet instance if the coin supports it
+ * Returns custodial or self custodial lightning wallet depends on wallet type.
  */
-
 export function getLightningWallet(wallet: sdkcore.IWallet): ILightningWallet {
-  if (!isLightningCoinName(wallet.baseCoin.getChain())) {
-    throw new Error(`Lightning not supported for ${wallet.coin()}`);
+  if (wallet.baseCoin.getFamily() !== 'lnbtc') {
+    throw new Error(`invalid coin for lightning wallet: ${wallet.baseCoin.getFamily()}`);
   }
-  return new SelfCustodialLightningWallet(wallet);
+
+  switch (wallet.type()) {
+    case 'custodial':
+      return new CustodialLightningWallet(wallet);
+    case 'hot':
+      return new SelfCustodialLightningWallet(wallet);
+    default:
+      throw new Error(`invalid wallet type ${wallet.type()} for lightning coin`);
+  }
 }

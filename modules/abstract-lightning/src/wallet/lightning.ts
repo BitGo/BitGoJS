@@ -10,7 +10,7 @@ import {
   decodeOrElse,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
-import { createMessageSignature, deriveLightningServiceSharedSecret, unwrapLightningCoinSpecific } from '../lightning';
+import { createMessageSignature, unwrapLightningCoinSpecific } from '../lightning';
 import {
   CreateInvoiceBody,
   Invoice,
@@ -20,12 +20,9 @@ import {
   LightningKeychain,
   LndCreatePaymentResponse,
   SubmitPaymentParams,
-  UpdateLightningWalletClientRequest,
-  UpdateLightningWalletEncryptedRequest,
   Transaction,
   TransactionQuery,
   PaymentInfo,
-  BackupResponse,
   PaymentQuery,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
@@ -38,34 +35,60 @@ export type PayInvoiceResponse = {
   paymentStatus?: LndCreatePaymentResponse;
 };
 
+/**
+ * Get the lightning keychain for the given wallet.
+ */
+export async function getLightningKeychain(wallet: sdkcore.IWallet): Promise<LightningKeychain> {
+  const coin = wallet.baseCoin;
+  if (coin.getFamily() !== 'lnbtc') {
+    throw new Error(`Invalid coin to get lightning wallet key: ${coin.getFamily()}`);
+  }
+  const keyIds = wallet.keyIds();
+  if (keyIds.length !== 1) {
+    throw new Error(`Invalid number of key in lightning wallet: ${keyIds.length}`);
+  }
+  const keychain = await coin.keychains().get({ id: keyIds[0] });
+  return sdkcore.decodeOrElse(LightningKeychain.name, LightningKeychain, keychain, (_) => {
+    throw new Error(`Invalid user key`);
+  });
+}
+
+/**
+ * Get the lightning auth keychains for the given wallet.
+ */
+export async function getLightningAuthKeychains(wallet: sdkcore.IWallet): Promise<{
+  userAuthKey: LightningAuthKeychain;
+  nodeAuthKey: LightningAuthKeychain;
+}> {
+  const coin = wallet.baseCoin;
+  if (coin.getFamily() !== 'lnbtc') {
+    throw new Error(`Invalid coin to get lightning wallet auth keys: ${coin.getFamily()}`);
+  }
+  const authKeyIds = wallet.coinSpecific()?.keys;
+  if (authKeyIds?.length !== 2) {
+    throw new Error(`Invalid number of auth keys in lightning wallet: ${authKeyIds?.length}`);
+  }
+  const keychains = await Promise.all(authKeyIds.map((id) => coin.keychains().get({ id })));
+  const authKeychains = keychains.map((keychain) => {
+    return sdkcore.decodeOrElse(LightningAuthKeychain.name, LightningAuthKeychain, keychain, (_) => {
+      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
+      throw new Error(`Invalid lightning auth key: ${keychain?.id}`);
+    });
+  });
+  const [userAuthKey, nodeAuthKey] = (['userAuth', 'nodeAuth'] as const).map((purpose) => {
+    const keychain = authKeychains.find(
+      (k) => unwrapLightningCoinSpecific(k.coinSpecific, coin.getChain()).purpose === purpose
+    );
+    if (!keychain) {
+      throw new Error(`Missing ${purpose} key`);
+    }
+    return keychain;
+  });
+
+  return { userAuthKey, nodeAuthKey };
+}
+
 export interface ILightningWallet {
-  /**
-   * Get the lightning keychain for the given wallet.
-   */
-  getLightningKeychain(): Promise<LightningKeychain>;
-
-  /**
-   * Get the lightning auth keychains for the given wallet.
-   */
-  getLightningAuthKeychains(): Promise<{ userAuthKey: LightningAuthKeychain; nodeAuthKey: LightningAuthKeychain }>;
-
-  /**
-   * Updates the coin-specific configuration for a Lightning Wallet.
-   *
-   * @param {UpdateLightningWalletClientRequest} params - The parameters containing the updated wallet-specific details.
-   *   - `encryptedSignerMacaroon` (optional): This macaroon is used by the watch-only node to ask the signer node to sign transactions.
-   *     Encrypted with ECDH secret key from private key of wallet's user auth key and public key of lightning service.
-   *   - `encryptedSignerAdminMacaroon` (optional): Generated when initializing the wallet of the signer node.
-   *     Encrypted with client's wallet passphrase.
-   *   - `signerHost` (optional): The host address of the Lightning signer node.
-   *   - `encryptedSignerTlsKey` (optional): The wallet passphrase encrypted TLS key of the signer.
-   *   - `passphrase` (required): The wallet passphrase.
-   *   - `signerTlsCert` (optional): The TLS certificate of the signer.
-   *   - `watchOnlyAccounts` (optional): These are the accounts used to initialize the watch-only wallet.
-   * @returns {Promise<unknown>} A promise resolving to the updated wallet response or throwing an error if the update fails.
-   */
-  updateWalletCoinSpecific(params: UpdateLightningWalletClientRequest): Promise<unknown>;
-
   /**
    * Creates a lightning invoice
    * @param {object} params Invoice parameters
@@ -138,128 +161,17 @@ export interface ILightningWallet {
    * @returns {Promise<Transaction[]>} List of transactions
    */
   listTransactions(params: TransactionQuery): Promise<Transaction[]>;
-
-  /**
-   * Get the channel backup for the given wallet.
-   * @returns {Promise<BackupResponse>} A promise resolving to the channel backup
-   */
-  getChannelBackup(): Promise<BackupResponse>;
 }
 
-export class SelfCustodialLightningWallet implements ILightningWallet {
+export class LightningWallet implements ILightningWallet {
   public wallet: sdkcore.IWallet;
 
   constructor(wallet: sdkcore.IWallet) {
     const coin = wallet.baseCoin;
     if (coin.getFamily() !== 'lnbtc') {
-      throw new Error(`Invalid coin to update lightning wallet: ${coin.getFamily()}`);
+      throw new Error(`Invalid coin for lightning wallet: ${coin.getFamily()}`);
     }
     this.wallet = wallet;
-  }
-
-  private encryptWalletUpdateRequest(
-    params: UpdateLightningWalletClientRequest,
-    userAuthKey: LightningAuthKeychain
-  ): UpdateLightningWalletEncryptedRequest {
-    const coinName = this.wallet.coin() as 'tlnbtc' | 'lnbtc';
-
-    const requestWithEncryption: Partial<UpdateLightningWalletClientRequest & UpdateLightningWalletEncryptedRequest> = {
-      ...params,
-    };
-
-    const userAuthXprv = this.wallet.bitgo.decrypt({
-      password: params.passphrase,
-      input: userAuthKey.encryptedPrv,
-    });
-
-    if (params.signerTlsKey) {
-      requestWithEncryption.encryptedSignerTlsKey = this.wallet.bitgo.encrypt({
-        password: params.passphrase,
-        input: params.signerTlsKey,
-      });
-    }
-
-    if (params.signerAdminMacaroon) {
-      requestWithEncryption.encryptedSignerAdminMacaroon = this.wallet.bitgo.encrypt({
-        password: params.passphrase,
-        input: params.signerAdminMacaroon,
-      });
-    }
-
-    if (params.signerMacaroon) {
-      requestWithEncryption.encryptedSignerMacaroon = this.wallet.bitgo.encrypt({
-        password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
-        input: params.signerMacaroon,
-      });
-    }
-
-    return t.exact(UpdateLightningWalletEncryptedRequest).encode(requestWithEncryption);
-  }
-
-  async getLightningKeychain(): Promise<LightningKeychain> {
-    const keyIds = this.wallet.keyIds();
-    if (keyIds.length !== 1) {
-      throw new Error(`Invalid number of key in lightning wallet: ${keyIds.length}`);
-    }
-    const keychain = await this.wallet.baseCoin.keychains().get({ id: keyIds[0] });
-    return sdkcore.decodeOrElse(LightningKeychain.name, LightningKeychain, keychain, (_) => {
-      throw new Error(`Invalid user key`);
-    });
-  }
-
-  async getLightningAuthKeychains(): Promise<{
-    userAuthKey: LightningAuthKeychain;
-    nodeAuthKey: LightningAuthKeychain;
-  }> {
-    const authKeyIds = this.wallet.coinSpecific()?.keys;
-    if (authKeyIds?.length !== 2) {
-      throw new Error(`Invalid number of auth keys in lightning wallet: ${authKeyIds?.length}`);
-    }
-    const coin = this.wallet.baseCoin;
-    const keychains = await Promise.all(authKeyIds.map((id) => coin.keychains().get({ id })));
-    const authKeychains = keychains.map((keychain) => {
-      return sdkcore.decodeOrElse(LightningAuthKeychain.name, LightningAuthKeychain, keychain, (_) => {
-        // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-        throw new Error(`Invalid lightning auth key: ${keychain?.id}`);
-      });
-    });
-    const [userAuthKey, nodeAuthKey] = (['userAuth', 'nodeAuth'] as const).map((purpose) => {
-      const keychain = authKeychains.find(
-        (k) => unwrapLightningCoinSpecific(k.coinSpecific, coin.getChain()).purpose === purpose
-      );
-      if (!keychain) {
-        throw new Error(`Missing ${purpose} key`);
-      }
-      return keychain;
-    });
-
-    return { userAuthKey, nodeAuthKey };
-  }
-
-  async updateWalletCoinSpecific(params: UpdateLightningWalletClientRequest): Promise<unknown> {
-    sdkcore.decodeOrElse(
-      UpdateLightningWalletClientRequest.name,
-      UpdateLightningWalletClientRequest,
-      params,
-      (errors) => {
-        // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-        throw new Error(`Invalid params for lightning specific update wallet`);
-      }
-    );
-
-    const { userAuthKey } = await this.getLightningAuthKeychains();
-    const updateRequestWithEncryption = this.encryptWalletUpdateRequest(params, userAuthKey);
-    const signature = createMessageSignature(
-      updateRequestWithEncryption,
-      this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
-    );
-    const coinSpecific = {
-      [this.wallet.coin()]: {
-        signedRequest: updateRequestWithEncryption,
-        signature,
-      },
-    };
-    return await this.wallet.bitgo.put(this.wallet.url()).send({ coinSpecific }).result();
   }
 
   async createInvoice(params: CreateInvoiceBody): Promise<Invoice> {
@@ -297,7 +209,7 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
     const reqId = new RequestTracer();
     this.wallet.bitgo.setRequestTracer(reqId);
 
-    const { userAuthKey } = await this.getLightningAuthKeychains();
+    const { userAuthKey } = await getLightningAuthKeychains(this.wallet);
     const signature = createMessageSignature(
       t.exact(LightningPaymentRequest).encode(params),
       this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
@@ -385,15 +297,6 @@ export class SelfCustodialLightningWallet implements ILightningWallet {
       .result();
     return decodeOrElse(t.array(Transaction).name, t.array(Transaction), response, (error) => {
       throw new Error(`Invalid transaction list response: ${error}`);
-    });
-  }
-
-  async getChannelBackup(): Promise<BackupResponse> {
-    const backupResponse = await this.wallet.bitgo
-      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/backup`))
-      .result();
-    return sdkcore.decodeOrElse(BackupResponse.name, BackupResponse, backupResponse, (error) => {
-      throw new Error(`Invalid backup response: ${error}`);
     });
   }
 }

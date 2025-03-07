@@ -31,6 +31,6 @@ describe('LightningV2 Wallet:', function () {
 
     assert.throws(() => {
       getLightningWallet(btcWallet);
-    }, /Lightning not supported for btc/);
+    }, /Error: invalid coin for lightning wallet: btc/);
   });
 });
