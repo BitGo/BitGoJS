@@ -2490,6 +2490,13 @@ export enum UnderlyingAsset {
 
   // Apt testnet tokens
   'tapt:usdt' = 'tapt:usdt',
+
+  // Sip10 tokens
+  'stx:sbtc' = 'stx:sbtc',
+
+  // Sip10 testnet tokens
+  'tstx:tsip6dp' = 'tstx:tsip6dp',
+  'tstx:tsip8dp' = 'tstx:tsip8dp',
 }
 
 /**
