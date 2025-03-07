@@ -131,8 +131,7 @@ export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
 }
 
 export interface Sip10TokenConstructorOptions extends AccountConstructorOptions {
-  contractAddress: string;
-  contractName: string;
+  assetId: string;
 }
 
 export interface ContractAddress extends String {
@@ -531,15 +530,13 @@ export class FiatCoin extends BaseCoin {
  * the contractName on the chain.
  */
 export class Sip10Token extends AccountCoinToken {
-  public contractAddress: string;
-  public contractName: string;
+  public assetId: string;
   constructor(options: Sip10TokenConstructorOptions) {
     super({
       ...options,
     });
 
-    this.contractAddress = options.contractAddress;
-    this.contractName = options.contractName;
+    this.assetId = options.assetId;
   }
 }
 
@@ -2612,8 +2609,7 @@ export function fiat(
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param contractName Contract name of this token
- * @param contractAddress Contract address of this token
+ * @param assetId A unique identifier for a token, which is in the form of contractAddress.contractName::tokenName
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -2626,8 +2622,7 @@ export function sip10Token(
   name: string,
   fullName: string,
   decimalPlaces: number,
-  contractName: string,
-  contractAddress: string,
+  assetId: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -2641,8 +2636,7 @@ export function sip10Token(
       name,
       fullName,
       network,
-      contractName,
-      contractAddress,
+      assetId,
       prefix,
       suffix,
       features,
@@ -2662,8 +2656,7 @@ export function sip10Token(
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param contractName Contract name of this token
- * @param contractAddress Contract address of this token
+ * @param assetId A unique identifier for a token, which is in the form of contractAddress.contractName::tokenName
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -2675,25 +2668,12 @@ export function tsip10Token(
   name: string,
   fullName: string,
   decimalPlaces: number,
-  contractName: string,
-  contractAddress: string,
+  assetId: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.stx
 ) {
-  return sip10Token(
-    id,
-    name,
-    fullName,
-    decimalPlaces,
-    contractName,
-    contractAddress,
-    asset,
-    features,
-    prefix,
-    suffix,
-    network
-  );
+  return sip10Token(id, name, fullName, decimalPlaces, assetId, asset, features, prefix, suffix, network);
 }

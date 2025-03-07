@@ -96,8 +96,8 @@ export type AptTokenConfig = BaseNetworkConfig & {
   assetId: string;
 };
 
-export type Sip10TokenConfig = BaseContractAddressConfig & {
-  contractName: string;
+export type Sip10TokenConfig = BaseNetworkConfig & {
+  assetId: string;
 };
 
 export interface Tokens {
@@ -566,8 +566,7 @@ const formattedSip10Tokens = coins.reduce((acc: Sip10TokenConfig[], coin) => {
       coin: coin.network.type === NetworkType.MAINNET ? 'stx' : 'tstx',
       network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
       name: coin.fullName,
-      contractName: coin.contractName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      assetId: coin.assetId,
       decimalPlaces: coin.decimalPlaces,
     });
   }

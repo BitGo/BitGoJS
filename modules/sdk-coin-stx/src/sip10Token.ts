@@ -36,12 +36,8 @@ export class Sip10Token extends Stx {
     return this.tokenConfig.network;
   }
 
-  get tokenContractAddress(): string {
-    return this.tokenConfig.tokenContractAddress;
-  }
-
-  get contractName(): string {
-    return this.tokenConfig.contractName;
+  get assetId(): string {
+    return this.tokenConfig.assetId;
   }
 
   get decimalPlaces(): number {
