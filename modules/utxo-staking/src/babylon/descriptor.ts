@@ -1,3 +1,8 @@
+/**
+ * https://github.com/babylonlabs-io/babylon/tree/main/docs
+ * https://github.com/babylonlabs-io/babylon/blob/main/docs/staking-script.md
+ */
+
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
 
 export function getUnspendableKey(): string {

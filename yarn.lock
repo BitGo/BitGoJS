@@ -846,10 +846,10 @@
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
 
-"@babylonlabs-io/babylon-proto-ts@0.0.3-canary.5":
-  version "0.0.3-canary.5"
-  resolved "https://registry.npmjs.org/@babylonlabs-io/babylon-proto-ts/-/babylon-proto-ts-0.0.3-canary.5.tgz#f91fa80191171a46e80c305f4b11c58dc8ec3421"
-  integrity sha512-NhivyLgSdXqojMg5FdQJPxk5T1uttcMex8jnVTdZFQoIcesWOsCOxZ4V/IBT//8oLoa9K3rkND8aSP30hq7Tkw==
+"@babylonlabs-io/babylon-proto-ts@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@babylonlabs-io/babylon-proto-ts/-/babylon-proto-ts-1.0.0.tgz#d1c4d113d1ed6174996694abea6b9f146a65e654"
+  integrity sha512-lwzS5Ljr18yOg3Hs2O8qpK/4asjQkdlCDzpxhWzfB4AXWxLCGLOzmFW3f31XDqGBNgCuITFuDfB7U/zi1C9SFg==
   dependencies:
     "@bufbuild/protobuf" "^2.2.0"
 
