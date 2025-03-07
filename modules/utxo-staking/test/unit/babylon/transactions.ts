@@ -10,9 +10,10 @@ import { getFixture, toPlainObject } from '@bitgo/utxo-core/testutil';
 
 import {
   BabylonDescriptorBuilder,
-  finalityBabylonProvider0,
+  testnetFinalityProvider0,
   getSignedPsbt,
   testnetStakingParams,
+  toVersionedParams,
 } from '../../../src/babylon';
 import { normalize } from '../fixtures.utils';
 
@@ -20,26 +21,6 @@ import { fromXOnlyPublicKey, getECKey, getECKeys, getXOnlyPubkey } from './key.u
 import { getBitGoUtxoStakingMsgCreateBtcDelegation, getVendorMsgCreateBtcDelegation } from './vendor.utils';
 
 bitcoinjslib.initEccLib(utxolib.ecc);
-
-function getTestnetStakingParams(): vendor.VersionedStakingParams {
-  return {
-    version: testnetStakingParams.version,
-    btcActivationHeight: testnetStakingParams.btc_activation_height,
-    covenantNoCoordPks: testnetStakingParams.covenant_pks,
-    covenantQuorum: testnetStakingParams.covenant_quorum,
-    unbondingTime: testnetStakingParams.unbonding_time_blocks,
-    unbondingFeeSat: testnetStakingParams.unbonding_fee_sat,
-    maxStakingAmountSat: testnetStakingParams.max_staking_value_sat,
-    minStakingAmountSat: testnetStakingParams.min_staking_value_sat,
-    maxStakingTimeBlocks: testnetStakingParams.max_staking_time_blocks,
-    minStakingTimeBlocks: testnetStakingParams.min_staking_time_blocks,
-    slashing: {
-      slashingPkScriptHex: Buffer.from(testnetStakingParams.slashing_pk_script, 'base64').toString('hex'),
-      slashingRate: parseFloat(testnetStakingParams.slashing_rate),
-      minSlashingTxFeeSat: testnetStakingParams.min_slashing_tx_fee_sat,
-    },
-  };
-}
 
 type WithFee<T> = T & { fee: number };
 type TransactionWithFee = WithFee<{ transaction: bitcoinjslib.Transaction }>;
@@ -111,7 +92,7 @@ function getStakingTransactionTreeVendor(
 
 function getTestnetStakingParamsWithCovenant(covenantKeys: ECPairInterface[]): vendor.VersionedStakingParams {
   return {
-    ...getTestnetStakingParams(),
+    ...toVersionedParams(testnetStakingParams),
     covenantNoCoordPks: covenantKeys.map((pk) => getXOnlyPubkey(pk).toString('hex')),
   };
 }
@@ -379,5 +360,9 @@ function describeWithMockKeys(tag: string, finalityProviderKeys: ECPairInterface
   });
 }
 
-describeWithKeysFromStakingParams('testnet', [fromXOnlyPublicKey(finalityBabylonProvider0)], getTestnetStakingParams());
+describeWithKeysFromStakingParams(
+  'testnet',
+  [fromXOnlyPublicKey(testnetFinalityProvider0)],
+  toVersionedParams(testnetStakingParams)
+);
 describeWithMockKeys('testnetMock', getECKeys('finalityProvider', 1), getECKeys('covenant', 9));

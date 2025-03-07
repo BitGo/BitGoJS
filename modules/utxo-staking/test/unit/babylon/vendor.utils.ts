@@ -6,7 +6,7 @@ import { toBech32 } from 'bitcoinjs-lib/src/address';
 
 import {
   BabylonDescriptorBuilder,
-  createUnsignedPreStakeRegistrationBabylonTransaction,
+  createUnsignedPreStakeRegistrationBabylonTransactionWithBtcProvider,
   getBtcProviderForECKey,
   ValueWithTypeUrl,
 } from '../../../src/babylon';
@@ -29,20 +29,9 @@ export async function getBitGoUtxoStakingMsgCreateBtcDelegation(
   utxo: vendor.UTXO,
   feeRateSatB: number
 ): Promise<Result> {
-  const babylonProvider: vendor.BabylonProvider = {
-    signTransaction(): Promise<Uint8Array> {
-      throw new Error('Function not implemented.');
-    },
-  };
-  const manager = new vendor.BabylonBtcStakingManager(
-    network,
-    [stakingParams],
+  return await createUnsignedPreStakeRegistrationBabylonTransactionWithBtcProvider(
     getBtcProviderForECKey(descriptorBuilder, stakerKey),
-    babylonProvider
-  );
-  return await createUnsignedPreStakeRegistrationBabylonTransaction(
-    manager,
-    [stakingParams],
+    stakingParams,
     network,
     {
       address: changeAddress,

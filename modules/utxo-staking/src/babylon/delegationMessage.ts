@@ -9,6 +9,12 @@ import { toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
 
 import { BabylonDescriptorBuilder } from './descriptor';
 
+export const mockBabylonProvider: vendor.BabylonProvider = {
+  signTransaction(): Promise<Uint8Array> {
+    throw new Error('Function not implemented.');
+  },
+};
+
 export type ValueWithTypeUrl<T> = { typeUrl: string; value: T };
 
 export function getSignedPsbt(
@@ -76,6 +82,11 @@ export function getBtcProviderForECKey(
   };
 }
 
+type Result = {
+  unsignedDelegationMsg: ValueWithTypeUrl<babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation>;
+  stakingTx: bitcoinjslib.Transaction;
+};
+
 /*
  * This is mostly lifted from
  * https://github.com/babylonlabs-io/btc-staking-ts/blob/v0.4.0-rc.2/src/staking/manager.ts#L100-L172
@@ -90,12 +101,9 @@ export async function createUnsignedPreStakeRegistrationBabylonTransaction(
   stakingInput: vendor.StakingInputs,
   babylonBtcTipHeight: number,
   inputUTXOs: vendor.UTXO[],
-  feeRate: number,
+  feeRateSatB: number,
   babylonAddress: string
-): Promise<{
-  unsignedDelegationMsg: ValueWithTypeUrl<babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation>;
-  stakingTx: bitcoinjslib.Transaction;
-}> {
+): Promise<Result> {
   if (babylonBtcTipHeight === 0) {
     throw new Error('Babylon BTC tip height cannot be 0');
   }
@@ -118,7 +126,7 @@ export async function createUnsignedPreStakeRegistrationBabylonTransaction(
   );
 
   // Create unsigned staking transaction
-  const { transaction } = staking.createStakingTransaction(stakingInput.stakingAmountSat, inputUTXOs, feeRate);
+  const { transaction } = staking.createStakingTransaction(stakingInput.stakingAmountSat, inputUTXOs, feeRateSatB);
 
   // Create delegation message without including inclusion proof
   const msg = await manager.createBtcDelegationMsg(
@@ -133,4 +141,29 @@ export async function createUnsignedPreStakeRegistrationBabylonTransaction(
     unsignedDelegationMsg: msg,
     stakingTx: transaction,
   };
+}
+
+export async function createUnsignedPreStakeRegistrationBabylonTransactionWithBtcProvider(
+  btcProvider: vendor.BtcProvider,
+  stakingParams: vendor.VersionedStakingParams,
+  network: bitcoinjslib.Network,
+  stakerBtcInfo: vendor.StakerInfo,
+  stakingInput: vendor.StakingInputs,
+  babylonBtcTipHeight: number,
+  inputUTXOs: vendor.UTXO[],
+  feeRateSatB: number,
+  babylonAddress: string
+): Promise<Result> {
+  const manager = new vendor.BabylonBtcStakingManager(network, [stakingParams], btcProvider, mockBabylonProvider);
+  return await createUnsignedPreStakeRegistrationBabylonTransaction(
+    manager,
+    [stakingParams],
+    network,
+    stakerBtcInfo,
+    stakingInput,
+    babylonBtcTipHeight,
+    inputUTXOs,
+    feeRateSatB,
+    babylonAddress
+  );
 }
