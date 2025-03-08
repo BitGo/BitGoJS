@@ -9,7 +9,7 @@ import { CoinFeature } from '@bitgo/statics';
 
 import { sanitizeLegacyPath } from '../../api';
 import * as common from '../../common';
-import { IBaseCoin, KeychainsTriplet, KeyPair, SupplementGenerateWalletOptions } from '../baseCoin';
+import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
 import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
@@ -160,18 +160,16 @@ export class Wallets implements IWallets {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
-    const { label, passphrase, enterprise, passcodeEncryptionCode } = params;
+    const { label, passphrase, enterprise, passcodeEncryptionCode, type } = params;
 
+    // TODO BTC-1899: only userAuth key is required for custodial lightning wallet. all 3 keys are required for self custodial lightning.
+    // to avoid changing the platform for custodial flow, let us all 3 keys both wallet types.
     const keychainPromises = ([undefined, 'userAuth', 'nodeAuth'] as const).map((purpose) => {
       return async (): Promise<Keychain> => {
-        let keychain: KeyPair | null = this.baseCoin.keychains().create();
-        const pub = keychain.pub;
-        const encryptedPrv = this.bitgo.encrypt({ password: passphrase, input: keychain.prv });
-        delete (keychain as any).prv;
-        keychain = null;
+        const keychain = this.baseCoin.keychains().create();
         const keychainParams: AddKeychainOptions = {
-          pub,
-          encryptedPrv,
+          pub: keychain.pub,
+          encryptedPrv: this.bitgo.encrypt({ password: passphrase, input: keychain.prv }),
           originalPasscodeEncryptionCode: purpose === undefined ? passcodeEncryptionCode : undefined,
           coinSpecific: purpose === undefined ? undefined : { [this.baseCoin.getChain()]: { purpose } },
           keyType: 'independent',
@@ -191,7 +189,7 @@ export class Wallets implements IWallets {
       label,
       m: 1,
       n: 1,
-      type: 'hot',
+      type,
       enterprise,
       keys: [userKeychain.id],
       coinSpecific: { [this.baseCoin.getChain()]: { keys: [userAuthKeychain.id, nodeAuthKeychain.id] } },
