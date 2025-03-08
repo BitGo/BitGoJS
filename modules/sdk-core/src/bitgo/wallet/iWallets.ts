@@ -80,6 +80,9 @@ export const GenerateLightningWalletOptionsCodec = t.strict(
     passphrase: t.string,
     enterprise: t.string,
     passcodeEncryptionCode: t.string,
+    // custodial - bitgo controls the node private key
+    // hot - client controls the node private key by running remote signer node
+    type: t.union([t.literal('custodial'), t.literal('hot')]),
   },
   'GenerateLightningWalletOptions'
 );
