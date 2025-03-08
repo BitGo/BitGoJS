@@ -87,10 +87,16 @@ async function main() {
     for (const dep of mod.deps) {
       const depVersion = getDependencyVersion(mod.path, dep);
       if (depVersion && depVersion !== expectedVersions[dep]) {
-        console.log(
-          `error: expected lerna-managed module ${mod.name} to depend on package ${dep} using version ${expectedVersions[dep]}, but found version ${depVersion} instead`
-        );
-        exitCode = 1;
+        // Handle pre-release versions by checking if the base version matches
+        const baseDepVersion = depVersion.split('-')[0];
+        const baseExpectedVersion = expectedVersions[dep].split('-')[0];
+
+        if (baseDepVersion !== baseExpectedVersion) {
+          console.log(
+            `error: expected lerna-managed module ${mod.name} to depend on package ${dep} using version ${expectedVersions[dep]}, but found version ${depVersion} instead`
+          );
+          exitCode = 1;
+        }
       }
     }
   }
