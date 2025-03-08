@@ -7,7 +7,9 @@ import {
   createWatchOnly,
   addIPCaveatToMacaroon,
   isLightningCoinName,
-  getLightningWallet,
+  getLightningKeychain,
+  getLightningAuthKeychains,
+  updateWalletCoinSpecific,
 } from '@bitgo/abstract-lightning';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Buffer } from 'buffer';
@@ -82,11 +84,14 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     }
   );
 
+  const wallet = await coin.wallets().get({ id: walletId });
+  if (wallet.type() !== 'hot') {
+    throw new ApiResponseError(`not a self custodial lighting wallet ${walletId}`, 400);
+  }
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
-  const lightningWallet = getLightningWallet(await coin.wallets().get({ id: walletId }));
 
-  const userKey = await lightningWallet.getLightningKeychain();
-  const { nodeAuthKey } = await lightningWallet.getLightningAuthKeychains();
+  const userKey = await getLightningKeychain(wallet);
+  const { nodeAuthKey } = await getLightningAuthKeychains(wallet);
 
   const network = getUtxolibNetwork(coin.getChain());
   const signerRootKey = getSignerRootKey(passphrase, userKey.encryptedPrv, network, bitgo.decrypt);
@@ -100,7 +105,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     macaroon_root_key: macaroonRootKey,
   });
 
-  return await lightningWallet.updateWalletCoinSpecific({
+  return await updateWalletCoinSpecific(wallet, {
     signerAdminMacaroon:
       expressHost && !!isIP(expressHost) ? addIPCaveatToMacaroon(adminMacaroon, expressHost) : adminMacaroon,
     watchOnlyAccounts: createWatchOnly(signerRootKey, network),
@@ -134,6 +139,9 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   );
 
   const wallet = await coin.wallets().get({ id: walletId });
+  if (wallet.type() !== 'hot') {
+    throw new ApiResponseError(`not a self custodial lighting wallet ${walletId}`, 400);
+  }
   const watchOnlyIp = wallet.coinSpecific()?.watchOnlyExternalIp;
   if (!watchOnlyIp && addIpCaveatToMacaroon) {
     throw new ApiResponseError(
@@ -147,7 +155,6 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   }
 
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
-  const lightningWallet = getLightningWallet(wallet);
 
   const encryptedSignerAdminMacaroon = wallet.coinSpecific()?.encryptedSignerAdminMacaroon;
   if (!encryptedSignerAdminMacaroon) {
@@ -164,7 +171,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
     addIpCaveatToMacaroon ? watchOnlyIp : null
   );
 
-  return await lightningWallet.updateWalletCoinSpecific({
+  return await updateWalletCoinSpecific(wallet, {
     signerMacaroon,
     passphrase,
   });
