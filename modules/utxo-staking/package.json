@@ -39,7 +39,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/babylonlabs-io-btc-staking-ts": "^0.4.0-bitgo.1",
+    "@bitgo/babylonlabs-io-btc-staking-ts": "^0.4.0-beta.1",
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "@bitgo/unspents": "^0.47.20",
     "@bitgo/utxo-core": "^1.5.0",
