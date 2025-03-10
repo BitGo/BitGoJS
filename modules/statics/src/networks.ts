@@ -1170,6 +1170,9 @@ class Xdc extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://xdcscan.com/address/';
   chainId = 50;
   nativeCoinOperationHashPrefix = '50';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class XdcTestnet extends Testnet implements EthereumNetwork {
   name = 'XdcChainTestnet';
@@ -1189,6 +1192,9 @@ class Wemix extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.wemix.com/address/';
   chainId = 1111;
   nativeCoinOperationHashPrefix = '1111';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class WemixTestnet extends Testnet implements EthereumNetwork {
   name = 'WemixChainTestnet';
@@ -1208,6 +1214,9 @@ class Flare extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://flare-explorer.flare.network/address/';
   chainId = 14;
   nativeCoinOperationHashPrefix = '14';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class FlareTestnet extends Testnet implements EthereumNetwork {
   name = 'FlarechainTestnet';
@@ -1227,6 +1236,9 @@ class Songbird extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://songbird-explorer.flare.network/address/';
   chainId = 19;
   nativeCoinOperationHashPrefix = '19';
+  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class SongbirdTestnet extends Testnet implements EthereumNetwork {
   name = 'SongbirdchainTestnet';
