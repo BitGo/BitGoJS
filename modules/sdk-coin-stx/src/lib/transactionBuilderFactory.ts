@@ -12,6 +12,7 @@ import { Transaction } from './transaction';
 import { ContractBuilder } from './contractBuilder';
 import { Utils } from '.';
 import { SendmanyBuilder } from './sendmanyBuilder';
+import { FungibleTokenTransferBuilder } from './fungibleTokenTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -29,6 +30,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case PayloadType.ContractCall:
           if (SendmanyBuilder.isValidContractCall(this._coinConfig, tx.stxTransaction.payload)) {
             return this.getSendmanyBuilder(tx);
+          }
+          if (FungibleTokenTransferBuilder.isFungibleTokenTransferContractCall(tx.stxTransaction.payload)) {
+            return this.getFungibleTokenTransferBuilder(tx);
           }
           return this.getContractBuilder(tx);
         default:
@@ -65,6 +69,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getSendmanyBuilder(tx?: Transaction): SendmanyBuilder {
     return TransactionBuilderFactory.initializeBuilder(new SendmanyBuilder(this._coinConfig), tx);
+  }
+
+  getFungibleTokenTransferBuilder(tx?: Transaction): FungibleTokenTransferBuilder {
+    return TransactionBuilderFactory.initializeBuilder(new FungibleTokenTransferBuilder(this._coinConfig), tx);
   }
 
   /**

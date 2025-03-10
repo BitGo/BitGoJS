@@ -29,7 +29,7 @@ import {
 import { secp256k1 } from '@noble/curves/secp256k1';
 import * as _ from 'lodash';
 import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsError } from '@bitgo/sdk-core';
-import { AddressDetails, SendParams } from './iface';
+import { AddressDetails, SendParams, TokenTransferParams } from './iface';
 import { KeyPair } from '.';
 import { StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
 import { VALID_CONTRACT_FUNCTION_NAMES } from './constants';
@@ -466,6 +466,28 @@ export function functionArgsToSendParams(args: ClarityValue[]): SendParams[] {
       memo: tuple.data.memo.buffer.toString('ascii'),
     };
   });
+}
+
+export function functionArgsToTokenTransferParams(args: ClarityValue[]): TokenTransferParams {
+  if (args.length < 3) {
+    throw new InvalidTransactionError("function args don't match token transfer declaration");
+  }
+  if (
+    args[0].type !== ClarityType.PrincipalStandard ||
+    args[1].type !== ClarityType.PrincipalStandard ||
+    args[2].type !== ClarityType.UInt
+  ) {
+    throw new InvalidTransactionError("function args don't match token transfer declaration");
+  }
+  const tokenTransferParams = {
+    sender: cvToString(args[0]),
+    recipient: cvToString(args[1]),
+    amount: cvToValue(args[2], true),
+  };
+  if (args.length === 4 && args[3].type === ClarityType.Buffer) {
+    tokenTransferParams['memo'] = args[3].buffer.toString('ascii');
+  }
+  return tokenTransferParams;
 }
 
 /**
