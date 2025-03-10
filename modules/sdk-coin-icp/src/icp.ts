@@ -78,7 +78,7 @@ export class Icp extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidAddress(address);
   }
 
   signTransaction(_: SignTransactionOptions): Promise<SignedTransaction> {
