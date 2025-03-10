@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
-import { BaseTransaction, BaseKey, SigningError, BuildTransactionError } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError } from '@bitgo/sdk-core';
 import { Utils } from './utils';
 import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
@@ -14,7 +14,6 @@ import {
   OperationType,
 } from './iface';
 import { SignedTransactionBuilder } from './signedTransactionBuilder';
-import { KeyPair } from './keyPair';
 import assert from 'assert';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -114,16 +113,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected signImplementation(key: BaseKey): BaseTransaction {
-    this.validateKey(key);
-    if (!this.transaction.canSign(key)) {
-      throw new SigningError('Private key cannot sign the transaction');
-    }
-    const keyPair = new KeyPair({ prv: key.key });
-    const keys = keyPair.getKeys();
-    if (!keys.prv) {
-      throw new SigningError('invalid private key');
-    }
+  protected signImplementation(): BaseTransaction {
     const signedTransactionBuilder = new SignedTransactionBuilder(
       this._transaction.unsignedTransaction,
       this._transaction.signaturePayload

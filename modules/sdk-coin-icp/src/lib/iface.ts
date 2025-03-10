@@ -189,3 +189,13 @@ export interface SignedTransactionRequest {
   network_identifier: NetworkIdentifier;
   signed_transaction: string;
 }
+
+export interface RecoveryOptions {
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
+  bitgoKey?: string;
+  rootAddress?: string;
+  recoveryDestination: string;
+  walletPassphrase?: string;
+  memo?: number | BigInt;
+}
