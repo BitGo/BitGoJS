@@ -27,7 +27,7 @@ describe('Tao:', function () {
     let headerInfoCB;
     let getFeeCB;
 
-    before(function () {
+    beforeEach(function () {
       accountInfoCB = sandBox.stub(Tao.prototype, 'getAccountInfo' as keyof Tao);
       headerInfoCB = sandBox.stub(Tao.prototype, 'getHeaderInfo' as keyof Tao);
       getFeeCB = sandBox.stub(Tao.prototype, 'getFee' as keyof Tao);
