@@ -22,5 +22,5 @@ export const mainnetCommon = EthereumCommon.custom(
     networkId: (coins.get('celo').network as EthereumNetwork).chainId,
     chainId: (coins.get('celo').network as EthereumNetwork).chainId,
   },
-  { hardfork: 'petersburg' }
+  { hardfork: 'london' }
 );
