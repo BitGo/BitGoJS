@@ -14,7 +14,7 @@ import {
   State,
   Type,
 } from '../pendingApproval';
-import { RequestTracer } from '../utils';
+import { RequestTracer, RequestType } from '../utils';
 import { IWallet } from '../wallet';
 import { BuildParams } from '../wallet/BuildParams';
 import { IRequestTracer } from '../../api';
@@ -23,6 +23,8 @@ import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import { KeyShare as EcdsaKeyShare } from '../utils/tss/ecdsa/types';
 import { KeyShare as EddsaKeyShare } from '../utils/tss/eddsa/types';
+import { sendTxRequest } from '../tss/common';
+import assert from 'assert';
 
 type PreApproveResult = {
   txHex: string;
@@ -341,10 +343,17 @@ export class PendingApproval implements IPendingApproval {
    *
    * Therefore, if neither of these is true, the transaction cannot be recreated, which is reflected in the if
    * statement below.
+   *
+   * Lightning transactions cannot be recreated.
    */
   private canRecreateTransaction(params: ApproveOptions): boolean {
     const isColdWallet = !!_.get(this.wallet, '_wallet.isCold');
     const isOFCWallet = this.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
+    const isLightningWallet = this.baseCoin.getFamily() === 'lnbtc';
+    if (isLightningWallet) {
+      return false;
+    }
+
     if (!params.xprv && !(params.walletPassphrase && !isColdWallet && !isOFCWallet)) {
       return false;
     }
@@ -420,13 +429,22 @@ export class PendingApproval implements IPendingApproval {
   private async postApprove(params: ApproveOptions = {}, reqId: IRequestTracer): Promise<void> {
     switch (this.type()) {
       case Type.TRANSACTION_REQUEST_FULL:
-        // TransactionRequestFull for SMH or SMC wallets can only be signed after pending approval is approved
-        if (
-          this._pendingApproval.state === State.APPROVED &&
-          this.canRecreateTransaction(params) &&
-          this.baseCoin.supportsTss()
-        ) {
-          await this.recreateAndSignTSSTransaction(params, reqId);
+        if (this._pendingApproval.state === State.APPROVED) {
+          // After we approve a lightning transaction, we should proceed with submitting the payment
+          if (this.baseCoin.getFamily() === 'lnbtc') {
+            assert(this._pendingApproval.txRequestId, 'Missing txRequestId');
+            // this.populateWallet is called before this so we should be good here
+            assert(this.wallet?.id(), 'Missing wallet id');
+            await sendTxRequest(
+              this.bitgo,
+              this.wallet?.id() as string,
+              this._pendingApproval.txRequestId,
+              RequestType.tx,
+              reqId
+            );
+          } else if (this.canRecreateTransaction(params) && this.baseCoin.supportsTss()) {
+            await this.recreateAndSignTSSTransaction(params, reqId);
+          }
         }
     }
   }
