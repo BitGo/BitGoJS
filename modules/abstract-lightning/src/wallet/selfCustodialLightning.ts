@@ -1,6 +1,105 @@
 import * as sdkcore from '@bitgo/sdk-core';
-import { BackupResponse } from '../codecs';
-import { ILightningWallet, LightningWallet } from './lightning';
+import {
+  BackupResponse,
+  LightningAuthKeychain,
+  UpdateLightningWalletClientRequest,
+  UpdateLightningWalletEncryptedRequest,
+} from '../codecs';
+import { getLightningAuthKeychains, ILightningWallet, LightningWallet } from './lightning';
+import { createMessageSignature, deriveLightningServiceSharedSecret, isLightningCoinName } from '../lightning';
+import * as t from 'io-ts';
+
+function encryptWalletUpdateRequest(
+  wallet: sdkcore.IWallet,
+  params: UpdateLightningWalletClientRequest,
+  userAuthKey: LightningAuthKeychain
+): UpdateLightningWalletEncryptedRequest {
+  const coinName = wallet.coin() as 'tlnbtc' | 'lnbtc';
+
+  const requestWithEncryption: Partial<UpdateLightningWalletClientRequest & UpdateLightningWalletEncryptedRequest> = {
+    ...params,
+  };
+
+  const userAuthXprv = wallet.bitgo.decrypt({
+    password: params.passphrase,
+    input: userAuthKey.encryptedPrv,
+  });
+
+  if (params.signerTlsKey) {
+    requestWithEncryption.encryptedSignerTlsKey = wallet.bitgo.encrypt({
+      password: params.passphrase,
+      input: params.signerTlsKey,
+    });
+  }
+
+  if (params.signerAdminMacaroon) {
+    requestWithEncryption.encryptedSignerAdminMacaroon = wallet.bitgo.encrypt({
+      password: params.passphrase,
+      input: params.signerAdminMacaroon,
+    });
+  }
+
+  if (params.signerMacaroon) {
+    requestWithEncryption.encryptedSignerMacaroon = wallet.bitgo.encrypt({
+      password: deriveLightningServiceSharedSecret(coinName, userAuthXprv).toString('hex'),
+      input: params.signerMacaroon,
+    });
+  }
+
+  return t.exact(UpdateLightningWalletEncryptedRequest).encode(requestWithEncryption);
+}
+
+/**
+ * Updates the coin-specific configuration for a Lightning Wallet.
+ *
+ * @param {Wallet} wallet - Wallet.
+ * @param {UpdateLightningWalletClientRequest} params - The parameters containing the updated wallet-specific details.
+ *   - `encryptedSignerMacaroon` (optional): This macaroon is used by the watch-only node to ask the signer node to sign transactions.
+ *     Encrypted with ECDH secret key from private key of wallet's user auth key and public key of lightning service.
+ *   - `encryptedSignerAdminMacaroon` (optional): Generated when initializing the wallet of the signer node.
+ *     Encrypted with client's wallet passphrase.
+ *   - `signerHost` (optional): The host address of the Lightning signer node.
+ *   - `encryptedSignerTlsKey` (optional): The wallet passphrase encrypted TLS key of the signer.
+ *   - `passphrase` (required): The wallet passphrase.
+ *   - `signerTlsCert` (optional): The TLS certificate of the signer.
+ *   - `watchOnlyAccounts` (optional): These are the accounts used to initialize the watch-only wallet.
+ * @returns {Promise<unknown>} A promise resolving to the updated wallet response or throwing an error if the update fails.
+ */
+export async function updateWalletCoinSpecific(
+  wallet: sdkcore.IWallet,
+  params: UpdateLightningWalletClientRequest
+): Promise<unknown> {
+  if (!isLightningCoinName(wallet.coin())) {
+    throw new Error(`cant update lightning wallet coin specific for coin ${wallet.type()}`);
+  }
+  if (wallet.type() !== 'hot') {
+    throw new Error(`cant update lightning wallet coin specific for wallet type ${wallet.type()}`);
+  }
+
+  sdkcore.decodeOrElse(
+    UpdateLightningWalletClientRequest.name,
+    UpdateLightningWalletClientRequest,
+    params,
+    (errors) => {
+      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
+      throw new Error(`Invalid params for lightning specific update wallet`);
+    }
+  );
+
+  const { userAuthKey } = await getLightningAuthKeychains(wallet);
+  const updateRequestWithEncryption = encryptWalletUpdateRequest(wallet, params, userAuthKey);
+  const signature = createMessageSignature(
+    updateRequestWithEncryption,
+    wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
+  );
+  const coinSpecific = {
+    [wallet.coin()]: {
+      signedRequest: updateRequestWithEncryption,
+      signature,
+    },
+  };
+  return await wallet.bitgo.put(wallet.url()).send({ coinSpecific }).result();
+}
 
 export interface ISelfCustodialLightningWallet extends ILightningWallet {
   /**
