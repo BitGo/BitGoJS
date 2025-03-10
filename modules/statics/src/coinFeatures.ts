@@ -6,6 +6,7 @@ export const ETH_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
+  CoinFeature.WALLET_CONNECT_DEFI,
 ];
 export const ETH_FEATURES_WITH_MMI = [...ETH_FEATURES, CoinFeature.METAMASK_INSTITUTIONAL];
 export const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
@@ -111,6 +112,7 @@ export const HTETH_TOKEN_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.EIP1559,
+  CoinFeature.WALLET_CONNECT_DEFI,
 ];
 export const ADA_FEATURES = [...Ada.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
 export const ADA_FEATURES_WITH_FRANKFURT = [...ADA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
@@ -336,6 +338,7 @@ export const ARBETH_FEATURES = [
   CoinFeature.ETH_ROLLUP_CHAIN,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.EIP1559,
+  CoinFeature.WALLET_CONNECT_DEFI,
 ];
 export const OPETH_FEATURES = [
   ...ETH_FEATURES,
@@ -345,6 +348,7 @@ export const OPETH_FEATURES = [
   CoinFeature.ETH_ROLLUP_CHAIN,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.EIP1559,
+  CoinFeature.WALLET_CONNECT_DEFI,
 ];
 export const ZKETH_FEATURES = [
   ...ETH_FEATURES,
@@ -440,7 +444,7 @@ export const TIA_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
-export const WCT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING];
+export const WCT_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STAKING, CoinFeature.WALLET_CONNECT_DEFI];
 export const BERA_BGT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
