@@ -333,6 +333,11 @@ export enum CoinFeature {
    * This coin supports alphanumeric memo id
    */
   ALPHANUMERIC_MEMO_ID = 'alphanumeric-memo-id',
+
+  /**
+   * This coin supports WalletConnect
+   */
+  WALLET_CONNECT_DEFI = 'wallet-connect-defi',
 }
 
 /**
