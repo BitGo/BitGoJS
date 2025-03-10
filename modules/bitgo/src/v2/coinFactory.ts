@@ -73,6 +73,7 @@ import {
   Rbtc,
   Sei,
   Sgb,
+  Sip10Token,
   Sol,
   StellarToken,
   Stx,
@@ -372,6 +373,10 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   );
 
   AptToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
+    globalCoinFactory.register(name, coinConstructor)
+  );
+
+  Sip10Token.createTokenConstructors().forEach(({ name, coinConstructor }) =>
     globalCoinFactory.register(name, coinConstructor)
   );
 }

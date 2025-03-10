@@ -29,7 +29,7 @@ import {
 import { secp256k1 } from '@noble/curves/secp256k1';
 import * as _ from 'lodash';
 import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsError } from '@bitgo/sdk-core';
-import { AddressDetails, SendParams } from './iface';
+import { AddressDetails, SendParams, TokenTransferParams } from './iface';
 import { KeyPair } from '.';
 import { StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
 import { VALID_CONTRACT_FUNCTION_NAMES } from './constants';
@@ -466,6 +466,26 @@ export function functionArgsToSendParams(args: ClarityValue[]): SendParams[] {
       memo: tuple.data.memo.buffer.toString('ascii'),
     };
   });
+}
+
+export function functionArgsToTokenTransferParams(args: ClarityValue[]): TokenTransferParams {
+  if (args.length !== 4) {
+    throw new InvalidTransactionError("function args don't match token transfer declaration");
+  }
+  if (
+    args[0].type !== ClarityType.PrincipalStandard ||
+    args[1].type !== ClarityType.PrincipalStandard ||
+    args[2].type !== ClarityType.UInt ||
+    args[3].type !== ClarityType.Buffer
+  ) {
+    throw new InvalidTransactionError("function args don't match token transfer declaration");
+  }
+  return {
+    sender: cvToString(args[0]),
+    recipient: cvToString(args[1]),
+    amount: cvToValue(args[2], true),
+    memo: args[3].buffer.toString('ascii'),
+  };
 }
 
 /**

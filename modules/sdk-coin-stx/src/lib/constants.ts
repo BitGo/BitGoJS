@@ -1,6 +1,7 @@
 export const FUNCTION_NAME_SENDMANY = 'send-many';
 export const CONTRACT_NAME_SENDMANY = 'send-many-memo';
 export const CONTRACT_NAME_STAKING = 'pox-4';
+export const FUNCTION_NAME_TRANSFER = 'transfer';
 
 export const VALID_CONTRACT_FUNCTION_NAMES = [
   'stack-stx',
@@ -9,6 +10,7 @@ export const VALID_CONTRACT_FUNCTION_NAMES = [
   'stack-aggregation-commit',
   'revoke-delegate-stx',
   'send-many',
+  'transfer',
 ];
 
 export const DEFAULT_SEED_SIZE_BYTES = 64;
