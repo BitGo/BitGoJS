@@ -2734,6 +2734,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['apt:usdt'],
     APT_FEATURES
   ),
+  aptToken(
+    'bf82aa75-88a8-4010-91cf-b8811cf4b763',
+    'apt:usdc',
+    'USD Coin',
+    6,
+    '0xbae207659db88bea0cbead6da0ed00aac12edcdda169e591cd41c94180b46f3b',
+    UnderlyingAsset['apt:usdc'],
+    APT_FEATURES
+  ),
   taptToken(
     '2695e728-96dd-46e6-9d01-bd0fdbe1ff38',
     'tapt:usdt',
