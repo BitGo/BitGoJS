@@ -592,6 +592,11 @@ export class Algo extends BaseCoin {
     return false;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   /**
    * Gets config for how token enablements work for this coin
    * @returns

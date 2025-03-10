@@ -97,6 +97,11 @@ export class Cspr extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     // TODO: Implement when available on the SDK.
     return true;

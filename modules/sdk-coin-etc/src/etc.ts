@@ -49,6 +49,11 @@ export class Etc extends AbstractEthLikeCoin {
     return valid;
   }
 
+  /** {@inheritDoc } **/
+  supportsMultisig() {
+    return true;
+  }
+
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
