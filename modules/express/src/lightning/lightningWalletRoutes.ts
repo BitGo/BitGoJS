@@ -8,6 +8,7 @@ import {
   PaymentInfo,
   Transaction,
   PaymentQuery,
+  updateWalletCoinSpecific,
 } from '@bitgo/abstract-lightning';
 import { decodeOrElse } from '@bitgo/sdk-core';
 import { TransactionParams, PaymentHashParams } from './codecs';
@@ -41,9 +42,8 @@ export async function handleUpdateLightningWalletCoinSpecific(req: express.Reque
 
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
-  const lightningWallet = getLightningWallet(wallet);
 
-  return await lightningWallet.updateWalletCoinSpecific(params);
+  return await updateWalletCoinSpecific(wallet, params);
 }
 
 export async function handleListLightningTransactions(req: express.Request): Promise<unknown> {
