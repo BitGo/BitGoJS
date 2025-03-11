@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { common, ECDSAMethodTypes, FullySignedTransaction, Recipient, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -220,6 +221,94 @@ describe('Polygon', function () {
       halfSignedRawTx.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
       halfSignedRawTx.halfSigned.eip1559.maxFeePerGas.should.equal('7593123');
       halfSignedRawTx.halfSigned.eip1559.maxPriorityFeePerGas.should.equal('150');
+    });
+
+    it('should include isBatch field in halfSigned when signing a native batch transaction', async function () {
+      const batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
+      const recipients: Recipient[] = [
+        {
+          address: account_2.address,
+          amount: '500000000000',
+        },
+        {
+          address: '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6',
+          amount: '500000000000',
+        },
+      ];
+      const totalAmount = recipients.reduce(
+        (sum, recipient) => new BigNumber(sum).plus(recipient.amount).toString(),
+        '0'
+      );
+      const BATCH_METHOD_NAME = 'batch';
+      const BATCH_METHOD_TYPES = ['address[]', 'uint256[]'];
+
+      const addresses = recipients.map((r) => r.address);
+      const amounts = recipients.map((r) => r.amount);
+      const batchExecutionInfo = {
+        values: [addresses, amounts],
+        totalAmount: totalAmount,
+      };
+
+      const ethAbi = require('ethereumjs-abi');
+      const ethUtil = require('ethereumjs-util');
+
+      const getMethodCallData = (functionName, types, values) => {
+        return Buffer.concat([
+          // function signature
+          ethAbi.methodID(functionName, types),
+          // function arguments
+          ethAbi.rawEncode(types, values),
+        ]);
+      };
+
+      const batchData = ethUtil.addHexPrefix(
+        getMethodCallData(BATCH_METHOD_NAME, BATCH_METHOD_TYPES, batchExecutionInfo.values).toString('hex')
+      );
+
+      const txBuilder = getBuilder('tpolygon') as TransactionBuilder;
+      txBuilder.fee({
+        fee: '280000000000',
+        gasLimit: '7000000',
+      });
+      txBuilder.counter(1);
+      txBuilder.type(TransactionType.Send);
+      txBuilder.contract(account_1.address);
+      txBuilder
+        .transfer()
+        .amount(totalAmount)
+        .to(batcherContractAddress)
+        .data(batchData)
+        .expirationTime(10000)
+        .contractSequenceId(1);
+
+      const unsignedTx = await txBuilder.build();
+      const unsignedTxHex = unsignedTx.toBroadcastFormat();
+
+      const txPrebuild = {
+        txHex: unsignedTxHex,
+        isBatch: true,
+        recipients: [
+          {
+            amount: totalAmount,
+            address: batcherContractAddress,
+          },
+        ],
+        nextContractSequenceId: 1,
+        gasPrice: 280000000000,
+        gasLimit: 7000000,
+        coin: 'tpolygon',
+        walletId: 'fakeWalletId',
+        walletContractAddress: account_1.address,
+      };
+
+      const signedTx = await basecoin.signTransaction({
+        txPrebuild,
+        prv: account_1.owner_2,
+      });
+
+      should.exist(signedTx);
+      should.exist(signedTx.halfSigned);
+      signedTx.halfSigned.should.have.property('isBatch', true);
     });
   });
 
