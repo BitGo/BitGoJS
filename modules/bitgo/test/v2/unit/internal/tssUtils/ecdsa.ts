@@ -659,8 +659,11 @@ describe('TSS Ecdsa Utils:', async function () {
       transactions: [
         {
           unsignedTx: {
-            serializedTxHex: 'TOO MANY SECRETS',
-            signableHex: 'TOO MANY SECRETS',
+            // hteth txid: 0xc5a7bfe6b13ceae563da0f9feaa9c4ad1c101a15366a2a488828a5dd27cb9da3
+            serializedTxHex:
+              '02f38242688084448b9b8084448b9b908301637894a1cfb9d51c0af191ff21c5f0f01723e056f7dc12865af3107a400080c0808080',
+            signableHex:
+              '02f08242688084448b9b8084448b9b908301637894a1cfb9d51c0af191ff21c5f0f01723e056f7dc12865af3107a400080c0',
             derivationPath: '', // Needs this when key derivation is supported
           },
           state: 'pendingSignature',
@@ -669,8 +672,11 @@ describe('TSS Ecdsa Utils:', async function () {
       ],
       unsignedTxs: [
         {
-          serializedTxHex: 'TOO MANY SECRETS',
-          signableHex: 'TOO MANY SECRETS',
+          // hteth txid: 0xc5a7bfe6b13ceae563da0f9feaa9c4ad1c101a15366a2a488828a5dd27cb9da3
+          serializedTxHex:
+            '02f38242688084448b9b8084448b9b908301637894a1cfb9d51c0af191ff21c5f0f01723e056f7dc12865af3107a400080c0808080',
+          signableHex:
+            '02f38242688084448b9b8084448b9b908301637894a1cfb9d51c0af191ff21c5f0f01723e056f7dc12865af3107a400080c0808080',
           derivationPath: '', // Needs this when key derivation is supported
         },
       ],
@@ -933,6 +939,68 @@ describe('TSS Ecdsa Utils:', async function () {
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
     });
 
+    it('signTxRequest should fail with wrong recipient', async function () {
+      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData);
+      await tssUtils
+        .signTxRequest({
+          txRequest: txRequestId,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+          txParams: { recipients: [{ address: '0x1234', amount: '100000000000000' }], type: 'transfer' },
+        })
+        .should.be.rejectedWith('destination address does not match with the recipient address');
+    });
+
+    it('signTxRequest should fail with incorrect value', async function () {
+      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData);
+      await tssUtils
+        .signTxRequest({
+          txRequest: txRequestId,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+          txParams: {
+            recipients: [{ address: '0xa1cfb9d51c0af191ff21c5f0f01723e056f7dc12', amount: '1' }],
+            type: 'transfer',
+          },
+        })
+        .should.be.rejectedWith('the transaction amount in txPrebuild does not match the value given by client');
+    });
+
+    it('signTxRequest should fail with incorrect value for token txn', async function () {
+      const signableHex =
+        '02f86d8242681083122c9e83122cae8301e04994ebe8b46a42f05072b723b00013ff822b2af1b5cb80b844a9059cbb0000000000000000000000002b0d6cb2f8c388757f4d7ad857fccab18290dbc900000000000000000000000000000000000000000000000000000000000186a0c0';
+      const serializedTxHex =
+        '02f8708242681083122c9e83122cae8301e04994ebe8b46a42f05072b723b00013ff822b2af1b5cb80b844a9059cbb0000000000000000000000002b0d6cb2f8c388757f4d7ad857fccab18290dbc900000000000000000000000000000000000000000000000000000000000186a0c0808080';
+      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData, {
+        signableHex,
+        serializedTxHex,
+        apiVersion: 'full',
+      });
+      await tssUtils
+        .signTxRequest({
+          txRequest: txRequestId,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          reqId,
+          txParams: {
+            recipients: [{ address: '0x2b0d6cb2f8c388757f4d7ad857fccab18290dbc9', amount: '707' }],
+            type: 'transfer',
+          },
+        })
+        .should.be.rejectedWith('the transaction amount in txPrebuild does not match the value given by client');
+    });
+
     it('getOfflineSignerPaillierModulus should succeed', async function () {
       const paillierModulus = tssUtils.getOfflineSignerPaillierModulus({
         prv: JSON.stringify({
@@ -1101,7 +1169,12 @@ describe('TSS Ecdsa Utils:', async function () {
       userSignShare: ECDSA.SignShareRT,
       aShare: ECDSA.AShare,
       dShare: ECDSA.DShare,
-      enterpriseData?: EnterpriseData
+      enterpriseData: EnterpriseData,
+      {
+        signableHex,
+        serializedTxHex,
+        apiVersion,
+      }: { signableHex?: string; serializedTxHex?: string; apiVersion?: 'full' | 'lite' } = {}
     ) {
       if (enterpriseData) {
         await nockGetEnterprise({ enterpriseId: enterpriseData.id, response: enterpriseData, times: 1 });
@@ -1116,12 +1189,13 @@ describe('TSS Ecdsa Utils:', async function () {
               {
                 ...txRequest,
                 unsignedTx: {
-                  signableHex: txRequest.unsignedTxs[0].signableHex,
-                  serializedTxHex: txRequest.unsignedTxs[0].serializedTxHex,
+                  signableHex: signableHex ?? txRequest.unsignedTxs[0].signableHex,
+                  serializedTxHex: serializedTxHex ?? txRequest.unsignedTxs[0].serializedTxHex,
                   derivationPath,
                 },
               },
             ],
+            apiVersion: apiVersion,
           },
         ],
       };
@@ -1145,6 +1219,7 @@ describe('TSS Ecdsa Utils:', async function () {
                 },
               },
             ],
+            apiVersion: apiVersion,
           },
         ],
       };
@@ -1165,6 +1240,7 @@ describe('TSS Ecdsa Utils:', async function () {
                 },
               },
             ],
+            apiVersion: apiVersion,
           },
         ],
       };
