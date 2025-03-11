@@ -15,7 +15,7 @@ import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import utils from './lib/utils';
 
 /**
- * Class representing the Internet Computer (ICP) coin.
+ * Class representing the Internet Computer (ICP) coins.
  * Extends the BaseCoin class and provides specific implementations for ICP.
  *
  * @see {@link https://internetcomputer.org/}
