@@ -1,0 +1,10 @@
+export declare const DEFAULT_INPUT_SIZE = 180;
+export declare const P2WPKH_INPUT_SIZE = 68;
+export declare const P2TR_INPUT_SIZE = 58;
+export declare const TX_BUFFER_SIZE_OVERHEAD = 11;
+export declare const LOW_RATE_ESTIMATION_ACCURACY_BUFFER = 30;
+export declare const MAX_NON_LEGACY_OUTPUT_SIZE = 43;
+export declare const WITHDRAW_TX_BUFFER_SIZE = 17;
+export declare const WALLET_RELAY_FEE_RATE_THRESHOLD = 2;
+export declare const OP_RETURN_OUTPUT_VALUE_SIZE = 8;
+export declare const OP_RETURN_VALUE_SERIALIZE_SIZE = 1;
