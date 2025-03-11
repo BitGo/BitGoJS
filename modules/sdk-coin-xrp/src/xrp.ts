@@ -13,6 +13,8 @@ import {
   getBip32Keys,
   InvalidAddressError,
   KeyPair,
+  MultisigType,
+  multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
@@ -117,6 +119,11 @@ export class Xrp extends BaseCoin {
   /** {@inheritDoc } **/
   supportsMultisig(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   public getTokenEnablementConfig(): TokenEnablementConfig {

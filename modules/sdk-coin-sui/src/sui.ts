@@ -27,6 +27,8 @@ import {
   VerifyTransactionOptions,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
@@ -120,6 +122,11 @@ export class Sui extends BaseCoin {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   getMPCAlgorithm(): MPCAlgorithm {

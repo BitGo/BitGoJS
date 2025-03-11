@@ -5,6 +5,8 @@ import {
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
+  MultisigType,
+  multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -62,6 +64,11 @@ export class Apt extends BaseCoin {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   getMPCAlgorithm(): MPCAlgorithm {

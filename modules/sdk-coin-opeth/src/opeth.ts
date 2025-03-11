@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
@@ -55,5 +55,10 @@ export class Opeth extends AbstractEthLikeNewCoins {
   /** {@inheritDoc } **/
   supportsMultisig(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 }

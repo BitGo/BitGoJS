@@ -43,6 +43,7 @@ import {
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
   DeriveKeyWithSeedOptions,
+  MultisigType,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
@@ -190,6 +191,17 @@ export abstract class BaseCoin implements IBaseCoin {
    */
   supportsMultisig(): boolean {
     return false;
+  }
+
+  /**
+   * It will return the default multisig type value for coin
+   * @return {MultisigType} return 'tss' if coin supports only TSS not MultiSig
+   * else if coin supports MultiSig return 'onchain'
+   * if coin supports both return 'onchain'
+   * else undefined
+   */
+  getDefaultMultisigType(): MultisigType | undefined {
+    return undefined;
   }
 
   /**

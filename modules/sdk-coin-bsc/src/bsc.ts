@@ -1,4 +1,4 @@
-import { BaseCoin, BitGoBase, common, MPCAlgorithm } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
@@ -29,6 +29,11 @@ export class Bsc extends AbstractEthLikeNewCoins {
   /** {@inheritDoc} */
   supportsMultisig(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   /** @inheritDoc */

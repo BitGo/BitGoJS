@@ -14,6 +14,8 @@ import {
   UnexpectedAddressError,
   ITransactionRecipient,
   ParsedTransaction,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
 import {
@@ -61,6 +63,11 @@ export class AvaxP extends BaseCoin {
   /** {@inheritDoc } **/
   supportsMultisig(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   /**

@@ -12,6 +12,8 @@ import {
   InvalidAddressError,
   InvalidTransactionError,
   KeyPair,
+  MultisigType,
+  multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -100,6 +102,11 @@ export class Cspr extends BaseCoin {
   /** {@inheritDoc } **/
   supportsMultisig(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

@@ -1,4 +1,4 @@
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { KeyPair, TransactionBuilder } from './lib';
@@ -25,6 +25,11 @@ export class Rbtc extends AbstractEthLikeCoin {
   /** {@inheritDoc } **/
   supportsMultisig() {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   protected getTransactionBuilder(): TransactionBuilder {

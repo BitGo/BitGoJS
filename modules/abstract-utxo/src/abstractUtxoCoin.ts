@@ -21,6 +21,8 @@ import {
   IWallet,
   KeychainsTriplet,
   KeyIndices,
+  MultisigType,
+  multisigTypes,
   P2shP2wshUnsupportedError,
   P2trMusig2UnsupportedError,
   P2trUnsupportedError,
@@ -696,6 +698,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   /** {@inheritDoc } **/
   supportsMultisig(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   /**
