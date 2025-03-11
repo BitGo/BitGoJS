@@ -3450,6 +3450,7 @@ export class Wallet implements IWallet {
     try {
       return await this.tssUtils!.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
+        txParams: params.txPrebuild.buildParams,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,
