@@ -552,6 +552,52 @@ describe('V2 Wallets:', function () {
       );
     });
 
+    it('should create a new TSS wallet without passing multisig type', async function () {
+      const stubbedKeychainsTriplet: KeychainsTriplet = {
+        userKeychain: {
+          id: '1',
+          pub: 'userPub',
+          type: 'independent',
+          source: 'user',
+        },
+        backupKeychain: {
+          id: '2',
+          pub: 'userPub',
+          type: 'independent',
+          source: 'backup',
+        },
+        bitgoKeychain: {
+          id: '3',
+          pub: 'userPub',
+          type: 'independent',
+          source: 'bitgo',
+        },
+      };
+      sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
+
+      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet/add').reply(200);
+
+      const wallets = new Wallets(bitgo, tsol);
+
+      const params = {
+        label: 'tss wallet',
+        passphrase: 'tss password',
+        enterprise: 'enterprise',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+      };
+
+      const response = await wallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.ok(response.wallet);
+      assert.equal(
+        bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+        params.passphrase
+      );
+    });
+
     it('should create a new TSS wallet without providing passcodeEncryptionCode', async function () {
       const stubbedKeychainsTriplet: KeychainsTriplet = {
         userKeychain: {
