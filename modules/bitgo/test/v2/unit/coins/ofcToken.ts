@@ -63,16 +63,16 @@ describe('OFC:', function () {
     teth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   });
 
-  it('test crypto coins for ofcgteth', function () {
-    const gteth = bitgo.coin('ofcgteth');
-    gteth.getChain().should.equal('ofcgteth');
-    gteth.getFullName().should.equal('Test Goerli Ether');
-    gteth.getBaseFactor().should.equal(PRECISION_18);
-    gteth.isValidAddress('0x801b2954117cf3439479df391bed2f472e4bd4b8').should.be.true;
-    gteth.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
-    gteth.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
-    gteth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
-    gteth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
+  it('test crypto coins for ofchteth', function () {
+    const hteth = bitgo.coin('ofchteth');
+    hteth.getChain().should.equal('ofchteth');
+    hteth.getFullName().should.equal('Test Holesky Ether');
+    hteth.getBaseFactor().should.equal(PRECISION_18);
+    hteth.isValidAddress('0x801b2954117cf3439479df391bed2f472e4bd4b8').should.be.true;
+    hteth.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
+    hteth.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
+    hteth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
+    hteth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   });
 
   it('test crypto coins for ofcavaxc', function () {

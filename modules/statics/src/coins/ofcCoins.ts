@@ -165,14 +165,14 @@ export const ofcCoins = [
   tofc('b4a75a39-3fd2-4866-aaed-75b969df1d98', 'ofctbtc4', 'Testnet4 Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   tofc('4bf9d3a3-04f7-4c48-9a26-12b36bbecfb7', 'ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
   tofc('e916ff23-7521-4046-9bea-b92788acc23b', 'ofcteth', 'Test Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
-  tofc(
-    'a90ab5b8-e156-4d40-9cd7-b170416ba7de',
-    'ofcgteth',
-    'Test Goerli Ether',
-    18,
-    UnderlyingAsset.ETH,
-    CoinKind.CRYPTO
-  ),
+  // tofc(
+  //   'a90ab5b8-e156-4d40-9cd7-b170416ba7de',
+  //   'ofcgteth',
+  //   'Test Goerli Ether',
+  //   18,
+  //   UnderlyingAsset.ETH,
+  //   CoinKind.CRYPTO
+  // ),
   tofc(
     'dd7fd2c8-df50-4f8b-96ac-ff5f874c80ca',
     'ofchteth',
