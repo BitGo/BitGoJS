@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
-import { BaseTransaction, BaseKey, SigningError, BuildTransactionError } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, MethodNotImplementedError } from '@bitgo/sdk-core';
 import { Utils } from './utils';
 import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
@@ -14,7 +14,6 @@ import {
   OperationType,
 } from './iface';
 import { SignedTransactionBuilder } from './signedTransactionBuilder';
-import { KeyPair } from './keyPair';
 import assert from 'assert';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -113,22 +112,18 @@ export class TransferBuilder extends TransactionBuilder {
     this._transaction.icpTransaction = icpTransaction;
   }
 
-  /** @inheritdoc */
-  protected signImplementation(key: BaseKey): BaseTransaction {
-    this.validateKey(key);
-    if (!this.transaction.canSign(key)) {
-      throw new SigningError('Private key cannot sign the transaction');
-    }
-    const keyPair = new KeyPair({ prv: key.key });
-    const keys = keyPair.getKeys();
-    if (!keys.prv) {
-      throw new SigningError('invalid private key');
-    }
+  // combine the unsigned transaction with the signature payload and generates the signed transaction
+  protected combine(): BaseTransaction {
     const signedTransactionBuilder = new SignedTransactionBuilder(
       this._transaction.unsignedTransaction,
       this._transaction.signaturePayload
     );
     this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
     return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected signImplementation(): BaseTransaction {
+    throw new MethodNotImplementedError();
   }
 }

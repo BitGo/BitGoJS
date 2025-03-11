@@ -59,7 +59,7 @@ export class Icp extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+    throw new MethodNotImplementedError();
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
@@ -67,7 +67,7 @@ export class Icp extends BaseCoin {
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new Error('Method not implemented.');
+    throw new MethodNotImplementedError();
   }
 
   /**
@@ -83,7 +83,7 @@ export class Icp extends BaseCoin {
   }
 
   signTransaction(_: SignTransactionOptions): Promise<SignedTransaction> {
-    throw new Error('Method not implemented.');
+    throw new MethodNotImplementedError();
   }
 
   isValidPub(key: string): boolean {

@@ -74,7 +74,7 @@ describe('ICP Transaction Builder', async () => {
 
   it('should build a signed txn and give txn in broadcast format', async () => {
     txn.addSignature(testData.signatures);
-    txBuilder.sign({ key: testData.accounts.account1.secretKey });
+    txBuilder.combine();
     const signedTxn = txBuilder.transaction.signedTransaction;
     signedTxn.should.be.a.String();
     should.equal(signedTxn, testData.signedTransaction);

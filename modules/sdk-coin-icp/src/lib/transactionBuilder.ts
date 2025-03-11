@@ -1,6 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { BaseKey, BaseTransactionBuilder, BuildTransactionError, SigningError, BaseAddress } from '@bitgo/sdk-core';
+import {
+  BaseTransactionBuilder,
+  BuildTransactionError,
+  BaseAddress,
+  MethodNotImplementedError,
+  BaseKey,
+} from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import utils from './utils';
 import { IcpTransactionData } from './iface';
@@ -16,6 +22,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new Transaction(_coinConfig, utils);
+  }
+
+  validateKey(key: BaseKey): void {
+    throw new MethodNotImplementedError();
   }
 
   /**
@@ -123,16 +133,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._receiverId = icpTransactionData.receiverAddress;
     this._publicKey = icpTransactionData.senderPublicKeyHex;
     this._amount = icpTransactionData.amount;
-  }
-
-  /** @inheritdoc */
-  validateKey(key: BaseKey): void {
-    if (!key || !key.key) {
-      throw new SigningError('Key is required');
-    }
-    if (!utils.isValidPrivateKey(key.key)) {
-      throw new SigningError('Invalid private key');
-    }
   }
 
   validateAddress(address: BaseAddress): void {
