@@ -190,6 +190,23 @@ describe('STX:', function () {
     explain.contractFunctionArgs[0].value.toString().should.equal(testData.txExplainedContract.functionArgs[0].value);
   });
 
+  it('should explain a fungible token transfer transaction', async function () {
+    const explain = await basecoin.explainTransaction({
+      txHex: testData.txForExplainFungibleTokenTransfer,
+      feeInfo: { fee: '' },
+    });
+    explain.id.should.equal(testData.fungibleTokenTransferTx.id);
+    explain.fee.should.equal(testData.fungibleTokenTransferTx.fee);
+    explain.contractAddress.should.equal(testData.fungibleTokenTransferTx.contractAddress);
+    explain.contractName.should.equal(testData.fungibleTokenTransferTx.contractName);
+    explain.contractFunction.should.equal(testData.fungibleTokenTransferTx.functionName);
+    explain.contractFunctionArgs[0].type.should.equal(testData.fungibleTokenTransferTx.functionArgs[0].type);
+    explain.contractFunctionArgs[0].address.hash160.should.equal(
+      testData.fungibleTokenTransferTx.functionArgs[0]?.address?.hash160
+    );
+    explain.contractFunctionArgs[2].value.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
+  });
+
   describe('Keypairs:', () => {
     it('should generate a keypair from random seed', function () {
       const keyPair = basecoin.generateKeyPair();
