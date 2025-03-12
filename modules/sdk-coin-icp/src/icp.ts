@@ -2,6 +2,7 @@ import {
   BaseCoin,
   BitGoBase,
   MPCAlgorithm,
+  MethodNotImplementedError,
   VerifyTransactionOptions,
   TssVerifyAddressOptions,
   ParseTransactionOptions,
@@ -62,7 +63,7 @@ export class Icp extends BaseCoin {
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+    throw new MethodNotImplementedError();
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
