@@ -21,7 +21,7 @@ export abstract class AbstractLightningCoin extends BaseCoin {
   }
 
   getBaseFactor(): number {
-    throw new Error('Method not implemented.');
+    return 10e11;
   }
 
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
