@@ -74,11 +74,11 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
 
         tx.type.should.equal(TransactionType.Send);
         tx.outputs.length.should.equal(1);
-        tx.outputs[0].address.should.equal(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.CONTRACT_ADDRESS);
-        tx.outputs[0].value.should.equal('0');
+        tx.outputs[0].address.should.equal(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS);
+        tx.outputs[0].value.should.equal('10000');
         tx.inputs.length.should.equal(1);
-        tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
-        tx.inputs[0].value.should.equal('0');
+        tx.inputs[0].address.should.equal(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS);
+        tx.inputs[0].value.should.equal('10000');
       });
 
       it('an unsigned fungible token transfer transaction without memo', async () => {
@@ -105,11 +105,11 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
 
         tx.type.should.equal(TransactionType.Send);
         tx.outputs.length.should.equal(1);
-        tx.outputs[0].address.should.equal(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.CONTRACT_ADDRESS);
-        tx.outputs[0].value.should.equal('0');
+        tx.outputs[0].address.should.equal(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS);
+        tx.outputs[0].value.should.equal('10000');
         tx.inputs.length.should.equal(1);
-        tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
-        tx.inputs[0].value.should.equal('0');
+        tx.inputs[0].address.should.equal(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS);
+        tx.inputs[0].value.should.equal('10000');
       });
 
       it('a multisig fungible token transfer transaction', async () => {

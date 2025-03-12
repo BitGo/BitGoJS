@@ -1,10 +1,13 @@
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import assert from 'assert';
+
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { Wallet } from '@bitgo/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
+import { cvToString } from '@stacks/transactions';
+
 import * as testData from '../fixtures';
 import { Stx, Tstx, StxLib } from '../../src';
-import assert from 'assert';
-import { Wallet } from '@bitgo/sdk-core';
 
 const { KeyPair } = StxLib;
 
@@ -188,6 +191,20 @@ describe('STX:', function () {
     explain.contractFunction.should.equal(testData.txExplainedContract.functionName);
     explain.contractFunctionArgs[0].type.should.equal(testData.txExplainedContract.functionArgs[0].type);
     explain.contractFunctionArgs[0].value.toString().should.equal(testData.txExplainedContract.functionArgs[0].value);
+  });
+
+  it('should explain a fungible token transfer transaction', async function () {
+    const explain = await basecoin.explainTransaction({
+      txHex: testData.txForExplainFungibleTokenTransfer,
+      feeInfo: { fee: '' },
+    });
+    explain.id.should.equal(testData.fungibleTokenTransferTx.id);
+    explain.fee.should.equal(testData.fungibleTokenTransferTx.fee);
+    explain.memo.should.equal('1');
+    explain.outputAmount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
+    explain.outputs[0].amount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
+    explain.outputs[0].address.should.equal(cvToString(testData.fungibleTokenTransferTx.functionArgs[1]));
+    explain.outputs[0].memo.should.equal('1');
   });
 
   describe('Keypairs:', () => {

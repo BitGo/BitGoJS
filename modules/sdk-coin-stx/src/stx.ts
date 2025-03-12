@@ -9,6 +9,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { cvToString, cvToValue } from '@stacks/transactions';
 import { ExplainTransactionOptions, StxSignTransactionOptions, StxTransactionExplanation } from './types';
 import { StxLib } from '.';
 
@@ -182,24 +183,41 @@ export class Stx extends BaseCoin {
     const txJson = tx.toJson();
 
     if (tx.type === TransactionType.Send) {
-      const outputs: TransactionRecipient[] = [
-        {
+      // check if it is a token transaction or native coin transaction
+      let transactionRecipient: TransactionRecipient;
+      let outputAmount: string;
+      let memo: string | undefined;
+      if (txJson.payload.contractAddress && txJson.payload.functionArgs.length >= 3) {
+        outputAmount = cvToValue(txJson.payload.functionArgs[2]).toString();
+        transactionRecipient = {
+          address: cvToString(txJson.payload.functionArgs[1]),
+          amount: outputAmount,
+        };
+        if (txJson.payload.functionArgs.length === 4) {
+          memo = txJson.payload.functionArgs[3].buffer.toString('ascii');
+          transactionRecipient['memo'] = memo;
+        }
+      } else {
+        outputAmount = txJson.payload.amount;
+        memo = txJson.payload.memo;
+        transactionRecipient = {
           address: txJson.payload.to,
-          amount: txJson.payload.amount,
-          memo: txJson.payload.memo,
-        },
-      ];
+          amount: outputAmount,
+          memo: memo,
+        };
+      }
+      const outputs: TransactionRecipient[] = [transactionRecipient];
 
       const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'type'];
       return {
         displayOrder,
         id: txJson.id,
-        outputAmount: txJson.payload.amount.toString(),
+        outputAmount: outputAmount.toString(),
         changeAmount: '0',
         outputs,
         changeOutputs: [],
         fee: txJson.fee,
-        memo: txJson.payload.memo,
+        memo: memo,
         type: tx.type,
       };
     }
