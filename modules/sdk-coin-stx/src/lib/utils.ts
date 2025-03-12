@@ -31,7 +31,7 @@ import * as _ from 'lodash';
 import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsError } from '@bitgo/sdk-core';
 import { AddressDetails, SendParams, TokenTransferParams } from './iface';
 import { KeyPair } from '.';
-import { StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
+import { coins, Sip10Token, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
 import { VALID_CONTRACT_FUNCTION_NAMES } from './constants';
 
 /**
@@ -534,4 +534,20 @@ export function isSameBaseAddress(address: string, baseAddress: string): boolean
     throw new UtilsError(`invalid address: ${address}`);
   }
   return getBaseAddress(address) === getBaseAddress(baseAddress);
+}
+
+/**
+ * Function to get tokenName from list of sip10 tokens using contract details
+ *
+ * @param {String} contractAddress
+ * @param {String} contractName
+ * @returns {String|Undefined}
+ */
+export function findTokenNameByContract(contractAddress: string, contractName: string): string | undefined {
+  {
+    const tokenName = coins
+      .filter((coin) => coin instanceof Sip10Token && coin.assetId.includes(`${contractAddress}.${contractName}`))
+      .map((coin) => coin.name);
+    return tokenName ? tokenName[0] : undefined;
+  }
 }
