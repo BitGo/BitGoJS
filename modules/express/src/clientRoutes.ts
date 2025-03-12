@@ -1677,29 +1677,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     promiseWrapper(handleV2PendingApproval)
   );
 
-  // any other API v2 call
-  app.use('/api/v2/user/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2UserREST));
-  app.use('/api/v2/:coin/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2CoinSpecificREST));
-
-  app.post(
-    '/api/network/v1/enterprises/:enterpriseId/clients/connections',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleNetworkV1EnterpriseClientConnections)
-  );
-
-  // everything else should use the proxy handler
-  if (config.disableProxy !== true) {
-    app.use(
-      '/api/:namespace/v[12]/enterprises/:enterpriseId/*',
-      parseBody,
-      prepareBitGo(config),
-      promiseWrapper(handleProxyReq)
-    );
-
-    app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
-  }
-
   // lightning - create invoice
   app.post(
     '/api/v2/:coin/wallet/:id/lightning/invoice',
@@ -1707,6 +1684,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     prepareBitGo(config),
     promiseWrapper(handleCreateLightningInvoice)
   );
+
   // lightning - get invoice
   app.get(
     '/api/v2/:coin/wallet/:id/lightning/invoice/:paymentHash',
@@ -1755,6 +1733,29 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // lightning - backup
   app.get('/api/v2/:coin/wallet/:id/lightning/backup', prepareBitGo(config), promiseWrapper(handleGetChannelBackup));
+
+  // any other API v2 call
+  app.use('/api/v2/user/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2UserREST));
+  app.use('/api/v2/:coin/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2CoinSpecificREST));
+
+  app.post(
+    '/api/network/v1/enterprises/:enterpriseId/clients/connections',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleNetworkV1EnterpriseClientConnections)
+  );
+
+  // everything else should use the proxy handler
+  if (config.disableProxy !== true) {
+    app.use(
+      '/api/:namespace/v[12]/enterprises/:enterpriseId/*',
+      parseBody,
+      prepareBitGo(config),
+      promiseWrapper(handleProxyReq)
+    );
+
+    app.use(parseBody, prepareBitGo(config), promiseWrapper(handleProxyReq));
+  }
 }
 
 export function setupSigningRoutes(app: express.Application, config: Config): void {
