@@ -2147,7 +2147,7 @@ export class Wallet implements IWallet {
 
     try {
       await this.baseCoin.verifyTransaction({
-        txParams: txPrebuild.buildParams || params,
+        txParams: { ...txPrebuild.buildParams, ...params },
         txPrebuild,
         wallet: this,
         verification: params.verification ?? {},
