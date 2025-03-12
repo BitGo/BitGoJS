@@ -4,6 +4,7 @@ import { BaseUnit, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair, TransactionBuilderFactory } from './lib';
 import { GAS_AMOUNT, GAS_LIMIT } from './lib/constants';
 import utils from './lib/utils';
+import { BabylonSpecificMessages } from './lib/iface';
 
 /**
  *
@@ -12,7 +13,7 @@ import utils from './lib/utils';
  * Docs: https://docs.babylonlabs.io/
  * GitHub : https://github.com/babylonlabs-io/networks
  */
-export class Baby extends CosmosCoin {
+export class Baby extends CosmosCoin<BabylonSpecificMessages> {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);

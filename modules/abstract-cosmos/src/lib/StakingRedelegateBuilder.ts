@@ -5,10 +5,10 @@ import { RedelegateMessage } from './iface';
 import { CosmosTransactionBuilder } from './transactionBuilder';
 import { CosmosUtils } from './utils';
 
-export class StakingRedelegateBuilder extends CosmosTransactionBuilder {
-  protected _utils: CosmosUtils;
+export class StakingRedelegateBuilder<CustomMessage = never> extends CosmosTransactionBuilder<CustomMessage> {
+  protected _utils: CosmosUtils<CustomMessage>;
 
-  constructor(_coinConfig: Readonly<CoinConfig>, utils: CosmosUtils) {
+  constructor(_coinConfig: Readonly<CoinConfig>, utils: CosmosUtils<CustomMessage>) {
     super(_coinConfig, utils);
     this._utils = utils;
   }
