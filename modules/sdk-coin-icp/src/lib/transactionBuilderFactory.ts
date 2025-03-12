@@ -1,4 +1,4 @@
-import { BaseTransactionBuilderFactory, InvalidTransactionError } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory, InvalidTransactionError, MethodNotImplementedError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -59,6 +59,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   getWalletInitializationBuilder(): void {
-    throw new Error('method not implemented');
+    throw new MethodNotImplementedError();
   }
 }
