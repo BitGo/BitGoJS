@@ -215,22 +215,24 @@ export class LightningWallet implements ILightningWallet {
       this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
     );
 
-    const paymentIntent: LightningPaymentIntent = {
-      comment: params.comment,
-      sequenceId: params.sequenceId,
-      intentType: 'payment',
-      signedRequest: {
-        invoice: params.invoice,
-        amountMsat: params.amountMsat,
-        feeLimitMsat: params.feeLimitMsat,
-        feeLimitRatio: params.feeLimitRatio,
+    const paymentIntent: { intent: LightningPaymentIntent } = {
+      intent: {
+        comment: params.comment,
+        sequenceId: params.sequenceId,
+        intentType: 'payment',
+        signedRequest: {
+          invoice: params.invoice,
+          amountMsat: params.amountMsat,
+          feeLimitMsat: params.feeLimitMsat,
+          feeLimitRatio: params.feeLimitRatio,
+        },
+        signature,
       },
-      signature,
     };
 
     const transactionRequestCreate = (await this.wallet.bitgo
       .post(this.wallet.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
-      .send(LightningPaymentIntent.encode(paymentIntent))
+      .send(t.type({ intent: LightningPaymentIntent }).encode(paymentIntent))
       .result()) as TxRequest;
 
     if (transactionRequestCreate.state === 'pendingApproval') {
