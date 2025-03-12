@@ -4,6 +4,7 @@ describe('BitGoJS in the browser', () => {
     expect(BitGoJS).toBeTruthy();
   });
 });
+//hello
 
 describe('Coins', () => {
   it('Should work for all coins', () => {
