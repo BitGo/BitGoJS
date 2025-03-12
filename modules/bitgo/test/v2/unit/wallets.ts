@@ -25,6 +25,7 @@ import {
   BulkWalletShareOptions,
   KeychainWithEncryptedPrv,
   WalletWithKeychains,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
 import { afterEach } from 'mocha';
@@ -575,7 +576,12 @@ describe('V2 Wallets:', function () {
       };
       sandbox.stub(TssUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
 
-      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tsol/wallet/add').reply(200);
+      const walletNock = nock('https://bitgo.fakeurl')
+        .post('/api/v2/tsol/wallet/add', function (params) {
+          assert.equal(params.multisigType, multisigTypes.tss, 'multisigType should default to tss');
+          return true;
+        })
+        .reply(200);
 
       const wallets = new Wallets(bitgo, tsol);
 
@@ -586,10 +592,11 @@ describe('V2 Wallets:', function () {
         passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
       };
 
+      const generateWalletSpy = sandbox.spy(wallets, 'generateWallet');
       const response = await wallets.generateWallet(params);
-
       walletNock.isDone().should.be.true();
-
+      sinon.assert.calledOnce(generateWalletSpy);
+      assert.equal(generateWalletSpy.firstCall?.args[0]?.multisigType, multisigTypes.tss);
       assert.ok(response.encryptedWalletPassphrase);
       assert.ok(response.wallet);
       assert.equal(
