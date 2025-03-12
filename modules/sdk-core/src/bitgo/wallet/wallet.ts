@@ -970,8 +970,15 @@ export class Wallet implements IWallet {
     ]);
     this.bitgo.setRequestTracer(reqId);
     const response = await this.bitgo.post(this.url('/sweepWallet')).send(filteredParams).result();
-
-    // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
+    const transaction = await this.baseCoin.explainTransaction(response);
+    if (transaction?.outputs.length) {
+      const invalidOutputAddress = transaction.outputs.find((output) => output.address !== params.address);
+      if (invalidOutputAddress) {
+        throw new Error(`invalid sweep destination ${invalidOutputAddress.address}, specified ${params.address}`);
+      }
+    } else {
+      throw new Error('invalid transaction, no destination address');
+    }
 
     const keychains = (await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId })) as any;
 
