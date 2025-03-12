@@ -1031,6 +1031,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       expireTime: params.expireTime,
       contractSequenceId: params.txPrebuild.nextContractSequenceId as number,
       sequenceId: params.sequenceId,
+      ...(params.txPrebuild.isBatch ? { isBatch: params.txPrebuild.isBatch } : {}),
     };
 
     return { halfSigned: txParams };
