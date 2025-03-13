@@ -4741,20 +4741,20 @@
     "@sigstore/protobuf-specs" "^0.2.0"
     tuf-js "^1.1.7"
 
-"@silencelaboratories/dkls-wasm-ll-bundler@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.npmjs.org/@silencelaboratories/dkls-wasm-ll-bundler/-/dkls-wasm-ll-bundler-1.1.2.tgz#caf33be078a75e0400dedfd7da60eafac1838047"
-  integrity sha512-Z1AovxUDJf0tuTH56UTrj+RZJ4CEkTae/Oe+klGZJxykUfJ/tpmGVyuuA8WAgbYCdkgAe3rBRu9OsBKOYCfx2Q==
+"@silencelaboratories/dkls-wasm-ll-bundler@1.2.0-pre.4":
+  version "1.2.0-pre.4"
+  resolved "https://registry.npmjs.org/@silencelaboratories/dkls-wasm-ll-bundler/-/dkls-wasm-ll-bundler-1.2.0-pre.4.tgz#a3d7c6d72faf0edddce7313f054bfcc2ed844aa8"
+  integrity sha512-Msug1/s0G3m+nhsmYWPADiDbYt2wMrX7mllETJbbnWpTQBXGyGJpqVjatz7jMqYqNHTY5xtFzrNzn9+RKGkyuQ==
 
-"@silencelaboratories/dkls-wasm-ll-node@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.npmjs.org/@silencelaboratories/dkls-wasm-ll-node/-/dkls-wasm-ll-node-1.1.2.tgz#595c6da10208d0638e72db323da87a4a42dd2890"
-  integrity sha512-ZGnE0p/GQRIMHJzbPtSy/3deUmD340NbWrBwpU0NyqJW4EKvh9xxv5ZFnJApq1YboHxHTaz2aP03eu+ZPZShpQ==
+"@silencelaboratories/dkls-wasm-ll-node@1.2.0-pre.4":
+  version "1.2.0-pre.4"
+  resolved "https://registry.npmjs.org/@silencelaboratories/dkls-wasm-ll-node/-/dkls-wasm-ll-node-1.2.0-pre.4.tgz#0f8f9a802d564bb2b36561ac770493d63af146e1"
+  integrity sha512-KWHR/6SCa67mrYVPbhNjzoYEKadhQ5cL3UPI4UgtVZEk/Fc5yB0AaYUX3DuWHskxQTvj0mF2shYcZe9OubkvnQ==
 
-"@silencelaboratories/dkls-wasm-ll-web@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.npmjs.org/@silencelaboratories/dkls-wasm-ll-web/-/dkls-wasm-ll-web-1.1.2.tgz#2ab1fe0bb462601886c42fd33a722f00807aa2f5"
-  integrity sha512-GFdQdeTAK5RQ6SP+RVenjm/cSAXYek8+hMOL6Uw6uqsoGhJzveJHMEKEEbitGDpBjoN/admwxIKcv0wpIo022Q==
+"@silencelaboratories/dkls-wasm-ll-web@1.2.0-pre.4":
+  version "1.2.0-pre.4"
+  resolved "https://registry.npmjs.org/@silencelaboratories/dkls-wasm-ll-web/-/dkls-wasm-ll-web-1.2.0-pre.4.tgz#a6ca7f951c0c2cc682c7390ae7ba12c1b055fcad"
+  integrity sha512-RDyGVX6nyABPchnucl4IOV78LWzXBV9QucRiitRNONo3pfO4z375T00lI/wPiId13wXb8YNkB1Ej90hBNUK25A==
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"

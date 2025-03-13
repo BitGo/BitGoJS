@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "@noble/curves": "1.8.1",
-    "@silencelaboratories/dkls-wasm-ll-node": "1.1.2",
-    "@silencelaboratories/dkls-wasm-ll-web": "1.1.2",
+    "@silencelaboratories/dkls-wasm-ll-node": "1.2.0-pre.4",
+    "@silencelaboratories/dkls-wasm-ll-web": "1.2.0-pre.4",
     "@types/superagent": "4.1.15",
     "@wasmer/wasi": "^1.2.2",
     "bigint-crypto-utils": "3.1.4",
@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@bitgo/sdk-opensslbytes": "^2.0.0",
-    "@silencelaboratories/dkls-wasm-ll-bundler": "1.1.2",
+    "@silencelaboratories/dkls-wasm-ll-bundler": "1.2.0-pre.4",
     "@types/lodash": "^4.14.151",
     "@types/node": "^20.11.19",
     "@types/sjcl": "1.0.34",
@@ -61,7 +61,7 @@
     "sjcl": "1.0.8"
   },
   "peerDependencies": {
-    "@silencelaboratories/dkls-wasm-ll-bundler": "1.1.2"
+    "@silencelaboratories/dkls-wasm-ll-bundler": "1.2.0-pre.4"
   },
   "peerDependenciesMeta": {
     "@silencelaboratories/dkls-wasm-ll-bundler": {
