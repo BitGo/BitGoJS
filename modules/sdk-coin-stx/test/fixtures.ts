@@ -30,3 +30,34 @@ export const unsignedTxExplainedTransfer = {
   recipient: 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0',
   sender: 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
 };
+
+export const txForExplainFungibleTokenTransfer =
+  '808000000004012fe507c09dbb23c3b7e5d166c81fc4b87692510b000000000000000000000000000000b4000000030200ffa41419c088011baffa87d0113257dbf2033e19ffd5098e9c3e1d8bc606f5e97519688630d57154fcad34967ea04246fe5127203c9971e0b1426cdbd6c132d502004fed6b5699e3211629ad182bf53392374a72e692eb4afe770ffa1fd715661c5706ec16854d14028c49d54806b34b89f108f76d39f2a7675589a94a179bba0ed100038e3c4529395611be9abf6fa3b6987e81d402385e3d605a073f42f407565a4a3d0002030200000000021a1500a1c42f0c11bfe3893f479af18904677685be0d747369703664702d746f6b656e087472616e7366657200000004051a1500a1c42f0c11bfe3893f479af18904677685be0515ab50cac953ac55edc14e2b236854b1ead863fece0100000000000000000000000000002710020000000131';
+
+export const fungibleTokenTransferTx = {
+  id: 'f2ea2261c3d66b87ffe67dedbf36e8ab00762bd6fa8d8fafdf6299c56deb1ebf',
+  fee: '180',
+  contractAddress: 'STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH',
+  contractName: 'tsip6dp-token',
+  functionName: 'transfer',
+  functionArgs: [
+    {
+      type: 5,
+      address: {
+        type: 0,
+        version: 26,
+        hash160: '1500a1c42f0c11bfe3893f479af18904677685be',
+      },
+    },
+    {
+      type: 5,
+      address: {
+        type: 0,
+        version: 21,
+        hash160: 'ab50cac953ac55edc14e2b236854b1ead863fece',
+      },
+    },
+    { type: 1, value: '10000' },
+    { type: 2 },
+  ],
+};
