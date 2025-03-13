@@ -559,5 +559,47 @@ describe('Bitgo Express', function () {
       (() => expressApp(args)).should.not.throw();
       readValidStub.restore();
     });
+
+    it('should set keepAliveTimeout and headersTimeout if specified in config for HTTP server', async function () {
+      const createServerStub = sinon.stub(http, 'createServer').callsFake(() => {
+        return { listen: sinon.stub(), setTimeout: sinon.stub() } as unknown as http.Server;
+      });
+
+      const args: any = {
+        env: 'test',
+        bind: 'localhost',
+        keepAliveTimeout: 5000,
+        headersTimeout: 10000,
+      };
+
+      const server = await createServer(args, null as any);
+
+      server.keepAliveTimeout.should.equal(args.keepAliveTimeout);
+      server.headersTimeout.should.equal(args.headersTimeout);
+
+      createServerStub.restore();
+    });
+
+    it('should set keepAliveTimeout and headersTimeout if specified in config for HTTPS server', async function () {
+      const createServerStub = sinon.stub(https, 'createServer').callsFake(() => {
+        return { listen: sinon.stub(), setTimeout: sinon.stub() } as unknown as https.Server;
+      });
+
+      const args: any = {
+        env: 'test',
+        bind: 'localhost',
+        sslKey: 'ssl-key',
+        sslCert: 'ssl-cert',
+        keepAliveTimeout: 5000,
+        headersTimeout: 10000,
+      };
+
+      const server = await createServer(args, null as any);
+
+      server.keepAliveTimeout.should.equal(args.keepAliveTimeout);
+      server.headersTimeout.should.equal(args.headersTimeout);
+
+      createServerStub.restore();
+    });
   });
 });
