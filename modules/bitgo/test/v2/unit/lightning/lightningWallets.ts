@@ -72,7 +72,7 @@ describe('Lightning wallets', function () {
           passphrase: 'pass123',
           enterprise: 'ent123',
           passcodeEncryptionCode: 'code123',
-          type: 'custodial',
+          subType: 'lightningCustody',
         })
         .should.be.rejectedWith(
           "error(s) parsing generate lightning wallet request params: Invalid value 'undefined' supplied to GenerateLightningWalletOptions.label, expected string."
@@ -83,7 +83,7 @@ describe('Lightning wallets', function () {
           label: 'my ln wallet',
           enterprise: 'ent123',
           passcodeEncryptionCode: 'code123',
-          type: 'custodial',
+          subType: 'lightningCustody',
         })
         .should.be.rejectedWith(
           "error(s) parsing generate lightning wallet request params: Invalid value 'undefined' supplied to GenerateLightningWalletOptions.passphrase, expected string."
@@ -94,7 +94,7 @@ describe('Lightning wallets', function () {
           label: 'my ln wallet',
           passphrase: 'pass123',
           passcodeEncryptionCode: 'code123',
-          type: 'custodial',
+          subType: 'lightningCustody',
         })
         .should.be.rejectedWith(
           "error(s) parsing generate lightning wallet request params: Invalid value 'undefined' supplied to GenerateLightningWalletOptions.enterprise, expected string."
@@ -105,7 +105,7 @@ describe('Lightning wallets', function () {
           label: 'my ln wallet',
           passphrase: 'pass123',
           enterprise: 'ent123',
-          type: 'custodial',
+          subType: 'lightningCustody',
         })
         .should.be.rejectedWith(
           "error(s) parsing generate lightning wallet request params: Invalid value 'undefined' supplied to GenerateLightningWalletOptions.passcodeEncryptionCode, expected string."
@@ -117,7 +117,7 @@ describe('Lightning wallets', function () {
           passphrase: 'pass123',
           enterprise: 'ent123',
           passcodeEncryptionCode: 'code123',
-          type: 'custodial',
+          subType: 'lightningCustody',
         })
         .should.be.rejectedWith(
           "error(s) parsing generate lightning wallet request params: Invalid value '123' supplied to GenerateLightningWalletOptions.label, expected string."
@@ -129,7 +129,7 @@ describe('Lightning wallets', function () {
           passphrase: 123 as any,
           enterprise: 'ent123',
           passcodeEncryptionCode: 'code123',
-          type: 'custodial',
+          subType: 'lightningCustody',
         })
         .should.be.rejectedWith(
           "error(s) parsing generate lightning wallet request params: Invalid value '123' supplied to GenerateLightningWalletOptions.passphrase, expected string."
@@ -141,7 +141,7 @@ describe('Lightning wallets', function () {
           passphrase: 'pass123',
           enterprise: 123 as any,
           passcodeEncryptionCode: 'code123',
-          type: 'custodial',
+          subType: 'lightningCustody',
         })
         .should.be.rejectedWith(
           "error(s) parsing generate lightning wallet request params: Invalid value '123' supplied to GenerateLightningWalletOptions.enterprise, expected string."
@@ -153,34 +153,21 @@ describe('Lightning wallets', function () {
           passphrase: 'pass123',
           enterprise: 'ent123',
           passcodeEncryptionCode: 123 as any,
-          type: 'custodial',
+          subType: 'lightningCustody',
         })
         .should.be.rejectedWith(
           "error(s) parsing generate lightning wallet request params: Invalid value '123' supplied to GenerateLightningWalletOptions.passcodeEncryptionCode, expected string."
         );
-
-      await wallets
-        .generateWallet({
-          label: 'my ln wallet',
-          passphrase: 'pass123',
-          enterprise: 'ent123',
-          passcodeEncryptionCode: 'code123',
-          type: 'cold',
-        })
-        .should.be.rejectedWith(
-          'error(s) parsing generate lightning wallet request params: Invalid value \'"cold"\' supplied to GenerateLightningWalletOptions.type.0, expected "custodial".\n' +
-            'Invalid value \'"cold"\' supplied to GenerateLightningWalletOptions.type.1, expected "hot".'
-        );
     });
 
-    for (const type of ['hot', 'custodial'] as const) {
-      it(`should generate ${type} lightning wallet`, async function () {
+    for (const subType of ['lightningCustody', 'lightningSelfCustody'] as const) {
+      it(`should generate ${subType} lightning wallet`, async function () {
         const params: GenerateLightningWalletOptions = {
           label: 'my ln wallet',
           passphrase: 'pass123',
           enterprise: 'ent123',
           passcodeEncryptionCode: 'code123',
-          type,
+          subType: subType as 'lightningCustody' | 'lightningSelfCustody',
         };
 
         const validateKeyRequest = (body) => {
@@ -203,7 +190,8 @@ describe('Lightning wallets', function () {
             body.label === 'my ln wallet' &&
             body.m === 1 &&
             body.n === 1 &&
-            body.type === type &&
+            body.type === 'hot' &&
+            body.subType === subType &&
             body.enterprise === 'ent123' &&
             Array.isArray(body.keys) &&
             body.keys.length === 1 &&
@@ -247,7 +235,12 @@ describe('Lightning wallets', function () {
     let wallet: LightningWallet;
     beforeEach(function () {
       wallet = getLightningWallet(
-        new Wallet(bitgo, basecoin, { id: 'walletId', coin: 'tlnbtc', coinSpecific: { keys: ['def', 'ghi'] } })
+        new Wallet(bitgo, basecoin, {
+          id: 'walletId',
+          coin: 'tlnbtc',
+          subType: 'lightningCustody',
+          coinSpecific: { keys: ['def', 'ghi'] },
+        })
       ) as LightningWallet;
     });
 
@@ -464,6 +457,7 @@ describe('Lightning wallets', function () {
       coin: coinName,
       keys: ['abc'],
       coinSpecific: { keys: ['def', 'ghi'] },
+      subType: 'lightningCustody',
     };
 
     const userKeyData = {
@@ -576,6 +570,7 @@ describe('Lightning wallets', function () {
       coin: coinName,
       keys: ['abc'],
       coinSpecific: { keys: ['def', 'ghi'] },
+      subType: 'lightningSelfCustody',
     };
 
     const watchOnlyAccounts = {

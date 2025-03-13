@@ -70,10 +70,10 @@ export async function updateWalletCoinSpecific(
   params: UpdateLightningWalletClientRequest
 ): Promise<unknown> {
   if (!isLightningCoinName(wallet.coin())) {
-    throw new Error(`cant update lightning wallet coin specific for coin ${wallet.type()}`);
+    throw new Error(`cant update lightning wallet coin specific for coin ${wallet.subType()}`);
   }
-  if (wallet.type() !== 'hot') {
-    throw new Error(`cant update lightning wallet coin specific for wallet type ${wallet.type()}`);
+  if (wallet.subType() !== 'lightningSelfCustody') {
+    throw new Error(`cant update lightning wallet coin specific for wallet type ${wallet.subType()}`);
   }
 
   sdkcore.decodeOrElse(
@@ -112,8 +112,8 @@ export interface ISelfCustodialLightningWallet extends ILightningWallet {
 export class SelfCustodialLightningWallet extends LightningWallet implements ISelfCustodialLightningWallet {
   constructor(wallet: sdkcore.IWallet) {
     super(wallet);
-    if (wallet.type() !== 'hot') {
-      throw new Error(`Invalid lightning wallet type for self custodial lightning: ${wallet.type()}`);
+    if (wallet.subType() !== 'lightningSelfCustody') {
+      throw new Error(`Invalid lightning wallet type for self custodial lightning: ${wallet.subType()}`);
     }
   }
 

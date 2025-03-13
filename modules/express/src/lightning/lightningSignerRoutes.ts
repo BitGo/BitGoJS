@@ -85,7 +85,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
   );
 
   const wallet = await coin.wallets().get({ id: walletId });
-  if (wallet.type() !== 'hot') {
+  if (wallet.subType() !== 'lightningSelfCustody') {
     throw new ApiResponseError(`not a self custodial lighting wallet ${walletId}`, 400);
   }
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
@@ -139,7 +139,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
   );
 
   const wallet = await coin.wallets().get({ id: walletId });
-  if (wallet.type() !== 'hot') {
+  if (wallet.subType() !== 'lightningSelfCustody') {
     throw new ApiResponseError(`not a self custodial lighting wallet ${walletId}`, 400);
   }
   const watchOnlyIp = wallet.coinSpecific()?.watchOnlyExternalIp;

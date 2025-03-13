@@ -11,12 +11,12 @@ export function getLightningWallet(wallet: sdkcore.IWallet): ILightningWallet {
     throw new Error(`invalid coin for lightning wallet: ${wallet.baseCoin.getFamily()}`);
   }
 
-  switch (wallet.type()) {
-    case 'custodial':
+  switch (wallet.subType()) {
+    case 'lightningCustody':
       return new CustodialLightningWallet(wallet);
-    case 'hot':
+    case 'lightningSelfCustody':
       return new SelfCustodialLightningWallet(wallet);
     default:
-      throw new Error(`invalid wallet type ${wallet.type()} for lightning coin`);
+      throw new Error(`invalid wallet type ${wallet.subType()} for lightning coin`);
   }
 }
