@@ -153,7 +153,16 @@ function isTLS(config: Config): config is Config & { keyPath: string; crtPath: s
  * Create either a HTTP or HTTPS server
  */
 export async function createServer(config: Config, app: express.Application): Promise<https.Server | http.Server> {
-  return isTLS(config) ? await createHttpsServer(app, config) : createHttpServer(app);
+  const server = isTLS(config) ? await createHttpsServer(app, config) : createHttpServer(app);
+
+  // Set keepAliveTimeout and headersTimeout if specified in config
+  if (config.keepAliveTimeout !== undefined) {
+    server.keepAliveTimeout = config.keepAliveTimeout;
+  }
+  if (config.headersTimeout !== undefined) {
+    server.headersTimeout = config.headersTimeout;
+  }
+  return server;
 }
 
 /**
