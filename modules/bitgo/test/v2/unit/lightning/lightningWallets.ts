@@ -358,6 +358,17 @@ describe('Lightning wallets', function () {
         ],
       };
 
+      const transferData = {
+        id: 'fake_id',
+        coin: 'tlnbtc',
+        state: 'confirmed',
+        txid: lndResponse.paymentHash,
+      };
+
+      const getTransferNock = nock(bgUrl)
+        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${lndResponse.paymentHash}`)
+        .reply(200, transferData);
+
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
@@ -398,6 +409,7 @@ describe('Lightning wallets', function () {
         finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.paymentPreimage
       );
 
+      getTransferNock.done();
       createTxRequestNock.done();
       sendTxRequestNock.done();
       userAuthKeyNock.done();
