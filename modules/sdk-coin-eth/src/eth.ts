@@ -89,7 +89,7 @@ export class Eth extends AbstractEthLikeNewCoins {
 
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
-    return multisigTypes.onchain;
+    return multisigTypes.tss;
   }
 
   getMPCAlgorithm(): MPCAlgorithm {

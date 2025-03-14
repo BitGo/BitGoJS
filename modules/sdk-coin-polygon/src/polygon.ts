@@ -56,7 +56,7 @@ export class Polygon extends AbstractEthLikeNewCoins {
 
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
-    return multisigTypes.onchain;
+    return multisigTypes.tss;
   }
 
   /** @inheritDoc */
