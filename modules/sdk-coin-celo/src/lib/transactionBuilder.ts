@@ -1,9 +1,8 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
-import { addHexPrefix } from 'ethereumjs-util';
+import { Transaction } from '@bitgo/abstract-eth';
 import { TransactionBuilder as EthTransactionBuilder, TxData, walletSimpleConstructor } from '@bitgo/sdk-coin-eth';
 import { BuildTransactionError, TransactionType, StakingOperationTypes } from '@bitgo/sdk-core';
-import { Transaction } from './transaction';
 import { StakingBuilder } from './stakingBuilder';
 import { StakingCall } from './stakingCall';
 import { getCommon, walletSimpleByteCode } from './utils';
@@ -49,7 +48,7 @@ export class TransactionBuilder extends EthTransactionBuilder {
       super.loadBuilderInput(tx.toJson());
     } else {
       const txData = JSON.parse(rawTransaction);
-      tx = new Transaction(this._coinConfig, this._common, txData);
+      tx = new Transaction(this._coinConfig, txData);
     }
     return tx;
   }
@@ -221,15 +220,6 @@ export class TransactionBuilder extends EthTransactionBuilder {
     data.to = stake.address;
 
     return data;
-  }
-
-  /**
-   * Get the final v value. Final v is described in EIP-155.
-   *
-   * @protected for internal use when the enableFinalVField flag is true.
-   */
-  protected getFinalV(): string {
-    return addHexPrefix(this._common.chainIdBN().toString(16));
   }
 
   /**
