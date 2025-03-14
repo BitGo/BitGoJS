@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { ApiResponseError } from '../errors';
-import { CreateInvoiceBody, getLightningWallet, SubmitPaymentParams } from '@bitgo/abstract-lightning';
+import { CreateInvoiceBody, getLightningWallet, Invoice, SubmitPaymentParams } from '@bitgo/abstract-lightning';
 import { decodeOrElse } from '@bitgo/sdk-core';
 
 export async function handleCreateLightningInvoice(req: express.Request): Promise<any> {
@@ -14,7 +14,7 @@ export async function handleCreateLightningInvoice(req: express.Request): Promis
   const wallet = await coin.wallets().get({ id: req.params.id });
   const lightningWallet = getLightningWallet(wallet);
 
-  return await lightningWallet.createInvoice(params);
+  return Invoice.encode(await lightningWallet.createInvoice(params));
 }
 
 export async function handlePayLightningInvoice(req: express.Request): Promise<any> {

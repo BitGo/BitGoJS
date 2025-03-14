@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import * as should from 'should';
 import * as express from 'express';
 import { handleCreateLightningInvoice, handlePayLightningInvoice } from '../../../src/lightning/lightningInvoiceRoutes';
-import { PayInvoiceResponse } from '@bitgo/abstract-lightning';
+import { Invoice, PayInvoiceResponse } from '@bitgo/abstract-lightning';
 import { BitGo } from 'bitgo';
 
 describe('Lightning Invoice Routes', () => {
@@ -31,13 +31,13 @@ describe('Lightning Invoice Routes', () => {
       };
 
       const expectedResponse = {
-        value: 10000,
+        valueMsat: 10000n,
         memo: 'test invoice',
         paymentHash: 'abc123',
         invoice: 'lntb100u1p3h2jk3pp5yndyvx4zmv...',
         walletId: 'testWalletId',
-        status: 'open',
-        expiresAt: '2025-02-21T10:00:00.000Z',
+        status: 'open' as const,
+        expiresAt: new Date('2025-02-21T10:00:00.000Z'),
       };
 
       const createInvoiceSpy = sinon.stub().resolves(expectedResponse);
@@ -68,7 +68,7 @@ describe('Lightning Invoice Routes', () => {
 
       const result = await lightningRoutes.handleCreateLightningInvoice(req);
 
-      should(result).deepEqual(expectedResponse);
+      should(result).deepEqual(Invoice.encode(expectedResponse));
       should(createInvoiceSpy).be.calledOnce();
       const [firstArg] = createInvoiceSpy.getCall(0).args;
 
