@@ -854,7 +854,19 @@ export interface IWallet {
   removeWebhook(params?: ModifyWebhookOptions): Promise<any>;
   getEncryptedUserKeychain(): Promise<KeychainWithEncryptedPrv>;
   getPrv(params?: GetPrvOptions): Promise<any>;
+  prepareSharedKeychain(
+    walletPassphrase: string | undefined,
+    pubkey: string,
+    path: string,
+    keychain?: KeychainWithEncryptedPrv
+  ): Promise<SharedKeyChain>;
+  prepareCreateShareOptions(
+    params: ShareWalletOptions,
+    sharing: { userId: string },
+    sharedKeychain: KeychainWithEncryptedPrv | undefined
+  ): CreateShareOptions;
   createShare(params?: CreateShareOptions): Promise<any>;
+  validateShareWalletOptions(params: ShareWalletOptions): Promise<{ needsKeychain: boolean; sharing: any }>;
   shareWallet(params?: ShareWalletOptions): Promise<any>;
   createBulkKeyShares(params?: BulkCreateShareOption[]): Promise<CreateBulkWalletShareListResponse>;
   createBulkWalletShare(params?: BulkWalletShareOptions): Promise<CreateBulkWalletShareListResponse>;

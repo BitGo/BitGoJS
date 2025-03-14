@@ -1612,12 +1612,13 @@ export class Wallet implements IWallet {
   async prepareSharedKeychain(
     walletPassphrase: string | undefined,
     pubkey: string,
-    path: string
+    path: string,
+    keychain?: KeychainWithEncryptedPrv
   ): Promise<SharedKeyChain> {
     let sharedKeychain: SharedKeyChain = {};
 
     try {
-      const keychain = await this.getEncryptedUserKeychain();
+      keychain = keychain ?? (await this.getEncryptedUserKeychain());
 
       // Decrypt the user key with a passphrase
       if (keychain.encryptedPrv) {
@@ -1664,12 +1665,7 @@ export class Wallet implements IWallet {
     return sharedKeychain;
   }
 
-  /**
-   * Share this wallet with another BitGo user.
-   * @param params
-   * @returns {*}
-   */
-  async shareWallet(params: ShareWalletOptions = {}): Promise<any> {
+  async validateShareWalletOptions(params: ShareWalletOptions): Promise<{ needsKeychain: boolean; sharing: any }> {
     common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message']);
     if (params.reshare !== undefined && !_.isBoolean(params.reshare)) {
       throw new Error('Expected reshare to be a boolean.');
@@ -1689,12 +1685,15 @@ export class Wallet implements IWallet {
     }
 
     const sharing = (await this.bitgo.getSharingKey({ email: params.email.toLowerCase() })) as any;
-    let sharedKeychain;
-    if (needsKeychain) {
-      sharedKeychain = await this.prepareSharedKeychain(params.walletPassphrase, sharing.pubkey, sharing.path);
-    }
+    return { needsKeychain: !!needsKeychain, sharing };
+  }
 
-    const options: CreateShareOptions = {
+  prepareCreateShareOptions(
+    params: ShareWalletOptions,
+    sharing: { userId: string },
+    sharedKeychain: KeychainWithEncryptedPrv | undefined
+  ): CreateShareOptions {
+    return {
       user: sharing.userId,
       permissions: params.permissions,
       reshare: params.reshare,
@@ -1703,8 +1702,21 @@ export class Wallet implements IWallet {
       skipKeychain: Object.keys(sharedKeychain ?? {}).length === 0,
       keychain: Object.keys(sharedKeychain ?? {}).length === 0 ? undefined : sharedKeychain,
     };
+  }
 
-    return await this.createShare(options);
+  /**
+   * Share this wallet with another BitGo user.
+   * @param params
+   * @returns {*}
+   */
+  async shareWallet(params: ShareWalletOptions = {}): Promise<any> {
+    const { needsKeychain, sharing } = await this.validateShareWalletOptions(params);
+    let sharedKeychain;
+    if (needsKeychain) {
+      sharedKeychain = await this.prepareSharedKeychain(params.walletPassphrase, sharing.pubkey, sharing.path);
+    }
+
+    return await this.createShare(this.prepareCreateShareOptions(params, sharing, sharedKeychain));
   }
 
   /**

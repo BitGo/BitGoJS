@@ -8,6 +8,7 @@ import {
   commonTssMethods,
   TxRequestState,
   decodeOrElse,
+  ShareWalletOptions,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 import { createMessageSignature, unwrapLightningCoinSpecific } from '../lightning';
@@ -190,6 +191,15 @@ export interface ILightningWallet {
    * @returns {Promise<Transaction[]>} List of transactions
    */
   listTransactions(params: TransactionQuery): Promise<Transaction[]>;
+
+  /**
+   * Shares the wallet with another user. Since we are sharing different keys in
+   * different places, it needs to be done through here. For custody wallets,
+   * we only need to share the userAuthKey. For self custody wallets, we need to
+   * share more keys depending on the sharing permissions
+   * @param params {ShareWalletOptions}
+   */
+  shareWallet(params?: ShareWalletOptions): Promise<any>;
 }
 
 export class LightningWallet implements ILightningWallet {
@@ -333,5 +343,21 @@ export class LightningWallet implements ILightningWallet {
     return decodeOrElse(t.array(Transaction).name, t.array(Transaction), response, (error) => {
       throw new Error(`Invalid transaction list response: ${error}`);
     });
+  }
+
+  async shareWallet(params: ShareWalletOptions = {}): Promise<any> {
+    const { needsKeychain, sharing } = await this.wallet.validateShareWalletOptions(params);
+    let sharedKeychain;
+    if (needsKeychain) {
+      const { userAuthKey } = await getLightningAuthKeychains(this.wallet);
+      sharedKeychain = await this.wallet.prepareSharedKeychain(
+        params.walletPassphrase,
+        sharing.pubkey,
+        sharing.path,
+        userAuthKey as any
+      );
+    }
+    console.log(sharedKeychain);
+    return await this.wallet.createShare(this.wallet.prepareCreateShareOptions(params, sharing, sharedKeychain));
   }
 }
