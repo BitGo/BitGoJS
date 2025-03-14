@@ -1,9 +1,6 @@
 import * as crypto from 'crypto';
 import 'should';
 
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
-
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { bip32 } from '../../../../src/bip32util';
 
@@ -61,14 +58,11 @@ describe('XRP:', function () {
       });
   });
 
-  it(
-    'should create an XRP address',
-    co(function* () {
-      const wallet = yield basecoin.wallets().get({ id: someWalletId });
-      const addrObj = yield wallet.createAddress();
-      addrObj.should.have.property('address');
-      addrObj.should.have.property('wallet');
-      addrObj.should.have.property('keychains');
-    })
-  );
+  it('should create an XRP address', async function () {
+    const wallet = await basecoin.wallets().get({ id: someWalletId });
+    const addrObj = await wallet.createAddress();
+    addrObj.should.have.property('address');
+    addrObj.should.have.property('wallet');
+    addrObj.should.have.property('keychains');
+  });
 });
