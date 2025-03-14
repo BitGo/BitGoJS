@@ -26,17 +26,17 @@ export const WALRUS_PROD_CONFIG = {
   ...WALRUS_TESTNET_CONFIG,
 
   WALRUS_SYSTEM_OBJECT: {
-    objectId: 'TODO PROD CONFIG',
+    objectId: '0x2134d52768ea07e8c43570ef975eb3e4c27a39fa6396bef985b5abc58d03ddd2',
     initialSharedVersion: 1,
     mutable: true,
   } as SharedObjectRef,
 
   WALRUS_STAKING_OBJECT: {
-    objectId: 'TODO PROD CONFIG',
-    initialSharedVersion: 0, // TODO PROD CONFIG
+    objectId: '0x10b9d30c28448939ce6c4d6c6e0ffce4a7f8a4ada8248bdad09ef8b70e4a3904',
+    initialSharedVersion: 317862159,
     mutable: true,
   } as SharedObjectRef,
 
-  WALRUS_PKG_ID: 'TODO PROD CONFIG',
-  WAL_PKG_ID: 'TODO PROD CONFIG',
+  WALRUS_PKG_ID: '0xfdc88f7d7cf30afab2f82e8380d11ee8f70efb90e863d1de8616fae1bb09ea77',
+  WAL_PKG_ID: '0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59',
 };
