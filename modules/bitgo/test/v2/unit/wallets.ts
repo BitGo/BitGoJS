@@ -1051,6 +1051,62 @@ describe('V2 Wallets:', function () {
         );
       });
 
+      it(`should create a new ${coin} TSS MPCv2 hot wallet without passing multisig type`, async function () {
+        const testCoin = bitgo.coin(coin);
+        const stubbedKeychainsTriplet: KeychainsTriplet = {
+          userKeychain: {
+            id: '1',
+            commonKeychain: 'userPub',
+            type: 'tss',
+            source: 'user',
+          },
+          backupKeychain: {
+            id: '2',
+            commonKeychain: 'userPub',
+            type: 'tss',
+            source: 'backup',
+          },
+          bitgoKeychain: {
+            id: '3',
+            commonKeychain: 'userPub',
+            type: 'tss',
+            source: 'bitgo',
+          },
+        };
+        const stubCreateKeychains = sandbox
+          .stub(ECDSAUtils.EcdsaMPCv2Utils.prototype, 'createKeychains')
+          .resolves(stubbedKeychainsTriplet);
+
+        const walletNock = nock('https://bitgo.fakeurl')
+          .post(`/api/v2/${coin}/wallet/add`, function (body) {
+            body.multisigType.should.equal(multisigTypes.tss);
+            return true;
+          })
+          .reply(200);
+
+        const wallets = new Wallets(bitgo, testCoin);
+
+        const params = {
+          label: 'tss wallet',
+          passphrase: 'tss password',
+          enterprise: 'enterprise',
+          passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+          walletVersion: 3,
+        };
+
+        const response = await wallets.generateWallet(params);
+
+        walletNock.isDone().should.be.true();
+        stubCreateKeychains.calledOnce.should.be.true();
+
+        assert.ok(response.encryptedWalletPassphrase);
+        assert.ok(response.wallet);
+        assert.equal(
+          bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
+          params.passphrase
+        );
+      });
+
       it(`should create a new ${coin} TSS MPCv2 cold wallet`, async function () {
         const testCoin = bitgo.coin(coin);
         const bitgoKeyId = 'key123';
