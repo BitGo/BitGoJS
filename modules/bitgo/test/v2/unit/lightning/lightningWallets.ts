@@ -358,6 +358,17 @@ describe('Lightning wallets', function () {
         ],
       };
 
+      const transferData = {
+        id: lndResponse.paymentHash,
+        coin: 'tlnbtc',
+        type: 'lightning_payment',
+        state: 'confirmed',
+        amount: '1000',
+        txid: lndResponse.paymentHash,
+        createdAt: new Date().toISOString(),
+        confirmedAt: new Date().toISOString(),
+      };
+
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
@@ -369,9 +380,14 @@ describe('Lightning wallets', function () {
       const userAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
         .reply(200, userAuthKey);
+
       const nodeAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
+
+      const getTransferNock = nock(bgUrl)
+        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${lndResponse.paymentHash}`)
+        .reply(200, transferData);
 
       const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
@@ -398,10 +414,13 @@ describe('Lightning wallets', function () {
         finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.paymentPreimage
       );
 
+      assert.deepStrictEqual(response.transfer, transferData);
+
       createTxRequestNock.done();
       sendTxRequestNock.done();
       userAuthKeyNock.done();
       nodeAuthKeyNock.done();
+      getTransferNock.done();
     });
 
     it('should handle pending approval when paying invoice', async function () {

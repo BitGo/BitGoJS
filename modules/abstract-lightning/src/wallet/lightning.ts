@@ -33,6 +33,7 @@ export type PayInvoiceResponse = {
   pendingApproval?: PendingApprovalData;
   // Absent if there's a pending approval
   paymentStatus?: LndCreatePaymentResponse;
+  transfer?: any;
 };
 
 /**
@@ -254,6 +255,10 @@ export class LightningWallet implements ILightningWallet {
     );
 
     const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
+    let transfer;
+    if (coinSpecific && coinSpecific.paymentHash && typeof coinSpecific.paymentHash === 'string') {
+      transfer = await this.wallet.getTransfer({ id: coinSpecific.paymentHash });
+    }
 
     return {
       txRequestId: transactionRequestCreate.txRequestId,
@@ -261,6 +266,7 @@ export class LightningWallet implements ILightningWallet {
       paymentStatus: coinSpecific
         ? t.exact(LndCreatePaymentResponse).encode(coinSpecific as LndCreatePaymentResponse)
         : undefined,
+      transfer,
     };
   }
 
