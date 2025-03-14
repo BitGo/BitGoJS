@@ -1,7 +1,7 @@
 import * as sinon from 'sinon';
 import * as should from 'should';
 import * as express from 'express';
-import { handleCreateLightningInvoice, handlePayLightningInvoice } from '../../../src/lightning/lightningInvoiceRoutes';
+import { handlePayLightningInvoice } from '../../../src/lightning/lightningInvoiceRoutes';
 import { PayInvoiceResponse } from '@bitgo/abstract-lightning';
 import { BitGo } from 'bitgo';
 
@@ -20,79 +20,6 @@ describe('Lightning Invoice Routes', () => {
 
   afterEach(() => {
     sinon.restore();
-  });
-
-  describe('Create Lightning Invoice', () => {
-    it('should successfully create a lightning invoice', async () => {
-      const inputParams = {
-        valueMsat: '10000',
-        memo: 'test invoice',
-        expiry: 3600,
-      };
-
-      const expectedResponse = {
-        value: 10000,
-        memo: 'test invoice',
-        paymentHash: 'abc123',
-        invoice: 'lntb100u1p3h2jk3pp5yndyvx4zmv...',
-        walletId: 'testWalletId',
-        status: 'open',
-        expiresAt: '2025-02-21T10:00:00.000Z',
-      };
-
-      const createInvoiceSpy = sinon.stub().resolves(expectedResponse);
-      const mockLightningWallet = {
-        createInvoice: createInvoiceSpy,
-      };
-
-      // Mock the module import
-      const proxyquire = require('proxyquire');
-      const lightningRoutes = proxyquire('../../../src/lightning/lightningInvoiceRoutes', {
-        '@bitgo/abstract-lightning': {
-          getLightningWallet: () => mockLightningWallet,
-        },
-      });
-
-      const walletStub = {};
-      const coinStub = {
-        wallets: () => ({ get: sinon.stub().resolves(walletStub) }),
-      };
-
-      const stubBitgo = sinon.createStubInstance(BitGo as any, { coin: coinStub });
-
-      const req = mockRequestObject({
-        params: { id: 'testWalletId', coin },
-        body: inputParams,
-        bitgo: stubBitgo,
-      });
-
-      const result = await lightningRoutes.handleCreateLightningInvoice(req);
-
-      should(result).deepEqual(expectedResponse);
-      should(createInvoiceSpy).be.calledOnce();
-      const [firstArg] = createInvoiceSpy.getCall(0).args;
-
-      should(firstArg).have.property('valueMsat', BigInt(10000));
-      should(firstArg).have.property('memo', 'test invoice');
-      should(firstArg).have.property('expiry', 3600);
-    });
-
-    it('should fail when valueMsat is missing from request', async () => {
-      const inputParams = {
-        memo: 'test invoice',
-        expiry: 3600,
-      };
-
-      const req = mockRequestObject({
-        params: { id: 'testWalletId', coin },
-        body: inputParams,
-      });
-      req.bitgo = bitgo;
-
-      await should(handleCreateLightningInvoice(req)).be.rejectedWith(
-        /^Invalid request body to create lightning invoice/
-      );
-    });
   });
 
   describe('Pay Lightning Invoice', () => {
