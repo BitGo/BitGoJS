@@ -28,11 +28,39 @@ import {
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
 export type PayInvoiceResponse = {
+  /**
+   * Unique identifier for the payment request submitted to BitGo.
+   */
   txRequestId: string;
+
+  /**
+   * Status of the payment request submission to BitGo.
+   * - `'delivered'`: Successfully received by BitGo, but may or may not have been sent to the Lightning Network yet.
+   * - For the actual payment status, refer to `paymentStatus` and track `transfer`.
+   */
   txRequestState: TxRequestState;
+
+  /**
+   * Pending approval details, if applicable.
+   * - If present, the payment has not been initiated yet.
+   */
   pendingApproval?: PendingApprovalData;
-  // Absent if there's a pending approval
+
+  /**
+   * Current snapshot of payment status (if available).
+   * - **`'in_flight'`**: Payment is in progress.
+   * - **`'settled'`**: Payment was successfully completed.
+   * - **`'failed'`**: Payment failed.
+   * This field is absent if approval is required before processing.
+   */
   paymentStatus?: LndCreatePaymentResponse;
+
+  /**
+   * Latest transfer details for this payment request (if available).
+   * - Provides the current state of the transfer.
+   * - To track the final payment status, monitor `transfer` asynchronously.
+   * This field is absent if approval is required before processing.
+   */
   transfer?: any;
 };
 
