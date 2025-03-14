@@ -13,6 +13,7 @@ export const apiData = {
     id: 'fakeid',
     coin: 'tlnbtc',
     keys: ['abc'],
+    subType: 'lightningSelfCustody',
     coinSpecific: {
       keys: ['def', 'ghi'],
       watchOnlyExternalIp: '1.2.3.4',

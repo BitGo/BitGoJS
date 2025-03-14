@@ -160,7 +160,7 @@ export class Wallets implements IWallets {
     const reqId = new RequestTracer();
     this.bitgo.setRequestTracer(reqId);
 
-    const { label, passphrase, enterprise, passcodeEncryptionCode, type } = params;
+    const { label, passphrase, enterprise, passcodeEncryptionCode, subType } = params;
 
     // TODO BTC-1899: only userAuth key is required for custodial lightning wallet. all 3 keys are required for self custodial lightning.
     // to avoid changing the platform for custodial flow, let us all 3 keys both wallet types.
@@ -189,7 +189,8 @@ export class Wallets implements IWallets {
       label,
       m: 1,
       n: 1,
-      type,
+      type: 'hot',
+      subType,
       enterprise,
       keys: [userKeychain.id],
       coinSpecific: { [this.baseCoin.getChain()]: { keys: [userAuthKeychain.id, nodeAuthKeychain.id] } },

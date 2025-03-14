@@ -12,11 +12,13 @@ describe('LightningV2 Wallet:', function () {
     const lnbtcWallet = new Wallet(bitgo, bitgo.coin('lnbtc'), {
       id: '123',
       coin: 'lnbtc',
+      subType: 'lightningCustody',
     });
 
     const tlntcWallet = new Wallet(bitgo, bitgo.coin('tlnbtc'), {
       id: '123',
       coin: 'tlntc',
+      subType: 'lightningCustody',
     });
 
     assert(getLightningWallet(lnbtcWallet), 'lnbtc wallet should support lightningV2');
