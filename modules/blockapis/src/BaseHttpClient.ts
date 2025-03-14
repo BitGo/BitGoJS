@@ -1,5 +1,4 @@
 import * as superagent from 'superagent';
-import * as Bluebird from 'bluebird';
 
 export class ApiRequestError extends Error {
   constructor(public url: string, public reason: Error | string) {
@@ -29,7 +28,13 @@ export interface HttpClient {
 }
 
 export function mapSeries<T, U>(arr: T[], f: (v: T, i: number) => Promise<U>): Promise<U[]> {
-  return Bluebird.mapSeries(arr, f);
+  const results: U[] = [];
+  return (async () => {
+    for (const [index, value] of arr.entries()) {
+      results.push(await f(value, index));
+    }
+    return results;
+  })();
 }
 
 export class BaseHttpClient implements HttpClient {
