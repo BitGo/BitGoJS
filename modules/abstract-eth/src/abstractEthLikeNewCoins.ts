@@ -2299,13 +2299,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {Wallet} params.wallet - Wallet object to obtain keys to verify against
    * @returns {boolean}
    */
-  verifyTssTransaction(params: VerifyEthTransactionOptions): boolean {
+  async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
     if (
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
-        (txParams.type && ['acceleration', 'fillNonce', 'transferToken'].includes(txParams.type))
+        (txParams.type && ['acceleration', 'fillNonce', 'transferToken', 'transfer'].includes(txParams.type))
       )
     ) {
       throw new Error(`missing txParams`);
@@ -2316,6 +2316,28 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
       throw new Error(`tx cannot be both a batch and hop transaction`);
     }
+
+    if (txParams.type && ['transfer', 'transferToken'].includes(txParams.type)) {
+      if (txParams.recipients && txParams.recipients.length > 0) {
+        const recipients = txParams.recipients;
+
+        if (recipients.length !== 1) {
+          throw new Error(`tss transaction only supports 1 recipient but ${recipients.length} found`);
+        }
+        const txBuilder = this.getTransactionBuilder();
+        txBuilder.from(txPrebuild.txHex);
+        const tx = await txBuilder.build();
+        const txJson = tx.toJson();
+        const expectedAmount = recipients[0].amount;
+        if (expectedAmount !== txJson.value) {
+          throw new Error('the transaction amount in txPrebuild does not match the value given by client');
+        }
+        if (recipients[0].address !== txJson.to) {
+          throw new Error('destination address does not match with the recipient address');
+        }
+      }
+    }
+
     return true;
   }
 
