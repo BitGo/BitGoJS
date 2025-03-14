@@ -84,7 +84,8 @@
     "web3-utils": "4.2.1",
     "@polkadot/api": "14.1.1",
     "elliptic": "^6.6.1",
-    "axios": "^1.8.2"
+    "axios": "^1.8.2",
+    "canvg": "4.0.3"
   },
   "workspaces": [
     "modules/*"

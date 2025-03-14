@@ -1,4 +1,11 @@
-import { BaseUtils, KeyPair, ParseTransactionError, Recipient, BuildTransactionError } from '@bitgo/sdk-core';
+import {
+  BaseUtils,
+  KeyPair,
+  ParseTransactionError,
+  Recipient,
+  BuildTransactionError,
+  MethodNotImplementedError,
+} from '@bitgo/sdk-core';
 import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
@@ -25,7 +32,7 @@ export const REQUEST_STATUS = 'request_status';
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
-    throw new Error('Method not implemented.');
+    throw new MethodNotImplementedError();
   }
 
   /**

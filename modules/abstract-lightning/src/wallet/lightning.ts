@@ -33,6 +33,7 @@ export type PayInvoiceResponse = {
   pendingApproval?: PendingApprovalData;
   // Absent if there's a pending approval
   paymentStatus?: LndCreatePaymentResponse;
+  transfer?: any;
 };
 
 /**
@@ -176,7 +177,7 @@ export class LightningWallet implements ILightningWallet {
 
   async createInvoice(params: CreateInvoiceBody): Promise<Invoice> {
     const createInvoiceResponse = await this.wallet.bitgo
-      .post(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice`))
+      .post(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/invoice`, 2))
       .send(t.exact(CreateInvoiceBody).encode(params))
       .result();
     return sdkcore.decodeOrElse(Invoice.name, Invoice, createInvoiceResponse, (error) => {
@@ -187,7 +188,7 @@ export class LightningWallet implements ILightningWallet {
 
   async getInvoice(paymentHash: string): Promise<InvoiceInfo> {
     const response = await this.wallet.bitgo
-      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice/${paymentHash}`))
+      .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/invoice/${paymentHash}`, 2))
       .result();
     return decodeOrElse(InvoiceInfo.name, InvoiceInfo, response, (error) => {
       throw new Error(`Invalid get invoice response ${error}`);
@@ -197,7 +198,7 @@ export class LightningWallet implements ILightningWallet {
   async listInvoices(params: InvoiceQuery): Promise<InvoiceInfo[]> {
     const returnCodec = t.array(InvoiceInfo);
     const createInvoiceResponse = await this.wallet.bitgo
-      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/invoice`))
+      .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/invoice`, 2))
       .query(InvoiceQuery.encode(params))
       .result();
     return sdkcore.decodeOrElse(returnCodec.name, returnCodec, createInvoiceResponse, (error) => {
@@ -215,22 +216,24 @@ export class LightningWallet implements ILightningWallet {
       this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
     );
 
-    const paymentIntent: LightningPaymentIntent = {
-      comment: params.comment,
-      sequenceId: params.sequenceId,
-      intentType: 'payment',
-      signedRequest: {
-        invoice: params.invoice,
-        amountMsat: params.amountMsat,
-        feeLimitMsat: params.feeLimitMsat,
-        feeLimitRatio: params.feeLimitRatio,
+    const paymentIntent: { intent: LightningPaymentIntent } = {
+      intent: {
+        comment: params.comment,
+        sequenceId: params.sequenceId,
+        intentType: 'payment',
+        signedRequest: {
+          invoice: params.invoice,
+          amountMsat: params.amountMsat,
+          feeLimitMsat: params.feeLimitMsat,
+          feeLimitRatio: params.feeLimitRatio,
+        },
+        signature,
       },
-      signature,
     };
 
     const transactionRequestCreate = (await this.wallet.bitgo
       .post(this.wallet.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
-      .send(LightningPaymentIntent.encode(paymentIntent))
+      .send(t.type({ intent: LightningPaymentIntent }).encode(paymentIntent))
       .result()) as TxRequest;
 
     if (transactionRequestCreate.state === 'pendingApproval') {
@@ -252,19 +255,23 @@ export class LightningWallet implements ILightningWallet {
     );
 
     const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
-
+    let transfer;
+    if (coinSpecific && coinSpecific.paymentHash && typeof coinSpecific.paymentHash === 'string') {
+      transfer = await this.wallet.getTransfer({ id: coinSpecific.paymentHash });
+    }
     return {
       txRequestId: transactionRequestCreate.txRequestId,
       txRequestState: transactionRequestSend.state,
       paymentStatus: coinSpecific
         ? t.exact(LndCreatePaymentResponse).encode(coinSpecific as LndCreatePaymentResponse)
         : undefined,
+      transfer,
     };
   }
 
   async getPayment(paymentHash: string): Promise<PaymentInfo> {
     const response = await this.wallet.bitgo
-      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/payment/${paymentHash}`))
+      .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/payment/${paymentHash}`, 2))
       .result();
     return decodeOrElse(PaymentInfo.name, PaymentInfo, response, (error) => {
       throw new Error(`Invalid payment response: ${error}`);
@@ -273,7 +280,7 @@ export class LightningWallet implements ILightningWallet {
 
   async listPayments(params: PaymentQuery): Promise<PaymentInfo[]> {
     const response = await this.wallet.bitgo
-      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/payment`))
+      .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/payment`, 2))
       .query(PaymentQuery.encode(params))
       .result();
     return decodeOrElse(t.array(PaymentInfo).name, t.array(PaymentInfo), response, (error) => {
@@ -283,7 +290,7 @@ export class LightningWallet implements ILightningWallet {
 
   async getTransaction(txId: string): Promise<Transaction> {
     const response = await this.wallet.bitgo
-      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/transaction/${txId}`))
+      .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/transaction/${txId}`, 2))
       .result();
     return decodeOrElse(Transaction.name, Transaction, response, (error) => {
       throw new Error(`Invalid transaction response: ${error}`);
@@ -292,7 +299,7 @@ export class LightningWallet implements ILightningWallet {
 
   async listTransactions(params: TransactionQuery): Promise<Transaction[]> {
     const response = await this.wallet.bitgo
-      .get(this.wallet.baseCoin.url(`/wallet/${this.wallet.id()}/lightning/transaction`))
+      .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/transaction`, 2))
       .query(TransactionQuery.encode(params))
       .result();
     return decodeOrElse(t.array(Transaction).name, t.array(Transaction), response, (error) => {

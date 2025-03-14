@@ -4,6 +4,7 @@ import {
   TransactionRecipient,
   TransactionType,
   InvalidTransactionError,
+  MethodNotImplementedError,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -24,7 +25,6 @@ import {
   IcpAccount,
 } from './iface';
 import { Utils } from './utils';
-import { KeyPair } from './keyPair';
 
 export class Transaction extends BaseTransaction {
   protected _icpTransactionData: IcpTransactionData;
@@ -202,17 +202,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
-    try {
-      const keyPair = new KeyPair({ prv: key.key });
-      const publicKeyHex = keyPair.getPublicKey({ compressed: true }).toString('hex');
-      const uncompressedPublicKeyHex = keyPair.getPublicKey({ compressed: false }).toString('hex');
-      return (
-        this.icpTransactionData.senderPublicKeyHex === publicKeyHex ||
-        this.icpTransactionData.senderPublicKeyHex === uncompressedPublicKeyHex
-      );
-    } catch (error) {
-      return false;
-    }
+    throw new MethodNotImplementedError();
   }
 
   async parseUnsignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {

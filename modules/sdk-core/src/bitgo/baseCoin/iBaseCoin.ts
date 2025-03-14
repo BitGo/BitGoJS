@@ -360,6 +360,7 @@ export interface HalfSignedTransaction extends HalfSignedAccountTransaction {
     contractSequenceId?: number;
     sequenceId?: number;
     txHex?: never;
+    isBatch?: boolean;
   };
 }
 

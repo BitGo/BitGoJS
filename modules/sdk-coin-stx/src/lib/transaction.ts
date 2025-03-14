@@ -1,9 +1,12 @@
 import {
   addressToString,
   BufferReader,
+  ContractCallPayload,
   createStacksPrivateKey,
   createStacksPublicKey,
   createTransactionAuthField,
+  cvToString,
+  cvToValue,
   deserializeTransaction,
   isSingleSig,
   MultiSigSpendingCondition,
@@ -13,7 +16,9 @@ import {
   StacksTransaction,
   TransactionSigner,
 } from '@stacks/transactions';
+
 import { BaseCoin as CoinConfig, StacksNetwork } from '@bitgo/statics';
+
 import {
   BaseKey,
   BaseTransaction,
@@ -23,11 +28,13 @@ import {
   SigningError,
   TransactionType,
 } from '@bitgo/sdk-core';
+
+import BigNum from 'bn.js';
+
 import { SignatureData, StacksContractPayload, StacksTransactionPayload, TxData } from './iface';
 import { functionArgsToSendParams, getTxSenderAddress, removeHexPrefix, stringifyCv, unpadMemo } from './utils';
 import { KeyPair } from './keyPair';
-import { ContractCallPayload } from '@stacks/transactions/dist/payload';
-import BigNum from 'bn.js';
+import { FUNCTION_NAME_TRANSFER } from './constants';
 
 export class Transaction extends BaseTransaction {
   private _stxTransaction: StacksTransaction;
@@ -237,6 +244,21 @@ export class Transaction extends BaseTransaction {
         const sum: BigNum = sendParams.reduce((current, next) => current.add(new BigNum(next.amount)), new BigNum(0));
         this._outputs = sendParams.map((sendParam) => ({ address: sendParam.address, value: sendParam.amount, coin }));
         this._inputs = [{ address: txJson.from, value: sum.toString(), coin }];
+      } else if (txJson.payload.functionName === FUNCTION_NAME_TRANSFER && txJson.payload.functionArgs.length >= 3) {
+        this._outputs = [
+          {
+            address: cvToString(txJson.payload.functionArgs[1]),
+            value: cvToValue(txJson.payload.functionArgs[2]).toString(),
+            coin: this._coinConfig.name,
+          },
+        ];
+        this._inputs = [
+          {
+            address: cvToString(txJson.payload.functionArgs[0]),
+            value: cvToValue(txJson.payload.functionArgs[2]).toString(),
+            coin: this._coinConfig.name,
+          },
+        ];
       } else {
         this._outputs = [
           {

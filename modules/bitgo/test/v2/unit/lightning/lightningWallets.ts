@@ -262,9 +262,13 @@ describe('Lightning wallets', function () {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const query = { status: 'open', startDate: new Date(), limit: 100n } as InvoiceQuery;
+      const query = {
+        status: 'open',
+        startDate: new Date(),
+        limit: 100n,
+      } as InvoiceQuery;
       const listInvoicesNock = nock(bgUrl)
-        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/lightning/invoice`)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`)
         .query(InvoiceQuery.encode(query))
         .reply(200, [InvoiceInfo.encode(invoice)]);
       const invoiceResponse = await wallet.listInvoices(query);
@@ -275,7 +279,7 @@ describe('Lightning wallets', function () {
 
     it('listInvoices should throw error if wp response is invalid', async function () {
       const listInvoicesNock = nock(bgUrl)
-        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/lightning/invoice`)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`)
         .reply(200, [{ valueMsat: '1000' }]);
       await assert.rejects(async () => await wallet.listInvoices({}), /Invalid list invoices response/);
       listInvoicesNock.done();
@@ -296,10 +300,7 @@ describe('Lightning wallets', function () {
         valueMsat: 1000n,
       };
       const createInvoiceNock = nock(bgUrl)
-        .post(
-          `/api/v2/${coinName}/wallet/${wallet.wallet.id()}/lightning/invoice`,
-          CreateInvoiceBody.encode(createInvoice)
-        )
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`, CreateInvoiceBody.encode(createInvoice))
         .reply(200, Invoice.encode(invoice));
       const createInvoiceResponse = await wallet.createInvoice(createInvoice);
       assert.deepStrictEqual(createInvoiceResponse, invoice);
@@ -313,7 +314,7 @@ describe('Lightning wallets', function () {
         expiry: 100,
       };
       const createInvoiceNock = nock(bgUrl)
-        .post(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/lightning/invoice`)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`)
         .reply(200, { valueMsat: '1000' });
       await assert.rejects(async () => await wallet.createInvoice(createInvoice), /Invalid create invoice response/);
       createInvoiceNock.done();
@@ -357,6 +358,17 @@ describe('Lightning wallets', function () {
         ],
       };
 
+      const transferData = {
+        id: 'fake_id',
+        coin: 'tlnbtc',
+        state: 'confirmed',
+        txid: lndResponse.paymentHash,
+      };
+
+      const getTransferNock = nock(bgUrl)
+        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${lndResponse.paymentHash}`)
+        .reply(200, transferData);
+
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
@@ -397,6 +409,7 @@ describe('Lightning wallets', function () {
         finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.paymentPreimage
       );
 
+      getTransferNock.done();
       createTxRequestNock.done();
       sendTxRequestNock.done();
       userAuthKeyNock.done();
