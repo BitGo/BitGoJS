@@ -6,13 +6,14 @@ import should from 'should';
 import { Transaction } from '../../src';
 import utils from '../../src/lib/utils';
 import * as testData from '../resources/baby';
+import { CustomTxMessage } from '../../src/lib/iface';
 
 describe('Babylon Transaction', () => {
-  let tx: Transaction;
+  let tx: Transaction<CustomTxMessage>;
   const config = coins.get('tbaby');
 
   beforeEach(() => {
-    tx = new CosmosTransaction(config, utils);
+    tx = new CosmosTransaction<CustomTxMessage>(config, utils);
   });
 
   describe('Empty transaction', () => {

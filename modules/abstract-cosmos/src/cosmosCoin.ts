@@ -57,7 +57,7 @@ interface CosmosCoinSpecific {
   rootAddress: string;
 }
 
-export class CosmosCoin extends BaseCoin {
+export class CosmosCoin<CustomMessage = never> extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
@@ -216,7 +216,7 @@ export class CosmosCoin extends BaseCoin {
       txnBuilder.publicKey(publicKey);
     }
 
-    const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction;
+    const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction<CustomMessage>;
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     const signableHex = unsignedTransaction.signablePayload.toString('hex');
 
@@ -327,7 +327,7 @@ export class CosmosCoin extends BaseCoin {
       .accountNumber(Number(accountNumber))
       .chainId(chainId);
 
-    const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction;
+    const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction<CustomMessage>;
     let serializedTx = unsignedTransaction.toBroadcastFormat();
     const signableHex = unsignedTransaction.signablePayload.toString('hex');
     const message = unsignedTransaction.signablePayload;

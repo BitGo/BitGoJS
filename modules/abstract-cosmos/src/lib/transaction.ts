@@ -24,23 +24,23 @@ import {
 } from './iface';
 import { CosmosUtils } from './utils';
 
-export class CosmosTransaction extends BaseTransaction {
-  protected _cosmosLikeTransaction: CosmosLikeTransaction;
+export class CosmosTransaction<CustomMessage = never> extends BaseTransaction {
+  protected _cosmosLikeTransaction: CosmosLikeTransaction<CustomMessage>;
   protected _accountNumber: number;
   protected _chainId: string;
 
-  protected _utils: CosmosUtils;
+  protected _utils: CosmosUtils<CustomMessage>;
 
-  constructor(_coinConfig: Readonly<CoinConfig>, utils: CosmosUtils) {
+  constructor(_coinConfig: Readonly<CoinConfig>, utils: CosmosUtils<CustomMessage>) {
     super(_coinConfig);
     this._utils = utils;
   }
 
-  get cosmosLikeTransaction(): CosmosLikeTransaction {
+  get cosmosLikeTransaction(): CosmosLikeTransaction<CustomMessage> {
     return this._cosmosLikeTransaction;
   }
 
-  set cosmosLikeTransaction(cosmosLikeTransaction: Readonly<CosmosLikeTransaction>) {
+  set cosmosLikeTransaction(cosmosLikeTransaction: Readonly<CosmosLikeTransaction<CustomMessage>>) {
     this._cosmosLikeTransaction = cosmosLikeTransaction;
   }
 
@@ -84,7 +84,7 @@ export class CosmosTransaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  toJson(): TxData {
+  toJson(): TxData<CustomMessage> {
     if (!this._cosmosLikeTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
@@ -171,7 +171,10 @@ export class CosmosTransaction extends BaseTransaction {
    * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
    * @returns {TransactionExplanation}
    */
-  explainTransactionInternal(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
+  explainTransactionInternal(
+    json: TxData<CustomMessage>,
+    explanationResult: TransactionExplanation
+  ): TransactionExplanation {
     let outputs: TransactionRecipient[];
     let outputAmount;
     switch (json.type) {
