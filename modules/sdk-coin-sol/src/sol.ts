@@ -886,6 +886,27 @@ export class Sol extends BaseCoin {
     if (totalFee.gt(balance)) {
       throw Error('Did not find address with funds to recover');
     }
+
+    if (params.tokenContractAddress) {
+      totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(new BigNumber(baseFee));
+      // Check if there is sufficient native solana to recover tokens
+      if (new BigNumber(balance).lt(totalFeeForTokenRecovery)) {
+        throw Error(
+          'Not enough funds to pay for recover tokens fees, have: ' +
+            balance +
+            ' need: ' +
+            totalFeeForTokenRecovery.toString()
+        );
+      }
+      txBuilder.fee({ amount: feePerSignature });
+    } else {
+      totalFee = new BigNumber(baseFee);
+      const netAmount = new BigNumber(balance).minus(totalFee);
+      txBuilder
+        .send({ address: params.recoveryDestination, amount: netAmount.toString() })
+        .fee({ amount: feePerSignature });
+    }
+
     if (!isUnsignedSweep) {
       // Sign the txn
       if (!params.userKey) {
@@ -900,25 +921,6 @@ export class Sol extends BaseCoin {
         throw new Error('missing wallet passphrase');
       }
 
-      if (params.tokenContractAddress) {
-        totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(new BigNumber(baseFee));
-        // Check if there is sufficient native solana to recover tokens
-        if (new BigNumber(balance).lt(totalFeeForTokenRecovery)) {
-          throw Error(
-            'Not enough funds to pay for recover tokens fees, have: ' +
-              balance +
-              ' need: ' +
-              totalFeeForTokenRecovery.toString()
-          );
-        }
-        txBuilder.fee({ amount: feePerSignature });
-      } else {
-        totalFee = new BigNumber(baseFee);
-        const netAmount = new BigNumber(balance).minus(totalFee);
-        txBuilder
-          .send({ address: params.recoveryDestination, amount: netAmount.toString() })
-          .fee({ amount: feePerSignature });
-      }
       // build the transaction with fee
       const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
