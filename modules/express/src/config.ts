@@ -41,6 +41,8 @@ export interface Config {
   signerMode?: boolean;
   signerFileSystemPath?: string;
   lightningSignerFileSystemPath?: string;
+  keepAliveTimeout?: number;
+  headersTimeout?: number;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -65,6 +67,8 @@ export const ArgConfig = (args): Partial<Config> => ({
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
   lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
+  keepAliveTimeout: args.keepalivetimeout,
+  headersTimeout: args.headerstimeout,
 });
 
 export const EnvConfig = (): Partial<Config> => ({
@@ -89,6 +93,8 @@ export const EnvConfig = (): Partial<Config> => ({
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
   lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
+  keepAliveTimeout: Number(readEnvVar('BITGO_KEEP_ALIVE_TIMEOUT')),
+  headersTimeout: Number(readEnvVar('BITGO_HEADERS_TIMEOUT')),
 });
 
 export const DefaultConfig: Config = {
@@ -173,6 +179,8 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
     lightningSignerFileSystemPath: get('lightningSignerFileSystemPath'),
+    keepAliveTimeout: get('keepAliveTimeout'),
+    headersTimeout: get('headersTimeout'),
   };
 }
 

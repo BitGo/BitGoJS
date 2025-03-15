@@ -109,4 +109,12 @@ parser.addArgument(['--signerFileSystemPath'], {
 parser.addArgument(['--lightningSignerFileSystemPath'], {
   help: 'Local path specifying where an Express machine keeps lightning signer urls.',
 });
+
+parser.addArgument(['--keepalivetimeout'], {
+  help: 'keep alive timeout in milliseconds',
+});
+
+parser.addArgument(['--headerstimeout'], {
+  help: 'headers timeout in milliseconds',
+});
 export const args = () => parser.parseArgs();
