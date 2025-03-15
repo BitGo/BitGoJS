@@ -205,6 +205,7 @@ describe('STX:', function () {
     explain.outputs[0].amount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
     explain.outputs[0].address.should.equal(cvToString(testData.fungibleTokenTransferTx.functionArgs[1]));
     explain.outputs[0].memo.should.equal('1');
+    explain.outputs[0].tokenName.should.equal(testData.fungibleTokenTransferTx.tokenName);
   });
 
   describe('Keypairs:', () => {
