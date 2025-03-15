@@ -24,6 +24,8 @@ import {
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
   InvalidAddressError,
   KeyPair,
+  MultisigType,
+  multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
   RequestTracer,
@@ -228,6 +230,16 @@ export class Eos extends BaseCoin {
 
   get decimalPlaces() {
     return 4;
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig() {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   /**

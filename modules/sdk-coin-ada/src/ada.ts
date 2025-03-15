@@ -29,6 +29,8 @@ import {
   MPCTxs,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -600,6 +602,11 @@ export class Ada extends BaseCoin {
   /** inherited doc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   /** inherited doc */

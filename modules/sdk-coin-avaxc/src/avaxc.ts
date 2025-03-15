@@ -25,6 +25,8 @@ import {
   InvalidAddressError,
   IWallet,
   KeyPair,
+  MultisigType,
+  multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
   Recipient,
@@ -131,6 +133,16 @@ export class AvaxC extends AbstractEthLikeNewCoins {
 
   isToken(): boolean {
     return false;
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {

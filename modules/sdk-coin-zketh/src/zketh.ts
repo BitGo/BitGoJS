@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
@@ -31,5 +31,15 @@ export class Zketh extends AbstractEthLikeNewCoins {
   async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
     const explorerUrl = common.Environments[this.bitgo.getEnv()].zksyncExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string);
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 }

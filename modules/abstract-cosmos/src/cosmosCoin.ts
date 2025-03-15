@@ -9,6 +9,8 @@ import {
   InvalidMemoIdError,
   KeyPair,
   MPCAlgorithm,
+  MultisigType,
+  multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -103,6 +105,11 @@ export class CosmosCoin extends BaseCoin {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   /** @inheritDoc **/

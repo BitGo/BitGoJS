@@ -10,6 +10,8 @@ import {
   TransactionExplanation,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { bip32 } from '@bitgo/secp256k1';
 import { CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -47,6 +49,16 @@ export class Xtz extends BaseCoin {
 
   getBaseFactor() {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   /**

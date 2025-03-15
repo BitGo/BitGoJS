@@ -13,6 +13,8 @@ import {
   MPCTx,
   MPCTxs,
   MPCUnsignedTx,
+  MultisigType,
+  multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
   RecoveryTxRequest,
@@ -76,6 +78,11 @@ export class SubstrateCoin extends BaseCoin {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   /** @inheritDoc **/
