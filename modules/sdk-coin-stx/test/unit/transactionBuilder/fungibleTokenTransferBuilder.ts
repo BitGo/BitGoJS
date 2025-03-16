@@ -55,9 +55,9 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
       it('an unsigned fungible token transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
+          uintCV('10000'),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
-          uintCV('10000'),
           bufferCVFromString('1'),
         ]);
         builder.fromPubKey(testData.TX_SENDER.pub);
@@ -84,9 +84,9 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
       it('an unsigned fungible token transfer transaction without memo', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
+          uintCV('10000'),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
-          uintCV('10000'),
         ]);
         builder.fromPubKey(testData.TX_SENDER.pub);
         builder.numberSignatures(1);
@@ -115,9 +115,9 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
       it('a multisig fungible token transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
+          uintCV('10000'),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
-          uintCV('10000'),
           bufferCVFromString('1'),
         ]);
 
