@@ -1,3 +1,5 @@
+import { ITransactionRecipient } from '@bitgo/sdk-core';
+
 export const txForExplainTransfer =
   '0x80800000000400164247d6f2b425ac5771423ae6c80c754f7172b0000000000000000000000000000000b40000ab3fcf8d6d697d01c3da3a20b06cd8b36f016755cb7637c3eb6b228980d8857c7826a8ea498e52fd73ecd8e3869881c9aba49ae598dfbf1d5af69b1c02b4f2bd03020000000000051a1ae3f911d8f1d46d7416bfbe4b593fd41eac19cb00000000000003e85468697320697320616e206578616d706c6500000000000000000000000000000000';
 
@@ -39,6 +41,7 @@ export const fungibleTokenTransferTx = {
   fee: '180',
   contractAddress: 'STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH',
   contractName: 'tsip6dp-token',
+  tokenName: 'tstx:tsip6dp',
   functionName: 'transfer',
   functionArgs: [
     {
@@ -61,3 +64,12 @@ export const fungibleTokenTransferTx = {
     { type: 2 },
   ],
 };
+
+export const recipients: ITransactionRecipient[] = [
+  {
+    address: 'SN2NN1JP9AEP5BVE19RNJ6T2MP7NDGRZYST1VDF3M',
+    amount: '10000',
+    memo: '1',
+    tokenName: 'tstx:tsip6dp',
+  },
+];
