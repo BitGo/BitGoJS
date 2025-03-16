@@ -196,9 +196,9 @@ export class Stx extends BaseCoin {
       let outputAmount: string;
       let memo: string | undefined;
       if (txJson.payload.contractAddress && txJson.payload.functionArgs.length >= 3) {
-        outputAmount = cvToValue(txJson.payload.functionArgs[2]).toString();
+        outputAmount = cvToValue(txJson.payload.functionArgs[0]).toString();
         transactionRecipient = {
-          address: cvToString(txJson.payload.functionArgs[1]),
+          address: cvToString(txJson.payload.functionArgs[2]),
           amount: outputAmount,
           tokenName: findTokenNameByContract(txJson.payload.contractAddress, txJson.payload.contractName),
         };

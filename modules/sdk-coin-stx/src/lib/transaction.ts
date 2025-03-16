@@ -247,15 +247,15 @@ export class Transaction extends BaseTransaction {
       } else if (txJson.payload.functionName === FUNCTION_NAME_TRANSFER && txJson.payload.functionArgs.length >= 3) {
         this._outputs = [
           {
-            address: cvToString(txJson.payload.functionArgs[1]),
-            value: cvToValue(txJson.payload.functionArgs[2]).toString(),
+            address: cvToString(txJson.payload.functionArgs[2]),
+            value: cvToValue(txJson.payload.functionArgs[0]).toString(),
             coin: this._coinConfig.name,
           },
         ];
         this._inputs = [
           {
-            address: cvToString(txJson.payload.functionArgs[0]),
-            value: cvToValue(txJson.payload.functionArgs[2]).toString(),
+            address: cvToString(txJson.payload.functionArgs[1]),
+            value: cvToValue(txJson.payload.functionArgs[0]).toString(),
             coin: this._coinConfig.name,
           },
         ];

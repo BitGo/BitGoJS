@@ -473,16 +473,16 @@ export function functionArgsToTokenTransferParams(args: ClarityValue[]): TokenTr
     throw new InvalidTransactionError("function args don't match token transfer declaration");
   }
   if (
-    args[0].type !== ClarityType.PrincipalStandard ||
+    args[0].type !== ClarityType.UInt ||
     args[1].type !== ClarityType.PrincipalStandard ||
-    args[2].type !== ClarityType.UInt
+    args[2].type !== ClarityType.PrincipalStandard
   ) {
     throw new InvalidTransactionError("function args don't match token transfer declaration");
   }
   const tokenTransferParams = {
-    sender: cvToString(args[0]),
-    recipient: cvToString(args[1]),
-    amount: cvToValue(args[2], true),
+    amount: cvToValue(args[0], true),
+    sender: cvToString(args[1]),
+    recipient: cvToString(args[2]),
   };
   if (args.length === 4 && args[3].type === ClarityType.Buffer) {
     tokenTransferParams['memo'] = args[3].buffer.toString('ascii');
