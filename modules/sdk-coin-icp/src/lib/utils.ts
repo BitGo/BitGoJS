@@ -18,6 +18,8 @@ import {
   Signatures,
   IcpMetadata,
   SendArgs,
+  PayloadsData,
+  CurveType,
 } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 import { decode, encode } from 'cbor-x'; // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
@@ -676,6 +678,27 @@ export class Utils implements BaseUtils {
   isValidTransactionId(txId: string): boolean {
     return this.isValidHash(txId);
   }
+
+  getSignatures(payloadsData: PayloadsData, senderPublicKey: string, senderPrivateKey: string): Signatures[] {
+    return payloadsData.payloads.map((payload) => ({
+      signing_payload: payload,
+      signature_type: payload.signature_type,
+      public_key: {
+        hex_bytes: senderPublicKey,
+        curve_type: CurveType.SECP256K1,
+      },
+      hex_bytes: this.signPayload(senderPrivateKey, payload.hex_bytes),
+    }));
+  }
+
+  signPayload = (privateKey: string, payloadHex: string): string => {
+    const privateKeyBytes = Buffer.from(privateKey, 'hex');
+    const payloadHash = crypto.createHash('sha256').update(Buffer.from(payloadHex, 'hex')).digest('hex');
+    const signature = secp256k1.sign(payloadHash, privateKeyBytes);
+    const r = Buffer.from(signature.r.toString(16).padStart(64, '0'), 'hex');
+    const s = Buffer.from(signature.s.toString(16).padStart(64, '0'), 'hex');
+    return Buffer.concat([r, s]).toString('hex');
+  };
 }
 
 const utils = new Utils();

@@ -4,7 +4,6 @@ import {
   TransactionRecipient,
   TransactionType,
   InvalidTransactionError,
-  MethodNotImplementedError,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -200,11 +199,6 @@ export class Transaction extends BaseTransaction {
     return JSON.stringify(transaction);
   }
 
-  /** @inheritdoc */
-  canSign(key: BaseKey): boolean {
-    throw new MethodNotImplementedError();
-  }
-
   async parseUnsignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
     const unsignedTransaction = this._utils.cborDecode(
       this._utils.blobFromHex(rawTransaction)
@@ -283,5 +277,10 @@ export class Transaction extends BaseTransaction {
     const updates = envelopes.map((envelope) => envelope.update);
     const httpCanisterUpdate = updates[0].content as HttpCanisterUpdate;
     return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, true);
+  }
+
+  /** @inheritdoc */
+  canSign(key: BaseKey): boolean {
+    return true;
   }
 }
