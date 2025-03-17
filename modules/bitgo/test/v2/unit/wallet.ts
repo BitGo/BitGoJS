@@ -2218,7 +2218,7 @@ describe('V2 Wallet:', function () {
       createShareNock.isDone().should.be.True();
     });
 
-    it('should use keychain pub to share hot wallet', async function () {
+    describe('Hot Wallet Sharing', function () {
       const userId = '123';
       const email = 'shareto@sdktest.com';
       const permissions = 'view,spend';
@@ -2226,34 +2226,69 @@ describe('V2 Wallet:', function () {
       const path = 'm/999999/1/1';
       const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
       const walletPassphrase = 'bitgo1234';
-
-      const getSharingKeyNock = nock(bgUrl)
-        .post('/api/v1/user/sharingkey', { email })
-        .reply(200, { userId, pubkey, path });
-
       const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
-      const getKeyNock = nock(bgUrl)
-        .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
-        .reply(200, {
-          id: wallet.keyIds()[0],
-          pub,
-          source: 'user',
-          encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
-          coinSpecific: {},
+
+      const lightningCoin: any = bitgo.coin('tlnbtc');
+      const lightningWalletData = {
+        id: '5b34252f1bf349930e34020a00000001',
+        coin: 'tlnbtc',
+        keys: ['5b3424f91bf349930e34017500000001'],
+        coinSpecific: { keys: ['5b3424f91bf349930e34017600000000', '5b3424f91bf349930e34017700000000'] },
+        type: 'hot',
+      };
+      const lightningWallet = new Wallet(bitgo, lightningCoin, lightningWalletData);
+
+      for (const hotWallet of [wallet, lightningWallet] as const) {
+        it(`should use keychain pub to share ${hotWallet.coin()} hot wallet`, async function () {
+          const getSharingKeyNock = nock(bgUrl)
+            .post('/api/v1/user/sharingkey', { email })
+            .reply(200, { userId, pubkey, path });
+
+          const getKeyNocks: nock.Scope[] = [];
+          if (hotWallet.baseCoin.getFamily() === 'lnbtc') {
+            for (let i = 0; i < 2; i++) {
+              const keyId = lightningWalletData.coinSpecific.keys[i];
+              const getKeyNock = nock(bgUrl)
+                .get(`/api/v2/tlnbtc/key/${keyId}`)
+                .reply(200, {
+                  id: keyId,
+                  pub: i === 0 ? pub : 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQm',
+                  source: 'user',
+                  encryptedPrv: bitgo.encrypt({ input: 'xprv' + i, password: walletPassphrase }),
+                  coinSpecific:
+                    i === 0
+                      ? { [hotWallet.baseCoin.getChain()]: { purpose: 'userAuth' } }
+                      : { [hotWallet.baseCoin.getChain()]: { purpose: 'nodeAuth' } },
+                });
+              getKeyNocks.push(getKeyNock);
+            }
+          } else {
+            const getKeyNock = nock(bgUrl)
+              .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
+              .reply(200, {
+                id: wallet.keyIds()[0],
+                pub,
+                source: 'user',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+                coinSpecific: {},
+              });
+            getKeyNocks.push(getKeyNock);
+          }
+
+          const stub = sinon.stub(hotWallet, 'createShare').callsFake(async (options) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            options!.keychain!.pub!.should.not.be.undefined();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            options!.keychain!.pub!.should.equal(pub);
+            return undefined;
+          });
+          await hotWallet.shareWallet({ email, permissions, walletPassphrase });
+
+          stub.calledOnce.should.be.true();
+          getSharingKeyNock.isDone().should.be.True();
+          getKeyNocks.every((v) => v.isDone().should.be.True());
         });
-
-      const stub = sinon.stub(wallet, 'createShare').callsFake(async (options) => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        options!.keychain!.pub!.should.not.be.undefined();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        options!.keychain!.pub!.should.equal(pub);
-        return undefined;
-      });
-      await wallet.shareWallet({ email, permissions, walletPassphrase });
-
-      stub.calledOnce.should.be.true();
-      getSharingKeyNock.isDone().should.be.True();
-      getKeyNock.isDone().should.be.True();
+      }
     });
 
     it('should provide skipKeychain to wallet share api for hot wallet', async function () {
