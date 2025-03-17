@@ -8,6 +8,7 @@ import { TransactionType } from '@bitgo/sdk-core';
 import assert from 'assert';
 
 import { Sip10Token, StxLib } from '../../../src';
+import { Transaction } from '../../../src/lib';
 import * as testData from '../resources';
 
 describe('Stacks: Fungible Token Transfer Builder', () => {
@@ -63,6 +64,8 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
         builder.fromPubKey(testData.TX_SENDER.pub);
         builder.numberSignatures(1);
         const tx = await builder.build();
+        const stacksTxn = tx as Transaction;
+        should.deepEqual(stacksTxn.stxTransaction.postConditions.values.length, 1);
 
         const txJson = tx.toJson();
         should.deepEqual(txJson.payload.contractAddress, testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.CONTRACT_ADDRESS);
