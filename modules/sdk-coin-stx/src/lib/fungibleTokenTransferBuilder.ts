@@ -39,12 +39,12 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
     this.contractName(this._contractName);
     this.functionName(this._functionName);
     this.functionArgs(this._functionArgs);
-    this._postConditionMode = PostConditionMode.Deny;
-    this._postConditions = this.tokenTransferParamsToPostCondition(this._fungibleTokenTransferParams);
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    this._postConditionMode = PostConditionMode.Deny;
+    this._postConditions = this.tokenTransferParamsToPostCondition(this._fungibleTokenTransferParams);
     await super.buildImplementation();
     this.transaction.setTransactionType(TransactionType.Send);
     return this.transaction;
@@ -127,6 +127,7 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
       throw new InvalidParameterValueError('Invalid number of arguments');
     }
     this._functionArgs = args;
+    this._fungibleTokenTransferParams = functionArgsToTokenTransferParams(this._functionArgs);
     return this;
   }
 
