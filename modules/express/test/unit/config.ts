@@ -86,6 +86,8 @@ describe('Config:', () => {
       signerMode: 'argsignerMode',
       signerFileSystemPath: 'argsignerFileSystemPath',
       lightningSignerFileSystemPath: 'arglightningSignerFileSystemPath',
+      keepalivetimeout: 'argkeepalivetimeout',
+      headerstimeout: 'argheaderstimeout',
     });
     const envStub = sinon.stub(process, 'env').value({
       BITGO_PORT: 'env12345',
@@ -108,6 +110,8 @@ describe('Config:', () => {
       BITGO_SIGNER_MODE: 'envsignerMode',
       BITGO_SIGNER_FILE_SYSTEM_PATH: 'envsignerFileSystemPath',
       BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH: 'envlightningSignerFileSystemPath',
+      BITGO_KEEP_ALIVE_TIMETOUT: 'envkeepalivetimeout',
+      BITGO_HEADERS_TIMETOUT: 'envheaderstimeout',
     });
     config().should.eql({
       port: 23456,
@@ -131,6 +135,8 @@ describe('Config:', () => {
       signerMode: 'argsignerMode',
       signerFileSystemPath: 'argsignerFileSystemPath',
       lightningSignerFileSystemPath: 'arglightningSignerFileSystemPath',
+      keepAliveTimeout: 'argkeepalivetimeout',
+      headersTimeout: 'argheaderstimeout',
     });
     argStub.restore();
     envStub.restore();

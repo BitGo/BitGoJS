@@ -206,6 +206,10 @@ This may be preferable for users who would like to apply their signature to thei
 
 For more information please see our [External Signing Mode Documentation](EXTERNAL_SIGNER.md).
 
+### KeepAliveTimeout/HeadersTimeout
+
+If the deployment destination is configured with a load balancer such as ELB, a 504 Gateway Timeout may occur. In such cases, it might be resolved by configuring the settings so that LB keepAliveTimeout < keepAliveTimeout < headersTimeout. This can be achieved by specifying the keepAliveTimeout and headersTimeout options.
+
 ## Configuration Values
 
 BitGo Express is able to take configuration options from either command line arguments, or via environment variables.
@@ -236,6 +240,9 @@ BitGo Express is able to take configuration options from either command line arg
 | N/A           | --lightningSignerFileSystemPath | `BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH` | N/A | Local path specifying how to contact the lightning signer node.
 
 \[0]: BitGo will also check the additional environment variables for some options for backwards compatibility, but these environment variables should be considered deprecated:
+
+| N/A | --keepalivetimeout | `BITGO_KEEP_ALIVE_TIMEOUT` | N/A | BitGo Express server KeepAliveTimeout |
+| N/A | --headerstimeout | `BITGO_HEADERS_TIMEOUT` | N/A | BitGo Express server HeadersTimeout |
 
 - Disable SSL
   - `DISABLESSL`
