@@ -551,3 +551,19 @@ export function findTokenNameByContract(contractAddress: string, contractName: s
     return tokenName ? tokenName[0] : undefined;
   }
 }
+
+/**
+ * Function to get contractTokenName from list of sip10 tokens using contract details
+ *
+ * @param {String} contractAddress
+ * @param {String} contractName
+ * @returns {String|Undefined}
+ */
+export function findContractTokenNameUsingContract(contractAddress: string, contractName: string): string | undefined {
+  {
+    const sip10Token = coins
+      .filter((coin) => coin instanceof Sip10Token && coin.assetId.includes(`${contractAddress}.${contractName}`))
+      .map((coin) => coin as Sip10Token);
+    return sip10Token ? sip10Token[0].assetId.split('::')[1] : undefined;
+  }
+}

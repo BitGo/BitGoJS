@@ -15,6 +15,7 @@ import BigNum from 'bn.js';
 import { AbstractContractBuilder } from './abstractContractBuilder';
 import { Transaction } from './transaction';
 import {
+  findContractTokenNameUsingContract,
   functionArgsToTokenTransferParams,
   getSTXAddressFromPubKeys,
   isValidAddress,
@@ -138,6 +139,12 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
    * @returns {PostCondition[]} returns stx fungible post condition
    */
   private tokenTransferParamsToPostCondition(tokenTransferParams: TokenTransferParams): PostCondition[] {
+    if (!this._tokenName) {
+      const contractTokenName = findContractTokenNameUsingContract(this._contractAddress, this._contractName);
+      if (contractTokenName) {
+        this.tokenName(contractTokenName);
+      }
+    }
     const amount: BigNum = new BigNum(tokenTransferParams.amount);
     return [
       makeStandardFungiblePostCondition(
