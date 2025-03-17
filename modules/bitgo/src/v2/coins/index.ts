@@ -125,5 +125,35 @@ export { Wemix, Twemix };
 export { Zketh, Tzketh, ZkethToken };
 
 import { coins } from '@bitgo/sdk-core';
-const { Ofc, OfcToken, Susd, FiatUsd, FiatEur, FiatGBP, Tsusd, TfiatUsd, TfiatEur, TfiatGBP } = coins;
-export { FiatEur, FiatGBP, FiatUsd, Ofc, OfcToken, Susd, TfiatEur, TfiatGBP, TfiatUsd, Tsusd };
+const {
+  Ofc,
+  OfcToken,
+  Susd,
+  FiatUsd,
+  FiatEur,
+  FiatGBP,
+  FiatAED,
+  FiatSGD,
+  Tsusd,
+  TfiatUsd,
+  TfiatEur,
+  TfiatGBP,
+  TfiatAED,
+  TfiatSGD,
+} = coins;
+export {
+  FiatAED,
+  FiatEur,
+  FiatGBP,
+  FiatSGD,
+  FiatUsd,
+  Ofc,
+  OfcToken,
+  Susd,
+  TfiatAED,
+  TfiatEur,
+  TfiatGBP,
+  TfiatSGD,
+  TfiatUsd,
+  Tsusd,
+};
