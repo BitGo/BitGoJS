@@ -111,6 +111,7 @@ import { TxSendBody } from '@bitgo/public-types';
 import { AddressBook, IAddressBook } from '../address-book';
 import { IRequestTracer } from '../../api';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
+import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -1609,6 +1610,19 @@ export class Wallet implements IWallet {
     return this.bitgo.post(url).send({ shareOptions: params }).result();
   }
 
+  /**
+   * Gets keychain with encrypted private key to be shared for wallet sharing.
+   */
+  private async getEncryptedWalletKeychainForWalletSharing(): Promise<KeychainWithEncryptedPrv> {
+    if (this.baseCoin.getFamily() === 'lnbtc') {
+      // lightning coin does not use user key to sign the transactions from SDK.
+      // it uses user auth key instead.
+      return await getLightningAuthKey(this, 'userAuth');
+    } else {
+      return await this.getEncryptedUserKeychain();
+    }
+  }
+
   async prepareSharedKeychain(
     walletPassphrase: string | undefined,
     pubkey: string,
@@ -1617,7 +1631,7 @@ export class Wallet implements IWallet {
     let sharedKeychain: SharedKeyChain = {};
 
     try {
-      const keychain = await this.getEncryptedUserKeychain();
+      const keychain = await this.getEncryptedWalletKeychainForWalletSharing();
 
       // Decrypt the user key with a passphrase
       if (keychain.encryptedPrv) {
