@@ -7,7 +7,6 @@
 
 import { strict as assert } from 'assert';
 import 'should';
-import { coroutine as co } from 'bluebird';
 import * as _ from 'lodash';
 
 const TestBitGo = require('../lib/test_bitgo');
@@ -138,36 +137,31 @@ describe('Keychains', function () {
     let keychains;
     let correctPassword;
 
-    before(
-      co(function* beforeUpdatePassword() {
-        bitgo = new TestBitGo({ env: 'test' });
-        bitgo.initializeTestVars();
-        keychains = bitgo.keychains();
-        const loginPasswords = yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
-        correctPassword = loginPasswords.password;
-        yield bitgo.unlock({ otp: bitgo.testUserOTP() });
-      })
-    );
+    before(async function beforeUpdatePassword() {
+      bitgo = new TestBitGo({ env: 'test' });
+      bitgo.initializeTestVars();
+      keychains = bitgo.keychains();
+      const loginPasswords = await bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
+      correctPassword = loginPasswords.password;
+      await bitgo.unlock({ otp: bitgo.testUserOTP() });
+    });
 
-    it(
-      'successful update the password for all v1 keychains that are encrypted with the old password',
-      co(function* itUpdatePassword() {
-        const newPassword = 'newPassword';
-        const result = yield keychains.updatePassword({ oldPassword: correctPassword, newPassword });
-        _.forOwn(result.keychains, function (encryptedXprv, xpub) {
-          xpub.should.startWith('xpub');
-          try {
-            const decryptedPrv = bitgo.decrypt({ input: encryptedXprv, password: newPassword });
-            decryptedPrv.should.startWith('xprv');
-          } catch (e) {
-            // the decryption didn't work because of the wrong password, this is one of the keychains that wasn't
-            // encrypted with the old password
-            e.message.should.startWith('password error');
-          }
-        });
-        result.should.hasOwnProperty('version');
-      })
-    );
+    it('successful update the password for all v1 keychains that are encrypted with the old password', async function itUpdatePassword() {
+      const newPassword = 'newPassword';
+      const result = await keychains.updatePassword({ oldPassword: correctPassword, newPassword });
+      _.forOwn(result.keychains, function (encryptedXprv, xpub) {
+        xpub.should.startWith('xpub');
+        try {
+          const decryptedPrv = bitgo.decrypt({ input: encryptedXprv, password: newPassword });
+          decryptedPrv.should.startWith('xprv');
+        } catch (e) {
+          // the decryption didn't work because of the wrong password, this is one of the keychains that wasn't
+          // encrypted with the old password
+          e.message.should.startWith('password error');
+        }
+      });
+      result.should.hasOwnProperty('version');
+    });
   });
 
   describe('Get', function () {
