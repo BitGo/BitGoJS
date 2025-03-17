@@ -52,6 +52,7 @@ describe('ICP Transaction Builder', async () => {
     should.equal(icpTransaction.public_keys[0].hex_bytes, testData.accounts.account1.publicKey);
     payloadsData.unsigned_transaction.should.be.a.String();
     payloadsData.payloads.should.be.an.Array();
+    payloadsData.payloads.length.should.equal(2);
     should.equal(payloadsData.unsigned_transaction, testData.payloadsData.unsigned_transaction);
     should.deepEqual(payloadsData.payloads, testData.payloadsData.payloads);
   });
