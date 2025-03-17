@@ -2,6 +2,8 @@ import {
   BaseCoin,
   BitGoBase,
   KeyPair,
+  MultisigType,
+  multisigTypes,
   SignedTransaction,
   TransactionRecipient,
   TransactionType,
@@ -52,6 +54,16 @@ export class Stx extends BaseCoin {
 
   getTransaction(coinConfig: Readonly<StaticsBaseCoin>): TransactionBuilder {
     return new TransactionBuilderFactory(coinConfig).getTransferBuilder();
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

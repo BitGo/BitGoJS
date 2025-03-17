@@ -21,6 +21,8 @@ import {
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
   NotSupported,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -566,6 +568,16 @@ export class Hbar extends BaseCoin {
 
   supportsDeriveKeyWithSeed(): boolean {
     return false;
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   public getTokenEnablementConfig(): TokenEnablementConfig {

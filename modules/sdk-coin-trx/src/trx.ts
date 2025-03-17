@@ -26,6 +26,8 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   BaseTransaction,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
@@ -158,6 +160,16 @@ export class Trx extends BaseCoin {
   /** @inheritdoc */
   transactionDataAllowed() {
     return true;
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {

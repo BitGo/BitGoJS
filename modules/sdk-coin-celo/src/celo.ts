@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, VerifyTransactionOptions } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, MultisigType, multisigTypes, VerifyTransactionOptions } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { AbstractEthLikeCoin } from '@bitgo/abstract-eth';
 import { KeyPair, TransactionBuilder } from './lib';
@@ -23,6 +23,16 @@ export class Celo extends AbstractEthLikeCoin {
       valid = false;
     }
     return valid;
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   protected getTransactionBuilder(): TransactionBuilder {
