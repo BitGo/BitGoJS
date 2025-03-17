@@ -21,7 +21,10 @@ export class UnsignedTransactionBuilder {
   }
 
   async getUnsignedTransaction(): Promise<PayloadsData> {
-    const interval = MAX_INGRESS_TTL - PERMITTED_DRIFT - 120 * 1000_000_000; // 120 seconds in milliseconds
+    // interval value can be altered here to change the count of ingressExpiries which eventually changes the number of interval value can be altered here to change the count of ingressExpiries which eventually changes the number of payloads that needs to be signed
+    const interval =
+      Number(this._icpTransactionPayload.metadata.ingress_end) -
+      Number(this._icpTransactionPayload.metadata.ingress_start); // 300s in nanoseconds
     const ingressExpiries = this.getIngressExpiries(
       this._icpTransactionPayload.metadata.ingress_start!,
       this._icpTransactionPayload.metadata.ingress_end!,
