@@ -1,3 +1,7 @@
+export * from './fiataed';
+export * from './tfiataed';
+export * from './fiatsgd';
+export * from './tfiatsgd';
 export * from './fiateur';
 export * from './tfiateur';
 export * from './fiatgbp';

@@ -2793,4 +2793,36 @@ export const coins = CoinMap.fromCoins([
     2,
     UnderlyingAsset.GBP
   ),
+  fiat(
+    '414d69c3-8da1-460a-add3-ef26453fc76c',
+    'fiataed',
+    'United Arab Emirates Dirham',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.AED
+  ),
+  fiat(
+    '47f21e91-c2e0-4aaf-a0c8-e8bb3126688c',
+    'tfiataed',
+    'Testnet United Arab Emirates Dirham',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.AED
+  ),
+  fiat(
+    'd5f087f0-acc8-4cc3-aaff-dd7f183099db',
+    'fiatsgd',
+    'Singapore Dollar',
+    Networks.main.fiat,
+    2,
+    UnderlyingAsset.SGD
+  ),
+  fiat(
+    '61c863bc-9e22-457c-b6f2-dcab35f32ff6',
+    'tfiatsgd',
+    'Testnet Singapore Dollar',
+    Networks.test.fiat,
+    2,
+    UnderlyingAsset.SGD
+  ),
 ]);
