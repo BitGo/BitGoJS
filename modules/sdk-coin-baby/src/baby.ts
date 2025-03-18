@@ -39,7 +39,8 @@ export class Baby extends CosmosCoin {
 
   /** @inheritDoc **/
   isValidAddress(address: string): boolean {
-    return utils.isValidAddress(address) || utils.isValidValidatorAddress(address);
+    const isValidFinalAddress = utils.isValidHexString(address) && address.length === 64;
+    return utils.isValidAddress(address) || utils.isValidValidatorAddress(address) || isValidFinalAddress;
   }
 
   /** @inheritDoc **/
