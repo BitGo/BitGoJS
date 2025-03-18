@@ -2307,6 +2307,14 @@ export const coins = CoinMap.fromCoins([
     '0x4883c8f0529f37e40ebea870f3c13cdfad5d01f8',
     UnderlyingAsset['arbeth:veur']
   ),
+  arbethErc20(
+    '1a5481b2-67c1-4872-9b81-478773cc10c6',
+    'arbeth:tbill',
+    'OpenEden T-Bills',
+    18,
+    '0xf84d28a8d28292842dd73d1c5f99476a80b6666a',
+    UnderlyingAsset['arbeth:tbill']
+  ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
     'tarbeth:link',
@@ -2521,6 +2529,17 @@ export const coins = CoinMap.fromCoins([
     'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De::524C555344000000000000000000000000000000',
     'ripple.com',
     UnderlyingAsset['xrp:rlusd']
+  ),
+  xrpToken(
+    'd6d5ff31-c539-4ea7-ae62-a6d986190234',
+    'xrp:tbill',
+    'OpenEden T-Bills',
+    15,
+    'rJNE2NNz83GJYtWVLwMvchDWEon3huWnFn',
+    'TBL',
+    'rJNE2NNz83GJYtWVLwMvchDWEon3huWnFn::TBL',
+    'openeden.com',
+    UnderlyingAsset['xrp:tbill']
   ),
   txrpToken(
     '155818c4-efda-4758-bb25-37c093b6dc02',

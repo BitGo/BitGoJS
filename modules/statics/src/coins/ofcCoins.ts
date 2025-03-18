@@ -653,6 +653,13 @@ export const ofcCoins = [
   ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset['trx:usdt']),
   ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 15, UnderlyingAsset['xrp:rlusd']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 15, UnderlyingAsset['txrp:rlusd']),
+  ofcXrpToken(
+    '46c75216-5498-4417-b73c-a08c11d693ad',
+    'ofcxrp:tbill',
+    'OpenEden T-Bills',
+    15,
+    UnderlyingAsset['xrp:tbill']
+  ),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
@@ -701,6 +708,13 @@ export const ofcCoins = [
     'Arbitrum',
     18,
     UnderlyingAsset['arbeth:arb']
+  ),
+  ofcArbethErc20(
+    '1ba44303-cdf1-4322-bb82-54adbbbbd7f0',
+    'ofcarbeth:tbill',
+    'OpenEden T-Bills',
+    18,
+    UnderlyingAsset['arbeth:tbill']
   ),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),

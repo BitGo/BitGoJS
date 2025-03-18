@@ -2987,6 +2987,13 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:una')
   ),
   ofcerc20('5a894d9e-6b32-4b61-992b-cc684dcc01dd', 'ofceth:ads', 'Alkimi', 18, underlyingAssetForSymbol('eth:ads')),
+  ofcerc20(
+    '223902a4-2c32-4366-9164-6bd8dc338569',
+    'ofceth:fuelv1',
+    'Fuel v1',
+    18,
+    underlyingAssetForSymbol('eth:fuelv1')
+  ),
 ];
 
 export const tOfcErc20Coins = [
