@@ -3,24 +3,20 @@ import assert from 'assert';
 import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as babylonProtobuf from '@babylonlabs-io/babylon-proto-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
-import { ECPairInterface } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import { toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
 
 import { BabylonDescriptorBuilder } from './descriptor';
-
-export const mockBabylonProvider: vendor.BabylonProvider = {
-  signTransaction(): Promise<Uint8Array> {
-    throw new Error('Function not implemented.');
-  },
-};
+import { createStakingManager } from './stakingManager';
+import { getStakingParams } from './stakingParams';
 
 export type ValueWithTypeUrl<T> = { typeUrl: string; value: T };
 
 export function getSignedPsbt(
   psbt: bitcoinjslib.Psbt,
   descriptor: Descriptor,
-  signers: ECPairInterface[],
+  signers: utxolib.ECPairInterface[],
   { finalize = false }
 ): bitcoinjslib.Psbt {
   const wrappedPsbt = toWrappedPsbt(psbt.toBuffer());
@@ -45,12 +41,12 @@ export function getSignedPsbt(
 
 export function getBtcProviderForECKey(
   descriptorBuilder: BabylonDescriptorBuilder,
-  stakerKey: ECPairInterface
+  stakerKey: utxolib.ECPairInterface
 ): vendor.BtcProvider {
   function signWithDescriptor(
     psbt: bitcoinjslib.Psbt,
     descriptor: Descriptor,
-    key: ECPairInterface
+    key: utxolib.ECPairInterface
   ): bitcoinjslib.Psbt {
     psbt = getSignedPsbt(psbt, descriptor, [key], { finalize: false });
     // BUG: we need to blindly finalize here even though we have not fully signed
@@ -145,19 +141,19 @@ export async function createUnsignedPreStakeRegistrationBabylonTransaction(
 
 export async function createUnsignedPreStakeRegistrationBabylonTransactionWithBtcProvider(
   btcProvider: vendor.BtcProvider,
-  stakingParams: vendor.VersionedStakingParams,
   network: bitcoinjslib.Network,
   stakerBtcInfo: vendor.StakerInfo,
   stakingInput: vendor.StakingInputs,
   babylonBtcTipHeight: number,
   inputUTXOs: vendor.UTXO[],
   feeRateSatB: number,
-  babylonAddress: string
+  babylonAddress: string,
+  stakingParams: vendor.VersionedStakingParams[] = getStakingParams(network)
 ): Promise<Result> {
-  const manager = new vendor.BabylonBtcStakingManager(network, [stakingParams], btcProvider, mockBabylonProvider);
+  const manager = createStakingManager(network, btcProvider, stakingParams);
   return await createUnsignedPreStakeRegistrationBabylonTransaction(
     manager,
-    [stakingParams],
+    stakingParams,
     network,
     stakerBtcInfo,
     stakingInput,

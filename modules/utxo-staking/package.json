@@ -45,6 +45,12 @@
     "@bitgo/utxo-core": "^1.5.0",
     "@bitgo/utxo-lib": "^11.2.4",
     "@bitgo/wasm-miniscript": "2.0.0-beta.7",
-    "bitcoinjs-lib": "^6.1.7"
+    "bitcoinjs-lib": "^6.1.7",
+    "fp-ts": "^2.16.2",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "io-ts-types": "^0.5.19"
+  },
+  "devDependencies": {
+    "yargs": "^17.7.2"
   }
 }
