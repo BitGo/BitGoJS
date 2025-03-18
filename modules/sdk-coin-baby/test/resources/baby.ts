@@ -174,6 +174,7 @@ export const address = {
   invalidMemoIdAddress: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=-1',
   invalidMemoIdAddress2: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=1.23',
   multipleMemoIdAddress: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3?memoId=3&memoId=12',
+  finalityProviderAddress: 'e4889630fa8695dae630c41cd9b85ef165ccc2dc5e5935d5a24393a9defee9ef',
 };
 
 export const blockHash = {
