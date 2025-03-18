@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
-import { BaseTransaction, BuildTransactionError, MethodNotImplementedError } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, BaseKey } from '@bitgo/sdk-core';
 import { Utils } from './utils';
 import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
@@ -123,7 +123,9 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected signImplementation(): BaseTransaction {
-    throw new MethodNotImplementedError();
+  protected signImplementation(key: BaseKey): BaseTransaction {
+    const signatures = this._utils.getSignatures(this._transaction.payloadsData, this._publicKey, key.key);
+    this._transaction.addSignature(signatures);
+    return this._transaction;
   }
 }

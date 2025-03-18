@@ -1,5 +1,6 @@
 import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
+import { BaseKey } from '@bitgo/sdk-core';
 import * as testData from '../../resources/icp';
 import sinon from 'sinon';
 
@@ -75,6 +76,21 @@ describe('ICP Transaction Builder', async () => {
 
   it('should build a signed txn and give txn in broadcast format', async () => {
     txn.addSignature(testData.signatures);
+    txBuilder.combine();
+    const signedTxn = txBuilder.transaction.signedTransaction;
+    signedTxn.should.be.a.String();
+    should.equal(signedTxn, testData.signedTransaction);
+    const broadcastTxn = txBuilder.transaction.toBroadcastFormat();
+    broadcastTxn.should.be.a.String();
+    const broadcastTxnObj = JSON.parse(broadcastTxn);
+    should.equal(broadcastTxnObj.signed_transaction, signedTxn);
+    should.equal(broadcastTxnObj.network_identifier.network, '00000000000000020101');
+  });
+
+  it('should sign a txn and then give txn in broadcast format', async () => {
+    const baseKey: BaseKey = { key: testData.accounts.account1.secretKey };
+    txBuilder.sign(baseKey);
+    should.deepEqual(txn.signaturePayload, testData.signatures);
     txBuilder.combine();
     const signedTxn = txBuilder.transaction.signedTransaction;
     signedTxn.should.be.a.String();
