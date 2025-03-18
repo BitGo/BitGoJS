@@ -52,6 +52,8 @@ describe('Apt Transfer Transaction', () => {
 
       it('should build and send a signed tx', async function () {
         const txBuilder = factory.from(testData.TRANSACTION_USING_TRANSFER_COINS);
+        txBuilder.getSequenceNumber().should.equal(146);
+
         const tx = (await txBuilder.build()) as TransferTransaction;
         should.equal(tx.type, TransactionType.Send);
         tx.inputs.length.should.equal(1);
