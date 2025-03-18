@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.5.1...@bitgo/abstract-cosmos@11.6.0) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-core:** add validation for unsigned txHex ([4a5ba60](https://github.com/BitGo/BitGoJS/commit/4a5ba60cc98a3aededc7c3385cb8dd47f8c21353))
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
+### Features
+
+- **sdk-coin-baby:** add sdk support for babylon native staking ([4e59dc6](https://github.com/BitGo/BitGoJS/commit/4e59dc67e80e0f5c608f85e67b389fc2885f349c))
+
 ## [11.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.5.0...@bitgo/abstract-cosmos@11.5.1) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

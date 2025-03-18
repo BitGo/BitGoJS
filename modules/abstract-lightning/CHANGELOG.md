@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.0.1...@bitgo/abstract-lightning@4.1.0) (2025-03-18)
+
+### Bug Fixes
+
+- **abstract-lightning:** nest intent ([bba99ce](https://github.com/BitGo/BitGoJS/commit/bba99cec98e3ed6c3d7ab48dec6ddb5f6c47b5e7))
+
+### Features
+
+- **abstract-lightning:** add custodial lightning api functions ([16b825a](https://github.com/BitGo/BitGoJS/commit/16b825a4d052399d4360c689b24888ab327ff6c0))
+- **abstract-lightning:** add dev docs for pay invoice function ([8214e9e](https://github.com/BitGo/BitGoJS/commit/8214e9eae28b94a7592dfcccf84763158963fc16))
+- **abstract-lightning:** get transfer for lightning pay invoice ([cfc6127](https://github.com/BitGo/BitGoJS/commit/cfc61278903976c8409574ba773c29dea7cfd743))
+- **abstract-lightning:** move lightning wallet update ([f374f41](https://github.com/BitGo/BitGoJS/commit/f374f416e8ab907ef340dedd6c9d6c271d34253d))
+- **express:** remove unneeded express routes and use subtype on wallet ([3356783](https://github.com/BitGo/BitGoJS/commit/335678378737608280f768b8306ced454d88a7c2))
+- set a base factor for lightning ([32d0e48](https://github.com/BitGo/BitGoJS/commit/32d0e487cacf5ce6c840217ea0ab2bb7cedf79a2))
+
 ## [4.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.0.0...@bitgo/abstract-lightning@4.0.1) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

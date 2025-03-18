@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [23.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@23.0.1...@bitgo/abstract-eth@23.0.2) (2025-03-18)
+
+### Bug Fixes
+
+- pass isBatch in send API ([b8c0dfc](https://github.com/BitGo/BitGoJS/commit/b8c0dfc0e2748da7aa631dc77e0c505fcd5cbfcb))
+- **sdk-core:** add validation for unsigned txHex ([4a5ba60](https://github.com/BitGo/BitGoJS/commit/4a5ba60cc98a3aededc7c3385cb8dd47f8c21353))
+
 ## [23.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@23.0.0...@bitgo/abstract-eth@23.0.1) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

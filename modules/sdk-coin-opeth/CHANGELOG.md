@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [18.1.56](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.1.55...@bitgo/sdk-coin-opeth@18.1.56) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
 ## [18.1.55](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.1.54...@bitgo/sdk-coin-opeth@18.1.55) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-opeth

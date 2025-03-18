@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.3.0...@bitgo/statics@51.4.0) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-coin-stx:** adding contractId instead of contractAddress & contractName for SIP10 tokens ([68d4db7](https://github.com/BitGo/BitGoJS/commit/68d4db725e0cb35d217a5a47f333af6dc13502f0))
+
+### Features
+
+- **sdk-coin-stx:** added mainnet and testnet token details ([110bbcf](https://github.com/BitGo/BitGoJS/commit/110bbcf72bccbd8c7e7aaa415e223652c60d9243))
+- **sdk-core:** add aed and sgd ([2ba82d6](https://github.com/BitGo/BitGoJS/commit/2ba82d6b5a9e1522a54b4d086d0a06a60999f1ef))
+- **statics:** add go account support for aptos ([c1a4365](https://github.com/BitGo/BitGoJS/commit/c1a4365b94b5e9551e0ccb2d0873b1fda60d6b0d))
+- **statics:** new feature for coins supporting walletconnect ([b693155](https://github.com/BitGo/BitGoJS/commit/b693155abacfff9cfe8327b360115736a057a064))
+- **statics:** onboard tokens ([55d21aa](https://github.com/BitGo/BitGoJS/commit/55d21aad9d2b0361cc30d4ab1a2622cde4a9dbfd))
+
 # [51.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.2.0...@bitgo/statics@51.3.0) (2025-03-06)
 
 ### Bug Fixes

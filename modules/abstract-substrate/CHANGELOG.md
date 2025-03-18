@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.0...@bitgo/abstract-substrate@1.4.1) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.3.0...@bitgo/abstract-substrate@1.4.0) (2025-03-06)
 
 ### Features

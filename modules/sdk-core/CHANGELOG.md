@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [31.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@31.1.0...@bitgo/sdk-core@31.2.0) (2025-03-18)
+
+### Bug Fixes
+
+- pass isBatch in send API ([b8c0dfc](https://github.com/BitGo/BitGoJS/commit/b8c0dfc0e2748da7aa631dc77e0c505fcd5cbfcb))
+- **sdk-core:** add validation for unsigned txHex ([4a5ba60](https://github.com/BitGo/BitGoJS/commit/4a5ba60cc98a3aededc7c3385cb8dd47f8c21353))
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+- **sdk-core:** validate sweep destination on utxos ([b480b8c](https://github.com/BitGo/BitGoJS/commit/b480b8cbb2bd36e1dd8f5a3da716a64d46efac8a))
+
+### Features
+
+- **express:** remove unneeded express routes and use subtype on wallet ([3356783](https://github.com/BitGo/BitGoJS/commit/335678378737608280f768b8306ced454d88a7c2))
+- **sdk-core:** add aed and sgd ([2ba82d6](https://github.com/BitGo/BitGoJS/commit/2ba82d6b5a9e1522a54b4d086d0a06a60999f1ef))
+- **sdk-core:** add babylon and core staking params ([e13d5da](https://github.com/BitGo/BitGoJS/commit/e13d5dac9ccd471c06165b5010dba41073223aed))
+- **sdk-core:** add custodial lightning wallet creation ([d19802d](https://github.com/BitGo/BitGoJS/commit/d19802d8f766753f1f227d0145f3e00f9fb57f98))
+- **sdk-core:** lightning wallet sharing support ([2d1d566](https://github.com/BitGo/BitGoJS/commit/2d1d566ca9631f2d6c8055d5cd0ca9be70739d74))
+- send lightning payment after pending approval ([82e06db](https://github.com/BitGo/BitGoJS/commit/82e06db81d2c5e316a8dd4e501b72ffbc2090eeb))
+
 # [31.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@31.0.0...@bitgo/sdk-core@31.1.0) (2025-03-06)
 
 ### Bug Fixes

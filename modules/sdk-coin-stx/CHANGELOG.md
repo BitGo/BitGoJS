@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.4.0...@bitgo/sdk-coin-stx@3.5.0) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-coin-stx:** adding contractId instead of contractAddress & contractName for SIP10 tokens ([68d4db7](https://github.com/BitGo/BitGoJS/commit/68d4db725e0cb35d217a5a47f333af6dc13502f0))
+- **sdk-coin-stx:** fix post condition issue in fungible token transfer builder ([be2dbc7](https://github.com/BitGo/BitGoJS/commit/be2dbc703a0e0845dc6af06f071458460d993821))
+- **sdk-coin-stx:** from implementation issue for fungible token transfer builder ([eb709cc](https://github.com/BitGo/BitGoJS/commit/eb709cc8c0364418e84481b897d3061a37a7b19b))
+- **sdk-coin-stx:** function arguments order fix ([419ba84](https://github.com/BitGo/BitGoJS/commit/419ba845ffaf4a7c05707984bb72a91d3af37073))
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
+### Features
+
+- **sdk-coin-stx:** added fungible token transfer builder for sip10 ([f17c040](https://github.com/BitGo/BitGoJS/commit/f17c04054e7cf4fa87d1e2c1b23b713e21498db8))
+- **sdk-coin-stx:** implement verify transaction method ([2115f4a](https://github.com/BitGo/BitGoJS/commit/2115f4a7bddae8066ea10525c5f1f6245a104cb4))
+- **sdk-coin-stx:** modified explain transaction to accomodate token transfer transactions ([ea9014d](https://github.com/BitGo/BitGoJS/commit/ea9014db643a88999b5c9c8e2b571c6b24cebf42))
+
 # [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.3.26...@bitgo/sdk-coin-stx@3.4.0) (2025-03-06)
 
 ### Features

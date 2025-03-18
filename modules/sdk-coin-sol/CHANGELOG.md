@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.8.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.8.9...@bitgo/sdk-coin-sol@4.8.10) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** set fee for unsigned sweep ([75927f0](https://github.com/BitGo/BitGoJS/commit/75927f04b0ba19f3f1ce9ec10cad51c82e17b35c))
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
 ## [4.8.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.8.8...@bitgo/sdk-coin-sol@4.8.9) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
