@@ -1431,9 +1431,10 @@ describe('SOL:', function () {
     const sandBox = sinon.createSandbox();
     const coin = coins.get('tsol');
     const usdtMintAddress = '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C';
+    let callBack;
 
     beforeEach(() => {
-      const callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
+      callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
 
       callBack
         .withArgs({
@@ -1963,6 +1964,24 @@ describe('SOL:', function () {
     });
 
     it('should recover sol tokens to recovery destination with existing token accounts for unsigned sweep recoveries', async function () {
+      const feeResponse = testData.SolResponses.getFeesForMessageResponse;
+      feeResponse.body.result.value = 10000;
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'getFeeForMessage',
+            params: [
+              sinon.match.string,
+              {
+                commitment: 'finalized',
+              },
+            ],
+          },
+        })
+        .resolves(feeResponse);
+
       const tokenTxn = (await basecoin.recover({
         bitgoKey: testData.wrwUser.bitgoKey,
         recoveryDestination: testData.keys.destinationPubKey2,

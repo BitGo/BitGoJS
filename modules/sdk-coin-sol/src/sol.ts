@@ -781,12 +781,6 @@ export class Sol extends BaseCoin {
     let totalFee = new BigNumber(0);
     let totalFeeForTokenRecovery = new BigNumber(0);
 
-    if (params.durableNonce) {
-      const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
-      blockhash = durableNonceInfo.blockhash;
-      authority = durableNonceInfo.authority;
-    }
-
     // check for possible token recovery, recover the token provide by user
     if (params.tokenContractAddress) {
       const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey);
@@ -869,6 +863,10 @@ export class Sol extends BaseCoin {
     }
 
     if (params.durableNonce) {
+      const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
+      blockhash = durableNonceInfo.blockhash;
+      authority = durableNonceInfo.authority;
+
       txBuilder.nonce(blockhash, {
         walletNonceAddress: params.durableNonce.publicKey,
         authWalletAddress: authority,
@@ -879,13 +877,43 @@ export class Sol extends BaseCoin {
     const unsignedTransactionWithoutFee = (await txBuilder.build()) as Transaction;
     const serializedMessage = unsignedTransactionWithoutFee.solTransaction.serializeMessage().toString('base64');
 
-    const feePerSignature = await this.getFeeForMessage(serializedMessage);
-    const baseFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
+    const baseFee = await this.getFeeForMessage(serializedMessage);
+    const feePerSignature = params.durableNonce ? baseFee / 2 : baseFee;
     totalFee = totalFee.plus(new BigNumber(baseFee));
     totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(new BigNumber(baseFee));
     if (totalFee.gt(balance)) {
       throw Error('Did not find address with funds to recover');
     }
+
+    if (params.tokenContractAddress) {
+      // Check if there is sufficient native solana to recover tokens
+      if (new BigNumber(balance).lt(totalFeeForTokenRecovery)) {
+        throw Error(
+          'Not enough funds to pay for recover tokens fees, have: ' +
+            balance +
+            ' need: ' +
+            totalFeeForTokenRecovery.toString()
+        );
+      }
+      txBuilder.fee({ amount: feePerSignature });
+    } else {
+      const netAmount = new BigNumber(balance).minus(totalFee);
+      txBuilder = factory
+        .getTransferBuilder()
+        .nonce(blockhash)
+        .sender(bs58EncodedPublicKey)
+        .send({ address: params.recoveryDestination, amount: netAmount.toString() })
+        .feePayer(bs58EncodedPublicKey)
+        .fee({ amount: feePerSignature });
+
+      if (params.durableNonce) {
+        txBuilder.nonce(blockhash, {
+          walletNonceAddress: params.durableNonce.publicKey,
+          authWalletAddress: authority,
+        });
+      }
+    }
+
     if (!isUnsignedSweep) {
       // Sign the txn
       if (!params.userKey) {
@@ -900,25 +928,6 @@ export class Sol extends BaseCoin {
         throw new Error('missing wallet passphrase');
       }
 
-      if (params.tokenContractAddress) {
-        totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(new BigNumber(baseFee));
-        // Check if there is sufficient native solana to recover tokens
-        if (new BigNumber(balance).lt(totalFeeForTokenRecovery)) {
-          throw Error(
-            'Not enough funds to pay for recover tokens fees, have: ' +
-              balance +
-              ' need: ' +
-              totalFeeForTokenRecovery.toString()
-          );
-        }
-        txBuilder.fee({ amount: feePerSignature });
-      } else {
-        totalFee = new BigNumber(baseFee);
-        const netAmount = new BigNumber(balance).minus(totalFee);
-        txBuilder
-          .send({ address: params.recoveryDestination, amount: netAmount.toString() })
-          .fee({ amount: feePerSignature });
-      }
       // build the transaction with fee
       const unsignedTransaction = (await txBuilder.build()) as Transaction;
 
