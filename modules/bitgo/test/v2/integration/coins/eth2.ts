@@ -1,7 +1,5 @@
 import { bufferToHex } from 'ethereumjs-util';
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
-import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
@@ -11,15 +9,13 @@ describe('ETH2:', function () {
   let bitgo;
   let wallet;
 
-  before(
-    co(function* () {
-      bitgo = new TestBitGo({ env: 'test' });
-      bitgo.initializeTestVars();
+  before(async function () {
+    bitgo = new TestBitGo({ env: 'test' });
+    bitgo.initializeTestVars();
 
-      yield bitgo.authenticateTestUser(bitgo.testUserOTP());
-      wallet = yield bitgo.coin('teth2').wallets().getWallet({ id: TestBitGo.V2.TEST_ETH2_WALLET_ID });
-    })
-  );
+    await bitgo.authenticateTestUser(bitgo.testUserOTP());
+    wallet = await bitgo.coin('teth2').wallets().getWallet({ id: TestBitGo.V2.TEST_ETH2_WALLET_ID });
+  });
 
   describe('Sign message', function () {
     it('should sign and verify a message', async function () {

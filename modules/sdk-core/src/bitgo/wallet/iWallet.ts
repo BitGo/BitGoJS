@@ -693,7 +693,7 @@ export interface CrossChainUTXO {
 }
 
 export type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';
-export type SubWalletType = 'distributedCustody';
+export type SubWalletType = 'distributedCustody' | 'lightningCustody' | 'lightningSelfCustody';
 
 export interface WalletData {
   id: string;
@@ -816,6 +816,7 @@ export interface IWallet {
   unsupportedNftBalances(): NftBalance[] | undefined;
   coin(): string;
   type(): WalletType;
+  subType(): SubWalletType | undefined;
   multisigType(): 'onchain' | 'tss';
   multisigTypeVersion(): 'MPCv2' | undefined;
   label(): string;

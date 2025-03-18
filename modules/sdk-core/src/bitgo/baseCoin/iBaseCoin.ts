@@ -16,6 +16,13 @@ import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
 import { MPCTx, PopulatedIntent } from '../utils';
 
+export const multisigTypes = {
+  onchain: 'onchain',
+  tss: 'tss',
+} as const;
+
+export type MultisigType = keyof typeof multisigTypes;
+
 export interface Output extends ITransactionRecipient {
   address: string;
   // of form coin:token
@@ -152,7 +159,7 @@ export interface VerificationOptions {
 export interface VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
   txParams: TransactionParams;
-  wallet: Wallet;
+  wallet: IWallet;
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
   walletType?: 'onchain' | 'tss';
@@ -179,6 +186,7 @@ export interface SupplementGenerateWalletOptions {
   disableKRSEmail?: boolean;
   multisigType?: 'tss' | 'onchain' | 'blsdkg';
   type: 'hot' | 'cold' | 'custodial';
+  subType?: 'lightningCustody' | 'lightningSelfCustody';
   coinSpecific?: { [coinName: string]: unknown };
 }
 
@@ -484,6 +492,8 @@ export interface IBaseCoin {
   allowsAccountConsolidations(): boolean;
   getTokenEnablementConfig(): TokenEnablementConfig;
   supportsTss(): boolean;
+  supportsMultisig(): boolean;
+  getDefaultMultisigType(): MultisigType | undefined;
   supportsDeriveKeyWithSeed(): boolean;
   isEVM(): boolean;
   supportsBlsDkg(): boolean;

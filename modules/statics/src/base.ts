@@ -333,6 +333,11 @@ export enum CoinFeature {
    * This coin supports alphanumeric memo id
    */
   ALPHANUMERIC_MEMO_ID = 'alphanumeric-memo-id',
+
+  /**
+   * This coin supports WalletConnect
+   */
+  WALLET_CONNECT_DEFI = 'wallet-connect-defi',
 }
 
 /**
@@ -376,13 +381,11 @@ export enum UnderlyingAsset {
   ETC = 'etc',
   EOS = 'eos',
   ERD = 'erd',
-  EUR = 'eur',
   EURCVV0 = 'eurcvv0',
   EURCV = 'eurcv',
   EUROC = 'euroc',
   EURR = 'eurr',
   FLR = 'flr',
-  GBP = 'gbp',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
@@ -406,7 +409,6 @@ export enum UnderlyingAsset {
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
-  USD = 'usd',
   WEMIX = 'wemix',
   XLM = 'xlm',
   XDC = 'xdc',
@@ -2500,6 +2502,13 @@ export enum UnderlyingAsset {
   // Sip10 testnet tokens
   'tstx:tsip6dp' = 'tstx:tsip6dp',
   'tstx:tsip8dp' = 'tstx:tsip8dp',
+
+  // fiats
+  AED = 'aed',
+  EUR = 'eur',
+  GBP = 'gbp',
+  SGD = 'sgd',
+  USD = 'usd',
 }
 
 /**

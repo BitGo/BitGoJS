@@ -26,6 +26,8 @@ import {
   MPCAlgorithm,
   EDDSAMethods,
   EDDSAMethodTypes,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
@@ -147,6 +149,11 @@ export class Near extends BaseCoin {
    */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   getMPCAlgorithm(): MPCAlgorithm {

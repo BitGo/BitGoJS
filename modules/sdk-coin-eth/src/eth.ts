@@ -16,6 +16,8 @@ import {
   MPCAlgorithm,
   Recipient,
   Util,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import {
   AbstractEthLikeNewCoins,
@@ -78,6 +80,11 @@ export class Eth extends AbstractEthLikeNewCoins {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   getMPCAlgorithm(): MPCAlgorithm {

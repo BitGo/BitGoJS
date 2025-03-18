@@ -86,20 +86,11 @@ describe('Celo Transaction builder for wallet initialization', () => {
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
 
-    // TODO(COIN-2208): Update the txHex with correct value using london hardfork
-    xit('a signed init transaction from serialized with tough signature validation', async () => {
-      const newTxBuilder = getBuilder('tcelo') as TransactionBuilder;
-      newTxBuilder.from(testData.WALLET_CREATION_TX_CHECK_SIGNATURE_VALIDATION);
-      const newTx = await newTxBuilder.build();
-      should.equal(newTx.toBroadcastFormat(), testData.WALLET_CREATION_TX_CHECK_SIGNATURE_VALIDATION);
-    });
-
-    // TODO(COIN-2208): Update the txHex with correct value using london hardfork
-    xit('correct transaction id', async () => {
+    it('correct transaction id', async () => {
       const newTxBuilder = getBuilder('tcelo') as TransactionBuilder;
       newTxBuilder.from(testData.TEST_WALLET_CREATION);
       const newTx = await newTxBuilder.build();
-      should.equal(newTx.toJson().id, '0xc35ef12951bad60c37453a8bbabd50765c5426f4568e4afa3cbcd00b1505a946');
+      should.equal(newTx.toJson().id, '0x3b6cdb03cc92aae90ae067ec71e27f17ff879e9c6499ab682212bab367628a9c');
     });
   });
 

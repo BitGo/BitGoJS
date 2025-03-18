@@ -20,8 +20,6 @@ const crypto = require('crypto');
 import * as _ from 'lodash';
 const bitcoin = BitGoJS.bitcoin;
 const unspentData = require('./fixtures/largeunspents.json');
-import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 const common = require('../../src/common');
 const request = require('superagent');
 const Wallet = require('../../src/wallet');
@@ -3450,49 +3448,47 @@ describe('Accelerate Transaction (test server)', function accelerateTxDescribe()
   let parentTx;
   let parentTxFeeRate;
 
-  before(
-    co(function* coAccelerateTxBefore() {
-      require('nock').restore();
-      if (bitgo._token === undefined || bitgo._token === null) {
-        yield bitgo.authenticateTestUser(bitgo.testUserOTP());
-      }
-      yield bitgo.unlock({ otp: bitgo.testUserOTP() });
-      yield wallet.get();
-      const walletBalance = wallet.balance();
-      if (walletBalance < minWalletBalance) {
-        // ask to fund wallet if there are less than 100k satoshi
-        throw new Error(
-          `The v1 TBTC Test Wallet ${wallet.id()} doesn't have enough funds to run the test suite. The current balance is ${walletBalance} and the minimum balance is ${minWalletBalance}. Please send at least ${
-            minWalletBalance - walletBalance
-          } TBTC to that address`
-        );
-      }
+  before(async function coAccelerateTxBefore() {
+    require('nock').restore();
+    if (bitgo._token === undefined || bitgo._token === null) {
+      await bitgo.authenticateTestUser(bitgo.testUserOTP());
+    }
+    await bitgo.unlock({ otp: bitgo.testUserOTP() });
+    await wallet.get();
+    const walletBalance = wallet.balance();
+    if (walletBalance < minWalletBalance) {
+      // ask to fund wallet if there are less than 100k satoshi
+      throw new Error(
+        `The v1 TBTC Test Wallet ${wallet.id()} doesn't have enough funds to run the test suite. The current balance is ${walletBalance} and the minimum balance is ${minWalletBalance}. Please send at least ${
+          minWalletBalance - walletBalance
+        } TBTC to that address`
+      );
+    }
 
-      // random low fee rate at most 10% above the min fee rate, with a minimum of 500 sat / 1000 bytes.
-      // Maximum must also be bounded by the maxFeeRate, which the parent tx cannot break
-      const randomFeeRate = Math.max(Math.floor(Math.random() * minFeeRate * 0.1) + minFeeRate, 500);
-      parentTxFeeRate = Math.min(Math.max(randomFeeRate, minFeeRate), maxFeeRate);
+    // random low fee rate at most 10% above the min fee rate, with a minimum of 500 sat / 1000 bytes.
+    // Maximum must also be bounded by the maxFeeRate, which the parent tx cannot break
+    const randomFeeRate = Math.max(Math.floor(Math.random() * minFeeRate * 0.1) + minFeeRate, 500);
+    parentTxFeeRate = Math.min(Math.max(randomFeeRate, minFeeRate), maxFeeRate);
 
-      // create stuck parent tx
-      const address = yield wallet.createAddress();
-      parentTx = yield wallet.createAndSignTransaction({
-        recipients: [
-          {
-            address: address.address,
-            amount: 10000,
-          },
-        ],
-        feeRate: parentTxFeeRate,
-        xprv: wallet.keychains[0].xprv,
-      });
+    // create stuck parent tx
+    const address = await wallet.createAddress();
+    parentTx = await wallet.createAndSignTransaction({
+      recipients: [
+        {
+          address: address.address,
+          amount: 10000,
+        },
+      ],
+      feeRate: parentTxFeeRate,
+      xprv: wallet.keychains[0].xprv,
+    });
 
-      const sendResult = yield wallet.sendTransaction(parentTx);
-      parentTx = _.merge(parentTx, _.pick(sendResult, ['hash']));
+    const sendResult = await wallet.sendTransaction(parentTx);
+    parentTx = _.merge(parentTx, _.pick(sendResult, ['hash']));
 
-      // allow parent tx time to be indexed by smartbit
-      return Bluebird.delay(10000);
-    })
-  );
+    // allow parent tx time to be indexed by smartbit
+    return new Promise((resolve) => setTimeout(resolve, 10000));
+  });
 
   async function verifyTargetFeeRate({ parentTx, childTx, targetRate }) {
     const explorerBaseUrl = common.Environments[bitgo.getEnv()].btcExplorerBaseUrl;
@@ -3536,7 +3532,7 @@ describe('Accelerate Transaction (test server)', function accelerateTxDescribe()
     childTx.should.have.property('status', 'accepted');
 
     // allow child tx time to be indexed by smartbit
-    await Bluebird.delay(10000);
+    await new Promise((resolve) => setTimeout(resolve, 10000));
     return verifyTargetFeeRate({ parentTx, childTx, targetRate: combinedTxFeeRate });
   });
 });

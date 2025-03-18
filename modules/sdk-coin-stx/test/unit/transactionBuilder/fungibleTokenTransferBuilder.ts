@@ -8,6 +8,7 @@ import { TransactionType } from '@bitgo/sdk-core';
 import assert from 'assert';
 
 import { Sip10Token, StxLib } from '../../../src';
+import { Transaction } from '../../../src/lib';
 import * as testData from '../resources';
 
 describe('Stacks: Fungible Token Transfer Builder', () => {
@@ -55,14 +56,16 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
       it('an unsigned fungible token transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
+          uintCV('10000'),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
-          uintCV('10000'),
           bufferCVFromString('1'),
         ]);
         builder.fromPubKey(testData.TX_SENDER.pub);
         builder.numberSignatures(1);
         const tx = await builder.build();
+        const stacksTxn = tx as Transaction;
+        should.deepEqual(stacksTxn.stxTransaction.postConditions.values.length, 1);
 
         const txJson = tx.toJson();
         should.deepEqual(txJson.payload.contractAddress, testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.CONTRACT_ADDRESS);
@@ -84,9 +87,9 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
       it('an unsigned fungible token transfer transaction without memo', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
+          uintCV('10000'),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
-          uintCV('10000'),
         ]);
         builder.fromPubKey(testData.TX_SENDER.pub);
         builder.numberSignatures(1);
@@ -115,9 +118,9 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
       it('a multisig fungible token transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
+          uintCV('10000'),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
-          uintCV('10000'),
           bufferCVFromString('1'),
         ]);
 

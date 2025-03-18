@@ -15,6 +15,7 @@ import BigNum from 'bn.js';
 import { AbstractContractBuilder } from './abstractContractBuilder';
 import { Transaction } from './transaction';
 import {
+  findContractTokenNameUsingContract,
   functionArgsToTokenTransferParams,
   getSTXAddressFromPubKeys,
   isValidAddress,
@@ -39,12 +40,12 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
     this.contractName(this._contractName);
     this.functionName(this._functionName);
     this.functionArgs(this._functionArgs);
-    this._postConditionMode = PostConditionMode.Deny;
-    this._postConditions = this.tokenTransferParamsToPostCondition(this._fungibleTokenTransferParams);
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    this._postConditionMode = PostConditionMode.Deny;
+    this._postConditions = this.tokenTransferParamsToPostCondition(this._fungibleTokenTransferParams);
     await super.buildImplementation();
     this.transaction.setTransactionType(TransactionType.Send);
     return this.transaction;
@@ -127,6 +128,7 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
       throw new InvalidParameterValueError('Invalid number of arguments');
     }
     this._functionArgs = args;
+    this._fungibleTokenTransferParams = functionArgsToTokenTransferParams(this._functionArgs);
     return this;
   }
 
@@ -137,6 +139,12 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
    * @returns {PostCondition[]} returns stx fungible post condition
    */
   private tokenTransferParamsToPostCondition(tokenTransferParams: TokenTransferParams): PostCondition[] {
+    if (!this._tokenName) {
+      const contractTokenName = findContractTokenNameUsingContract(this._contractAddress, this._contractName);
+      if (contractTokenName) {
+        this.tokenName(contractTokenName);
+      }
+    }
     const amount: BigNum = new BigNum(tokenTransferParams.amount);
     return [
       makeStandardFungiblePostCondition(

@@ -27,6 +27,8 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   NotSupported,
+  MultisigType,
+  multisigTypes,
 } from '@bitgo/sdk-core';
 import stellar from 'stellar-sdk';
 import BigNumber from 'bignumber.js';
@@ -590,6 +592,16 @@ export class Algo extends BaseCoin {
 
   supportsDeriveKeyWithSeed(): boolean {
     return false;
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   /**

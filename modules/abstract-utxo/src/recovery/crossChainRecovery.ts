@@ -1,4 +1,3 @@
-import Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import { Dimensions } from '@bitgo/unspents';
@@ -199,23 +198,26 @@ async function toWalletUnspents<TNumber extends number | bigint = number>(
   wallet: IWallet | WalletV1
 ): Promise<WalletUnspent<TNumber>[]> {
   const addresses = new Set(unspents.map((u) => u.address));
-  return (
-    await Bluebird.mapSeries(addresses, async (address): Promise<WalletUnspent<TNumber>[]> => {
-      let scriptId;
-      try {
-        scriptId = await getScriptId(recoveryCoin, wallet, utxolib.address.toOutputScript(address, sourceCoin.network));
-      } catch (e) {
-        console.error(`error getting scriptId for ${address}:`, e);
-        return [];
-      }
-      return unspents
-        .filter((u) => u.address === address)
-        .map((u) => ({
-          ...u,
-          ...scriptId,
-        }));
-    })
-  ).flat();
+  const walletUnspents: WalletUnspent<TNumber>[] = [];
+
+  for (const address of addresses) {
+    let scriptId;
+    try {
+      scriptId = await getScriptId(recoveryCoin, wallet, utxolib.address.toOutputScript(address, sourceCoin.network));
+    } catch (e) {
+      console.error(`error getting scriptId for ${address}:`, e);
+      continue;
+    }
+    const filteredUnspents = unspents
+      .filter((u) => u.address === address)
+      .map((u) => ({
+        ...u,
+        ...scriptId,
+      }));
+    walletUnspents.push(...filteredUnspents);
+  }
+
+  return walletUnspents;
 }
 
 /**

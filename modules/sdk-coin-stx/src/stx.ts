@@ -2,6 +2,8 @@ import {
   BaseCoin,
   BitGoBase,
   KeyPair,
+  MultisigType,
+  multisigTypes,
   SignedTransaction,
   TransactionRecipient,
   TransactionType,
@@ -10,8 +12,12 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import { cvToString, cvToValue } from '@stacks/transactions';
+
 import { ExplainTransactionOptions, StxSignTransactionOptions, StxTransactionExplanation } from './types';
 import { StxLib } from '.';
+import { TransactionBuilderFactory } from './lib';
+import { TransactionBuilder } from './lib/transactionBuilder';
+import { findTokenNameByContract } from './lib/utils';
 
 export class Stx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -44,6 +50,20 @@ export class Stx extends BaseCoin {
 
   getBaseFactor(): string | number {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getTransaction(coinConfig: Readonly<StaticsBaseCoin>): TransactionBuilder {
+    return new TransactionBuilderFactory(coinConfig).getTransferBuilder();
+  }
+
+  /** {@inheritDoc } **/
+  supportsMultisig(): boolean {
+    return true;
+  }
+
+  /** inherited doc */
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.onchain;
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
@@ -188,10 +208,11 @@ export class Stx extends BaseCoin {
       let outputAmount: string;
       let memo: string | undefined;
       if (txJson.payload.contractAddress && txJson.payload.functionArgs.length >= 3) {
-        outputAmount = cvToValue(txJson.payload.functionArgs[2]).toString();
+        outputAmount = cvToValue(txJson.payload.functionArgs[0]).toString();
         transactionRecipient = {
-          address: cvToString(txJson.payload.functionArgs[1]),
+          address: cvToString(txJson.payload.functionArgs[2]),
           amount: outputAmount,
+          tokenName: findTokenNameByContract(txJson.payload.contractAddress, txJson.payload.contractName),
         };
         if (txJson.payload.functionArgs.length === 4) {
           memo = txJson.payload.functionArgs[3].buffer.toString('ascii');
