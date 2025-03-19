@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.2.60](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.2.59...@bitgo/sdk-coin-eth@24.2.60) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
 ## [24.2.59](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.2.58...@bitgo/sdk-coin-eth@24.2.59) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth
