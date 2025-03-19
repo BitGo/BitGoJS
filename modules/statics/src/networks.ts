@@ -172,14 +172,18 @@ class AptTestnet extends Testnet implements AccountNetwork {
 class Icp extends Mainnet implements AccountNetwork {
   name = 'Internet Computer';
   family = CoinFamily.ICP;
-  explorerUrl = 'https://www.icpexplorer.org'; //TODO(WIN-4242): update to the prod rosetta explorer url
-}
+  explorerUrl = 'https://www.icpexplorer.org/#/tx/'; //TODO(WIN-4242): update to the test rosetta explorer url
+  accountExplorerUrl = 'https://www.icpexplorer.org/#/account/?network=mainnet';
+  blockExplorerUrl = 'https://www.icpexplorer.org/#/block/?network=mainnet';
+  }
 
 class IcpTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Internet Computer';
   family = CoinFamily.ICP;
-  explorerUrl = 'https://www.icpexplorer.org'; //TODO(WIN-4242): update to the test rosetta explorer url
-}
+  explorerUrl = 'https://www.icpexplorer.org/#/tx/'; //TODO(WIN-4242): update to the test rosetta explorer url
+  accountExplorerUrl = 'https://www.icpexplorer.org/#/account/?network=testnet';
+  blockExplorerUrl = 'https://www.icpexplorer.org/#/block/?network=testnet';
+  }
 class Arbitrum extends Mainnet implements EthereumNetwork {
   name = 'Arbitrum';
   family = CoinFamily.ARBETH;
