@@ -24,7 +24,6 @@
   "dependencies": {
     "@bitgo/utxo-lib": "^11.2.4",
     "@types/superagent": "4.1.16",
-    "bluebird": "^3.7.2",
     "superagent": "^9.0.1"
   },
   "lint-staged": {
