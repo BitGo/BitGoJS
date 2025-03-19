@@ -2979,6 +2979,14 @@ export const ofcErc20Coins = [
   ofcerc20('098c9adb-469b-44e8-a327-b7099797888e', 'ofceth:fuel', 'Fuel', 9, underlyingAssetForSymbol('eth:fuel')),
   ofcerc20('12ef69e3-a6a2-484b-9977-615c7dab9ef3', 'ofceth:pyr', 'PYR', 18, underlyingAssetForSymbol('eth:pyr')),
   ofcerc20('f93561d5-8e67-4165-bf92-34d97d6f96a5', 'ofceth:ibtc', 'iBTC', 8, underlyingAssetForSymbol('eth:ibtc')),
+  ofcerc20(
+    'a696dd96-77e2-483e-b8ff-057bc3332ff9',
+    'ofceth:una',
+    'Unagi Token',
+    18,
+    underlyingAssetForSymbol('eth:una')
+  ),
+  ofcerc20('5a894d9e-6b32-4b61-992b-cc684dcc01dd', 'ofceth:ads', 'Alkimi', 18, underlyingAssetForSymbol('eth:ads')),
 ];
 
 export const tOfcErc20Coins = [

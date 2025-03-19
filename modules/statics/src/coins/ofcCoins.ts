@@ -568,6 +568,14 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['sol:melania']
   ),
+  ofcsolToken('ea60791b-6ab9-4c90-b691-b669e3815c1c', 'ofcsol:matrix', 'Matrix One', 9, UnderlyingAsset['sol:matrix']),
+  ofcsolToken(
+    '05e3371a-db83-4e9d-9e53-cbc557fc6de9',
+    'ofcsol:eurcv',
+    'EUR CoinVertible',
+    2,
+    UnderlyingAsset['sol:eurcv']
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',

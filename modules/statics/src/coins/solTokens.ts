@@ -2538,6 +2538,26 @@ export const solTokens = [
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
     ]
   ),
+  solToken(
+    '3766131e-2d14-46f8-bc14-b15c080256e3',
+    'sol:matrix',
+    'Matrix One',
+    9,
+    'E1R4RF89GcKxz62DVfojxDJteLFFs8rtiXcGcrx5HbTj',
+    'E1R4RF89GcKxz62DVfojxDJteLFFs8rtiXcGcrx5HbTj',
+    UnderlyingAsset['sol:matrix'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '88814831-9cae-4174-8d1c-380aeb3fe55a',
+    'sol:eurcv',
+    'EUR CoinVertible',
+    2,
+    'DghpMkatCiUsofbTmid3M3kAbDTPqDwKiYHnudXeGG52',
+    'DghpMkatCiUsofbTmid3M3kAbDTPqDwKiYHnudXeGG52',
+    UnderlyingAsset['sol:eurcv'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
