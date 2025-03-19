@@ -10235,6 +10235,14 @@ export const erc20Coins = [
     '0x3106a0a076bedae847652f42ef07fd58589e001f',
     UnderlyingAsset['eth:ads']
   ),
+  erc20(
+    '2d048dbf-d629-46d0-9d9d-10cf2eecbef1',
+    'eth:fuelv1',
+    'Fuel v1',
+    18,
+    '0x56ebdae96d179549f279ea0cfea3b3432b8cd2bc',
+    UnderlyingAsset['eth:fuelv1']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
