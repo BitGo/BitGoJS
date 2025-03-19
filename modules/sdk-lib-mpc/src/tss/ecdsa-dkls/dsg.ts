@@ -1,4 +1,4 @@
-import { Message, SignSession } from '@silencelaboratories/dkls-wasm-ll-node';
+import { Message, SignSessionOTVariant } from '@silencelaboratories/dkls-wasm-ll-node';
 import { DeserializedBroadcastMessage, DeserializedDklsSignature, DeserializedMessages, DsgState } from './types';
 import { decode } from 'cbor-x';
 
@@ -9,7 +9,7 @@ type BundlerWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-bundler');
 type DklsWasm = NodeWasmer | WebWasmer | BundlerWasmer;
 
 export class Dsg {
-  protected dsgSession: SignSession | undefined;
+  protected dsgSession: SignSessionOTVariant | undefined;
   protected dsgSessionBytes: Uint8Array;
   private _signature: DeserializedDklsSignature | undefined;
   protected keyShareBytes: Buffer;
@@ -35,7 +35,7 @@ export class Dsg {
 
   private _restoreSession() {
     if (!this.dsgSession) {
-      this.dsgSession = this.getDklsWasm().SignSession.fromBytes(this.dsgSessionBytes);
+      this.dsgSession = this.getDklsWasm().SignSessionOTVariant.fromBytes(this.dsgSessionBytes);
     }
   }
 
@@ -132,12 +132,12 @@ export class Dsg {
       const initDkls = await import('@silencelaboratories/dkls-wasm-ll-web');
       await initDkls.default();
     }
-    const { Keyshare, SignSession } = this.getDklsWasm();
+    const { Keyshare, SignSessionOTVariant } = this.getDklsWasm();
     const keyShare = Keyshare.fromBytes(this.keyShareBytes);
     if (keyShare.partyId !== this.partyIdx) {
       throw Error(`Party index: ${this.partyIdx} does not match key share partyId: ${keyShare.partyId} `);
     }
-    this.dsgSession = new SignSession(keyShare, this.derivationPath);
+    this.dsgSession = new SignSessionOTVariant(keyShare, this.derivationPath);
     try {
       const payload = this.dsgSession.createFirstMessage().payload;
       this._deserializeState();
