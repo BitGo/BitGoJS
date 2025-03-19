@@ -10,26 +10,34 @@ export type KeyPurpose = t.TypeOf<typeof KeyPurpose>;
 
 export const LightningAuthKeychainCoinSpecific = getCodecPair(t.type({ purpose: KeyPurpose }));
 
-export const LightningKeychain = t.strict(
-  {
-    id: NonEmptyString,
-    pub: NonEmptyString,
-    encryptedPrv: NonEmptyString,
-    source: t.literal('user'),
-  },
+export const LightningKeychain = t.intersection(
+  [
+    t.type({
+      id: NonEmptyString,
+      pub: NonEmptyString,
+      source: t.literal('user'),
+    }),
+    t.partial({
+      encryptedPrv: NonEmptyString,
+    }),
+  ],
   'LightningKeychain'
 );
 
 export type LightningKeychain = t.TypeOf<typeof LightningKeychain>;
 
-export const LightningAuthKeychain = t.strict(
-  {
-    id: NonEmptyString,
-    pub: NonEmptyString,
-    encryptedPrv: NonEmptyString,
-    coinSpecific: LightningAuthKeychainCoinSpecific,
-    source: t.literal('user'),
-  },
+export const LightningAuthKeychain = t.intersection(
+  [
+    t.type({
+      id: NonEmptyString,
+      pub: NonEmptyString,
+      coinSpecific: LightningAuthKeychainCoinSpecific,
+      source: t.literal('user'),
+    }),
+    t.partial({
+      encryptedPrv: NonEmptyString,
+    }),
+  ],
   'LightningAuthKeychain'
 );
 

@@ -91,11 +91,18 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
 
   const userKey = await getLightningKeychain(wallet);
+  const userKeyEncryptedPrv = userKey.encryptedPrv;
+  if (!userKeyEncryptedPrv) {
+    throw new ApiResponseError('Missing encryptedPrv in user keychain', 400);
+  }
   const { nodeAuthKey } = await getLightningAuthKeychains(wallet);
-
+  const nodeAuthKeyEncryptedPrv = nodeAuthKey.encryptedPrv;
+  if (!nodeAuthKeyEncryptedPrv) {
+    throw new ApiResponseError('Missing encryptedPrv in node auth keychain', 400);
+  }
   const network = getUtxolibNetwork(coin.getChain());
-  const signerRootKey = getSignerRootKey(passphrase, userKey.encryptedPrv, network, bitgo.decrypt);
-  const macaroonRootKey = getMacaroonRootKey(passphrase, nodeAuthKey.encryptedPrv, bitgo.decrypt);
+  const signerRootKey = getSignerRootKey(passphrase, userKeyEncryptedPrv, network, bitgo.decrypt);
+  const macaroonRootKey = getMacaroonRootKey(passphrase, nodeAuthKeyEncryptedPrv, bitgo.decrypt);
 
   const { admin_macaroon: adminMacaroon } = await lndSignerClient.initWallet({
     // The passphrase at LND can only accommodate a base64 character set
