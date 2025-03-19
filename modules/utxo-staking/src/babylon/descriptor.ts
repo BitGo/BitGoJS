@@ -44,21 +44,6 @@ export class BabylonDescriptorBuilder {
       finalityProviderKeys: Buffer[];
     } & StakingParams
   ): BabylonDescriptorBuilder {
-    /*
-
-  const stakerKey = getECKey('staker');
-  const covenantThreshold = stakingParams.covenantQuorum;
-  const stakingTimelock = stakingParams.minStakingTimeBlocks;
-  const unbondingTimelock = stakingParams.unbondingTime;
-  const vendorBuilder = new vendor.StakingScriptData(
-    getXOnlyPubkey(stakerKey),
-    finalityProviderKeys.map(getXOnlyPubkey),
-    covenantKeys.map(getXOnlyPubkey),
-    covenantThreshold,
-    stakingTimelock,
-    unbondingTimelock
-  );
-     */
     return new BabylonDescriptorBuilder(
       params.stakerKey,
       params.finalityProviderKeys,
