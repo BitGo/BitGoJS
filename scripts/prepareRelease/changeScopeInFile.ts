@@ -1,16 +1,19 @@
 import { readFileSync, writeFileSync } from 'fs';
 
-export function updateModuleNames(input: string, lernaModules: string[], targetScope: string): string {
-  lernaModules.forEach((moduleName) => {
-    const newName = `${moduleName.replace('@bitgo/', `${targetScope}/`)}`;
-    input = input.replace(new RegExp(moduleName, 'g'), newName);
+export function getNewModuleName(moduleName: string, targetScope: string): string {
+  return moduleName.replace('@bitgo/', `${targetScope}/`);
+}
+
+export function updateModuleNames(input: string, moduleNames: string[], targetScope: string): string {
+  moduleNames.forEach((moduleName) => {
+    input = input.replace(new RegExp(moduleName, 'g'), getNewModuleName(moduleName, targetScope));
   });
   return input;
 }
 
-export function changeScopeInFile(filePath: string, lernaModules: string[], targetScope: string): number {
+export function changeScopeInFile(filePath: string, moduleNames: string[], targetScope: string): number {
   const oldContent = readFileSync(filePath, { encoding: 'utf8' });
-  const newContent = updateModuleNames(oldContent, lernaModules, targetScope);
+  const newContent = updateModuleNames(oldContent, moduleNames, targetScope);
   if (newContent !== oldContent) {
     writeFileSync(filePath, newContent, { encoding: 'utf-8' });
     return 1;
