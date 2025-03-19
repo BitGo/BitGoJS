@@ -16,30 +16,34 @@ export async function getDistTags(packageName: string): Promise<DistTags> {
   return response.json();
 }
 
-export async function getDistTagsForModuleNames(moduleNames: string[]): Promise<(DistTags | undefined)[]> {
-  return Promise.all(
-    moduleNames.map(async (moduleName) => {
-      switch (moduleName) {
-        case '@bitgo-beta/express':
-        case '@bitgo-beta/web-demo':
-        case '@bitgo-beta/sdk-test':
-          console.warn(`Skipping ${moduleName} as it's not published to npm`);
-          return undefined;
-      }
-      try {
-        return await getDistTags(moduleName);
-      } catch (e) {
-        console.warn(`Failed to fetch dist tags for ${moduleName}`, e);
-        return undefined;
-      }
-    })
+export async function getDistTagsForModuleNames(moduleNames: string[]): Promise<Map<string, DistTags>> {
+  return new Map(
+    (
+      await Promise.all(
+        moduleNames.map(async (moduleName): Promise<[string, DistTags][]> => {
+          switch (moduleName) {
+            case '@bitgo-beta/express':
+            case '@bitgo-beta/web-demo':
+            case '@bitgo-beta/sdk-test':
+              console.warn(`Skipping ${moduleName} as it's not published to npm`);
+              return [];
+          }
+          try {
+            return [[moduleName, await getDistTags(moduleName)]];
+          } catch (e) {
+            console.warn(`Failed to fetch dist tags for ${moduleName}`, e);
+            return [];
+          }
+        })
+      )
+    ).flat()
   );
 }
 
 export async function getDistTagsForModuleLocations(moduleLocations: string[]): Promise<(DistTags | undefined)[]> {
-  return getDistTagsForModuleNames(
-    moduleLocations.map(
-      (modulePath) => JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' })).name
-    )
+  const names: string[] = moduleLocations.map(
+    (modulePath) => JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' })).name
   );
+  const map = await getDistTagsForModuleNames(names);
+  return names.map((name) => map.get(name));
 }
