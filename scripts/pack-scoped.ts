@@ -47,6 +47,10 @@ async function changeModuleVersions(
   const packageJsonPath = mpath.join(dir, 'package.json');
   const packageJson = JSON.parse(await fs.promises.readFile(packageJsonPath, 'utf-8'));
   newModuleNames.forEach((m) => {
+    if (!distTagsByModuleName.has(m)) {
+      console.warn(`No dist tags found for ${m}`);
+      return;
+    }
     const newVersion = distTagsByModuleName.get(m)?.beta;
     if (newVersion) {
       setDependencyVersion(packageJson, m, newVersion);
@@ -55,14 +59,37 @@ async function changeModuleVersions(
   await fs.promises.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 }
 
+async function getDistTagsFromPackageJson(
+  newModuleNames: string[],
+  packageJsonPath: string
+): Promise<Map<string, DistTags>> {
+  const packageJson = JSON.parse(await fs.promises.readFile(packageJsonPath, 'utf-8'));
+  return new Map<string, DistTags>(
+    newModuleNames.map((m) => {
+      const distTags = packageJson.dependencies[m];
+      if (distTags) {
+        return [m, { beta: distTags }];
+      }
+      return [m, { beta: '0.0.0' }];
+    })
+  );
+}
+
 async function getDistTagsForModuleNamesCached(
   dir: string,
-  moduleNames: string[],
+  newModuleNames: string[],
   params: {
     scope: string;
+    sourceFile?: string;
     cache?: string;
   }
 ): Promise<Map<string, DistTags>> {
+  if (params.sourceFile) {
+    if (params.sourceFile.endsWith('package.json')) {
+      return getDistTagsFromPackageJson(newModuleNames, params.sourceFile);
+    }
+  }
+
   if (params.cache) {
     try {
       console.log(`Loading cached dist tags from ${params.cache}`);
@@ -77,7 +104,6 @@ async function getDistTagsForModuleNamesCached(
     }
   }
 
-  const newModuleNames = moduleNames.map((m) => updateModuleNames(m, moduleNames, params.scope));
   const distTagsByModuleName = await getDistTagsForModuleNames(newModuleNames);
   if (params.cache) {
     console.log(`Caching dist tags to ${params.cache}`);
@@ -89,16 +115,23 @@ async function getDistTagsForModuleNamesCached(
 /** Change the scope of a module and update its dependencies */
 async function runChangeScope(
   dir: string,
-  params: { lernaModules?: LernaModule[]; scope: string; cacheDistTags?: string }
+  params: {
+    lernaModules?: LernaModule[];
+    scope: string;
+    distTagsFrom?: string;
+    cacheDistTags?: string;
+  }
 ) {
   const { lernaModules = await getLernaModules() } = params;
   const moduleNames = lernaModules.map((m) => m.name);
+  const newModuleNames = moduleNames.map((m) => updateModuleNames(m, moduleNames, params.scope));
   await changeModuleScope(dir, { ...params, lernaModules });
   await changeModuleVersions(dir, {
     ...params,
     moduleNames,
-    distTagsByModuleName: await getDistTagsForModuleNamesCached(dir, moduleNames, {
+    distTagsByModuleName: await getDistTagsForModuleNamesCached(dir, newModuleNames, {
       scope: params.scope,
+      sourceFile: params.distTagsFrom,
       cache: params.cacheDistTags,
     }),
   });
@@ -184,9 +217,13 @@ yargs
         })
         .options({
           scope: optScope,
+          distTagsFrom: {
+            describe: 'Path to a file to read dist tags from',
+            type: 'string',
+          },
         });
     },
-    async handler({ dir, scope }) {
+    async handler({ dir, scope, distTagsFrom }) {
       const lernaModules = await getLernaModules();
       const module = getModuleByDir(lernaModules, dir);
       const archiveName = getArchiveName(module);
@@ -194,6 +231,7 @@ yargs
       await runChangeScope(mpath.join(dir, scopedPackageDir, 'package'), {
         scope,
         lernaModules,
+        distTagsFrom,
         cacheDistTags: mpath.join(dir, scopedPackageDir, '.distTags.cache.json'),
       });
       await packArchive(dir, archiveName, scopedPackageDir);
