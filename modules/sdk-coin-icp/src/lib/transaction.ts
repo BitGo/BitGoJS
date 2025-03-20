@@ -22,6 +22,9 @@ import {
   ParsedTransaction,
   IcpOperation,
   IcpAccount,
+  MAX_INGRESS_TTL,
+  PERMITTED_DRIFT,
+  RawTransaction,
 } from './iface';
 import { Utils } from './utils';
 
@@ -78,20 +81,23 @@ export class Transaction extends BaseTransaction {
     return this._payloadsData;
   }
 
-  fromRawTransaction(rawTransaction: string): void {
+  async fromRawTransaction(rawTransaction: string): Promise<void> {
     try {
-      const parsedTx = JSON.parse(rawTransaction);
-      switch (parsedTx.type) {
+      const jsonRawTransaction: RawTransaction = JSON.parse(rawTransaction);
+      const parsedTx = await this.parseUnsignedTransaction(jsonRawTransaction.serializedTxHex);
+      const senderPublicKeyHex = jsonRawTransaction.publicKey;
+      const transactionType = parsedTx.operations[0].type;
+      switch (transactionType) {
         case OperationType.TRANSACTION:
           this._icpTransactionData = {
-            senderAddress: parsedTx.address,
-            receiverAddress: parsedTx.externalOutputs[0].address,
-            amount: parsedTx.spendAmountString,
-            fee: parsedTx.fee,
-            senderPublicKeyHex: parsedTx.senderKey,
-            memo: parsedTx.seqno,
-            transactionType: parsedTx.type,
-            expiryTime: parsedTx.expiryTime,
+            senderAddress: parsedTx.operations[0].account.address,
+            receiverAddress: parsedTx.operations[1].account.address,
+            amount: parsedTx.operations[1].amount.value,
+            fee: parsedTx.operations[2].amount.value,
+            senderPublicKeyHex: senderPublicKeyHex,
+            memo: parsedTx.metadata.memo,
+            transactionType: transactionType,
+            expiryTime: Number(parsedTx.metadata.created_at_time + (MAX_INGRESS_TTL - PERMITTED_DRIFT)),
           };
           this._utils.validateRawTransaction(this._icpTransactionData);
           break;
