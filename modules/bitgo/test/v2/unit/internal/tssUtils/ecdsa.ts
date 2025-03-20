@@ -659,11 +659,8 @@ describe('TSS Ecdsa Utils:', async function () {
       transactions: [
         {
           unsignedTx: {
-            // hteth txid: 0xc5a7bfe6b13ceae563da0f9feaa9c4ad1c101a15366a2a488828a5dd27cb9da3
-            serializedTxHex:
-              '02f38242688084448b9b8084448b9b908301637894a1cfb9d51c0af191ff21c5f0f01723e056f7dc12865af3107a400080c0808080',
-            signableHex:
-              '02f08242688084448b9b8084448b9b908301637894a1cfb9d51c0af191ff21c5f0f01723e056f7dc12865af3107a400080c0',
+            serializedTxHex: 'TOO MANY SECRETS',
+            signableHex: 'TOO MANY SECRETS',
             derivationPath: '', // Needs this when key derivation is supported
           },
           state: 'pendingSignature',
@@ -672,11 +669,8 @@ describe('TSS Ecdsa Utils:', async function () {
       ],
       unsignedTxs: [
         {
-          // hteth txid: 0xc5a7bfe6b13ceae563da0f9feaa9c4ad1c101a15366a2a488828a5dd27cb9da3
-          serializedTxHex:
-            '02f38242688084448b9b8084448b9b908301637894a1cfb9d51c0af191ff21c5f0f01723e056f7dc12865af3107a400080c0808080',
-          signableHex:
-            '02f38242688084448b9b8084448b9b908301637894a1cfb9d51c0af191ff21c5f0f01723e056f7dc12865af3107a400080c0808080',
+          serializedTxHex: 'TOO MANY SECRETS',
+          signableHex: 'TOO MANY SECRETS',
           derivationPath: '', // Needs this when key derivation is supported
         },
       ],
@@ -937,41 +931,6 @@ describe('TSS Ecdsa Utils:', async function () {
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
       const userGpgActual = sendShareSpy.getCalls()[0].args[10] as string;
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
-    });
-
-    it('signTxRequest should fail with wrong recipient', async function () {
-      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData);
-      await tssUtils
-        .signTxRequest({
-          txRequest: txRequestId,
-          prv: JSON.stringify({
-            pShare: userKeyShare.pShare,
-            bitgoNShare: bitgoKeyShare.nShares[1],
-            backupNShare: backupKeyShare.nShares[1],
-          }),
-          reqId,
-          txParams: { recipients: [{ address: '0x1234', amount: '100000000000000' }], type: 'transfer' },
-        })
-        .should.be.rejectedWith('destination address does not match with the recipient address');
-    });
-
-    it('signTxRequest should fail with incorrect value', async function () {
-      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData);
-      await tssUtils
-        .signTxRequest({
-          txRequest: txRequestId,
-          prv: JSON.stringify({
-            pShare: userKeyShare.pShare,
-            bitgoNShare: bitgoKeyShare.nShares[1],
-            backupNShare: backupKeyShare.nShares[1],
-          }),
-          reqId,
-          txParams: {
-            recipients: [{ address: '0xa1cfb9d51c0af191ff21c5f0f01723e056f7dc12', amount: '1' }],
-            type: 'transfer',
-          },
-        })
-        .should.be.rejectedWith('the transaction amount in txPrebuild does not match the value given by client');
     });
 
     it('getOfflineSignerPaillierModulus should succeed', async function () {

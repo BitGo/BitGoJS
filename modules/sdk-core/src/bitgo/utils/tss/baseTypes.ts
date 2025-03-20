@@ -1,6 +1,6 @@
 import { Key, SerializedKeyPair } from 'openpgp';
 import { IRequestTracer } from '../../../api';
-import { KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
+import { KeychainsTriplet, ParsedTransaction } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
@@ -422,7 +422,6 @@ export type TSSParams = {
   txRequest: string | TxRequest; // can be either a string or TxRequest
   reqId: IRequestTracer;
   apiVersion?: ApiVersion;
-  txParams?: TransactionParams;
 };
 
 export type TSSParamsForMessage = TSSParams & {

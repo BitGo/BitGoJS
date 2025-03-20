@@ -159,7 +159,7 @@ export interface VerificationOptions {
 export interface VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
   txParams: TransactionParams;
-  wallet: IWallet;
+  wallet: Wallet;
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
   walletType?: 'onchain' | 'tss';
