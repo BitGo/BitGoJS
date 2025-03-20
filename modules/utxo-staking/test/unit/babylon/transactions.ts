@@ -7,13 +7,13 @@ import { ECPairInterface } from '@bitgo/utxo-lib';
 import { ast, Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 import { createAddressFromDescriptor } from '@bitgo/utxo-core/descriptor';
 import { getFixture, toPlainObject } from '@bitgo/utxo-core/testutil';
+import { getBabylonParamByVersion } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 import {
   BabylonDescriptorBuilder,
   testnetFinalityProvider0,
   getSignedPsbt,
-  testnetStakingParams,
-  toVersionedParams,
+  getStakingParams,
 } from '../../../src/babylon';
 import { normalize } from '../fixtures.utils';
 
@@ -90,9 +90,12 @@ function getStakingTransactionTreeVendor(
   };
 }
 
-function getTestnetStakingParamsWithCovenant(covenantKeys: ECPairInterface[]): vendor.VersionedStakingParams {
+function getTestnetStakingParamsWithCovenant(
+  params: vendor.StakingParams,
+  covenantKeys: ECPairInterface[]
+): vendor.StakingParams {
   return {
-    ...toVersionedParams(testnetStakingParams),
+    ...params,
     covenantNoCoordPks: covenantKeys.map((pk) => getXOnlyPubkey(pk).toString('hex')),
   };
 }
@@ -193,7 +196,7 @@ function describeWithKeys(
   tag: string,
   finalityProviderKeys: ECPairInterface[],
   covenantKeys: ECPairInterface[],
-  stakingParams: vendor.VersionedStakingParams,
+  stakingParams: vendor.StakingParams,
   { signIntermediateTxs = false } = {}
 ) {
   const stakerKey = getECKey('staker');
@@ -328,11 +331,12 @@ function describeWithKeys(
               stakerKey,
               finalityProvider,
               descriptorBuilder,
-              stakingParams,
+              [{ ...stakingParams, version: 0, btcActivationHeight: 0 }],
               changeAddress,
               amount,
               utxo,
-              feeRateSatB
+              feeRateSatB,
+              800_000
             )
           );
         }
@@ -344,7 +348,7 @@ function describeWithKeys(
 function describeWithKeysFromStakingParams(
   tag: string,
   finalityProviderKeys: ECPairInterface[],
-  stakingParams: vendor.VersionedStakingParams
+  stakingParams: vendor.StakingParams
 ) {
   describeWithKeys(
     tag,
@@ -354,15 +358,31 @@ function describeWithKeysFromStakingParams(
   );
 }
 
-function describeWithMockKeys(tag: string, finalityProviderKeys: ECPairInterface[], covenantKeys: ECPairInterface[]) {
-  describeWithKeys(tag, finalityProviderKeys, covenantKeys, getTestnetStakingParamsWithCovenant(covenantKeys), {
-    signIntermediateTxs: true,
-  });
+function describeWithMockKeys(
+  tag: string,
+  stakingParams: vendor.StakingParams,
+  finalityProviderKeys: ECPairInterface[],
+  covenantKeys: ECPairInterface[]
+) {
+  describeWithKeys(
+    tag,
+    finalityProviderKeys,
+    covenantKeys,
+    getTestnetStakingParamsWithCovenant(stakingParams, covenantKeys),
+    {
+      signIntermediateTxs: true,
+    }
+  );
 }
 
 describeWithKeysFromStakingParams(
   'testnet',
   [fromXOnlyPublicKey(testnetFinalityProvider0)],
-  toVersionedParams(testnetStakingParams)
+  getBabylonParamByVersion(5, getStakingParams('testnet'))
 );
-describeWithMockKeys('testnetMock', getECKeys('finalityProvider', 1), getECKeys('covenant', 9));
+describeWithMockKeys(
+  'testnetMock',
+  getBabylonParamByVersion(5, getStakingParams('testnet')),
+  getECKeys('finalityProvider', 1),
+  getECKeys('covenant', 9)
+);

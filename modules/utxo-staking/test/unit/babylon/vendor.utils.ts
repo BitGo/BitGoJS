@@ -3,6 +3,7 @@ import { ECPairInterface } from '@bitgo/utxo-lib';
 import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as babylonProtobuf from '@babylonlabs-io/babylon-proto-ts';
 import { toBech32 } from 'bitcoinjs-lib/src/address';
+import { getBabylonParamByBtcHeight } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 import {
   BabylonDescriptorBuilder,
@@ -23,15 +24,15 @@ export async function getBitGoUtxoStakingMsgCreateBtcDelegation(
   stakerKey: ECPairInterface,
   finalityProvider: ECPairInterface,
   descriptorBuilder: BabylonDescriptorBuilder,
-  stakingParams: vendor.VersionedStakingParams,
+  stakingParams: vendor.VersionedStakingParams[],
   changeAddress: string,
   amount: number,
   utxo: vendor.UTXO,
-  feeRateSatB: number
+  feeRateSatB: number,
+  blockHeight: number
 ): Promise<Result> {
   return await createUnsignedPreStakeRegistrationBabylonTransactionWithBtcProvider(
     getBtcProviderForECKey(descriptorBuilder, stakerKey),
-    stakingParams,
     network,
     {
       address: changeAddress,
@@ -40,12 +41,13 @@ export async function getBitGoUtxoStakingMsgCreateBtcDelegation(
     {
       finalityProviderPkNoCoordHex: getXOnlyPubkey(finalityProvider).toString('hex'),
       stakingAmountSat: amount,
-      stakingTimelock: stakingParams.minStakingTimeBlocks,
+      stakingTimelock: getBabylonParamByBtcHeight(blockHeight, stakingParams).minStakingTimeBlocks,
     },
     800_000,
     [utxo],
     feeRateSatB,
-    toBech32(Buffer.from('test'), 0, 'bbn')
+    toBech32(Buffer.from('test'), 0, 'bbn'),
+    stakingParams
   );
 }
 
@@ -54,11 +56,12 @@ export async function getVendorMsgCreateBtcDelegation(
   stakerKey: ECPairInterface,
   finalityProvider: ECPairInterface,
   descriptorBuilder: BabylonDescriptorBuilder,
-  stakingParams: vendor.VersionedStakingParams,
+  stakingParams: vendor.VersionedStakingParams[],
   changeAddress: string,
   amount: number,
   utxo: vendor.UTXO,
-  feeRateSatB: number
+  feeRateSatB: number,
+  blockHeight: number
 ): Promise<Result> {
   const babylonProvider: vendor.BabylonProvider = {
     async signTransaction(signingStep, msg) {
@@ -70,7 +73,7 @@ export async function getVendorMsgCreateBtcDelegation(
   };
   const manager = new vendor.BabylonBtcStakingManager(
     network,
-    [stakingParams],
+    stakingParams,
     getBtcProviderForECKey(descriptorBuilder, stakerKey),
     babylonProvider
   );
@@ -83,9 +86,9 @@ export async function getVendorMsgCreateBtcDelegation(
     {
       finalityProviderPkNoCoordHex: getXOnlyPubkey(finalityProvider).toString('hex'),
       stakingAmountSat: amount,
-      stakingTimelock: stakingParams.minStakingTimeBlocks,
+      stakingTimelock: getBabylonParamByBtcHeight(blockHeight, stakingParams).minStakingTimeBlocks,
     },
-    800_000,
+    blockHeight,
     [utxo],
     feeRateSatB,
     toBech32(Buffer.from('test'), 0, 'bbn')

@@ -8,9 +8,10 @@
     "strict": true,
     "useUnknownInCatchVariables": false,
     "moduleResolution": "node16",
-    "module": "node16"
+    "module": "node16",
+    "esModuleInterop": true
   },
-  "include": ["src/**/*", "bin/**/*", "test/**/*"],
+  "include": ["src/**/*", "src/babylon/*.json", "test/**/*", "scripts/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {

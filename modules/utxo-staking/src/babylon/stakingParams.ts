@@ -1,86 +1,43 @@
-import { BIP32Interface, ECPairInterface } from '@bitgo/utxo-lib';
-import { StakerInfo, StakingInputs, VersionedStakingParams } from '@bitgo/babylonlabs-io-btc-staking-ts';
+import * as t from 'io-ts';
+import * as tt from 'io-ts-types';
+import { isLeft } from 'fp-ts/Either';
+import { PathReporter } from 'io-ts/lib/PathReporter';
+import * as bitcoinjslib from 'bitcoinjs-lib';
+import * as utxolib from '@bitgo/utxo-lib';
+import {
+  getBabylonParamByVersion,
+  StakerInfo,
+  StakingInputs,
+  VersionedStakingParams,
+} from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 import { BabylonDescriptorBuilder } from './descriptor';
+import jsonMainnetParams from './params.mainnet.json';
+import jsonTestnetParams from './params.testnet.json';
 
-export type JsonParams = {
-  version: number;
-  covenant_pks: string[];
-  covenant_quorum: number;
-  min_staking_value_sat: number;
-  max_staking_value_sat: number;
-  min_staking_time_blocks: number;
-  max_staking_time_blocks: number;
-  slashing_pk_script: string;
-  min_slashing_tx_fee_sat: number;
-  slashing_rate: string;
-  unbonding_time_blocks: number;
-  unbonding_fee_sat: number;
-  min_commission_rate: string;
-  delegation_creation_base_gas_fee: number;
-  allow_list_expiration_height: number;
-  btc_activation_height: number;
-};
+const BabylonParamsJSON = t.type({
+  covenant_pks: t.array(t.string),
+  covenant_quorum: t.number,
+  min_staking_value_sat: tt.NumberFromString,
+  max_staking_value_sat: tt.NumberFromString,
+  min_staking_time_blocks: t.number,
+  max_staking_time_blocks: t.number,
+  slashing_pk_script: t.string,
+  min_slashing_tx_fee_sat: tt.NumberFromString,
+  slashing_rate: t.string,
+  unbonding_time_blocks: t.number,
+  unbonding_fee_sat: tt.NumberFromString,
+  min_commission_rate: tt.NumberFromString,
+  delegation_creation_base_gas_fee: tt.NumberFromString,
+  allow_list_expiration_height: tt.NumberFromString,
+  btc_activation_height: t.number,
+});
 
-// Source: https://github.com/babylonlabs-io/babylon/blob/v1.99.0-snapshot.250211/app/upgrades/v1/testnet/btcstaking_params.go#L149-L159
-export const testnetStakingParams: JsonParams = {
-  version: 5 /* it's the sixth element in the array */,
-  covenant_pks: [
-    'fa9d882d45f4060bdb8042183828cd87544f1ea997380e586cab77d5fd698737',
-    '0aee0509b16db71c999238a4827db945526859b13c95487ab46725357c9a9f25',
-    '17921cf156ccb4e73d428f996ed11b245313e37e27c978ac4d2cc21eca4672e4',
-    '113c3a32a9d320b72190a04a020a0db3976ef36972673258e9a38a364f3dc3b0',
-    '79a71ffd71c503ef2e2f91bccfc8fcda7946f4653cef0d9f3dde20795ef3b9f0',
-    '3bb93dfc8b61887d771f3630e9a63e97cbafcfcc78556a474df83a31a0ef899c',
-    'd21faf78c6751a0d38e6bd8028b907ff07e9a869a43fc837d6b3f8dff6119a36',
-    '40afaf47c4ffa56de86410d8e47baa2bb6f04b604f4ea24323737ddc3fe092df',
-    'f5199efae3f28bb82476163a7e458c7ad445d9bffb0682d10d3bdb2cb41f8e8e',
-  ],
-  covenant_quorum: 6,
-  min_staking_value_sat: 50000,
-  max_staking_value_sat: 35000000000,
-  min_staking_time_blocks: 10000,
-  max_staking_time_blocks: 64000,
-  slashing_pk_script: 'ABRb4SYk0IorQkCV18ByIcM0UNFL8Q==',
-  min_slashing_tx_fee_sat: 5000,
-  slashing_rate: '0.05',
-  unbonding_time_blocks: 1008,
-  unbonding_fee_sat: 2000,
-  min_commission_rate: '0.03',
-  delegation_creation_base_gas_fee: 1095000,
-  allow_list_expiration_height: 26124,
-  btc_activation_height: 227174,
-};
+type BabylonParamsJSON = t.TypeOf<typeof BabylonParamsJSON>;
 
-// https://github.com/babylonlabs-io/babylon/blob/v1.99.0-snapshot.250211/app/upgrades/v1/mainnet/btcstaking_params.go#L4-L28
-export const mainnetStakingParams: JsonParams = {
-  version: 0,
-  covenant_pks: [
-    '43311589af63c2adda04fcd7792c038a05c12a4fe40351b3eb1612ff6b2e5a0e',
-    'd415b187c6e7ce9da46ac888d20df20737d6f16a41639e68ea055311e1535dd9',
-    'd27cd27dbff481bc6fc4aa39dd19405eb6010237784ecba13bab130a4a62df5d',
-    'a3e107fee8879f5cf901161dbf4ff61c252ba5fec6f6407fe81b9453d244c02c',
-    'c45753e856ad0abb06f68947604f11476c157d13b7efd54499eaa0f6918cf716',
-  ],
-  covenant_quorum: 3,
-  min_staking_value_sat: 10000,
-  max_staking_value_sat: 10000000000,
-  min_staking_time_blocks: 10,
-  max_staking_time_blocks: 65535,
-  slashing_pk_script: 'dqkUAQEBAQEBAQEBAQEBAQEBAQEBAQGIrA==',
-  min_slashing_tx_fee_sat: 1000,
-  slashing_rate: '0.100000000000000000',
-  unbonding_time_blocks: 101,
-  unbonding_fee_sat: 1000,
-  min_commission_rate: '0.03',
-  delegation_creation_base_gas_fee: 1000,
-  allow_list_expiration_height: 0,
-  btc_activation_height: 100,
-};
-
-export function toVersionedParams(p: JsonParams): VersionedStakingParams {
-  return {
-    version: p.version,
+export function toVersionedParams(ps: BabylonParamsJSON[]): VersionedStakingParams[] {
+  return ps.map((p, version) => ({
+    version,
     btcActivationHeight: p.btc_activation_height,
     covenantNoCoordPks: p.covenant_pks,
     covenantQuorum: p.covenant_quorum,
@@ -95,7 +52,60 @@ export function toVersionedParams(p: JsonParams): VersionedStakingParams {
       slashingRate: parseFloat(p.slashing_rate),
       minSlashingTxFeeSat: p.min_slashing_tx_fee_sat,
     },
-  };
+  }));
+}
+
+function toVersionedParamsFromJson(jsonParams: unknown[]): VersionedStakingParams[] {
+  return toVersionedParams(
+    jsonParams.map((p): BabylonParamsJSON => {
+      const result = t.type({ params: BabylonParamsJSON }).decode(p);
+      if (isLeft(result)) {
+        const msg = PathReporter.report(result).join('\n');
+        throw new Error(`Invalid testnet params: ${msg}`);
+      }
+      return result.right.params;
+    })
+  );
+}
+
+type BabylonNetwork = 'mainnet' | 'testnet';
+
+type BabylonNetworkLike = bitcoinjslib.Network | utxolib.Network | BabylonNetwork;
+
+function toBabylonNetwork(n: BabylonNetworkLike): BabylonNetwork {
+  switch (n) {
+    case bitcoinjslib.networks.bitcoin:
+    case utxolib.networks.bitcoin:
+      return 'mainnet';
+    case bitcoinjslib.networks.testnet:
+    case utxolib.networks.testnet:
+    case utxolib.networks.bitcoinPublicSignet:
+      return 'testnet';
+    case 'mainnet':
+    case 'testnet':
+      return n;
+    default:
+      throw new Error('Unsupported network');
+  }
+}
+
+export const mainnetStakingParams: readonly VersionedStakingParams[] = Object.freeze(
+  toVersionedParamsFromJson(jsonMainnetParams)
+);
+
+export const testnetStakingParams: readonly VersionedStakingParams[] = Object.freeze(
+  toVersionedParamsFromJson(jsonTestnetParams)
+);
+
+export function getStakingParams(network: BabylonNetworkLike): VersionedStakingParams[] {
+  switch (toBabylonNetwork(network)) {
+    case 'mainnet':
+      return [...mainnetStakingParams];
+    case 'testnet':
+      return [...testnetStakingParams];
+    default:
+      throw new Error('Unsupported network');
+  }
 }
 
 // Source: https://btcstaking.testnet.babylonlabs.io/ "Babylon Foundation 0"
@@ -105,7 +115,7 @@ export const testnetFinalityProvider0 = Buffer.from(
 );
 
 export function getDescriptorBuilderForParams(
-  userKey: BIP32Interface | ECPairInterface | Buffer,
+  userKey: utxolib.BIP32Interface | utxolib.ECPairInterface | Buffer,
   finalityProviderKeys: Buffer[],
   params: Pick<
     VersionedStakingParams,
@@ -136,12 +146,16 @@ export function getDescriptorProviderForStakingParams(
 }
 
 export function getTestnetDescriptorBuilder(
-  userKey: BIP32Interface | ECPairInterface | Buffer,
+  userKey: utxolib.BIP32Interface | utxolib.ECPairInterface | Buffer,
   {
     finalityProviderKeys = [testnetFinalityProvider0],
   }: {
     finalityProviderKeys?: Buffer[];
   } = {}
 ): BabylonDescriptorBuilder {
-  return getDescriptorBuilderForParams(userKey, finalityProviderKeys, toVersionedParams(testnetStakingParams));
+  return getDescriptorBuilderForParams(
+    userKey,
+    finalityProviderKeys,
+    getBabylonParamByVersion(5, getStakingParams('testnet'))
+  );
 }
