@@ -1,5 +1,4 @@
 import * as sinon from 'sinon';
-import * as Bluebird from 'bluebird';
 
 import 'should-http';
 import 'should-sinon';
@@ -15,7 +14,7 @@ import { BaseCoin, Wallets, WalletWithKeychains } from '@bitgo/sdk-core';
 describe('Generate Wallet', () => {
   it('should return the internal wallet object and keychains by default or if includeKeychains is true', async () => {
     const walletStub = sinon
-      .stub<[], Bluebird<WalletWithKeychains>>()
+      .stub<[], Promise<WalletWithKeychains>>()
       .resolves({ wallet: { toJSON: () => 'walletdata with keychains' } } as any);
     const walletsStub = sinon.createStubInstance(Wallets, { generateWallet: walletStub });
     const coinStub = sinon.createStubInstance(BaseCoin, {

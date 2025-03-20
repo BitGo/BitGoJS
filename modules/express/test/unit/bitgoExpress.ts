@@ -12,7 +12,6 @@ import * as https from 'https';
 import * as debugLib from 'debug';
 import * as path from 'path';
 import { Environments } from 'bitgo';
-import { coroutine as co } from 'bluebird';
 
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
@@ -112,50 +111,44 @@ describe('Bitgo Express', function () {
       (() => expressApp(args)).should.throw(TlsConfigurationError);
     });
 
-    it(
-      'should create an http server when not using TLS',
-      co(function* () {
-        const createServerStub = sinon.stub(http, 'createServer');
+    it('should create an http server when not using TLS', async function () {
+      const createServerStub = sinon.stub(http, 'createServer');
 
-        const args: any = {
-          env: 'prod',
-          bind: 'localhost',
-        };
+      const args: any = {
+        env: 'prod',
+        bind: 'localhost',
+      };
 
-        createServer(args, null as any);
+      createServer(args, null as any);
 
-        createServerStub.should.be.calledOnce();
-        createServerStub.restore();
-      })
-    );
+      createServerStub.should.be.calledOnce();
+      createServerStub.restore();
+    });
 
-    it(
-      'should create an https server when using TLS',
-      co(function* () {
-        const createServerStub = sinon.stub(https, 'createServer');
-        const readFileAsyncStub = sinon
-          .stub(fs.promises, 'readFile' as any)
-          .onFirstCall()
-          .resolves('key')
-          .onSecondCall()
-          .resolves('cert');
+    it('should create an https server when using TLS', async function () {
+      const createServerStub = sinon.stub(https, 'createServer');
+      const readFileAsyncStub = sinon
+        .stub(fs.promises, 'readFile' as any)
+        .onFirstCall()
+        .resolves('key')
+        .onSecondCall()
+        .resolves('cert');
 
-        const args: any = {
-          env: 'prod',
-          bind: '1.2.3.4',
-          crtPath: '/tmp/crt.pem',
-          keyPath: '/tmp/key.pem',
-        };
+      const args: any = {
+        env: 'prod',
+        bind: '1.2.3.4',
+        crtPath: '/tmp/crt.pem',
+        keyPath: '/tmp/key.pem',
+      };
 
-        yield createServer(args, null as any);
+      await createServer(args, null as any);
 
-        https.createServer.should.be.calledOnce();
-        https.createServer.should.be.calledWith({ secureOptions: SSL_OP_NO_TLSv1, key: 'key', cert: 'cert' });
+      https.createServer.should.be.calledOnce();
+      https.createServer.should.be.calledWith({ secureOptions: SSL_OP_NO_TLSv1, key: 'key', cert: 'cert' });
 
-        createServerStub.restore();
-        readFileAsyncStub.restore();
-      })
-    );
+      createServerStub.restore();
+      readFileAsyncStub.restore();
+    });
 
     it('should create https server with sslkey and sslcert', async () => {
       const createServerStub = sinon.stub(https, 'createServer');
