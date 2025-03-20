@@ -12,9 +12,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(rawTransaction: string): TransactionBuilder {
+  async from(rawTransaction: string): Promise<TransactionBuilder> {
     const transaction = new Transaction(this._coinConfig, new Utils());
-    transaction.fromRawTransaction(rawTransaction);
+    await transaction.fromRawTransaction(rawTransaction);
     try {
       switch (transaction.icpTransactionData.transactionType) {
         case OperationType.TRANSACTION:
