@@ -5,6 +5,9 @@
   "command": {
     "version": {
       "message": "chore(root): publish modules"
+    },
+    "bootstrap": {
+      "concurrency": 4
     }
   },
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
