@@ -127,6 +127,21 @@ export const ofcCoins = [
     UnderlyingAsset.COREDAO,
     CoinKind.CRYPTO
   ),
+  ofc('1c21ee76-2285-4bd6-855b-9fa5698ab78c', 'ofcxdc', 'XDC', 18, UnderlyingAsset.XDC, CoinKind.CRYPTO),
+  tofc('a4b3776d-aea6-4c07-968e-0e698c9aea91', 'ofctxdc', 'Testnet XDC', 18, UnderlyingAsset.XDC, CoinKind.CRYPTO),
+  ofc('3c85e27d-ee16-468a-bab3-f44ef1642a8b', 'ofcwemix', 'Wemix', 18, UnderlyingAsset.WEMIX, CoinKind.CRYPTO),
+  tofc(
+    '80f8c9ac-0855-4dd6-894f-99e45e607504',
+    'ofctwemix',
+    'Testnet wemix',
+    18,
+    UnderlyingAsset.WEMIX,
+    CoinKind.CRYPTO
+  ),
+  ofc('1876cf96-a0b7-4b7b-9024-6bd89df9814b', 'ofcflr', 'Flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
+  tofc('312ff039-2473-4a11-837f-4ec896a0483d', 'ofctflr', 'Testnet flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
+  ofc('dd3f3d9a-8eae-4a7a-8178-88611687674d', 'ofcsgb', 'Songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
+  tofc('30e8f8d8-17e7-4af0-91cf-069724e05e65', 'ofctsgb', 'Testnet songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
   ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('ecc046f9-eb9c-479d-943f-9fe0633ea212', 'ofcoas', 'oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   ofc('24c3b525-b5d3-45c0-9280-599db27c0fab', 'ofctao', 'Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
