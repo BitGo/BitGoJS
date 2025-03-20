@@ -1,4 +1,9 @@
-import { IcpMetadata, OperationType, IcpAccount } from '../../src/lib/iface';
+import {
+  IcpTransactionParseMetadata,
+  OperationType,
+  IcpAccount,
+  IcpTransactionBuildMetadata,
+} from '../../src/lib/iface';
 
 export const accounts = {
   account1: {
@@ -117,11 +122,17 @@ export const rawTransaction = {
   expiryTime: Date.now() * 1000_000 + 5 * 60 * 1000_000_000,
 };
 
-export const metaData: IcpMetadata = {
+export const metaData: IcpTransactionParseMetadata = {
   created_at_time: 1740739880079000000,
   ingress_end: 1740740180079000000,
   ingress_start: 1740739880079000000,
   memo: 1234,
+};
+
+export const transactionMetaData: IcpTransactionBuildMetadata = {
+  created_at_time: 1740739880079000000,
+  ingress_end: 1740740180079000000,
+  ingress_start: 1740739880079000000,
 };
 
 export const payloadsData = {
@@ -272,5 +283,112 @@ export const ParsedSignedTransaction = {
   metadata: {
     created_at_time: 1740739880079000064,
     memo: 1234,
+  },
+};
+
+export const WRWRecovery = {
+  rootAddress: '4623c8c75bf76b1275460328de94a6f1b9f9000d173941694cb93a8bd26b77ca',
+  destinationAddress: accounts.account1.address,
+  userKey:
+    '{"iv":"ZfhJQF9+MUj7hZ8OoesfcA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"+f/agM4bM8s=","ct":"2dQxSuUKSyFbe3vSYHSRG4p4PJ4XWA/yz7Af9dPpmFDN+2G4iXsUdkyscBsU1QGZ1gDgB7EUPnNIoa36Kbm2Ioh9QR1pms2xPzkHMvdO9UtMwch+tDPFMSYBCOfIWXjAVIIDpJcJthepIK+f2W8JiuWIz9m+TGV+R6kA1ahBURgyKBA7pyUuPrnXmWWj4ihEOOvxjt5df14ZcQ11KjtnaE4Mal2Zm+oXQj4VwW39CUF7QI+5XIBlhq3uXfJ6NLhRQ1DjH2imQVp8iCE1to8lBLj9V09beXNdXQBAomm4fugl6ejTp5tsig/75VKazYJzjNuOAAKaEHDkdMOUzdp8oOWq3eiBFMgD+9Zy31tYxCHGlKyMNjgOlwrKxmuv1zWrhEbYkALB+m7AUc2+qkCYUK+L+FfAPO/U0Ww3gq/mYtFDvdqSF6wDa68r5eab9fc04k1phrxRRuL1K02Hf68z6nvw0I9CCzaW9C2Gmyz8K06o7YlRBy7fkya11L++OWpEL5zGs8Fnamaz3EImLakL/gKSvJVNXLRxrh2btjAbs/hEXek3WMntJCK1RiwALbMVakBYZiKgKCXlD0AvMdz+s8/pFyyQuDk1fmJtrnaCNnR6ozcvmd4+ZLtVOcte5f6t7DCHlIvEy3ys4sCQlr6zAXAtg2kX7uHkuEls2lTMwRb4PekNAoO4oxLRbKo+L9t4FnmnXBSDQW0+TqBfduMZ8rzLqppoTyep8dyFySBXQLQAaCrNsWgEnuHk7dKLWwKzYTCDJbX/UClS2ehoyoJcMQwmRIMjY9FmJPNK03RTBA9jllUk/JrNfEXkHwKeT+SWuQgAeMCqbWJ8A/b9SIPDRJFdR5mt1+H9sL5Y+6+2lcqXtAvSUnUgTMt9oUZirAXE7Wt2qZewaXYmaRarFRH/bw/xzVkSfjrLD22iribAKivIGDzPLIirhN+9xAXBlsErAOT/V8aejuPw9k9oL9Ae/Ok0NZfPZMR8/7uutiGvDgw7vJVDelYMIjEOJHXFDnj+rH3vwPnMNI4Y6M6fNt0yrgMR+eMjgbxxGFYTZO9vlsQRiL/pxP6ceM9ReampgOWLmnYfIhTx91DMURfN"}',
+  backupKey:
+    '{"iv":"ZKCXaP1L5fVxDOjVKKZuCg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"4mmZz3KxTqs=","ct":"R2UVujh0H0FmPFkxTLnAGg+/P50DVnNP8d7VbsVJWJJWJvbV5tf+eYpvuz+5dpCC7D6xR7vN08ZXuZf6whUFerYOev+LSTcq2T1uar5xLvZBTd7alD889aJQJcd9+Om2JIjdPq3drFaqQF366d2H9tsVY+3iGsuJwCMHf6k8pxePxx5vk3iu4lcy4mJWp4d0zdo95nc4IZCrDp9i9i1p+w/mPhR0Rn+9c6T770vblRm87ft8vfyLZwMEqvJp3QW2XR+6vSyCkzbeZ/+m2nJmsK/Wt6sRqv27KDGVh23YEKp+yY3T9hT4FK0kzaF3tR8yq62Nj40eQ2iHIz50teiyW6HFm7IL4BT/vhL7qFa+VBz6qowON9p/96/21D2Nq40QnAxnOVfxW9DfQwnfBWyZJ8cLvHQ2s24LJX/YdHilPbElbjHncrpqf1jT/AELfBar/i5rrQZ5T0kxNC6t1VJpTUqiWuGUU42GTfzj12XHdqEdj+PcycLWjx8/DoqNPxqcPiEenBl8mst5SWNp1LW/FfEFgyB9p7L2UkxHhRYEzQ4WqIpQ6wERFqmpF6tRgXcYvwu5qc903C9CkRp2HXx2zmryW/vpODBXqwtRiwK1TGXQ0FPuEML+vwhh2LoYRGKOqcfQDTY4qX25kcly6D0zyY7YPTqALJnQYEGXOP42CBO+i5NkTjNCWsJRQMyNqRgEuAE8m1MWjcUIFQWebSJEyss6Ty14HHv+p6ACk6bDVMSLQLhVW3eccvRV5cBu4O6xFAehtvJ74Hc44iDZd5MFjBCZhj9dB3qfrkVFuIjT9WJkXYAn4f6b8Src+COrscklpYvcObGjeel5/Hx80q3jzboYmo9wgisKVpGhtz0XuqrxfZUiHUOGCoWMXFsdLmruh6u3CKKLnobBFgcmFAHJZaotYKOvpK0Lge7qN5vsGVZQhLu6ba/mUJdueDnUPmIJfMczi/yZ+600OcYjD2hetxzzrhkJ7qYRx0WCAyWUKHDl/1QqmavS+wKbnmbziAhgq6BL9cOG7hlPYIx0OERHzpmA3BCpeojI1Fgu27sADyZWLzO1YNfqeTX9fYvgEUE1XmTiSshvkwQxa/KNNHE9+A=="}',
+  bitgoPublicKey:
+    '036ded8b5a849409935a4fa1a1cf921233f2c755162987804c861ab3aff95cf8fd8553beb55f568dc886b05c5b6831d946e7c442468fef9c953f62f9b1e06ac9d9',
+  walletPassphrase: 'Eaglefenaus@1994',
+};
+
+export const FetchBalanceResponse = {
+  block_identifier: {
+    index: 503,
+    hash: '775b6651b0e66b0163d0f5db533ed5dfd1273d668b75a33ed11751694f85497e',
+  },
+  balances: [
+    {
+      value: '1000000000',
+      currency: {
+        symbol: 'ICP',
+        decimals: 8,
+      },
+    },
+  ],
+};
+
+export const SubmitApiResponse = {
+  transaction_identifier: {
+    hash: '4c10cf22a768a20e7eebc86e49c031d0e22895a39c6355b5f7455b2acad59c1e',
+  },
+  metadata: {
+    operations: [
+      {
+        account: {
+          address: '47867f2cfb85094275c847435fa10cad54a813eba7e6a9bc3538aa2f537f1d73',
+        },
+        amount: {
+          currency: {
+            decimals: 8,
+            symbol: 'ICP',
+          },
+          value: '-10',
+        },
+        metadata: {
+          block_index: 503,
+          transaction_identifier: {
+            hash: '4c10cf22a768a20e7eebc86e49c031d0e22895a39c6355b5f7455b2acad59c1e',
+          },
+        },
+        operation_identifier: {
+          index: 0,
+        },
+        status: 'COMPLETED',
+        type: 'TRANSACTION',
+      },
+      {
+        account: {
+          address: 'a1c60efca988c411cd7bc5e481364b9c94caebb24c00e01db269e3a0541ee498',
+        },
+        amount: {
+          currency: {
+            decimals: 8,
+            symbol: 'ICP',
+          },
+          value: '10',
+        },
+        metadata: {
+          block_index: 503,
+          transaction_identifier: {
+            hash: '4c10cf22a768a20e7eebc86e49c031d0e22895a39c6355b5f7455b2acad59c1e',
+          },
+        },
+        operation_identifier: {
+          index: 1,
+        },
+        status: 'COMPLETED',
+        type: 'TRANSACTION',
+      },
+      {
+        account: {
+          address: '47867f2cfb85094275c847435fa10cad54a813eba7e6a9bc3538aa2f537f1d73',
+        },
+        amount: {
+          currency: {
+            decimals: 8,
+            symbol: 'ICP',
+          },
+          value: '-10000',
+        },
+        metadata: {
+          block_index: 503,
+          transaction_identifier: {
+            hash: '4c10cf22a768a20e7eebc86e49c031d0e22895a39c6355b5f7455b2acad59c1e',
+          },
+        },
+        operation_identifier: {
+          index: 2,
+        },
+        status: 'COMPLETED',
+        type: 'FEE',
+      },
+    ],
   },
 };

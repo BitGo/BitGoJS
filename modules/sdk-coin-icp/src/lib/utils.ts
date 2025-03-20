@@ -16,7 +16,7 @@ import {
   ReadState,
   RequestType,
   Signatures,
-  IcpMetadata,
+  IcpTransactionBuildMetadata,
   SendArgs,
   PayloadsData,
   CurveType,
@@ -608,16 +608,19 @@ export class Utils implements BaseUtils {
     );
   }
 
-  getMetaData(memo: number | BigInt): { metaData: IcpMetadata; ingressEndTime: number | BigInt } {
+  getMetaData(memo: number | BigInt): { metaData: IcpTransactionBuildMetadata; ingressEndTime: number | BigInt } {
     const currentTime = Date.now() * 1000000;
     const ingressStartTime = currentTime;
     const ingressEndTime = ingressStartTime + 5 * 60 * 1000000000; // 5 mins in nanoseconds
-    const metaData: IcpMetadata = {
+    const metaData: IcpTransactionBuildMetadata = {
       created_at_time: currentTime,
       memo: memo,
       ingress_start: ingressStartTime,
       ingress_end: ingressEndTime,
     };
+    if (memo !== undefined || !isNaN(memo)) {
+      metaData.memo = memo;
+    }
     return { metaData, ingressEndTime };
   }
 

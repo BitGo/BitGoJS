@@ -3,6 +3,14 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import { BaseKey } from '@bitgo/sdk-core';
 import * as testData from '../../resources/icp';
 import sinon from 'sinon';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import nock from 'nock';
+import { Icp, Ticp } from '../../../src/index';
+import { RecoveryOptions, ACCOUNT_BALANCE_ENDPOINT, SUBMIT_TRANSACTION_ENDPOINT } from '../../../src/lib/iface';
+
+const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+bitgo.safeRegister('ticp', Ticp.createInstance);
 
 describe('ICP Transaction Builder', async () => {
   const factory = getBuilderFactory('ticp');
@@ -100,5 +108,64 @@ describe('ICP Transaction Builder', async () => {
     const broadcastTxnObj = JSON.parse(broadcastTxn);
     should.equal(broadcastTxnObj.signed_transaction, signedTxn);
     should.equal(broadcastTxnObj.network_identifier.network, '00000000000000020101');
+  });
+
+  describe('ICP transaction recovery', async () => {
+    let bitgo;
+    let recoveryParams: RecoveryOptions;
+
+    before(function () {
+      bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+      bitgo.safeRegister('icp', Icp.createInstance);
+      bitgo.safeRegister('ticp', Ticp.createInstance);
+      bitgo.initializeTestVars();
+      recoveryParams = {
+        userKey: testData.WRWRecovery.userKey,
+        backupKey: testData.WRWRecovery.backupKey,
+        walletPassphrase: testData.WRWRecovery.walletPassphrase,
+        rootAddress: testData.accounts.account1.address,
+        recoveryDestination: testData.accounts.account2.address,
+      };
+    });
+    it('should recover a transaction without memo successfully', async () => {
+      const icp = bitgo.coin('icp');
+      const nodeUrl = icp.getPublicNodeUrl();
+      nock(nodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(`${SUBMIT_TRANSACTION_ENDPOINT}`).reply(200, testData.SubmitApiResponse);
+
+      const txnId = await icp.recover(recoveryParams);
+      txnId.should.be.a.String();
+      should.equal(txnId, testData.SubmitApiResponse.transaction_identifier.hash);
+    });
+
+    it('should recover a transaction with memo successfully', async () => {
+      recoveryParams.memo = 0;
+      const icp = bitgo.coin('icp');
+      const nodeUrl = icp.getPublicNodeUrl();
+      nock(nodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(`${SUBMIT_TRANSACTION_ENDPOINT}`).reply(200, testData.SubmitApiResponse);
+
+      const txnId = await icp.recover(recoveryParams);
+      txnId.should.be.a.String();
+      should.equal(txnId, testData.SubmitApiResponse.transaction_identifier.hash);
+    });
+
+    it('should fail to recover txn if balance is low', async () => {
+      const icp = bitgo.coin('icp');
+      const nodeUrl = icp.getPublicNodeUrl();
+      testData.FetchBalanceResponse.balances[0].value = '0';
+      nock(nodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(`${SUBMIT_TRANSACTION_ENDPOINT}`).reply(200, testData.SubmitApiResponse);
+
+      const recoveryParams: RecoveryOptions = {
+        userKey: testData.WRWRecovery.userKey,
+        backupKey: testData.WRWRecovery.backupKey,
+        walletPassphrase: testData.WRWRecovery.walletPassphrase,
+        rootAddress: testData.accounts.account1.address,
+        recoveryDestination: testData.accounts.account2.address,
+        memo: 0,
+      };
+      await await icp.recover(recoveryParams).should.rejectedWith('Did not have enough funds to recover');
+    });
   });
 });

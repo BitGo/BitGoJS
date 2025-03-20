@@ -4,6 +4,9 @@ import {
 } from '@bitgo/sdk-core';
 
 export const REQUEST_STATUS = 'request_status';
+export const ROOT_PATH = 'm/0';
+export const ACCOUNT_BALANCE_ENDPOINT = '/account/balance';
+export const SUBMIT_TRANSACTION_ENDPOINT = '/construction/submit';
 
 export enum RequestType {
   CALL = 'call',
@@ -67,23 +70,30 @@ export interface IcpOperation {
   amount: IcpAmount;
 }
 
-export interface IcpMetadata {
+export interface IcpTransactionParseMetadata {
   created_at_time: number;
   memo: number | BigInt; // memo in string is not accepted by ICP chain.
   ingress_start?: number | BigInt; // it should be nano seconds
   ingress_end?: number | BigInt; // it should be nano seconds
 }
 
+export interface IcpTransactionBuildMetadata {
+  created_at_time: number;
+  memo?: number | BigInt; // memo in string is not accepted by ICP chain.
+  ingress_start: number | BigInt; // it should be nano seconds
+  ingress_end: number | BigInt; // it should be nano seconds
+}
+
 export interface IcpTransaction {
   public_keys: IcpPublicKey[];
   operations: IcpOperation[];
-  metadata: IcpMetadata;
+  metadata: IcpTransactionBuildMetadata;
 }
 
 export interface ParsedTransaction {
   operations: IcpOperation[];
   account_identifier_signers: IcpAccount[];
-  metadata: IcpMetadata;
+  metadata: IcpTransactionParseMetadata;
 }
 
 export interface IcpAccountIdentifier {
@@ -188,4 +198,15 @@ export interface NetworkIdentifier {
 export interface SignedTransactionRequest {
   network_identifier: NetworkIdentifier;
   signed_transaction: string;
+}
+
+export interface RecoveryOptions {
+  userKey?: string; // Box A
+  backupKey?: string; // Box B
+  bitgoKey?: string;
+  rootAddress?: string;
+  recoveryDestination: string;
+  walletPassphrase?: string;
+  memo?: number | BigInt;
+  krsProvider?: string;
 }

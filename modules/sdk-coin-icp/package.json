@@ -51,7 +51,8 @@
     "cbor-x": "^1.5.9",
     "crc-32": "^1.2.0",
     "js-sha256": "^0.9.0",
-    "protobufjs": "^7.2.5"
+    "protobufjs": "^7.2.5",
+    "superagent": "^10.1.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.61.1",

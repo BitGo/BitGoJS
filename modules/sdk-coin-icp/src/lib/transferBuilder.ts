@@ -6,7 +6,7 @@ import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
 import {
   CurveType,
-  IcpMetadata,
+  IcpTransactionBuildMetadata,
   IcpOperation,
   IcpPublicKey,
   IcpTransaction,
@@ -90,7 +90,7 @@ export class TransferBuilder extends TransactionBuilder {
       },
     };
 
-    const { metaData, ingressEndTime }: { metaData: IcpMetadata; ingressEndTime: number | BigInt } =
+    const { metaData, ingressEndTime }: { metaData: IcpTransactionBuildMetadata; ingressEndTime: number | BigInt } =
       this._utils.getMetaData(this._memo);
 
     const icpTransaction: IcpTransaction = {
@@ -112,8 +112,11 @@ export class TransferBuilder extends TransactionBuilder {
     this._transaction.icpTransaction = icpTransaction;
   }
 
-  // combine the unsigned transaction with the signature payload and generates the signed transaction
-  protected combine(): BaseTransaction {
+  /**
+   * Combines the unsigned transaction and the signature payload to create a signed transaction.
+   *
+   */
+  public combine(): BaseTransaction {
     const signedTransactionBuilder = new SignedTransactionBuilder(
       this._transaction.unsignedTransaction,
       this._transaction.signaturePayload
