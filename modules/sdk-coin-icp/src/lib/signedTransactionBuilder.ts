@@ -51,12 +51,12 @@ export class SignedTransactionBuilder {
         const readState = utils.makeReadStateFromUpdate(update);
         const transactionSignature = utils.getTransactionSignature(signatureMap, update);
         if (!transactionSignature) {
-          throw new Error('Transaction signature is undefined');
+          throw new Error('Transaction signature is invalid');
         }
 
         const readStateSignature = utils.getReadStateSignature(signatureMap, readState);
         if (!readStateSignature) {
-          throw new Error('read state signature is undefined');
+          throw new Error('read state signature is invalid');
         }
 
         const pk_der = utils.getPublicKeyInDERFormat(transactionSignature.public_key.hex_bytes);

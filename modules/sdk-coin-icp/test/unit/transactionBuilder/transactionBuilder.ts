@@ -101,4 +101,28 @@ describe('ICP Transaction Builder', async () => {
     should.equal(broadcastTxnObj.signed_transaction, signedTxn);
     should.equal(broadcastTxnObj.network_identifier.network, '00000000000000020101');
   });
+
+  it('should build a txn then parse it and then again build', async () => {
+    sinon.restore(); // do not stub getMetaData
+    txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+    txBuilder.receiverId(testData.accounts.account2.address);
+    txBuilder.amount('10');
+    txBuilder.memo(testData.metaData.memo);
+
+    await txBuilder.build();
+    txn = txBuilder.transaction;
+    const unsignedTxn = txBuilder.transaction.unsignedTransaction;
+    unsignedTxn.should.be.a.String();
+    const rawTransaction = {
+      serializedTxHex: unsignedTxn,
+      publicKey: testData.accounts.account1.publicKey,
+    };
+    await txn.fromRawTransaction(JSON.stringify(rawTransaction));
+    const baseKey: BaseKey = { key: testData.accounts.account1.secretKey };
+    txBuilder.sign(baseKey);
+    txBuilder.combine();
+    const signedTxn = txBuilder.transaction.signedTransaction;
+    signedTxn.should.be.a.String();
+  });
 });

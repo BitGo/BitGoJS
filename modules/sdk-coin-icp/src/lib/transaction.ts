@@ -34,6 +34,7 @@ export class Transaction extends BaseTransaction {
   protected _payloadsData: PayloadsData;
   protected _signedTransaction: string;
   protected _signaturePayload: Signatures[];
+  protected _createdTimestamp: number | bigint | undefined;
   protected _utils: Utils;
 
   constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
@@ -79,6 +80,14 @@ export class Transaction extends BaseTransaction {
 
   get payloadsData(): PayloadsData {
     return this._payloadsData;
+  }
+
+  set createdTimestamp(createdTimestamp: number) {
+    this._createdTimestamp = createdTimestamp;
+  }
+
+  get createdTimestamp(): number | bigint | undefined {
+    return this._createdTimestamp;
   }
 
   async fromRawTransaction(rawTransaction: string): Promise<void> {
@@ -273,6 +282,7 @@ export class Transaction extends BaseTransaction {
       },
       account_identifier_signers: accountIdentifierSigners,
     };
+    this.createdTimestamp = args.createdAtTime.timestampNanos;
     return parsedTxn;
   }
 

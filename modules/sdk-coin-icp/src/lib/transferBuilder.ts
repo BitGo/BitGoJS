@@ -48,7 +48,7 @@ export class TransferBuilder extends TransactionBuilder {
     assert(this._publicKey, new BuildTransactionError('sender public key is required before building'));
     assert(this._amount, new BuildTransactionError('amount is required before building'));
     assert(this._receiverId, new BuildTransactionError('receiver is required before building'));
-    assert(this._memo, new BuildTransactionError('memo is required before building'));
+    this._utils.validateMemo(this._memo);
     const publicKey: IcpPublicKey = {
       hex_bytes: this._publicKey,
       curve_type: CurveType.SECP256K1,
@@ -90,8 +90,9 @@ export class TransferBuilder extends TransactionBuilder {
       },
     };
 
+    const createdTimestamp = this._transaction.createdTimestamp;
     const { metaData, ingressEndTime }: { metaData: IcpMetadata; ingressEndTime: number | BigInt } =
-      this._utils.getMetaData(this._memo);
+      this._utils.getMetaData(this._memo, createdTimestamp);
 
     const icpTransaction: IcpTransaction = {
       public_keys: [publicKey],
