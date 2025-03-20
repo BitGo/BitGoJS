@@ -4,7 +4,7 @@ import {
   WalrusWithdrawStakeProgrammableTransaction,
   SuiTransactionType,
 } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { WalrusWithdrawStakeTransaction } from './walrusWithdrawStakeTransaction';
 import utils from './utils';
@@ -32,7 +32,7 @@ export class WalrusWithdrawStakeBuilder extends TransactionBuilder<WalrusWithdra
     this._transaction = new WalrusWithdrawStakeTransaction(_coinConfig);
 
     // TODO improve mainnet vs. testnet configuration
-    this.walrusConfig = _coinConfig.network.name === 'Mainnet' ? WALRUS_PROD_CONFIG : WALRUS_TESTNET_CONFIG;
+    this.walrusConfig = _coinConfig.network.type === NetworkType.MAINNET ? WALRUS_PROD_CONFIG : WALRUS_TESTNET_CONFIG;
   }
 
   /**
