@@ -1,8 +1,8 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import { BaseKey, BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
-  SuiTransaction,
   RequestWalrusStakeWithPool,
+  SuiTransaction,
   SuiTransactionType,
   WalrusStakingProgrammableTransaction,
 } from './iface';
@@ -13,13 +13,13 @@ import assert from 'assert';
 import { TransferTransaction } from './transferTransaction';
 import { StakingTransaction } from './stakingTransaction';
 import {
-  TransactionBlock as ProgrammingTransactionBlockBuilder,
-  MoveCallTransaction,
   Inputs,
+  MoveCallTransaction,
   TransactionArgument,
+  TransactionBlock as ProgrammingTransactionBlockBuilder,
 } from './mystenlab/builder';
 import { MAX_GAS_OBJECTS } from './constants';
-import { WALRUS_TESTNET_CONFIG, WALRUS_PROD_CONFIG } from './resources/walrusConfig';
+import { WALRUS_PROD_CONFIG, WALRUS_TESTNET_CONFIG } from './resources/walrusConfig';
 import { SuiObjectRef } from './mystenlab/types';
 
 export class WalrusStakingBuilder extends TransactionBuilder<WalrusStakingProgrammableTransaction> {
@@ -33,7 +33,7 @@ export class WalrusStakingBuilder extends TransactionBuilder<WalrusStakingProgra
     this._transaction = new StakingTransaction(_coinConfig);
 
     // TODO improve mainnet vs. testnet configuration
-    this.walrusConfig = _coinConfig.network.name === 'Mainnet' ? WALRUS_PROD_CONFIG : WALRUS_TESTNET_CONFIG;
+    this.walrusConfig = _coinConfig.network.type === NetworkType.MAINNET ? WALRUS_PROD_CONFIG : WALRUS_TESTNET_CONFIG;
   }
 
   /**
