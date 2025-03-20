@@ -1,86 +1,32 @@
-import * as execa from 'execa';
-import { readFileSync, readdirSync, writeFileSync, statSync } from 'fs';
+import * as assert from 'node:assert';
+import { readFileSync, writeFileSync } from 'fs';
 import * as path from 'path';
 import { inc } from 'semver';
+import {
+  walk,
+  getDistTagsForModuleLocations,
+  getLernaModules,
+  changeScopeInFile,
+  setDependencyVersion,
+} from './prepareRelease';
 
 let lernaModules: string[] = [];
 let lernaModuleLocations: string[] = [];
 let TARGET_SCOPE = '@bitgo-beta';
 let filesChanged = 0;
 
-/**
- * Create a function which can run lerna commands
- * @param {String} lernaPath - path to lerna binary
- * @returns {function(string, string[], Object.<string, string>): Promise<string>}
- */
-function getLernaRunner(lernaPath: string) {
-  return async (command: string, args: string[] = [], options = {}) => {
-    const { stdout } = await execa(lernaPath, [command, ...args], options);
-    return stdout;
-  };
-}
-
-const getLernaModules = async (): Promise<void> => {
-  const { stdout: lernaBinary } = await execa('yarn', ['bin', 'lerna'], { cwd: process.cwd() });
-
-  const lerna = getLernaRunner(lernaBinary);
-  const modules: Array<{ name: string; location: string }> = JSON.parse(
-    await lerna('list', ['--loglevel', 'silent', '--json', '--all'])
-  );
+const setLernaModules = async (): Promise<void> => {
+  const modules = await getLernaModules();
   lernaModules = modules.map(({ name }) => name);
   lernaModuleLocations = modules.map(({ location }) => location);
-};
-
-const walk = (dir: string): string[] => {
-  let results: string[] = [];
-  const ignoredFolders = [/node_modules/];
-  const list = readdirSync(dir);
-  list.forEach((file) => {
-    file = path.join(dir, file);
-    const stat = statSync(file);
-    if (stat && stat.isDirectory()) {
-      if (!ignoredFolders.some((folder) => folder.test(file))) {
-        results = [...results, ...walk(file)];
-      }
-    } else if (['.ts', '.tsx', '.js', '.json'].includes(path.extname(file))) {
-      // Is a file
-      results.push(file);
-    }
-  });
-  return results;
-};
-
-const changeScopeInFile = (filePath: string): void => {
-  const oldContent = readFileSync(filePath, { encoding: 'utf8' });
-  let newContent = oldContent;
-  lernaModules.forEach((moduleName) => {
-    const newName = `${moduleName.replace('@bitgo/', `${TARGET_SCOPE}/`)}`;
-    newContent = newContent.replace(new RegExp(moduleName, 'g'), newName);
-  });
-  if (newContent !== oldContent) {
-    writeFileSync(filePath, newContent, { encoding: 'utf-8' });
-    ++filesChanged;
-  }
 };
 
 const replacePackageScopes = () => {
   // replace all @bitgo packages & source code with alternate SCOPE
   const filePaths = [...walk(path.join(__dirname, '../', 'modules')), ...walk(path.join(__dirname, '../', 'webpack'))];
-  filePaths.forEach((file) => changeScopeInFile(file));
-};
-
-/**
- * Makes an HTTP request to fetch all the dist tags for a given package.
- */
-type DistTags = Record<string, string>;
-const getDistTags = async (packageName: string): Promise<DistTags> => {
-  console.log(`Fetching dist tags for ${packageName}`);
-  const url = `https://registry.npmjs.org/-/package/${packageName}/dist-tags`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed ${url}: ${response.status} ${response.statusText} ${await response.text()}`);
-  }
-  return response.json();
+  filePaths.forEach((file) => {
+    filesChanged += changeScopeInFile(file, lernaModules, TARGET_SCOPE);
+  });
 };
 
 // modules/bitgo is the only package we publish without an `@bitgo` prefix, so
@@ -122,36 +68,13 @@ function compareversion(version1, version2) {
   return result;
 }
 
-async function getDistTagsForModules(moduleLocations: string[]): Promise<(DistTags | undefined)[]> {
-  return await Promise.all(
-    moduleLocations.map(async (modulePath) => {
-      const moduleName: string = JSON.parse(
-        readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' })
-      ).name;
-      switch (moduleName) {
-        case '@bitgo-beta/express':
-        case '@bitgo-beta/web-demo':
-        case '@bitgo-beta/sdk-test':
-          console.warn(`Skipping ${moduleName} as it's not published to npm`);
-          return undefined;
-      }
-      try {
-        return await getDistTags(moduleName);
-      } catch (e) {
-        console.warn(`Failed to fetch dist tags for ${moduleName}`, e);
-        return undefined;
-      }
-    })
-  );
-}
-
 /**
  * increment the version based on the preid. default to `beta`
  *
  * @param {String | undefined} preid
  */
 const incrementVersions = async (preid = 'beta') => {
-  const distTags = await getDistTagsForModules(lernaModuleLocations);
+  const distTags = await getDistTagsForModuleLocations(lernaModuleLocations);
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     try {
       const modulePath = lernaModuleLocations[i];
@@ -172,6 +95,7 @@ const incrementVersions = async (preid = 'beta') => {
 
       if (prevTag) {
         const next = inc(prevTag, 'prerelease', undefined, preid);
+        assert(typeof next === 'string', `Failed to increment version for ${json.name}`);
         console.log(`Setting next version for ${json.name} to ${next}`);
         json.version = next;
         writeFileSync(path.join(modulePath, 'package.json'), JSON.stringify(json, null, 2) + '\n');
@@ -184,12 +108,7 @@ const incrementVersions = async (preid = 'beta') => {
           const otherJsonContent = readFileSync(path.join(otherModulePath, 'package.json'), { encoding: 'utf-8' });
           if (otherJsonContent.includes(json.name)) {
             const otherJson = JSON.parse(otherJsonContent);
-            if (otherJson.dependencies && otherJson.dependencies[json.name]) {
-              otherJson.dependencies[json.name] = next;
-            }
-            if (otherJson.devDependencies && otherJson.devDependencies[json.name]) {
-              otherJson.devDependencies[json.name] = next;
-            }
+            setDependencyVersion(otherJson, json.name, next as string);
             writeFileSync(path.join(otherModulePath, 'package.json'), JSON.stringify(otherJson, null, 2) + '\n');
           }
         });
@@ -213,7 +132,7 @@ const getArgs = () => {
 
 const main = async (preid?: string) => {
   getArgs();
-  await getLernaModules();
+  await setLernaModules();
   replacePackageScopes();
   replaceBitGoPackageScope();
   await incrementVersions(preid);
