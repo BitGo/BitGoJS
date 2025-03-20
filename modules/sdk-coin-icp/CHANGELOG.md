@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.8.0...@bitgo/sdk-coin-icp@1.9.0) (2025-03-20)
+
+### Features
+
+- **sdk-coin-icp:** enhance raw transaction handling ([d9402f4](https://github.com/BitGo/BitGoJS/commit/d9402f443f0cc70eb1cf95f692a6f91f91ffadb6))
+- **sdk-coin-icp:** make from method asynchronous for improved transaction handling ([de96c9d](https://github.com/BitGo/BitGoJS/commit/de96c9d7a80da44f130df640178af12255ed1d5b))
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.7.0...@bitgo/sdk-coin-icp@1.8.0) (2025-03-18)
 
 ### Bug Fixes

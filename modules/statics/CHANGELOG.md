@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.4.0...@bitgo/statics@51.5.0) (2025-03-20)
+
+### Features
+
+- add ofc statics for flr,sgb,xdc,wemix ([83acf7d](https://github.com/BitGo/BitGoJS/commit/83acf7db18719dca863ea93d00ff24277e17a2d7))
+- **statics:** add tokens arbeth:tbill, xrp:tbill and eth:fuelv1 ([40b9b9b](https://github.com/BitGo/BitGoJS/commit/40b9b9bc0f55e5870fb4f2d1639ea5d5da91b3ae))
+- **statics:** onbaord UNA, ADS, MATRIX, PACT, EURCV WIN-4836 ([825098d](https://github.com/BitGo/BitGoJS/commit/825098d92cffbfc51f9b0ec83ddaa400c0b73a42))
+
 # [51.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.3.0...@bitgo/statics@51.4.0) (2025-03-18)
 
 ### Bug Fixes

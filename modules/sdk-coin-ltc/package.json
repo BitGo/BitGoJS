@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-ltc",
-  "version": "3.1.21",
+  "version": "3.1.22",
   "description": "BitGo SDK coin library for Litecoin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,13 +40,13 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^9.19.1",
-    "@bitgo/sdk-core": "^31.2.0",
+    "@bitgo/abstract-utxo": "^9.19.2",
+    "@bitgo/sdk-core": "^31.2.1",
     "@bitgo/utxo-lib": "^11.2.4"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.61.1",
-    "@bitgo/sdk-test": "^8.0.76"
+    "@bitgo/sdk-api": "^1.61.2",
+    "@bitgo/sdk-test": "^8.0.77"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

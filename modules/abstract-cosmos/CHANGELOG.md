@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.6.0...@bitgo/abstract-cosmos@11.6.1) (2025-03-20)
+
+### Reverts
+
+- Revert "fix(sdk-core): add validation for unsigned txHex" ([4333b10](https://github.com/BitGo/BitGoJS/commit/4333b1014040edbb0f5b347a9f5e343b20e1704f))
+
 # [11.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.5.1...@bitgo/abstract-cosmos@11.6.0) (2025-03-18)
 
 ### Bug Fixes
