@@ -358,10 +358,10 @@ export class CosmosCoin extends BaseCoin {
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
     }
+    const transaction = await this.getBuilder().from(rawTx).build();
+    const explainedTx = transaction.explainTransaction();
 
     if (txParams.recipients && txParams.recipients.length > 0) {
-      const transaction = await this.getBuilder().from(rawTx).build();
-      const explainedTx = transaction.explainTransaction();
       const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
       const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
 
