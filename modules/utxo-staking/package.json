@@ -4,6 +4,9 @@
   "description": "BitGo SDK for build UTXO staking transactions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist/src"
+  ],
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",

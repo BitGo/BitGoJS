@@ -1,5 +1,11 @@
 import * as execa from 'execa';
 
+export type LernaModule = {
+  name: string;
+  location: string;
+  version: string;
+};
+
 /**
  * Create a function which can run lerna commands
  * @param {String} lernaPath - path to lerna binary
@@ -12,7 +18,7 @@ function getLernaRunner(lernaPath: string) {
   };
 }
 
-export async function getLernaModules(): Promise<Array<{ name: string; location: string }>> {
+export async function getLernaModules(): Promise<LernaModule[]> {
   const { stdout: lernaBinary } = await execa('yarn', ['bin', 'lerna'], { cwd: process.cwd() });
   const lerna = getLernaRunner(lernaBinary);
   return JSON.parse(await lerna('list', ['--loglevel', 'silent', '--json', '--all']));
