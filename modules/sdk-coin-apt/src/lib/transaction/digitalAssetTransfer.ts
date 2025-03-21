@@ -37,19 +37,20 @@ export class DigitalAssetTransfer extends Transaction {
       throw new InvalidTransactionError('Invalid transaction payload');
     }
     const entryFunction = payload.entryFunction;
-    if (!this._recipient) {
-      this._recipient = {} as TransactionRecipient;
-    }
     this._assetId = entryFunction.args[0].toString();
-    this._recipient.address = entryFunction.args[1].toString();
-    this._recipient.amount = DIGITAL_ASSET_TRANSFER_AMOUNT;
+    this.recipients = [
+      {
+        address: entryFunction.args[1].toString(),
+        amount: DIGITAL_ASSET_TRANSFER_AMOUNT,
+      },
+    ] as TransactionRecipient[];
   }
 
   protected async buildRawTransaction(): Promise<void> {
     const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
     const aptos = new Aptos(new AptosConfig({ network }));
     const senderAddress = AccountAddress.fromString(this._sender);
-    const recipientAddress = AccountAddress.fromString(this._recipient.address);
+    const recipientAddress = AccountAddress.fromString(this.recipients[0].address);
     const digitalAssetAddress = AccountAddress.fromString(this._assetId);
 
     const transferDigitalAssetAbi: EntryFunctionABI = {
