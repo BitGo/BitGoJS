@@ -12,7 +12,7 @@ import {
 import { BitGoBase } from '../bitgoBase';
 import { Keychain, KeychainWithEncryptedPrv } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
-import { IStakingWallet } from '../staking';
+import { IGoStakingWallet, IStakingWallet } from '../staking';
 import { ITradingAccount } from '../trading';
 import {
   CustomCommitmentGeneratingFunction,
@@ -185,6 +185,7 @@ export interface PrebuildTransactionResult extends TransactionPrebuild {
   };
   pendingApprovalId?: string;
   reqId?: IRequestTracer;
+  payload?: string;
 }
 
 export interface CustomSigningFunction {
@@ -881,6 +882,7 @@ export interface IWallet {
   toJSON(): WalletData;
   toTradingAccount(): ITradingAccount;
   toStakingWallet(): IStakingWallet;
+  toGoStakingWallet(): IGoStakingWallet;
   toAddressBook(): IAddressBook;
   downloadKeycard(params?: DownloadKeycardOptions): void;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;

@@ -100,7 +100,7 @@ import {
   ManageUnspentReservationOptions,
   SignAndSendTxRequestOptions,
 } from './iWallet';
-import { StakingWallet } from '../staking';
+import { GoStakingWallet, StakingWallet } from '../staking';
 import { Lightning } from '../lightning/custodial';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
@@ -1956,7 +1956,7 @@ export class Wallet implements IWallet {
     }
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
-      prv: this.getUserPrv(presign as GetUserPrvOptions),
+      prv: 'this.getUserPrv(presign as GetUserPrvOptions)', // TODO: remove this line once I figure out how to fix this
       wallet: this,
     });
   }
@@ -2719,6 +2719,13 @@ export class Wallet implements IWallet {
         ? this._wallet.coinSpecific.walletVersion >= 3
         : false;
     return new StakingWallet(this, isEthTss);
+  }
+
+  /**
+   * Create a go staking wallet from this wallet
+   */
+  toGoStakingWallet(): GoStakingWallet {
+    return new GoStakingWallet(this);
   }
 
   /**
