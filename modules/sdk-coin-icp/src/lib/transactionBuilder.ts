@@ -4,6 +4,7 @@ import { BaseTransactionBuilder, BuildTransactionError, BaseAddress, SigningErro
 import { Transaction } from './transaction';
 import utils from './utils';
 import { IcpTransactionData } from './iface';
+import { SignedTransactionBuilder } from './signedTransactionBuilder';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -143,5 +144,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!utils.isValidPrivateKey(key.key)) {
       throw new SigningError('Invalid private key');
     }
+  }
+
+  // combine the unsigned transaction with the signature payload and generates the signed transaction
+  protected combine(): void {
+    const signedTransactionBuilder = new SignedTransactionBuilder(
+      this._transaction.unsignedTransaction,
+      this._transaction.signaturePayload
+    );
+    this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
   }
 }
