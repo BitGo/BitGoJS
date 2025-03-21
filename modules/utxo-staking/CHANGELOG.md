@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.10.0...@bitgo/utxo-staking@1.11.0) (2025-03-20)
+
+### Features
+
+- **utxo-staking:** add babylon params sync script and manager ([c743316](https://github.com/BitGo/BitGoJS/commit/c743316b4c52a60063e0bfc926847152eccbf490))
+- **utxo-staking:** add files field to package.json ([fdde58b](https://github.com/BitGo/BitGoJS/commit/fdde58bd8baca4ca8cdbe9e6f221759562a7ca76))
+
 # [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.9.0...@bitgo/utxo-staking@1.10.0) (2025-03-18)
 
 ### Features
