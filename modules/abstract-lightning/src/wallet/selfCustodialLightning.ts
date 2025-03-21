@@ -1,10 +1,5 @@
 import * as sdkcore from '@bitgo/sdk-core';
-import {
-  BackupResponse,
-  LightningAuthKeychain,
-  UpdateLightningWalletClientRequest,
-  UpdateLightningWalletEncryptedRequest,
-} from '../codecs';
+import { BackupResponse, UpdateLightningWalletClientRequest, UpdateLightningWalletEncryptedRequest } from '../codecs';
 import { getLightningAuthKeychains, ILightningWallet, LightningWallet } from './lightning';
 import { createMessageSignature, deriveLightningServiceSharedSecret, isLightningCoinName } from '../lightning';
 import * as t from 'io-ts';
@@ -12,7 +7,7 @@ import * as t from 'io-ts';
 function encryptWalletUpdateRequest(
   wallet: sdkcore.IWallet,
   params: UpdateLightningWalletClientRequest,
-  userAuthKey: LightningAuthKeychain
+  userAuthKeyEncryptedPrv: string
 ): UpdateLightningWalletEncryptedRequest {
   const coinName = wallet.coin() as 'tlnbtc' | 'lnbtc';
 
@@ -22,7 +17,7 @@ function encryptWalletUpdateRequest(
 
   const userAuthXprv = wallet.bitgo.decrypt({
     password: params.passphrase,
-    input: userAuthKey.encryptedPrv,
+    input: userAuthKeyEncryptedPrv,
   });
 
   if (params.signerTlsKey) {
@@ -87,10 +82,14 @@ export async function updateWalletCoinSpecific(
   );
 
   const { userAuthKey } = await getLightningAuthKeychains(wallet);
-  const updateRequestWithEncryption = encryptWalletUpdateRequest(wallet, params, userAuthKey);
+  const userAuthKeyEncryptedPrv = userAuthKey.encryptedPrv;
+  if (!userAuthKeyEncryptedPrv) {
+    throw new Error(`user auth key is missing encrypted private key`);
+  }
+  const updateRequestWithEncryption = encryptWalletUpdateRequest(wallet, params, userAuthKeyEncryptedPrv);
   const signature = createMessageSignature(
     updateRequestWithEncryption,
-    wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
+    wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
   );
   const coinSpecific = {
     [wallet.coin()]: {

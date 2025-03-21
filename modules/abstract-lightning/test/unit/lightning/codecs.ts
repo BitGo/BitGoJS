@@ -37,6 +37,11 @@ describe('Codecs', function () {
         encryptedPrv: 'encryptedPrv',
         source: 'user',
       },
+      {
+        id: 'id',
+        pub: 'xpub',
+        source: 'user',
+      },
     ],
     [
       null,
@@ -58,6 +63,16 @@ describe('Codecs', function () {
         id: 'id',
         pub: 'xpub',
         encryptedPrv: 'encryptedPrv',
+        source: 'user',
+        coinSpecific: {
+          lnbtc: {
+            purpose: 'userAuth',
+          },
+        },
+      },
+      {
+        id: 'id',
+        pub: 'xpub',
         source: 'user',
         coinSpecific: {
           lnbtc: {
