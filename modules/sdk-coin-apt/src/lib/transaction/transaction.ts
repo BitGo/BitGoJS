@@ -39,6 +39,7 @@ export abstract class Transaction extends BaseTransaction {
   protected _feePayerSignature: Signature;
   protected _sender: string;
   protected _recipient: TransactionRecipient;
+  protected _recipients: TransactionRecipient[];
   protected _sequenceNumber: number;
   protected _maxGasAmount: number;
   protected _gasUnitPrice: number;
@@ -96,6 +97,14 @@ export abstract class Transaction extends BaseTransaction {
 
   set recipient(value: TransactionRecipient) {
     this._recipient = value;
+  }
+
+  get recipients(): TransactionRecipient[] {
+    return this._recipients;
+  }
+
+  set recipients(value: TransactionRecipient[]) {
+    this._recipients = value;
   }
 
   get sequenceNumber(): number {
@@ -258,14 +267,24 @@ export abstract class Transaction extends BaseTransaction {
   }
 
   loadInputsAndOutputs(): void {
+    const totalAmount = this._recipients?.reduce(
+      (accumulator, current) => accumulator.plus(current.amount),
+      new BigNumber('0')
+    );
     this._inputs = [
       {
         address: this.sender,
-        value: this.recipient.amount as string,
+        value: totalAmount?.toString() || (this.recipient.amount as string),
         coin: this._coinConfig.name,
       },
     ];
-    this._outputs = [
+    this._outputs = this._recipients?.map((recipient) => {
+      return {
+        address: recipient.address,
+        value: recipient.amount as string,
+        coin: this._coinConfig.name,
+      };
+    }) || [
       {
         address: this.recipient.address,
         value: this.recipient.amount as string,
@@ -303,6 +322,7 @@ export abstract class Transaction extends BaseTransaction {
       id: this.id,
       sender: this.sender,
       recipient: this.recipient,
+      recipients: this.recipients,
       sequenceNumber: this.sequenceNumber,
       maxGasAmount: this.maxGasAmount,
       gasUnitPrice: this.gasUnitPrice,
@@ -335,8 +355,10 @@ export abstract class Transaction extends BaseTransaction {
       'type',
     ];
 
-    const outputs: TransactionRecipient[] = [this.recipient];
-    const outputAmount = outputs[0].amount;
+    const outputs: TransactionRecipient[] = this._recipients || [this._recipient];
+    const outputAmount = outputs
+      .reduce((accumulator, current) => accumulator.plus(current.amount), new BigNumber('0'))
+      .toString();
     return {
       displayOrder,
       id: this.id,

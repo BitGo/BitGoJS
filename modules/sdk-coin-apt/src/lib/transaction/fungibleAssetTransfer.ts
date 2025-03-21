@@ -38,15 +38,23 @@ export class FungibleAssetTransfer extends Transaction {
     this._assetId = entryFunction.args[0].toString();
     this._recipient.address = entryFunction.args[1].toString();
     this._recipient.amount = utils.getAmountFromPayloadArgs(entryFunction.args[2].bcsToBytes());
+    this._recipients = [
+      {
+        address: entryFunction.args[1].toString(),
+        amount: utils.getAmountFromPayloadArgs(entryFunction.args[2].bcsToBytes()),
+      },
+    ] as TransactionRecipient[];
   }
 
   protected async buildRawTransaction(): Promise<void> {
     const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
     const aptos = new Aptos(new AptosConfig({ network }));
     const senderAddress = AccountAddress.fromString(this._sender);
-    const recipientAddress = AccountAddress.fromString(this._recipient.address);
+    const recipientAddress = AccountAddress.fromString(
+      this._recipients ? this._recipients[0].address : this._recipient.address
+    );
     const fungibleTokenAddress = this._assetId;
-
+    const recipientAmount = this._recipients ? this.recipients[0].amount : this.recipient.amount;
     const faTransferAbi: EntryFunctionABI = {
       typeParameters: [{ constraints: [] }],
       parameters: [parseTypeTag('0x1::object::Object'), new TypeTagAddress(), new TypeTagU64()],
@@ -57,7 +65,7 @@ export class FungibleAssetTransfer extends Transaction {
       data: {
         function: FUNGIBLE_ASSET_TRANSFER_FUNCTION,
         typeArguments: [FUNGIBLE_ASSET_TYPE_ARGUMENT],
-        functionArguments: [fungibleTokenAddress, recipientAddress, this.recipient.amount],
+        functionArguments: [fungibleTokenAddress, recipientAddress, recipientAmount],
         abi: faTransferAbi,
       },
       options: {
