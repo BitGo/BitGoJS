@@ -371,6 +371,7 @@ export const BERA_FEATURES = [
   CoinFeature.STAKING,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.WALLET_CONNECT_DEFI,
 ];
 export const OAS_FEATURES = [
   ...ETH_FEATURES,
