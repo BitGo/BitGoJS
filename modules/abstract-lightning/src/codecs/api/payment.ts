@@ -29,6 +29,7 @@ export const PAYMENT_FAILURE_INSUFFICIENT_WALLET_BALANCE = 'INSUFFICIENT_WALLET_
 export const PAYMENT_FAILURE_EXCESS_WALLET_BALANCE = 'EXCESS_WALLET_BALANCE';
 export const PAYMENT_FAILURE_INVOICE_EXPIRED = 'INVOICE_EXPIRED';
 export const PAYMENT_FAILURE_CANCELED = 'CANCELED';
+export const PAYMENT_FAILURE_FORCE_FAILED = 'FORCE_FAILED';
 
 export const PaymentFailureReason = t.union([
   t.literal(PAYMENT_FAILURE_TIMEOUT),
@@ -40,6 +41,7 @@ export const PaymentFailureReason = t.union([
   t.literal(PAYMENT_FAILURE_EXCESS_WALLET_BALANCE),
   t.literal(PAYMENT_FAILURE_INVOICE_EXPIRED),
   t.literal(PAYMENT_FAILURE_CANCELED),
+  t.literal(PAYMENT_FAILURE_FORCE_FAILED),
 ]);
 
 export type PaymentFailureReason = t.TypeOf<typeof PaymentFailureReason>;
