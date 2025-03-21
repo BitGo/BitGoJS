@@ -13,7 +13,6 @@ import {
   IcpTransactionData,
   OperationType,
 } from './iface';
-import { SignedTransactionBuilder } from './signedTransactionBuilder';
 import assert from 'assert';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -111,16 +110,6 @@ export class TransferBuilder extends TransactionBuilder {
     };
     this._transaction.icpTransactionData = icpTransactionData;
     this._transaction.icpTransaction = icpTransaction;
-  }
-
-  // combine the unsigned transaction with the signature payload and generates the signed transaction
-  protected combine(): BaseTransaction {
-    const signedTransactionBuilder = new SignedTransactionBuilder(
-      this._transaction.unsignedTransaction,
-      this._transaction.signaturePayload
-    );
-    this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
-    return this._transaction;
   }
 
   /** @inheritdoc */
