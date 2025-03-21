@@ -3,9 +3,9 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { Baby, Tbaby } from '../../src';
-import utils from '../../src/lib/utils';
 import { TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO, address } from '../resources/baby';
 import should = require('should');
+import utils from '../../src/lib/utils';
 
 describe('Babylon', function () {
   let bitgo: TestBitGoAPI;
