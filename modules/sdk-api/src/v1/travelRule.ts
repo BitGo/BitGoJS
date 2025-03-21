@@ -13,7 +13,6 @@
 import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
-import Bluebird from 'bluebird';
 import _ from 'lodash';
 
 interface DecryptReceivedTravelRuleOptions {
@@ -65,7 +64,7 @@ TravelRule.prototype.getRecipients = function (params, callback) {
   common.validateParams(params, ['txid'], [], callback);
 
   const url = this.url(params.txid + '/recipients');
-  return Bluebird.resolve(this.bitgo.get(url).result('recipients')).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(url).result('recipients')).then(callback).catch(callback);
 };
 
 TravelRule.prototype.validateTravelInfo = function (info) {
@@ -216,12 +215,14 @@ TravelRule.prototype.send = function (params, callback) {
     throw new Error('invalid outputIndex');
   }
 
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .post(this.url(params.txid + '/' + params.outputIndex))
       .send(params)
       .result()
-  ).nodeify(callback);
+  )
+    .then(callback)
+    .catch(callback);
 };
 
 /**

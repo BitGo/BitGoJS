@@ -12,7 +12,6 @@
 import { common } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import Bluebird from 'bluebird';
 import _ from 'lodash';
 
 //
@@ -134,12 +133,13 @@ PendingApproval.prototype.get = function (params, callback) {
   common.validateParams(params, [], [], callback);
 
   const self = this;
-  return Bluebird.resolve(this.bitgo.get(this.url()).result())
+  return Promise.resolve(this.bitgo.get(this.url()).result())
     .then(function (res) {
       self.pendingApproval = res;
       return self;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -184,38 +184,40 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
 
   const self = this;
 
-  return Bluebird.try(function () {
-    if (self.info().transactionRequest.recipients) {
-      // recipients object found on the pending approvals - use it
-      params.recipients = self.info().transactionRequest.recipients;
-      return;
-    }
-    if (transaction.outs.length <= 2) {
-      transaction.outs.forEach(function (out) {
-        const outAddress = utxolib.address.fromOutputScript(out.script, network);
-        if (self.info().transactionRequest.destinationAddress === outAddress) {
-          // If this is the destination, then spend to it
-          params.recipients[outAddress] = out.value;
-        }
-      });
-      return;
-    }
+  return Promise.resolve()
+    .then(function () {
+      if (self.info().transactionRequest.recipients) {
+        // recipients object found on the pending approvals - use it
+        params.recipients = self.info().transactionRequest.recipients;
+        return;
+      }
+      if (transaction.outs.length <= 2) {
+        transaction.outs.forEach(function (out) {
+          const outAddress = utxolib.address.fromOutputScript(out.script, network);
+          if (self.info().transactionRequest.destinationAddress === outAddress) {
+            // If this is the destination, then spend to it
+            params.recipients[outAddress] = out.value;
+          }
+        });
+        return;
+      }
 
-    // This looks like a sendmany
-    // Attempt to figure out the outputs by choosing all outputs that were not going back to the wallet as change addresses
-    return self.wallet.addresses({ chain: 1, sort: -1, limit: 500 }).then(function (result) {
-      const changeAddresses = _.keyBy(result.addresses, 'address');
-      transaction.outs.forEach(function (out) {
-        const outAddress = utxolib.address.fromOutputScript(out.script, network);
-        if (!changeAddresses[outAddress]) {
-          // If this is not a change address, then spend to it
-          params.recipients[outAddress] = out.value;
-        }
+      // This looks like a sendmany
+      // Attempt to figure out the outputs by choosing all outputs that were not going back to the wallet as change addresses
+      return self.wallet.addresses({ chain: 1, sort: -1, limit: 500 }).then(function (result) {
+        const changeAddresses = _.keyBy(result.addresses, 'address');
+        transaction.outs.forEach(function (out) {
+          const outAddress = utxolib.address.fromOutputScript(out.script, network);
+          if (!changeAddresses[outAddress]) {
+            // If this is not a change address, then spend to it
+            params.recipients[outAddress] = out.value;
+          }
+        });
       });
+    })
+    .then(function () {
+      return self.wallet.createAndSignTransaction(params);
     });
-  }).then(function () {
-    return self.wallet.createAndSignTransaction(params);
-  });
 };
 
 //
@@ -240,7 +242,7 @@ PendingApproval.prototype.constructApprovalTx = function (params, callback) {
   }
 
   const self = this;
-  return Bluebird.try(function () {
+  return Promise.resolve().then(function () {
     if (self.type() === 'transactionRequest') {
       const extendParams: any = { txHex: self.info().transactionRequest.transaction };
       if (params.useOriginalFee) {
@@ -280,45 +282,46 @@ PendingApproval.prototype.approve = function (params, callback) {
   }
 
   const self = this;
-  return Bluebird.try(function () {
-    if (self.type() === 'transactionRequest') {
-      if (params.tx) {
-        // the approval tx was reconstructed and explicitly specified - pass it through
-        return {
-          tx: params.tx,
-        };
-      }
+  return Promise.resolve()
+    .then(function () {
+      if (self.type() === 'transactionRequest') {
+        if (params.tx) {
+          // the approval tx was reconstructed and explicitly specified - pass it through
+          return {
+            tx: params.tx,
+          };
+        }
 
-      // this user may not have spending privileges or a passphrase may not have been passed in
-      if (!canRecreateTransaction) {
-        return {
-          tx: self.info().transactionRequest.transaction,
-        };
-      }
+        // this user may not have spending privileges or a passphrase may not have been passed in
+        if (!canRecreateTransaction) {
+          return {
+            tx: self.info().transactionRequest.transaction,
+          };
+        }
 
-      return self.populateWallet().then(function () {
-        const recreationParams = _.extend(
-          {},
-          params,
-          { txHex: self.info().transactionRequest.transaction },
-          self.info().transactionRequest.buildParams
-        );
-        // delete the old build params because we want 'recreateAndSign' to recreate the transaction
-        delete recreationParams.fee;
-        delete recreationParams.unspents;
-        delete recreationParams.txInfo;
-        delete recreationParams.estimatedSize;
-        delete recreationParams.changeAddresses;
-        return self.recreateAndSignTransaction(recreationParams);
-      });
-    }
-  })
+        return self.populateWallet().then(function () {
+          const recreationParams = _.extend(
+            {},
+            params,
+            { txHex: self.info().transactionRequest.transaction },
+            self.info().transactionRequest.buildParams
+          );
+          // delete the old build params because we want 'recreateAndSign' to recreate the transaction
+          delete recreationParams.fee;
+          delete recreationParams.unspents;
+          delete recreationParams.txInfo;
+          delete recreationParams.estimatedSize;
+          delete recreationParams.changeAddresses;
+          return self.recreateAndSignTransaction(recreationParams);
+        });
+      }
+    })
     .then(function (transaction) {
       const approvalParams: any = { state: 'approved', otp: params.otp };
       if (transaction) {
         approvalParams.tx = transaction.tx;
       }
-      return Bluebird.resolve(self.bitgo.put(self.url()).send(approvalParams).result()).nodeify(callback);
+      return Promise.resolve(self.bitgo.put(self.url()).send(approvalParams).result()).then(callback).catch(callback);
     })
     .catch(function (error) {
       if (
@@ -351,7 +354,9 @@ PendingApproval.prototype.reject = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.put(this.url()).send({ state: 'rejected' }).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.put(this.url()).send({ state: 'rejected' }).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //

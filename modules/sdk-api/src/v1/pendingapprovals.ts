@@ -11,7 +11,6 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-import Bluebird from 'bluebird';
 import * as _ from 'lodash';
 
 import { common } from '@bitgo/sdk-core';
@@ -46,14 +45,15 @@ PendingApprovals.prototype.list = function (params, callback) {
   }
 
   const self = this;
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/pendingapprovals')).query(queryParams).result())
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/pendingapprovals')).query(queryParams).result())
     .then(function (body) {
       body.pendingApprovals = body.pendingApprovals.map(function (p) {
         return new PendingApproval(self.bitgo, p);
       });
       return body;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -67,11 +67,12 @@ PendingApprovals.prototype.get = function (params, callback) {
   common.validateParams(params, ['id'], [], callback);
 
   const self = this;
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/pendingapprovals/' + params.id)).result())
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/pendingapprovals/' + params.id)).result())
     .then(function (body) {
       return new PendingApproval(self.bitgo, body);
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 export = PendingApprovals;
