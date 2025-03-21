@@ -36,19 +36,28 @@ export class TransferTransaction extends Transaction {
     this._assetId = entryFunction.type_args[0].toString();
     this._recipient.address = entryFunction.args[0].toString();
     this._recipient.amount = utils.getAmountFromPayloadArgs(entryFunction.args[1].bcsToBytes());
+    this._recipients = [
+      {
+        address: entryFunction.args[0].toString(),
+        amount: utils.getAmountFromPayloadArgs(entryFunction.args[1].bcsToBytes()),
+      },
+    ] as TransactionRecipient[];
   }
 
   protected async buildRawTransaction(): Promise<void> {
     const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
     const aptos = new Aptos(new AptosConfig({ network }));
     const senderAddress = AccountAddress.fromString(this._sender);
-    const recipientAddress = AccountAddress.fromString(this._recipient.address);
+    const recipientAddress = AccountAddress.fromString(
+      this._recipients ? this._recipients[0].address : this._recipient.address
+    );
+    const recipientAmount = this._recipients ? this.recipients[0].amount : this.recipient.amount;
     const simpleTxn = await aptos.transaction.build.simple({
       sender: senderAddress,
       data: {
         function: COIN_TRANSFER_FUNCTION,
         typeArguments: [this.assetId],
-        functionArguments: [recipientAddress, this.recipient.amount],
+        functionArguments: [recipientAddress, recipientAmount],
       },
       options: {
         maxGasAmount: this.maxGasAmount,

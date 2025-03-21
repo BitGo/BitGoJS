@@ -70,6 +70,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  recipients(recipients: Recipient[]): this {
+    this.validateAddress({ address: recipients[0].address });
+    this.validateValue(new BigNumber(recipients[0].amount));
+    this.transaction.recipients = recipients;
+    return this;
+  }
+
   gasData(gasData: GasData): this {
     this.validateGasData(gasData);
     this.transaction.maxGasAmount = gasData.maxGasAmount;
@@ -143,8 +150,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new Error('transaction not defined');
     }
     this.validateAddress({ address: transaction.sender });
-    this.validateAddress({ address: transaction.recipient.address });
-    this.validateValue(new BigNumber(transaction.recipient.amount));
+    if (transaction.recipients) {
+      this.validateAddress({ address: transaction.recipients[0].address });
+      this.validateValue(new BigNumber(transaction.recipients[0].amount));
+    } else {
+      this.validateAddress({ address: transaction.recipient.address });
+      this.validateValue(new BigNumber(transaction.recipient.amount));
+    }
   }
 
   isValidRawTransaction(rawTransaction: string): boolean {

@@ -43,13 +43,21 @@ export class DigitalAssetTransfer extends Transaction {
     this._assetId = entryFunction.args[0].toString();
     this._recipient.address = entryFunction.args[1].toString();
     this._recipient.amount = DIGITAL_ASSET_TRANSFER_AMOUNT;
+    this._recipients = [
+      {
+        address: entryFunction.args[1].toString(),
+        amount: DIGITAL_ASSET_TRANSFER_AMOUNT,
+      },
+    ] as TransactionRecipient[];
   }
 
   protected async buildRawTransaction(): Promise<void> {
     const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
     const aptos = new Aptos(new AptosConfig({ network }));
     const senderAddress = AccountAddress.fromString(this._sender);
-    const recipientAddress = AccountAddress.fromString(this._recipient.address);
+    const recipientAddress = AccountAddress.fromString(
+      this.recipients ? this._recipients[0].address : this._recipient.address
+    );
     const digitalAssetAddress = AccountAddress.fromString(this._assetId);
 
     const transferDigitalAssetAbi: EntryFunctionABI = {
