@@ -11,8 +11,6 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-import Bluebird from 'bluebird';
-
 import { common } from '@bitgo/sdk-core';
 
 //
@@ -34,7 +32,9 @@ Markets.prototype.latest = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/market/latest')).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/market/latest')).result())
+    .then(callback)
+    .catch(callback);
 };
 
 /**
@@ -48,7 +48,9 @@ Markets.prototype.yesterday = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/market/yesterday')).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/market/yesterday')).result())
+    .then(callback)
+    .catch(callback);
 };
 
 /**
@@ -67,9 +69,9 @@ Markets.prototype.lastDays = function (params, callback) {
     throw new Error('must use a non-negative number of days');
   }
 
-  return Bluebird.resolve(
-    this.bitgo.get(this.bitgo.url('/market/last/' + days + '/' + params.currencyName)).result()
-  ).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/market/last/' + days + '/' + params.currencyName)).result())
+    .then(callback)
+    .catch(callback);
 };
 
 module.exports = Markets;
