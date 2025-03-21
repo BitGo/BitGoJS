@@ -59,9 +59,6 @@ jobs:
       - name: Check In-Repo Package Versions
         run: yarn run check-versions
 
-      - name: Dependency Audit
-        run: yarn run improved-yarn-audit --min-severity high
-
       - name: build packages
         env:
           # Workaround for https://github.com/nodejs/node/issues/51555
@@ -86,7 +83,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: ['lint', 'format', 'commit-lint', 'dependencies']
+        check: ['lint', 'format', 'commit-lint', 'dependencies', 'audit']
 
     steps:
       - uses: actions/checkout@v4
@@ -128,6 +125,10 @@ jobs:
       - name: Check Package Dependencies
         if: matrix.check == 'dependencies'
         run: yarn run check-deps
+
+      - name: Audit Dependencies
+        if: matrix.check == 'audit'
+        run: yarn run improved-yarn-audit --min-severity high
 
   browser-test:
     runs-on: ubuntu-22.04
