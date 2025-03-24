@@ -84,7 +84,7 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
     }
   );
 
-  const wallet = await coin.wallets().get({ id: walletId });
+  const wallet = await coin.wallets().get({ id: walletId, includeBalance: false });
   if (wallet.subType() !== 'lightningSelfCustody') {
     throw new ApiResponseError(`not a self custodial lighting wallet ${walletId}`, 400);
   }
@@ -145,7 +145,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
     }
   );
 
-  const wallet = await coin.wallets().get({ id: walletId });
+  const wallet = await coin.wallets().get({ id: walletId, includeBalance: false });
   if (wallet.subType() !== 'lightningSelfCustody') {
     throw new ApiResponseError(`not a self custodial lighting wallet ${walletId}`, 400);
   }
