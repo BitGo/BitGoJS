@@ -7,6 +7,7 @@ import {
   getBabylonParamByVersion,
   StakerInfo,
   StakingInputs,
+  StakingParams,
   VersionedStakingParams,
 } from '@bitgo/babylonlabs-io-btc-staking-ts';
 export { getBabylonParamByVersion, getBabylonParamByBtcHeight } from '@bitgo/babylonlabs-io-btc-staking-ts';
@@ -94,13 +95,16 @@ export const testnetFinalityProvider0 = Buffer.from(
   'hex'
 );
 
+type DescriptorStakingParams = Pick<
+  StakingParams,
+  'covenantNoCoordPks' | 'covenantQuorum' | 'minStakingTimeBlocks' | 'unbondingTime'
+>;
+
 export function getDescriptorBuilderForParams(
   userKey: utxolib.BIP32Interface | utxolib.ECPairInterface | Buffer,
   finalityProviderKeys: Buffer[],
-  params: Pick<
-    VersionedStakingParams,
-    'covenantNoCoordPks' | 'covenantQuorum' | 'minStakingTimeBlocks' | 'unbondingTime'
-  >
+  stakingTimelock: number,
+  params: DescriptorStakingParams
 ): BabylonDescriptorBuilder {
   if (!Buffer.isBuffer(userKey)) {
     userKey = userKey.publicKey;
@@ -110,32 +114,32 @@ export function getDescriptorBuilderForParams(
     finalityProviderKeys,
     params.covenantNoCoordPks.map((pk) => Buffer.from(pk, 'hex')),
     params.covenantQuorum,
-    params.minStakingTimeBlocks,
+    stakingTimelock,
     params.unbondingTime
   );
 }
 
 export function getDescriptorProviderForStakingParams(
-  stakerBtcInfo: StakerInfo,
+  stakerBtcInfo: Pick<StakerInfo, 'publicKeyNoCoordHex'>,
   stakingInput: StakingInputs,
-  stakingParams: VersionedStakingParams
+  stakingParams: DescriptorStakingParams
 ): BabylonDescriptorBuilder {
   const userKey = Buffer.from(stakerBtcInfo.publicKeyNoCoordHex, 'hex');
   const finalityProviderKey = Buffer.from(stakingInput.finalityProviderPkNoCoordHex, 'hex');
-  return getDescriptorBuilderForParams(userKey, [finalityProviderKey], stakingParams);
+  return getDescriptorBuilderForParams(userKey, [finalityProviderKey], stakingInput.stakingTimelock, stakingParams);
 }
 
 export function getTestnetDescriptorBuilder(
   userKey: utxolib.BIP32Interface | utxolib.ECPairInterface | Buffer,
   {
     finalityProviderKeys = [testnetFinalityProvider0],
+    params = getBabylonParamByVersion(5, getStakingParams('testnet')),
+    stakingTimelock = params.minStakingTimeBlocks,
   }: {
     finalityProviderKeys?: Buffer[];
+    params?: StakingParams;
+    stakingTimelock?: number;
   } = {}
 ): BabylonDescriptorBuilder {
-  return getDescriptorBuilderForParams(
-    userKey,
-    finalityProviderKeys,
-    getBabylonParamByVersion(5, getStakingParams('testnet'))
-  );
+  return getDescriptorBuilderForParams(userKey, finalityProviderKeys, stakingTimelock, params);
 }
