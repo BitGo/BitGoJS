@@ -20,8 +20,6 @@ import { normalize } from '../fixtures.utils';
 import { fromXOnlyPublicKey, getECKey, getECKeys, getXOnlyPubkey } from './key.utils';
 import { getBitGoUtxoStakingMsgCreateBtcDelegation, getVendorMsgCreateBtcDelegation } from './vendor.utils';
 
-bitcoinjslib.initEccLib(utxolib.ecc);
-
 type WithFee<T> = T & { fee: number };
 type TransactionWithFee = WithFee<{ transaction: bitcoinjslib.Transaction }>;
 type PsbtWithFee = WithFee<{ psbt: bitcoinjslib.Psbt }>;
