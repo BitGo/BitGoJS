@@ -3,6 +3,12 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import { BaseKey } from '@bitgo/sdk-core';
 import * as testData from '../../resources/icp';
 import sinon from 'sinon';
+import { TestBitGo } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import nock from 'nock';
+import { Icp } from '../../../src/index';
+import { RecoveryOptions, ACCOUNT_BALANCE_ENDPOINT, LEDGER_CANISTER_ID } from '../../../src/lib/iface';
+import { Principal } from '@dfinity/principal';
 
 describe('ICP Transaction Builder', async () => {
   const factory = getBuilderFactory('ticp');
@@ -119,5 +125,105 @@ describe('ICP Transaction Builder', async () => {
     txBuilder.combine();
     const signedTxn = txBuilder.transaction.signedTransaction;
     signedTxn.should.be.a.String();
+  });
+
+  describe('ICP transaction recovery', async () => {
+    let bitgo;
+    let recoveryParams: RecoveryOptions;
+    let icp;
+    let broadcastEndpoint: string;
+    let broadcastResponse: Buffer;
+    let nodeUrl: string;
+    let rosettaNodeUrl: string;
+
+    before(function () {
+      bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+      bitgo.safeRegister('icp', Icp.createInstance);
+      bitgo.initializeTestVars();
+      recoveryParams = {
+        userKey: testData.WRWRecovery.userKey,
+        backupKey: testData.WRWRecovery.backupKey,
+        walletPassphrase: testData.WRWRecovery.walletPassphrase,
+        rootAddress: testData.accounts.account1.address,
+        recoveryDestination: testData.accounts.account2.address,
+      };
+
+      icp = bitgo.coin('icp');
+      rosettaNodeUrl = icp.getRosettaNodeUrl();
+      nodeUrl = icp.getPublicNodeUrl();
+      const principal = Principal.fromUint8Array(LEDGER_CANISTER_ID);
+      const canisterIdHex = principal.toText();
+      broadcastEndpoint = `/api/v3/canister/${canisterIdHex}/call`;
+      broadcastResponse = Buffer.from(testData.NodeBroadcastResponse, 'hex');
+    });
+
+    afterEach(function () {
+      recoveryParams = {
+        userKey: testData.WRWRecovery.userKey,
+        backupKey: testData.WRWRecovery.backupKey,
+        walletPassphrase: testData.WRWRecovery.walletPassphrase,
+        rootAddress: testData.accounts.account1.address,
+        recoveryDestination: testData.accounts.account2.address,
+      };
+      nock.cleanAll();
+    });
+
+    it('should recover a transaction without memo successfully', async () => {
+      nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(broadcastEndpoint).reply(200, broadcastResponse);
+      const txnId = await icp.recover(recoveryParams);
+      txnId.should.be.a.String();
+      should.equal(txnId, testData.TxnId);
+    });
+
+    it('should recover a transaction with memo successfully', async () => {
+      nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(broadcastEndpoint).reply(200, broadcastResponse);
+      recoveryParams.memo = 0;
+      const txnId = await icp.recover(recoveryParams);
+      txnId.should.be.a.String();
+      should.equal(txnId, testData.TxnId);
+    });
+
+    it('should fail to recover if broadcast API fails', async () => {
+      nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(broadcastEndpoint).reply(500, 'Internal Server Error');
+      recoveryParams.memo = 0;
+      await icp
+        .recover(recoveryParams)
+        .should.rejectedWith('Transaction broadcast error: Request failed with status code 500');
+    });
+
+    it('should fail to recover txn if balance is low', async () => {
+      testData.FetchBalanceResponse.balances[0].value = '0';
+      nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(broadcastEndpoint).reply(200, broadcastResponse);
+      await icp.recover(recoveryParams).should.rejectedWith('Did not have enough funds to recover');
+    });
+
+    it('should fail to recover txn if userKey is not provided', async () => {
+      nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+
+      recoveryParams.userKey = '';
+      await icp.recover(recoveryParams).should.rejectedWith('missing userKey');
+    });
+
+    it('should fail to recover txn if backupKey is not provided', async () => {
+      nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+
+      recoveryParams.backupKey = '';
+      await icp.recover(recoveryParams).should.rejectedWith('missing backupKey');
+    });
+
+    it('should fail to recover txn if wallet passphrase is not provided', async () => {
+      nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+      nock(nodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.FetchBalanceResponse);
+
+      recoveryParams.walletPassphrase = '';
+      await icp.recover(recoveryParams).should.rejectedWith('missing wallet passphrase');
+    });
   });
 });

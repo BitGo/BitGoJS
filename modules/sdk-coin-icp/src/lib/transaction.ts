@@ -145,7 +145,7 @@ export class Transaction extends BaseTransaction {
           type: BitGoTransactionType.Send,
         };
       default:
-        throw new Error('Unsupported transaction type');
+        throw new Error(`Unsupported transaction type: ${this._icpTransactionData.transactionType}`);
     }
   }
 

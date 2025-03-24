@@ -158,7 +158,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  // combine the unsigned transaction with the signature payload and generates the signed transaction
+  /**
+   * Combines the unsigned transaction and the signature payload to create a signed transaction.
+   */
   public combine(): void {
     const signedTransactionBuilder = new SignedTransactionBuilder(
       this._transaction.unsignedTransaction,
