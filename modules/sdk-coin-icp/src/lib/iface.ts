@@ -7,6 +7,9 @@ export const REQUEST_STATUS = 'request_status';
 export const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
 export const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
 export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // Uint8Array value for "00000000000000020101" and the string value is "ryjl3-tyaaa-aaaaa-aaaba-cai"
+export const ROOT_PATH = 'm/0';
+export const ACCOUNT_BALANCE_ENDPOINT = '/account/balance';
+export const SUBMIT_TRANSACTION_ENDPOINT = '/construction/submit';
 
 export enum RequestType {
   CALL = 'call',
@@ -70,23 +73,30 @@ export interface IcpOperation {
   amount: IcpAmount;
 }
 
-export interface IcpMetadata {
+export interface IcpTransactionParseMetadata {
   created_at_time: number;
   memo: number | BigInt; // memo in string is not accepted by ICP chain.
   ingress_start?: number | BigInt; // it should be nano seconds
   ingress_end?: number | BigInt; // it should be nano seconds
 }
 
+export interface IcpTransactionBuildMetadata {
+  created_at_time: number;
+  memo?: number | BigInt; // memo in string is not accepted by ICP chain.
+  ingress_start: number | BigInt; // it should be nano seconds
+  ingress_end: number | BigInt; // it should be nano seconds
+}
+
 export interface IcpTransaction {
   public_keys: IcpPublicKey[];
   operations: IcpOperation[];
-  metadata: IcpMetadata;
+  metadata: IcpTransactionBuildMetadata;
 }
 
 export interface ParsedTransaction {
   operations: IcpOperation[];
   account_identifier_signers: IcpAccount[];
-  metadata: IcpMetadata;
+  metadata: IcpTransactionParseMetadata;
 }
 
 export interface IcpAccountIdentifier {
@@ -196,4 +206,14 @@ export interface SignedTransactionRequest {
 export interface RawTransaction {
   serializedTxHex: string;
   publicKey: string;
+}
+
+export interface RecoveryOptions {
+  userKey: string; // Box A
+  backupKey: string; // Box B
+  bitgoKey?: string;
+  rootAddress?: string;
+  recoveryDestination: string;
+  walletPassphrase?: string;
+  memo?: number | BigInt;
 }
