@@ -165,54 +165,29 @@ export function toStakingTransaction(tx: TransactionLike): bitcoinjslib.Transact
  *
  * The difference is that here we are returning an _unsigned_ delegation message.
  */
-export async function createUnsignedPreStakeRegistrationBabylonTransaction(
+export async function createDelegationMessageWithTransaction(
   manager: vendor.BabylonBtcStakingManager,
-  stakingParams: vendor.VersionedStakingParams[],
-  network: bitcoinjslib.Network,
-  stakerBtcInfo: vendor.StakerInfo,
-  stakingInput: vendor.StakingInputs,
-  babylonBtcTipHeight: number,
-  inputUTXOs: vendor.UTXO[],
-  feeRateSatB: number,
+  staking: vendor.Staking,
+  stakingAmountSat: number,
+  transaction: TransactionLike,
   babylonAddress: string
-): Promise<Result> {
-  if (babylonBtcTipHeight === 0) {
-    throw new Error('Babylon BTC tip height cannot be 0');
-  }
-  if (inputUTXOs.length === 0) {
-    throw new Error('No input UTXOs provided');
-  }
+): Promise<ValueWithTypeUrl<babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation>> {
   if (!vendor.isValidBabylonAddress(babylonAddress)) {
     throw new Error('Invalid Babylon address');
   }
-
-  // Get the Babylon params based on the BTC tip height from Babylon chain
-  const params = vendor.getBabylonParamByBtcHeight(babylonBtcTipHeight, stakingParams);
-
-  const staking = new vendor.Staking(
-    network,
-    stakerBtcInfo,
-    params,
-    stakingInput.finalityProviderPkNoCoordHex,
-    stakingInput.stakingTimelock
-  );
-
-  // Create unsigned staking transaction
-  const { transaction } = staking.createStakingTransaction(stakingInput.stakingAmountSat, inputUTXOs, feeRateSatB);
-
   // Create delegation message without including inclusion proof
-  const msg = await manager.createBtcDelegationMsg(
+  return manager.createBtcDelegationMsg(
     staking,
-    stakingInput,
-    transaction,
+    {
+      stakingTimelock: staking.stakingTimelock,
+      finalityProviderPkNoCoordHex: staking.finalityProviderPkNoCoordHex,
+      stakingAmountSat,
+    },
+    toStakingTransaction(transaction),
     babylonAddress,
-    stakerBtcInfo,
-    params
+    staking.stakerInfo,
+    staking.params
   );
-  return {
-    unsignedDelegationMsg: msg,
-    stakingTx: transaction,
-  };
 }
 
 export async function createUnsignedPreStakeRegistrationBabylonTransactionWithBtcProvider(
@@ -226,16 +201,19 @@ export async function createUnsignedPreStakeRegistrationBabylonTransactionWithBt
   babylonAddress: string,
   stakingParams: vendor.VersionedStakingParams[] = getStakingParams(network)
 ): Promise<Result> {
+  if (inputUTXOs.length === 0) {
+    throw new Error('No input UTXOs provided');
+  }
   const manager = createStakingManager(network, btcProvider, stakingParams);
-  return await createUnsignedPreStakeRegistrationBabylonTransaction(
+  const staking = createStaking(network, babylonBtcTipHeight, stakerBtcInfo, stakingInput, stakingParams);
+  // Create unsigned staking transaction
+  const { transaction } = staking.createStakingTransaction(stakingInput.stakingAmountSat, inputUTXOs, feeRateSatB);
+  const unsignedDelegationMsg = await createDelegationMessageWithTransaction(
     manager,
-    stakingParams,
-    network,
-    stakerBtcInfo,
-    stakingInput,
-    babylonBtcTipHeight,
-    inputUTXOs,
-    feeRateSatB,
+    staking,
+    stakingInput.stakingAmountSat,
+    transaction,
     babylonAddress
   );
+  return { unsignedDelegationMsg, stakingTx: transaction };
 }
