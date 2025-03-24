@@ -1,3 +1,6 @@
+/**
+ * https://github.com/babylonlabs-io/babylon/blob/v1.99.0-snapshot.250211/x/btcstaking/types/validate_parsed_message.go
+ */
 import assert from 'assert';
 
 import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
