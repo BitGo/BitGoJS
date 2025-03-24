@@ -11,14 +11,16 @@ import {
   KeyPair,
   MethodNotImplementedError,
   MPCAlgorithm,
-  // MultisigType,
-  // multisigTypes,
+  MultisigType,
+  multisigTypes,
   ParseTransactionOptions,
   ParsedTransaction,
   SignTransactionOptions,
   SignedTransaction,
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
+  getIsKrsRecovery,
+  checkKrsProvider,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
@@ -120,8 +122,8 @@ export class Icp extends BaseCoin {
   }
 
   /** inherited doc */
-  getDefaultMultisigType(): 'tss' {
-    return 'tss';
+  getDefaultMultisigType(): MultisigType {
+    return multisigTypes.tss;
   }
 
   /** @inheritDoc */
@@ -272,8 +274,13 @@ export class Icp extends BaseCoin {
       throw new Error('missing wallet passphrase');
     }
 
+    const isKrsRecovery = getIsKrsRecovery(params);
     const userKey = params.userKey.replace(/\s/g, '');
     const backupKey = params.backupKey.replace(/\s/g, '');
+
+    if (isKrsRecovery) {
+      checkKrsProvider(this, params.krsProvider);
+    }
 
     const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
       userKey,

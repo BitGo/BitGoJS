@@ -201,8 +201,8 @@ export interface SignedTransactionRequest {
 }
 
 export interface RecoveryOptions {
-  userKey?: string; // Box A
-  backupKey?: string; // Box B
+  userKey: string; // Box A
+  backupKey: string; // Box B
   bitgoKey?: string;
   rootAddress?: string;
   recoveryDestination: string;
