@@ -14,6 +14,7 @@ import {
   testnetFinalityProvider0,
   getSignedPsbt,
   getStakingParams,
+  toStakerInfo,
 } from '../../../src/babylon';
 import { normalize } from '../fixtures.utils';
 
@@ -289,10 +290,7 @@ function describeWithKeys(
       it('has expected transactions (vendorStaking.Staking)', async function (this: Mocha.Context) {
         const vendorStakingTxBuilder = new vendor.Staking(
           bitcoinjslib.networks.bitcoin,
-          {
-            address: changeAddress,
-            publicKeyNoCoordHex: getXOnlyPubkey(stakerKey).toString('hex'),
-          },
+          toStakerInfo(stakerKey, changeAddress),
           stakingParams,
           getXOnlyPubkey(finalityProvider).toString('hex'),
           stakingParams.minStakingTimeBlocks
