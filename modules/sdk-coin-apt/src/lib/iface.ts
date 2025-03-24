@@ -16,7 +16,6 @@ export interface TxData {
   id: string;
   sender: string;
   recipient: TransactionRecipient;
-  recipients: TransactionRecipient[];
   sequenceNumber: number;
   maxGasAmount: number;
   gasUnitPrice: number;

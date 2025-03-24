@@ -63,22 +63,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  /**
-   * @deprecated - use `recipients()`.
-   */
   recipient(recipient: Recipient): this {
     this.validateAddress({ address: recipient.address });
     this.validateValue(new BigNumber(recipient.amount));
-    this.transaction.recipients = [recipient];
-    return this;
-  }
-
-  recipients(recipients: Recipient[]): this {
-    for (const recipient of recipients) {
-      this.validateAddress({ address: recipient.address });
-      this.validateValue(new BigNumber(recipient.amount));
-    }
-    this.transaction.recipients = recipients;
+    this.transaction.recipient = recipient;
     return this;
   }
 
@@ -155,10 +143,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new Error('transaction not defined');
     }
     this.validateAddress({ address: transaction.sender });
-    for (const recipient of transaction.recipients) {
-      this.validateAddress({ address: recipient.address });
-      this.validateValue(new BigNumber(recipient.amount));
-    }
+    this.validateAddress({ address: transaction.recipient.address });
+    this.validateValue(new BigNumber(transaction.recipient.amount));
   }
 
   isValidRawTransaction(rawTransaction: string): boolean {

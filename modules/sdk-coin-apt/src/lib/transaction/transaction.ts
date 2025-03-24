@@ -32,14 +32,13 @@ import { DEFAULT_GAS_UNIT_PRICE, UNAVAILABLE_TEXT } from '../constants';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
 import { AptTransactionExplanation, TxData } from '../iface';
-import assert from 'assert';
 
 export abstract class Transaction extends BaseTransaction {
   protected _rawTransaction: RawTransaction;
   protected _senderSignature: Signature;
   protected _feePayerSignature: Signature;
   protected _sender: string;
-  protected _recipients: TransactionRecipient[];
+  protected _recipient: TransactionRecipient;
   protected _sequenceNumber: number;
   protected _maxGasAmount: number;
   protected _gasUnitPrice: number;
@@ -60,7 +59,6 @@ export abstract class Transaction extends BaseTransaction {
     this._expirationTime = utils.getTxnExpirationTimestamp();
     this._sequenceNumber = 0;
     this._sender = AccountAddress.ZERO.toString();
-    this._recipients = [];
     this._assetId = AccountAddress.ZERO.toString();
     this._isSimulateTxn = false;
     this._senderSignature = {
@@ -92,27 +90,12 @@ export abstract class Transaction extends BaseTransaction {
     this._sender = value;
   }
 
-  /**
-   * @deprecated - use `recipients()`.
-   */
   get recipient(): TransactionRecipient {
-    assert(this._recipients.length > 0, 'No recipients available');
-    return this._recipients[0];
+    return this._recipient;
   }
 
-  /**
-   * @deprecated - use `recipients()`.
-   */
   set recipient(value: TransactionRecipient) {
-    this.recipients = [value];
-  }
-
-  get recipients(): TransactionRecipient[] {
-    return this._recipients;
-  }
-
-  set recipients(value: TransactionRecipient[]) {
-    this._recipients = value;
+    this._recipient = value;
   }
 
   get sequenceNumber(): number {
@@ -275,24 +258,20 @@ export abstract class Transaction extends BaseTransaction {
   }
 
   loadInputsAndOutputs(): void {
-    const totalAmount = this._recipients.reduce(
-      (accumulator, current) => accumulator.plus(current.amount),
-      new BigNumber('0')
-    );
     this._inputs = [
       {
         address: this.sender,
-        value: totalAmount.toString(),
+        value: this.recipient.amount as string,
         coin: this._coinConfig.name,
       },
     ];
-    this._outputs = this._recipients.map((recipient) => {
-      return {
-        address: recipient.address,
-        value: recipient.amount as string,
+    this._outputs = [
+      {
+        address: this.recipient.address,
+        value: this.recipient.amount as string,
         coin: this._coinConfig.name,
-      };
-    });
+      },
+    ];
   }
 
   fromRawTransaction(rawTransaction: string): void {
@@ -324,7 +303,6 @@ export abstract class Transaction extends BaseTransaction {
       id: this.id,
       sender: this.sender,
       recipient: this.recipient,
-      recipients: this.recipients,
       sequenceNumber: this.sequenceNumber,
       maxGasAmount: this.maxGasAmount,
       gasUnitPrice: this.gasUnitPrice,
@@ -357,10 +335,8 @@ export abstract class Transaction extends BaseTransaction {
       'type',
     ];
 
-    const outputs: TransactionRecipient[] = this._recipients;
-    const outputAmount = outputs
-      .reduce((accumulator, current) => accumulator.plus(current.amount), new BigNumber('0'))
-      .toString();
+    const outputs: TransactionRecipient[] = [this.recipient];
+    const outputAmount = outputs[0].amount;
     return {
       displayOrder,
       id: this.id,
