@@ -2,7 +2,6 @@ import * as t from 'io-ts';
 import * as tt from 'io-ts-types';
 import { isLeft } from 'fp-ts/Either';
 import { PathReporter } from 'io-ts/lib/PathReporter';
-import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import {
   getBabylonParamByVersion,
@@ -14,6 +13,7 @@ import {
 import { BabylonDescriptorBuilder } from './descriptor';
 import jsonMainnetParams from './params.mainnet.json';
 import jsonTestnetParams from './params.testnet.json';
+import { BabylonNetworkLike, toBabylonNetwork } from './network';
 
 const BabylonParamsJSON = t.type({
   covenant_pks: t.array(t.string),
@@ -66,27 +66,6 @@ function toVersionedParamsFromJson(jsonParams: unknown[]): VersionedStakingParam
       return result.right.params;
     })
   );
-}
-
-type BabylonNetwork = 'mainnet' | 'testnet';
-
-type BabylonNetworkLike = bitcoinjslib.Network | utxolib.Network | BabylonNetwork;
-
-function toBabylonNetwork(n: BabylonNetworkLike): BabylonNetwork {
-  switch (n) {
-    case bitcoinjslib.networks.bitcoin:
-    case utxolib.networks.bitcoin:
-      return 'mainnet';
-    case bitcoinjslib.networks.testnet:
-    case utxolib.networks.testnet:
-    case utxolib.networks.bitcoinPublicSignet:
-      return 'testnet';
-    case 'mainnet':
-    case 'testnet':
-      return n;
-    default:
-      throw new Error('Unsupported network');
-  }
 }
 
 export const mainnetStakingParams: readonly VersionedStakingParams[] = Object.freeze(
