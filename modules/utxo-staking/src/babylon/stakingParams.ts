@@ -9,6 +9,7 @@ import {
   StakingInputs,
   VersionedStakingParams,
 } from '@bitgo/babylonlabs-io-btc-staking-ts';
+export { getBabylonParamByVersion, getBabylonParamByBtcHeight } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 import { BabylonDescriptorBuilder } from './descriptor';
 import jsonMainnetParams from './params.mainnet.json';
