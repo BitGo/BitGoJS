@@ -1,6 +1,7 @@
 /**
  * https://github.com/babylonlabs-io/babylon/tree/main/docs
  * https://github.com/babylonlabs-io/babylon/blob/main/docs/staking-script.md
+ * https://github.com/babylonlabs-io/babylon/blob/v1.99.0-snapshot.250211/btcstaking/staking.go
  */
 
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
