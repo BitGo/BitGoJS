@@ -21,10 +21,11 @@ import {
   tofcAlgoToken,
   ofcHederaToken,
   tofcHederaToken,
+  ofcaptToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind } from '../base';
 
-import { SOL_TOKEN_FEATURES, SOL_OFC_TOKEN_FEATURES } from '../coinFeatures';
+import { SOL_TOKEN_FEATURES, SOL_OFC_TOKEN_FEATURES, APT_OFC_TOKEN_FEATURES } from '../coinFeatures';
 
 export const ofcCoins = [
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
@@ -1189,5 +1190,21 @@ export const ofcCoins = [
     'Arbitrum Test LINK',
     18,
     UnderlyingAsset['tarbeth:link']
+  ),
+  ofcaptToken(
+    '6d027643-3d96-4627-8312-1151a793d4f8',
+    'ofcapt:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset['apt:usdc'],
+    APT_OFC_TOKEN_FEATURES
+  ),
+  ofcaptToken(
+    'd15ec98e-1c8f-4c2d-9ede-e34edb3980b5',
+    'ofcapt:usdt',
+    'USD Tether',
+    6,
+    UnderlyingAsset['apt:usdt'],
+    APT_OFC_TOKEN_FEATURES
   ),
 ];
