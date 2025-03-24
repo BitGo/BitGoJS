@@ -43,7 +43,7 @@ describe('utils', () => {
 
   describe('gasData()', () => {
     it('should return correct gas data', () => {
-      should.equal(utils.gasData(), '-10000');
+      should.equal(utils.feeData(), '-10000');
     });
   });
 

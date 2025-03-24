@@ -6,7 +6,7 @@ import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
 import {
   CurveType,
-  IcpMetadata,
+  IcpTransactionBuildMetadata,
   IcpOperation,
   IcpPublicKey,
   IcpTransaction,
@@ -47,7 +47,7 @@ export class TransferBuilder extends TransactionBuilder {
     assert(this._publicKey, new BuildTransactionError('sender public key is required before building'));
     assert(this._amount, new BuildTransactionError('amount is required before building'));
     assert(this._receiverId, new BuildTransactionError('receiver is required before building'));
-    this._utils.validateMemo(this._memo);
+
     const publicKey: IcpPublicKey = {
       hex_bytes: this._publicKey,
       curve_type: CurveType.SECP256K1,
@@ -81,7 +81,7 @@ export class TransferBuilder extends TransactionBuilder {
       type: OperationType.FEE,
       account: { address: this._sender },
       amount: {
-        value: this._utils.gasData(),
+        value: this._utils.feeData(),
         currency: {
           symbol: this._coinConfig.family,
           decimals: this._coinConfig.decimalPlaces,
@@ -90,7 +90,7 @@ export class TransferBuilder extends TransactionBuilder {
     };
 
     const createdTimestamp = this._transaction.createdTimestamp;
-    const { metaData, ingressEndTime }: { metaData: IcpMetadata; ingressEndTime: number | BigInt } =
+    const { metaData, ingressEndTime }: { metaData: IcpTransactionBuildMetadata; ingressEndTime: number | BigInt } =
       this._utils.getMetaData(this._memo, createdTimestamp);
 
     const icpTransaction: IcpTransaction = {
@@ -102,7 +102,7 @@ export class TransferBuilder extends TransactionBuilder {
       senderAddress: this._sender,
       receiverAddress: this._receiverId,
       amount: this._amount,
-      fee: this._utils.gasData(),
+      fee: this._utils.feeData(),
       senderPublicKeyHex: this._publicKey,
       memo: this._memo,
       transactionType: OperationType.TRANSACTION,
