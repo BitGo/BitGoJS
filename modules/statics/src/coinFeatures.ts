@@ -186,6 +186,7 @@ export const SOL_TOKEN_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
 ];
 export const SOL_OFC_TOKEN_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
+export const APT_OFC_TOKEN_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 export const BSC_TOKEN_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
 export const BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE = [
   ...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
