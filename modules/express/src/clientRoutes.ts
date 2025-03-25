@@ -1575,7 +1575,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
 
-  app.put('/api/v2/:coin/wallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleWalletUpdate));
+  app.put('/express/api/v2/:coin/wallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleWalletUpdate));
 
   // create address
   app.post('/api/v2/:coin/wallet/:id/address', parseBody, prepareBitGo(config), promiseWrapper(handleV2CreateAddress));
