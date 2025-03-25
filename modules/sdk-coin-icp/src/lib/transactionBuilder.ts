@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { BaseTransactionBuilder, BuildTransactionError, BaseAddress, SigningError, BaseKey } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import utils from './utils';
-import { IcpTransactionData } from './iface';
+import { IcpTransactionData, Signatures } from './iface';
 import { SignedTransactionBuilder } from './signedTransactionBuilder';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -17,6 +17,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new Transaction(_coinConfig, utils);
+  }
+
+  get signaturePayload(): Signatures[] {
+    return this._transaction.signaturePayload;
+  }
+
+  get unsignedTransaction(): string {
+    return this._transaction.payloadsData.unsigned_transaction;
   }
 
   /**
@@ -147,7 +155,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   // combine the unsigned transaction with the signature payload and generates the signed transaction
-  protected combine(): void {
+  public combine(): void {
     const signedTransactionBuilder = new SignedTransactionBuilder(
       this._transaction.unsignedTransaction,
       this._transaction.signaturePayload
