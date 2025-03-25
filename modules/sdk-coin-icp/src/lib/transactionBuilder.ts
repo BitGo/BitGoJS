@@ -19,11 +19,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = new Transaction(_coinConfig, utils);
   }
 
-  public getSignaturePayload(): Signatures[] {
+  public signaturePayload(): Signatures[] {
     return this._transaction.signaturePayload;
   }
 
-  public getUnsignedTransaction(): string {
+  public unsignedTransaction(): string {
     return this._transaction.payloadsData.unsigned_transaction;
   }
 
