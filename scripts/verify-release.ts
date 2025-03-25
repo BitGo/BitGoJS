@@ -5,12 +5,12 @@ import { getLernaModules, getDistTags } from './prepareRelease';
 
 let lernaModuleLocations: string[] = [];
 
-const getLernaModuleLocations = async (): Promise<void> => {
+async function getLernaModuleLocations(): Promise<void> {
   const modules = await getLernaModules();
   lernaModuleLocations = modules.map(({ location }) => location);
-};
+}
 
-const verifyPackage = async (dir: string, preid = 'beta'): Promise<boolean> => {
+async function verifyPackage(dir: string, preid = 'beta'): Promise<boolean> {
   const cwd = dir;
   const json = JSON.parse(readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }));
   if (json.private) {
@@ -32,9 +32,9 @@ const verifyPackage = async (dir: string, preid = 'beta'): Promise<boolean> => {
     console.warn(`Failed to fetch dist tags for ${json.name}`, e);
     return false;
   }
-};
+}
 
-const verify = async (preid?: string) => {
+async function verify(preid?: string) {
   await getLernaModuleLocations();
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     const dir = lernaModuleLocations[i];
@@ -43,7 +43,7 @@ const verify = async (preid?: string) => {
       return;
     }
   }
-};
+}
 
 // e.g. for alpha releases: `npx ts-node ./scripts/verify-beta.ts alpha`
 verify(process.argv.slice(2)[0]);
