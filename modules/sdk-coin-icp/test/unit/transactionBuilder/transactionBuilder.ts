@@ -51,10 +51,10 @@ describe('ICP Transaction Builder', async () => {
     should.equal(icpTransaction.operations[1].amount.value, '10');
     should.equal(icpTransaction.operations[2].amount.value, '-10000');
     should.equal(icpTransaction.public_keys[0].hex_bytes, testData.accounts.account1.publicKey);
-    payloadsData.unsigned_transaction.should.be.a.String();
+    txBuilder.unsignedTransaction.should.be.a.String();
     payloadsData.payloads.should.be.an.Array();
     payloadsData.payloads.length.should.equal(2);
-    should.equal(payloadsData.unsigned_transaction, testData.payloadsData.unsigned_transaction);
+    should.equal(txBuilder.unsignedTransaction, testData.payloadsData.unsigned_transaction);
     should.deepEqual(payloadsData.payloads, testData.payloadsData.payloads);
   });
 
@@ -90,7 +90,7 @@ describe('ICP Transaction Builder', async () => {
   it('should sign a txn and then give txn in broadcast format', async () => {
     const baseKey: BaseKey = { key: testData.accounts.account1.secretKey };
     txBuilder.sign(baseKey);
-    should.deepEqual(txn.signaturePayload, testData.signatures);
+    should.deepEqual(txBuilder.signaturePayload, testData.signatures);
     txBuilder.combine();
     const signedTxn = txBuilder.transaction.signedTransaction;
     signedTxn.should.be.a.String();
