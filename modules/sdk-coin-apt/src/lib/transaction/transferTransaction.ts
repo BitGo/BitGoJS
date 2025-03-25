@@ -30,25 +30,26 @@ export class TransferTransaction extends Transaction {
       throw new InvalidTransactionError('Invalid transaction payload');
     }
     const entryFunction = payload.entryFunction;
-    if (!this._recipient) {
-      this._recipient = {} as TransactionRecipient;
-    }
     this._assetId = entryFunction.type_args[0].toString();
-    this._recipient.address = entryFunction.args[0].toString();
-    this._recipient.amount = utils.getAmountFromPayloadArgs(entryFunction.args[1].bcsToBytes());
+    this.recipients = [
+      {
+        address: entryFunction.args[0].toString(),
+        amount: utils.getAmountFromPayloadArgs(entryFunction.args[1].bcsToBytes()),
+      },
+    ] as TransactionRecipient[];
   }
 
   protected async buildRawTransaction(): Promise<void> {
     const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
     const aptos = new Aptos(new AptosConfig({ network }));
     const senderAddress = AccountAddress.fromString(this._sender);
-    const recipientAddress = AccountAddress.fromString(this._recipient.address);
+    const recipientAddress = AccountAddress.fromString(this.recipients[0].address);
     const simpleTxn = await aptos.transaction.build.simple({
       sender: senderAddress,
       data: {
         function: COIN_TRANSFER_FUNCTION,
         typeArguments: [this.assetId],
-        functionArguments: [recipientAddress, this.recipient.amount],
+        functionArguments: [recipientAddress, this.recipients[0].amount],
       },
       options: {
         maxGasAmount: this.maxGasAmount,
