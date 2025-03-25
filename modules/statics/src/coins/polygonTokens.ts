@@ -1033,7 +1033,7 @@ export const polygonTokens = [
   tpolygonErc20(
     'e988a1a1-e22e-4649-986e-7718e503f047',
     'tpolygon:testcopm',
-    'Test ERC20 Token 10 Decimals',
+    'TestCOP Minteo (Testnet)',
     18,
     '0x866022aa0489bd84fd2b3e0320ba988d9385d439', // https://polygonscan.com/token/0x866022aa0489bd84fd2B3e0320bA988d9385d439
     UnderlyingAsset['tpolygon:testcopm'],

@@ -2082,6 +2082,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['arbeth:link']
   ),
   arbethErc20(
+    '42ae1f1a-95df-40b7-a584-fe52b2cf08c6',
+    'arbeth:xsgdv2',
+    'XSGD (Bridged)',
+    6,
+    '0xa05245ade25cc1063ee50cf7c083b4524c1c4302',
+    UnderlyingAsset['arbeth:xsgdv2']
+  ),
+  arbethErc20(
     '0606676c-1e6b-488a-abe1-ab46c697c4b9',
     'arbeth:usdc',
     'USD Coin',

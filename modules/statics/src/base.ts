@@ -1844,6 +1844,7 @@ export enum UnderlyingAsset {
   'eth:icnt' = 'eth:icnt',
   'eth:god' = 'eth:god',
   'eth:sky' = 'eth:sky',
+  'eth:uco' = 'eth:uco',
   'eth:fuel' = 'eth:fuel',
   'eth:xreth' = 'eth:xreth',
   'eth:xy' = 'eth:xy',
@@ -2272,6 +2273,7 @@ export enum UnderlyingAsset {
   // Arbitrum mainnet tokens
   'arbeth:link' = 'arbeth:link',
   'arbeth:usdc' = 'arbeth:usdc',
+  'arbeth:xsgdv2' = 'arbeth:xsgdv2',
   'arbeth:usdcv2' = 'arbeth:usdcv2',
   'arbeth:usdt' = 'arbeth:usdt',
   'arbeth:arb' = 'arbeth:arb',

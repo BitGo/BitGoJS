@@ -1625,6 +1625,13 @@ export const ofcErc20Coins = [
   ),
   ofcerc20('bdb004b5-4ec7-479e-905b-ee34bc8f6bea', 'ofceth:usual', 'Usual', 18, underlyingAssetForSymbol('eth:usual')),
   ofcerc20(
+    '03fc7083-15c1-4a9f-9029-5b5342f2f11e',
+    'ofceth:uco',
+    'Archethic Universal Coin',
+    8,
+    underlyingAssetForSymbol('eth:uco')
+  ),
+  ofcerc20(
     '593ae9a1-ab69-423a-b9a2-1980a0c50f97',
     'ofceth:bito',
     'BitoPro Coin',
