@@ -15,6 +15,7 @@ export interface AptTransactionExplanation extends BaseTransactionExplanation {
 export interface TxData {
   id: string;
   sender: string;
+  /** @deprecated - use `recipients`. */
   recipient: TransactionRecipient;
   recipients: TransactionRecipient[];
   sequenceNumber: number;
