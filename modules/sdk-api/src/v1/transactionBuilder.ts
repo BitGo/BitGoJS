@@ -12,7 +12,6 @@
 //
 
 import { bip32 } from '@bitgo/utxo-lib';
-import Bluebird from 'bluebird';
 import * as utxolib from '@bitgo/utxo-lib';
 import _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
@@ -20,6 +19,7 @@ import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 import { common, getAddressP2PKH, getNetwork, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import { verifyAddress } from './verifyAddress';
+import { tryPromise } from '../util';
 
 interface BaseOutput {
   amount: number;
@@ -241,7 +241,7 @@ exports.createTransaction = function (params) {
   let transaction = utxolib.bitgo.createTransactionBuilderForNetwork(network);
 
   const getBitGoFee = function () {
-    return Bluebird.try(function () {
+    return tryPromise(function () {
       if (bitgoFeeInfo) {
         return;
       }
@@ -260,7 +260,7 @@ exports.createTransaction = function (params) {
   };
 
   const getBitGoFeeAddress = function () {
-    return Bluebird.try(function () {
+    return tryPromise(function () {
       // If we don't have bitgoFeeInfo, or address is already set, don't get a new one
       if (!bitgoFeeInfo || bitgoFeeInfo.address) {
         return;
@@ -310,12 +310,12 @@ exports.createTransaction = function (params) {
         .catch(function (e) {
           // sanity check failed on tx size
           if (_.includes(e.message, 'invalid txSize')) {
-            return Bluebird.reject(e);
+            return Promise.reject(e);
           } else {
             // couldn't estimate the fee, proceed using the default
             feeRate = constants.fallbackFeeRate;
             console.log('Error estimating fee for send from ' + params.wallet.id() + ': ' + e.message);
-            return Bluebird.resolve();
+            return Promise.resolve();
           }
         });
     }
@@ -412,7 +412,7 @@ exports.createTransaction = function (params) {
     inputAmount = 0;
 
     // Calculate the cost of spending a single input, i.e. the smallest economical unspent value
-    return Bluebird.try(function () {
+    return tryPromise(function () {
       if (_.isNumber(params.feeRate) || _.isNumber(params.originalFeeRate)) {
         return !_.isUndefined(params.feeRate) ? params.feeRate : params.originalFeeRate;
       } else {
@@ -562,7 +562,7 @@ exports.createTransaction = function (params) {
               bitgoFee: bitgoFeeInfo,
               txInfo: txInfo,
             };
-            return Bluebird.reject(err);
+            return Promise.reject(err);
           }
         }
 
@@ -592,7 +592,7 @@ exports.createTransaction = function (params) {
             bitgoFee: bitgoFeeInfo,
             txInfo: txInfo,
           };
-          return Bluebird.reject(err);
+          return Promise.reject(err);
         }
       });
   };
@@ -635,7 +635,7 @@ exports.createTransaction = function (params) {
       outputs.push({ script, amount });
     });
 
-    const getChangeOutputs = function (changeAmount: number): Output[] | Bluebird<Output[]> {
+    const getChangeOutputs = function (changeAmount: number): Output[] | Promise<Output[]> {
       if (changeAmount < 0) {
         throw new Error('negative change amount: ' + changeAmount);
       }
@@ -675,12 +675,12 @@ exports.createTransaction = function (params) {
       allChangeAmounts.push(changeAmount - extraChangeTotal);
 
       // Recursive async func to add all change outputs
-      const addChangeOutputs = function (): Output[] | Bluebird<Output[]> {
+      const addChangeOutputs = function (): Output[] | Promise<Output[]> {
         const thisAmount = allChangeAmounts.shift();
         if (!thisAmount) {
           return result;
         }
-        return Bluebird.try(function () {
+        return tryPromise(function () {
           if (params.changeAddress) {
             // If user passed a change address, use it for all outputs
             return params.changeAddress;
@@ -702,7 +702,7 @@ exports.createTransaction = function (params) {
     };
 
     // Add change output(s) and instant fee output if applicable
-    return Bluebird.try(function () {
+    return tryPromise(function () {
       return getChangeOutputs(inputAmount - totalAmount);
     }).then(function (result) {
       changeOutputs = result;
@@ -774,11 +774,11 @@ exports.createTransaction = function (params) {
     return result;
   };
 
-  return Bluebird.try(function () {
+  return tryPromise(function () {
     return getBitGoFee();
   })
     .then(function () {
-      return Bluebird.all([getBitGoFeeAddress(), getUnspents(), getUnspentsForSingleKey()]);
+      return Promise.all([getBitGoFeeAddress(), getUnspents(), getUnspentsForSingleKey()]);
     })
     .then(collectInputs)
     .then(collectOutputs)
@@ -1017,7 +1017,7 @@ exports.signTransaction = function (params) {
           e.stack
         }`;
         debug('input sign failed: %s', e.message);
-        return Bluebird.reject(e);
+        return Promise.reject(e);
       }
     }
   }
@@ -1039,7 +1039,7 @@ exports.signTransaction = function (params) {
     });
   }
 
-  return Bluebird.resolve({
+  return Promise.resolve({
     transactionHex: partialTransaction.toHex(),
   });
 };

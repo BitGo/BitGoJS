@@ -24,14 +24,13 @@ import {
   makeRandomKey,
   sanitizeLegacyPath,
 } from '@bitgo/sdk-core';
-import Bluebird from 'bluebird';
 import _ from 'lodash';
 import { signPsbtRequest } from './signPsbt';
+import { tryPromise } from '../util';
 
 const TransactionBuilder = require('./transactionBuilder');
 const PendingApproval = require('./pendingapproval');
 
-const co = Bluebird.coroutine;
 const { getExternalChainCode, getInternalChainCode, isChainCode, scriptTypeForChain } = utxolib.bitgo;
 const request = require('superagent');
 
@@ -170,13 +169,13 @@ Wallet.prototype.approvalsRequired = function () {
 // get
 // Refetches this wallet and returns it
 //
-Wallet.prototype.get = function (params, callback): Bluebird<any> {
+Wallet.prototype.get = function (params, callback): Promise<any> {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
   const self = this;
 
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .get(this.url())
       .result()
@@ -184,7 +183,9 @@ Wallet.prototype.get = function (params, callback): Bluebird<any> {
         self.wallet = res;
         return self;
       })
-  ).nodeify(callback);
+  )
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -193,7 +194,7 @@ Wallet.prototype.get = function (params, callback): Bluebird<any> {
 // The approvals required is by default 1, but this function allows you to update the
 // number such that 1 <= approvalsRequired <= walletAdmins.length - 1
 //
-Wallet.prototype.updateApprovalsRequired = function (params, callback): Bluebird<any> {
+Wallet.prototype.updateApprovalsRequired = function (params, callback): Promise<any> {
   params = params || {};
   common.validateParams(params, [], [], callback);
   if (
@@ -208,12 +209,14 @@ Wallet.prototype.updateApprovalsRequired = function (params, callback): Bluebird
   const currentApprovalsRequired = this.approvalsRequired();
   if (currentApprovalsRequired === params.approvalsRequired) {
     // no-op, just return the current wallet
-    return Bluebird.try(function () {
+    return tryPromise(function () {
       return self.wallet;
-    }).nodeify(callback);
+    })
+      .then(callback)
+      .catch(callback);
   }
 
-  return Bluebird.resolve(this.bitgo.put(this.url()).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.put(this.url()).send(params).result()).then(callback).catch(callback);
 };
 
 /**
@@ -259,7 +262,7 @@ Wallet.prototype.createAddress = function (params, callback) {
   if (chain === null || chain === undefined) {
     chain = defaultChain;
   }
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .post(this.url('/address/' + chain))
       .send(params)
@@ -270,7 +273,9 @@ Wallet.prototype.createAddress = function (params, callback) {
         }
         return addr;
       })
-  ).nodeify(callback);
+  )
+    .then(callback)
+    .catch(callback);
 };
 
 /**
@@ -396,7 +401,7 @@ Wallet.prototype.addresses = function (params, callback) {
   }
 
   const url = this.url('/addresses');
-  return Bluebird.resolve(this.bitgo.get(url).query(query).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(url).query(query).result()).then(callback).catch(callback);
 };
 
 Wallet.prototype.stats = function (params, callback) {
@@ -416,7 +421,7 @@ Wallet.prototype.stats = function (params, callback) {
 
   const url = this.url('/stats' + query);
 
-  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(url).result()).then(callback).catch(callback);
 };
 
 /**
@@ -425,18 +430,19 @@ Wallet.prototype.stats = function (params, callback) {
  * @returns {Wallet}
  */
 Wallet.prototype.refresh = function (params, callback) {
-  return co(function* () {
+  return async function () {
     // when set to true, gpk returns the private data of safe wallets
     const query = _.extend({}, _.pick(params, ['gpk']));
     // @ts-expect-error - no implicit this
-    const res = yield this.bitgo.get(this.url()).query(query).result();
+    const res = await this.bitgo.get(this.url()).query(query).result();
     // @ts-expect-error - no implicit this
     this.wallet = res;
     // @ts-expect-error - no implicit this
     return this;
-  })
+  }
     .call(this)
-    .asCallback(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -452,7 +458,7 @@ Wallet.prototype.address = function (params, callback) {
 
   const url = this.url('/addresses/' + params.address);
 
-  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(url).result()).then(callback).catch(callback);
 };
 
 /**
@@ -469,7 +475,9 @@ Wallet.prototype.freeze = function (params, callback) {
     }
   }
 
-  return Bluebird.resolve(this.bitgo.post(this.url('/freeze')).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.post(this.url('/freeze')).send(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -480,7 +488,7 @@ Wallet.prototype.delete = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.del(this.url()).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.del(this.url()).result()).then(callback).catch(callback);
 };
 
 //
@@ -493,7 +501,7 @@ Wallet.prototype.labels = function (params, callback) {
 
   const url = this.bitgo.url('/labels/' + this.id());
 
-  return Bluebird.resolve(this.bitgo.get(url).result('labels')).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(url).result('labels')).then(callback).catch(callback);
 };
 
 /**
@@ -508,7 +516,9 @@ Wallet.prototype.setWalletName = function (params, callback) {
   common.validateParams(params, ['label'], [], callback);
 
   const url = this.bitgo.url('/wallet/' + this.id());
-  return Bluebird.resolve(this.bitgo.put(url).send({ label: params.label }).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.put(url).send({ label: params.label }).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -527,7 +537,9 @@ Wallet.prototype.setLabel = function (params, callback) {
 
   const url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
-  return Bluebird.resolve(this.bitgo.put(url).send({ label: params.label }).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.put(url).send({ label: params.label }).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -546,7 +558,7 @@ Wallet.prototype.deleteLabel = function (params, callback) {
 
   const url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
-  return Bluebird.resolve(this.bitgo.del(url).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.del(url).result()).then(callback).catch(callback);
 };
 
 //
@@ -608,7 +620,7 @@ Wallet.prototype.unspents = function (params, callback) {
     });
   };
 
-  return getUnspentsBatch(0, params.limit).nodeify(callback);
+  return getUnspentsBatch(0, params.limit).then(callback).catch(callback);
 };
 
 /**
@@ -682,7 +694,9 @@ Wallet.prototype.unspentsPaged = function (params, callback) {
     queryObject.allowLedgerSegwit = params.allowLedgerSegwit;
   }
 
-  return Bluebird.resolve(this.bitgo.get(this.url('/unspents')).query(queryObject).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.url('/unspents')).query(queryObject).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -738,7 +752,7 @@ Wallet.prototype.transactions = function (params, callback) {
 
   const url = this.url('/tx' + query);
 
-  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(url).result()).then(callback).catch(callback);
 };
 
 //
@@ -750,7 +764,7 @@ Wallet.prototype.getTransaction = function (params, callback) {
 
   const url = this.url('/tx/' + params.id);
 
-  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(url).result()).then(callback).catch(callback);
 };
 
 //
@@ -785,7 +799,7 @@ Wallet.prototype.pollForTransaction = function (params, callback) {
         if (err.status !== 404 || new Date().valueOf() - start.valueOf() > params.timeout) {
           throw err;
         }
-        return Bluebird.delay(params.delay).then(function () {
+        return new Promise((resolve) => setTimeout(resolve, params.delay)).then(function () {
           return doNextPoll();
         });
       });
@@ -803,7 +817,7 @@ Wallet.prototype.getWalletTransactionBySequenceId = function (params, callback) 
 
   const url = this.url('/tx/sequence/' + params.sequenceId);
 
-  return Bluebird.resolve(this.bitgo.get(url).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(url).result()).then(callback).catch(callback);
 };
 
 //
@@ -812,13 +826,13 @@ Wallet.prototype.getWalletTransactionBySequenceId = function (params, callback) 
 // The user key chain is typically the first keychain of the wallet and has the encrypted xpriv stored on BitGo.
 // Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
 Wallet.prototype.getEncryptedUserKeychain = function (params, callback) {
-  return co(function* () {
+  return async function () {
     params = params || {};
     common.validateParams(params, [], [], callback);
     // @ts-expect-error - no implicit this
     const self = this;
 
-    const tryKeyChain = co(function* (index) {
+    async function tryKeyChain(index) {
       if (!self.keychains || index >= self.keychains.length) {
         const error: any = new Error('No encrypted keychains on this wallet.');
         error.code = 'no_encrypted_keychain_on_wallet';
@@ -827,19 +841,20 @@ Wallet.prototype.getEncryptedUserKeychain = function (params, callback) {
 
       const params = { xpub: self.keychains[index].xpub };
 
-      const keychain = yield self.bitgo.keychains().get(params);
+      const keychain = await self.bitgo.keychains().get(params);
       // If we find the xprv, then this is probably the user keychain we're looking for
       keychain.walletSubPath = self.keychains[index].path;
       if (keychain.encryptedXprv) {
         return keychain;
       }
       return tryKeyChain(index + 1);
-    });
+    }
 
     return tryKeyChain(0);
-  })
+  }
     .call(this)
-    .asCallback(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -879,7 +894,7 @@ Wallet.prototype.createTransaction = function (params, callback) {
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
   params.wallet = this;
 
-  return TransactionBuilder.createTransaction(params).nodeify(callback);
+  return TransactionBuilder.createTransaction(params).then(callback).catch(callback);
 };
 
 //
@@ -899,7 +914,9 @@ Wallet.prototype.signTransaction = function (params, callback) {
   params = _.extend({}, params);
 
   if (params.psbt) {
-    return Bluebird.try(() => signPsbtRequest(params)).nodeify(callback);
+    return tryPromise(() => signPsbtRequest(params))
+      .then(callback)
+      .catch(callback);
   }
 
   common.validateParams(params, ['transactionHex'], [], callback);
@@ -923,7 +940,8 @@ Wallet.prototype.signTransaction = function (params, callback) {
         tx: result.transactionHex,
       };
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -938,7 +956,7 @@ Wallet.prototype.sendTransaction = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['tx'], ['message', 'otp'], callback);
 
-  return Bluebird.resolve(this.bitgo.post(this.bitgo.url('/tx/send')).send(params).result())
+  return Promise.resolve(this.bitgo.post(this.bitgo.url('/tx/send')).send(params).result())
     .then(function (body) {
       if (body.pendingApproval) {
         return _.extend(body, { status: 'pendingApproval' });
@@ -956,7 +974,8 @@ Wallet.prototype.sendTransaction = function (params, callback) {
         instantId: body.instantId,
       };
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 /**
@@ -982,7 +1001,9 @@ Wallet.prototype.createShare = function (params, callback) {
     }
   }
 
-  return Bluebird.resolve(this.bitgo.post(this.url('/share')).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.post(this.url('/share')).send(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -1006,7 +1027,9 @@ Wallet.prototype.createInvite = function (params, callback) {
     options.message = params.message;
   }
 
-  return Bluebird.resolve(this.bitgo.post(this.url('/invite')).send(options).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.post(this.url('/invite')).send(options).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -1048,7 +1071,8 @@ Wallet.prototype.confirmInviteAndShareWallet = function (params, callback) {
       // @ts-expect-error - no implicit this
       return this.bitgo.put(this.bitgo.url('/walletinvite/' + params.walletInviteId));
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -1080,7 +1104,7 @@ Wallet.prototype.sendCoins = function (params, callback) {
   params.recipients = {};
   params.recipients[params.address] = params.amount;
 
-  return this.sendMany(params).nodeify(callback);
+  return this.sendMany(params).then(callback).catch(callback);
 };
 
 //
@@ -1197,7 +1221,7 @@ Wallet.prototype.sendMany = function (params, callback) {
     .then(function () {
       return finalResult;
     });
-  return Bluebird.resolve(retPromise).nodeify(callback);
+  return Promise.resolve(retPromise).then(callback).catch(callback);
 };
 
 /**
@@ -1277,7 +1301,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
    *          the child tx, and the updated inputs for the child tx.
    */
   const findAdditionalUnspents = ({ inputs, parentOutputValue, parentFee, parentVSize, maxUnspents }) => {
-    return co(function* coFindAdditionalUnspents() {
+    return async function coFindAdditionalUnspents() {
       const additionalUnspents: any[] = [];
 
       // ask the server for enough unspents to cover the child fee, assuming
@@ -1290,7 +1314,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       while (uncoveredChildFee > 0 && additionalUnspents.length < maxUnspents) {
         // try to get enough unspents to cover the rest of the child fee
         // @ts-expect-error - no implicit this
-        const unspents = (yield this.unspents({
+        const unspents = (await this.unspents({
           minConfirms: 1,
           target: uncoveredChildFee,
           limit: maxUnspents - additionalUnspents.length,
@@ -1336,7 +1360,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
         newChildFee: currentChildFeeEstimate,
         newInputs: inputs,
       };
-    }).call(this);
+    }.call(this);
   };
 
   /**
@@ -1417,7 +1441,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
    *    (and, if necessary, additional wallet unspents) as inputs
    * 7) Broadcast the new child transaction
    */
-  return co(function* coAccelerateTransaction(): any {
+  return async function coAccelerateTransaction() {
     params = params || {};
     common.validateParams(params, ['transactionID'], [], callback);
 
@@ -1440,7 +1464,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     }
 
     // @ts-expect-error - no implicit this
-    const parentTx = yield this.getTransaction({ id: params.transactionID });
+    const parentTx = await this.getTransaction({ id: params.transactionID });
     if (parentTx.confirmations > 0) {
       throw new Error(`Transaction ${params.transactionID} is already confirmed and cannot be accelerated`);
     }
@@ -1470,7 +1494,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       // TODO: is there a better way to get this unspent?
       // TODO: The best we can do here is set minSize = maxSize = outputToUse.value
       // @ts-expect-error - no implicit this
-      const unspentsResult = yield this.unspents({
+      const unspentsResult = await this.unspents({
         minSize: outputToUse.value,
         maxSize: outputToUse.value,
       });
@@ -1490,7 +1514,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     }
 
     // get the full hex for the parent tx and decode it to get its vsize
-    const parentTxHex = yield getParentTxHex({ parentTxId: params.transactionID });
+    const parentTxHex = await getParentTxHex({ parentTxId: params.transactionID });
     const decodedParent = utxolib.bitgo.createTransactionFromHex(parentTxHex, utxolib.networks.bitcoin);
     const parentVSize = decodedParent.virtualSize();
 
@@ -1538,7 +1562,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     if (outputToUse.value < childFee + minChangeSize) {
       // parent output cannot cover child fee plus the minimum change,
       // must find additional unspents to cover the difference
-      const { additional, newChildFee, newInputs } = yield findAdditionalUnspents({
+      const { additional, newChildFee, newInputs } = await findAdditionalUnspents({
         inputs: childInputs,
         parentOutputValue: outputToUse.value,
         parentFee: parentTx.fee,
@@ -1575,11 +1599,11 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     // @ts-expect-error - no implicit this
     const changeChain = this.getChangeChain({});
     // @ts-expect-error - no implicit this
-    const changeAddress = yield this.createAddress({ chain: changeChain });
+    const changeAddress = await this.createAddress({ chain: changeChain });
 
     // create the child tx and broadcast
     // @ts-expect-error - no implicit this
-    const tx = yield this.createAndSignTransaction({
+    const tx = await this.createAndSignTransaction({
       unspents: unspentsToUse,
       recipients: [
         {
@@ -1606,9 +1630,10 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     // @ts-expect-error - no implicit this
     return this.sendTransaction(tx);
-  })
+  }
     .call(this)
-    .asCallback(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -1622,7 +1647,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 // Returns:
 //
 Wallet.prototype.createAndSignTransaction = function (params, callback) {
-  return co(function* () {
+  return async function () {
     params = params || {};
     common.validateParams(params, [], [], callback);
 
@@ -1647,7 +1672,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
     }
 
     // @ts-expect-error - no implicit this
-    const transaction = (yield this.createTransaction(params)) as any;
+    const transaction = (await this.createTransaction(params)) as any;
     const fee = transaction.fee;
     const feeRate = transaction.feeRate;
     const estimatedSize = transaction.estimatedSize;
@@ -1658,7 +1683,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
     // Sign the transaction
     try {
       // @ts-expect-error - no implicit this
-      const keychain = yield this.getAndPrepareSigningKeychain(params);
+      const keychain = await this.getAndPrepareSigningKeychain(params);
       transaction.keychain = keychain;
     } catch (e) {
       if (e.code !== 'no_encrypted_keychain_on_wallet') {
@@ -1666,7 +1691,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
       }
       // this might be a safe wallet, so let's retrieve the private key info
       // @ts-expect-error - no implicit this
-      yield this.refresh({ gpk: true });
+      await this.refresh({ gpk: true });
       // @ts-expect-error - no implicit this
       const safeUserKey = _.get(this.wallet, 'private.userPrivKey');
       if (_.isString(safeUserKey) && _.isString(params.walletPassphrase)) {
@@ -1679,7 +1704,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
 
     transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
     // @ts-expect-error - no implicit this
-    const result = yield this.signTransaction(transaction);
+    const result = await this.signTransaction(transaction);
     return _.extend(result, {
       fee,
       feeRate,
@@ -1689,9 +1714,10 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
       estimatedSize,
       unspents,
     });
-  })
+  }
     .call(this)
-    .asCallback(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -1714,7 +1740,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
 
   // If keychain with xprv is already provided, use it
   if (_.isObject(params.keychain) && params.keychain.xprv) {
-    return Bluebird.resolve(params.keychain);
+    return Promise.resolve(params.keychain);
   }
 
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
@@ -1780,7 +1806,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function (params, callback) {
  */
 Wallet.prototype.fanOutUnspents = function (params, callback) {
   const self = this;
-  return Bluebird.coroutine(function* () {
+  return (async function () {
     // maximum number of inputs for fanout transaction
     // (when fanning out, we take all the unspents and make a bigger number of outputs)
     const MAX_FANOUT_INPUT_COUNT = 80;
@@ -1834,7 +1860,7 @@ Wallet.prototype.fanOutUnspents = function (params, callback) {
     };
 
     // first, let's take all the wallet's unspents (with min confirms if necessary)
-    const allUnspents = (yield self.unspents({ minConfirms: minConfirms })) as any;
+    const allUnspents = (await self.unspents({ minConfirms: minConfirms })) as any;
     if (allUnspents.length < 1) {
       throw new Error('No unspents to branch out');
     }
@@ -1862,7 +1888,7 @@ Wallet.prototype.fanOutUnspents = function (params, callback) {
     const newAddressPromises = _.range(target).map(() =>
       self.createAddress({ chain: self.getChangeChain(params), validate: validate })
     );
-    const newAddresses = yield Bluebird.all(newAddressPromises);
+    const newAddresses = await Promise.all(newAddressPromises);
     // let's find a nice, equal distribution of our Satoshis among the new addresses
     const splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
     // map the newly created addresses to the almost components amounts we just calculated
@@ -1870,7 +1896,7 @@ Wallet.prototype.fanOutUnspents = function (params, callback) {
     txParams.noSplitChange = true;
     // attempt to create a transaction. As it is a wallet-sweeping transaction with no fee, we expect it to fail
     try {
-      yield self.sendMany(txParams);
+      await self.sendMany(txParams);
     } catch (error) {
       // as expected, the transaction creation did indeed fail due to insufficient fees
       // the error suggests a fee value which we then use for the transaction
@@ -1906,15 +1932,17 @@ Wallet.prototype.fanOutUnspents = function (params, callback) {
     // this time, the transaction creation should work
     let fanoutTx;
     try {
-      fanoutTx = yield self.sendMany(txParams);
+      fanoutTx = await self.sendMany(txParams);
     } catch (e) {
       const debugParams = _.omit(txParams, ['walletPassphrase', 'xprv']);
       e.message += `\n\nTX PARAMS:\n ${JSON.stringify(debugParams, null, 4)}`;
       throw e;
     }
 
-    return Bluebird.resolve(fanoutTx).asCallback(callback);
-  })().asCallback(callback);
+    return Promise.resolve(fanoutTx).then(callback).catch(callback);
+  })()
+    .then(callback)
+    .catch(callback);
 };
 
 /**
@@ -2041,7 +2069,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
    * Consolidate one batch of up to MAX_INPUT_COUNT unspents.
    * @returns {*}
    */
-  const runNextConsolidation = co(function* () {
+  async function runNextConsolidation() {
     const consolidationTransactions: any[] = [];
     let isFinalConsolidation = false;
     iterationCount++;
@@ -2065,7 +2093,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
     if (params.maxSize) {
       queryParams.maxSize = params.maxSize;
     }
-    const allUnspents = (yield self.unspents(queryParams)) as any;
+    const allUnspents = (await self.unspents(queryParams)) as any;
     // this consolidation is essentially just a waste of money
     if (allUnspents.length <= target) {
       if (iterationCount <= 1) {
@@ -2093,7 +2121,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
 
     const currentChunk = allUnspents.splice(0, inputCount);
     const changeChain = self.getChangeChain(params);
-    const newAddress = (yield self.createAddress({ chain: changeChain, validate: validate })) as any;
+    const newAddress = (await self.createAddress({ chain: changeChain, validate: validate })) as any;
     const txParams = _.extend({}, params);
     const currentAddress = newAddress;
     // the total amount that we are consolidating within this batch
@@ -2110,7 +2138,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
 
     // let's attempt to create this transaction. We expect it to fail because no fee is set.
     try {
-      yield self.sendMany(txParams);
+      await self.sendMany(txParams);
     } catch (error) {
       // this error should occur due to insufficient funds
       // however, let's make sure it wasn't something else
@@ -2144,7 +2172,7 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
     // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
     let sentTx;
     try {
-      sentTx = yield self.sendMany(txParams);
+      sentTx = await self.sendMany(txParams);
     } catch (e) {
       const debugParams = _.omit(txParams, ['walletPassphrase', 'xprv']);
       e.message += `\n\nTX PARAMS:\n ${JSON.stringify(debugParams, null, 4)}`;
@@ -2166,12 +2194,12 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
       // this last consolidation has not yet brought the unspents count down to the target unspent count
       // therefore, we proceed by consolidating yet another batch
       // before we do that, we wait 1 second so that the newly created unspent will be fetched in the next batch
-      yield Bluebird.delay(1000);
-      consolidationTransactions.push(...((yield runNextConsolidation()) as any));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      consolidationTransactions.push(...((await runNextConsolidation()) as any));
     }
     // this is the final consolidation transaction. We return all the ones we've had so far
     return consolidationTransactions;
-  });
+  }
 
   return runNextConsolidation()
     .catch(function (err) {
@@ -2180,7 +2208,8 @@ Wallet.prototype.consolidateUnspents = function (params, callback) {
       }
       throw err;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.shareWallet = function (params, callback) {
@@ -2262,33 +2291,40 @@ Wallet.prototype.shareWallet = function (params, callback) {
 
       return self.createShare(options);
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.removeUser = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['user'], [], callback);
 
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .del(this.url('/user/' + params.user))
       .send()
       .result()
-  ).nodeify(callback);
+  )
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.getPolicy = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.url('/policy')).send().result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.url('/policy')).send().result())
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.getPolicyStatus = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.url('/policy/status')).send().result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.url('/policy/status')).send().result())
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.setPolicyRule = function (params, callback) {
@@ -2303,21 +2339,27 @@ Wallet.prototype.setPolicyRule = function (params, callback) {
     throw new Error('missing parameter: action object');
   }
 
-  return Bluebird.resolve(this.bitgo.put(this.url('/policy/rule')).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.put(this.url('/policy/rule')).send(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.removePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], ['message'], callback);
 
-  return Bluebird.resolve(this.bitgo.del(this.url('/policy/rule')).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.del(this.url('/policy/rule')).send(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.listWebhooks = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.url('/webhooks')).send().result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.url('/webhooks')).send().result())
+    .then(callback)
+    .catch(callback);
 };
 
 /**
@@ -2347,26 +2389,32 @@ Wallet.prototype.simulateWebhook = function (params, callback) {
   const filteredParams = _.pick(params, ['txHash', 'pendingApprovalId']);
 
   const webhookId = params.webhookId;
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .post(this.url('/webhooks/' + webhookId + '/simulate'))
       .send(filteredParams)
       .result()
-  ).nodeify(callback);
+  )
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.addWebhook = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['url', 'type'], [], callback);
 
-  return Bluebird.resolve(this.bitgo.post(this.url('/webhooks')).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.post(this.url('/webhooks')).send(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.removeWebhook = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['url', 'type'], [], callback);
 
-  return Bluebird.resolve(this.bitgo.del(this.url('/webhooks')).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.del(this.url('/webhooks')).send(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.estimateFee = function (params, callback) {
@@ -2410,14 +2458,18 @@ Wallet.prototype.updatePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id', 'type'], [], callback);
 
-  return Bluebird.resolve(this.bitgo.put(this.url('/policy/rule')).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.put(this.url('/policy/rule')).send(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 Wallet.prototype.deletePolicyRule = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return Bluebird.resolve(this.bitgo.del(this.url('/policy/rule')).send(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.del(this.url('/policy/rule')).send(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -2433,7 +2485,9 @@ Wallet.prototype.getBitGoFee = function (params, callback) {
   if (params.instant && !_.isBoolean(params.instant)) {
     throw new Error('invalid instant argument');
   }
-  return Bluebird.resolve(this.bitgo.get(this.url('/billing/fee')).query(params).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.url('/billing/fee')).query(params).result())
+    .then(callback)
+    .catch(callback);
 };
 
 /*
