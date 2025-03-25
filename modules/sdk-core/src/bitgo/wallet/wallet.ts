@@ -100,7 +100,7 @@ import {
   ManageUnspentReservationOptions,
   SignAndSendTxRequestOptions,
 } from './iWallet';
-import { StakingWallet } from '../staking';
+import { GoStakingWallet, StakingWallet } from '../staking';
 import { Lightning } from '../lightning/custodial';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
@@ -2719,6 +2719,16 @@ export class Wallet implements IWallet {
         ? this._wallet.coinSpecific.walletVersion >= 3
         : false;
     return new StakingWallet(this, isEthTss);
+  }
+
+  /**
+   * Create a go staking wallet from this wallet
+   */
+  toGoStakingWallet(): GoStakingWallet {
+    if (this.baseCoin.getFamily() !== 'ofc') {
+      throw new Error('Can only convert an Offchain (OFC) wallet to a staking wallet');
+    }
+    return new GoStakingWallet(this);
   }
 
   /**
