@@ -49,6 +49,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(
+    '03f58d68-6162-4890-b98d-82c6051d28a4',
+    'polygon:cnkt',
+    'Coinnekt',
+    18,
+    '0xcd75a3538f662b22e25d055b272477a68f1c36fc',
+    UnderlyingAsset['polygon:cnkt'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
     '0fb0aecf-c5d1-4c42-a96b-04ddbf45c99c',
     'polygon:wbtc',
     'Wrapped BTC',

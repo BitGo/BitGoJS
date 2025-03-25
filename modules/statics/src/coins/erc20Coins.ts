@@ -102,6 +102,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:exrd']
   ),
   erc20(
+    'e11480f5-ad48-4255-8de0-c31351b147da',
+    'eth:usual',
+    'USUAL',
+    18,
+    '0xc4441c2be5d8fa8126822b9929ca0b81ea0de38e',
+    UnderlyingAsset['eth:usual']
+  ),
+  erc20(
     '2cc8846d-8b8d-4480-b49f-026bc56fbf42',
     'eth:turbo',
     'Turbo',

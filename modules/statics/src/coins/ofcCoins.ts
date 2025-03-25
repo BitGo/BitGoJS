@@ -319,6 +319,13 @@ export const ofcCoins = [
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
+    'ca2feee8-425b-4690-9294-a81911cbab42',
+    'ofcsol:pnut',
+    'Peanut the Squirrel',
+    6,
+    UnderlyingAsset['sol:pnut']
+  ),
+  ofcsolToken(
     'c382f3cc-c071-4ef5-89ac-bcb85d8d415f',
     'ofcsol:wec',
     'Whole Earth Coin',
@@ -832,6 +839,13 @@ export const ofcCoins = [
     'USD Coin (native)',
     6,
     UnderlyingAsset['polygon:usdcv2']
+  ),
+  ofcPolygonErc20(
+    'b4381484-7f8d-4d20-aa19-5c99e9d230d6',
+    'ofcpolygon:cnkt',
+    'Coinnekt',
+    18,
+    UnderlyingAsset['polygon:cnkt']
   ),
   ofcPolygonErc20(
     'a63bf18b-3462-403c-93f5-ff1b608622c2',

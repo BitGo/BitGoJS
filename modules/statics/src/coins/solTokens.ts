@@ -28,6 +28,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '5367fe0f-1f39-48c1-8673-23cd6bc1f445',
+    'sol:pnut',
+    'Peanut the Squirrel',
+    6,
+    '2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump', // https://solscan.io/token/2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump
+    '2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump',
+    UnderlyingAsset['sol:pnut'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '2d3009df-9534-43c7-8661-e3fe00a023f5',
     'sol:nyan',
     'NYAN',

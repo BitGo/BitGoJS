@@ -1623,6 +1623,7 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:block')
   ),
+  ofcerc20('bdb004b5-4ec7-479e-905b-ee34bc8f6bea', 'ofceth:usual', 'Usual', 18, underlyingAssetForSymbol('eth:usual')),
   ofcerc20(
     '593ae9a1-ab69-423a-b9a2-1980a0c50f97',
     'ofceth:bito',
