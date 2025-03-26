@@ -1,5 +1,5 @@
 export { KeyPair, Interface } from '@bitgo/sdk-coin-eth';
-export { Transaction } from './transaction';
+export { Transaction } from '@bitgo/abstract-eth';
 export { TransactionBuilder } from './transactionBuilder';
 export { TestnetTransactionBuilder } from './testnetTransactionBuilder';
 export { TransferBuilder } from './transferBuilder';
