@@ -15,28 +15,28 @@ let lernaModuleLocations: string[] = [];
 let TARGET_SCOPE = '@bitgo-beta';
 let filesChanged = 0;
 
-const setLernaModules = async (): Promise<void> => {
+async function setLernaModules(): Promise<void> {
   const modules = await getLernaModules();
   lernaModules = modules.map(({ name }) => name);
   lernaModuleLocations = modules.map(({ location }) => location);
-};
+}
 
-const replacePackageScopes = () => {
+function replacePackageScopes() {
   // replace all @bitgo packages & source code with alternate SCOPE
   const filePaths = [...walk(path.join(__dirname, '../', 'modules')), ...walk(path.join(__dirname, '../', 'webpack'))];
   filePaths.forEach((file) => {
     filesChanged += changeScopeInFile(file, lernaModules, TARGET_SCOPE);
   });
-};
+}
 
 // modules/bitgo is the only package we publish without an `@bitgo` prefix, so
 // we must manually set one
-const replaceBitGoPackageScope = () => {
+function replaceBitGoPackageScope() {
   const cwd = path.join(__dirname, '../', 'modules', 'bitgo');
   const json = JSON.parse(readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }));
   json.name = `${TARGET_SCOPE}/bitgo`;
   writeFileSync(path.join(cwd, 'package.json'), JSON.stringify(json, null, 2) + '\n');
-};
+}
 
 /** Small version checkers in place of an npm dependency installation */
 function compareversion(version1, version2) {
@@ -73,7 +73,7 @@ function compareversion(version1, version2) {
  *
  * @param {String | undefined} preid
  */
-const incrementVersions = async (preid = 'beta') => {
+async function incrementVersions(preid = 'beta') {
   const distTags = await getDistTagsForModuleLocations(lernaModuleLocations);
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     try {
@@ -118,9 +118,9 @@ const incrementVersions = async (preid = 'beta') => {
       console.warn(`Couldn't set next version for ${lernaModuleLocations[i]}`, e);
     }
   }
-};
+}
 
-const getArgs = () => {
+function getArgs() {
   const args = process.argv.slice(2) || [];
   const scopeArg = args.find((arg) => arg.startsWith('scope='));
   if (scopeArg) {
@@ -128,9 +128,9 @@ const getArgs = () => {
     TARGET_SCOPE = split[1] || TARGET_SCOPE;
   }
   console.log(`Preparing to re-target to ${TARGET_SCOPE}`);
-};
+}
 
-const main = async (preid?: string) => {
+async function main(preid?: string) {
   getArgs();
   await setLernaModules();
   replacePackageScopes();
@@ -143,6 +143,6 @@ const main = async (preid?: string) => {
     console.error('No files were changed, something must have gone wrong.');
     process.exit(1);
   }
-};
+}
 
 main(process.argv.slice(2)[0]);
