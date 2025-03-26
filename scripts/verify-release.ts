@@ -4,6 +4,8 @@ import * as path from 'path';
 import { get as httpGet } from 'https';
 
 let lernaModuleLocations: string[] = [];
+const publishedVersions: Record<string, string> = {}; // Store versions here
+
 
 /**
  * Create a function which can run lerna commands
@@ -60,8 +62,15 @@ const verifyPackage = async (dir: string, preid: string = 'beta'): Promise<boole
     return exitCode === 0;
   } else {
     console.log(`${json.name} matches expected version ${json.version}`);
+    publishedVersions[json.name] = json.version;
   }
   return true;
+};
+
+const writeVersionsToFile = () => {
+  const filePath = path.join(process.cwd(), 'versions.json');
+  fs.writeFileSync(filePath, JSON.stringify(publishedVersions, null, 2), { encoding: 'utf-8' });
+  console.log('✅ Versions saved to versions.json:', publishedVersions);
 };
 
 const verify = async (preid?: string) => {
@@ -72,6 +81,7 @@ const verify = async (preid?: string) => {
       console.error('Failed to verify outstanding packages.');
       return;
     }
+    writeVersionsToFile();
   }
 };
 

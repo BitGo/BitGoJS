@@ -63,3 +63,10 @@ jobs:
 
       - name: Verify Publish
         run: npx ts-node ./scripts/verify-release.ts ${{ env.preid }}
+
+      - name: Upload versions.json as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-versions
+          path: versions.json
+          retention-days: 7  # Keep artifact for 7 days
