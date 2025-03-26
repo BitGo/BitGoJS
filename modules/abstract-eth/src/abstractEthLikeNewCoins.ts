@@ -2430,11 +2430,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   /**
    * Transform message to accommodate specific blockchain requirements.
    * @param {string} message - the message to prepare
-   * @return {string} the prepared message.
+   * @return {string} the prepared message as a hex encoded string.
    */
   encodeMessage(message: string): string {
     const prefix = `\u0019Ethereum Signed Message:\n${message.length}`;
-    return prefix.concat(message);
+    return Buffer.from(prefix.concat(message)).toString('hex');
   }
 
   /**

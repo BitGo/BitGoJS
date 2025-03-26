@@ -16,21 +16,20 @@ const walletId = null;
 const walletPassphrase = '';
 
 Promise.coroutine(function* () {
-    bitgo.authenticateWithAccessToken({ accessToken: accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 
-    const walletInstance = yield basecoin.wallets().get({ id: walletId });
+  const walletInstance = yield basecoin.wallets().get({ id: walletId });
 
-    const messageRaw = 'Shamir has too many secrets';
-    const messageEncoded = `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`;
+  const messageRaw = 'Shamir has too many secrets';
+  const messageEncoded = basecoin.encodeMessage(messageRaw);
 
-    const messageTxn = yield walletInstance.signMessage({
-        message: {
-            messageRaw,
-            messageEncoded,
-        },
-        walletPassphrase,
-    })
+  const messageTxn = yield walletInstance.signMessage({
+    message: {
+      messageRaw,
+      messageEncoded,
+    },
+    walletPassphrase,
+  });
 
-    console.log(messageTxn);
-
+  console.log(messageTxn);
 })();
