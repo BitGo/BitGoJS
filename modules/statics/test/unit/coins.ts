@@ -17,9 +17,11 @@ import {
   EosCoin,
   SolCoin,
   XrpCoin,
+  createTokenMapUsingConfigDetails,
 } from '../../src';
 import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
+import { amsTokenConfig } from './resources/amsTokenConfig';
 
 interface DuplicateCoinObject {
   name: string;
@@ -902,6 +904,20 @@ describe('Eip1559 coins', () => {
     eip1559Coins.forEach((coinName) => {
       const coin = coins.get(coinName);
       coin.features.includes(CoinFeature.EIP1559).should.eql(true);
+    });
+  });
+});
+
+describe('create token map using config details', () => {
+  it('should create a valid token map from AmsTokenConfig', () => {
+    const tokenMap = createTokenMapUsingConfigDetails(amsTokenConfig);
+    Object.keys(amsTokenConfig).forEach((tokenName) => {
+      const token = tokenMap.get(tokenName);
+      const tokenFromStaticCoinMap = coins.get(tokenName);
+      const { network: tokenNetwork, ...tokenRest } = token;
+      const { network: staticNetwork, ...staticRest } = tokenFromStaticCoinMap;
+      tokenRest.should.deepEqual(staticRest);
+      JSON.stringify(tokenNetwork).should.eql(JSON.stringify(staticNetwork));
     });
   });
 });
