@@ -233,6 +233,33 @@ export interface Tokens {
   };
 }
 
+export interface AmsTokenConfig {
+  id: string;
+  name: string;
+  fullName: string;
+  family: string;
+  decimalPlaces: number;
+  asset: string;
+  features?: string[];
+  prefix?: string;
+  suffix?: string;
+  network?: unknown;
+  primaryKeyCurve?: string;
+  contractAddress?: string;
+  tokenAddress?: string;
+  alias?: string;
+  contractName?: string;
+  tokenId?: string;
+  packageId?: string;
+  module?: string;
+  symbol?: string;
+  issuerAddress?: string;
+  currecnycode?: string;
+  domain?: string;
+  assetId?: string;
+  isToken: boolean;
+}
+
 // Get the list of ERC-20 tokens from statics and format it properly
 const formattedErc20Tokens = coins.reduce((acc: Erc20TokenConfig[], coin) => {
   if (coin instanceof Erc20Coin) {
