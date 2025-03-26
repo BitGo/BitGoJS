@@ -33,7 +33,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "dts-bundle-generator": "^9.3.1",
-    "esbuild": "^0.20.2"
+    "esbuild": "^0.25.0"
   },
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",
