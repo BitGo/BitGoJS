@@ -15,8 +15,6 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 import { common, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
 const _ = require('lodash');
-import Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 
 //
 // Constructor
@@ -150,7 +148,7 @@ Keychains.prototype.list = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/keychain')).result('keychains'))
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/keychain')).result('keychains'))
     .then(function (keychains) {
       keychains.map(function (keychain) {
         if (
@@ -164,7 +162,8 @@ Keychains.prototype.list = function (params, callback) {
       });
       return keychains;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 /**
@@ -182,10 +181,10 @@ Keychains.prototype.list = function (params, callback) {
  *  @returns result.version {Number}
  */
 Keychains.prototype.updatePassword = function (params, callback) {
-  return co(function* coUpdatePassword() {
+  return async function coUpdatePassword() {
     common.validateParams(params, ['oldPassword', 'newPassword'], [], callback);
     // @ts-expect-error - no implicit this
-    const encrypted = yield this.bitgo.post(this.bitgo.url('/user/encrypted')).result();
+    const encrypted = await this.bitgo.post(this.bitgo.url('/user/encrypted')).result();
     const newKeychains = {};
     // @ts-expect-error - no implicit this
     const self = this;
@@ -200,9 +199,10 @@ Keychains.prototype.updatePassword = function (params, callback) {
       }
     });
     return { keychains: newKeychains, version: (encrypted as any).version };
-  })
+  }
     .call(this)
-    .asCallback(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -213,7 +213,7 @@ Keychains.prototype.add = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['xpub'], ['encryptedXprv', 'type', 'isLedger'], callback);
 
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .post(this.bitgo.url('/keychain'))
       .send({
@@ -236,7 +236,8 @@ Keychains.prototype.add = function (params, callback) {
       }
       return keychain;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -247,7 +248,7 @@ Keychains.prototype.createBitGo = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.post(this.bitgo.url('/keychain/bitgo')).send(params).result())
+  return Promise.resolve(this.bitgo.post(this.bitgo.url('/keychain/bitgo')).send(params).result())
     .then(function (keychain) {
       if (
         keychain.xpub &&
@@ -259,7 +260,8 @@ Keychains.prototype.createBitGo = function (params, callback) {
       }
       return keychain;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -270,7 +272,7 @@ Keychains.prototype.createBackup = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['provider'], [], callback);
 
-  return Bluebird.resolve(this.bitgo.post(this.bitgo.url('/keychain/backup')).send(params).result())
+  return Promise.resolve(this.bitgo.post(this.bitgo.url('/keychain/backup')).send(params).result())
     .then(function (keychain) {
       // not all keychains have an xpub
       if (
@@ -283,7 +285,8 @@ Keychains.prototype.createBackup = function (params, callback) {
       }
       return keychain;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -301,7 +304,7 @@ Keychains.prototype.get = function (params, callback) {
   }
 
   const id = params.xpub || params.ethAddress;
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .post(this.bitgo.url('/keychain/' + encodeURIComponent(id)))
       .send({})
@@ -318,7 +321,8 @@ Keychains.prototype.get = function (params, callback) {
       }
       return keychain;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -331,7 +335,7 @@ Keychains.prototype.update = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['xpub'], ['encryptedXprv'], callback);
 
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .put(this.bitgo.url('/keychain/' + params.xpub))
       .send({
@@ -350,7 +354,8 @@ Keychains.prototype.update = function (params, callback) {
       }
       return keychain;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 module.exports = Keychains;

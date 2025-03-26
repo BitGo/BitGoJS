@@ -12,8 +12,8 @@
 import { common } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import Bluebird from 'bluebird';
 import _ from 'lodash';
+import { tryPromise } from '../util';
 
 //
 // Constructor
@@ -134,12 +134,13 @@ PendingApproval.prototype.get = function (params, callback) {
   common.validateParams(params, [], [], callback);
 
   const self = this;
-  return Bluebird.resolve(this.bitgo.get(this.url()).result())
+  return Promise.resolve(this.bitgo.get(this.url()).result())
     .then(function (res) {
       self.pendingApproval = res;
       return self;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -184,7 +185,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function (params, callbac
 
   const self = this;
 
-  return Bluebird.try(function () {
+  return tryPromise(function () {
     if (self.info().transactionRequest.recipients) {
       // recipients object found on the pending approvals - use it
       params.recipients = self.info().transactionRequest.recipients;
@@ -240,7 +241,7 @@ PendingApproval.prototype.constructApprovalTx = function (params, callback) {
   }
 
   const self = this;
-  return Bluebird.try(function () {
+  return tryPromise(function () {
     if (self.type() === 'transactionRequest') {
       const extendParams: any = { txHex: self.info().transactionRequest.transaction };
       if (params.useOriginalFee) {
@@ -280,7 +281,7 @@ PendingApproval.prototype.approve = function (params, callback) {
   }
 
   const self = this;
-  return Bluebird.try(function () {
+  return tryPromise(function () {
     if (self.type() === 'transactionRequest') {
       if (params.tx) {
         // the approval tx was reconstructed and explicitly specified - pass it through
@@ -318,7 +319,7 @@ PendingApproval.prototype.approve = function (params, callback) {
       if (transaction) {
         approvalParams.tx = transaction.tx;
       }
-      return Bluebird.resolve(self.bitgo.put(self.url()).send(approvalParams).result()).nodeify(callback);
+      return Promise.resolve(self.bitgo.put(self.url()).send(approvalParams).result()).then(callback).catch(callback);
     })
     .catch(function (error) {
       if (
@@ -351,7 +352,9 @@ PendingApproval.prototype.reject = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.put(this.url()).send({ state: 'rejected' }).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.put(this.url()).send({ state: 'rejected' }).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
