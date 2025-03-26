@@ -691,6 +691,13 @@ export const ofcCoins = [
     UnderlyingAsset['arbeth:link']
   ),
   ofcArbethErc20(
+    '0cf9baf8-eca6-47b2-82e1-6ca0ee09f760',
+    'ofcarbeth:xsgdv2',
+    'XSGD (Bridged)',
+    6,
+    UnderlyingAsset['arbeth:xsgdv2']
+  ),
+  ofcArbethErc20(
     '59220e6e-d94b-40b7-8e10-2f7c691c2482',
     'ofcarbeth:usdcv2',
     'USD Coin (native)',

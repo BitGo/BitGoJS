@@ -45,6 +45,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:iris']
   ),
   erc20(
+    '11506670-9b97-4ade-ae56-4b9c883de952',
+    'eth:uco',
+    'Archethic Universal Coin',
+    8,
+    '0x1a688d3d294ee7bcc1f59011de93d608dc21c377',
+    UnderlyingAsset['eth:uco']
+  ),
+  erc20(
     'a214db0d-a25b-485f-a8fc-b7970cb4d500',
     'eth:hard',
     'Kava Lend',
