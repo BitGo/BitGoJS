@@ -59,6 +59,7 @@ export enum CoinFamily {
   KAVA = 'kava',
   LNBTC = 'lnbtc',
   LTC = 'ltc',
+  MANTRA = 'mantra',
   POLYGON = 'polygon',
   NEAR = 'near',
   OAS = 'oas',
@@ -395,6 +396,7 @@ export enum UnderlyingAsset {
   KAVA = 'kava',
   LNBTC = 'lnbtc',
   LTC = 'ltc',
+  MANTRA = 'mantra',
   NEAR = 'near',
   OAS = 'oas',
   OPETH = 'opeth',
@@ -2577,6 +2579,7 @@ export enum BaseUnit {
   RUNE = 'rune',
   TAO = 'rao',
   ICP = 'e8s',
+  MANTRA = 'uom',
 }
 
 export interface BaseCoinConstructorOptions {
