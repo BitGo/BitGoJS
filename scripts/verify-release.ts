@@ -1,5 +1,5 @@
 import * as execa from 'execa';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import * as path from 'path';
 import { get as httpGet } from 'https';
 
@@ -69,7 +69,7 @@ const verifyPackage = async (dir: string, preid: string = 'beta'): Promise<boole
 
 const writeVersionsToFile = () => {
   const filePath = path.join(process.cwd(), 'versions.json');
-  fs.writeFileSync(filePath, JSON.stringify(publishedVersions, null, 2), { encoding: 'utf-8' });
+  writeFileSync(filePath, JSON.stringify(publishedVersions, null, 2), { encoding: 'utf-8' });
   console.log('✅ Versions saved to versions.json:', publishedVersions);
 };
 
