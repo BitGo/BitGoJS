@@ -142,7 +142,7 @@ export async function sendOmniAsset(
 }
 
 /*
- * Usage: npx ts-node btc/omni/expressOnly.ts,
+ * Usage: npx ts-node btc/omni/sweepExpress.ts,
  * and have a senders.csv file in the same directory with the format:
  * address,amount without header, where amount is 1e-8 dollars
  * e.g., 2NCeUg5WCxn692CfoSJ86gh2pKdN3jdk9a3,100000000 for 1 USDT contained within 2NCeUg5WCxn692CfoSJ86gh2pKdN3jdk9a3
