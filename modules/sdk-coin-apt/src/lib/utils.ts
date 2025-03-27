@@ -1,11 +1,14 @@
 import {
+  AccountAddress,
   AuthenticationKey,
   Deserializer,
   Ed25519PublicKey,
+  EntryFunctionArgument,
   Hex,
   SignedTransaction,
   TransactionPayload,
   TransactionPayloadEntryFunction,
+  U64,
 } from '@aptos-labs/ts-sdk';
 import {
   BaseUtils,
@@ -19,12 +22,16 @@ import {
   APT_BLOCK_ID_LENGTH,
   APT_SIGNATURE_LENGTH,
   APT_TRANSACTION_ID_LENGTH,
+  COIN_BATCH_TRANSFER_FUNCTION,
   COIN_TRANSFER_FUNCTION,
   DIGITAL_ASSET_TRANSFER_FUNCTION,
   FUNGIBLE_ASSET_TRANSFER_FUNCTION,
   SECONDS_PER_WEEK,
+  ADDRESS_BYTES_LENGTH,
+  AMOUNT_BYTES_LENGTH,
 } from './constants';
 import BigNumber from 'bignumber.js';
+import { RecipientsValidationResult } from './iface';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -80,6 +87,7 @@ export class Utils implements BaseUtils {
     const uniqueIdentifier = `${moduleAddress}::${moduleIdentifier}::${functionIdentifier}`;
     switch (uniqueIdentifier) {
       case COIN_TRANSFER_FUNCTION:
+      case COIN_BATCH_TRANSFER_FUNCTION:
         return TransactionType.Send;
       case FUNGIBLE_ASSET_TRANSFER_FUNCTION:
         return TransactionType.SendToken;
@@ -90,10 +98,51 @@ export class Utils implements BaseUtils {
     }
   }
 
+  fetchAndValidateRecipients(
+    addressArg: EntryFunctionArgument,
+    amountArg: EntryFunctionArgument
+  ): RecipientsValidationResult {
+    const addressBytes = addressArg.bcsToBytes();
+    const amountBytes = amountArg.bcsToBytes();
+    let deserializedAddresses: string[];
+    let deserializedAmounts: Uint8Array<ArrayBuffer>[];
+    if (addressBytes.length > ADDRESS_BYTES_LENGTH || amountBytes.length > AMOUNT_BYTES_LENGTH) {
+      deserializedAddresses = utils.deserializeAccountAddressVector(addressBytes);
+      deserializedAmounts = utils.deserializeU64Vector(amountBytes);
+      if (deserializedAddresses.length !== deserializedAmounts.length) {
+        console.error('invalid payload entry function arguments : addresses and amounts length mismatch');
+        return { recipients: { deserializedAddresses, deserializedAmounts }, isValid: false };
+      }
+    } else {
+      deserializedAddresses = [addressArg.toString()];
+      deserializedAmounts = [amountBytes];
+    }
+    const allAddressesValid = deserializedAddresses.every((address) => utils.isValidAddress(address.toString()));
+    const allAmountsValid = deserializedAmounts.every((amount) =>
+      new BigNumber(utils.getAmountFromPayloadArgs(amount)).isGreaterThan(0)
+    );
+    return {
+      recipients: { deserializedAddresses, deserializedAmounts },
+      isValid: allAddressesValid && allAmountsValid,
+    };
+  }
+
   deserializeSignedTransaction(rawTransaction: string): SignedTransaction {
     const txnBytes = Hex.fromHexString(rawTransaction).toUint8Array();
     const deserializer = new Deserializer(txnBytes);
     return deserializer.deserialize(SignedTransaction);
+  }
+
+  deserializeAccountAddressVector(serializedBytes: Uint8Array): string[] {
+    const deserializer = new Deserializer(serializedBytes);
+    const deserializedAddresses = deserializer.deserializeVector(AccountAddress);
+    return deserializedAddresses.map((address) => address.toString());
+  }
+
+  deserializeU64Vector(serializedBytes: Uint8Array): Uint8Array[] {
+    const deserializer = new Deserializer(serializedBytes);
+    const deserializedAmounts = deserializer.deserializeVector(U64);
+    return deserializedAmounts.map((amount) => amount.bcsToBytes());
   }
 
   getBufferFromHexString(hexString: string): Buffer {
