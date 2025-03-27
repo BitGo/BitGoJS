@@ -14,6 +14,8 @@ let lernaModules: string[] = [];
 let lernaModuleLocations: string[] = [];
 let TARGET_SCOPE = '@bitgo-beta';
 let filesChanged = 0;
+// Default to __dirname/.. but allow override via environment variable
+const ROOT_DIR = process.env.BITGO_PREPARE_RELEASE_ROOT_DIR || path.join(__dirname, '..');
 
 async function setLernaModules(): Promise<void> {
   const modules = await getLernaModules();
@@ -23,7 +25,7 @@ async function setLernaModules(): Promise<void> {
 
 function replacePackageScopes() {
   // replace all @bitgo packages & source code with alternate SCOPE
-  const filePaths = [...walk(path.join(__dirname, '../', 'modules')), ...walk(path.join(__dirname, '../', 'webpack'))];
+  const filePaths = [...walk(path.join(ROOT_DIR, 'modules')), ...walk(path.join(ROOT_DIR, 'webpack'))];
   filePaths.forEach((file) => {
     filesChanged += changeScopeInFile(file, lernaModules, TARGET_SCOPE);
   });
@@ -128,6 +130,7 @@ function getArgs() {
     TARGET_SCOPE = split[1] || TARGET_SCOPE;
   }
   console.log(`Preparing to re-target to ${TARGET_SCOPE}`);
+  console.log(`Using root directory: ${ROOT_DIR}`);
 }
 
 async function main(preid?: string) {
