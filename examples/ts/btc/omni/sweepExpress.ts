@@ -1,26 +1,56 @@
 /**
  * Sweep omni USDT to a single external address using express.
  *
- * Copyright 2024, BitGo, Inc.  All Rights Reserved.
+ * This script takes a file `senders.csv` (located in the same directory) with the format address,amount without header,
+ * where amount is 1e-8 dollars. e.g., 2NCeUg5WCxn692CfoSJ86gh2pKdN3jdk9a3,100000000 for 1 USDT contained
+ * within 2NCeUg5WCxn692CfoSJ86gh2pKdN3jdk9a3.
+ *
+ * At the top of the file, there are values that you need to populate/review before running the script.
+ *
+ * This file does not use any SDK code and can be run without any BitGoJS dependencies.
+ *
+ * NOTE: ONLY SEND FUNDS USING P2SH ADDRESSES. WE DO NOT KNOW IF THIS WILL WORK WITH MODERN ADDRESS TYPES. If using
+ * the script as is, you will be safe.
+ *
+ * Copyright 2025, BitGo, Inc.  All Rights Reserved.
  */
 import * as superagent from 'superagent';
 import * as fs from 'fs';
 import { Buffer } from 'buffer';
 
-const env = 'test' as 'test' | 'prod';
-
+// Values to populate
+//
+// Access Token for BitGo
 const accessToken = '';
+// The environment that you would like to run the script in. Either `prod` or `test`
+const env = 'test' as 'test' | 'prod';
+// The wallet ID of the wallet that contains the OMNI funds
 const walletId = '';
+// Whether or not the Express configuration you are using is using the remote signer. If you are using the remote signer,
+// then you do not need to provide the `walletPassphrase` below.
+const usingRemoteSigner = false;
+// The passphrase of the wallet that contains the OMNI funds. Can be left blank if `usingRemoteSigner` is true.
 const walletPassphrase = '';
-
-const MEMPOOL_PREFIX = env === 'test' ? 'testnet4/' : '';
-const OMNI_PREFIX = Buffer.from('6f6d6e69', 'hex');
-// we can get away with 0x14 because the omni sends are always a fixed size
-const OP_RETURN_PREFIX = Buffer.from('6a14', 'hex');
-const BITGO_BASE_URL = 'http://localhost:3080';
+// This is the URL of BitGo express
+const BITGO_BASE_URL = '';
+// This is the address that you need to send the OMNI funds to. This address should be a legacy address.
 const RECEIVE_ADDRESS = '';
-const ASSET_ID = 31;
+// This is the prefunding amount in satoshis that is used for `fundAddressesIfEmpty`.
+// If the address does not contain any UTXOs, we will send an output to the address with this amount.
 const FUNDING_AMOUNT = 5000;
+// The amount of time to wait between the funding transaction and the sweep transaction. If there is no funding transaction,
+// we dont need to wait
+const fundingTxWaitMs = 15 * 60 * 1000; // 15 minutes
+
+// Fixed values to run the script. You do not need to touch these
+//
+// The prefix to use in the mempool.space URI
+const MEMPOOL_PREFIX = env === 'test' ? 'testnet4/' : '';
+// This is the first data in the OP_RETURN that is used to identify the OMNI transaction for the protocol.
+const OMNI_PREFIX = Buffer.from('6f6d6e69', 'hex');
+// We can put the length of the OP_RETURN data here because OMNI sends have a predictable OP_RETURN data length
+const OP_RETURN_PREFIX = Buffer.from('6a14', 'hex');
+const ASSET_ID = 31;
 const COIN_NAME = env === 'test' ? 'tbtc4' : 'btc';
 
 /**
@@ -44,7 +74,7 @@ async function fundAddressesIfEmpty(addresses: string[], feeRateSatPerKB: number
     .send({
       recipients: addressesToFund.map((address) => ({ address, amount: fundAmount })),
       feeRate: feeRateSatPerKB,
-      walletPassphrase: walletPassphrase,
+      ...(usingRemoteSigner ? {} : { walletPassphrase }),
     });
 
   console.log('Funded addresses', addressesToFund, 'with response', res.body);
@@ -132,20 +162,18 @@ export async function sendOmniAsset(
       ],
       isReplaceableByFee: true,
       feeRate: feeRateSatPerKB,
-      walletPassphrase: walletPassphrase,
       // we must send change to our input address to ensure that omni won't
       // accidentally send our asset to the change address instead of the recipient
       changeAddress: sender,
       unspents: [unspent_id],
+      ...(usingRemoteSigner ? {} : { walletPassphrase }), // only include walletPassphrase if not using remote signer
     });
   console.log('Omni asset sent: ', bitgoRes.body);
 }
 
 /*
  * Usage: npx ts-node btc/omni/sweepExpress.ts,
- * and have a senders.csv file in the same directory with the format:
- * address,amount without header, where amount is 1e-8 dollars
- * e.g., 2NCeUg5WCxn692CfoSJ86gh2pKdN3jdk9a3,100000000 for 1 USDT contained within 2NCeUg5WCxn692CfoSJ86gh2pKdN3jdk9a3
+
  * */
 async function main() {
   console.log('Starting...');
@@ -159,7 +187,7 @@ async function main() {
     feeRate * 1000,
     FUNDING_AMOUNT
   );
-  await new Promise((resolve) => setTimeout(resolve, 30000));
+  await new Promise((resolve) => setTimeout(resolve, fundingTxWaitMs));
   for (const sender of senders) {
     await sendOmniAsset(RECEIVE_ADDRESS, sender.address, sender.baseAmount, ASSET_ID, feeRate * 1000);
     console.log(`Sent ${sender.baseAmount} from ${sender.address}`);
