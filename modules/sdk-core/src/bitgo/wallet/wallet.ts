@@ -3497,7 +3497,7 @@ export class Wallet implements IWallet {
         reqId: params.reqId || new RequestTracer(),
         messageRaw: params.message.messageRaw,
         messageEncoded: params.message.messageEncoded,
-        bufferToSign: Buffer.from(params.message.messageEncoded ?? ''),
+        bufferToSign: Buffer.from(params.message.messageEncoded ?? '', 'hex'),
       });
       assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
       assert(

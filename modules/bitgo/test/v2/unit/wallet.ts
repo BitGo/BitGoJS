@@ -3448,7 +3448,7 @@ describe('V2 Wallet:', function () {
         signature: txHash,
         messageRaw,
         coin: 'teth',
-        messageEncoded: '\u0019Ethereum Signed Message:\n4test',
+        messageEncoded: Buffer.from('\u0019Ethereum Signed Message:\n4test').toString('hex'),
       };
 
       beforeEach(async function () {
@@ -3499,7 +3499,7 @@ describe('V2 Wallet:', function () {
           signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0] as WalletSignMessageOptions;
           actualArg.message?.messageEncoded?.should.equal(
-            `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
+            Buffer.from(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`).toString('hex')
           );
         });
 
@@ -3516,7 +3516,7 @@ describe('V2 Wallet:', function () {
           signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0] as WalletSignMessageOptions;
           actualArg.message?.messageEncoded?.should.equal(
-            `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
+            Buffer.from(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`).toString('hex')
           );
         });
 
@@ -3532,7 +3532,7 @@ describe('V2 Wallet:', function () {
           signMessage.should.deepEqual(expectedWithCoinField);
           const actualArg = signMessageTssSpy.getCalls()[0].args[0] as WalletSignMessageOptions;
           actualArg.message?.messageEncoded?.should.equal(
-            `\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`
+            Buffer.from(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`).toString('hex')
           );
         });
 
