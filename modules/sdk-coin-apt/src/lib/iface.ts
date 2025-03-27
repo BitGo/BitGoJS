@@ -26,3 +26,11 @@ export interface TxData {
   feePayer: string;
   assetId: string;
 }
+
+export interface RecipientsValidationResult {
+  recipients: {
+    deserializedAddresses: string[];
+    deserializedAmounts: Uint8Array[];
+  };
+  isValid: boolean;
+}
