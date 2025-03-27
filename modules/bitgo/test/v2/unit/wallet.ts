@@ -4681,4 +4681,169 @@ describe('V2 Wallet:', function () {
       await adaWallet.sendMany(sendManyParams).should.be.resolved();
     });
   });
+
+  describe('ERC20 Token Approval', function () {
+    let wallet;
+    const walletId = '5b34252f1bf349930e34020a00000000';
+    let topethCoin;
+    const tokenName = 'topeth:terc18dp';
+    const coin = 'topeth';
+
+    beforeEach(function () {
+      topethCoin = bitgo.coin('topeth');
+      wallet = new Wallet(bitgo, topethCoin, {
+        id: walletId,
+        coin: coin,
+        keys: ['keyid1', 'keyid2', 'keyid3'],
+      });
+    });
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should successfully approve a token', async function () {
+      const walletPassphrase = 'password123';
+      const expectedApprovalBuild = {
+        txHex: '0x123456',
+        feeInfo: {
+          fee: '1000000000',
+        },
+      };
+
+      const expectedSignedTx = {
+        txHex: '0x123456signed',
+      };
+
+      const expectedSendResult = {
+        txid: '0xabcdef',
+        tx: '0x123456signed',
+        status: 'signed',
+      };
+
+      // Mock the token approval build API
+      const ethUrl = common.Environments[bitgo.getEnv()].uri;
+      nock(ethUrl).post(`/api/v2/${coin}/wallet/${walletId}/token/approval/build`).reply(200, expectedApprovalBuild);
+
+      // Mock the getKeychainsAndValidatePassphrase method
+      sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([
+        {
+          id: 'keyid1',
+          pub: 'pub1',
+          encryptedPrv: 'encryptedPrv',
+        },
+      ]);
+
+      // Mock the sign transaction method
+      sinon.stub(wallet, 'signTransaction').resolves(expectedSignedTx);
+
+      // Mock the send transaction method
+      sinon.stub(wallet, 'sendTransaction').resolves(expectedSendResult);
+
+      const result = await wallet.approveErc20Token(walletPassphrase, tokenName);
+
+      should.exist(result);
+      result.should.deepEqual(expectedSendResult);
+
+      // Verify the parameters passed to signTransaction
+      const signParams = wallet.signTransaction.firstCall.args[0];
+      signParams.should.have.property('txPrebuild', expectedApprovalBuild);
+      signParams.should.have.property('keychain');
+      signParams.should.have.property('walletPassphrase', walletPassphrase);
+    });
+
+    it('should handle token approval build API errors', async function () {
+      const walletPassphrase = 'password123';
+      const errorMessage = 'token approval build failed';
+
+      // Mock the token approval build API to return an error
+      nock(bgUrl).post(`/api/v2/${coin}/wallet/${walletId}/token/approval/build`).replyWithError(errorMessage);
+
+      await wallet.approveErc20Token(walletPassphrase, tokenName).should.be.rejectedWith(errorMessage);
+    });
+
+    it('should handle wallet passphrase validation errors', async function () {
+      const walletPassphrase = 'wrong-password';
+      const expectedApprovalBuild = {
+        txHex: '0x123456',
+        feeInfo: {
+          fee: '1000000000',
+        },
+      };
+
+      // Mock the token approval build API
+      nock(bgUrl).post(`/api/v2/${coin}/wallet/${walletId}/token/approval/build`).reply(200, expectedApprovalBuild);
+
+      // Mock the getKeychainsAndValidatePassphrase method to throw an error
+      const error = new Error('unable to decrypt keychain with the given wallet passphrase');
+      error.name = 'wallet_passphrase_incorrect';
+      sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').rejects(error);
+
+      await wallet
+        .approveErc20Token(walletPassphrase, tokenName)
+        .should.be.rejectedWith('unable to decrypt keychain with the given wallet passphrase');
+    });
+
+    it('should handle signing errors', async function () {
+      const walletPassphrase = 'password123';
+      const expectedApprovalBuild = {
+        txHex: '0x123456',
+        feeInfo: {
+          fee: '1000000000',
+        },
+      };
+      const signingError = new Error('signing failed');
+
+      // Mock the token approval build API
+      nock(bgUrl).post(`/api/v2/${coin}/wallet/${walletId}/token/approval/build`).reply(200, expectedApprovalBuild);
+
+      // Mock the getKeychainsAndValidatePassphrase method
+      sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([
+        {
+          id: 'keyid1',
+          pub: 'pub1',
+          encryptedPrv: 'encryptedPrv',
+        },
+      ]);
+
+      // Mock the sign transaction method to throw an error
+      sinon.stub(wallet, 'signTransaction').rejects(signingError);
+
+      await wallet.approveErc20Token(walletPassphrase, tokenName).should.be.rejectedWith(signingError);
+    });
+
+    it('should handle send transaction errors', async function () {
+      const walletPassphrase = 'password123';
+      const expectedApprovalBuild = {
+        txHex: '0x123456',
+        feeInfo: {
+          fee: '1000000000',
+        },
+      };
+      const expectedSignedTx = {
+        txHex: '0x123456signed',
+      };
+      const sendError = new Error('send failed');
+
+      // Mock the token approval build API
+      nock(bgUrl).post(`/api/v2/${coin}/wallet/${walletId}/token/approval/build`).reply(200, expectedApprovalBuild);
+
+      // Mock the getKeychainsAndValidatePassphrase method
+      sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([
+        {
+          id: 'keyid1',
+          pub: 'pub1',
+          encryptedPrv: 'encryptedPrv',
+        },
+      ]);
+
+      // Mock the sign transaction method
+      sinon.stub(wallet, 'signTransaction').resolves(expectedSignedTx);
+
+      // Mock the send transaction method to throw an error
+      sinon.stub(wallet, 'sendTransaction').rejects(sendError);
+
+      await wallet.approveErc20Token(walletPassphrase, tokenName).should.be.rejectedWith(sendError);
+    });
+  });
 });
