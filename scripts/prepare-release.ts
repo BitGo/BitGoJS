@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import { readFileSync, writeFileSync } from 'fs';
 import * as path from 'path';
-import { inc } from 'semver';
+import { inc, lt } from 'semver';
 import {
   walk,
   getDistTagsForModuleLocations,
@@ -34,40 +34,10 @@ function replacePackageScopes() {
 // modules/bitgo is the only package we publish without an `@bitgo` prefix, so
 // we must manually set one
 function replaceBitGoPackageScope() {
-  const cwd = path.join(__dirname, '../', 'modules', 'bitgo');
+  const cwd = path.join(ROOT_DIR, 'modules', 'bitgo');
   const json = JSON.parse(readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }));
   json.name = `${TARGET_SCOPE}/bitgo`;
   writeFileSync(path.join(cwd, 'package.json'), JSON.stringify(json, null, 2) + '\n');
-}
-
-/** Small version checkers in place of an npm dependency installation */
-function compareversion(version1, version2) {
-  let result = false;
-
-  if (typeof version1 !== 'object') {
-    version1 = version1.toString().split('.');
-  }
-  if (typeof version2 !== 'object') {
-    version2 = version2.toString().split('.');
-  }
-
-  for (let i = 0; i < Math.max(version1.length, version2.length); i++) {
-    if (version1[i] === undefined) {
-      version1[i] = 0;
-    }
-    if (version2[i] === undefined) {
-      version2[i] = 0;
-    }
-
-    if (Number(version1[i]) < Number(version2[i])) {
-      result = true;
-      break;
-    }
-    if (version1[i] !== version2[i]) {
-      break;
-    }
-  }
-  return result;
 }
 
 /**
@@ -89,7 +59,7 @@ async function incrementVersions(preid = 'beta') {
         if (tags[preid]) {
           const version = tags[preid].split('-');
           const latest = tags?.latest?.split('-') ?? ['0.0.0'];
-          prevTag = compareversion(version[0], latest[0]) ? `${tags.latest}-${preid}` : tags[preid];
+          prevTag = lt(version[0], latest[0]) ? `${tags.latest}-${preid}` : tags[preid];
         } else {
           prevTag = `${tags.latest}-${preid}`;
         }
@@ -97,7 +67,7 @@ async function incrementVersions(preid = 'beta') {
 
       if (prevTag) {
         const next = inc(prevTag, 'prerelease', undefined, preid);
-        assert(typeof next === 'string', `Failed to increment version for ${json.name}`);
+        assert(typeof next === 'string', `Failed to increment version for ${json.name} prevTag=${prevTag}`);
         console.log(`Setting next version for ${json.name} to ${next}`);
         json.version = next;
         writeFileSync(path.join(modulePath, 'package.json'), JSON.stringify(json, null, 2) + '\n');
