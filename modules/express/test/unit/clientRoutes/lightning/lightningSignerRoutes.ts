@@ -43,7 +43,10 @@ describe('Lightning signer routes', () => {
       includingOptionalFields ? 'with' : 'without'
     } optional fields`, async () => {
       const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
-      const wpWalletnock = nock(bgUrl).get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200, apiData.wallet);
+      const wpWalletnock = nock(bgUrl)
+        .get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`)
+        .query({ includeBalance: false })
+        .reply(200, apiData.wallet);
 
       const wpKeychainNocks = [
         nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userKey.id}`).reply(200, apiData.userKey),
@@ -92,6 +95,7 @@ describe('Lightning signer routes', () => {
         const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
         const wpWalletnock = nock(bgUrl)
           .get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`)
+          .query({ includeBalance: false })
           .reply(200, {
             ...apiData.wallet,
             ...(includeWatchOnlyIp ? {} : { watchOnlyExternalIp: null }),
