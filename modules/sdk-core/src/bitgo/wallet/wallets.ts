@@ -926,6 +926,10 @@ export class Wallets implements IWallets {
       query.allTokens = params.allTokens;
     }
 
+    if (params.includeBalance !== undefined) {
+      query.includeBalance = params.includeBalance;
+    }
+
     this.bitgo.setRequestTracer(params.reqId || new RequestTracer());
 
     const wallet = await this.bitgo
