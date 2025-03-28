@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.2.1...@bitgo/express@13.3.0) (2025-03-28)
+
+### Features
+
+- **abstract-lightning:** make encrypted prv key optional in get key ([be728ab](https://github.com/BitGo/BitGoJS/commit/be728ab7935fe00476647cb7b7e002a5af304d88))
+- **express:** add includeBalance option when fetching lightning wallets ([832aa59](https://github.com/BitGo/BitGoJS/commit/832aa593e0b2c739d14f31bcba9fb38d51dd5950))
+- **express:** encode invoice to avoid serialization error ([dcdb310](https://github.com/BitGo/BitGoJS/commit/dcdb3104291e24251cad017e077ab9bd814c2662))
+
 ## [13.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.2.0...@bitgo/express@13.2.1) (2025-03-20)
 
 **Note:** Version bump only for package @bitgo/express

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.11.0...@bitgo/utxo-staking@1.12.0) (2025-03-28)
+
+### Features
+
+- **utxo-staking:** add babylon implementation link ([cfd5fd6](https://github.com/BitGo/BitGoJS/commit/cfd5fd619d7f16bfc5ae1734763a7ff6eb479d38))
+- **utxo-staking:** add babylon network type and conversion utils ([4ef02f9](https://github.com/BitGo/BitGoJS/commit/4ef02f9e1ce65f7a29580ac5509ecbc3ac269ed1))
+- **utxo-staking:** add createDelegationMessageFromPsbt utils ([ca8202e](https://github.com/BitGo/BitGoJS/commit/ca8202ec7dbc9b0ab83a8688b6a79a1f054ba4b3))
+- **utxo-staking:** add reference link to babylon types impl ([a631006](https://github.com/BitGo/BitGoJS/commit/a6310064ef65e87ad7a2df5a373e5282aeba9ccf))
+- **utxo-staking:** add staking timelock parameter ([689aded](https://github.com/BitGo/BitGoJS/commit/689aded1dbf07362ac082f151910cd85591e0196))
+- **utxo-staking:** add toStakerInfo helper ([dd4ca9b](https://github.com/BitGo/BitGoJS/commit/dd4ca9b64be3818478f09db0c5666259fb89dfd2))
+- **utxo-staking:** export babylon param lookup functions ([70b6efd](https://github.com/BitGo/BitGoJS/commit/70b6efd5914bbf6ae36625f25d4b2100eb8bae93))
+- **utxo-staking:** extract network type definitions ([eb7f2b8](https://github.com/BitGo/BitGoJS/commit/eb7f2b87fa94ab8d9ef666818254604f42cfbceb))
+- **utxo-staking:** init bitcoinjs ecc lib in index.ts ([d0e7ef5](https://github.com/BitGo/BitGoJS/commit/d0e7ef55bdf1298d53fe664758baaddf5fad7d28))
+- **utxo-staking:** initialize bitcoinjs ecc lib with utxolib ecc ([fbfd4dd](https://github.com/BitGo/BitGoJS/commit/fbfd4dd3c603cf1ddc75efb49d89c8876a343e5d))
+- **utxo-staking:** refactor delegation message creation ([8019a14](https://github.com/BitGo/BitGoJS/commit/8019a14d68157399ca16cab95936c5e67ddc539f))
+- **utxo-staking:** remove unused key utils file ([df2f341](https://github.com/BitGo/BitGoJS/commit/df2f34108103b2003e907ec7d1cf65788d294385))
+
 # [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.10.0...@bitgo/utxo-staking@1.11.0) (2025-03-20)
 
 ### Features

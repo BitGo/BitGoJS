@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@4.0.23...@bitgo/sdk-coin-celo@5.0.0) (2025-03-28)
+
+### Features
+
+- **sdk-coin-celo:** prepare celo for mainnet hardfork ([1028d63](https://github.com/BitGo/BitGoJS/commit/1028d63d8f41cd4204d8c3d3bb3d84a09ecc81fa))
+
+### BREAKING CHANGES
+
+- **sdk-coin-celo:** added changes to transaction building for
+  celo l2 migration
+
+TICKET: COIN-3350
+
 ## [4.0.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@4.0.22...@bitgo/sdk-coin-celo@4.0.23) (2025-03-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo
