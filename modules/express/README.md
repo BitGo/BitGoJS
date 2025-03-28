@@ -237,12 +237,12 @@ BitGo Express is able to take configuration options from either command line arg
 | N/A             | --externalSignerUrl    | `BITGO_EXTERNAL_SIGNER_URL`              | N/A           | URL specifying the external API to call for remote signing.                                                                                                                                                                                                                                                                                          |
 | N/A             | --signerMode           | `BITGO_SIGNER_MODE `                     | N/A           | If set, run Express as a remote signer.                                                                                                                                                                                                                                                                                                              |
 | N/A             | --signerFileSystemPath | `BITGO_SIGNER_FILE_SYSTEM_PATH `         | N/A           | Local path specifying where an Express signer machine keeps the encrypted user private keys. Required when signerMode is set.                                                                                                                                                                                                                        |
-| N/A           | --lightningSignerFileSystemPath | `BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH` | N/A | Local path specifying how to contact the lightning signer node.
+| N/A           | --lightningSignerFileSystemPath | `BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH` | N/A          | Local path specifying how to contact the lightning signer node.                                                                                                                                                                                                                                                                                                              |
+| N/A           | --keepalivetimeout | `BITGO_KEEP_ALIVE_TIMEOUT` | N/A          | BitGo Express server KeepAliveTimeout node.                                                                                                                                                                                                                                                                                                              |
+| N/A           | --headerstimeout | `BITGO_HEADERS_TIMEOUT` | N/A          | BitGo Express server HeadersTimeout node.                                                                                                                                                                                                                                                                                                              |
+
 
 \[0]: BitGo will also check the additional environment variables for some options for backwards compatibility, but these environment variables should be considered deprecated:
-
-| N/A | --keepalivetimeout | `BITGO_KEEP_ALIVE_TIMEOUT` | N/A | BitGo Express server KeepAliveTimeout |
-| N/A | --headerstimeout | `BITGO_HEADERS_TIMEOUT` | N/A | BitGo Express server HeadersTimeout |
 
 - Disable SSL
   - `DISABLESSL`
