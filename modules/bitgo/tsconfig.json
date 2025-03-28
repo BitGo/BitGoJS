@@ -34,7 +34,6 @@
     "test/v2/integration/markets.ts",
     "test/v2/integration/coins/baseCoin.ts",
     "test/v2/integration/coins/eth.ts",
-    "test/v2/integration/coins/eth2.ts",
     "test/v2/integration/coins/xlm.ts",
     "test/v2/integration/coins/xrp.ts"
   ],
@@ -137,9 +136,6 @@
     },
     {
       "path": "../sdk-coin-eth"
-    },
-    {
-      "path": "../sdk-coin-eth2"
     },
     {
       "path": "../sdk-coin-ethlike"

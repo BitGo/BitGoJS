@@ -40,7 +40,6 @@
 /modules/sdk-coin-etc/ @BitGo/ethalt-team
 /modules/abstract-eth/ @BitGo/ethalt-team
 /modules/sdk-coin-eth/ @BitGo/ethalt-team
-/modules/sdk-coin-eth2/ @BitGo/ethalt-team
 /modules/sdk-coin-rbtc/ @BitGo/ethalt-team
 /modules/bitgo/test/v2/unit/coins/staking/ @BitGo/ethalt-team
 /modules/bitgo/test/v2/unit/coins/token.ts @BitGo/ethalt-team
