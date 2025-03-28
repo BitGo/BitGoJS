@@ -839,6 +839,26 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
+    '08ff6b77-4cfb-4dcd-9182-dd1cc6f92f70',
+    'mantra',
+    'Mantra',
+    Networks.main.mantra,
+    6,
+    UnderlyingAsset.MANTRA,
+    BaseUnit.MANTRA,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    'cc900f12-f229-4eb3-9ca7-2a05a445f362',
+    'tmantra',
+    'Testnet Mantra',
+    Networks.test.mantra,
+    6,
+    UnderlyingAsset.MANTRA,
+    BaseUnit.MANTRA,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
     'islm',
     'Islamic Coin',
