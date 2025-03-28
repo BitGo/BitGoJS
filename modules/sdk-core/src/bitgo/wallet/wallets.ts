@@ -357,25 +357,6 @@ export class Wallets implements IWallets {
       return walletData;
     }
 
-    const isBlsDkg = params.multisigType ? params.multisigType === 'blsdkg' : this.baseCoin.supportsBlsDkg();
-    if (isBlsDkg) {
-      if (!this.baseCoin.supportsBlsDkg()) {
-        throw new Error(`coin ${this.baseCoin.getFamily()} does not support BLS-DKG at this time`);
-      }
-      assert(enterprise, 'enterprise is required for BLS-DKG wallet');
-
-      if (type === 'cold') {
-        throw new Error('BLS-DKG SMC wallets are not supported at this time');
-      }
-
-      if (type === 'custodial') {
-        throw new Error('BLS-DKG custodial wallets are not supported at this time');
-      }
-
-      assert(passphrase, 'cannot generate BLS-DKG keys without passphrase');
-      return this.generateMpcWallet({ multisigType: 'blsdkg', label, passphrase, enterprise });
-    }
-
     // Handle distributed custody
     if (isDistributedCustody) {
       if (!enterprise) {
@@ -404,6 +385,9 @@ export class Wallets implements IWallets {
     }
 
     if (!_.isUndefined(params.gasPrice)) {
+      if (!BigNumber) {
+        throw new Error('BigNumber is undefined');
+      }
       const gasPriceBN = new BigNumber(params.gasPrice);
       if (gasPriceBN.isNaN()) {
         throw new Error('invalid gas price argument, expecting number or number as string');
@@ -412,6 +396,9 @@ export class Wallets implements IWallets {
     }
 
     if (!_.isUndefined(params.eip1559) && !_.isEmpty(params.eip1559)) {
+      if (!BigNumber) {
+        throw new Error('BigNumber is undefined');
+      }
       const maxFeePerGasBN = new BigNumber(params.eip1559.maxFeePerGas);
       if (maxFeePerGasBN.isNaN()) {
         throw new Error('invalid max fee argument, expecting number or number as string');

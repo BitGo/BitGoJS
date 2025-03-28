@@ -45,7 +45,6 @@ export const CELO_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.EIP1559,
 ];
-export const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 export const RBTC_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.MULTISIG_COLD,

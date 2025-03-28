@@ -239,6 +239,9 @@ export abstract class BaseCoin implements IBaseCoin {
    * to big units (btc, eth, xrp, xlm)
    */
   baseUnitsToBigUnits(baseUnits: string | number): string {
+    if (!BigNumber) {
+      throw new Error('BigNumber is undefined');
+    }
     BigNumber.set({ DECIMAL_PLACES: 24 });
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
@@ -247,6 +250,9 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   checkRecipient(recipient: { address: string; amount: string | number }): void {
+    if (!BigNumber) {
+      throw new Error('BigNumber is undefined');
+    }
     if (recipient.amount !== 'max') {
       const amount = new BigNumber(recipient.amount);
       if (amount.isNegative()) {
@@ -264,6 +270,9 @@ export abstract class BaseCoin implements IBaseCoin {
    * @param bigUnits
    */
   bigUnitsToBaseUnits(bigUnits: string | number): string {
+    if (!BigNumber) {
+      throw new Error('BigNumber is undefined');
+    }
     const multiplier = this.getBaseFactor();
     const bigNumber = new BigNumber(bigUnits).times(multiplier);
     if (!bigNumber.isInteger()) {

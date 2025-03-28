@@ -152,7 +152,7 @@ export type DecryptedRetrofitPayload = {
 };
 
 export interface CreateMpcOptions {
-  multisigType: 'onchain' | 'tss' | 'blsdkg';
+  multisigType: 'onchain' | 'tss';
   passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;

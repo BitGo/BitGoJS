@@ -9,16 +9,7 @@ import * as nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import {
-  BlsUtils,
-  common,
-  decodeOrElse,
-  ECDSAUtils,
-  EDDSAUtils,
-  Keychains,
-  KeychainsTriplet,
-  OvcShare,
-} from '@bitgo/sdk-core';
+import { common, decodeOrElse, ECDSAUtils, EDDSAUtils, Keychains, OvcShare } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
@@ -551,34 +542,6 @@ describe('V2 Keychains', function () {
             },
           })
         );
-      });
-    });
-
-    describe('Create BLS-DKG Keychains', function () {
-      it('should create BLS-DKG Keychains', async function () {
-        const stubbedKeychainsTriplet: KeychainsTriplet = {
-          userKeychain: {
-            id: '1',
-            pub: 'userPub',
-            type: 'independent',
-          },
-          backupKeychain: {
-            id: '2',
-            pub: 'userPub',
-            type: 'independent',
-          },
-          bitgoKeychain: {
-            id: '3',
-            pub: 'userPub',
-            type: 'independent',
-          },
-        };
-        sinon.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
-        const keychains = await bitgo.coin('eth2').keychains().createMpc({
-          multisigType: 'blsdkg',
-          passphrase: 'password',
-        });
-        keychains.should.deepEqual(stubbedKeychainsTriplet);
       });
     });
 
