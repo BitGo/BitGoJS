@@ -108,13 +108,11 @@ yargs(hideBin(process.argv))
           default: 'beta',
         })
         .option('scope', {
-          alias: 's',
           type: 'string',
           description: 'Target scope for packages',
           default: '@bitgo-beta',
         })
         .option('root-dir', {
-          alias: 'r',
           type: 'string',
           description: 'Root directory of the repository',
           default: process.env.BITGO_PREPARE_RELEASE_ROOT_DIR || path.join(__dirname, '..'),
