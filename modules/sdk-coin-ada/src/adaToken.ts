@@ -25,9 +25,11 @@ export class AdaToken extends Ada {
     return (bitgo: BitGoBase) => new AdaToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: AdaTokenConfig[] = [...tokens.bitcoin.ada.tokens, ...tokens.testnet.ada.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.ada.tokens, ...tokens.testnet.ada.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = AdaToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

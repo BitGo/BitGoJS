@@ -33,9 +33,11 @@ export class StellarToken extends Xlm {
     return (bitgo: BitGoBase) => new StellarToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: StellarTokenConfig[] = [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = StellarToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

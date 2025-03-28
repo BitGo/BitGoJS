@@ -26,9 +26,11 @@ export class TrxToken extends Trx {
     return (bitgo: BitGoBase) => new TrxToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: TrxTokenConfig[] = [...tokens.bitcoin.trx.tokens, ...tokens.testnet.trx.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.trx.tokens, ...tokens.testnet.trx.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = TrxToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }
