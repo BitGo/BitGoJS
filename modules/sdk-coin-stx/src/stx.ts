@@ -215,7 +215,7 @@ export class Stx extends BaseCoin {
           tokenName: findTokenNameByContract(txJson.payload.contractAddress, txJson.payload.contractName),
         };
         if (txJson.payload.functionArgs.length === 4) {
-          memo = txJson.payload.functionArgs[3].buffer.toString('ascii');
+          memo = Buffer.from(txJson.payload.functionArgs[3].value.buffer).toString();
           transactionRecipient['memo'] = memo;
         }
       } else {

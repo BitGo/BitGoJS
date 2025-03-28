@@ -1,7 +1,7 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
-import { bufferCVFromString, standardPrincipalCV, uintCV } from '@stacks/transactions';
+import { bufferCVFromString, someCV, standardPrincipalCV, uintCV } from '@stacks/transactions';
 import should from 'should';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { TransactionType } from '@bitgo/sdk-core';
@@ -59,7 +59,7 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
           uintCV('10000'),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
-          bufferCVFromString('1'),
+          someCV(bufferCVFromString('1')),
         ]);
         builder.fromPubKey(testData.TX_SENDER.pub);
         builder.numberSignatures(1);
@@ -121,7 +121,7 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
           uintCV('10000'),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
           standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
-          bufferCVFromString('1'),
+          someCV(bufferCVFromString('1')),
         ]);
 
         builder.sign({ key: testData.prv1 });
