@@ -1,0 +1,457 @@
+{
+  "@bitgo-beta/abstract-cosmos": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.768",
+    "alpha": "1.0.0-alpha.244"
+  },
+  "@bitgo-beta/abstract-eth": {
+    "latest": "1.0.1",
+    "beta": "1.0.2-beta.1017",
+    "alpha": "1.2.3-alpha.295"
+  },
+  "@bitgo-beta/abstract-lightning": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.401",
+    "alpha": "1.0.0-alpha.149"
+  },
+  "@bitgo-beta/abstract-substrate": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.149",
+    "alpha": "1.0.0-alpha.47"
+  },
+  "@bitgo-beta/abstract-utxo": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1020",
+    "alpha": "1.6.1-alpha.295"
+  },
+  "@bitgo-beta/account-lib": {
+    "latest": "2.20.1-beta.23",
+    "beta": "2.20.1-beta.1008",
+    "alpha": "2.24.1-alpha.290"
+  },
+  "@bitgo-beta/babylonlabs-io-btc-staking-ts": {
+    "latest": "0.4.0-bitgo.1",
+    "beta": "0.4.0-beta.32",
+    "alpha": "0.4.0-alpha.12"
+  },
+  "@bitgo-beta/bitgo": {
+    "latest": "14.2.1-beta.23",
+    "beta": "14.2.1-beta.1008",
+    "alpha": "14.7.1-alpha.290"
+  },
+  "@bitgo-beta/blake2b-wasm": {
+    "latest": "3.0.3",
+    "beta": "3.0.4-beta.1027",
+    "alpha": "3.2.1-alpha.297"
+  },
+  "@bitgo-beta/blake2b": {
+    "latest": "3.0.3",
+    "beta": "3.0.4-beta.1024",
+    "alpha": "3.2.1-alpha.296"
+  },
+  "@bitgo-beta/blockapis": {
+    "latest": "1.0.4",
+    "beta": "1.0.5-beta.1023",
+    "alpha": "1.3.3-alpha.296"
+  },
+  "@bitgo-beta/bls-dkg": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1027",
+    "alpha": "1.3.1-alpha.297"
+  },
+  "@bitgo-beta/deser-lib": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.558",
+    "alpha": "1.0.0-alpha.198"
+  },
+  "@bitgo-beta/key-card": {
+    "latest": "0.0.0",
+    "beta": "0.0.1-beta.896",
+    "alpha": "0.1.2-alpha.274"
+  },
+  "@bitgo-beta/sdk-api": {
+    "latest": "1.1.0",
+    "beta": "1.10.1-beta.786",
+    "alpha": "1.6.1-alpha.295"
+  },
+  "@bitgo-beta/sdk-coin-ada": {
+    "latest": "1.1.0",
+    "beta": "2.3.14-beta.785",
+    "alpha": "2.2.3-alpha.294"
+  },
+  "@bitgo-beta/sdk-coin-algo": {
+    "latest": "1.1.0",
+    "beta": "1.3.19-beta.785",
+    "alpha": "1.3.3-alpha.295"
+  },
+  "@bitgo-beta/sdk-coin-apt": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.227",
+    "alpha": "1.0.0-alpha.65"
+  },
+  "@bitgo-beta/sdk-coin-arbeth": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.641",
+    "alpha": "1.0.0-alpha.205"
+  },
+  "@bitgo-beta/sdk-coin-atom": {
+    "latest": "1.0.0",
+    "beta": "3.1.2-beta.784",
+    "alpha": "1.1.2-alpha.275"
+  },
+  "@bitgo-beta/sdk-coin-avaxc": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1012",
+    "alpha": "2.2.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-avaxp": {
+    "latest": "2.0.0",
+    "beta": "3.5.10-beta.784",
+    "alpha": "3.2.3-alpha.294"
+  },
+  "@bitgo-beta/sdk-coin-baby": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.127",
+    "alpha": "1.0.0-alpha.36"
+  },
+  "@bitgo-beta/sdk-coin-bch": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1013",
+    "alpha": "1.3.3-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-bcha": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1012",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-bera": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.640",
+    "alpha": "1.0.0-alpha.205"
+  },
+  "@bitgo-beta/sdk-coin-bld": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.746",
+    "alpha": "1.0.0-alpha.241"
+  },
+  "@bitgo-beta/sdk-coin-bsc": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.1012",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-bsv": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1012",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-btc": {
+    "latest": "1.0.1",
+    "beta": "1.0.2-beta.1013",
+    "alpha": "1.2.3-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-btg": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1012",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-celo": {
+    "latest": "1.1.1-beta.23",
+    "beta": "1.1.1-beta.1011",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-coredao": {
+    "latest": "1.0.0",
+    "beta": "1.0.0-beta.219",
+    "alpha": "1.0.1-alpha.58"
+  },
+  "@bitgo-beta/sdk-coin-coreum": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.628",
+    "alpha": "1.0.0-alpha.204"
+  },
+  "@bitgo-beta/sdk-coin-cspr": {
+    "latest": "1.0.1",
+    "beta": "1.2.19-beta.784",
+    "alpha": "1.2.3-alpha.294"
+  },
+  "@bitgo-beta/sdk-coin-dash": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1013",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-doge": {
+    "latest": "1.0.1",
+    "beta": "1.0.2-beta.1013",
+    "alpha": "1.5.1-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-dot": {
+    "latest": "1.0.1",
+    "beta": "2.2.8-beta.784",
+    "alpha": "1.3.3-alpha.294"
+  },
+  "@bitgo-beta/sdk-coin-eos": {
+    "latest": "1.0.1",
+    "beta": "1.3.19-beta.783",
+    "alpha": "1.3.3-alpha.294"
+  },
+  "@bitgo-beta/sdk-coin-etc": {
+    "latest": "1.0.1",
+    "beta": "1.0.2-beta.1011",
+    "alpha": "1.2.3-alpha.290"
+  },
+  "@bitgo-beta/sdk-coin-eth": {
+    "latest": "1.1.0",
+    "beta": "4.4.1-beta.782",
+    "alpha": "2.4.1-alpha.293"
+  },
+  "@bitgo-beta/sdk-coin-eth2": {
+    "latest": "1.0.1",
+    "beta": "1.2.19-beta.783",
+    "alpha": "1.2.3-alpha.294"
+  },
+  "@bitgo-beta/sdk-coin-ethlike": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.406",
+    "alpha": "1.0.0-alpha.152"
+  },
+  "@bitgo-beta/sdk-coin-ethw": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.1011",
+    "alpha": "1.3.3-alpha.290"
+  },
+  "@bitgo-beta/sdk-coin-flr": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.126",
+    "alpha": "1.0.0-alpha.36"
+  },
+  "@bitgo-beta/sdk-coin-hash": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.743",
+    "alpha": "1.0.0-alpha.241"
+  },
+  "@bitgo-beta/sdk-coin-hbar": {
+    "latest": "1.0.1",
+    "beta": "1.0.2-beta.1013",
+    "alpha": "2.0.73-alpha.0"
+  },
+  "@bitgo-beta/sdk-coin-icp": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.139",
+    "alpha": "1.0.0-alpha.43"
+  },
+  "@bitgo-beta/sdk-coin-injective": {
+    "latest": "1.1.2",
+    "beta": "1.1.3-beta.737",
+    "alpha": "1.1.2-alpha.241"
+  },
+  "@bitgo-beta/sdk-coin-islm": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.640",
+    "alpha": "1.0.0-alpha.206"
+  },
+  "@bitgo-beta/sdk-coin-lnbtc": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.397",
+    "alpha": "1.0.0-alpha.148"
+  },
+  "@bitgo-beta/sdk-coin-ltc": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1013",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-near": {
+    "latest": "1.1.0",
+    "beta": "1.3.19-beta.782",
+    "alpha": "1.3.3-alpha.294"
+  },
+  "@bitgo-beta/sdk-coin-oas": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.221",
+    "alpha": "1.0.0-alpha.62"
+  },
+  "@bitgo-beta/sdk-coin-opeth": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.638",
+    "alpha": "1.0.0-alpha.204"
+  },
+  "@bitgo-beta/sdk-coin-osmo": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.767",
+    "alpha": "1.0.0-alpha.242"
+  },
+  "@bitgo-beta/sdk-coin-polygon": {
+    "latest": "1.0.1",
+    "beta": "1.0.2-beta.1011",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-rbtc": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1011",
+    "alpha": "1.3.3-alpha.290"
+  },
+  "@bitgo-beta/sdk-coin-rune": {
+    "latest": "1.0.0",
+    "beta": "1.0.0-beta.251",
+    "alpha": "1.0.1-alpha.72"
+  },
+  "@bitgo-beta/sdk-coin-sei": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.739",
+    "alpha": "1.0.0-alpha.240"
+  },
+  "@bitgo-beta/sdk-coin-sgb": {
+    "latest": "1.1.1",
+    "beta": "1.1.1-beta.126",
+    "alpha": "1.1.2-alpha.35"
+  },
+  "@bitgo-beta/sdk-coin-sol": {
+    "latest": "1.0.1",
+    "beta": "2.4.3-beta.781",
+    "alpha": "2.2.3-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-stx": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1016",
+    "alpha": "1.4.3-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-sui": {
+    "latest": "1.0.0",
+    "beta": "3.0.3-beta.781",
+    "alpha": "1.4.1-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-tao": {
+    "latest": "1.0.0",
+    "beta": "1.0.0-beta.148",
+    "alpha": "1.0.1-alpha.44"
+  },
+  "@bitgo-beta/sdk-coin-tia": {
+    "latest": "1.0.0",
+    "beta": "1.0.0-beta.748",
+    "alpha": "1.0.1-alpha.239"
+  },
+  "@bitgo-beta/sdk-coin-ton": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.649",
+    "alpha": "1.0.0-alpha.207"
+  },
+  "@bitgo-beta/sdk-coin-trx": {
+    "latest": "1.0.1",
+    "beta": "1.0.2-beta.1015",
+    "alpha": "1.2.3-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-wemix": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.119",
+    "alpha": "1.0.0-alpha.33"
+  },
+  "@bitgo-beta/sdk-coin-xdc": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.126",
+    "alpha": "1.0.0-alpha.36"
+  },
+  "@bitgo-beta/sdk-coin-xlm": {
+    "latest": "1.0.1",
+    "beta": "2.0.5-beta.781",
+    "alpha": "1.2.3-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-xrp": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1014",
+    "alpha": "1.3.3-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-xtz": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1014",
+    "alpha": "1.4.3-alpha.292"
+  },
+  "@bitgo-beta/sdk-coin-zec": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.1013",
+    "alpha": "1.3.3-alpha.291"
+  },
+  "@bitgo-beta/sdk-coin-zeta": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.704",
+    "alpha": "1.0.0-alpha.230"
+  },
+  "@bitgo-beta/sdk-coin-zketh": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.568",
+    "alpha": "1.0.0-alpha.196"
+  },
+  "@bitgo-beta/sdk-core": {
+    "latest": "1.1.0",
+    "beta": "8.2.1-beta.787",
+    "alpha": "2.4.1-alpha.295"
+  },
+  "@bitgo-beta/sdk-hmac": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.153",
+    "alpha": "1.0.0-alpha.48"
+  },
+  "@bitgo-beta/sdk-lib-mpc": {
+    "latest": "8.2.0",
+    "beta": "8.2.0-beta.779",
+    "alpha": "8.2.1-alpha.251"
+  },
+  "@bitgo-beta/sdk-opensslbytes": {
+    "latest": "1.0.0",
+    "beta": "1.0.0-beta.340",
+    "alpha": "1.0.1-alpha.115"
+  },
+  "@bitgo-beta/sdk-rpc-wrapper": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.852",
+    "alpha": "1.1.3-alpha.246"
+  },
+  "@bitgo-beta/sdk-unified-wallet": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.880",
+    "alpha": "2.0.2-alpha.268"
+  },
+  "@bitgo-beta/secp256k1": {
+    "latest": "1.0.0",
+    "beta": "1.0.2-beta.813",
+    "alpha": "1.0.1-alpha.253"
+  },
+  "@bitgo-beta/sjcl": {
+    "latest": "1.0.1",
+    "beta": "1.0.2-beta.1025",
+    "alpha": "1.0.1-alpha.245"
+  },
+  "@bitgo-beta/statics": {
+    "latest": "7.0.0",
+    "beta": "15.1.1-beta.790",
+    "alpha": "10.0.1-alpha.295"
+  },
+  "@bitgo-beta/unspents": {
+    "latest": "0.8.3",
+    "beta": "0.13.2-beta.787",
+    "alpha": "0.11.3-alpha.296"
+  },
+  "@bitgo-beta/utxo-bin": {
+    "latest": "2.0.0",
+    "beta": "2.8.3-beta.786",
+    "alpha": "2.3.3-alpha.295"
+  },
+  "@bitgo-beta/utxo-core": {
+    "latest": "1.0.0",
+    "beta": "1.0.0-beta.98",
+    "alpha": "1.0.1-alpha.26"
+  },
+  "@bitgo-beta/utxo-lib": {
+    "latest": "2.4.1",
+    "beta": "8.0.3-beta.788",
+    "alpha": "4.0.1-alpha.296"
+  },
+  "@bitgo-beta/utxo-ord": {
+    "latest": "1.0.0",
+    "beta": "1.0.1-beta.859",
+    "alpha": "1.1.3-alpha.250"
+  },
+  "@bitgo-beta/utxo-staking": {
+    "latest": "1.1.0",
+    "beta": "1.1.1-beta.228",
+    "alpha": "1.1.0-alpha.65"
+  }
+}

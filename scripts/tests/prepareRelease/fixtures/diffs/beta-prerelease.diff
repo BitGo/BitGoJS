@@ -1,0 +1,1825 @@
+diff --git a/modules/bitgo/package.json b/modules/bitgo/package.json
+index efc0e26cd..b12342ecc 100644
+--- a/modules/bitgo/package.json
++++ b/modules/bitgo/package.json
+@@ -1,6 +1,6 @@
+ {
+-  "name": "bitgo",
+-  "version": "42.2.1",
++  "name": "@bitgo-beta/bitgo",
++  "version": "14.2.1-beta.1009",
+   "description": "BitGo JavaScript SDK",
+   "main": "./dist/src/index.js",
+   "types": "./dist/types/src/index.d.ts",
+@@ -44,78 +44,78 @@
+     "gen-docs": "typedoc"
+   },
+   "dependencies": {
+-    "@bitgo/abstract-lightning": "^4.1.1",
+-    "@bitgo/abstract-utxo": "^9.19.2",
+-    "@bitgo/account-lib": "^24.5.8",
+-    "@bitgo/blockapis": "^1.10.13",
+-    "@bitgo/sdk-api": "^1.61.2",
+-    "@bitgo/sdk-coin-ada": "^4.9.3",
+-    "@bitgo/sdk-coin-algo": "^2.1.70",
+-    "@bitgo/sdk-coin-apt": "^1.10.3",
+-    "@bitgo/sdk-coin-arbeth": "^21.3.3",
+-    "@bitgo/sdk-coin-atom": "^13.4.3",
+-    "@bitgo/sdk-coin-avaxc": "^6.0.3",
+-    "@bitgo/sdk-coin-avaxp": "^5.0.71",
+-    "@bitgo/sdk-coin-baby": "^1.2.1",
+-    "@bitgo/sdk-coin-bch": "^2.1.22",
+-    "@bitgo/sdk-coin-bcha": "^2.2.22",
+-    "@bitgo/sdk-coin-bera": "^2.3.16",
+-    "@bitgo/sdk-coin-bld": "^3.0.41",
+-    "@bitgo/sdk-coin-bsc": "^22.2.25",
+-    "@bitgo/sdk-coin-bsv": "^2.1.22",
+-    "@bitgo/sdk-coin-btc": "^2.4.22",
+-    "@bitgo/sdk-coin-btg": "^2.1.22",
+-    "@bitgo/sdk-coin-celo": "^4.0.23",
+-    "@bitgo/sdk-coin-coredao": "^2.0.6",
+-    "@bitgo/sdk-coin-coreum": "^21.0.41",
+-    "@bitgo/sdk-coin-cspr": "^2.0.72",
+-    "@bitgo/sdk-coin-dash": "^2.1.22",
+-    "@bitgo/sdk-coin-doge": "^2.1.22",
+-    "@bitgo/sdk-coin-dot": "^4.1.50",
+-    "@bitgo/sdk-coin-eos": "^2.1.65",
+-    "@bitgo/sdk-coin-etc": "^2.2.39",
+-    "@bitgo/sdk-coin-eth": "^24.2.61",
+-    "@bitgo/sdk-coin-eth2": "^3.0.71",
+-    "@bitgo/sdk-coin-ethlike": "^1.2.7",
+-    "@bitgo/sdk-coin-ethw": "^20.0.72",
+-    "@bitgo/sdk-coin-flr": "^1.1.11",
+-    "@bitgo/sdk-coin-hash": "^3.0.41",
+-    "@bitgo/sdk-coin-hbar": "^2.0.72",
+-    "@bitgo/sdk-coin-icp": "^1.9.0",
+-    "@bitgo/sdk-coin-injective": "^3.0.41",
+-    "@bitgo/sdk-coin-islm": "^2.1.22",
+-    "@bitgo/sdk-coin-lnbtc": "^1.2.3",
+-    "@bitgo/sdk-coin-ltc": "^3.1.22",
+-    "@bitgo/sdk-coin-near": "^2.0.72",
+-    "@bitgo/sdk-coin-oas": "^2.0.6",
+-    "@bitgo/sdk-coin-opeth": "^18.1.57",
+-    "@bitgo/sdk-coin-osmo": "^3.0.41",
+-    "@bitgo/sdk-coin-polygon": "^21.0.41",
+-    "@bitgo/sdk-coin-rbtc": "^2.0.72",
+-    "@bitgo/sdk-coin-rune": "^1.1.29",
+-    "@bitgo/sdk-coin-sei": "^3.0.41",
+-    "@bitgo/sdk-coin-sgb": "^1.1.11",
+-    "@bitgo/sdk-coin-sol": "^4.8.11",
+-    "@bitgo/sdk-coin-stx": "^3.5.1",
+-    "@bitgo/sdk-coin-sui": "^5.13.1",
+-    "@bitgo/sdk-coin-tao": "^1.6.2",
+-    "@bitgo/sdk-coin-tia": "^3.0.41",
+-    "@bitgo/sdk-coin-ton": "^3.4.29",
+-    "@bitgo/sdk-coin-trx": "^2.0.72",
+-    "@bitgo/sdk-coin-wemix": "^1.1.9",
+-    "@bitgo/sdk-coin-xdc": "^1.1.11",
+-    "@bitgo/sdk-coin-xlm": "^3.2.46",
+-    "@bitgo/sdk-coin-xrp": "^3.7.14",
+-    "@bitgo/sdk-coin-xtz": "^2.2.3",
+-    "@bitgo/sdk-coin-zec": "^2.1.22",
+-    "@bitgo/sdk-coin-zeta": "^3.0.41",
+-    "@bitgo/sdk-coin-zketh": "^2.0.64",
+-    "@bitgo/sdk-core": "^31.2.1",
+-    "@bitgo/sdk-lib-mpc": "^10.1.2",
+-    "@bitgo/sjcl": "^1.0.1",
+-    "@bitgo/statics": "^51.5.0",
+-    "@bitgo/unspents": "^0.47.20",
+-    "@bitgo/utxo-lib": "^11.2.4",
++    "@bitgo-beta/abstract-lightning": "1.0.1-beta.402",
++    "@bitgo-beta/abstract-utxo": "1.1.1-beta.1021",
++    "@bitgo-beta/account-lib": "2.20.1-beta.1009",
++    "@bitgo-beta/blockapis": "1.0.5-beta.1024",
++    "@bitgo-beta/sdk-api": "1.10.1-beta.787",
++    "@bitgo-beta/sdk-coin-ada": "2.3.14-beta.786",
++    "@bitgo-beta/sdk-coin-algo": "1.3.19-beta.786",
++    "@bitgo-beta/sdk-coin-apt": "1.0.1-beta.228",
++    "@bitgo-beta/sdk-coin-arbeth": "1.0.1-beta.642",
++    "@bitgo-beta/sdk-coin-atom": "3.1.2-beta.785",
++    "@bitgo-beta/sdk-coin-avaxc": "1.1.1-beta.1013",
++    "@bitgo-beta/sdk-coin-avaxp": "3.5.10-beta.785",
++    "@bitgo-beta/sdk-coin-baby": "1.0.1-beta.128",
++    "@bitgo-beta/sdk-coin-bch": "1.1.1-beta.1014",
++    "@bitgo-beta/sdk-coin-bcha": "1.1.1-beta.1013",
++    "@bitgo-beta/sdk-coin-bera": "1.0.1-beta.641",
++    "@bitgo-beta/sdk-coin-bld": "1.0.1-beta.747",
++    "@bitgo-beta/sdk-coin-bsc": "1.0.1-beta.1013",
++    "@bitgo-beta/sdk-coin-bsv": "1.1.1-beta.1013",
++    "@bitgo-beta/sdk-coin-btc": "1.0.2-beta.1014",
++    "@bitgo-beta/sdk-coin-btg": "1.1.1-beta.1013",
++    "@bitgo-beta/sdk-coin-celo": "1.1.1-beta.1012",
++    "@bitgo-beta/sdk-coin-coredao": "1.0.0-beta.220",
++    "@bitgo-beta/sdk-coin-coreum": "1.0.1-beta.629",
++    "@bitgo-beta/sdk-coin-cspr": "1.2.19-beta.785",
++    "@bitgo-beta/sdk-coin-dash": "1.1.1-beta.1014",
++    "@bitgo-beta/sdk-coin-doge": "1.0.2-beta.1014",
++    "@bitgo-beta/sdk-coin-dot": "2.2.8-beta.785",
++    "@bitgo-beta/sdk-coin-eos": "1.3.19-beta.784",
++    "@bitgo-beta/sdk-coin-etc": "1.0.2-beta.1012",
++    "@bitgo-beta/sdk-coin-eth": "4.4.1-beta.783",
++    "@bitgo-beta/sdk-coin-eth2": "1.2.19-beta.784",
++    "@bitgo-beta/sdk-coin-ethlike": "1.0.1-beta.407",
++    "@bitgo-beta/sdk-coin-ethw": "1.0.1-beta.1012",
++    "@bitgo-beta/sdk-coin-flr": "1.0.1-beta.127",
++    "@bitgo-beta/sdk-coin-hash": "1.0.1-beta.744",
++    "@bitgo-beta/sdk-coin-hbar": "1.0.2-beta.1014",
++    "@bitgo-beta/sdk-coin-icp": "1.0.1-beta.140",
++    "@bitgo-beta/sdk-coin-injective": "1.1.3-beta.738",
++    "@bitgo-beta/sdk-coin-islm": "1.0.1-beta.641",
++    "@bitgo-beta/sdk-coin-lnbtc": "1.0.1-beta.398",
++    "@bitgo-beta/sdk-coin-ltc": "1.1.1-beta.1014",
++    "@bitgo-beta/sdk-coin-near": "1.3.19-beta.783",
++    "@bitgo-beta/sdk-coin-oas": "1.0.1-beta.222",
++    "@bitgo-beta/sdk-coin-opeth": "1.0.1-beta.639",
++    "@bitgo-beta/sdk-coin-osmo": "1.0.1-beta.768",
++    "@bitgo-beta/sdk-coin-polygon": "1.0.2-beta.1012",
++    "@bitgo-beta/sdk-coin-rbtc": "1.1.1-beta.1012",
++    "@bitgo-beta/sdk-coin-rune": "1.0.0-beta.252",
++    "@bitgo-beta/sdk-coin-sei": "1.0.1-beta.740",
++    "@bitgo-beta/sdk-coin-sgb": "1.1.1-beta.127",
++    "@bitgo-beta/sdk-coin-sol": "2.4.3-beta.782",
++    "@bitgo-beta/sdk-coin-stx": "1.1.1-beta.1017",
++    "@bitgo-beta/sdk-coin-sui": "3.0.3-beta.782",
++    "@bitgo-beta/sdk-coin-tao": "1.0.0-beta.149",
++    "@bitgo-beta/sdk-coin-tia": "1.0.0-beta.749",
++    "@bitgo-beta/sdk-coin-ton": "1.0.1-beta.650",
++    "@bitgo-beta/sdk-coin-trx": "1.0.2-beta.1016",
++    "@bitgo-beta/sdk-coin-wemix": "1.0.1-beta.120",
++    "@bitgo-beta/sdk-coin-xdc": "1.0.1-beta.127",
++    "@bitgo-beta/sdk-coin-xlm": "2.0.5-beta.782",
++    "@bitgo-beta/sdk-coin-xrp": "1.1.1-beta.1015",
++    "@bitgo-beta/sdk-coin-xtz": "1.1.1-beta.1015",
++    "@bitgo-beta/sdk-coin-zec": "1.1.1-beta.1014",
++    "@bitgo-beta/sdk-coin-zeta": "1.0.1-beta.705",
++    "@bitgo-beta/sdk-coin-zketh": "1.0.1-beta.569",
++    "@bitgo-beta/sdk-core": "8.2.1-beta.788",
++    "@bitgo-beta/sdk-lib-mpc": "8.2.0-beta.780",
++    "@bitgo-beta/sjcl": "1.0.2-beta.1026",
++    "@bitgo-beta/statics": "15.1.1-beta.791",
++    "@bitgo-beta/unspents": "0.13.2-beta.788",
++    "@bitgo-beta/utxo-lib": "8.0.3-beta.789",
+     "@types/superagent": "^4.1.3",
+     "bignumber.js": "^9.1.1",
+     "fs-extra": "^9.1.0",
+@@ -126,8 +126,8 @@
+   },
+   "devDependencies": {
+     "@bitgo/public-types": "4.17.0",
+-    "@bitgo/sdk-opensslbytes": "^2.0.0",
+-    "@bitgo/sdk-test": "^8.0.77",
++    "@bitgo-beta/sdk-opensslbytes": "1.0.0-beta.341",
++    "@bitgo-beta/sdk-test": "^8.0.77",
+     "@openpgp/web-stream-tools": "0.0.14",
+     "@types/create-hmac": "^1.1.0",
+     "@types/debug": "^4.1.4",
+diff --git a/modules/bitgo/src/bitgo.ts b/modules/bitgo/src/bitgo.ts
+index 1f51a6758..7eca26a18 100644
+--- a/modules/bitgo/src/bitgo.ts
++++ b/modules/bitgo/src/bitgo.ts
+@@ -7,8 +7,8 @@ import pjson = require('../package.json');
+ import * as _ from 'lodash';
+ 
+ import GlobalCoinFactory from './v2/coinFactory';
+-import { BaseCoin, common } from '@bitgo/sdk-core';
+-import { BitGoAPI, BitGoAPIOptions } from '@bitgo/sdk-api';
++import { BaseCoin, common } from '@bitgo-beta/sdk-core';
++import { BitGoAPI, BitGoAPIOptions } from '@bitgo-beta/sdk-api';
+ 
+ export type BitGoOptions = BitGoAPIOptions;
+ 
+diff --git a/modules/bitgo/src/config.ts b/modules/bitgo/src/config.ts
+index a31b51439..e294d340c 100644
+--- a/modules/bitgo/src/config.ts
++++ b/modules/bitgo/src/config.ts
+@@ -1,3 +1,3 @@
+-import { ethGasConfigs, mainnetTokens, testnetTokens, Tokens, tokens } from '@bitgo/statics';
+-import { Config, defaults, defaultConstants } from '@bitgo/sdk-core';
++import { ethGasConfigs, mainnetTokens, testnetTokens, Tokens, tokens } from '@bitgo-beta/statics';
++import { Config, defaults, defaultConstants } from '@bitgo-beta/sdk-core';
+ export { Config, defaultConstants, defaults, ethGasConfigs, mainnetTokens, testnetTokens, tokens, Tokens };
+diff --git a/modules/bitgo/src/index.ts b/modules/bitgo/src/index.ts
+index 86a1fef5c..79013532e 100644
+--- a/modules/bitgo/src/index.ts
++++ b/modules/bitgo/src/index.ts
+@@ -7,24 +7,24 @@
+ // Copyright 2022, BitGo, Inc.  All Rights Reserved.
+ //
+ import * as _ from 'lodash';
+-import { common } from '@bitgo/sdk-core';
+-export * from '@bitgo/sdk-api';
+-import * as utxolib from '@bitgo/utxo-lib';
++import { common } from '@bitgo-beta/sdk-core';
++export * from '@bitgo-beta/sdk-api';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ import GlobalCoinFactory from './v2/coinFactory';
+ 
+ export * from './bitgo';
+ 
+ // Expose legacy "bitcoin" API (mostly HDNode)
+ /** @deprecated */
+-export { bitcoin } from '@bitgo/sdk-core';
++export { bitcoin } from '@bitgo-beta/sdk-core';
+ 
+ /** @deprecated */
+-export const sjcl = require('@bitgo/sjcl');
++export const sjcl = require('@bitgo-beta/sjcl');
+ 
+ export { Buffer } from 'buffer';
+ 
+ export const Environments = _.cloneDeep(common.Environments);
+-export * from '@bitgo/sdk-core';
++export * from '@bitgo-beta/sdk-core';
+ export { GlobalCoinFactory };
+ export * from './v2';
+ 
+diff --git a/modules/bitgo/src/v2/coinFactory.ts b/modules/bitgo/src/v2/coinFactory.ts
+index d2d47c72f..8b85ea79c 100644
+--- a/modules/bitgo/src/v2/coinFactory.ts
++++ b/modules/bitgo/src/v2/coinFactory.ts
+@@ -1,14 +1,14 @@
+ /**
+  * @prettier
+  */
+-import { AdaToken } from '@bitgo/sdk-coin-ada';
+-import { AlgoToken } from '@bitgo/sdk-coin-algo';
+-import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
+-import { HbarToken } from '@bitgo/sdk-coin-hbar';
+-import { Near, TNear } from '@bitgo/sdk-coin-near';
+-import { SolToken } from '@bitgo/sdk-coin-sol';
+-import { TrxToken } from '@bitgo/sdk-coin-trx';
+-import { CoinFactory } from '@bitgo/sdk-core';
++import { AdaToken } from '@bitgo-beta/sdk-coin-ada';
++import { AlgoToken } from '@bitgo-beta/sdk-coin-algo';
++import { Bcha, Tbcha } from '@bitgo-beta/sdk-coin-bcha';
++import { HbarToken } from '@bitgo-beta/sdk-coin-hbar';
++import { Near, TNear } from '@bitgo-beta/sdk-coin-near';
++import { SolToken } from '@bitgo-beta/sdk-coin-sol';
++import { TrxToken } from '@bitgo-beta/sdk-coin-trx';
++import { CoinFactory } from '@bitgo-beta/sdk-core';
+ import { tokens } from '../config';
+ import {
+   Ada,
+diff --git a/modules/bitgo/src/v2/coins/index.ts b/modules/bitgo/src/v2/coins/index.ts
+index 8c3692053..e9a6e0a10 100644
+--- a/modules/bitgo/src/v2/coins/index.ts
++++ b/modules/bitgo/src/v2/coins/index.ts
+@@ -1,65 +1,65 @@
+-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+-import { AbstractLightningCoin } from '@bitgo/abstract-lightning';
+-import { Ada, Tada } from '@bitgo/sdk-coin-ada';
+-import { Algo, AlgoToken, Talgo } from '@bitgo/sdk-coin-algo';
+-import { Apt, Tapt, AptToken } from '@bitgo/sdk-coin-apt';
+-import { Arbeth, Tarbeth, ArbethToken } from '@bitgo/sdk-coin-arbeth';
+-import { Atom, Tatom } from '@bitgo/sdk-coin-atom';
+-import { AvaxC, AvaxCToken, TavaxC } from '@bitgo/sdk-coin-avaxc';
+-import { AvaxP, TavaxP } from '@bitgo/sdk-coin-avaxp';
+-import { Baby, Tbaby } from '@bitgo/sdk-coin-baby';
+-import { Bch, Tbch } from '@bitgo/sdk-coin-bch';
+-import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
+-import { Bera, Tbera, BeraToken } from '@bitgo/sdk-coin-bera';
+-import { Bld, Tbld } from '@bitgo/sdk-coin-bld';
+-import { Bsc, BscToken, Tbsc } from '@bitgo/sdk-coin-bsc';
+-import { Bsv, Tbsv } from '@bitgo/sdk-coin-bsv';
+-import { Btc, Tbtc, Tbtcsig, Tbtc4, Tbtcbgsig } from '@bitgo/sdk-coin-btc';
+-import { Btg } from '@bitgo/sdk-coin-btg';
+-import { Celo, CeloToken, Tcelo } from '@bitgo/sdk-coin-celo';
+-import { Coredao, Tcoredao } from '@bitgo/sdk-coin-coredao';
+-import { Coreum, Tcoreum } from '@bitgo/sdk-coin-coreum';
+-import { Cspr, Tcspr } from '@bitgo/sdk-coin-cspr';
+-import { Dash, Tdash } from '@bitgo/sdk-coin-dash';
+-import { Doge, Tdoge } from '@bitgo/sdk-coin-doge';
+-import { Dot, Tdot } from '@bitgo/sdk-coin-dot';
+-import { Eos, EosToken, Teos } from '@bitgo/sdk-coin-eos';
+-import { Etc, Tetc } from '@bitgo/sdk-coin-etc';
+-import { Erc20Token, Eth, Gteth, Hteth, Teth } from '@bitgo/sdk-coin-eth';
+-import { Eth2, Teth2 } from '@bitgo/sdk-coin-eth2';
+-import { Flr, Tflr } from '@bitgo/sdk-coin-flr';
+-import { Ethw } from '@bitgo/sdk-coin-ethw';
+-import { EthLikeCoin, TethLikeCoin } from '@bitgo/sdk-coin-ethlike';
+-import { Hash, Thash } from '@bitgo/sdk-coin-hash';
+-import { Hbar, Thbar } from '@bitgo/sdk-coin-hbar';
+-import { Icp, Ticp } from '@bitgo/sdk-coin-icp';
+-import { Injective, Tinjective } from '@bitgo/sdk-coin-injective';
+-import { Islm, Tislm } from '@bitgo/sdk-coin-islm';
+-import { Lnbtc, Tlnbtc } from '@bitgo/sdk-coin-lnbtc';
+-import { Ltc, Tltc } from '@bitgo/sdk-coin-ltc';
+-import { Oas, Toas } from '@bitgo/sdk-coin-oas';
+-import { Opeth, Topeth, OpethToken } from '@bitgo/sdk-coin-opeth';
+-import { Osmo, Tosmo } from '@bitgo/sdk-coin-osmo';
+-import { Polygon, PolygonToken, Tpolygon } from '@bitgo/sdk-coin-polygon';
+-import { Rbtc, Trbtc } from '@bitgo/sdk-coin-rbtc';
+-import { Rune, Trune } from '@bitgo/sdk-coin-rune';
+-import { Sei, Tsei } from '@bitgo/sdk-coin-sei';
+-import { Sgb, Tsgb } from '@bitgo/sdk-coin-sgb';
+-import { Sol, Tsol } from '@bitgo/sdk-coin-sol';
+-import { Stx, Tstx, Sip10Token } from '@bitgo/sdk-coin-stx';
+-import { Sui, Tsui, SuiToken } from '@bitgo/sdk-coin-sui';
+-import { Tao, Ttao } from '@bitgo/sdk-coin-tao';
+-import { Tia, Ttia } from '@bitgo/sdk-coin-tia';
+-import { Ton, Tton } from '@bitgo/sdk-coin-ton';
+-import { Trx, Ttrx } from '@bitgo/sdk-coin-trx';
+-import { StellarToken, Txlm, Xlm } from '@bitgo/sdk-coin-xlm';
+-import { Wemix, Twemix } from '@bitgo/sdk-coin-wemix';
+-import { Xdc, Txdc } from '@bitgo/sdk-coin-xdc';
+-import { Txrp, Xrp, XrpToken } from '@bitgo/sdk-coin-xrp';
+-import { Txtz, Xtz } from '@bitgo/sdk-coin-xtz';
+-import { Tzec, Zec } from '@bitgo/sdk-coin-zec';
+-import { Tzeta, Zeta } from '@bitgo/sdk-coin-zeta';
+-import { Zketh, Tzketh, ZkethToken } from '@bitgo/sdk-coin-zketh';
++import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
++import { AbstractLightningCoin } from '@bitgo-beta/abstract-lightning';
++import { Ada, Tada } from '@bitgo-beta/sdk-coin-ada';
++import { Algo, AlgoToken, Talgo } from '@bitgo-beta/sdk-coin-algo';
++import { Apt, Tapt, AptToken } from '@bitgo-beta/sdk-coin-apt';
++import { Arbeth, Tarbeth, ArbethToken } from '@bitgo-beta/sdk-coin-arbeth';
++import { Atom, Tatom } from '@bitgo-beta/sdk-coin-atom';
++import { AvaxC, AvaxCToken, TavaxC } from '@bitgo-beta/sdk-coin-avaxc';
++import { AvaxP, TavaxP } from '@bitgo-beta/sdk-coin-avaxp';
++import { Baby, Tbaby } from '@bitgo-beta/sdk-coin-baby';
++import { Bch, Tbch } from '@bitgo-beta/sdk-coin-bch';
++import { Bcha, Tbcha } from '@bitgo-beta/sdk-coin-bcha';
++import { Bera, Tbera, BeraToken } from '@bitgo-beta/sdk-coin-bera';
++import { Bld, Tbld } from '@bitgo-beta/sdk-coin-bld';
++import { Bsc, BscToken, Tbsc } from '@bitgo-beta/sdk-coin-bsc';
++import { Bsv, Tbsv } from '@bitgo-beta/sdk-coin-bsv';
++import { Btc, Tbtc, Tbtcsig, Tbtc4, Tbtcbgsig } from '@bitgo-beta/sdk-coin-btc';
++import { Btg } from '@bitgo-beta/sdk-coin-btg';
++import { Celo, CeloToken, Tcelo } from '@bitgo-beta/sdk-coin-celo';
++import { Coredao, Tcoredao } from '@bitgo-beta/sdk-coin-coredao';
++import { Coreum, Tcoreum } from '@bitgo-beta/sdk-coin-coreum';
++import { Cspr, Tcspr } from '@bitgo-beta/sdk-coin-cspr';
++import { Dash, Tdash } from '@bitgo-beta/sdk-coin-dash';
++import { Doge, Tdoge } from '@bitgo-beta/sdk-coin-doge';
++import { Dot, Tdot } from '@bitgo-beta/sdk-coin-dot';
++import { Eos, EosToken, Teos } from '@bitgo-beta/sdk-coin-eos';
++import { Etc, Tetc } from '@bitgo-beta/sdk-coin-etc';
++import { Erc20Token, Eth, Gteth, Hteth, Teth } from '@bitgo-beta/sdk-coin-eth';
++import { Eth2, Teth2 } from '@bitgo-beta/sdk-coin-eth2';
++import { Flr, Tflr } from '@bitgo-beta/sdk-coin-flr';
++import { Ethw } from '@bitgo-beta/sdk-coin-ethw';
++import { EthLikeCoin, TethLikeCoin } from '@bitgo-beta/sdk-coin-ethlike';
++import { Hash, Thash } from '@bitgo-beta/sdk-coin-hash';
++import { Hbar, Thbar } from '@bitgo-beta/sdk-coin-hbar';
++import { Icp, Ticp } from '@bitgo-beta/sdk-coin-icp';
++import { Injective, Tinjective } from '@bitgo-beta/sdk-coin-injective';
++import { Islm, Tislm } from '@bitgo-beta/sdk-coin-islm';
++import { Lnbtc, Tlnbtc } from '@bitgo-beta/sdk-coin-lnbtc';
++import { Ltc, Tltc } from '@bitgo-beta/sdk-coin-ltc';
++import { Oas, Toas } from '@bitgo-beta/sdk-coin-oas';
++import { Opeth, Topeth, OpethToken } from '@bitgo-beta/sdk-coin-opeth';
++import { Osmo, Tosmo } from '@bitgo-beta/sdk-coin-osmo';
++import { Polygon, PolygonToken, Tpolygon } from '@bitgo-beta/sdk-coin-polygon';
++import { Rbtc, Trbtc } from '@bitgo-beta/sdk-coin-rbtc';
++import { Rune, Trune } from '@bitgo-beta/sdk-coin-rune';
++import { Sei, Tsei } from '@bitgo-beta/sdk-coin-sei';
++import { Sgb, Tsgb } from '@bitgo-beta/sdk-coin-sgb';
++import { Sol, Tsol } from '@bitgo-beta/sdk-coin-sol';
++import { Stx, Tstx, Sip10Token } from '@bitgo-beta/sdk-coin-stx';
++import { Sui, Tsui, SuiToken } from '@bitgo-beta/sdk-coin-sui';
++import { Tao, Ttao } from '@bitgo-beta/sdk-coin-tao';
++import { Tia, Ttia } from '@bitgo-beta/sdk-coin-tia';
++import { Ton, Tton } from '@bitgo-beta/sdk-coin-ton';
++import { Trx, Ttrx } from '@bitgo-beta/sdk-coin-trx';
++import { StellarToken, Txlm, Xlm } from '@bitgo-beta/sdk-coin-xlm';
++import { Wemix, Twemix } from '@bitgo-beta/sdk-coin-wemix';
++import { Xdc, Txdc } from '@bitgo-beta/sdk-coin-xdc';
++import { Txrp, Xrp, XrpToken } from '@bitgo-beta/sdk-coin-xrp';
++import { Txtz, Xtz } from '@bitgo-beta/sdk-coin-xtz';
++import { Tzec, Zec } from '@bitgo-beta/sdk-coin-zec';
++import { Tzeta, Zeta } from '@bitgo-beta/sdk-coin-zeta';
++import { Zketh, Tzketh, ZkethToken } from '@bitgo-beta/sdk-coin-zketh';
+ 
+ export { AbstractUtxoCoin };
+ export { AbstractLightningCoin };
+@@ -124,7 +124,7 @@ export { Tzeta, Zeta };
+ export { Wemix, Twemix };
+ export { Zketh, Tzketh, ZkethToken };
+ 
+-import { coins } from '@bitgo/sdk-core';
++import { coins } from '@bitgo-beta/sdk-core';
+ const {
+   Ofc,
+   OfcToken,
+diff --git a/modules/bitgo/src/v2/internal/seedValidator.ts b/modules/bitgo/src/v2/internal/seedValidator.ts
+index bf02ae4b7..d773ca207 100644
+--- a/modules/bitgo/src/v2/internal/seedValidator.ts
++++ b/modules/bitgo/src/v2/internal/seedValidator.ts
+@@ -1,7 +1,7 @@
+ import * as stellar from 'stellar-sdk';
+ import * as _ from 'lodash';
+-import { CoinFamily } from '@bitgo/statics';
+-import { Hbar, Algo } from '@bitgo/account-lib';
++import { CoinFamily } from '@bitgo-beta/statics';
++import { Hbar, Algo } from '@bitgo-beta/account-lib';
+ 
+ /**
+  * This classes intention is to guess/verify what seeds come from where.
+diff --git a/modules/bitgo/src/v2/internal/util.ts b/modules/bitgo/src/v2/internal/util.ts
+index 14b96f581..0a0b23146 100644
+--- a/modules/bitgo/src/v2/internal/util.ts
++++ b/modules/bitgo/src/v2/internal/util.ts
+@@ -1,4 +1,4 @@
+-import { RequestTracer } from '@bitgo/sdk-core';
++import { RequestTracer } from '@bitgo-beta/sdk-core';
+ 
+ // TODO: Re-export for backcompat. Remove this when the next sdk-core is released.
+ export { RequestTracer };
+diff --git a/modules/bitgo/test/ecdh.ts b/modules/bitgo/test/ecdh.ts
+index 295dd6be1..04c1d918e 100644
+--- a/modules/bitgo/test/ecdh.ts
++++ b/modules/bitgo/test/ecdh.ts
+@@ -2,12 +2,12 @@
+  * @prettier
+  */
+ import 'should';
+-import { bip32 } from '@bitgo/utxo-lib';
++import { bip32 } from '@bitgo-beta/utxo-lib';
+ import * as crypto from 'crypto';
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ 
+-import { getSharedSecret, signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { getSharedSecret, signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import * as assert from 'assert';
+ import { BitGo } from '../src/bitgo';
+ 
+diff --git a/modules/bitgo/test/encrypt.ts b/modules/bitgo/test/encrypt.ts
+index 606a00028..13ddaca14 100644
+--- a/modules/bitgo/test/encrypt.ts
++++ b/modules/bitgo/test/encrypt.ts
+@@ -4,8 +4,8 @@
+ import * as should from 'should';
+ 
+ import { randomBytes } from 'crypto';
+-import { decrypt, encrypt, bytesToWord } from '@bitgo/sdk-api';
+-import { getSeed } from '@bitgo/sdk-test';
++import { decrypt, encrypt, bytesToWord } from '@bitgo-beta/sdk-api';
++import { getSeed } from '@bitgo-beta/sdk-test';
+ 
+ describe('bytesToWord', () => {
+   it('should fail if input is not a Uint8Array', () => {
+diff --git a/modules/bitgo/test/integration/pendingapproval.ts b/modules/bitgo/test/integration/pendingapproval.ts
+index 06e1ad843..9da082510 100644
+--- a/modules/bitgo/test/integration/pendingapproval.ts
++++ b/modules/bitgo/test/integration/pendingapproval.ts
+@@ -7,7 +7,7 @@
+ import * as _ from 'lodash';
+ import { strict as assert } from 'assert';
+ import 'should';
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ 
+ const BitGoJS = require('../../src/index');
+ const TestBitGo = require('../lib/test_bitgo');
+diff --git a/modules/bitgo/test/integration/travelRule.ts b/modules/bitgo/test/integration/travelRule.ts
+index 38305b08a..24fcdad63 100644
+--- a/modules/bitgo/test/integration/travelRule.ts
++++ b/modules/bitgo/test/integration/travelRule.ts
+@@ -4,7 +4,7 @@
+ // Copyright 2016, BitGo, Inc.  All Rights Reserved.
+ //
+ 
+-import { bip32 } from '@bitgo/utxo-lib';
++import { bip32 } from '@bitgo-beta/utxo-lib';
+ import { strict as assert } from 'assert';
+ import 'should';
+ import * as _ from 'lodash';
+@@ -12,7 +12,7 @@ import { getSharedSecret } from '../../src/ecdh';
+ 
+ const BitGoJS = require('../../src/index');
+ const bitcoin = BitGoJS.bitcoin;
+-const sjcl = require('@bitgo/sjcl');
++const sjcl = require('@bitgo-beta/sjcl');
+ const TestBitGo = require('../lib/test_bitgo');
+ 
+ const txid = TestBitGo.TRAVEL_RULE_TXID;
+diff --git a/modules/bitgo/test/integration/wallet.ts b/modules/bitgo/test/integration/wallet.ts
+index d07dca629..7f6cc71a7 100644
+--- a/modules/bitgo/test/integration/wallet.ts
++++ b/modules/bitgo/test/integration/wallet.ts
+@@ -8,8 +8,8 @@
+ 
+ import { strict as assert } from 'assert';
+ import * as should from 'should';
+-import { VirtualSizes } from '@bitgo/unspents';
+-import * as utxolib from '@bitgo/utxo-lib';
++import { VirtualSizes } from '@bitgo-beta/unspents';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ 
+ const Q = require('q');
+ 
+diff --git a/modules/bitgo/test/integration/wallets.ts b/modules/bitgo/test/integration/wallets.ts
+index a0ad95aca..39abe5716 100644
+--- a/modules/bitgo/test/integration/wallets.ts
++++ b/modules/bitgo/test/integration/wallets.ts
+@@ -11,9 +11,9 @@ import 'should';
+ const Q = require('q');
+ 
+ const TestBitGo = require('../lib/test_bitgo');
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ import { getAddressP2PKH, getNetwork } from '../../src/bitcoin';
+-import { common } from '@bitgo/sdk-core';
++import { common } from '@bitgo-beta/sdk-core';
+ import * as nock from 'nock';
+ 
+ const TEST_WALLET_LABEL = 'wallet management test';
+diff --git a/modules/bitgo/test/unit/bip32path.ts b/modules/bitgo/test/unit/bip32path.ts
+index 87cd3657a..719966da7 100644
+--- a/modules/bitgo/test/unit/bip32path.ts
++++ b/modules/bitgo/test/unit/bip32path.ts
+@@ -2,9 +2,9 @@
+  * @prettier
+  */
+ import 'should';
+-import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+-import { sanitizeLegacyPath, bitcoin } from '@bitgo/sdk-core';
+-import { getSeed } from '@bitgo/sdk-test';
++import { bip32, BIP32Interface } from '@bitgo-beta/utxo-lib';
++import { sanitizeLegacyPath, bitcoin } from '@bitgo-beta/sdk-core';
++import { getSeed } from '@bitgo-beta/sdk-test';
+ const { HDNode, hdPath } = bitcoin;
+ type Derivable = bitcoin.Derivable;
+ 
+diff --git a/modules/bitgo/test/unit/bip32util.ts b/modules/bitgo/test/unit/bip32util.ts
+index f5e501cc0..beb2f4cbb 100644
+--- a/modules/bitgo/test/unit/bip32util.ts
++++ b/modules/bitgo/test/unit/bip32util.ts
+@@ -1,12 +1,12 @@
+ /**
+  * @prettier
+  */
+-import { signMessage, verifyMessage } from '@bitgo/sdk-core';
++import { signMessage, verifyMessage } from '@bitgo-beta/sdk-core';
+ import * as crypto from 'crypto';
+-import { bip32 } from '@bitgo/utxo-lib';
++import { bip32 } from '@bitgo-beta/utxo-lib';
+ import 'should';
+ 
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ 
+ describe('bip32util', function () {
+   function getSeedBuffers(length: number) {
+diff --git a/modules/bitgo/test/unit/bitgo.ts b/modules/bitgo/test/unit/bitgo.ts
+index adcd1a70e..c17617aa9 100644
+--- a/modules/bitgo/test/unit/bitgo.ts
++++ b/modules/bitgo/test/unit/bitgo.ts
+@@ -7,13 +7,13 @@ import * as nock from 'nock';
+ import * as should from 'should';
+ import assert = require('assert');
+ 
+-import { common, generateGPGKeyPair } from '@bitgo/sdk-core';
+-import { bip32, ECPair } from '@bitgo/utxo-lib';
++import { common, generateGPGKeyPair } from '@bitgo-beta/sdk-core';
++import { bip32, ECPair } from '@bitgo-beta/utxo-lib';
+ import * as _ from 'lodash';
+ import * as BitGoJS from '../../src/index';
+ const rp = require('request-promise');
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../src/bitgo';
+ 
+ nock.disableNetConnect();
+diff --git a/modules/bitgo/test/unit/decryptKeychain.ts b/modules/bitgo/test/unit/decryptKeychain.ts
+index 976ae2b63..bffe44465 100644
+--- a/modules/bitgo/test/unit/decryptKeychain.ts
++++ b/modules/bitgo/test/unit/decryptKeychain.ts
+@@ -1,6 +1,6 @@
+ import 'should';
+-import { decryptKeychainPrivateKey, OptionalKeychainEncryptedKey } from '@bitgo/sdk-core';
+-import { BitGoAPI } from '@bitgo/sdk-api';
++import { decryptKeychainPrivateKey, OptionalKeychainEncryptedKey } from '@bitgo-beta/sdk-core';
++import { BitGoAPI } from '@bitgo-beta/sdk-api';
+ 
+ describe('decryptKeychainPrivateKey', () => {
+   const bitgo = new BitGoAPI();
+diff --git a/modules/bitgo/test/unit/hdnode.ts b/modules/bitgo/test/unit/hdnode.ts
+index 19a919222..2d26b2593 100644
+--- a/modules/bitgo/test/unit/hdnode.ts
++++ b/modules/bitgo/test/unit/hdnode.ts
+@@ -5,7 +5,7 @@
+ //
+ 
+ import 'should';
+-import { bitcoin } from '@bitgo/sdk-core';
++import { bitcoin } from '@bitgo-beta/sdk-core';
+ const { HDNode, hdPath } = bitcoin;
+ 
+ describe('HDNode', function () {
+diff --git a/modules/bitgo/test/unit/keychains.ts b/modules/bitgo/test/unit/keychains.ts
+index 9f39f423a..2badc3635 100644
+--- a/modules/bitgo/test/unit/keychains.ts
++++ b/modules/bitgo/test/unit/keychains.ts
+@@ -6,9 +6,9 @@ import * as _ from 'lodash';
+ import * as nock from 'nock';
+ import 'should';
+ 
+-import { common } from '@bitgo/sdk-core';
++import { common } from '@bitgo-beta/sdk-core';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../src/bitgo';
+ 
+ describe('Keychains', function v2keychains() {
+diff --git a/modules/bitgo/test/unit/local.ts b/modules/bitgo/test/unit/local.ts
+index 214c5f217..767cbef53 100644
+--- a/modules/bitgo/test/unit/local.ts
++++ b/modules/bitgo/test/unit/local.ts
+@@ -6,7 +6,7 @@
+ 
+ import 'should';
+ import * as BitGoJS from '../../src';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../src/bitgo';
+ 
+ describe('Constructor', function () {
+diff --git a/modules/bitgo/test/v2/fixtures/staking/goStakingWallet.ts b/modules/bitgo/test/v2/fixtures/staking/goStakingWallet.ts
+index 0fd3555e9..baff8b2b8 100644
+--- a/modules/bitgo/test/v2/fixtures/staking/goStakingWallet.ts
++++ b/modules/bitgo/test/v2/fixtures/staking/goStakingWallet.ts
+@@ -1,4 +1,4 @@
+-import { GoStakingRequest, UnsignedGoStakingRequest } from '@bitgo/sdk-core';
++import { GoStakingRequest, UnsignedGoStakingRequest } from '@bitgo-beta/sdk-core';
+ 
+ export default {
+   previewGoStakingRequest: function (coin: string): UnsignedGoStakingRequest {
+diff --git a/modules/bitgo/test/v2/fixtures/staking/stakingWallet.ts b/modules/bitgo/test/v2/fixtures/staking/stakingWallet.ts
+index 5f87bdb65..31aeceef6 100644
+--- a/modules/bitgo/test/v2/fixtures/staking/stakingWallet.ts
++++ b/modules/bitgo/test/v2/fixtures/staking/stakingWallet.ts
+@@ -1,4 +1,4 @@
+-import { PrebuildTransactionOptions, StakingRequest, StakingTransaction } from '@bitgo/sdk-core';
++import { PrebuildTransactionOptions, StakingRequest, StakingTransaction } from '@bitgo-beta/sdk-core';
+ 
+ export default {
+   txRequestId: '55ba0198-0b1f-44f6-94fe-8d782d633dde',
+diff --git a/modules/bitgo/test/v2/fixtures/tss/ecdsaFixtures.ts b/modules/bitgo/test/v2/fixtures/tss/ecdsaFixtures.ts
+index ac98b0b2b..b28f035f7 100644
+--- a/modules/bitgo/test/v2/fixtures/tss/ecdsaFixtures.ts
++++ b/modules/bitgo/test/v2/fixtures/tss/ecdsaFixtures.ts
+@@ -1,6 +1,6 @@
+ /** @format */
+ 
+-import { ECDSA } from '@bitgo/sdk-core';
++import { ECDSA } from '@bitgo-beta/sdk-core';
+ 
+ export const paillierChallenge = [
+   'a9a9ba83924e06b37ccafd9e4c93d66de592cb2050d7f85aec1a57bcdaa5d3c8a06406a83051b9f46ed8c1f9ddb675c7b063043f940adaa34d330473ae7a2070bf0ba156f58dc3e11cd881a38b1747acb28dd6c4b37b395a8bbef98f667033c48452189ca4187c0c1a1cb7947635125130115411553b74b2031168dd99d4485025b43626980a3b42c025b96dc31a3dbcc7945ae30e05eb5a2ac91a6f699d5eaf55c883e038b7361d68042d0b35284b684b7da6177b2706750527aac92f5456eed3ff177031a4bc086220970936ffae11a5caf62a67a863696e99fb419c3f5faadff780d029d74174fa70dd60ed5d70229c2697dec6445eb07cc8954f287130d71fd5d362e56b2d21342c9099158572b45bde0c6bbcdd88243cf59ad0cb00cac76efc3e379bc887422d9af50f2b0e32480fa118a1a50b0b380ab83c783e65df7cd83fc9eb892a9e5283c01a98d8b8ce886a4e45bbc2a60e945edc734c58017dd30adad5bf52ec97fefa92c1b5a3235765c19abae7de6688cf7dd7cfbea4ec5fe6',
+diff --git a/modules/bitgo/test/v2/integration/coins/eth2.ts b/modules/bitgo/test/v2/integration/coins/eth2.ts
+index 9766763de..ea7779d9e 100644
+--- a/modules/bitgo/test/v2/integration/coins/eth2.ts
++++ b/modules/bitgo/test/v2/integration/coins/eth2.ts
+@@ -1,5 +1,5 @@
+ import { bufferToHex } from 'ethereumjs-util';
+-import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
++import { Eth2 as Eth2AccountLib } from '@bitgo-beta/account-lib';
+ 
+ import { TestBitGo } from '../../../lib/test_bitgo';
+ import * as nock from 'nock';
+diff --git a/modules/bitgo/test/v2/lib/recovery-nocks.ts b/modules/bitgo/test/v2/lib/recovery-nocks.ts
+index 734b76736..29139c819 100644
+--- a/modules/bitgo/test/v2/lib/recovery-nocks.ts
++++ b/modules/bitgo/test/v2/lib/recovery-nocks.ts
+@@ -2,7 +2,7 @@
+  * @prettier
+  */
+ import * as nock from 'nock';
+-import { Environments } from '@bitgo/sdk-core';
++import { Environments } from '@bitgo-beta/sdk-core';
+ 
+ module.exports.nockXrpRecovery = function nockXrpRecovery() {
+   nock('https://s.altnet.rippletest.net:51234', { allowUnmocked: false })
+diff --git a/modules/bitgo/test/v2/unit/PrebuildAndSign.ts b/modules/bitgo/test/v2/unit/PrebuildAndSign.ts
+index f617c4e4f..7dcb6e9c3 100644
+--- a/modules/bitgo/test/v2/unit/PrebuildAndSign.ts
++++ b/modules/bitgo/test/v2/unit/PrebuildAndSign.ts
+@@ -1,8 +1,8 @@
+ import * as sinon from 'sinon';
+ import * as nock from 'nock';
+ 
+-import { Environments, Wallet } from '@bitgo/sdk-core';
+-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
++import { Environments, Wallet } from '@bitgo-beta/sdk-core';
++import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
+ 
+ import { BitGo } from '../../../src';
+ 
+diff --git a/modules/bitgo/test/v2/unit/accountConsolidations.ts b/modules/bitgo/test/v2/unit/accountConsolidations.ts
+index 1c85ba330..84b16fec1 100644
+--- a/modules/bitgo/test/v2/unit/accountConsolidations.ts
++++ b/modules/bitgo/test/v2/unit/accountConsolidations.ts
+@@ -8,9 +8,9 @@ require('should-sinon');
+ import '../lib/asserts';
+ import * as nock from 'nock';
+ 
+-import { common, Wallet } from '@bitgo/sdk-core';
++import { common, Wallet } from '@bitgo-beta/sdk-core';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src/bitgo';
+ const algoFixtures = require('../../../../sdk-coin-algo/test/fixtures/algo');
+ 
+diff --git a/modules/bitgo/test/v2/unit/baseCoin.ts b/modules/bitgo/test/v2/unit/baseCoin.ts
+index 41af4d192..1b66210ab 100644
+--- a/modules/bitgo/test/v2/unit/baseCoin.ts
++++ b/modules/bitgo/test/v2/unit/baseCoin.ts
+@@ -5,10 +5,10 @@
+ import 'should';
+ import * as nock from 'nock';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src/bitgo';
+-import { Erc20Token } from '@bitgo/sdk-coin-eth';
+-import { StellarToken } from '@bitgo/sdk-coin-xlm';
++import { Erc20Token } from '@bitgo-beta/sdk-coin-eth';
++import { StellarToken } from '@bitgo-beta/sdk-coin-xlm';
+ 
+ nock.disableNetConnect();
+ 
+diff --git a/modules/bitgo/test/v2/unit/bitcoin.ts b/modules/bitgo/test/v2/unit/bitcoin.ts
+index 5b15bdd55..584fd2bfd 100644
+--- a/modules/bitgo/test/v2/unit/bitcoin.ts
++++ b/modules/bitgo/test/v2/unit/bitcoin.ts
+@@ -2,8 +2,8 @@
+  * @prettier
+  */
+ import 'should';
+-import { ECPair } from '@bitgo/utxo-lib';
+-import { getAddressP2PKH } from '@bitgo/sdk-core';
++import { ECPair } from '@bitgo-beta/utxo-lib';
++import { getAddressP2PKH } from '@bitgo-beta/sdk-core';
+ 
+ describe('Bitcoin utils:', function () {
+   it('should produce equivalent addresses when using getAddress() vs getAddressP2PKH() for an ECPair key', () => {
+diff --git a/modules/bitgo/test/v2/unit/coins/abstractEthCoin.ts b/modules/bitgo/test/v2/unit/coins/abstractEthCoin.ts
+index b80ab0ebf..2e8b2b915 100644
+--- a/modules/bitgo/test/v2/unit/coins/abstractEthCoin.ts
++++ b/modules/bitgo/test/v2/unit/coins/abstractEthCoin.ts
+@@ -4,14 +4,14 @@
+ 
+ import * as _ from 'lodash';
+ import * as should from 'should';
+-import { bip32 } from '@bitgo/utxo-lib';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { bip32 } from '@bitgo-beta/utxo-lib';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+-import { getBuilder, Eth } from '@bitgo/account-lib';
++import { getBuilder, Eth } from '@bitgo-beta/account-lib';
+ import * as ethAbi from 'ethereumjs-abi';
+ import * as ethUtil from 'ethereumjs-util';
+-import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
+-import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
++import { coins, ContractAddressDefinedToken } from '@bitgo-beta/statics';
++import { BaseTransaction, TransactionType } from '@bitgo-beta/sdk-core';
+ 
+ describe('ETH-like coins', () => {
+   _.forEach(['tetc', 'tcelo', 'trbtc'], (coinName) => {
+diff --git a/modules/bitgo/test/v2/unit/coins/abstractUtxoCoin.ts b/modules/bitgo/test/v2/unit/coins/abstractUtxoCoin.ts
+index 002d251ce..cf9d82cd7 100644
+--- a/modules/bitgo/test/v2/unit/coins/abstractUtxoCoin.ts
++++ b/modules/bitgo/test/v2/unit/coins/abstractUtxoCoin.ts
+@@ -1,10 +1,10 @@
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ import * as should from 'should';
+ import * as sinon from 'sinon';
+-import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+-import { AbstractUtxoCoin, UtxoWallet, Output, TransactionExplanation, TransactionParams } from '@bitgo/abstract-utxo';
++import { AbstractUtxoCoin, UtxoWallet, Output, TransactionExplanation, TransactionParams } from '@bitgo-beta/abstract-utxo';
+ 
+ describe('Abstract UTXO Coin:', () => {
+   describe('Parse Transaction:', () => {
+diff --git a/modules/bitgo/test/v2/unit/coins/fiat.ts b/modules/bitgo/test/v2/unit/coins/fiat.ts
+index 99a4c36dd..ed67e5d6e 100644
+--- a/modules/bitgo/test/v2/unit/coins/fiat.ts
++++ b/modules/bitgo/test/v2/unit/coins/fiat.ts
+@@ -1,5 +1,5 @@
+ import 'should';
+-import { CoinFamily, coins, NetworkType } from '@bitgo/statics';
++import { CoinFamily, coins, NetworkType } from '@bitgo-beta/statics';
+ 
+ function executeTestForFiatCoins(coin, expectedNetwork) {
+   describe(`Fiat coin: ${coin.name}`, function () {
+diff --git a/modules/bitgo/test/v2/unit/coins/ofc.ts b/modules/bitgo/test/v2/unit/coins/ofc.ts
+index 36c03c3b4..3174a2784 100644
+--- a/modules/bitgo/test/v2/unit/coins/ofc.ts
++++ b/modules/bitgo/test/v2/unit/coins/ofc.ts
+@@ -1,6 +1,6 @@
+ import 'should';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+ 
+ describe('OFC:', function () {
+diff --git a/modules/bitgo/test/v2/unit/coins/ofcToken.ts b/modules/bitgo/test/v2/unit/coins/ofcToken.ts
+index d720bcb80..d2cdad069 100644
+--- a/modules/bitgo/test/v2/unit/coins/ofcToken.ts
++++ b/modules/bitgo/test/v2/unit/coins/ofcToken.ts
+@@ -1,5 +1,5 @@
+ import 'should';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+ 
+ const PRECISION_2 = '100';
+diff --git a/modules/bitgo/test/v2/unit/coins/stellarToken.ts b/modules/bitgo/test/v2/unit/coins/stellarToken.ts
+index 204fd4b81..ecac826c2 100644
+--- a/modules/bitgo/test/v2/unit/coins/stellarToken.ts
++++ b/modules/bitgo/test/v2/unit/coins/stellarToken.ts
+@@ -1,6 +1,6 @@
+ import 'should';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+ 
+ describe('Stellar Token:', function () {
+diff --git a/modules/bitgo/test/v2/unit/coins/susd.ts b/modules/bitgo/test/v2/unit/coins/susd.ts
+index a74274220..11ec69795 100644
+--- a/modules/bitgo/test/v2/unit/coins/susd.ts
++++ b/modules/bitgo/test/v2/unit/coins/susd.ts
+@@ -1,6 +1,6 @@
+ import 'should';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+ 
+ describe('SUSD:', function () {
+diff --git a/modules/bitgo/test/v2/unit/coins/token.ts b/modules/bitgo/test/v2/unit/coins/token.ts
+index 61508b042..736c6d018 100644
+--- a/modules/bitgo/test/v2/unit/coins/token.ts
++++ b/modules/bitgo/test/v2/unit/coins/token.ts
+@@ -1,7 +1,7 @@
+ import 'should';
+-import { BaseCoin } from '@bitgo/sdk-core';
++import { BaseCoin } from '@bitgo-beta/sdk-core';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+ 
+ describe('Virtual Token:', function () {
+@@ -14,7 +14,7 @@ describe('Virtual Token:', function () {
+ 
+   it('should not instantiate coin interface before loading client constants', function () {
+     (() => bitgo.coin('mycrappytoken')).should.throw(
+-      'Coin or token type mycrappytoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo/sdk-api, please confirm you have registered mycrappytoken first.'
++      'Coin or token type mycrappytoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo-beta/sdk-api, please confirm you have registered mycrappytoken first.'
+     );
+   });
+ 
+diff --git a/modules/bitgo/test/v2/unit/coins/tsusd.ts b/modules/bitgo/test/v2/unit/coins/tsusd.ts
+index 8a420b655..de3c64aff 100644
+--- a/modules/bitgo/test/v2/unit/coins/tsusd.ts
++++ b/modules/bitgo/test/v2/unit/coins/tsusd.ts
+@@ -1,6 +1,6 @@
+ import 'should';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+ 
+ describe('TSUSD:', function () {
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/address.ts b/modules/bitgo/test/v2/unit/coins/utxo/address.ts
+index 0dfbd58ab..971801036 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/address.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/address.ts
+@@ -3,10 +3,10 @@
+  */
+ import 'should';
+ import * as assert from 'assert';
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ const { chainCodes } = utxolib.bitgo;
+ 
+-import { AbstractUtxoCoin, GenerateFixedScriptAddressOptions } from '@bitgo/abstract-utxo';
++import { AbstractUtxoCoin, GenerateFixedScriptAddressOptions } from '@bitgo-beta/abstract-utxo';
+ 
+ import { utxoCoins, keychains as keychainsBip32, getFixture, shouldEqualJSON } from './util';
+ 
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/coins.ts b/modules/bitgo/test/v2/unit/coins/utxo/coins.ts
+index 349f028b4..9e4ad4e07 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/coins.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/coins.ts
+@@ -1,5 +1,5 @@
+ import * as assert from 'assert';
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ 
+ import { getUtxoCoinForNetwork, utxoCoins } from './util';
+ 
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/descriptorAddress.ts b/modules/bitgo/test/v2/unit/coins/utxo/descriptorAddress.ts
+index f9577d07e..075fd3827 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/descriptorAddress.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/descriptorAddress.ts
+@@ -1,9 +1,9 @@
+ import * as assert from 'node:assert';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
+-import { AbstractUtxoCoin, descriptor as utxod } from '@bitgo/abstract-utxo';
+-import * as utxolib from '@bitgo/utxo-lib';
+-import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
++import { AbstractUtxoCoin, descriptor as utxod } from '@bitgo-beta/abstract-utxo';
++import * as utxolib from '@bitgo-beta/utxo-lib';
++import { IWallet, WalletCoinSpecific } from '@bitgo-beta/sdk-core';
+ 
+ import { BitGo } from '../../../../../src';
+ 
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/keySignatures.ts b/modules/bitgo/test/v2/unit/coins/utxo/keySignatures.ts
+index 4c03cc2dd..4e816220b 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/keySignatures.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/keySignatures.ts
+@@ -1,6 +1,6 @@
+ import * as assert from 'assert';
+-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+-import { Keychain } from '@bitgo/sdk-core';
++import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
++import { Keychain } from '@bitgo-beta/sdk-core';
+ 
+ import { utxoCoins } from './util';
+ 
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/keychains.ts b/modules/bitgo/test/v2/unit/coins/utxo/keychains.ts
+index 8908534c0..f22596f18 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/keychains.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/keychains.ts
+@@ -1,6 +1,6 @@
+ import * as assert from 'assert';
+ import 'should';
+-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
++import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
+ import { utxoCoins } from './util';
+ 
+ function run(coin: AbstractUtxoCoin) {
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/prebuildAndSign.ts b/modules/bitgo/test/v2/unit/coins/utxo/prebuildAndSign.ts
+index eb8057b67..b5be7674b 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/prebuildAndSign.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/prebuildAndSign.ts
+@@ -3,13 +3,13 @@
+  */
+ import * as assert from 'assert';
+ 
+-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
+-import * as utxolib from '@bitgo/utxo-lib';
++import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo-beta/abstract-utxo';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ import * as nock from 'nock';
+ 
+ import { encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
+-import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
+-import { getSeed, TestBitGo } from '@bitgo/sdk-test';
++import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo-beta/sdk-core';
++import { getSeed, TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../../src';
+ 
+ const txFormats = ['legacy', 'psbt'] as const;
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/recovery/backupKeyRecovery.ts b/modules/bitgo/test/v2/unit/coins/utxo/recovery/backupKeyRecovery.ts
+index 9a8d48c62..74b0ece79 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/recovery/backupKeyRecovery.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/recovery/backupKeyRecovery.ts
+@@ -5,9 +5,9 @@ import 'should';
+ import * as mocha from 'mocha';
+ import * as sinon from 'sinon';
+ import * as nock from 'nock';
+-import { BIP32Interface } from '@bitgo/utxo-lib';
++import { BIP32Interface } from '@bitgo-beta/utxo-lib';
+ 
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ const { toOutput, outputScripts } = utxolib.bitgo;
+ type WalletUnspent = utxolib.bitgo.WalletUnspent<bigint>;
+ type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+@@ -20,7 +20,7 @@ import {
+   BackupKeyRecoveryTransansaction,
+   CoingeckoApi,
+   FormattedOfflineVaultTxInfo,
+-} from '@bitgo/abstract-utxo';
++} from '@bitgo-beta/abstract-utxo';
+ 
+ import {
+   defaultBitGo,
+@@ -36,7 +36,7 @@ import {
+ } from '../util';
+ 
+ import { MockRecoveryProvider } from './mock';
+-import { krsProviders, Triple } from '@bitgo/sdk-core';
++import { krsProviders, Triple } from '@bitgo-beta/sdk-core';
+ 
+ const config = { krsProviders };
+ 
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/recovery/crossChainRecovery.ts b/modules/bitgo/test/v2/unit/coins/utxo/recovery/crossChainRecovery.ts
+index cc516d23b..f14e19bc9 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/recovery/crossChainRecovery.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/recovery/crossChainRecovery.ts
+@@ -4,8 +4,8 @@
+ import * as assert from 'assert';
+ import * as should from 'should';
+ import * as nock from 'nock';
+-import * as utxolib from '@bitgo/utxo-lib';
+-import { Triple } from '@bitgo/sdk-core';
++import * as utxolib from '@bitgo-beta/utxo-lib';
++import { Triple } from '@bitgo-beta/sdk-core';
+ import {
+   getFixture,
+   keychainsBase58,
+@@ -18,7 +18,7 @@ import {
+   defaultBitGo,
+   getUtxoCoin,
+ } from '../util';
+-import { getSeed } from '@bitgo/sdk-test';
++import { getSeed } from '@bitgo-beta/sdk-test';
+ import { nockBitGo } from '../util/nockBitGo';
+ import { createFullSignedTransaction } from '../util/transaction';
+ import { getDefaultWalletUnspentSigner } from '../util/keychains';
+@@ -29,7 +29,7 @@ import {
+   CrossChainRecoveryUnsigned,
+   getWallet,
+   supportedCrossChainRecoveries,
+-} from '@bitgo/abstract-utxo';
++} from '@bitgo-beta/abstract-utxo';
+ import * as sinon from 'sinon';
+ 
+ type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/recovery/mock.ts b/modules/bitgo/test/v2/unit/coins/utxo/recovery/mock.ts
+index 507b26fa8..7796341bc 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/recovery/mock.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/recovery/mock.ts
+@@ -1,12 +1,12 @@
+ /**
+  * @prettier
+  */
+-import { bitgo } from '@bitgo/utxo-lib';
+-import { AddressInfo, TransactionIO } from '@bitgo/blockapis';
+-import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
+-import * as utxolib from '@bitgo/utxo-lib';
+-import { Bch } from '@bitgo/sdk-coin-bch';
+-import { Bsv } from '@bitgo/sdk-coin-bsv';
++import { bitgo } from '@bitgo-beta/utxo-lib';
++import { AddressInfo, TransactionIO } from '@bitgo-beta/blockapis';
++import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo-beta/abstract-utxo';
++import * as utxolib from '@bitgo-beta/utxo-lib';
++import { Bch } from '@bitgo-beta/sdk-coin-bch';
++import { Bsv } from '@bitgo-beta/sdk-coin-bsv';
+ 
+ type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+ export class MockRecoveryProvider implements RecoveryProvider {
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/transaction.ts b/modules/bitgo/test/v2/unit/coins/utxo/transaction.ts
+index ac0c97dcc..448c1e6ab 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/transaction.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/transaction.ts
+@@ -4,11 +4,11 @@
+ import 'mocha';
+ import * as _ from 'lodash';
+ import * as assert from 'assert';
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ import * as nock from 'nock';
+-import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
++import { BIP32Interface, bitgo, testutil } from '@bitgo-beta/utxo-lib';
+ 
+-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
++import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo-beta/abstract-utxo';
+ 
+ import {
+   utxoCoins,
+@@ -33,8 +33,8 @@ import {
+   HalfSignedUtxoTransaction,
+   Triple,
+   WalletSignTransactionOptions,
+-} from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++} from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../../src';
+ 
+ type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/util/fixtures.ts b/modules/bitgo/test/v2/unit/coins/utxo/util/fixtures.ts
+index a5a5c2bde..288c9389e 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/util/fixtures.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/util/fixtures.ts
+@@ -5,7 +5,7 @@ import 'should';
+ import * as fs from 'fs-extra';
+ import * as mpath from 'path';
+ 
+-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
++import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
+ 
+ function serializeBigInt(k: string, v: any): string | number {
+   if (typeof v === 'bigint') {
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/util/keychains.ts b/modules/bitgo/test/v2/unit/coins/utxo/util/keychains.ts
+index b40c6008b..b45cb0777 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/util/keychains.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/util/keychains.ts
+@@ -1,10 +1,10 @@
+ /**
+  * @prettier
+  */
+-import { Triple } from '@bitgo/sdk-core';
+-import { encrypt } from '@bitgo/sdk-api';
+-import { getSeed } from '@bitgo/sdk-test';
+-import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
++import { Triple } from '@bitgo-beta/sdk-core';
++import { encrypt } from '@bitgo-beta/sdk-api';
++import { getSeed } from '@bitgo-beta/sdk-test';
++import { bip32, BIP32Interface, bitgo } from '@bitgo-beta/utxo-lib';
+ 
+ type RootWalletKeys = bitgo.RootWalletKeys;
+ 
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/util/nockBitGo.ts b/modules/bitgo/test/v2/unit/coins/utxo/util/nockBitGo.ts
+index 28b99cf29..9c65cc660 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/util/nockBitGo.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/util/nockBitGo.ts
+@@ -1,5 +1,5 @@
+ import * as nock from 'nock';
+-import { Environment, Environments } from '@bitgo/sdk-core';
++import { Environment, Environments } from '@bitgo-beta/sdk-core';
+ import { defaultBitGo } from './utxoCoins';
+ 
+ export function nockBitGo(bitgo = defaultBitGo): nock.Scope {
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/util/nockIndexerAPI.ts b/modules/bitgo/test/v2/unit/coins/utxo/util/nockIndexerAPI.ts
+index eeb74448c..7a7399a13 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/util/nockIndexerAPI.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/util/nockIndexerAPI.ts
+@@ -2,8 +2,8 @@
+  * @prettier
+  */
+ import * as nock from 'nock';
+-import * as utxolib from '@bitgo/utxo-lib';
+-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
++import * as utxolib from '@bitgo-beta/utxo-lib';
++import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
+ import { nockBitGo } from './nockBitGo';
+ 
+ interface ImsUnspent {
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/util/transaction.ts b/modules/bitgo/test/v2/unit/coins/utxo/util/transaction.ts
+index 6bf3078ba..8e2fae51d 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/util/transaction.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/util/transaction.ts
+@@ -1,7 +1,7 @@
+ /**
+  * @prettier
+  */
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
+ type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+ type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/util/unspents.ts b/modules/bitgo/test/v2/unit/coins/utxo/util/unspents.ts
+index 49477647e..1c2029170 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/util/unspents.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/util/unspents.ts
+@@ -1,7 +1,7 @@
+ /**
+  * @prettier
+  */
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ const { scriptTypeForChain, chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
+ 
+ type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
+@@ -9,8 +9,8 @@ type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<T
+ type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
+ type ChainCode = utxolib.bitgo.ChainCode;
+ 
+-import { getSeed } from '@bitgo/sdk-test';
+-import { getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
++import { getSeed } from '@bitgo-beta/sdk-test';
++import { getReplayProtectionAddresses } from '@bitgo-beta/abstract-utxo';
+ 
+ export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';
+ 
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/util/utxoCoins.ts b/modules/bitgo/test/v2/unit/coins/utxo/util/utxoCoins.ts
+index 7910956da..5c190643a 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/util/utxoCoins.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/util/utxoCoins.ts
+@@ -1,10 +1,10 @@
+ /**
+  * @prettier
+  */
+-import * as utxolib from '@bitgo/utxo-lib';
++import * as utxolib from '@bitgo-beta/utxo-lib';
+ import * as coins from '../../../../../../src/v2/coins';
+-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../../../src/bitgo';
+ 
+ const AbstractUtxoCoinCtor = AbstractUtxoCoin as unknown as ObjectConstructor;
+diff --git a/modules/bitgo/test/v2/unit/coins/utxo/util/wallet.ts b/modules/bitgo/test/v2/unit/coins/utxo/util/wallet.ts
+index 5e3d82417..9ecd09dad 100644
+--- a/modules/bitgo/test/v2/unit/coins/utxo/util/wallet.ts
++++ b/modules/bitgo/test/v2/unit/coins/utxo/util/wallet.ts
+@@ -1,5 +1,5 @@
+-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+-import { Wallet } from '@bitgo/sdk-core';
++import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
++import { Wallet } from '@bitgo-beta/sdk-core';
+ import { defaultBitGo } from './utxoCoins';
+ 
+ export function getUtxoWallet(coin: AbstractUtxoCoin, walletData = {}): Wallet {
+diff --git a/modules/bitgo/test/v2/unit/custodialLightning.ts b/modules/bitgo/test/v2/unit/custodialLightning.ts
+index dc2874fe6..bd9516155 100644
+--- a/modules/bitgo/test/v2/unit/custodialLightning.ts
++++ b/modules/bitgo/test/v2/unit/custodialLightning.ts
+@@ -1,5 +1,5 @@
+-import { TestBitGo } from '@bitgo/sdk-test';
+-import { common, Wallet, encodeLnurl, parseLightningInvoice } from '@bitgo/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
++import { common, Wallet, encodeLnurl, parseLightningInvoice } from '@bitgo-beta/sdk-core';
+ import { BitGo } from '../../../src/bitgo';
+ import * as nock from 'nock';
+ import * as assert from 'assert';
+diff --git a/modules/bitgo/test/v2/unit/enterprise.ts b/modules/bitgo/test/v2/unit/enterprise.ts
+index 9a54851bb..27c28414f 100644
+--- a/modules/bitgo/test/v2/unit/enterprise.ts
++++ b/modules/bitgo/test/v2/unit/enterprise.ts
+@@ -4,12 +4,12 @@
+ 
+ import * as nock from 'nock';
+ import * as sinon from 'sinon';
+-import { common, ECDSAUtils, Enterprise } from '@bitgo/sdk-core';
++import { common, ECDSAUtils, Enterprise } from '@bitgo-beta/sdk-core';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src/bitgo';
+ import { mockChallengeA } from './internal/tssUtils/mocks/ecdsaNtilde';
+-import { bip32 } from '@bitgo/utxo-lib';
++import { bip32 } from '@bitgo-beta/utxo-lib';
+ 
+ describe('Enterprise:', function () {
+   let bitgo;
+diff --git a/modules/bitgo/test/v2/unit/environments.ts b/modules/bitgo/test/v2/unit/environments.ts
+index 21caa55b2..6eb73d97a 100644
+--- a/modules/bitgo/test/v2/unit/environments.ts
++++ b/modules/bitgo/test/v2/unit/environments.ts
+@@ -1,6 +1,6 @@
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src/bitgo';
+-import { AliasEnvironments } from '@bitgo/sdk-core';
++import { AliasEnvironments } from '@bitgo-beta/sdk-core';
+ 
+ describe('Environments', () => {
+   it('should swap alias environments for supported environments', () => {
+diff --git a/modules/bitgo/test/v2/unit/errors.ts b/modules/bitgo/test/v2/unit/errors.ts
+index 5ba25c409..f803eac97 100644
+--- a/modules/bitgo/test/v2/unit/errors.ts
++++ b/modules/bitgo/test/v2/unit/errors.ts
+@@ -1,6 +1,6 @@
+ import 'should';
+ const assert = require('assert');
+-import { BitGoJsError, NodeEnvironmentError } from '@bitgo/sdk-core';
++import { BitGoJsError, NodeEnvironmentError } from '@bitgo-beta/sdk-core';
+ 
+ describe('Error handling', () => {
+   it('should capture stack trace', function namedFunc() {
+diff --git a/modules/bitgo/test/v2/unit/internal.ts b/modules/bitgo/test/v2/unit/internal.ts
+index 733ae6386..34187bd0a 100644
+--- a/modules/bitgo/test/v2/unit/internal.ts
++++ b/modules/bitgo/test/v2/unit/internal.ts
+@@ -1,7 +1,7 @@
+ import 'should';
+ 
+-import { bip32 } from '@bitgo/utxo-lib';
+-import { Util } from '@bitgo/sdk-core';
++import { bip32 } from '@bitgo-beta/utxo-lib';
++import { Util } from '@bitgo-beta/sdk-core';
+ 
+ describe('Internal:', () => {
+   describe('Util', function () {
+diff --git a/modules/bitgo/test/v2/unit/internal/blsUtils.ts b/modules/bitgo/test/v2/unit/internal/blsUtils.ts
+index c605d07fa..e96309659 100644
+--- a/modules/bitgo/test/v2/unit/internal/blsUtils.ts
++++ b/modules/bitgo/test/v2/unit/internal/blsUtils.ts
+@@ -3,11 +3,11 @@ import * as nock from 'nock';
+ import * as should from 'should';
+ import * as openpgp from 'openpgp';
+ 
+-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
++import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src';
+-import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
++import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo-beta/sdk-core';
+ import assert = require('assert');
+-import { Eth2 } from '@bitgo/sdk-coin-eth2';
++import { Eth2 } from '@bitgo-beta/sdk-coin-eth2';
+ 
+ describe('BLS Utils:', async function () {
+   const bitgo: TestableBG & BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
+diff --git a/modules/bitgo/test/v2/unit/internal/opengpgUtils.ts b/modules/bitgo/test/v2/unit/internal/opengpgUtils.ts
+index 31d8b645c..092d7ba07 100644
+--- a/modules/bitgo/test/v2/unit/internal/opengpgUtils.ts
++++ b/modules/bitgo/test/v2/unit/internal/opengpgUtils.ts
+@@ -3,8 +3,8 @@ import * as should from 'should';
+ import * as crypto from 'crypto';
+ import * as assert from 'assert';
+ 
+-import { openpgpUtils } from '@bitgo/sdk-core';
+-import { ecc as secp256k1 } from '@bitgo/utxo-lib';
++import { openpgpUtils } from '@bitgo-beta/sdk-core';
++import { ecc as secp256k1 } from '@bitgo-beta/utxo-lib';
+ import * as sinon from 'sinon';
+ 
+ const sodium = require('libsodium-wrappers-sumo');
+diff --git a/modules/bitgo/test/v2/unit/internal/tssUtils/bitgoMpcGpgPubKeys.ts b/modules/bitgo/test/v2/unit/internal/tssUtils/bitgoMpcGpgPubKeys.ts
+index 5a4fd1e45..4b1ba09d6 100644
+--- a/modules/bitgo/test/v2/unit/internal/tssUtils/bitgoMpcGpgPubKeys.ts
++++ b/modules/bitgo/test/v2/unit/internal/tssUtils/bitgoMpcGpgPubKeys.ts
+@@ -6,8 +6,8 @@ import {
+   EnvironmentName,
+   IRequestTracer,
+   Wallet,
+-} from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++} from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ 
+ import { BitGo } from '../../../../../src';
+ import * as openpgp from 'openpgp';
+diff --git a/modules/bitgo/test/v2/unit/internal/tssUtils/common.ts b/modules/bitgo/test/v2/unit/internal/tssUtils/common.ts
+index 85fcaa547..cfe91dbed 100644
+--- a/modules/bitgo/test/v2/unit/internal/tssUtils/common.ts
++++ b/modules/bitgo/test/v2/unit/internal/tssUtils/common.ts
+@@ -1,4 +1,4 @@
+-import { ExchangeCommitmentResponse, SignatureShareRecord } from '@bitgo/sdk-core';
++import { ExchangeCommitmentResponse, SignatureShareRecord } from '@bitgo-beta/sdk-core';
+ import * as nock from 'nock';
+ import * as _ from 'lodash';
+ 
+diff --git a/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsa.ts b/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsa.ts
+index 9982ee5cb..487489468 100644
+--- a/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsa.ts
++++ b/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsa.ts
+@@ -10,7 +10,7 @@ import {
+   mockSerializedChallengeWithProofs2,
+   TestableBG,
+   TestBitGo,
+-} from '@bitgo/sdk-test';
++} from '@bitgo-beta/sdk-test';
+ import { BitGo, createSharedDataProof, TssUtils, RequestType } from '../../../../../src';
+ import {
+   BackupGpgKey,
+@@ -30,8 +30,8 @@ import {
+   SignatureShareType,
+   TxRequest,
+   Wallet,
+-} from '@bitgo/sdk-core';
+-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt } from '@bitgo/sdk-lib-mpc';
++} from '@bitgo-beta/sdk-core';
++import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt } from '@bitgo-beta/sdk-lib-mpc';
+ import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
+ import { nockSendSignatureShareWithResponse } from './common';
+ import {
+@@ -42,11 +42,11 @@ import {
+   nockGetSigningKey,
+   nockGetTxRequest,
+ } from '../../tss/helpers';
+-import { bip32, ecc } from '@bitgo/utxo-lib';
++import { bip32, ecc } from '@bitgo-beta/utxo-lib';
+ import { Hash } from 'crypto';
+ import { mockChallengeA, mockChallengeB, mockChallengeC } from './mocks/ecdsaNtilde';
+ 
+-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
++import { loadWebAssembly } from '@bitgo-beta/sdk-opensslbytes';
+ 
+ const openSSLBytes = loadWebAssembly().buffer;
+ 
+diff --git a/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/createKeychains.ts b/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/createKeychains.ts
+index 5c73592fd..68441a3a1 100644
+--- a/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/createKeychains.ts
++++ b/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/createKeychains.ts
+@@ -3,9 +3,9 @@ import * as nock from 'nock';
+ import * as openpgp from 'openpgp';
+ import * as crypto from 'crypto';
+ 
+-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
+-import { AddKeychainOptions, BaseCoin, common, ECDSAUtils, Keychain, Wallet } from '@bitgo/sdk-core';
+-import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
++import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
++import { AddKeychainOptions, BaseCoin, common, ECDSAUtils, Keychain, Wallet } from '@bitgo-beta/sdk-core';
++import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo-beta/sdk-lib-mpc';
+ import {
+   KeyCreationMPCv2StateEnum,
+   MPCv2KeyGenRound1Request,
+diff --git a/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/fixtures/mpcv1KeyShares.ts b/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/fixtures/mpcv1KeyShares.ts
+index d5aa8234b..d2fde0ca8 100644
+--- a/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/fixtures/mpcv1KeyShares.ts
++++ b/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/fixtures/mpcv1KeyShares.ts
+@@ -1,4 +1,4 @@
+-import { ECDSAMethodTypes } from '@bitgo/sdk-core';
++import { ECDSAMethodTypes } from '@bitgo-beta/sdk-core';
+ 
+ export const mockUserSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
+   pShare: {
+diff --git a/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/signTxRequest.ts b/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/signTxRequest.ts
+index 9fe7614ad..a2f1efa7f 100644
+--- a/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/signTxRequest.ts
++++ b/modules/bitgo/test/v2/unit/internal/tssUtils/ecdsaMPCv2/signTxRequest.ts
+@@ -9,8 +9,8 @@ import {
+   SignatureShareType,
+   TxRequest,
+   Wallet,
+-} from '@bitgo/sdk-core';
+-import { DklsDsg, DklsTypes, DklsComms } from '@bitgo/sdk-lib-mpc';
++} from '@bitgo-beta/sdk-core';
++import { DklsDsg, DklsTypes, DklsComms } from '@bitgo-beta/sdk-lib-mpc';
+ import * as fs from 'fs';
+ import { getRoute } from '../common';
+ import {
+@@ -23,7 +23,7 @@ import {
+ } from '@bitgo/public-types';
+ import * as openpgp from 'openpgp';
+ import * as nock from 'nock';
+-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
++import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../../../src';
+ const createKeccakHash = require('keccak');
+ 
+diff --git a/modules/bitgo/test/v2/unit/internal/tssUtils/eddsa.ts b/modules/bitgo/test/v2/unit/internal/tssUtils/eddsa.ts
+index 3d238b398..ed29f16a7 100644
+--- a/modules/bitgo/test/v2/unit/internal/tssUtils/eddsa.ts
++++ b/modules/bitgo/test/v2/unit/internal/tssUtils/eddsa.ts
+@@ -5,7 +5,7 @@ import * as openpgp from 'openpgp';
+ import * as should from 'should';
+ import * as sinon from 'sinon';
+ 
+-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
++import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../../src/bitgo';
+ import {
+   common,
+@@ -25,7 +25,7 @@ import {
+   ExchangeCommitmentResponse,
+   EncryptedSignerShareType,
+   BaseCoin,
+-} from '@bitgo/sdk-core';
++} from '@bitgo-beta/sdk-core';
+ import { createWalletSignatures } from '../../tss/helpers';
+ import {
+   nockSendSignatureShare,
+diff --git a/modules/bitgo/test/v2/unit/keychains.ts b/modules/bitgo/test/v2/unit/keychains.ts
+index f6b900d21..8ed8366c7 100644
+--- a/modules/bitgo/test/v2/unit/keychains.ts
++++ b/modules/bitgo/test/v2/unit/keychains.ts
+@@ -2,7 +2,7 @@
+ // Test for Keychains
+ //
+ 
+-import { CoinFamily, CoinKind, coins, KeyCurve, UnderlyingAsset } from '@bitgo/statics';
++import { CoinFamily, CoinKind, coins, KeyCurve, UnderlyingAsset } from '@bitgo-beta/statics';
+ import * as assert from 'assert';
+ import * as _ from 'lodash';
+ import * as nock from 'nock';
+@@ -18,8 +18,8 @@ import {
+   Keychains,
+   KeychainsTriplet,
+   OvcShare,
+-} from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++} from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src/bitgo';
+ 
+ describe('V2 Keychains', function () {
+diff --git a/modules/bitgo/test/v2/unit/lightning/lightningWallets.ts b/modules/bitgo/test/v2/unit/lightning/lightningWallets.ts
+index d4e5dae5b..6441fdb66 100644
+--- a/modules/bitgo/test/v2/unit/lightning/lightningWallets.ts
++++ b/modules/bitgo/test/v2/unit/lightning/lightningWallets.ts
+@@ -1,7 +1,7 @@
+ import * as assert from 'assert';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import * as nock from 'nock';
+-import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
++import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo-beta/sdk-core';
+ import {
+   CreateInvoiceBody,
+   getLightningWallet,
+@@ -15,7 +15,7 @@ import {
+   getLightningKeychain,
+   getLightningAuthKeychains,
+   updateWalletCoinSpecific,
+-} from '@bitgo/abstract-lightning';
++} from '@bitgo-beta/abstract-lightning';
+ 
+ import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
+ 
+diff --git a/modules/bitgo/test/v2/unit/lightningWallet.ts b/modules/bitgo/test/v2/unit/lightningWallet.ts
+index 7d190f955..34ff608df 100644
+--- a/modules/bitgo/test/v2/unit/lightningWallet.ts
++++ b/modules/bitgo/test/v2/unit/lightningWallet.ts
+@@ -1,8 +1,8 @@
+ import { strict as assert } from 'assert';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src';
+-import { Wallet } from '@bitgo/sdk-core';
+-import { getLightningWallet } from '@bitgo/abstract-lightning';
++import { Wallet } from '@bitgo-beta/sdk-core';
++import { getLightningWallet } from '@bitgo-beta/abstract-lightning';
+ 
+ describe('LightningV2 Wallet:', function () {
+   const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+diff --git a/modules/bitgo/test/v2/unit/mmi.ts b/modules/bitgo/test/v2/unit/mmi.ts
+index 7eca972c9..9709e8339 100644
+--- a/modules/bitgo/test/v2/unit/mmi.ts
++++ b/modules/bitgo/test/v2/unit/mmi.ts
+@@ -1,9 +1,9 @@
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src/bitgo';
+ 
+ import * as nock from 'nock';
+-import { bip32 } from '@bitgo/utxo-lib';
+-import { common, TransactionType } from '@bitgo/sdk-core';
++import { bip32 } from '@bitgo-beta/utxo-lib';
++import { common, TransactionType } from '@bitgo-beta/sdk-core';
+ import { AvaxC as AvaxCAccountLib, getBuilder } from '../../../../account-lib';
+ 
+ nock.enableNetConnect();
+diff --git a/modules/bitgo/test/v2/unit/pendingApproval.ts b/modules/bitgo/test/v2/unit/pendingApproval.ts
+index 515eca0d9..25b50eda7 100644
+--- a/modules/bitgo/test/v2/unit/pendingApproval.ts
++++ b/modules/bitgo/test/v2/unit/pendingApproval.ts
+@@ -4,7 +4,7 @@
+ import 'should';
+ import * as nock from 'nock';
+ import * as sinon from 'sinon';
+-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
++import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src';
+ 
+ import {
+@@ -22,7 +22,7 @@ import {
+   TxRequest,
+   Type,
+   Wallet,
+-} from '@bitgo/sdk-core';
++} from '@bitgo-beta/sdk-core';
+ 
+ describe('Pending Approvals:', () => {
+   let sandbox: sinon.SinonSandbox;
+diff --git a/modules/bitgo/test/v2/unit/recovery.ts b/modules/bitgo/test/v2/unit/recovery.ts
+index 423ac0280..bae60fba9 100644
+--- a/modules/bitgo/test/v2/unit/recovery.ts
++++ b/modules/bitgo/test/v2/unit/recovery.ts
+@@ -1,14 +1,14 @@
+ import * as should from 'should';
+ import * as nock from 'nock';
+ 
+-import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
++import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src';
+-import { krsProviders } from '@bitgo/sdk-core';
+-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
++import { krsProviders } from '@bitgo-beta/sdk-core';
++import { EcdsaRangeProof, EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
+ import { TransactionFactory } from '@ethereumjs/tx';
+ import * as sinon from 'sinon';
+ import { ethLikeDKLSKeycard, ethLikeGG18Keycard } from '../fixtures/tss/recoveryFixtures';
+-import { Utils } from '@bitgo/sdk-coin-xrp';
++import { Utils } from '@bitgo-beta/sdk-coin-xrp';
+ 
+ const recoveryNocks = require('../lib/recovery-nocks');
+ 
+diff --git a/modules/bitgo/test/v2/unit/seedValidator.ts b/modules/bitgo/test/v2/unit/seedValidator.ts
+index 4486b355c..c9a98e8e9 100644
+--- a/modules/bitgo/test/v2/unit/seedValidator.ts
++++ b/modules/bitgo/test/v2/unit/seedValidator.ts
+@@ -1,11 +1,11 @@
+ import 'should';
+ 
+ import * as nock from 'nock';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src/bitgo';
+ 
+ import { SeedValidator } from '../../../src/v2/internal/seedValidator';
+-import { CoinFamily } from '@bitgo/statics';
++import { CoinFamily } from '@bitgo-beta/statics';
+ 
+ describe('SeedValidators:', function () {
+   let bitgo;
+diff --git a/modules/bitgo/test/v2/unit/staking/goStakingWalletCommon.ts b/modules/bitgo/test/v2/unit/staking/goStakingWalletCommon.ts
+index 99e73cfc5..1216fd963 100644
+--- a/modules/bitgo/test/v2/unit/staking/goStakingWalletCommon.ts
++++ b/modules/bitgo/test/v2/unit/staking/goStakingWalletCommon.ts
+@@ -2,12 +2,12 @@ import * as nock from 'nock';
+ import * as should from 'should';
+ import fixtures from '../../fixtures/staking/goStakingWallet';
+ 
+-import { Enterprise, Environments, GoStakingWallet, Wallet } from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { Enterprise, Environments, GoStakingWallet, Wallet } from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src';
+ import * as sinon from 'sinon';
+ import { OfcToken } from '../../../../src/v2/coins';
+-import { tokens } from '@bitgo/statics';
++import { tokens } from '@bitgo-beta/statics';
+ 
+ describe('Go Staking Wallet Common', function () {
+   const microservicesUri = Environments['mock'].uri;
+diff --git a/modules/bitgo/test/v2/unit/staking/stakingWalletCommon.ts b/modules/bitgo/test/v2/unit/staking/stakingWalletCommon.ts
+index 8cf8bfe03..dc435f99f 100644
+--- a/modules/bitgo/test/v2/unit/staking/stakingWalletCommon.ts
++++ b/modules/bitgo/test/v2/unit/staking/stakingWalletCommon.ts
+@@ -2,8 +2,8 @@ import * as nock from 'nock';
+ import * as should from 'should';
+ import fixtures from '../../fixtures/staking/stakingWallet';
+ 
+-import { Enterprise, Environments, StakingRequest, StakingWallet, TssUtils, Wallet } from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { Enterprise, Environments, StakingRequest, StakingWallet, TssUtils, Wallet } from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src';
+ import * as sinon from 'sinon';
+ 
+diff --git a/modules/bitgo/test/v2/unit/staking/stakingWalletNonTSS.ts b/modules/bitgo/test/v2/unit/staking/stakingWalletNonTSS.ts
+index 5bf4f366d..866bce3e1 100644
+--- a/modules/bitgo/test/v2/unit/staking/stakingWalletNonTSS.ts
++++ b/modules/bitgo/test/v2/unit/staking/stakingWalletNonTSS.ts
+@@ -15,8 +15,8 @@ import {
+   Wallet,
+   WalletCoinSpecific,
+   WalletData,
+-} from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++} from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src';
+ import * as sinon from 'sinon';
+ 
+diff --git a/modules/bitgo/test/v2/unit/staking/stakingWalletTSS.ts b/modules/bitgo/test/v2/unit/staking/stakingWalletTSS.ts
+index 99d39b5be..b5e53b7a2 100644
+--- a/modules/bitgo/test/v2/unit/staking/stakingWalletTSS.ts
++++ b/modules/bitgo/test/v2/unit/staking/stakingWalletTSS.ts
+@@ -3,8 +3,8 @@ import * as _ from 'lodash';
+ import * as nock from 'nock';
+ import fixtures from '../../fixtures/staking/stakingWallet';
+ 
+-import { Enterprise, Environments, Keychain, Keychains, StakingWallet, TssUtils, Wallet } from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { Enterprise, Environments, Keychain, Keychains, StakingWallet, TssUtils, Wallet } from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src';
+ 
+ import * as sinon from 'sinon';
+diff --git a/modules/bitgo/test/v2/unit/sweep.ts b/modules/bitgo/test/v2/unit/sweep.ts
+index db07e991d..f0a6bc00f 100644
+--- a/modules/bitgo/test/v2/unit/sweep.ts
++++ b/modules/bitgo/test/v2/unit/sweep.ts
+@@ -1,7 +1,7 @@
+ import * as nock from 'nock';
+ 
+-import { Environments, Wallet } from '@bitgo/sdk-core';
+-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
++import { Environments, Wallet } from '@bitgo-beta/sdk-core';
++import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
+ 
+ import { BitGo } from '../../../src';
+ 
+diff --git a/modules/bitgo/test/v2/unit/tss/common.ts b/modules/bitgo/test/v2/unit/tss/common.ts
+index b1310fa1c..927db2646 100644
+--- a/modules/bitgo/test/v2/unit/tss/common.ts
++++ b/modules/bitgo/test/v2/unit/tss/common.ts
+@@ -1,4 +1,4 @@
+-import { createSharedDataProof, commonTssMethods } from '@bitgo/sdk-core';
++import { createSharedDataProof, commonTssMethods } from '@bitgo-beta/sdk-core';
+ import * as openpgp from 'openpgp';
+ 
+ openpgp.config.rejectCurves = new Set();
+diff --git a/modules/bitgo/test/v2/unit/tss/ecdsa.ts b/modules/bitgo/test/v2/unit/tss/ecdsa.ts
+index 270315778..25c91869c 100644
+--- a/modules/bitgo/test/v2/unit/tss/ecdsa.ts
++++ b/modules/bitgo/test/v2/unit/tss/ecdsa.ts
+@@ -9,11 +9,11 @@ import {
+   RequestType,
+   SignatureShareType,
+   hexToBigInt,
+-} from '@bitgo/sdk-core';
+-import { EcdsaTypes, EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
++} from '@bitgo-beta/sdk-core';
++import { EcdsaTypes, EcdsaPaillierProof } from '@bitgo-beta/sdk-lib-mpc';
+ import * as openpgp from 'openpgp';
+ import * as should from 'should';
+-import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
++import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src';
+ import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
+ import {
+diff --git a/modules/bitgo/test/v2/unit/tss/eddsa.ts b/modules/bitgo/test/v2/unit/tss/eddsa.ts
+index fb52d1ea8..ebef0b368 100644
+--- a/modules/bitgo/test/v2/unit/tss/eddsa.ts
++++ b/modules/bitgo/test/v2/unit/tss/eddsa.ts
+@@ -20,11 +20,11 @@ import {
+   CommitmentType,
+   SignatureShareType,
+   RequestTracer,
+-} from '@bitgo/sdk-core';
++} from '@bitgo-beta/sdk-core';
+ import * as openpgp from 'openpgp';
+ import * as should from 'should';
+ import * as _ from 'lodash';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../../src/bitgo';
+ import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
+ import * as sinon from 'sinon';
+diff --git a/modules/bitgo/test/v2/unit/tss/helpers.ts b/modules/bitgo/test/v2/unit/tss/helpers.ts
+index e21ec5e0b..4652af2e0 100644
+--- a/modules/bitgo/test/v2/unit/tss/helpers.ts
++++ b/modules/bitgo/test/v2/unit/tss/helpers.ts
+@@ -1,5 +1,5 @@
+ import * as openpgp from 'openpgp';
+-import { createSharedDataProof, SignatureShareRecord } from '@bitgo/sdk-core';
++import { createSharedDataProof, SignatureShareRecord } from '@bitgo-beta/sdk-core';
+ import { getRoute } from '../internal/tssUtils/common';
+ import * as nock from 'nock';
+ 
+diff --git a/modules/bitgo/test/v2/unit/unspents.ts b/modules/bitgo/test/v2/unit/unspents.ts
+index f37e295ee..d62cb74de 100644
+--- a/modules/bitgo/test/v2/unit/unspents.ts
++++ b/modules/bitgo/test/v2/unit/unspents.ts
+@@ -1,7 +1,7 @@
+ import * as nock from 'nock';
+ import * as sinon from 'sinon';
+-import { common, Wallet } from '@bitgo/sdk-core';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { common, Wallet } from '@bitgo-beta/sdk-core';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src';
+ 
+ describe('Verify string type is used for value of unspent', function () {
+diff --git a/modules/bitgo/test/v2/unit/wallet.ts b/modules/bitgo/test/v2/unit/wallet.ts
+index c792284b5..30abc0c1e 100644
+--- a/modules/bitgo/test/v2/unit/wallet.ts
++++ b/modules/bitgo/test/v2/unit/wallet.ts
+@@ -34,15 +34,15 @@ import {
+   TxRequestVersion,
+   WalletSignMessageOptions,
+   WalletSignTypedDataOptions,
+-} from '@bitgo/sdk-core';
++} from '@bitgo-beta/sdk-core';
+ 
+-import { TestBitGo } from '@bitgo/sdk-test';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import { BitGo } from '../../../src';
+-import * as utxoLib from '@bitgo/utxo-lib';
++import * as utxoLib from '@bitgo-beta/utxo-lib';
+ import { randomBytes } from 'crypto';
+ import { getDefaultWalletKeys, toKeychainObjects } from './coins/utxo/util';
+-import { Tsol } from '@bitgo/sdk-coin-sol';
+-import { Teth } from '@bitgo/sdk-coin-eth';
++import { Tsol } from '@bitgo-beta/sdk-coin-sol';
++import { Teth } from '@bitgo-beta/sdk-coin-eth';
+ 
+ import { nftResponse, unsupportedNftResponse } from '../fixtures/nfts/nftResponses';
+ 
+diff --git a/modules/bitgo/test/v2/unit/wallets.ts b/modules/bitgo/test/v2/unit/wallets.ts
+index 5a6d5246d..ce85ac737 100644
+--- a/modules/bitgo/test/v2/unit/wallets.ts
++++ b/modules/bitgo/test/v2/unit/wallets.ts
+@@ -6,8 +6,8 @@ import * as nock from 'nock';
+ import * as sinon from 'sinon';
+ import * as should from 'should';
+ import * as _ from 'lodash';
+-import * as utxoLib from '@bitgo/utxo-lib';
+-import { TestBitGo } from '@bitgo/sdk-test';
++import * as utxoLib from '@bitgo-beta/utxo-lib';
++import { TestBitGo } from '@bitgo-beta/sdk-test';
+ import {
+   BlsUtils,
+   common,
+@@ -26,11 +26,11 @@ import {
+   KeychainWithEncryptedPrv,
+   WalletWithKeychains,
+   multisigTypes,
+-} from '@bitgo/sdk-core';
++} from '@bitgo-beta/sdk-core';
+ import { BitGo } from '../../../src';
+ import { afterEach } from 'mocha';
+ import { TssSettings } from '@bitgo/public-types';
+-import * as moduleBitgo from '@bitgo/sdk-core';
++import * as moduleBitgo from '@bitgo-beta/sdk-core';
+ 
+ describe('V2 Wallets:', function () {
+   const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
