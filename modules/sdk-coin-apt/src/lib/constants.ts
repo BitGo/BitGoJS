@@ -11,6 +11,7 @@ export const AMOUNT_BYTES_LENGTH = 8;
 export const DIGITAL_ASSET_TRANSFER_AMOUNT = '1';
 
 export const FUNGIBLE_ASSET_TRANSFER_FUNCTION = '0x1::primary_fungible_store::transfer';
+export const FUNGIBLE_ASSET_BATCH_TRANSFER_FUNCTION = '0x1::aptos_account::batch_transfer_fungible_assets';
 export const COIN_TRANSFER_FUNCTION = '0x1::aptos_account::transfer_coins';
 export const COIN_BATCH_TRANSFER_FUNCTION = '0x1::aptos_account::batch_transfer_coins';
 export const DIGITAL_ASSET_TRANSFER_FUNCTION = '0x1::object::transfer';

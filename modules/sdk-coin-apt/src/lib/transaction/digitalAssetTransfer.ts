@@ -1,11 +1,9 @@
 import { Transaction } from './transaction';
 import {
   AccountAddress,
-  Aptos,
-  AptosConfig,
   EntryFunctionABI,
+  InputGenerateTransactionPayloadData,
   MoveAbility,
-  Network,
   objectStructTag,
   TransactionPayload,
   TransactionPayloadEntryFunction,
@@ -14,7 +12,7 @@ import {
   TypeTagStruct,
 } from '@aptos-labs/ts-sdk';
 import { InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   DIGITAL_ASSET_TYPE_ARGUMENT,
   DIGITAL_ASSET_TRANSFER_FUNCTION,
@@ -46,33 +44,19 @@ export class DigitalAssetTransfer extends Transaction {
     ] as TransactionRecipient[];
   }
 
-  protected async buildRawTransaction(): Promise<void> {
-    const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
-    const aptos = new Aptos(new AptosConfig({ network }));
-    const senderAddress = AccountAddress.fromString(this._sender);
+  protected getTransactionPayloadData(): InputGenerateTransactionPayloadData {
     const recipientAddress = AccountAddress.fromString(this.recipients[0].address);
     const digitalAssetAddress = AccountAddress.fromString(this._assetId);
-
     const transferDigitalAssetAbi: EntryFunctionABI = {
       typeParameters: [{ constraints: [MoveAbility.KEY] }],
       parameters: [new TypeTagStruct(objectStructTag(new TypeTagGeneric(0))), new TypeTagAddress()],
     };
 
-    const simpleTxn = await aptos.transaction.build.simple({
-      sender: senderAddress,
-      data: {
-        function: DIGITAL_ASSET_TRANSFER_FUNCTION,
-        typeArguments: [DIGITAL_ASSET_TYPE_ARGUMENT],
-        functionArguments: [digitalAssetAddress, recipientAddress],
-        abi: transferDigitalAssetAbi,
-      },
-      options: {
-        maxGasAmount: this.maxGasAmount,
-        gasUnitPrice: this.gasUnitPrice,
-        expireTimestamp: this.expirationTime,
-        accountSequenceNumber: this.sequenceNumber,
-      },
-    });
-    this._rawTransaction = simpleTxn.rawTransaction;
+    return {
+      function: DIGITAL_ASSET_TRANSFER_FUNCTION,
+      typeArguments: [DIGITAL_ASSET_TYPE_ARGUMENT],
+      functionArguments: [digitalAssetAddress, recipientAddress],
+      abi: transferDigitalAssetAbi,
+    };
   }
 }

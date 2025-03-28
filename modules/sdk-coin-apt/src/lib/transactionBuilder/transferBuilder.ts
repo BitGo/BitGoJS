@@ -36,7 +36,9 @@ export class TransferBuilder extends TransactionBuilder {
       }
       const entryFunction = (payload as TransactionPayloadEntryFunction).entryFunction;
       this.validatePartsOfAssetId(entryFunction.type_args[0].toString());
-      return utils.fetchAndValidateRecipients(entryFunction.args[0], entryFunction.args[1]).isValid;
+      const addressArg = entryFunction.args[0];
+      const amountArg = entryFunction.args[1];
+      return utils.fetchAndValidateRecipients(addressArg, amountArg).isValid;
     } catch (e) {
       console.error('invalid transaction payload', e);
       return false;
