@@ -2,29 +2,28 @@ import {
   BaseUtils,
   InvalidTransactionError,
   NotImplementedError,
+  NotSupported,
   ParseTransactionError,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { encodeSecp256k1Pubkey, encodeSecp256k1Signature } from '@cosmjs/amino';
-import { fromBase64, fromBech32, fromHex, toHex, toBech32 } from '@cosmjs/encoding';
+import { fromBase64, fromBech32, fromHex, toBech32, toHex } from '@cosmjs/encoding';
 import {
   DecodedTxRaw,
-  EncodeObject,
-  Registry,
   decodePubkey,
   decodeTxRaw,
+  EncodeObject,
   encodePubkey,
   makeAuthInfoBytes,
   makeSignDoc,
+  Registry,
 } from '@cosmjs/proto-signing';
 import { Coin, defaultRegistryTypes } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 import { SignDoc, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { Any } from 'cosmjs-types/google/protobuf/any';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-const { MsgSend } = require('../../resources/MsgCompiled').types;
-
-import { Hash, createHash } from 'crypto';
+import { createHash, Hash } from 'crypto';
 import * as constants from './constants';
 import {
   CosmosLikeTransaction,
@@ -38,7 +37,9 @@ import {
 } from './iface';
 import { CosmosKeyPair as KeyPair } from './keyPair';
 
-export class CosmosUtils implements BaseUtils {
+const { MsgSend } = require('../../resources/MsgCompiled').types;
+
+export class CosmosUtils<CustomMessage = never> implements BaseUtils {
   protected registry;
 
   constructor() {
@@ -201,7 +202,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {DecodedTxRaw} decodedTx
    * @returns {MessageData[]} Send transaction message data
    */
-  protected getSendMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
+  protected getSendMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
     return decodedTx.body.messages.map((message) => {
       const value = this.registry.decode(message);
       return {
@@ -220,7 +221,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {DecodedTxRaw} decodedTx
    * @returns {MessageData[]} Delegate of undelegate transaction message data
    */
-  getDelegateOrUndelegateMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
+  getDelegateOrUndelegateMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
     return decodedTx.body.messages.map((message) => {
       const value = this.registry.decode(message);
       return {
@@ -239,7 +240,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {DecodedTxRaw} decodedTx
    * @returns {MessageData[]} Redelegate transaction message data
    */
-  getRedelegateMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
+  getRedelegateMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
     return decodedTx.body.messages.map((message) => {
       const value = this.registry.decode(message);
       return {
@@ -259,7 +260,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {DecodedTxRaw} decodedTx
    * @returns {MessageData[]} WithdrawDelegatorRewards transaction message data
    */
-  getWithdrawRewardsMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
+  getWithdrawRewardsMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
     return decodedTx.body.messages.map((message) => {
       const value = this.registry.decode(message);
       return {
@@ -277,7 +278,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {DecodedTxRaw} decodedTx
    * @returns {MessageData[]} Delegate of undelegate transaction message data
    */
-  getWithdrawDelegatorRewardsMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
+  getWithdrawDelegatorRewardsMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
     return decodedTx.body.messages.map((message) => {
       const value = this.registry.decode(message);
       return {
@@ -318,7 +319,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {DecodedTxRaw} decodedTx
    * @returns {MessageData[]} Execute contract transaction message data
    */
-  getExecuteContractMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData[] {
+  getExecuteContractMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
     return decodedTx.body.messages.map((message) => {
       const value = this.registry.decode(message);
       return {
@@ -331,6 +332,15 @@ export class CosmosUtils implements BaseUtils {
         typeUrl: message.typeUrl,
       };
     });
+  }
+
+  /**
+   * Returns the array of MessageData[] from the decoded transaction
+   * @param {DecodedTxRaw} decodedTx
+   * @returns {MessageData[]} Custom transaction message data
+   */
+  getCustomMessageDataFromDecodedTx(decodedTx: DecodedTxRaw): MessageData<CustomMessage>[] {
+    throw new NotSupported('Custom message data not supported');
   }
 
   /**
@@ -374,7 +384,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {CosmosLikeTransaction} cosmosLikeTransaction transaction to get send messages from
    * @returns {Any[]} processed send messages
    */
-  getSendMessagesForEncodingTx(cosmosLikeTransaction: CosmosLikeTransaction): Any[] {
+  getSendMessagesForEncodingTx(cosmosLikeTransaction: CosmosLikeTransaction<CustomMessage>): Any[] {
     return cosmosLikeTransaction.sendMessages as unknown as Any[];
   }
 
@@ -384,7 +394,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {CosmosLikeTransaction} cosmosLikeTransaction
    * @returns {TxRaw} Unsigned raw transaction
    */
-  createTxRawFromCosmosLikeTransaction(cosmosLikeTransaction: CosmosLikeTransaction): TxRaw {
+  createTxRawFromCosmosLikeTransaction(cosmosLikeTransaction: CosmosLikeTransaction<CustomMessage>): TxRaw {
     if (!cosmosLikeTransaction.publicKey) {
       throw new Error('publicKey is required to create a txRaw');
     }
@@ -472,7 +482,7 @@ export class CosmosUtils implements BaseUtils {
    * @returns {SignDoc} sign doc
    */
   createSignDoc(
-    cosmosLikeTransaction: CosmosLikeTransaction,
+    cosmosLikeTransaction: CosmosLikeTransaction<CustomMessage>,
     accountNumber: number | undefined,
     chainId: string | undefined
   ): SignDoc {
@@ -581,11 +591,21 @@ export class CosmosUtils implements BaseUtils {
   }
 
   /**
+   * Validates the CustomMessage
+   * @param {CustomMessage} customMessage - The CustomMessage to validate.
+   * @throws {InvalidTransactionError} Throws an error if the custom message is invalid or missing required fields.
+   * @throws {NotSupported} Throws an error if the custom message data is not supported.
+   */
+  validateCustomMessage(customMessage: CustomMessage) {
+    throw new NotSupported('Custom message data not supported');
+  }
+
+  /**
    * Validates the MessageData
    * @param {MessageData} messageData - The MessageData to validate.
    * @throws {InvalidTransactionError} Throws an error if the messageData is invalid or missing required fields.
    */
-  validateMessageData(messageData: MessageData): void {
+  validateMessageData(messageData: MessageData<CustomMessage>): void {
     if (messageData == null) {
       throw new InvalidTransactionError(`Invalid MessageData: undefined`);
     }
@@ -621,6 +641,11 @@ export class CosmosUtils implements BaseUtils {
         this.validateRedelegateMessage(value);
         break;
       }
+      case TransactionType.CustomTx: {
+        const value = messageData.value as CustomMessage;
+        this.validateCustomMessage(value);
+        break;
+      }
       default:
         throw new InvalidTransactionError(`Invalid MessageData TypeUrl is not supported: ` + messageData.typeUrl);
     }
@@ -631,7 +656,7 @@ export class CosmosUtils implements BaseUtils {
    * @param {CosmosLikeTransaction} tx - The transaction to validate.
    * @throws {InvalidTransactionError} Throws an error if the transaction is invalid or missing required fields.
    */
-  validateTransaction(tx: CosmosLikeTransaction): void {
+  validateTransaction(tx: CosmosLikeTransaction<CustomMessage>): void {
     this.validateSequence(tx.sequence);
     this.validateGasBudget(tx.gasBudget);
     this.validatePublicKey(tx.publicKey);
@@ -654,11 +679,11 @@ export class CosmosUtils implements BaseUtils {
    */
   createTransaction(
     sequence: number,
-    messages: MessageData[],
+    messages: MessageData<CustomMessage>[],
     gasBudget: FeeData,
     publicKey?: string,
     memo?: string
-  ): CosmosLikeTransaction {
+  ): CosmosLikeTransaction<CustomMessage> {
     const cosmosLikeTxn = {
       sequence: sequence,
       sendMessages: messages,
@@ -682,12 +707,12 @@ export class CosmosUtils implements BaseUtils {
    */
   createTransactionWithHash(
     sequence: number,
-    messages: MessageData[],
+    messages: MessageData<CustomMessage>[],
     gasBudget: FeeData,
     publicKey?: string,
     signature?: Buffer,
     memo?: string
-  ): CosmosLikeTransaction {
+  ): CosmosLikeTransaction<CustomMessage> {
     const cosmosLikeTxn = this.createTransaction(sequence, messages, gasBudget, publicKey, memo);
     let hash = constants.UNAVAILABLE_TEXT;
     if (signature !== undefined) {
@@ -712,11 +737,11 @@ export class CosmosUtils implements BaseUtils {
    * @param {string} rawTx base64 enocded raw transaction string
    * @returns {CosmosLikeTransaction} Deserialized cosmosLikeTransaction
    */
-  deserializeTransaction(rawTx: string): CosmosLikeTransaction {
+  deserializeTransaction(rawTx: string): CosmosLikeTransaction<CustomMessage> {
     const decodedTx = this.getDecodedTxFromRawBase64(rawTx);
     const typeUrl = this.getTypeUrlFromDecodedTx(decodedTx);
     const type: TransactionType | undefined = this.getTransactionTypeFromTypeUrl(typeUrl);
-    let sendMessageData: MessageData[];
+    let sendMessageData: MessageData<CustomMessage>[];
     if (type === TransactionType.Send) {
       sendMessageData = this.getSendMessageDataFromDecodedTx(decodedTx);
     } else if (type === TransactionType.StakingActivate || type === TransactionType.StakingDeactivate) {
@@ -727,6 +752,8 @@ export class CosmosUtils implements BaseUtils {
       sendMessageData = this.getExecuteContractMessageDataFromDecodedTx(decodedTx);
     } else if (type === TransactionType.StakingRedelegate) {
       sendMessageData = this.getRedelegateMessageDataFromDecodedTx(decodedTx);
+    } else if (type === TransactionType.CustomTx) {
+      sendMessageData = this.getCustomMessageDataFromDecodedTx(decodedTx);
     } else {
       throw new Error('Transaction type not supported: ' + typeUrl);
     }
