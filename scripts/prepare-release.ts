@@ -7,7 +7,7 @@ import { hideBin } from 'yargs/helpers';
 
 import {
   walk,
-  getDistTagsForModuleLocations,
+  getDistTagsForModules,
   getLernaModules,
   changeScopeInFile,
   setDependencyVersion,
@@ -37,6 +37,24 @@ function replaceBitGoPackageScope(rootDir: string, targetScope: string): void {
 }
 
 /**
+ * Read package.json for a module
+ * @param module The module to read package.json from
+ * @returns The parsed package.json content
+ */
+function readModulePackageJson(module: LernaModule): any {
+  return JSON.parse(readFileSync(path.join(module.location, 'package.json'), { encoding: 'utf-8' }));
+}
+
+/**
+ * Write package.json for a module
+ * @param module The module to write package.json to
+ * @param json The content to write
+ */
+function writeModulePackageJson(module: LernaModule, json: any): void {
+  writeFileSync(path.join(module.location, 'package.json'), JSON.stringify(json, null, 2) + '\n');
+}
+
+/**
  * Increment the version for a single module based on the preid.
  *
  * @param {String} preid - The prerelease identifier
@@ -51,8 +69,7 @@ function incrementVersionsForModuleLocation(
   tags: DistTags | undefined,
   allModules: LernaModule[]
 ): string | undefined {
-  const modulePath = module.location;
-  const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
+  const json = readModulePackageJson(module);
 
   let prevTag: string | undefined = undefined;
 
@@ -71,20 +88,23 @@ function incrementVersionsForModuleLocation(
     assert(typeof next === 'string', `Failed to increment version for ${json.name} prevTag=${prevTag}`);
     console.log(`Setting next version for ${json.name} to ${next}`);
     json.version = next;
-    writeFileSync(path.join(modulePath, 'package.json'), JSON.stringify(json, null, 2) + '\n');
+    writeModulePackageJson(module, json);
 
     // since we're manually setting new versions, we must also reconcile all other lerna packages to use the 'next' version for this module
     allModules.forEach((otherModule) => {
       // skip it for the current version
-      if (otherModule.location === modulePath) {
+      if (otherModule.location === module.location) {
         return;
       }
 
-      const otherJsonContent = readFileSync(path.join(otherModule.location, 'package.json'), { encoding: 'utf-8' });
-      if (otherJsonContent.includes(json.name)) {
-        const otherJson = JSON.parse(otherJsonContent);
+      // Use readModulePackageJson here instead of direct readFileSync
+      const otherJson = readModulePackageJson(otherModule);
+
+      // Check if this module depends on the one we're updating
+      const otherJsonString = JSON.stringify(otherJson);
+      if (otherJsonString.includes(json.name)) {
         setDependencyVersion(otherJson, json.name, next);
-        writeFileSync(path.join(otherModule.location, 'package.json'), JSON.stringify(otherJson, null, 2) + '\n');
+        writeModulePackageJson(otherModule, otherJson);
       }
     });
 
@@ -100,15 +120,14 @@ function incrementVersionsForModuleLocation(
  * @param {LernaModule[]} lernaModules - The modules to update
  */
 async function incrementVersions(preid: string, lernaModules: LernaModule[]): Promise<void> {
-  const moduleLocations = lernaModules.map(({ location }) => location);
-  const distTags = await getDistTagsForModuleLocations(moduleLocations);
+  const distTags = await getDistTagsForModules(lernaModules);
 
-  for (let i = 0; i < lernaModules.length; i++) {
+  for (const m of lernaModules) {
     try {
-      incrementVersionsForModuleLocation(preid, lernaModules[i], distTags[i], lernaModules);
+      incrementVersionsForModuleLocation(preid, m, distTags.get(m), lernaModules);
     } catch (e) {
       // it's not necessarily a blocking error. Let lerna try and publish anyways
-      console.warn(`Couldn't set next version for ${lernaModules[i].name} at ${lernaModules[i].location}`, e);
+      console.warn(`Couldn't set next version for ${m.name} at ${m.location}`, e);
     }
   }
 }
