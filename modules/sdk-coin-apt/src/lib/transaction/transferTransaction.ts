@@ -1,16 +1,14 @@
 import { Transaction } from './transaction';
-import { InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
   AccountAddress,
-  Aptos,
-  AptosConfig,
-  Network,
+  InputGenerateTransactionPayloadData,
   TransactionPayload,
   TransactionPayloadEntryFunction,
 } from '@aptos-labs/ts-sdk';
 
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
-import { APTOS_COIN, COIN_TRANSFER_FUNCTION } from '../constants';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { APTOS_COIN, COIN_BATCH_TRANSFER_FUNCTION, COIN_TRANSFER_FUNCTION } from '../constants';
 import utils from '../utils';
 
 export class TransferTransaction extends Transaction {
@@ -21,42 +19,40 @@ export class TransferTransaction extends Transaction {
   }
 
   protected parseTransactionPayload(payload: TransactionPayload): void {
-    if (
-      !(payload instanceof TransactionPayloadEntryFunction) ||
-      payload.entryFunction.args.length !== 2 ||
-      payload.entryFunction.type_args.length !== 1 ||
-      payload.entryFunction.type_args[0].toString().length === 0
-    ) {
+    if (!this.isValidPayload(payload)) {
       throw new InvalidTransactionError('Invalid transaction payload');
     }
-    const entryFunction = payload.entryFunction;
-    if (!this._recipient) {
-      this._recipient = {} as TransactionRecipient;
-    }
+    const entryFunction = (payload as TransactionPayloadEntryFunction).entryFunction;
     this._assetId = entryFunction.type_args[0].toString();
-    this._recipient.address = entryFunction.args[0].toString();
-    this._recipient.amount = utils.getAmountFromPayloadArgs(entryFunction.args[1].bcsToBytes());
+    const addressArg = entryFunction.args[0];
+    const amountArg = entryFunction.args[1];
+    this.recipients = utils.parseRecipients(addressArg, amountArg);
   }
 
-  protected async buildRawTransaction(): Promise<void> {
-    const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
-    const aptos = new Aptos(new AptosConfig({ network }));
-    const senderAddress = AccountAddress.fromString(this._sender);
-    const recipientAddress = AccountAddress.fromString(this._recipient.address);
-    const simpleTxn = await aptos.transaction.build.simple({
-      sender: senderAddress,
-      data: {
-        function: COIN_TRANSFER_FUNCTION,
+  protected getTransactionPayloadData(): InputGenerateTransactionPayloadData {
+    if (this.recipients.length > 1) {
+      return {
+        function: COIN_BATCH_TRANSFER_FUNCTION,
         typeArguments: [this.assetId],
-        functionArguments: [recipientAddress, this.recipient.amount],
-      },
-      options: {
-        maxGasAmount: this.maxGasAmount,
-        gasUnitPrice: this.gasUnitPrice,
-        expireTimestamp: this.expirationTime,
-        accountSequenceNumber: this.sequenceNumber,
-      },
-    });
-    this._rawTransaction = simpleTxn.rawTransaction;
+        functionArguments: [
+          this.recipients.map((recipient) => AccountAddress.fromString(recipient.address)),
+          this.recipients.map((recipient) => recipient.amount),
+        ],
+      };
+    }
+    return {
+      function: COIN_TRANSFER_FUNCTION,
+      typeArguments: [this.assetId],
+      functionArguments: [AccountAddress.fromString(this.recipients[0].address), this.recipients[0].amount],
+    };
+  }
+
+  private isValidPayload(payload: TransactionPayload): boolean {
+    return (
+      payload instanceof TransactionPayloadEntryFunction &&
+      payload.entryFunction.args.length === 2 &&
+      payload.entryFunction.type_args.length === 1 &&
+      payload.entryFunction.type_args[0].toString().length > 0
+    );
   }
 }

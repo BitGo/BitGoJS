@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.6.1...@bitgo/sdk-coin-tao@1.6.2) (2025-03-20)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-tao
+
+## [1.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.6.0...@bitgo/sdk-coin-tao@1.6.1) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-coin-tao:** prevent real api calls by using beforeEach for stubbing ([4415e0e](https://github.com/BitGo/BitGoJS/commit/4415e0e0348eb9f110a53dcbd393f8bd2e1e8619))
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.5.0...@bitgo/sdk-coin-tao@1.6.0) (2025-03-06)
 
 ### Features

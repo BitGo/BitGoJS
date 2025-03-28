@@ -233,38 +233,66 @@ export interface Tokens {
   };
 }
 
-// Get the list of ERC-20 tokens from statics and format it properly
-const formattedErc20Tokens = coins.reduce((acc: Erc20TokenConfig[], coin) => {
-  if (coin instanceof Erc20Coin) {
-    let baseCoin: string;
-    switch (coin.network) {
-      case Networks.main.ethereum:
-        baseCoin = 'eth';
-        break;
-      case Networks.test.kovan:
-        baseCoin = 'teth';
-        break;
-      case Networks.test.goerli:
-        baseCoin = 'gteth';
-        break;
-      case Networks.test.holesky:
-        baseCoin = 'hteth';
-        break;
-      default:
-        throw new Error(`Erc20 token ${coin.name} has an unsupported network`);
-    }
+export interface AmsTokenConfig {
+  id: string;
+  name: string;
+  fullName: string;
+  family: string;
+  decimalPlaces: number;
+  asset: string;
+  features?: string[];
+  prefix?: string;
+  suffix?: string;
+  network?: unknown;
+  primaryKeyCurve?: string;
+  contractAddress?: string;
+  tokenAddress?: string;
+  alias?: string;
+  contractName?: string;
+  tokenId?: string;
+  packageId?: string;
+  module?: string;
+  symbol?: string;
+  issuerAddress?: string;
+  currecnycode?: string;
+  domain?: string;
+  assetId?: string;
+  isToken: boolean;
+}
 
-    acc.push({
-      type: coin.name,
-      coin: baseCoin,
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+// Get the list of ERC-20 tokens from statics and format it properly
+const getFormattedErc20Tokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: Erc20TokenConfig[], coin) => {
+    if (coin instanceof Erc20Coin) {
+      let baseCoin: string;
+      switch (coin.network.name) {
+        case Networks.main.ethereum.name:
+          baseCoin = 'eth';
+          break;
+        case Networks.test.kovan.name:
+          baseCoin = 'teth';
+          break;
+        case Networks.test.goerli.name:
+          baseCoin = 'gteth';
+          break;
+        case Networks.test.holesky.name:
+          baseCoin = 'hteth';
+          break;
+        default:
+          throw new Error(`Erc20 token ${coin.name} has an unsupported network`);
+      }
+
+      acc.push({
+        type: coin.name,
+        coin: baseCoin,
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
 export const ethGasConfigs = {
   minimumGasPrice: 1000000000, // minimum gas price a user can provide (1 Gwei)
@@ -278,434 +306,458 @@ export const ethGasConfigs = {
   opethGasL1Fees: 1000000000000000, // Buffer for opeth L1 gas fees
 };
 // Get the list of Stellar tokens from statics and format it properly
-const formattedStellarTokens = coins.reduce((acc: StellarTokenConfig[], coin) => {
-  if (coin instanceof StellarCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedStellarTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: StellarTokenConfig[], coin) => {
+    if (coin instanceof StellarCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
 // Get the list of OFC tokens from statics and format it properly
-const formattedOfcCoins = coins.reduce((acc: OfcTokenConfig[], coin) => {
-  if (coin instanceof OfcCoin) {
-    acc.push({
-      type: coin.name,
-      coin: 'ofc',
-      backingCoin: coin.asset,
-      name: coin.fullName,
-      decimalPlaces: coin.decimalPlaces,
-      isFiat: coin.kind === CoinKind.FIAT,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedOfcCoins = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: OfcTokenConfig[], coin) => {
+    if (coin instanceof OfcCoin) {
+      acc.push({
+        type: coin.name,
+        coin: 'ofc',
+        backingCoin: coin.asset,
+        name: coin.fullName,
+        decimalPlaces: coin.decimalPlaces,
+        isFiat: coin.kind === CoinKind.FIAT,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedCeloTokens = coins.reduce((acc: CeloTokenConfig[], coin) => {
-  if (coin instanceof CeloCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'celo' : 'tcelo',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedCeloTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: CeloTokenConfig[], coin) => {
+    if (coin instanceof CeloCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'celo' : 'tcelo',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedBscTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof BscCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'bsc' : 'tbsc',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedBscTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof BscCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'bsc' : 'tbsc',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedEosTokens = coins.reduce((acc: EosTokenConfig[], coin) => {
-  if (coin instanceof EosCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'eos' : 'teos',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractName.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-      contractName: coin.contractName,
-      contractAddress: coin.contractAddress,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedEosTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EosTokenConfig[], coin) => {
+    if (coin instanceof EosCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'eos' : 'teos',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractName.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+        contractName: coin.contractName,
+        contractAddress: coin.contractAddress,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedAvaxCTokens = coins.reduce((acc: AvaxcTokenConfig[], coin) => {
-  if (coin instanceof AvaxERC20Token) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'avaxc' : 'tavaxc',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedAvaxCTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: AvaxcTokenConfig[], coin) => {
+    if (coin instanceof AvaxERC20Token) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'avaxc' : 'tavaxc',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedPolygonTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (
-    coin instanceof PolygonERC20Token ||
-    ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.POLYGON)
-  ) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedPolygonTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (
+      coin instanceof PolygonERC20Token ||
+      ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.POLYGON)
+    ) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedArbethTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof ArbethERC20Token) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'arbeth' : 'tarbeth',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedArbethTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof ArbethERC20Token) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'arbeth' : 'tarbeth',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedOpethTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof OpethERC20Token) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'opeth' : 'topeth',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedOpethTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof OpethERC20Token) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'opeth' : 'topeth',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedZkethTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof ZkethERC20Token) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'zketh' : 'tzketh',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedZkethTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof ZkethERC20Token) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'zketh' : 'tzketh',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedBeraTokens = coins.reduce((acc: EthLikeTokenConfig[], coin) => {
-  if (coin instanceof BeraERC20Token) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'bera' : 'tbera',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedBeraTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof BeraERC20Token) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'bera' : 'tbera',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedSolTokens = coins.reduce((acc: SolTokenConfig[], coin) => {
-  if (coin instanceof SolCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'sol' : 'tsol',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenAddress: coin.tokenAddress,
-      decimalPlaces: coin.decimalPlaces,
-      contractAddress: coin.contractAddress,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedSolTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: SolTokenConfig[], coin) => {
+    if (coin instanceof SolCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'sol' : 'tsol',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenAddress: coin.tokenAddress,
+        decimalPlaces: coin.decimalPlaces,
+        contractAddress: coin.contractAddress,
+      });
+    }
+    return acc;
+  }, []);
 
-export const formattedAlgoTokens = coins.reduce((acc: AlgoTokenConfig[], coin) => {
-  if (coin instanceof AlgoCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
-      alias: coin.alias,
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+export const getFormattedAlgoTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: AlgoTokenConfig[], coin) => {
+    if (coin instanceof AlgoCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
+        alias: coin.alias,
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedHbarTokens = coins.reduce((acc: HbarTokenConfig[], coin) => {
-  if (coin instanceof HederaToken) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'hbar' : 'thbar',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      decimalPlaces: coin.decimalPlaces,
-      nodeAccountId: coin.nodeAccountId,
-      tokenId: coin.tokenId,
-      contractAddress: coin.contractAddress,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedHbarTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: HbarTokenConfig[], coin) => {
+    if (coin instanceof HederaToken) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'hbar' : 'thbar',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        decimalPlaces: coin.decimalPlaces,
+        nodeAccountId: coin.nodeAccountId,
+        tokenId: coin.tokenId,
+        contractAddress: coin.contractAddress,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedAdaTokens = coins.reduce((acc: AdaTokenConfig[], coin) => {
-  if (coin instanceof AdaCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'ada' : 'tada',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      policyId: coin.policyId,
-      assetName: coin.assetName,
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedAdaTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: AdaTokenConfig[], coin) => {
+    if (coin instanceof AdaCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'ada' : 'tada',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        policyId: coin.policyId,
+        assetName: coin.assetName,
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedTrxTokens = coins.reduce((acc: TrxTokenConfig[], coin) => {
-  if (coin instanceof TronErc20Coin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'trx' : 'ttrx',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedTrxTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: TrxTokenConfig[], coin) => {
+    if (coin instanceof TronErc20Coin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'trx' : 'ttrx',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedXrpTokens = coins.reduce((acc: XrpTokenConfig[], coin) => {
-  if (coin instanceof XrpCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'xrp' : 'txrp',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      decimalPlaces: coin.decimalPlaces,
-      issuerAddress: coin.issuerAddress,
-      currencyCode: coin.currencyCode,
-      domain: coin.domain,
-      contractAddress: coin.contractAddress,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedXrpTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: XrpTokenConfig[], coin) => {
+    if (coin instanceof XrpCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'xrp' : 'txrp',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        decimalPlaces: coin.decimalPlaces,
+        issuerAddress: coin.issuerAddress,
+        currencyCode: coin.currencyCode,
+        domain: coin.domain,
+        contractAddress: coin.contractAddress,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedSuiTokens = coins.reduce((acc: SuiTokenConfig[], coin) => {
-  if (coin instanceof SuiCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'sui' : 'tsui',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      decimalPlaces: coin.decimalPlaces,
-      packageId: coin.packageId,
-      module: coin.module,
-      symbol: coin.symbol,
-      contractAddress: coin.contractAddress,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedSuiTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: SuiTokenConfig[], coin) => {
+    if (coin instanceof SuiCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'sui' : 'tsui',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        decimalPlaces: coin.decimalPlaces,
+        packageId: coin.packageId,
+        module: coin.module,
+        symbol: coin.symbol,
+        contractAddress: coin.contractAddress,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedAptTokens = coins.reduce((acc: AptTokenConfig[], coin) => {
-  if (coin instanceof AptCoin) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      assetId: coin.assetId,
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedAptTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: AptTokenConfig[], coin) => {
+    if (coin instanceof AptCoin) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        assetId: coin.assetId,
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-const formattedSip10Tokens = coins.reduce((acc: Sip10TokenConfig[], coin) => {
-  if (coin instanceof Sip10Token) {
-    acc.push({
-      type: coin.name,
-      coin: coin.network.type === NetworkType.MAINNET ? 'stx' : 'tstx',
-      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-      name: coin.fullName,
-      assetId: coin.assetId,
-      decimalPlaces: coin.decimalPlaces,
-    });
-  }
-  return acc;
-}, []);
+const getFormattedSip10Tokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: Sip10TokenConfig[], coin) => {
+    if (coin instanceof Sip10Token) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'stx' : 'tstx',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        assetId: coin.assetId,
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
 
-export const tokens: Tokens = {
-  // network name for production environments
-  bitcoin: {
-    eth: {
-      tokens: formattedErc20Tokens.filter((token) => token.network === 'Mainnet'),
+export const getFormattedTokens = (coinMap = coins): Tokens => {
+  return {
+    bitcoin: {
+      eth: {
+        tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      xlm: {
+        tokens: getFormattedStellarTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      algo: {
+        tokens: getFormattedAlgoTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      ofc: {
+        tokens: getFormattedOfcCoins(coinMap).filter(
+          (token) => coinMap.get(token.type).network.type === NetworkType.MAINNET
+        ),
+      },
+      celo: {
+        tokens: getFormattedCeloTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      bsc: {
+        tokens: getFormattedBscTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      eos: {
+        tokens: getFormattedEosTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      avaxc: {
+        tokens: getFormattedAvaxCTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      polygon: {
+        tokens: getFormattedPolygonTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      arbeth: {
+        tokens: getFormattedArbethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      opeth: {
+        tokens: getFormattedOpethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      zketh: {
+        tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      sol: {
+        tokens: getFormattedSolTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      hbar: {
+        tokens: getFormattedHbarTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      ada: {
+        tokens: getFormattedAdaTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      trx: {
+        tokens: getFormattedTrxTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      xrp: {
+        tokens: getFormattedXrpTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      sui: {
+        tokens: getFormattedSuiTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      bera: {
+        tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      apt: {
+        tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      stx: {
+        tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
     },
-    xlm: {
-      tokens: formattedStellarTokens.filter((token) => token.network === 'Mainnet'),
+    testnet: {
+      eth: {
+        tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      xlm: {
+        tokens: getFormattedStellarTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      algo: {
+        tokens: getFormattedAlgoTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      ofc: {
+        tokens: getFormattedOfcCoins(coinMap).filter(
+          (token) => coinMap.get(token.type).network.type === NetworkType.TESTNET
+        ),
+      },
+      celo: {
+        tokens: getFormattedCeloTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      bsc: {
+        tokens: getFormattedBscTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      eos: {
+        tokens: getFormattedEosTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      avaxc: {
+        tokens: getFormattedAvaxCTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      polygon: {
+        tokens: getFormattedPolygonTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      arbeth: {
+        tokens: getFormattedArbethTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      opeth: {
+        tokens: getFormattedOpethTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      zketh: {
+        tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      sol: {
+        tokens: getFormattedSolTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      hbar: {
+        tokens: getFormattedHbarTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      ada: {
+        tokens: getFormattedAdaTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      trx: {
+        tokens: getFormattedTrxTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      xrp: {
+        tokens: getFormattedXrpTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      sui: {
+        tokens: getFormattedSuiTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      bera: {
+        tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      apt: {
+        tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      stx: {
+        tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
     },
-    algo: {
-      tokens: formattedAlgoTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    ofc: {
-      tokens: formattedOfcCoins.filter((token) => coins.get(token.type).network.type === NetworkType.MAINNET),
-    },
-    celo: {
-      tokens: formattedCeloTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    bsc: {
-      tokens: formattedBscTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    eos: {
-      tokens: formattedEosTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    avaxc: {
-      tokens: formattedAvaxCTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    polygon: {
-      tokens: formattedPolygonTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    arbeth: {
-      tokens: formattedArbethTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    opeth: {
-      tokens: formattedOpethTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    zketh: {
-      tokens: formattedZkethTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    sol: {
-      tokens: formattedSolTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    hbar: {
-      tokens: formattedHbarTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    ada: {
-      tokens: formattedAdaTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    trx: {
-      tokens: formattedTrxTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    xrp: {
-      tokens: formattedXrpTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    sui: {
-      tokens: formattedSuiTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    bera: {
-      tokens: formattedBeraTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    apt: {
-      tokens: formattedAptTokens.filter((token) => token.network === 'Mainnet'),
-    },
-    stx: {
-      tokens: formattedSip10Tokens.filter((token) => token.network === 'Mainnet'),
-    },
-  },
-  // network name for test environments
-  testnet: {
-    eth: {
-      tokens: formattedErc20Tokens.filter((token) => token.network === 'Testnet'),
-    },
-    xlm: {
-      tokens: formattedStellarTokens.filter((token) => token.network === 'Testnet'),
-    },
-    algo: {
-      tokens: formattedAlgoTokens.filter((token) => token.network === 'Testnet'),
-    },
-    ofc: {
-      tokens: formattedOfcCoins.filter((token) => coins.get(token.type).network.type === NetworkType.TESTNET),
-    },
-    celo: {
-      tokens: formattedCeloTokens.filter((token) => token.network === 'Testnet'),
-    },
-    bsc: {
-      tokens: formattedBscTokens.filter((token) => token.network === 'Testnet'),
-    },
-    eos: {
-      tokens: formattedEosTokens.filter((token) => token.network === 'Testnet'),
-    },
-    avaxc: {
-      tokens: formattedAvaxCTokens.filter((token) => token.network === 'Testnet'),
-    },
-    polygon: {
-      tokens: formattedPolygonTokens.filter((token) => token.network === 'Testnet'),
-    },
-    arbeth: {
-      tokens: formattedArbethTokens.filter((token) => token.network === 'Testnet'),
-    },
-    opeth: {
-      tokens: formattedOpethTokens.filter((token) => token.network === 'Testnet'),
-    },
-    zketh: {
-      tokens: formattedZkethTokens.filter((token) => token.network === 'Testnet'),
-    },
-    sol: {
-      tokens: formattedSolTokens.filter((token) => token.network === 'Testnet'),
-    },
-    hbar: {
-      tokens: formattedHbarTokens.filter((token) => token.network === 'Testnet'),
-    },
-    ada: {
-      tokens: formattedAdaTokens.filter((token) => token.network === 'Testnet'),
-    },
-    trx: {
-      tokens: formattedTrxTokens.filter((token) => token.network === 'Testnet'),
-    },
-    xrp: {
-      tokens: formattedXrpTokens.filter((token) => token.network === 'Testnet'),
-    },
-    sui: {
-      tokens: formattedSuiTokens.filter((token) => token.network === 'Testnet'),
-    },
-    bera: {
-      tokens: formattedBeraTokens.filter((token) => token.network === 'Testnet'),
-    },
-    apt: {
-      tokens: formattedAptTokens.filter((token) => token.network === 'Testnet'),
-    },
-    stx: {
-      tokens: formattedSip10Tokens.filter((token) => token.network === 'Testnet'),
-    },
-  },
+  };
 };
 
 /**
@@ -733,6 +785,10 @@ const verifyTokens = function (tokens: BaseTokenConfig[]) {
 
   return verifiedTokens;
 };
+
+export const tokens = getFormattedTokens();
+
+export const formattedAlgoTokens = getFormattedAlgoTokens();
 
 const mainnetErc20Tokens = verifyTokens(tokens.bitcoin.eth.tokens);
 const mainnetStellarTokens = verifyTokens(tokens.bitcoin.xlm.tokens);

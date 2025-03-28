@@ -2,8 +2,20 @@ import * as _ from 'lodash';
 
 import * as nock from 'nock';
 import fixtures from '../../fixtures/staking/stakingWallet';
+import * as opethFixtures from '../../fixtures/staking/topethStakingFixtures';
 
-import { Enterprise, Environments, Keychain, Keychains, StakingWallet, Wallet } from '@bitgo/sdk-core';
+import {
+  Enterprise,
+  Environments,
+  Keychain,
+  Keychains,
+  PrebuildTransactionResult,
+  StakingTransaction,
+  StakingWallet,
+  Wallet,
+  WalletCoinSpecific,
+  WalletData,
+} from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 import * as sinon from 'sinon';
@@ -14,13 +26,16 @@ describe('non-TSS Staking Wallet', function () {
   let ethBaseCoin;
   let maticBaseCoin;
   let btcBaseCoin;
+  let topethWctBaseCoin;
   let enterprise;
   let ethWalletData: any;
   let btcWalletData: any;
+  let topethWctStakingWalletData: WalletData;
   let btcDescriptorWalletData: any;
   let ethStakingWallet: StakingWallet;
   let maticStakingWallet: StakingWallet;
   let btcStakingWallet: StakingWallet;
+  let topethWctStakingWallet: StakingWallet;
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
@@ -31,6 +46,7 @@ describe('non-TSS Staking Wallet', function () {
     maticBaseCoin.keychains();
     btcBaseCoin = bitgo.coin('btc');
     btcBaseCoin.keychains();
+    topethWctBaseCoin = bitgo.coin('topeth:wct');
 
     enterprise = new Enterprise(bitgo, ethBaseCoin, {
       id: '5cf940949449412d00f53b3d92dbcaa3',
@@ -63,9 +79,30 @@ describe('non-TSS Staking Wallet', function () {
       keys: ['5b3424f91bf349930e340175'],
       coinSpecific: {},
     };
+
+    topethWctStakingWalletData = {
+      approvalsRequired: 0,
+      balance: 0,
+      balanceString: '',
+      coinSpecific: {} as WalletCoinSpecific,
+      confirmedBalance: 0,
+      confirmedBalanceString: '',
+      keys: [],
+      label: '',
+      multisigType: 'onchain',
+      pendingApprovals: [],
+      spendableBalance: 0,
+      spendableBalanceString: '',
+      id: 'topethWctStakingWalletId',
+      coin: 'topeth:wct',
+      enterprise: enterprise.id,
+    };
+
     const ethWallet = new Wallet(bitgo, ethBaseCoin, ethWalletData);
     const maticWallet = new Wallet(bitgo, maticBaseCoin, maticWalletData);
     const btcWallet = new Wallet(bitgo, btcBaseCoin, btcWalletData);
+    topethWctStakingWallet = new Wallet(bitgo, topethWctBaseCoin, topethWctStakingWalletData).toStakingWallet();
+
     ethStakingWallet = ethWallet.toStakingWallet();
     maticStakingWallet = maticWallet.toStakingWallet();
     btcStakingWallet = btcWallet.toStakingWallet();
@@ -132,12 +169,16 @@ describe('non-TSS Staking Wallet', function () {
         )
         .reply(200, transaction);
 
+      // skipping validation because mock data is not a valid transaction
+      sinon.stub(StakingWallet.prototype, <any>'validateBuiltStakingTransaction').resolves();
+
       const stakingTransaction = await ethStakingWallet.buildSignAndSend(
         { walletPassphrase: walletPassphrase },
         transaction
       );
 
       stakingTransaction.should.deepEqual(transaction);
+      sinon.restore();
     });
 
     it('should throw error when buildParams are not expanded', async function () {
@@ -221,12 +262,15 @@ describe('non-TSS Staking Wallet', function () {
         )
         .reply(200, transaction);
 
+      // skipping validation because mock data is not a valid transaction
+      sinon.stub(StakingWallet.prototype, <any>'validateBuiltStakingTransaction').resolves();
       const stakingTransaction = await maticStakingWallet.buildSignAndSend(
         { walletPassphrase: walletPassphrase },
         transaction
       );
 
       stakingTransaction.should.deepEqual(transaction);
+      sinon.restore();
     });
   });
 
@@ -264,6 +308,67 @@ describe('non-TSS Staking Wallet', function () {
       const prebuildTransaction = sandbox.stub(Wallet.prototype, 'prebuildTransaction');
       await btcStakingWallet.build(transaction);
       prebuildTransaction.calledOnceWithExactly(transaction.buildParams).should.be.true;
+    });
+  });
+
+  describe('Opeth:WCT Staking', function () {
+    it('should build and validate transaction', async function () {
+      const unsignedTransaction: PrebuildTransactionResult = {
+        walletId: topethWctStakingWallet.walletId,
+        ...opethFixtures.unsignedStakingTransaction,
+      } as PrebuildTransactionResult;
+      const stakingTransaction: StakingTransaction = opethFixtures.updatedStakingRequest;
+
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${topethWctStakingWallet.coin}/wallets/${topethWctStakingWallet.walletId}/requests/${stakingTransaction.stakingRequestId}/transactions/${stakingTransaction.id}`
+        )
+        .query({ expandBuildParams: true })
+        .reply(200, stakingTransaction);
+
+      nock(microservicesUri)
+        .get(`/api/v2/topeth/wallet/${topethWctStakingWallet.walletId}`)
+        .reply(200, topethWctStakingWalletData);
+
+      nock(microservicesUri)
+        .post(`/api/v2/topeth/wallet/${topethWctStakingWallet.walletId}/tx/build`)
+        .reply(200, unsignedTransaction);
+
+      // tx validation happens before signing, so we can skip it
+      sinon.stub(topethWctStakingWallet, 'sign').resolves();
+
+      await topethWctStakingWallet.buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction);
+    });
+
+    it('should fail to validate transaction if unsigned transaction does not match the staking transaction', async function () {
+      const unsignedTransaction: PrebuildTransactionResult = {
+        walletId: topethWctStakingWallet.walletId,
+        ...opethFixtures.unsignedStakingTransaction,
+        txHex:
+          '0x02f9019083aa37dc718206a882089e83030d40941d1a245741bd7d603747a23d30f4c91682a2992680b901643912521500000000000000000000000086bb6dca2cd6f9a0189c478bbb8f7ee2fef07c89000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000067ebedc3000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000140d63efb5b24314f6f62dbadb383dba2e49d7ee0000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0808080',
+      } as PrebuildTransactionResult;
+      const stakingTransaction: StakingTransaction = opethFixtures.updatedStakingRequest;
+
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${topethWctStakingWallet.coin}/wallets/${topethWctStakingWallet.walletId}/requests/${stakingTransaction.stakingRequestId}/transactions/${stakingTransaction.id}`
+        )
+        .query({ expandBuildParams: true })
+        .reply(200, stakingTransaction);
+
+      nock(microservicesUri)
+        .get(`/api/v2/topeth/wallet/${topethWctStakingWallet.walletId}`)
+        .reply(200, topethWctStakingWalletData);
+
+      nock(microservicesUri)
+        .post(`/api/v2/topeth/wallet/${topethWctStakingWallet.walletId}/tx/build`)
+        .reply(200, unsignedTransaction);
+
+      await topethWctStakingWallet
+        .buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction)
+        .should.be.rejectedWith(
+          'Invalid recipient address: 0x86bb6dca2cd6f9a0189c478bbb8f7ee2fef07c89, Missing recipient address(es): 0x75bb6dca2cd6f9a0189c478bbb8f7ee2fef07c78'
+        );
     });
   });
 });

@@ -28,6 +28,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    '5367fe0f-1f39-48c1-8673-23cd6bc1f445',
+    'sol:pnut',
+    'Peanut the Squirrel',
+    6,
+    '2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump', // https://solscan.io/token/2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump
+    '2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump',
+    UnderlyingAsset['sol:pnut'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '2d3009df-9534-43c7-8661-e3fe00a023f5',
     'sol:nyan',
     'NYAN',
@@ -2537,6 +2547,26 @@ export const solTokens = [
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
     ]
+  ),
+  solToken(
+    '3766131e-2d14-46f8-bc14-b15c080256e3',
+    'sol:matrix',
+    'Matrix One',
+    9,
+    'E1R4RF89GcKxz62DVfojxDJteLFFs8rtiXcGcrx5HbTj',
+    'E1R4RF89GcKxz62DVfojxDJteLFFs8rtiXcGcrx5HbTj',
+    UnderlyingAsset['sol:matrix'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '88814831-9cae-4174-8d1c-380aeb3fe55a',
+    'sol:eurcv',
+    'EUR CoinVertible',
+    2,
+    'DghpMkatCiUsofbTmid3M3kAbDTPqDwKiYHnudXeGG52',
+    'DghpMkatCiUsofbTmid3M3kAbDTPqDwKiYHnudXeGG52',
+    UnderlyingAsset['sol:eurcv'],
+    SOL_TOKEN_FEATURES
   ),
 
   tsolToken(

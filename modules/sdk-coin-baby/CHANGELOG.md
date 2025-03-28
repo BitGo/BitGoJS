@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.2.0...@bitgo/sdk-coin-baby@1.2.1) (2025-03-20)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-baby
+
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.1.9...@bitgo/sdk-coin-baby@1.2.0) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-coin-baby:** add support for finality provider address ([6e4fa42](https://github.com/BitGo/BitGoJS/commit/6e4fa420a981feab2b354b2e628cbe893ba62899))
+
+### Features
+
+- **sdk-coin-baby:** add sdk support for babylon native staking ([4e59dc6](https://github.com/BitGo/BitGoJS/commit/4e59dc67e80e0f5c608f85e67b389fc2885f349c))
+
 ## [1.1.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.1.8...@bitgo/sdk-coin-baby@1.1.9) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-baby

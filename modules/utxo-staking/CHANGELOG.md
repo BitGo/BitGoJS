@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.10.0...@bitgo/utxo-staking@1.11.0) (2025-03-20)
+
+### Features
+
+- **utxo-staking:** add babylon params sync script and manager ([c743316](https://github.com/BitGo/BitGoJS/commit/c743316b4c52a60063e0bfc926847152eccbf490))
+- **utxo-staking:** add files field to package.json ([fdde58b](https://github.com/BitGo/BitGoJS/commit/fdde58bd8baca4ca8cdbe9e6f221759562a7ca76))
+
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.9.0...@bitgo/utxo-staking@1.10.0) (2025-03-18)
+
+### Features
+
+- **deps:** add babylonlabs package as dev dependency ([65e31bf](https://github.com/BitGo/BitGoJS/commit/65e31bff9e43f9f5401ca3dd334bf01085855128))
+- **utxo-staking:** add test for babylon delegation message ([d1bf8c3](https://github.com/BitGo/BitGoJS/commit/d1bf8c3083b6f3f5f7f629b56c60e548608cdbbe))
+- **utxo-staking:** add unsigned delegation message creation ([7fb9d68](https://github.com/BitGo/BitGoJS/commit/7fb9d68c6e7d2ac8f19c2f416807acb589c86f02))
+- **utxo-staking:** add utils for creating unsigned delegation messages ([071f7e4](https://github.com/BitGo/BitGoJS/commit/071f7e40a0c50cf90d4c185c3e5e7f3bdca90f35))
+- **utxo-staking:** bump babylon-proto-ts to 1.0.0 ([889b1c7](https://github.com/BitGo/BitGoJS/commit/889b1c7c8323db918d459117683c46afabfe83a6))
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.8.0...@bitgo/utxo-staking@1.9.0) (2025-03-06)
 
 ### Features

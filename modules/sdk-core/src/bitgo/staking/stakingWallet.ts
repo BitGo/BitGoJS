@@ -16,11 +16,14 @@ import {
   UnstakeOptions,
   EthUnstakeOptions,
   ClaimRewardsOptions,
+  StakingTxRequestPrebuildTransactionResult,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet, PrebuildTransactionResult } from '../wallet';
 import { ITssUtils, RequestTracer, TssUtils } from '../utils';
 import assert from 'assert';
+import { transactionRecipientsMatch } from '../utils/transactionUtils';
+import debug from 'debug';
 
 export class StakingWallet implements IStakingWallet {
   private readonly bitgo: BitGoBase;
@@ -262,6 +265,9 @@ export class StakingWallet implements IStakingWallet {
     transaction: StakingTransaction
   ): Promise<StakingSignedTransaction> {
     const builtTx = await this.build(transaction);
+    if (!isStakingTxRequestPrebuildResult(builtTx.result)) {
+      await this.validateBuiltStakingTransaction(transaction, builtTx);
+    }
     return await this.sign(signOptions, builtTx);
   }
 
@@ -338,4 +344,70 @@ export class StakingWallet implements IStakingWallet {
     assert(transaction.buildParams?.senderWalletId, 'senderWalletId is required for btc undelegate transaction');
     return await this.wallet.baseCoin.wallets().get({ id: transaction.buildParams.senderWalletId });
   }
+
+  private async validateBuiltStakingTransaction(
+    transaction: StakingTransaction,
+    prebuiltStakingTransaction: StakingPrebuildTransactionResult
+  ) {
+    const { buildParams } = transaction;
+    const { result } = prebuiltStakingTransaction;
+    const coin = this.wallet.baseCoin;
+    debug(`Validating staking transaction ${transaction.stakingRequestId} with prebuilt transaction`);
+
+    const explainedTransaction = await coin.explainTransaction(result);
+
+    if (buildParams?.recipients) {
+      const userRecipientMap = new Map(
+        buildParams.recipients.map((recipient) => [recipient.address.toLowerCase(), recipient])
+      );
+      const platformRecipientMap = new Map(
+        (explainedTransaction?.outputs ?? []).map((recipient) => [recipient.address.toLowerCase(), recipient])
+      );
+
+      const mismatchErrors: string[] = [];
+
+      for (const [recipientAddress, recipientInfo] of platformRecipientMap) {
+        if (userRecipientMap.has(recipientAddress)) {
+          const userRecpient = userRecipientMap.get(recipientAddress);
+          if (!userRecpient) {
+            throw new Error('Unable to determine recipient address');
+          }
+          const matchResult = transactionRecipientsMatch(userRecpient, recipientInfo);
+          if (!matchResult.exactMatch) {
+            if (!matchResult.tokenMatch) {
+              mismatchErrors.push(
+                `Invalid token ${recipientInfo.tokenName} transfer with amount ${recipientInfo.amount} to ${recipientInfo.amount} found in built transaction, specified ${userRecpient.tokenName}`
+              );
+            }
+            if (!matchResult.amountMatch) {
+              mismatchErrors.push(
+                `Invalid recipient amount for ${recipientInfo.address}, specified ${userRecpient.amount} got ${recipientInfo.amount}`
+              );
+            }
+          }
+        } else {
+          mismatchErrors.push(`Invalid recipient address: ${recipientAddress}`);
+        }
+      }
+
+      const missingRecipientAddresses = Array.from(userRecipientMap.keys()).filter(
+        (address) => !platformRecipientMap.has(address)
+      );
+
+      if (missingRecipientAddresses.length > 0) {
+        mismatchErrors.push(`Missing recipient address(es): ${missingRecipientAddresses.join(', ')}`);
+      }
+      if (mismatchErrors.length > 0) {
+        throw new Error(mismatchErrors.join(', '));
+      }
+    } else {
+      debug(`Cannot validate staking transaction ${transaction.stakingRequestId} without specified build params`);
+    }
+  }
+}
+
+function isStakingTxRequestPrebuildResult(
+  tx: StakingPrebuildTransactionResult['result']
+): tx is StakingTxRequestPrebuildTransactionResult {
+  return (tx as StakingTxRequestPrebuildTransactionResult).txRequestId !== undefined;
 }

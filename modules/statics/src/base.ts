@@ -59,6 +59,7 @@ export enum CoinFamily {
   KAVA = 'kava',
   LNBTC = 'lnbtc',
   LTC = 'ltc',
+  MANTRA = 'mantra',
   POLYGON = 'polygon',
   NEAR = 'near',
   OAS = 'oas',
@@ -395,6 +396,7 @@ export enum UnderlyingAsset {
   KAVA = 'kava',
   LNBTC = 'lnbtc',
   LTC = 'ltc',
+  MANTRA = 'mantra',
   NEAR = 'near',
   OAS = 'oas',
   OPETH = 'opeth',
@@ -1844,14 +1846,19 @@ export enum UnderlyingAsset {
   'eth:icnt' = 'eth:icnt',
   'eth:god' = 'eth:god',
   'eth:sky' = 'eth:sky',
+  'eth:uco' = 'eth:uco',
   'eth:fuel' = 'eth:fuel',
   'eth:xreth' = 'eth:xreth',
   'eth:xy' = 'eth:xy',
   'eth:move' = 'eth:move',
   'eth:mon' = 'eth:mon',
+  'eth:usual' = 'eth:usual',
   'eth:usd1' = 'eth:usd1',
   'eth:ibtc' = 'eth:ibtc',
   'eth:pyr' = 'eth:pyr',
+  'eth:una' = 'eth:una',
+  'eth:ads' = 'eth:ads',
+  'eth:fuelv1' = 'eth:fuelv1',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -1998,6 +2005,7 @@ export enum UnderlyingAsset {
   'polygon:usdcv2' = 'polygon:usdcv2',
   'polygon:usdt' = 'polygon:usdt',
   'polygon:weth' = 'polygon:weth',
+  'polygon:cnkt' = 'polygon:cnkt',
   'polygon:wbtc' = 'polygon:wbtc',
   'polygon:sand' = 'polygon:sand',
   'polygon:dai' = 'polygon:dai',
@@ -2267,6 +2275,7 @@ export enum UnderlyingAsset {
   // Arbitrum mainnet tokens
   'arbeth:link' = 'arbeth:link',
   'arbeth:usdc' = 'arbeth:usdc',
+  'arbeth:xsgdv2' = 'arbeth:xsgdv2',
   'arbeth:usdcv2' = 'arbeth:usdcv2',
   'arbeth:usdt' = 'arbeth:usdt',
   'arbeth:arb' = 'arbeth:arb',
@@ -2294,6 +2303,7 @@ export enum UnderlyingAsset {
   'arbeth:gs' = 'arbeth:gs',
   'arbeth:veur' = 'arbeth:veur',
   'arbeth:vchf' = 'arbeth:vchf',
+  'arbeth:tbill' = 'arbeth:tbill',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2435,6 +2445,7 @@ export enum UnderlyingAsset {
   'sol:corn' = 'sol:corn',
   'sol:yes' = 'sol:yes',
   'sol:ai16z' = 'sol:ai16z',
+  'sol:pnut' = 'sol:pnut',
   'sol:nyan' = 'sol:nyan',
   'sol:virtual' = 'sol:virtual',
   'sol:zerebro' = 'sol:zerebro',
@@ -2450,6 +2461,8 @@ export enum UnderlyingAsset {
   'sol:cetes' = 'sol:cetes',
   'sol:gilts' = 'sol:gilts',
   'sol:muskit' = 'sol:muskit',
+  'sol:matrix' = 'sol:matrix',
+  'sol:eurcv' = 'sol:eurcv',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
@@ -2468,6 +2481,7 @@ export enum UnderlyingAsset {
   'xrp:rlusd' = 'xrp:rlusd',
   'txrp:rlusd' = 'txrp:rlusd',
   'txrp:xat' = 'txrp:xat',
+  'xrp:tbill' = 'xrp:tbill',
 
   // Sui tokens
   'sui:deep' = 'sui:deep',
@@ -2492,6 +2506,7 @@ export enum UnderlyingAsset {
   // Apt tokens
   'apt:usdt' = 'apt:usdt',
   'apt:usdc' = 'apt:usdc',
+  'apt:pact' = 'apt:pact',
 
   // Apt testnet tokens
   'tapt:usdt' = 'tapt:usdt',
@@ -2566,6 +2581,7 @@ export enum BaseUnit {
   RUNE = 'rune',
   TAO = 'rao',
   ICP = 'e8s',
+  MANTRA = 'uom',
 }
 
 export interface BaseCoinConstructorOptions {

@@ -172,13 +172,17 @@ class AptTestnet extends Testnet implements AccountNetwork {
 class Icp extends Mainnet implements AccountNetwork {
   name = 'Internet Computer';
   family = CoinFamily.ICP;
-  explorerUrl = 'https://www.icpexplorer.org'; //TODO(WIN-4242): update to the prod rosetta explorer url
+  explorerUrl = 'https://www.icpexplorer.org/#/tx/'; //TODO(WIN-4242): update to the test rosetta explorer url
+  accountExplorerUrl = 'https://www.icpexplorer.org/#/account/?network=mainnet';
+  blockExplorerUrl = 'https://www.icpexplorer.org/#/block/?network=mainnet';
 }
 
 class IcpTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Internet Computer';
   family = CoinFamily.ICP;
-  explorerUrl = 'https://www.icpexplorer.org'; //TODO(WIN-4242): update to the test rosetta explorer url
+  explorerUrl = 'https://www.icpexplorer.org/#/tx/'; //TODO(WIN-4242): update to the test rosetta explorer url
+  accountExplorerUrl = 'https://www.icpexplorer.org/#/account/?network=testnet';
+  blockExplorerUrl = 'https://www.icpexplorer.org/#/block/?network=testnet';
 }
 class Arbitrum extends Mainnet implements EthereumNetwork {
   name = 'Arbitrum';
@@ -863,6 +867,18 @@ class BabyTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.babylon.explorers.guru/transaction/';
 }
 
+class Mantra extends Mainnet implements AccountNetwork {
+  name = 'Mantra';
+  family = CoinFamily.MANTRA;
+  explorerUrl = 'https://explorer.mantrachain.io/MANTRA-1/tx/';
+}
+
+class MantraTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Mantra';
+  family = CoinFamily.MANTRA;
+  explorerUrl = 'https://explorer.mantrachain.io/MANTRA-Dukong/tx/';
+}
+
 class Islm extends Mainnet implements AccountNetwork {
   name = 'Haqq';
   family = CoinFamily.ISLM;
@@ -1320,6 +1336,7 @@ export const Networks = {
     kava: Object.freeze(new Kava()),
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
+    mantra: Object.freeze(new Mantra()),
     polygon: Object.freeze(new Polygon()),
     oas: Object.freeze(new Oas()),
     ofc: Object.freeze(new Ofc()),
@@ -1390,6 +1407,7 @@ export const Networks = {
     holesky: Object.freeze(new Holesky()),
     lnbtc: Object.freeze(new LightningBitcoinTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
+    mantra: Object.freeze(new MantraTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     oas: Object.freeze(new OasTestnet()),
     ofc: Object.freeze(new OfcTestnet()),

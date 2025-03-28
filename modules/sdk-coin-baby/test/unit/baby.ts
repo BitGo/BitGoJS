@@ -90,6 +90,7 @@ describe('Babylon', function () {
       should.equal(utils.isValidAddress(address.validMemoIdAddress2), true);
       should.equal(utils.isValidAddress(address.multipleMemoIdAddress), false);
     });
+
     it('should validate validator addresses correctly', () => {
       should.equal(utils.isValidValidatorAddress(address.validatorAddress1), true);
       should.equal(utils.isValidValidatorAddress(address.validatorAddress2), true);
@@ -98,6 +99,11 @@ describe('Babylon', function () {
       should.equal(utils.isValidValidatorAddress('dfjk35y'), false);
       should.equal(utils.isValidValidatorAddress(undefined as unknown as string), false);
       should.equal(utils.isValidValidatorAddress(''), false);
+    });
+
+    it('should finality provider addresses correctly', () => {
+      should.equal(basecoin.isValidAddress(address.finalityProviderAddress), true);
+      should.equal(basecoin.isValidAddress('dfjk35y'), false);
     });
   });
 

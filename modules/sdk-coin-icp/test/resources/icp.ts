@@ -98,23 +98,71 @@ export const IcpTransactionData = {
 };
 
 export const rawTransaction = {
-  outputAmount: '10',
-  inputAmount: '10',
-  spendAmount: '10',
-  fee: '-10000',
-  externalOutputs: [
+  serializedTxHex:
+    'b90002677570646174657381826b5452414e53414354494f4eb900056b63616e69737465725f69644a000000000000000201016b6d6574686f645f6e616d656773656e645f70626361726758410a02080112060a0408c0843d1a0308904e2a220a20c3d30f404955975adaba89f2e1ebc75c1f44a6a204578afce8f3780d64fe252e3a0a0880ecbac5bfcc9d97186673656e646572581dd5fc1dc4d74d4aa35d81cf345533d20548113412d32fffdcece2f68a026e696e67726573735f6578706972791b000000000000000070696e67726573735f6578706972696573811b182e769bd9cc1600',
+  publicKey:
+    '042ab77b959e28c4fa47fa8fb9e57cec3d66df5684d076ac2e4c5f28fd69a23dd31a59f908c8add51eab3530b4ac5d015166eaf2198c52fa9a8df7cfaeb8fdb7d4',
+};
+
+export const parsedRawTransaction = {
+  operations: [
     {
-      amount: '10',
-      address: accounts.account2.address,
+      operation_identifier: {
+        index: 0,
+      },
+      type: 'TRANSACTION',
+      status: null,
+      account: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      amount: {
+        value: '-1000000',
+        currency: {
+          symbol: 'ICP',
+          decimals: 8,
+        },
+      },
+    },
+    {
+      operation_identifier: {
+        index: 1,
+      },
+      type: 'TRANSACTION',
+      status: null,
+      account: {
+        address: 'c3d30f404955975adaba89f2e1ebc75c1f44a6a204578afce8f3780d64fe252e',
+      },
+      amount: {
+        value: '1000000',
+        currency: {
+          symbol: 'ICP',
+          decimals: 8,
+        },
+      },
+    },
+    {
+      operation_identifier: {
+        index: 2,
+      },
+      type: 'FEE',
+      status: null,
+      account: {
+        address: '0af815da8259ba8bb3d34fbfb2ac730f07a1adc81438d40d667d91b408b25f2f',
+      },
+      amount: {
+        value: '-10000',
+        currency: {
+          symbol: 'ICP',
+          decimals: 8,
+        },
+      },
     },
   ],
-  type: OperationType.TRANSACTION,
-  address: accounts.account1.address,
-  senderKey: accounts.account1.publicKey,
-  seqno: 1740638136656000000,
-  spendAmountString: '10',
-  id: '5jTEPuDcMCeEgp1iyEbNBKsnhYz4F4c1EPDtRmxm3wCw',
-  expiryTime: Date.now() * 1000_000 + 5 * 60 * 1000_000_000,
+  account_identifier_signers: [],
+  metadata: {
+    created_at_time: 1742457444920999936,
+    memo: 1,
+  },
 };
 
 export const metaData: IcpMetadata = {

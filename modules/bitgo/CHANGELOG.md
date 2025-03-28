@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [42.2.1](https://github.com/BitGo/BitGoJS/compare/bitgo@42.2.0...bitgo@42.2.1) (2025-03-20)
+
+### Reverts
+
+- Revert "fix(sdk-core): add validation for unsigned txHex" ([4333b10](https://github.com/BitGo/BitGoJS/commit/4333b1014040edbb0f5b347a9f5e343b20e1704f))
+
+# [42.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@42.1.0...bitgo@42.2.0) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-core:** add validation for unsigned txHex ([4a5ba60](https://github.com/BitGo/BitGoJS/commit/4a5ba60cc98a3aededc7c3385cb8dd47f8c21353))
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+- **sdk-core:** validate sweep destination on utxos ([b480b8c](https://github.com/BitGo/BitGoJS/commit/b480b8cbb2bd36e1dd8f5a3da716a64d46efac8a))
+
+### Features
+
+- **abstract-lightning:** add custodial lightning api functions ([16b825a](https://github.com/BitGo/BitGoJS/commit/16b825a4d052399d4360c689b24888ab327ff6c0))
+- **abstract-lightning:** get transfer for lightning pay invoice ([cfc6127](https://github.com/BitGo/BitGoJS/commit/cfc61278903976c8409574ba773c29dea7cfd743))
+- **express:** remove unneeded express routes and use subtype on wallet ([3356783](https://github.com/BitGo/BitGoJS/commit/335678378737608280f768b8306ced454d88a7c2))
+- **sdk-coin-stx:** added fungible token transfer builder for sip10 ([f17c040](https://github.com/BitGo/BitGoJS/commit/f17c04054e7cf4fa87d1e2c1b23b713e21498db8))
+- **sdk-core:** add aed and sgd ([2ba82d6](https://github.com/BitGo/BitGoJS/commit/2ba82d6b5a9e1522a54b4d086d0a06a60999f1ef))
+- **sdk-core:** add custodial lightning wallet creation ([d19802d](https://github.com/BitGo/BitGoJS/commit/d19802d8f766753f1f227d0145f3e00f9fb57f98))
+- **sdk-core:** lightning wallet sharing support ([2d1d566](https://github.com/BitGo/BitGoJS/commit/2d1d566ca9631f2d6c8055d5cd0ca9be70739d74))
+
 # [42.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@42.0.0...bitgo@42.1.0) (2025-03-06)
 
 ### Bug Fixes

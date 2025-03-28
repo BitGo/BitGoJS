@@ -4,7 +4,6 @@ import {
   TransactionRecipient,
   TransactionType,
   InvalidTransactionError,
-  MethodNotImplementedError,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -23,6 +22,9 @@ import {
   ParsedTransaction,
   IcpOperation,
   IcpAccount,
+  MAX_INGRESS_TTL,
+  PERMITTED_DRIFT,
+  RawTransaction,
 } from './iface';
 import { Utils } from './utils';
 
@@ -32,6 +34,7 @@ export class Transaction extends BaseTransaction {
   protected _payloadsData: PayloadsData;
   protected _signedTransaction: string;
   protected _signaturePayload: Signatures[];
+  protected _createdTimestamp: number | bigint | undefined;
   protected _utils: Utils;
 
   constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
@@ -79,20 +82,31 @@ export class Transaction extends BaseTransaction {
     return this._payloadsData;
   }
 
-  fromRawTransaction(rawTransaction: string): void {
+  set createdTimestamp(createdTimestamp: number) {
+    this._createdTimestamp = createdTimestamp;
+  }
+
+  get createdTimestamp(): number | bigint | undefined {
+    return this._createdTimestamp;
+  }
+
+  async fromRawTransaction(rawTransaction: string): Promise<void> {
     try {
-      const parsedTx = JSON.parse(rawTransaction);
-      switch (parsedTx.type) {
+      const jsonRawTransaction: RawTransaction = JSON.parse(rawTransaction);
+      const parsedTx = await this.parseUnsignedTransaction(jsonRawTransaction.serializedTxHex);
+      const senderPublicKeyHex = jsonRawTransaction.publicKey;
+      const transactionType = parsedTx.operations[0].type;
+      switch (transactionType) {
         case OperationType.TRANSACTION:
           this._icpTransactionData = {
-            senderAddress: parsedTx.address,
-            receiverAddress: parsedTx.externalOutputs[0].address,
-            amount: parsedTx.spendAmountString,
-            fee: parsedTx.fee,
-            senderPublicKeyHex: parsedTx.senderKey,
-            memo: parsedTx.seqno,
-            transactionType: parsedTx.type,
-            expiryTime: parsedTx.expiryTime,
+            senderAddress: parsedTx.operations[0].account.address,
+            receiverAddress: parsedTx.operations[1].account.address,
+            amount: parsedTx.operations[1].amount.value,
+            fee: parsedTx.operations[2].amount.value,
+            senderPublicKeyHex: senderPublicKeyHex,
+            memo: parsedTx.metadata.memo,
+            transactionType: transactionType,
+            expiryTime: Number(parsedTx.metadata.created_at_time + (MAX_INGRESS_TTL - PERMITTED_DRIFT)),
           };
           this._utils.validateRawTransaction(this._icpTransactionData);
           break;
@@ -200,11 +214,6 @@ export class Transaction extends BaseTransaction {
     return JSON.stringify(transaction);
   }
 
-  /** @inheritdoc */
-  canSign(key: BaseKey): boolean {
-    throw new MethodNotImplementedError();
-  }
-
   async parseUnsignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
     const unsignedTransaction = this._utils.cborDecode(
       this._utils.blobFromHex(rawTransaction)
@@ -273,6 +282,7 @@ export class Transaction extends BaseTransaction {
       },
       account_identifier_signers: accountIdentifierSigners,
     };
+    this.createdTimestamp = args.createdAtTime.timestampNanos;
     return parsedTxn;
   }
 
@@ -283,5 +293,10 @@ export class Transaction extends BaseTransaction {
     const updates = envelopes.map((envelope) => envelope.update);
     const httpCanisterUpdate = updates[0].content as HttpCanisterUpdate;
     return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, true);
+  }
+
+  /** @inheritdoc */
+  canSign(key: BaseKey): boolean {
+    return true;
   }
 }

@@ -49,6 +49,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(
+    '03f58d68-6162-4890-b98d-82c6051d28a4',
+    'polygon:cnkt',
+    'Coinnekt',
+    18,
+    '0xcd75a3538f662b22e25d055b272477a68f1c36fc',
+    UnderlyingAsset['polygon:cnkt'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
     '0fb0aecf-c5d1-4c42-a96b-04ddbf45c99c',
     'polygon:wbtc',
     'Wrapped BTC',
@@ -1024,7 +1033,7 @@ export const polygonTokens = [
   tpolygonErc20(
     'e988a1a1-e22e-4649-986e-7718e503f047',
     'tpolygon:testcopm',
-    'Test ERC20 Token 10 Decimals',
+    'TestCOP Minteo (Testnet)',
     18,
     '0x866022aa0489bd84fd2b3e0320ba988d9385d439', // https://polygonscan.com/token/0x866022aa0489bd84fd2B3e0320bA988d9385d439
     UnderlyingAsset['tpolygon:testcopm'],

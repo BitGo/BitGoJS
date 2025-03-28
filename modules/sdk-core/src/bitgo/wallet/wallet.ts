@@ -100,7 +100,7 @@ import {
   ManageUnspentReservationOptions,
   SignAndSendTxRequestOptions,
 } from './iWallet';
-import { StakingWallet } from '../staking';
+import { GoStakingWallet, StakingWallet } from '../staking';
 import { Lightning } from '../lightning/custodial';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
@@ -2147,7 +2147,7 @@ export class Wallet implements IWallet {
 
     try {
       await this.baseCoin.verifyTransaction({
-        txParams: txPrebuild.buildParams || params,
+        txParams: { ...txPrebuild.buildParams, ...params },
         txPrebuild,
         wallet: this,
         verification: params.verification ?? {},
@@ -2719,6 +2719,16 @@ export class Wallet implements IWallet {
         ? this._wallet.coinSpecific.walletVersion >= 3
         : false;
     return new StakingWallet(this, isEthTss);
+  }
+
+  /**
+   * Create a go staking wallet from this wallet
+   */
+  toGoStakingWallet(): GoStakingWallet {
+    if (this.baseCoin.getFamily() !== 'ofc') {
+      throw new Error('Can only convert an Offchain (OFC) wallet to a staking wallet');
+    }
+    return new GoStakingWallet(this);
   }
 
   /**
@@ -3440,7 +3450,6 @@ export class Wallet implements IWallet {
     try {
       return await this.tssUtils!.signTxRequest({
         txRequest: params.txPrebuild.txRequestId,
-        txParams: params.txPrebuild.buildParams,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,
@@ -3488,7 +3497,7 @@ export class Wallet implements IWallet {
         reqId: params.reqId || new RequestTracer(),
         messageRaw: params.message.messageRaw,
         messageEncoded: params.message.messageEncoded,
-        bufferToSign: Buffer.from(params.message.messageEncoded ?? ''),
+        bufferToSign: Buffer.from(params.message.messageEncoded ?? '', 'hex'),
       });
       assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
       assert(

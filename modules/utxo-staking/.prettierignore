@@ -1,4 +1,5 @@
 .nyc_output/
 dist/
+src/babylon/*.json
 test/fixtures
 test/unit/babylon/vendor/btc-staking-ts

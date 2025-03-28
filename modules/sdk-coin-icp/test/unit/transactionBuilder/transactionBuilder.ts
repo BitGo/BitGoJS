@@ -1,5 +1,6 @@
 import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
+import { BaseKey } from '@bitgo/sdk-core';
 import * as testData from '../../resources/icp';
 import sinon from 'sinon';
 
@@ -50,10 +51,10 @@ describe('ICP Transaction Builder', async () => {
     should.equal(icpTransaction.operations[1].amount.value, '10');
     should.equal(icpTransaction.operations[2].amount.value, '-10000');
     should.equal(icpTransaction.public_keys[0].hex_bytes, testData.accounts.account1.publicKey);
-    payloadsData.unsigned_transaction.should.be.a.String();
+    txBuilder.unsignedTransaction().should.be.a.String();
     payloadsData.payloads.should.be.an.Array();
     payloadsData.payloads.length.should.equal(2);
-    should.equal(payloadsData.unsigned_transaction, testData.payloadsData.unsigned_transaction);
+    should.equal(txBuilder.unsignedTransaction(), testData.payloadsData.unsigned_transaction);
     should.deepEqual(payloadsData.payloads, testData.payloadsData.payloads);
   });
 
@@ -84,5 +85,44 @@ describe('ICP Transaction Builder', async () => {
     const broadcastTxnObj = JSON.parse(broadcastTxn);
     should.equal(broadcastTxnObj.signed_transaction, signedTxn);
     should.equal(broadcastTxnObj.network_identifier.network, '00000000000000020101');
+  });
+
+  it('should sign a txn and then give txn in broadcast format', async () => {
+    const baseKey: BaseKey = { key: testData.accounts.account1.secretKey };
+    txBuilder.sign(baseKey);
+    should.deepEqual(txBuilder.signaturePayload(), testData.signatures);
+    txBuilder.combine();
+    const signedTxn = txBuilder.transaction.signedTransaction;
+    signedTxn.should.be.a.String();
+    should.equal(signedTxn, testData.signedTransaction);
+    const broadcastTxn = txBuilder.transaction.toBroadcastFormat();
+    broadcastTxn.should.be.a.String();
+    const broadcastTxnObj = JSON.parse(broadcastTxn);
+    should.equal(broadcastTxnObj.signed_transaction, signedTxn);
+    should.equal(broadcastTxnObj.network_identifier.network, '00000000000000020101');
+  });
+
+  it('should build a txn then parse it and then again build', async () => {
+    sinon.restore(); // do not stub getMetaData
+    txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
+    txBuilder.receiverId(testData.accounts.account2.address);
+    txBuilder.amount('10');
+    txBuilder.memo(testData.metaData.memo);
+
+    await txBuilder.build();
+    txn = txBuilder.transaction;
+    const unsignedTxn = txBuilder.transaction.unsignedTransaction;
+    unsignedTxn.should.be.a.String();
+    const rawTransaction = {
+      serializedTxHex: unsignedTxn,
+      publicKey: testData.accounts.account1.publicKey,
+    };
+    await txn.fromRawTransaction(JSON.stringify(rawTransaction));
+    const baseKey: BaseKey = { key: testData.accounts.account1.secretKey };
+    txBuilder.sign(baseKey);
+    txBuilder.combine();
+    const signedTxn = txBuilder.transaction.signedTransaction;
+    signedTxn.should.be.a.String();
   });
 });

@@ -3,10 +3,13 @@ import {
   AccountCoin,
   algoToken,
   arbethErc20,
+  avaxErc20,
   beraErc20,
+  bscToken,
   celoToken,
   eosToken,
   erc1155,
+  erc20,
   erc20CompatibleAccountCoin,
   erc721,
   fiat,
@@ -15,6 +18,9 @@ import {
   hederaToken,
   nonstandardToken,
   opethErc20,
+  polygonErc20,
+  sip10Token,
+  solToken,
   stellarToken,
   suiToken,
   aptToken,
@@ -38,7 +44,8 @@ import {
 } from './account';
 import { ada } from './ada';
 import { avaxp } from './avaxp';
-import { BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
+import { BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset, BaseCoin } from './base';
+import { AmsTokenConfig } from './tokenConfig';
 import { erc20Coins } from './coins/erc20Coins';
 import { avaxTokens } from './coins/avaxTokens';
 import { bscTokens } from './coins/bscTokens';
@@ -830,6 +837,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+  ),
+  account(
+    '08ff6b77-4cfb-4dcd-9182-dd1cc6f92f70',
+    'mantra',
+    'Mantra',
+    Networks.main.mantra,
+    6,
+    UnderlyingAsset.MANTRA,
+    BaseUnit.MANTRA,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    'cc900f12-f229-4eb3-9ca7-2a05a445f362',
+    'tmantra',
+    'Testnet Mantra',
+    Networks.test.mantra,
+    6,
+    UnderlyingAsset.MANTRA,
+    BaseUnit.MANTRA,
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
@@ -2082,6 +2109,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['arbeth:link']
   ),
   arbethErc20(
+    '42ae1f1a-95df-40b7-a584-fe52b2cf08c6',
+    'arbeth:xsgdv2',
+    'XSGD (Bridged)',
+    6,
+    '0xa05245ade25cc1063ee50cf7c083b4524c1c4302',
+    UnderlyingAsset['arbeth:xsgdv2']
+  ),
+  arbethErc20(
     '0606676c-1e6b-488a-abe1-ab46c697c4b9',
     'arbeth:usdc',
     'USD Coin',
@@ -2307,6 +2342,15 @@ export const coins = CoinMap.fromCoins([
     '0x4883c8f0529f37e40ebea870f3c13cdfad5d01f8',
     UnderlyingAsset['arbeth:veur']
   ),
+  arbethErc20(
+    '1a5481b2-67c1-4872-9b81-478773cc10c6',
+    'arbeth:tbill',
+    'OpenEden T-Bills',
+    18,
+    '0xf84d28a8d28292842dd73d1c5f99476a80b6666a',
+    UnderlyingAsset['arbeth:tbill'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
   tarbethErc20(
     'd6a8869d-3da4-4b95-a9af-f2a059ca651f',
     'tarbeth:link',
@@ -2521,6 +2565,18 @@ export const coins = CoinMap.fromCoins([
     'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De::524C555344000000000000000000000000000000',
     'ripple.com',
     UnderlyingAsset['xrp:rlusd']
+  ),
+  xrpToken(
+    'd6d5ff31-c539-4ea7-ae62-a6d986190234',
+    'xrp:tbill',
+    'OpenEden T-Bills',
+    15,
+    'rJNE2NNz83GJYtWVLwMvchDWEon3huWnFn',
+    'TBL',
+    'rJNE2NNz83GJYtWVLwMvchDWEon3huWnFn::TBL',
+    'openeden.com',
+    UnderlyingAsset['xrp:tbill'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   txrpToken(
     '155818c4-efda-4758-bb25-37c093b6dc02',
@@ -2743,6 +2799,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['apt:usdc'],
     APT_FEATURES
   ),
+  aptToken(
+    '3d29adfb-7df5-4295-a3c2-acdf3f23adc2',
+    'apt:pact',
+    'PACT',
+    8,
+    '0xc546cc2dd26d9e9a4516b4514288bedf1085259fcb106b84b6469337f527fb92',
+    UnderlyingAsset['apt:pact'],
+    APT_FEATURES
+  ),
   taptToken(
     '2695e728-96dd-46e6-9d01-bd0fdbe1ff38',
     'tapt:usdt',
@@ -2826,3 +2891,186 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.SGD
   ),
 ]);
+
+function createToken(
+  family: string,
+  token: AmsTokenConfig,
+  initializerMap: Record<string, unknown>
+): Readonly<BaseCoin> | undefined {
+  const initializer = initializerMap[family] as (...args: unknown[]) => Readonly<BaseCoin>;
+  if (!initializer) {
+    return undefined;
+  }
+
+  const commonArgs = [
+    token.id,
+    token.name,
+    token.fullName,
+    token.decimalPlaces,
+    token.asset,
+    token.features,
+    token.prefix,
+    token.suffix,
+    token.network,
+    token.primaryKeyCurve,
+  ];
+
+  switch (family) {
+    case 'arbeth':
+    case 'avax':
+    case 'bera':
+    case 'bsc':
+    case 'celo':
+    case 'eth':
+    case 'opeth':
+    case 'polygon':
+    case 'trx':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.contractAddress || token.tokenAddress, // contractAddress
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    case 'apt':
+    case 'stx':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.assetId, // assetId
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    case 'algo':
+      return initializer(
+        ...commonArgs.slice(0, 2), // id, name
+        token.alias, // alias
+        ...commonArgs.slice(2) // fullName, decimal, asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    case 'eos':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.contractName, // contractName
+        token.contractAddress, // contractAddress
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    case 'hbar':
+      return initializer(
+        ...commonArgs.slice(0, 3), // id, name, fullName
+        token.network, // network
+        token.decimalPlaces,
+        token.asset,
+        token.tokenId, // tokenId
+        token.contractAddress, // contractAddress
+        ...commonArgs.slice(5, 8), // features, prefix, suffix
+        token.primaryKeyCurve
+      );
+
+    case 'sol':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.tokenAddress, // tokenAddress
+        token.contractAddress, // contractAddress
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    case 'sui':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.packageId, // packageId
+        token.module, // module
+        token.symbol, // symbol
+        token.contractAddress, // contractAddress
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    case 'xlm':
+      return initializer(
+        ...commonArgs.slice(0, 5), // id, name, fullName, decimalPlaces, asset
+        token.domain, // domain
+        ...commonArgs.slice(5) // features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    case 'xrp':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.issuerAddress, // issuerAddress
+        token.currecnycode, // currencyCode
+        token.contractAddress, // contractAddress
+        token.domain, // domain
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    default:
+      return undefined;
+  }
+}
+
+export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, AmsTokenConfig[]>): CoinMap {
+  const BaseCoins: Map<string, Readonly<BaseCoin>> = new Map();
+  const initializerMap: Record<string, unknown> = {
+    algo: algoToken,
+    apt: aptToken,
+    arbeth: arbethErc20,
+    avaxc: avaxErc20,
+    bera: beraErc20,
+    bsc: bscToken,
+    celo: celoToken,
+    eth: erc20,
+    eos: eosToken,
+    hbar: hederaToken,
+    opeth: opethErc20,
+    polygon: polygonErc20,
+    sol: solToken,
+    stx: sip10Token,
+    sui: suiToken,
+    trx: tronToken,
+    xlm: stellarToken,
+    xrp: xrpToken,
+  };
+
+  const nftAndOtherTokens = new Set([
+    'erc721:bsctoken',
+    'terc721:bsctoken',
+    'erc1155:bsctoken',
+    'terc1155:bsctoken',
+    'erc721:witch',
+    'erc721:token',
+    'erc1155:token',
+    'nonstandard:token',
+    'terc721:token',
+    'terc1155:token',
+    'tnonstandard:token',
+    'terc721:bitgoerc721',
+    'terc1155:bitgoerc1155',
+    'erc721:polygontoken',
+    'erc1155:polygontoken',
+    'terc721:polygontoken',
+    'terc1155:polygontoken',
+  ]);
+
+  for (const tokenConfigs of Object.values(tokenConfigMap)) {
+    const tokenConfig = tokenConfigs[0];
+    const family = tokenConfig.family;
+
+    if (tokenConfig.isToken && !nftAndOtherTokens.has(tokenConfig.name)) {
+      const token = createToken(family, tokenConfig, initializerMap);
+      if (token) {
+        BaseCoins.set(token.name, token);
+      } else if (coins.has(tokenConfig.name)) {
+        BaseCoins.set(tokenConfig.name, coins.get(tokenConfig.name));
+      }
+    } else if (coins.has(tokenConfig.name)) {
+      BaseCoins.set(tokenConfig.name, coins.get(tokenConfig.name));
+    }
+  }
+
+  // Add keys and values from `coins` that are not already in `BaseCoins`
+  coins.forEach((coin, coinName) => {
+    if (!BaseCoins.has(coinName)) {
+      BaseCoins.set(coinName, coin);
+    }
+  });
+
+  return CoinMap.fromCoins(Array.from(BaseCoins.values()));
+}

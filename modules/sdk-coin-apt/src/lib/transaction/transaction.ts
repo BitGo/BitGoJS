@@ -7,12 +7,14 @@ import {
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import {
   AccountAddress,
   AccountAuthenticator,
   AccountAuthenticatorEd25519,
   AccountAuthenticatorNoAccountAuthenticator,
+  Aptos,
+  AptosConfig,
   DEFAULT_MAX_GAS_AMOUNT,
   Ed25519PublicKey,
   Ed25519Signature,
@@ -20,6 +22,8 @@ import {
   generateSigningMessage,
   generateUserTransactionHash,
   Hex,
+  InputGenerateTransactionPayloadData,
+  Network,
   RAW_TRANSACTION_SALT,
   RAW_TRANSACTION_WITH_DATA_SALT,
   RawTransaction,
@@ -32,13 +36,14 @@ import { DEFAULT_GAS_UNIT_PRICE, UNAVAILABLE_TEXT } from '../constants';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
 import { AptTransactionExplanation, TxData } from '../iface';
+import assert from 'assert';
 
 export abstract class Transaction extends BaseTransaction {
   protected _rawTransaction: RawTransaction;
   protected _senderSignature: Signature;
   protected _feePayerSignature: Signature;
   protected _sender: string;
-  protected _recipient: TransactionRecipient;
+  protected _recipients: TransactionRecipient[];
   protected _sequenceNumber: number;
   protected _maxGasAmount: number;
   protected _gasUnitPrice: number;
@@ -59,6 +64,7 @@ export abstract class Transaction extends BaseTransaction {
     this._expirationTime = utils.getTxnExpirationTimestamp();
     this._sequenceNumber = 0;
     this._sender = AccountAddress.ZERO.toString();
+    this._recipients = [];
     this._assetId = AccountAddress.ZERO.toString();
     this._isSimulateTxn = false;
     this._senderSignature = {
@@ -90,12 +96,27 @@ export abstract class Transaction extends BaseTransaction {
     this._sender = value;
   }
 
+  /**
+   * @deprecated - use `recipients()`.
+   */
   get recipient(): TransactionRecipient {
-    return this._recipient;
+    assert(this._recipients.length > 0, 'No recipients available');
+    return this._recipients[0];
   }
 
+  /**
+   * @deprecated - use `recipients()`.
+   */
   set recipient(value: TransactionRecipient) {
-    this._recipient = value;
+    this.recipients = [value];
+  }
+
+  get recipients(): TransactionRecipient[] {
+    return this._recipients;
+  }
+
+  set recipients(value: TransactionRecipient[]) {
+    this._recipients = value;
   }
 
   get sequenceNumber(): number {
@@ -162,7 +183,7 @@ export abstract class Transaction extends BaseTransaction {
     this._isSimulateTxn = value;
   }
 
-  protected abstract buildRawTransaction(): void;
+  protected abstract getTransactionPayloadData(): InputGenerateTransactionPayloadData;
 
   protected abstract parseTransactionPayload(payload: TransactionPayload): void;
 
@@ -258,20 +279,24 @@ export abstract class Transaction extends BaseTransaction {
   }
 
   loadInputsAndOutputs(): void {
+    const totalAmount = this._recipients.reduce(
+      (accumulator, current) => accumulator.plus(current.amount),
+      new BigNumber('0')
+    );
     this._inputs = [
       {
         address: this.sender,
-        value: this.recipient.amount as string,
+        value: totalAmount.toString(),
         coin: this._coinConfig.name,
       },
     ];
-    this._outputs = [
-      {
-        address: this.recipient.address,
-        value: this.recipient.amount as string,
+    this._outputs = this._recipients.map((recipient) => {
+      return {
+        address: recipient.address,
+        value: recipient.amount as string,
         coin: this._coinConfig.name,
-      },
-    ];
+      };
+    });
   }
 
   fromRawTransaction(rawTransaction: string): void {
@@ -303,6 +328,7 @@ export abstract class Transaction extends BaseTransaction {
       id: this.id,
       sender: this.sender,
       recipient: this.recipient,
+      recipients: this.recipients,
       sequenceNumber: this.sequenceNumber,
       maxGasAmount: this.maxGasAmount,
       gasUnitPrice: this.gasUnitPrice,
@@ -335,8 +361,10 @@ export abstract class Transaction extends BaseTransaction {
       'type',
     ];
 
-    const outputs: TransactionRecipient[] = [this.recipient];
-    const outputAmount = outputs[0].amount;
+    const outputs: TransactionRecipient[] = this._recipients;
+    const outputAmount = outputs
+      .reduce((accumulator, current) => accumulator.plus(current.amount), new BigNumber('0'))
+      .toString();
     return {
       displayOrder,
       id: this.id,
@@ -348,6 +376,24 @@ export abstract class Transaction extends BaseTransaction {
       sender: this.sender,
       type: this.type,
     };
+  }
+
+  protected async buildRawTransaction(): Promise<void> {
+    const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
+    const aptos = new Aptos(new AptosConfig({ network }));
+    const senderAddress = AccountAddress.fromString(this._sender);
+
+    const simpleTxn = await aptos.transaction.build.simple({
+      sender: senderAddress,
+      data: this.getTransactionPayloadData() as InputGenerateTransactionPayloadData,
+      options: {
+        maxGasAmount: this.maxGasAmount,
+        gasUnitPrice: this.gasUnitPrice,
+        expireTimestamp: this.expirationTime,
+        accountSequenceNumber: this.sequenceNumber,
+      },
+    });
+    this._rawTransaction = simpleTxn.rawTransaction;
   }
 
   private getSignablePayloadWithFeePayer(): Buffer {

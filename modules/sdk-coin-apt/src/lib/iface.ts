@@ -15,7 +15,9 @@ export interface AptTransactionExplanation extends BaseTransactionExplanation {
 export interface TxData {
   id: string;
   sender: string;
+  /** @deprecated - use `recipients`. */
   recipient: TransactionRecipient;
+  recipients: TransactionRecipient[];
   sequenceNumber: number;
   maxGasAmount: number;
   gasUnitPrice: number;
@@ -23,4 +25,12 @@ export interface TxData {
   expirationTime: number;
   feePayer: string;
   assetId: string;
+}
+
+export interface RecipientsValidationResult {
+  recipients: {
+    deserializedAddresses: string[];
+    deserializedAmounts: Uint8Array[];
+  };
+  isValid: boolean;
 }

@@ -21,8 +21,6 @@ import {
 import { bip32 } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import _ from 'lodash';
-import Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
 
 //
@@ -74,14 +72,15 @@ Wallets.prototype.list = function (params, callback) {
   }
 
   const self = this;
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/wallet' + query)).result())
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/wallet' + query)).result())
     .then(function (body) {
       body.wallets = body.wallets.map(function (w) {
         return new Wallet(self.bitgo, w);
       });
       return body;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 Wallets.prototype.getWallet = function (params, callback) {
@@ -95,11 +94,12 @@ Wallets.prototype.getWallet = function (params, callback) {
     query = '?gpk=1';
   }
 
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/wallet/' + params.id + query)).result())
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/wallet/' + params.id + query)).result())
     .then(function (wallet) {
       return new Wallet(self.bitgo, wallet);
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -110,7 +110,9 @@ Wallets.prototype.listInvites = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/walletinvite')).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/walletinvite')).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -121,9 +123,9 @@ Wallets.prototype.cancelInvite = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['walletInviteId'], [], callback);
 
-  return Bluebird.resolve(this.bitgo.del(this.bitgo.url('/walletinvite/' + params.walletInviteId)).result()).nodeify(
-    callback
-  );
+  return Promise.resolve(this.bitgo.del(this.bitgo.url('/walletinvite/' + params.walletInviteId)).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -134,7 +136,9 @@ Wallets.prototype.listShares = function (params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/walletshare')).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/walletshare')).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -144,16 +148,17 @@ Wallets.prototype.listShares = function (params, callback) {
 //    walletShareId - the wallet share to get information on
 //
 Wallets.prototype.resendShareInvite = function (params, callback) {
-  return co(function* () {
+  return async function () {
     params = params || {};
     common.validateParams(params, ['walletShareId'], [], callback);
 
     const urlParts = params.walletShareId + '/resendemail';
     // @ts-expect-error - no implicit this
     return this.bitgo.post(this.bitgo.url('/walletshare/' + urlParts)).result();
-  })
+  }
     .call(this)
-    .asCallback(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -166,9 +171,9 @@ Wallets.prototype.getShare = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['walletShareId'], [], callback);
 
-  return Bluebird.resolve(this.bitgo.get(this.bitgo.url('/walletshare/' + params.walletShareId)).result()).nodeify(
-    callback
-  );
+  return Promise.resolve(this.bitgo.get(this.bitgo.url('/walletshare/' + params.walletShareId)).result())
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -182,12 +187,14 @@ Wallets.prototype.updateShare = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['walletShareId'], [], callback);
 
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .post(this.bitgo.url('/walletshare/' + params.walletShareId))
       .send(params)
       .result()
-  ).nodeify(callback);
+  )
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -200,12 +207,14 @@ Wallets.prototype.cancelShare = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['walletShareId'], [], callback);
 
-  return Bluebird.resolve(
+  return Promise.resolve(
     this.bitgo
       .del(this.bitgo.url('/walletshare/' + params.walletShareId))
       .send()
       .result()
-  ).nodeify(callback);
+  )
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -281,7 +290,8 @@ Wallets.prototype.acceptShare = function (params, callback) {
 
       return self.updateShare(updateParams);
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -429,7 +439,8 @@ Wallets.prototype.createWalletWithKeychains = function (params, callback) {
 
       return result;
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -487,7 +498,9 @@ Wallets.prototype.createForwardWallet = function (params, callback) {
       walletParams.enterprise = params.enterprise;
     }
 
-    return Bluebird.resolve(self.bitgo.post(self.bitgo.url('/wallet')).send(walletParams).result()).nodeify(callback);
+    return Promise.resolve(self.bitgo.post(self.bitgo.url('/wallet')).send(walletParams).result())
+      .then(callback)
+      .catch(callback);
   });
 };
 
@@ -533,11 +546,12 @@ Wallets.prototype.add = function (params, callback) {
     walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
   }
 
-  return Bluebird.resolve(this.bitgo.post(this.bitgo.url('/wallet')).send(walletParams).result())
+  return Promise.resolve(this.bitgo.post(this.bitgo.url('/wallet')).send(walletParams).result())
     .then(function (body) {
       return new Wallet(self.bitgo, body);
     })
-    .nodeify(callback);
+    .then(callback)
+    .catch(callback);
 };
 
 //
@@ -560,7 +574,9 @@ Wallets.prototype.remove = function (params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return Bluebird.resolve(this.bitgo.del(this.bitgo.url('/wallet/' + params.id)).result()).nodeify(callback);
+  return Promise.resolve(this.bitgo.del(this.bitgo.url('/wallet/' + params.id)).result())
+    .then(callback)
+    .catch(callback);
 };
 
 module.exports = Wallets;

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.13.0...@bitgo/sdk-coin-sui@5.13.1) (2025-03-20)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** detect sui mainnet ([a8a512f](https://github.com/BitGo/BitGoJS/commit/a8a512f83af34157512e00427f2d2c6a8523058d))
+
+# [5.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.12.1...@bitgo/sdk-coin-sui@5.13.0) (2025-03-18)
+
+### Bug Fixes
+
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
+### Features
+
+- **sdk-coin-sui:** add walrus prod config ([7ecdfa5](https://github.com/BitGo/BitGoJS/commit/7ecdfa52a805c262518a1199f655e9b9ef46b1c2))
+
 ## [5.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.12.0...@bitgo/sdk-coin-sui@5.12.1) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

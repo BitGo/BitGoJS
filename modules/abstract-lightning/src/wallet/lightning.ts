@@ -239,9 +239,13 @@ export class LightningWallet implements ILightningWallet {
     this.wallet.bitgo.setRequestTracer(reqId);
 
     const { userAuthKey } = await getLightningAuthKeychains(this.wallet);
+    const userAuthKeyEncryptedPrv = userAuthKey.encryptedPrv;
+    if (!userAuthKeyEncryptedPrv) {
+      throw new Error(`user auth key is missing encrypted private key`);
+    }
     const signature = createMessageSignature(
       t.exact(LightningPaymentRequest).encode(params),
-      this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKey.encryptedPrv })
+      this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
 
     const paymentIntent: { intent: LightningPaymentIntent } = {

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [21.0.41](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@21.0.40...@bitgo/sdk-coin-polygon@21.0.41) (2025-03-20)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-polygon
+
+## [21.0.40](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@21.0.39...@bitgo/sdk-coin-polygon@21.0.40) (2025-03-18)
+
+### Bug Fixes
+
+- pass isBatch in send API ([b8c0dfc](https://github.com/BitGo/BitGoJS/commit/b8c0dfc0e2748da7aa631dc77e0c505fcd5cbfcb))
+- **sdk-core:** set default multisig if empty ([e2727df](https://github.com/BitGo/BitGoJS/commit/e2727dfc89dd314a607b737e761e5eff824606af))
+
 ## [21.0.39](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polygon@21.0.38...@bitgo/sdk-coin-polygon@21.0.39) (2025-03-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polygon

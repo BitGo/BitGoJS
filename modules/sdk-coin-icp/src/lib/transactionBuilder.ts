@@ -1,15 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import {
-  BaseTransactionBuilder,
-  BuildTransactionError,
-  BaseAddress,
-  MethodNotImplementedError,
-  BaseKey,
-} from '@bitgo/sdk-core';
+import { BaseTransactionBuilder, BuildTransactionError, BaseAddress, SigningError, BaseKey } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import utils from './utils';
-import { IcpTransactionData } from './iface';
+import { IcpTransactionData, Signatures } from './iface';
+import { SignedTransactionBuilder } from './signedTransactionBuilder';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -24,8 +19,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = new Transaction(_coinConfig, utils);
   }
 
-  validateKey(key: BaseKey): void {
-    throw new MethodNotImplementedError();
+  public signaturePayload(): Signatures[] {
+    return this._transaction.signaturePayload;
+  }
+
+  public unsignedTransaction(): string {
+    return this._transaction.payloadsData.unsigned_transaction;
   }
 
   /**
@@ -143,5 +142,24 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   validateRawTransaction(rawTransaction: IcpTransactionData): void {
     utils.validateRawTransaction(rawTransaction);
+  }
+
+  /** @inheritdoc */
+  validateKey(key: BaseKey): void {
+    if (!key || !key.key) {
+      throw new SigningError('Key is required');
+    }
+    if (!utils.isValidPrivateKey(key.key)) {
+      throw new SigningError('Invalid private key');
+    }
+  }
+
+  // combine the unsigned transaction with the signature payload and generates the signed transaction
+  public combine(): void {
+    const signedTransactionBuilder = new SignedTransactionBuilder(
+      this._transaction.unsignedTransaction,
+      this._transaction.signaturePayload
+    );
+    this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
   }
 }

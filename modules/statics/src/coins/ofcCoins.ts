@@ -21,10 +21,11 @@ import {
   tofcAlgoToken,
   ofcHederaToken,
   tofcHederaToken,
+  ofcaptToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind } from '../base';
 
-import { SOL_TOKEN_FEATURES, SOL_OFC_TOKEN_FEATURES } from '../coinFeatures';
+import { SOL_TOKEN_FEATURES, SOL_OFC_TOKEN_FEATURES, APT_OFC_TOKEN_FEATURES } from '../coinFeatures';
 
 export const ofcCoins = [
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
@@ -127,6 +128,21 @@ export const ofcCoins = [
     UnderlyingAsset.COREDAO,
     CoinKind.CRYPTO
   ),
+  ofc('1c21ee76-2285-4bd6-855b-9fa5698ab78c', 'ofcxdc', 'XDC', 18, UnderlyingAsset.XDC, CoinKind.CRYPTO),
+  tofc('a4b3776d-aea6-4c07-968e-0e698c9aea91', 'ofctxdc', 'Testnet XDC', 18, UnderlyingAsset.XDC, CoinKind.CRYPTO),
+  ofc('3c85e27d-ee16-468a-bab3-f44ef1642a8b', 'ofcwemix', 'Wemix', 18, UnderlyingAsset.WEMIX, CoinKind.CRYPTO),
+  tofc(
+    '80f8c9ac-0855-4dd6-894f-99e45e607504',
+    'ofctwemix',
+    'Testnet wemix',
+    18,
+    UnderlyingAsset.WEMIX,
+    CoinKind.CRYPTO
+  ),
+  ofc('1876cf96-a0b7-4b7b-9024-6bd89df9814b', 'ofcflr', 'Flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
+  tofc('312ff039-2473-4a11-837f-4ec896a0483d', 'ofctflr', 'Testnet flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
+  ofc('dd3f3d9a-8eae-4a7a-8178-88611687674d', 'ofcsgb', 'Songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
+  tofc('30e8f8d8-17e7-4af0-91cf-069724e05e65', 'ofctsgb', 'Testnet songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
   ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('ecc046f9-eb9c-479d-943f-9fe0633ea212', 'ofcoas', 'oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   ofc('24c3b525-b5d3-45c0-9280-599db27c0fab', 'ofctao', 'Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
@@ -165,14 +181,14 @@ export const ofcCoins = [
   tofc('b4a75a39-3fd2-4866-aaed-75b969df1d98', 'ofctbtc4', 'Testnet4 Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   tofc('4bf9d3a3-04f7-4c48-9a26-12b36bbecfb7', 'ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
   tofc('e916ff23-7521-4046-9bea-b92788acc23b', 'ofcteth', 'Test Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
-  // tofc(
-  //   'a90ab5b8-e156-4d40-9cd7-b170416ba7de',
-  //   'ofcgteth',
-  //   'Test Goerli Ether',
-  //   18,
-  //   UnderlyingAsset.ETH,
-  //   CoinKind.CRYPTO
-  // ),
+  tofc(
+    'a90ab5b8-e156-4d40-9cd7-b170416ba7de',
+    'ofcgteth',
+    'Test Goerli Ether',
+    18,
+    UnderlyingAsset.ETH,
+    CoinKind.CRYPTO
+  ),
   tofc(
     'dd7fd2c8-df50-4f8b-96ac-ff5f874c80ca',
     'ofchteth',
@@ -301,6 +317,13 @@ export const ofcCoins = [
     9,
     UnderlyingAsset['sol:wsol'],
     SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ca2feee8-425b-4690-9294-a81911cbab42',
+    'ofcsol:pnut',
+    'Peanut the Squirrel',
+    6,
+    UnderlyingAsset['sol:pnut']
   ),
   ofcsolToken(
     'c382f3cc-c071-4ef5-89ac-bcb85d8d415f',
@@ -568,6 +591,14 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['sol:melania']
   ),
+  ofcsolToken('ea60791b-6ab9-4c90-b691-b669e3815c1c', 'ofcsol:matrix', 'Matrix One', 9, UnderlyingAsset['sol:matrix']),
+  ofcsolToken(
+    '05e3371a-db83-4e9d-9e53-cbc557fc6de9',
+    'ofcsol:eurcv',
+    'EUR CoinVertible',
+    2,
+    UnderlyingAsset['sol:eurcv']
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -645,12 +676,26 @@ export const ofcCoins = [
   ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset['trx:usdt']),
   ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 15, UnderlyingAsset['xrp:rlusd']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 15, UnderlyingAsset['txrp:rlusd']),
+  ofcXrpToken(
+    '46c75216-5498-4417-b73c-a08c11d693ad',
+    'ofcxrp:tbill',
+    'OpenEden T-Bills',
+    15,
+    UnderlyingAsset['xrp:tbill']
+  ),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',
     'Chainlink Token',
     18,
     UnderlyingAsset['arbeth:link']
+  ),
+  ofcArbethErc20(
+    '0cf9baf8-eca6-47b2-82e1-6ca0ee09f760',
+    'ofcarbeth:xsgdv2',
+    'XSGD (Bridged)',
+    6,
+    UnderlyingAsset['arbeth:xsgdv2']
   ),
   ofcArbethErc20(
     '59220e6e-d94b-40b7-8e10-2f7c691c2482',
@@ -693,6 +738,13 @@ export const ofcCoins = [
     'Arbitrum',
     18,
     UnderlyingAsset['arbeth:arb']
+  ),
+  ofcArbethErc20(
+    '1ba44303-cdf1-4322-bb82-54adbbbbd7f0',
+    'ofcarbeth:tbill',
+    'OpenEden T-Bills',
+    18,
+    UnderlyingAsset['arbeth:tbill']
   ),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),
@@ -794,6 +846,13 @@ export const ofcCoins = [
     'USD Coin (native)',
     6,
     UnderlyingAsset['polygon:usdcv2']
+  ),
+  ofcPolygonErc20(
+    'b4381484-7f8d-4d20-aa19-5c99e9d230d6',
+    'ofcpolygon:cnkt',
+    'Coinnekt',
+    18,
+    UnderlyingAsset['polygon:cnkt']
   ),
   ofcPolygonErc20(
     'a63bf18b-3462-403c-93f5-ff1b608622c2',
@@ -1152,5 +1211,21 @@ export const ofcCoins = [
     'Arbitrum Test LINK',
     18,
     UnderlyingAsset['tarbeth:link']
+  ),
+  ofcaptToken(
+    '6d027643-3d96-4627-8312-1151a793d4f8',
+    'ofcapt:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset['apt:usdc'],
+    APT_OFC_TOKEN_FEATURES
+  ),
+  ofcaptToken(
+    'd15ec98e-1c8f-4c2d-9ede-e34edb3980b5',
+    'ofcapt:usdt',
+    'USD Tether',
+    6,
+    UnderlyingAsset['apt:usdt'],
+    APT_OFC_TOKEN_FEATURES
   ),
 ];

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.2.0...@bitgo/express@13.2.1) (2025-03-20)
+
+**Note:** Version bump only for package @bitgo/express
+
+# [13.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.1.0...@bitgo/express@13.2.0) (2025-03-18)
+
+### Bug Fixes
+
+- move lightning routes to before the any other calls ([797e460](https://github.com/BitGo/BitGoJS/commit/797e460f6719dcaf5af4106083951380b205ffbc))
+
+### Features
+
+- **abstract-lightning:** add custodial lightning api functions ([16b825a](https://github.com/BitGo/BitGoJS/commit/16b825a4d052399d4360c689b24888ab327ff6c0))
+- **express:** add keepAliveTimeout, headersTimeout option [#5747](https://github.com/BitGo/BitGoJS/issues/5747) ([903b842](https://github.com/BitGo/BitGoJS/commit/903b84245f12612cae63807891e0b6b58f8d2225))
+- **express:** remove unneeded express routes and use subtype on wallet ([3356783](https://github.com/BitGo/BitGoJS/commit/335678378737608280f768b8306ced454d88a7c2))
+
 # [13.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.0.0...@bitgo/express@13.1.0) (2025-03-06)
 
 ### Bug Fixes

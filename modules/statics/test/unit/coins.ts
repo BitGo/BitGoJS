@@ -17,9 +17,13 @@ import {
   EosCoin,
   SolCoin,
   XrpCoin,
+  tokens,
+  getFormattedTokens,
+  createTokenMapUsingConfigDetails,
 } from '../../src';
 import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
+import { amsTokenConfig, amsTokenConfigWithCustomToken } from './resources/amsTokenConfig';
 
 interface DuplicateCoinObject {
   name: string;
@@ -903,5 +907,26 @@ describe('Eip1559 coins', () => {
       const coin = coins.get(coinName);
       coin.features.includes(CoinFeature.EIP1559).should.eql(true);
     });
+  });
+});
+
+describe('create token map using config details', () => {
+  it('should create a valid token map from AmsTokenConfig', () => {
+    const tokenMap = createTokenMapUsingConfigDetails(amsTokenConfig);
+    Object.keys(amsTokenConfig).forEach((tokenName) => {
+      const token = tokenMap.get(tokenName);
+      const tokenFromStaticCoinMap = coins.get(tokenName);
+      const { network: tokenNetwork, ...tokenRest } = token;
+      const { network: staticNetwork, ...staticRest } = tokenFromStaticCoinMap;
+      tokenRest.should.deepEqual(staticRest);
+      JSON.stringify(tokenNetwork).should.eql(JSON.stringify(staticNetwork));
+    });
+  });
+  it('should create a coin map and get formatted tokens from it', () => {
+    const coinMap = createTokenMapUsingConfigDetails(amsTokenConfigWithCustomToken);
+    const formattedTokens = getFormattedTokens(coinMap);
+    formattedTokens.bitcoin.should.deepEqual(tokens.bitcoin);
+    formattedTokens.testnet.eth.should.not.deepEqual(tokens.testnet.eth);
+    formattedTokens.testnet.eth.tokens.some((token) => token.type === 'hteth:faketoken').should.eql(true);
   });
 });

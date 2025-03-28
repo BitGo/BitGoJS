@@ -1623,6 +1623,14 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:block')
   ),
+  ofcerc20('bdb004b5-4ec7-479e-905b-ee34bc8f6bea', 'ofceth:usual', 'Usual', 18, underlyingAssetForSymbol('eth:usual')),
+  ofcerc20(
+    '03fc7083-15c1-4a9f-9029-5b5342f2f11e',
+    'ofceth:uco',
+    'Archethic Universal Coin',
+    8,
+    underlyingAssetForSymbol('eth:uco')
+  ),
   ofcerc20(
     '593ae9a1-ab69-423a-b9a2-1980a0c50f97',
     'ofceth:bito',
@@ -2979,6 +2987,21 @@ export const ofcErc20Coins = [
   ofcerc20('098c9adb-469b-44e8-a327-b7099797888e', 'ofceth:fuel', 'Fuel', 9, underlyingAssetForSymbol('eth:fuel')),
   ofcerc20('12ef69e3-a6a2-484b-9977-615c7dab9ef3', 'ofceth:pyr', 'PYR', 18, underlyingAssetForSymbol('eth:pyr')),
   ofcerc20('f93561d5-8e67-4165-bf92-34d97d6f96a5', 'ofceth:ibtc', 'iBTC', 8, underlyingAssetForSymbol('eth:ibtc')),
+  ofcerc20(
+    'a696dd96-77e2-483e-b8ff-057bc3332ff9',
+    'ofceth:una',
+    'Unagi Token',
+    18,
+    underlyingAssetForSymbol('eth:una')
+  ),
+  ofcerc20('5a894d9e-6b32-4b61-992b-cc684dcc01dd', 'ofceth:ads', 'Alkimi', 18, underlyingAssetForSymbol('eth:ads')),
+  ofcerc20(
+    '223902a4-2c32-4366-9164-6bd8dc338569',
+    'ofceth:fuelv1',
+    'Fuel v1',
+    18,
+    underlyingAssetForSymbol('eth:fuelv1')
+  ),
 ];
 
 export const tOfcErc20Coins = [

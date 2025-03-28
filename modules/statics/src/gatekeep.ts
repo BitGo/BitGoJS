@@ -1786,4 +1786,5 @@ export const gatekeep = [
   'ofcbera',
   'ofcoas',
   'bera:ibera',
+  'stx:sbtc',
 ];

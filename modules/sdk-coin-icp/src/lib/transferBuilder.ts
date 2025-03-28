@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
-import { BaseTransaction, BuildTransactionError, MethodNotImplementedError } from '@bitgo/sdk-core';
+import { BaseTransaction, BuildTransactionError, BaseKey } from '@bitgo/sdk-core';
 import { Utils } from './utils';
 import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
@@ -13,7 +13,6 @@ import {
   IcpTransactionData,
   OperationType,
 } from './iface';
-import { SignedTransactionBuilder } from './signedTransactionBuilder';
 import assert from 'assert';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -48,7 +47,7 @@ export class TransferBuilder extends TransactionBuilder {
     assert(this._publicKey, new BuildTransactionError('sender public key is required before building'));
     assert(this._amount, new BuildTransactionError('amount is required before building'));
     assert(this._receiverId, new BuildTransactionError('receiver is required before building'));
-    assert(this._memo, new BuildTransactionError('memo is required before building'));
+    this._utils.validateMemo(this._memo);
     const publicKey: IcpPublicKey = {
       hex_bytes: this._publicKey,
       curve_type: CurveType.SECP256K1,
@@ -90,8 +89,9 @@ export class TransferBuilder extends TransactionBuilder {
       },
     };
 
+    const createdTimestamp = this._transaction.createdTimestamp;
     const { metaData, ingressEndTime }: { metaData: IcpMetadata; ingressEndTime: number | BigInt } =
-      this._utils.getMetaData(this._memo);
+      this._utils.getMetaData(this._memo, createdTimestamp);
 
     const icpTransaction: IcpTransaction = {
       public_keys: [publicKey],
@@ -112,18 +112,10 @@ export class TransferBuilder extends TransactionBuilder {
     this._transaction.icpTransaction = icpTransaction;
   }
 
-  // combine the unsigned transaction with the signature payload and generates the signed transaction
-  protected combine(): BaseTransaction {
-    const signedTransactionBuilder = new SignedTransactionBuilder(
-      this._transaction.unsignedTransaction,
-      this._transaction.signaturePayload
-    );
-    this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
-    return this._transaction;
-  }
-
   /** @inheritdoc */
-  protected signImplementation(): BaseTransaction {
-    throw new MethodNotImplementedError();
+  protected signImplementation(key: BaseKey): BaseTransaction {
+    const signatures = this._utils.getSignatures(this._transaction.payloadsData, this._publicKey, key.key);
+    this._transaction.addSignature(signatures);
+    return this._transaction;
   }
 }

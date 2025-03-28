@@ -17,7 +17,7 @@ export async function handleUpdateLightningWalletCoinSpecific(req: express.Reque
   );
 
   const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const wallet = await coin.wallets().get({ id: req.params.id, includeBalance: false });
 
   return await updateWalletCoinSpecific(wallet, params);
 }

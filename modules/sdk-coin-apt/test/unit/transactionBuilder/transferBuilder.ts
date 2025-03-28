@@ -13,7 +13,7 @@ describe('Apt Transfer Transaction', () => {
         const transaction = new TransferTransaction(coins.get('tapt'));
         const txBuilder = factory.getTransferBuilder(transaction);
         txBuilder.sender(testData.sender2.address);
-        txBuilder.recipient(testData.recipients[0]);
+        txBuilder.recipients(testData.recipients);
         txBuilder.gasData({
           maxGasAmount: 200000,
           gasUnitPrice: 100,
@@ -24,7 +24,10 @@ describe('Apt Transfer Transaction', () => {
         txBuilder.setIsSimulateTxn(true);
         const tx = (await txBuilder.build()) as TransferTransaction;
         should.equal(tx.sender, testData.sender2.address);
+        should.equal(tx.recipients[0].address, testData.recipients[0].address);
+        should.equal(tx.recipients[0].amount, testData.recipients[0].amount);
         should.equal(tx.recipient.address, testData.recipients[0].address);
+        should.equal(tx.recipients[0].amount, testData.recipients[0].amount);
         should.equal(tx.recipient.amount, testData.recipients[0].amount);
         should.equal(tx.maxGasAmount, 200000);
         should.equal(tx.gasUnitPrice, 100);
@@ -52,6 +55,8 @@ describe('Apt Transfer Transaction', () => {
 
       it('should build and send a signed tx', async function () {
         const txBuilder = factory.from(testData.TRANSACTION_USING_TRANSFER_COINS);
+        txBuilder.getSequenceNumber().should.equal(146);
+
         const tx = (await txBuilder.build()) as TransferTransaction;
         should.equal(tx.type, TransactionType.Send);
         tx.inputs.length.should.equal(1);
@@ -81,7 +86,7 @@ describe('Apt Transfer Transaction', () => {
         const transaction = new TransferTransaction(coins.get('tapt'));
         const txBuilder = factory.getTransferBuilder(transaction);
         txBuilder.sender(testData.sender2.address);
-        txBuilder.recipient(testData.recipients[0]);
+        txBuilder.recipients(testData.recipients);
         txBuilder.gasData({
           maxGasAmount: 200000,
           gasUnitPrice: 100,
@@ -101,7 +106,7 @@ describe('Apt Transfer Transaction', () => {
         const transaction = new TransferTransaction(coins.get('tapt'));
         const txBuilder = factory.getTransferBuilder(transaction);
         txBuilder.sender(testData.sender2.address);
-        txBuilder.recipient(testData.recipients[0]);
+        txBuilder.recipients(testData.recipients);
         txBuilder.gasData({
           maxGasAmount: 200000,
           gasUnitPrice: 100,
@@ -112,6 +117,12 @@ describe('Apt Transfer Transaction', () => {
         const tx = (await txBuilder.build()) as TransferTransaction;
         const toJson = tx.toJson();
         should.equal(toJson.sender, testData.sender2.address);
+        should.deepEqual(toJson.recipients, [
+          {
+            address: testData.recipients[0].address,
+            amount: testData.recipients[0].amount,
+          },
+        ]);
         should.deepEqual(toJson.recipient, {
           address: testData.recipients[0].address,
           amount: testData.recipients[0].amount,
@@ -129,6 +140,12 @@ describe('Apt Transfer Transaction', () => {
         const toJson = tx.toJson();
         should.equal(toJson.id, '0x249289a8178e4b9cdb89fad6e8e436ccc435753e4ea3c9d50e0c8b525582e90d');
         should.equal(toJson.sender, '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449');
+        should.deepEqual(toJson.recipients, [
+          {
+            address: '0xf7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad9',
+            amount: '1000',
+          },
+        ]);
         should.deepEqual(toJson.recipient, {
           address: '0xf7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad9',
           amount: '1000',
@@ -149,9 +166,9 @@ describe('Apt Transfer Transaction', () => {
 
       it('should fail for invalid recipient', async function () {
         const builder = factory.getTransferBuilder();
-        should(() => builder.recipient(testData.invalidRecipients[0])).throwError('Invalid address randomString');
-        should(() => builder.recipient(testData.invalidRecipients[1])).throwError('Value cannot be less than zero');
-        should(() => builder.recipient(testData.invalidRecipients[2])).throwError('Invalid amount format');
+        should(() => builder.recipients([testData.invalidRecipients[0]])).throwError('Invalid address randomString');
+        should(() => builder.recipients([testData.invalidRecipients[1]])).throwError('Value cannot be less than zero');
+        should(() => builder.recipients([testData.invalidRecipients[2]])).throwError('Invalid amount format');
       });
       it('should fail for invalid gas amount', async function () {
         const builder = factory.getTransferBuilder();
@@ -170,7 +187,7 @@ describe('Apt Transfer Transaction', () => {
       const transaction = new TransferTransaction(coins.get('tapt'));
       const txBuilder = factory.getTransferBuilder(transaction);
       txBuilder.sender(testData.sender2.address);
-      txBuilder.recipient(testData.recipients[0]);
+      txBuilder.recipients(testData.recipients);
       txBuilder.gasData({
         maxGasAmount: 200000,
         gasUnitPrice: 100,
@@ -182,8 +199,8 @@ describe('Apt Transfer Transaction', () => {
       txBuilder.setIsSimulateTxn(true);
       const tx = (await txBuilder.build()) as TransferTransaction;
       should.equal(tx.sender, testData.sender2.address);
-      should.equal(tx.recipient.address, testData.recipients[0].address);
-      should.equal(tx.recipient.amount, testData.recipients[0].amount);
+      should.equal(tx.recipients[0].address, testData.recipients[0].address);
+      should.equal(tx.recipients[0].amount, testData.recipients[0].amount);
       should.equal(tx.maxGasAmount, 200000);
       should.equal(tx.gasUnitPrice, 100);
       should.equal(tx.sequenceNumber, 14);
@@ -212,7 +229,7 @@ describe('Apt Transfer Transaction', () => {
       const transaction = new TransferTransaction(coins.get('tapt'));
       const txBuilder = factory.getTransferBuilder(transaction);
       txBuilder.sender(testData.sender2.address);
-      txBuilder.recipient(testData.recipients[0]);
+      txBuilder.recipients(testData.recipients);
       txBuilder.gasData({
         maxGasAmount: 200000,
         gasUnitPrice: 100,
@@ -233,7 +250,7 @@ describe('Apt Transfer Transaction', () => {
       const transaction = new TransferTransaction(coins.get('tapt'));
       const txBuilder = factory.getTransferBuilder(transaction);
       txBuilder.sender(testData.sender2.address);
-      txBuilder.recipient(testData.recipients[0]);
+      txBuilder.recipients(testData.recipients);
       txBuilder.gasData({
         maxGasAmount: 200000,
         gasUnitPrice: 100,
@@ -245,6 +262,62 @@ describe('Apt Transfer Transaction', () => {
       const tx = (await txBuilder.build()) as TransferTransaction;
       const toJson = tx.toJson();
       should.equal(toJson.sender, testData.sender2.address);
+      should.deepEqual(toJson.recipients, [
+        {
+          address: testData.recipients[0].address,
+          amount: testData.recipients[0].amount,
+        },
+      ]);
+      should.equal(toJson.sequenceNumber, 14);
+      should.equal(toJson.maxGasAmount, 200000);
+      should.equal(toJson.gasUnitPrice, 100);
+      should.equal(toJson.expirationTime, 1736246155);
+      should.equal(toJson.feePayer, testData.feePayer.address);
+    });
+  });
+
+  describe('should test for deprecated field recipient in building transaction, without usage of recipients', () => {
+    it('should build a transfer tx', async function () {
+      const transaction = new TransferTransaction(coins.get('tapt'));
+      const txBuilder = factory.getTransferBuilder(transaction);
+      txBuilder.sender(testData.sender2.address);
+      txBuilder.recipient(testData.recipients[0]);
+      txBuilder.gasData({
+        maxGasAmount: 200000,
+        gasUnitPrice: 100,
+      });
+      txBuilder.sequenceNumber(14);
+      txBuilder.expirationTime(1736246155);
+      txBuilder.addFeePayerAddress(testData.feePayer.address);
+      txBuilder.setIsSimulateTxn(true);
+      const tx = (await txBuilder.build()) as TransferTransaction;
+      should.equal(tx.sender, testData.sender2.address);
+      should.equal(tx.recipient.address, testData.recipients[0].address);
+      should.equal(tx.recipient.amount, testData.recipients[0].amount);
+      should.equal(tx.maxGasAmount, 200000);
+      should.equal(tx.gasUnitPrice, 100);
+      should.equal(tx.sequenceNumber, 14);
+      should.equal(tx.expirationTime, 1736246155);
+      should.equal(tx.type, TransactionType.Send);
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender2.address,
+        value: testData.recipients[0].amount,
+        coin: 'tapt',
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: testData.recipients[0].address,
+        value: testData.recipients[0].amount,
+        coin: 'tapt',
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(txBuilder.isValidRawTransaction(rawTx), true);
+      rawTx.should.equal(
+        '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a3724490e000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e740e7472616e736665725f636f696e73010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220f7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad908e803000000000000400d03000000000064000000000000008b037d67000000000203040000dbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f204'
+      );
+      const toJson = tx.toJson();
+      should.equal(toJson.sender, testData.sender2.address);
       should.deepEqual(toJson.recipient, {
         address: testData.recipients[0].address,
         amount: testData.recipients[0].amount,
@@ -254,6 +327,205 @@ describe('Apt Transfer Transaction', () => {
       should.equal(toJson.gasUnitPrice, 100);
       should.equal(toJson.expirationTime, 1736246155);
       should.equal(toJson.feePayer, testData.feePayer.address);
+    });
+
+    it('should build and send a signed tx', async function () {
+      const txBuilder = factory.from(testData.TRANSACTION_USING_TRANSFER_COINS);
+      txBuilder.getSequenceNumber().should.equal(146);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: testData.sender2.address,
+        value: testData.recipients[0].amount,
+        coin: 'tapt',
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: testData.recipients[0].address,
+        value: testData.recipients[0].amount,
+        coin: 'tapt',
+      });
+      should.equal(tx.id, '0x249289a8178e4b9cdb89fad6e8e436ccc435753e4ea3c9d50e0c8b525582e90d');
+      should.equal(tx.maxGasAmount, 200000);
+      should.equal(tx.gasUnitPrice, 100);
+      should.equal(tx.sequenceNumber, 146);
+      should.equal(tx.expirationTime, 1737528215);
+      should.equal(tx.type, TransactionType.Send);
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(txBuilder.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.TRANSACTION_USING_TRANSFER_COINS);
+      const toJson = tx.toJson();
+      should.equal(toJson.id, '0x249289a8178e4b9cdb89fad6e8e436ccc435753e4ea3c9d50e0c8b525582e90d');
+      should.equal(toJson.sender, '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449');
+      should.deepEqual(toJson.recipient, {
+        address: '0xf7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad9',
+        amount: '1000',
+      });
+      should.equal(toJson.sequenceNumber, 146);
+      should.equal(toJson.maxGasAmount, 200000);
+      should.equal(toJson.gasUnitPrice, 100);
+      should.equal(toJson.expirationTime, 1737528215);
+    });
+  });
+
+  describe('Batch Transfer', () => {
+    it('should build a batch transfer tx', async function () {
+      const transaction = new TransferTransaction(coins.get('tapt'));
+      const txBuilder = factory.getTransferBuilder(transaction);
+      txBuilder.sender(testData.sender2.address);
+      txBuilder.recipients(testData.batchRecipients);
+      txBuilder.gasData({
+        maxGasAmount: 200000,
+        gasUnitPrice: 100,
+      });
+      txBuilder.sequenceNumber(14);
+      txBuilder.expirationTime(1736246155);
+      txBuilder.addFeePayerAddress(testData.feePayer.address);
+      txBuilder.setIsSimulateTxn(true);
+      const tx = (await txBuilder.build()) as TransferTransaction;
+      should.equal(tx.sender, '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449');
+      should.equal(tx.recipients[0].address, '0xdd52c0b72a73696b867d6571a308c413e43bff8f44956a5991abc4d50db0b849');
+      should.equal(tx.recipients[0].amount, '1000');
+      should.equal(tx.recipients[1].address, '0x2a81760d52db9a96df2609860218214b6d1012e77e84a3fed5145a9a65bf6932');
+      should.equal(tx.recipients[1].amount, '1000');
+      should.equal(tx.maxGasAmount, 200000);
+      should.equal(tx.gasUnitPrice, 100);
+      should.equal(tx.sequenceNumber, 14);
+      should.equal(tx.expirationTime, 1736246155);
+      should.equal(tx.type, TransactionType.Send);
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449',
+        value: '2000',
+        coin: 'tapt',
+      });
+      tx.outputs.length.should.equal(2);
+      tx.outputs[0].should.deepEqual({
+        address: '0xdd52c0b72a73696b867d6571a308c413e43bff8f44956a5991abc4d50db0b849',
+        value: '1000',
+        coin: 'tapt',
+      });
+      tx.outputs[1].should.deepEqual({
+        address: '0x2a81760d52db9a96df2609860218214b6d1012e77e84a3fed5145a9a65bf6932',
+        value: '1000',
+        coin: 'tapt',
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(txBuilder.isValidRawTransaction(rawTx), true);
+      should.equal(
+        rawTx,
+        '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a3724490e000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e741462617463685f7472616e736665725f636f696e73010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e00024102dd52c0b72a73696b867d6571a308c413e43bff8f44956a5991abc4d50db0b8492a81760d52db9a96df2609860218214b6d1012e77e84a3fed5145a9a65bf69321102e803000000000000e803000000000000400d03000000000064000000000000008b037d67000000000203040000dbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f204'
+      );
+    });
+
+    it('should succeed to validate a valid signablePayload', async function () {
+      const transaction = new TransferTransaction(coins.get('tapt'));
+      const txBuilder = factory.getTransferBuilder(transaction);
+      txBuilder.sender(testData.sender2.address);
+      txBuilder.recipients(testData.batchRecipients);
+      txBuilder.gasData({
+        maxGasAmount: 200000,
+        gasUnitPrice: 100,
+      });
+      txBuilder.sequenceNumber(14);
+      txBuilder.expirationTime(1736246155);
+      txBuilder.addFeePayerAddress(testData.feePayer.address);
+      const tx = (await txBuilder.build()) as TransferTransaction;
+      const signablePayload = tx.signablePayload;
+      should.equal(
+        signablePayload.toString('hex'),
+        '5efa3c4f02f83a0f4b2d69fc95c607cc02825cc4e7be536ef0992df050d9e67c011aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a3724490e000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e741462617463685f7472616e736665725f636f696e73010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e00024102dd52c0b72a73696b867d6571a308c413e43bff8f44956a5991abc4d50db0b8492a81760d52db9a96df2609860218214b6d1012e77e84a3fed5145a9a65bf69321102e803000000000000e803000000000000400d03000000000064000000000000008b037d67000000000200dbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f2'
+      );
+    });
+
+    it('should build a unsigned tx and validate its toJson', async function () {
+      const transaction = new TransferTransaction(coins.get('tapt'));
+      const txBuilder = factory.getTransferBuilder(transaction);
+      txBuilder.sender(testData.sender2.address);
+      txBuilder.recipients(testData.batchRecipients);
+      txBuilder.gasData({
+        maxGasAmount: 200000,
+        gasUnitPrice: 100,
+      });
+      txBuilder.sequenceNumber(14);
+      txBuilder.expirationTime(1736246155);
+      txBuilder.addFeePayerAddress(testData.feePayer.address);
+      const tx = (await txBuilder.build()) as TransferTransaction;
+      const toJson = tx.toJson();
+      should.equal(toJson.sender, '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449');
+      should.deepEqual(toJson.recipients, [
+        {
+          address: '0xdd52c0b72a73696b867d6571a308c413e43bff8f44956a5991abc4d50db0b849',
+          amount: '1000',
+        },
+        {
+          address: '0x2a81760d52db9a96df2609860218214b6d1012e77e84a3fed5145a9a65bf6932',
+          amount: '1000',
+        },
+      ]);
+      should.equal(toJson.sequenceNumber, 14);
+      should.equal(toJson.maxGasAmount, 200000);
+      should.equal(toJson.gasUnitPrice, 100);
+      should.equal(toJson.gasUsed, 0);
+      should.equal(toJson.expirationTime, 1736246155);
+      should.equal(toJson.feePayer, '0xdbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f2');
+      should.equal(toJson.assetId, '0x1::aptos_coin::AptosCoin');
+    });
+
+    it('should build and send a signed tx', async function () {
+      const txBuilder = factory.from(testData.COIN_BATCH_TRANSFER);
+      const tx = (await txBuilder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: '0xc8f02d25aa698b3e9fbd8a08e8da4c8ee261832a25a4cde8731b5ec356537d09',
+        value: '2000',
+        coin: 'tapt',
+      });
+      tx.outputs.length.should.equal(2);
+      tx.outputs[0].should.deepEqual({
+        address: '0xdd52c0b72a73696b867d6571a308c413e43bff8f44956a5991abc4d50db0b849',
+        value: '1000',
+        coin: 'tapt',
+      });
+      tx.outputs[1].should.deepEqual({
+        address: '0x2a81760d52db9a96df2609860218214b6d1012e77e84a3fed5145a9a65bf6932',
+        value: '1000',
+        coin: 'tapt',
+      });
+      should.equal(tx.id, '0xf885489e4737a7ed2773bc11ba95994f2b2edc7d6b67d58e39bad76dd5d71c0c');
+      should.equal(tx.maxGasAmount, 200000);
+      should.equal(tx.gasUnitPrice, 100);
+      should.equal(tx.sequenceNumber, 81);
+      should.equal(tx.expirationTime, 1743442953);
+      should.equal(tx.type, TransactionType.Send);
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(txBuilder.isValidRawTransaction(rawTx), true);
+      const toJson = tx.toJson();
+      should.equal(toJson.id, '0xf885489e4737a7ed2773bc11ba95994f2b2edc7d6b67d58e39bad76dd5d71c0c');
+      should.equal(toJson.sender, '0xc8f02d25aa698b3e9fbd8a08e8da4c8ee261832a25a4cde8731b5ec356537d09');
+      should.deepEqual(toJson.recipient, {
+        address: '0xdd52c0b72a73696b867d6571a308c413e43bff8f44956a5991abc4d50db0b849',
+        amount: '1000',
+      });
+      should.deepEqual(toJson.recipients, [
+        {
+          address: '0xdd52c0b72a73696b867d6571a308c413e43bff8f44956a5991abc4d50db0b849',
+          amount: '1000',
+        },
+        {
+          address: '0x2a81760d52db9a96df2609860218214b6d1012e77e84a3fed5145a9a65bf6932',
+          amount: '1000',
+        },
+      ]);
+      should.equal(toJson.sequenceNumber, 81);
+      should.equal(toJson.maxGasAmount, 200000);
+      should.equal(toJson.gasUnitPrice, 100);
+      should.equal(toJson.expirationTime, 1743442953);
+      should.equal(toJson.feePayer, '0xdbc87a1c816d9bcd06b683c37e80c7162e4d48da7812198b830e4d5d8e0629f2');
+      should.equal(toJson.assetId, '0x1::aptos_coin::AptosCoin');
     });
   });
 });

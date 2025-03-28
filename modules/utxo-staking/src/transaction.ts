@@ -1,5 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions } from '@bitgo/unspents';
+import * as bitcoinjslib from 'bitcoinjs-lib';
+
+bitcoinjslib.initEccLib(utxolib.ecc);
 
 /**
  * Build a staking transaction for a wallet that assumes 2-of-3 multisig for the inputs

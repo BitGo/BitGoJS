@@ -45,6 +45,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:iris']
   ),
   erc20(
+    '11506670-9b97-4ade-ae56-4b9c883de952',
+    'eth:uco',
+    'Archethic Universal Coin',
+    8,
+    '0x1a688d3d294ee7bcc1f59011de93d608dc21c377',
+    UnderlyingAsset['eth:uco']
+  ),
+  erc20(
     'a214db0d-a25b-485f-a8fc-b7970cb4d500',
     'eth:hard',
     'Kava Lend',
@@ -100,6 +108,14 @@ export const erc20Coins = [
     18,
     '0x6468e79a80c0eab0f9a2b574c8d5bc374af59414',
     UnderlyingAsset['eth:exrd']
+  ),
+  erc20(
+    'e11480f5-ad48-4255-8de0-c31351b147da',
+    'eth:usual',
+    'USUAL',
+    18,
+    '0xc4441c2be5d8fa8126822b9929ca0b81ea0de38e',
+    UnderlyingAsset['eth:usual']
   ),
   erc20(
     '2cc8846d-8b8d-4480-b49f-026bc56fbf42',
@@ -10218,6 +10234,30 @@ export const erc20Coins = [
     18,
     '0x430ef9263e76dae63c84292c3409d61c598e9682',
     UnderlyingAsset['eth:pyr']
+  ),
+  erc20(
+    'c3387e50-42fc-4d90-b879-5362e37993c4',
+    'eth:una',
+    'Unagi Token',
+    18,
+    '0x0b6f3ea2814f3fff804ba5d5c237aebbc364fba9',
+    UnderlyingAsset['eth:una']
+  ),
+  erc20(
+    'c5db8504-58ee-49ec-bc63-791222e2439b',
+    'eth:ads',
+    'Alkimi',
+    18,
+    '0x3106a0a076bedae847652f42ef07fd58589e001f',
+    UnderlyingAsset['eth:ads']
+  ),
+  erc20(
+    '2d048dbf-d629-46d0-9d9d-10cf2eecbef1',
+    'eth:fuelv1',
+    'Fuel v1',
+    18,
+    '0x56ebdae96d179549f279ea0cfea3b3432b8cd2bc',
+    UnderlyingAsset['eth:fuelv1']
   ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',

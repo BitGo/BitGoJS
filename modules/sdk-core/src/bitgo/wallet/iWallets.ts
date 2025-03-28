@@ -23,6 +23,7 @@ export interface GetWalletOptions {
   allTokens?: boolean;
   reqId?: IRequestTracer;
   id?: string;
+  includeBalance?: boolean;
 }
 
 export interface GenerateBaseMpcWalletOptions {

@@ -4,6 +4,9 @@ import {
 } from '@bitgo/sdk-core';
 
 export const REQUEST_STATUS = 'request_status';
+export const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
+export const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
+export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // Uint8Array value for "00000000000000020101" and the string value is "ryjl3-tyaaa-aaaaa-aaaba-cai"
 
 export enum RequestType {
   CALL = 'call',
@@ -188,4 +191,9 @@ export interface NetworkIdentifier {
 export interface SignedTransactionRequest {
   network_identifier: NetworkIdentifier;
   signed_transaction: string;
+}
+
+export interface RawTransaction {
+  serializedTxHex: string;
+  publicKey: string;
 }
