@@ -2,7 +2,6 @@ import { TransactionBuilder } from './transactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { FungibleAssetTransfer } from '../transaction/fungibleAssetTransfer';
 import { TransactionType } from '@bitgo/sdk-core';
-import BigNumber from 'bignumber.js';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
 import { FUNGIBLE_ASSET_TYPE_ARGUMENT } from '../constants';
@@ -34,28 +33,30 @@ export class FungibleAssetTransferBuilder extends TransactionBuilder {
 
   protected isValidTransactionPayload(payload: TransactionPayload) {
     try {
-      if (
-        !(payload instanceof TransactionPayloadEntryFunction) ||
-        payload.entryFunction.args.length !== 3 ||
-        payload.entryFunction.type_args.length !== 1 ||
-        FUNGIBLE_ASSET_TYPE_ARGUMENT !== payload.entryFunction.type_args[0].toString()
-      ) {
+      if (!this.isValidPayload(payload)) {
         console.error('invalid transaction payload');
         return false;
       }
-      const entryFunction = payload.entryFunction;
+      const entryFunction = (payload as TransactionPayloadEntryFunction).entryFunction;
       const fungibleTokenAddress = entryFunction.args[0].toString();
-      const recipientAddress = entryFunction.args[1].toString();
-      const amountBuffer = Buffer.from(entryFunction.args[2].bcsToBytes());
-      const recipientAmount = new BigNumber(amountBuffer.readBigUint64LE().toString());
+      const addressArg = entryFunction.args[1];
+      const amountArg = entryFunction.args[2];
       return (
-        utils.isValidAddress(recipientAddress) &&
-        utils.isValidAddress(fungibleTokenAddress) &&
-        !recipientAmount.isLessThan(0)
+        utils.isValidAddress(fungibleTokenAddress) && utils.fetchAndValidateRecipients(addressArg, amountArg).isValid
       );
     } catch (e) {
       console.error('invalid transaction payload', e);
       return false;
     }
+  }
+
+  private isValidPayload(payload: TransactionPayload) {
+    return (
+      payload instanceof TransactionPayloadEntryFunction &&
+      payload.entryFunction.args.length === 3 &&
+      (payload.entryFunction.type_args.length === 0 ||
+        (payload.entryFunction.type_args.length === 1 &&
+          FUNGIBLE_ASSET_TYPE_ARGUMENT === payload.entryFunction.type_args[0].toString()))
+    );
   }
 }

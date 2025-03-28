@@ -7,12 +7,14 @@ import {
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import {
   AccountAddress,
   AccountAuthenticator,
   AccountAuthenticatorEd25519,
   AccountAuthenticatorNoAccountAuthenticator,
+  Aptos,
+  AptosConfig,
   DEFAULT_MAX_GAS_AMOUNT,
   Ed25519PublicKey,
   Ed25519Signature,
@@ -20,6 +22,8 @@ import {
   generateSigningMessage,
   generateUserTransactionHash,
   Hex,
+  InputGenerateTransactionPayloadData,
+  Network,
   RAW_TRANSACTION_SALT,
   RAW_TRANSACTION_WITH_DATA_SALT,
   RawTransaction,
@@ -179,7 +183,7 @@ export abstract class Transaction extends BaseTransaction {
     this._isSimulateTxn = value;
   }
 
-  protected abstract buildRawTransaction(): void;
+  protected abstract getTransactionPayloadData(): InputGenerateTransactionPayloadData;
 
   protected abstract parseTransactionPayload(payload: TransactionPayload): void;
 
@@ -372,6 +376,24 @@ export abstract class Transaction extends BaseTransaction {
       sender: this.sender,
       type: this.type,
     };
+  }
+
+  protected async buildRawTransaction(): Promise<void> {
+    const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
+    const aptos = new Aptos(new AptosConfig({ network }));
+    const senderAddress = AccountAddress.fromString(this._sender);
+
+    const simpleTxn = await aptos.transaction.build.simple({
+      sender: senderAddress,
+      data: this.getTransactionPayloadData() as InputGenerateTransactionPayloadData,
+      options: {
+        maxGasAmount: this.maxGasAmount,
+        gasUnitPrice: this.gasUnitPrice,
+        expireTimestamp: this.expirationTime,
+        accountSequenceNumber: this.sequenceNumber,
+      },
+    });
+    this._rawTransaction = simpleTxn.rawTransaction;
   }
 
   private getSignablePayloadWithFeePayer(): Buffer {

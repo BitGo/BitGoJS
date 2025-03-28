@@ -1,17 +1,13 @@
 import { Transaction } from './transaction';
-import { InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
   AccountAddress,
-  Aptos,
-  AptosConfig,
-  EntryFunctionArgument,
   InputGenerateTransactionPayloadData,
-  Network,
   TransactionPayload,
   TransactionPayloadEntryFunction,
 } from '@aptos-labs/ts-sdk';
 
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { APTOS_COIN, COIN_BATCH_TRANSFER_FUNCTION, COIN_TRANSFER_FUNCTION } from '../constants';
 import utils from '../utils';
 
@@ -30,25 +26,25 @@ export class TransferTransaction extends Transaction {
     this._assetId = entryFunction.type_args[0].toString();
     const addressArg = entryFunction.args[0];
     const amountArg = entryFunction.args[1];
-    this.recipients = this.parseRecipients(addressArg, amountArg);
+    this.recipients = utils.parseRecipients(addressArg, amountArg);
   }
 
-  protected async buildRawTransaction(): Promise<void> {
-    const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
-    const aptos = new Aptos(new AptosConfig({ network }));
-    const senderAddress = AccountAddress.fromString(this._sender);
-
-    const simpleTxn = await aptos.transaction.build.simple({
-      sender: senderAddress,
-      data: this.buildData(this.recipients) as InputGenerateTransactionPayloadData,
-      options: {
-        maxGasAmount: this.maxGasAmount,
-        gasUnitPrice: this.gasUnitPrice,
-        expireTimestamp: this.expirationTime,
-        accountSequenceNumber: this.sequenceNumber,
-      },
-    });
-    this._rawTransaction = simpleTxn.rawTransaction;
+  protected getTransactionPayloadData(): InputGenerateTransactionPayloadData {
+    if (this.recipients.length > 1) {
+      return {
+        function: COIN_BATCH_TRANSFER_FUNCTION,
+        typeArguments: [this.assetId],
+        functionArguments: [
+          this.recipients.map((recipient) => AccountAddress.fromString(recipient.address)),
+          this.recipients.map((recipient) => recipient.amount),
+        ],
+      };
+    }
+    return {
+      function: COIN_TRANSFER_FUNCTION,
+      typeArguments: [this.assetId],
+      functionArguments: [AccountAddress.fromString(this.recipients[0].address), this.recipients[0].amount],
+    };
   }
 
   private isValidPayload(payload: TransactionPayload): boolean {
@@ -58,35 +54,5 @@ export class TransferTransaction extends Transaction {
       payload.entryFunction.type_args.length === 1 &&
       payload.entryFunction.type_args[0].toString().length > 0
     );
-  }
-
-  private parseRecipients(addressArg: EntryFunctionArgument, amountArg: EntryFunctionArgument): TransactionRecipient[] {
-    const { recipients, isValid } = utils.fetchAndValidateRecipients(addressArg, amountArg);
-    if (!isValid) {
-      throw new InvalidTransactionError('Invalid transaction recipients');
-    }
-    return recipients.deserializedAddresses.map((address, index) => ({
-      address,
-      amount: utils.getAmountFromPayloadArgs(recipients.deserializedAmounts[index]),
-    })) as TransactionRecipient[];
-  }
-
-  private buildData(recipients: TransactionRecipient[]): InputGenerateTransactionPayloadData {
-    if (recipients.length > 1) {
-      return {
-        function: COIN_BATCH_TRANSFER_FUNCTION,
-        typeArguments: [this.assetId],
-        functionArguments: [
-          recipients.map((recipient) => AccountAddress.fromString(recipient.address)),
-          recipients.map((recipient) => recipient.amount),
-        ],
-      };
-    } else {
-      return {
-        function: COIN_TRANSFER_FUNCTION,
-        typeArguments: [this.assetId],
-        functionArguments: [AccountAddress.fromString(recipients[0].address), recipients[0].amount],
-      };
-    }
   }
 }

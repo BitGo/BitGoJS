@@ -15,6 +15,7 @@ import {
   InvalidTransactionError,
   isValidEd25519PublicKey,
   isValidEd25519SecretKey,
+  TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
 import {
@@ -29,6 +30,7 @@ import {
   SECONDS_PER_WEEK,
   ADDRESS_BYTES_LENGTH,
   AMOUNT_BYTES_LENGTH,
+  FUNGIBLE_ASSET_BATCH_TRANSFER_FUNCTION,
 } from './constants';
 import BigNumber from 'bignumber.js';
 import { RecipientsValidationResult } from './iface';
@@ -90,6 +92,7 @@ export class Utils implements BaseUtils {
       case COIN_BATCH_TRANSFER_FUNCTION:
         return TransactionType.Send;
       case FUNGIBLE_ASSET_TRANSFER_FUNCTION:
+      case FUNGIBLE_ASSET_BATCH_TRANSFER_FUNCTION:
         return TransactionType.SendToken;
       case DIGITAL_ASSET_TRANSFER_FUNCTION:
         return TransactionType.SendNFT;
@@ -111,7 +114,7 @@ export class Utils implements BaseUtils {
       deserializedAmounts = utils.deserializeU64Vector(amountBytes);
       if (deserializedAddresses.length !== deserializedAmounts.length) {
         console.error('invalid payload entry function arguments : addresses and amounts length mismatch');
-        return { recipients: { deserializedAddresses, deserializedAmounts }, isValid: false };
+        return { recipients: { deserializedAddresses: [], deserializedAmounts: [] }, isValid: false };
       }
     } else {
       deserializedAddresses = [addressArg.toString()];
@@ -125,6 +128,17 @@ export class Utils implements BaseUtils {
       recipients: { deserializedAddresses, deserializedAmounts },
       isValid: allAddressesValid && allAmountsValid,
     };
+  }
+
+  parseRecipients(addressArg: EntryFunctionArgument, amountArg: EntryFunctionArgument): TransactionRecipient[] {
+    const { recipients, isValid } = utils.fetchAndValidateRecipients(addressArg, amountArg);
+    if (!isValid) {
+      throw new InvalidTransactionError('Invalid transaction recipients');
+    }
+    return recipients.deserializedAddresses.map((address, index) => ({
+      address,
+      amount: utils.getAmountFromPayloadArgs(recipients.deserializedAmounts[index]),
+    })) as TransactionRecipient[];
   }
 
   deserializeSignedTransaction(rawTransaction: string): SignedTransaction {
