@@ -12,25 +12,17 @@ import {
   changeScopeInFile,
   setDependencyVersion,
   DistTags,
+  LernaModule,
 } from './prepareRelease';
 
-async function setLernaModules(): Promise<{
-  modules: string[];
-  locations: string[];
-}> {
-  const modules = await getLernaModules();
-  return {
-    modules: modules.map(({ name }) => name),
-    locations: modules.map(({ location }) => location),
-  };
-}
-
-function replacePackageScopes(rootDir: string, lernaModules: string[], targetScope: string): number {
+function replacePackageScopes(rootDir: string, lernaModules: LernaModule[], targetScope: string): number {
   let filesChanged = 0;
   // replace all @bitgo packages & source code with alternate SCOPE
   const filePaths = [...walk(path.join(rootDir, 'modules')), ...walk(path.join(rootDir, 'webpack'))];
+  const moduleNames = lernaModules.map(({ name }) => name);
+
   filePaths.forEach((file) => {
-    filesChanged += changeScopeInFile(file, lernaModules, targetScope);
+    filesChanged += changeScopeInFile(file, moduleNames, targetScope);
   });
   return filesChanged;
 }
@@ -48,17 +40,18 @@ function replaceBitGoPackageScope(rootDir: string, targetScope: string): void {
  * Increment the version for a single module based on the preid.
  *
  * @param {String} preid - The prerelease identifier
- * @param {String} modulePath - The location of the module to update
+ * @param {LernaModule} module - The module to update
  * @param {DistTags|undefined} tags - The dist tags for the module
- * @param {String[]} moduleLocations - All module locations for dependency updates
+ * @param {LernaModule[]} allModules - All modules for dependency updates
  * @returns {String|undefined} - The new version if set, undefined otherwise
  */
 function incrementVersionsForModuleLocation(
   preid: string,
-  modulePath: string,
+  module: LernaModule,
   tags: DistTags | undefined,
-  moduleLocations: string[]
+  allModules: LernaModule[]
 ): string | undefined {
+  const modulePath = module.location;
   const json = JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' }));
 
   let prevTag: string | undefined = undefined;
@@ -79,19 +72,22 @@ function incrementVersionsForModuleLocation(
     console.log(`Setting next version for ${json.name} to ${next}`);
     json.version = next;
     writeFileSync(path.join(modulePath, 'package.json'), JSON.stringify(json, null, 2) + '\n');
+
     // since we're manually setting new versions, we must also reconcile all other lerna packages to use the 'next' version for this module
-    moduleLocations.forEach((otherModulePath) => {
+    allModules.forEach((otherModule) => {
       // skip it for the current version
-      if (otherModulePath === modulePath) {
+      if (otherModule.location === modulePath) {
         return;
       }
-      const otherJsonContent = readFileSync(path.join(otherModulePath, 'package.json'), { encoding: 'utf-8' });
+
+      const otherJsonContent = readFileSync(path.join(otherModule.location, 'package.json'), { encoding: 'utf-8' });
       if (otherJsonContent.includes(json.name)) {
         const otherJson = JSON.parse(otherJsonContent);
         setDependencyVersion(otherJson, json.name, next);
-        writeFileSync(path.join(otherModulePath, 'package.json'), JSON.stringify(otherJson, null, 2) + '\n');
+        writeFileSync(path.join(otherModule.location, 'package.json'), JSON.stringify(otherJson, null, 2) + '\n');
       }
     });
+
     return next;
   }
   return undefined;
@@ -101,16 +97,18 @@ function incrementVersionsForModuleLocation(
  * increment the version based on the preid.
  *
  * @param {String} preid - The prerelease identifier
- * @param {String[]} moduleLocations - The locations of the modules to update
+ * @param {LernaModule[]} lernaModules - The modules to update
  */
-async function incrementVersions(preid: string, moduleLocations: string[]): Promise<void> {
+async function incrementVersions(preid: string, lernaModules: LernaModule[]): Promise<void> {
+  const moduleLocations = lernaModules.map(({ location }) => location);
   const distTags = await getDistTagsForModuleLocations(moduleLocations);
-  for (let i = 0; i < moduleLocations.length; i++) {
+
+  for (let i = 0; i < lernaModules.length; i++) {
     try {
-      incrementVersionsForModuleLocation(preid, moduleLocations[i], distTags[i], moduleLocations);
+      incrementVersionsForModuleLocation(preid, lernaModules[i], distTags[i], lernaModules);
     } catch (e) {
       // it's not necessarily a blocking error. Let lerna try and publish anyways
-      console.warn(`Couldn't set next version for ${moduleLocations[i]}`, e);
+      console.warn(`Couldn't set next version for ${lernaModules[i].name} at ${lernaModules[i].location}`, e);
     }
   }
 }
@@ -145,8 +143,8 @@ yargs(hideBin(process.argv))
       console.log(`Using prerelease identifier: ${preid}`);
 
       try {
-        // Get lerna modules
-        const { modules: lernaModules, locations: lernaModuleLocations } = await setLernaModules();
+        // Get lerna modules directly
+        const lernaModules = await getLernaModules();
 
         // Replace package scopes
         const filesChanged = replacePackageScopes(rootDir, lernaModules, targetScope);
@@ -155,7 +153,7 @@ yargs(hideBin(process.argv))
         replaceBitGoPackageScope(rootDir, targetScope);
 
         // Increment versions
-        await incrementVersions(preid, lernaModuleLocations);
+        await incrementVersions(preid, lernaModules);
 
         if (filesChanged) {
           console.log(`Successfully re-targeted ${filesChanged} files.`);
