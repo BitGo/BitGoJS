@@ -5,6 +5,7 @@ import { coins, BaseCoin, ContractAddressDefinedToken, EthereumNetwork as EthLik
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
 import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils';
+import { sendMultiSigTokenTypes, sendMultiSigTypes } from './walletUtil';
 
 /** ETH transfer builder */
 export class TransferBuilder {
@@ -108,6 +109,11 @@ export class TransferBuilder {
 
   setCoinUsesNonPackedEncodingForTxData(isCoinUsesNonPackedEncodingForTxData: boolean): TransferBuilder {
     this._coinUsesNonPackedEncodingForTxData = isCoinUsesNonPackedEncodingForTxData;
+    return this;
+  }
+
+  setSignature(signature: string): TransferBuilder {
+    this._signature = signature;
     return this;
   }
 
@@ -288,5 +294,18 @@ export class TransferBuilder {
     if (transferData.tokenContractAddress) {
       this._tokenContractAddress = transferData.tokenContractAddress;
     }
+  }
+
+  public buildUnsignedTransaction(): Buffer<ArrayBuffer> {
+    const method = this._tokenContractAddress
+      ? EthereumAbi.methodID('sendMultiSigToken', sendMultiSigTokenTypes)
+      : EthereumAbi.methodID('sendMultiSig', sendMultiSigTypes);
+    const operationData = this.getOperationData();
+    const rawEncodedOperationData = EthereumAbi.rawEncode(...operationData);
+    return Buffer.concat([
+      method,
+      rawEncodedOperationData,
+      Buffer.from([this._coinUsesNonPackedEncodingForTxData ? 1 : 0]),
+    ]);
   }
 }
