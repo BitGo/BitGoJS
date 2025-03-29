@@ -15,9 +15,11 @@ export class AptToken extends Apt {
   static createTokenConstructor(config: AptTokenConfig): CoinConstructor {
     return (bitgo: BitGoBase) => new AptToken(bitgo, config);
   }
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: AptTokenConfig[] = [...tokens.bitcoin.apt.tokens, ...tokens.testnet.apt.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.apt.tokens, ...tokens.testnet.apt.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = AptToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

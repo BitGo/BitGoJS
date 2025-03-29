@@ -20,9 +20,11 @@ export class CeloToken extends Celo {
     return (bitgo: BitGoBase) => new CeloToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: CeloTokenConfig[] = [...tokens.bitcoin.celo.tokens, ...tokens.testnet.celo.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.celo.tokens, ...tokens.testnet.celo.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = CeloToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
       tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });

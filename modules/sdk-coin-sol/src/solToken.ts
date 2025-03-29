@@ -24,9 +24,11 @@ export class SolToken extends Sol {
     return (bitgo: BitGoBase) => new SolToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: SolTokenConfig[] = [...tokens.bitcoin.sol.tokens, ...tokens.testnet.sol.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.sol.tokens, ...tokens.testnet.sol.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = SolToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

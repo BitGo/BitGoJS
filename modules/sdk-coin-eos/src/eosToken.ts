@@ -19,9 +19,11 @@ export class EosToken extends Eos {
     return (bitgo: BitGoBase) => new EosToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: EosTokenConfig[] = [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.eos.tokens, ...tokens.testnet.eos.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = EosToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

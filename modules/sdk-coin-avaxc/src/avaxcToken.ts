@@ -21,9 +21,11 @@ export class AvaxCToken extends AvaxC {
     return (bitgo: BitGoBase) => new AvaxCToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: AvaxcTokenConfig[] = [...tokens.bitcoin.avaxc.tokens, ...tokens.testnet.avaxc.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.avaxc.tokens, ...tokens.testnet.avaxc.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = AvaxCToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
       tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });

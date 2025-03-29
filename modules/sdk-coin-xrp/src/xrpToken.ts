@@ -15,9 +15,11 @@ export class XrpToken extends Xrp {
     return (bitgo: BitGoBase) => new XrpToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: XrpTokenConfig[] = [...tokens.bitcoin.xrp.tokens, ...tokens.testnet.xrp.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.xrp.tokens, ...tokens.testnet.xrp.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = XrpToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }
