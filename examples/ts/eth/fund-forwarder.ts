@@ -1,3 +1,5 @@
+import { FundForwarderParams } from "@bitgo/sdk-core";
+
 /**
  * Send funds from a fee address to a forwarder.
  *
@@ -28,12 +30,16 @@ async function fundForwarder() {
   bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
-  const fundForwarderOptions = {
-    forwarderAddress: forwarderAddress,
-    amount: amount,
-  };
+  const fundForwarderParams: FundForwarderParams = {
+    forwarders: [
+      {
+        forwarderAddress,
+        amount, // optional field
+      },
+    ],
+  }
 
-  const response = await wallet.fundForwarder(fundForwarderOptions);
+  const response = await wallet.fundForwarders(fundForwarderParams);
   console.log('Response', response);
 }
 
