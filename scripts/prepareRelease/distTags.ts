@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import * as path from 'path';
+import { LernaModule } from './getLernaModules';
 
 export type DistTags = Record<string, string>;
 
@@ -69,10 +70,10 @@ export async function getDistTagsForModuleNames(moduleNames: string[]): Promise<
   return tagsMap;
 }
 
-export async function getDistTagsForModuleLocations(moduleLocations: string[]): Promise<(DistTags | undefined)[]> {
-  const names: string[] = moduleLocations.map(
-    (modulePath) => JSON.parse(readFileSync(path.join(modulePath, 'package.json'), { encoding: 'utf-8' })).name
+export async function getDistTagsForModules(modules: LernaModule[]): Promise<Map<LernaModule, DistTags | undefined>> {
+  const names: string[] = modules.map(
+    (m) => JSON.parse(readFileSync(path.join(m.location, 'package.json'), { encoding: 'utf-8' })).name
   );
-  const map = await getDistTagsForModuleNames(names);
-  return names.map((name) => map.get(name));
+  const nameMap = await getDistTagsForModuleNames(names);
+  return new Map<LernaModule, DistTags | undefined>(modules.map((m, i) => [m, nameMap.get(names[i])]));
 }

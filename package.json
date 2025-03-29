@@ -121,7 +121,8 @@
     "update-dockerfile": "ts-node scripts/update-dockerfile.ts",
     "precommit": "lint-staged",
     "lint-fix": "lerna run lint --parallel -- --fix",
-    "prepare-commit-msg": "node ./scripts/prepare-commit-msg.js"
+    "prepare-commit-msg": "node ./scripts/prepare-commit-msg.js",
+    "test:prepare-release": "mocha --require ts-node/register ./scripts/tests/prepareRelease/prepare-release-main.test.ts"
   },
   "dependencies": {
     "axios": "^1.8.2",
