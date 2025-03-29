@@ -3733,4 +3733,53 @@ export class Wallet implements IWallet {
     }
     return keychains;
   }
+
+  /**
+   * Approve token for use with a batcher contract
+   * This function builds, signs, and sends a token approval transaction
+   *
+   * @param {string} walletPassphrase - The passphrase to be used to decrypt the user key
+   * @returns {Promise<any>} The transaction details
+   */
+  async approveToken(walletPassphrase: string): Promise<any> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    // Step 1: Call the token approval build API
+    const url = this.baseCoin.url(`/wallet/${this.id()}/token/approval/build`);
+    const tokenApprovalBuild = await this.bitgo.post(url).result();
+
+    console.log('unsigned tx: ', tokenApprovalBuild);
+
+    // Step 2: Sign the transaction
+    // Doing a sanity check for password here to avoid doing further work if we know it's wrong
+    const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId });
+    const userKeychain = keychains[0];
+
+    if (userKeychain.encryptedPrv && walletPassphrase) {
+      if (!decryptKeychainPrivateKey(this.bitgo, userKeychain, walletPassphrase)) {
+        const error: Error & { code?: string } = new Error(
+          `unable to decrypt keychain with the given wallet passphrase`
+        );
+        error.code = 'wallet_passphrase_incorrect';
+        throw error;
+      }
+    }
+
+    const signingParams = {
+      txPrebuild: tokenApprovalBuild,
+      keychain: userKeychain,
+      walletPassphrase: walletPassphrase,
+      reqId,
+    };
+
+    const halfSignedTransaction = await this.signTransaction(signingParams);
+
+    console.log('half signed tx: ', halfSignedTransaction);
+
+    // Step 3: Send the transaction
+    const finalTxParams = _.extend({}, halfSignedTransaction);
+
+    return this.sendTransaction(finalTxParams, reqId);
+  }
 }
