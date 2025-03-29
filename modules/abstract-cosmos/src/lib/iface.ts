@@ -1,5 +1,6 @@
 import { TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
 import { Coin } from '@cosmjs/stargate';
+import { CosmosTransaction } from './transaction';
 
 /**
  * Defines the protobuf typeUrl for the public key
@@ -39,7 +40,7 @@ export interface RecoveryOptions {
 
 export interface CosmosLikeCoinRecoveryOutput {
   serializedTx?: string;
-  signableHex?: string;
+  signableTransaction?: CosmosTransaction;
 }
 
 export interface DelegateOrUndelegeteMessage {
