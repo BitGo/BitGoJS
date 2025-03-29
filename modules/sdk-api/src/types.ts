@@ -22,6 +22,7 @@ export interface BitGoAPIOptions {
   env?: EnvironmentName;
   etherscanApiToken?: string;
   polygonscanApiToken?: string;
+  baseethApiToken?: string;
   arbiscanApiToken?: string;
   optimisticEtherscanApiToken?: string;
   zksyncExplorerApiToken?: string;
