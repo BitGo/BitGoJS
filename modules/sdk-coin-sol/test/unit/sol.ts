@@ -1700,8 +1700,8 @@ describe('SOL:', function () {
       recoveryTxn.transactions[0].serializedTx.should.equal(
         'AvR+L909kzRq6NuaUe9F6Jt97MOiFs7jpW8MuOrwz4EbKF40d31dci/bgLTq4gpk/Hh3s5cA8FtbLkDQr15PqAE7yd8LOXvsLtO2REqMM/OCZ8wItfsqfTfia2xIfibRW3wHgw63jiaojbXeSqaYajJ/Ca7YwBUz5blydI3fYLgPAgECBsLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHxPX1mHv+JqpmAT79ltNjYPK0M2yR+ZMln7VgUTBWFNQvLqE/j/nXlY2/JpxuNr/fXLXEPeS04dPvt9qz1dAoYEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAADpiH20cxLj7KnOaoI5ANNoPxYjs472FdjDeMPft3kXdAgQDAgUBBAQAAAAEAgADDAIAAADwopo7AAAAAA=='
       );
-      recoveryTxn.transactions[0].scanIndex.should.equal(0);
-      recoveryTxn.lastScanIndex.should.equal(0);
+      (recoveryTxn.transactions[0].scanIndex ?? 0).should.equal(0);
+      (recoveryTxn.lastScanIndex ?? 0).should.equal(0);
     });
 
     it('should take consolidation OVC output and generate multiple signed sweep transactions', async function () {
@@ -1710,12 +1710,12 @@ describe('SOL:', function () {
       recoveryTxn.transactions[0].serializedTx.should.equal(
         'AtQPLzOmLuKwHY6N5XoJIZK/T7W10uYWm/MRte3GFUdl+w3gHLjSa9H66WSfFNubQxIPckxJDyltkP7ksLDf9QgBNJM2UWbBUH5wT0JJHILlhCs33HX8DeE/8Tdsw6tGfZoMhCnSKv6TPWtBxy7Sb6sW8ksCUPnAWuHGGKmgjEMBAgECBmLrqxJrY2kbN/tcrQw3P8P15OljFGabFJAKBrUO1grNBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHxPX1mHv+JqpmAT79ltNjYPK0M2yR+ZMln7VgUTBWFNQsLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAAIZQniiS73D6mwfpnfhVMC4lyYJtRSrmoZpF7yIlUdIDAgQDAgUBBAQAAAAEAgADDAIAAADwPc0dAAAAAA=='
       );
-      recoveryTxn.transactions[0].scanIndex.should.equal(1);
+      (recoveryTxn.transactions[0].scanIndex ?? 0).should.equal(1);
       recoveryTxn.transactions[1].serializedTx.should.equal(
         'AuLhOA5zmOBZR85lo+nKdTopVwJAMrMp6NW+8UnGNsSBSpBkqfWZQqSg9s+7aTlXezm5vxol+Pl6t7PpVNTOHwLcp9xJp3TFHdivEbhwJKldR4Ny+pasoFx+Bgk8q6g1iNiq7XSi1Ov3bs7euMkTj7nDRFqP8lv7xLTcvrBm9OQJAgECBp14ImBCdmVROlw0UveYS1MvG/ljCRI3MJTFmsxuXEoWBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHw0hyxvpVwtIx9/zeX2O16eTrY+aKIh1mdKg4MMg0eyxMLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAAC7ws1XFslinwgtpISUViVWIVTHyD2Q0qj24YjKmrAmXAgQDAgUBBAQAAAAEAgADDAIAAADwPc0dAAAAAA=='
       );
-      recoveryTxn.transactions[1].scanIndex.should.equal(2);
-      recoveryTxn.lastScanIndex.should.equal(20);
+      (recoveryTxn.transactions[1].scanIndex ?? 0).should.equal(2);
+      (recoveryTxn.lastScanIndex ?? 0).should.equal(20);
     });
 
     it('should recover a txn for non-bitgo recoveries (latest blockhash)', async function () {
@@ -2272,7 +2272,7 @@ describe('SOL:', function () {
       })) as MPCTxs;
       res.should.not.be.empty();
       res.transactions.length.should.equal(2);
-      res.lastScanIndex.should.equal(3);
+      (res.lastScanIndex ?? 0).should.equal(3);
 
       const txn1 = res.transactions[0];
       const latestBlockhashTxnDeserialize1 = new Transaction(coin);
@@ -2309,7 +2309,7 @@ describe('SOL:', function () {
       txn1.should.hasOwnProperty('serializedTx');
       txn1.should.hasOwnProperty('signableHex');
       txn1.should.hasOwnProperty('scanIndex');
-      txn1.scanIndex.should.equal(2);
+      (txn1.scanIndex ?? 0).should.equal(2);
       txn1.should.hasOwnProperty('coin');
       txn1.coin?.should.equal('tsol');
       txn1.should.hasOwnProperty('derivationPath');
@@ -2332,7 +2332,7 @@ describe('SOL:', function () {
       txn2.should.hasOwnProperty('serializedTx');
       txn2.should.hasOwnProperty('signableHex');
       txn2.should.hasOwnProperty('scanIndex');
-      txn2.scanIndex.should.equal(3);
+      (txn2.scanIndex ?? 0).should.equal(3);
       txn2.should.hasOwnProperty('coin');
       txn2.coin?.should.equal('tsol');
       txn2.should.hasOwnProperty('derivationPath');
@@ -2369,7 +2369,7 @@ describe('SOL:', function () {
       txn1.should.hasOwnProperty('serializedTx');
       txn1.should.hasOwnProperty('signableHex');
       txn1.should.hasOwnProperty('scanIndex');
-      txn1.scanIndex.should.equal(4);
+      (txn1.scanIndex ?? 0).should.equal(4);
       txn1.should.hasOwnProperty('coin');
       txn1.coin?.should.equal('tsol');
       txn1.should.hasOwnProperty('derivationPath');

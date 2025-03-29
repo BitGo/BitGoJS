@@ -37,6 +37,7 @@ import {
   TransactionPrebuild,
   OfflineVaultTxInfo,
   optionalDeps,
+  UnsignedSweepTxMPCv2,
 } from '@bitgo/abstract-eth';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
@@ -347,6 +348,11 @@ export class Eth extends AbstractEthLikeNewCoins {
     }
 
     return signedTx;
+  }
+
+  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    // Coin-specific logic for ETH
+    return this.buildUnsignedSweepTxnMPCv2(params);
   }
 
   /**
