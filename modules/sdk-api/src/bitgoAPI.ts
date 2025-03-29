@@ -336,7 +336,7 @@ export class BitGoAPI implements BitGoBase {
    * headers to any outbound request.
    * @param method
    */
-  private requestPatch(method: (typeof patchedRequestMethods)[number], url: string) {
+  private requestPatch(method: (typeof patchedRequestMethods)[number], url: string, headers?: Record<string, string>) {
     const req = this.getAgentRequest(method, url);
     if (this._customProxyAgent) {
       debug('using custom proxy agent');
@@ -414,6 +414,13 @@ export class BitGoAPI implements BitGoBase {
         req.set('HMAC', requestProperties.hmac);
       }
 
+      // set the headers
+      if (headers) {
+        for (const key of Object.keys(headers)) {
+          req.set(key, headers[key]);
+        }
+      }
+
       /**
        * Verify the response before calling the original onfulfilled handler,
        * and make sure onrejected is called if a verification error is encountered
@@ -436,23 +443,23 @@ export class BitGoAPI implements BitGoBase {
     return toBitgoRequest(req);
   }
 
-  get(url: string): BitGoRequest {
-    return this.requestPatch('get', url);
+  get(url: string, headers?: Record<string, string>): BitGoRequest {
+    return this.requestPatch('get', url, headers);
   }
-  post(url: string): BitGoRequest {
-    return this.requestPatch('post', url);
+  post(url: string, headers?: Record<string, string>): BitGoRequest {
+    return this.requestPatch('post', url, headers);
   }
-  put(url: string): BitGoRequest {
-    return this.requestPatch('put', url);
+  put(url: string, headers?: Record<string, string>): BitGoRequest {
+    return this.requestPatch('put', url, headers);
   }
-  del(url: string): BitGoRequest {
-    return this.requestPatch('del', url);
+  del(url: string, headers?: Record<string, string>): BitGoRequest {
+    return this.requestPatch('del', url, headers);
   }
-  patch(url: string): BitGoRequest {
-    return this.requestPatch('patch', url);
+  patch(url: string, headers?: Record<string, string>): BitGoRequest {
+    return this.requestPatch('patch', url, headers);
   }
-  options(url: string): BitGoRequest {
-    return this.requestPatch('options', url);
+  options(url: string, headers?: Record<string, string>): BitGoRequest {
+    return this.requestPatch('options', url, headers);
   }
 
   /**
@@ -809,7 +816,7 @@ export class BitGoAPI implements BitGoBase {
   /**
    * Login to the bitgo platform.
    */
-  async authenticate(params: AuthenticateOptions): Promise<LoginResponse | any> {
+  async authenticate(params: AuthenticateOptions, headers?: Record<string, string>): Promise<LoginResponse | any> {
     try {
       if (!_.isObject(params)) {
         throw new Error('required object params');
@@ -828,7 +835,7 @@ export class BitGoAPI implements BitGoBase {
       }
 
       const authUrl = this.microservicesUrl('/api/auth/v1/session');
-      const request = this.post(authUrl);
+      const request = this.post(authUrl, headers);
 
       if (forceV1Auth) {
         request.forceV1Auth = true;
@@ -877,14 +884,14 @@ export class BitGoAPI implements BitGoBase {
   /**
    * Login to the bitgo platform with passkey.
    */
-  async authenticateWithPasskey(passkey: string): Promise<LoginResponse | any> {
+  async authenticateWithPasskey(passkey: string, headers?: Record<string, string>): Promise<LoginResponse | any> {
     try {
       if (this._token) {
         return new Error('already logged in');
       }
 
       const authUrl = this.microservicesUrl('/api/auth/v1/session');
-      const request = this.post(authUrl);
+      const request = this.post(authUrl, headers);
 
       this.validatePasskeyResponse(passkey);
       const userId = JSON.parse(passkey).response.userHandle;
