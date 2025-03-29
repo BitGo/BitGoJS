@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.1.1...@bitgo/abstract-lightning@4.2.0) (2025-03-28)
+
+### Features
+
+- **abstract-lightning:** add manually failed failure type ([3ea064d](https://github.com/BitGo/BitGoJS/commit/3ea064ddda7383b3a85bb64e965787623b465176))
+- **abstract-lightning:** make encrypted prv key optional in get key ([be728ab](https://github.com/BitGo/BitGoJS/commit/be728ab7935fe00476647cb7b7e002a5af304d88))
+
 ## [4.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.1.0...@bitgo/abstract-lightning@4.1.1) (2025-03-20)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@23.0.3...@bitgo/abstract-eth@24.0.0) (2025-03-28)
+
+### Bug Fixes
+
+- **abstract-eth:** return eip 191 encoded message as a hex string ([6ae1979](https://github.com/BitGo/BitGoJS/commit/6ae19794ff1c738b4984cb4dacc23130da708a17))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** messageEncoded is now encoded as a hex string
+
 ## [23.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@23.0.2...@bitgo/abstract-eth@23.0.3) (2025-03-20)
 
 ### Reverts

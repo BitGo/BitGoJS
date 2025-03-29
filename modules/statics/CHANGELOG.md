@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.5.0...@bitgo/statics@51.6.0) (2025-03-28)
+
+### Features
+
+- onboard arbeth coin because product missed adding it to ticket ([abbad82](https://github.com/BitGo/BitGoJS/commit/abbad82597c5ce8c4089cd31d9868d17bd35c97d))
+- onboard new tokens ([f27c01e](https://github.com/BitGo/BitGoJS/commit/f27c01e078d80eb240ed053506726bb4ef30fdca))
+- **statics:** add method to create custom coin map ([b5d60d2](https://github.com/BitGo/BitGoJS/commit/b5d60d2e88980825cad77e3311f5ad0587a7a985))
+- **statics:** get formatted tokens from custom coin map ([0e12f90](https://github.com/BitGo/BitGoJS/commit/0e12f90a4e9d588e1c3f338d8bab8c445ac646fc))
+
 # [51.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.4.0...@bitgo/statics@51.5.0) (2025-03-20)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.5.0...@bitgo/utxo-core@1.6.0) (2025-03-28)
+
+### Features
+
+- **utxo-core:** add toXOnlyPublicKey utility function ([bc527b5](https://github.com/BitGo/BitGoJS/commit/bc527b5d8169453e8438c839acb5c20f1ab124cf))
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.2.0...@bitgo/utxo-core@1.5.0) (2025-03-04)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.5.1...@bitgo/sdk-coin-stx@3.5.2) (2025-03-28)
+
+### Bug Fixes
+
+- **sdk-coin-stx:** extracting memo from functionArgs ([d316b46](https://github.com/BitGo/BitGoJS/commit/d316b46f6bede2a06ddde8645717c0cc4988ee36))
+
 ## [3.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.5.0...@bitgo/sdk-coin-stx@3.5.1) (2025-03-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx
