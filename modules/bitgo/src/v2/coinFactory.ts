@@ -63,6 +63,7 @@ import {
   Islm,
   Lnbtc,
   Ltc,
+  Mantra,
   Ofc,
   Oas,
   OfcToken,
@@ -126,6 +127,7 @@ import {
   Tislm,
   Tlnbtc,
   Tltc,
+  Tmantra,
   Toas,
   Tosmo,
   Topeth,
@@ -206,6 +208,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('hteth', Hteth.createInstance);
   globalCoinFactory.register('lnbtc', Lnbtc.createInstance);
   globalCoinFactory.register('ltc', Ltc.createInstance);
+  globalCoinFactory.register('mantra', Mantra.createInstance);
   globalCoinFactory.register('icp', Icp.createInstance);
   globalCoinFactory.register('injective', Injective.createInstance);
   globalCoinFactory.register('islm', Islm.createInstance);
@@ -268,6 +271,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tislm', Tislm.createInstance);
   globalCoinFactory.register('tlnbtc', Tlnbtc.createInstance);
   globalCoinFactory.register('tltc', Tltc.createInstance);
+  globalCoinFactory.register('tmantra', Tmantra.createInstance);
   globalCoinFactory.register('tnear', TNear.createInstance);
   globalCoinFactory.register('toas', Toas.createInstance);
   globalCoinFactory.register('topeth', Topeth.createInstance);
