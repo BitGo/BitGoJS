@@ -172,6 +172,9 @@
       "path": "../sdk-coin-ltc"
     },
     {
+      "path": "../sdk-coin-mantra"
+    },
+    {
       "path": "../sdk-coin-near"
     },
     {
