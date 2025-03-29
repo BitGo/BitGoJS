@@ -48,6 +48,7 @@ interface EnvironmentTemplate {
   coreumNodeUrl: string;
   runeNodeUrl: string;
   babyNodeUrl: string;
+  mantraNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
   substrateNodeUrls: string[];
@@ -157,6 +158,7 @@ const mainnetBase: EnvironmentTemplate = {
   runeNodeUrl: 'https://thornode.ninerealms.com',
   babyNodeUrl: '', // TODO(COIN-2758) update url when mainnet goes live
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
+  mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
   tronNodes: {
@@ -218,6 +220,7 @@ const testnetBase: EnvironmentTemplate = {
   runeNodeUrl: 'https://stagenet-thornode.ninerealms.com',
   babyNodeUrl: 'https://babylon-testnet-api.nodes.guru/',
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
+  mantraNodeUrl: 'https://mantra-testnet-rest.publicnode.com/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
   tronNodes: {
