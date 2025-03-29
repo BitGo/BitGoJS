@@ -238,6 +238,7 @@ export class BitGoAPI implements BitGoBase {
       'bscscanApiToken',
       'coredaoExplorerApiToken',
       'oasExplorerApiToken',
+      'baseethApiToken',
       'sgbExplorerApiToken',
       'flrExplorerApiToken',
       'xdcExplorerApiToken',
