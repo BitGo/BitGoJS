@@ -21,9 +21,11 @@ export class Sip10Token extends Stx {
     return (bitgo: BitGoBase) => new Sip10Token(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: Sip10TokenConfig[] = [...tokens.bitcoin.stx.tokens, ...tokens.testnet.stx.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.stx.tokens, ...tokens.testnet.stx.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = Sip10Token.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

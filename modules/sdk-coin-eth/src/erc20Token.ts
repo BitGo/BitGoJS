@@ -41,9 +41,11 @@ export class Erc20Token extends Eth {
     return (bitgo: BitGoBase) => new Erc20Token(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: Erc20TokenConfig[] = [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = Erc20Token.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
       tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });

@@ -15,9 +15,11 @@ export class HbarToken extends Hbar {
     return (bitgo: BitGoBase) => new HbarToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: HbarTokenConfig[] = [...tokens.bitcoin.hbar.tokens, ...tokens.testnet.hbar.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.hbar.tokens, ...tokens.testnet.hbar.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = HbarToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

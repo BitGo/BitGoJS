@@ -15,9 +15,11 @@ export class SuiToken extends Sui {
     return (bitgo: BitGoBase) => new SuiToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: SuiTokenConfig[] = [...tokens.bitcoin.sui.tokens, ...tokens.testnet.sui.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.sui.tokens, ...tokens.testnet.sui.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = SuiToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }
