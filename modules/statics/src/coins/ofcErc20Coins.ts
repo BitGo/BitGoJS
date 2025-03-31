@@ -3002,6 +3002,20 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:fuelv1')
   ),
+  ofcerc20(
+    '26fbd57c-e0f9-4cbe-a31a-68cfd0e341ae',
+    'ofceth:cet',
+    'CoinEx Token',
+    18,
+    underlyingAssetForSymbol('eth:cet')
+  ),
+  ofcerc20(
+    'e6d51d14-edd1-4fe3-9a6a-4ccc8f76f1ad',
+    'ofceth:unio',
+    'UNIO Coin',
+    18,
+    underlyingAssetForSymbol('eth:unio')
+  ),
 ];
 
 export const tOfcErc20Coins = [

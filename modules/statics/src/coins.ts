@@ -1337,6 +1337,72 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    'e92938d6-6b8b-4c4f-9e38-3eee24810925',
+    'hbar:karate',
+    'Karate Combat',
+    Networks.main.hedera,
+    8,
+    UnderlyingAsset['hbar:karate'],
+    '0.0.2283230',
+    '0.0.2283230',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
+    '9826ce8f-5679-4ba0-94d3-5ee74d2a349b',
+    'hbar:sauce',
+    'SaucerSwap',
+    Networks.main.hedera,
+    6,
+    UnderlyingAsset['hbar:sauce'],
+    '0.0.731861',
+    '0.0.731861',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
+    'bf69c3c4-9180-48d6-9e64-a605918a15dc',
+    'hbar:dovu',
+    'DOVU',
+    Networks.main.hedera,
+    8,
+    UnderlyingAsset['hbar:dovu'],
+    '0.0.3716059',
+    '0.0.3716059',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
+    'e2c50b47-6343-4a01-a21c-9e666bdd1693',
+    'hbar:pack',
+    'HashPack',
+    Networks.main.hedera,
+    6,
+    UnderlyingAsset['hbar:pack'],
+    '0.0.4794920',
+    '0.0.4794920',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
+    'a7085ea0-9ad7-40fb-b2bd-44e31c156e84',
+    'hbar:jam',
+    'Tune.Fm',
+    Networks.main.hedera,
+    8,
+    UnderlyingAsset['hbar:jam'],
+    '0.0.127877',
+    '0.0.127877',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
+    '36caaf39-fd90-4bad-a197-d36cfaa9c8aa',
+    'hbar:berry',
+    'Berry',
+    Networks.main.hedera,
+    6,
+    UnderlyingAsset['hbar:berry'],
+    '0.0.7496578',
+    '0.0.7496578',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '842c2119-3071-409d-b86f-49f0b46b676e',
     'thbar:usdc',
     'Testnet Hedera USD Coin',
@@ -2367,6 +2433,14 @@ export const coins = CoinMap.fromCoins([
     '0x63681558c1b680e43bbcadc0ced21075854bba87',
     UnderlyingAsset['tarbeth:xsgd']
   ),
+  arbethErc20(
+    '6a69ea1d-ce7d-4603-89df-cf2f6490d1f9',
+    'arbeth:xai',
+    'Xai',
+    18,
+    '0x4cb9a7ae498cedcbb5eae9f25736ae7d428c9d66',
+    UnderlyingAsset['arbeth:xai']
+  ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',
@@ -2588,6 +2662,17 @@ export const coins = CoinMap.fromCoins([
     'rHy7UVhwM7Xgo4SoUTf5hE5yWKZKPEkxcL::5841540000000000000000000000000000000000',
     'xat.com',
     UnderlyingAsset['txrp:xat']
+  ),
+  xrpToken(
+    '88a010ca-8666-493e-b534-725fa6851da3',
+    'xrp:xsgd',
+    'XSGD',
+    15,
+    'rK67JczCpaYXVtfw3qJVmqwpSfa1bYTptw',
+    'XSGD',
+    'rK67JczCpaYXVtfw3qJVmqwpSfa1bYTptw::XSGD',
+    'straitsx.com',
+    UnderlyingAsset['xrp:xsgd']
   ),
   suiToken(
     'f26941b7-1110-4aa7-a2bc-29807297a51c',

@@ -1119,6 +1119,15 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    'ec186a0f-8e7c-4844-92b0-630d4bce7eef',
+    'bsc:oort',
+    'OORT',
+    18,
+    '0x5651fa7a726b9ec0cad00ee140179912b6e73599',
+    UnderlyingAsset['bsc:oort'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     'bea7d7f0-a2c3-48fd-95aa-9c51811153f6',
     'bsc:psg',
     'Paris Saint-Germain Fan Token',
@@ -1136,7 +1145,6 @@ export const bscTokens = [
     UnderlyingAsset['bsc:telos'],
     BSC_TOKEN_FEATURES
   ),
-
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',
