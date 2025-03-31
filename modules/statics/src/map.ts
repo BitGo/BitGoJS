@@ -68,6 +68,18 @@ export class CoinMap {
       1112: 'twemix',
       50: 'xdc',
       51: 'txdc',
+      80094: 'bera',
+      80000: 'tbera',
+      42220: 'celo',
+      44787: 'tcelo',
+      2222: 'kava',
+      2221: 'tkava',
+      43114: 'avax',
+      43113: 'tavax',
+      100: 'gno',
+      130: 'uni',
+      324: 'zketh',
+      8453: 'baseeth',
     };
     return ethLikeCoinFromChainId[chainId];
   }
