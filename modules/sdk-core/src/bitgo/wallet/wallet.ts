@@ -101,7 +101,6 @@ import {
   SignAndSendTxRequestOptions,
 } from './iWallet';
 import { GoStakingWallet, StakingWallet } from '../staking';
-import { Lightning } from '../lightning/custodial';
 import EddsaUtils from '../utils/tss/eddsa';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import { getTxRequest } from '../tss';
@@ -3099,16 +3098,6 @@ export class Wallet implements IWallet {
       success: successfulTxs,
       failure: failedTxs,
     };
-  }
-
-  /**
-   * Create lightning for btc/tbtc from this wallet
-   */
-  public lightning(): Lightning {
-    if (!this.baseCoin.supportsLightning()) {
-      throw new Error(`Lightning not supported for ${this.coin()}`);
-    }
-    return new Lightning(this.bitgo, this);
   }
 
   /* MARK: TSS Helpers */

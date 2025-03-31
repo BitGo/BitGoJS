@@ -28,7 +28,6 @@ import {
   TokenEnablement,
   TokenTransferRecipientParams,
 } from '../utils';
-import { ILightning } from '../lightning/custodial';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IAddressBook } from '../address-book';
 import { WalletUser } from '@bitgo/public-types';
@@ -891,7 +890,6 @@ export interface IWallet {
   buildTokenEnablements(params?: BuildTokenEnablementOptions): Promise<PrebuildTransactionResult[]>;
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
-  lightning(): ILightning;
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
