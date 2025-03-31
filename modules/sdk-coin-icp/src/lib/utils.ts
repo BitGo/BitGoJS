@@ -571,21 +571,6 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Generates a representation-independent hash for an HTTP read state object.
-   *
-   * @param {ReadState} readState - The HTTP read state object.
-   * @returns {Buffer} - The hash of the read state object.
-   */
-  HttpReadStateRepresentationIndependentHash(readState: ReadState): Buffer {
-    return this.hashOfMap({
-      request_type: RequestType.READ_STATE,
-      ingress_expiry: readState.ingress_expiry,
-      paths: readState.paths,
-      sender: readState.sender,
-    });
-  }
-
-  /**
    * Extracts the recipient information from the provided ICP transaction data.
    *
    * @param {IcpTransactionData} icpTransactionData - The ICP transaction data containing the receiver's address and amount.
@@ -600,12 +585,6 @@ export class Utils implements BaseUtils {
 
   getTransactionSignature(signatureMap: Map<string, Signatures>, update: HttpCanisterUpdate): Signatures | undefined {
     return signatureMap.get(this.blobToHex(this.makeSignatureData(this.generateHttpCanisterUpdateId(update))));
-  }
-
-  getReadStateSignature(signatureMap: Map<string, Signatures>, readState: ReadState): Signatures | undefined {
-    return signatureMap.get(
-      this.blobToHex(this.makeSignatureData(this.HttpReadStateRepresentationIndependentHash(readState)))
-    );
   }
 
   getMetaData(

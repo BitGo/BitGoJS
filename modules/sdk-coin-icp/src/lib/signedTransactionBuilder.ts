@@ -1,11 +1,4 @@
-import {
-  CborUnsignedTransaction,
-  RequestType,
-  Signatures,
-  UpdateEnvelope,
-  ReadStateEnvelope,
-  RequestEnvelope,
-} from './iface';
+import { CborUnsignedTransaction, RequestType, Signatures, UpdateEnvelope, RequestEnvelope } from './iface';
 import utils from './utils';
 import assert from 'assert';
 
@@ -30,7 +23,7 @@ export class SignedTransactionBuilder {
     const unsignedTransaction = utils.cborDecode(
       utils.blobFromHex(combineRequest.unsigned_transaction)
     ) as CborUnsignedTransaction;
-    assert(combineRequest.signatures.length === unsignedTransaction.ingress_expiries.length * 2);
+    assert(combineRequest.signatures.length === unsignedTransaction.ingress_expiries.length);
     assert(unsignedTransaction.updates.length === 1);
     const envelopes = this.getEnvelopes(unsignedTransaction, signatureMap);
     const envelopRequests = { requests: envelopes };
@@ -48,15 +41,9 @@ export class SignedTransactionBuilder {
       for (const ingressExpiry of unsignedTransaction.ingress_expiries) {
         update.ingress_expiry = ingressExpiry;
 
-        const readState = utils.makeReadStateFromUpdate(update);
         const transactionSignature = utils.getTransactionSignature(signatureMap, update);
         if (!transactionSignature) {
           throw new Error('Transaction signature is invalid');
-        }
-
-        const readStateSignature = utils.getReadStateSignature(signatureMap, readState);
-        if (!readStateSignature) {
-          throw new Error('read state signature is invalid');
         }
 
         const pk_der = utils.getPublicKeyInDERFormat(transactionSignature.public_key.hex_bytes);
@@ -66,15 +53,8 @@ export class SignedTransactionBuilder {
           sender_sig: utils.blobFromHex(transactionSignature.hex_bytes),
         };
 
-        const readStateEnvelope: ReadStateEnvelope = {
-          content: { request_type: RequestType.READ_STATE, ...readState },
-          sender_pubkey: pk_der,
-          sender_sig: utils.blobFromHex(readStateSignature.hex_bytes),
-        };
-
         requestEnvelopes.push({
           update: updateEnvelope,
-          read_state: readStateEnvelope,
         });
       }
       envelopes.push([reqType, requestEnvelopes]);

@@ -10,7 +10,6 @@ export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1])
 
 export enum RequestType {
   CALL = 'call',
-  READ_STATE = 'read_state',
 }
 
 export enum SignatureType {
@@ -161,7 +160,6 @@ export interface ReadStateEnvelope {
 
 export interface RequestEnvelope {
   update: UpdateEnvelope;
-  read_state: ReadStateEnvelope;
 }
 
 /**

@@ -72,15 +72,6 @@ export class UnsignedTransactionBuilder {
         signature_type: SignatureType.ECDSA,
       };
       payloads.push(transactionPayload);
-
-      const readState = utils.makeReadStateFromUpdate(clonedUpdate);
-      const readStateMessageId = utils.HttpReadStateRepresentationIndependentHash(readState);
-      const readStatePayload: SigningPayload = {
-        hex_bytes: utils.blobToHex(utils.makeSignatureData(readStateMessageId)),
-        account_identifier: { address: accountAddress },
-        signature_type: SignatureType.ECDSA,
-      };
-      payloads.push(readStatePayload);
     }
 
     return payloads;
