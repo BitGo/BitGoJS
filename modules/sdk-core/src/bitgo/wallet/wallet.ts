@@ -3621,7 +3621,7 @@ export class Wallet implements IWallet {
    * @param {String} params.amount - Amount to send the forwarder (optional). If not given, defaults to sending an estimate of the amount needed for a fund recovery
    * @returns {*}
    */
-  public async fundForwarder(params: FundForwardersOptions): Promise<any> {
+  public async fundForwarder(params: FundForwardersOptions): Promise<WalletData> {
     if (_.isUndefined(params.forwarderAddress)) {
       throw new Error('forwarder address required');
     }
@@ -3637,7 +3637,7 @@ export class Wallet implements IWallet {
    * @param {List} params.forwarders - list of fund forwarder options
    * @returns {*}
    */
-  public async fundForwarders(params: FundForwarderParams): Promise<any> {
+  public async fundForwarders(params: FundForwarderParams): Promise<WalletData> {
     if (_.isUndefined(params.forwarders) || params.forwarders.length == 0) {
       throw new Error('fund forwarder options required');
     }
