@@ -346,6 +346,72 @@ const getGasPriceResponse = {
     id: 'dontcare',
   },
 };
+export const ovcResponse = {
+  signatureShares: [
+    {
+      txRequest: {
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTx:
+                'QAAAAGIzODNjYWM2ZjNjZDY0OTViZDZhYjg3NzMwMGE4NzliN2RiYzRhMTZhYjBlZjE5NzlkZTZmNzNkYjAyNDlmYWEAs4PKxvPNZJW9arh3MAqHm328SharDvGXneb3PbAkn6oBuZUj6a0AAEAAAABlYWRiMzIwOGZiOWU5MWY2MGQ3NmUzYzUxNzEzZDA1Y2I0YTU5NDFlNWYzNTVlMWZmOThlMTQwYTcxMjNlODRl2hbJtC4rwLyWAbMzTgTcRmr5xpWlrXOXbzxMWcP7wwcBAAAAA9A1oVfvpz3o4hcAAAAAAAA=',
+              scanIndex: 0,
+              coin: 'tnear',
+              signableHex: '9ce890db77fe8b62478e22bee84387b77e110c21cbba8fe3ee7eb4bf953c6e2c',
+              derivationPath: 'm/0',
+              parsedTx: {
+                inputs: [
+                  {
+                    address: 'b383cac6f3cd6495bd6ab877300a879b7dbc4a16ab0ef1979de6f73db0249faa',
+                    valueString: '1.12800127983096986416592e+23',
+                    value: 1.12800127983097e23,
+                  },
+                ],
+                outputs: [
+                  {
+                    address: 'eadb3208fb9e91f60d76e3c51713d05cb4a5941e5f355e1ff98e140a7123e84e',
+                    valueString: '1.12800127983096986416592e+23',
+                    coinName: 'tnear',
+                  },
+                ],
+                spendAmount: '1.12800127983096986416592e+23',
+                type: '',
+              },
+              feeInfo: {
+                fee: 6.862863796875e19,
+                feeString: '68628637968750000000',
+              },
+              coinSpecific: {
+                commonKeychain:
+                  '23f6ac586f0c7fe1ba4e67af674c06e61ea8d88b3c0243d5cbf6f66b0077ec807307ad0da02f62bfeec1e603df8305d72c49d1c9c1e99808b71fbeb1d8c85e0c',
+                lastScanIndex: 0,
+              },
+            },
+            signatureShares: [],
+            signatureShare: {
+              from: 'backup',
+              to: 'user',
+              share:
+                'bc02163a3d9cd5086a6d6702959f1d5bb29071f1bd8181648a66d10f223cb7c21ce535876b1560f78eaaa7f7cf3f35885ed539bcd0345d8db5edae402770bf04',
+              publicShare: 'b383cac6f3cd6495bd6ab877300a879b7dbc4a16ab0ef1979de6f73db0249faa',
+            },
+          },
+        ],
+        walletCoin: 'tnear',
+      },
+      tssVersion: '0.0.1',
+      ovc: [
+        {
+          eddsaSignature: {
+            y: 'b383cac6f3cd6495bd6ab877300a879b7dbc4a16ab0ef1979de6f73db0249faa',
+            R: 'bc02163a3d9cd5086a6d6702959f1d5bb29071f1bd8181648a66d10f223cb7c2',
+            sigma: 'f84d4894c915cc62fe54f23684b0d156b5e05c506a2515c2d049b6c3e4c0a90f',
+          },
+        },
+      ],
+    },
+  ],
+};
 
 export const NearResponses = {
   getAccessKeyResponse,
