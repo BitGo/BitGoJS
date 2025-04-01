@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BaseCoin, ITransactionRecipient, Wallet } from '@bitgo/sdk-core';
+import { ITransactionRecipient, Wallet } from '@bitgo/sdk-core';
 
 import { Sip10Token } from '../../src';
 import * as testData from '../fixtures';
@@ -9,7 +9,7 @@ import * as testData from '../fixtures';
 describe('Sip10Token:', function () {
   const sip10TokenName = 'tstx:tsip6dp';
   let bitgo: TestBitGoAPI;
-  let basecoin: BaseCoin;
+  let basecoin: Sip10Token;
   let newTxPrebuild: () => { txHex: string; txInfo: Record<string, unknown> };
   let newTxParams: () => { recipients: ITransactionRecipient[] };
   let wallet: Wallet;
@@ -21,6 +21,11 @@ describe('Sip10Token:', function () {
 
   const txParams = {
     recipients: testData.recipients,
+  };
+
+  const memo = {
+    type: '',
+    value: '1',
   };
 
   before(function () {
@@ -37,7 +42,7 @@ describe('Sip10Token:', function () {
     newTxParams = () => {
       return _.cloneDeep(txParams);
     };
-    basecoin = bitgo.coin(sip10TokenName);
+    basecoin = bitgo.coin(sip10TokenName) as Sip10Token;
     wallet = new Wallet(bitgo, basecoin, {});
   });
 
@@ -51,6 +56,7 @@ describe('Sip10Token:', function () {
         txPrebuild,
         verification,
         wallet,
+        memo,
       });
       isTransactionVerified.should.equal(true);
     });
@@ -66,6 +72,74 @@ describe('Sip10Token:', function () {
       const verification = {};
       const isTransactionVerified = await basecoin.verifyTransaction({
         txParams: txParamsWithNumberAmounts,
+        txPrebuild,
+        verification,
+        wallet,
+        memo,
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify when memo is passed', async function () {
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = testData.txForExplainFungibleTokenTransferWithMemoId10;
+      const txParams = newTxParams();
+      const verification = {};
+      const memo = {
+        type: '',
+        value: '10',
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams: txParams,
+        txPrebuild,
+        verification,
+        wallet,
+        memo,
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify when memo is zero', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txPrebuild.txHex = testData.txForExplainFungibleTokenTransferWithMemoZero;
+      const memo = {
+        type: '',
+        value: '0',
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams: txParams,
+        txPrebuild,
+        verification,
+        wallet,
+        memo,
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify when memo is passed inside recipient address', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txParams.recipients[0].address = 'SN2NN1JP9AEP5BVE19RNJ6T2MP7NDGRZYST1VDF3M?memoId=10';
+      txPrebuild.txHex = testData.txForExplainFungibleTokenTransferWithMemoId10;
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams: txParams,
+        txPrebuild,
+        verification,
+        wallet,
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify when memo is not passed', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      txPrebuild.txHex = testData.txForExplainFungibleTokenTransferWithoutMemo;
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams: txParams,
         txPrebuild,
         verification,
         wallet,
@@ -148,7 +222,7 @@ describe('Sip10Token:', function () {
           verification,
           wallet,
         })
-        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+        .should.rejectedWith('Tx memo does not match with expected txParams recipient memo');
     });
 
     it('should fail to verify transaction with wrong token', async function () {
