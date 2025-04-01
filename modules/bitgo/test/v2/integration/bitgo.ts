@@ -634,4 +634,48 @@ describe('BitGo', function () {
       return bitgo.authenticateKnownBalanceTestUser(bitgo.testUserOTP());
     });
   });
+
+  describe('getAdditionalHeadersCb', function () {
+    let bitgo;
+    let additionalHeadersCb;
+
+    before(function () {
+      additionalHeadersCb = sinon.spy((method, url, data) => {
+        return [
+          { key: 'X-Custom-Header', value: 'CustomValue' },
+          { key: 'X-Another-Header', value: 'AnotherValue' },
+        ];
+      });
+
+      bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      bitgo = new BitGoJS.BitGo({ getAdditionalHeadersCb: additionalHeadersCb });
+    });
+
+    it('should invoke getAdditionalHeadersCb and apply headers to the request', async function () {
+      const url = bitgo.url('/test-endpoint');
+      const method = 'get';
+
+      // Mock the request to avoid actual network calls
+      const mockRequest = sinon.stub(bitgo, 'getAgentRequest').returns({
+        set: sinon.stub().returnsThis(),
+        then: sinon.stub().resolves({}),
+      });
+
+      await bitgo.get(url);
+
+      // Verify that the callback was called with the correct arguments
+      sinon.assert.calledOnce(additionalHeadersCb);
+      sinon.assert.calledWith(additionalHeadersCb, method, url, undefined);
+
+      // Verify that the headers were applied to the request
+      const headers = additionalHeadersCb.returnValues[0];
+      headers.forEach(({ key, value }) => {
+        sinon.assert.calledWith(mockRequest().set, key, value);
+      });
+
+      // Restore the stubbed method
+      mockRequest.restore();
+    });
+  });
 });
