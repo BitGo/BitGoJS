@@ -2667,7 +2667,7 @@ export const coins = CoinMap.fromCoins([
     '88a010ca-8666-493e-b534-725fa6851da3',
     'xrp:xsgd',
     'XSGD',
-    15,
+    6,
     'rK67JczCpaYXVtfw3qJVmqwpSfa1bYTptw',
     'XSGD',
     'rK67JczCpaYXVtfw3qJVmqwpSfa1bYTptw::XSGD',
