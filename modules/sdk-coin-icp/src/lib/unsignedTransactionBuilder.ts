@@ -1,15 +1,15 @@
 import {
-  IcpTransaction,
-  SendArgs,
   HttpCanisterUpdate,
-  SigningPayload,
-  PayloadsData,
-  SignatureType,
-  OperationType,
-  MethodName,
-  MAX_INGRESS_TTL,
-  PERMITTED_DRIFT,
+  IcpTransaction,
   LEDGER_CANISTER_ID,
+  MAX_INGRESS_TTL,
+  MethodName,
+  OperationType,
+  PayloadsData,
+  PERMITTED_DRIFT,
+  SendArgs,
+  SignatureType,
+  SigningPayload,
 } from './iface';
 import utils from './utils';
 
@@ -56,32 +56,24 @@ export class UnsignedTransactionBuilder {
     accountAddress: string,
     update: HttpCanisterUpdate
   ): SigningPayload[] {
-    for (const ingressExpiry of ingressExpiries) {
-      const clonedUpdate: HttpCanisterUpdate = {
-        canister_id: Buffer.from(update.canister_id),
-        method_name: update.method_name,
-        arg: update.arg,
-        sender: update.sender,
-        ingress_expiry: ingressExpiry,
-      };
+    // There can only be one ingress_expiry always as we only need to create one payload for a txn
+    const ingressExpiry = ingressExpiries[0];
 
-      const representationIndependentHash = utils.HttpCanisterUpdateRepresentationIndependentHash(clonedUpdate);
-      const transactionPayload: SigningPayload = {
-        hex_bytes: utils.blobToHex(utils.makeSignatureData(representationIndependentHash)),
-        account_identifier: { address: accountAddress },
-        signature_type: SignatureType.ECDSA,
-      };
-      payloads.push(transactionPayload);
+    const clonedUpdate: HttpCanisterUpdate = {
+      canister_id: Buffer.from(update.canister_id),
+      method_name: update.method_name,
+      arg: update.arg,
+      sender: update.sender,
+      ingress_expiry: ingressExpiry,
+    };
 
-      const readState = utils.makeReadStateFromUpdate(clonedUpdate);
-      const readStateMessageId = utils.HttpReadStateRepresentationIndependentHash(readState);
-      const readStatePayload: SigningPayload = {
-        hex_bytes: utils.blobToHex(utils.makeSignatureData(readStateMessageId)),
-        account_identifier: { address: accountAddress },
-        signature_type: SignatureType.ECDSA,
-      };
-      payloads.push(readStatePayload);
-    }
+    const representationIndependentHash = utils.HttpCanisterUpdateRepresentationIndependentHash(clonedUpdate);
+    const transactionPayload: SigningPayload = {
+      hex_bytes: utils.blobToHex(utils.makeSignatureData(representationIndependentHash)),
+      account_identifier: { address: accountAddress },
+      signature_type: SignatureType.ECDSA,
+    };
+    payloads.push(transactionPayload);
 
     return payloads;
   }

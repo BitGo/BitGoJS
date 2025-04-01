@@ -1,13 +1,6 @@
-import {
-  CborUnsignedTransaction,
-  RequestType,
-  Signatures,
-  UpdateEnvelope,
-  ReadStateEnvelope,
-  RequestEnvelope,
-} from './iface';
-import utils from './utils';
 import assert from 'assert';
+import { CborUnsignedTransaction, RequestEnvelope, RequestType, Signatures, UpdateEnvelope } from './iface';
+import utils from './utils';
 
 export class SignedTransactionBuilder {
   protected _unsigned_transaction: string;
@@ -33,51 +26,40 @@ export class SignedTransactionBuilder {
     assert(combineRequest.signatures.length === unsignedTransaction.ingress_expiries.length * 2);
     assert(unsignedTransaction.updates.length === 1);
     const envelopes = this.getEnvelopes(unsignedTransaction, signatureMap);
-    const envelopRequests = { requests: envelopes };
-    const signedTransaction = utils.cborEncode(envelopRequests);
+    const envelope = envelopes[0];
+    const requestEnvelopes = envelope[0] as RequestEnvelope[];
+    const updateEnvelope = requestEnvelopes[0].update as UpdateEnvelope;
+    const signedTransaction = utils.cborEncode(updateEnvelope);
     return signedTransaction;
   }
 
   getEnvelopes(
     unsignedTransaction: CborUnsignedTransaction,
     signatureMap: Map<string, Signatures>
-  ): [string, RequestEnvelope[]][] {
-    const envelopes: [string, RequestEnvelope[]][] = [];
-    for (const [reqType, update] of unsignedTransaction.updates) {
+  ): [RequestEnvelope[]][] {
+    const envelopes: [RequestEnvelope[]][] = [];
+    for (const [update] of unsignedTransaction.updates) {
       const requestEnvelopes: RequestEnvelope[] = [];
-      for (const ingressExpiry of unsignedTransaction.ingress_expiries) {
-        update.ingress_expiry = ingressExpiry;
 
-        const readState = utils.makeReadStateFromUpdate(update);
-        const transactionSignature = utils.getTransactionSignature(signatureMap, update);
-        if (!transactionSignature) {
-          throw new Error('Transaction signature is invalid');
-        }
+      // There will be always one ingress_expiry
+      update.ingress_expiry = unsignedTransaction.ingress_expiries[0];
 
-        const readStateSignature = utils.getReadStateSignature(signatureMap, readState);
-        if (!readStateSignature) {
-          throw new Error('read state signature is invalid');
-        }
-
-        const pk_der = utils.getPublicKeyInDERFormat(transactionSignature.public_key.hex_bytes);
-        const updateEnvelope: UpdateEnvelope = {
-          content: { request_type: RequestType.CALL, ...update },
-          sender_pubkey: pk_der,
-          sender_sig: utils.blobFromHex(transactionSignature.hex_bytes),
-        };
-
-        const readStateEnvelope: ReadStateEnvelope = {
-          content: { request_type: RequestType.READ_STATE, ...readState },
-          sender_pubkey: pk_der,
-          sender_sig: utils.blobFromHex(readStateSignature.hex_bytes),
-        };
-
-        requestEnvelopes.push({
-          update: updateEnvelope,
-          read_state: readStateEnvelope,
-        });
+      const transactionSignature = utils.getTransactionSignature(signatureMap, update);
+      if (!transactionSignature) {
+        throw new Error('Transaction signature is invalid');
       }
-      envelopes.push([reqType, requestEnvelopes]);
+
+      const pk_der = utils.getPublicKeyInDERFormat(transactionSignature.public_key.hex_bytes);
+      const updateEnvelope: UpdateEnvelope = {
+        content: { request_type: RequestType.CALL, ...update },
+        sender_pubkey: pk_der,
+        sender_sig: utils.blobFromHex(transactionSignature.hex_bytes),
+      };
+
+      requestEnvelopes.push({
+        update: updateEnvelope,
+      });
+      envelopes.push([requestEnvelopes]);
     }
     return envelopes;
   }
