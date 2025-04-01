@@ -395,8 +395,8 @@ export class BitGoAPI implements BitGoBase {
 
       req.set('BitGo-Auth-Version', this._authVersion === 3 ? '3.0' : '2.0');
 
+      const data = serializeRequestData(req);
       if (this._token) {
-        const data = serializeRequestData(req);
         setRequestQueryString(req);
 
         const requestProperties = this.calculateRequestHeaders({
@@ -417,7 +417,6 @@ export class BitGoAPI implements BitGoBase {
       }
 
       if (this.getAdditionalHeadersCb) {
-        const data = serializeRequestData(req);
         const additionalHeaders = this.getAdditionalHeadersCb(method, url, data);
         for (const { key, value } of additionalHeaders) {
           req.set(key, value);
