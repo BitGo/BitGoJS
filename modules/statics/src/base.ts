@@ -1859,6 +1859,8 @@ export enum UnderlyingAsset {
   'eth:una' = 'eth:una',
   'eth:ads' = 'eth:ads',
   'eth:fuelv1' = 'eth:fuelv1',
+  'eth:cet' = 'eth:cet',
+  'eth:unio' = 'eth:unio',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2245,6 +2247,7 @@ export enum UnderlyingAsset {
   'bsc:farm' = 'bsc:farm',
   'bsc:lina' = 'bsc:lina',
   'bsc:usd1' = 'bsc:usd1',
+  'bsc:oort' = 'bsc:oort',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2304,6 +2307,7 @@ export enum UnderlyingAsset {
   'arbeth:veur' = 'arbeth:veur',
   'arbeth:vchf' = 'arbeth:vchf',
   'arbeth:tbill' = 'arbeth:tbill',
+  'arbeth:xai' = 'arbeth:xai',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2482,6 +2486,7 @@ export enum UnderlyingAsset {
   'txrp:rlusd' = 'txrp:rlusd',
   'txrp:xat' = 'txrp:xat',
   'xrp:tbill' = 'xrp:tbill',
+  'xrp:xsgd' = 'xrp:xsgd',
 
   // Sui tokens
   'sui:deep' = 'sui:deep',
@@ -2513,10 +2518,23 @@ export enum UnderlyingAsset {
 
   // Sip10 tokens
   'stx:sbtc' = 'stx:sbtc',
+  'stx:ststx' = 'stx:ststx',
+  'stx:alex' = 'stx:alex',
+  'stx:aeusdc' = 'stx:aeusdc',
+  'stx:usdh' = 'stx:usdh',
+  'stx:welsh' = 'stx:welsh',
 
   // Sip10 testnet tokens
   'tstx:tsip6dp' = 'tstx:tsip6dp',
   'tstx:tsip8dp' = 'tstx:tsip8dp',
+
+  // Hbar tokens
+  'hbar:karate' = 'hbar:karate',
+  'hbar:sauce' = 'hbar:sauce',
+  'hbar:dovu' = 'hbar:dovu',
+  'hbar:pack' = 'hbar:pack',
+  'hbar:jam' = 'hbar:jam',
+  'hbar:berry' = 'hbar:berry',
 
   // fiats
   AED = 'aed',
