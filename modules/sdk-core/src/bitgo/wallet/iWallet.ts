@@ -432,6 +432,10 @@ export interface FundForwardersOptions {
   amount?: string;
 }
 
+export interface FundForwarderParams {
+  forwarders: FundForwardersOptions[];
+}
+
 export interface FlushForwarderTokenOptions {
   address?: string;
   id?: string;

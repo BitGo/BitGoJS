@@ -99,6 +99,7 @@ import {
   BulkWalletShareKeychain,
   ManageUnspentReservationOptions,
   SignAndSendTxRequestOptions,
+  FundForwarderParams,
 } from './iWallet';
 import { GoStakingWallet, StakingWallet } from '../staking';
 import EddsaUtils from '../utils/tss/eddsa';
@@ -3625,6 +3626,22 @@ export class Wallet implements IWallet {
       throw new Error('forwarder address required');
     }
     const url = this.url('/fundForwarder');
+    this._wallet = await this.bitgo.post(url).send(params).result();
+    return this._wallet;
+  }
+
+  /**
+   * Send funds from a fee address to a forwarder.
+   *
+   * @param {Object} params - parameters object
+   * @param {List} params.forwarders - list of fund forwarder options
+   * @returns {*}
+   */
+  public async fundForwarders(params: FundForwarderParams): Promise<any> {
+    if (_.isUndefined(params.forwarders) || params.forwarders.length == 0) {
+      throw new Error('fund forwarder options required');
+    }
+    const url = this.url('/fundforwarders');
     this._wallet = await this.bitgo.post(url).send(params).result();
     return this._wallet;
   }
