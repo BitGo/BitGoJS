@@ -247,6 +247,7 @@ export interface AmsTokenConfig {
   primaryKeyCurve?: string;
   contractAddress?: string;
   tokenAddress?: string;
+  collectionId?: string;
   alias?: string;
   contractName?: string;
   tokenId?: string;

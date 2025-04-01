@@ -2,6 +2,8 @@ import {
   account,
   AccountCoin,
   algoToken,
+  aptNFTCollection,
+  aptToken,
   arbethErc20,
   avaxErc20,
   beraErc20,
@@ -23,7 +25,6 @@ import {
   solToken,
   stellarToken,
   suiToken,
-  aptToken,
   talgoToken,
   tarbethErc20,
   tberaErc20,
@@ -41,6 +42,7 @@ import {
   xrpToken,
   zkethErc20,
   taptToken,
+  taptNFTCollection,
 } from './account';
 import { ada } from './ada';
 import { avaxp } from './avaxp';
@@ -2902,6 +2904,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['tapt:usdt'],
     APT_FEATURES
   ),
+  // TODO: remove after APT NFTs are live on prod
+  taptNFTCollection(
+    '8f222afb-99b5-4811-b7d0-3a0753b8be74',
+    'tapt:nftcollection1',
+    'BitGo Apt NFT Collection (Test) #1',
+    '0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5',
+    UnderlyingAsset['tapt:nftcollection1'],
+    APT_FEATURES
+  ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(
     '8691cc4f-a425-4192-b6cb-3b0b6f646cbc',
@@ -3017,6 +3028,13 @@ function createToken(
       );
 
     case 'apt':
+      const { initFunc, objectId } = getAptTokenInitializer(token);
+      return initFunc(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        objectId,
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
     case 'stx':
       return initializer(
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
@@ -3089,6 +3107,21 @@ function createToken(
     default:
       return undefined;
   }
+}
+
+function getAptTokenInitializer(token: AmsTokenConfig) {
+  if (token.assetId) {
+    // used for fungible-assets / legacy coins etc.
+    return {
+      initFunc: aptToken as (...args: unknown[]) => Readonly<BaseCoin>,
+      objectId: token.assetId,
+    };
+  }
+  // used for non-fungible token (NFT) collections
+  return {
+    initFunc: aptNFTCollection as (...args: unknown[]) => Readonly<BaseCoin>,
+    objectId: token.collectionId,
+  };
 }
 
 export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, AmsTokenConfig[]>): CoinMap {

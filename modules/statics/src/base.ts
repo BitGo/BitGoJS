@@ -2516,6 +2516,9 @@ export enum UnderlyingAsset {
   // Apt testnet tokens
   'tapt:usdt' = 'tapt:usdt',
 
+  // Apt testnet NFT collections
+  'tapt:nftcollection1' = 'tapt:nftcollection1',
+
   // Sip10 tokens
   'stx:sbtc' = 'stx:sbtc',
   'stx:ststx' = 'stx:ststx',
