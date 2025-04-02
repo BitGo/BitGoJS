@@ -1,10 +1,9 @@
 /* eslint no-redeclare: 0 */
 import * as opcodes from 'bitcoin-ops';
-import { TxInput, script as bscript } from 'bitcoinjs-lib';
+import { script as bscript, TxInput } from 'bitcoinjs-lib';
 
 import { isTriple } from './types';
 import { isScriptType2Of3 } from './outputScripts';
-import { ChainCode, isChainCode } from './wallet/chains';
 
 export function isPlaceholderSignature(v: number | Buffer): boolean {
   if (Buffer.isBuffer(v)) {
@@ -698,21 +697,4 @@ export function parsePubScript(
   }
 
   return result;
-}
-
-export function getChainAndIndexFromPath(path: string): { chain: ChainCode; index: number } {
-  const parts = path.split('/');
-  if (parts.length <= 2) {
-    throw new Error(`invalid path "${path}"`);
-  }
-  const chain = Number(parts[parts.length - 2]);
-  const index = Number(parts[parts.length - 1]);
-  if (!isChainCode(chain)) {
-    throw new Error(`invalid chain "${chain}"`);
-  }
-  if (!Number.isInteger(index) || index < 0) {
-    throw new Error(`invalid index "${index}"`);
-  }
-
-  return { chain, index };
 }
