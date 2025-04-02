@@ -1,9 +1,16 @@
 import { ChainCode, isChainCode } from './chains';
 
-export function getChainAndIndexFromPath(path: string): {
+export type ScriptId = {
   chain: ChainCode;
   index: number;
-} {
+};
+
+/**
+ * Get the chain and index from a bip32 path.
+ *
+ * @param path
+ */
+export function getScriptIdFromPath(path: string): ScriptId {
   const parts = path.split('/');
   if (parts.length <= 2) {
     throw new Error(`invalid path "${path}"`);
@@ -19,3 +26,6 @@ export function getChainAndIndexFromPath(path: string): {
 
   return { chain, index };
 }
+
+/** @deprecated use getScriptId */
+export const getChainAndIndexFromPath = getScriptIdFromPath;
