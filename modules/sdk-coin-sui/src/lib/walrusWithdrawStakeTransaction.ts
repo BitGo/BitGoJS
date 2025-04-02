@@ -195,7 +195,7 @@ export class WalrusWithdrawStakeTransaction extends Transaction<WalrusWithdrawSt
   }
 
   loadInputsAndOutputs(): void {
-    if (!this._suiTransaction) {
+    if (!this._suiTransaction || utils.isWalrusRequestWithdrawStakeTx(this._suiTransaction.tx)) {
       return;
     }
 

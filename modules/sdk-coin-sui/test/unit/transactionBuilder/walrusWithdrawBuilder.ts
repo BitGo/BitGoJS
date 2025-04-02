@@ -32,18 +32,8 @@ describe('Walrus Withdraw Builder', () => {
 
       assert(tx instanceof SuiTransaction);
       tx.type.should.equal(TransactionType.StakingDeactivate);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
-        value: testData.STAKING_AMOUNT.toString(),
-        coin: 'tsui:wal',
-      });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: testData.sender.address,
-        value: testData.STAKING_AMOUNT.toString(),
-        coin: 'tsui:wal',
-      });
+      tx.inputs.length.should.equal(0);
+      tx.outputs.length.should.equal(0);
 
       const rawTx = tx.toBroadcastFormat();
       await assertRebuild(rawTx);
@@ -74,18 +64,8 @@ describe('Walrus Withdraw Builder', () => {
 
       assert(tx instanceof SuiTransaction);
       tx.type.should.equal(TransactionType.StakingDeactivate);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: '0xee6dfc3da32e21541a2aeadfcd250f8a0a23bb7abda9c8988407fc32068c3746',
-        value: AMOUNT_UNKNOWN_TEXT,
-        coin: 'tsui:wal',
-      });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: testData.sender.address,
-        value: AMOUNT_UNKNOWN_TEXT,
-        coin: 'tsui:wal',
-      });
+      tx.inputs.length.should.equal(0);
+      tx.outputs.length.should.equal(0);
 
       const rawTx = tx.toBroadcastFormat();
       await assertRebuild(rawTx);
