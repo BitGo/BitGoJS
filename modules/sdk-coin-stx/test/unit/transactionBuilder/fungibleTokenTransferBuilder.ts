@@ -1,7 +1,7 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
-import { bufferCVFromString, someCV, standardPrincipalCV, uintCV } from '@stacks/transactions';
+import { bufferCVFromString, noneCV, someCV, standardPrincipalCV, uintCV } from '@stacks/transactions';
 import should from 'should';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { TransactionType } from '@bitgo/sdk-core';
@@ -115,7 +115,7 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
         tx.inputs[0].value.should.equal('10000');
       });
 
-      it('a multisig fungible token transfer transaction', async () => {
+      it('a multisig fungible token transfer transaction with memo', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
           uintCV('10000'),
@@ -131,6 +131,27 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
         const tx = await builder.build();
         JSON.stringify(tx.toJson());
         should.deepEqual(tx.toBroadcastFormat(), testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SIGNED_MULTI_SIG_TX);
+      });
+
+      it('a multisig fungible token transfer transaction without memo', async () => {
+        const builder = initTxBuilder();
+        builder.functionArgs([
+          uintCV('10000'),
+          standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
+          standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
+          noneCV(),
+        ]);
+
+        builder.sign({ key: testData.prv1 });
+        builder.sign({ key: testData.prv2 });
+        builder.fromPubKey([testData.pub1, testData.pub2, testData.pub3]);
+        builder.numberSignatures(2);
+        const tx = await builder.build();
+        JSON.stringify(tx.toJson());
+        should.deepEqual(
+          tx.toBroadcastFormat(),
+          testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SIGNED_MULTI_SIG_TX_WITHOUT_MEMO
+        );
       });
     });
 

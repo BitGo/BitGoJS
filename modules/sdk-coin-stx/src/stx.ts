@@ -11,7 +11,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
-import { cvToString, cvToValue } from '@stacks/transactions';
+import { ClarityType, cvToString, cvToValue } from '@stacks/transactions';
 
 import { ExplainTransactionOptions, StxSignTransactionOptions, StxTransactionExplanation } from './types';
 import { StxLib } from '.';
@@ -214,7 +214,10 @@ export class Stx extends BaseCoin {
           amount: outputAmount,
           tokenName: findTokenNameByContract(txJson.payload.contractAddress, txJson.payload.contractName),
         };
-        if (txJson.payload.functionArgs.length === 4) {
+        if (
+          txJson.payload.functionArgs.length === 4 &&
+          txJson.payload.functionArgs[3].type === ClarityType.OptionalSome
+        ) {
           memo = Buffer.from(txJson.payload.functionArgs[3].value.buffer).toString();
           transactionRecipient['memo'] = memo;
         }
