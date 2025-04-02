@@ -78,6 +78,10 @@ export interface Erc20ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
 }
 
+export interface CollectionIdConstructorOptions extends AccountConstructorOptions {
+  collectionId: string;
+}
+
 export interface StellarCoinConstructorOptions extends AccountConstructorOptions {
   domain: string;
 }
@@ -177,6 +181,20 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
     }
 
     this.contractAddress = options.contractAddress as unknown as ContractAddress;
+  }
+}
+
+/**
+ * Used for blockchains that support NFT collections.
+ */
+export class CollectionIdDefinedToken extends AccountCoinToken {
+  public collectionId: string;
+
+  constructor(options: CollectionIdConstructorOptions) {
+    super({
+      ...options,
+    });
+    this.collectionId = options.collectionId;
   }
 }
 
@@ -500,6 +518,12 @@ export class AptCoin extends AccountCoinToken {
     this.assetId = options.assetId;
   }
 }
+
+/**
+ * The Apt network supports non-fungible tokens (Digital Asset Standard)
+ * Every NFT belongs to an NFT collection.
+ */
+export class AptNFTCollection extends CollectionIdDefinedToken {}
 
 /**
  * Fiat currencies, such as USD, EUR, or YEN.
@@ -2514,6 +2538,51 @@ export function aptToken(
 }
 
 /**
+ * Factory function for Apt NFT collections.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the NFT collection
+ * @param fullName Complete human-readable name of the NFT collection
+ * @param collectionId collection ID of the non-fungible tokens (NFTs)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to APT main network.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function aptNFTCollection(
+  id: string,
+  name: string,
+  fullName: string,
+  collectionId: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.apt,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new AptNFTCollection({
+      id,
+      name,
+      fullName,
+      network,
+      collectionId,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces: 0,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.APT,
+    })
+  );
+}
+
+/**
  * Factory function for testnet apt token instances.
  *
  * @param id uuid v4
@@ -2554,6 +2623,35 @@ export function taptToken(
     network,
     primaryKeyCurve
   );
+}
+
+/**
+ * Factory function for testnet Apt NFT collections.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the NFT collection
+ * @param fullName Complete human-readable name of the NFT collection
+ * @param collectionId collection ID of the non-fungible tokens (NFTs)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to APT test network.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function taptNFTCollection(
+  id: string,
+  name: string,
+  fullName: string,
+  collectionId: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.apt,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return aptNFTCollection(id, name, fullName, collectionId, asset, features, prefix, suffix, network, primaryKeyCurve);
 }
 
 /**
