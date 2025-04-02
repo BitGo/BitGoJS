@@ -51,10 +51,9 @@ describe('ICP Transaction Builder', async () => {
     should.equal(icpTransaction.operations[1].amount.value, '10');
     should.equal(icpTransaction.operations[2].amount.value, '-10000');
     should.equal(icpTransaction.public_keys[0].hex_bytes, testData.accounts.account1.publicKey);
-    txBuilder.unsignedTransaction().should.be.a.String();
     payloadsData.payloads.should.be.an.Array();
-    payloadsData.payloads.length.should.equal(2);
-    should.equal(txBuilder.unsignedTransaction(), testData.payloadsData.unsigned_transaction);
+    payloadsData.payloads.length.should.equal(1);
+    should.deepEqual(txBuilder.payloadData(), testData.payloadsData);
     should.deepEqual(payloadsData.payloads, testData.payloadsData.payloads);
   });
 
@@ -82,9 +81,7 @@ describe('ICP Transaction Builder', async () => {
     should.equal(signedTxn, testData.signedTransaction);
     const broadcastTxn = txBuilder.transaction.toBroadcastFormat();
     broadcastTxn.should.be.a.String();
-    const broadcastTxnObj = JSON.parse(broadcastTxn);
-    should.equal(broadcastTxnObj.signed_transaction, signedTxn);
-    should.equal(broadcastTxnObj.network_identifier.network, '00000000000000020101');
+    should.equal(broadcastTxn, signedTxn);
   });
 
   it('should sign a txn and then give txn in broadcast format', async () => {
@@ -97,9 +94,7 @@ describe('ICP Transaction Builder', async () => {
     should.equal(signedTxn, testData.signedTransaction);
     const broadcastTxn = txBuilder.transaction.toBroadcastFormat();
     broadcastTxn.should.be.a.String();
-    const broadcastTxnObj = JSON.parse(broadcastTxn);
-    should.equal(broadcastTxnObj.signed_transaction, signedTxn);
-    should.equal(broadcastTxnObj.network_identifier.network, '00000000000000020101');
+    should.equal(broadcastTxn, signedTxn);
   });
 
   it('should build a txn then parse it and then again build', async () => {

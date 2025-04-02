@@ -15,12 +15,11 @@ import {
   Signatures,
   TxData,
   IcpTransactionExplanation,
-  SignedTransactionRequest,
-  Network,
   CborUnsignedTransaction,
   HttpCanisterUpdate,
   ParsedTransaction,
   IcpOperation,
+  UpdateEnvelope,
   IcpAccount,
   MAX_INGRESS_TTL,
   PERMITTED_DRIFT,
@@ -204,14 +203,7 @@ export class Transaction extends BaseTransaction {
   }
 
   serialize(): string {
-    const transaction: SignedTransactionRequest = {
-      signed_transaction: this._signedTransaction,
-      network_identifier: {
-        blockchain: this._coinConfig.fullName,
-        network: Network.ID,
-      },
-    };
-    return JSON.stringify(transaction);
+    return this._signedTransaction;
   }
 
   async parseUnsignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
@@ -219,7 +211,7 @@ export class Transaction extends BaseTransaction {
       this._utils.blobFromHex(rawTransaction)
     ) as CborUnsignedTransaction;
     const update = unsignedTransaction.updates[0];
-    const httpCanisterUpdate = update[1] as HttpCanisterUpdate;
+    const httpCanisterUpdate = (update as unknown as [string, HttpCanisterUpdate])[1];
     return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, false);
   }
 
@@ -288,10 +280,7 @@ export class Transaction extends BaseTransaction {
 
   async parseSignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
     const signedTransaction = this._utils.cborDecode(this._utils.blobFromHex(rawTransaction));
-    const signedTransactionTyped = signedTransaction as { requests: any[] };
-    const envelopes = signedTransactionTyped.requests[0][1];
-    const updates = envelopes.map((envelope) => envelope.update);
-    const httpCanisterUpdate = updates[0].content as HttpCanisterUpdate;
+    const httpCanisterUpdate = (signedTransaction as UpdateEnvelope).content as HttpCanisterUpdate;
     return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, true);
   }
 

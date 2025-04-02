@@ -13,7 +13,6 @@ import crc32 from 'crc-32';
 import {
   HttpCanisterUpdate,
   IcpTransactionData,
-  ReadState,
   RequestType,
   Signatures,
   IcpMetadata,
@@ -28,8 +27,6 @@ import BigNumber from 'bignumber.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import protobuf from 'protobufjs';
 import { protoDefinition } from './protoDefinition';
-
-export const REQUEST_STATUS = 'request_status';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -557,35 +554,6 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Generates a read state object from an HTTP canister update.
-   *
-   * @param {HttpCanisterUpdate} update - The HTTP canister update object.
-   * @returns {ReadState} The read state object containing the sender, paths, and ingress expiry.
-   */
-  makeReadStateFromUpdate(update: HttpCanisterUpdate): ReadState {
-    return {
-      sender: update.sender,
-      paths: [[Buffer.from(REQUEST_STATUS), this.generateHttpCanisterUpdateId(update)]],
-      ingress_expiry: update.ingress_expiry,
-    };
-  }
-
-  /**
-   * Generates a representation-independent hash for an HTTP read state object.
-   *
-   * @param {ReadState} readState - The HTTP read state object.
-   * @returns {Buffer} - The hash of the read state object.
-   */
-  HttpReadStateRepresentationIndependentHash(readState: ReadState): Buffer {
-    return this.hashOfMap({
-      request_type: RequestType.READ_STATE,
-      ingress_expiry: readState.ingress_expiry,
-      paths: readState.paths,
-      sender: readState.sender,
-    });
-  }
-
-  /**
    * Extracts the recipient information from the provided ICP transaction data.
    *
    * @param {IcpTransactionData} icpTransactionData - The ICP transaction data containing the receiver's address and amount.
@@ -600,12 +568,6 @@ export class Utils implements BaseUtils {
 
   getTransactionSignature(signatureMap: Map<string, Signatures>, update: HttpCanisterUpdate): Signatures | undefined {
     return signatureMap.get(this.blobToHex(this.makeSignatureData(this.generateHttpCanisterUpdateId(update))));
-  }
-
-  getReadStateSignature(signatureMap: Map<string, Signatures>, readState: ReadState): Signatures | undefined {
-    return signatureMap.get(
-      this.blobToHex(this.makeSignatureData(this.HttpReadStateRepresentationIndependentHash(readState)))
-    );
   }
 
   getMetaData(
