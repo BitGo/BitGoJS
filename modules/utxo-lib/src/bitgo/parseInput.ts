@@ -1,6 +1,6 @@
 /* eslint no-redeclare: 0 */
 import * as opcodes from 'bitcoin-ops';
-import { TxInput, script as bscript } from 'bitcoinjs-lib';
+import { script as bscript, TxInput } from 'bitcoinjs-lib';
 
 import { isTriple } from './types';
 import { isScriptType2Of3 } from './outputScripts';
@@ -697,21 +697,4 @@ export function parsePubScript(
   }
 
   return result;
-}
-
-export function getChainAndIndexFromPath(path: string): { chain: number; index: number } {
-  const parts = path.split('/');
-  if (parts.length <= 2) {
-    throw new Error(`invalid path "${path}"`);
-  }
-  const chain = Number(parts[parts.length - 2]);
-  const index = Number(parts[parts.length - 1]);
-  if (isNaN(chain) || isNaN(index)) {
-    throw new Error(`Could not parse chain and index into numbers from path ${path}`);
-  }
-  if (chain < 0 || index < 0) {
-    throw new Error(`chain and index must be non-negative`);
-  }
-
-  return { chain, index };
 }

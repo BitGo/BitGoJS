@@ -7,3 +7,4 @@ export * from './WalletScripts';
 export * from './WalletKeys';
 export * from './psbt/PsbtOutputs';
 export * from './psbt/RootNodes';
+export * from './ScriptId';
