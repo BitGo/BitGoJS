@@ -1,11 +1,12 @@
+import * as assert from 'assert';
+
 import { Payment, taproot } from 'bitcoinjs-lib';
 import { PsbtOutput, PsbtOutputUpdate } from 'bip174/src/lib/interfaces';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { RootWalletKeys, DerivedWalletKeys } from './WalletKeys';
 import { ChainCode, scriptTypeForChain } from './chains';
-import { createOutputScript2of3, createPaymentP2tr, createPaymentP2trMusig2, toXOnlyPublicKey } from '../outputScripts';
 import { getScriptIdFromPath, ScriptId } from './ScriptId';
-import * as assert from 'node:assert';
+import { createOutputScript2of3, createPaymentP2tr, createPaymentP2trMusig2, toXOnlyPublicKey } from '../outputScripts';
 
 /**
  * Get the BIP32 derivation data for a PSBT output.

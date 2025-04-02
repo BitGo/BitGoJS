@@ -1,7 +1,9 @@
 import * as assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 
-import { Network, p2trPayments, supportsSegwit, supportsTaproot, taproot } from '..';
+import { Network, supportsSegwit, supportsTaproot } from '../networks';
+import * as p2trPayments from '../payments';
+import * as taproot from '../taproot';
 
 import { isTriple, Triple, Tuple } from './types';
 

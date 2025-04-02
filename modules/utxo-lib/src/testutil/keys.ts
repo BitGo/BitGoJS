@@ -1,8 +1,8 @@
 import { BIP32API, BIP32Factory, BIP32Interface } from 'bip32';
 import * as crypto from 'crypto';
 
-import { Triple } from '../bitgo';
-import { RootWalletKeys } from '../bitgo';
+import { Triple } from '../bitgo/types';
+import { RootWalletKeys } from '../bitgo/wallet/WalletKeys';
 import { ecc, ECPair, ECPairInterface } from '../noble_ecc';
 import { networks } from '../networks';
 
