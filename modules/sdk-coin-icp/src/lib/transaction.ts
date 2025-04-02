@@ -215,7 +215,7 @@ export class Transaction extends BaseTransaction {
       this._utils.blobFromHex(rawTransaction)
     ) as CborUnsignedTransaction;
     const update = unsignedTransaction.updates[0];
-    const httpCanisterUpdate = update[0] as HttpCanisterUpdate;
+    const httpCanisterUpdate = update[1] as HttpCanisterUpdate;
     return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, false);
   }
 

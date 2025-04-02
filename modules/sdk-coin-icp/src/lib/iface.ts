@@ -134,7 +134,7 @@ export interface Signatures {
 }
 
 export interface CborUnsignedTransaction {
-  updates: [HttpCanisterUpdate][];
+  updates: [string, HttpCanisterUpdate][];
   ingress_expiries: bigint[];
 }
 

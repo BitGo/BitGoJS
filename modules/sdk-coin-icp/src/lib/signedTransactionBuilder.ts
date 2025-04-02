@@ -27,7 +27,7 @@ export class SignedTransactionBuilder {
     assert(unsignedTransaction.updates.length === 1);
     const envelopes = this.getEnvelopes(unsignedTransaction, signatureMap);
     const envelope = envelopes[0];
-    const requestEnvelopes = envelope[0] as RequestEnvelope[];
+    const requestEnvelopes = envelope[1] as RequestEnvelope[];
     const updateEnvelope = requestEnvelopes[0].update as UpdateEnvelope;
     const signedTransaction = utils.cborEncode(updateEnvelope);
     return signedTransaction;
@@ -36,9 +36,9 @@ export class SignedTransactionBuilder {
   getEnvelopes(
     unsignedTransaction: CborUnsignedTransaction,
     signatureMap: Map<string, Signatures>
-  ): [RequestEnvelope[]][] {
-    const envelopes: [RequestEnvelope[]][] = [];
-    for (const [update] of unsignedTransaction.updates) {
+  ): [string, RequestEnvelope[]][] {
+    const envelopes: [string, RequestEnvelope[]][] = [];
+    for (const [reqType, update] of unsignedTransaction.updates) {
       const requestEnvelopes: RequestEnvelope[] = [];
 
       // There will be always one ingress_expiry
@@ -59,7 +59,7 @@ export class SignedTransactionBuilder {
       requestEnvelopes.push({
         update: updateEnvelope,
       });
-      envelopes.push([requestEnvelopes]);
+      envelopes.push([reqType, requestEnvelopes]);
     }
     return envelopes;
   }
