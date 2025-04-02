@@ -8,7 +8,7 @@ import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { PrebuildTransactionWithIntentOptions, TxRequest } from '../utils/tss/eddsa';
-import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Wallet, WalletData } from '../wallet';
+import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Wallet, WalletData, Memo } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
 import { TransactionType } from '../../account-lib';
@@ -136,6 +136,7 @@ export interface TransactionParams {
   recipients?: ITransactionRecipient[];
   walletPassphrase?: string;
   type?: string;
+  memo?: Memo;
 }
 
 export interface AddressVerificationData {
