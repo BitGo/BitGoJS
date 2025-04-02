@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { common, FullySignedTransaction, HalfSignedTransaction, TransactionType } from '@bitgo/sdk-core';
-import { OfflineVaultTxInfo } from '@bitgo/abstract-eth';
+import { OfflineVaultTxInfo, TransferBuilder } from '@bitgo/abstract-eth';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { bip32 } from '@bitgo/secp256k1';
 import nock from 'nock';
@@ -92,6 +92,37 @@ describe('EthLike coin tests', function () {
         const result = await basecoin.sendCrossChainRecoveryTransaction({ ...params, walletType: 'cold' });
         assert(result.txHex);
         result.txHex.should.equal(mockData.ccr[coin.name].txHex);
+      });
+
+      it('should generate signature data for custodial hot wallet and sign using hsm signature', async function () {
+        const baseAddress = '0x702cf81e03aa310ec9481d814e3d04a20b04b505';
+        const destinationAddress = '0xb9f62c71d5f6949cfb211a67fb13ccf079cc760b';
+        const tokenContractAddress = '0xe4ab69c077896252fafbd49efd26b5d171a32410';
+        const txBuilder = getBuilder(coin.name, coin.common) as EthLikeTransactionBuilder;
+
+        txBuilder.contract(baseAddress);
+        txBuilder.contractCounter(0);
+        txBuilder.fee({
+          fee: '100000',
+          gasLimit: '21000',
+        });
+
+        const transferBuilder = txBuilder.transfer() as TransferBuilder;
+        transferBuilder
+          .coin(coin.name)
+          .amount('100000000')
+          .contractSequenceId(100)
+          .expirationTime(1744049633)
+          .to(destinationAddress)
+          .tokenContractAddress(tokenContractAddress);
+        const signatureData = transferBuilder.getSignatureData();
+        assert.strictEqual(signatureData.toString('hex'), mockData.custodialHot[coin.name].signatureData);
+
+        // Set HSM Signature
+        transferBuilder.setSignature(mockData.custodialHot[coin.name].signature);
+        const tx = await txBuilder.build();
+        const txHex = tx.toBroadcastFormat();
+        assert.strictEqual(txHex, mockData.custodialHot[coin.name].signedTxHex);
       });
     });
   });

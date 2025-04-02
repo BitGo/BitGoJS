@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import BN from 'bn.js';
@@ -5,6 +6,7 @@ import { coins, BaseCoin, ContractAddressDefinedToken, EthereumNetwork as EthLik
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
 import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils';
+import { sendMultiSigTokenTypes, sendMultiSigTypes } from './walletUtil';
 
 /** ETH transfer builder */
 export class TransferBuilder {
@@ -12,7 +14,7 @@ export class TransferBuilder {
   protected _amount: string;
   protected _toAddress: string;
   protected _sequenceId: number;
-  protected _signKey: string;
+  protected _signKey: string | null;
   protected _expirationTime: number;
   protected _signature: string;
   private _data: string;
@@ -108,6 +110,12 @@ export class TransferBuilder {
 
   setCoinUsesNonPackedEncodingForTxData(isCoinUsesNonPackedEncodingForTxData: boolean): TransferBuilder {
     this._coinUsesNonPackedEncodingForTxData = isCoinUsesNonPackedEncodingForTxData;
+    return this;
+  }
+
+  setSignature(signature: string): TransferBuilder {
+    this._signKey = null;
+    this._signature = signature;
     return this;
   }
 
@@ -254,6 +262,7 @@ export class TransferBuilder {
 
   protected ethSignMsgHash(): string {
     const data = this.getOperationHash();
+    assert(this._signKey);
     const keyBuffer = Buffer.from(ethUtil.padToEven(this._signKey), 'hex');
     if (keyBuffer.length !== 32) {
       throw new Error('private key length is invalid');
@@ -288,5 +297,18 @@ export class TransferBuilder {
     if (transferData.tokenContractAddress) {
       this._tokenContractAddress = transferData.tokenContractAddress;
     }
+  }
+
+  public getSignatureData(): Buffer<ArrayBuffer> {
+    const method = this._tokenContractAddress
+      ? EthereumAbi.methodID('sendMultiSigToken', sendMultiSigTokenTypes)
+      : EthereumAbi.methodID('sendMultiSig', sendMultiSigTypes);
+    const operationData = this.getOperationData();
+    const rawEncodedOperationData = EthereumAbi.rawEncode(...operationData);
+    return Buffer.concat([
+      method,
+      rawEncodedOperationData,
+      Buffer.from([this._coinUsesNonPackedEncodingForTxData ? 1 : 0]),
+    ]);
   }
 }

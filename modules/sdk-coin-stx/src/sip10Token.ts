@@ -1,12 +1,17 @@
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, Memo, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, NetworkType, Sip10TokenConfig, tokens } from '@bitgo/statics';
 
 import { Stx } from './stx';
 import { TransactionBuilderFactory } from './lib';
 import { TransactionBuilder } from './lib/transactionBuilder';
+import { getMemoIdAndBaseAddressFromAddress } from './lib/utils';
+
+export interface Sip10VerifyTransactionOptions extends VerifyTransactionOptions {
+  memo?: Memo;
+}
 
 export class Sip10Token extends Stx {
   public readonly tokenConfig: Sip10TokenConfig;
@@ -21,9 +26,11 @@ export class Sip10Token extends Stx {
     return (bitgo: BitGoBase) => new Sip10Token(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: Sip10TokenConfig[] = [...tokens.bitcoin.stx.tokens, ...tokens.testnet.stx.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.stx.tokens, ...tokens.testnet.stx.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = Sip10Token.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }
@@ -70,8 +77,8 @@ export class Sip10Token extends Stx {
     return new TransactionBuilderFactory(coinConfig).getFungibleTokenTransferBuilder();
   }
 
-  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+  async verifyTransaction(params: Sip10VerifyTransactionOptions): Promise<boolean> {
+    const { txPrebuild: txPrebuild, txParams: txParams, memo: memo } = params;
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
@@ -87,13 +94,11 @@ export class Sip10Token extends Stx {
     const explainedTx = await this.explainTransaction({ txHex: rawTx, feeInfo: { fee: '' } });
     if (txParams.recipients !== undefined && explainedTx) {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
+        const addressDetails = getMemoIdAndBaseAddressFromAddress(recipient.address);
         const recipientData = {
-          address: recipient.address,
+          address: addressDetails.address,
           amount: BigInt(recipient.amount),
         };
-        if (recipient.memo) {
-          recipientData['memo'] = recipient.memo;
-        }
         if (recipient.tokenName) {
           recipientData['tokenName'] = recipient.tokenName;
         }
@@ -104,9 +109,6 @@ export class Sip10Token extends Stx {
           address: output.address,
           amount: BigInt(output.amount),
         };
-        if (output.memo) {
-          recipientData['memo'] = output.memo;
-        }
         if (output.tokenName) {
           recipientData['tokenName'] = output.tokenName;
         }
@@ -115,6 +117,22 @@ export class Sip10Token extends Stx {
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }
+      // compare memo
+      let memoInput = '';
+      let memoOutput = '';
+      if (memo && memo.value) {
+        memoInput = memo.value;
+      } else if (txParams.recipients.length) {
+        const addressDetails = getMemoIdAndBaseAddressFromAddress(txParams.recipients[0].address);
+        memoInput = addressDetails.memoId ? addressDetails.memoId : '';
+      }
+      if (explainedTx.memo) {
+        memoOutput = explainedTx.memo;
+      }
+      if (!_.isEqual(memoInput, memoOutput)) {
+        throw new Error('Tx memo does not match with expected txParams recipient memo');
+      }
+      // compare send amount
       let totalAmount = new BigNumber(0);
       for (const recipients of txParams.recipients) {
         totalAmount = totalAmount.plus(recipients.amount);

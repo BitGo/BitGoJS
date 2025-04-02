@@ -66,6 +66,7 @@
 /modules/sdk-coin-ethlike/ @BitGo/ethalt-team
 /modules/sdk-coin-hbar/ @BitGo/ethalt-team
 /modules/sdk-coin-icp/ @BitGo/ethalt-team
+/modules/sdk-coin-mantra/ @BitGo/ethalt-team
 /modules/sdk-coin-near/ @BitGo/ethalt-team
 /modules/sdk-coin-oas/ @BitGo/ethalt-team
 /modules/sdk-coin-opeth/ @BitGo/ethalt-team
@@ -84,6 +85,9 @@
 /modules/sdk-coin-xrp/ @BitGo/ethalt-team
 /modules/sdk-coin-xtz/ @BitGo/ethalt-team
 /modules/sdk-coin-zketh/ @BitGo/ethalt-team
+
+# Examples
+/examples/ @BitGo/ethalt-team
 
 # Trade
 /modules/sdk-core/src/bitgo/address-book/ @BitGo/prime

@@ -567,3 +567,20 @@ export function findContractTokenNameUsingContract(contractAddress: string, cont
     return sip10Token ? sip10Token[0].assetId.split('::')[1] : undefined;
   }
 }
+
+/**
+ * Function to get address and memo details from address input
+ *
+ * @param address
+ * @returns {AddressDetails}
+ */
+export function getMemoIdAndBaseAddressFromAddress(address: string): AddressDetails {
+  const [baseAddress, queryString] = address.split('?');
+  const params = new URLSearchParams(queryString);
+  const memoId = params.get('memoId');
+
+  return {
+    address: baseAddress,
+    memoId: memoId ? memoId : undefined,
+  };
+}

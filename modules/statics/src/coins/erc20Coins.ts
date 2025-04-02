@@ -53,6 +53,22 @@ export const erc20Coins = [
     UnderlyingAsset['eth:uco']
   ),
   erc20(
+    '28351723-6c8a-4db3-9ebf-d6a1a5f0cb17',
+    'eth:cet',
+    'CoinEx Token',
+    18,
+    '0x081f67afa0ccf8c7b17540767bbe95df2ba8d97f',
+    UnderlyingAsset['eth:cet']
+  ),
+  erc20(
+    '717f318f-a97d-4e12-9fa1-4f57276066de',
+    'eth:unio',
+    'UNIO Coin',
+    18,
+    '0x01aac2b594f7bdbec740f0f1aa22910ebb4b74ab',
+    UnderlyingAsset['eth:unio']
+  ),
+  erc20(
     'a214db0d-a25b-485f-a8fc-b7970cb4d500',
     'eth:hard',
     'Kava Lend',

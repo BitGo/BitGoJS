@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.3...@bitgo/abstract-substrate@1.4.4) (2025-04-02)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
 ## [1.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.2...@bitgo/abstract-substrate@1.4.3) (2025-03-28)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

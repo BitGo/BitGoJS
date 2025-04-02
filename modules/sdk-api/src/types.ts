@@ -1,6 +1,15 @@
 import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { type Agent } from 'http';
+
+const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
+export type RequestMethods = (typeof patchedRequestMethods)[number];
+export type AdditionalHeadersCallback = (
+  method: RequestMethods,
+  url: string,
+  data?: string
+) => Array<{ key: string; value: string }>;
+
 export {
   supportedRequestMethods,
   AuthVersion,
@@ -22,6 +31,7 @@ export interface BitGoAPIOptions {
   env?: EnvironmentName;
   etherscanApiToken?: string;
   polygonscanApiToken?: string;
+  baseethApiToken?: string;
   arbiscanApiToken?: string;
   optimisticEtherscanApiToken?: string;
   zksyncExplorerApiToken?: string;
@@ -35,6 +45,7 @@ export interface BitGoAPIOptions {
   userAgent?: string;
   validate?: boolean;
   cookiesPropagationEnabled?: boolean;
+  getAdditionalHeadersCb?: AdditionalHeadersCallback;
 }
 
 export interface AccessTokenOptions {

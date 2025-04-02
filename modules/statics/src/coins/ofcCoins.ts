@@ -7,6 +7,7 @@ import {
   ofcTronToken,
   ofcXrpToken,
   tofcXrpToken,
+  ofcStxToken,
   ofcStellarToken,
   tofcStellarToken,
   ofcBscToken,
@@ -676,6 +677,7 @@ export const ofcCoins = [
   ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset['trx:usdt']),
   ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 15, UnderlyingAsset['xrp:rlusd']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 15, UnderlyingAsset['txrp:rlusd']),
+  ofcXrpToken('eb3c02de-7221-4fde-9235-5cc576eb7c8b', 'ofcxrp:xsgd', 'XSGD', 6, UnderlyingAsset['xrp:xsgd']),
   ofcXrpToken(
     '46c75216-5498-4417-b73c-a08c11d693ad',
     'ofcxrp:tbill',
@@ -746,6 +748,7 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:tbill']
   ),
+  ofcArbethErc20('5be753ec-179f-4bad-8552-b3190b723779', 'ofcarbeth:xai', 'Xai', 18, UnderlyingAsset['arbeth:xai']),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),
   ofcAvaxErc20(
@@ -809,6 +812,7 @@ export const ofcCoins = [
   ),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
+  ofcBscToken('c6f5df09-5a21-468b-89cc-f626d02d74d0', 'ofcbsc:oort', 'OORT', 18, UnderlyingAsset['bsc:oort']),
   ofcBscToken(
     '7e8cb701-0f63-4105-be1d-8b20fd42b093',
     'ofcbsc:cake',
@@ -1181,6 +1185,24 @@ export const ofcCoins = [
     6,
     UnderlyingAsset.USDC
   ),
+  ofcHederaToken(
+    'd59935a2-e435-4ffa-b519-443310c80830',
+    'ofchbar:karate',
+    'Karate Combat',
+    8,
+    UnderlyingAsset['hbar:karate']
+  ),
+  ofcHederaToken(
+    'f15365a0-924f-47aa-8e41-02022079a368',
+    'ofchbar:sauce',
+    'SaucerSwap',
+    6,
+    UnderlyingAsset['hbar:sauce']
+  ),
+  ofcHederaToken('25496b3d-0358-4f40-8ef4-2b8330e2d00c', 'ofchbar:dovu', 'DOVU', 8, UnderlyingAsset['hbar:dovu']),
+  ofcHederaToken('9db9ba12-13e2-438f-a964-a853de847084', 'ofchbar:pack', 'HashPack', 6, UnderlyingAsset['hbar:pack']),
+  ofcHederaToken('4b801f44-ede2-46e9-97df-89d641c0136e', 'ofchbar:jam', 'Tune.Fm', 8, UnderlyingAsset['hbar:jam']),
+  ofcHederaToken('368ae3e4-edc1-496e-956d-e346c336c917', 'ofchbar:berry', 'Berry', 6, UnderlyingAsset['hbar:berry']),
 
   tofcHederaToken(
     'e12614d8-21de-4303-91fa-f13a44c4902a',
@@ -1228,4 +1250,15 @@ export const ofcCoins = [
     UnderlyingAsset['apt:usdt'],
     APT_OFC_TOKEN_FEATURES
   ),
+  ofcStxToken('df131c24-8458-49ea-8f7d-7dcce6b13ad9', 'ofcstx:ststx', 'stSTX', 8, UnderlyingAsset['stx:ststx']),
+  ofcStxToken('10210906-6701-4c25-a204-0fe7399bae83', 'ofcstx:alex', 'Alex Labs', 8, UnderlyingAsset['stx:alex']),
+  ofcStxToken(
+    '6eefa66f-3065-48db-b78f-3ae4e2172a41',
+    'ofcstx:aeusdc',
+    'Allbridge Bridged USDC',
+    8,
+    UnderlyingAsset['stx:aeusdc']
+  ),
+  ofcStxToken('b4ef967b-7aa3-4252-9366-bbcffffd1c4d', 'ofcstx:usdh', 'USDH', 8, UnderlyingAsset['stx:usdh']),
+  ofcStxToken('511fc482-d962-4c29-9921-4a7d99405e64', 'ofcstx:welsh', 'Welsh', 8, UnderlyingAsset['stx:welsh']),
 ];

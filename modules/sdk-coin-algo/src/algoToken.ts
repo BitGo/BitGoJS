@@ -33,9 +33,9 @@ export class AlgoToken extends Algo {
     return (bitgo: BitGoBase) => new AlgoToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(tokenConfigs: AlgoTokenConfig[] = formattedAlgoTokens): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    formattedAlgoTokens.forEach((config) => {
+    tokenConfigs.forEach((config) => {
       tokensCtors.push({ name: config.type, coinConstructor: AlgoToken.createTokenConstructor(config) });
       if (config.alias) {
         tokensCtors.push({ name: config.alias, coinConstructor: AlgoToken.createTokenConstructor(config) });

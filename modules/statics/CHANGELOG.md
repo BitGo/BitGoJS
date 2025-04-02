@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [51.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.6.0...@bitgo/statics@51.6.1) (2025-04-02)
+
+**Note:** Version bump only for package @bitgo/statics
+
 # [51.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.5.0...@bitgo/statics@51.6.0) (2025-03-28)
 
 ### Features

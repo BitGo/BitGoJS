@@ -44,6 +44,7 @@ import {
   AccessTokenOptions,
   AddAccessTokenOptions,
   AddAccessTokenResponse,
+  AdditionalHeadersCallback,
   AuthenticateOptions,
   AuthenticateWithAuthCodeOptions,
   BitGoAPIOptions,
@@ -67,6 +68,7 @@ import {
   RegisterPushTokenOptions,
   RemoveAccessTokenOptions,
   RequestHeaders,
+  RequestMethods,
   SplitSecret,
   SplitSecretOptions,
   TokenIssuance,
@@ -93,8 +95,6 @@ const Markets = require('./v1/markets');
 const PendingApprovals = require('./v1/pendingapprovals');
 const TravelRule = require('./v1/travelRule');
 const TransactionBuilder = require('./v1/transactionBuilder');
-
-const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
 
 export class BitGoAPI implements BitGoBase {
   // v1 types
@@ -130,8 +130,10 @@ export class BitGoAPI implements BitGoBase {
   protected _validate: boolean;
   public readonly cookiesPropagationEnabled: boolean;
   private _customProxyAgent?: Agent;
+  private getAdditionalHeadersCb?: AdditionalHeadersCallback;
 
   constructor(params: BitGoAPIOptions = {}) {
+    this.getAdditionalHeadersCb = params.getAdditionalHeadersCb;
     this.cookiesPropagationEnabled = false;
     if (
       !common.validateParams(
@@ -238,6 +240,7 @@ export class BitGoAPI implements BitGoBase {
       'bscscanApiToken',
       'coredaoExplorerApiToken',
       'oasExplorerApiToken',
+      'baseethApiToken',
       'sgbExplorerApiToken',
       'flrExplorerApiToken',
       'xdcExplorerApiToken',
@@ -302,7 +305,7 @@ export class BitGoAPI implements BitGoBase {
    * @param method - http method for the new request
    * @param url - URL for the new request
    */
-  protected getAgentRequest(method: (typeof patchedRequestMethods)[number], url: string): superagent.SuperAgentRequest {
+  protected getAgentRequest(method: RequestMethods, url: string): superagent.SuperAgentRequest {
     let req: superagent.SuperAgentRequest = superagent[method](url);
     if (this.cookiesPropagationEnabled) {
       req = req.withCredentials();
@@ -336,7 +339,7 @@ export class BitGoAPI implements BitGoBase {
    * headers to any outbound request.
    * @param method
    */
-  private requestPatch(method: (typeof patchedRequestMethods)[number], url: string) {
+  private requestPatch(method: RequestMethods, url: string) {
     const req = this.getAgentRequest(method, url);
     if (this._customProxyAgent) {
       debug('using custom proxy agent');
@@ -393,8 +396,8 @@ export class BitGoAPI implements BitGoBase {
 
       req.set('BitGo-Auth-Version', this._authVersion === 3 ? '3.0' : '2.0');
 
+      const data = serializeRequestData(req);
       if (this._token) {
-        const data = serializeRequestData(req);
         setRequestQueryString(req);
 
         const requestProperties = this.calculateRequestHeaders({
@@ -412,6 +415,13 @@ export class BitGoAPI implements BitGoBase {
 
         // set the HMAC
         req.set('HMAC', requestProperties.hmac);
+      }
+
+      if (this.getAdditionalHeadersCb) {
+        const additionalHeaders = this.getAdditionalHeadersCb(method, url, data);
+        for (const { key, value } of additionalHeaders) {
+          req.set(key, value);
+        }
       }
 
       /**

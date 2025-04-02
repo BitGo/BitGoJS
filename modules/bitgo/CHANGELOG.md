@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [43.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@43.0.0...bitgo@43.0.1) (2025-04-02)
+
+**Note:** Version bump only for package bitgo
+
 # [43.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@42.2.1...bitgo@43.0.0) (2025-03-28)
 
 ### Bug Fixes

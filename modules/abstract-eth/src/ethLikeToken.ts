@@ -40,10 +40,15 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
     return (bitgo: BitGoBase) => new this(bitgo, config, coinNames);
   }
 
-  static createTokenConstructors(coinNames: CoinNames): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    coinNames: CoinNames,
+    tokenConfigs: EthLikeTokenConfig[] = [
+      ...tokens.bitcoin[coinNames.Mainnet].tokens,
+      ...tokens.testnet[coinNames.Mainnet].tokens,
+    ]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    const chain = coinNames.Mainnet;
-    for (const token of [...tokens.bitcoin[chain].tokens, ...tokens.testnet[chain].tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = this.createTokenConstructor(token, coinNames);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
       tokensCtors.push({ name: token.tokenContractAddress, coinConstructor: tokenConstructor });
