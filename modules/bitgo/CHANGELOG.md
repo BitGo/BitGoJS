@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [43.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@43.0.0...bitgo@43.0.1) (2025-04-02)
+
+**Note:** Version bump only for package bitgo
+
+# [43.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@42.2.1...bitgo@43.0.0) (2025-03-28)
+
+### Bug Fixes
+
+- **abstract-eth:** return eip 191 encoded message as a hex string ([6ae1979](https://github.com/BitGo/BitGoJS/commit/6ae19794ff1c738b4984cb4dacc23130da708a17))
+- ensure user params are used for tx verification ([b0ec18e](https://github.com/BitGo/BitGoJS/commit/b0ec18ef4f228d713655d39cda378ff464b536d5))
+- **sdk-core:** validate unsigned staking transaction before sign ([8121753](https://github.com/BitGo/BitGoJS/commit/8121753962eed3dfaf06da31aec33a8fbed178e3))
+
+### Features
+
+- **sdk-core:** add GoStakingWallet ([f9d98ab](https://github.com/BitGo/BitGoJS/commit/f9d98abec72526a6afe2f9cbfb904a2855934de4))
+
+### BREAKING CHANGES
+
+- **abstract-eth:** messageEncoded is now encoded as a hex string
+
 ## [42.2.1](https://github.com/BitGo/BitGoJS/compare/bitgo@42.2.0...bitgo@42.2.1) (2025-03-20)
 
 ### Reverts

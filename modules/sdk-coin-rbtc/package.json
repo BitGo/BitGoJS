@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-rbtc",
-  "version": "2.0.72",
+  "version": "2.0.74",
   "description": "BitGo SDK coin library for Rootstock rsk",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,16 +40,16 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^23.0.3",
-    "@bitgo/sdk-coin-eth": "^24.2.61",
-    "@bitgo/sdk-core": "^31.2.1",
-    "@bitgo/statics": "^51.5.0",
+    "@bitgo/abstract-eth": "^24.0.1",
+    "@bitgo/sdk-coin-eth": "^24.2.63",
+    "@bitgo/sdk-core": "^32.0.1",
+    "@bitgo/statics": "^51.6.1",
     "@ethereumjs/common": "^2.6.5",
     "ethereumjs-abi": "^0.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.61.2",
-    "@bitgo/sdk-test": "^8.0.77"
+    "@bitgo/sdk-api": "^1.61.4",
+    "@bitgo/sdk-test": "^8.0.79"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

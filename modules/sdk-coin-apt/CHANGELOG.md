@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.0.0...@bitgo/sdk-coin-apt@2.0.1) (2025-04-02)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-apt
+
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.10.3...@bitgo/sdk-coin-apt@2.0.0) (2025-03-28)
+
+### Features
+
+- **sdk-coin-apt:** send many support fungible asset ([66a935f](https://github.com/BitGo/BitGoJS/commit/66a935f78cf8154bbca09fbdd821ad8f01b098ad))
+- **sdk-coin-apt:** send many: addition of recipients ([11023bd](https://github.com/BitGo/BitGoJS/commit/11023bdce766eb75db9ddd376e7e87322d5b699e))
+- **sdk-coin-apt:** sendMany multiple recipients native aptos ([6efbd37](https://github.com/BitGo/BitGoJS/commit/6efbd37a4f2f0d1ea33a9c4101bfe7f5504aef6a))
+
+### BREAKING CHANGES
+
+- **sdk-coin-apt:** Replaced protected `recipient` field with `recipients` in Aptos transactions.
+
 ## [1.10.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@1.10.2...@bitgo/sdk-coin-apt@1.10.3) (2025-03-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apt

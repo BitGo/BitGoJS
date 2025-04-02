@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.10.0...@bitgo/sdk-coin-icp@1.10.1) (2025-04-02)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-icp
+
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.9.0...@bitgo/sdk-coin-icp@1.10.0) (2025-03-28)
+
+### Bug Fixes
+
+- **sdk-coin-icp:** change combine method visibility from protected to public ([ff50dff](https://github.com/BitGo/BitGoJS/commit/ff50dff5222fe29fbd313909c97a3ad28043e49f))
+
+### Features
+
+- **sdk-coin-icp:** implement combine method for signed transaction generation ([9bf8d85](https://github.com/BitGo/BitGoJS/commit/9bf8d85a09c1f603227548d346e68905dafd3df0))
+- **sdk-coin-icp:** improve transaction signature validation ([6c8151e](https://github.com/BitGo/BitGoJS/commit/6c8151e639143e840707b6d56636c451ac96f192))
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.8.0...@bitgo/sdk-coin-icp@1.9.0) (2025-03-20)
 
 ### Features
