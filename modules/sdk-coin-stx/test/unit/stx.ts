@@ -193,7 +193,7 @@ describe('STX:', function () {
     explain.contractFunctionArgs[0].value.toString().should.equal(testData.txExplainedContract.functionArgs[0].value);
   });
 
-  it('should explain a fungible token transfer transaction', async function () {
+  it('should explain a fungible token transfer transaction with memo', async function () {
     const explain = await basecoin.explainTransaction({
       txHex: testData.txForExplainFungibleTokenTransfer,
       feeInfo: { fee: '' },
@@ -205,6 +205,21 @@ describe('STX:', function () {
     explain.outputs[0].amount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
     explain.outputs[0].address.should.equal(cvToString(testData.fungibleTokenTransferTx.functionArgs[1]));
     explain.outputs[0].memo.should.equal('1');
+    explain.outputs[0].tokenName.should.equal(testData.fungibleTokenTransferTx.tokenName);
+  });
+
+  it('should explain a fungible token transfer transaction without memo', async function () {
+    const explain = await basecoin.explainTransaction({
+      txHex: testData.txForExplainFungibleTokenTransferWithoutMemo,
+      feeInfo: { fee: '' },
+    });
+    explain.id.should.equal(testData.hexWithoutMemoTransferId);
+    explain.fee.should.equal(testData.fungibleTokenTransferTx.fee);
+    assert.deepEqual(explain.memo, undefined, 'memo should be undefined');
+    explain.outputAmount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
+    explain.outputs[0].amount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
+    explain.outputs[0].address.should.equal(cvToString(testData.fungibleTokenTransferTx.functionArgs[1]));
+    assert.deepEqual(explain.outputs[0].memo, undefined, 'memo should be undefined');
     explain.outputs[0].tokenName.should.equal(testData.fungibleTokenTransferTx.tokenName);
   });
 
