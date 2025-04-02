@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { BaseTransactionBuilder, BuildTransactionError, BaseAddress, SigningError, BaseKey } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import utils from './utils';
-import { IcpTransactionData, Signatures } from './iface';
+import { IcpTransaction, IcpTransactionData, PayloadsData, Signatures } from './iface';
 import { SignedTransactionBuilder } from './signedTransactionBuilder';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -23,8 +23,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this._transaction.signaturePayload;
   }
 
-  public unsignedTransaction(): string {
-    return this._transaction.payloadsData.unsigned_transaction;
+  public payloadData(): PayloadsData {
+    return this._transaction.payloadsData;
+  }
+
+  public icpTransaction(): IcpTransaction {
+    return this._transaction.icpTransaction;
   }
 
   /**

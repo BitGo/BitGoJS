@@ -3,8 +3,8 @@ import {
   RequestType,
   Signatures,
   UpdateEnvelope,
-  ReadStateEnvelope,
   RequestEnvelope,
+  HttpCanisterUpdate,
 } from './iface';
 import utils from './utils';
 import assert from 'assert';
@@ -30,54 +30,48 @@ export class SignedTransactionBuilder {
     const unsignedTransaction = utils.cborDecode(
       utils.blobFromHex(combineRequest.unsigned_transaction)
     ) as CborUnsignedTransaction;
-    assert(combineRequest.signatures.length === unsignedTransaction.ingress_expiries.length * 2);
+    // at present we expect only one request type and one signature
+    assert(combineRequest.signatures.length === 1);
     assert(unsignedTransaction.updates.length === 1);
     const envelopes = this.getEnvelopes(unsignedTransaction, signatureMap);
-    const envelopRequests = { requests: envelopes };
-    const signedTransaction = utils.cborEncode(envelopRequests);
+    const requestEnvelopeArray = envelopes[0] as [RequestEnvelope[]];
+    const requestEnvelopes = requestEnvelopeArray[0] as RequestEnvelope[];
+    assert(requestEnvelopes.length === 1);
+    const requestEnvelope = requestEnvelopes[0] as RequestEnvelope;
+    const signedTransaction = utils.cborEncode(requestEnvelope.update as UpdateEnvelope);
     return signedTransaction;
   }
 
   getEnvelopes(
     unsignedTransaction: CborUnsignedTransaction,
     signatureMap: Map<string, Signatures>
-  ): [string, RequestEnvelope[]][] {
-    const envelopes: [string, RequestEnvelope[]][] = [];
-    for (const [reqType, update] of unsignedTransaction.updates) {
+  ): [RequestEnvelope[]][] {
+    const envelopes: [RequestEnvelope[]][] = [];
+    for (const [, update] of unsignedTransaction.updates as unknown as [string, HttpCanisterUpdate][]) {
       const requestEnvelopes: RequestEnvelope[] = [];
-      for (const ingressExpiry of unsignedTransaction.ingress_expiries) {
-        update.ingress_expiry = ingressExpiry;
-
-        const readState = utils.makeReadStateFromUpdate(update);
-        const transactionSignature = utils.getTransactionSignature(signatureMap, update);
-        if (!transactionSignature) {
-          throw new Error('Transaction signature is invalid');
-        }
-
-        const readStateSignature = utils.getReadStateSignature(signatureMap, readState);
-        if (!readStateSignature) {
-          throw new Error('read state signature is invalid');
-        }
-
-        const pk_der = utils.getPublicKeyInDERFormat(transactionSignature.public_key.hex_bytes);
-        const updateEnvelope: UpdateEnvelope = {
-          content: { request_type: RequestType.CALL, ...update },
-          sender_pubkey: pk_der,
-          sender_sig: utils.blobFromHex(transactionSignature.hex_bytes),
-        };
-
-        const readStateEnvelope: ReadStateEnvelope = {
-          content: { request_type: RequestType.READ_STATE, ...readState },
-          sender_pubkey: pk_der,
-          sender_sig: utils.blobFromHex(readStateSignature.hex_bytes),
-        };
-
-        requestEnvelopes.push({
-          update: updateEnvelope,
-          read_state: readStateEnvelope,
-        });
+      if (unsignedTransaction.ingress_expiries.length != 1) {
+        throw new Error('ingress expiry can have only one entry');
       }
-      envelopes.push([reqType, requestEnvelopes]);
+      const ingressExpiry = unsignedTransaction.ingress_expiries[0];
+      update.ingress_expiry = ingressExpiry;
+
+      const transactionSignature = utils.getTransactionSignature(signatureMap, update);
+      if (!transactionSignature) {
+        throw new Error('Transaction signature is invalid');
+      }
+
+      const pk_der = utils.getPublicKeyInDERFormat(transactionSignature.public_key.hex_bytes);
+      const updateEnvelope: UpdateEnvelope = {
+        content: { request_type: RequestType.CALL, ...update },
+        sender_pubkey: pk_der,
+        sender_sig: utils.blobFromHex(transactionSignature.hex_bytes),
+      };
+
+      requestEnvelopes.push({
+        update: updateEnvelope,
+      });
+
+      envelopes.push([requestEnvelopes]);
     }
     return envelopes;
   }

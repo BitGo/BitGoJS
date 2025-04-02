@@ -56,33 +56,25 @@ export class UnsignedTransactionBuilder {
     accountAddress: string,
     update: HttpCanisterUpdate
   ): SigningPayload[] {
-    for (const ingressExpiry of ingressExpiries) {
-      const clonedUpdate: HttpCanisterUpdate = {
-        canister_id: Buffer.from(update.canister_id),
-        method_name: update.method_name,
-        arg: update.arg,
-        sender: update.sender,
-        ingress_expiry: ingressExpiry,
-      };
-
-      const representationIndependentHash = utils.HttpCanisterUpdateRepresentationIndependentHash(clonedUpdate);
-      const transactionPayload: SigningPayload = {
-        hex_bytes: utils.blobToHex(utils.makeSignatureData(representationIndependentHash)),
-        account_identifier: { address: accountAddress },
-        signature_type: SignatureType.ECDSA,
-      };
-      payloads.push(transactionPayload);
-
-      const readState = utils.makeReadStateFromUpdate(clonedUpdate);
-      const readStateMessageId = utils.HttpReadStateRepresentationIndependentHash(readState);
-      const readStatePayload: SigningPayload = {
-        hex_bytes: utils.blobToHex(utils.makeSignatureData(readStateMessageId)),
-        account_identifier: { address: accountAddress },
-        signature_type: SignatureType.ECDSA,
-      };
-      payloads.push(readStatePayload);
+    if (ingressExpiries.length != 1) {
+      throw new Error('ingress expiry can have only one entry');
     }
+    const ingressExpiry = ingressExpiries[0];
+    const clonedUpdate: HttpCanisterUpdate = {
+      canister_id: Buffer.from(update.canister_id),
+      method_name: update.method_name,
+      arg: update.arg,
+      sender: update.sender,
+      ingress_expiry: ingressExpiry,
+    };
 
+    const representationIndependentHash = utils.HttpCanisterUpdateRepresentationIndependentHash(clonedUpdate);
+    const transactionPayload: SigningPayload = {
+      hex_bytes: utils.blobToHex(utils.makeSignatureData(representationIndependentHash)),
+      account_identifier: { address: accountAddress },
+      signature_type: SignatureType.ECDSA,
+    };
+    payloads.push(transactionPayload);
     return payloads;
   }
 
