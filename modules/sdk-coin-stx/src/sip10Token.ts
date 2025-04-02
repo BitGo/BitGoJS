@@ -1,17 +1,13 @@
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 
-import { BitGoBase, CoinConstructor, Memo, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, NetworkType, Sip10TokenConfig, tokens } from '@bitgo/statics';
 
 import { Stx } from './stx';
 import { TransactionBuilderFactory } from './lib';
 import { TransactionBuilder } from './lib/transactionBuilder';
 import { getMemoIdAndBaseAddressFromAddress } from './lib/utils';
-
-export interface Sip10VerifyTransactionOptions extends VerifyTransactionOptions {
-  memo?: Memo;
-}
 
 export class Sip10Token extends Stx {
   public readonly tokenConfig: Sip10TokenConfig;
@@ -77,8 +73,9 @@ export class Sip10Token extends Stx {
     return new TransactionBuilderFactory(coinConfig).getFungibleTokenTransferBuilder();
   }
 
-  async verifyTransaction(params: Sip10VerifyTransactionOptions): Promise<boolean> {
-    const { txPrebuild: txPrebuild, txParams: txParams, memo: memo } = params;
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const { memo } = txParams;
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`

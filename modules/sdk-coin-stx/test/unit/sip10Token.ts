@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { ITransactionRecipient, Wallet } from '@bitgo/sdk-core';
+import { ITransactionRecipient, Wallet, Memo } from '@bitgo/sdk-core';
 
 import { Sip10Token } from '../../src';
 import * as testData from '../fixtures';
@@ -11,7 +11,7 @@ describe('Sip10Token:', function () {
   let bitgo: TestBitGoAPI;
   let basecoin: Sip10Token;
   let newTxPrebuild: () => { txHex: string; txInfo: Record<string, unknown> };
-  let newTxParams: () => { recipients: ITransactionRecipient[] };
+  let newTxParams: () => { recipients: ITransactionRecipient[]; memo?: Memo };
   let wallet: Wallet;
 
   const txPreBuild = {
@@ -50,13 +50,13 @@ describe('Sip10Token:', function () {
     it('should succeed to verify transaction', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
+      txParams.memo = memo;
       const verification = {};
       const isTransactionVerified = await basecoin.verifyTransaction({
         txParams,
         txPrebuild,
         verification,
         wallet,
-        memo,
       });
       isTransactionVerified.should.equal(true);
     });
@@ -69,13 +69,14 @@ describe('Sip10Token:', function () {
           return { address, amount: Number(amount), memo, tokenName };
         }
       );
+      txParamsWithNumberAmounts.memo = memo;
+
       const verification = {};
       const isTransactionVerified = await basecoin.verifyTransaction({
         txParams: txParamsWithNumberAmounts,
         txPrebuild,
         verification,
         wallet,
-        memo,
       });
       isTransactionVerified.should.equal(true);
     });
@@ -85,7 +86,7 @@ describe('Sip10Token:', function () {
       txPrebuild.txHex = testData.txForExplainFungibleTokenTransferWithMemoId10;
       const txParams = newTxParams();
       const verification = {};
-      const memo = {
+      txParams.memo = {
         type: '',
         value: '10',
       };
@@ -94,7 +95,6 @@ describe('Sip10Token:', function () {
         txPrebuild,
         verification,
         wallet,
-        memo,
       });
       isTransactionVerified.should.equal(true);
     });
@@ -103,7 +103,7 @@ describe('Sip10Token:', function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
       txPrebuild.txHex = testData.txForExplainFungibleTokenTransferWithMemoZero;
-      const memo = {
+      txParams.memo = {
         type: '',
         value: '0',
       };
@@ -113,7 +113,6 @@ describe('Sip10Token:', function () {
         txPrebuild,
         verification,
         wallet,
-        memo,
       });
       isTransactionVerified.should.equal(true);
     });
