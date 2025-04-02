@@ -67,20 +67,18 @@ describe('getChainAndIndexFromPath', function () {
   });
 
   it('should throw if the path is not a number', function () {
-    assert.throws(() => getChainAndIndexFromPath('m/0/ssss'), /Could not parse chain and index into numbers from path/);
-    assert.throws(
-      () => getChainAndIndexFromPath('//d/dd/d/d/dd/dd'),
-      /Could not parse chain and index into numbers from path/
-    );
-  });
-
-  it('should throw if chain or index is negative', function () {
-    assert.throws(() => getChainAndIndexFromPath('m/-1/0'), /chain and index must be non-negative/);
-    assert.throws(() => getChainAndIndexFromPath('m/0/-1'), /chain and index must be non-negative/);
+    const invalidChain = [-1, 2, 'lol'];
+    const invalidIndex = [-1, 'lol'];
+    for (const chain of invalidChain) {
+      assert.throws(() => getChainAndIndexFromPath(`m/${chain}/0`), /invalid chain/);
+    }
+    for (const index of invalidIndex) {
+      assert.throws(() => getChainAndIndexFromPath(`m/0/${index}`), /invalid index/);
+    }
   });
 
   it('should set the chain and index correctly', function () {
     assert.deepStrictEqual(getChainAndIndexFromPath('m/1/2'), { chain: 1, index: 2 });
-    assert.deepStrictEqual(getChainAndIndexFromPath('m/4/3/2'), { chain: 3, index: 2 });
+    assert.deepStrictEqual(getChainAndIndexFromPath('m/1/2/3/4/5/10/20'), { chain: 10, index: 20 });
   });
 });
