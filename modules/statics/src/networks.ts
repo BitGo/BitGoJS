@@ -1161,7 +1161,7 @@ class Coredao extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://scan.coredao.org/address/';
   chainId = 1116;
   nativeCoinOperationHashPrefix = '1116';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1175,7 +1175,7 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '1114';
 
   // TODO (SC-1024) Update contract addresses to new testnet when they are deployed
-  batcherContractAddress = '0xad7a34aa9c0c7cb2c4d1f07ce8d1d0530b07fe27';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1186,7 +1186,7 @@ class Xdc extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://xdcscan.com/address/';
   chainId = 50;
   nativeCoinOperationHashPrefix = '50';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1197,7 +1197,7 @@ class XdcTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://testnet.xdcscan.com/address/';
   chainId = 51;
   nativeCoinOperationHashPrefix = '51';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1208,7 +1208,7 @@ class Wemix extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.wemix.com/address/';
   chainId = 1111;
   nativeCoinOperationHashPrefix = '1111';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1219,7 +1219,7 @@ class WemixTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.test.wemix.com/address/';
   chainId = 1112;
   nativeCoinOperationHashPrefix = '1112';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1230,7 +1230,7 @@ class Flare extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://flare-explorer.flare.network/address/';
   chainId = 14;
   nativeCoinOperationHashPrefix = '14';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1241,7 +1241,7 @@ class FlareTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://coston2-explorer.flare.network/address/';
   chainId = 114;
   nativeCoinOperationHashPrefix = '114';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1252,7 +1252,7 @@ class Songbird extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://songbird-explorer.flare.network/address/';
   chainId = 19;
   nativeCoinOperationHashPrefix = '19';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1263,7 +1263,7 @@ class SongbirdTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://coston-explorer.flare.network/address/';
   chainId = 16;
   nativeCoinOperationHashPrefix = '16';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
