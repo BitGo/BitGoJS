@@ -71,6 +71,7 @@ export class UnstakeBuilder extends TransactionBuilder {
    * @returns {UnstakeBuilder} This unstaking builder
    */
   netuid(netuid: string): this {
+    this.validateNetuid(netuid);
     this._netuid = netuid;
     return this;
   }
