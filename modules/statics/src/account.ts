@@ -78,8 +78,8 @@ export interface Erc20ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
 }
 
-export interface CollectionIdConstructorOptions extends AccountConstructorOptions {
-  collectionId: string;
+export interface NFTCollectionIdConstructorOptions extends AccountConstructorOptions {
+  nftCollectionId: string;
 }
 
 export interface StellarCoinConstructorOptions extends AccountConstructorOptions {
@@ -187,14 +187,14 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
 /**
  * Used for blockchains that support NFT collections.
  */
-export class CollectionIdDefinedToken extends AccountCoinToken {
-  public collectionId: string;
+export class NFTCollectionIdDefinedToken extends AccountCoinToken {
+  public nftCollectionId: string;
 
-  constructor(options: CollectionIdConstructorOptions) {
+  constructor(options: NFTCollectionIdConstructorOptions) {
     super({
       ...options,
     });
-    this.collectionId = options.collectionId;
+    this.nftCollectionId = options.nftCollectionId;
   }
 }
 
@@ -523,7 +523,7 @@ export class AptCoin extends AccountCoinToken {
  * The Apt network supports non-fungible tokens (Digital Asset Standard)
  * Every NFT belongs to an NFT collection.
  */
-export class AptNFTCollection extends CollectionIdDefinedToken {}
+export class AptNFTCollection extends NFTCollectionIdDefinedToken {}
 
 /**
  * Fiat currencies, such as USD, EUR, or YEN.
@@ -2543,7 +2543,7 @@ export function aptToken(
  * @param id uuid v4
  * @param name unique identifier of the NFT collection
  * @param fullName Complete human-readable name of the NFT collection
- * @param collectionId collection ID of the non-fungible tokens (NFTs)
+ * @param nftCollectionId collection ID of the non-fungible tokens (NFTs)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix Optional token prefix. Defaults to empty string
  * @param suffix Optional token suffix. Defaults to token name.
@@ -2555,7 +2555,7 @@ export function aptNFTCollection(
   id: string,
   name: string,
   fullName: string,
-  collectionId: string,
+  nftCollectionId: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -2569,7 +2569,7 @@ export function aptNFTCollection(
       name,
       fullName,
       network,
-      collectionId,
+      nftCollectionId,
       prefix,
       suffix,
       features,
@@ -2631,7 +2631,7 @@ export function taptToken(
  * @param id uuid v4
  * @param name unique identifier of the NFT collection
  * @param fullName Complete human-readable name of the NFT collection
- * @param collectionId collection ID of the non-fungible tokens (NFTs)
+ * @param nftCollectionId collection ID of the non-fungible tokens (NFTs)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix Optional token prefix. Defaults to empty string
  * @param suffix Optional token suffix. Defaults to token name.
@@ -2643,7 +2643,7 @@ export function taptNFTCollection(
   id: string,
   name: string,
   fullName: string,
-  collectionId: string,
+  nftCollectionId: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -2651,7 +2651,18 @@ export function taptNFTCollection(
   network: AccountNetwork = Networks.test.apt,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
-  return aptNFTCollection(id, name, fullName, collectionId, asset, features, prefix, suffix, network, primaryKeyCurve);
+  return aptNFTCollection(
+    id,
+    name,
+    fullName,
+    nftCollectionId,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
 }
 
 /**

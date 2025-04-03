@@ -16,6 +16,7 @@ export {
   EosCoin,
   AlgoCoin,
   AvaxERC20Token,
+  NFTCollectionIdDefinedToken,
   SolCoin,
   HederaToken,
   TronErc20Coin,
