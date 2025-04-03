@@ -26,6 +26,12 @@ import {
   MPCAlgorithm,
   EDDSAMethods,
   EDDSAMethodTypes,
+  MPCTx,
+  MPCUnsignedTx,
+  RecoveryTxRequest,
+  MPCSweepTxs,
+  MPCSweepRecoveryOptions,
+  MPCTxs,
   MultisigType,
   multisigTypes,
 } from '@bitgo/sdk-core';
@@ -83,11 +89,6 @@ interface RecoveryOptions {
   walletPassphrase: string;
   startingScanIndex?: number;
   scan?: number;
-}
-
-interface NearTx {
-  serializedTx: string;
-  scanIndex: number;
 }
 
 interface NearTxBuilderParamsFromNode {
@@ -327,7 +328,7 @@ export class Near extends BaseCoin {
    * Builds a funds recovery transaction without BitGo
    * @param params
    */
-  async recover(params: RecoveryOptions): Promise<NearTx> {
+  async recover(params: RecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -397,9 +398,9 @@ export class Near extends BaseCoin {
         .receiverId(params.recoveryDestination)
         .recentBlockHash(blockHash)
         .amount(netAmount.toFixed());
-
+      const unsignedTransaction = (await txBuilder.build()) as Transaction;
+      let serializedTx = unsignedTransaction.toBroadcastFormat();
       if (!isUnsignedSweep) {
-        const unsignedTransaction = (await txBuilder.build()) as Transaction;
         // Sign the txn
         /* ***************** START **************************************/
         // TODO(BG-51092): This looks like a common part which can be extracted out too
@@ -451,13 +452,118 @@ export class Near extends BaseCoin {
         );
         const publicKeyObj = { pub: accountId };
         txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
-      }
 
-      const completedTransaction = await txBuilder.build();
-      const serializedTx = completedTransaction.toBroadcastFormat();
+        const completedTransaction = await txBuilder.build();
+        serializedTx = completedTransaction.toBroadcastFormat();
+      } else {
+        const value = new BigNumber(netAmount); // Use the calculated netAmount for the transaction
+        const walletCoin = this.getChain();
+        const inputs = [
+          {
+            address: accountId, // The sender's account ID
+            valueString: value.toString(),
+            value: value.toNumber(),
+          },
+        ];
+        const outputs = [
+          {
+            address: params.recoveryDestination, // The recovery destination address
+            valueString: value.toString(),
+            coinName: walletCoin,
+          },
+        ];
+        const spendAmount = value.toString();
+        const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+        const feeInfo = { fee: totalGasWithPadding.toNumber(), feeString: totalGasWithPadding.toFixed() }; // Include gas fees
+
+        const transaction: MPCTx = {
+          serializedTx: serializedTx, // Serialized unsigned transaction
+          scanIndex: i, // Current index in the scan
+          coin: walletCoin,
+          signableHex: unsignedTransaction.signablePayload.toString('hex'), // Hex payload for signing
+          derivationPath: currPath, // Derivation path for the account
+          parsedTx: parsedTx,
+          feeInfo: feeInfo,
+          coinSpecific: { commonKeychain: bitgoKey }, // Include block hash for NEAR
+        };
+
+        const transactions: MPCUnsignedTx[] = [{ unsignedTx: transaction, signatureShares: [] }];
+        const txRequest: RecoveryTxRequest = {
+          transactions: transactions,
+          walletCoin: walletCoin,
+        };
+        return { txRequests: [txRequest] };
+      }
       return { serializedTx: serializedTx, scanIndex: i };
     }
     throw new Error('Did not find an address with funds to recover');
+  }
+
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
+    const req = params.signatureShares;
+    const broadcastableTransactions: MPCTx[] = [];
+    let lastScanIndex = 0;
+
+    for (let i = 0; i < req.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+
+      // Validate signature shares
+      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+        throw new Error('Missing signature(s)');
+      }
+      const signature = req[i].ovc[0].eddsaSignature;
+
+      // Validate signable hex
+      if (!transaction.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      const result = MPC.verify(messageBuffer, signature);
+      if (!result) {
+        throw new Error('Invalid signature');
+      }
+
+      // Prepare the signature in hex format
+      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
+
+      // Validate transaction-specific fields
+      if (!transaction.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+
+      if (!transaction.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = transaction.derivationPath as string;
+
+      // Derive account ID and sender address
+      const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+      const txnBuilder = this.getBuilder().from(transaction.serializedTx as string);
+
+      // Add the signature
+      const nearKeyPair = new NearKeyPair({ pub: accountId });
+      txnBuilder.addSignature({ pub: nearKeyPair.getKeys().pub }, signatureHex);
+
+      // Finalize and serialize the transaction
+      const signedTransaction = await txnBuilder.build();
+      const serializedTx = signedTransaction.toBroadcastFormat();
+
+      // Add the signed transaction to the list
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: transaction.scanIndex,
+      });
+
+      // Update the last scan index if applicable
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
+    }
+
+    // Return the broadcastable transactions and the last scan index
+    return { transactions: broadcastableTransactions, lastScanIndex };
   }
 
   /**

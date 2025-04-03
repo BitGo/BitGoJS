@@ -11,6 +11,7 @@ import {
   keys,
   accountInfo,
   nonce,
+  ovcResponse,
 } from '../fixtures/near';
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
@@ -742,17 +743,67 @@ describe('NEAR:', function () {
         bitgoKey: keys.bitgoKey,
         recoveryDestination: 'abhay-near.testnet',
       });
-      res.should.not.be.empty();
-      res.should.hasOwnProperty('serializedTx');
 
-      const UnsignedSweepTxnDeserialize = new Transaction(coin);
-      UnsignedSweepTxnDeserialize.fromRawTransaction(res.serializedTx);
-      const UnsignedSweepTxnJson = UnsignedSweepTxnDeserialize.toJson();
+      // Assertions for the structure of the result
+      should.exist(res);
+      res.should.have.property('txRequests').which.is.an.Array();
+      res.txRequests[0].should.have.property('transactions').which.is.an.Array();
+      res.txRequests[0].transactions[0].should.have.property('unsignedTx');
 
-      should.equal(UnsignedSweepTxnJson.nonce, nonce);
-      should.equal(UnsignedSweepTxnJson.signerId, accountInfo.accountId);
-      should.equal(UnsignedSweepTxnJson.publicKey, 'ed25519:' + accountInfo.bs58EncodedPublicKey);
-      sandBox.assert.callCount(basecoin.getDataFromNode, 4);
+      // Assertions for the unsigned transaction
+      const unsignedTx = res.txRequests[0].transactions[0].unsignedTx;
+      unsignedTx.should.have.property('serializedTx').which.is.a.String();
+      unsignedTx.should.have.property('scanIndex', 0);
+      unsignedTx.should.have.property('coin', 'tnear');
+      unsignedTx.should.have.property(
+        'signableHex',
+        'c27d684b6f09c4b603d9bf8a08baedf12b8bb951f314acd747b16bb75cfbf687'
+      );
+      unsignedTx.should.have.property('derivationPath', 'm/0');
+
+      // Assertions for parsed transaction
+      const parsedTx = unsignedTx.parsedTx;
+      parsedTx.should.have.property('inputs').which.is.an.Array();
+      parsedTx.inputs[0].should.have.property(
+        'address',
+        'f256196dae617aa348149c1e61e997272492668d517506d7a6e2392e06ea532c'
+      );
+      parsedTx.inputs[0].should.have.property('valueString', '1.97885506094866269650000001e+26');
+      parsedTx.inputs[0].should.have.property('value', 1.9788550609486627e26);
+
+      parsedTx.should.have.property('outputs').which.is.an.Array();
+      parsedTx.outputs[0].should.have.property('address', 'abhay-near.testnet');
+      parsedTx.outputs[0].should.have.property('valueString', '1.97885506094866269650000001e+26');
+      parsedTx.outputs[0].should.have.property('coinName', 'tnear');
+
+      parsedTx.should.have.property('spendAmount', '1.97885506094866269650000001e+26');
+      parsedTx.should.have.property('type', '');
+
+      // Assertions for fee info
+      unsignedTx.should.have.property('feeInfo');
+      unsignedTx.feeInfo.should.have.property('fee', 68628637968750000000);
+      unsignedTx.feeInfo.should.have.property('feeString', '68628637968750000000');
+
+      // Assertions for coin-specific data
+      unsignedTx.should.have.property('coinSpecific');
+      unsignedTx.coinSpecific.should.have.property(
+        'commonKeychain',
+        '8699d2e05d60a3f7ab733a74ccf707f3407494b60f4253616187f5262e20737519a1763de0bcc4d165a7fa0e4dde67a1426ec4cc9fcd0820d749e6589dcfa08e'
+      );
+    });
+
+    it('should take OVC output and generate a signed sweep transaction for NEAR', async function () {
+      const params = ovcResponse; // NEAR-specific response fixture
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+
+      // Validate the serialized transaction
+      recoveryTxn.transactions[0].serializedTx.should.equal(
+        'QAAAAGIzODNjYWM2ZjNjZDY0OTViZDZhYjg3NzMwMGE4NzliN2RiYzRhMTZhYjBlZjE5NzlkZTZmNzNkYjAyNDlmYWEAs4PKxvPNZJW9arh3MAqHm328SharDvGXneb3PbAkn6oBuZUj6a0AAEAAAABlYWRiMzIwOGZiOWU5MWY2MGQ3NmUzYzUxNzEzZDA1Y2I0YTU5NDFlNWYzNTVlMWZmOThlMTQwYTcxMjNlODRl2hbJtC4rwLyWAbMzTgTcRmr5xpWlrXOXbzxMWcP7wwcBAAAAA9A1oVfvpz3o4hcAAAAAAAAAvAIWOj2c1QhqbWcClZ8dW7KQcfG9gYFkimbRDyI8t8L4TUiUyRXMYv5U8jaEsNFWteBcUGolFcLQSbbD5MCpDw=='
+      );
+
+      // Validate the scan index
+      recoveryTxn.transactions[0].scanIndex.should.equal(0);
+      recoveryTxn.lastScanIndex.should.equal(0);
     });
   });
 
