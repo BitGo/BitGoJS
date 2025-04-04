@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@bitgo/sdk-core": "^32.0.1",
+    "@bitgo/sdk-lib-mpc": "^10.1.2",
     "@bitgo/secp256k1": "^1.3.3",
     "@bitgo/statics": "^51.6.1",
     "@ethereumjs/common": "^2.6.5",

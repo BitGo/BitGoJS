@@ -9,6 +9,7 @@ import { TransactionFactory } from '@ethereumjs/tx';
 import * as sinon from 'sinon';
 import { ethLikeDKLSKeycard, ethLikeGG18Keycard } from '../fixtures/tss/recoveryFixtures';
 import { Utils } from '@bitgo/sdk-coin-xrp';
+import { UnsignedSweepTxMPCv2 } from '@bitgo/sdk-coin-eth';
 
 const recoveryNocks = require('../lib/recovery-nocks');
 
@@ -733,7 +734,32 @@ describe('Recovery:', function () {
         },
       },
     ];
-
+    const nockUnsignedSweepTSSData: any[] = [
+      {
+        params: {
+          module: 'account',
+          action: 'txlist',
+          address: '0xa91e1059953d7ef2adbbca4b688bfe22866fbcee',
+        },
+        response: {
+          status: '0',
+          message: 'No transactions found',
+          result: [],
+        },
+      },
+      {
+        params: {
+          module: 'account',
+          action: 'balance',
+          address: '0xa91e1059953d7ef2adbbca4b688bfe22866fbcee',
+        },
+        response: {
+          status: '1',
+          message: 'OK',
+          result: '1000000000000000000',
+        },
+      },
+    ];
     let recoverEthSandbox: sinon.SinonSandbox;
 
     before(() => {
@@ -1098,12 +1124,14 @@ describe('Recovery:', function () {
     });
 
     it('should construct an unsigned sweep tx with TSS', async function () {
-      recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
+      recoveryNocks.nockEthLikeRecovery(bitgo, nockUnsignedSweepTSSData);
 
       const basecoin = bitgo.coin('hteth');
 
-      const userKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
-      const backupKey = '03f8606a595917de4cf2244e27b7fba172505469392ad385d2dd2b3588a6bb878c';
+      const userKey =
+        '0234eb39b22fed523ece7c78da29ba1f1de5b64a6e48013e0914de793bc1df0570e779de04758732734d97e54b782c8b336283811af6a2c57bd81438798e1c2446';
+      const backupKey =
+        '0234eb39b22fed523ece7c78da29ba1f1de5b64a6e48013e0914de793bc1df0570e779de04758732734d97e54b782c8b336283811af6a2c57bd81438798e1c2446';
 
       recoveryParams = {
         userKey: userKey,
@@ -1122,17 +1150,21 @@ describe('Recovery:', function () {
 
       const transaction = await basecoin.recover(recoveryParams);
       should.exist(transaction);
-      transaction.should.have.property('tx');
-      transaction.should.have.property('expireTime');
-      transaction.should.have.property('gasLimit');
-      transaction.gasLimit.should.equal('500000');
-      transaction.should.have.property('gasPrice');
-      transaction.gasPrice.should.equal('20000000000');
-      transaction.should.have.property('recipient');
-      transaction.recipient.should.have.property('address');
-      transaction.recipient.address.should.equal('0xac05da78464520aa7c9d4c19bd7a440b111b3054');
-      transaction.recipient.should.have.property('amount');
-      transaction.recipient.amount.should.equal('990000000000000000');
+      const output = transaction as unknown as UnsignedSweepTxMPCv2;
+      output.should.have.property('txRequests');
+      output.txRequests.should.have.length(1);
+      output.txRequests[0].should.have.property('transactions');
+      output.txRequests[0].transactions.should.have.length(1);
+      output.txRequests[0].should.have.property('walletCoin');
+      output.txRequests[0].transactions[0].should.have.property('unsignedTx');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('serializedTxHex');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('signableHex');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('derivationPath');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('feeInfo');
+      output.txRequests[0].transactions[0].unsignedTx.should.have.property('parsedTx');
+      const parsedTx = output.txRequests[0].transactions[0].unsignedTx.parsedTx as { spendAmount: string };
+      parsedTx.should.have.property('spendAmount');
+      (output.txRequests[0].transactions[0].unsignedTx.parsedTx as { outputs: any[] }).should.have.property('outputs');
     });
   });
 });

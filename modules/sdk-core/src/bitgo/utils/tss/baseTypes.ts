@@ -4,6 +4,7 @@ import { KeychainsTriplet, ParsedTransaction } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
 import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
+import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { KeyShare } from './ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
@@ -18,8 +19,8 @@ export interface HopParams {
 
 export interface EIP1559FeeOptions {
   gasLimit?: number;
-  maxFeePerGas?: number;
-  maxPriorityFeePerGas?: number;
+  maxFeePerGas: number;
+  maxPriorityFeePerGas: number;
 }
 
 export interface FeeOption {
@@ -282,6 +283,11 @@ export type SignableTransaction = {
   signableHex: string;
 };
 
+export interface ReplayProtectionOptions {
+  chain: string | number;
+  hardfork: string;
+}
+
 export type UnsignedTransactionTss = SignableTransaction & {
   // derivation path of the signer
   derivationPath: string;
@@ -292,6 +298,8 @@ export type UnsignedTransactionTss = SignableTransaction & {
   };
   coinSpecific?: Record<string, unknown>;
   parsedTx?: unknown;
+  eip1559?: EIP1559FeeOptions;
+  replayProtectionOptions?: ReplayProtectionOptions;
 };
 
 export type UnsignedMessageTss = {
@@ -450,7 +458,7 @@ export interface BitgoGPGPublicKey {
 
 export interface MPCTx {
   serializedTx: string;
-  scanIndex: number;
+  scanIndex?: number;
   coin?: string;
   signableHex?: string;
   derivationPath?: string;
@@ -537,11 +545,12 @@ interface SignatureShare {
 
 interface Ovc {
   eddsaSignature: Signature;
+  ecdsaSignature?: EcdsaSignature;
 }
 
 export interface MPCTxs {
   transactions: MPCTx[];
-  lastScanIndex: number;
+  lastScanIndex?: number;
 }
 
 export interface OvcInput {
