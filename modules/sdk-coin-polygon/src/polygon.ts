@@ -5,10 +5,24 @@ import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo
 import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { TransactionBuilder } from './lib';
+import {
+  UnsignedSweepTxMPCv2,
+  RecoverOptions,
+  OfflineVaultTxInfo,
+} from '../../abstract-eth/src/abstractEthLikeNewCoins';
 
 export class Polygon extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
+  }
+
+  /**
+   * Builds an unsigned sweep transaction for TSS
+   * @param params - Recovery options
+   * @returns {Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2>}
+   */
+  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    return this.buildUnsignedSweepTxnMPCv2(params);
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
