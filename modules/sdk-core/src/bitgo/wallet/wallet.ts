@@ -3,7 +3,7 @@
  */
 import * as t from 'io-ts';
 import assert from 'assert';
-import { BigNumber } from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import * as common from '../../common';
 import {
@@ -934,10 +934,6 @@ export class Wallet implements IWallet {
     common.validateParams(params, ['address'], ['walletPassphrase', 'xprv', 'otp']);
 
     // The sweep API endpoint is only available to utxo-based coins
-
-    if (!BigNumber) {
-      throw new Error('BigNumber is undefined');
-    }
 
     if (!this.baseCoin.sweepWithSendMany()) {
       if (this.confirmedBalanceString() !== this.balanceString()) {
@@ -2357,10 +2353,6 @@ export class Wallet implements IWallet {
 
     if (_.isUndefined(params.address)) {
       throw new Error('missing required parameter address');
-    }
-
-    if (!BigNumber) {
-      throw new Error('BigNumber is undefined');
     }
 
     const coin = this.baseCoin;

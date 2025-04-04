@@ -385,9 +385,6 @@ export class Wallets implements IWallets {
     }
 
     if (!_.isUndefined(params.gasPrice)) {
-      if (!BigNumber) {
-        throw new Error('BigNumber is undefined');
-      }
       const gasPriceBN = new BigNumber(params.gasPrice);
       if (gasPriceBN.isNaN()) {
         throw new Error('invalid gas price argument, expecting number or number as string');
@@ -396,9 +393,6 @@ export class Wallets implements IWallets {
     }
 
     if (!_.isUndefined(params.eip1559) && !_.isEmpty(params.eip1559)) {
-      if (!BigNumber) {
-        throw new Error('BigNumber is undefined');
-      }
       const maxFeePerGasBN = new BigNumber(params.eip1559.maxFeePerGas);
       if (maxFeePerGasBN.isNaN()) {
         throw new Error('invalid max fee argument, expecting number or number as string');

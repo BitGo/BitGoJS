@@ -11,7 +11,6 @@
 /modules/bitgo/test/v2/unit/coins/utxo/ @BitGo/btc-team
 /modules/bitgo/test/v2/unit/lightning.ts @BitGo/btc-team
 /modules/blockapis/ @BitGo/btc-team
-/modules/bls-dkg/ @BitGo/hsm
 /modules/sdk-coin-bch/ @BitGo/btc-team
 /modules/sdk-coin-bcha/ @BitGo/btc-team
 /modules/sdk-coin-bsv/ @BitGo/btc-team
