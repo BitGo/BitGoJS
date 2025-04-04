@@ -85,7 +85,10 @@
     "@polkadot/api": "14.1.1",
     "elliptic": "^6.6.1",
     "axios": "^1.8.2",
-    "canvg": "4.0.3"
+    "canvg": "4.0.3",
+    "**/stellar-sdk/**/bignumber.js": "4.1.0",
+    "**/stellar-base/**/bignumber.js": "4.1.0",
+    "bignumber.js": "9.1.2"
   },
   "workspaces": [
     "modules/*"
