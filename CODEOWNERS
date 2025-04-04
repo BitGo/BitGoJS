@@ -95,6 +95,7 @@
 
 # Core Modules
 /modules/bitgo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+/modules/bitgo-v2/ @BitGo/ethalt-team
 /modules/bitgo/test/v2/unit/lightning/ @BitGo/btc-team
 /modules/blake2b-wasm/  @BitGo/custody-experience @BitGo/wallet-platform
 /modules/blake2b/ @BitGo/custody-experience @BitGo/wallet-platform
