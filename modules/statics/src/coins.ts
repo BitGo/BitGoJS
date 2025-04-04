@@ -3120,7 +3120,7 @@ function getAptTokenInitializer(token: AmsTokenConfig) {
   // used for non-fungible token (NFT) collections
   return {
     initFunc: aptNFTCollection as (...args: unknown[]) => Readonly<BaseCoin>,
-    objectId: token.collectionId,
+    objectId: token.nftCollectionId,
   };
 }
 
