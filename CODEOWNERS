@@ -2,7 +2,7 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners and first officers will be the default owners for everything in the repo.
-*   @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+*   @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 
 # Order is important. The last matching pattern has the most precedence.
 
@@ -94,16 +94,16 @@
 /modules/sdk-core/src/bitgo/trading/ @BitGo/prime
 
 # Core Modules
-/modules/bitgo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+/modules/bitgo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /modules/bitgo/test/v2/unit/lightning/ @BitGo/btc-team
-/modules/blake2b-wasm/  @BitGo/custody-experience @BitGo/wallet-platform
-/modules/blake2b/ @BitGo/custody-experience @BitGo/wallet-platform
+/modules/blake2b-wasm/  @BitGo/web-experience @BitGo/wallet-platform
+/modules/blake2b/ @BitGo/web-experience @BitGo/wallet-platform
 /modules/express/ @BitGo/wallet-platform
 /modules/express/src/lightning/ @BitGo/btc-team
 /modules/express/test/unit/lightning/ @BitGo/btc-team
 /modules/express/test/unit/clientRoutes/lightning/ @BitGo/btc-team
 /modules/key-card/ @BitGo/wallet-platform
-/modules/sdk-api/ @BitGo/custody-experience @BitGo/wallet-platform
+/modules/sdk-api/ @BitGo/web-experience @BitGo/wallet-platform
 /modules/sdk-api/src/v1 @BitGo/btc-team
 /modules/sdk-api/test/unit/v1 @BitGo/btc-team
 /modules/sdk-core/ @BitGo/wallet-platform @BitGo/hsm @BitGo/coins
@@ -112,25 +112,25 @@
 /modules/sdk-lib-mpc/ @BitGo/wallet-platform @BitGo/hsm
 /modules/deser-lib/ @BitGo/wallet-platform @BitGo/hsm
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team
-/modules/sdk-test/ @BitGo/custody-experience @BitGo/wallet-platform
+/modules/sdk-test/ @BitGo/web-experience @BitGo/wallet-platform
 /modules/sdk-unified-wallet @BitGo/ethalt-team
-/modules/sjcl/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/modules/statics/ @BitGo/custody-experience @BitGo/wallet-platform @BitGo/ethalt-team
+/modules/sjcl/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/modules/statics/ @BitGo/web-experience @BitGo/wallet-platform @BitGo/ethalt-team
 /modules/statics/src/utxo.ts @BitGo/btc-team
-/modules/web-demo/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/scripts/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/types/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/webpack/ @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+/modules/web-demo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/scripts/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/types/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/webpack/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 
-/.eslintrc.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/.prettierrc.yml @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/check-package-versions.js @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+/.eslintrc.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/.prettierrc.yml @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/check-package-versions.js @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /CODEOWNERS @BitGo/git-admins
-/DEVELOPERS.md @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/commitlint.config.js @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/Dockerfile @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/lerna.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/package.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/tsconfig.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
-/tsconfig.packages.json @BitGo/coins @BitGo/custody-experience @BitGo/wallet-platform
+/DEVELOPERS.md @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/commitlint.config.js @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/Dockerfile @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/lerna.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/package.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/tsconfig.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
+/tsconfig.packages.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /.iyarc @BitGo/wallet-platform @BitGo/hsm @BitGo/velocity
