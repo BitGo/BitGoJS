@@ -899,4 +899,5 @@ export interface IWallet {
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
   getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;
   getNftBalances(): Promise<NftBalance[]>;
+  approveToken(walletPassphrase: string, tokenName: string): Promise<any>;
 }
