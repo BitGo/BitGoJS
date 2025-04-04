@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.8.13...@bitgo/sdk-coin-sol@4.9.0) (2025-04-04)
+
+### Features
+
+- **abstract-eth:** added support for mpcv2 in recovery ([da92bf8](https://github.com/BitGo/BitGoJS/commit/da92bf80d3f34c35ce73b0a9c2581d1ae201d1cc))
+
 ## [4.8.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.8.12...@bitgo/sdk-coin-sol@4.8.13) (2025-04-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

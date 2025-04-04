@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [32.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@32.0.1...@bitgo/sdk-core@32.1.0) (2025-04-04)
+
+### Bug Fixes
+
+- **sdk-coin-stx:** fix issue in verifyTx for sip10 tokens ([40c7597](https://github.com/BitGo/BitGoJS/commit/40c7597ccafa709da2254fa20621a06ba5d0161a))
+
+### Features
+
+- **abstract-eth:** added support for mpcv2 in recovery ([da92bf8](https://github.com/BitGo/BitGoJS/commit/da92bf80d3f34c35ce73b0a9c2581d1ae201d1cc))
+
 ## [32.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@32.0.0...@bitgo/sdk-core@32.0.1) (2025-04-02)
 
 **Note:** Version bump only for package @bitgo/sdk-core

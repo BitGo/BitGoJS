@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.0.74...@bitgo/sdk-coin-near@2.1.0) (2025-04-04)
+
+### Features
+
+- **sdk-coin-near:** add unsigned sweep recovery for near ([44d5eb0](https://github.com/BitGo/BitGoJS/commit/44d5eb0be42a6f44bf50bccc090db4f5159195e7))
+
 ## [2.0.74](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.0.73...@bitgo/sdk-coin-near@2.0.74) (2025-04-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

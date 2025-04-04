@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [43.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@43.0.1...bitgo@43.1.0) (2025-04-04)
+
+### Features
+
+- **abstract-eth:** added support for mpcv2 in recovery ([da92bf8](https://github.com/BitGo/BitGoJS/commit/da92bf80d3f34c35ce73b0a9c2581d1ae201d1cc))
+
 ## [43.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@43.0.0...bitgo@43.0.1) (2025-04-02)
 
 **Note:** Version bump only for package bitgo
