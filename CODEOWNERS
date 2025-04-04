@@ -103,6 +103,7 @@
 /modules/express/test/unit/lightning/ @BitGo/btc-team
 /modules/express/test/unit/clientRoutes/lightning/ @BitGo/btc-team
 /modules/key-card/ @BitGo/wallet-platform
+/modules/sdk-ams/ @BitGo/ethalt-team
 /modules/sdk-api/ @BitGo/web-experience @BitGo/wallet-platform
 /modules/sdk-api/src/v1 @BitGo/btc-team
 /modules/sdk-api/test/unit/v1 @BitGo/btc-team

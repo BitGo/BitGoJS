@@ -35,6 +35,9 @@
       "path": "./modules/key-card"
     },
     {
+      "path": "./modules/sdk-ams"
+    },
+    {
       "path": "./modules/sdk-api"
     },
     {
