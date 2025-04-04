@@ -1250,15 +1250,15 @@ export const ofcCoins = [
     UnderlyingAsset['apt:usdt'],
     APT_OFC_TOKEN_FEATURES
   ),
-  ofcStxToken('df131c24-8458-49ea-8f7d-7dcce6b13ad9', 'ofcstx:ststx', 'stSTX', 8, UnderlyingAsset['stx:ststx']),
+  ofcStxToken('df131c24-8458-49ea-8f7d-7dcce6b13ad9', 'ofcstx:ststx', 'stSTX', 6, UnderlyingAsset['stx:ststx']),
   ofcStxToken('10210906-6701-4c25-a204-0fe7399bae83', 'ofcstx:alex', 'Alex Labs', 8, UnderlyingAsset['stx:alex']),
   ofcStxToken(
     '6eefa66f-3065-48db-b78f-3ae4e2172a41',
     'ofcstx:aeusdc',
     'Allbridge Bridged USDC',
-    8,
+    6,
     UnderlyingAsset['stx:aeusdc']
   ),
   ofcStxToken('b4ef967b-7aa3-4252-9366-bbcffffd1c4d', 'ofcstx:usdh', 'USDH', 8, UnderlyingAsset['stx:usdh']),
-  ofcStxToken('511fc482-d962-4c29-9921-4a7d99405e64', 'ofcstx:welsh', 'Welsh', 8, UnderlyingAsset['stx:welsh']),
+  ofcStxToken('511fc482-d962-4c29-9921-4a7d99405e64', 'ofcstx:welsh', 'Welsh', 6, UnderlyingAsset['stx:welsh']),
 ];
