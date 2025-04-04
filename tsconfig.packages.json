@@ -23,6 +23,9 @@
       "path": "./modules/bitgo"
     },
     {
+      "path": "./modules/bitgo-v2"
+    },
+    {
       "path": "./modules/blockapis"
     },
     {
