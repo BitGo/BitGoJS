@@ -67,16 +67,17 @@ export interface ExecuteContractMessage {
   funds?: Coin[];
 }
 
-export type CosmosTransactionMessage =
+export type CosmosTransactionMessage<CustomMessage = never> =
   | SendMessage
   | DelegateOrUndelegeteMessage
   | WithdrawDelegatorRewardsMessage
   | ExecuteContractMessage
-  | RedelegateMessage;
+  | RedelegateMessage
+  | CustomMessage;
 
-export interface MessageData {
+export interface MessageData<CustomMessage = never> {
   typeUrl: string;
-  value: CosmosTransactionMessage;
+  value: CosmosTransactionMessage<CustomMessage>;
 }
 
 export interface FeeData {
@@ -92,16 +93,16 @@ export interface GasAmountDetails {
 /**
  * The transaction data returned from the toJson() function of a transaction
  */
-export interface TxData extends CosmosLikeTransaction {
+export interface TxData<CustomMessage = never> extends CosmosLikeTransaction<CustomMessage> {
   id?: string;
   type?: TransactionType;
   accountNumber: number;
   chainId: string;
 }
 
-export interface CosmosLikeTransaction {
+export interface CosmosLikeTransaction<CustomMessage = never> {
   readonly sequence: number;
-  readonly sendMessages: MessageData[];
+  readonly sendMessages: MessageData<CustomMessage>[];
   readonly gasBudget: FeeData;
   readonly publicKey?: string;
   readonly signature?: Uint8Array;

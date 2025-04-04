@@ -8,3 +8,4 @@ export const GAS_LIMIT = 200000;
 export const wrappedDelegateMsgTypeUrl = '/babylon.epoching.v1.MsgWrappedDelegate';
 export const wrappedUndelegateMsgTypeUrl = '/babylon.epoching.v1.MsgWrappedUndelegate';
 export const wrappedBeginRedelegateTypeUrl = '/babylon.epoching.v1.MsgWrappedBeginRedelegate';
+export const createBTCDelegationMsgTypeUrl = '/babylon.btcstaking.v1.MsgCreateBTCDelegation';
