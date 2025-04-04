@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.10.1...@bitgo/sdk-coin-icp@1.11.0) (2025-04-04)
+
+### Features
+
+- **sdk-coin-icp:** reduce the payload to 1 ([c6905ce](https://github.com/BitGo/BitGoJS/commit/c6905ce4b205c1c2a265b89e657f16d5b29c564d))
+
 ## [1.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.10.0...@bitgo/sdk-coin-icp@1.10.1) (2025-04-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp

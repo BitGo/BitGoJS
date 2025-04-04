@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.2.4...@bitgo/utxo-lib@11.3.0) (2025-04-04)
+
+### Bug Fixes
+
+- **utxo-lib:** refactor imports to remove circular dependencies ([0fa57dd](https://github.com/BitGo/BitGoJS/commit/0fa57dd4f5966f0e4b756f5b1cb75409e1523837))
+
+### Features
+
+- **utxo-lib:** improve validation for path chain and index ([8c8644c](https://github.com/BitGo/BitGoJS/commit/8c8644c22cbc4a5395af9b46dfdd154504fbf416))
+
 ## [11.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.2.2...@bitgo/utxo-lib@11.2.4) (2025-03-04)
 
 ### Bug Fixes

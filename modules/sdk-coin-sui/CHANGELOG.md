@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.13.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.13.3...@bitgo/sdk-coin-sui@5.13.4) (2025-04-04)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** walrus request withdraw stake should have empty inputs and outputs ([8def393](https://github.com/BitGo/BitGoJS/commit/8def393b5d07dd9629a5f18059cc2665e9f423f9))
+
 ## [5.13.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.13.2...@bitgo/sdk-coin-sui@5.13.3) (2025-04-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

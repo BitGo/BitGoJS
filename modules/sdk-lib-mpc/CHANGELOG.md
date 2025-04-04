@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.1.2...@bitgo/sdk-lib-mpc@10.2.0) (2025-04-04)
+
+### Features
+
+- **sdk-lib-mpc:** switch to better DKLs variant ([0105670](https://github.com/BitGo/BitGoJS/commit/01056703fd2ba1bcabf340eed4d228d6a2a0a439))
+
 ## [10.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.1.0...@bitgo/sdk-lib-mpc@10.1.2) (2025-03-04)
 
 ### Bug Fixes

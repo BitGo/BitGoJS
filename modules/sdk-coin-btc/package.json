@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-btc",
-  "version": "2.4.24",
+  "version": "2.4.25",
   "description": "BitGo SDK coin library for Bitcoin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,14 +40,14 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^9.19.4",
-    "@bitgo/sdk-core": "^32.0.1",
-    "@bitgo/utxo-lib": "^11.2.4",
-    "@bitgo/utxo-ord": "^1.20.79"
+    "@bitgo/abstract-utxo": "^9.19.5",
+    "@bitgo/sdk-core": "^32.1.0",
+    "@bitgo/utxo-lib": "^11.3.0",
+    "@bitgo/utxo-ord": "^1.20.80"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.61.4",
-    "@bitgo/sdk-test": "^8.0.79"
+    "@bitgo/sdk-api": "^1.61.5",
+    "@bitgo/sdk-test": "^8.0.80"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

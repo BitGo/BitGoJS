@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.3.1...@bitgo/express@13.3.2) (2025-04-04)
+
+### Bug Fixes
+
+- **express:** display corruption in markdown [#5747](https://github.com/BitGo/BitGoJS/issues/5747) ([e4620f0](https://github.com/BitGo/BitGoJS/commit/e4620f05732864eb75b080e751696089303b5e20))
+
 ## [13.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.3.0...@bitgo/express@13.3.1) (2025-04-02)
 
 **Note:** Version bump only for package @bitgo/express

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.6.1...@bitgo/statics@51.7.0) (2025-04-04)
+
+### Bug Fixes
+
+- **statics:** correct ofc decimal places for stx tokens ([d044ed9](https://github.com/BitGo/BitGoJS/commit/d044ed97a68c3275d66ca1245a913b0fe3c6c15d))
+
+### Features
+
+- **sdk-coin-apt:** add generic NFT collection statics ([519935b](https://github.com/BitGo/BitGoJS/commit/519935b37091e80079342150186346ae176a0dec))
+- **statics:** extend coin name to chain id map ([f0908e0](https://github.com/BitGo/BitGoJS/commit/f0908e05b95722861f943e4179e6fda081de921d))
+
 ## [51.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.6.0...@bitgo/statics@51.6.1) (2025-04-02)
 
 **Note:** Version bump only for package @bitgo/statics

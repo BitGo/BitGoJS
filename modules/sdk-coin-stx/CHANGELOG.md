@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.5.3...@bitgo/sdk-coin-stx@3.5.4) (2025-04-04)
+
+### Bug Fixes
+
+- **sdk-coin-stx:** fix issue in verifyTx for sip10 tokens ([40c7597](https://github.com/BitGo/BitGoJS/commit/40c7597ccafa709da2254fa20621a06ba5d0161a))
+- **sdk-coin-stx:** handling noneCV for sip10 ([f0cbac5](https://github.com/BitGo/BitGoJS/commit/f0cbac555685b6ad10ba2a20a720c7e651fae751))
+
 ## [3.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.5.2...@bitgo/sdk-coin-stx@3.5.3) (2025-04-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx
