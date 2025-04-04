@@ -1078,6 +1078,7 @@ class OptimismTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0xc84c7eb4c84271ec03ca9e3dbf12cfa42146309e';
 }
 
 class ZkSync extends Mainnet implements EthereumNetwork {

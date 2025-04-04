@@ -319,6 +319,7 @@ interface EthTransactionParams extends TransactionParams {
   hopParams?: HopParams;
   hop?: boolean;
   prebuildTx?: PrebuildTransactionResult;
+  tokenName?: string;
 }
 
 interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
@@ -2375,14 +2376,21 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       await this.validateHopPrebuild(wallet, txPrebuild.hopTransaction, { recipients });
     } else if (txParams.recipients.length > 1) {
       // Check total amount for batch transaction
-      let expectedTotalAmount = new BigNumber(0);
-      for (let i = 0; i < txParams.recipients.length; i++) {
-        expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
-      }
-      if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-        throw new Error(
-          'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
-        );
+      if (txParams.tokenName) {
+        const expectedTotalAmount = new BigNumber(0);
+        if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
+          throw new Error('batch token transaction amount in txPrebuild should be zero for token transfers');
+        }
+      } else {
+        let expectedTotalAmount = new BigNumber(0);
+        for (let i = 0; i < txParams.recipients.length; i++) {
+          expectedTotalAmount = expectedTotalAmount.plus(txParams.recipients[i].amount);
+        }
+        if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
+          throw new Error(
+            'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
+          );
+        }
       }
 
       // Check batch transaction is sent to the batcher contract address for the chain
