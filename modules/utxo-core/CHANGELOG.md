@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.6.0...@bitgo/utxo-core@1.7.0) (2025-04-04)
+
+### Features
+
+- **utxo-core:** export derive from descriptor index ([87270df](https://github.com/BitGo/BitGoJS/commit/87270df9b44fab48fe05b602cd0595a6200ed75b))
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.5.0...@bitgo/utxo-core@1.6.0) (2025-03-28)
 
 ### Features
