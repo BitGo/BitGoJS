@@ -67,7 +67,7 @@ interface EnvironmentTemplate {
   flrExplorerApiToken?: string;
   sgbExplorerBaseUrl?: string;
   sgbExplorerApiToken?: string;
-  rosettaNodeURL: string;
+  icpRosettaNodeURL: string;
   icpNodeURL: string;
   wemixExplorerBaseUrl?: string;
   wemixExplorerApiToken?: string;
@@ -175,7 +175,7 @@ const mainnetBase: EnvironmentTemplate = {
   xdcExplorerBaseUrl: 'https://api-xdc.blocksscan.io',
   wemixExplorerBaseUrl: 'https://api.wemixscan.com',
   sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
-  rosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
+  icpRosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
   icpNodeURL: 'https://ic0.app',
 };
 
@@ -238,7 +238,7 @@ const testnetBase: EnvironmentTemplate = {
   flrExplorerBaseUrl: 'https://coston2-explorer.flare.network',
   xdcExplorerBaseUrl: 'https://api-apothem.xdcscan.io',
   sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
-  rosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
+  icpRosettaNodeURL: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
   icpNodeURL: 'https://exchanges.testnet.dfinity.network',
 };
 

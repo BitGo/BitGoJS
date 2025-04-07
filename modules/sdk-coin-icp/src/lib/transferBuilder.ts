@@ -81,7 +81,7 @@ export class TransferBuilder extends TransactionBuilder {
       type: OperationType.FEE,
       account: { address: this._sender },
       amount: {
-        value: this._utils.gasData(),
+        value: this._utils.feeData(),
         currency: {
           symbol: this._coinConfig.family,
           decimals: this._coinConfig.decimalPlaces,
@@ -102,7 +102,7 @@ export class TransferBuilder extends TransactionBuilder {
       senderAddress: this._sender,
       receiverAddress: this._receiverId,
       amount: this._amount,
-      fee: this._utils.gasData(),
+      fee: this._utils.feeData(),
       senderPublicKeyHex: this._publicKey,
       memo: this._memo,
       transactionType: OperationType.TRANSACTION,

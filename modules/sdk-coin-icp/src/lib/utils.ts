@@ -38,7 +38,7 @@ export class Utils implements BaseUtils {
    * gets the gas data of this transaction.
    */
   //TODO WIN-4242: to moved to a config and eventually to an API for dynamic value
-  gasData(): string {
+  feeData(): string {
     return '-10000';
   }
 
@@ -358,6 +358,7 @@ export class Utils implements BaseUtils {
     }
     this.validateFee(transactionData.fee);
     this.validateValue(new BigNumber(transactionData.amount));
+    //TODO check for optional memo
     this.validateMemo(transactionData.memo);
     this.validateExpireTime(transactionData.expiryTime);
   }

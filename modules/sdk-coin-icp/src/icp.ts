@@ -30,8 +30,9 @@ import {
   ACCOUNT_BALANCE_ENDPOINT,
   ROOT_PATH,
   LEDGER_CANISTER_ID,
-  CborDecodeOnChainResponse,
+  RosettaBroadcastAPIOnchainResponse,
   CurveType,
+  PUBLIC_NODE_BROADCAST_ENDPOINT,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
@@ -142,41 +143,36 @@ export class Icp extends BaseCoin {
     return Environments[this.bitgo.getEnv()].icpNodeURL;
   }
 
-  protected getRosettaNodeUrl(): string {
-    return Environments[this.bitgo.getEnv()].rosettaNodeURL;
+  protected getIcpRosettaNodeUrl(): string {
+    return Environments[this.bitgo.getEnv()].icpRosettaNodeURL;
   }
 
-  /**
-   * Get balance from public node
-   * @param senderAddress - The address of the account to fetch the balance for
-   * @returns The response from the node containing the balance information
-   * @throws If there is an error fetching the balance from the node
-   */
-  protected async getBalanceFromNode(senderAddress: string): Promise<request.Response> {
-    const nodeUrl = this.getRosettaNodeUrl();
+  protected async getResponseFromIcpRosettaNode(payload: string): Promise<request.Response> {
+    const nodeUrl = this.getIcpRosettaNodeUrl();
     const fullEndpoint = `${nodeUrl}${ACCOUNT_BALANCE_ENDPOINT}`;
-    const payload = {
+    const body = {
       network_identifier: {
         blockchain: this.getFullName(),
         network: Network.ID,
       },
-      account_identifier: {
-        address: senderAddress,
-      },
+      ...JSON.parse(payload),
     };
 
     try {
-      return await request.post(fullEndpoint).set('Content-Type', 'application/json').send(payload);
+      const response = await request.post(fullEndpoint).set('Content-Type', 'application/json').send(body);
+      if (response.status !== 200) {
+        throw new Error(`Call to Rosetta node failed. got HTTP Status: ${response.status} with body: ${response.body}`);
+      }
+      return response;
     } catch (error) {
-      throw new Error(`Unable to fetch account balance: ${error.message || error}`);
+      throw new Error(`Unable to call rosetta node: ${error.message || error}`);
     }
   }
+
   /* inheritDoc */
+  // this method calls the public node to broadcast the transaction and not the rosetta node
   public async broadcastTransaction(payload: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
-    const nodeUrl = this.getPublicNodeUrl();
-    const principal = Principal.fromUint8Array(LEDGER_CANISTER_ID);
-    const canisterIdHex = principal.toText();
-    const endpoint = `${nodeUrl}/api/v3/canister/${canisterIdHex}/call`;
+    const endpoint = this.getPublicNodeBroadcastEndpoint();
 
     try {
       const response = await axios.post(endpoint, payload.serializedSignedTransaction, {
@@ -190,7 +186,7 @@ export class Icp extends BaseCoin {
         throw new Error(`Transaction broadcast failed with status: ${response.status} - ${response.statusText}`);
       }
 
-      const decodedResponse = utils.cborDecode(response.data) as CborDecodeOnChainResponse;
+      const decodedResponse = utils.cborDecode(response.data) as RosettaBroadcastAPIOnchainResponse;
 
       if (decodedResponse.status === 'replied') {
         const txnId = this.extractTransactionId(decodedResponse);
@@ -203,8 +199,16 @@ export class Icp extends BaseCoin {
     }
   }
 
-  // TODO: Implement the real logic to extract the transaction ID
-  private extractTransactionId(decodedResponse: CborDecodeOnChainResponse): string {
+  private getPublicNodeBroadcastEndpoint() {
+    const nodeUrl = this.getPublicNodeUrl();
+    const principal = Principal.fromUint8Array(LEDGER_CANISTER_ID);
+    const canisterIdHex = principal.toText();
+    const endpoint = `${nodeUrl}${PUBLIC_NODE_BROADCAST_ENDPOINT}${canisterIdHex}/call`;
+    return endpoint;
+  }
+
+  // TODO: Implement the real logic to extract the transaction ID, Ticket: https://bitgoinc.atlassian.net/browse/WIN-5075
+  private extractTransactionId(decodedResponse: RosettaBroadcastAPIOnchainResponse): string {
     return '4c10cf22a768a20e7eebc86e49c031d0e22895a39c6355b5f7455b2acad59c1e';
   }
 
@@ -214,18 +218,18 @@ export class Icp extends BaseCoin {
    * @returns The balance of the account as a string
    * @throws If the account is not found or there is an error fetching the balance
    */
-  protected async getAccountBalance(senderAddress: string): Promise<string> {
+  protected async getAccountBalance(address: string): Promise<string> {
     try {
-      const response = await this.getBalanceFromNode(senderAddress);
-      if (response.status !== 200 || !response.body?.balances?.length) {
-        throw new Error(
-          `Account not found for address: ${senderAddress}. HTTP Status: ${response.status} with body: ${response.body}`
-        );
-      }
+      const payload = {
+        account_identifier: {
+          address: address,
+        },
+      };
+      const response = await this.getResponseFromIcpRosettaNode(JSON.stringify(payload));
       const coinName = this._staticsCoin.name.toUpperCase();
       const balanceEntry = response.body.balances.find((b) => b.currency?.symbol === coinName);
       if (!balanceEntry) {
-        throw new Error(`No balance found for ICP account ${senderAddress}.`);
+        throw new Error(`No balance found for ICP account ${address}.`);
       }
       const balance = balanceEntry.value;
       return balance;
@@ -258,9 +262,6 @@ export class Icp extends BaseCoin {
   ): Promise<Signatures[]> {
     try {
       const payload = payloadsData.payloads[0] as SigningPayload;
-      if (!payload) {
-        return [];
-      }
       const message = Buffer.from(payload.hex_bytes, 'hex');
       const messageHash = createHash('sha256').update(message).digest();
       const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
@@ -311,11 +312,16 @@ export class Icp extends BaseCoin {
     );
     const MPC = new Ecdsa();
     const publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
+
+    if (!publicKey || !backupKeyShare) {
+      throw new Error('Missing publicKey or backupKeyShare');
+    }
+
     const senderAddress = await this.getAddressFromPublicKey(publicKey);
 
     const balance = new BigNumber(await this.getAccountBalance(senderAddress));
-    const gasAmount = new BigNumber(utils.gasData());
-    const actualBalance = balance.plus(gasAmount); // gas amount returned from gasData is negative so we add it
+    const feeData = new BigNumber(utils.feeData());
+    const actualBalance = balance.plus(feeData); // gas amount returned from gasData is negative so we add it
     if (actualBalance.isLessThanOrEqualTo(0)) {
       throw new Error('Did not have enough funds to recover');
     }
@@ -329,8 +335,8 @@ export class Icp extends BaseCoin {
       txBuilder.memo(Number(params.memo));
     }
     await txBuilder.build();
-    if (!publicKey || !backupKeyShare) {
-      throw new Error('Missing publicKey or backupKeyShare');
+    if (txBuilder.transaction.payloadsData.payloads.length === 0) {
+      throw new Error('Missing payloads to generate signatures');
     }
     const signatures = await this.signatures(
       txBuilder.transaction.payloadsData,

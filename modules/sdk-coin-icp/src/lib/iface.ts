@@ -8,6 +8,7 @@ export const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
 export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // Uint8Array value for "00000000000000020101" and the string value is "ryjl3-tyaaa-aaaaa-aaaba-cai"
 export const ROOT_PATH = 'm/0';
 export const ACCOUNT_BALANCE_ENDPOINT = '/account/balance';
+export const PUBLIC_NODE_BROADCAST_ENDPOINT = '/api/v3/canister/';
 
 export enum RequestType {
   CALL = 'call',
@@ -34,6 +35,7 @@ export enum Network {
   ID = '00000000000000020101', // ICP does not have different network IDs for mainnet and testnet
 }
 
+//TODO make memo optional in the interface
 export interface IcpTransactionData {
   senderAddress: string;
   receiverAddress: string;
@@ -70,6 +72,7 @@ export interface IcpOperation {
   amount: IcpAmount;
 }
 
+//TODO check for optional memo in the interface
 export interface IcpTransactionParseMetadata {
   created_at_time: number;
   memo: number | BigInt; // memo in string is not accepted by ICP chain.
@@ -185,12 +188,11 @@ export interface RecoveryOptions {
   userKey: string; // Box A
   backupKey: string; // Box B
   bitgoKey?: string;
-  rootAddress?: string;
   recoveryDestination: string;
-  walletPassphrase?: string;
+  walletPassphrase: string;
   memo?: number | BigInt;
 }
 
-export interface CborDecodeOnChainResponse {
+export interface RosettaBroadcastAPIOnchainResponse {
   status: string;
 }

@@ -97,6 +97,7 @@ export class Transaction extends BaseTransaction {
       const transactionType = parsedTx.operations[0].type;
       switch (transactionType) {
         case OperationType.TRANSACTION:
+          //TODO memo is optional here too, check proto def as well
           this._icpTransactionData = {
             senderAddress: parsedTx.operations[0].account.address,
             receiverAddress: parsedTx.operations[1].account.address,
