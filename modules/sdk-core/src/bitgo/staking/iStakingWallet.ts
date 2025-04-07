@@ -243,14 +243,9 @@ export interface StakingTransaction {
   gasPrice?: string;
 }
 
-export type StakingTxRequestPrebuildTransactionResult = {
-  walletId: string;
-  txRequestId: string;
-};
-
 export interface StakingPrebuildTransactionResult {
   transaction: StakingTransaction;
-  result: PrebuildTransactionResult | StakingTxRequestPrebuildTransactionResult;
+  result: PrebuildTransactionResult;
 }
 
 export interface StakingSignedTransaction {
