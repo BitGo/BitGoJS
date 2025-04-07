@@ -72,6 +72,7 @@ import {
   Osmo,
   Polygon,
   PolygonToken,
+  Polyx,
   Rune,
   Rbtc,
   Sei,
@@ -132,6 +133,7 @@ import {
   Tosmo,
   Topeth,
   Tpolygon,
+  Tpolyx,
   Trbtc,
   Trune,
   Trx,
@@ -218,6 +220,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('opeth', Opeth.createInstance);
   globalCoinFactory.register('osmo', Osmo.createInstance);
   globalCoinFactory.register('polygon', Polygon.createInstance);
+  globalCoinFactory.register('polyx', Polyx.createInstance);
   globalCoinFactory.register('rbtc', Rbtc.createInstance);
   globalCoinFactory.register('thorchain:rune', Rune.createInstance);
   globalCoinFactory.register('sei', Sei.createInstance);
@@ -277,6 +280,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('topeth', Topeth.createInstance);
   globalCoinFactory.register('tosmo', Tosmo.createInstance);
   globalCoinFactory.register('tpolygon', Tpolygon.createInstance);
+  globalCoinFactory.register('tpolyx', Tpolyx.createInstance);
   globalCoinFactory.register('trbtc', Trbtc.createInstance);
   globalCoinFactory.register('tsgb', Tsgb.createInstance);
   globalCoinFactory.register('tthorchain:rune', Trune.createInstance);

@@ -71,6 +71,7 @@
 /modules/sdk-coin-oas/ @BitGo/ethalt-team
 /modules/sdk-coin-opeth/ @BitGo/ethalt-team
 /modules/sdk-coin-polygon/ @BitGo/ethalt-team
+/modules/sdk-coin-polyx/ @BitGo/ethalt-team
 /modules/sdk-coin-rune/ @BitGo/ethalt-team
 /modules/sdk-coin-sgb/ @BitGo/ethalt-team
 /modules/sdk-coin-sol/ @BitGo/ethalt-team

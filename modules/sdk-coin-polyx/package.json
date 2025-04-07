@@ -1,0 +1,52 @@
+{
+  "name": "@bitgo/sdk-coin-polyx",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for POLYX (Polymesh) coin",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16 <21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-polyx"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/abstract-substrate": "^1.4.5",
+    "@bitgo/sdk-core": "^32.1.0",
+    "@bitgo/statics": "^51.7.0",
+    "bignumber.js": "^9.1.2"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.61.5",
+    "@bitgo/sdk-test": "^8.0.80"
+  }
+}
