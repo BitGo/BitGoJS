@@ -61,6 +61,7 @@ export enum CoinFamily {
   LTC = 'ltc',
   MANTRA = 'mantra',
   POLYGON = 'polygon',
+  POLYX = 'polyx',
   NEAR = 'near',
   OAS = 'oas',
   OFC = 'ofc',
@@ -1307,6 +1308,7 @@ export enum UnderlyingAsset {
   POL = 'pol',
   POLIS = 'polis',
   POLY = 'poly',
+  POLYX = 'polyx',
   POLS = 'pols',
   POND = 'pond',
   PONYS = 'ponys',
@@ -2603,6 +2605,7 @@ export enum BaseUnit {
   TAO = 'rao',
   ICP = 'e8s',
   MANTRA = 'uom',
+  POLYX = 'micropolyx',
 }
 
 export interface BaseCoinConstructorOptions {
