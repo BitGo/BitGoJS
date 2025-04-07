@@ -156,7 +156,7 @@ const mainnetBase: EnvironmentTemplate = {
   zetaNodeUrl: 'https://zetachain.blockpi.network', // reference https://www.zetachain.com/docs/reference/api/
   coreumNodeUrl: 'https://full-node.mainnet-1.coreum.dev:1317',
   runeNodeUrl: 'https://thornode.ninerealms.com',
-  babyNodeUrl: '', // TODO(COIN-2758) update url when mainnet goes live
+  babyNodeUrl: 'https://babylon.nodes.guru/api/',
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
