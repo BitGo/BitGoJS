@@ -1295,6 +1295,18 @@ class BaseChain extends Mainnet implements EthereumNetwork {
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
 }
 
+class Polymesh extends Mainnet implements AccountNetwork {
+  name = 'Polymesh';
+  family = CoinFamily.POLYX;
+  explorerUrl = 'https://polymesh.subscan.io/extrinsic/';
+}
+
+class PolymeshTestnet extends Testnet implements AccountNetwork {
+  name = 'PolymeshTestnet';
+  family = CoinFamily.POLYX;
+  explorerUrl = 'https://polymesh-testnet.subscan.io/extrinsic/';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -1338,6 +1350,7 @@ export const Networks = {
     litecoin: Object.freeze(new Litecoin()),
     mantra: Object.freeze(new Mantra()),
     polygon: Object.freeze(new Polygon()),
+    polyx: Object.freeze(new Polymesh()),
     oas: Object.freeze(new Oas()),
     ofc: Object.freeze(new Ofc()),
     optimism: Object.freeze(new Optimism()),
@@ -1409,6 +1422,7 @@ export const Networks = {
     litecoin: Object.freeze(new LitecoinTestnet()),
     mantra: Object.freeze(new MantraTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
+    polyx: Object.freeze(new PolymeshTestnet()),
     oas: Object.freeze(new OasTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
