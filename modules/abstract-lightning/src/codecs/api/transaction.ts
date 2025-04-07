@@ -52,8 +52,6 @@ export const Transaction = t.intersection(
       id: t.string,
       normalizedTxHash: t.string,
       blockHeight: t.number,
-      blockHash: t.string,
-      blockPosition: t.number,
       inputIds: t.array(t.string),
       entries: t.array(TransactionEntry),
       inputs: t.array(Output),
@@ -66,6 +64,8 @@ export const Transaction = t.intersection(
       confirmations: t.number,
     }),
     t.partial({
+      blockHash: t.string,
+      blockPosition: t.number,
       label: t.string,
     }),
   ],
