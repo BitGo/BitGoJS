@@ -1,6 +1,12 @@
 import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
+import {
+  AbstractEthLikeNewCoins,
+  recoveryBlockchainExplorerQuery,
+  UnsignedSweepTxMPCv2,
+  RecoverOptions,
+  OfflineVaultTxInfo,
+} from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
 export class Xdc extends AbstractEthLikeNewCoins {
@@ -24,6 +30,10 @@ export class Xdc extends AbstractEthLikeNewCoins {
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.tss;
+  }
+
+  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    return this.buildUnsignedSweepTxnMPCv2(params);
   }
 
   /** @inheritDoc */
