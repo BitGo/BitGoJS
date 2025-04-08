@@ -134,15 +134,26 @@ function describeCreatePsbt(name: string, testParams: TestParams) {
   });
 }
 
+const defaultStagesCombinedAB: PsbtStage[] = [
+  { name: 'unsigned', keys: [] },
+  { name: 'signedA', keys: selfKeys.slice(0, 1) },
+  { name: 'signedAB', keys: selfKeys.slice(0, 2), final: true },
+];
+
+function getDefaultStagesSeparateAB({ plain = false } = {}): PsbtStage[] {
+  const keys = plain ? selfKeys.map(toPlain) : selfKeys;
+  return [
+    { name: 'unsigned', keys: [] },
+    { name: 'signedA', keys: keys.slice(0, 1) },
+    { name: 'signedB', keys: keys.slice(1, 2), final: true },
+  ];
+}
+
 function describeCreatePsbt2Of3(t: DescriptorTemplate) {
   describeCreatePsbt(t, {
     descriptorSelf: getDescriptor(t, selfKeys),
     psbtParams: getPsbtParams(t),
-    stages: [
-      { name: 'unsigned', keys: [] },
-      { name: 'signedA', keys: selfKeys.slice(0, 1) },
-      { name: 'signedAB', keys: selfKeys.slice(0, 2), final: true },
-    ],
+    stages: defaultStagesCombinedAB,
   });
 }
 
@@ -152,18 +163,10 @@ describeCreatePsbt2Of3('Tr2Of3-NoKeyPath');
 describeCreatePsbt('Tr1Of3-NoKeyPath-Tree', {
   descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree', selfKeys),
   psbtParams: {},
-  stages: [
-    { name: 'unsigned', keys: [] },
-    { name: 'signedA', keys: selfKeys.slice(0, 1) },
-    { name: 'signedB', keys: selfKeys.slice(1, 2), final: true },
-  ],
+  stages: getDefaultStagesSeparateAB(),
 });
 describeCreatePsbt('Tr1Of3-NoKeyPath-Tree-PlainKeys', {
   descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree-Plain', selfKeys),
   psbtParams: {},
-  stages: [
-    { name: 'unsigned', keys: [] },
-    { name: 'signedA', keys: selfKeys.slice(0, 1).map(toPlain) },
-    { name: 'signedB', keys: selfKeys.slice(1, 2).map(toPlain), final: true },
-  ],
+  stages: getDefaultStagesSeparateAB({ plain: true }),
 });
