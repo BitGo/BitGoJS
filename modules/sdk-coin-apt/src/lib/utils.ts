@@ -34,11 +34,6 @@ import {
 } from './constants';
 import BigNumber from 'bignumber.js';
 import { RecipientsValidationResult } from './iface';
-import { Transaction } from './transaction/transaction';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { TransferTransaction } from './transaction/transferTransaction';
-import { FungibleAssetTransfer } from './transaction/fungibleAssetTransfer';
-import { DigitalAssetTransfer } from './transaction/digitalAssetTransfer';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -195,38 +190,6 @@ export class Utils implements BaseUtils {
    */
   getTxnExpirationTimestamp(): number {
     return Math.floor(Date.now() / 1e3) + SECONDS_PER_WEEK;
-  }
-
-  /**
-   * Parses a raw transaction string and returns a `Transaction` object based on its type.
-   *
-   * @param {string} rawTx - The raw transaction string in hex format.
-   * @param {Readonly<StaticsBaseCoin>} coinConfig - The coin configuration object for the transaction.
-   * @returns {Transaction} The transaction object.
-   * @throws {InvalidTransactionError} If the transaction type is invalid or unrecognized.
-   */
-  getTransactionFromRawTx(rawTx: string, coinConfig: Readonly<StaticsBaseCoin>): Transaction {
-    const signedTxn = this.parseTransaction(rawTx);
-    const txnType = utils.getTransactionTypeFromTransactionPayload(signedTxn.raw_txn.payload);
-    switch (txnType) {
-      case TransactionType.Send:
-        return new TransferTransaction(coinConfig);
-      case TransactionType.SendToken:
-        return new FungibleAssetTransfer(coinConfig);
-      case TransactionType.SendNFT:
-        return new DigitalAssetTransfer(coinConfig);
-      default:
-        throw new InvalidTransactionError('Invalid transaction');
-    }
-  }
-
-  /** Parse the transaction from a signed txn hex string
-   *
-   * @param {string} signedRawTransaction - the signed txn hex
-   * @returns {SignedTransaction} parsedtransaction
-   */
-  parseTransaction(signedRawTransaction: string): SignedTransaction {
-    return Transaction.deserializeSignedTransaction(signedRawTransaction);
   }
 }
 

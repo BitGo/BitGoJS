@@ -80,14 +80,15 @@ export class Apt extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const coinConfig = coins.get(this.getChain());
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
-    const rawTx = txPrebuild.txHex;
-    if (!rawTx) {
+    const txHex = txPrebuild.txHex;
+    if (!txHex) {
       throw new Error('missing required tx prebuild property txHex');
     }
-    const transaction = utils.getTransactionFromRawTx(rawTx, coinConfig);
-    transaction.fromRawTransaction(rawTx);
+    const transaction = await this.getRebuiltTransaction(txHex);
+    if (!transaction) {
+      throw new Error('failed to rebuild transaction from hex');
+    }
     const explainedTx = transaction.explainTransaction();
     if (txParams.recipients !== undefined) {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
@@ -151,12 +152,8 @@ export class Apt extends BaseCoin {
    * @param params
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<AptTransactionExplanation | undefined> {
-    const factory = this.getBuilder();
-    let rebuiltTransaction: BaseTransaction;
-    try {
-      const transactionBuilder = factory.from(params.txHex);
-      rebuiltTransaction = await transactionBuilder.build();
-    } catch {
+    const rebuiltTransaction = await this.getRebuiltTransaction(params.txHex);
+    if (!rebuiltTransaction) {
       return undefined;
     }
     return rebuiltTransaction.explainTransaction();
@@ -188,5 +185,15 @@ export class Apt extends BaseCoin {
 
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  private async getRebuiltTransaction(txHex: string): Promise<BaseTransaction | undefined> {
+    const factory = this.getBuilder();
+    try {
+      const transactionBuilder = factory.from(txHex);
+      return await transactionBuilder.build();
+    } catch {
+      return undefined;
+    }
   }
 }
