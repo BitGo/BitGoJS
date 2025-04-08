@@ -1,0 +1,37 @@
+{
+  "transaction": {
+    "version": 2,
+    "locktime": 0,
+    "ins": [
+      {
+        "hash": "64da14050ffd0e6186c68a59f371a0adc95cc84b0502fe0915be7eba3f771bb3",
+        "index": 0,
+        "script": "",
+        "sequence": 10000,
+        "witness": [
+          "34a9fb0ebbcd13f30cb8ca398bdedb23073c19cabb17b6de6ba4f45afea360bd9798b4fa5d2d886af2fd1e161f37787316fa3482e45ef4a6ca5692a619550ac0",
+          "207b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9ad021027b2",
+          "c050929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac01e1d2e84c4fc6bdddf3b8018065cf5ca8405988579188585f382c51c088e882696962cb69242e00941e0a6197b7ecdb83ab8bb0490dbfd23fa4b8d26b75989eb"
+        ]
+      }
+    ],
+    "outs": [
+      {
+        "value": "54555",
+        "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
+      }
+    ],
+    "network": {
+      "messagePrefix": "\u0018Bitcoin Signed Message:\n",
+      "bech32": "bc",
+      "bip32": {
+        "public": 76067358,
+        "private": 76066276
+      },
+      "pubKeyHash": 0,
+      "scriptHash": 5,
+      "wif": 128,
+      "coin": "btc"
+    }
+  }
+}

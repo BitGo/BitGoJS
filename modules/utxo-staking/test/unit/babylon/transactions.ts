@@ -5,7 +5,14 @@ import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { ast, Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
-import { createAddressFromDescriptor } from '@bitgo/utxo-core/descriptor';
+import {
+  createAddressFromDescriptor,
+  createPsbt,
+  getNewSignatureCount,
+  signWithKey,
+  toUtxoPsbt,
+  toWrappedPsbt,
+} from '@bitgo/utxo-core/descriptor';
 import { getFixture, toPlainObject } from '@bitgo/utxo-core/testutil';
 import { getBabylonParamByVersion } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
@@ -87,6 +94,40 @@ function getStakingTransactionTreeVendor(
     slashing,
     slashingWithdraw,
   };
+}
+
+function createUnstakingTransaction(
+  stakingTx: vendor.TransactionResult,
+  stakingDescriptor: Descriptor,
+  changeAddress: string,
+  { sequence }: { sequence: number }
+): utxolib.Psbt {
+  const network = utxolib.networks.bitcoin;
+  const witnessUtxoNumber = stakingTx.transaction.outs[0];
+  const witnessUtxo = {
+    script: witnessUtxoNumber.script,
+    value: BigInt(witnessUtxoNumber.value),
+  };
+  return createPsbt(
+    {
+      network,
+    },
+    [
+      {
+        hash: stakingTx.transaction.getId(),
+        index: 0,
+        witnessUtxo,
+        descriptor: stakingDescriptor,
+        sequence,
+      },
+    ],
+    [
+      {
+        script: utxolib.address.toOutputScript(changeAddress, network),
+        value: BigInt(witnessUtxoNumber.value) - 1000n,
+      },
+    ]
+  );
 }
 
 function getTestnetStakingParamsWithCovenant(
@@ -198,7 +239,7 @@ function describeWithKeys(
   stakingParams: vendor.StakingParams,
   { signIntermediateTxs = false } = {}
 ) {
-  const stakerKey = getECKey('staker');
+  const stakerKey = getECKey('staker') as ECPairInterface & { privateKey: Buffer };
   const covenantThreshold = stakingParams.covenantQuorum;
   const stakingTimelock = stakingParams.minStakingTimeBlocks;
   const unbondingTimelock = stakingParams.unbondingTime;
@@ -256,8 +297,10 @@ function describeWithKeys(
       const feeRateSatB = 2;
       const utxo = mockUtxo(mainWallet);
 
-      it('has expected transactions', async function () {
-        const stakingTx = vendor.stakingTransaction(
+      let stakingTx: vendor.TransactionResult;
+
+      before('setup stakingTx', function () {
+        stakingTx = vendor.stakingTransaction(
           vendorBuilder.buildScripts(),
           amount,
           changeAddress,
@@ -265,6 +308,9 @@ function describeWithKeys(
           bitcoinjslib.networks.bitcoin,
           feeRateSatB
         );
+      });
+
+      it('has expected transactions', async function () {
         await assertTransactionEqualsFixture(`test/fixtures/babylon/stakingTransaction.${tag}.json`, stakingTx);
 
         // simply one staking output and one change output
@@ -336,6 +382,22 @@ function describeWithKeys(
             )
           );
         }
+      });
+
+      it('creates unstaking transaction', async function () {
+        const unstaking = createUnstakingTransaction(
+          stakingTx,
+          descriptorBuilder.getStakingDescriptor(),
+          changeAddress,
+          { sequence: stakingParams.minStakingTimeBlocks }
+        );
+        const wrappedPsbt = toWrappedPsbt(unstaking);
+        assert(getNewSignatureCount(signWithKey(wrappedPsbt, stakerKey)) > 0);
+        wrappedPsbt.finalize();
+        const tx = toUtxoPsbt(wrappedPsbt, utxolib.networks.bitcoin).extractTransaction();
+        await assertTransactionEqualsFixture(`test/fixtures/babylon/unstakingTransaction.${tag}.json`, {
+          transaction: tx,
+        });
       });
     });
   });
