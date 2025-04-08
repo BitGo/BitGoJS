@@ -10,6 +10,7 @@ import {
   DescriptorTemplate,
   getDescriptor,
   getPsbtParams,
+  mockPsbt,
   mockPsbtDefault,
   toPlainObjectFromPsbt,
   toPlainObjectFromTx,
@@ -114,18 +115,27 @@ function getStages(
 
 type TestParams = {
   descriptorSelf: Descriptor;
-  psbtParams: Partial<PsbtParams>;
   stages: PsbtStage[];
-};
+} & (
+  | {
+      psbtParams: Partial<PsbtParams>;
+    }
+  | {
+      psbt: utxolib.bitgo.UtxoPsbt;
+    }
+);
 
 function describeCreatePsbt(name: string, testParams: TestParams) {
   describe(`createPsbt ${name}`, function () {
     it('creates psbt with expected properties', async function () {
-      const psbtUnsigned = mockPsbtDefault({
-        descriptorSelf: testParams.descriptorSelf,
-        descriptorOther: getDescriptor('Wsh2Of3', otherKeys),
-        params: testParams.psbtParams,
-      });
+      const psbtUnsigned =
+        'psbt' in testParams
+          ? testParams.psbt
+          : mockPsbtDefault({
+              descriptorSelf: testParams.descriptorSelf,
+              descriptorOther: getDescriptor('Wsh2Of3', otherKeys),
+              params: testParams.psbtParams,
+            });
       const descriptorMap = new Map([['self', testParams.descriptorSelf]]);
       const parsed = parse(psbtUnsigned, descriptorMap, utxolib.networks.bitcoin);
       assert.strictEqual(parsed.spendAmount, psbtUnsigned.txOutputs[1].value);
@@ -170,3 +180,27 @@ describeCreatePsbt('Tr1Of3-NoKeyPath-Tree-PlainKeys', {
   psbtParams: {},
   stages: getDefaultStagesSeparateAB({ plain: true }),
 });
+
+{
+  const descriptorSelf = getDescriptor('Wsh2Of3', selfKeys);
+  const descriptorOther = getDescriptor('Wsh2Of3', otherKeys);
+  describeCreatePsbt('Wsh2Of3-CustomInputSequence', {
+    descriptorSelf,
+    psbt: mockPsbt(
+      [
+        { descriptor: descriptorSelf, index: 0 },
+        { descriptor: descriptorSelf, index: 1, id: { vout: 1 }, sequence: 123 },
+      ],
+      [
+        {
+          descriptor: descriptorOther,
+          index: 0,
+          value: BigInt(4e5),
+          external: true,
+        },
+        { descriptor: descriptorSelf, index: 0, value: BigInt(4e5) },
+      ]
+    ),
+    stages: defaultStagesCombinedAB,
+  });
+}

@@ -48,15 +48,19 @@ export type PsbtParams = {
   sequence?: number;
 };
 
+export type DerivedDescriptorTransactionInput = DerivedDescriptorWalletOutput & {
+  sequence?: number;
+};
+
 export function createPsbt(
   params: PsbtParams,
-  inputs: DerivedDescriptorWalletOutput[],
+  inputs: DerivedDescriptorTransactionInput[],
   outputs: WithOptDescriptor<Output>[]
 ): utxolib.bitgo.UtxoPsbt {
   const psbt = utxolib.bitgo.UtxoPsbt.createPsbt({ network: params.network });
   psbt.setVersion(params.version ?? 2);
   psbt.setLocktime(params.locktime ?? 0);
-  psbt.addInputs(inputs.map((i) => ({ ...i, sequence: params.sequence ?? MAX_BIP125_RBF_SEQUENCE })));
+  psbt.addInputs(inputs.map((i) => ({ ...i, sequence: i.sequence ?? params.sequence ?? MAX_BIP125_RBF_SEQUENCE })));
   psbt.addOutputs(outputs);
   updateInputsWithDescriptors(
     psbt,

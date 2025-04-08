@@ -1,8 +1,12 @@
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { PsbtParams, createPsbt, createScriptPubKeyFromDescriptor } from '../../descriptor';
-import { DerivedDescriptorWalletOutput } from '../../descriptor/Output';
+import {
+  PsbtParams,
+  createPsbt,
+  createScriptPubKeyFromDescriptor,
+  DerivedDescriptorTransactionInput,
+} from '../../descriptor';
 
 import { DescriptorTemplate, getDefaultXPubs, getDescriptor } from './descriptors';
 
@@ -12,6 +16,7 @@ type BaseMockDescriptorOutputParams = {
   id?: MockOutputIdParams;
   index?: number;
   value?: bigint;
+  sequence?: number;
 };
 
 function mockOutputId(id?: MockOutputIdParams): {
@@ -26,7 +31,7 @@ function mockOutputId(id?: MockOutputIdParams): {
 export function mockDerivedDescriptorWalletOutput(
   descriptor: Descriptor,
   outputParams: BaseMockDescriptorOutputParams = {}
-): DerivedDescriptorWalletOutput {
+): DerivedDescriptorTransactionInput {
   const { value = BigInt(1e6) } = outputParams;
   const { hash, vout } = mockOutputId(outputParams.id);
   return {
@@ -37,6 +42,7 @@ export function mockDerivedDescriptorWalletOutput(
       value,
     },
     descriptor,
+    sequence: outputParams.sequence,
   };
 }
 
