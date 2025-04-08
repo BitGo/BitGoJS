@@ -3190,28 +3190,24 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
     'terc1155:polygontoken',
   ]);
 
+  // Add all the coins from statics coin map first
+  coins.forEach((coin, coinName) => {
+    BaseCoins.set(coinName, coin);
+  });
+
+  // add the tokens not present in the static coin map
   for (const tokenConfigs of Object.values(tokenConfigMap)) {
     const tokenConfig = tokenConfigs[0];
     const family = tokenConfig.family;
+    const name = tokenConfig.name;
 
-    if (tokenConfig.isToken && !nftAndOtherTokens.has(tokenConfig.name)) {
+    if (!coins.has(name) && tokenConfig.isToken && !nftAndOtherTokens.has(tokenConfig.name)) {
       const token = createToken(family, tokenConfig, initializerMap);
       if (token) {
         BaseCoins.set(token.name, token);
-      } else if (coins.has(tokenConfig.name)) {
-        BaseCoins.set(tokenConfig.name, coins.get(tokenConfig.name));
       }
-    } else if (coins.has(tokenConfig.name)) {
-      BaseCoins.set(tokenConfig.name, coins.get(tokenConfig.name));
     }
   }
-
-  // Add keys and values from `coins` that are not already in `BaseCoins`
-  coins.forEach((coin, coinName) => {
-    if (!BaseCoins.has(coinName)) {
-      BaseCoins.set(coinName, coin);
-    }
-  });
 
   return CoinMap.fromCoins(Array.from(BaseCoins.values()));
 }
