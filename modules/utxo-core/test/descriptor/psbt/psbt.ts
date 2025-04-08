@@ -15,6 +15,7 @@ import {
   toPlainObjectFromPsbt,
   toPlainObjectFromTx,
 } from '../../../src/testutil/descriptor';
+import { getNewSignatureCount, signWithKey } from '../../../src/descriptor/psbt/sign';
 
 function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {
@@ -55,12 +56,6 @@ function toPlain(k: BIP32Interface): ECPairInterface {
   return ECPair.fromPrivateKey(k.privateKey);
 }
 
-function isBIP32Interface(k: BIP32Interface | ECPairInterface): k is BIP32Interface {
-  const { name } = k.constructor;
-  assert(name === 'BIP32' || name === 'ECPair');
-  return k.constructor.name === 'BIP32';
-}
-
 type PsbtStage = {
   name: string;
   keys: (BIP32Interface | ECPairInterface)[];
@@ -82,12 +77,7 @@ function getStages(
     stages.map((stage) => {
       const psbtStageWrapped = toWrappedPsbt(psbt);
       for (const key of stage.keys) {
-        if (isBIP32Interface(key)) {
-          psbtStageWrapped.signWithXprv(key.toBase58());
-        } else {
-          assert(key.privateKey);
-          psbtStageWrapped.signWithPrv(key.privateKey);
-        }
+        assert(getNewSignatureCount(signWithKey(psbtStageWrapped, key)) > 0, 'No new signatures were created');
       }
       const psbtStage = toUtxoPsbt(psbtStageWrapped, utxolib.networks.bitcoin);
       let psbtFinal: utxolib.bitgo.UtxoPsbt | undefined;
