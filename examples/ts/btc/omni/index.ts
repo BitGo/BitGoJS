@@ -8,12 +8,7 @@ import { omniConfig } from './config';
 import * as superagent from 'superagent';
 import * as utxolib from '@bitgo/utxo-lib';
 
-const RECEIVE_ADDRESS = '';
-const SEND_ADDRESS = '';
-const ASSET_ID = 31;
-const BASE_AMOUNT = 729100000n; // this is currently 7.291 USDT
-
-async function getWallet() {
+export async function getWallet(): Promise<Wallet> {
   return await omniConfig.sdk.coin(omniConfig.coin).wallets().get({ id: omniConfig.walletId });
 }
 
@@ -37,15 +32,15 @@ async function getWallet() {
  *   This is 31 for USDT.
  * @param feeRateSatPerKB - The fee rate to use for the transaction, in satoshis per kilobyte.
  */
-async function sendOmniAsset(
+export async function sendOmniAsset(
   wallet: Wallet,
   receiver: string,
   sender: string,
   omniBaseAmount: bigint,
   assetId = 31,
   feeRateSatPerKB = 20_000
-) {
-  if (!['1', '3', 'n', 'm'].includes(receiver.slice(0, 1))) {
+): Promise<void> {
+  if (!['1', '2', '3', 'n', 'm'].includes(receiver.slice(0, 1))) {
     throw new Error(
       'Omni has only been verified to work with legacy and wrapped segwit addresses - use other address formats at your own risk'
     );
@@ -92,22 +87,3 @@ async function sendOmniAsset(
   });
   console.log('Omni asset sent: ', tx);
 }
-
-/*
- * Usage: npx ts-node btc/omni/index.ts
- * */
-async function main() {
-  console.log('Starting...');
-
-  const feeRateRes = await superagent.get(`https://mempool.space/${omniConfig.MEMPOOL_PREFIX}api/v1/fees/recommended`);
-  const feeRate = feeRateRes.body.fastestFee;
-
-  const wallet = await getWallet();
-  // we multiply feeRate by 1000 because mempool returns sat/vB and BitGo uses sat/kvB
-  await sendOmniAsset(wallet, RECEIVE_ADDRESS, SEND_ADDRESS, BASE_AMOUNT, ASSET_ID, feeRate * 1000);
-}
-
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
