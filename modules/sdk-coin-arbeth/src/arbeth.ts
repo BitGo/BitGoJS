@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, common, MultisigType, multisigTypes } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
@@ -21,6 +21,15 @@ export class Arbeth extends AbstractEthLikeNewCoins {
 
   protected getTransactionBuilder(): EthLikeTransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 
   /**
@@ -59,6 +68,6 @@ export class Arbeth extends AbstractEthLikeNewCoins {
 
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
-    return multisigTypes.onchain;
+    return multisigTypes.tss;
   }
 }
