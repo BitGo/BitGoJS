@@ -731,6 +731,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      await this.baseCoin.verifyTransaction({
+        txPrebuild: { txHex: unsignedTx.signableHex },
+        txParams: params.txParams || { recipients: [] },
+        wallet: this.wallet,
+        walletType: this.wallet.multisigType(),
+      });
       txOrMessageToSign = unsignedTx.signableHex;
       derivationPath = unsignedTx.derivationPath;
       bufferContent = Buffer.from(txOrMessageToSign, 'hex');
