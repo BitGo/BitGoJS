@@ -112,29 +112,24 @@ function getStages(
   );
 }
 
-function describeCreatePsbt(
-  name: string,
-  {
-    descriptorSelf,
-    psbtParams,
-    stages,
-  }: {
-    descriptorSelf: Descriptor;
-    stages: PsbtStage[];
-    psbtParams: Partial<PsbtParams>;
-  }
-) {
+type TestParams = {
+  descriptorSelf: Descriptor;
+  psbtParams: Partial<PsbtParams>;
+  stages: PsbtStage[];
+};
+
+function describeCreatePsbt(name: string, testParams: TestParams) {
   describe(`createPsbt ${name}`, function () {
     it('creates psbt with expected properties', async function () {
       const psbtUnsigned = mockPsbtDefault({
-        descriptorSelf,
+        descriptorSelf: testParams.descriptorSelf,
         descriptorOther: getDescriptor('Wsh2Of3', otherKeys),
-        params: psbtParams,
+        params: testParams.psbtParams,
       });
-      const descriptorMap = new Map([['self', descriptorSelf]]);
+      const descriptorMap = new Map([['self', testParams.descriptorSelf]]);
       const parsed = parse(psbtUnsigned, descriptorMap, utxolib.networks.bitcoin);
       assert.strictEqual(parsed.spendAmount, psbtUnsigned.txOutputs[1].value);
-      await assertEqualsFixture(name, 'psbtStages.json', getStages(psbtUnsigned, parsed, stages));
+      await assertEqualsFixture(name, 'psbtStages.json', getStages(psbtUnsigned, parsed, testParams.stages));
     });
   });
 }
