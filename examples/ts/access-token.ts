@@ -6,14 +6,14 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 require('dotenv').config({ path: '../../.env' });
 
 const bitgo = new BitGoAPI({
-  env: 'prod', // Change this to env: 'production' when you are ready for production
+  env: 'test', // Change this to env: 'prod' when you are ready for production
 });
 
 async function main() {
   const auth_res = await bitgo.authenticate({
-    username: process.env.PROD_EMAIL!,
-    password: process.env.PROD_PASS!,
-    otp: '942384',
+    username: process.env.TEST_EMAIL!,
+    password: process.env.TEST_PASS!,
+    otp: '000000',
   });
 
   console.log(auth_res);
