@@ -10,10 +10,12 @@ import {
   DescriptorTemplate,
   getDescriptor,
   getPsbtParams,
+  mockPsbt,
   mockPsbtDefault,
   toPlainObjectFromPsbt,
   toPlainObjectFromTx,
 } from '../../../src/testutil/descriptor';
+import { getNewSignatureCount, signWithKey } from '../../../src/descriptor/psbt/sign';
 
 function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {
@@ -54,12 +56,6 @@ function toPlain(k: BIP32Interface): ECPairInterface {
   return ECPair.fromPrivateKey(k.privateKey);
 }
 
-function isBIP32Interface(k: BIP32Interface | ECPairInterface): k is BIP32Interface {
-  const { name } = k.constructor;
-  assert(name === 'BIP32' || name === 'ECPair');
-  return k.constructor.name === 'BIP32';
-}
-
 type PsbtStage = {
   name: string;
   keys: (BIP32Interface | ECPairInterface)[];
@@ -81,12 +77,7 @@ function getStages(
     stages.map((stage) => {
       const psbtStageWrapped = toWrappedPsbt(psbt);
       for (const key of stage.keys) {
-        if (isBIP32Interface(key)) {
-          psbtStageWrapped.signWithXprv(key.toBase58());
-        } else {
-          assert(key.privateKey);
-          psbtStageWrapped.signWithPrv(key.privateKey);
-        }
+        assert(getNewSignatureCount(signWithKey(psbtStageWrapped, key)) > 0, 'No new signatures were created');
       }
       const psbtStage = toUtxoPsbt(psbtStageWrapped, utxolib.networks.bitcoin);
       let psbtFinal: utxolib.bitgo.UtxoPsbt | undefined;
@@ -112,42 +103,57 @@ function getStages(
   );
 }
 
-function describeCreatePsbt(
-  name: string,
-  {
-    descriptorSelf,
-    psbtParams,
-    stages,
-  }: {
-    descriptorSelf: Descriptor;
-    stages: PsbtStage[];
-    psbtParams: Partial<PsbtParams>;
-  }
-) {
+type TestParams = {
+  descriptorSelf: Descriptor;
+  stages: PsbtStage[];
+} & (
+  | {
+      psbtParams: Partial<PsbtParams>;
+    }
+  | {
+      psbt: utxolib.bitgo.UtxoPsbt;
+    }
+);
+
+function describeCreatePsbt(name: string, testParams: TestParams) {
   describe(`createPsbt ${name}`, function () {
     it('creates psbt with expected properties', async function () {
-      const psbtUnsigned = mockPsbtDefault({
-        descriptorSelf,
-        descriptorOther: getDescriptor('Wsh2Of3', otherKeys),
-        params: psbtParams,
-      });
-      const descriptorMap = new Map([['self', descriptorSelf]]);
+      const psbtUnsigned =
+        'psbt' in testParams
+          ? testParams.psbt
+          : mockPsbtDefault({
+              descriptorSelf: testParams.descriptorSelf,
+              descriptorOther: getDescriptor('Wsh2Of3', otherKeys),
+              params: testParams.psbtParams,
+            });
+      const descriptorMap = new Map([['self', testParams.descriptorSelf]]);
       const parsed = parse(psbtUnsigned, descriptorMap, utxolib.networks.bitcoin);
       assert.strictEqual(parsed.spendAmount, psbtUnsigned.txOutputs[1].value);
-      await assertEqualsFixture(name, 'psbtStages.json', getStages(psbtUnsigned, parsed, stages));
+      await assertEqualsFixture(name, 'psbtStages.json', getStages(psbtUnsigned, parsed, testParams.stages));
     });
   });
+}
+
+const defaultStagesCombinedAB: PsbtStage[] = [
+  { name: 'unsigned', keys: [] },
+  { name: 'signedA', keys: selfKeys.slice(0, 1) },
+  { name: 'signedAB', keys: selfKeys.slice(0, 2), final: true },
+];
+
+function getDefaultStagesSeparateAB({ plain = false } = {}): PsbtStage[] {
+  const keys = plain ? selfKeys.map(toPlain) : selfKeys;
+  return [
+    { name: 'unsigned', keys: [] },
+    { name: 'signedA', keys: keys.slice(0, 1) },
+    { name: 'signedB', keys: keys.slice(1, 2), final: true },
+  ];
 }
 
 function describeCreatePsbt2Of3(t: DescriptorTemplate) {
   describeCreatePsbt(t, {
     descriptorSelf: getDescriptor(t, selfKeys),
     psbtParams: getPsbtParams(t),
-    stages: [
-      { name: 'unsigned', keys: [] },
-      { name: 'signedA', keys: selfKeys.slice(0, 1) },
-      { name: 'signedAB', keys: selfKeys.slice(0, 2), final: true },
-    ],
+    stages: defaultStagesCombinedAB,
   });
 }
 
@@ -157,18 +163,34 @@ describeCreatePsbt2Of3('Tr2Of3-NoKeyPath');
 describeCreatePsbt('Tr1Of3-NoKeyPath-Tree', {
   descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree', selfKeys),
   psbtParams: {},
-  stages: [
-    { name: 'unsigned', keys: [] },
-    { name: 'signedA', keys: selfKeys.slice(0, 1) },
-    { name: 'signedB', keys: selfKeys.slice(1, 2), final: true },
-  ],
+  stages: getDefaultStagesSeparateAB(),
 });
 describeCreatePsbt('Tr1Of3-NoKeyPath-Tree-PlainKeys', {
   descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree-Plain', selfKeys),
   psbtParams: {},
-  stages: [
-    { name: 'unsigned', keys: [] },
-    { name: 'signedA', keys: selfKeys.slice(0, 1).map(toPlain) },
-    { name: 'signedB', keys: selfKeys.slice(1, 2).map(toPlain), final: true },
-  ],
+  stages: getDefaultStagesSeparateAB({ plain: true }),
 });
+
+{
+  const descriptorSelf = getDescriptor('Wsh2Of3', selfKeys);
+  const descriptorOther = getDescriptor('Wsh2Of3', otherKeys);
+  describeCreatePsbt('Wsh2Of3-CustomInputSequence', {
+    descriptorSelf,
+    psbt: mockPsbt(
+      [
+        { descriptor: descriptorSelf, index: 0 },
+        { descriptor: descriptorSelf, index: 1, id: { vout: 1 }, sequence: 123 },
+      ],
+      [
+        {
+          descriptor: descriptorOther,
+          index: 0,
+          value: BigInt(4e5),
+          external: true,
+        },
+        { descriptor: descriptorSelf, index: 0, value: BigInt(4e5) },
+      ]
+    ),
+    stages: defaultStagesCombinedAB,
+  });
+}

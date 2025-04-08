@@ -3,3 +3,4 @@ export * from './createPsbt';
 export * from './parse';
 export * from './findDescriptors';
 export * from './wrap';
+export * from './sign';
