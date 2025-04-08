@@ -135,16 +135,19 @@ export class Transaction extends BaseTransaction {
     }
     switch (this._icpTransactionData.transactionType) {
       case OperationType.TRANSACTION:
-        return {
+        const txData: TxData = {
           id: this._id,
           sender: this._icpTransactionData.senderAddress,
           senderPublicKey: this._icpTransactionData.senderPublicKeyHex,
           recipient: this._icpTransactionData.receiverAddress,
-          memo: this._icpTransactionData.memo,
           feeAmount: this._icpTransactionData.fee,
           expirationTime: this._icpTransactionData.expiryTime,
           type: BitGoTransactionType.Send,
         };
+        if (this._icpTransactionData.memo !== undefined) {
+          txData.memo = this._icpTransactionData.memo;
+        }
+        return txData;
       default:
         throw new Error(`Unsupported transaction type: ${this._icpTransactionData.transactionType}`);
     }
@@ -271,10 +274,12 @@ export class Transaction extends BaseTransaction {
       operations: [senderOperation, receiverOperation, feeOperation],
       metadata: {
         created_at_time: args.createdAtTime.timestampNanos,
-        memo: Number(args.memo.memo),
       },
       account_identifier_signers: accountIdentifierSigners,
     };
+    if (args.memo !== undefined) {
+      parsedTxn.metadata.memo = Number(args.memo.memo);
+    }
     this.createdTimestamp = args.createdAtTime.timestampNanos;
     return parsedTxn;
   }

@@ -358,8 +358,9 @@ export class Utils implements BaseUtils {
     }
     this.validateFee(transactionData.fee);
     this.validateValue(new BigNumber(transactionData.amount));
-    //TODO check for optional memo
-    this.validateMemo(transactionData.memo);
+    if (transactionData.memo !== undefined) {
+      this.validateMemo(transactionData.memo);
+    }
     this.validateExpireTime(transactionData.expiryTime);
   }
 
@@ -607,12 +608,14 @@ export class Utils implements BaseUtils {
     const SendRequestMessage = root.lookupType('SendRequest');
     const args = SendRequestMessage.decode(arg) as unknown as SendArgs;
     const transformedArgs: SendArgs = {
-      memo: { memo: BigInt(args.memo.memo.toString()) },
       payment: { receiverGets: { e8s: args.payment.receiverGets.e8s } },
       maxFee: { e8s: args.maxFee.e8s },
       to: { hash: Buffer.from(args.to.hash) },
       createdAtTime: { timestampNanos: BigNumber(args.createdAtTime.timestampNanos.toString()).toNumber() },
     };
+    if (args.memo !== undefined) {
+      transformedArgs.memo = { memo: BigInt(args.memo.memo.toString()) };
+    }
     return transformedArgs;
   }
 
