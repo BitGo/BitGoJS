@@ -23,7 +23,7 @@ import {
 } from '../../src';
 import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
-import { amsTokenConfig, amsTokenConfigWithCustomToken } from './resources/amsTokenConfig';
+import { amsTokenConfig, amsTokenConfigWithCustomToken, incorrectAmsTokenConfig } from './resources/amsTokenConfig';
 
 interface DuplicateCoinObject {
   name: string;
@@ -921,6 +921,15 @@ describe('create token map using config details', () => {
       tokenRest.should.deepEqual(staticRest);
       JSON.stringify(tokenNetwork).should.eql(JSON.stringify(staticNetwork));
     });
+  });
+  it('should give precedence to static coin map over ams coin map', () => {
+    const tokenMap = createTokenMapUsingConfigDetails(incorrectAmsTokenConfig);
+    const tokenName = 'thbar:usdc';
+    const token = tokenMap.get(tokenName);
+    token.decimalPlaces.should.eql(coins.get(tokenName).decimalPlaces);
+    token.baseUnit.should.eql(coins.get(tokenName).baseUnit);
+    token.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
+    token.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
   });
   it('should create a coin map and get formatted tokens from it', () => {
     const coinMap = createTokenMapUsingConfigDetails(amsTokenConfigWithCustomToken);

@@ -654,3 +654,46 @@ export const amsTokenConfigWithCustomToken = {
     },
   ],
 };
+
+export const incorrectAmsTokenConfig = {
+  ...amsTokenConfig,
+  'thbar:usdc': [
+    {
+      id: '842c2119-3071-409d-b86f-49f0b46b676e',
+      fullName: 'Testnet Hedera USD Coin',
+      name: 'thbar:usdc',
+      prefix: '',
+      suffix: 'THBAR:USDC',
+      baseUnit: 'fakebar',
+      kind: 'crypto',
+      family: 'hbar',
+      isToken: true,
+      features: [
+        'account-model',
+        'requires-big-number',
+        'valueless-transfer',
+        'transaction-data',
+        'custody',
+        'custody-bitgo-trust',
+        'custody-bitgo-mena-fze',
+        'custody-bitgo-custody-mena-fze',
+        'custody-bitgo-singapore',
+        'custody-bitgo-korea',
+        'custody-bitgo-europe-aps',
+        'custody-bitgo-frankfurt',
+      ],
+      decimalPlaces: 60,
+      asset: 'usdc',
+      network: {
+        type: 'testnet',
+        name: 'HederaTestnet',
+        family: 'hbar',
+        explorerUrl: 'https://testnet.dragonglass.me/hedera/search?q=',
+      },
+      primaryKeyCurve: 'ed25519',
+      nodeAccountId: '0.0.3',
+      tokenId: '0.0.13078',
+      contractAddress: '0.0.13078',
+    },
+  ],
+};
