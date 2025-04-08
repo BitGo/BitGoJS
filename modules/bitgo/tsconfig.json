@@ -190,6 +190,9 @@
       "path": "../sdk-coin-polygon"
     },
     {
+      "path": "../sdk-coin-polyx"
+    },
+    {
       "path": "../sdk-coin-rbtc"
     },
     {
