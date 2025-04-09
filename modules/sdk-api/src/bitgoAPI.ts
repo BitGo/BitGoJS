@@ -6,6 +6,7 @@ import {
   BitGoRequest,
   CoinConstructor,
   common,
+  DecryptKeysOptions,
   DecryptOptions,
   defaultConstants,
   EcdhDerivedKeypair,
@@ -620,6 +621,57 @@ export class BitGoAPI implements BitGoBase {
       }
       throw error;
     }
+  }
+
+  /**
+   * Attempt to decrypt multiple wallet keys with the provided passphrase
+   * @param {DecryptKeysOptions} params - Parameters object containing wallet key pairs and password
+   * @param {Array<{walletId: string, encryptedPrv: string}>} params.walletIdEncryptedKeyPairs - Array of wallet ID and encrypted private key pairs
+   * @param {string} params.password - The passphrase to attempt decryption with
+   * @returns {string[]} - Array of wallet IDs for which decryption failed
+   */
+  decryptKeys(params: DecryptKeysOptions): string[] {
+    params = params || {};
+    if (!params.walletIdEncryptedKeyPairs) {
+      throw new Error('Missing parameter: walletIdEncryptedKeyPairs');
+    }
+
+    if (!params.password) {
+      throw new Error('Missing parameter: password');
+    }
+
+    if (!Array.isArray(params.walletIdEncryptedKeyPairs)) {
+      throw new Error('walletIdEncryptedKeyPairs must be an array');
+    }
+
+    if (params.walletIdEncryptedKeyPairs.length === 0) {
+      return [];
+    }
+
+    const failedWalletIds: string[] = [];
+
+    for (const keyPair of params.walletIdEncryptedKeyPairs) {
+      if (!keyPair.walletId || typeof keyPair.walletId !== 'string') {
+        throw new Error('each key pair must have a string walletId');
+      }
+
+      if (!keyPair.encryptedPrv || typeof keyPair.encryptedPrv !== 'string') {
+        throw new Error('each key pair must have a string encryptedPrv');
+      }
+
+      try {
+        this.decrypt({
+          input: keyPair.encryptedPrv,
+          password: params.password,
+        });
+        // If no error was thrown, decryption was successful
+      } catch (error) {
+        // If decryption fails, add the walletId to the failed list
+        failedWalletIds.push(keyPair.walletId);
+      }
+    }
+
+    return failedWalletIds;
   }
 
   /**
