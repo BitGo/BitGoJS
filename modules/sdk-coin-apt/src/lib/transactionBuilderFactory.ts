@@ -19,7 +19,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   from(signedRawTxn: string): TransactionBuilder {
     try {
-      const signedTxn = this.parseTransaction(signedRawTxn);
+      const signedTxn = Transaction.deserializeSignedTransaction(signedRawTxn);
       const txnType = this.getTransactionTypeFromSignedTxn(signedTxn);
       switch (txnType) {
         case TransactionType.Send:
@@ -79,14 +79,5 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       builder.initBuilder(tx);
     }
     return builder;
-  }
-
-  /** Parse the transaction from a signed txn hex string
-   *
-   * @param {string} signedRawTransaction - the signed txn hex
-   * @returns {SignedTransaction} parsedtransaction
-   */
-  private parseTransaction(signedRawTransaction: string): SignedTransaction {
-    return Transaction.deserializeSignedTransaction(signedRawTransaction);
   }
 }
