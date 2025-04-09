@@ -40,6 +40,15 @@ export const sip10Tokens = [
     STX_TOKEN_FEATURES
   ),
   sip10Token(
+    'baaf7ebe-b931-4a5e-a173-ab514688df73',
+    'stx:susdh',
+    'sUSDH',
+    6,
+    'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.susdh-token-v1::susdh-token-v1',
+    UnderlyingAsset['stx:susdh'],
+    STX_TOKEN_FEATURES
+  ),
+  sip10Token(
     '83fbaa8a-eeda-496a-9c38-98ef592a008b',
     'stx:usdh',
     'USDH',
@@ -58,6 +67,15 @@ export const sip10Tokens = [
     STX_TOKEN_FEATURES
   ),
   // testnet tokens
+  tsip10Token(
+    '74b5f05c-9cfa-45bf-b6a4-bc7f6dde37f9',
+    'tstx:tsbtc',
+    'Test sBTC',
+    8,
+    'ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token::sbtc-token',
+    UnderlyingAsset['tstx:tsbtc'],
+    STX_TOKEN_FEATURES
+  ),
   tsip10Token(
     'ffa80cb4-dd2f-4729-9635-11071b9d8496',
     'tstx:tsip6dp',

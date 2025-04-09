@@ -818,6 +818,8 @@ export enum UnderlyingAsset {
   ETHFI = 'ethfi',
   'eth:block' = 'eth:block',
   'eth:bito' = 'eth:bito',
+  'ETH:ECASH' = 'eth:ecash',
+  'ETH:OORT' = 'eth:oort',
   'eth:ultra' = 'eth:ultra',
   ETHHEDGE = 'ethhedge',
   ETHMOON = 'ethmoon',
@@ -1968,6 +1970,7 @@ export enum UnderlyingAsset {
   'avaxc:aavausdt' = 'avaxc:aavausdt',
   'avaxc:acre' = 'avaxc:acre',
   'avaxc:gmx' = 'avaxc:gmx',
+  'avaxc:gunz' = 'avaxc:gunz',
   'avaxc:mim' = 'avaxc:mim',
   'avaxc:axlusdc' = 'avaxc:axlusdc',
   'avaxc:lot' = 'avaxc:lot',
@@ -2343,6 +2346,7 @@ export enum UnderlyingAsset {
   'bera:honey' = 'bera:honey',
   'bera:usdc' = 'bera:usdc',
   'bera:ibera' = 'bera:ibera',
+  'bera:dolo' = 'bera:dolo',
 
   // bera testnet tokens
   'tbera:bgt' = 'tbera:bgt',
@@ -2527,9 +2531,11 @@ export enum UnderlyingAsset {
   'stx:alex' = 'stx:alex',
   'stx:aeusdc' = 'stx:aeusdc',
   'stx:usdh' = 'stx:usdh',
+  'stx:susdh' = 'stx:susdh',
   'stx:welsh' = 'stx:welsh',
 
   // Sip10 testnet tokens
+  'tstx:tsbtc' = 'tstx:tsbtc',
   'tstx:tsip6dp' = 'tstx:tsip6dp',
   'tstx:tsip8dp' = 'tstx:tsip8dp',
 
