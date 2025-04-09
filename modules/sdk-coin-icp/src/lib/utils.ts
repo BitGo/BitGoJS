@@ -613,8 +613,8 @@ export class Utils implements BaseUtils {
       to: { hash: Buffer.from(args.to.hash) },
       createdAtTime: { timestampNanos: BigNumber(args.createdAtTime.timestampNanos.toString()).toNumber() },
     };
-    if (args.memo !== undefined) {
-      transformedArgs.memo = { memo: BigInt(args.memo.memo.toString()) };
+    if (args.memo !== undefined && args.memo !== null) {
+      transformedArgs.memo = { memo: BigInt(args.memo?.memo?.toString() ?? '0') };
     }
     return transformedArgs;
   }

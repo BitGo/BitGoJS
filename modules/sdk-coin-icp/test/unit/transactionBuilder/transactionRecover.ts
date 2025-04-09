@@ -64,7 +64,7 @@ describe('ICP transaction recovery', async () => {
       ingressEndTime: testData.transactionMetaData.ingress_end,
     });
 
-    const body = testData.SignedTransactionWithoutMemo;
+    const body = testData.RecoverySignedTransactionWithoutMemo;
     nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
     nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
     const txnId = await icp.recover(recoveryParams);
@@ -85,7 +85,7 @@ describe('ICP transaction recovery', async () => {
       ingressEndTime: testData.metaData.ingress_end,
     });
 
-    const body = testData.SignedTransactionWithMemo;
+    const body = testData.RecoverySignedTransactionWithMemo;
     nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
     nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
     recoveryParams.memo = testData.metaData.memo;
