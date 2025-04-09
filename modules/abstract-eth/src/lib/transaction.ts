@@ -14,9 +14,7 @@ import {
 import { KeyPair } from './keyPair';
 import { EthLikeTransactionData, TxData } from './iface';
 import { EthTransactionData } from './types';
-import { classifyTransaction, decodeTransferData, getToken, hasSignature, toStringSig } from './utils';
-
-const UNSUPPORTED_COIN_NAME = 'unsupported';
+import { classifyTransaction, decodeTransferData, hasSignature, toStringSig } from './utils';
 
 export class Transaction extends BaseTransaction {
   protected _id: string; // The transaction id as seen in the blockchain
@@ -98,25 +96,16 @@ export class Transaction extends BaseTransaction {
       this._type === TransactionType.SendERC721 ||
       this._type === TransactionType.SendERC1155
     ) {
-      const { to, amount, tokenContractAddress, signature } = decodeTransferData(txData.data);
-      let coinName: string;
-      if (tokenContractAddress) {
-        const token = getToken(tokenContractAddress, this._coinConfig.network, this._coinConfig.family);
-        coinName = token ? token.name : UNSUPPORTED_COIN_NAME;
-      } else {
-        coinName = this._coinConfig.name;
-      }
+      const { to, amount, signature } = decodeTransferData(txData.data);
 
       this.outputs.push({
         address: to,
         value: amount,
-        coin: coinName,
       });
 
       this.inputs.push({
         address: txData.to!, // the sending wallet contract is the recipient of the outer transaction
         value: amount,
-        coin: coinName,
       });
 
       this._signatures.push(signature);

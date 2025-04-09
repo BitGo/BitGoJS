@@ -12,24 +12,18 @@ describe('Eth send multi sig builder', function () {
   const ethLikeCoins = ['hteth', 'tarbeth', 'topeth', 'zketh'];
 
   describe('should fail', () => {
-    it('should fail if a coin does not exists in @bitgo/statics', () => {
-      should(() => {
-        new TransferBuilder().coin('inexistentcoin');
-      }).throw();
-    });
-
     ethLikeCoins.forEach((coin) => {
       it('should fail with an invalid key', () => {
-        const staticsCoin = coins.get(coin) as unknown as EthLikeNetwork;
+        const staticsCoin = coins.get(coin);
         const builder = new TransferBuilder()
-          .coin(coin)
+          .coin(staticsCoin)
           .expirationTime(1590078260)
           .amount(amount)
           .to(toAddress)
           .contractSequenceId(2)
           .key('invalidkey');
         should(() => {
-          builder.signAndBuild(`${staticsCoin.chainId}`);
+          builder.signAndBuild(`${(staticsCoin as unknown as EthLikeNetwork).chainId}`);
         }).throw('private key length is invalid');
       });
     });

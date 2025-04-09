@@ -2,7 +2,7 @@ import assert from 'assert';
 import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import BN from 'bn.js';
-import { coins, BaseCoin, ContractAddressDefinedToken, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
+import { BaseCoin, ContractAddressDefinedToken, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
 import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
 import { defaultAbiCoder, keccak256 } from 'ethers/lib/utils';
@@ -42,8 +42,8 @@ export class TransferBuilder {
    * @param {string} coin - the native coin or ERC20 token to be set
    * @returns {TransferBuilder} the transfer builder instance modified
    */
-  coin(coin: string): TransferBuilder {
-    this._coin = coins.get(coin);
+  coin(coin: Readonly<BaseCoin>): TransferBuilder {
+    this._coin = coin;
     if (this._coin instanceof ContractAddressDefinedToken) {
       this._tokenContractAddress = this._coin.contractAddress.toString();
     }
