@@ -104,10 +104,13 @@ export class TransferBuilder extends TransactionBuilder {
       amount: this._amount,
       fee: this._utils.feeData(),
       senderPublicKeyHex: this._publicKey,
-      memo: this._memo,
+      // memo: this._memo,
       transactionType: OperationType.TRANSACTION,
       expiryTime: ingressEndTime,
     };
+    if (this._memo !== undefined) {
+      icpTransactionData.memo = this._memo;
+    }
     this._transaction.icpTransactionData = icpTransactionData;
     this._transaction.icpTransaction = icpTransaction;
   }
