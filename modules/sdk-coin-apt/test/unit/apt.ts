@@ -35,6 +35,16 @@ describe('APT:', function () {
     recipients: testData.recipients,
   };
 
+  const fungibleTxPrebuild = {
+    txHex: testData.FUNGIBLE_BATCH_RAW_TX_HEX,
+    txInfo: {},
+  };
+
+  const fungibleTxParams = {
+    recipients: testData.batchFungibleRecipients,
+    type: 'transfer',
+  };
+
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('apt', Apt.createInstance);
@@ -93,6 +103,16 @@ describe('APT:', function () {
       const txParams = newTxParams();
       const verification = {};
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify fungible transaction', async function () {
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txPrebuild: fungibleTxPrebuild,
+        txParams: fungibleTxParams,
+        verification,
+      });
       isTransactionVerified.should.equal(true);
     });
 
