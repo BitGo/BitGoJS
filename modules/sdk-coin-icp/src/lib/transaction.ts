@@ -97,17 +97,18 @@ export class Transaction extends BaseTransaction {
       const transactionType = parsedTx.operations[0].type;
       switch (transactionType) {
         case OperationType.TRANSACTION:
-          //TODO memo is optional here too, check proto def as well
           this._icpTransactionData = {
             senderAddress: parsedTx.operations[0].account.address,
             receiverAddress: parsedTx.operations[1].account.address,
             amount: parsedTx.operations[1].amount.value,
             fee: parsedTx.operations[2].amount.value,
             senderPublicKeyHex: senderPublicKeyHex,
-            memo: parsedTx.metadata.memo,
             transactionType: transactionType,
             expiryTime: Number(parsedTx.metadata.created_at_time + (MAX_INGRESS_TTL - PERMITTED_DRIFT)),
           };
+          if (parsedTx.metadata.memo !== undefined) {
+            this._icpTransactionData.memo = parsedTx.metadata.memo;
+          }
           this._utils.validateRawTransaction(this._icpTransactionData);
           break;
         default:
@@ -135,7 +136,7 @@ export class Transaction extends BaseTransaction {
     }
     switch (this._icpTransactionData.transactionType) {
       case OperationType.TRANSACTION:
-        return {
+        const txData: TxData = {
           id: this._id,
           sender: this._icpTransactionData.senderAddress,
           senderPublicKey: this._icpTransactionData.senderPublicKeyHex,
@@ -145,6 +146,10 @@ export class Transaction extends BaseTransaction {
           expirationTime: this._icpTransactionData.expiryTime,
           type: BitGoTransactionType.Send,
         };
+        if (this._icpTransactionData.memo !== undefined) {
+          txData.memo = this._icpTransactionData.memo;
+        }
+        return txData;
       default:
         throw new Error(`Unsupported transaction type: ${this._icpTransactionData.transactionType}`);
     }
@@ -271,10 +276,12 @@ export class Transaction extends BaseTransaction {
       operations: [senderOperation, receiverOperation, feeOperation],
       metadata: {
         created_at_time: args.createdAtTime.timestampNanos,
-        memo: Number(args.memo.memo),
       },
       account_identifier_signers: accountIdentifierSigners,
     };
+    if (args.memo !== undefined) {
+      parsedTxn.metadata.memo = Number(args.memo.memo);
+    }
     this.createdTimestamp = args.createdAtTime.timestampNanos;
     return parsedTxn;
   }

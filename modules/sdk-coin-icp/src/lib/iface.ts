@@ -35,14 +35,13 @@ export enum Network {
   ID = '00000000000000020101', // ICP does not have different network IDs for mainnet and testnet
 }
 
-//TODO make memo optional in the interface
 export interface IcpTransactionData {
   senderAddress: string;
   receiverAddress: string;
   amount: string;
   fee: string;
   senderPublicKeyHex: string;
-  memo: number | BigInt; // memo in string is not accepted by ICP chain.
+  memo?: number | BigInt; // memo in string is not accepted by ICP chain.
   transactionType: OperationType;
   expiryTime: number | BigInt;
 }
@@ -72,10 +71,9 @@ export interface IcpOperation {
   amount: IcpAmount;
 }
 
-//TODO check for optional memo in the interface
 export interface IcpTransactionParseMetadata {
   created_at_time: number;
-  memo: number | BigInt; // memo in string is not accepted by ICP chain.
+  memo?: number | BigInt; // memo in string is not accepted by ICP chain.
   ingress_start?: number | BigInt; // it should be nano seconds
   ingress_end?: number | BigInt; // it should be nano seconds
 }
@@ -104,7 +102,7 @@ export interface IcpAccountIdentifier {
 }
 
 export interface SendArgs {
-  memo: { memo: number | BigInt };
+  memo?: { memo: number | BigInt };
   payment: { receiverGets: { e8s: number } };
   maxFee: { e8s: number };
   to: { hash: Buffer };
@@ -163,7 +161,7 @@ export interface TxData {
   sender: string;
   senderPublicKey: string;
   recipient: string;
-  memo: number | BigInt;
+  memo?: number | BigInt;
   feeAmount: string;
   expirationTime: number | BigInt;
   type?: BitGoTransactionType;

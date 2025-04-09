@@ -89,14 +89,22 @@ export class UnsignedTransactionBuilder {
     return ingressExpiries;
   }
 
-  getSendArgs(memo: number | BigInt, created_at_time: number, amount: string, fee: string, receiver: string): SendArgs {
+  getSendArgs(
+    memo: number | BigInt | undefined,
+    created_at_time: number,
+    amount: string,
+    fee: string,
+    receiver: string
+  ): SendArgs {
     const sendArgs: SendArgs = {
-      memo: { memo: memo },
       payment: { receiverGets: { e8s: Number(amount) } },
       maxFee: { e8s: -Number(fee) },
       to: { hash: Buffer.from(receiver, 'hex') },
       createdAtTime: { timestampNanos: Number(created_at_time) },
     };
+    if (memo !== undefined) {
+      sendArgs.memo = { memo: memo };
+    }
     return sendArgs;
   }
 
