@@ -15,7 +15,7 @@ import {
   IcpTransactionData,
   RequestType,
   Signatures,
-  IcpMetadata,
+  IcpTransactionBuildMetadata,
   SendArgs,
   PayloadsData,
   CurveType,
@@ -38,7 +38,7 @@ export class Utils implements BaseUtils {
    * gets the gas data of this transaction.
    */
   //TODO WIN-4242: to moved to a config and eventually to an API for dynamic value
-  gasData(): string {
+  feeData(): string {
     return '-10000';
   }
 
@@ -358,6 +358,7 @@ export class Utils implements BaseUtils {
     }
     this.validateFee(transactionData.fee);
     this.validateValue(new BigNumber(transactionData.amount));
+    //TODO check for optional memo
     this.validateMemo(transactionData.memo);
     this.validateExpireTime(transactionData.expiryTime);
   }
@@ -573,19 +574,21 @@ export class Utils implements BaseUtils {
   getMetaData(
     memo: number | BigInt,
     timestamp: number | bigint | undefined
-  ): { metaData: IcpMetadata; ingressEndTime: number | BigInt } {
+  ): { metaData: IcpTransactionBuildMetadata; ingressEndTime: number | BigInt } {
     let currentTime = Date.now() * 1000000;
     if (timestamp) {
       currentTime = Number(timestamp);
     }
     const ingressStartTime = currentTime;
     const ingressEndTime = ingressStartTime + 5 * 60 * 1000000000; // 5 mins in nanoseconds
-    const metaData: IcpMetadata = {
+    const metaData: IcpTransactionBuildMetadata = {
       created_at_time: currentTime,
-      memo: memo,
       ingress_start: ingressStartTime,
       ingress_end: ingressEndTime,
     };
+    if (memo !== undefined || !isNaN(memo)) {
+      metaData.memo = memo;
+    }
     return { metaData, ingressEndTime };
   }
 

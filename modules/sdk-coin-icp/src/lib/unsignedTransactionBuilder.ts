@@ -25,12 +25,12 @@ export class UnsignedTransactionBuilder {
       Number(this._icpTransactionPayload.metadata.ingress_end) -
       Number(this._icpTransactionPayload.metadata.ingress_start); // 300s in nanoseconds
     const ingressExpiries = this.getIngressExpiries(
-      this._icpTransactionPayload.metadata.ingress_start!,
-      this._icpTransactionPayload.metadata.ingress_end!,
+      this._icpTransactionPayload.metadata.ingress_start,
+      this._icpTransactionPayload.metadata.ingress_end,
       interval
     );
     const sendArgs = this.getSendArgs(
-      this._icpTransactionPayload.metadata.memo,
+      this._icpTransactionPayload.metadata.memo!,
       this._icpTransactionPayload.metadata.created_at_time,
       this._icpTransactionPayload.operations[1].amount.value,
       this._icpTransactionPayload.operations[2].amount.value,
