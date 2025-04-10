@@ -325,10 +325,17 @@ interface StakingInstructions {
 function validateStakingInstructions(stakingInstructions: StakingInstructions) {
   if (!stakingInstructions.create) {
     throw new NotSupported('Invalid staking activate transaction, missing create stake account instruction');
-  } else if (!stakingInstructions.initialize) {
-    throw new NotSupported('Invalid staking activate transaction, missing initialize stake account instruction');
-  } else if (!stakingInstructions.delegate) {
-    throw new NotSupported('Invalid staking activate transaction, missing delegate instruction');
+  }
+
+  if (!stakingInstructions.initialize && stakingInstructions.delegate) {
+    return;
+  } else if (!stakingInstructions.delegate && stakingInstructions.initialize) {
+    return;
+  } else if (!stakingInstructions.delegate && !stakingInstructions.initialize) {
+    // If both are missing something is wrong
+    throw new NotSupported(
+      'Invalid staking activate transaction, missing initialize stake account/delegate instruction'
+    );
   }
 }
 

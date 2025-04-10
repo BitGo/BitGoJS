@@ -200,33 +200,44 @@ function createNonceAccountInstruction(data: WalletInit): TransactionInstruction
  */
 function stakingInitializeInstruction(data: StakingActivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, amount, validator },
+    params: { fromAddress, stakingAddress, amount, validator, isMarinade },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
   assert(stakingAddress, 'Missing stakingAddress param');
   assert(amount, 'Missing amount param');
   assert(validator, 'Missing validator param');
+  assert(isMarinade !== undefined, 'Missing isMarinade param');
 
   const fromPubkey = new PublicKey(fromAddress);
   const stakePubkey = new PublicKey(stakingAddress);
-
+  const validatorPubkey = new PublicKey(validator);
   const tx = new Transaction();
 
+  const stakerPubkey = isMarinade ? validatorPubkey : fromPubkey;
   const walletInitStaking = StakeProgram.createAccount({
     fromPubkey,
     stakePubkey,
-    authorized: new Authorized(fromPubkey, fromPubkey), // staker and withdrawer
-    lockup: new Lockup(0, 0, fromPubkey), // Lookup sets the minimum epoch to withdraw, by default is 0,0 which means there's no minimum limit
+    authorized: new Authorized(stakerPubkey, fromPubkey), // staker and withdrawer
+    lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
     lamports: new BigNumber(amount).toNumber(),
   });
   tx.add(walletInitStaking);
 
-  const delegateStaking = StakeProgram.delegate({
-    stakePubkey: new PublicKey(stakingAddress),
-    authorizedPubkey: new PublicKey(fromAddress),
-    votePubkey: new PublicKey(validator),
-  });
-  tx.add(delegateStaking);
+  if (isMarinade) {
+    const initializeStaking = StakeProgram.initialize({
+      stakePubkey,
+      authorized: new Authorized(stakerPubkey, fromPubkey), // staker and withdrawer
+      lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
+    });
+    tx.add(initializeStaking);
+  } else {
+    const delegateStaking = StakeProgram.delegate({
+      stakePubkey: new PublicKey(stakingAddress),
+      authorizedPubkey: new PublicKey(fromAddress),
+      votePubkey: new PublicKey(validator),
+    });
+    tx.add(delegateStaking);
+  }
 
   return tx.instructions;
 }
@@ -246,8 +257,8 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
 
   if (data.params.amount && data.params.unstakingAddress) {
     const tx = new Transaction();
-
     const unstakingAddress = new PublicKey(data.params.unstakingAddress);
+
     const allocateAccount = SystemProgram.allocate({
       accountPubkey: unstakingAddress,
       space: StakeProgram.space,
