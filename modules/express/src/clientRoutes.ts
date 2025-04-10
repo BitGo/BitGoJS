@@ -2,33 +2,33 @@
  * @prettier
  */
 import {
-  EddsaUtils,
-  EcdsaUtils,
-  EcdsaMPCv2Utils,
-  CustomGShareGeneratingFunction,
-  CustomRShareGeneratingFunction,
-  UnsupportedCoinError,
-  GShare,
-  SignShare,
-  CustomCommitmentGeneratingFunction,
   CommitmentShareRecord,
-  EncryptedSignerShareRecord,
-  CustomPaillierModulusGetterFunction,
-  CustomKShareGeneratingFunction,
-  CustomMuDeltaShareGeneratingFunction,
-  CustomSShareGeneratingFunction,
-  TssEcdsaStep1ReturnMessage,
-  TssEcdsaStep2ReturnMessage,
-  SShare,
-  ShareType,
-  MPCType,
   CreateNetworkConnectionParams,
-  GetNetworkPartnersResponse,
-  encryptRsaWithAesGcm,
-  Wallet,
+  CustomCommitmentGeneratingFunction,
+  CustomGShareGeneratingFunction,
+  CustomKShareGeneratingFunction,
   CustomMPCv2SigningRound1GeneratingFunction,
   CustomMPCv2SigningRound2GeneratingFunction,
   CustomMPCv2SigningRound3GeneratingFunction,
+  CustomMuDeltaShareGeneratingFunction,
+  CustomPaillierModulusGetterFunction,
+  CustomRShareGeneratingFunction,
+  CustomSShareGeneratingFunction,
+  EcdsaMPCv2Utils,
+  EcdsaUtils,
+  EddsaUtils,
+  EncryptedSignerShareRecord,
+  encryptRsaWithAesGcm,
+  GetNetworkPartnersResponse,
+  GShare,
+  MPCType,
+  ShareType,
+  SignShare,
+  SShare,
+  TssEcdsaStep1ReturnMessage,
+  TssEcdsaStep2ReturnMessage,
+  UnsupportedCoinError,
+  Wallet,
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
@@ -965,7 +965,7 @@ async function handleV2SendMany(req: express.Request) {
 }
 
 /**
- * Routes payload meant for prebuildAndSignTransaction() in sdk-core which
+ *  payload meant for prebuildAndSignTransaction() in sdk-core which
  * validates the payload and makes the appropriate request to WP to
  * build, sign, and send a tx.
  * - sends request to Platform to build the transaction
@@ -1023,6 +1023,38 @@ async function handleWalletUpdate(req: express.Request): Promise<unknown> {
   // For non-lightning coins, directly update the wallet
   const wallet = await coin.wallets().get({ id: req.params.id });
   return await bitgo.put(wallet.url()).send(req.body).result();
+}
+
+/**
+ * Changes a wallet passphrase, re-encrypting the User key to a new password
+ * @param req
+ */
+export async function handleWalletChangePassword(req: express.Request): Promise<unknown> {
+  const { oldPassword, newPassword, otp } = req.body;
+  if (!oldPassword || !newPassword) {
+    throw new ApiResponseError('Missing 1 or more required fields: [oldPassword, newPassword]', 400);
+  }
+
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const reqId = new RequestTracer();
+
+  if (otp) {
+    await bitgo.unlock({ otp });
+  }
+
+  const wallet = await coin.wallets().get({ id: req.params.id, reqId });
+  const keychain = await wallet.getEncryptedUserKeychain();
+
+  const updatedKeychain = await wallet.baseCoin.keychains().updateSingleKeychainPassword({
+    keychain,
+    oldPassword,
+    newPassword,
+  });
+
+  return bitgo.put(coin.url(`/key/${updatedKeychain.id}`)).send({
+    encryptedPrv: updatedKeychain.encryptedPrv,
+  });
 }
 
 /**
@@ -1576,6 +1608,14 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
 
   app.put('/express/api/v2/:coin/wallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleWalletUpdate));
+
+  // change wallet passphrase
+  app.post(
+    '/api/v2/:coin/wallet/:id/changepassword',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleWalletChangePassword)
+  );
 
   // create address
   app.post('/api/v2/:coin/wallet/:id/address', parseBody, prepareBitGo(config), promiseWrapper(handleV2CreateAddress));
