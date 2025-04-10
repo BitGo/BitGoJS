@@ -87,6 +87,36 @@ export class Utils implements BaseUtils {
   }
 }
 
+const DUMMY_PRIVATE_KEY = '43e8594854cb53947c4a1a2fab926af11e123f6251dcd5bd0dfb100604186430'; // This dummy private key is used only for fee estimation
+
+/**
+ * Function to estimate the fee for a transaction.
+ * This function uses the dummy private key exclusively for fee estimation.
+ * @param wallet - The wallet instance.
+ * @param toAddress - The destination address.
+ * @param amount - The amount to transfer.
+ * @param seqno - The sequence number for the transaction.
+ * @returns The estimated fee for the transaction.
+ */
+
+export async function getFeeEstimate(wallet: any, toAddress: string, amount: string, seqno: number): Promise<any> {
+  try {
+    const secretKey = TonWeb.utils.stringToBytes(DUMMY_PRIVATE_KEY);
+    const feeEstimate = await wallet.methods
+      .transfer({
+        secretKey,
+        toAddress,
+        amount,
+        seqno,
+        sendMode: 1,
+      })
+      .estimateFee();
+    return feeEstimate;
+  } catch (error) {
+    throw new Error(`Failed to estimate fee: ${error.message}`);
+  }
+}
+
 const utils = new Utils();
 
 export default utils;
