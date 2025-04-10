@@ -10,6 +10,7 @@ import { OfflineVaultTxInfo, optionalDeps, SignTransactionOptions } from '@bitgo
 import { Opeth, Topeth, TransactionBuilder, TransferBuilder } from '../../src/index';
 import * as mockData from '../fixtures/opeth';
 import { getBuilder } from '../getBuilder';
+import { EthereumNetwork } from '@bitgo/statics';
 
 nock.enableNetConnect();
 
@@ -577,6 +578,105 @@ describe('Optimism', function () {
       await basecoin
         .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('coin in txPrebuild did not match that in txParams supplied by client');
+    });
+
+    it('should verify a txPrebuild with more than one recipient in case of token batch transfer', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        tokenName: 'topeth:terc18dp',
+        recipients: [
+          { amount: '1', address: address1 },
+          { amount: '2', address: address2 },
+          { amount: '3', address: address2 },
+        ],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [
+          { amount: '0', address: (basecoin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress },
+        ],
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'topeth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should reject a txPrebuild with more than one recipient in case of token batch transfer with wrong amount', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        tokenName: 'topeth:terc18dp',
+        recipients: [
+          { amount: '1', address: address1 },
+          { amount: '2', address: address2 },
+          { amount: '3', address: address2 },
+        ],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [
+          { amount: '6', address: (basecoin?.staticsCoin?.network as EthereumNetwork).batcherContractAddress },
+        ],
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'topeth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith(`batch token transaction amount in txPrebuild should be zero for token transfers`);
+    });
+
+    it('should reject a txPrebuild with more than one recipient in case of token batch transfer with wrong batcher contract address', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        tokenName: 'topeth:terc18dp',
+        recipients: [
+          { amount: '1', address: address1 },
+          { amount: '2', address: address2 },
+          { amount: '3', address: address2 },
+        ],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        recipients: [{ amount: '0', address: 'fakeContractAddress' }],
+        nextContractSequenceId: 0,
+        gasPrice: 20000000000,
+        gasLimit: 500000,
+        isBatch: true,
+        coin: 'topeth',
+        walletId: 'fakeWalletId',
+        walletContractAddress: 'fakeWalletContractAddress',
+      };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith(`recipient address of txPrebuild does not match batcher address`);
     });
   });
 
