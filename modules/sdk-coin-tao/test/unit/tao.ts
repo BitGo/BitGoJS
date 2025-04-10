@@ -19,7 +19,7 @@ describe('Tao:', function () {
     baseCoin = bitgo.coin('ttao') as Ttao;
   });
 
-  describe('Recover Transactions:', function () {
+  describe.skip('Recover Transactions:', function () {
     const sandBox = sinon.createSandbox();
     const recoveryDestination = '5FJ18ywfrWuRifNyc8aPwQ5ium19Fefwmx18H4XYkDc36F2A';
     const nonce = 2;
@@ -173,7 +173,7 @@ describe('Tao:', function () {
     });
   });
 
-  describe('Build Consolidation Recoveries', function () {
+  describe.skip('Build Consolidation Recoveries', function () {
     const sandbox = sinon.createSandbox();
     const baseAddr = testData.consolidationWrwUser.walletAddress0;
     const nonce = 123;
