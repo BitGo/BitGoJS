@@ -1,6 +1,13 @@
 import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeNewCoins, optionalDeps, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
+import {
+  AbstractEthLikeNewCoins,
+  optionalDeps,
+  recoveryBlockchainExplorerQuery,
+  UnsignedSweepTxMPCv2,
+  RecoverOptions,
+  OfflineVaultTxInfo,
+} from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 import BN from 'bn.js';
 
@@ -36,6 +43,10 @@ export class Coredao extends AbstractEthLikeNewCoins {
     const apiToken = common.Environments[this.bitgo.getEnv()].coredaoExplorerApiToken;
     const explorerUrl = common.Environments[this.bitgo.getEnv()].coredaoExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
+  }
+
+  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    return this.buildUnsignedSweepTxnMPCv2(params);
   }
 
   /** @inheritDoc */
