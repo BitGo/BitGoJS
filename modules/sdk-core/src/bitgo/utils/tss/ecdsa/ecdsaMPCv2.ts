@@ -737,7 +737,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     } else if (requestType === RequestType.message) {
       txOrMessageToSign = txRequest.messages![0].messageEncoded;
       derivationPath = txRequest.messages![0].derivationPath || 'm/0';
-      bufferContent = Buffer.from(txOrMessageToSign);
+      bufferContent = Buffer.from(txOrMessageToSign, 'hex');
     } else {
       throw new Error('Invalid request type');
     }
