@@ -1,5 +1,5 @@
 import { TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo/abstract-eth';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, PublicKey, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 import { getCommon } from './utils';
@@ -8,6 +8,7 @@ import { Transaction, TransferBuilder } from './';
 
 export class TransactionBuilder extends EthLikeTransactionBuilder {
   protected _transfer: TransferBuilder;
+  private _signatures: { publicKey: string; signature: string }[] = [];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -25,6 +26,16 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
       this._transfer = new TransferBuilder(data);
     }
     return this._transfer;
+  }
+
+  /**
+   * Add a signature to the transaction
+   * @param publicKey - The public key associated with the signature
+   * @param signature - The signature to add
+   */
+  addSignature(publicKey: PublicKey, signature: Buffer): void {
+    // Method updated
+    this._signatures.push({ publicKey: publicKey.toString(), signature: signature.toString('hex') });
   }
 
   /** @inheritdoc */
