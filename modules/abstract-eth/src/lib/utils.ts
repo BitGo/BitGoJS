@@ -1,6 +1,5 @@
 import { Buffer } from 'buffer';
 import request from 'superagent';
-import assert from 'assert';
 import {
   addHexPrefix,
   bufferToHex,
@@ -13,7 +12,7 @@ import {
   generateAddress2,
   padToEven,
 } from 'ethereumjs-util';
-import { BaseCoin, BaseNetwork, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
+import { coins, EthereumNetwork } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
 import BN from 'bn.js';
@@ -655,43 +654,6 @@ export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
     throw new BuildTransactionError(`Invalid send bytecode: ${rawData} (wrong lenght)`);
   }
   return Buffer.from(splitBytecode[1], 'hex');
-}
-
-/**
- * Get the statics coin object matching a given contract address if it exists
- *
- * @param tokenContractAddress The contract address to match against
- * @param network - the coin network
- * @param family - the coin family
- * @returns statics BaseCoin object for the matching token
- */
-export function getToken(
-  tokenContractAddress: string,
-  network: BaseNetwork,
-  family: string
-): Readonly<BaseCoin> | undefined {
-  // filter the coins array to find the token with the matching contract address, network and coin family
-  // coin family is needed to avoid causing issues when a token has same contract address on two different chains
-  const tokens = coins.filter((coin) => {
-    if (coin instanceof ContractAddressDefinedToken) {
-      return (
-        coin.network.type === network.type &&
-        coin.family === family &&
-        coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase()
-      );
-    }
-    return false;
-  });
-
-  // if length of tokens is 1, return the first, else return undefined
-  // Can't directly index into tokens, or call `length`, so we use map to get an array
-  const tokensArray = tokens.map((token) => token);
-  if (tokensArray.length >= 1) {
-    // there should never be two tokens with the same contract address, so we assert that here
-    assert(tokensArray.length === 1);
-    return tokensArray[0];
-  }
-  return undefined;
 }
 
 /**

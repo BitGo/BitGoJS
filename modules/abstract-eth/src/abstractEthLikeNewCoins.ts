@@ -68,7 +68,6 @@ import {
   ERC721TransferBuilder,
   getCommon,
   getProxyInitcode,
-  getToken,
   KeyPair as KeyPairLib,
   TransactionBuilder,
   TransferBuilder,
@@ -1027,7 +1026,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder
       .transfer()
-      .coin(this.staticsCoin?.name as string)
+      .coin(this.staticsCoin as Readonly<StaticsBaseCoin>)
       .key(new KeyPairLib({ prv: params.prv }).getKeys().prv!);
     if (params.walletVersion) {
       txBuilder.walletVersion(params.walletVersion);
@@ -1303,7 +1302,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     });
     const transferBuilder = txBuilder.transfer() as TransferBuilder;
     transferBuilder
-      .coin(this.staticsCoin?.name as string)
+      .coin(this.staticsCoin as Readonly<StaticsBaseCoin>)
       .amount(recipients[0].amount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())
@@ -1331,7 +1330,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     txBuilder
       .transfer()
-      .coin(this.staticsCoin?.name as string)
+      .coin(this.staticsCoin as Readonly<StaticsBaseCoin>)
       .key(new KeyPairLib({ prv: userKey }).getKeys().prv as string);
     txBuilder.sign({ key: backupSigningKey });
 
@@ -1374,7 +1373,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     txBuilder.from(txHex);
     txBuilder
       .transfer()
-      .coin(this.staticsCoin?.name as string)
+      .coin(this.staticsCoin as Readonly<StaticsBaseCoin>)
       .key(userSigningKey);
     const tx = await txBuilder.build();
     const res = await this.bitgo
@@ -1525,14 +1524,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const transferBuilder = txBuilder.transfer() as TransferBuilder;
     if (!batcherContractAddress) {
       transferBuilder
-        .coin(this.staticsCoin?.name as string)
+        .coin(this.staticsCoin as Readonly<StaticsBaseCoin>)
         .amount(batchExecutionInfo.totalAmount)
         .contractSequenceId(sequenceId)
         .expirationTime(this.getDefaultExpireTime())
         .to(recoveryDestination);
     } else {
       transferBuilder
-        .coin(this.staticsCoin?.name as string)
+        .coin(this.staticsCoin as Readonly<StaticsBaseCoin>)
         .amount(batchExecutionInfo.totalAmount)
         .contractSequenceId(sequenceId)
         .expirationTime(this.getDefaultExpireTime())
@@ -1692,26 +1691,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     const transferBuilder = txBuilder.transfer() as TransferBuilder;
 
-    const network = this.getNetwork();
-    const token = getToken(
-      params.tokenContractAddress as string,
-      network as EthLikeNetwork,
-      this.staticsCoin?.family as string
-    )?.name as string;
-
     transferBuilder
       .amount(txAmount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())
-      .to(params.recoveryDestination);
-
-    if (token) {
-      transferBuilder.coin(token);
-    } else {
-      transferBuilder
-        .coin(this.staticsCoin?.name as string)
-        .tokenContractAddress(params.tokenContractAddress as string);
-    }
+      .to(params.recoveryDestination)
+      .coin(this.staticsCoin as Readonly<StaticsBaseCoin>)
+      .tokenContractAddress(params.tokenContractAddress as string);
 
     if (params.walletPassphrase) {
       txBuilder.transfer().key(userSigningKey);
@@ -1752,7 +1738,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const response: OfflineVaultTxInfo = {
       txHex: tx.toBroadcastFormat(),
       userKey,
-      coin: token ? token : this.getChain(),
+      coin: this.getChain(),
       gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
       gasLimit,
       recipients: txInfo.recipients,
