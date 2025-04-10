@@ -6,6 +6,7 @@ import { TransferBuilder } from './transferBuilder';
 
 export class TransactionBuilder extends AbstractTransactionBuilder {
   protected _transfer: TransferBuilder;
+  private _signatures: any;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -24,6 +25,10 @@ export class TransactionBuilder extends AbstractTransactionBuilder {
     return this._transfer;
   }
 
+  addSignature(publicKey, signature) {
+    this._signatures = [];
+    this._signatures.push({ publicKey, signature });
+  }
   protected getContractData(addresses: string[]): string {
     throw new Error('Method not implemented.');
   }
