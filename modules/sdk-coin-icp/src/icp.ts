@@ -36,7 +36,7 @@ import {
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
-import { createHash } from 'crypto';
+import { createHash, Hash } from 'crypto';
 import { Principal } from '@dfinity/principal';
 import axios from 'axios';
 
@@ -132,6 +132,11 @@ export class Icp extends BaseCoin {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  /** @inheritDoc **/
+  getHashFunction(): Hash {
+    return createHash('sha256');
   }
 
   private async getAddressFromPublicKey(hexEncodedPublicKey: string) {
