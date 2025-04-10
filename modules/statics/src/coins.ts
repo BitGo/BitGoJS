@@ -2936,6 +2936,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['tapt:nftcollection1'],
     APT_FEATURES
   ),
+  taptNFTCollection(
+    'f4230725-6add-4a54-b5be-61b3c2d29566',
+    'tapt:beta3loanbook',
+    'beta 3 Loan Book',
+    '0x14d44152cb1050277338ab6c58416e074d4a34ddf431978b41b5a9d14f9884f2',
+    UnderlyingAsset['tapt:beta3loanbook'],
+    APT_FEATURES
+  ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(
     '8691cc4f-a425-4192-b6cb-3b0b6f646cbc',
