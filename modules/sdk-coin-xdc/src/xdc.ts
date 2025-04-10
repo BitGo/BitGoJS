@@ -1,6 +1,12 @@
 import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
+import {
+  AbstractEthLikeNewCoins,
+  recoveryBlockchainExplorerQuery,
+  UnsignedSweepTxMPCv2,
+  RecoverOptions,
+  OfflineVaultTxInfo,
+} from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
 export class Xdc extends AbstractEthLikeNewCoins {
@@ -29,6 +35,10 @@ export class Xdc extends AbstractEthLikeNewCoins {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    return this.buildUnsignedSweepTxnMPCv2(params);
   }
 
   async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
