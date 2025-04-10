@@ -23,6 +23,7 @@ import {
   ofcHederaToken,
   tofcHederaToken,
   ofcaptToken,
+  tofcStxToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind } from '../base';
 
@@ -147,6 +148,7 @@ export const ofcCoins = [
   ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('ecc046f9-eb9c-479d-943f-9fe0633ea212', 'ofcoas', 'oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   ofc('24c3b525-b5d3-45c0-9280-599db27c0fab', 'ofctao', 'Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
+  ofc('77661a48-865f-48ea-bb73-875744729a69', 'ofcbera:dolo', 'Dolomite', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('411fd61a-3571-41f4-b632-6058a30a66a2', 'ofcapt', 'Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
   tofc('6677edac-c597-43ca-b8ff-6cdfa4e094a3', 'ofctapt', 'Testnet Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
   tofc('81bd0c13-6531-42b9-a58a-b1e65d239f6f', 'ofctoas', 'Testnet oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
@@ -796,6 +798,7 @@ export const ofcCoins = [
     UnderlyingAsset['avaxc:weth']
   ),
   ofcAvaxErc20('caeec903-4c42-4d03-8cee-91319ab708c9', 'ofcavaxc:xava', 'Avalaunch', 18, UnderlyingAsset['avaxc:xava']),
+  ofcAvaxErc20('7ab1e706-8751-4e9a-b710-c56540a24c11', 'ofcavaxc:gunz', 'GUNZ', 18, UnderlyingAsset['avaxc:gunz']),
   tofcAvaxErc20(
     'e70417f4-61df-4622-a933-40a43f807923',
     'ofctavaxc:link',
@@ -1250,7 +1253,9 @@ export const ofcCoins = [
     UnderlyingAsset['apt:usdt'],
     APT_OFC_TOKEN_FEATURES
   ),
+  ofcStxToken('cc76810a-e19c-4123-ad0c-be39ce08550a', 'ofcstx:susdh', 'sUSDH', 6, UnderlyingAsset['stx:susdh']),
   ofcStxToken('df131c24-8458-49ea-8f7d-7dcce6b13ad9', 'ofcstx:ststx', 'stSTX', 6, UnderlyingAsset['stx:ststx']),
+  tofcStxToken('a7f63434-b424-4f8f-94d8-476f827e4d1b', 'ofctstx:tsbtc', 'Test sBTC', 8, UnderlyingAsset['tstx:tsbtc']),
   ofcStxToken('10210906-6701-4c25-a204-0fe7399bae83', 'ofcstx:alex', 'Alex Labs', 8, UnderlyingAsset['stx:alex']),
   ofcStxToken(
     '6eefa66f-3065-48db-b78f-3ae4e2172a41',

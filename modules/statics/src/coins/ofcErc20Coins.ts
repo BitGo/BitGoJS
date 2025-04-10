@@ -609,6 +609,14 @@ export const ofcErc20Coins = [
   ofcerc20('81d817b5-da65-41aa-983a-ec9619a6a46f', 'ofcedr', 'Endor Protocol', 18, underlyingAssetForSymbol('edr')),
   ofcerc20('c74b96eb-2b24-43a6-a718-936526651f3a', 'ofcefi', 'Efinity', 18, underlyingAssetForSymbol('efi')),
   ofcerc20('e925c83f-bcbd-42a6-90f0-40cc8eae54bd', 'ofcegold', 'eGold', 4, underlyingAssetForSymbol('egold')),
+  ofcerc20(
+    '570832c1-4e4f-4a68-8c0b-3085e065cd9f',
+    'ofceth:ecash',
+    'Ethereum Cash',
+    18,
+    underlyingAssetForSymbol('eth:ecash')
+  ),
+  ofcerc20('ac3f2b43-0ea1-4692-994c-4adac50bb86a', 'ofceth:oort', 'OORT', 18, underlyingAssetForSymbol('eth:oort')),
   ofcerc20('8ca8c8ac-fba8-48f4-8615-5413017937f0', 'ofcegl', 'Ethereum Eagle', 18, underlyingAssetForSymbol('egl')),
   ofcerc20('9b8af64f-7fe5-4e86-838c-27344322a709', 'ofcerd', 'Elrond', 18, underlyingAssetForSymbol('erd')),
   ofcerc20('f08fa2d8-ef9a-4ce2-a1c3-80349758282e', 'ofcese', 'Eesee', 18, underlyingAssetForSymbol('ese')),

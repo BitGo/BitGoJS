@@ -2575,6 +2575,14 @@ export const coins = CoinMap.fromCoins([
     BERA_BGT_FEATURES
   ),
   beraErc20(
+    'a2b9e15b-4196-494c-b86a-f4fa9dcee13b',
+    'bera:dolo',
+    'Dolomite',
+    18,
+    '0x0f81001ef0a83ecce5ccebf63eb302c70a39a654',
+    UnderlyingAsset['bera:dolo']
+  ),
+  beraErc20(
     'ca86baf8-fcc6-40ff-9d65-08db513a131e',
     'bera:honey',
     'Honey Token',

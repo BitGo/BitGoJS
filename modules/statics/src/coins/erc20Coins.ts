@@ -1991,6 +1991,14 @@ export const erc20Coins = [
     UnderlyingAsset.EGOLD
   ),
   erc20(
+    '03423ec5-a65f-428d-9a96-1affb41d583e',
+    'eth:ecash',
+    'Ethereum Cash',
+    18,
+    '0x5d21ef5f25a985380b65c8e943a0082feda0db84',
+    UnderlyingAsset['ETH:ECASH']
+  ),
+  erc20(
     'cd3628a6-9585-4964-9994-f295c65e8338',
     'egl',
     'Ethereum Eagle',
@@ -10242,6 +10250,14 @@ export const erc20Coins = [
     8,
     '0x20157dbabb84e3bbfe68c349d0d44e48ae7b5ad2',
     UnderlyingAsset['eth:ibtc']
+  ),
+  erc20(
+    'ece250d3-eb11-4981-ba26-8db4c7680f00',
+    'eth:oort',
+    'OORT',
+    18,
+    '0x5651fa7a726b9ec0cad00ee140179912b6e73599',
+    UnderlyingAsset['ETH:OORT']
   ),
   erc20(
     'e036704f-1b00-4d9c-83ac-da4cf0452a8a',

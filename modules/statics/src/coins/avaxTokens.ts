@@ -3,6 +3,14 @@ import { UnderlyingAsset } from '../base';
 
 export const avaxTokens = [
   avaxErc20(
+    '64d0e7de-bda5-4ba8-8b48-96ca71385076',
+    'avaxc:gunz',
+    'GUNZ',
+    18,
+    '0x26debd39d5ed069770406fca10a0e4f8d2c743eb',
+    UnderlyingAsset['avaxc:gunz']
+  ),
+  avaxErc20(
     '820d451a-3c7f-43fb-a872-9e323468c922',
     'avaxc:qi',
     'BenQi',
