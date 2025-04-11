@@ -1,3 +1,4 @@
+import assert from 'assert';
 import {
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
@@ -7,7 +8,6 @@ import {
   ECDSAUtils,
   Environments,
   KeyPair,
-  MethodNotImplementedError,
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
@@ -18,6 +18,8 @@ import {
   SignTransactionOptions,
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
+  InvalidAddressError,
+  UnexpectedAddressError,
 } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Principal } from '@dfinity/principal';
@@ -37,9 +39,12 @@ import {
   ROOT_PATH,
   Signatures,
   SigningPayload,
+  IcpTransactionExplanation,
+  IcpCoinSpecific,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
+import { Transaction } from './lib';
 
 /**
  * Class representing the Internet Computer (ICP) coin.
@@ -84,16 +89,50 @@ export class Icp extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  async explainTransaction(params: { txHex: string }): Promise<IcpTransactionExplanation> {
+    const transaction = (await (await this.getBuilderFactory().from(params.txHex)).build()) as Transaction;
+    return transaction.explainTransaction();
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+    const { txParams, txPrebuild } = params;
+    const { txHex } = txPrebuild;
+    if (!txHex) {
+      throw new Error('txHex is required');
+    }
+    const explainedTx = await this.explainTransaction({ txHex });
+
+    if (Array.isArray(txParams.recipients) && txParams.recipients.length > 0) {
+      if (txParams.recipients.length > 1) {
+        throw new Error(
+          `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+        );
+      }
+      assert(explainedTx.outputs.length === 1, 'Tx outputs does not match with expected txParams recipients');
+
+      const output = explainedTx.outputs[0];
+      const recipient = txParams.recipients[0];
+      assert(
+        output.address === recipient.address && BigNumber(output.amount).eq(BigNumber(recipient.amount)),
+        'Tx outputs does not match with expected txParams recipients'
+      );
+    }
+    return true;
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+    if (!this.isValidAddress(params.address)) {
+      throw new InvalidAddressError(`invalid address: ${params.address}`);
+    }
+    const rootAddress = (params.coinSpecific as IcpCoinSpecific).rootAddress;
+    if (params.address.includes(rootAddress)) {
+      throw new UnexpectedAddressError(`address validation failure: ${params.address} vs ${rootAddress}`);
+    }
+    return true;
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new MethodNotImplementedError();
+    return {};
   }
 
   /**
