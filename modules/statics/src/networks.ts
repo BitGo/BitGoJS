@@ -505,7 +505,7 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   blockExplorerUrl = 'https://etherscan.io/block/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 1;
-  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
   nativeCoinOperationHashPrefix = 'ETHER';
@@ -1064,6 +1064,7 @@ class Optimism extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class OptimismTestnet extends Testnet implements EthereumNetwork {
