@@ -1,5 +1,3 @@
-import BigNumber from 'bignumber.js';
-import * as request from 'superagent';
 import {
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
@@ -13,32 +11,35 @@ import {
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
-  ParseTransactionOptions,
   ParsedTransaction,
-  SignTransactionOptions,
+  ParseTransactionOptions,
   SignedTransaction,
+  SigningError,
+  SignTransactionOptions,
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { Principal } from '@dfinity/principal';
+import axios from 'axios';
+import BigNumber from 'bignumber.js';
+import { createHash, Hash } from 'crypto';
+import * as request from 'superagent';
 import {
+  ACCOUNT_BALANCE_ENDPOINT,
+  CurveType,
+  LEDGER_CANISTER_ID,
   Network,
   PayloadsData,
+  PUBLIC_NODE_REQUEST_ENDPOINT,
+  PublicNodeSubmitResponse,
   RecoveryOptions,
+  ROOT_PATH,
   Signatures,
   SigningPayload,
-  ACCOUNT_BALANCE_ENDPOINT,
-  ROOT_PATH,
-  LEDGER_CANISTER_ID,
-  PublicNodeSubmitResponse,
-  CurveType,
-  PUBLIC_NODE_REQUEST_ENDPOINT,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
-import { createHash } from 'crypto';
-import { Principal } from '@dfinity/principal';
-import axios from 'axios';
 
 /**
  * Class representing the Internet Computer (ICP) coin.
@@ -107,8 +108,25 @@ export class Icp extends BaseCoin {
     return utils.isValidAddress(address);
   }
 
-  signTransaction(_: SignTransactionOptions): Promise<SignedTransaction> {
-    throw new MethodNotImplementedError();
+  async signTransaction(
+    params: SignTransactionOptions & { txPrebuild: { txHex: string }; prv: string }
+  ): Promise<SignedTransaction> {
+    const txHex = params?.txPrebuild?.txHex;
+    const privateKey = params?.prv;
+    if (!txHex) {
+      throw new SigningError('missing required txPrebuild parameter: params.txPrebuild.txHex');
+    }
+    if (!privateKey) {
+      throw new SigningError('missing required prv parameter: params.prv');
+    }
+    const factory = this.getBuilderFactory();
+    const txBuilder = await factory.from(params.txPrebuild.txHex);
+    txBuilder.sign({ key: params.prv });
+    txBuilder.combine();
+    const serializedTx = txBuilder.transaction.toBroadcastFormat();
+    return {
+      txHex: serializedTx,
+    };
   }
 
   isValidPub(key: string): boolean {
@@ -132,6 +150,11 @@ export class Icp extends BaseCoin {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  /** @inheritDoc **/
+  getHashFunction(): Hash {
+    return createHash('sha256');
   }
 
   private async getAddressFromPublicKey(hexEncodedPublicKey: string) {
