@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
@@ -21,15 +21,6 @@ export class Opeth extends AbstractEthLikeNewCoins {
 
   protected getTransactionBuilder(): EthLikeTransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
-  }
-
-  supportsTss(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
-  getMPCAlgorithm(): MPCAlgorithm {
-    return 'ecdsa';
   }
 
   /**
@@ -68,6 +59,6 @@ export class Opeth extends AbstractEthLikeNewCoins {
 
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
-    return multisigTypes.tss;
+    return multisigTypes.onchain;
   }
 }

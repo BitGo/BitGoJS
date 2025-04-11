@@ -333,9 +333,6 @@ export const TON_FEATURES = [
 ];
 export const ARBETH_FEATURES = [
   ...ETH_FEATURES,
-  CoinFeature.TSS,
-  CoinFeature.TSS_COLD,
-  CoinFeature.MPCV2,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
@@ -346,9 +343,6 @@ export const ARBETH_FEATURES = [
 ];
 export const OPETH_FEATURES = [
   ...ETH_FEATURES,
-  CoinFeature.TSS,
-  CoinFeature.TSS_COLD,
-  CoinFeature.MPCV2,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
