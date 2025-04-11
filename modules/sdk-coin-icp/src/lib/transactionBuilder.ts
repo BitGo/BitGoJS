@@ -132,10 +132,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction = tx;
     const icpTransactionData = tx.icpTransactionData;
     this._sender = icpTransactionData.senderAddress;
-    this._memo = icpTransactionData.memo;
     this._receiverId = icpTransactionData.receiverAddress;
     this._publicKey = icpTransactionData.senderPublicKeyHex;
     this._amount = icpTransactionData.amount;
+    if (icpTransactionData.memo !== undefined) {
+      this._memo = icpTransactionData.memo;
+    }
   }
 
   validateAddress(address: BaseAddress): void {
