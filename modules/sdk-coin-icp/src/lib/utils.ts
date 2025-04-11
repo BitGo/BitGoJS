@@ -602,7 +602,7 @@ export class Utils implements BaseUtils {
     return principalBytes;
   }
 
-  async fromArgs(arg: Uint8Array): Promise<SendArgs> {
+  fromArgs(arg: Uint8Array): SendArgs {
     const root = protobuf.parse(protoDefinition).root;
     const SendRequestMessage = root.lookupType('SendRequest');
     const args = SendRequestMessage.decode(arg) as unknown as SendArgs;

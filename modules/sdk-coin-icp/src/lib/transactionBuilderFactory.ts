@@ -46,7 +46,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig, new Utils()));
   }
 
-  parseTransaction(rawTransaction: string, isSigned: boolean): Promise<ParsedTransaction> {
+  parseTransaction(rawTransaction: string, isSigned: boolean): ParsedTransaction {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Transaction is empty');
     }

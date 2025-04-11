@@ -207,19 +207,16 @@ export class Transaction extends BaseTransaction {
     return this._signedTransaction;
   }
 
-  async parseUnsignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
+  parseUnsignedTransaction(rawTransaction: string): ParsedTransaction {
     const unsignedTransaction = this._utils.cborDecode(
       this._utils.blobFromHex(rawTransaction)
     ) as CborUnsignedTransaction;
     const update = unsignedTransaction.updates[0];
     const httpCanisterUpdate = (update as unknown as [string, HttpCanisterUpdate])[1];
-    return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, false);
+    return this.getParsedTransactionFromUpdate(httpCanisterUpdate, false);
   }
 
-  private async getParsedTransactionFromUpdate(
-    httpCanisterUpdate: HttpCanisterUpdate,
-    isSigned: boolean
-  ): Promise<ParsedTransaction> {
+  private getParsedTransactionFromUpdate(httpCanisterUpdate: HttpCanisterUpdate, isSigned: boolean): ParsedTransaction {
     const senderPrincipal = this._utils.convertSenderBlobToPrincipal(httpCanisterUpdate.sender);
     const ACCOUNT_ID_PREFIX = this._utils.getAccountIdPrefix();
     const subAccount = new Uint8Array(32);
@@ -228,7 +225,7 @@ export class Transaction extends BaseTransaction {
       Buffer.from(senderPrincipal.buffer),
       subAccount
     );
-    const args = await this._utils.fromArgs(httpCanisterUpdate.arg);
+    const args = this._utils.fromArgs(httpCanisterUpdate.arg);
     const senderOperation: IcpOperation = {
       type: OperationType.TRANSACTION,
       account: { address: senderAccount },
@@ -279,10 +276,10 @@ export class Transaction extends BaseTransaction {
     return parsedTxn;
   }
 
-  async parseSignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
+  parseSignedTransaction(rawTransaction: string): ParsedTransaction {
     const signedTransaction = this._utils.cborDecode(this._utils.blobFromHex(rawTransaction));
     const httpCanisterUpdate = (signedTransaction as UpdateEnvelope).content as HttpCanisterUpdate;
-    return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, true);
+    return this.getParsedTransactionFromUpdate(httpCanisterUpdate, true);
   }
 
   /** @inheritdoc */
