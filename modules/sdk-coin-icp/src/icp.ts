@@ -1,3 +1,4 @@
+import assert from 'assert';
 import {
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
@@ -7,7 +8,6 @@ import {
   ECDSAUtils,
   Environments,
   KeyPair,
-  MethodNotImplementedError,
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
@@ -37,6 +37,7 @@ import {
   ROOT_PATH,
   Signatures,
   SigningPayload,
+  IcpTransactionExplanation,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
@@ -84,16 +85,48 @@ export class Icp extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
+  async explainTransaction(params: { txHex: string }): Promise<IcpTransactionExplanation> {
+    const factory = this.getBuilderFactory();
+    const txBuilder = await factory.from(params.txHex);
+    const transaction = await txBuilder.build();
+    return transaction.explainTransaction();
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+    const { txParams, txPrebuild } = params;
+    const txHex = txPrebuild?.txHex;
+    if (!txHex) {
+      throw new Error('txHex is required');
+    }
+    const explainedTx = await this.explainTransaction({ txHex });
+
+    if (Array.isArray(txParams.recipients) && txParams.recipients.length > 0) {
+      if (txParams.recipients.length > 1) {
+        throw new Error(
+          `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+        );
+      }
+      assert(explainedTx.outputs.length === 1, 'Tx outputs does not match with expected txParams recipients');
+
+      const output = explainedTx.outputs[0];
+      const recipient = txParams.recipients[0];
+      assert(
+        typeof recipient.address === 'string' &&
+          typeof output.address === 'string' &&
+          output.address === recipient.address &&
+          BigNumber(output.amount).eq(BigNumber(recipient.amount)),
+        'Tx outputs does not match with expected txParams recipients'
+      );
+    }
+    return true;
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+    return this.isValidAddress(params.address);
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    throw new MethodNotImplementedError();
+    return {};
   }
 
   /**
