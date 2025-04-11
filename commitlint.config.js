@@ -20,6 +20,7 @@ module.exports = {
         'BOS-',
         'BT-',
         'BTC-',
+        'CAAS-',
         'CE-',
         'CEN-',
         'CLEX-',
