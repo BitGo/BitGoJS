@@ -9,3 +9,48 @@ export const SEND_TX_BROADCAST_LEGACY =
 
 export const SEND_TX_AMOUNT_ZERO_BROADCAST =
   '0xf901cc02843b9aca0083b8a1a0948f977e912ef500548a0c3be6ddde9899f1199b8180b901643912521500000000000000000000000019645032c7f1533395d44a629462e751084d3e4c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000005ec67da8000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000411badc5af505b10ebf6bc80322567ac71af7970a9ac1ebdf33f656bbfa2b40f652239e4ecd9b7b391db68fb84467e11dacb5d54f38770d79f4c95c9c1d4eba0a21c000000000000000000000000000000000000000000000000000000000000008208d3a01c830bee5c43a339f4f6bec2e705045986482d72cf0c504183c121a4c246a57ba068b7460d6e0b0e5b354053c78cd412286adc79e21ec3bb9169930b47e455b071';
+
+const getTxListRequestUnsignedSweep: Record<string, string> = {
+  module: 'account',
+  action: 'txlist',
+  address: '0x742838193c4169f6b2ba7b0e03f723c3ba0928e1',
+};
+
+const getTxListResponseUnsignedSweep: Record<string, unknown> = {
+  status: '1',
+  result: [
+    {
+      hash: '0xede855d43d70ea1bb75db63d4f75113dae0845f0d4bdb0b2d8bda55249c70812',
+      nonce: '23',
+      from: '0x742838193c4169f6b2ba7b0e03f723c3ba0928e1',
+    },
+  ],
+  message: 'OK',
+};
+
+const getBalanceRequestUnsignedSweep: Record<string, string> = {
+  module: 'account',
+  action: 'balance',
+  address: '0x742838193c4169f6b2ba7b0e03f723c3ba0928e1',
+};
+
+const getBalanceResponseUnsignedSweep: Record<string, unknown> = {
+  status: '1',
+  result: '100000000000000000',
+  message: 'OK',
+};
+
+export const mockDataUnsignedSweep = {
+  userKey:
+    '029d2ded2d39ee7cd8d8bbba8b25e4c60bb09297936fa6b223de1f495b5ee20dcaf762367f9691f7719cb5e13e59d725669a18aad1e2522dd141fa4c7fd3d25c17',
+  backupKey:
+    '029d2ded2d39ee7cd8d8bbba8b25e4c60bb09297936fa6b223de1f495b5ee20dcaf762367f9691f7719cb5e13e59d725669a18aad1e2522dd141fa4c7fd3d25c17',
+  derivationPath: 'm/0',
+  derivationSeed: '',
+  walletBaseAddress: '0x742838193c4169f6b2ba7b0e03f723c3ba0928e1',
+  recoveryDestination: '0xd76b586901850f2c656db0cbef795c0851bbec35',
+  getTxListRequest: getTxListRequestUnsignedSweep,
+  getTxListResponse: getTxListResponseUnsignedSweep,
+  getBalanceRequest: getBalanceRequestUnsignedSweep,
+  getBalanceResponse: getBalanceResponseUnsignedSweep,
+};
