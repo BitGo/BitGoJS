@@ -9,7 +9,7 @@ import * as testData from '../resources/baby';
 import { BabylonSpecificMessages } from '../../src/lib/iface';
 
 describe('Babylon Transaction', () => {
-  let tx: Transaction<BabylonSpecificMessages>;
+  let tx: Transaction;
   const config = coins.get('tbaby');
 
   beforeEach(() => {
