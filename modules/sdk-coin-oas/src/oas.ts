@@ -7,6 +7,9 @@ import {
   AbstractEthLikeNewCoins,
   recoveryBlockchainExplorerQuery,
   TransactionBuilder as EthLikeTransactionBuilder,
+  UnsignedSweepTxMPCv2,
+  RecoverOptions,
+  OfflineVaultTxInfo,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
@@ -36,6 +39,10 @@ export class Oas extends AbstractEthLikeNewCoins {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    return this.buildUnsignedSweepTxnMPCv2(params);
   }
 
   /**
