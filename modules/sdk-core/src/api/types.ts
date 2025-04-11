@@ -9,6 +9,14 @@ export interface DecryptOptions {
   password?: string;
 }
 
+export interface DecryptKeysOptions {
+  walletIdEncryptedKeyPairs: Array<{
+    walletId: string;
+    encryptedPrv: string;
+  }>;
+  password: string;
+}
+
 export interface EncryptOptions {
   input: string;
   password?: string;
