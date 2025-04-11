@@ -5,9 +5,11 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 
 import { Flr, Tflr } from '../../src/index';
 import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
-import { mockDataUnsignedSweep } from '../resources';
+import { mockDataUnsignedSweep, mockDataNonBitGoRecovery } from '../resources';
 import nock from 'nock';
 import { common } from '@bitgo/sdk-core';
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
+import { stripHexPrefix } from '@ethereumjs/util';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 
@@ -98,5 +100,49 @@ describe('Build Unsigned Sweep for Self-Custody Cold Wallets - (MPCv2)', functio
     tx.unsignedTx.should.have.property('parsedTx');
     tx.unsignedTx.parsedTx?.should.have.property('spendAmount');
     tx.unsignedTx.parsedTx?.should.have.property('outputs');
+  });
+});
+
+describe('Non Bitgo Recovery for Hot Wallets', function () {
+  const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+  const explorerUrl = common.Environments[bitgo.getEnv()].flrExplorerBaseUrl as string;
+  const maxFeePerGasvalue = 30000000000;
+  const maxPriorityFeePerGasValue = 15000000000;
+  const chain_id = 114;
+  const gasLimitvalue = 500000;
+
+  it('should generate a signed non-bitgo recovery tx', async () => {
+    nock(explorerUrl)
+      .get('/api')
+      .twice()
+      .query(mockDataNonBitGoRecovery.getTxListRequest)
+      .reply(200, mockDataNonBitGoRecovery.getTxListResponse);
+    nock(explorerUrl)
+      .get('/api')
+      .query(mockDataNonBitGoRecovery.getBalanceRequest)
+      .reply(200, mockDataNonBitGoRecovery.getBalanceResponse);
+
+    const baseCoin: any = bitgo.coin('tflr');
+    const transaction = await baseCoin.recover({
+      userKey: mockDataNonBitGoRecovery.userKeyData,
+      backupKey: mockDataNonBitGoRecovery.backupKeyData,
+      walletContractAddress: mockDataNonBitGoRecovery.walletRootAddress,
+      walletPassphrase: mockDataNonBitGoRecovery.walletPassphrase,
+      recoveryDestination: mockDataNonBitGoRecovery.recoveryDestination,
+      isTss: true,
+      eip1559: { maxFeePerGas: maxFeePerGasvalue, maxPriorityFeePerGas: maxPriorityFeePerGasValue },
+      gasLimit: gasLimitvalue,
+      replayProtectionOptions: {
+        chain: chain_id,
+        hardfork: 'london',
+      },
+    });
+    should.exist(transaction);
+    transaction.should.have.property('id');
+    transaction.should.have.property('tx');
+    const tx = FeeMarketEIP1559Transaction.fromSerializedTx(Buffer.from(stripHexPrefix(transaction.tx), 'hex'));
+    tx.getSenderAddress().toString().should.equal(mockDataNonBitGoRecovery.walletRootAddress);
+    const jsonTx = tx.toJSON();
+    jsonTx.to?.should.equal(mockDataNonBitGoRecovery.recoveryDestination);
   });
 });
