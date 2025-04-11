@@ -43,7 +43,8 @@
     "@bitgo/abstract-eth": "^24.1.0",
     "@bitgo/sdk-core": "^32.1.0",
     "@bitgo/statics": "^51.7.0",
-    "@ethereumjs/common": "^2.6.5"
+    "@ethereumjs/common": "^2.6.5",
+    "@ethereumjs/tx": "^3.3.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.61.5",
