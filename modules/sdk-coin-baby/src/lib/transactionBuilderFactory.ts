@@ -1,19 +1,22 @@
 import {
+  ContractCallBuilder,
   CosmosTransaction,
   CosmosTransactionBuilder,
   CosmosTransferBuilder,
   StakingActivateBuilder,
   StakingDeactivateBuilder,
-  StakingWithdrawRewardsBuilder,
-  ContractCallBuilder,
   StakingRedelegateBuilder,
+  StakingWithdrawRewardsBuilder,
 } from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { EpochedStakingActivateBuilder } from './EpochedStakingActivateBuilder';
 import { EpochedStakingDeactivateBuilder } from './EpochedStakingDeactivateBuilder';
 import { EpochedStakingRedelegateBuilder } from './EpochedStakingRedelegateBuilder';
+import { CustomTransactionBuilder } from './CustomTransactionBuilder';
+import { BabylonSpecificMessages } from './iface';
 import utils from './utils';
+import { BabylonTransaction } from './BabylonTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -21,8 +24,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): CosmosTransactionBuilder {
-    const tx = new CosmosTransaction(this._coinConfig, utils);
+  from(raw: string): CosmosTransactionBuilder<BabylonSpecificMessages> {
+    const tx = new BabylonTransaction(this._coinConfig, utils);
     tx.enrichTransactionDetailsFromRawTransaction(raw);
     try {
       switch (tx.type) {
@@ -38,6 +41,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getContractCallBuilder(tx);
         case TransactionType.StakingRedelegate:
           return this.getStakingRedelegateBuilder(tx);
+        case TransactionType.CustomTx:
+          return this.getCustomTransactionBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -47,28 +52,44 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  getTransferBuilder(tx?: CosmosTransaction): CosmosTransferBuilder {
+  getTransferBuilder(tx?: CosmosTransaction<BabylonSpecificMessages>): CosmosTransferBuilder<BabylonSpecificMessages> {
     return this.initializeBuilder(tx, new CosmosTransferBuilder(this._coinConfig, utils));
   }
   /** @inheritdoc */
-  getStakingActivateBuilder(tx?: CosmosTransaction): StakingActivateBuilder {
+  getStakingActivateBuilder(
+    tx?: CosmosTransaction<BabylonSpecificMessages>
+  ): StakingActivateBuilder<BabylonSpecificMessages> {
     return this.initializeBuilder(tx, new EpochedStakingActivateBuilder(this._coinConfig, utils));
   }
   /** @inheritdoc */
-  getStakingDeactivateBuilder(tx?: CosmosTransaction): StakingDeactivateBuilder {
+  getStakingDeactivateBuilder(
+    tx?: CosmosTransaction<BabylonSpecificMessages>
+  ): StakingDeactivateBuilder<BabylonSpecificMessages> {
     return this.initializeBuilder(tx, new EpochedStakingDeactivateBuilder(this._coinConfig, utils));
   }
   /** @inheritdoc */
-  getStakingWithdrawRewardsBuilder(tx?: CosmosTransaction): StakingWithdrawRewardsBuilder {
+  getStakingWithdrawRewardsBuilder(
+    tx?: CosmosTransaction<BabylonSpecificMessages>
+  ): StakingWithdrawRewardsBuilder<BabylonSpecificMessages> {
     return this.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig, utils));
   }
 
-  getContractCallBuilder(tx?: CosmosTransaction): ContractCallBuilder {
+  getContractCallBuilder(
+    tx?: CosmosTransaction<BabylonSpecificMessages>
+  ): ContractCallBuilder<BabylonSpecificMessages> {
     return this.initializeBuilder(tx, new ContractCallBuilder(this._coinConfig, utils));
   }
 
-  getStakingRedelegateBuilder(tx?: CosmosTransaction): StakingRedelegateBuilder {
+  getStakingRedelegateBuilder(
+    tx?: CosmosTransaction<BabylonSpecificMessages>
+  ): StakingRedelegateBuilder<BabylonSpecificMessages> {
     return this.initializeBuilder(tx, new EpochedStakingRedelegateBuilder(this._coinConfig, utils));
+  }
+
+  getCustomTransactionBuilder(
+    tx?: CosmosTransaction<BabylonSpecificMessages>
+  ): CosmosTransactionBuilder<BabylonSpecificMessages> {
+    return this.initializeBuilder(tx, new CustomTransactionBuilder(this._coinConfig, utils));
   }
 
   /** @inheritdoc */
@@ -83,7 +104,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {TransactionBuilder} builder - the builder to be initialized
    * @returns {TransactionBuilder} the builder initialized
    */
-  private initializeBuilder<T extends CosmosTransactionBuilder>(tx: CosmosTransaction | undefined, builder: T): T {
+  private initializeBuilder<T extends CosmosTransactionBuilder<BabylonSpecificMessages>>(
+    tx: CosmosTransaction<BabylonSpecificMessages> | undefined,
+    builder: T
+  ): T {
     if (tx) {
       builder.initBuilder(tx);
     }

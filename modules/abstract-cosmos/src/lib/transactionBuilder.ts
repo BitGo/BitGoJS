@@ -17,10 +17,10 @@ import { CosmosKeyPair as KeyPair } from './keyPair';
 import { CosmosTransaction } from './transaction';
 import { CosmosUtils } from './utils';
 
-export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
-  protected _transaction: CosmosTransaction;
+export abstract class CosmosTransactionBuilder<CustomMessage = never> extends BaseTransactionBuilder {
+  protected _transaction: CosmosTransaction<CustomMessage>;
   protected _sequence: number;
-  protected _messages: MessageData[];
+  protected _messages: MessageData<CustomMessage>[];
   protected _gasBudget: FeeData;
   protected _accountNumber?: number;
   protected _signature: Buffer;
@@ -29,9 +29,9 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
   protected _signer: KeyPair;
   protected _memo?: string;
 
-  protected _utils: CosmosUtils;
+  protected _utils: CosmosUtils<CustomMessage>;
 
-  constructor(_coinConfig: Readonly<CoinConfig>, _utils: CosmosUtils) {
+  constructor(_coinConfig: Readonly<CoinConfig>, _utils: CosmosUtils<CustomMessage>) {
     super(_coinConfig);
     this._transaction = new CosmosTransaction(_coinConfig, _utils);
   }
@@ -42,12 +42,12 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
   protected abstract get transactionType(): TransactionType;
 
   /** @inheritdoc */
-  protected get transaction(): CosmosTransaction {
+  protected get transaction(): CosmosTransaction<CustomMessage> {
     return this._transaction;
   }
 
   /** @inheritdoc */
-  protected set transaction(transaction: CosmosTransaction) {
+  protected set transaction(transaction: CosmosTransaction<CustomMessage>) {
     this._transaction = transaction;
   }
 
@@ -78,7 +78,7 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
    * @param {CosmosTransactionMessage[]} messages
    * @returns {TransactionBuilder} This transaction builder
    */
-  abstract messages(messages: CosmosTransactionMessage[]): this;
+  abstract messages(messages: CosmosTransactionMessage<CustomMessage>[]): this;
 
   publicKey(publicKey: string | undefined): this {
     this._publicKey = publicKey;
@@ -101,7 +101,7 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected signImplementation(key: BaseKey): CosmosTransaction {
+  protected signImplementation(key: BaseKey): CosmosTransaction<CustomMessage> {
     this.validateKey(key);
     if (this._accountNumber === undefined) {
       throw new SigningError('accountNumber is required before signing');
@@ -147,7 +147,7 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
    * Initialize the transaction builder fields using the decoded transaction data
    * @param {CosmosTransaction} tx the transaction data
    */
-  initBuilder(tx: CosmosTransaction): void {
+  initBuilder(tx: CosmosTransaction<CustomMessage>): void {
     this._transaction = tx;
     const txData = tx.toJson();
     this.gasBudget(txData.gasBudget);
@@ -166,16 +166,23 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /**
+   * Creates a new CosmosTransaction instance
+   */
+  protected newTransaction(): CosmosTransaction<CustomMessage> {
+    return new CosmosTransaction<CustomMessage>(this._coinConfig, this._utils);
+  }
+
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): CosmosTransaction {
-    const tx = new CosmosTransaction(this._coinConfig, this._utils);
+  protected fromImplementation(rawTransaction: string): CosmosTransaction<CustomMessage> {
+    const tx = this.newTransaction();
     tx.enrichTransactionDetailsFromRawTransaction(rawTransaction);
     this.initBuilder(tx);
     return this.transaction;
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<CosmosTransaction> {
+  protected async buildImplementation(): Promise<CosmosTransaction<CustomMessage>> {
     this.transaction.transactionType = this.transactionType;
     if (this._accountNumber) {
       this.transaction.accountNumber = this._accountNumber;
@@ -240,7 +247,7 @@ export abstract class CosmosTransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction: CosmosTransaction): void {
+  validateTransaction(transaction: CosmosTransaction<CustomMessage>): void {
     this._utils.validateTransaction({
       sequence: this._sequence,
       sendMessages: this._messages,

@@ -298,6 +298,69 @@ export const TEST_WITHDRAW_REWARDS_TX = {
   },
 };
 
+const u8 = (data: string) => new Uint8Array(Buffer.from(data, 'hex'));
+export const TEST_CUSTOM_MsgCreateBTCDelegation_TX = {
+  hash: '',
+  signature: 'cuHdHOHdvc1pkJ/6EFCJZLAnIH8tybynNFGBZ23F/zQRXJhpJpLeiGajImQf91t59V4l1yfy/L6+Z5LEjKwVtQ==',
+  pubKey: 'AwT4xoruxA+DkKynr1LH7CM60RwR7Lp5InwQ5ISaN1Hw',
+  privateKey: 'QAzeAkPWRGyRT8/TvJcRC7VSzQHV9QhH6YTmGZbnvmk=',
+  signedTxBase64:
+    'CvoGCvcGCi0vYmFieWxvbi5idGNzdGFraW5nLnYxLk1zZ0NyZWF0ZUJUQ0RlbGVnYXRpb24SxQYKKmJibjEyNzRlcDhwbnJsZWo1dmdtdHdwcHlzeW56Y2Q0Zmh4YzNrdTB0MxJkCAISYHfXPH3u933nX23HnN2vfH+POu293NNveH9tNdN9+vXX29tGue+3HnHeefPPdOemt+n/dHWuPG2n3HueeunPdOHetG3G3NW9N3tt9uO+dHX+3fPXG9fHdX+n3G3dOt9N2xoge2oIUExGM2+YWleHpUI+sYwQsUn+8pzTMWrYb1Zc0rkiINI8LCXh/Pj9HCG5pALBni4wnlMeRekvsemAW2BWsMx2KJBOMIOyAzp9AgAAAAEREREREREREREREREREREREREREREREREREREREREREQAAAAAA/////wID2QAAAAAAACJRIPGHH8KsMFC1PcNdUCqdlDiPbzc7hvOQVmeUWoQwy9Y5v1EJAAAAAAAWABSJbxumXerrBFuzEh4g5XROZsoOSAAAAABKfQIAAAABZNoUBQ/9DmGGxopZ83GgrclcyEsFAv4JFb5+uj93G7MAAAAAAP////8C2QoAAAAAAAAWABRb4SYk0IorQkCV18ByIcM0UNFL8aK6AAAAAAAAIlEg1SOFMOIj7xvTSoqY7hcI9qiofnolidiN5nALmXP//0YAAAAAUkDxCl5tcitFnofXE7+a8RE/pet6HkH/VzjecEn88RO+ql8BIors8n65QEWpkAsJIJGmPb9Ub9fWwF0y0yz4rVkdWPAHYl4CAAAAAWTaFAUP/Q5hhsaKWfNxoK3JXMhLBQL+CRW+fro/dxuzAAAAAAD/////ATPRAAAAAAAAIlEgTc6gyAIjYRBgLXscwudu9fHwUXCwWGhbTK9DZ6yEnWsAAAAAaLOiA3J9AgAAAAHAR8WQRUIBfP7lf9s1DWv3dqXvjEa8Az9FSmS0ltCrnQAAAAAA/////wJ1CgAAAAAAABYAFFvhJiTQiitCQJXXwHIhwzRQ0UvxNrMAAAAAAAAiUSDVI4Uw4iPvG9NKipjuFwj2qKh+eiWJ2I3mcAuZc///RgAAAAB6QFv5vtY3+9EJ1Txg30CTsWa6BqJ7kMa30FvrkSShn8YtHRdSKjCdTdfY3C7tlU3LP2KPRK6YN8ArkVRfoxPebhcSZQpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAwT4xoruxA+DkKynr1LH7CM60RwR7Lp5InwQ5ISaN1HwEgQKAggBGCESEQoLCgR1YmJuEgM1MDAQwJoMGkBy4d0c4d29zWmQn/oQUIlksCcgfy3JvKc0UYFnbcX/NBFcmGkmkt6IZqMiZB/3W3n1XiXXJ/L8vr5nksSMrBW1',
+  from: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
+  to: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
+  chainId: 'bbn-test-5',
+  accountNumber: 59235,
+  sequence: 33,
+  sendAmount: '10000',
+  feeAmount: '500',
+  sendMessage: {
+    typeUrl: '/babylon.btcstaking.v1.MsgCreateBTCDelegation',
+    value: {
+      _kind: 'CreateBtcDelegation',
+      stakerAddr: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
+      pop: {
+        btcSigType: 2,
+        btcSig: u8(
+          '77d73c7deef77de75f6dc79cddaf7c7f8f3aedbddcd36f787f6d35d37dfaf5d7dbdb46b9efb71e71de79f3cf74e7a6b7e9ff7475ae3c6da7dc7b9e7ae9cf74e1deb46dc6dcd5bd377b6df6e3be7475feddf3d71bd7c7757fa7dc6ddd3adf4ddb'
+        ),
+      },
+      btcPk: u8('7b6a08504c46336f985a5787a5423eb18c10b149fef29cd3316ad86f565cd2b9'),
+      fpBtcPkList: [u8('d23c2c25e1fcf8fd1c21b9a402c19e2e309e531e45e92fb1e9805b6056b0cc76')],
+      stakingTime: 10000,
+      stakingValue: 55555,
+      stakingTx: u8(
+        '020000000111111111111111111111111111111111111111111111111111111111111111110000000000ffffffff0203d9000000000000225120f1871fc2ac3050b53dc35d502a9d94388f6f373b86f3905667945a8430cbd639bf51090000000000160014896f1ba65deaeb045bb3121e20e5744e66ca0e4800000000'
+      ),
+      slashingTx: u8(
+        '020000000164da14050ffd0e6186c68a59f371a0adc95cc84b0502fe0915be7eba3f771bb30000000000ffffffff02d90a0000000000001600145be12624d08a2b424095d7c07221c33450d14bf1a2ba000000000000225120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff4600000000'
+      ),
+      delegatorSlashingSig: u8(
+        'f10a5e6d722b459e87d713bf9af1113fa5eb7a1e41ff5738de7049fcf113beaa5f01228aecf27eb94045a9900b092091a63dbf546fd7d6c05d32d32cf8ad591d'
+      ),
+      unbondingTime: 1008,
+      unbondingTx: u8(
+        '020000000164da14050ffd0e6186c68a59f371a0adc95cc84b0502fe0915be7eba3f771bb30000000000ffffffff0133d10000000000002251204dcea0c802236110602d7b1cc2e76ef5f1f05170b058685b4caf4367ac849d6b00000000'
+      ),
+      unbondingValue: 53555,
+      unbondingSlashingTx: u8(
+        '0200000001c047c5904542017cfee57fdb350d6bf776a5ef8c46bc033f454a64b496d0ab9d0000000000ffffffff02750a0000000000001600145be12624d08a2b424095d7c07221c33450d14bf136b3000000000000225120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff4600000000'
+      ),
+      delegatorUnbondingSlashingSig: u8(
+        '5bf9bed637fbd109d53c60df4093b166ba06a27b90c6b7d05beb9124a19fc62d1d17522a309d4dd7d8dc2eed954dcb3f628f44ae9837c02b91545fa313de6e17'
+      ),
+    },
+  },
+  gasBudget: {
+    amount: [
+      {
+        denom: 'ubbn',
+        amount: '500',
+      },
+    ],
+    gasLimit: 200000,
+  },
+};
+
 export const address = {
   address1: 'bbn1897xa4swxx9dr7z0zut0mfs7efplx80q86kd8q',
   address2: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',

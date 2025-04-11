@@ -45,6 +45,11 @@ describe('Babylon Transaction Builder', async () => {
         testTx: testData.TEST_WITHDRAW_REWARDS_TX,
         builder: factory.getStakingWithdrawRewardsBuilder(),
       },
+      {
+        type: TransactionType.CustomTx,
+        testTx: testData.TEST_CUSTOM_MsgCreateBTCDelegation_TX,
+        builder: factory.getCustomTransactionBuilder(),
+      },
     ];
   });
 
