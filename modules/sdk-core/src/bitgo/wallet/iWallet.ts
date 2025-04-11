@@ -31,6 +31,7 @@ import {
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IAddressBook } from '../address-book';
 import { WalletUser } from '@bitgo/public-types';
+import { SubmitTransactionResponse } from '../inscriptionBuilder';
 
 export interface MaximumSpendableOptions {
   minValue?: number | string;
@@ -899,4 +900,5 @@ export interface IWallet {
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
   getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;
   getNftBalances(): Promise<NftBalance[]>;
+  approveErc20Token(walletPassphrase: string, tokenName: string): Promise<SubmitTransactionResponse>;
 }

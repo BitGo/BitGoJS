@@ -112,6 +112,7 @@ import { AddressBook, IAddressBook } from '../address-book';
 import { IRequestTracer } from '../../api';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
+import { SubmitTransactionResponse } from '../inscriptionBuilder';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -3738,5 +3739,48 @@ export class Wallet implements IWallet {
       }
     }
     return keychains;
+  }
+
+  /**
+   * Approve token for use with a batcher contract
+   * This function builds, signs, and sends a token approval transaction
+   *
+   * @param {string} walletPassphrase - The passphrase to be used to decrypt the user key
+   * @param {string} tokenName - The name of the token to be approved
+   * @returns {Promise<any>} The transaction details
+   */
+  async approveErc20Token(walletPassphrase: string, tokenName: string): Promise<SubmitTransactionResponse> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    let tokenApprovalBuild;
+    try {
+      const url = this.baseCoin.url(`/wallet/${this.id()}/token/approval/build`);
+      tokenApprovalBuild = await this.bitgo
+        .post(url)
+        .send({
+          tokenName: tokenName,
+        })
+        .result();
+    } catch (e) {
+      throw e;
+    }
+
+    const keychains = await this.getKeychainsAndValidatePassphrase({
+      reqId,
+      walletPassphrase,
+    });
+
+    const signingParams = {
+      txPrebuild: tokenApprovalBuild,
+      keychain: keychains[0],
+      walletPassphrase,
+      reqId,
+    };
+
+    const halfSignedTransaction = await this.signTransaction(signingParams);
+    const finalTxParams = _.extend({}, halfSignedTransaction);
+
+    return this.sendTransaction(finalTxParams, reqId);
   }
 }
