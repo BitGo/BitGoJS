@@ -44,6 +44,19 @@ export function getSignedPsbt(
   return bitcoinjslib.Psbt.fromBuffer(Buffer.from(wrappedPsbt.serialize()));
 }
 
+/**
+ * Utility method to work around a bug in btc-staking-ts
+ * https://github.com/babylonlabs-io/btc-staking-ts/issues/71
+ * @param buffer
+ * @param network
+ */
+export function forceFinalizePsbt(buffer: Buffer, network: BabylonNetworkLike): bitcoinjslib.Psbt {
+  const psbt = bitcoinjslib.Psbt.fromBuffer(buffer, { network: toBitcoinJsNetwork(network) });
+  // this only works with certain bitcoinjslib versions
+  psbt.finalizeAllInputs();
+  return psbt;
+}
+
 export function getBtcProviderForECKey(
   descriptorBuilder: BabylonDescriptorBuilder,
   stakerKey: utxolib.ECPairInterface
