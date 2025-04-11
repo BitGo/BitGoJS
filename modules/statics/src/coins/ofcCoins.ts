@@ -833,6 +833,391 @@ export const ofcCoins = [
   ),
   ofcBscToken('822d85d7-f42d-40de-a14c-220a375eda3f', 'ofcbsc:sfp', 'SafePal Token', 18, UnderlyingAsset['bsc:sfp']),
   ofcBscToken('10226e82-2fac-49f4-8ee0-e0f7affeaeec', 'ofcbsc:mask', 'Mask Network', 18, UnderlyingAsset['bsc:mask']),
+  ofcBscToken('6a1e8b8c-4d7e-4f9a-9d8f-f6e72f8c7e65', 'ofcbsc:solv', 'SOLV Protocol', 9, UnderlyingAsset['bsc:solv']),
+  ofcBscToken('f8c3d7b5-2d9e-4b3f-8a1e-7c6d9e3a2f4b', 'ofcbsc:brise', 'Bitrise Token', 9, UnderlyingAsset['bsc:brise']),
+  ofcBscToken('2e9f4c6b-8a7d-4b2e-9d3f-7c6a5e8b1f2a', 'ofcbsc:bsw', 'Biswap', 18, UnderlyingAsset['bsc:bsw']),
+  ofcBscToken(
+    '7c3f2e8a-9d1f-4b6a-8e7b-1f9e4c5d2a6f',
+    'ofcbsc:burger',
+    'Burger Swap',
+    18,
+    UnderlyingAsset['bsc:burger']
+  ),
+  ofcBscToken('4b2e7c6a-9d8f-3f1e-8a2f-5c6d9e7b1a3f', 'ofcbsc:bnx', 'BinaryX', 18, UnderlyingAsset['bsc:bnx']),
+  ofcBscToken('3f1e9d8f-7c6a-2e4b-8a5f-1b2e6c7a9d6f', 'ofcbsc:bake', 'BakeryToken', 18, UnderlyingAsset['bsc:bake']),
+  ofcBscToken(
+    '8a7d9f6c-5e4b-1f2a-3f7c-9d6a8e2b1c5f',
+    'ofcbsc:busd',
+    'Binance USD Token',
+    18,
+    UnderlyingAsset['bsc:busd']
+  ),
+  ofcBscToken('1f9d3f6a-7c4b-8a2e-9e5c-6b1e8f7a2c9d', 'ofcbsc:hook', 'Hook Token', 18, UnderlyingAsset['bsc:hook']),
+  ofcBscToken('9e7b8f6a-3f1d-4b2e-7c9a-5f6c1e8a2b3f', 'ofcbsc:usdt', 'BSC-USD', 18, UnderlyingAsset['bsc:usdt']),
+  ofcBscToken(
+    '5c6a9d8f-7b4e-3f2e-8a1f-2e7c1e6a9b3f',
+    'ofcbsc:ksm',
+    'Kusama (Binance Pegged)',
+    5,
+    UnderlyingAsset['bsc:ksm']
+  ),
+  ofcBscToken(
+    '7c9a8f6a-5e4b-1f2e-3f7b-9d6a1e8a2c5f',
+    'ofcbsc:vet',
+    'VeChain (Binance Pegged)',
+    9,
+    UnderlyingAsset['bsc:vet']
+  ),
+  ofcBscToken(
+    '8a2e9d6f-7c4b-5f3f-1b2e-9e6a7c1a8b5f',
+    'ofcbsc:cake',
+    'PancakeSwap Token',
+    18,
+    UnderlyingAsset['bsc:cake']
+  ),
+  ofcBscToken('9d8f6a7c-3f1e-4b2e-8a5f-1e6a9c7a2b3f', 'ofcbsc:litt', 'LitLabToken', 18, UnderlyingAsset['bsc:litt']),
+  ofcBscToken('4b1e9f6c-7c3f-8a2e-9d5f-6b1a2e7c8a3f', 'ofcbsc:xvs', 'Venus', 18, UnderlyingAsset['bsc:xvs']),
+  ofcBscToken('7c6a9d8f-1f2e-4b3f-8a5f-9e2b1e6a7c9d', 'ofcbsc:epx', 'Ellipsis X', 18, UnderlyingAsset['bsc:epx']),
+  ofcBscToken('8a1e9d6f-7c3f-4b2e-9d5f-6b7a2c8a1e3f', 'ofcbsc:usdc', 'USDC', 18, UnderlyingAsset['bsc:usdc']),
+  ofcBscToken('5c7a9d8f-4b1e-3f2e-8a9f-6a1e7c9d2b3f', 'ofcbsc:dd', 'Diment Dollar', 6, UnderlyingAsset['bsc:dd']),
+  ofcBscToken(
+    '7c3f9d6a-1f2e-8a5f-4b2e-9e7a1c8a9b5f',
+    'ofcbsc:ltc',
+    'Binance-Peg Litecoin Token',
+    18,
+    UnderlyingAsset['bsc:ltc']
+  ),
+  ofcBscToken('4b1e9d6f-7c3f-8a2e-9d5f-6b1a2e7c8a9f', 'ofcbsc:matic', 'Matic Token', 18, UnderlyingAsset['bsc:matic']),
+  ofcBscToken('7c9d8f6a-5e4b-1f2e-3f7b-9e6a1e8a2c5f', 'ofcbsc:mbox', 'Mobox', 18, UnderlyingAsset['bsc:mbox']),
+  ofcBscToken(
+    '8a1f9d6c-7c3f-4b2e-9d5f-6b7a2c8a1e3f',
+    'ofcbsc:mdt',
+    'Measurable Data Token',
+    18,
+    UnderlyingAsset['bsc:mdt']
+  ),
+  ofcBscToken('5c7a8f6a-4b1e-3f2e-9d9f-6a1e7c9d2b3f', 'ofcbsc:nuls', 'Nuls', 8, UnderlyingAsset['bsc:nuls']),
+  ofcBscToken(
+    '7c3f9d6a-1f2e-8a5f-4b2e-9e7a1c8a9b5f',
+    'ofcbsc:ont',
+    'Binance-Peg Ontology Token',
+    18,
+    UnderlyingAsset['bsc:ont']
+  ),
+  ofcBscToken('9e7b8f6a-3f1d-4b2e-7c9a-5f6c1e8a2b3f', 'ofcbsc:orn', 'Orion Protocol', 8, UnderlyingAsset['bsc:orn']),
+  ofcBscToken(
+    '5c6a9d8f-7b4e-3f2e-8a1f-2e7c1e6a9b3f',
+    'ofcbsc:porto',
+    'FC Porto Fan Token',
+    8,
+    UnderlyingAsset['bsc:porto']
+  ),
+  ofcBscToken('8a2e9d6f-7c3f-4b2e-9d5f-6b7a2c8a1e3f', 'ofcbsc:reef', 'Reef.finance', 18, UnderlyingAsset['bsc:reef']),
+  ofcBscToken('4e2f9b6a-1c8d-4f7b-9d3e-7a5c6b8e2f1a', 'ofcbsc:renbtc', 'renBTC', 8, UnderlyingAsset['bsc:renbtc']),
+  ofcBscToken(
+    '3f1e7c8a-9d6f-5b2e-4b9d-6a7c9e2f1b5a',
+    'ofcbsc:snx',
+    'Binance-Peg Synthetix Network Token',
+    18,
+    UnderlyingAsset['bsc:snx']
+  ),
+  ofcBscToken('7c6a8f1e-3f9d-4b2e-9e5f-1a7c9b6f2e5a', 'ofcbsc:tking', 'Tiger King', 18, UnderlyingAsset['bsc:tking']),
+  ofcBscToken(
+    '9d3f6a8f-7c1e-4b2e-5f9e-2a7c9b6f8e1a',
+    'ofcbsc:tlm',
+    'Alien Worlds Trilium',
+    4,
+    UnderlyingAsset['bsc:tlm']
+  ),
+  ofcBscToken('5c6a7f8e-4b9d-3f2e-8a9f-7c1e9b6a2f3e', 'ofcbsc:ton', 'Wrapped TON Coin', 9, UnderlyingAsset['bsc:ton']),
+  ofcBscToken('3f1e8f7c-6a9d-4b2e-9e5f-7a1c9b6f2e5a', 'ofcbsc:trx', 'TRON', 6, UnderlyingAsset['bsc:trx']),
+  ofcBscToken('7c9e8f1e-3f6a-4b2e-5f9d-8a7c1b6f2e5a', 'ofcbsc:wbnb', 'Wrapped BNB', 18, UnderlyingAsset['bsc:wbnb']),
+  ofcBscToken('9d7f6a1e-8c3f-4b2e-5f9e-7a8c9b6f2e1a', 'ofcbsc:win', 'WINk', 18, UnderlyingAsset['bsc:win']),
+  ofcBscToken('5c7a8f9e-4b1e-3f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:wrx', 'WazirX New', 18, UnderlyingAsset['bsc:wrx']),
+  ofcBscToken(
+    '8a9f6a7c-1e3f-4b2e-9d5f-7c8a9b6f2e1a',
+    'ofcbsc:yfii',
+    'Binance-Peg YFII.finance Token',
+    18,
+    UnderlyingAsset['bsc:yfii']
+  ),
+  ofcBscToken('9d6f7a1e-3f8c-4b2e-5f9e-8a7c9b6f2e5a', 'ofcbsc:zil', 'Zilliqa', 12, UnderlyingAsset['bsc:zil']),
+  ofcBscToken('7c3f8f1e-9d6a-4b2e-5f9e-7a8c9b6f2e1a', 'ofcbsc:1inch', '1INCH Token', 18, UnderlyingAsset['bsc:1inch']),
+  ofcBscToken(
+    '5c9d7f6a-4b1e-3f2e-9d8f-7c1a8b6f2e5a',
+    'ofcbsc:ada',
+    'Binance-Peg Cardano Token',
+    18,
+    UnderlyingAsset['bsc:ada']
+  ),
+  ofcBscToken('9e8f6a1e-3f7c-4b2e-5f9d-8a7c9b6f2e5a', 'ofcbsc:alice', 'ALICE', 6, UnderlyingAsset['bsc:alice']),
+  ofcBscToken('7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a', 'ofcbsc:ankr', 'Ankr', 18, UnderlyingAsset['bsc:ankr']),
+  ofcBscToken('9d5f6a1e-8c3f-4b2e-7f9e-8a7c9b6f2e1a', 'ofcbsc:beta', 'Beta Token', 18, UnderlyingAsset['bsc:beta']),
+  ofcBscToken(
+    '5c7a8f9e-4b1e-3f2e-6d9f-7c8a1b6f2e5a',
+    'ofcbsc:avax',
+    'Binance-Peg Avalanche Token',
+    18,
+    UnderlyingAsset['bsc:avax']
+  ),
+  ofcBscToken('8a9f7c3f-1e5f-4b2e-9d6a-7c8a9b6f2e5a', 'ofcbsc:btt', 'BitTorrent', 18, UnderlyingAsset['bsc:btt']),
+  ofcBscToken(
+    '9d6f8a7c-3f1e-4b2e-5f9e-1a7c9b6f2e5a',
+    'ofcbsc:celr',
+    'Binance-Peg Celer Token',
+    18,
+    UnderlyingAsset['bsc:celr']
+  ),
+  ofcBscToken('7c1e9d8f-3f6a-4b2e-5f9e-7a8c9b6f2e1a', 'ofcbsc:chr', 'Chroma', 6, UnderlyingAsset['bsc:chr']),
+  ofcBscToken(
+    '9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a',
+    'ofcbsc:coti',
+    'Binance-Peg COTI Token',
+    18,
+    UnderlyingAsset['bsc:coti']
+  ),
+  ofcBscToken('5c9d7f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a', 'ofcbsc:cream', 'Cream', 18, UnderlyingAsset['bsc:cream']),
+  ofcBscToken('7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a', 'ofcbsc:dar', 'Dalarnia', 6, UnderlyingAsset['bsc:dar']),
+  ofcBscToken(
+    '9e5f6a1e-3f7c-4b2e-9d8f-8a7c9b6f2e1a',
+    'ofcbsc:degov2',
+    'dego.finance',
+    18,
+    UnderlyingAsset['bsc:degov2']
+  ),
+  ofcBscToken('7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a', 'ofcbsc:dodo', 'DODO bird', 18, UnderlyingAsset['bsc:dodo']),
+  ofcBscToken('5c7a9f8e-4b1e-3f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:elon', 'Dogelon Mars', 18, UnderlyingAsset['bsc:elon']),
+  ofcBscToken(
+    '8a9f7c6a-1e3f-4b2e-5f9d-7a8c9b6f2e5a',
+    'ofcbsc:etc',
+    'Binance-Peg Ethereum Classic',
+    18,
+    UnderlyingAsset['bsc:etc']
+  ),
+  ofcBscToken(
+    '9d6f8a7c-3f1e-4b2e-5f9e-1a8c9b6f2e5a',
+    'ofcbsc:front',
+    'Frontier Token',
+    18,
+    UnderlyingAsset['bsc:front']
+  ),
+  ofcBscToken('7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a', 'ofcbsc:hft', 'Hashflow', 18, UnderlyingAsset['bsc:hft']),
+  ofcBscToken(
+    '9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a',
+    'ofcbsc:high',
+    'Highstreet Token',
+    18,
+    UnderlyingAsset['bsc:high']
+  ),
+  ofcBscToken(
+    '5c9d7f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a',
+    'ofcbsc:inj',
+    'Injective Protocol',
+    18,
+    UnderlyingAsset['bsc:inj']
+  ),
+  ofcBscToken(
+    '7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a',
+    'ofcbsc:iotx',
+    'Binance-Peg IoTeX Network',
+    18,
+    UnderlyingAsset['bsc:iotx']
+  ),
+  ofcBscToken('9e5f6a1e-3f7c-4b2e-9d8f-8a7c9b6f2e1a', 'ofcbsc:auto', 'AUTOv2', 18, UnderlyingAsset['bsc:auto']),
+  ofcBscToken('7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a', 'ofcbsc:fet', 'Fetch', 18, UnderlyingAsset['bsc:fet']),
+  ofcBscToken('5c7a9f8e-4b1e-3f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:kas', 'Kaspa', 18, UnderlyingAsset['bsc:kas']),
+  ofcBscToken('8a9f7c6a-1e3f-4b2e-5f9d-7a8c9b6f2e5a', 'ofcbsc:lit', 'Litentry', 18, UnderlyingAsset['bsc:lit']),
+  ofcBscToken('9d6f8a7c-3f1e-4b2e-5f9e-1a8c9b6f2e5a', 'ofcbsc:mana', 'Decentraland', 18, UnderlyingAsset['bsc:mana']),
+  ofcBscToken(
+    '7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a',
+    'ofcbsc:shib',
+    'Binance-Peg SHIBA INU Token',
+    18,
+    UnderlyingAsset['bsc:shib']
+  ),
+  ofcBscToken('9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a', 'ofcbsc:sxp', 'Swipe', 18, UnderlyingAsset['bsc:sxp']),
+  ofcBscToken('5c9d7f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a', 'ofcbsc:nnn', 'Novem Gold Token', 18, UnderlyingAsset['bsc:nnn']),
+  ofcBscToken('7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a', 'ofcbsc:nvm', 'Novem Pro Token', 18, UnderlyingAsset['bsc:nvm']),
+  ofcBscToken('9e5f6a1e-3f7c-4b2e-9d8f-8a7c9b6f2e1a', 'ofcbsc:jasmy', 'Jasmy Coin', 18, UnderlyingAsset['bsc:jasmy']),
+  ofcBscToken('7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a', 'ofcbsc:near', 'NEAR Token', 18, UnderlyingAsset['bsc:near']),
+  ofcBscToken(
+    '5c7a9f8e-4b1e-3f2e-9d6f-7c8a1b6f2e5a',
+    'ofcbsc:ocean',
+    'Ocean Protocol',
+    18,
+    UnderlyingAsset['bsc:ocean']
+  ),
+  ofcBscToken('8a9f7c6a-1e3f-4b2e-5f9d-7a8c9b6f2e5a', 'ofcbsc:sand', 'The Sandbox', 18, UnderlyingAsset['bsc:sand']),
+  ofcBscToken('9d6f8a7c-3f1e-4b2e-5f9e-1a8c9b6f2e5a', 'ofcbsc:tusd', 'TrueUSD', 18, UnderlyingAsset['bsc:tusd']),
+  ofcBscToken('7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a', 'ofcbsc:wrose', 'Wrapped ROSE', 18, UnderlyingAsset['bsc:wrose']),
+  ofcBscToken(
+    '9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a',
+    'ofcbsc:twt',
+    'Trust Wallet Token',
+    18,
+    UnderlyingAsset['bsc:twt']
+  ),
+  ofcBscToken(
+    '7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a',
+    'ofcbsc:edu',
+    'Open Campus EDU Coin',
+    18,
+    UnderlyingAsset['bsc:edu']
+  ),
+  ofcBscToken('9e5f6a1e-3f7c-4b2e-9d8f-8a7c9b6f2e1a', 'ofcbsc:mrs', 'Metars Genesis', 18, UnderlyingAsset['bsc:mrs']),
+  ofcBscToken(
+    '7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a',
+    'ofcbsc:ong',
+    'Ontology Gas Token',
+    9,
+    UnderlyingAsset['bsc:ong']
+  ),
+  ofcBscToken(
+    '5c7a9f8e-4b1e-3f2e-9d6f-7c8a1b6f2e5a',
+    'ofcbsc:ctk',
+    'Shentu CertiK Token',
+    6,
+    UnderlyingAsset['bsc:ctk']
+  ),
+  ofcBscToken(
+    '8a9f7c6a-1e3f-4b2e-5f9d-7a8c9b6f2e5a',
+    'ofcbsc:rdnt',
+    'Radiant Capital',
+    18,
+    UnderlyingAsset['bsc:rdnt']
+  ),
+  ofcBscToken('9d6f8a7c-3f1e-4b2e-5f9e-1a8c9b6f2e5a', 'ofcbsc:mbx', 'MARBLEX', 18, UnderlyingAsset['bsc:mbx']),
+  ofcBscToken('7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a', 'ofcbsc:mav', 'Maverick Token', 18, UnderlyingAsset['bsc:mav']),
+  ofcBscToken('9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a', 'ofcbsc:mct', 'MetaCraftToken', 18, UnderlyingAsset['bsc:mct']),
+  ofcBscToken(
+    '5c9d7f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a',
+    'ofcbsc:thunder',
+    'BSC-Peg Thunder Token',
+    18,
+    UnderlyingAsset['bsc:thunder']
+  ),
+  ofcBscToken('7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a', 'ofcbsc:atlas', 'Star Atlas', 8, UnderlyingAsset['bsc:atlas']),
+  ofcBscToken('9e5f6a1e-3f7c-4b2e-9d8f-8a7c9b6f2e1a', 'ofcbsc:vidt', 'VIDT DAO', 18, UnderlyingAsset['bsc:vidt']),
+  ofcBscToken(
+    '7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a',
+    'ofcbsc:pax',
+    'Binance-Peg Paxos Standard',
+    18,
+    UnderlyingAsset['bsc:pax']
+  ),
+  ofcBscToken(
+    '5c7a9f8e-4b1e-3f2e-9d6f-7c8a1b6f2e5a',
+    'ofcbsc:unfi',
+    'Unifi Protocol DAO',
+    18,
+    UnderlyingAsset['bsc:unfi']
+  ),
+  ofcBscToken('8a9f7c6a-1e3f-4b2e-5f9d-7a8c9b6f2e5a', 'ofcbsc:chess', 'Tranchess', 18, UnderlyingAsset['bsc:chess']),
+  ofcBscToken(
+    '9d6f8a7c-3f1e-4b2e-5f9e-1a8c9b6f2e5a',
+    'ofcbsc:pols',
+    'PolkastarterToken',
+    18,
+    UnderlyingAsset['bsc:pols']
+  ),
+  ofcBscToken(
+    '7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a',
+    'ofcbsc:uft',
+    'UniLend Finance Token',
+    18,
+    UnderlyingAsset['bsc:uft']
+  ),
+  ofcBscToken('9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a', 'ofcbsc:wing', 'Wing Finance', 9, UnderlyingAsset['bsc:wing']),
+  ofcBscToken(
+    '5c9d7f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a',
+    'ofcbsc:santos',
+    'FC Santos Fan Token',
+    8,
+    UnderlyingAsset['bsc:santos']
+  ),
+  ofcBscToken(
+    '7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a',
+    'ofcbsc:lazio',
+    'FC Lazio Fan Token',
+    8,
+    UnderlyingAsset['bsc:lazio']
+  ),
+  ofcBscToken(
+    '9e5f6a1e-3f7c-4b2e-9d8f-8a7c9b6f2e1a',
+    'ofcbsc:swap',
+    'TrustSwap Token',
+    18,
+    UnderlyingAsset['bsc:swap']
+  ),
+  ofcBscToken('7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a', 'ofcbsc:troy', 'TROY', 18, UnderlyingAsset['bsc:troy']),
+  ofcBscToken('5c7a8f9e-4b1e-3f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:volt', 'Volt Inu', 9, UnderlyingAsset['bsc:volt']),
+  ofcBscToken(
+    '8a9f7c6a-1e3f-4b2e-5f9d-7a8c9b6f2e5a',
+    'ofcbsc:city',
+    'Manchester City Fan Token',
+    2,
+    UnderlyingAsset['bsc:city']
+  ),
+  ofcBscToken('9d6f8a7c-3f1e-4b2e-5f9e-1a8c9b6f2e5a', 'ofcbsc:gft', 'Gifto', 18, UnderlyingAsset['bsc:gft']),
+  ofcBscToken('7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a', 'ofcbsc:glmr', 'Moonbeam', 18, UnderlyingAsset['bsc:glmr']),
+  ofcBscToken(
+    '9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a',
+    'ofcbsc:gmt',
+    'Green Metaverse Token',
+    8,
+    UnderlyingAsset['bsc:gmt']
+  ),
+  ofcBscToken('5c9d7f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a', 'ofcbsc:h2o', 'H2O DAO', 18, UnderlyingAsset['bsc:h2o']),
+  ofcBscToken('7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a', 'ofcbsc:flux', 'Flux', 8, UnderlyingAsset['bsc:flux']),
+  ofcBscToken('9e5f6a1e-3f7c-4b2e-9d8f-8a7c9b6f2e1a', 'ofcbsc:lto', 'LTO Network', 18, UnderlyingAsset['bsc:lto']),
+  ofcBscToken('7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a', 'ofcbsc:kmd', 'Komodo', 18, UnderlyingAsset['bsc:kmd']),
+  ofcBscToken(
+    '5c7a8f9e-4b1e-3f2e-9d6f-7c8a1b6f2e5a',
+    'ofcbsc:farm',
+    'Harvest Finance',
+    18,
+    UnderlyingAsset['bsc:farm']
+  ),
+  ofcBscToken('8a9f7c6a-1e3f-4b2e-5f9d-7a8c9b6f2e5a', 'ofcbsc:lina', 'Linear Finance', 18, UnderlyingAsset['bsc:lina']),
+  ofcBscToken('7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a', 'ofcbsc:firo', 'Firo', 8, UnderlyingAsset['bsc:firo']),
+  ofcBscToken(
+    '9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a',
+    'ofcbsc:fdusd',
+    'First Digital USD',
+    18,
+    UnderlyingAsset['bsc:fdusd']
+  ),
+  ofcBscToken('5c9d7f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a', 'ofcbsc:floki', 'FLOKI', 9, UnderlyingAsset['bsc:floki']),
+  ofcBscToken('7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a', 'ofcbsc:ldo', 'LIDO DAO', 18, UnderlyingAsset['bsc:ldo']),
+  ofcBscToken('9e5f6a1e-3f7c-4b2e-9d8f-8a7c9b6f2e1a', 'ofcbsc:eos', 'EOS', 18, UnderlyingAsset['bsc:eos']),
+  ofcBscToken('7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a', 'ofcbsc:om', 'MANTRA DAO', 18, UnderlyingAsset['bsc:om']),
+  ofcBscToken('5c7a8f9e-4b1e-3f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:usdd', 'USDD', 18, UnderlyingAsset['bsc:usdd']),
+  ofcBscToken(
+    '8a9f7c6a-1e3f-4b2e-5f9d-7a8c9b6f2e5a',
+    'ofcbsc:alpaca',
+    'Alpaca Finance',
+    18,
+    UnderlyingAsset['bsc:alpaca']
+  ),
+  ofcBscToken(
+    '9d6f8a7c-3f1e-4b2e-5f9e-1a8c9b6f2e5a',
+    'ofcbsc:alpine',
+    'Alpine F1 Team Fan Token',
+    8,
+    UnderlyingAsset['bsc:alpine']
+  ),
+  ofcBscToken('7c1e9f8a-3f6a-4b2e-5f9d-7a8c9b6f2e1a', 'ofcbsc:tko', 'Toko Token', 18, UnderlyingAsset['bsc:tko']),
+  ofcBscToken('9e8f6a7c-3f1d-4b2e-5f9e-8a7c1b6f2e5a', 'ofcbsc:vite', 'VITE', 18, UnderlyingAsset['bsc:vite']),
+  ofcBscToken('5c9d7f6a-4b1e-3f2e-9d8f-7c1e8b6f2e5a', 'ofcbsc:mdx', 'Mdex', 18, UnderlyingAsset['bsc:mdx']),
+  ofcBscToken('7c8f9d6a-1e3f-4b2e-5f9e-7a9c1b6f2e5a', 'ofcbsc:multi', 'Multichain', 18, UnderlyingAsset['bsc:multi']),
+  ofcBscToken(
+    '7c3f8a1e-9d6f-4b2e-5f9e-7a8c9b6f2e5a',
+    'ofcbsc:psg',
+    'Paris Saint-Germain Fan Token',
+    2,
+    UnderlyingAsset['bsc:psg']
+  ),
+  ofcBscToken('5c7a8f9e-4b1e-3f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:telos', 'Telos', 18, UnderlyingAsset['bsc:telos']),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
     'ofcpolygon:sbc',
