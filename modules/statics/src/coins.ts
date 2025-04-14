@@ -2707,6 +2707,50 @@ export const coins = CoinMap.fromCoins([
     'straitsx.com',
     UnderlyingAsset['xrp:xsgd']
   ),
+  xrpToken(
+    'a47c9171-6cb5-487a-a467-7bc131b93ed3',
+    'xrp:veur',
+    'VNX Euro',
+    15,
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3',
+    'VEUR',
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::VEUR',
+    'vnx.li',
+    UnderlyingAsset['xrp:veur']
+  ),
+  xrpToken(
+    '09517f5b-06b8-438a-bdb8-af3f62089ba9',
+    'xrp:vchf',
+    'VNX Swiss Frank',
+    15,
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3',
+    'VCHF',
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::VCHF',
+    'vnx.li',
+    UnderlyingAsset['xrp:vchf']
+  ),
+  xrpToken(
+    '78e89b34-dfc8-4122-918c-0b05281f76cc',
+    'xrp:vgbp',
+    'VNX Pound',
+    15,
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3',
+    'VGBP',
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::VGBP',
+    'vnx.li',
+    UnderlyingAsset['xrp:vgbp']
+  ),
+  txrpToken(
+    '80cbaecf-b1ea-4811-97ae-213c1ffc9175',
+    'txrp:xsgd',
+    'XSGD',
+    15,
+    'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD',
+    'XSGD',
+    'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD::XSGD',
+    'straitsx.com',
+    UnderlyingAsset['txrp:xsgd']
+  ),
   suiToken(
     'f26941b7-1110-4aa7-a2bc-29807297a51c',
     'sui:deep',

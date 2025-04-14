@@ -1631,6 +1631,13 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:block')
   ),
+  ofcerc20(
+    '3ffe3b72-6493-4d63-b483-19ff7a59ca53',
+    'ofceth:dragonx',
+    'DragonX',
+    18,
+    underlyingAssetForSymbol('eth:dragonx')
+  ),
   ofcerc20('bdb004b5-4ec7-479e-905b-ee34bc8f6bea', 'ofceth:usual', 'Usual', 18, underlyingAssetForSymbol('eth:usual')),
   ofcerc20(
     '03fc7083-15c1-4a9f-9029-5b5342f2f11e',

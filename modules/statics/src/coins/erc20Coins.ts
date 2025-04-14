@@ -830,6 +830,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:ultra']
   ),
   erc20(
+    'c68804ae-fd39-4d71-8948-913fa04d0152',
+    'eth:dragonx',
+    'DragonX',
+    18,
+    '0x96a5399d07896f757bd4c6ef56461f58db951862',
+    UnderlyingAsset['eth:dragonx']
+  ),
+  erc20(
     'bcb2af13-b64d-403a-bb61-1990e6286fcd',
     'bidl',
     'Blockbid Liquidity',
