@@ -253,6 +253,7 @@ export type RecoverOptions = {
   intendedChain?: string;
   common?: EthLikeCommon.default;
   derivationSeed?: string;
+  apiKey?: string;
 } & TSSRecoverOptions;
 
 export type GetBatchExecutionInfoRT = {
@@ -531,13 +532,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {String} address - the ETHLike address
    * @returns {BigNumber} address balance
    */
-  async queryAddressBalance(address: string): Promise<any> {
+  async queryAddressBalance(address: string, apiKey?: string): Promise<any> {
     const result = await this.recoveryBlockchainExplorerQuery({
       chainid: this.getChainId().toString(),
       module: 'account',
       action: 'balance',
       address: address,
-    });
+    }, apiKey);
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
       throw new Error(`Could not obtain address balance for ${address} from the explorer, got: ${result.result}`);
@@ -839,7 +840,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {string} address
    * @returns {Promise<number>}
    */
-  async getAddressNonce(address: string): Promise<number> {
+  async getAddressNonce(address: string, apiKey?: string): Promise<number> {
     // Get nonce for backup key (should be 0)
     let nonce = 0;
 
@@ -1943,7 +1944,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
   }
 
-  private async getGasValues(params: RecoverOptions): Promise<{ gasLimit: number; gasPrice: Buffer }> {
+  protected async getGasValues(params: RecoverOptions): Promise<{ gasLimit: number; gasPrice: Buffer }> {
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
@@ -2028,7 +2029,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       } as unknown as ECDSAMethodTypes.Signature;
       const signatureHex = Buffer.from(signature.toString(), 'hex');
       const txBuilder = this.getTransactionBuilder(getCommon(this.getNetwork() as EthLikeNetwork));
-      txBuilder.from(transaction.serializedTxHex as string);
+      txBuilder.from(addHexPrefix(transaction.serializedTxHex) as string);
 
       if (!transaction.coinSpecific?.commonKeyChain) {
         throw new Error(`Missing common keychain for transaction at index ${i}`);
@@ -2163,9 +2164,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     };
   }
 
-  private async buildTssRecoveryTxn(baseAddress: string, gasPrice: any, gasLimit: any, params: RecoverOptions) {
-    const nonce = await this.getAddressNonce(baseAddress);
-    const txAmount = await this.validateBalanceAndGetTxAmount(baseAddress, gasPrice, gasLimit);
+  protected async buildTssRecoveryTxn(baseAddress: string, gasPrice: any, gasLimit: any, params: RecoverOptions) {
+    const nonce = await this.getAddressNonce(baseAddress, params.apiKey);
+    const txAmount = await this.validateBalanceAndGetTxAmount(baseAddress, gasPrice, gasLimit, params.apiKey);
     const recipients = [
       {
         address: params.recoveryDestination,
@@ -2194,8 +2195,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return { txInfo, tx, nonce };
   }
 
-  async validateBalanceAndGetTxAmount(baseAddress: string, gasPrice: BN, gasLimit: BN) {
-    const baseAddressBalance = await this.queryAddressBalance(baseAddress);
+  async validateBalanceAndGetTxAmount(baseAddress: string, gasPrice: BN, gasLimit: BN, apiKey?: string) {
+    const baseAddressBalance = await this.queryAddressBalance(baseAddress, apiKey);
     const totalGasNeeded = gasPrice.mul(gasLimit);
     const weiToGwei = new BN(10 ** 9);
     if (baseAddressBalance.lt(totalGasNeeded)) {
@@ -2209,7 +2210,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return txAmount;
   }
 
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<any> {
+  async recoveryBlockchainExplorerQuery(query: Record<string, string>, apiKey?: string): Promise<any> {
     throw new Error('method not implemented');
   }
 
@@ -2844,3 +2845,4 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
   }
 }
+

@@ -104,3 +104,114 @@ export const keyShares = {
     },
   },
 };
+
+// New mock data functions for recovery and sweep
+const TEST_POLYGON_WALLET_FIRST_ADDRESS = '0x4861ae0ac185c9b395df457e9d8c03ec14b558fe';
+const TEST_RECOVERY_PASSCODE = 'Bondiola1234#';
+
+export function getNonBitGoRecoveryForHotWalletsMPCv2(intendedChain = 'tpolygon'): any {
+  return {
+    userKey:
+      '{"iv":"xijOgJRivR4fTovtu+UyxA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+      ':"ccm","adata":"","cipher":"aes","salt":"X3Y8Gq6SIww=","ct":"NLtQHqJx5dNCO5\n' +
+      'h/qdqnrDVLTgxPkOVPbLgw0qvA28w2jU+E63DP1R45sXCeCJM1CyMq+aADBE8HAsqA91Pn21AvW\n' +
+      'cR9B7ElL5uCSWplBgQhitQN58m6sDs0wkskjMTYTZlv6UuDsTr/ZxWUug/xxiWn6FT0O8OcSemI\n' +
+      'CR0/VoEwiLKmO48Ay9FnfI+/5BPZGExuu9ej8rIQJr2LF+F+HZKDP/IDJU4yoBsK+a1MCnNWh4X\n' +
+      'IIqg2dgW00rebJuO1wCBmQUBX9mNe1wu83YZjPd4Q1LtRyFyIvadVf+tiUXLuyYQddbyFrR5d9J\n' +
+      'HOPHafMyMzhD6TZD9ejBwB/jnfxg6ksjC4KgfkvQFvPyJfuC9eXms6ZLkYLb8xQina0M1PhBzBM\n' +
+      'kcPBIiat9IRkc0XwD0csRXRMUp9spp0g7Cs78oCazfwrtqMVhoUP1lLqNA/JhPCIfjQwaiIWHu3\n' +
+      'xo+j0+MEr9ShpTa8GxGhnqTvE8yGAjjzvVHTftHtCfV6v8mP30c7nst9NMn8q/kp2r7DICVdWzl\n' +
+      'ZSr+t676mO8VC/OZ5imxeNZRpD5HBjMw6sreSPZpcBCB2jnLcKzmmUdL+YUUaMpM46v3jCypOsb\n' +
+      'geQ0Y8J1b7VGHwwdMpoWJFwYfPGPhFXKe/93HilfVc+0rKmDM3Sf+XHRdRbcnB0gd/f4e2Nz3nd\n' +
+      'XpFgM+U3u4rPXx1KBAnySH2jQM6ewPqyNqiEtisCAe3/YJ9wXegvSP5EGDtE91tur36NWJ1/DEl\n' +
+      'e17QnNh23IHg5zn37pqnf+E2CYI77Db4TrVdFW/8Mw9Cc+qy1Nqk1Z4nzw7KF1r1AuJtOOLWnAo\n' +
+      'AF43cG92JfpW8degO1xUu4LRMgPc/kqAsB+BK33zabHk4R8mBzrRTD9mdtlVz+4fAwrcM9KIwr/\n' +
+      'xAf7jb/96juw02v0juDKmM/gFv+Wa8aCLyT0liW/cJm4h3ZyJTpFrZWRH06FEiPf4skaOpBVQov\n' +
+      'HmTAXpRWVNtNB3XKkE7AtsYOd+2F2txx/PrOPZjvMP18RqwIjY4KZKYGamEnU/AjCk3LphNmKP+\n' +
+      'V7cNpyP+zr5HxMDlCqYuYKbObDQCrTwVz18BWNrArdIfUw=="},\n',
+    backupKey:
+      '{"iv":"a4Ec48bpYTnXUyxGYVdvTg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+      ':"ccm","adata":"","cipher":"aes","salt":"fLRw4S3Gl2Y=","ct":"043lWL0p9f99Xr\n' +
+      'S9d9LloOoKJIsb9xoh03Iszy1GPsLyCD1Fd+tNiQUNKaG5LgNS1YPOk4xfBzD1NclPNj3ycZg/e\n' +
+      'r/vTTPIpclwC0U/jQU8wTbdP8oR2oofJ+Ttss29ryYV08wcRKurwpmxvrBuVWtNNU7TIdsqZLkm\n' +
+      '9emXt9hBEJHlN89/ydiNkBCsqb5L5/i1aI2Kg4CLzTvuq2vOVFMFtpdP9ll/xKZX8OCjpGgOmnS\n' +
+      'EW4+Dm1+Nau2nuEMqdux8ev4JafA+MWUe6246Guof6zpluVeRiO/ebl7yiMA52IdpuJWW9girdp\n' +
+      'qiZaKZ6vbI7aimgLtC6OnhLq+wnc6dddE2bBJWuVE6G7VhQ6I8uVogSZfQ1Go5bY+kaMkRMVPWw\n' +
+      'XlMO8nw/z/zwa4CJPNAcdz4ONU1Rj5K5S9Jl0duvrIWs/1aDMaAKT+F72mUs4+Rhw1y6E+vXeto\n' +
+      'tGY4392bwX9K5/KTTHGD4CYvJCUk3RMmYVezcwsFrbdCnAhys6qUqrKy5sIkrjXnemqubPXubGT\n' +
+      'APYhitF8LY5mk3iA8V4Areb+04ADR/qDc6/QE5HnZnM1kqQ6GgULBIrKX0Q6wRusHyVgjzryqJM\n' +
+      'iFJbwIXaKbpjofzUACAoHy0zy2Mzmwh3ebnFoVNvPyWlvOkrmBlQYMaz4eAcE0dlufbsI2JzNwu\n' +
+      'PIbu6ptY6Kqw1in7LgZgCS3NwzyPslkZEn80aEvbBKFQjZgvZK7Ll1z2rO3igYvm4zfv9kl3oD2\n' +
+      'R+rScIRRVuOsgeUKGQrPekpN0ZCaHzNABJBdz7GDde6n4N48NrnEr8nwOQcRe3xzHgkmrBmb7zz\n' +
+      '7DhGmn47mLqasml61ztbGn+QrKjLXGB3vJr09WSkCfCvoF+vW36HNJf399XgJdjg1aAa3c4HpRQ\n' +
+      '3qRN5R5ArHcJqVdK3OYLObzNAbgKMZidLnW2ExtKRkT9/mW4scyNDwgnv653w34V7yYyKdNG1R2\n' +
+      'usziXQizZwLdvTHhcsH5XXfwyy+8xOSyyv1ZstuIrixnYDgWbuDYTBJFqwUiue6GeN7lbzvmiq2\n' +
+      'oG2EIT5o4QeEMd5npIyEr411jRzgsLwLpFpuEo1M"},\n',
+    bitgoKey:
+      '02e75778dbb3988061f438b08d2eaf8d1bd3e6decc01b57ae35da45ba902eee1b34da5234e4d65c94fa4f8c3ac1313ca3f1f13f1262545d714249c349895eb9c01',
+    walletPassphrase: TEST_RECOVERY_PASSCODE,
+    walletContractAddress: TEST_POLYGON_WALLET_FIRST_ADDRESS,
+    bitgoFeeAddress: '0x4861ae0ac185c9b395df457e9d8c03ec14b558fe',
+    recoveryDestination: '0xd5adde17fed8baed3f32b84af05b8f2816f7b560',
+    bitgoDestinationAddress: '0xe5986ce4490deb67d2950562ceb930ddf9be7a14',
+    eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+    gasLimit: 500000,
+    intendedChain: intendedChain,
+  };
+}
+
+export function getBuildUnsignedSweepForSelfCustodyColdWalletsMPCv2(intendedChain = 'tpolygon'): any {
+  const address = '0x3685e9831699279942c1190edbf2c33c2c3c156b';
+  return {
+    recoveryDestination: '0xd5adde17fed8baed3f32b84af05b8f2816f7b560',
+    bitgoDestinationAddress: '0xe5986ce4490deb67d2950562ceb930ddf9be7a14',
+    walletContractAddress: TEST_POLYGON_WALLET_FIRST_ADDRESS,
+    eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+    gasLimit: 500000,
+    intendedChain: intendedChain,
+    address: address,
+    amount: '100000000000000000', // 0.1 MATIC
+    commonKeyChain:
+      '03a139ba3bf49de33675ea869baaab8f3225afffc96835c30db401c53b335476dddf0ad919ad8cfa92967a20879753a42fd3df1d6eb0824f0294a7838faa80e963',
+  };
+}
+
+export function getInvalidNonBitGoRecoveryParams(): any {
+  return {
+    ...getNonBitGoRecoveryForHotWalletsMPCv2(),
+    userKey: 'invalidUserKey',
+  };
+}
+
+export function getTxListRequest(
+  bitgoFeeAddress: any
+):
+  | string
+  | boolean
+  | import('nock').DataMatcherMap
+  | import('url').URLSearchParams
+  | ((parsedObj: import('querystring').ParsedUrlQuery) => boolean) {
+  throw new Error('Function not implemented.');
+}
+export function getTxListResponse(arg0: number, getTxListResponse: any) {
+  throw new Error('Function not implemented.');
+}
+
+export function getBalanceRequest(
+  bitgoFeeAddress: any
+):
+  | string
+  | boolean
+  | import('nock').DataMatcherMap
+  | import('url').URLSearchParams
+  | ((parsedObj: import('querystring').ParsedUrlQuery) => boolean) {
+  throw new Error('Function not implemented.');
+}
+
+export function getBalanceResponse(arg0: number, getBalanceResponse: any) {
+  throw new Error('Function not implemented.');
+}
+
+export function getBitgoKey() {
+  throw new Error('Function not implemented.');
+}
