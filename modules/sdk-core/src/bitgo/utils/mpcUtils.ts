@@ -6,7 +6,6 @@ import { decrypt, readMessage, readPrivateKey, SerializedKeyPair } from 'openpgp
 import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { AddKeychainOptions, Keychain, KeyType } from '../keychain';
-import { BackupProvider } from '../wallet';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
 import { IntentRecipient, PopulatedIntent, PrebuildTransactionWithIntentOptions } from './tss/baseTypes';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../tss/bitgoPubKeys';
@@ -100,7 +99,6 @@ export abstract class MpcUtils {
     passphrase: string;
     enterprise?: string;
     originalPasscodeEncryptionCode?: string;
-    backupProvider?: BackupProvider;
   }): Promise<KeychainsTriplet>;
 
   /**
