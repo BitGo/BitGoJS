@@ -322,6 +322,14 @@ export const ofcCoins = [
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
+    '522d80ff-9588-4e56-8bb5-c2d3dce69e77',
+    'ofcsol:tbill',
+    'OpenEden T-Bills',
+    6,
+    UnderlyingAsset['sol:tbill'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
     'ca2feee8-425b-4690-9294-a81911cbab42',
     'ofcsol:pnut',
     'Peanut the Squirrel',
@@ -687,6 +695,16 @@ export const ofcCoins = [
     15,
     UnderlyingAsset['xrp:tbill']
   ),
+  ofcXrpToken('48ee9d32-9a99-4fd2-8636-021b150e6580', 'ofcxrp:veur', 'VNX Euro', 15, UnderlyingAsset['xrp:veur']),
+  ofcXrpToken(
+    '5b175d47-b21a-4fdd-8b84-7a6cb53697bc',
+    'ofcxrp:vchf',
+    'VNX Swiss Frank',
+    15,
+    UnderlyingAsset['xrp:vchf']
+  ),
+  ofcXrpToken('54c3a5df-ad9f-42a9-82fc-ef8617ec6ebf', 'ofcxrp:vgbp', 'VNX Pound', 15, UnderlyingAsset['xrp:vgbp']),
+  tofcXrpToken('0c22d8ef-4c27-4088-bd3d-eb76484d5edf', 'ofctxrp:xsgd', 'XSGB', 15, UnderlyingAsset['txrp:xsgd']),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
     'ofcarbeth:link',

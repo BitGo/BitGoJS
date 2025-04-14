@@ -2559,6 +2559,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'acc1caa5-b864-4c5f-92eb-b40c5efe1e5a',
+    'sol:tbill',
+    'OpenEden T-Bills',
+    6,
+    '4MmJVdwYN8LwvbGeCowYjSx7KoEi6BJWg8XXnW4fDDp6',
+    '4MmJVdwYN8LwvbGeCowYjSx7KoEi6BJWg8XXnW4fDDp6',
+    UnderlyingAsset['sol:tbill'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '88814831-9cae-4174-8d1c-380aeb3fe55a',
     'sol:eurcv',
     'EUR CoinVertible',

@@ -821,6 +821,7 @@ export enum UnderlyingAsset {
   'ETH:ECASH' = 'eth:ecash',
   'ETH:OORT' = 'eth:oort',
   'eth:ultra' = 'eth:ultra',
+  'eth:dragonx' = 'eth:dragonx',
   ETHHEDGE = 'ethhedge',
   ETHMOON = 'ethmoon',
   ETHOPT = 'ethopt',
@@ -1426,6 +1427,7 @@ export enum UnderlyingAsset {
   'sol:sbc' = 'sol:sbc',
   'sol:veur' = 'sol:veur',
   'sol:vchf' = 'sol:vchf',
+  'sol:tbill' = 'sol:tbill',
   SBF = 'sbf',
   SBR = 'sbr',
   // Saber IOU Token (Liquidity Mining Rewards)
@@ -2493,6 +2495,12 @@ export enum UnderlyingAsset {
   'txrp:xat' = 'txrp:xat',
   'xrp:tbill' = 'xrp:tbill',
   'xrp:xsgd' = 'xrp:xsgd',
+  'xrp:veur' = 'xrp:veur',
+  'xrp:vchf' = 'xrp:vchf',
+  'xrp:vgbp' = 'xrp:vgbp',
+
+  // XRP testnet tokens
+  'txrp:xsgd' = 'txrp:xsgd',
 
   // Sui tokens
   'sui:deep' = 'sui:deep',
