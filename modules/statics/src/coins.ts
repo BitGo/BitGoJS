@@ -1023,7 +1023,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.OPETH,
     BaseUnit.ETH,
-    OPETH_FEATURES
+    [...OPETH_FEATURES, CoinFeature.BULK_TRANSACTION]
   ),
   account(
     '53b1e350-f907-45ec-abf7-11d132547055',
