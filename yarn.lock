@@ -7936,6 +7936,11 @@ cbor-x@^1.5.9:
   optionalDependencies:
     cbor-extract "^2.2.0"
 
+cbor2@1.12.0:
+  version "1.12.0"
+  resolved "https://registry.npmjs.org/cbor2/-/cbor2-1.12.0.tgz#b1cae821ee8d673cff70b078c3f08041bc47bdde"
+  integrity sha512-3Cco8XQhi27DogSp9Ri6LYNZLi/TBY/JVnDe+mj06NkBjW/ZYOtekaEU4wZ4xcRMNrFkDv8KNtOAqHyDfz3lYg==
+
 cbor@^10.0.3:
   version "10.0.3"
   resolved "https://registry.npmjs.org/cbor/-/cbor-10.0.3.tgz#202d79cd696f408700af51b0c9771577048a860e"

@@ -49,6 +49,7 @@
     "@noble/curves": "1.8.1",
     "bignumber.js": "^9.1.1",
     "cbor-x": "^1.5.9",
+    "cbor2": "1.12.0",
     "crc-32": "^1.2.0",
     "js-sha256": "^0.9.0",
     "protobufjs": "^7.2.5",
