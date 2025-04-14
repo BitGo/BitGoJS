@@ -733,7 +733,7 @@ export function terc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION],
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.kovan
@@ -2075,7 +2075,7 @@ export function topethErc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION],
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.optimism,
