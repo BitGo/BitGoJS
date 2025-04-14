@@ -733,6 +733,30 @@ describe('Recovery:', function () {
           result: '1000000000000000000',
         },
       },
+      {
+        params: {
+          module: 'account',
+          action: 'txlist',
+          address: '0x88c2ab227908d39f6afdb85203dca3e937bb77af',
+        },
+        response: {
+          status: '0',
+          message: 'No transactions found',
+          result: [],
+        },
+      },
+      {
+        params: {
+          module: 'account',
+          action: 'balance',
+          address: '0x88c2ab227908d39f6afdb85203dca3e937bb77af',
+        },
+        response: {
+          status: '1',
+          message: 'OK',
+          result: '1000000000000000000',
+        },
+      },
     ];
     const nockUnsignedSweepTSSData: any[] = [
       {
@@ -1071,6 +1095,35 @@ describe('Recovery:', function () {
     });
 
     it('should construct a recovery tx with MPCv2 TSS', async function () {
+      // Add direct nocks for the specific BSC address that's failing
+      nock('https://api-testnet.bscscan.com')
+        .get('/api')
+        .query({
+          module: 'account',
+          action: 'txlist',
+          address: '0x88c2ab227908d39f6afdb85203dca3e937bb77af',
+          apiKey: '7IM2WZ72DWSWSG71T3ZTTXCMSKBAKTUWSP',
+        })
+        .reply(200, {
+          status: '0',
+          message: 'No transactions found',
+          result: [],
+        });
+
+      nock('https://api-testnet.bscscan.com')
+        .get('/api')
+        .query({
+          module: 'account',
+          action: 'balance',
+          address: '0x88c2ab227908d39f6afdb85203dca3e937bb77af',
+          apiKey: '7IM2WZ72DWSWSG71T3ZTTXCMSKBAKTUWSP',
+        })
+        .reply(200, {
+          status: '1',
+          message: 'OK',
+          result: '1000000000000000000',
+        });
+
       for (const { coin, chain } of [
         { coin: 'hteth', chain: 17000 },
         { coin: 'tpolygon', chain: 80002 },
