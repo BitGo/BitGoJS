@@ -13,6 +13,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _memo: number | BigInt;
   protected _receiverId: string;
   protected _amount: string;
+  protected _txnId: string | undefined;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -169,5 +170,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._transaction.signaturePayload
     );
     this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
+    this._transaction.txnId = utils.getTransactionId(
+      this._transaction.unsignedTransaction,
+      this._sender,
+      this._receiverId
+    );
   }
 }
