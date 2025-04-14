@@ -851,6 +851,7 @@ export const ofcCoins = [
   ),
   ofcBscToken('822d85d7-f42d-40de-a14c-220a375eda3f', 'ofcbsc:sfp', 'SafePal Token', 18, UnderlyingAsset['bsc:sfp']),
   ofcBscToken('10226e82-2fac-49f4-8ee0-e0f7affeaeec', 'ofcbsc:mask', 'Mask Network', 18, UnderlyingAsset['bsc:mask']),
+  ofcBscToken('a1380903-6d91-4555-b8ef-74b1bcd993d0', 'ofcbsc:usdt', 'BSC-USD', 18, UnderlyingAsset['bsc:usdt']),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
     'ofcpolygon:sbc',
