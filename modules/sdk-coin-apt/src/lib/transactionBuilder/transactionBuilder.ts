@@ -28,6 +28,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected abstract get transactionType(): TransactionType;
 
+  getRebuiltTransaction(): Transaction {
+    return this._transaction;
+  }
+
   getSequenceNumber(): number {
     return this.transaction.sequenceNumber;
   }

@@ -192,7 +192,7 @@ export class Apt extends BaseCoin {
     const txBuilderFactory = this.getTxBuilderFactory();
     try {
       const txBuilder = txBuilderFactory.from(txHex);
-      return await txBuilder.build();
+      return txBuilder.getRebuiltTransaction();
     } catch {
       throw new Error('Failed to rebuild transaction');
     }
