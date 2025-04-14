@@ -347,7 +347,7 @@ export class Utils implements BaseUtils {
       throw new ParseTransactionError('Transaction data is missing.');
     }
     const { senderPublicKeyHex, senderAddress, receiverAddress } = transactionData;
-    if (!this.isValidPublicKey(senderPublicKeyHex)) {
+    if (senderPublicKeyHex && !this.isValidPublicKey(senderPublicKeyHex)) {
       throw new ParseTransactionError('Sender public key is invalid.');
     }
     if (!this.isValidAddress(senderAddress)) {
