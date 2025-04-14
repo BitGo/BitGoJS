@@ -1205,6 +1205,7 @@ describe('Polygon', function () {
       should.exist(transaction);
       transaction.should.have.property('tx');
     });
+
     it('should throw an error for invalid user key', async function () {
       const params = mockData.getInvalidNonBitGoRecoveryParams();
 

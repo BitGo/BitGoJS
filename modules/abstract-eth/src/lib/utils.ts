@@ -870,7 +870,7 @@ export async function recoveryBlockchainExplorerQuery(
   token?: string
 ): Promise<Record<string, unknown>> {
   if (token) {
-    query.apikey = token;
+    query.apiKey = token;
   }
   const response = await request.get(`${explorerUrl}/api`).query(query);
 
