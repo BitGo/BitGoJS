@@ -46,7 +46,7 @@ export class BabylonTransaction extends CosmosTransaction<BabylonSpecificMessage
       case TransactionType.CustomTx:
         break;
       default:
-        super.loadInputsAndOutputs();
+        return super.loadInputsAndOutputs();
     }
     this._inputs = inputs;
     this._outputs = outputs;
