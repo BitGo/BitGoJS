@@ -89,6 +89,7 @@
 
 # Examples
 /examples/ @BitGo/ethalt-team
+/examples/ts/btc/ @BitGo/btc-team
 
 # Trade
 /modules/sdk-core/src/bitgo/address-book/ @BitGo/prime
