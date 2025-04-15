@@ -2,6 +2,11 @@ import { sip10Token, tsip10Token } from '../account';
 import { UnderlyingAsset } from '../base';
 import { STX_TOKEN_FEATURES } from '../coinFeatures';
 
+// SIP10 tokens' assetId can be obtained as follows:
+// assetId = contractId::tokenName
+// contractId is the contract field and can be obtained from the token contract on explorer
+// tokenName is the name defined in the SIP10 token contract source code. Search 'define-fungible-token'
+// in the contract source code to find the tokenName
 export const sip10Tokens = [
   sip10Token(
     '6157083d-e0b5-4a77-9ace-20c4b96af9ed',
@@ -17,7 +22,7 @@ export const sip10Tokens = [
     'stx:ststx',
     'stSTX',
     6,
-    'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token::ststx-token',
+    'SP4SZE494VC2YC5JYG7AYFQ44F5Q4PYV7DVMDPBG.ststx-token::ststx',
     UnderlyingAsset['stx:ststx'],
     STX_TOKEN_FEATURES
   ),
@@ -26,7 +31,7 @@ export const sip10Tokens = [
     'stx:alex',
     'Alex Labs',
     8,
-    'SP102V8P0F7JX67ARQ77WEA3D3CFB5XW39REDT0AM.token-alex::token-alex',
+    'SP102V8P0F7JX67ARQ77WEA3D3CFB5XW39REDT0AM.token-alex::alex',
     UnderlyingAsset['stx:alex'],
     STX_TOKEN_FEATURES
   ),
@@ -35,7 +40,7 @@ export const sip10Tokens = [
     'stx:aeusdc',
     'Allbridge Bridged USDC',
     6,
-    'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc::token-aeusdc',
+    'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc::aeUSDC',
     UnderlyingAsset['stx:aeusdc'],
     STX_TOKEN_FEATURES
   ),
@@ -44,7 +49,7 @@ export const sip10Tokens = [
     'stx:susdh',
     'sUSDH',
     6,
-    'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.susdh-token-v1::susdh-token-v1',
+    'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.susdh-token-v1::susdh',
     UnderlyingAsset['stx:susdh'],
     STX_TOKEN_FEATURES
   ),
@@ -53,7 +58,7 @@ export const sip10Tokens = [
     'stx:usdh',
     'USDH',
     8,
-    'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.usdh-token-v1::usdh-token-v1',
+    'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.usdh-token-v1::usdh',
     UnderlyingAsset['stx:usdh'],
     STX_TOKEN_FEATURES
   ),
@@ -62,7 +67,7 @@ export const sip10Tokens = [
     'stx:welsh',
     'Welshcorgicoin',
     6,
-    'SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G.welshcorgicoin-token::welshcorgicoin-token',
+    'SP3NE50GEXFG9SZGTT51P40X2CKYSZ5CC4ZTZ7A2G.welshcorgicoin-token::welshcorgicoin',
     UnderlyingAsset['stx:welsh'],
     STX_TOKEN_FEATURES
   ),
