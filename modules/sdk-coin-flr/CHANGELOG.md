@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.1.14...@bitgo/sdk-coin-flr@1.2.0) (2025-04-15)
+
+### Features
+
+- adding test case for non-bitgo recovery for FLR ([ffadfbc](https://github.com/BitGo/BitGoJS/commit/ffadfbcde26c6963d0f910c0c1dd3becc4d4d683))
+- unsigned sweep for flare,xdc,coredao and oasys ([0a29d5e](https://github.com/BitGo/BitGoJS/commit/0a29d5ed8398a9c56233a344ff179e014ca1ce28))
+
 ## [1.1.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.1.13...@bitgo/sdk-coin-flr@1.1.14) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flr

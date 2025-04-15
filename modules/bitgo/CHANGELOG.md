@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [43.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@43.1.0...bitgo@43.2.0) (2025-04-15)
+
+### Features
+
+- add approveToken function for erc20 sendMany ([6c5f1db](https://github.com/BitGo/BitGoJS/commit/6c5f1db55ab0c67c774dc21a16a3b67068e55910))
+- add tss support for arbeth and opeth ([d9c9ec4](https://github.com/BitGo/BitGoJS/commit/d9c9ec4534ceac6eb85a5167e0985bc922262dee))
+
 # [43.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@43.0.1...bitgo@43.1.0) (2025-04-04)
 
 ### Features

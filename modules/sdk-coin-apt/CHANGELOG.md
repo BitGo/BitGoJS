@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.0.2...@bitgo/sdk-coin-apt@2.0.3) (2025-04-15)
+
+### Bug Fixes
+
+- **sdk-coin-apt:** fungible fix verify transaction flow ([2f4746f](https://github.com/BitGo/BitGoJS/commit/2f4746f6a10b869c58eea19ea9f6c9cedc325db7))
+- **sdk-coin-apt:** prevent build() step during rebuildTransaction() ([2b887aa](https://github.com/BitGo/BitGoJS/commit/2b887aa35bd328580214e1fdbba8657bc615453e))
+
 ## [2.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.0.1...@bitgo/sdk-coin-apt@2.0.2) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apt

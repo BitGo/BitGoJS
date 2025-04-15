@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [32.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@32.1.0...@bitgo/sdk-core@32.2.0) (2025-04-15)
+
+### Bug Fixes
+
+- **sdk-core:** messageEncoded is encoded as hex ([39efcfd](https://github.com/BitGo/BitGoJS/commit/39efcfdd09082e852a5139f217bc51bbd9531a7d))
+
+### Features
+
+- add approveToken function for erc20 sendMany ([6c5f1db](https://github.com/BitGo/BitGoJS/commit/6c5f1db55ab0c67c774dc21a16a3b67068e55910))
+- **sdk-api:** add decryptKeys method for bulk wallet key decryption ([5a6e36f](https://github.com/BitGo/BitGoJS/commit/5a6e36f4adde42b414cd1e739b6f83103e07afbf))
+- **sdk-coin-icp:** implemented recover() for WRW support ([d6bd979](https://github.com/BitGo/BitGoJS/commit/d6bd979f2a52b36a86366ce5f9d5f8e619df155f))
+
 # [32.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@32.0.1...@bitgo/sdk-core@32.1.0) (2025-04-04)
 
 ### Bug Fixes

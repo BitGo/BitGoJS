@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [51.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.7.0...@bitgo/statics@51.8.0) (2025-04-15)
+
+### Bug Fixes
+
+- **statics:** correct assetids for sip10 tokens ([11a693c](https://github.com/BitGo/BitGoJS/commit/11a693c37f56fd25328e0b9c13e8ffb42c5dc9af))
+- **statics:** give precedence to statics coin map over ams map ([c8945b6](https://github.com/BitGo/BitGoJS/commit/c8945b629f82e50c1ac56d49b0caf1a7affe7a8e))
+
+### Features
+
+- add ofc bsc usdt token ([3e323e1](https://github.com/BitGo/BitGoJS/commit/3e323e1c774693627aa9dc64a51c66ff85ccba92))
+- add tss support for arbeth and opeth ([d9c9ec4](https://github.com/BitGo/BitGoJS/commit/d9c9ec4534ceac6eb85a5167e0985bc922262dee))
+- added missing ofc coin config for stx:sbtc ([95aa9a3](https://github.com/BitGo/BitGoJS/commit/95aa9a3f589da765428051f420bd78f5875e9f89))
+- adding new batch of tokens ([1c76684](https://github.com/BitGo/BitGoJS/commit/1c76684c5b8146232c944c4ae677c7cd98821451))
+- enable erc20 sendmany ([a412a7c](https://github.com/BitGo/BitGoJS/commit/a412a7c6454cedf1cd235f4636e29e7e7a8d3232))
+- onboard new tokens ([a81f7fe](https://github.com/BitGo/BitGoJS/commit/a81f7fe2669bac8ae3e288869b7d8e4c8aa4dd01))
+- **statics:** add ofc support to all bsc tokens ([14a70c2](https://github.com/BitGo/BitGoJS/commit/14a70c28b7f0d981a7cb403490a5493b11927195))
+- **statics:** onboard lucid finance's test NFT collection ([8c7d32b](https://github.com/BitGo/BitGoJS/commit/8c7d32bf6b6b7cab3367664e7dbeceafbddd77f1))
+- **statics:** onboard new batch of erc20 tokens ([9e8c162](https://github.com/BitGo/BitGoJS/commit/9e8c1620ac8921f789bff52d6a425be8c8035d62))
+- update eth opeth batcherContract to support erc20Batching ([d076e14](https://github.com/BitGo/BitGoJS/commit/d076e14636cf692ec1a1ada78b49b674612ff6c8))
+
 # [51.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.6.1...@bitgo/statics@51.7.0) (2025-04-04)
 
 ### Bug Fixes
