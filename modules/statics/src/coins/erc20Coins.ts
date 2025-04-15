@@ -10299,6 +10299,94 @@ export const erc20Coins = [
     '0x56ebdae96d179549f279ea0cfea3b3432b8cd2bc',
     UnderlyingAsset['eth:fuelv1']
   ),
+  erc20(
+    '40cc0406-57aa-4310-b0fa-155f3c0d4477',
+    'eth:flttx',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    18,
+    '0x98f865bd2e5a3e289b8cca54f24a7eeb2bba56ce',
+    UnderlyingAsset['eth:flttx']
+  ),
+  erc20(
+    'b3aa443c-30f3-4369-9a09-c5cd51f1789d',
+    'eth:wtsix',
+    'WisdomTree Short-Duration Income Digital Fund',
+    18,
+    '0x518fb6afefea9bb0a5135014d8032edee4a8b1ec',
+    UnderlyingAsset['eth:wtsix']
+  ),
+  erc20(
+    '69c59d2c-2e9a-4fea-9cdc-18e89d1e8df6',
+    'eth:modrx',
+    'WisdomTree Siegel Moderate Digital Fund',
+    18,
+    '0xfb20015fb2047320a0f1c209f35c6432147770e8',
+    UnderlyingAsset['eth:modrx']
+  ),
+  erc20(
+    '88baf298-5ed4-4767-a44c-6312a4ce4c3f',
+    'eth:techx',
+    'WisdomTree Technology & Innovation 100 Digital Fund',
+    18,
+    '0x1a17f2bdb023e516f1b32b121f332fa931802a9f',
+    UnderlyingAsset['eth:techx']
+  ),
+  erc20(
+    'c8d27e15-dc81-490a-9bbf-20e051ff8e4a',
+    'eth:wtsyx',
+    'WisdomTree Short-Term Treasury Digital Fund',
+    18,
+    '0x3340e2c0ddcc4a035737bc1f5445c7d0fa6cbf5c',
+    UnderlyingAsset['eth:wtsyx']
+  ),
+  erc20(
+    '3dc5f6ed-ca1a-45e6-9b1c-c4085c25900e',
+    'eth:wtlgx',
+    'WisdomTree Long Term Treasury Digital Fund',
+    18,
+    '0x4d682cbd74a67b1ffe97a2bb78475a16efe23e8a',
+    UnderlyingAsset['eth:wtlgx']
+  ),
+  erc20(
+    'bd6c8c3a-9253-40eb-915e-20e01735be32',
+    'eth:wttsx',
+    'WisdomTree 3-7 Year Treasury Digital Fund',
+    18,
+    '0xe7d2e561b8e3b1a0125f45da596706110f8953be',
+    UnderlyingAsset['eth:wttsx']
+  ),
+  erc20(
+    '843ed917-4fc7-4e2c-97a5-4c9f293aac4b',
+    'eth:tipsx',
+    'WisdomTree TIPS Digital Fund',
+    18,
+    '0xa4964a2fe606f1d445e36006bcb7f7faee580042',
+    UnderlyingAsset['eth:tipsx']
+  ),
+  erc20(
+    'b0164bbb-757b-4973-b54d-a2f751946c98',
+    'eth:wtstx',
+    'WisdomTree 7-10 Year Treasury Digital Fund',
+    18,
+    '0xa58b23027cdeb442854bb8063164d1fd48f37707',
+    UnderlyingAsset['eth:wtstx']
+  ),
+  erc20(
+    '49f8d4e5-995f-453b-a4c0-77867e304702',
+    'eth:lngvx',
+    'WisdomTree Siegel Longevity Digital Fund',
+    18,
+    '0x2ecad4280b7720ba4f3830b47ab8ef2da4763f04',
+    UnderlyingAsset['eth:lngvx']
+  ),
+  erc20(
+    '894ec30f-10c6-479b-8291-fac4af4a44a3',
+    'eth:eqtyx',
+    'WisdomTree Siegel Global Equity Digital Fund',
+    18,
+    '0xa14669a76b12f94d6ad09304ad15905e900a6e25',
+    UnderlyingAsset['eth:eqtyx']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

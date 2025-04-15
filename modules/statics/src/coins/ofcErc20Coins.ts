@@ -3031,6 +3031,83 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:unio')
   ),
+  ofcerc20(
+    '07c75048-fc9a-4d5f-841e-6d9c40fcc8ba',
+    'ofceth:flttx',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:flttx')
+  ),
+  ofcerc20(
+    'b6b2477c-0b79-413e-8669-3c999715fef8',
+    'ofceth:wtsix',
+    'WisdomTree Short-Duration Income Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:wtsix')
+  ),
+  ofcerc20(
+    '08411905-993b-4c48-b206-bdfb6f022eb3',
+    'ofceth:modrx',
+    'WisdomTree Siegel Moderate Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:modrx')
+  ),
+  ofcerc20(
+    '77696898-511c-43eb-9dac-094fd6009b4b',
+    'ofceth:techx',
+    'WisdomTree Technology & Innovation 100 Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:techx')
+  ),
+  ofcerc20(
+    '7baa22a4-909c-49b1-a81e-d462a5b2d787',
+    'ofceth:wtsyx',
+    'WisdomTree Short-Term Treasury Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:wtsyx')
+  ),
+  ofcerc20(
+    'dfd5e05b-c2ed-4d2f-bb57-b0ab8da7e11f',
+    'ofceth:wtlgx',
+    'WisdomTree Long Term Treasury Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:wtlgx')
+  ),
+  ofcerc20(
+    '2a630a07-4208-42b6-bd93-d5c81e4dfaed',
+    'ofceth:wttsx',
+    'WisdomTree 3-7 Year Treasury Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:wttsx')
+  ),
+  ofcerc20(
+    '2738802a-3d4f-43bf-9b33-e57f4ee80502',
+    'ofceth:tipsx',
+    'WisdomTree TIPS Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:tipsx')
+  ),
+  ofcerc20(
+    '036bc1fa-211a-40b4-bbbf-0441fe2a9818',
+    'ofceth:wtstx',
+    'WisdomTree 7-10 Year Treasury Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:wtstx')
+  ),
+  ofcerc20(
+    '6a713449-fbdd-423c-8bb1-f73d2ca4c23f',
+    'ofceth:lngvx',
+    'WisdomTree Siegel Longevity Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:lngvx')
+  ),
+  ofcerc20(
+    '21a84f93-d828-423b-8644-432e0e49f2e7',
+    'ofceth:eqtyx',
+    'WisdomTree Siegel Global Equity Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:eqtyx')
+  ),
 ];
 
 export const tOfcErc20Coins = [
