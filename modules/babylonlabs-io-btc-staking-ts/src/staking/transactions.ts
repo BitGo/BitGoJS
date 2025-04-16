@@ -1,4 +1,4 @@
-import { Psbt, Transaction, networks, payments, script, address } from "bitcoinjs-lib";
+import { Psbt, Transaction, networks, payments, script, address, opcodes } from "bitcoinjs-lib";
 import { Taptree } from "bitcoinjs-lib/src/types";
 
 import { BTC_DUST_SAT } from "../constants/dustSat";
@@ -15,6 +15,7 @@ import { REDEEM_VERSION } from "../constants/transaction";
 
 // https://bips.xyz/370
 const BTC_LOCKTIME_HEIGHT_TIME_CUTOFF = 500000000;
+const BTC_SLASHING_FRACTION_DIGITS = 4;
 
 /**
  * Constructs an unsigned BTC Staking transaction in psbt format.
@@ -537,7 +538,7 @@ function slashingTransaction(
     throw new Error("Slashing rate must be between 0 and 1");
   }
   // Round the slashing rate to two decimal places
-  slashingRate = parseFloat(slashingRate.toFixed(2));
+  slashingRate = parseFloat(slashingRate.toFixed(BTC_SLASHING_FRACTION_DIGITS));
   // Minimum fee must be a postive integer
   if (minimumFee <= 0 || !Number.isInteger(minimumFee)) {
     throw new Error("Minimum fee must be a positve integer");
@@ -574,9 +575,17 @@ function slashingTransaction(
   const stakingAmount = transaction.outs[outputIndex].value;
   // Slashing rate is a percentage of the staking amount, rounded down to
   // the nearest integer to avoid sending decimal satoshis
-  const slashingAmount = Math.floor(stakingAmount * slashingRate);
-  if (slashingAmount <= BTC_DUST_SAT) {
-    throw new Error("Slashing amount is less than dust limit");
+  const slashingAmount = Math.round(stakingAmount * slashingRate);
+
+  // Compute the slashing output
+  const slashingOutput = Buffer.from(slashingPkScriptHex, "hex");
+
+  // If OP_RETURN is not included, the slashing amount must be greater than the
+  // dust limit.
+  if (opcodes.OP_RETURN != slashingOutput[0]) {
+    if (slashingAmount <= BTC_DUST_SAT) {
+      throw new Error("Slashing amount is less than dust limit");
+    }  
   }
 
   const userFunds = stakingAmount - slashingAmount - minimumFee;
@@ -602,7 +611,7 @@ function slashingTransaction(
 
   // Add the slashing output
   psbt.addOutput({
-    script: Buffer.from(slashingPkScriptHex, "hex"),
+    script: slashingOutput,
     value: slashingAmount,
   });
 
