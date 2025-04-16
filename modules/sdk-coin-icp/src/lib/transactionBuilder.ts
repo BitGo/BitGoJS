@@ -93,8 +93,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  fromImplementation(rawTransaction: IcpTransactionData): Transaction {
-    this.validateRawTransaction(rawTransaction);
+  fromImplementation(rawTransaction: string): Transaction {
+    this.transaction.fromRawTransaction(rawTransaction);
+    const icpTransactionData = this.transaction.icpTransactionData;
+    this.validateRawTransaction(icpTransactionData);
     this.buildImplementation();
     return this.transaction;
   }

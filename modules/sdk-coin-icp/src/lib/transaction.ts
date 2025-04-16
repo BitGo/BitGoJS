@@ -91,8 +91,11 @@ export class Transaction extends BaseTransaction {
 
   async fromRawTransaction(rawTransaction: string): Promise<void> {
     try {
-      const jsonRawTransaction: RawTransaction = JSON.parse(rawTransaction);
-      const parsedTx = await this.parseUnsignedTransaction(jsonRawTransaction.serializedTxHex);
+      const serializedTxFormatBuffer = Buffer.from(rawTransaction, 'hex');
+      const serializedTxFormatJsonString = serializedTxFormatBuffer.toString('utf-8');
+      const jsonRawTransaction: RawTransaction = JSON.parse(serializedTxFormatJsonString);
+      const payloadsData = jsonRawTransaction.serializedTxHex;
+      const parsedTx = await this.parseUnsignedTransaction(payloadsData.unsigned_transaction);
       const senderPublicKeyHex = jsonRawTransaction.publicKey;
       const transactionType = parsedTx.operations[0].type;
       switch (transactionType) {

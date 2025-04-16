@@ -109,11 +109,13 @@ describe('ICP Transaction Builder', async () => {
     txn = txBuilder.transaction;
     const unsignedTxn = txBuilder.transaction.unsignedTransaction;
     unsignedTxn.should.be.a.String();
-    const rawTransaction = {
-      serializedTxHex: unsignedTxn,
+    const payloadsData = txBuilder.transaction.payloadsData;
+    const serializedTxFormat = {
+      serializedTxHex: payloadsData,
       publicKey: testData.accounts.account1.publicKey,
     };
-    await txn.fromRawTransaction(JSON.stringify(rawTransaction));
+    const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+    await txn.fromRawTransaction(serializedTxHex);
     const baseKey: BaseKey = { key: testData.accounts.account1.secretKey };
     txBuilder.sign(baseKey);
     txBuilder.combine();
@@ -214,11 +216,13 @@ describe('ICP Transaction Builder without memo', async () => {
     txn = txBuilder.transaction;
     const unsignedTxn = txBuilder.transaction.unsignedTransaction;
     unsignedTxn.should.be.a.String();
-    const rawTransaction = {
-      serializedTxHex: unsignedTxn,
+    const payloadsData = txBuilder.transaction.payloadsData;
+    const serializedTxFormat = {
+      serializedTxHex: payloadsData,
       publicKey: testData.accounts.account1.publicKey,
     };
-    await txn.fromRawTransaction(JSON.stringify(rawTransaction));
+    const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+    await txn.fromRawTransaction(serializedTxHex);
     const baseKey: BaseKey = { key: testData.accounts.account1.secretKey };
     txBuilder.sign(baseKey);
     txBuilder.combine();
