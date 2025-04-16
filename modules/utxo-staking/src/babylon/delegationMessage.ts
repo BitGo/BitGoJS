@@ -73,7 +73,11 @@ export function getBtcProviderForECKey(
   }
 
   return {
-    async signMessage(signingStep: vendor.SigningStep, message: string, type: 'ecdsa'): Promise<string> {
+    async signMessage(
+      signingStep: vendor.SigningStep,
+      message: string,
+      type: 'ecdsa' | 'bip322-simple'
+    ): Promise<string> {
       assert(type === 'ecdsa');
       switch (signingStep) {
         case 'proof-of-possession':
