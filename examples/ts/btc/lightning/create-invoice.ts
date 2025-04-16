@@ -11,14 +11,13 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Tlnbtc } from '@bitgo/sdk-coin-lnbtc';
 import { CreateInvoiceBody, getLightningWallet, Invoice } from '@bitgo/abstract-lightning';
-require('dotenv').config({ path: '../../.env' });
 
 // TODO: set access token for testnet
 // Get this from your BitGo account
-const accessToken = process.env.TESTNET_ACCESS_TOKEN || '';
+const accessToken = '';
 
 // TODO: set your lightning wallet ID
-const walletId = process.env.LIGHTNING_WALLET_ID || '';
+const walletId = '';
 
 // Use tlnbtc for testnet, lnbtc for mainnet
 const coin = 'tlnbtc';
