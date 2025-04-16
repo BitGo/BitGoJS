@@ -2210,7 +2210,7 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Accelerate a transaction's confirmation using Child-Pays-For-Parent (CPFP)
+   * Accelerate a transaction's confirmation using Child-Pays-For-Parent (CPFP) or Replace-By-Fee (RBF)
    * @param params
    */
   async accelerateTransaction(params: AccelerateTransactionOptions = {}): Promise<any> {
