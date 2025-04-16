@@ -9,10 +9,19 @@ import {
   InvalidTransactionError,
   ParseTransactionError,
   SigningError,
+  ExtendTransactionError,
+  InvalidParameterValueError,
 } from '@bitgo/sdk-core';
-import { TransactionReceipt } from './iface';
+import { TransactionReceipt, Block } from './iface';
 import { Address } from './address';
-import { signTransaction, isBase58Address, decodeTransaction } from './utils';
+import {
+  signTransaction,
+  isBase58Address,
+  decodeTransaction,
+  VALID_RESOURCE_TYPES,
+  getHexAddressFromBase58Address,
+  TRANSACTION_MAX_EXPIRATION,
+} from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 
@@ -22,6 +31,12 @@ import { KeyPair } from './keyPair';
 export class TransactionBuilder extends BaseTransactionBuilder {
   // transaction being built
   private _transaction: Transaction;
+  protected _ownerAddress: string;
+  protected _refBlockBytes: string;
+  protected _refBlockHash: string;
+  protected _expiration: number;
+  protected _timestamp: number;
+
   /**
    * Public constructor.
    *
@@ -29,6 +44,70 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+  }
+
+  /** @inheritdoc */
+  protected get transaction(): Transaction {
+    return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
+  /**
+   * Set the source address for the transaction
+   *
+   * @param {Address} address The source address
+   * @returns the builder with the new parameter set
+   */
+  source(address: Address): this {
+    this.validateAddress(address);
+    this._ownerAddress = getHexAddressFromBase58Address(address.address);
+    return this;
+  }
+
+  /**
+   * Set the timestamp for the transaction
+   *
+   * @param {number} time the timestamp in milliseconds
+   * @returns the builder with the new parameter set
+   */
+  timestamp(time: number): this {
+    this._timestamp = time;
+    return this;
+  }
+
+  /**
+   * Set the block values,
+   *
+   * @param {Block} block the object containing number and hash of the block
+   * @returns the builder with the new parameter set
+   */
+  block(block: Block): this {
+    const blockBytes = Buffer.alloc(8);
+    blockBytes.writeInt32BE(block.number, 4);
+    this._refBlockBytes = blockBytes.slice(6, 8).toString('hex');
+    this._refBlockHash = Buffer.from(block.hash, 'hex').slice(8, 16).toString('hex');
+
+    return this;
+  }
+
+  /**
+   * Set the expiration time for the transaction, set timestamp if it was not set previously
+   *
+   * @param {number} time the expiration time in milliseconds
+   * @returns the builder with the new parameter set
+   */
+  expiration(time: number): this {
+    if (this.transaction.id) {
+      throw new ExtendTransactionError('Expiration is already set, it can only be extended');
+    }
+    this._timestamp = this._timestamp || Date.now();
+    this.validateExpirationTime(time);
+    this._expiration = time;
+    return this;
   }
 
   /**
@@ -126,6 +205,16 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /**
+   * Helper method to validate the resource type
+   * @param resource The resource type to be validated
+   */
+  validateResource(resource: string): void {
+    if (!VALID_RESOURCE_TYPES.includes(resource)) {
+      throw new Error(resource + ' is not a valid resource type.');
+    }
+  }
+
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
     try {
@@ -200,13 +289,23 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  /** @inheritdoc */
-  protected get transaction(): Transaction {
-    return this._transaction;
-  }
+  /**
+   * Validate the expiration time of the transaction
+   *
+   * @param {number} value The expiration time in milliseconds
+   * @throws {InvalidParameterValueError} If the expiration time is invalid
+   */
+  validateExpirationTime(value: number): void {
+    if (value < this._timestamp) {
+      throw new InvalidParameterValueError('Expiration must be greater than timestamp');
+    }
 
-  /** @inheritdoc */
-  protected set transaction(transaction: Transaction) {
-    this._transaction = transaction;
+    if (value < Date.now()) {
+      throw new InvalidParameterValueError('Expiration must be greater than current time');
+    }
+
+    if (value - this._timestamp > TRANSACTION_MAX_EXPIRATION) {
+      throw new InvalidParameterValueError('Expiration must not be greater than one day');
+    }
   }
 }

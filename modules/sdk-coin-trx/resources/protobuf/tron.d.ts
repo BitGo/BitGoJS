@@ -1,4 +1,5 @@
 import * as $protobuf from 'protobufjs';
+import Long = require('long');
 /** Namespace protocol. */
 export namespace protocol {
   /** Properties of an Endpoint. */
@@ -99,6 +100,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Endpoint
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a PingMessage. */
@@ -205,6 +213,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for PingMessage
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a PongMessage. */
@@ -305,6 +320,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for PongMessage
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a FindNeighbours. */
@@ -408,6 +430,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for FindNeighbours
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a Neighbours. */
@@ -508,6 +537,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Neighbours
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a BackupMessage. */
@@ -605,6 +641,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for BackupMessage
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an AccountCreateContract. */
@@ -711,6 +754,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for AccountCreateContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an AccountUpdateContract. */
@@ -811,6 +861,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for AccountUpdateContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a SetAccountIdContract. */
@@ -908,6 +965,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for SetAccountIdContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a TransferContract. */
@@ -1011,6 +1075,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TransferContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a TransferAssetContract. */
@@ -1123,6 +1194,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TransferAssetContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a VoteAssetContract. */
@@ -1232,6 +1310,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for VoteAssetContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a VoteWitnessContract. */
@@ -1335,6 +1420,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for VoteWitnessContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace VoteWitnessContract {
@@ -1436,6 +1528,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for Vote
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -1543,6 +1642,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for UpdateSettingContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an UpdateEnergyLimitContract. */
@@ -1649,6 +1755,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for UpdateEnergyLimitContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a ClearABIContract. */
@@ -1746,6 +1859,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ClearABIContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a WitnessCreateContract. */
@@ -1846,6 +1966,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for WitnessCreateContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a WitnessUpdateContract. */
@@ -1946,6 +2073,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for WitnessUpdateContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an AssetIssueContract. */
@@ -2145,6 +2279,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for AssetIssueContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace AssetIssueContract {
@@ -2254,6 +2395,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for FrozenSupply
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -2370,6 +2518,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ParticipateAssetIssueContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** ResourceCode enum. */
@@ -2494,6 +2649,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for FreezeBalanceContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an UnfreezeBalanceContract. */
@@ -2600,6 +2762,348 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for UnfreezeBalanceContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+  }
+
+  /** Properties of a FreezeBalanceV2Contract. */
+  interface IFreezeBalanceV2Contract {
+    /** FreezeBalanceV2Contract ownerAddress */
+    ownerAddress?: Uint8Array | null;
+
+    /** FreezeBalanceV2Contract frozenBalance */
+    frozenBalance?: number | Long | null;
+
+    /** FreezeBalanceV2Contract resource */
+    resource?: protocol.ResourceCode | null;
+  }
+
+  /** Represents a FreezeBalanceV2Contract. */
+  class FreezeBalanceV2Contract implements IFreezeBalanceV2Contract {
+    /**
+     * Constructs a new FreezeBalanceV2Contract.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: protocol.IFreezeBalanceV2Contract);
+
+    /** FreezeBalanceV2Contract ownerAddress. */
+    public ownerAddress: Uint8Array;
+
+    /** FreezeBalanceV2Contract frozenBalance. */
+    public frozenBalance: number | Long;
+
+    /** FreezeBalanceV2Contract resource. */
+    public resource: protocol.ResourceCode;
+
+    /**
+     * Creates a new FreezeBalanceV2Contract instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns FreezeBalanceV2Contract instance
+     */
+    public static create(properties?: protocol.IFreezeBalanceV2Contract): protocol.FreezeBalanceV2Contract;
+
+    /**
+     * Encodes the specified FreezeBalanceV2Contract message. Does not implicitly {@link protocol.FreezeBalanceV2Contract.verify|verify} messages.
+     * @param message FreezeBalanceV2Contract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: protocol.IFreezeBalanceV2Contract, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified FreezeBalanceV2Contract message, length delimited. Does not implicitly {@link protocol.FreezeBalanceV2Contract.verify|verify} messages.
+     * @param message FreezeBalanceV2Contract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(
+      message: protocol.IFreezeBalanceV2Contract,
+      writer?: $protobuf.Writer
+    ): $protobuf.Writer;
+
+    /**
+     * Decodes a FreezeBalanceV2Contract message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns FreezeBalanceV2Contract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: $protobuf.Reader | Uint8Array, length?: number): protocol.FreezeBalanceV2Contract;
+
+    /**
+     * Decodes a FreezeBalanceV2Contract message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns FreezeBalanceV2Contract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: $protobuf.Reader | Uint8Array): protocol.FreezeBalanceV2Contract;
+
+    /**
+     * Verifies a FreezeBalanceV2Contract message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): string | null;
+
+    /**
+     * Creates a FreezeBalanceV2Contract message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns FreezeBalanceV2Contract
+     */
+    public static fromObject(object: { [k: string]: any }): protocol.FreezeBalanceV2Contract;
+
+    /**
+     * Creates a plain object from a FreezeBalanceV2Contract message. Also converts values to other types if specified.
+     * @param message FreezeBalanceV2Contract
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(
+      message: protocol.FreezeBalanceV2Contract,
+      options?: $protobuf.IConversionOptions
+    ): { [k: string]: any };
+
+    /**
+     * Converts this FreezeBalanceV2Contract to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for FreezeBalanceV2Contract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+  }
+
+  /** Properties of an UnfreezeBalanceV2Contract. */
+  interface IUnfreezeBalanceV2Contract {
+    /** UnfreezeBalanceV2Contract ownerAddress */
+    ownerAddress?: Uint8Array | null;
+
+    /** UnfreezeBalanceV2Contract unfreezeBalance */
+    unfreezeBalance?: number | Long | null;
+
+    /** UnfreezeBalanceV2Contract resource */
+    resource?: protocol.ResourceCode | null;
+  }
+
+  /** Represents an UnfreezeBalanceV2Contract. */
+  class UnfreezeBalanceV2Contract implements IUnfreezeBalanceV2Contract {
+    /**
+     * Constructs a new UnfreezeBalanceV2Contract.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: protocol.IUnfreezeBalanceV2Contract);
+
+    /** UnfreezeBalanceV2Contract ownerAddress. */
+    public ownerAddress: Uint8Array;
+
+    /** UnfreezeBalanceV2Contract unfreezeBalance. */
+    public unfreezeBalance: number | Long;
+
+    /** UnfreezeBalanceV2Contract resource. */
+    public resource: protocol.ResourceCode;
+
+    /**
+     * Creates a new UnfreezeBalanceV2Contract instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns UnfreezeBalanceV2Contract instance
+     */
+    public static create(properties?: protocol.IUnfreezeBalanceV2Contract): protocol.UnfreezeBalanceV2Contract;
+
+    /**
+     * Encodes the specified UnfreezeBalanceV2Contract message. Does not implicitly {@link protocol.UnfreezeBalanceV2Contract.verify|verify} messages.
+     * @param message UnfreezeBalanceV2Contract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: protocol.IUnfreezeBalanceV2Contract, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified UnfreezeBalanceV2Contract message, length delimited. Does not implicitly {@link protocol.UnfreezeBalanceV2Contract.verify|verify} messages.
+     * @param message UnfreezeBalanceV2Contract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(
+      message: protocol.IUnfreezeBalanceV2Contract,
+      writer?: $protobuf.Writer
+    ): $protobuf.Writer;
+
+    /**
+     * Decodes an UnfreezeBalanceV2Contract message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns UnfreezeBalanceV2Contract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: $protobuf.Reader | Uint8Array, length?: number): protocol.UnfreezeBalanceV2Contract;
+
+    /**
+     * Decodes an UnfreezeBalanceV2Contract message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns UnfreezeBalanceV2Contract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: $protobuf.Reader | Uint8Array): protocol.UnfreezeBalanceV2Contract;
+
+    /**
+     * Verifies an UnfreezeBalanceV2Contract message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): string | null;
+
+    /**
+     * Creates an UnfreezeBalanceV2Contract message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns UnfreezeBalanceV2Contract
+     */
+    public static fromObject(object: { [k: string]: any }): protocol.UnfreezeBalanceV2Contract;
+
+    /**
+     * Creates a plain object from an UnfreezeBalanceV2Contract message. Also converts values to other types if specified.
+     * @param message UnfreezeBalanceV2Contract
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(
+      message: protocol.UnfreezeBalanceV2Contract,
+      options?: $protobuf.IConversionOptions
+    ): { [k: string]: any };
+
+    /**
+     * Converts this UnfreezeBalanceV2Contract to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for UnfreezeBalanceV2Contract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+  }
+
+  /** Properties of a WithdrawExpireUnfreezeContract. */
+  interface IWithdrawExpireUnfreezeContract {
+    /** WithdrawExpireUnfreezeContract ownerAddress */
+    ownerAddress?: Uint8Array | null;
+  }
+
+  /** Represents a WithdrawExpireUnfreezeContract. */
+  class WithdrawExpireUnfreezeContract implements IWithdrawExpireUnfreezeContract {
+    /**
+     * Constructs a new WithdrawExpireUnfreezeContract.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: protocol.IWithdrawExpireUnfreezeContract);
+
+    /** WithdrawExpireUnfreezeContract ownerAddress. */
+    public ownerAddress: Uint8Array;
+
+    /**
+     * Creates a new WithdrawExpireUnfreezeContract instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns WithdrawExpireUnfreezeContract instance
+     */
+    public static create(
+      properties?: protocol.IWithdrawExpireUnfreezeContract
+    ): protocol.WithdrawExpireUnfreezeContract;
+
+    /**
+     * Encodes the specified WithdrawExpireUnfreezeContract message. Does not implicitly {@link protocol.WithdrawExpireUnfreezeContract.verify|verify} messages.
+     * @param message WithdrawExpireUnfreezeContract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(
+      message: protocol.IWithdrawExpireUnfreezeContract,
+      writer?: $protobuf.Writer
+    ): $protobuf.Writer;
+
+    /**
+     * Encodes the specified WithdrawExpireUnfreezeContract message, length delimited. Does not implicitly {@link protocol.WithdrawExpireUnfreezeContract.verify|verify} messages.
+     * @param message WithdrawExpireUnfreezeContract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(
+      message: protocol.IWithdrawExpireUnfreezeContract,
+      writer?: $protobuf.Writer
+    ): $protobuf.Writer;
+
+    /**
+     * Decodes a WithdrawExpireUnfreezeContract message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns WithdrawExpireUnfreezeContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(
+      reader: $protobuf.Reader | Uint8Array,
+      length?: number
+    ): protocol.WithdrawExpireUnfreezeContract;
+
+    /**
+     * Decodes a WithdrawExpireUnfreezeContract message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns WithdrawExpireUnfreezeContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: $protobuf.Reader | Uint8Array): protocol.WithdrawExpireUnfreezeContract;
+
+    /**
+     * Verifies a WithdrawExpireUnfreezeContract message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): string | null;
+
+    /**
+     * Creates a WithdrawExpireUnfreezeContract message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns WithdrawExpireUnfreezeContract
+     */
+    public static fromObject(object: { [k: string]: any }): protocol.WithdrawExpireUnfreezeContract;
+
+    /**
+     * Creates a plain object from a WithdrawExpireUnfreezeContract message. Also converts values to other types if specified.
+     * @param message WithdrawExpireUnfreezeContract
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(
+      message: protocol.WithdrawExpireUnfreezeContract,
+      options?: $protobuf.IConversionOptions
+    ): { [k: string]: any };
+
+    /**
+     * Converts this WithdrawExpireUnfreezeContract to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for WithdrawExpireUnfreezeContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an UnfreezeAssetContract. */
@@ -2694,6 +3198,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for UnfreezeAssetContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a WithdrawBalanceContract. */
@@ -2788,6 +3299,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for WithdrawBalanceContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an UpdateAssetContract. */
@@ -2903,6 +3421,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for UpdateAssetContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a ProposalCreateContract. */
@@ -3003,6 +3528,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ProposalCreateContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a ProposalApproveContract. */
@@ -3109,6 +3641,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ProposalApproveContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a ProposalDeleteContract. */
@@ -3209,6 +3748,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ProposalDeleteContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a CreateSmartContract. */
@@ -3318,6 +3864,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CreateSmartContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a TriggerSmartContract. */
@@ -3439,6 +3992,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TriggerSmartContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a BuyStorageContract. */
@@ -3536,6 +4096,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for BuyStorageContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a BuyStorageBytesContract. */
@@ -3636,6 +4203,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for BuyStorageBytesContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a SellStorageContract. */
@@ -3733,6 +4307,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for SellStorageContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an ExchangeCreateContract. */
@@ -3851,6 +4432,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ExchangeCreateContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an ExchangeInjectContract. */
@@ -3963,6 +4551,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ExchangeInjectContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an ExchangeWithdrawContract. */
@@ -4075,6 +4670,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ExchangeWithdrawContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an ExchangeTransactionContract. */
@@ -4193,6 +4795,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ExchangeTransactionContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an AccountPermissionUpdateContract. */
@@ -4313,6 +4922,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for AccountPermissionUpdateContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** AccountType enum. */
@@ -4414,6 +5030,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for AccountId
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a Vote. */
@@ -4508,6 +5131,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Vote
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a Proposal. */
@@ -4632,6 +5262,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Proposal
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace Proposal {
@@ -4766,6 +5403,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Exchange
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a ChainParameters. */
@@ -4857,6 +5501,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ChainParameters
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace ChainParameters {
@@ -4966,6 +5617,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for ChainParameter
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -5253,6 +5911,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Account
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace Account {
@@ -5351,6 +6016,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for Frozen
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
     /** Properties of an AccountResource. */
@@ -5487,6 +6159,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for AccountResource
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -5582,6 +6261,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Key
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a DelegatedResource. */
@@ -5703,6 +6389,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DelegatedResource
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of an authority. */
@@ -5797,6 +6490,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for authority
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a Permission. */
@@ -5921,6 +6621,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Permission
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace Permission {
@@ -6066,6 +6773,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Witness
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a Votes. */
@@ -6166,6 +6880,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Votes
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a TXOutput. */
@@ -6260,6 +6981,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TXOutput
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a TXInput. */
@@ -6354,6 +7082,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TXInput
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace TXInput {
@@ -6458,6 +7193,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for raw
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -6547,6 +7289,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TXOutputs
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a ResourceReceipt. */
@@ -6674,6 +7423,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ResourceReceipt
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a Transaction. */
@@ -6774,6 +7530,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Transaction
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace Transaction {
@@ -6893,6 +7656,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for Contract
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
     namespace Contract {
@@ -6929,6 +7699,10 @@ export namespace protocol {
         UpdateEnergyLimitContract = 45,
         AccountPermissionUpdateContract = 46,
         ClearABIContract = 48,
+        UpdateBrokerageContract = 49,
+        FreezeBalanceV2Contract = 54,
+        UnfreezeBalanceV2Contract = 55,
+        WithdrawExpireUnfreezeContract = 56,
       }
     }
 
@@ -7075,6 +7849,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for Result
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
     namespace Result {
@@ -7247,6 +8028,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for raw
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -7441,6 +8229,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TransactionInfo
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace TransactionInfo {
@@ -7554,6 +8349,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for Log
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -7658,6 +8460,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TransactionRet
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a Transactions. */
@@ -7749,6 +8558,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Transactions
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a TransactionSign. */
@@ -7846,6 +8662,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TransactionSign
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a BlockHeader. */
@@ -7940,6 +8763,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for BlockHeader
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace BlockHeader {
@@ -8074,6 +8904,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for raw
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -8169,6 +9006,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Block
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a ChainInventory. */
@@ -8266,6 +9110,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ChainInventory
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace ChainInventory {
@@ -8367,6 +9218,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for BlockId
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -8465,6 +9323,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for BlockInventory
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace BlockInventory {
@@ -8573,6 +9438,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for BlockId
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -8668,6 +9540,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Inventory
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace Inventory {
@@ -8782,6 +9661,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Items
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace Items {
@@ -8883,6 +9769,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DynamicProperties
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** ReasonCode enum. */
@@ -9002,6 +9895,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DisconnectMessage
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a HelloMessage. */
@@ -9123,6 +10023,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for HelloMessage
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace HelloMessage {
@@ -9224,6 +10131,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for BlockId
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -9370,6 +10284,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for SmartContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace SmartContract {
@@ -9462,6 +10383,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for ABI
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
     namespace ABI {
@@ -9599,6 +10527,13 @@ export namespace protocol {
          * @returns JSON object
          */
         public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for Entry
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
       }
 
       namespace Entry {
@@ -9723,6 +10658,13 @@ export namespace protocol {
            * @returns JSON object
            */
           public toJSON(): { [k: string]: any };
+
+          /**
+           * Gets the default type url for Param
+           * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+           * @returns The default type url
+           */
+          public static getTypeUrl(typeUrlPrefix?: string): string;
         }
 
         /** StateMutabilityType enum. */
@@ -9856,6 +10798,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for InternalTransaction
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace InternalTransaction {
@@ -9965,6 +10914,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for CallValueInfo
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 
@@ -10075,6 +11031,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DelegatedResourceAccountIndex
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   /** Properties of a NodeInfo. */
@@ -10223,6 +11186,13 @@ export namespace protocol {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for NodeInfo
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
   namespace NodeInfo {
@@ -10459,6 +11429,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for PeerInfo
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
     /** Properties of a ConfigNodeInfo. */
@@ -10661,6 +11638,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for ConfigNodeInfo
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
     /** Properties of a MachineInfo. */
@@ -10827,6 +11811,13 @@ export namespace protocol {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for MachineInfo
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
 
     namespace MachineInfo {
@@ -10956,6 +11947,13 @@ export namespace protocol {
          * @returns JSON object
          */
         public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for MemoryDescInfo
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
       }
 
       /** Properties of a DeadLockThreadInfo. */
@@ -11096,6 +12094,13 @@ export namespace protocol {
          * @returns JSON object
          */
         public toJSON(): { [k: string]: any };
+
+        /**
+         * Gets the default type url for DeadLockThreadInfo
+         * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns The default type url
+         */
+        public static getTypeUrl(typeUrlPrefix?: string): string;
       }
     }
   }
@@ -11200,6 +12205,13 @@ export namespace google {
        * @returns JSON object
        */
       public toJSON(): { [k: string]: any };
+
+      /**
+       * Gets the default type url for Any
+       * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+       * @returns The default type url
+       */
+      public static getTypeUrl(typeUrlPrefix?: string): string;
     }
   }
 }

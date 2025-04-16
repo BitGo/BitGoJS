@@ -13,30 +13,24 @@ import {
 import { TransactionBuilder } from './transactionBuilder';
 import { Address } from './address';
 import { Transaction } from './transaction';
-import { Block, Fee, TransactionReceipt, TriggerSmartContract } from './iface';
+import { Fee, TransactionReceipt, TriggerSmartContract } from './iface';
 import {
   decodeTransaction,
   getBase58AddressFromHex,
   getByteArrayFromHexAddress,
   getHexAddressFromBase58Address,
   isValidHex,
+  TRANSACTION_MAX_EXPIRATION,
+  TRANSACTION_DEFAULT_EXPIRATION,
 } from './utils';
 
 import ContractType = protocol.Transaction.Contract.ContractType;
-
-const DEFAULT_EXPIRATION = 3600000; // one hour
-const MAX_DURATION = 31536000000; // one year
 export const MAX_FEE = 5000000000; // 5e9 = 5000 TRX acording https://developers.tron.network/docs/setting-a-fee-limit-on-deployexecution
 
 export class ContractCallBuilder extends TransactionBuilder {
   protected _signingKeys: BaseKey[];
   private _toContractAddress: string;
   private _data: string;
-  private _ownerAddress: string;
-  private _refBlockBytes: string;
-  private _refBlockHash: string;
-  private _expiration: number;
-  private _timestamp: number;
   private _fee: Fee;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -112,19 +106,6 @@ export class ContractCallBuilder extends TransactionBuilder {
     }
   }
 
-  // region Contract Call fields
-  /**
-   * Set the source address,
-   *
-   * @param {Address} address source account
-   * @returns {ContractCallBuilder} the builder with the new parameter set
-   */
-  source(address: Address): this {
-    this.validateAddress(address);
-    this._ownerAddress = getHexAddressFromBase58Address(address.address);
-    return this;
-  }
-
   /**
    * Set the address of the contract to be called,
    *
@@ -151,38 +132,6 @@ export class ContractCallBuilder extends TransactionBuilder {
     return this;
   }
 
-  /**
-   * Set the block values,
-   *
-   * @param {Block} block the object containing number and hash of the block
-   * @returns {ContractCallBuilder} the builder with the new parameter set
-   */
-  block(block: Block): this {
-    const blockBytes = Buffer.alloc(8);
-    blockBytes.writeInt32BE(block.number, 4);
-    this._refBlockBytes = blockBytes.slice(6, 8).toString('hex');
-
-    this._refBlockHash = Buffer.from(block.hash, 'hex').slice(8, 16).toString('hex');
-
-    return this;
-  }
-
-  /**
-   * Set the expiration time for the transaction, set also timestamp if it was not set previously
-   *
-   * @param {number} time the expiration time in milliseconds
-   * @returns {ContractCallBuilder} the builder with the new parameter set
-   */
-  expiration(time: number): this {
-    if (this.transaction.id) {
-      throw new ExtendTransactionError('Expiration is already set, it can only be extended');
-    }
-    this._timestamp = this._timestamp || Date.now();
-    this.validateExpirationTime(time);
-    this._expiration = time;
-    return this;
-  }
-
   /** @inheritdoc */
   extendValidTo(extensionMs: number): void {
     if (this.transaction.signature && this.transaction.signature.length > 0) {
@@ -193,7 +142,7 @@ export class ContractCallBuilder extends TransactionBuilder {
       throw new Error('Value cannot be below zero');
     }
 
-    if (extensionMs > MAX_DURATION) {
+    if (extensionMs > TRANSACTION_MAX_EXPIRATION) {
       throw new ExtendTransactionError('The expiration cannot be extended more than one year');
     }
 
@@ -202,17 +151,6 @@ export class ContractCallBuilder extends TransactionBuilder {
     } else {
       throw new Error('There is not expiration to extend');
     }
-  }
-
-  /**
-   * Set the timestamp for the transaction
-   *
-   * @param {number} time the timestamp in milliseconds
-   * @returns {ContractCallBuilder} the builder with the new parameter set
-   */
-  timestamp(time: number): this {
-    this._timestamp = time;
-    return this;
   }
 
   /**
@@ -272,7 +210,7 @@ export class ContractCallBuilder extends TransactionBuilder {
     const raw = {
       refBlockBytes: Buffer.from(this._refBlockBytes, 'hex'),
       refBlockHash: Buffer.from(this._refBlockHash, 'hex'),
-      expiration: this._expiration || Date.now() + DEFAULT_EXPIRATION,
+      expiration: this._expiration || Date.now() + TRANSACTION_DEFAULT_EXPIRATION,
       timestamp: this._timestamp || Date.now(),
       contract: [txContract],
       feeLimit: parseInt(this._fee.feeLimit, 10),
@@ -310,18 +248,6 @@ export class ContractCallBuilder extends TransactionBuilder {
     }
     if (!this._fee) {
       throw new BuildTransactionError('Missing fee');
-    }
-  }
-
-  validateExpirationTime(value: number): void {
-    if (value < this._timestamp) {
-      throw new InvalidParameterValueError('Expiration must be greater than timestamp');
-    }
-    if (value < Date.now()) {
-      throw new InvalidParameterValueError('Expiration must be greater than current time');
-    }
-    if (value - this._timestamp > MAX_DURATION) {
-      throw new InvalidParameterValueError('Expiration must not be greater than one year');
     }
   }
 }
