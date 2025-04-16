@@ -118,7 +118,7 @@ export class Transaction extends BaseTransaction {
           throw new Error('Invalid transaction type');
       }
     } catch (error) {
-      throw new InvalidTransactionError('Invalid raw transaction');
+      throw new InvalidTransactionError(`Invalid transaction type: ${error.message}`);
     }
   }
 
