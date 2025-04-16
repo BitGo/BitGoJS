@@ -3,13 +3,14 @@
  */
 import assert from 'assert';
 
+import { BIP322 } from 'bip322-js';
 import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as babylonProtobuf from '@babylonlabs-io/babylon-proto-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import { toXOnlyPublicKey } from '@bitgo/utxo-core';
-import { toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
+import { signWithKey, toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
 
 import { BabylonDescriptorBuilder } from './descriptor';
 import { createStakingManager } from './stakingManager';
@@ -72,20 +73,55 @@ export function getBtcProviderForECKey(
     return psbt;
   }
 
+  function signBip322Simple(message: string): string {
+    // Get the script public key from the staking descriptor
+    const scriptPubKey = Buffer.from(descriptorBuilder.getStakingDescriptor().scriptPubkey());
+    const toSpendTx = BIP322.buildToSpendTx(message, scriptPubKey);
+
+    // Get the to_spend txid
+    const toSpendTxId = toSpendTx.getId();
+
+    // Create PSBT object for constructing the transaction
+    const toSignPsbt = new bitcoinjslib.Psbt();
+    toSignPsbt.setVersion(2); // nVersion = 0
+    toSignPsbt.setLocktime(0); // nLockTime = 0
+    toSignPsbt.addInput({
+      hash: toSpendTxId,
+      index: 0,
+      sequence: descriptorBuilder.stakingTimeLock,
+      witnessUtxo: {
+        script: scriptPubKey,
+        value: 0,
+      },
+    });
+
+    // Sign the PSBT with the staker key
+    const wrappedPsbt = toWrappedPsbt(toSignPsbt.toBuffer());
+    wrappedPsbt.updateInputWithDescriptor(0, descriptorBuilder.getStakingDescriptor());
+    signWithKey(wrappedPsbt, stakerKey);
+    wrappedPsbt.finalize();
+
+    // Encode the witness data and return
+    return BIP322.encodeWitness(bitcoinjslib.Psbt.fromBuffer(Buffer.from(wrappedPsbt.serialize())));
+  }
+
   return {
     async signMessage(
       signingStep: vendor.SigningStep,
       message: string,
       type: 'ecdsa' | 'bip322-simple'
     ): Promise<string> {
-      assert(type === 'ecdsa');
-      switch (signingStep) {
-        case 'proof-of-possession':
+      assert(signingStep === 'proof-of-possession');
+      switch (type) {
+        case 'ecdsa':
           return stakerKey.sign(Buffer.from(message, 'hex')).toString('hex');
+        case 'bip322-simple':
+          return signBip322Simple(message);
         default:
           throw new Error(`unexpected signing step: ${signingStep}`);
       }
     },
+
     async signPsbt(signingStep: vendor.SigningStep, psbtHex: string): Promise<string> {
       const psbt = bitcoinjslib.Psbt.fromHex(psbtHex);
       switch (signingStep) {
@@ -99,7 +135,6 @@ export function getBtcProviderForECKey(
     },
   };
 }
-
 type Result = {
   unsignedDelegationMsg: ValueWithTypeUrl<babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation>;
   stakingTx: bitcoinjslib.Transaction;
