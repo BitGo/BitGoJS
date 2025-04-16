@@ -10,14 +10,14 @@
 
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Tlnbtc } from '@bitgo/sdk-coin-lnbtc';
-import { getLightningWallet } from 'modules/abstract-lightning/src';
+import { getLightningWallet } from '@bitgo/abstract-lightning';
 
 // TODO: set access token for testnet
 // Get this from your BitGo account
-const accessToken = process.env.TESTNET_ACCESS_TOKEN || '';
+const accessToken = '';
 
 // TODO: set your Lightning wallet ID here
-const walletId = process.env.LIGHTNING_WALLET_ID || '';
+const walletId = '';
 
 // Optional filter parameters
 const status = process.env.INVOICE_STATUS as 'open' | 'settled' | 'canceled' | undefined; // Can be 'open', 'settled', or 'canceled'
@@ -28,9 +28,9 @@ const coin = 'tlnbtc';
 
 /**
  * List Lightning invoices with optional filtering
- * @returns {Promise<any>} Array of Lightning invoices
+ * @returns {Promise<void>} Array of Lightning invoices
  */
-async function main(): Promise<any> {
+async function main(): Promise<void> {
   try {
     const bitgo = new BitGoAPI({
       accessToken,
@@ -74,8 +74,6 @@ async function main(): Promise<any> {
         console.log(`Invoice: ${invoice.invoice}`);
       }
     });
-
-    return invoices;
   } catch (e) {
     console.error('Error listing Lightning invoices:', e.message);
     throw e;

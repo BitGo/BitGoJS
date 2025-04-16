@@ -12,13 +12,13 @@ import { Tlnbtc } from '@bitgo/sdk-coin-lnbtc';
 import { getLightningWallet, SubmitPaymentParams } from '@bitgo/abstract-lightning';
 
 // Set access token for testnet
-const accessToken = process.env.TESTNET_ACCESS_TOKEN || '';
+const accessToken = '';
 
 // Set your lightning wallet ID
-const walletId = process.env.LIGHTNING_WALLET_ID || '';
+const walletId = '';
 
 // Set your wallet passphrase - needed for signing
-const passphrase = process.env.WALLET_PASSPHRASE || '';
+const passphrase = '';
 
 // Use tlnbtc for testnet, lnbtc for mainnet
 const coin = '';
@@ -28,7 +28,7 @@ const invoiceToPay = ''; // BOLT11 encoded invoice string
 
 /**
  * Pay a Lightning invoice
- * @returns {Promise<any>} Payment result
+ * @returns {Promise<void>} Payment result
  */
 async function main(): Promise<void> {
   try {
