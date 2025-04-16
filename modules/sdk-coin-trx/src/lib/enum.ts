@@ -14,6 +14,10 @@ export enum ContractType {
    * This is a smart contract type.
    */
   TriggerSmartContract,
+  /**
+   * This is the contract for freezeBuilder
+   */
+  FreezeBalanceV2,
 }
 
 export enum PermissionType {

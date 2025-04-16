@@ -636,3 +636,29 @@ export const mockTokenTx = {
   raw_data_hex:
     '0a02c8cf220889177fd84c5d919640ccd2b9a1cf305aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a15414887974f42a789ef6d4dfc7ba28b1583219434b312154142a1e39aefa49290f2b3f9ed688d7cecf86cd6e02244a9059cbb0000000000000000000000004887974f42a789ef6d4dfc7ba28b1583219434b3000000000000000000000000000000000000000000000000000000003b9aca0070ccf5dd9fcf30900180a3c347',
 };
+
+export const validFreezeUnsignedTx = {
+  visible: false,
+  txID: '0ef75a270b55cb4d88e06aee5cbaf799c5ecec2b275b28f3fedcaf9e64cd4294',
+  raw_data: {
+    contract: [
+      {
+        parameter: {
+          value: {
+            resource: 'ENERGY',
+            frozen_balance: 1000000,
+            owner_address: '41e5e00fc1cdb3921b8340c20b2b65b543c84aa1dd',
+          },
+          type_url: 'type.googleapis.com/protocol.FreezeBalanceV2Contract',
+        },
+        type: 'FreezeBalanceV2Contract',
+      },
+    ],
+    ref_block_bytes: '2b36',
+    ref_block_hash: '71f8f66bb371e300',
+    expiration: 1744868547000,
+    timestamp: 1744868489523,
+  },
+  raw_data_hex:
+    '0a022b36220871f8f66bb371e30040b8b39492e4325a59083612550a34747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e467265657a6542616c616e63655632436f6e7472616374121d0a1541e5e00fc1cdb3921b8340c20b2b65b543c84aa1dd10c0843d180170b3f29092e432',
+};
