@@ -356,6 +356,7 @@ export const OPETH_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.EIP1559,
   CoinFeature.WALLET_CONNECT_DEFI,
+  CoinFeature.BULK_TRANSACTION,
 ];
 export const ZKETH_FEATURES = [
   ...ETH_FEATURES,
