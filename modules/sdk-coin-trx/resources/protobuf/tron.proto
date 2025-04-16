@@ -273,6 +273,10 @@ message Transaction {
       UpdateEnergyLimitContract = 45;
       AccountPermissionUpdateContract = 46;
       ClearABIContract = 48;
+      UpdateBrokerageContract = 49;
+      FreezeBalanceV2Contract = 54;
+      UnfreezeBalanceV2Contract = 55;
+      WithdrawExpireUnfreezeContract = 56;
     }
     ContractType type = 1;
     google.protobuf.Any parameter = 2;

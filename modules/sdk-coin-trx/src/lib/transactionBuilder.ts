@@ -12,7 +12,7 @@ import {
 } from '@bitgo/sdk-core';
 import { TransactionReceipt } from './iface';
 import { Address } from './address';
-import { signTransaction, isBase58Address, decodeTransaction } from './utils';
+import { signTransaction, isBase58Address, decodeTransaction, VALID_RESOURCE_TYPES } from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 
@@ -123,6 +123,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // assumes a base 58 address for our addresses
     if (!isBase58Address(address.address)) {
       throw new Error(address.address + ' is not a valid base58 address.');
+    }
+  }
+
+  validateResource(resource: string): void {
+    if (!VALID_RESOURCE_TYPES.includes(resource)) {
+      throw new Error(resource + ' is not a valid resource type.');
     }
   }
 
