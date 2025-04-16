@@ -5,7 +5,7 @@ import { hideBin } from 'yargs/helpers';
 
 function getBaseUrl(network: 'mainnet' | 'testnet') {
   if (network === 'mainnet') {
-    throw new Error('Mainnet not supported');
+    return 'https://babylon.nodes.guru/api';
   }
   return 'https://babylon-testnet-api.nodes.guru';
 }
@@ -16,7 +16,7 @@ async function getParams(network: BabylonNetwork, version: number): Promise<unkn
   const url = `${getBaseUrl(network)}/babylon/btcstaking/v1/params/${version}`;
   const resp = await fetch(url);
   if (!resp.ok) {
-    throw new Error(`Failed to fetch ${url}: ${resp.statusText}`);
+    throw new Error(`Failed to fetch ${url}: ${resp.status} ${resp.statusText}`);
   }
   return await resp.json();
 }
