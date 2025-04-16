@@ -4,7 +4,7 @@ import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
 import { Keychain, KeyIndices } from '../../keychain';
 import { getTxRequest } from '../../tss';
-import { IWallet, BackupProvider } from '../../wallet';
+import { IWallet } from '../../wallet';
 import { MpcUtils } from '../mpcUtils';
 import * as _ from 'lodash';
 import {
@@ -187,7 +187,6 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     enterprise?: string | undefined;
     originalPasscodeEncryptionCode?: string | undefined;
     isThirdPartyBackup?: boolean;
-    backupProvider?: BackupProvider;
   }): Promise<KeychainsTriplet> {
     throw new Error('Method not implemented.');
   }
@@ -492,17 +491,6 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    */
   async getTxRequest(txRequestId: string, reqId?: IRequestTracer): Promise<TxRequest> {
     return getTxRequest(this.bitgo, this.wallet.id(), txRequestId, reqId);
-  }
-
-  /**
-   * Checks whether the third party backup provider is valid/supported
-   * @param backupProvider - the backup provider client selected
-   */
-  isValidThirdPartyBackupProvider(
-    backupProvider: BackupProvider | string | undefined
-  ): backupProvider is BackupProvider {
-    // As of now, BitGo is the only supported KRS provider for TSS
-    return !!(backupProvider && backupProvider === 'BitGoTrustAsKrs');
   }
 
   /**

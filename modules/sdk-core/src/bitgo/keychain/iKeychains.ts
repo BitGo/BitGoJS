@@ -1,7 +1,7 @@
 import { IRequestTracer } from '../../api';
 import { KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitgoPubKeyType } from '../utils/tss/baseTypes';
-import { BackupProvider, IWallet } from '../wallet';
+import { IWallet } from '../wallet';
 import { BitGoKeyFromOvcShares, OvcToBitGoJSON } from './ovcJsonCodec';
 
 export type KeyType = 'tss' | 'independent' | 'blsdkg';
@@ -156,7 +156,6 @@ export interface CreateMpcOptions {
   passphrase?: string;
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
-  backupProvider?: BackupProvider;
   retrofit?: DecryptedRetrofitPayload;
 }
 

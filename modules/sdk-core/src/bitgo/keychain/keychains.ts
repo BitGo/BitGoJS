@@ -332,7 +332,6 @@ export class Keychains implements IKeychains {
       passphrase: params.passphrase,
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-      backupProvider: params.backupProvider,
       retrofit: params.retrofit,
     });
   }

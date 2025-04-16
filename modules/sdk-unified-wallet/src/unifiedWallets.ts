@@ -64,7 +64,6 @@ export abstract class UnifiedWallets implements IUnifiedWallets {
       passphrase: params.passphrase,
       enterprise: params.enterprise,
       originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
-      backupProvider: params.backupProvider,
     });
     return keychainsTriplet;
   }
