@@ -19,24 +19,14 @@ import {
   SendArgs,
   PayloadsData,
   CurveType,
-  AccountIdentifierHex,
-  CborUnsignedTransaction,
 } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
-import { decode, encode, Encoder } from 'cbor-x'; // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
+import { decode, encode } from 'cbor-x'; // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
 import js_sha256 from 'js-sha256';
 import BigNumber from 'bignumber.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import protobuf from 'protobufjs';
 import { protoDefinition } from './protoDefinition';
-
-// Create a custom encoder that avoids tagging
-const encoder = new Encoder({
-  structuredClone: false,
-  useToJSON: false,
-  mapsAsObjects: false,
-  largeBigIntToFloat: false,
-});
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -613,18 +603,18 @@ export class Utils implements BaseUtils {
     return principalBytes;
   }
 
-  fromArgs(arg: Uint8Array): SendArgs {
+  async fromArgs(arg: Uint8Array): Promise<SendArgs> {
     const root = protobuf.parse(protoDefinition).root;
     const SendRequestMessage = root.lookupType('SendRequest');
     const args = SendRequestMessage.decode(arg) as unknown as SendArgs;
     const transformedArgs: SendArgs = {
-      payment: { receiverGets: { e8s: Number(args.payment.receiverGets.e8s) } },
-      maxFee: { e8s: Number(args.maxFee.e8s) },
+      payment: { receiverGets: { e8s: args.payment.receiverGets.e8s } },
+      maxFee: { e8s: args.maxFee.e8s },
       to: { hash: Buffer.from(args.to.hash) },
       createdAtTime: { timestampNanos: BigNumber(args.createdAtTime.timestampNanos.toString()).toNumber() },
     };
     if (args.memo !== undefined && args.memo !== null) {
-      transformedArgs.memo = { memo: Number(args.memo?.memo?.toString()) };
+      transformedArgs.memo = { memo: BigInt(args.memo?.memo?.toString()) };
     }
     return transformedArgs;
   }
@@ -683,81 +673,6 @@ export class Utils implements BaseUtils {
     const s = Buffer.from(signature.s.toString(16).padStart(64, '0'), 'hex');
     return Buffer.concat([r, s]).toString('hex');
   };
-
-  getTransactionId(encodedUnsignedTransaction: string, sender: string, receiver: string): string {
-    const unsignedTransaction = utils.cborDecode(
-      utils.blobFromHex(encodedUnsignedTransaction)
-    ) as CborUnsignedTransaction;
-    for (const [, update] of unsignedTransaction.updates as unknown as [string, HttpCanisterUpdate][]) {
-      const args = update.arg;
-      const sendArgs = utils.fromArgs(args);
-      const hash = this.generateTransactionHash(sendArgs, sender, receiver);
-      return hash;
-    }
-    throw new Error('Unable to compute transaction ID: no updates found in the unsigned transaction.');
-  }
-
-  safeBigInt(val: unknown): number | bigint {
-    if (typeof val === 'bigint') return val;
-    if (typeof val !== 'number') throw new Error('Expected number or bigint');
-
-    if (val > Number.MAX_SAFE_INTEGER || val < Number.MIN_SAFE_INTEGER) {
-      return BigInt(val);
-    }
-    return val;
-  }
-
-  generateTransactionHash(sendArgs: SendArgs, sender: string, receiver: string): string {
-    const from = this.accountIdentifier(sender);
-    const to = this.accountIdentifier(receiver);
-
-    const transferMap = new Map<any, any>([
-      [0, from],
-      [1, to],
-      [2, new Map([[0, this.safeBigInt(Number(sendArgs.payment.receiverGets.e8s))]])],
-      [3, new Map([[0, sendArgs.maxFee.e8s]])],
-    ]);
-
-    const operationMap = new Map([[2, transferMap]]);
-    const txnMap = new Map<any, any>([
-      [0, operationMap],
-      [1, this.safeBigInt(sendArgs.memo?.memo ?? 0)], //TODO need to make memo as optional, ticket: WIN-5209
-      [2, new Map([[0, BigInt(sendArgs.createdAtTime.timestampNanos)]])],
-    ]);
-
-    const transactionMap = this.getProcessedTransactionMap(txnMap);
-    const serializedTxn = encoder.encode(transactionMap);
-    return crypto.createHash('sha256').update(serializedTxn).digest('hex');
-  }
-
-  accountIdentifier(hexStr: string): AccountIdentifierHex {
-    const bytes = Buffer.from(hexStr, 'hex');
-    if (bytes.length === 28) {
-      return { hash: bytes };
-    }
-    if (bytes.length === 32) {
-      return { hash: bytes.slice(4) };
-    }
-    throw new Error(`Invalid AccountIdentifier: expected 56 or 64 hex chars, got ${hexStr.length}`);
-  }
-
-  getProcessedTransactionMap(txn: Map<any, any>): Map<any, any> {
-    const operationMap = txn.get(0);
-    const transferMap = operationMap.get(2);
-    transferMap.set(0, this.serializeAccountIdentifier(transferMap.get(0)));
-    transferMap.set(1, this.serializeAccountIdentifier(transferMap.get(1)));
-    return txn;
-  }
-
-  serializeAccountIdentifier(accountHex: AccountIdentifierHex): string {
-    if (accountHex && accountHex.hash) {
-      const hash = accountHex.hash;
-      const checksum = Buffer.alloc(4);
-      checksum.writeUInt32BE(crc32.buf(hash) >>> 0, 0);
-      return Buffer.concat([checksum, hash]).toString('hex').toLowerCase();
-    }
-    throw new Error('Invalid accountHex format');
-  }
 }
 
 const utils = new Utils();

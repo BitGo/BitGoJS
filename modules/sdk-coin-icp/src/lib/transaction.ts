@@ -34,7 +34,6 @@ export class Transaction extends BaseTransaction {
   protected _signedTransaction: string;
   protected _signaturePayload: Signatures[];
   protected _createdTimestamp: number | bigint | undefined;
-  protected _txnId: string | undefined;
   protected _utils: Utils;
 
   constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
@@ -90,14 +89,6 @@ export class Transaction extends BaseTransaction {
     return this._createdTimestamp;
   }
 
-  set txnId(txnId: string) {
-    this._txnId = txnId;
-  }
-
-  get txnId(): string | undefined {
-    return this._txnId;
-  }
-
   async fromRawTransaction(rawTransaction: string): Promise<void> {
     try {
       const jsonRawTransaction: RawTransaction = JSON.parse(rawTransaction);
@@ -124,7 +115,7 @@ export class Transaction extends BaseTransaction {
           throw new Error('Invalid transaction type');
       }
     } catch (error) {
-      throw new InvalidTransactionError(`Invalid raw transaction: ${error.message}`);
+      throw new InvalidTransactionError('Invalid raw transaction');
     }
   }
 
@@ -146,7 +137,7 @@ export class Transaction extends BaseTransaction {
     switch (this._icpTransactionData.transactionType) {
       case OperationType.TRANSACTION:
         const txData: TxData = {
-          id: this._id, //TODO set transaction ID
+          id: this._id,
           sender: this._icpTransactionData.senderAddress,
           senderPublicKey: this._icpTransactionData.senderPublicKeyHex,
           recipient: this._icpTransactionData.receiverAddress,

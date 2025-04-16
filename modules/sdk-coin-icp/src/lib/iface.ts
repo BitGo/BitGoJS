@@ -194,7 +194,3 @@ export interface RecoveryOptions {
 export interface PublicNodeSubmitResponse {
   status: string;
 }
-
-export interface AccountIdentifierHex {
-  hash: Buffer<ArrayBuffer>;
-}

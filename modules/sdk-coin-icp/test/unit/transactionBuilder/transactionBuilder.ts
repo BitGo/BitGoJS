@@ -92,8 +92,6 @@ describe('ICP Transaction Builder', async () => {
     const signedTxn = txBuilder.transaction.signedTransaction;
     signedTxn.should.be.a.String();
     should.equal(signedTxn, testData.SignedTransaction);
-    const transactionHash = txBuilder.transaction.txnId;
-    should.equal(transactionHash, testData.transactionHash);
     const broadcastTxn = txBuilder.transaction.toBroadcastFormat();
     broadcastTxn.should.be.a.String();
     should.equal(broadcastTxn, signedTxn);
