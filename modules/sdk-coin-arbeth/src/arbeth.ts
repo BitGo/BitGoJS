@@ -70,9 +70,4 @@ export class Arbeth extends AbstractEthLikeNewCoins {
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.tss;
   }
-
-  /** inherited doc */
-  isTssSupportGated(): boolean {
-    return true;
-  }
 }
