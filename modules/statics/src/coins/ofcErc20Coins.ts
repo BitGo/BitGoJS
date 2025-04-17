@@ -3225,6 +3225,20 @@ export const tOfcErc20Coins = [
     undefined,
     'hteth'
   ),
+  tofcerc20(
+    '4dc4534c-72b8-4a68-a914-210dae1e5d4d',
+    'ofchteth:usd1',
+    'Holesky Testnet USD1',
+    18,
+    UnderlyingAsset['hteth:usd1'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

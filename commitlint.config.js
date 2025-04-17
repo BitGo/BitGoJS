@@ -56,6 +56,7 @@ module.exports = {
         'SC-',
         'ST-',
         'STLX-',
+        'TMS-',
         'TRUST-',
         'USDS-',
         'VL-',
