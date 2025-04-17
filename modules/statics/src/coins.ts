@@ -2756,8 +2756,8 @@ export const coins = CoinMap.fromCoins([
     'XSGD',
     15,
     'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD',
-    'XSGD',
-    'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD::XSGD',
+    '5853474400000000000000000000000000000000',
+    'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD::5853474400000000000000000000000000000000',
     'straitsx.com',
     UnderlyingAsset['txrp:xsgd']
   ),
