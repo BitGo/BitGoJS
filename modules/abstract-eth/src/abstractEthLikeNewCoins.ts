@@ -2728,6 +2728,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
         return transferBuilder.build();
       }
+
+      default:
+        throw new Error(`Unsupported NFT type: ${params.type}`);
     }
   }
 

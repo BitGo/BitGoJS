@@ -14,7 +14,7 @@ import { IWebhooks } from '../webhook/iWebhooks';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
-import { MPCTx, PopulatedIntent } from '../utils';
+import { MPCTx, PopulatedIntent, TokenType } from '../utils';
 
 export const multisigTypes = {
   onchain: 'onchain',
@@ -449,7 +449,7 @@ export type NFTTransferOptions = {
   recipientAddress: string;
 } & (
   | {
-      type: 'ERC721';
+      type: 'ERC721' | TokenType.DIGITAL_ASSET;
       tokenId: string;
     }
   | {
