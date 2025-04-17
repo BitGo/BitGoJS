@@ -359,6 +359,55 @@ export const TEST_CUSTOM_MsgCreateBTCDelegation_TX = {
     ],
     gasLimit: 200000,
   },
+  inputs: [],
+  outputs: [],
+};
+
+export const TEST_CUSTOM_MsgWithdrawReward_TX = {
+  hash: '',
+  signature: 'KGFmGSxicrY4WjDoJPOaVyzd4TJNFtxVI6vLXCr1X7MaOylWJTh+2pkIJc5Cm/kUFkDqWsyHdUzexbt1ThyZ2A==',
+  pubKey: 'AwT4xoruxA+DkKynr1LH7CM60RwR7Lp5InwQ5ISaN1Hw',
+  privateKey: 'QAzeAkPWRGyRT8/TvJcRC7VSzQHV9QhH6YTmGZbnvmk=',
+  signedTxBase64:
+    'CmkKZwokL2JhYnlsb24uaW5jZW50aXZlLk1zZ1dpdGhkcmF3UmV3YXJkEj8KEWZpbmFsaXR5X3Byb3ZpZGVyEipiYm4xMjc0ZXA4cG5ybGVqNXZnbXR3cHB5c3luemNkNGZoeGMza3UwdDMSZQpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAwT4xoruxA+DkKynr1LH7CM60RwR7Lp5InwQ5ISaN1HwEgQKAggBGDsSEQoLCgR1YmJuEgM1MDAQwJoMGkAoYWYZLGJytjhaMOgk85pXLN3hMk0W3FUjq8tcKvVfsxo7KVYlOH7amQglzkKb+RQWQOpazId1TN7Fu3VOHJnY',
+  from: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
+  to: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
+  chainId: 'bbn-test-5',
+  accountNumber: 59235,
+  sequence: 59,
+  sendAmount: '0',
+  feeAmount: '500',
+  sendMessage: {
+    typeUrl: '/babylon.incentive.MsgWithdrawReward',
+    value: {
+      _kind: 'WithdrawReward',
+      type: 'finality_provider',
+      address: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
+    },
+  },
+  gasBudget: {
+    amount: [
+      {
+        denom: 'ubbn',
+        amount: '500',
+      },
+    ],
+    gasLimit: 200000,
+  },
+  inputs: [
+    {
+      address: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
+      value: 'UNAVAILABLE',
+      coin: 'tbaby',
+    },
+  ],
+  outputs: [
+    {
+      address: 'bbn1274ep8pnrlej5vgmtwppysynzcd4fhxc3ku0t3',
+      value: 'UNAVAILABLE',
+      coin: 'tbaby',
+    },
+  ],
 };
 
 export const address = {

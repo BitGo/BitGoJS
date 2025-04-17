@@ -1,7 +1,8 @@
 import { CosmosTransaction, CosmosUtils, TransactionExplanation, TxData } from '@bitgo/abstract-cosmos';
 import { Entry, InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
-import { BabylonSpecificMessages } from './iface';
+import { BabylonSpecificMessages, WithdrawRewardMessage } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { UNAVAILABLE_TEXT } from './constants';
 
 export class BabylonTransaction extends CosmosTransaction<BabylonSpecificMessages> {
   constructor(_coinConfig: Readonly<CoinConfig>, _utils: CosmosUtils<BabylonSpecificMessages>) {
@@ -18,7 +19,22 @@ export class BabylonTransaction extends CosmosTransaction<BabylonSpecificMessage
       case TransactionType.CustomTx:
         explanationResult.type = TransactionType.CustomTx;
         outputAmount = BigInt(0);
-        outputs = [];
+        outputs = json.sendMessages.flatMap((message) => {
+          const value = message.value as BabylonSpecificMessages;
+          switch (value._kind) {
+            case 'CreateBtcDelegation':
+              return [];
+            case 'WithdrawReward':
+              return [
+                {
+                  address: (value as WithdrawRewardMessage).address,
+                  amount: UNAVAILABLE_TEXT,
+                },
+              ];
+            default:
+              throw new InvalidTransactionError(`Unsupported BabylonSpecificMessages message`);
+          }
+        });
         break;
       default:
         return super.explainTransactionInternal(json, explanationResult);
@@ -44,6 +60,27 @@ export class BabylonTransaction extends CosmosTransaction<BabylonSpecificMessage
     const inputs: Entry[] = [];
     switch (this.type) {
       case TransactionType.CustomTx:
+        this.cosmosLikeTransaction.sendMessages.forEach((message) => {
+          const value = message.value as BabylonSpecificMessages;
+          switch (value._kind) {
+            case 'CreateBtcDelegation':
+              break;
+            case 'WithdrawReward':
+              inputs.push({
+                address: (value as WithdrawRewardMessage).address,
+                value: UNAVAILABLE_TEXT,
+                coin: this._coinConfig.name,
+              });
+              outputs.push({
+                address: (value as WithdrawRewardMessage).address,
+                value: UNAVAILABLE_TEXT,
+                coin: this._coinConfig.name,
+              });
+              break;
+            default:
+              throw new InvalidTransactionError(`Unsupported BabylonSpecificMessages message`);
+          }
+        });
         break;
       default:
         return super.loadInputsAndOutputs();
