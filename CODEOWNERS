@@ -66,6 +66,7 @@
 /modules/sdk-coin-ethlike/ @BitGo/ethalt-team
 /modules/sdk-coin-hbar/ @BitGo/ethalt-team
 /modules/sdk-coin-icp/ @BitGo/ethalt-team
+/modules/sdk-coin-mon/ @BitGo/ethalt-team
 /modules/sdk-coin-mantra/ @BitGo/ethalt-team
 /modules/sdk-coin-near/ @BitGo/ethalt-team
 /modules/sdk-coin-oas/ @BitGo/ethalt-team

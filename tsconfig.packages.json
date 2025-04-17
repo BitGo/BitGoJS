@@ -149,6 +149,9 @@
       "path": "./modules/sdk-coin-ltc"
     },
     {
+      "path": "./modules/sdk-coin-mon"
+    },
+    {
       "path": "./modules/sdk-coin-mantra"
     },
     {
