@@ -357,6 +357,7 @@ export const OPETH_FEATURES = [
   CoinFeature.EIP1559,
   CoinFeature.WALLET_CONNECT_DEFI,
   CoinFeature.BULK_TRANSACTION,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const ZKETH_FEATURES = [
   ...ETH_FEATURES,

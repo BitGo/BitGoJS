@@ -264,6 +264,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
       CoinFeature.EIP1559,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ), // we should probably refactor this into a eth() method
   account(
@@ -323,6 +324,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
       CoinFeature.EIP1559,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
