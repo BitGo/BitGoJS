@@ -4,7 +4,10 @@ import {
   InvalidIdError,
   MissingRequiredCoinFeatureError,
 } from './errors';
-import { BaseNetwork } from './networks';
+import { BaseNetwork, Networks } from './networks';
+import { coins } from './coins';
+import { OfcCoin } from './ofc';
+import { v4 as uuidV4 } from 'uuid';
 
 export enum CoinKind {
   CRYPTO = 'crypto',
@@ -2709,6 +2712,11 @@ export abstract class BaseCoin {
   public readonly primaryKeyCurve: KeyCurve;
 
   /**
+   * Off-chain equivalent of this asset.
+   */
+  public readonly ofcCoin?: Readonly<BaseCoin>;
+
+  /**
    * Set of features which are required by a coin subclass
    * @return {Set<CoinFeature>}
    */
@@ -2784,5 +2792,27 @@ export abstract class BaseCoin {
     this.asset = options.asset;
     this.network = options.network;
     this.primaryKeyCurve = options.primaryKeyCurve;
+    this.ofcCoin =
+      coins.get(`ofc${this.name}`) ??
+      Object.freeze(
+        new OfcCoin({
+          id: uuidV4({
+            rng: () => Buffer.from(options.id, 'utf-8'),
+          }),
+          name: `ofc${options.name}`,
+          fullName: options.fullName,
+          network: Networks.test.ofc /* TODO: Networks.main.ofc if mainnet */,
+          prefix: '',
+          suffix: options.name.toUpperCase(),
+          features: [...OfcCoin.DEFAULT_FEATURES, CoinFeature.TSS_ENTERPRISE_PAYS_FEES],
+          decimalPlaces: options.decimalPlaces,
+          isToken: options.isToken,
+          asset: options.asset,
+          kind: options.kind,
+          primaryKeyCurve: options.primaryKeyCurve,
+          baseUnit: BaseUnit.OFC,
+          addressCoin: options.isToken ? options.name : undefined,
+        })
+      );
   }
 }
