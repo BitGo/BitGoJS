@@ -2729,6 +2729,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         return transferBuilder.build();
       }
     }
+    return '';
   }
 
   /**
