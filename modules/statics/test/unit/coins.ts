@@ -876,6 +876,21 @@ describe('Bulk Transaction Features', () => {
   });
 });
 
+describe('ERC20 Bulk Transaction Feature', () => {
+  it('should have ERC20_BULK_TRANSACTION feature for appropriate coins', () => {
+    const erc20BulkTransactionCoins = ['eth', 'hteth', 'opeth', 'topeth'];
+    erc20BulkTransactionCoins.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.ERC20_BULK_TRANSACTION).should.eql(true);
+    });
+  });
+
+  it('should not have ERC20_BULK_TRANSACTION feature for Polygon', () => {
+    const coin = coins.get('polygon');
+    coin.features.includes(CoinFeature.ERC20_BULK_TRANSACTION).should.eql(false);
+  });
+});
+
 describe('Eip1559 coins', () => {
   const eip1559Coins = [
     'avaxc',
