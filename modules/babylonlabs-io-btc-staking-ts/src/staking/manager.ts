@@ -2,36 +2,53 @@ import { networks, Psbt, Transaction } from "bitcoinjs-lib";
 import { StakingParams, VersionedStakingParams } from "../types/params";
 import { TransactionResult, UTXO } from "../types";
 import { StakerInfo, Staking } from ".";
-import { fromBech32 } from "@cosmjs/encoding";
 import {
   btccheckpoint,
   btcstaking,
   btcstakingtx,
 } from "@babylonlabs-io/babylon-proto-ts";
 import {
+  BIP322Sig,
   BTCSigType,
   ProofOfPossessionBTC,
 } from "@babylonlabs-io/babylon-proto-ts/dist/generated/babylon/btcstaking/v1/pop";
 import { BABYLON_REGISTRY_TYPE_URLS } from "../constants/registry";
 import { createCovenantWitness } from "./transactions";
 import { getBabylonParamByBtcHeight, getBabylonParamByVersion } from "../utils/staking/param";
-import { reverseBuffer, uint8ArrayToHex } from "../utils";
+import { reverseBuffer } from "../utils";
 import { deriveStakingOutputInfo } from "../utils/staking";
 import { findMatchingTxOutputIndex } from "../utils/staking";
 import { isValidBabylonAddress } from "../utils/babylon";
 import { StakingError } from "../error";
 import { StakingErrorCode } from "../error";
+import { isNativeSegwit, isTaproot } from "../utils/btc";
 
 export interface BtcProvider {
   // Sign a PSBT
+  // Expecting the PSBT to be encoded in hex format.
   signPsbt(signingStep: SigningStep, psbtHex: string): Promise<string>;
-  // Sign a message using the ECDSA type
-  // This is optional and only required if you would like to use the 
-  // `createProofOfPossession` function
-  signMessage?: (signingStep: SigningStep, message: string, type: "ecdsa") => Promise<string>;
+  
+  // Signs a message using either ECDSA or BIP-322, depending on the address type.
+  // - Taproot and Native Segwit addresses will use BIP-322.
+  // - Legacy addresses will use ECDSA.
+  // Expecting the message to be encoded in base64 format.
+  signMessage: (
+    signingStep: SigningStep, message: string, type: "ecdsa" | "bip322-simple"
+  ) => Promise<string>;
 }
 
 export interface BabylonProvider {
+  /**
+   * Signs a Babylon chain transaction using the provided signing step.
+   * This is primarily used for signing MsgCreateBTCDelegation transactions
+   * which register the BTC delegation on the Babylon Genesis chain.
+   * 
+   * @param {SigningStep} signingStep - The current signing step context
+   * @param {object} msg - The Cosmos SDK transaction message to sign
+   * @param {string} msg.typeUrl - The Protobuf type URL identifying the message type
+   * @param {T} msg.value - The transaction message data matching the typeUrl
+   * @returns {Promise<Uint8Array>} The signed transaction bytes
+   */
   signTransaction: <T extends object>(
     signingStep: SigningStep,
     msg: {
@@ -106,7 +123,9 @@ export class BabylonBtcStakingManager {
    * @param babylonBtcTipHeight - The Babylon BTC tip height.
    * @param inputUTXOs - The UTXOs that will be used to pay for the staking
    * transaction.
-   * @param feeRate - The fee rate in satoshis per byte.
+   * @param feeRate - The fee rate in satoshis per byte. Typical value for the
+   * fee rate is above 1. If the fee rate is too low, the transaction will not
+   * be included in a block.
    * @param babylonAddress - The Babylon bech32 encoded address of the staker.
    * @returns The signed babylon pre-staking registration transaction in base64 
    * format.
@@ -182,7 +201,8 @@ export class BabylonBtcStakingManager {
    * @param stakingTxHeight - The BTC height in which the staking transaction 
    * is included.
    * @param stakingInput - The staking inputs.
-   * @param inclusionProof - The inclusion proof of the staking transaction.
+   * @param inclusionProof - Merkle Proof of Inclusion: Verifies transaction
+   * inclusion in a Bitcoin block that is k-deep.
    * @param babylonAddress - The Babylon bech32 encoded address of the staker.
    * @returns The signed babylon transaction in base64 format.
    */
@@ -249,7 +269,9 @@ export class BabylonBtcStakingManager {
    * @param stakingInput - The staking inputs.
    * @param inputUTXOs - The UTXOs that will be used to pay for the staking
    * transaction.
-   * @param feeRate - The fee rate in satoshis per byte.
+   * @param feeRate - The fee rate in satoshis per byte. Typical value for the
+   * fee rate is above 1. If the fee rate is too low, the transaction will not
+   * be included in a block.
    * @returns The estimated BTC fee in satoshis.
    */
   estimateBtcStakingFee(
@@ -462,7 +484,9 @@ export class BabylonBtcStakingManager {
    * @param stakingParamsVersion - The params version that was used to create the
    * delegation in Babylon chain
    * @param earlyUnbondingTx - The early unbonding transaction.
-   * @param feeRate - The fee rate in satoshis per byte.
+   * @param feeRate - The fee rate in satoshis per byte. Typical value for the
+   * fee rate is above 1. If the fee rate is too low, the transaction will not
+   * be included in a block.
    * @returns The signed withdrawal transaction and its fee.
    */
   async createSignedBtcWithdrawEarlyUnbondedTransaction(
@@ -509,7 +533,9 @@ export class BabylonBtcStakingManager {
    * @param stakingParamsVersion - The params version that was used to create the
    * delegation in Babylon chain
    * @param stakingTx - The staking transaction.
-   * @param feeRate - The fee rate in satoshis per byte.
+   * @param feeRate - The fee rate in satoshis per byte. Typical value for the
+   * fee rate is above 1. If the fee rate is too low, the transaction will not
+   * be included in a block.
    * @returns The signed withdrawal transaction and its fee.
    */
   async createSignedBtcWithdrawStakingExpiredTransaction(
@@ -556,7 +582,9 @@ export class BabylonBtcStakingManager {
    * @param stakingParamsVersion - The params version that was used to create the
    * delegation in Babylon chain
    * @param slashingTx - The slashing transaction.
-   * @param feeRate - The fee rate in satoshis per byte.
+   * @param feeRate - The fee rate in satoshis per byte. Typical value for the
+   * fee rate is above 1. If the fee rate is too low, the transaction will not
+   * be included in a block.
    * @returns The signed withdrawal transaction and its fee.
    */
   async createSignedBtcWithdrawSlashingTransaction(
@@ -601,22 +629,42 @@ export class BabylonBtcStakingManager {
    */
   async createProofOfPossession(
     bech32Address: string,
+    stakerBtcAddress: string,
   ): Promise<ProofOfPossessionBTC> {
-    if (!this.btcProvider.signMessage) {
-      throw new Error("Sign message function not found");
+    let sigType: BTCSigType = BTCSigType.ECDSA;
+
+    // For Taproot or Native SegWit addresses, use the BIP322 signature scheme
+    // in the proof of possession as it uses the same signature type as the regular
+    // input UTXO spend. For legacy addresses, use the ECDSA signature scheme.
+    if (
+      isTaproot(stakerBtcAddress, this.network) 
+        || isNativeSegwit(stakerBtcAddress, this.network)
+    ) {
+      sigType = BTCSigType.BIP322;
     }
-    // Create Proof of Possession
-    const bech32AddressHex = uint8ArrayToHex(fromBech32(bech32Address).data);
- 
+
     const signedBabylonAddress = await this.btcProvider.signMessage(
       SigningStep.PROOF_OF_POSSESSION,
-      bech32AddressHex,
-      "ecdsa",
+      bech32Address,
+      sigType === BTCSigType.BIP322 ? "bip322-simple" : "ecdsa",
     );
-    const ecdsaSig = Uint8Array.from(Buffer.from(signedBabylonAddress, "base64"));
+
+    let btcSig: Uint8Array;
+    if (sigType === BTCSigType.BIP322) {
+      const bip322Sig = BIP322Sig.fromPartial({
+        address: stakerBtcAddress,
+        sig: Buffer.from(signedBabylonAddress, "base64"),
+      });
+      // Encode the BIP322 protobuf message to a Uint8Array
+      btcSig = BIP322Sig.encode(bip322Sig).finish();
+    } else {
+      // Encode the ECDSA signature to a Uint8Array
+      btcSig = Buffer.from(signedBabylonAddress, "base64");
+    }
+
     return {
-      btcSigType: BTCSigType.ECDSA,
-      btcSig: ecdsaSig,
+      btcSigType: sigType,
+      btcSig
     };
   }
 
@@ -710,7 +758,10 @@ export class BabylonBtcStakingManager {
     }
 
     // Create proof of possession
-    const proofOfPossession = await this.createProofOfPossession(bech32Address);
+    const proofOfPossession = await this.createProofOfPossession(
+      bech32Address,
+      stakerBtcInfo.address,
+    );
 
     // Prepare the final protobuf message
     const msg: btcstakingtx.MsgCreateBTCDelegation =

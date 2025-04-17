@@ -3,6 +3,7 @@
  */
 import assert from 'assert';
 
+import { BIP322 } from 'bip322-js';
 import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as babylonProtobuf from '@babylonlabs-io/babylon-proto-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
@@ -72,16 +73,44 @@ export function getBtcProviderForECKey(
     return psbt;
   }
 
+  function signBip322Simple(message: string): string {
+    // Get the script public key from the staking descriptor
+    const scriptPubKey = Buffer.from(descriptorBuilder.getStakingDescriptor().scriptPubkey());
+
+    // Build to_spend transaction for BIP-322
+    const toSpendTx = BIP322.buildToSpendTx(message, scriptPubKey);
+
+    // Get the to_spend txid
+    const toSpendTxId = toSpendTx.getId();
+
+    // Build to_sign transaction
+    const toSignPsbt = BIP322.buildToSignTx(toSpendTxId, scriptPubKey);
+
+    // Sign the PSBT with the staker key
+    toSignPsbt.signInput(0, stakerKey);
+    toSignPsbt.finalizeAllInputs();
+
+    // Encode the witness data and return
+    return BIP322.encodeWitness(toSignPsbt);
+  }
+
   return {
-    async signMessage(signingStep: vendor.SigningStep, message: string, type: 'ecdsa'): Promise<string> {
-      assert(type === 'ecdsa');
-      switch (signingStep) {
-        case 'proof-of-possession':
+    async signMessage(
+      signingStep: vendor.SigningStep,
+      message: string,
+      type: 'ecdsa' | 'bip322-simple'
+    ): Promise<string> {
+      assert(signingStep === 'proof-of-possession');
+      switch (type) {
+        case 'ecdsa':
           return stakerKey.sign(Buffer.from(message, 'hex')).toString('hex');
+        case 'bip322-simple':
+          return signBip322Simple(message);
         default:
           throw new Error(`unexpected signing step: ${signingStep}`);
       }
     },
+
     async signPsbt(signingStep: vendor.SigningStep, psbtHex: string): Promise<string> {
       const psbt = bitcoinjslib.Psbt.fromHex(psbtHex);
       switch (signingStep) {
@@ -95,7 +124,6 @@ export function getBtcProviderForECKey(
     },
   };
 }
-
 type Result = {
   unsignedDelegationMsg: ValueWithTypeUrl<babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation>;
   stakingTx: bitcoinjslib.Transaction;

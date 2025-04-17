@@ -32,22 +32,60 @@ export const isValidBitcoinAddress = (
  * @param {object} network - The Bitcoin network (e.g., bitcoin.networks.bitcoin).
  * @returns {boolean} - True if the address is a Taproot address, otherwise false.
  */
-export const isTaproot = (taprootAddress: string, network: networks.Network): boolean => {
+export const isTaproot = (
+  taprootAddress: string,
+  network: networks.Network,
+): boolean => {
   try {
     const decoded = address.fromBech32(taprootAddress);
     if (decoded.version !== 1) {
       return false;
     }
-    switch (network) {
-      case networks.bitcoin:
-        // Check if address statrts with "bc1p"
-        return taprootAddress.startsWith("bc1p");
-      case networks.testnet:
-        // signet, regtest and testnet taproot addresses start with "tb1p" or "sb1p"
-        return taprootAddress.startsWith("tb1p") || taprootAddress.startsWith("sb1p");
-      default:
-        return false;
-    }  
+
+    // Compare network properties instead of object reference
+    // The bech32 is hardcoded in the bitcoinjs-lib library.
+    // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/ts_src/networks.ts#L36
+    if (network.bech32 === networks.bitcoin.bech32) {
+      // Check if address starts with "bc1p"
+      return taprootAddress.startsWith("bc1p");
+    } else if (network.bech32 === networks.testnet.bech32) {
+      // signet, regtest and testnet taproot addresses start with "tb1p" or "sb1p"
+      return taprootAddress.startsWith("tb1p") || taprootAddress.startsWith("sb1p");
+    }
+    return false;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Check whether the given address is a Native SegWit address.
+ *
+ * @param {string} segwitAddress - The Bitcoin bech32 encoded address to check.
+ * @param {object} network - The Bitcoin network (e.g., bitcoin.networks.bitcoin).
+ * @returns {boolean} - True if the address is a Native SegWit address, otherwise false.
+ */
+export const isNativeSegwit = (
+  segwitAddress: string,
+  network: networks.Network,
+): boolean => {
+  try {
+    const decoded = address.fromBech32(segwitAddress);
+    if (decoded.version !== 0) {
+      return false;
+    }
+    
+    // Compare network properties instead of object reference
+    // The bech32 is hardcoded in the bitcoinjs-lib library.
+    // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/ts_src/networks.ts#L36
+    if (network.bech32 === networks.bitcoin.bech32) {
+      // Check if address starts with "bc1q"
+      return segwitAddress.startsWith("bc1q");
+    } else if (network.bech32 === networks.testnet.bech32) {
+      // testnet native segwit addresses start with "tb1q"
+      return segwitAddress.startsWith("tb1q");
+    }
+    return false;
   } catch (error) {
     return false;
   }
