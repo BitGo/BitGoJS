@@ -67,6 +67,7 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc('140ac16e-e39a-49d0-ae69-60019ff35727', 'ofcbld', 'Agoric', 6, UnderlyingAsset.BLD, CoinKind.CRYPTO),
+  ofc('8b4f4051-b447-479b-bc3e-88e30a496599', 'ofcbaby', 'Babylon', 6, UnderlyingAsset.BABY, CoinKind.CRYPTO),
   ofc('220b2568-e996-40d1-af2c-fc4f79019069', 'ofctia', 'Celestia', 6, UnderlyingAsset.TIA, CoinKind.CRYPTO),
   ofc('3ad9a2e0-a8f4-4673-9177-35e855929eb6', 'ofcatom', 'Cosmos Hub ATOM', 6, UnderlyingAsset.ATOM, CoinKind.CRYPTO),
   ofc(
@@ -245,6 +246,7 @@ export const ofcCoins = [
     UnderlyingAsset.ATOM,
     CoinKind.CRYPTO
   ),
+  tofc('db429b06-c128-461e-9401-0e9d96fe500f', 'ofctbaby', 'Testnet Babylon', 6, UnderlyingAsset.BABY, CoinKind.CRYPTO),
   tofc(
     '3b0f5716-94c3-4c5b-be70-cfd08b2f1fdf',
     'ofctinjective',
