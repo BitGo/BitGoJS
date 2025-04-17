@@ -619,4 +619,12 @@ export abstract class BaseCoin implements IBaseCoin {
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
     return;
   }
+
+  /**
+   * Flag indicating if TSS support is gated for this coin.
+   * @returns {boolean}
+   */
+  isTssSupportGated(): boolean {
+    return false;
+  }
 }
