@@ -11,6 +11,7 @@ import {
   ofcStellarToken,
   tofcStellarToken,
   ofcBscToken,
+  tofcBscToken,
   ofcAvaxErc20,
   tofcAvaxErc20,
   ofcArbethErc20,
@@ -1222,6 +1223,13 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:psg']
   ),
   ofcBscToken('5c7a8f9e-4b1e-1f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:telos', 'Telos', 18, UnderlyingAsset['bsc:telos']),
+  tofcBscToken(
+    'bf8a52e5-f416-46ea-95c2-a920dc204233',
+    'ofctbsc:usd1',
+    'Test USD1 Token',
+    18,
+    UnderlyingAsset['tbsc:usd1']
+  ),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
     'ofcpolygon:sbc',
