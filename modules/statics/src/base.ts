@@ -346,6 +346,11 @@ export enum CoinFeature {
    * This coin supports WalletConnect
    */
   WALLET_CONNECT_DEFI = 'wallet-connect-defi',
+
+  /**
+   * This coin is gated for TSS Support
+   */
+  TSS_SUPPORT_GATED = 'tss-support-gated',
 }
 
 /**
