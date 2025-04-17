@@ -115,7 +115,6 @@
 /modules/deser-lib/ @BitGo/wallet-platform @BitGo/hsm
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team
 /modules/sdk-test/ @BitGo/web-experience @BitGo/wallet-platform
-/modules/sdk-unified-wallet @BitGo/ethalt-team
 /modules/sjcl/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /modules/statics/ @BitGo/web-experience @BitGo/wallet-platform @BitGo/ethalt-team
 /modules/statics/src/utxo.ts @BitGo/btc-team

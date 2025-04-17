@@ -245,9 +245,6 @@
       "path": "./modules/sdk-test"
     },
     {
-      "path": "./modules/sdk-unified-wallet"
-    },
-    {
       "path": "./modules/statics"
     },
     {
