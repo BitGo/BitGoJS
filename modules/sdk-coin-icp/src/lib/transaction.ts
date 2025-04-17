@@ -95,6 +95,7 @@ export class Transaction extends BaseTransaction {
       const serializedTxFormatJsonString = serializedTxFormatBuffer.toString('utf-8');
       const jsonRawTransaction: RawTransaction = JSON.parse(serializedTxFormatJsonString);
       const payloadsData = jsonRawTransaction.serializedTxHex;
+      this._payloadsData = payloadsData;
       const parsedTx = await this.parseUnsignedTransaction(payloadsData.unsigned_transaction);
       const senderPublicKeyHex = jsonRawTransaction.publicKey;
       const transactionType = parsedTx.operations[0].type;
@@ -113,12 +114,13 @@ export class Transaction extends BaseTransaction {
             this._icpTransactionData.memo = parsedTx.metadata.memo;
           }
           this._utils.validateRawTransaction(this._icpTransactionData);
+          this._id = this.generateTransactionId();
           break;
         default:
           throw new Error('Invalid transaction type');
       }
     } catch (error) {
-      throw new InvalidTransactionError(`Invalid transaction type: ${error.message}`);
+      throw new InvalidTransactionError(`Invalid transaction: ${error.message}`);
     }
   }
 
@@ -130,6 +132,9 @@ export class Transaction extends BaseTransaction {
       throw new Error('signatures length is not matching');
     }
     this._signaturePayload = signaturePayloads;
+    if (this._id === undefined || this._id === null) {
+      this._id = this.generateTransactionId();
+    }
   }
 
   /** @inheritdoc */
@@ -298,5 +303,21 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     return true;
+  }
+
+  /**
+   * Generates a unique transaction ID for the current transaction.
+   * The transaction ID is derived using the unsigned transaction data,
+   * the sender's address, and the receiver's address.
+   *
+   * @returns {string} The generated transaction ID.
+   */
+  private generateTransactionId(): string {
+    const id = this._utils.getTransactionId(
+      this.unsignedTransaction,
+      this.icpTransactionData.senderAddress,
+      this.icpTransactionData.receiverAddress
+    );
+    return id;
   }
 }
