@@ -78,7 +78,6 @@ import {
   DOT_FEATURES,
   EOS_FEATURES,
   ETC_FEATURES,
-  ETH2_FEATURES,
   ETH_FEATURES,
   ETH_FEATURES_WITH_STAKING_AND_MMI,
   EVM_FEATURES,
@@ -328,17 +327,6 @@ export const coins = CoinMap.fromCoins([
     ]
   ),
   account(
-    'bfe3a3d5-2210-4bac-b494-40c45ed89267',
-    'eth2',
-    'Ethereum 2.0',
-    Networks.main.ethereum2,
-    18,
-    UnderlyingAsset.ETH2,
-    BaseUnit.ETH,
-    [...ETH2_FEATURES, CoinFeature.TSS, CoinFeature.MULTISIG_COLD, CoinFeature.TSS_COLD],
-    KeyCurve.BLS
-  ),
-  account(
     '33712672-8cb9-444e-be92-b8c9e84050d5',
     'ethw',
     'Ethereum PoW',
@@ -347,17 +335,6 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.ETHW,
     BaseUnit.ETH,
     [...AccountCoin.DEFAULT_FEATURES]
-  ),
-  account(
-    '37ee6253-04fb-4eec-bd88-310a480b1e43',
-    'teth2',
-    'Testnet Ethereum 2.0',
-    Networks.test.pyrmont,
-    18,
-    UnderlyingAsset.ETH2,
-    BaseUnit.ETH,
-    [...ETH2_FEATURES, CoinFeature.TSS, CoinFeature.MULTISIG_COLD, CoinFeature.TSS_COLD],
-    KeyCurve.BLS
   ),
   account(
     '2660f6f6-1980-4584-a0b3-487d4a832b9f',
