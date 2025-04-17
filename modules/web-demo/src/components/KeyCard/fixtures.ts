@@ -246,7 +246,6 @@ export async function downloadKeycardForSelfManagedHotAdvancedPolygonWallet() {
   const backupKeychain: Keychain = {
     id: '63e50a15f9cdb4000746eb377628ea41',
     type: 'tss',
-    provider: 'BitGoTrustAsKrs',
     commonKeychain:
       '021150550261463d753e96647bd5debb05d9ef325f4368cc160bf03365e4dadc756416f1230ccc4a1f24eb4924395bced22400f63d4837d511a28da015728ca049',
     keyShares: [

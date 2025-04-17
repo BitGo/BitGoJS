@@ -60,6 +60,7 @@ export enum CoinFamily {
   LNBTC = 'lnbtc',
   LTC = 'ltc',
   MANTRA = 'mantra',
+  MON = 'mon',
   POLYGON = 'polygon',
   POLYX = 'polyx',
   NEAR = 'near',
@@ -288,6 +289,11 @@ export enum CoinFeature {
   BULK_TRANSACTION = 'bulk-transaction',
 
   /**
+   * This coin supports bulk ERC20 token transactions (token batching)
+   */
+  ERC20_BULK_TRANSACTION = 'erc20-bulk-transaction',
+
+  /**
    * This coin supports distributed custody wallets
    */
   DISTRIBUTED_CUSTODY = 'distributed-custody',
@@ -340,6 +346,11 @@ export enum CoinFeature {
    * This coin supports WalletConnect
    */
   WALLET_CONNECT_DEFI = 'wallet-connect-defi',
+
+  /**
+   * This coin is gated for TSS Support
+   */
+  TSS_SUPPORT_GATED = 'tss-support-gated',
 }
 
 /**
@@ -398,6 +409,7 @@ export enum UnderlyingAsset {
   LNBTC = 'lnbtc',
   LTC = 'ltc',
   MANTRA = 'mantra',
+  MON = 'mon',
   NEAR = 'near',
   OAS = 'oas',
   OPETH = 'opeth',
@@ -1581,6 +1593,7 @@ export enum UnderlyingAsset {
   TUSDS = 'tusds',
   TGOUSD = 'tgousd',
   'hteth:gousd' = 'hteth:gousd',
+  'hteth:usd1' = 'hteth:usd1',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
@@ -2242,6 +2255,7 @@ export enum UnderlyingAsset {
   'bsc:pax' = 'bsc:pax',
   'bsc:volt' = 'bsc:volt',
   'tbsc:busd' = 'tbsc:busd',
+  'tbsc:usd1' = 'tbsc:usd1',
   'bsc:city' = 'bsc:city',
   'bsc:fdusd' = 'bsc:fdusd',
   'bsc:floki' = 'bsc:floki',

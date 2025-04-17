@@ -264,6 +264,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
       CoinFeature.EIP1559,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ), // we should probably refactor this into a eth() method
   account(
@@ -323,6 +324,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
       CoinFeature.EIP1559,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1023,7 +1025,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.OPETH,
     BaseUnit.ETH,
-    [...OPETH_FEATURES, CoinFeature.BULK_TRANSACTION]
+    OPETH_FEATURES
   ),
   account(
     '53b1e350-f907-45ec-abf7-11d132547055',
@@ -1142,6 +1144,16 @@ export const coins = CoinMap.fromCoins([
     Networks.test.wemix,
     18,
     UnderlyingAsset.WEMIX,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
+    'tmon',
+    'Monad',
+    Networks.test.mon,
+    18,
+    UnderlyingAsset.MON,
     BaseUnit.ETH,
     EVM_FEATURES
   ),
@@ -2700,10 +2712,10 @@ export const coins = CoinMap.fromCoins([
     '88a010ca-8666-493e-b534-725fa6851da3',
     'xrp:xsgd',
     'XSGD',
-    6,
+    15,
     'rK67JczCpaYXVtfw3qJVmqwpSfa1bYTptw',
-    'XSGD',
-    'rK67JczCpaYXVtfw3qJVmqwpSfa1bYTptw::XSGD',
+    '5853474400000000000000000000000000000000',
+    'rK67JczCpaYXVtfw3qJVmqwpSfa1bYTptw::5853474400000000000000000000000000000000',
     'straitsx.com',
     UnderlyingAsset['xrp:xsgd']
   ),

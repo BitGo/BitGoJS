@@ -1225,6 +1225,14 @@ class WemixTestnet extends Testnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
+class MonadTestnet extends Testnet implements EthereumNetwork {
+  name = 'MonadTestnet';
+  family = CoinFamily.MON;
+  explorerUrl = 'https://testnet.monadexplorer.com/tx/';
+  accountExplorerUrl = 'https://testnet.monadexplorer.com/address/';
+  chainId = 10143;
+  nativeCoinOperationHashPrefix = '10143';
+}
 class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
@@ -1236,6 +1244,7 @@ class Flare extends Mainnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
+
 class FlareTestnet extends Testnet implements EthereumNetwork {
   name = 'FlarechainTestnet';
   family = CoinFamily.FLR;
@@ -1409,6 +1418,7 @@ export const Networks = {
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
     flr: Object.freeze(new FlareTestnet()),
+    mon: Object.freeze(new MonadTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hash: Object.freeze(new HashTestnet()),

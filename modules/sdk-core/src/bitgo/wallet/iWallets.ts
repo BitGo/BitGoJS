@@ -36,7 +36,6 @@ export interface GenerateBaseMpcWalletOptions {
 export interface GenerateMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   passphrase: string;
   originalPasscodeEncryptionCode?: string;
-  backupProvider?: BackupProvider;
 }
 export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOptions {
   bitgoKeyId: string;
@@ -44,15 +43,12 @@ export interface GenerateSMCMpcWalletOptions extends GenerateBaseMpcWalletOption
   coldDerivationSeed?: string;
 }
 
-export const backupProviders = ['BitGoTrustAsKrs'] as const;
-export type BackupProvider = (typeof backupProviders)[number];
 export interface GenerateWalletOptions {
   label?: string;
   passphrase?: string;
   userKey?: string;
   backupXpub?: string;
   backupXpubProvider?: string;
-  backupProvider?: BackupProvider;
   passcodeEncryptionCode?: string;
   enterprise?: string;
   disableTransactionNotifications?: string;

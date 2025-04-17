@@ -6353,7 +6353,7 @@ export const erc20Coins = [
     18,
     '0x163f8c2467924be0ae7b5347228cabf260318753',
     UnderlyingAsset.WLD,
-    ETH_FEATURES_WITH_FRANKFURT
+    [...ETH_FEATURES_WITH_FRANKFURT, CoinFeature.BULK_TRANSACTION]
   ),
   erc20(
     '9a5fada5-5f91-494b-bab5-8781d831fcd0',
@@ -10834,6 +10834,18 @@ export const erc20Coins = [
     6,
     '0x65c959b9184b4f8c8633646d5dfd049d2ebc251a',
     UnderlyingAsset['hteth:gousd'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
+    '0354c858-912b-4a65-b3e1-9b29a5f8573a',
+    'hteth:usd1',
+    'Holesky Testnet USD1',
+    18,
+    '0x978b411161325c7b689573396d717c828d9f480a',
+    UnderlyingAsset['hteth:usd1'],
     undefined,
     undefined,
     undefined,

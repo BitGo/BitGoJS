@@ -682,44 +682,6 @@ describe('V2 Wallets:', function () {
       assert.ok(response.encryptedWalletPassphrase === undefined);
     });
 
-    it('should create a new ECDSA TSS wallet with BitGoTrustAsKrs as backup provider', async function () {
-      const tpolygon = bitgo.coin('tpolygon');
-      const stubbedKeychainsTriplet: KeychainsTriplet = {
-        userKeychain: {
-          id: '1',
-          pub: 'userPub',
-          type: 'independent',
-        },
-        backupKeychain: {
-          id: '2',
-          pub: 'userPub',
-          type: 'independent',
-        },
-        bitgoKeychain: {
-          id: '3',
-          pub: 'userPub',
-          type: 'independent',
-        },
-      };
-      sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
-
-      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/tpolygon/wallet/add').reply(200);
-
-      const wallets = new Wallets(bitgo, tpolygon);
-
-      await wallets.generateWallet({
-        label: 'tss wallet',
-        passphrase: 'tss password',
-        multisigType: 'tss',
-        enterprise: 'enterprise',
-        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
-        backupProvider: 'BitGoTrustAsKrs',
-        walletVersion: 3,
-      });
-
-      walletNock.isDone().should.be.true();
-    });
-
     it('should fail to create TSS wallet with invalid inputs', async function () {
       const tbtc = bitgo.coin('tbtc');
       const params = {

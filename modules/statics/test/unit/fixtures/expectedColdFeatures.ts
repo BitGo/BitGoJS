@@ -93,6 +93,7 @@ export const expectedColdFeatures = {
     'tcoreum',
     'tdot',
     'tflr',
+    'tmon',
     'thash',
     'thorchain:rune',
     'tia',

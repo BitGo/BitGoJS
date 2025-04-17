@@ -178,7 +178,7 @@ export interface NetworkIdentifier {
 }
 
 export interface RawTransaction {
-  serializedTxHex: string;
+  serializedTxHex: PayloadsData;
   publicKey: string;
 }
 

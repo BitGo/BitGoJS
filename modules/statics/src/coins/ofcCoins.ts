@@ -11,6 +11,7 @@ import {
   ofcStellarToken,
   tofcStellarToken,
   ofcBscToken,
+  tofcBscToken,
   ofcAvaxErc20,
   tofcAvaxErc20,
   ofcArbethErc20,
@@ -33,6 +34,15 @@ export const ofcCoins = [
   ofc('837f0cab-cad1-4510-a8e4-f2c60e1a8760', 'ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('798f2a7c-23fd-4e16-9fe5-6bf47ca438a0', 'ofceur', 'Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   ofc('f37bbb72-adfe-4d06-90dc-afd0aa34aadd', 'ofcgbp', 'Pound Sterling', 2, UnderlyingAsset.GBP, CoinKind.FIAT),
+  ofc('60778b32-3497-4e45-895a-3f0bd3a2f475', 'ofcsgd', 'Singapore Dollar', 2, UnderlyingAsset.SGD, CoinKind.FIAT),
+  ofc(
+    'fe742061-8838-4b32-ab64-d328ca587feb',
+    'ofcaed',
+    'United Arab Emirates Dirham',
+    2,
+    UnderlyingAsset.AED,
+    CoinKind.FIAT
+  ),
   ofc(
     '71c2203c-59ba-45ba-9280-ec94b9c4e44f',
     'ofcavaxc',
@@ -67,6 +77,7 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc('140ac16e-e39a-49d0-ae69-60019ff35727', 'ofcbld', 'Agoric', 6, UnderlyingAsset.BLD, CoinKind.CRYPTO),
+  ofc('8b4f4051-b447-479b-bc3e-88e30a496599', 'ofcbaby', 'Babylon', 6, UnderlyingAsset.BABY, CoinKind.CRYPTO),
   ofc('220b2568-e996-40d1-af2c-fc4f79019069', 'ofctia', 'Celestia', 6, UnderlyingAsset.TIA, CoinKind.CRYPTO),
   ofc('3ad9a2e0-a8f4-4673-9177-35e855929eb6', 'ofcatom', 'Cosmos Hub ATOM', 6, UnderlyingAsset.ATOM, CoinKind.CRYPTO),
   ofc(
@@ -171,6 +182,22 @@ export const ofcCoins = [
   tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
   tofc(
+    'c916c733-2a4e-4b09-ab8d-38e891194016',
+    'ofctsgd',
+    'Testnet Singapore Dollar',
+    2,
+    UnderlyingAsset.SGD,
+    CoinKind.FIAT
+  ),
+  tofc(
+    'e1608f5b-6471-45a6-9987-73a131d354f4',
+    'ofctaed',
+    'Testnet United Arab Emirates Dirham',
+    2,
+    UnderlyingAsset.SGD,
+    CoinKind.FIAT
+  ),
+  tofc(
     'd98b94c0-222f-4efe-ae88-917722ac45b4',
     'ofctgbp',
     'Test British Pound Sterling',
@@ -245,6 +272,7 @@ export const ofcCoins = [
     UnderlyingAsset.ATOM,
     CoinKind.CRYPTO
   ),
+  tofc('db429b06-c128-461e-9401-0e9d96fe500f', 'ofctbaby', 'Testnet Babylon', 6, UnderlyingAsset.BABY, CoinKind.CRYPTO),
   tofc(
     '3b0f5716-94c3-4c5b-be70-cfd08b2f1fdf',
     'ofctinjective',
@@ -1222,6 +1250,13 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:psg']
   ),
   ofcBscToken('5c7a8f9e-4b1e-1f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:telos', 'Telos', 18, UnderlyingAsset['bsc:telos']),
+  tofcBscToken(
+    'bf8a52e5-f416-46ea-95c2-a920dc204233',
+    'ofctbsc:usd1',
+    'Test USD1 Token',
+    18,
+    UnderlyingAsset['tbsc:usd1']
+  ),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
     'ofcpolygon:sbc',

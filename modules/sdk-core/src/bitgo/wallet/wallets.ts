@@ -220,7 +220,6 @@ export class Wallets implements IWallets {
    * @param params.userKey User xpub
    * @param params.backupXpub Backup xpub
    * @param params.backupXpubProvider
-   * @param params.backupProvider Third party backup provider for TSS
    * @param params.enterprise the enterpriseId
    * @param params.disableTransactionNotifications
    * @param params.passcodeEncryptionCode optional this is a recovery code that can be used to decrypt the original passphrase in a recovery case.
@@ -348,7 +347,6 @@ export class Wallets implements IWallets {
         originalPasscodeEncryptionCode: params.passcodeEncryptionCode,
         enterprise,
         walletVersion: params.walletVersion,
-        backupProvider: params.backupProvider,
       });
       if (params.passcodeEncryptionCode) {
         walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
@@ -976,7 +974,6 @@ export class Wallets implements IWallets {
     enterprise,
     walletVersion,
     originalPasscodeEncryptionCode,
-    backupProvider,
   }: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
       const tssSettings: TssSettings = await this.bitgo
@@ -996,7 +993,6 @@ export class Wallets implements IWallets {
       passphrase,
       enterprise,
       originalPasscodeEncryptionCode,
-      backupProvider,
     });
 
     // Create Wallet
@@ -1022,7 +1018,7 @@ export class Wallets implements IWallets {
       responseType: 'WalletWithKeychains',
     };
 
-    if (!_.isUndefined(backupKeychain.prv) && !_.isUndefined(backupProvider)) {
+    if (!_.isUndefined(backupKeychain.prv)) {
       result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
     }
 

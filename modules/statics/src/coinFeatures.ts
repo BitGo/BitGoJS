@@ -343,6 +343,7 @@ export const ARBETH_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.EIP1559,
   CoinFeature.WALLET_CONNECT_DEFI,
+  CoinFeature.TSS_SUPPORT_GATED,
 ];
 export const OPETH_FEATURES = [
   ...ETH_FEATURES,
@@ -356,6 +357,9 @@ export const OPETH_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.EIP1559,
   CoinFeature.WALLET_CONNECT_DEFI,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.ERC20_BULK_TRANSACTION,
+  CoinFeature.TSS_SUPPORT_GATED,
 ];
 export const ZKETH_FEATURES = [
   ...ETH_FEATURES,

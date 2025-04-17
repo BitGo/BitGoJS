@@ -472,7 +472,7 @@ export class Utils implements BaseUtils {
   hashVal(val: string | Buffer | BigInt | number | Array<unknown>): Buffer {
     if (typeof val === 'string') {
       return utils.hashString(val);
-    } else if (Buffer.isBuffer(val)) {
+    } else if (Buffer.isBuffer(val) || val instanceof Uint8Array) {
       return utils.hashBytes(val);
     } else if (typeof val === 'bigint' || typeof val === 'number') {
       return utils.hashU64(BigInt(val));
@@ -489,7 +489,7 @@ export class Utils implements BaseUtils {
    * @param value - The buffer to hash.
    * @returns The SHA-256 hash of the input buffer.
    */
-  hashBytes(value: Buffer): Buffer {
+  hashBytes(value: Buffer | Uint8Array): Buffer {
     return this.sha256([value]);
   }
 
@@ -499,7 +499,7 @@ export class Utils implements BaseUtils {
    * @param {Array<Buffer>} chunks - An array of Buffer objects to be hashed.
    * @returns {Buffer} - The resulting SHA-256 hash as a Buffer.
    */
-  sha256(chunks: Array<Buffer>): Buffer {
+  sha256(chunks: Array<Buffer> | Array<Uint8Array>): Buffer {
     const hasher = js_sha256.sha256.create();
     chunks.forEach((chunk) => hasher.update(chunk));
     return Buffer.from(hasher.arrayBuffer());
