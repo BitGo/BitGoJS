@@ -37,6 +37,13 @@ describe('Bitgo Express', function () {
         res.body.isValid.should.equal(false);
       });
 
+      it('should mark as invalid sol address', async function () {
+        const res = await agent.post('/api/v2/sol/verifyaddress').send({ address: '11111111111111111111111111111112' });
+
+        res.should.have.status(200);
+        res.body.isValid.should.equal(false);
+      });
+
       it('should mark as invalid bad ltc address', async function () {
         const res = await agent
           .post('/api/v2/ltc/verifyaddress')
@@ -88,6 +95,15 @@ describe('Bitgo Express', function () {
         const res = await agent
           .post('/api/v2/btc/verifyaddress')
           .send({ address: '3P14159f73E4gFr7JterCCQh9QjiTjiZrG' });
+
+        res.should.have.status(200);
+        res.body.isValid.should.equal(true);
+      });
+
+      it('should verify valid sol address', async function () {
+        const res = await agent
+          .post('/api/v2/sol/verifyaddress')
+          .send({ address: 'DjTwTkToVm3m69zJGwzP4UWXrF6vK8QHe1jRUUJAFhy5' });
 
         res.should.have.status(200);
         res.body.isValid.should.equal(true);
