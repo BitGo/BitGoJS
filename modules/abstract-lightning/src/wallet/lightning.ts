@@ -20,12 +20,14 @@ import {
   LightningKeychain,
   LndCreatePaymentResponse,
   SubmitPaymentParams,
+  PaymentParams,
   Transaction,
   TransactionQuery,
   PaymentInfo,
   PaymentQuery,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
+import { LnurlProcessor, isValidLnurl } from '../lightning/lnurl';
 
 export type PayInvoiceResponse = {
   /**
@@ -62,6 +64,13 @@ export type PayInvoiceResponse = {
    * This field is absent if approval is required before processing.
    */
   transfer?: any;
+
+  /**
+   * LNURL-specific data, if applicable.
+   */
+  lnurlData?: {
+    description?: string;
+  };
 };
 
 /**
@@ -146,16 +155,19 @@ export interface ILightningWallet {
   listInvoices(params: InvoiceQuery): Promise<InvoiceInfo[]>;
 
   /**
-   * Pay a lightning invoice
-   * @param {SubmitPaymentParams} params - Payment parameters
-   * @param {string} params.invoice - The invoice to pay
-   * @param {string} params.amountMsat - The amount to pay in millisatoshis
+   * Pay a Lightning invoice or LNURL
+   * @param {PaymentParams} params - Payment parameters
+   * @param {string} params.destination - Either a BOLT11 invoice or LNURL
+   * @param {bigint} params.amountMsat - The amount to pay in millisatoshis
    * @param {string} params.passphrase - The wallet passphrase
-   * @param {string} [params.sequenceId] - Optional sequence ID for the respective payment transfer
-   * @param {string} [params.comment] - Optional comment for the respective payment transfer
-   * @returns {Promise<PayInvoiceResponse>} Payment result containing transaction request details and payment status
+   * @param {string} [params.sequenceId] - Optional sequence ID for the payment
+   * @param {string} [params.comment] - Optional comment for the payment
+   * @param {bigint} [params.feeLimitMsat] - Optional fee limit in millisatoshis
+   * @param {number} [params.feeLimitRatio] - Optional fee limit as a ratio
+   * @returns {Promise<PayInvoiceResponse>} Payment result
    */
-  payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse>;
+  pay(params: PaymentParams): Promise<PayInvoiceResponse>;
+
   /**
    * Get payment details by payment hash
    * @param {string} paymentHash - Payment hash to lookup
@@ -234,6 +246,65 @@ export class LightningWallet implements ILightningWallet {
     });
   }
 
+  async pay(params: PaymentParams): Promise<PayInvoiceResponse> {
+    // Check if this is an LNURL or a regular invoice
+    if (isValidLnurl(params.destination)) {
+      return this.payLnurl(params);
+    } else {
+      return this.payInvoice({
+        invoice: params.destination,
+        amountMsat: params.amountMsat,
+        passphrase: params.passphrase,
+        sequenceId: params.sequenceId,
+        comment: params.comment,
+        feeLimitMsat: params.feeLimitMsat,
+        feeLimitRatio: params.feeLimitRatio,
+      });
+    }
+  }
+
+  /**
+   * Private method to handle LNURL payments
+   * @param {PaymentParams} params - Payment parameters
+   * @returns {Promise<PayInvoiceResponse>} Payment result
+   * @private
+   */
+  private async payLnurl(params: PaymentParams): Promise<PayInvoiceResponse> {
+    try {
+      const lnurlProcessor = new LnurlProcessor();
+
+      // Convert amount from millisatoshis to satoshis for LNURL processing
+      const amountSats = params.amountMsat / BigInt(1000);
+
+      // Process the LNURL to get an invoice
+      const lnurlPaymentResult = await lnurlProcessor.processLnurlPayment(
+        params.destination,
+        amountSats,
+        params.comment
+      );
+
+      // Use LNURL description as fallback comment if none provided
+      const comment = params.comment || lnurlPaymentResult.description;
+
+      // Forward to regular invoice payment with the generated invoice
+      return this.payInvoice({
+        invoice: lnurlPaymentResult.invoice,
+        amountMsat: params.amountMsat,
+        passphrase: params.passphrase,
+        sequenceId: params.sequenceId,
+        comment,
+        feeLimitMsat: params.feeLimitMsat,
+        feeLimitRatio: params.feeLimitRatio,
+        lnurlData: {
+          description: lnurlPaymentResult.description,
+          successAction: lnurlPaymentResult.successAction,
+        },
+      });
+    } catch (error: any) {
+      throw new Error(`LNURL payment processing failed: ${error.message}`);
+    }
+  }
+
   async payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse> {
     const reqId = new RequestTracer();
     this.wallet.bitgo.setRequestTracer(reqId);
@@ -243,8 +314,14 @@ export class LightningWallet implements ILightningWallet {
     if (!userAuthKeyEncryptedPrv) {
       throw new Error(`user auth key is missing encrypted private key`);
     }
+
     const signature = createMessageSignature(
-      t.exact(LightningPaymentRequest).encode(params),
+      t.exact(LightningPaymentRequest).encode({
+        invoice: params.invoice,
+        amountMsat: params.amountMsat,
+        feeLimitMsat: params.feeLimitMsat,
+        feeLimitRatio: params.feeLimitRatio,
+      }),
       this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
 
@@ -275,6 +352,7 @@ export class LightningWallet implements ILightningWallet {
         pendingApproval: pendingApproval.toJSON(),
         txRequestId: transactionRequestCreate.txRequestId,
         txRequestState: transactionRequestCreate.state,
+        lnurlData: params.lnurlData, // Include LNURL data if applicable
       };
     }
 
@@ -291,6 +369,7 @@ export class LightningWallet implements ILightningWallet {
     if (coinSpecific && coinSpecific.paymentHash && typeof coinSpecific.paymentHash === 'string') {
       transfer = await this.wallet.getTransfer({ id: coinSpecific.paymentHash });
     }
+
     return {
       txRequestId: transactionRequestCreate.txRequestId,
       txRequestState: transactionRequestSend.state,
@@ -298,6 +377,7 @@ export class LightningWallet implements ILightningWallet {
         ? t.exact(LndCreatePaymentResponse).encode(coinSpecific as LndCreatePaymentResponse)
         : undefined,
       transfer,
+      lnurlData: params.lnurlData, // Include LNURL data if applicable
     };
   }
 

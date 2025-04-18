@@ -4,3 +4,4 @@ export * from './invoice';
 export * from './payment';
 export * from './transaction';
 export * from './wallet';
+export * from './lnurl';
