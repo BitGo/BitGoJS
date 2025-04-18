@@ -13,6 +13,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddresses: string[];
   protected _amount?: string;
   protected _unstakingAddress: string;
+  protected _isMarinade = false;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -92,6 +93,16 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   }
 
   /**
+   * Set isMarinade flag
+   * @param {boolean} flag - true if the transaction is for Marinade, false by default if not set
+   * @returns {StakingActivateBuilder} This staking builder
+   */
+  isMarinade(flag: boolean): this {
+    this._isMarinade = flag;
+    return this;
+  }
+
+  /**
    * When partially unstaking move the amount to unstake to this account and initiate the
    * unstake process. The original stake account will continue staking.
    *
@@ -109,6 +120,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
+    assert(this._isMarinade !== undefined, 'isMarinade must be set before building the transaction');
 
     if (this._stakingAddresses && this._stakingAddresses.length > 0) {
       this._instructionsData = [];
@@ -118,6 +130,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           params: {
             fromAddress: this._sender,
             stakingAddress: stakingAddress,
+            isMarinade: this._isMarinade,
           },
         };
         this._instructionsData.push(stakingDeactivateData);
@@ -159,6 +172,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           stakingAddress: this._stakingAddress,
           amount: this._amount,
           unstakingAddress: this._unstakingAddress,
+          isMarinade: this._isMarinade,
         },
       };
       this._instructionsData.push(stakingDeactivateData);
