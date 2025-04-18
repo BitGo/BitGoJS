@@ -10,6 +10,7 @@ import { ContractType } from './enum';
 import { ContractCallBuilder } from './contractCallBuilder';
 import { TransactionReceipt } from './iface';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { FreezeBuilder } from './freezeBuilder';
 
 /**
  * Wrapped Builder class
@@ -41,6 +42,16 @@ export class WrappedBuilder extends TransactionBuilder {
 
   getTokenTransferBuilder(tx?: TransactionReceipt | string): TokenTransferBuilder {
     return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create a freeze balance transaction
+   *
+   * @param {Transaction} [tx] The transaction to initialize builder
+   * @returns {FreezeBuilder} The specific freeze balance builder
+   */
+  getFreezeBuilder(tx?: TransactionReceipt | string): FreezeBuilder {
+    return this.initializeBuilder(tx, new FreezeBuilder(this._coinConfig));
   }
 
   private initializeBuilder<T extends TransactionBuilder>(tx: TransactionReceipt | string | undefined, builder: T): T {
@@ -78,6 +89,8 @@ export class WrappedBuilder extends TransactionBuilder {
         return this._builder;
       case ContractType.TriggerSmartContract:
         return this.getContractCallBuilder(raw);
+      case ContractType.FreezeBalanceV2:
+        return this.getFreezeBuilder(raw);
       default:
         throw new InvalidTransactionError('Invalid transaction type: ' + contractType);
     }

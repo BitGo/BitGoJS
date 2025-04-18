@@ -90,21 +90,21 @@ export function getHexAddressFromBase58Address(base58: string): string {
   // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
   // but they don't surface this call in index.js
   const bytes = tronweb.utils.crypto.decodeBase58Address(base58);
-  return getHexAddressFromByteArray(bytes);
+  return getHexAddressFromByteArray(bytes as any);
 }
 
 /**
  * @param privateKey
  */
 export function getPubKeyFromPriKey(privateKey: TronBinaryLike): ByteArray {
-  return tronweb.utils.crypto.getPubKeyFromPriKey(privateKey);
+  return tronweb.utils.crypto.getPubKeyFromPriKey(privateKey as any);
 }
 
 /**
  * @param privateKey
  */
 export function getAddressFromPriKey(privateKey: TronBinaryLike): ByteArray {
-  return tronweb.utils.crypto.getAddressFromPriKey(privateKey);
+  return tronweb.utils.crypto.getAddressFromPriKey(privateKey as any);
 }
 
 /**
@@ -127,7 +127,7 @@ export function getBase58AddressFromHex(hex: string): string {
  * @param transaction
  */
 export function signTransaction(privateKey: string | ByteArray, transaction: TransactionReceipt): TransactionReceipt {
-  return tronweb.utils.crypto.signTransaction(privateKey, transaction);
+  return tronweb.utils.crypto.signTransaction(privateKey, transaction) as unknown as TransactionReceipt;
 }
 
 /**
@@ -136,14 +136,14 @@ export function signTransaction(privateKey: string | ByteArray, transaction: Tra
  * @param useTronHeader
  */
 export function signString(message: string, privateKey: string | ByteArray, useTronHeader = true): string {
-  return tronweb.Trx.signString(message, privateKey, useTronHeader);
+  return tronweb.Trx.signString(message, privateKey as any, useTronHeader);
 }
 
 /**
  * @param pubBytes
  */
 export function getRawAddressFromPubKey(pubBytes: TronBinaryLike): ByteArray {
-  return tronweb.utils.crypto.computeAddress(pubBytes);
+  return tronweb.utils.crypto.computeAddress(pubBytes as any);
 }
 
 /**
@@ -174,6 +174,10 @@ export function decodeTransaction(hexString: string): RawData {
     case 'type.googleapis.com/protocol.TriggerSmartContract':
       contractType = ContractType.TriggerSmartContract;
       contract = exports.decodeTriggerSmartContract(rawTransaction.contracts[0].parameter.value);
+      break;
+    case 'type.googleapis.com/protocol.FreezeBalanceV2Contract':
+      contractType = ContractType.FreezeBalanceV2;
+      contract = exports.decodeFreezeBalanceV2Contract(rawTransaction.contracts[0].parameter.value);
       break;
     default:
       throw new UtilsError('Unsupported contract type');
@@ -358,6 +362,52 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
     witness,
     actives: activeList,
   };
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with freeze balance contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {Array} - Array containing the decoded freeze contract
+ */
+export function decodeFreezeBalanceV2Contract(base64: string): any[] {
+  let freezeContract;
+  try {
+    freezeContract = protocol.FreezeBalanceContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the freeze contract in the transaction.');
+  }
+
+  if (!freezeContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this freeze contract.');
+  }
+
+  if (!freezeContract.resource) {
+    throw new UtilsError('Resource type does not exist in this freeze contract.');
+  }
+
+  if (!freezeContract.hasOwnProperty('frozenBalance')) {
+    throw new UtilsError('Frozen balance does not exist in this freeze contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(freezeContract.ownerAddress, 'base64').toString('hex'))
+  );
+  const resource = freezeContract.resource;
+  const frozen_balance = freezeContract.frozenBalance;
+
+  return [
+    {
+      parameter: {
+        value: {
+          resource,
+          frozen_balance: Number(frozen_balance),
+          owner_address,
+        },
+      },
+    },
+  ];
 }
 
 /**
