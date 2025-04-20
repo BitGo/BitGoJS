@@ -32,6 +32,8 @@ import {
   IntentOptionsForMessage,
   IntentOptionsForTypedData,
   RequestType,
+  TokenTransferRecipientParams,
+  TokenType,
 } from '../utils';
 import {
   AccelerateTransactionOptions,
@@ -2405,7 +2407,7 @@ export class Wallet implements IWallet {
     if (!this.baseCoin.isValidAddress(recipientAddress)) {
       throw new Error(`Invalid recipient address ${recipientAddress}`);
     }
-    const baseAddress = this.coinSpecific()?.baseAddress;
+    const baseAddress = this.coinSpecific()?.baseAddress || this.coinSpecific()?.rootAddress;
     if (!baseAddress) {
       throw new Error('Missing base address for wallet');
     }
@@ -2434,22 +2436,9 @@ export class Wallet implements IWallet {
           ],
         });
       }
+
       case 'ERC1155': {
-        const entries = sendNftOptions.entries;
-        for (const entry of entries) {
-          if (!nftBalance.collections[entry.tokenId]) {
-            throw new Error(
-              `Token ${entry.tokenId} not found in collection ${sendNftOptions.tokenContractAddress} or does not have a spendable balance`
-            );
-          }
-          if (nftBalance.collections[entry.tokenId] < entry.amount) {
-            throw new Error(
-              `Amount ${entry.amount} exceeds spendable balance of ${nftBalance.collections[entry.tokenId]} for token ${
-                entry.tokenId
-              }`
-            );
-          }
-        }
+        this.validateNftEntries(sendNftOptions.entries, nftBalance, sendNftOptions);
 
         const data = this.baseCoin.buildNftTransferData({ ...sendNftOptions, fromAddress: baseAddress });
         return this.sendMany({
@@ -2461,6 +2450,28 @@ export class Wallet implements IWallet {
               data: data,
             },
           ],
+        });
+      }
+
+      case 'Digital Asset': {
+        this.validateNftEntries(sendNftOptions.entries, nftBalance, sendNftOptions);
+
+        const recipients = _.map(sendNftOptions.entries, (entry) => {
+          const tokenData: TokenTransferRecipientParams = {
+            tokenType: TokenType.DIGITAL_ASSET,
+            tokenQuantity: entry.amount.toString(),
+            tokenContractAddress,
+            tokenId: entry.tokenId,
+          };
+          return {
+            address: recipientAddress,
+            amount: '0',
+            tokenData,
+          };
+        });
+        return this.sendMany({
+          ...sendOptions,
+          recipients,
         });
       }
     }
@@ -3782,5 +3793,26 @@ export class Wallet implements IWallet {
     const finalTxParams = _.extend({}, halfSignedTransaction);
 
     return this.sendTransaction(finalTxParams, reqId);
+  }
+
+  private validateNftEntries(
+    entries: { tokenId: string; amount: number }[],
+    nftBalance: NftBalance,
+    sendNftOptions: NFTTransferOptions
+  ): void {
+    for (const entry of entries) {
+      if (!nftBalance.collections[entry.tokenId]) {
+        throw new Error(
+          `Token ${entry.tokenId} not found in collection ${sendNftOptions.tokenContractAddress} or does not have a spendable balance`
+        );
+      }
+      if (nftBalance.collections[entry.tokenId] < entry.amount) {
+        throw new Error(
+          `Amount ${entry.amount} exceeds spendable balance of ${nftBalance.collections[entry.tokenId]} for token ${
+            entry.tokenId
+          }`
+        );
+      }
+    }
   }
 }

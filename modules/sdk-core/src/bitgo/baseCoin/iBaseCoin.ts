@@ -453,7 +453,7 @@ export type NFTTransferOptions = {
       tokenId: string;
     }
   | {
-      type: 'ERC1155';
+      type: 'ERC1155' | 'Digital Asset';
       entries: { tokenId: string; amount: number }[];
     }
 );
