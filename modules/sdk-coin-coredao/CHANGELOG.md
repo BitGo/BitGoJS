@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.0.9...@bitgo/sdk-coin-coredao@2.1.0) (2025-04-15)
+
+### Features
+
+- unsigned sweep for flare,xdc,coredao and oasys ([0a29d5e](https://github.com/BitGo/BitGoJS/commit/0a29d5ed8398a9c56233a344ff179e014ca1ce28))
+
 ## [2.0.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.0.8...@bitgo/sdk-coin-coredao@2.0.9) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coredao

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.1.0...@bitgo/abstract-eth@24.2.0) (2025-04-15)
+
+### Features
+
+- enable erc20 sendmany ([a412a7c](https://github.com/BitGo/BitGoJS/commit/a412a7c6454cedf1cd235f4636e29e7e7a8d3232))
+
 # [24.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.0.1...@bitgo/abstract-eth@24.1.0) (2025-04-04)
 
 ### Features

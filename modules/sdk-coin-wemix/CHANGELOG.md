@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-wemix@1.1.12...@bitgo/sdk-coin-wemix@1.2.0) (2025-04-15)
+
+### Features
+
+- adding test cases for non bitgo recovery for Wemix ([096a27c](https://github.com/BitGo/BitGoJS/commit/096a27c3a1f7e1ecb44ab38b5a8efc4d7e0b9016))
+- unsigned sweep for wemix ([b321bcb](https://github.com/BitGo/BitGoJS/commit/b321bcba91eefde2806a7cda402d56546dbb7270))
+
 ## [1.1.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-wemix@1.1.11...@bitgo/sdk-coin-wemix@1.1.12) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-wemix

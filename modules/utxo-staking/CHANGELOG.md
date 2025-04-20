@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.12.1...@bitgo/utxo-staking@1.13.0) (2025-04-15)
+
+### Features
+
+- **utxo-staking:** add babylon unstaking transaction functionality ([531fc3d](https://github.com/BitGo/BitGoJS/commit/531fc3dcf7c3e64613cc786e9f42a57932de101b))
+- **utxo-staking:** add utility function to force finalize PSBTs ([ddbf39e](https://github.com/BitGo/BitGoJS/commit/ddbf39e89517b7eab7fabb158cfcbe05379885d2)), closes [babylonlabs-io/btc-staking-ts#71](https://github.com/babylonlabs-io/btc-staking-ts/issues/71)
+
 ## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.12.0...@bitgo/utxo-staking@1.12.1) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

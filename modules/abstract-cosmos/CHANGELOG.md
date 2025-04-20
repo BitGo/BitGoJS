@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.6.4...@bitgo/abstract-cosmos@11.7.0) (2025-04-15)
+
+### Features
+
+- **sdk-coin-baby:** add CreateBtcDelegation transaction ([67c089a](https://github.com/BitGo/BitGoJS/commit/67c089af49616b2f70198f49e9401c7447f9931a))
+
 ## [11.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.6.3...@bitgo/abstract-cosmos@11.6.4) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos
