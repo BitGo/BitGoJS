@@ -63,6 +63,7 @@ import {
   Islm,
   Lnbtc,
   Ltc,
+  Mon,
   Mantra,
   Ofc,
   Oas,
@@ -115,6 +116,7 @@ import {
   Teth,
   Teth2,
   Tflr,
+  Tmon,
   TfiatAED,
   TfiatEur,
   TfiatGBP,
@@ -210,6 +212,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('hteth', Hteth.createInstance);
   globalCoinFactory.register('lnbtc', Lnbtc.createInstance);
   globalCoinFactory.register('ltc', Ltc.createInstance);
+  globalCoinFactory.register('mon', Mon.createInstance);
   globalCoinFactory.register('mantra', Mantra.createInstance);
   globalCoinFactory.register('icp', Icp.createInstance);
   globalCoinFactory.register('injective', Injective.createInstance);
@@ -267,6 +270,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tfiatsgd', TfiatSGD.createInstance);
   globalCoinFactory.register('tfiatusd', TfiatUsd.createInstance);
   globalCoinFactory.register('tflr', Tflr.createInstance);
+  globalCoinFactory.register('tmon', Tmon.createInstance);
   globalCoinFactory.register('thash', Thash.createInstance);
   globalCoinFactory.register('thbar', Thbar.createInstance);
   globalCoinFactory.register('ticp', Ticp.createInstance);

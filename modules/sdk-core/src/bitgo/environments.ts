@@ -71,6 +71,8 @@ interface EnvironmentTemplate {
   icpNodeUrl: string;
   wemixExplorerBaseUrl?: string;
   wemixExplorerApiToken?: string;
+  monExplorerBaseUrl?: string;
+  monExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -240,6 +242,7 @@ const testnetBase: EnvironmentTemplate = {
   sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
   icpRosettaNodeUrl: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
   icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
+  monExplorerBaseUrl: 'https://testnet.monadexplorer.com/',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

@@ -70,6 +70,7 @@ export const expectedColdFeatures = {
     'injective',
     'kava',
     'mantra',
+    'mon',
     'near',
     'oas',
     'osmo',

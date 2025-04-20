@@ -107,6 +107,9 @@ export { Rune };
 import * as Baby from '@bitgo/sdk-coin-baby';
 export { Baby };
 
+import * as Mon from '@bitgo/sdk-coin-mon';
+export { Mon };
+
 import * as Mantra from '@bitgo/sdk-coin-mantra';
 export { Mantra };
 
@@ -259,6 +262,8 @@ const coinBuilderMap = {
   twemix: Wemix.TransactionBuilder,
   mantra: Mantra.TransactionBuilder,
   tmantra: Mantra.TransactionBuilder,
+  mon: Mon.TransactionBuilder,
+  tmon: Mon.TransactionBuilder,
 };
 
 /**
