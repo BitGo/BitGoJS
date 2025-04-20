@@ -43,6 +43,7 @@
     "@bitgo/sdk-core": "^32.1.0",
     "@bitgo/statics": "^51.7.0",
     "@bitgo/utxo-lib": "^11.3.0",
+    "bolt11": "^1.4.1",
     "bs58check": "^2.1.2",
     "fp-ts": "^2.12.2",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",

@@ -96,10 +96,26 @@ export const SubmitPaymentParams = t.intersection([
   t.partial({
     sequenceId: optionalString,
     comment: optionalString,
+    lnurlData: t.partial({
+      description: optionalString,
+      successAction: t.unknown,
+    }),
   }),
 ]);
 
 export type SubmitPaymentParams = t.TypeOf<typeof SubmitPaymentParams>;
+
+export const PaymentParams = t.type({
+  destination: t.string, // Either invoice or LNURL
+  amountMsat: t.bigint,
+  passphrase: t.string,
+  sequenceId: optionalString,
+  comment: optionalString,
+  feeLimitMsat: t.union([t.bigint, t.undefined]),
+  feeLimitRatio: t.union([t.number, t.undefined]),
+});
+
+export type PaymentParams = t.TypeOf<typeof PaymentParams>;
 
 export const LndCreatePaymentResponse = t.intersection(
   [
