@@ -1,7 +1,7 @@
 import should from 'should';
 import utils from '../../src/lib/utils';
 import { accounts, IcpTransactionData, blockHashes, TransactionHashes } from '../resources/icp';
-import { encode } from 'cbor-x';
+const { encode } = require('cbor-x/index-no-eval');
 import { randomBytes } from 'crypto';
 
 describe('utils', () => {
