@@ -10,7 +10,6 @@ import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
-import path from 'path';
 import {
   HttpCanisterUpdate,
   IcpTransactionData,
@@ -24,11 +23,11 @@ import {
   CborUnsignedTransaction,
 } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
+const messageCompiled = require('../../resources/messageCompiled');
 const { encode, decode, Encoder } = require('cbor-x/index-no-eval'); // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
 import js_sha256 from 'js-sha256';
 import BigNumber from 'bignumber.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
-import protobuf from 'protobufjs';
 
 //custom encoder that avoids tagging
 const encoder = new Encoder({
@@ -614,8 +613,7 @@ export class Utils implements BaseUtils {
   }
 
   fromArgs(arg: Uint8Array): SendArgs {
-    const root = protobuf.Root.fromJSON(require(path.resolve(__dirname, './staticProtoDefinition.json')));
-    const SendRequestMessage = root.lookupType('SendRequest');
+    const SendRequestMessage = messageCompiled.SendRequest;
     const args = SendRequestMessage.decode(arg) as unknown as SendArgs;
     const transformedArgs: SendArgs = {
       payment: { receiverGets: { e8s: Number(args.payment.receiverGets.e8s) } },
@@ -630,11 +628,10 @@ export class Utils implements BaseUtils {
   }
 
   async toArg(args: SendArgs): Promise<Uint8Array> {
-    const root = protobuf.Root.fromJSON(require(path.resolve(__dirname, './staticProtoDefinition.json')));
-    const SendRequestMessage = root.lookupType('SendRequest');
+    const SendRequestMessage = messageCompiled.SendRequest;
     const errMsg = SendRequestMessage.verify(args);
     if (errMsg) throw new Error(errMsg);
-    const message = SendRequestMessage.create(args);
+    const message = SendRequestMessage.create(args as any);
     return SendRequestMessage.encode(message).finish();
   }
 
