@@ -643,6 +643,7 @@ export class Wallet implements IWallet {
       'prevId',
       'segwit',
       'target',
+      'unspentIds',
     ]);
 
     return this.bitgo.get(this.url('/unspents')).query(query).result();
