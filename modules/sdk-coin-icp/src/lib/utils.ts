@@ -10,6 +10,7 @@ import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';
 import crc32 from 'crc-32';
+import path from 'path';
 import {
   HttpCanisterUpdate,
   IcpTransactionData,
@@ -26,7 +27,6 @@ import js_sha256 from 'js-sha256';
 import BigNumber from 'bignumber.js';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import protobuf from 'protobufjs';
-import { protoDefinition } from './protoDefinition';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -604,7 +604,7 @@ export class Utils implements BaseUtils {
   }
 
   async fromArgs(arg: Uint8Array): Promise<SendArgs> {
-    const root = protobuf.parse(protoDefinition).root;
+    const root = protobuf.Root.fromJSON(require(path.resolve(__dirname, './staticProtoDefinition.json')));
     const SendRequestMessage = root.lookupType('SendRequest');
     const args = SendRequestMessage.decode(arg) as unknown as SendArgs;
     const transformedArgs: SendArgs = {
@@ -620,7 +620,7 @@ export class Utils implements BaseUtils {
   }
 
   async toArg(args: SendArgs): Promise<Uint8Array> {
-    const root = protobuf.parse(protoDefinition).root;
+    const root = protobuf.Root.fromJSON(require(path.resolve(__dirname, './staticProtoDefinition.json')));
     const SendRequestMessage = root.lookupType('SendRequest');
     const errMsg = SendRequestMessage.verify(args);
     if (errMsg) throw new Error(errMsg);
