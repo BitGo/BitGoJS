@@ -322,6 +322,8 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           amount: undefined,
           unstakingAddress: undefined,
+          isMarinade: false,
+          recipients: undefined,
         },
       };
 
@@ -372,6 +374,8 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           amount: undefined,
           unstakingAddress: undefined,
+          isMarinade: false,
+          recipients: undefined,
         },
       };
 
@@ -404,6 +408,8 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           amount: undefined,
           unstakingAddress: undefined,
+          isMarinade: false,
+          recipients: undefined,
         },
       };
 
@@ -450,6 +456,8 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           amount: undefined,
           unstakingAddress: undefined,
+          isMarinade: false,
+          recipients: undefined,
         },
       };
 
@@ -1021,6 +1029,8 @@ describe('Instruction Parser Staking Tests: ', function () {
             stakingAddress: stakingAccount.toString(),
             amount: '100000',
             unstakingAddress: splitStakeAccount.toString(),
+            isMarinade: false,
+            recipients: undefined,
           },
         };
 

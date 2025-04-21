@@ -239,7 +239,11 @@ export class Transaction extends BaseTransaction {
         authWalletAddress: nonceInstruction.authorizedPubkey.toString(),
       };
     }
-    const instructionData = instructionParamsFactory(this._type, this._solTransaction.instructions);
+    const instructionData = instructionParamsFactory(
+      this._type,
+      this._solTransaction.instructions,
+      this._coinConfig.name
+    );
     if (this._type) {
       if (
         !durableNonce &&
@@ -284,7 +288,11 @@ export class Transaction extends BaseTransaction {
     }
     const outputs: Entry[] = [];
     const inputs: Entry[] = [];
-    const instructionParams = instructionParamsFactory(this.type, this._solTransaction.instructions);
+    const instructionParams = instructionParamsFactory(
+      this.type,
+      this._solTransaction.instructions,
+      this._coinConfig.name
+    );
 
     for (const instruction of instructionParams) {
       switch (instruction.type) {
@@ -378,7 +386,11 @@ export class Transaction extends BaseTransaction {
     if (validateRawMsgInstruction(this._solTransaction.instructions)) {
       return this.explainRawMsgAuthorizeTransaction();
     }
-    const decodedInstructions = instructionParamsFactory(this._type, this._solTransaction.instructions);
+    const decodedInstructions = instructionParamsFactory(
+      this._type,
+      this._solTransaction.instructions,
+      this._coinConfig.name
+    );
 
     let memo: string | undefined = undefined;
     let durableNonce: DurableNonceParams | undefined = undefined;

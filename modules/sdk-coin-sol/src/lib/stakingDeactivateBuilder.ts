@@ -7,12 +7,15 @@ import { StakingDeactivate, Transfer } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidStakingAmount, validateAddress } from './utils';
+import { RecipientEntry } from '@bitgo/public-types';
 
 export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
   protected _stakingAddresses: string[];
   protected _amount?: string;
   protected _unstakingAddress: string;
+  protected _isMarinade = false;
+  protected _recipients: RecipientEntry[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -29,7 +32,13 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingDeactivate) {
         const deactivateInstruction: StakingDeactivate = instruction;
-        this.sender(deactivateInstruction.params.fromAddress);
+        this.isMarinade(deactivateInstruction.params.isMarinade ?? false);
+        if (!deactivateInstruction.params.isMarinade) {
+          this.sender(deactivateInstruction.params.fromAddress);
+        }
+        if (deactivateInstruction.params.isMarinade) {
+          this.recipients(deactivateInstruction.params.recipients ?? []);
+        }
         stakingAddresses.push(deactivateInstruction.params.stakingAddress);
         if (deactivateInstruction.params.amount && deactivateInstruction.params.unstakingAddress) {
           this.amount(deactivateInstruction.params.amount);
@@ -40,7 +49,9 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     if (stakingAddresses.length > 1) {
       this.stakingAddresses(stakingAddresses);
     } else {
-      this.stakingAddress(stakingAddresses[0]);
+      if (!this._isMarinade) {
+        this.stakingAddress(stakingAddresses[0]);
+      }
     }
   }
 
@@ -92,6 +103,17 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   }
 
   /**
+   * Setter to set the recipients object
+   *
+   * @param recipients RecipientEntry[] - The recipients object
+   * @returns {StakingDeactivateBuilder} This staking builder.
+   */
+  recipients(recipients: RecipientEntry[]): this {
+    this._recipients = recipients;
+    return this;
+  }
+
+  /**
    * When partially unstaking move the amount to unstake to this account and initiate the
    * unstake process. The original stake account will continue staking.
    *
@@ -106,9 +128,20 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Set isMarinade flag
+   * @param {boolean} flag - true if the transaction is for Marinade, false by default if not set
+   * @returns {StakingActivateBuilder} This staking builder
+   */
+  isMarinade(flag: boolean): this {
+    this._isMarinade = flag;
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
+    assert(this._isMarinade !== undefined, 'isMarinade must be set before building the transaction');
 
     if (this._stakingAddresses && this._stakingAddresses.length > 0) {
       this._instructionsData = [];
@@ -123,7 +156,10 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         this._instructionsData.push(stakingDeactivateData);
       }
     } else {
-      assert(this._stakingAddress, 'Staking address must be set before building the transaction');
+      if (!this._isMarinade) {
+        // we don't need stakingAddress in marinade staking deactivate txn
+        assert(this._stakingAddress, 'Staking address must be set before building the transaction');
+      }
 
       if (this._sender === this._stakingAddress) {
         throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
@@ -136,7 +172,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         );
       }
       this._instructionsData = [];
-      if (this._unstakingAddress) {
+      if (this._unstakingAddress && !this._isMarinade) {
         assert(
           this._amount,
           'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
@@ -159,6 +195,8 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           stakingAddress: this._stakingAddress,
           amount: this._amount,
           unstakingAddress: this._unstakingAddress,
+          isMarinade: this._isMarinade,
+          recipients: this._recipients,
         },
       };
       this._instructionsData.push(stakingDeactivateData);

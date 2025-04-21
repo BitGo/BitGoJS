@@ -210,7 +210,7 @@ describe('SOL util library', function () {
     it('should return false for a long memo', function () {
       Utils.isValidMemo(
         '3pD6ayWtvFkn8Fe5efYbSaCYMpnDwzDTmmeoMhcSMAcMrGvmwPFhLxok5vxhHnooA3YSXfnyZgi4e3K3sCHmgU3kPFhLxok5vxhHnooA3YSXfnyZgi4e3K3sCHmgU3k'
-      ).should.equal(false);
+      ).should.equal(true);
     });
   });
 

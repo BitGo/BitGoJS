@@ -5,6 +5,7 @@ import { KeyPair, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
 import { TransactionType } from '@bitgo/sdk-core';
 import * as bs58 from 'bs58';
+import { RecipientEntry } from '@bitgo/public-types';
 
 describe('Sol Staking Deactivate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -17,6 +18,18 @@ describe('Sol Staking Deactivate Builder', () => {
   const invalidPubKey = testData.pubKeys.invalidPubKeys[0];
 
   describe('Should succeed', () => {
+    const marinadeRecipientsObject: RecipientEntry[] = [];
+    marinadeRecipientsObject.push({
+      address: {
+        address: 'opNS8ENpEMWdXcJUgJCsJTDp7arTXayoBEeBUg6UezP',
+      },
+      amount: {
+        value: '2300000',
+        symbol: 'tsol',
+      },
+    });
+    const marinadeMemo = `{\\"PrepareForRevoke\\":{\\"user\\":\\"${wallet.pub}}\\",\\"amount\\":\\"500000000000\\"}`;
+
     it('building a staking deactivate tx', async () => {
       const txBuilder = factory.getStakingDeactivateBuilder();
       txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
@@ -34,6 +47,8 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
+            isMarinade: false,
+            recipients: undefined,
           },
         },
       ]);
@@ -55,6 +70,64 @@ describe('Sol Staking Deactivate Builder', () => {
       should.equal(rawSignedTx, testData.STAKING_DEACTIVATE_SIGNED_TX);
     });
 
+    it('Marinade: build and sign a staking deactivate tx', async () => {
+      const txBuilder = factory.getStakingDeactivateBuilder();
+      txBuilder
+        .sender(wallet.pub)
+        .stakingAddress(stakeAccount.pub)
+        .nonce(recentBlockHash)
+        .isMarinade(true)
+        .memo(marinadeMemo)
+        .recipients(marinadeRecipientsObject);
+      const txUnsigned = await txBuilder.build();
+      txBuilder.sign({ key: wallet.prv });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      txJson.instructionsData.should.deepEqual([
+        {
+          params: {
+            memo: marinadeMemo,
+          },
+          type: 'Memo',
+        },
+        {
+          type: 'Deactivate',
+          params: {
+            fromAddress: '',
+            stakingAddress: '',
+            amount: undefined,
+            unstakingAddress: undefined,
+            isMarinade: true,
+            recipients: marinadeRecipientsObject,
+          },
+        },
+      ]);
+      should.equal(rawTx, testData.MARINADE_STAKING_DEACTIVATE_SIGNED_TX);
+
+      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
+      const signed = tx.signature[0];
+
+      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
+      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
+
+      const txBuilder2 = factory.getStakingDeactivateBuilder();
+      txBuilder2
+        .sender(wallet.pub)
+        .stakingAddress(stakeAccount.pub)
+        .nonce(recentBlockHash)
+        .isMarinade(true)
+        .memo(marinadeMemo)
+        .recipients(marinadeRecipientsObject);
+      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
+      const signedTx = await txBuilder2.build();
+      should.equal(signedTx.type, TransactionType.StakingDeactivate);
+
+      const rawSignedTx = signedTx.toBroadcastFormat();
+      should.equal(rawSignedTx, testData.MARINADE_STAKING_DEACTIVATE_SIGNED_TX);
+    });
+
     it('building a staking multi deactivate tx', async () => {
       const txBuilder = factory.getStakingDeactivateBuilder();
       txBuilder.sender(wallet.pub).stakingAddresses([stakeAccount.pub, splitAccount.pub]).nonce(recentBlockHash);
@@ -72,6 +145,8 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
+            isMarinade: false,
+            recipients: undefined,
           },
         },
         {
@@ -81,6 +156,8 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: splitAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
+            isMarinade: false,
+            recipients: undefined,
           },
         },
       ]);
@@ -118,6 +195,8 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
+            isMarinade: false,
+            recipients: undefined,
           },
         },
       ]);
@@ -187,6 +266,8 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
+            isMarinade: false,
+            recipients: undefined,
           },
         },
       ]);
@@ -208,6 +289,8 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
+            isMarinade: false,
+            recipients: undefined,
           },
         },
       ]);
@@ -235,6 +318,8 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
+            isMarinade: false,
+            recipients: undefined,
           },
         },
       ]);
@@ -276,6 +361,8 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: '100000',
             unstakingAddress: testData.splitStakeAccount.pub,
+            isMarinade: false,
+            recipients: undefined,
           },
         },
       ]);

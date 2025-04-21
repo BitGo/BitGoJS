@@ -16,6 +16,8 @@ import {
   ComputeBudgetInstruction,
 } from '@solana/web3.js';
 
+import { RecipientEntry } from '@bitgo/public-types';
+
 import { NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
@@ -47,7 +49,8 @@ import { getInstructionType } from './utils';
  */
 export function instructionParamsFactory(
   type: TransactionType,
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
+  coinName?: string
 ): InstructionParams[] {
   switch (type) {
     case TransactionType.WalletInitialization:
@@ -57,7 +60,7 @@ export function instructionParamsFactory(
     case TransactionType.StakingActivate:
       return parseStakingActivateInstructions(instructions);
     case TransactionType.StakingDeactivate:
-      return parseStakingDeactivateInstructions(instructions);
+      return parseStakingDeactivateInstructions(instructions, coinName);
     case TransactionType.StakingWithdraw:
       return parseStakingWithdrawInstructions(instructions);
     case TransactionType.AssociatedTokenAccountInitialization:
@@ -358,7 +361,8 @@ function validateStakingInstructions(stakingInstructions: StakingInstructions) {
  * @returns {InstructionParams[]} An array containing instruction params for staking deactivate tx
  */
 function parseStakingDeactivateInstructions(
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
+  coinName?: string
 ): Array<Nonce | StakingDeactivate | Memo> {
   const instructionData: Array<Nonce | StakingDeactivate | Memo> = [];
   const unstakingInstructions: UnstakingInstructions[] = [];
@@ -467,6 +471,21 @@ function parseStakingDeactivateInstructions(
           '',
         amount: unstakingInstruction.split?.lamports.toString(),
         unstakingAddress: unstakingInstruction.split?.splitStakePubkey.toString(),
+        isMarinade: unstakingInstruction.deactivate === undefined,
+        recipients:
+          unstakingInstruction.deactivate === undefined
+            ? ([
+                {
+                  address: {
+                    address: unstakingInstruction.transfer?.toPubkey.toString(),
+                  },
+                  amount: {
+                    value: unstakingInstruction.transfer?.lamports.toString(),
+                    symbol: coinName,
+                  },
+                },
+              ] as RecipientEntry[])
+            : undefined,
       },
     };
     instructionData.push(stakingDeactivate);
@@ -485,6 +504,14 @@ interface UnstakingInstructions {
 
 function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructions) {
   if (!unstakingInstructions.deactivate) {
+    if (
+      unstakingInstructions.transfer &&
+      !unstakingInstructions.allocate &&
+      !unstakingInstructions.assign &&
+      !unstakingInstructions.split
+    ) {
+      return;
+    }
     throw new NotSupported('Invalid deactivate stake transaction, missing deactivate stake account instruction');
   } else if (
     unstakingInstructions.allocate ||
