@@ -1238,6 +1238,25 @@ class Monad extends Mainnet implements AccountNetwork {
   family = CoinFamily.MON;
   explorerUrl = 'https://testnet.monadexplorer.com/tx/'; //TODO: WIN-5225: change it with mainnet explorer, when its available
 }
+
+class World extends Mainnet implements EthereumNetwork {
+  name = 'Worldchain';
+  family = CoinFamily.WORLD;
+  explorerUrl = 'https://worldscan.org/tx/';
+  accountExplorerUrl = 'https://worldscan.org/address/';
+  chainId = 480;
+  nativeCoinOperationHashPrefix = '480';
+}
+
+class WorldTestnet extends Testnet implements EthereumNetwork {
+  name = 'WorldchainTestnet';
+  family = CoinFamily.WORLD;
+  explorerUrl = 'https://sepolia.worldscan.org/tx/';
+  accountExplorerUrl = 'https://sepolia.worldscan.org/address/';
+  chainId = 4801;
+  nativeCoinOperationHashPrefix = '4801';
+}
+
 class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
@@ -1249,7 +1268,6 @@ class Flare extends Mainnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
-
 class FlareTestnet extends Testnet implements EthereumNetwork {
   name = 'FlarechainTestnet';
   family = CoinFamily.FLR;
@@ -1387,6 +1405,7 @@ export const Networks = {
     ton: Object.freeze(new Ton()),
     trx: Object.freeze(new Trx()),
     wemix: Object.freeze(new Wemix()),
+    world: Object.freeze(new World()),
     xdc: Object.freeze(new Xdc()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
@@ -1461,6 +1480,7 @@ export const Networks = {
     ton: Object.freeze(new TonTestnet()),
     trx: Object.freeze(new TrxTestnet()),
     wemix: Object.freeze(new WemixTestnet()),
+    world: Object.freeze(new WorldTestnet()),
     xdc: Object.freeze(new XdcTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),

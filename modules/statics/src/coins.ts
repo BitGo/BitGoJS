@@ -1168,6 +1168,26 @@ export const coins = CoinMap.fromCoins([
     EVM_FEATURES
   ),
   account(
+    'd4f8e4f5-7060-44e3-aca1-e3ac11597ecb',
+    'world',
+    'Worldchain',
+    Networks.main.world,
+    18,
+    UnderlyingAsset.WORLD,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '1cd29730-f70b-4c7d-a19c-eb3345f01acb',
+    'tworld',
+    'Worldchain Testnet',
+    Networks.test.world,
+    18,
+    UnderlyingAsset.WORLD,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
     '202caf8f-4d43-4208-b206-8231f555c518',
     'flr',
     'Flare',
