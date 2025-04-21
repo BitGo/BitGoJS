@@ -1233,6 +1233,11 @@ class MonadTestnet extends Testnet implements EthereumNetwork {
   chainId = 10143;
   nativeCoinOperationHashPrefix = '10143';
 }
+class Monad extends Mainnet implements AccountNetwork {
+  name = 'Monad';
+  family = CoinFamily.MON;
+  explorerUrl = 'https://testnet.monadexplorer.com/tx/'; //TODO: WIN-5225: change it with mainnet explorer, when its available
+}
 class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
@@ -1359,6 +1364,7 @@ export const Networks = {
     kava: Object.freeze(new Kava()),
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
+    mon: Object.freeze(new Monad()),
     mantra: Object.freeze(new Mantra()),
     polygon: Object.freeze(new Polygon()),
     polyx: Object.freeze(new Polymesh()),

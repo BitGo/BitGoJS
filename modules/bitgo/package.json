@@ -87,6 +87,7 @@
     "@bitgo/sdk-coin-lnbtc": "^1.2.6",
     "@bitgo/sdk-coin-ltc": "^3.1.25",
     "@bitgo/sdk-coin-mantra": "^1.0.2",
+    "@bitgo/sdk-coin-mon": "^1.0.0",
     "@bitgo/sdk-coin-near": "^2.1.0",
     "@bitgo/sdk-coin-oas": "^2.0.9",
     "@bitgo/sdk-coin-opeth": "^18.1.60",

@@ -74,6 +74,9 @@
       "path": "../sdk-coin-islm"
     },
     {
+      "path": "../sdk-coin-mon"
+    },
+    {
       "path": "../sdk-coin-near"
     },
     {

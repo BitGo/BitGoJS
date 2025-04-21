@@ -1148,9 +1148,19 @@ export const coins = CoinMap.fromCoins([
     EVM_FEATURES
   ),
   account(
+    'c315bdbb-4e77-4eeb-a625-92f4defc3e42',
+    'mon',
+    'Monad',
+    Networks.main.mon,
+    18,
+    UnderlyingAsset.MON,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
     'tmon',
-    'Monad',
+    'Testnet Monad',
     Networks.test.mon,
     18,
     UnderlyingAsset.MON,
