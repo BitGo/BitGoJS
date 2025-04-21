@@ -20,6 +20,9 @@ import {
   AcceptShareResponse,
   AddWalletOptions,
   BulkAcceptShareOptions,
+  BulkUpdateWalletShareOptions,
+  BulkUpdateWalletShareOptionsRequest,
+  BulkUpdateWalletShareResponse,
   GenerateBaseMpcWalletOptions,
   GenerateLightningWalletOptions,
   GenerateLightningWalletOptionsCodec,
@@ -663,6 +666,12 @@ export class Wallets implements IWallets {
       .result();
   }
 
+  async bulkUpdateWalletShareRequest(
+    params: BulkUpdateWalletShareOptionsRequest[]
+  ): Promise<BulkUpdateWalletShareResponse> {
+    return await this.bitgo.put(this.bitgo.url('/walletshares/update', 2)).send(params).result();
+  }
+
   /**
    * Resend a wallet share invitation email
    * @param params
@@ -905,6 +914,272 @@ export class Wallets implements IWallets {
     });
 
     return this.bulkAcceptShareRequest(keysForWalletShares);
+  }
+
+  /**
+   * Updates multiple wallet shares in bulk
+   * This method allows users to accept or reject multiple wallet shares in a single operation.
+   * It handles different types of wallet shares including those requiring special keychain overrides
+   * and those with encrypted private keys that need to be decrypted and re-encrypted.
+   * After processing, it also reshares accepted wallets with spenders for special override cases.
+   *
+   * @param params - Options for bulk updating wallet shares
+   * @param params.shares - Array of wallet shares to update with their status (accept/reject)
+   * @param params.userLoginPassword - User's login password for decryption operations
+   * @param params.newWalletPassphrase - New wallet passphrase for re-encryption
+   * @returns Array of responses for each wallet share update
+   */
+  async bulkUpdateWalletShare(params: BulkUpdateWalletShareOptions): Promise<BulkUpdateWalletShareResponse> {
+    if (!params.shares) {
+      throw new Error('Missing parameter: shares');
+    }
+
+    if (!Array.isArray(params.shares)) {
+      throw new Error('Expecting parameter array: shares but found ' + typeof params.shares);
+    }
+
+    // Validate each share in the array
+    for (const share of params.shares) {
+      if (!share.walletShareId) {
+        throw new Error('Missing walletShareId in share');
+      }
+
+      if (!share.status) {
+        throw new Error('Missing status in share');
+      }
+
+      if (share.status !== 'accept' && share.status !== 'reject') {
+        throw new Error('Invalid status in share: ' + share.status + '. Must be either "accept" or "reject"');
+      }
+
+      if (typeof share.walletShareId !== 'string') {
+        throw new Error('Expecting walletShareId to be a string but found ' + typeof share.walletShareId);
+      }
+    }
+
+    // Validate optional parameters if provided
+    if (params.userLoginPassword !== undefined && typeof params.userLoginPassword !== 'string') {
+      throw new Error('Expecting parameter string: userLoginPassword but found ' + typeof params.userLoginPassword);
+    }
+
+    if (params.newWalletPassphrase !== undefined && typeof params.newWalletPassphrase !== 'string') {
+      throw new Error('Expecting parameter string: newWalletPassphrase but found ' + typeof params.newWalletPassphrase);
+    }
+    assert(params.shares.length > 0, 'no shares are passed');
+
+    const { shares: inputShares, userLoginPassword, newWalletPassphrase } = params;
+
+    const allWalletShares = await this.listSharesV2();
+
+    // Only include shares that are in the input array for efficiency
+    const shareIds = new Set(inputShares.map((share) => share.walletShareId));
+    const walletShareMap = new Map();
+
+    allWalletShares.incoming
+      .filter((share) => shareIds.has(share.id))
+      .forEach((share) => walletShareMap.set(share.id, share));
+
+    allWalletShares.outgoing
+      .filter((share) => shareIds.has(share.id))
+      .forEach((share) => walletShareMap.set(share.id, share));
+
+    const resolvedShares = inputShares.map((share) => {
+      const walletShare = walletShareMap.get(share.walletShareId);
+      if (!walletShare) {
+        throw new Error(`invalid wallet share provided: ${share.walletShareId}`);
+      }
+      return { ...share, walletShare };
+    });
+
+    // Identify special override cases that need resharing after acceptance
+    const specialOverrideCases = new Map();
+    resolvedShares.forEach((share) => {
+      if (
+        share.status === 'accept' &&
+        share.walletShare.keychainOverrideRequired &&
+        share.walletShare.permissions.includes('admin') &&
+        share.walletShare.permissions.includes('spend')
+      ) {
+        specialOverrideCases.set(share.walletShareId, share.walletShare.wallet);
+      }
+    });
+
+    // Decrypt sharing keychain if needed (only once)
+    let sharingKeychainPrv: string | undefined;
+
+    // Only decrypt if there are shares to accept that might need it
+    const hasSharesRequiringDecryption =
+      specialOverrideCases.size > 0 ||
+      resolvedShares.some((share) => share.status === 'accept' && share.walletShare.keychain?.encryptedPrv);
+
+    if (userLoginPassword && hasSharesRequiringDecryption) {
+      const sharingKeychain = await this.bitgo.getECDHKeychain();
+      if (!sharingKeychain.encryptedXprv) {
+        throw new Error('encryptedXprv was not found on sharing keychain');
+      }
+      sharingKeychainPrv = this.bitgo.decrypt({
+        password: userLoginPassword,
+        input: sharingKeychain.encryptedXprv,
+      });
+    }
+
+    const settledUpdates = await Promise.allSettled(
+      resolvedShares.map(async (share) => {
+        const { walletShareId, status, walletShare } = share;
+
+        // Handle accept case
+        if (status === 'accept') {
+          return this.processAcceptShare(
+            walletShareId,
+            walletShare,
+            userLoginPassword,
+            newWalletPassphrase,
+            sharingKeychainPrv
+          );
+        }
+
+        // Handle reject case
+        return [
+          {
+            walletShareId,
+            status: 'reject' as const,
+          },
+        ];
+      })
+    );
+
+    // Extract successful updates
+    const successfulUpdates = settledUpdates
+      .filter(
+        (result): result is PromiseFulfilledResult<BulkUpdateWalletShareOptionsRequest[]> =>
+          result.status === 'fulfilled'
+      )
+      .flatMap((result) => result.value);
+
+    // Send updates to the server
+    const response = await this.bulkUpdateWalletShareRequest(successfulUpdates);
+
+    // Process accepted special override cases - reshare with spenders
+    if (response.acceptedWalletShares && response.acceptedWalletShares.length > 0 && userLoginPassword) {
+      // For each accepted wallet share that is a special override case, reshare with spenders
+      for (const walletShareId of response.acceptedWalletShares) {
+        if (specialOverrideCases.has(walletShareId)) {
+          const walletId = specialOverrideCases.get(walletShareId);
+          try {
+            await this.reshareWalletWithSpenders(walletId, userLoginPassword);
+          } catch (e) {
+            // Log error but continue processing other shares
+            console.error(`Error resharing wallet ${walletId} with spenders: ${e?.message}`);
+          }
+        }
+      }
+    }
+
+    return response;
+  }
+
+  /**
+   * Process a wallet share that is being accepted
+   * This method handles the different cases for accepting a wallet share:
+   * 1. Special override case requiring user keychain and signing
+   * 2. Simple case with no keychain to decrypt
+   * 3. Standard case requiring decryption and re-encryption
+   *
+   * @param walletShareId - ID of the wallet share
+   * @param walletShare - Wallet share object
+   * @param userLoginPassword - User's login password
+   * @param newWalletPassphrase - New wallet passphrase
+   * @param sharingKeychainPrv - Decrypted sharing keychain private key
+   * @returns Array of wallet share update requests
+   */
+  private async processAcceptShare(
+    walletShareId: string,
+    walletShare: WalletShare,
+    userLoginPassword?: string,
+    newWalletPassphrase?: string,
+    sharingKeychainPrv?: string
+  ): Promise<BulkUpdateWalletShareOptionsRequest[]> {
+    // Special override case: requires user keychain and signing
+    if (
+      walletShare.keychainOverrideRequired &&
+      walletShare.permissions.includes('admin') &&
+      walletShare.permissions.includes('spend')
+    ) {
+      if (!userLoginPassword) {
+        throw new Error('userLoginPassword param must be provided to decrypt shared key');
+      }
+
+      const walletKeychain = await this.baseCoin.keychains().createUserKeychain(userLoginPassword);
+      if (!walletKeychain.encryptedPrv) {
+        throw new Error('encryptedPrv was not found on wallet keychain');
+      }
+
+      const payload = JSON.stringify({
+        tradingAccountId: walletShare.wallet,
+        pubkey: walletKeychain.pub,
+        timestamp: new Date().toISOString(),
+      });
+
+      const prv = this.bitgo.decrypt({
+        password: userLoginPassword,
+        input: walletKeychain.encryptedPrv,
+      });
+
+      const signature = await this.baseCoin.signMessage({ prv }, payload);
+
+      return [
+        {
+          walletShareId,
+          status: 'accept' as const,
+          keyId: walletKeychain.id,
+          signature: signature.toString('hex'),
+          payload,
+        },
+      ];
+    }
+
+    // Return right away if there is no keychain to decrypt
+    if (!walletShare.keychain || !walletShare.keychain.encryptedPrv) {
+      return [
+        {
+          walletShareId,
+          status: 'accept' as const,
+        },
+      ];
+    }
+
+    // More than viewing was requested, so we need to process the wallet keys using the shared ecdh scheme
+    if (!userLoginPassword) {
+      throw new Error('userLoginPassword param must be provided to decrypt shared key');
+    }
+    if (!sharingKeychainPrv) {
+      throw new Error('failed to retrieve and decrypt sharing keychain');
+    }
+
+    const derivedKey = bip32.fromBase58(sharingKeychainPrv).derivePath(sanitizeLegacyPath(walletShare.keychain.path));
+
+    const sharedSecret = getSharedSecret(derivedKey, Buffer.from(walletShare.keychain.fromPubKey, 'hex')).toString(
+      'hex'
+    );
+
+    const decryptedPrv = this.bitgo.decrypt({
+      password: sharedSecret,
+      input: walletShare.keychain.encryptedPrv,
+    });
+
+    // We will now re-encrypt the wallet with our own password
+    const encryptedPrv = this.bitgo.encrypt({
+      password: newWalletPassphrase || userLoginPassword,
+      input: decryptedPrv,
+    });
+
+    return [
+      {
+        walletShareId,
+        status: 'accept' as const,
+        encryptedPrv,
+      },
+    ];
   }
 
   /**
