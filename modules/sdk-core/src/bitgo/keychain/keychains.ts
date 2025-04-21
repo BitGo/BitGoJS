@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { BlsUtils, decodeOrElse, ECDSAUtils, EDDSAUtils, generateRandomPassword, RequestTracer } from '../utils';
+import { decodeOrElse, ECDSAUtils, EDDSAUtils, generateRandomPassword, RequestTracer } from '../utils';
 import {
   AddKeychainOptions,
   ApiKeyShare,
@@ -317,12 +317,6 @@ export class Keychains implements IKeychains {
             : multisigTypeVersion === 'MPCv2'
             ? ECDSAUtils.EcdsaMPCv2Utils
             : ECDSAUtils.EcdsaUtils;
-        break;
-      case 'blsdkg':
-        if (_.isUndefined(params.passphrase)) {
-          throw new Error('missing required param passphrase');
-        }
-        MpcUtils = BlsUtils;
         break;
       default:
         throw new Error('Unsupported multi-sig type');

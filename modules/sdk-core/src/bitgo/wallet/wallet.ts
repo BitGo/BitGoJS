@@ -3,7 +3,7 @@
  */
 import * as t from 'io-ts';
 import assert from 'assert';
-import { BigNumber } from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import * as common from '../../common';
 import {
