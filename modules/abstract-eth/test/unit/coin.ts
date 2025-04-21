@@ -11,6 +11,7 @@ import {
   TransferBuilder,
   TransactionBuilder,
 } from '../../src';
+import { coins } from '@bitgo/statics';
 
 nock.enableNetConnect();
 
@@ -173,7 +174,8 @@ export function runSignTransactionTests(coinName: string, builder: TransactionBu
       builder.type(TransactionType.Send);
       builder.contract(account_1.address);
       const transferBuilder = builder.transfer() as TransferBuilder;
-      transferBuilder.coin(coinTest).amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
+      const staticsCoin = coins.get(coinTest);
+      transferBuilder.coin(staticsCoin).amount('1').to(account_2.address).expirationTime(10000).contractSequenceId(1);
 
       const unsignedTx = await builder.build();
       const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();

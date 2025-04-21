@@ -354,7 +354,7 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
     });
     const transferBuilder = txBuilder.transfer() as EthLikeTransferBuilder;
     transferBuilder
-      .coin(this.tokenConfig.type)
+      .tokenContractAddress(this.tokenConfig.tokenContractAddress)
       .amount(recipients[0].amount)
       .contractSequenceId(sequenceId)
       .expirationTime(this.getDefaultExpireTime())
@@ -383,7 +383,7 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
 
     txBuilder
       .transfer()
-      .coin(this.tokenConfig.type)
+      .tokenContractAddress(this.tokenConfig.tokenContractAddress)
       .key(new KeyPairLib({ prv: userKey }).getKeys().prv as string);
     txBuilder.sign({ key: backupSigningKey });
 
