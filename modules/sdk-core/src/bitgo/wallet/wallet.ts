@@ -25,26 +25,30 @@ import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv } from '.
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
 import { TradingAccount } from '../trading';
 import {
-  inferAddressType,
-  RequestTracer,
-  TxRequest,
   EddsaUnsignedTransaction,
+  inferAddressType,
   IntentOptionsForMessage,
   IntentOptionsForTypedData,
+  RequestTracer,
   RequestType,
+  TokenTransferRecipientParams,
+  TokenType,
+  TxRequest,
 } from '../utils';
 import {
   AccelerateTransactionOptions,
   AddressesOptions,
   BuildConsolidationTransactionOptions,
   BuildTokenEnablementOptions,
+  BulkCreateShareOption,
+  BulkWalletShareKeychain,
+  BulkWalletShareOptions,
   ChangeFeeOptions,
   ConsolidateUnspentsOptions,
   CreateAddressOptions,
+  CreateBulkWalletShareListResponse,
   CreatePolicyRuleOptions,
   CreateShareOptions,
-  BulkCreateShareOption,
-  BulkWalletShareOptions,
   CrossChainUTXO,
   DeployForwardersOptions,
   DownloadKeycardOptions,
@@ -54,6 +58,7 @@ import {
   ForwarderBalance,
   ForwarderBalanceOptions,
   FreezeOptions,
+  FundForwarderParams,
   FundForwardersOptions,
   GetAddressOptions,
   GetPrvOptions,
@@ -61,6 +66,7 @@ import {
   GetTransferOptions,
   GetUserPrvOptions,
   IWallet,
+  ManageUnspentReservationOptions,
   MaximumSpendable,
   MaximumSpendableOptions,
   ModifyWebhookOptions,
@@ -76,7 +82,9 @@ import {
   SendNFTOptions,
   SendNFTResult,
   SendOptions,
+  SharedKeyChain,
   ShareWalletOptions,
+  SignAndSendTxRequestOptions,
   SimulateWebhookOptions,
   SubmitTransactionOptions,
   SubWalletType,
@@ -94,12 +102,6 @@ import {
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
   WalletType,
-  CreateBulkWalletShareListResponse,
-  SharedKeyChain,
-  BulkWalletShareKeychain,
-  ManageUnspentReservationOptions,
-  SignAndSendTxRequestOptions,
-  FundForwarderParams,
 } from './iWallet';
 import { GoStakingWallet, StakingWallet } from '../staking';
 import EddsaUtils from '../utils/tss/eddsa';
@@ -2405,7 +2407,7 @@ export class Wallet implements IWallet {
     if (!this.baseCoin.isValidAddress(recipientAddress)) {
       throw new Error(`Invalid recipient address ${recipientAddress}`);
     }
-    const baseAddress = this.coinSpecific()?.baseAddress;
+    const baseAddress = this.coinSpecific()?.baseAddress || this.coinSpecific()?.rootAddress;
     if (!baseAddress) {
       throw new Error('Missing base address for wallet');
     }
@@ -2459,6 +2461,30 @@ export class Wallet implements IWallet {
               address: sendNftOptions.tokenContractAddress,
               amount: '0',
               data: data,
+            },
+          ],
+        });
+      }
+
+      case TokenType.DIGITAL_ASSET: {
+        if (!nftBalance.collections[sendNftOptions.tokenId]) {
+          throw new Error(
+            `Token ${sendNftOptions.tokenId} not found in collection ${tokenContractAddress} or does not have a spendable balance`
+          );
+        }
+        const tokenData: TokenTransferRecipientParams = {
+          tokenType: sendNftOptions.type,
+          tokenQuantity: '1', // This NFT standard will always have quantity of 1
+          tokenContractAddress,
+          tokenId: sendNftOptions.tokenId,
+        };
+        return this.sendMany({
+          ...sendOptions,
+          recipients: [
+            {
+              address: recipientAddress,
+              amount: '1', // the amount needs to be non-zero for the transaction to be valid, it is ignored
+              tokenData,
             },
           ],
         });
