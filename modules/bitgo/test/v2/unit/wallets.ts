@@ -9,7 +9,6 @@ import * as _ from 'lodash';
 import * as utxoLib from '@bitgo/utxo-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
 import {
-  BlsUtils,
   common,
   TssUtils,
   Wallets,
@@ -1322,91 +1321,6 @@ describe('V2 Wallets:', function () {
         bitgo.decrypt({ input: response.encryptedWalletPassphrase, password: params.passcodeEncryptionCode }),
         params.passphrase
       );
-    });
-  });
-
-  describe('Generate BLS-DKG wallet:', function () {
-    const eth2 = bitgo.coin('eth2');
-    const sandbox = sinon.createSandbox();
-
-    afterEach(function () {
-      nock.cleanAll();
-      sandbox.verifyAndRestore();
-    });
-
-    it('should create a new BLS-DKG wallet', async function () {
-      const stubbedKeychainsTriplet: KeychainsTriplet = {
-        userKeychain: {
-          id: '1',
-          pub: 'userPub',
-          type: 'independent',
-        },
-        backupKeychain: {
-          id: '2',
-          pub: 'userPub',
-          type: 'independent',
-        },
-        bitgoKeychain: {
-          id: '3',
-          pub: 'userPub',
-          type: 'independent',
-        },
-      };
-      sandbox.stub(BlsUtils.prototype, 'createKeychains').resolves(stubbedKeychainsTriplet);
-
-      const walletNock = nock('https://bitgo.fakeurl').post('/api/v2/eth2/wallet/add').reply(200);
-
-      const wallets = new Wallets(bitgo, eth2);
-
-      await wallets.generateWallet({
-        label: 'blsdkg wallet',
-        passphrase: 'blsdkg password',
-        multisigType: 'blsdkg',
-        enterprise: 'enterpriseId',
-      });
-
-      walletNock.isDone().should.be.true();
-    });
-
-    it('should fail to create BLS-DKG wallet with invalid inputs', async function () {
-      const tbtc = bitgo.coin('tbtc');
-      const wallets = new Wallets(bitgo, tbtc);
-
-      await wallets
-        .generateWallet({
-          label: 'blsdkg wallet',
-          passphrase: 'passphrase',
-          multisigType: 'blsdkg',
-        })
-        .should.be.rejectedWith('coin btc does not support BLS-DKG at this time');
-
-      const eth2Wallets = new Wallets(bitgo, eth2);
-      await eth2Wallets
-        .generateWallet({
-          label: 'blsdkg wallet',
-          enterprise: 'enterpriseId',
-        })
-        .should.be.rejectedWith('cannot generate BLS-DKG keys without passphrase');
-
-      await eth2Wallets
-        .generateWallet({
-          label: 'blsdkg cold wallet',
-          passphrase: 'passphrase',
-          enterprise: 'enterpriseId',
-          userKey: 'user key',
-          type: 'cold',
-        })
-        .should.be.rejectedWith('BLS-DKG SMC wallets are not supported at this time');
-
-      await eth2Wallets
-        .generateWallet({
-          label: 'blsdkg cold wallet',
-          passphrase: 'passphrase',
-          enterprise: 'enterpriseId',
-          userKey: 'user key',
-          type: 'custodial',
-        })
-        .should.be.rejectedWith('BLS-DKG custodial wallets are not supported at this time');
     });
   });
 

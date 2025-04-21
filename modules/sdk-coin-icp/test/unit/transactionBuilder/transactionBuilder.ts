@@ -92,9 +92,27 @@ describe('ICP Transaction Builder', async () => {
     const signedTxn = txBuilder.transaction.signedTransaction;
     signedTxn.should.be.a.String();
     should.equal(signedTxn, testData.SignedTransaction);
+    const transactionHash = txBuilder.transaction.id;
+    should.equal(transactionHash, testData.OnChainTransactionHash);
     const broadcastTxn = txBuilder.transaction.toBroadcastFormat();
     broadcastTxn.should.be.a.String();
     should.equal(broadcastTxn, signedTxn);
+  });
+
+  it('should generate a correct txn hash', async () => {
+    sinon.stub(txn._utils, 'validateExpireTime').returns(true);
+    const unsignedTxn = txBuilder.transaction.unsignedTransaction;
+    unsignedTxn.should.be.a.String();
+    const payloadsData = txBuilder.transaction.payloadsData;
+    const serializedTxFormat = {
+      serializedTxHex: payloadsData,
+      publicKey: testData.accounts.account1.publicKey,
+    };
+    const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+    await txn.fromRawTransaction(serializedTxHex);
+    const transactionHash = txBuilder.transaction.id;
+    should.equal(transactionHash, testData.OnChainTransactionHash);
+    sinon.restore();
   });
 
   it('should build a txn then parse it and then again build', async () => {

@@ -323,6 +323,7 @@ export interface UnspentsOptions extends PaginationOptions {
   target?: number | string;
   segwit?: boolean;
   chains?: number[];
+  unspentIds?: string[];
 }
 
 export interface ManageUnspentReservationOptions {
@@ -646,6 +647,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
     feeLimit?: string;
     data?: string;
     tokenName?: string;
+    tokenData?: TokenTransferRecipientParams;
   }[];
   numBlocks?: number;
   feeRate?: number;

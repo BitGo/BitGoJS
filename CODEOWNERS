@@ -11,7 +11,6 @@
 /modules/bitgo/test/v2/unit/coins/utxo/ @BitGo/btc-team
 /modules/bitgo/test/v2/unit/lightning.ts @BitGo/btc-team
 /modules/blockapis/ @BitGo/btc-team
-/modules/bls-dkg/ @BitGo/hsm
 /modules/sdk-coin-bch/ @BitGo/btc-team
 /modules/sdk-coin-bcha/ @BitGo/btc-team
 /modules/sdk-coin-bsv/ @BitGo/btc-team
@@ -40,7 +39,6 @@
 /modules/sdk-coin-etc/ @BitGo/ethalt-team
 /modules/abstract-eth/ @BitGo/ethalt-team
 /modules/sdk-coin-eth/ @BitGo/ethalt-team
-/modules/sdk-coin-eth2/ @BitGo/ethalt-team
 /modules/sdk-coin-rbtc/ @BitGo/ethalt-team
 /modules/bitgo/test/v2/unit/coins/staking/ @BitGo/ethalt-team
 /modules/bitgo/test/v2/unit/coins/token.ts @BitGo/ethalt-team
@@ -66,6 +64,7 @@
 /modules/sdk-coin-ethlike/ @BitGo/ethalt-team
 /modules/sdk-coin-hbar/ @BitGo/ethalt-team
 /modules/sdk-coin-icp/ @BitGo/ethalt-team
+/modules/sdk-coin-mon/ @BitGo/ethalt-team
 /modules/sdk-coin-mantra/ @BitGo/ethalt-team
 /modules/sdk-coin-near/ @BitGo/ethalt-team
 /modules/sdk-coin-oas/ @BitGo/ethalt-team

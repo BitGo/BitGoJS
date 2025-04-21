@@ -40,7 +40,6 @@ COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
 #COPY_START
 COPY --from=builder /tmp/bitgo/modules/abstract-lightning /var/modules/abstract-lightning/
 COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
-COPY --from=builder /tmp/bitgo/modules/bls-dkg /var/modules/bls-dkg/
 COPY --from=builder /tmp/bitgo/modules/sdk-lib-mpc /var/modules/sdk-lib-mpc/
 COPY --from=builder /tmp/bitgo/modules/sdk-opensslbytes /var/modules/sdk-opensslbytes/
 COPY --from=builder /tmp/bitgo/modules/secp256k1 /var/modules/secp256k1/
@@ -76,13 +75,13 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-coreum /var/modules/sdk-coin-cor
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dot /var/modules/sdk-coin-dot/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-etc /var/modules/sdk-coin-etc/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth2 /var/modules/sdk-coin-eth2/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-flr /var/modules/sdk-coin-flr/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hash /var/modules/sdk-coin-hash/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-icp /var/modules/sdk-coin-icp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-injective /var/modules/sdk-coin-injective/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-islm /var/modules/sdk-coin-islm/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-mon /var/modules/sdk-coin-mon/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-mantra /var/modules/sdk-coin-mantra/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-near /var/modules/sdk-coin-near/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-oas /var/modules/sdk-coin-oas/
@@ -127,7 +126,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
 
 RUN cd /var/modules/abstract-lightning && yarn link && \
 cd /var/modules/sdk-core && yarn link && \
-cd /var/modules/bls-dkg && yarn link && \
 cd /var/modules/sdk-lib-mpc && yarn link && \
 cd /var/modules/sdk-opensslbytes && yarn link && \
 cd /var/modules/secp256k1 && yarn link && \
@@ -163,7 +161,6 @@ cd /var/modules/sdk-coin-coreum && yarn link && \
 cd /var/modules/sdk-coin-cspr && yarn link && \
 cd /var/modules/sdk-coin-dot && yarn link && \
 cd /var/modules/sdk-coin-etc && yarn link && \
-cd /var/modules/sdk-coin-eth2 && yarn link && \
 cd /var/modules/sdk-coin-flr && yarn link && \
 cd /var/modules/sdk-coin-hash && yarn link && \
 cd /var/modules/sdk-coin-hbar && yarn link && \
@@ -171,6 +168,7 @@ cd /var/modules/sdk-coin-icp && yarn link && \
 cd /var/modules/sdk-coin-injective && yarn link && \
 cd /var/modules/sdk-coin-islm && yarn link && \
 cd /var/modules/sdk-coin-mantra && yarn link && \
+cd /var/modules/sdk-coin-mon && yarn link && \
 cd /var/modules/sdk-coin-near && yarn link && \
 cd /var/modules/sdk-coin-oas && yarn link && \
 cd /var/modules/sdk-coin-opeth && yarn link && \
@@ -217,7 +215,6 @@ cd /var/modules/sdk-coin-zec && yarn link
 RUN cd /var/bitgo-express && \
     yarn link @bitgo/abstract-lightning && \
     yarn link @bitgo/sdk-core && \
-    yarn link @bitgo/bls-dkg && \
     yarn link @bitgo/sdk-lib-mpc && \
     yarn link @bitgo/sdk-opensslbytes && \
     yarn link @bitgo/secp256k1 && \
@@ -253,7 +250,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \
     yarn link @bitgo/sdk-coin-etc && \
-    yarn link @bitgo/sdk-coin-eth2 && \
     yarn link @bitgo/sdk-coin-flr && \
     yarn link @bitgo/sdk-coin-hash && \
     yarn link @bitgo/sdk-coin-hbar && \
@@ -261,6 +257,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-injective && \
     yarn link @bitgo/sdk-coin-islm && \
     yarn link @bitgo/sdk-coin-mantra && \
+    yarn link @bitgo/sdk-coin-mon && \
     yarn link @bitgo/sdk-coin-near && \
     yarn link @bitgo/sdk-coin-oas && \
     yarn link @bitgo/sdk-coin-opeth && \

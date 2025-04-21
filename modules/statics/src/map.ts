@@ -80,6 +80,7 @@ export class CoinMap {
       130: 'uni',
       324: 'zketh',
       8453: 'baseeth',
+      10143: 'tmon',
     };
     return ethLikeCoinFromChainId[chainId];
   }

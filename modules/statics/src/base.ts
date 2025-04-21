@@ -80,6 +80,7 @@ export enum CoinFamily {
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
+  WORLD = 'world',
   WEMIX = 'wemix',
   XDC = 'xdc',
   XLM = 'xlm',
@@ -425,6 +426,7 @@ export enum UnderlyingAsset {
   TON = 'ton',
   TRX = 'trx',
   WEMIX = 'wemix',
+  WORLD = 'world',
   XLM = 'xlm',
   XDC = 'xdc',
   XRP = 'xrp',
@@ -2595,7 +2597,6 @@ export enum UnderlyingAsset {
 export enum KeyCurve {
   Secp256k1 = 'secp256k1',
   Ed25519 = 'ed25519',
-  BLS = 'bls',
 }
 
 /**

@@ -78,7 +78,6 @@ import {
   DOT_FEATURES,
   EOS_FEATURES,
   ETC_FEATURES,
-  ETH2_FEATURES,
   ETH_FEATURES,
   ETH_FEATURES_WITH_STAKING_AND_MMI,
   EVM_FEATURES,
@@ -328,17 +327,6 @@ export const coins = CoinMap.fromCoins([
     ]
   ),
   account(
-    'bfe3a3d5-2210-4bac-b494-40c45ed89267',
-    'eth2',
-    'Ethereum 2.0',
-    Networks.main.ethereum2,
-    18,
-    UnderlyingAsset.ETH2,
-    BaseUnit.ETH,
-    [...ETH2_FEATURES, CoinFeature.TSS, CoinFeature.MULTISIG_COLD, CoinFeature.TSS_COLD],
-    KeyCurve.BLS
-  ),
-  account(
     '33712672-8cb9-444e-be92-b8c9e84050d5',
     'ethw',
     'Ethereum PoW',
@@ -349,17 +337,6 @@ export const coins = CoinMap.fromCoins([
     [...AccountCoin.DEFAULT_FEATURES]
   ),
   account(
-    '37ee6253-04fb-4eec-bd88-310a480b1e43',
-    'teth2',
-    'Testnet Ethereum 2.0',
-    Networks.test.pyrmont,
-    18,
-    UnderlyingAsset.ETH2,
-    BaseUnit.ETH,
-    [...ETH2_FEATURES, CoinFeature.TSS, CoinFeature.MULTISIG_COLD, CoinFeature.TSS_COLD],
-    KeyCurve.BLS
-  ),
-  account(
     '2660f6f6-1980-4584-a0b3-487d4a832b9f',
     'tbaseeth',
     'Base Sepolia Chain',
@@ -367,7 +344,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BASEETH,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA]
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
   ),
   account(
     'd51fe324-1e01-4630-9b04-c724fe495a1c',
@@ -377,7 +354,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BASEETH,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA]
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
   ),
   account(
     'ffc472f5-27c6-49f8-ad9a-f57659258fb9',
@@ -1148,12 +1125,42 @@ export const coins = CoinMap.fromCoins([
     EVM_FEATURES
   ),
   account(
+    'c315bdbb-4e77-4eeb-a625-92f4defc3e42',
+    'mon',
+    'Monad',
+    Networks.main.mon,
+    18,
+    UnderlyingAsset.MON,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
     'tmon',
-    'Monad',
+    'Testnet Monad',
     Networks.test.mon,
     18,
     UnderlyingAsset.MON,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    'd4f8e4f5-7060-44e3-aca1-e3ac11597ecb',
+    'world',
+    'Worldchain',
+    Networks.main.world,
+    18,
+    UnderlyingAsset.WORLD,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '1cd29730-f70b-4c7d-a19c-eb3345f01acb',
+    'tworld',
+    'Worldchain Testnet',
+    Networks.test.world,
+    18,
+    UnderlyingAsset.WORLD,
     BaseUnit.ETH,
     EVM_FEATURES
   ),
@@ -2758,8 +2765,8 @@ export const coins = CoinMap.fromCoins([
     'XSGD',
     15,
     'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD',
-    'XSGD',
-    'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD::XSGD',
+    '5853474400000000000000000000000000000000',
+    'rKgjEa9gEyyumaJsfkPq9uSAyaecQRmvYD::5853474400000000000000000000000000000000',
     'straitsx.com',
     UnderlyingAsset['txrp:xsgd']
   ),

@@ -1,9 +1,14 @@
-import { epochingtx, btcstakingtx } from '@babylonlabs-io/babylon-proto-ts';
+import { epochingtx, btcstakingtx, incentivetx } from '@babylonlabs-io/babylon-proto-ts';
 import { DecodedTxRaw } from '@cosmjs/proto-signing';
 import { Coin } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 import { Any } from 'cosmjs-types/google/protobuf/any';
-import { BabylonSpecificMessageKind, BabylonSpecificMessages } from './iface';
+import {
+  BabylonSpecificMessageKind,
+  BabylonSpecificMessages,
+  CreateBtcDelegationMessage,
+  WithdrawRewardMessage,
+} from './iface';
 import { CosmosUtils, MessageData } from '@bitgo/abstract-cosmos';
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import * as constants from './constants';
@@ -11,6 +16,7 @@ import * as constants from './constants';
 export class Utils extends CosmosUtils<BabylonSpecificMessages> {
   public babylonMessageKindToTypeUrl: Record<BabylonSpecificMessageKind, string> = {
     CreateBtcDelegation: constants.createBTCDelegationMsgTypeUrl,
+    WithdrawReward: constants.withdrawRewardMsgTypeUrl,
   };
   public babylonMessageTypeUrlToKind = Object.fromEntries(
     Object.entries(this.babylonMessageKindToTypeUrl).map(([key, value]) => [value, key])
@@ -29,6 +35,7 @@ export class Utils extends CosmosUtils<BabylonSpecificMessages> {
     this.registry.register(constants.wrappedUndelegateMsgTypeUrl, epochingtx.MsgWrappedUndelegate);
     this.registry.register(constants.wrappedBeginRedelegateTypeUrl, epochingtx.MsgWrappedBeginRedelegate);
     this.registry.register(constants.createBTCDelegationMsgTypeUrl, btcstakingtx.MsgCreateBTCDelegation);
+    this.registry.register(constants.withdrawRewardMsgTypeUrl, incentivetx.MsgWithdrawReward);
   }
 
   /** @inheritdoc */
@@ -86,6 +93,7 @@ export class Utils extends CosmosUtils<BabylonSpecificMessages> {
       case constants.wrappedBeginRedelegateTypeUrl:
         return TransactionType.StakingRedelegate;
       case constants.createBTCDelegationMsgTypeUrl:
+      case constants.withdrawRewardMsgTypeUrl:
         return TransactionType.CustomTx;
       default:
         return super.getTransactionTypeFromTypeUrl(typeUrl);
@@ -110,13 +118,26 @@ export class Utils extends CosmosUtils<BabylonSpecificMessages> {
   }
 
   /** @inheritdoc */
-  validateCustomMessage(customMessage: BabylonSpecificMessages) {
-    if (customMessage._kind !== 'CreateBtcDelegation') {
-      throw new InvalidTransactionError(`Unsupported BabylonSpecificMessages message: ` + customMessage._kind);
+  validateCustomMessage(customMessage: BabylonSpecificMessages): void {
+    switch (customMessage._kind) {
+      case 'CreateBtcDelegation':
+        this.validateCreateBtcDelegationMessage(customMessage);
+        break;
+      case 'WithdrawReward':
+        this.validateWithdrawRewardMessage(customMessage);
+        break;
+      default:
+        throw new InvalidTransactionError(`Unsupported BabylonSpecificMessages message`);
+    }
+  }
+
+  validateCreateBtcDelegationMessage(createBtcDelegationMessage: CreateBtcDelegationMessage): void {
+    if (createBtcDelegationMessage._kind !== 'CreateBtcDelegation') {
+      throw new InvalidTransactionError(`Invalid CreateBtcDelegationMessage kind: ${createBtcDelegationMessage._kind}`);
     }
 
     // TODO: check the other fields more thoroughly
-    this.isObjPropertyNull(customMessage, [
+    this.isObjPropertyNull(createBtcDelegationMessage, [
       'stakerAddr',
       // 'pop',
       'btcPk',
@@ -134,20 +155,38 @@ export class Utils extends CosmosUtils<BabylonSpecificMessages> {
       'delegatorUnbondingSlashingSig',
     ]);
 
-    if (customMessage.pop) {
-      this.isObjPropertyNull(customMessage.pop, ['btcSigType', 'btcSig']);
+    if (createBtcDelegationMessage.pop) {
+      this.isObjPropertyNull(createBtcDelegationMessage.pop, ['btcSigType', 'btcSig']);
     }
 
-    if (customMessage.stakingTxInclusionProof) {
-      this.isObjPropertyNull(customMessage.stakingTxInclusionProof, ['key', 'proof']);
+    if (createBtcDelegationMessage.stakingTxInclusionProof) {
+      this.isObjPropertyNull(createBtcDelegationMessage.stakingTxInclusionProof, ['key', 'proof']);
 
-      if (customMessage.stakingTxInclusionProof.key) {
-        this.isObjPropertyNull(customMessage.stakingTxInclusionProof.key, ['index', 'hash']);
+      if (createBtcDelegationMessage.stakingTxInclusionProof.key) {
+        this.isObjPropertyNull(createBtcDelegationMessage.stakingTxInclusionProof.key, ['index', 'hash']);
       }
     }
 
-    if (!this.isValidAddress(customMessage.stakerAddr)) {
-      throw new InvalidTransactionError(`Invalid CreateBtcDelegationMessage stakerAddr: ` + customMessage.stakerAddr);
+    if (!this.isValidAddress(createBtcDelegationMessage.stakerAddr)) {
+      throw new InvalidTransactionError(
+        `Invalid CreateBtcDelegationMessage stakerAddr: ${createBtcDelegationMessage.stakerAddr}`
+      );
+    }
+  }
+
+  validateWithdrawRewardMessage(withdrawRewardMessage: WithdrawRewardMessage): void {
+    if (withdrawRewardMessage._kind !== 'WithdrawReward') {
+      throw new InvalidTransactionError(`Invalid WithdrawRewardMessage kind: ${withdrawRewardMessage._kind}`);
+    }
+
+    this.isObjPropertyNull(withdrawRewardMessage, ['type', 'address']);
+
+    if (!['finality_provider', 'btc_staker'].includes(withdrawRewardMessage.type)) {
+      throw new InvalidTransactionError(`Invalid WithdrawRewardMessage type: ${withdrawRewardMessage.type}`);
+    }
+
+    if (!this.isValidAddress(withdrawRewardMessage.address)) {
+      throw new InvalidTransactionError(`Invalid WithdrawRewardMessage address: ${withdrawRewardMessage.address}`);
     }
   }
 

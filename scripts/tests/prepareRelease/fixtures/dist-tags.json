@@ -54,11 +54,6 @@
     "beta": "1.0.5-beta.1023",
     "alpha": "1.3.3-alpha.296"
   },
-  "@bitgo-beta/bls-dkg": {
-    "latest": "1.1.0",
-    "beta": "1.1.1-beta.1027",
-    "alpha": "1.3.1-alpha.297"
-  },
   "@bitgo-beta/deser-lib": {
     "latest": "1.0.0",
     "beta": "1.0.1-beta.558",
@@ -203,11 +198,6 @@
     "latest": "1.1.0",
     "beta": "4.4.1-beta.782",
     "alpha": "2.4.1-alpha.293"
-  },
-  "@bitgo-beta/sdk-coin-eth2": {
-    "latest": "1.0.1",
-    "beta": "1.2.19-beta.783",
-    "alpha": "1.2.3-alpha.294"
   },
   "@bitgo-beta/sdk-coin-ethlike": {
     "latest": "1.0.0",

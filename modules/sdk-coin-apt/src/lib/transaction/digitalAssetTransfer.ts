@@ -47,16 +47,17 @@ export class DigitalAssetTransfer extends Transaction {
   protected getTransactionPayloadData(): InputGenerateTransactionPayloadData {
     const recipientAddress = AccountAddress.fromString(this.recipients[0].address);
     const digitalAssetAddress = AccountAddress.fromString(this._assetId);
-    const transferDigitalAssetAbi: EntryFunctionABI = {
-      typeParameters: [{ constraints: [MoveAbility.KEY] }],
-      parameters: [new TypeTagStruct(objectStructTag(new TypeTagGeneric(0))), new TypeTagAddress()],
-    };
 
     return {
       function: DIGITAL_ASSET_TRANSFER_FUNCTION,
       typeArguments: [DIGITAL_ASSET_TYPE_ARGUMENT],
       functionArguments: [digitalAssetAddress, recipientAddress],
-      abi: transferDigitalAssetAbi,
+      abi: this.transferDigitalAssetAbi,
     };
   }
+
+  private transferDigitalAssetAbi: EntryFunctionABI = {
+    typeParameters: [{ constraints: [MoveAbility.KEY] }],
+    parameters: [new TypeTagStruct(objectStructTag(new TypeTagGeneric(0))), new TypeTagAddress()],
+  };
 }

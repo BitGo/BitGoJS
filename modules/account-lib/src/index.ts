@@ -35,9 +35,6 @@ export { Xtz };
 import * as Eth from '@bitgo/sdk-coin-eth';
 export { Eth };
 
-import * as Eth2 from '@bitgo/sdk-coin-eth2';
-export { Eth2 };
-
 import * as Etc from '@bitgo/sdk-coin-etc';
 export { Etc };
 
@@ -106,6 +103,9 @@ export { Rune };
 
 import * as Baby from '@bitgo/sdk-coin-baby';
 export { Baby };
+
+import * as Mon from '@bitgo/sdk-coin-mon';
+export { Mon };
 
 import * as Mantra from '@bitgo/sdk-coin-mantra';
 export { Mantra };
@@ -259,6 +259,8 @@ const coinBuilderMap = {
   twemix: Wemix.TransactionBuilder,
   mantra: Mantra.TransactionBuilder,
   tmantra: Mantra.TransactionBuilder,
+  mon: Mon.TransactionBuilder,
+  tmon: Mon.TransactionBuilder,
 };
 
 /**

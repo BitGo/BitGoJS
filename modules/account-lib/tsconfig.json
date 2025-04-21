@@ -50,9 +50,6 @@
       "path": "../sdk-coin-eth"
     },
     {
-      "path": "../sdk-coin-eth2"
-    },
-    {
       "path": "../sdk-coin-flr"
     },
     {
@@ -72,6 +69,9 @@
     },
     {
       "path": "../sdk-coin-islm"
+    },
+    {
+      "path": "../sdk-coin-mon"
     },
     {
       "path": "../sdk-coin-near"
