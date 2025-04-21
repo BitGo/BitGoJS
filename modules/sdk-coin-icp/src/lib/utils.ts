@@ -23,7 +23,8 @@ import {
   CborUnsignedTransaction,
 } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
-const compiledProto = require('./compiled.js');
+// const compiledProto = require('./compiled.js');
+import compiledProto from './resources/compiled';
 const { encode, decode, Encoder } = require('cbor-x/index-no-eval'); // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
 import js_sha256 from 'js-sha256';
 import BigNumber from 'bignumber.js';
@@ -631,7 +632,7 @@ export class Utils implements BaseUtils {
     const SendRequestMessage = compiledProto.SendRequest;
     const errMsg = SendRequestMessage.verify(args);
     if (errMsg) throw new Error(errMsg);
-    const message = SendRequestMessage.create(args);
+    const message = SendRequestMessage.create(args as any);
     return SendRequestMessage.encode(message).finish();
   }
 
