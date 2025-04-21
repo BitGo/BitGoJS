@@ -12,6 +12,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
   protected _amount: string;
   protected _stakingAddress: string;
   protected _validator: string;
+  protected _isMarinade = false;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -77,12 +78,23 @@ export class StakingActivateBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Set isMarinade flag
+   * @param {boolean} flag - true if the transaction is for Marinade, false by default if not set
+   * @returns {StakingActivateBuilder} This staking builder
+   */
+  isMarinade(flag: boolean): this {
+    this._isMarinade = flag;
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
     assert(this._stakingAddress, 'Staking Address must be set before building the transaction');
     assert(this._validator, 'Validator must be set before building the transaction');
     assert(this._amount, 'Amount must be set before building the transaction');
+    assert(this._isMarinade !== undefined, 'isMarinade must be set before building the transaction');
 
     if (this._sender === this._stakingAddress) {
       throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
@@ -95,6 +107,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
         stakingAddress: this._stakingAddress,
         amount: this._amount,
         validator: this._validator,
+        isMarinade: this._isMarinade,
       },
     };
     this._instructionsData = [stakingAccountData];

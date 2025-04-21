@@ -77,7 +77,13 @@ export interface TokenTransfer {
 
 export interface StakingActivate {
   type: InstructionBuilderTypes.StakingActivate;
-  params: { fromAddress: string; stakingAddress: string; amount: string; validator: string };
+  params: {
+    fromAddress: string;
+    stakingAddress: string;
+    amount: string;
+    validator: string;
+    isMarinade?: boolean;
+  };
 }
 
 export interface StakingDelegate {
@@ -87,7 +93,12 @@ export interface StakingDelegate {
 
 export interface StakingDeactivate {
   type: InstructionBuilderTypes.StakingDeactivate;
-  params: { fromAddress: string; stakingAddress: string; amount?: string; unstakingAddress?: string };
+  params: {
+    fromAddress: string;
+    stakingAddress: string;
+    amount?: string;
+    unstakingAddress?: string;
+  };
 }
 
 export interface StakingWithdraw {

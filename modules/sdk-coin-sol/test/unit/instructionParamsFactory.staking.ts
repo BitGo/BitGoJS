@@ -275,14 +275,9 @@ describe('Instruction Parser Staking Tests: ', function () {
       }, 'Invalid staking activate transaction, missing create stake account instruction');
 
       should.throws(() => {
-        const instructions = [stakingActivateInstructions[0], ...stakingDelegateInstructions];
+        const instructions = [stakingActivateInstructions[0]];
         instructionParamsFactory(TransactionType.StakingActivate, instructions);
-      }, 'Invalid staking activate transaction, missing initialize stake account instruction');
-
-      should.throws(() => {
-        const instructions = [...stakingActivateInstructions];
-        instructionParamsFactory(TransactionType.StakingActivate, instructions);
-      }, 'Invalid staking activate transaction, missing delegate instruction');
+      }, 'Invalid staking activate transaction, missing initialize stake account/delegate instruction');
     });
   });
 
