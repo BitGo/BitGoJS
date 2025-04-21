@@ -19,3 +19,6 @@ export const DIGITAL_ASSET_TRANSFER_FUNCTION = '0x1::object::transfer';
 export const APTOS_COIN = '0x1::aptos_coin::AptosCoin';
 export const FUNGIBLE_ASSET_TYPE_ARGUMENT = '0x1::fungible_asset::Metadata';
 export const DIGITAL_ASSET_TYPE_ARGUMENT = '0x4::token::Token';
+
+export const FUNBIGLE_ASSET_TYPE_TAG = '0x1::object::Object';
+export const BATCH_FUNGIBLE_ASSET_TYPE_TAG = '0x1::object::Object<0x1::fungible_asset::Metadata>';

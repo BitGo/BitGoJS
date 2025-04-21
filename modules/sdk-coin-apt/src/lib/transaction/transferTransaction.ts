@@ -2,9 +2,13 @@ import { Transaction } from './transaction';
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
   AccountAddress,
+  EntryFunctionABI,
   InputGenerateTransactionPayloadData,
   TransactionPayload,
   TransactionPayloadEntryFunction,
+  TypeTagAddress,
+  TypeTagU64,
+  TypeTagVector,
 } from '@aptos-labs/ts-sdk';
 
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -38,12 +42,14 @@ export class TransferTransaction extends Transaction {
           this.recipients.map((recipient) => AccountAddress.fromString(recipient.address)),
           this.recipients.map((recipient) => recipient.amount),
         ],
+        abi: this.batchCoinTransferAbi,
       };
     }
     return {
       function: COIN_TRANSFER_FUNCTION,
       typeArguments: [this.assetId],
       functionArguments: [AccountAddress.fromString(this.recipients[0].address), this.recipients[0].amount],
+      abi: this.coinTransferAbi,
     };
   }
 
@@ -55,4 +61,14 @@ export class TransferTransaction extends Transaction {
       payload.entryFunction.type_args[0].toString().length > 0
     );
   }
+
+  private coinTransferAbi: EntryFunctionABI = {
+    typeParameters: [{ constraints: [] }],
+    parameters: [new TypeTagAddress(), new TypeTagU64()],
+  };
+
+  private batchCoinTransferAbi: EntryFunctionABI = {
+    typeParameters: [{ constraints: [] }],
+    parameters: [new TypeTagVector(new TypeTagAddress()), new TypeTagVector(new TypeTagU64())],
+  };
 }
