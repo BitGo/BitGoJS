@@ -2,7 +2,7 @@
  * @prettier
  */
 import { EthLikeTokenConfig, coins } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, common } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, common, MPCAlgorithm } from '@bitgo/sdk-core';
 import { CoinNames, EthLikeToken, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
 
 import { TransactionBuilder } from './lib';
@@ -42,5 +42,14 @@ export class OpethToken extends EthLikeToken {
 
   getFullName(): string {
     return 'Opeth Token';
+  }
+
+  supportsTss(): boolean {
+    return true;
+  }
+
+  /** @inheritDoc */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 }
