@@ -38,6 +38,7 @@ import {
   Signatures,
   SigningPayload,
   IcpTransactionExplanation,
+  DEFAULT_MEMO,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
@@ -395,6 +396,7 @@ export class Icp extends BaseCoin {
     txBuilder.sender(senderAddress, publicKey as string);
     txBuilder.receiverId(params.recoveryDestination);
     txBuilder.amount(actualBalance.toString());
+    txBuilder.memo(DEFAULT_MEMO);
     if (params.memo !== undefined && utils.validateMemo(params.memo)) {
       txBuilder.memo(Number(params.memo));
     }

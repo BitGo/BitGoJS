@@ -15,12 +15,13 @@ import {
   IcpTransactionData,
   RequestType,
   Signatures,
-  IcpTransactionBuildMetadata,
+  Metadata,
   SendArgs,
   PayloadsData,
   CurveType,
   AccountIdentifierHash,
   CborUnsignedTransaction,
+  DEFAULT_MEMO,
 } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 const messageCompiled = require('../../resources/messageCompiled');
@@ -367,9 +368,7 @@ export class Utils implements BaseUtils {
     }
     this.validateFee(transactionData.fee);
     this.validateValue(new BigNumber(transactionData.amount));
-    if (transactionData.memo !== undefined) {
-      this.validateMemo(transactionData.memo);
-    }
+    this.validateMemo(transactionData.memo);
     this.validateExpireTime(transactionData.expiryTime);
   }
 
@@ -584,21 +583,19 @@ export class Utils implements BaseUtils {
   getMetaData(
     memo: number | BigInt,
     timestamp: number | bigint | undefined
-  ): { metaData: IcpTransactionBuildMetadata; ingressEndTime: number | BigInt } {
+  ): { metaData: Metadata; ingressEndTime: number | BigInt } {
     let currentTime = Date.now() * 1000000;
     if (timestamp) {
       currentTime = Number(timestamp);
     }
     const ingressStartTime = currentTime;
     const ingressEndTime = ingressStartTime + 5 * 60 * 1000000000; // 5 mins in nanoseconds
-    const metaData: IcpTransactionBuildMetadata = {
+    const metaData: Metadata = {
       created_at_time: currentTime,
       ingress_start: ingressStartTime,
       ingress_end: ingressEndTime,
+      memo: memo || DEFAULT_MEMO,
     };
-    if (memo !== undefined || !isNaN(memo)) {
-      metaData.memo = memo;
-    }
     return { metaData, ingressEndTime };
   }
 
@@ -620,10 +617,9 @@ export class Utils implements BaseUtils {
       maxFee: { e8s: Number(args.maxFee.e8s) },
       to: { hash: Buffer.from(args.to.hash) },
       createdAtTime: { timestampNanos: BigNumber(args.createdAtTime.timestampNanos.toString()).toNumber() },
+      memo: { memo: Number(args.memo?.memo?.toString()) },
     };
-    if (args.memo !== undefined && args.memo !== null) {
-      transformedArgs.memo = { memo: Number(args.memo?.memo?.toString()) };
-    }
+
     return transformedArgs;
   }
 
@@ -724,7 +720,7 @@ export class Utils implements BaseUtils {
     const operationMap = new Map([[2, transferFields]]);
     const txnFields = new Map<any, any>([
       [0, operationMap],
-      [1, this.safeBigInt(sendArgs.memo?.memo || 0)], // TODO: remove 0 value as memo will always be set, WIN-5232
+      [1, this.safeBigInt(sendArgs.memo?.memo)],
       [2, new Map([[0, BigInt(sendArgs.createdAtTime.timestampNanos)]])],
     ]);
 

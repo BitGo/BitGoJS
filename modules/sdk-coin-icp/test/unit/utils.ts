@@ -1,35 +1,35 @@
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { accounts, IcpTransactionData, blockHashes, TransactionHashes } from '../resources/icp';
+import { Accounts, IcpTransactionData, BlockHashes, TransactionHashes } from '../resources/icp';
 const { encode } = require('cbor-x/index-no-eval');
 import { randomBytes } from 'crypto';
 
 describe('utils', () => {
   describe('isValidAddress()', () => {
     it('should validate addresses correctly', () => {
-      should.equal(utils.isValidAddress(accounts.account1.address), true);
-      should.equal(utils.isValidAddress(accounts.account2.address), true);
-      should.equal(utils.isValidAddress(accounts.account3.address), true);
-      should.equal(utils.isValidAddress(accounts.account4.address), true);
-      should.equal(utils.isValidAddress(accounts.account5.address), true);
-      should.equal(utils.isValidAddress(accounts.account6.address), true);
+      should.equal(utils.isValidAddress(Accounts.account1.address), true);
+      should.equal(utils.isValidAddress(Accounts.account2.address), true);
+      should.equal(utils.isValidAddress(Accounts.account3.address), true);
+      should.equal(utils.isValidAddress(Accounts.account4.address), true);
+      should.equal(utils.isValidAddress(Accounts.account5.address), true);
+      should.equal(utils.isValidAddress(Accounts.account6.address), true);
     });
 
     it('should invalidate wrong addresses correctly', () => {
-      should.equal(utils.isValidAddress(accounts.errorsAccounts.account1.address), false);
-      should.equal(utils.isValidAddress(accounts.errorsAccounts.account2.address), false);
-      should.equal(utils.isValidAddress(accounts.errorsAccounts.account3.address), false);
-      should.equal(utils.isValidAddress(accounts.errorsAccounts.account4.address), false);
-      should.equal(utils.isValidAddress(accounts.errorsAccounts.account5.address), false);
-      should.equal(utils.isValidAddress(accounts.errorsAccounts.account6.address), false);
+      should.equal(utils.isValidAddress(Accounts.errorsAccounts.account1.address), false);
+      should.equal(utils.isValidAddress(Accounts.errorsAccounts.account2.address), false);
+      should.equal(utils.isValidAddress(Accounts.errorsAccounts.account3.address), false);
+      should.equal(utils.isValidAddress(Accounts.errorsAccounts.account4.address), false);
+      should.equal(utils.isValidAddress(Accounts.errorsAccounts.account5.address), false);
+      should.equal(utils.isValidAddress(Accounts.errorsAccounts.account6.address), false);
     });
   });
 
   describe('isValidBlockId()', () => {
     it('should validate block hashes correctly', () => {
-      should.equal(utils.isValidBlockId(blockHashes.validHashes.block1), true);
-      should.equal(utils.isValidBlockId(blockHashes.validHashes.block2), true);
-      should.equal(utils.isValidBlockId(blockHashes.validHashes.block3), true);
+      should.equal(utils.isValidBlockId(BlockHashes.validHashes.block1), true);
+      should.equal(utils.isValidBlockId(BlockHashes.validHashes.block2), true);
+      should.equal(utils.isValidBlockId(BlockHashes.validHashes.block3), true);
     });
   });
 
@@ -49,21 +49,21 @@ describe('utils', () => {
 
   describe('isValidPublicKey()', () => {
     it('should validate public key correctly', () => {
-      should.equal(utils.isValidPublicKey(accounts.account1.publicKey), true);
-      should.equal(utils.isValidPublicKey(accounts.account2.publicKey), true);
-      should.equal(utils.isValidPublicKey(accounts.account3.publicKey), true);
-      should.equal(utils.isValidPublicKey(accounts.account4.publicKey), true);
-      should.equal(utils.isValidPublicKey(accounts.account5.publicKey), true);
-      should.equal(utils.isValidPublicKey(accounts.account6.publicKey), true);
+      should.equal(utils.isValidPublicKey(Accounts.account1.publicKey), true);
+      should.equal(utils.isValidPublicKey(Accounts.account2.publicKey), true);
+      should.equal(utils.isValidPublicKey(Accounts.account3.publicKey), true);
+      should.equal(utils.isValidPublicKey(Accounts.account4.publicKey), true);
+      should.equal(utils.isValidPublicKey(Accounts.account5.publicKey), true);
+      should.equal(utils.isValidPublicKey(Accounts.account6.publicKey), true);
     });
 
     it('should invalidate public key correctly', () => {
-      should.equal(utils.isValidPublicKey(accounts.errorsAccounts.account1.publicKey), false);
-      should.equal(utils.isValidPublicKey(accounts.errorsAccounts.account2.publicKey), false);
-      should.equal(utils.isValidPublicKey(accounts.errorsAccounts.account3.publicKey), false);
-      should.equal(utils.isValidPublicKey(accounts.errorsAccounts.account4.publicKey), false);
-      should.equal(utils.isValidPublicKey(accounts.errorsAccounts.account5.publicKey), false);
-      should.equal(utils.isValidPublicKey(accounts.errorsAccounts.account6.publicKey), false);
+      should.equal(utils.isValidPublicKey(Accounts.errorsAccounts.account1.publicKey), false);
+      should.equal(utils.isValidPublicKey(Accounts.errorsAccounts.account2.publicKey), false);
+      should.equal(utils.isValidPublicKey(Accounts.errorsAccounts.account3.publicKey), false);
+      should.equal(utils.isValidPublicKey(Accounts.errorsAccounts.account4.publicKey), false);
+      should.equal(utils.isValidPublicKey(Accounts.errorsAccounts.account5.publicKey), false);
+      should.equal(utils.isValidPublicKey(Accounts.errorsAccounts.account6.publicKey), false);
     });
   });
 
@@ -113,42 +113,42 @@ describe('utils', () => {
 
   describe('isValidPrivateKey()', () => {
     it('should validate private key correctly', () => {
-      should.equal(utils.isValidPrivateKey(accounts.account1.secretKey), true);
-      should.equal(utils.isValidPrivateKey(accounts.account2.secretKey), true);
-      should.equal(utils.isValidPrivateKey(accounts.account3.secretKey), true);
-      should.equal(utils.isValidPrivateKey(accounts.account4.secretKey), true);
-      should.equal(utils.isValidPrivateKey(accounts.account5.secretKey), true);
-      should.equal(utils.isValidPrivateKey(accounts.account6.secretKey), true);
+      should.equal(utils.isValidPrivateKey(Accounts.account1.secretKey), true);
+      should.equal(utils.isValidPrivateKey(Accounts.account2.secretKey), true);
+      should.equal(utils.isValidPrivateKey(Accounts.account3.secretKey), true);
+      should.equal(utils.isValidPrivateKey(Accounts.account4.secretKey), true);
+      should.equal(utils.isValidPrivateKey(Accounts.account5.secretKey), true);
+      should.equal(utils.isValidPrivateKey(Accounts.account6.secretKey), true);
     });
 
     it('should invalidate private key correctly', () => {
-      should.equal(utils.isValidPrivateKey(accounts.errorsAccounts.account1.secretKey), false);
-      should.equal(utils.isValidPrivateKey(accounts.errorsAccounts.account2.secretKey), false);
-      should.equal(utils.isValidPrivateKey(accounts.errorsAccounts.account3.secretKey), false);
-      should.equal(utils.isValidPrivateKey(accounts.errorsAccounts.account4.secretKey), false);
-      should.equal(utils.isValidPrivateKey(accounts.errorsAccounts.account5.secretKey), false);
-      should.equal(utils.isValidPrivateKey(accounts.errorsAccounts.account6.secretKey), false);
+      should.equal(utils.isValidPrivateKey(Accounts.errorsAccounts.account1.secretKey), false);
+      should.equal(utils.isValidPrivateKey(Accounts.errorsAccounts.account2.secretKey), false);
+      should.equal(utils.isValidPrivateKey(Accounts.errorsAccounts.account3.secretKey), false);
+      should.equal(utils.isValidPrivateKey(Accounts.errorsAccounts.account4.secretKey), false);
+      should.equal(utils.isValidPrivateKey(Accounts.errorsAccounts.account5.secretKey), false);
+      should.equal(utils.isValidPrivateKey(Accounts.errorsAccounts.account6.secretKey), false);
     });
   });
 
   describe('getAddressFromPublicKey()', () => {
     it('should return the correct address for a valid public key', async () => {
-      const address1 = await utils.getAddressFromPublicKey(accounts.account1.publicKey);
-      should.equal(address1, accounts.account1.address);
-      const address2 = await utils.getAddressFromPublicKey(accounts.account1.publicKey);
-      should.equal(address2, accounts.account1.address);
-      const address3 = await utils.getAddressFromPublicKey(accounts.account1.publicKey);
-      should.equal(address3, accounts.account1.address);
-      const address4 = await utils.getAddressFromPublicKey(accounts.account1.publicKey);
-      should.equal(address4, accounts.account1.address);
-      const address5 = await utils.getAddressFromPublicKey(accounts.account1.publicKey);
-      should.equal(address5, accounts.account1.address);
-      const address6 = await utils.getAddressFromPublicKey(accounts.account1.publicKey);
-      should.equal(address6, accounts.account1.address);
+      const address1 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      should.equal(address1, Accounts.account1.address);
+      const address2 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      should.equal(address2, Accounts.account1.address);
+      const address3 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      should.equal(address3, Accounts.account1.address);
+      const address4 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      should.equal(address4, Accounts.account1.address);
+      const address5 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      should.equal(address5, Accounts.account1.address);
+      const address6 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      should.equal(address6, Accounts.account1.address);
     });
 
     it('should throw an error for an invalid public key', async () => {
-      await should(utils.getAddressFromPublicKey(accounts.errorsAccounts.account1.publicKey)).be.rejectedWith(
+      await should(utils.getAddressFromPublicKey(Accounts.errorsAccounts.account1.publicKey)).be.rejectedWith(
         'Invalid hex-encoded public key format.'
       );
     });

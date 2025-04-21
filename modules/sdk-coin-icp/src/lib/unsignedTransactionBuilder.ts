@@ -25,12 +25,12 @@ export class UnsignedTransactionBuilder {
       Number(this._icpTransactionPayload.metadata.ingress_end) -
       Number(this._icpTransactionPayload.metadata.ingress_start); // 300s in nanoseconds
     const ingressExpiries = this.getIngressExpiries(
-      this._icpTransactionPayload.metadata.ingress_start,
-      this._icpTransactionPayload.metadata.ingress_end,
+      this._icpTransactionPayload.metadata.ingress_start!,
+      this._icpTransactionPayload.metadata.ingress_end!,
       interval
     );
     const sendArgs = this.getSendArgs(
-      this._icpTransactionPayload.metadata.memo!,
+      this._icpTransactionPayload.metadata.memo,
       this._icpTransactionPayload.metadata.created_at_time,
       this._icpTransactionPayload.operations[1].amount.value,
       this._icpTransactionPayload.operations[2].amount.value,
@@ -89,22 +89,14 @@ export class UnsignedTransactionBuilder {
     return ingressExpiries;
   }
 
-  getSendArgs(
-    memo: number | BigInt | undefined,
-    created_at_time: number,
-    amount: string,
-    fee: string,
-    receiver: string
-  ): SendArgs {
+  getSendArgs(memo: number | BigInt, created_at_time: number, amount: string, fee: string, receiver: string): SendArgs {
     const sendArgs: SendArgs = {
       payment: { receiverGets: { e8s: Number(amount) } },
+      memo: { memo: memo },
       maxFee: { e8s: -Number(fee) },
       to: { hash: Buffer.from(receiver, 'hex') },
       createdAtTime: { timestampNanos: Number(created_at_time) },
     };
-    if (memo !== undefined) {
-      sendArgs.memo = { memo: memo };
-    }
     return sendArgs;
   }
 
