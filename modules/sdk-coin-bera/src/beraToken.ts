@@ -2,7 +2,7 @@
  * @prettier
  */
 import { coins, EthLikeTokenConfig } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, common, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, common, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { CoinNames, EthLikeToken, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
 
 import { TransactionBuilder } from './lib';
@@ -28,6 +28,16 @@ export class BeraToken extends EthLikeToken {
 
   protected getTransactionBuilder(): TransactionBuilder {
     return new TransactionBuilder(coins.get(this.getBaseChain()));
+  }
+
+  /** @inheritDoc **/
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
+  }
+
+  /** @inheritDoc */
+  supportsTss(): boolean {
+    return true;
   }
 
   /**
