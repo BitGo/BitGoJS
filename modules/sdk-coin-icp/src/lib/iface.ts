@@ -194,3 +194,7 @@ export interface RecoveryOptions {
 export interface PublicNodeSubmitResponse {
   status: string;
 }
+
+export interface AccountIdentifierHash {
+  hash: Buffer<ArrayBuffer>;
+}
