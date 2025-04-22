@@ -17,6 +17,7 @@ export class TransferBuilder {
   protected _signKey: string | null;
   protected _expirationTime: number;
   protected _signature: string;
+  protected _isFirstSigner: boolean | undefined;
   private _data: string;
   private _tokenContractAddress?: string;
   private _coin: Readonly<BaseCoin>;
@@ -24,7 +25,8 @@ export class TransferBuilder {
   private _coinUsesNonPackedEncodingForTxData?: boolean;
   private _walletVersion?: number;
 
-  constructor(serializedData?: string) {
+  constructor(serializedData?: string, isFirstSigner?: boolean) {
+    this._isFirstSigner = isFirstSigner;
     if (serializedData) {
       this.decodeTransferData(serializedData);
     } else {
@@ -49,6 +51,10 @@ export class TransferBuilder {
     }
 
     return this;
+  }
+
+  getIsFirstSigner(): boolean {
+    return this._isFirstSigner ? this._isFirstSigner : false;
   }
 
   walletVersion(version: number): TransferBuilder {
@@ -103,6 +109,11 @@ export class TransferBuilder {
     throw new InvalidParameterValueError('Invalid expiration time');
   }
 
+  isFirstSigner(isFirstSigner: boolean): TransferBuilder {
+    this._isFirstSigner = isFirstSigner;
+    return this;
+  }
+
   tokenContractAddress(tokenContractAddress: string): TransferBuilder {
     this._tokenContractAddress = tokenContractAddress;
     return this;
@@ -127,24 +138,29 @@ export class TransferBuilder {
     this._coinUsesNonPackedEncodingForTxData =
       coinUsesNonPackedEncodingForTxData && this._tokenContractAddress === undefined;
     if (this.hasMandatoryFields()) {
-      if (this._tokenContractAddress !== undefined) {
-        return sendMultiSigTokenData(
-          this._toAddress,
-          this._amount,
-          this._tokenContractAddress,
-          this._expirationTime,
-          this._sequenceId,
-          this.getSignature()
-        );
+      if (this._isFirstSigner) {
+        // First signer signs different data than the second signer in multisig evm contracts.
+        return ethUtil.addHexPrefix(this.getSignatureData().toString('hex'));
       } else {
-        return sendMultiSigData(
-          this._toAddress,
-          this._amount,
-          this._data,
-          this._expirationTime,
-          this._sequenceId,
-          this.getSignature()
-        );
+        if (this._tokenContractAddress !== undefined) {
+          return sendMultiSigTokenData(
+            this._toAddress,
+            this._amount,
+            this._tokenContractAddress,
+            this._expirationTime,
+            this._sequenceId,
+            this.getSignature()
+          );
+        } else {
+          return sendMultiSigData(
+            this._toAddress,
+            this._amount,
+            this._data,
+            this._expirationTime,
+            this._sequenceId,
+            this.getSignature()
+          );
+        }
       }
     }
     throw new BuildTransactionError(
@@ -282,7 +298,7 @@ export class TransferBuilder {
   }
 
   private decodeTransferData(data: string): void {
-    const transferData = decodeTransferData(data);
+    const transferData = decodeTransferData(data, this._isFirstSigner);
 
     this._toAddress = transferData.to;
     this._amount = transferData.amount;

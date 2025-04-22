@@ -71,6 +71,8 @@ import {
   v4CreateForwarderMethodId,
   flushTokensTypesv4,
   flushForwarderTokensMethodIdV4,
+  sendMultiSigTokenTypesFirstSigner,
+  sendMultiSigTypesFirstSigner,
 } from './walletUtil';
 import { EthTransactionData } from './types';
 
@@ -292,11 +294,11 @@ export function decodeWalletCreationData(data: string): WalletInitializationData
  * @param data The data to decode
  * @returns parsed transfer data
  */
-export function decodeTransferData(data: string): TransferData {
+export function decodeTransferData(data: string, isFirstSigner?: boolean): TransferData {
   if (data.startsWith(sendMultisigMethodId)) {
-    return decodeNativeTransferData(data);
+    return decodeNativeTransferData(data, isFirstSigner);
   } else if (data.startsWith(sendMultisigTokenMethodId)) {
-    return decodeTokenTransferData(data);
+    return decodeTokenTransferData(data, isFirstSigner);
   } else {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
@@ -306,19 +308,34 @@ export function decodeTransferData(data: string): TransferData {
  * Decode the given ABI-encoded transfer data for the sendMultisigToken function and return parsed fields
  *
  * @param data The data to decode
+ * @param isFirstSigner whether transaction is being built for a first signer
  * @returns parsed token transfer data
  */
-export function decodeTokenTransferData(data: string): TokenTransferData {
+export function decodeTokenTransferData(data: string, isFirstSigner?: boolean): TokenTransferData {
   if (!data.startsWith(sendMultisigTokenMethodId)) {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
-
-  const [to, amount, tokenContractAddress, expireTime, sequenceId, signature] = getRawDecoded(
-    sendMultiSigTokenTypes,
-    getBufferedByteCode(sendMultisigTokenMethodId, data)
-  );
+  let to: RecursiveBufferOrString | undefined;
+  let amount: RecursiveBufferOrString | undefined;
+  let tokenContractAddress: RecursiveBufferOrString | undefined;
+  let expireTime: RecursiveBufferOrString | undefined;
+  let sequenceId: RecursiveBufferOrString | undefined;
+  let signature: RecursiveBufferOrString | undefined;
+  let prefix: RecursiveBufferOrString | undefined;
+  if (!isFirstSigner) {
+    [to, amount, tokenContractAddress, expireTime, sequenceId, signature] = getRawDecoded(
+      sendMultiSigTokenTypes,
+      getBufferedByteCode(sendMultisigTokenMethodId, data)
+    );
+  } else {
+    [prefix, to, amount, tokenContractAddress, expireTime, sequenceId] = getRawDecoded(
+      sendMultiSigTokenTypesFirstSigner,
+      getBufferedByteCode(sendMultisigTokenMethodId, data)
+    );
+  }
 
   return {
+    operationHashPrefix: isFirstSigner ? (prefix as string) : undefined,
     to: addHexPrefix(to as string),
     amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
     expireTime: bufferToInt(expireTime as Buffer),
@@ -417,19 +434,35 @@ export function decodeERC1155TransferData(data: string): ERC1155TransferData {
  * Decode the given ABI-encoded transfer data for the sendMultisig function and return parsed fields
  *
  * @param data The data to decode
+ * @param isFirstSigner whether transaction is being built for a first signer
  * @returns parsed transfer data
  */
-export function decodeNativeTransferData(data: string): NativeTransferData {
+export function decodeNativeTransferData(data: string, isFirstSigner?: boolean): NativeTransferData {
   if (!data.startsWith(sendMultisigMethodId)) {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
 
-  const [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
-    sendMultiSigTypes,
-    getBufferedByteCode(sendMultisigMethodId, data)
-  );
+  let to: RecursiveBufferOrString | undefined;
+  let amount: RecursiveBufferOrString | undefined;
+  let internalData: RecursiveBufferOrString | undefined;
+  let expireTime: RecursiveBufferOrString | undefined;
+  let sequenceId: RecursiveBufferOrString | undefined;
+  let signature: RecursiveBufferOrString | undefined;
+  let prefix: RecursiveBufferOrString | undefined;
+  if (!isFirstSigner) {
+    [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
+      sendMultiSigTypes,
+      getBufferedByteCode(sendMultisigMethodId, data)
+    );
+  } else {
+    [prefix, to, amount, internalData, expireTime, sequenceId] = getRawDecoded(
+      sendMultiSigTypesFirstSigner,
+      getBufferedByteCode(sendMultisigMethodId, data)
+    );
+  }
 
   return {
+    operationHashPrefix: isFirstSigner ? (prefix as string) : undefined,
     to: addHexPrefix(to as string),
     amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
     expireTime: bufferToInt(expireTime as Buffer),

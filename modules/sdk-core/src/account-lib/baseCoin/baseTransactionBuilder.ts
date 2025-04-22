@@ -25,9 +25,9 @@ export abstract class BaseTransactionBuilder {
    *
    * @param rawTransaction A raw transaction to be parsed
    */
-  from(rawTransaction: any): void {
+  from(rawTransaction: any, isFirstSigner?: boolean): void {
     this.validateRawTransaction(rawTransaction);
-    this.transaction = this.fromImplementation(rawTransaction);
+    this.transaction = this.fromImplementation(rawTransaction, isFirstSigner);
   }
 
   /**
@@ -36,7 +36,7 @@ export abstract class BaseTransactionBuilder {
    * @see {@link from}
    * @returns the parsed coin specific transaction object
    */
-  protected abstract fromImplementation(rawTransaction: any): BaseTransaction;
+  protected abstract fromImplementation(rawTransaction: any, isFirstSigner?: boolean): BaseTransaction;
 
   /**
    * Validate keys and sign the transaction.

@@ -29,7 +29,7 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
    * @param [data] transfer data to initialize the transfer builder with, empty if none given
    * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder} the transfer builder
    */
-  transfer(data?: string): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder {
+  transfer(data?: string, isFirstSigner?: boolean): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder {
     if (
       !(
         this._type === TransactionType.Send ||
@@ -40,7 +40,7 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     } else if (!this._transfer) {
       if (this._type === TransactionType.Send) {
-        this._transfer = new TransferBuilder(data);
+        this._transfer = new TransferBuilder(data, isFirstSigner);
       } else if (this._type === TransactionType.SendERC721) {
         this._transfer = new ERC721TransferBuilder(data);
       } else if (this._type === TransactionType.SendERC1155) {
