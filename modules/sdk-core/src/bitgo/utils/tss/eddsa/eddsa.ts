@@ -37,6 +37,7 @@ import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import { IRequestTracer } from '../../../../api';
+import { Wallet } from '../../../wallet';
 
 /**
  * Utility functions for TSS work flows.
@@ -586,7 +587,12 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
     const unsignedTx =
       apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
-
+    await this.baseCoin.verifyTransaction({
+      txPrebuild: { txHex: unsignedTx.signableHex },
+      wallet: this.wallet as unknown as Wallet,
+      txParams: (params as any).txParams || { recipients: [] },
+      walletType: this.wallet.multisigType(),
+    });
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
