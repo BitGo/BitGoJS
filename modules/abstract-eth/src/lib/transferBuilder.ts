@@ -127,24 +127,29 @@ export class TransferBuilder {
     this._coinUsesNonPackedEncodingForTxData =
       coinUsesNonPackedEncodingForTxData && this._tokenContractAddress === undefined;
     if (this.hasMandatoryFields()) {
-      if (this._tokenContractAddress !== undefined) {
-        return sendMultiSigTokenData(
-          this._toAddress,
-          this._amount,
-          this._tokenContractAddress,
-          this._expirationTime,
-          this._sequenceId,
-          this.getSignature()
-        );
+      if (this.getSignature() === this._EMPTY_HEX_VALUE) {
+        // If no signer was set or no signature was provided, this means this is a transaction built for a first signer.
+        return ethUtil.addHexPrefix(this.getSignatureData().toString('hex'));
       } else {
-        return sendMultiSigData(
-          this._toAddress,
-          this._amount,
-          this._data,
-          this._expirationTime,
-          this._sequenceId,
-          this.getSignature()
-        );
+        if (this._tokenContractAddress !== undefined) {
+          return sendMultiSigTokenData(
+            this._toAddress,
+            this._amount,
+            this._tokenContractAddress,
+            this._expirationTime,
+            this._sequenceId,
+            this.getSignature()
+          );
+        } else {
+          return sendMultiSigData(
+            this._toAddress,
+            this._amount,
+            this._data,
+            this._expirationTime,
+            this._sequenceId,
+            this.getSignature()
+          );
+        }
       }
     }
     throw new BuildTransactionError(
