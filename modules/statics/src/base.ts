@@ -351,6 +351,11 @@ export enum CoinFeature {
    * This coin is gated for TSS Support
    */
   TSS_SUPPORT_GATED = 'tss-support-gated',
+
+  /**
+   * This coins is an EVM compatible coin and should use common EVM functionality
+   */
+  SHARED_EVM_SIGNING = 'shared-evm-signing',
 }
 
 /**
