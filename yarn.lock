@@ -882,6 +882,17 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
+"@bitgo/public-types@4.26.0":
+  version "4.26.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-4.26.0.tgz#93912722a2ef5c684d8c8257e3e90947c5f338ff"
+  integrity sha512-wkHVbe5YKPx6uSF4cjwolY3LIlDSwe1V9aMRHGlklxxp0/32NpkfmpE1eshb1+A5cdUVTu+8Tuexbufcrzg1rQ==
+  dependencies:
+    fp-ts "^2.0.0"
+    io-ts "npm:@bitgo-forks/io-ts@2.1.4"
+    io-ts-types "^0.5.16"
+    monocle-ts "^2.3.13"
+    newtype-ts "^0.3.5"
+
 "@bitgo/wasm-miniscript@2.0.0-beta.7":
   version "2.0.0-beta.7"
   resolved "https://registry.npmjs.org/@bitgo/wasm-miniscript/-/wasm-miniscript-2.0.0-beta.7.tgz#53eb0e87295ad5f2df0933c3b3b519e90bb4d2f1"
@@ -14083,6 +14094,11 @@ long@^5.0.0:
   version "5.3.1"
   resolved "https://registry.npmjs.org/long/-/long-5.3.1.tgz#9d4222d3213f38a5ec809674834e0f0ab21abe96"
   integrity sha512-ka87Jz3gcx/I7Hal94xaN2tZEOPoUOEVftkQqZx2EeQRN7LGdfLlI3FvZ+7WDplm+vK2Urx9ULrvSowtdCieng==
+
+long@^5.3.2:
+  version "5.3.2"
+  resolved "https://registry.npmjs.org/long/-/long-5.3.2.tgz#1d84463095999262d7d7b7f8bfd4a8cc55167f83"
+  integrity sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==
 
 long@~3:
   version "3.2.0"

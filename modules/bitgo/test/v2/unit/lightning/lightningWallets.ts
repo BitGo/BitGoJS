@@ -15,6 +15,7 @@ import {
   getLightningKeychain,
   getLightningAuthKeychains,
   updateWalletCoinSpecific,
+  LightningOnchainWithdrawParams,
 } from '@bitgo/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
@@ -649,6 +650,98 @@ describe('Lightning wallets', function () {
 
       // we should not pass passphrase to the backend
       assert.strictEqual(signedRequest.passphrase, undefined, 'passphrase should not exist in request');
+    });
+  });
+  describe('On chain withdrawal', function () {
+    let wallet: LightningWallet;
+    beforeEach(function () {
+      wallet = getLightningWallet(
+        new Wallet(bitgo, basecoin, {
+          id: 'walletId',
+          coin: 'tlnbtc',
+          subType: 'lightningCustody',
+          coinSpecific: { keys: ['def', 'ghi'] },
+        })
+      ) as LightningWallet;
+    });
+    it('should withdraw on chain', async function () {
+      const params: LightningOnchainWithdrawParams = {
+        recipients: [
+          {
+            amountSat: 500000n,
+            address: 'bcrt1qjq48cqk2u80hewdcndf539m8nnnvt845nl68x7',
+          },
+        ],
+        satsPerVbyte: 15n,
+      };
+
+      const txRequestResponse = {
+        txRequestId: 'txReq123',
+        state: 'pendingDelivery',
+      };
+
+      const finalPaymentResponse = {
+        txRequestId: 'txReq123',
+        state: 'delivered',
+      };
+
+      const createTxRequestNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
+        .reply(200, txRequestResponse);
+
+      const sendTxRequestNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transactions/0/send`)
+        .reply(200, finalPaymentResponse);
+
+      const response = await wallet.withdrawOnchain(params);
+      assert.strictEqual(response.txRequestId, 'txReq123');
+      assert.strictEqual(response.txRequestState, 'delivered');
+
+      createTxRequestNock.done();
+      sendTxRequestNock.done();
+    });
+
+    it('should handle pending approval when withdrawing onchain', async function () {
+      const params: LightningOnchainWithdrawParams = {
+        recipients: [
+          {
+            amountSat: 500000n,
+            address: 'bcrt1qjq48cqk2u80hewdcndf539m8nnnvt845nl68x7',
+          },
+        ],
+        satsPerVbyte: 15n,
+      };
+
+      const txRequestResponse = {
+        txRequestId: 'txReq123',
+        state: 'pendingApproval',
+        pendingApprovalId: 'approval123',
+      };
+
+      const pendingApprovalData: PendingApprovalData = {
+        id: 'approval123',
+        state: State.PENDING,
+        creator: 'user123',
+        info: {
+          type: Type.TRANSACTION_REQUEST,
+        },
+      };
+
+      const createTxRequestNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
+        .reply(200, txRequestResponse);
+
+      const getPendingApprovalNock = nock(bgUrl)
+        .get(`/api/v2/${coinName}/pendingapprovals/${txRequestResponse.pendingApprovalId}`)
+        .reply(200, pendingApprovalData);
+
+      const response = await wallet.withdrawOnchain(params);
+      assert.strictEqual(response.txRequestId, 'txReq123');
+      assert.strictEqual(response.txRequestState, 'pendingApproval');
+      assert(response.pendingApproval);
+
+      createTxRequestNock.done();
+      getPendingApprovalNock.done();
     });
   });
 });
