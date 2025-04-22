@@ -82,6 +82,13 @@ export const stakingActivateInstructionsIndexes = {
   Memo: 3,
 } as const;
 
+/** Const to check the order of the Marinade Staking Activate instructions when decode */
+export const marinadeStakingActivateInstructionsIndexes = {
+  Create: 0,
+  Initialize: 1,
+  Memo: 2,
+} as const;
+
 /** Const to check the order of the Staking Authorize instructions when decode */
 export const stakingAuthorizeInstructionsIndexes = {
   Authorize: 0,
@@ -95,6 +102,12 @@ export const stakingDelegateInstructionsIndexes = {
 /** Const to check the order of the Staking Deactivate instructions when decode */
 export const stakingDeactivateInstructionsIndexes = {
   Deactivate: 0,
+  Memo: 1,
+} as const;
+
+/** Const to check the order of the Marinade Staking Deactivate instructions when decode */
+export const marinadeStakingDeactivateInstructionsIndexes = {
+  Transfer: 0,
   Memo: 1,
 } as const;
 

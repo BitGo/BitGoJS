@@ -35,8 +35,10 @@ import {
   MEMO_PROGRAM_PK,
   nonceAdvanceInstruction,
   stakingActivateInstructionsIndexes,
+  marinadeStakingActivateInstructionsIndexes,
   stakingAuthorizeInstructionsIndexes,
   stakingDeactivateInstructionsIndexes,
+  marinadeStakingDeactivateInstructionsIndexes,
   stakingDelegateInstructionsIndexes,
   stakingPartialDeactivateInstructionsIndexes,
   stakingWithdrawInstructionsIndexes,
@@ -287,13 +289,17 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   }
   if (matchTransactionTypeByInstructionsOrder(instructions, walletInitInstructionIndexes)) {
     return TransactionType.WalletInitialization;
-  } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)) {
+  } else if (
+    matchTransactionTypeByInstructionsOrder(instructions, marinadeStakingActivateInstructionsIndexes) ||
+    matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)
+  ) {
     return TransactionType.StakingActivate;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingAuthorizeInstructionsIndexes)) {
     return TransactionType.StakingAuthorize;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingDelegateInstructionsIndexes)) {
     return TransactionType.StakingDelegate;
   } else if (
+    matchTransactionTypeByInstructionsOrder(instructions, marinadeStakingDeactivateInstructionsIndexes) ||
     matchTransactionTypeByInstructionsOrder(instructions, stakingDeactivateInstructionsIndexes) ||
     matchTransactionTypeByInstructionsOrder(instructions, stakingPartialDeactivateInstructionsIndexes)
   ) {

@@ -223,14 +223,7 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
   });
   tx.add(walletInitStaking);
 
-  if (isMarinade) {
-    const initializeStaking = StakeProgram.initialize({
-      stakePubkey,
-      authorized: new Authorized(stakerPubkey, fromPubkey), // staker and withdrawer
-      lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
-    });
-    tx.add(initializeStaking);
-  } else {
+  if (!isMarinade) {
     const delegateStaking = StakeProgram.delegate({
       stakePubkey: new PublicKey(stakingAddress),
       authorizedPubkey: new PublicKey(fromAddress),

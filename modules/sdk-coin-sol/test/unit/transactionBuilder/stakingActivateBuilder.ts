@@ -2,7 +2,8 @@ import should from 'should';
 
 import * as testData from '../../resources/sol';
 import { getBuilderFactory } from '../getBuilderFactory';
-import { KeyPair, Utils } from '../../../src';
+import { KeyPair, Utils, Transaction } from '../../../src';
+import { coins } from '@bitgo/statics';
 
 describe('Sol Staking Activate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -48,6 +49,10 @@ describe('Sol Staking Activate Builder', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.STAKING_ACTIVATE_SIGNED_TX);
+      factory.from(testData.STAKING_ACTIVATE_SIGNED_TX);
+      const coin = coins.get('tsol');
+      const tx2 = new Transaction(coin);
+      tx2.fromRawTransaction(rawTx);
     });
 
     it('Marinade: build a create staking signed tx', async () => {
@@ -84,6 +89,10 @@ describe('Sol Staking Activate Builder', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX);
+      factory.from(testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX);
+      const coin = coins.get('tsol');
+      const tx2 = new Transaction(coin);
+      tx2.fromRawTransaction(rawTx);
     });
 
     it('build a create and delegate staking signed tx with memo', async () => {
