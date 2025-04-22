@@ -254,6 +254,32 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Sets this transaction payload
+   *
+   * @param rawTx - The raw transaction in hex format
+   */
+  async fromRawTransaction(rawTransaction: string): Promise<void> {
+    try {
+      // Decode the raw transaction using Casper's DeployUtil
+      const deploy = DeployUtil.deployFromJson(JSON.parse(Buffer.from(rawTransaction, 'hex').toString()));
+
+      if (!deploy) {
+        throw new Error('Failed to decode raw transaction');
+      }
+
+      // Extract and set transaction details
+      if (deploy.ok) {
+        this._deploy = deploy.val;
+      } else {
+        throw new Error('Failed to decode raw transaction: ' + (deploy.err as any)?.message || 'Unknown error');
+      }
+      this._signatures = []; // Reset signatures as this is a raw transaction
+    } catch (e) {
+      throw new Error('Invalid raw transaction: ' + e.message);
+    }
+  }
+
   get casperTx(): DeployUtil.Deploy {
     return this._deploy;
   }
