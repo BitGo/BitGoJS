@@ -78,6 +78,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.MANTRA &&
         n.asset !== UnderlyingAsset.MON &&
         n.asset !== UnderlyingAsset.WORLD &&
+        n.asset !== UnderlyingAsset.STT &&
         coinFamilyValues.includes(n.name)
     );
 

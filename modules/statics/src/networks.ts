@@ -1257,6 +1257,23 @@ class WorldTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '4801';
 }
 
+class Somnia extends Mainnet implements EthereumNetwork {
+  name = 'Somnia';
+  family = CoinFamily.STT;
+  explorerUrl = 'https://shannon-explorer.somnia.network/tx/'; //TODO: WIN-5278: change it with mainnet explorer, when its available
+  chainId = 50311; //TODO: WIN-5278: change it with mainnet explorer, when its available
+  nativeCoinOperationHashPrefix = '50312'; //TODO: WIN-5278: change it with mainnet explorer, when its available
+}
+
+class SomniaTestnet extends Testnet implements EthereumNetwork {
+  name = 'SomniaTestnet';
+  family = CoinFamily.STT;
+  explorerUrl = 'https://shannon-explorer.somnia.network/tx/';
+  accountExplorerUrl = 'https://shannon-explorer.somnia.network/address/';
+  chainId = 50312;
+  nativeCoinOperationHashPrefix = '50312';
+}
+
 class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
@@ -1399,6 +1416,7 @@ export const Networks = {
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
+    stt: Object.freeze(new Somnia()),
     susd: Object.freeze(new SUSD()),
     tao: Object.freeze(new Bittensor()),
     tia: Object.freeze(new Tia()),
@@ -1473,6 +1491,7 @@ export const Networks = {
     sui: Object.freeze(new SuiTestnet()),
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
+    stt: Object.freeze(new SomniaTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     coreum: Object.freeze(new CoreumTestnet()),
     tao: Object.freeze(new BittensorTestnet()),
