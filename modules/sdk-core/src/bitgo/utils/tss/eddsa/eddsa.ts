@@ -26,6 +26,7 @@ import {
   CustomRShareGeneratingFunction,
   EncryptedSignerShareRecord,
   EncryptedSignerShareType,
+  PopulatedIntent,
   SignatureShareRecord,
   SignatureShareType,
   TSSParamsWithPrv,
@@ -37,6 +38,7 @@ import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import { IRequestTracer } from '../../../../api';
+import { Wallet } from '../../../wallet';
 
 /**
  * Utility functions for TSS work flows.
@@ -574,6 +576,31 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       txRequestId = txRequest.txRequestId;
     }
 
+    // Verify the transaction before signing
+    const isVerified = await this.baseCoin.verifyTransaction({
+      txParams: {
+        recipients: (txRequestResolved.intent as PopulatedIntent)?.recipients?.map((r) => ({
+          address: r.address.address,
+          amount: r.amount.value.toString(),
+        })),
+      },
+      txPrebuild: {
+        txHex:
+          txRequestResolved.apiVersion === 'full'
+            ? txRequestResolved.transactions?.[0]?.unsignedTx?.signableHex
+            : txRequestResolved.unsignedTxs[0]?.signableHex,
+        txInfo:
+          txRequestResolved.apiVersion === 'full'
+            ? txRequestResolved.transactions?.[0]?.unsignedTx
+            : txRequestResolved.unsignedTxs[0],
+      },
+      wallet: this.wallet,
+    });
+
+    if (!isVerified) {
+      throw new Error('Transaction verification failed');
+    }
+
     const hdTree = await Ed25519Bip32HdTree.initialize();
     const MPC = await Eddsa.initialize(hdTree);
 
@@ -586,7 +613,12 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
     const unsignedTx =
       apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
-
+    await this.baseCoin.verifyTransaction({
+      txPrebuild: { txHex: unsignedTx.signableHex },
+      wallet: this.wallet as unknown as Wallet,
+      txParams: (params as any).txParams || { recipients: [] },
+      walletType: this.wallet.multisigType(),
+    });
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],

@@ -116,12 +116,45 @@ export class Xtz extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams } = params;
-    if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
+    const { txPrebuild, txParams } = params;
+
+    // Verify single recipient constraint
+    if (Array.isArray(txParams?.recipients) && txParams.recipients.length > 1) {
       throw new Error(
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
       );
     }
+
+    // Get raw transaction from either txHex or txRequest
+    const rawTx =
+      txPrebuild.txHex ||
+      (txPrebuild.txRequest?.apiVersion === 'full'
+        ? txPrebuild.txRequest.transactions?.[0]?.unsignedTx?.signableHex
+        : txPrebuild.txRequest?.unsignedTxs?.[0]?.signableHex);
+
+    if (!rawTx) {
+      throw new Error('missing required transaction hex');
+    }
+
+    // Verify recipient and amount if provided
+    if (txParams?.recipients?.[0]) {
+      const recipient = txParams.recipients[0];
+      const txBuilder = new TransactionBuilder(coins.get(this.getChain()));
+      txBuilder.from(rawTx);
+      const transaction = await txBuilder.build();
+      const explainedTx = transaction.explainTransaction();
+
+      // Verify recipient address matches
+      if (recipient.address !== explainedTx.to) {
+        throw new Error('transaction recipient address does not match expected address');
+      }
+
+      // Verify amount matches
+      if (!new BigNumber(recipient.amount).isEqualTo(explainedTx.amount)) {
+        throw new Error('transaction amount does not match expected amount');
+      }
+    }
+
     return true;
   }
 

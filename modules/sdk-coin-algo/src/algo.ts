@@ -579,6 +579,45 @@ export class Algo extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const { txPrebuild, txParams } = params;
+
+    // Get raw transaction from either txHex or txRequest
+    const rawTx =
+      txPrebuild.txHex ||
+      (txPrebuild.txRequest?.apiVersion === 'full'
+        ? txPrebuild.txRequest.transactions?.[0]?.unsignedTx?.signableHex
+        : txPrebuild.txRequest?.unsignedTxs?.[0]?.signableHex);
+
+    if (!rawTx) {
+      throw new Error('missing required transaction hex');
+    }
+
+    const decodedTx = this.decodeTx(Buffer.from(rawTx, 'hex'));
+
+    // Verify recipients if provided
+    if (txParams?.recipients) {
+      const recipients = txParams.recipients;
+      const txAmount = (decodedTx as any).amount;
+      const txToAddress = (decodedTx as any).to;
+
+      // For Algorand, we currently only support single recipient transactions
+      if (recipients.length !== 1) {
+        throw new Error('Algorand only supports single recipient transactions');
+      }
+
+      const recipient = recipients[0];
+
+      // Verify recipient address matches
+      if (recipient.address !== txToAddress) {
+        throw new Error('transaction recipient address does not match expected address');
+      }
+
+      // Verify amount matches
+      if (new BigNumber(recipient.amount).isEqualTo(txAmount)) {
+        throw new Error('transaction amount does not match expected amount');
+      }
+    }
+
     return true;
   }
 

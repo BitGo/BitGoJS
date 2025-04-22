@@ -279,6 +279,7 @@ export interface TransactionPrebuild extends BaseSignable {
   txBase64?: string;
   txHex?: string;
   txInfo?: unknown;
+  txRequest?: TxRequest;
 }
 
 export interface Message extends BaseSignable {
