@@ -47,7 +47,9 @@ export interface RawData {
     | AccountPermissionUpdateContract[]
     | TriggerSmartContract[]
     | FreezeBalanceV2Contract[]
-    | VoteWitnessContract[];
+    | VoteWitnessContract[]
+    | UnfreezeBalanceV2Contract[]
+    | WithdrawExpireUnfreezeContract[];
 }
 
 export interface Value {
@@ -133,6 +135,15 @@ export interface FreezeBalanceValueFields {
 }
 
 /**
+ * Unfreeze transaction value fields
+ */
+export interface UnfreezeBalanceValueFields {
+  resource: string;
+  unfreeze_balance: number;
+  owner_address: string;
+}
+
+/**
  * Freeze balance contract value interface
  */
 export interface FreezeBalanceValue {
@@ -145,6 +156,22 @@ export interface FreezeBalanceValue {
  */
 export interface FreezeBalanceV2Contract {
   parameter: FreezeBalanceValue;
+  type?: string;
+}
+
+/**
+ * Unfreeze balance contract value interface
+ */
+export interface UnfreezeBalanceValue {
+  type_url?: string;
+  value: UnfreezeBalanceValueFields;
+}
+
+/**
+ * Unfreeze balance v2 contract interface
+ */
+export interface UnfreezeBalanceV2Contract {
+  parameter: UnfreezeBalanceValue;
   type?: string;
 }
 
@@ -162,12 +189,61 @@ export interface FreezeBalanceContractParameter {
 }
 
 /**
+ * Withdraw transaction value fields
+ */
+export interface WithdrawExpireUnfreezeValueFields {
+  owner_address: string;
+}
+
+/**
+ * Withdraw balance contract value interface
+ */
+export interface WithdrawExpireUnfreezeValue {
+  type_url?: string;
+  value: WithdrawExpireUnfreezeValueFields;
+}
+
+/**
+ * Withdraw expire unfreeze contract interface
+ */
+export interface WithdrawExpireUnfreezeContract {
+  parameter: WithdrawExpireUnfreezeValue;
+  type?: string;
+}
+
+export interface UnfreezeBalanceContractParameter {
+  parameter: {
+    value: {
+      resource: TronResource;
+      unfreeze_balance: number;
+      owner_address: string;
+    };
+  };
+}
+
+/**
  * Freeze balance contract decoded interface
  */
 export interface FreezeContractDecoded {
   ownerAddress?: string;
   resource?: number;
   frozenBalance?: string | number;
+}
+
+/**
+ * Unfreeze balance contract decoded interface
+ */
+export interface UnfreezeContractDecoded {
+  ownerAddress?: string;
+  resource?: number;
+  unfreezeBalance?: string | number;
+}
+
+/**
+ * Withdraw expire unfreeze contract decoded interface
+ */
+export interface WithdrawContractDecoded {
+  ownerAddress?: string;
 }
 
 /**
@@ -224,6 +300,17 @@ export interface VoteWitnessContractParameter {
         vote_address: string;
         vote_count: number;
       }>;
+    };
+  };
+}
+
+/**
+ * Withdraw expire unfreeze contract parameter interface
+ */
+export interface WithdrawExpireUnfreezeContractParameter {
+  parameter: {
+    value: {
+      owner_address: string;
     };
   };
 }
