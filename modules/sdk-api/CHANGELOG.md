@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.62.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.61.5...@bitgo/sdk-api@1.62.0) (2025-04-15)
+
+### Features
+
+- **sdk-api:** add decryptKeys method for bulk wallet key decryption ([5a6e36f](https://github.com/BitGo/BitGoJS/commit/5a6e36f4adde42b414cd1e739b6f83103e07afbf))
+
 ## [1.61.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.61.4...@bitgo/sdk-api@1.61.5) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/sdk-api

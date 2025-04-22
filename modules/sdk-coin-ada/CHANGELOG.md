@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.9.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.9.6...@bitgo/sdk-coin-ada@4.9.7) (2025-04-15)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
 ## [4.9.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.9.5...@bitgo/sdk-coin-ada@4.9.6) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

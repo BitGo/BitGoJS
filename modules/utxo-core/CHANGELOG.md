@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.7.0...@bitgo/utxo-core@1.8.0) (2025-04-15)
+
+### Features
+
+- **utxo-core:** add PSBT signing utilities ([d46fecf](https://github.com/BitGo/BitGoJS/commit/d46fecfcd6a435951162cdfcd8dd12efb2fbed35))
+- **utxo-core:** extract TestParams type for cleaner PSBT tests ([e83ece1](https://github.com/BitGo/BitGoJS/commit/e83ece12310635f6473c4f27f3af959b3b6d137e))
+- **utxo-core:** support custom input sequence in transaction creation ([89fad6b](https://github.com/BitGo/BitGoJS/commit/89fad6bb233689d4ca32eb0f33ef5b2df0597f6d))
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.6.0...@bitgo/utxo-core@1.7.0) (2025-04-04)
 
 ### Features

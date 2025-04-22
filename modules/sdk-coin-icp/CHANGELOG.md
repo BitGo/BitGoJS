@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.11.0...@bitgo/sdk-coin-icp@1.12.0) (2025-04-15)
+
+### Bug Fixes
+
+- **sdk-coin-icp:** validate pubkey only when set ([854b279](https://github.com/BitGo/BitGoJS/commit/854b279ec947019e868048d7f11e7632bb4e60ab))
+
+### Features
+
+- **sdk-coin-icp:** add missing function implementations ([5f99a06](https://github.com/BitGo/BitGoJS/commit/5f99a0693272427aae9bc49a400db8d2558860cf))
+- **sdk-coin-icp:** implement getHashFunction ([22ddba1](https://github.com/BitGo/BitGoJS/commit/22ddba1aaaa2d90235d206e9264efaa5c9c2cffe))
+- **sdk-coin-icp:** implement signTransaction method ([26a28aa](https://github.com/BitGo/BitGoJS/commit/26a28aaed67d5884107ca6817daf7734ebcc85ed))
+- **sdk-coin-icp:** implemented recover() for WRW support ([d6bd979](https://github.com/BitGo/BitGoJS/commit/d6bd979f2a52b36a86366ce5f9d5f8e619df155f))
+- **sdk-coin-icp:** make memo field optional in transaction interfaces and builders ([f2d2088](https://github.com/BitGo/BitGoJS/commit/f2d20886f67c12d53529064f0dc8192bc6643c49))
+
 # [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.10.1...@bitgo/sdk-coin-icp@1.11.0) (2025-04-04)
 
 ### Features

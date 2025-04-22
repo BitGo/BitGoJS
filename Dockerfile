@@ -88,7 +88,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-oas /var/modules/sdk-coin-oas/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-opeth /var/modules/sdk-coin-opeth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-osmo /var/modules/sdk-coin-osmo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-polygon /var/modules/sdk-coin-polygon/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-polyx /var/modules/sdk-coin-polyx/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-rbtc /var/modules/sdk-coin-rbtc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-rune /var/modules/sdk-coin-rune/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-sei /var/modules/sdk-coin-sei/
@@ -121,6 +120,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethlike /var/modules/sdk-coin-et
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethw /var/modules/sdk-coin-ethw/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-lnbtc /var/modules/sdk-coin-lnbtc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-polyx /var/modules/sdk-coin-polyx/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
 
@@ -174,7 +174,6 @@ cd /var/modules/sdk-coin-oas && yarn link && \
 cd /var/modules/sdk-coin-opeth && yarn link && \
 cd /var/modules/sdk-coin-osmo && yarn link && \
 cd /var/modules/sdk-coin-polygon && yarn link && \
-cd /var/modules/sdk-coin-polyx && yarn link && \
 cd /var/modules/sdk-coin-rbtc && yarn link && \
 cd /var/modules/sdk-coin-rune && yarn link && \
 cd /var/modules/sdk-coin-sei && yarn link && \
@@ -207,6 +206,7 @@ cd /var/modules/sdk-coin-ethlike && yarn link && \
 cd /var/modules/sdk-coin-ethw && yarn link && \
 cd /var/modules/sdk-coin-lnbtc && yarn link && \
 cd /var/modules/sdk-coin-ltc && yarn link && \
+cd /var/modules/sdk-coin-polyx && yarn link && \
 cd /var/modules/sdk-coin-xlm && yarn link && \
 cd /var/modules/sdk-coin-zec && yarn link
 #COPY_END
@@ -263,7 +263,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-opeth && \
     yarn link @bitgo/sdk-coin-osmo && \
     yarn link @bitgo/sdk-coin-polygon && \
-    yarn link @bitgo/sdk-coin-polyx && \
     yarn link @bitgo/sdk-coin-rbtc && \
     yarn link @bitgo/sdk-coin-rune && \
     yarn link @bitgo/sdk-coin-sei && \
@@ -296,14 +295,15 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-ethw && \
     yarn link @bitgo/sdk-coin-lnbtc && \
     yarn link @bitgo/sdk-coin-ltc && \
+    yarn link @bitgo/sdk-coin-polyx && \
     yarn link @bitgo/sdk-coin-xlm && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
 #LABEL_START
-LABEL created="Fri, 04 Apr 2025 19:35:15 GMT"
-LABEL version=13.3.2
-LABEL git_hash=3d041b569cc17b4814f1468f66abd9ca9969c5a9
+LABEL created="Wed, 16 Apr 2025 03:00:53 GMT"
+LABEL version=13.3.3
+LABEL git_hash=0463b44e76f9284eb0f67a66737fec20b8f87b2a
 #LABEL_END
 
 USER node

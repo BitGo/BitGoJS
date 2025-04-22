@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.2.4...@bitgo/sdk-coin-baby@1.3.0) (2025-04-15)
+
+### Bug Fixes
+
+- **sdk-coin-baby:** add return to super call so inputs and outputs dont get cleared ([89c1d2b](https://github.com/BitGo/BitGoJS/commit/89c1d2bdff9ca54397ecc29e27ec4043bb604394))
+
+### Features
+
+- **sdk-coin-baby:** add CreateBtcDelegation transaction ([67c089a](https://github.com/BitGo/BitGoJS/commit/67c089af49616b2f70198f49e9401c7447f9931a))
+- **sdk-coin-baby:** add exports for CreateBtcDelegation ([174f5a2](https://github.com/BitGo/BitGoJS/commit/174f5a25f98881e60d67c70aa050fc1acb92dfa6))
+
 ## [1.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.2.3...@bitgo/sdk-coin-baby@1.2.4) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-baby
