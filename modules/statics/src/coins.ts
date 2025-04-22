@@ -2732,8 +2732,8 @@ export const coins = CoinMap.fromCoins([
     'VNX Euro',
     15,
     'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3',
-    'VEUR',
-    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::VEUR',
+    '5645555200000000000000000000000000000000',
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::5645555200000000000000000000000000000000',
     'vnx.li',
     UnderlyingAsset['xrp:veur']
   ),
@@ -2743,8 +2743,8 @@ export const coins = CoinMap.fromCoins([
     'VNX Swiss Frank',
     15,
     'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3',
-    'VCHF',
-    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::VCHF',
+    '5643484600000000000000000000000000000000',
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::5643484600000000000000000000000000000000',
     'vnx.li',
     UnderlyingAsset['xrp:vchf']
   ),
@@ -2754,8 +2754,8 @@ export const coins = CoinMap.fromCoins([
     'VNX Pound',
     15,
     'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3',
-    'VGBP',
-    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::VGBP',
+    '5647425000000000000000000000000000000000',
+    'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::5647425000000000000000000000000000000000',
     'vnx.li',
     UnderlyingAsset['xrp:vgbp']
   ),
