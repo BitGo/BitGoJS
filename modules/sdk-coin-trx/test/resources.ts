@@ -636,3 +636,53 @@ export const mockTokenTx = {
   raw_data_hex:
     '0a02c8cf220889177fd84c5d919640ccd2b9a1cf305aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a15414887974f42a789ef6d4dfc7ba28b1583219434b312154142a1e39aefa49290f2b3f9ed688d7cecf86cd6e02244a9059cbb0000000000000000000000004887974f42a789ef6d4dfc7ba28b1583219434b3000000000000000000000000000000000000000000000000000000003b9aca0070ccf5dd9fcf30900180a3c347',
 };
+
+export const validUnfreezeUnsignedTx = {
+  visible: false,
+  txID: '227b7c700ea3bf507a7d8b3627b6e9db1d7e6116681f2e125c16fc40e6a19235',
+  raw_data: {
+    contract: [
+      {
+        parameter: {
+          value: {
+            resource: 'ENERGY',
+            owner_address: '41e5e00fc1cdb3921b8340c20b2b65b543c84aa1dd',
+            unfreeze_balance: 1000000,
+          },
+          type_url: 'type.googleapis.com/protocol.UnfreezeBalanceV2Contract',
+        },
+        type: 'UnfreezeBalanceV2Contract',
+      },
+    ],
+    ref_block_bytes: '67b9',
+    ref_block_hash: '3aef8803c1aceb03',
+    expiration: 1745312676000,
+    timestamp: 1745312617917,
+  },
+  raw_data_hex:
+    '0a0267b922083aef8803c1aceb0340a0f1f7e5e5325a5b083712570a36747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e556e667265657a6542616c616e63655632436f6e7472616374121d0a1541e5e00fc1cdb3921b8340c20b2b65b543c84aa1dd10c0843d180170bdabf4e5e532',
+};
+
+export const validWithdrawUnsignedTx = {
+  visible: false,
+  txID: '7a9d37540e56f3f61ed0f97cd8a5213652c90c4b75dad876da9c35291d231367',
+  raw_data: {
+    contract: [
+      {
+        parameter: {
+          value: {
+            owner_address: '41E5E00FC1CDB3921B8340C20B2B65B543C84AA1DD',
+          },
+          type_url: 'type.googleapis.com/protocol.WithdrawExpireUnfreezeContract',
+        },
+        type: 'WithdrawExpireUnfreezeContract',
+      },
+    ],
+    ref_block_bytes: '5b4c',
+    ref_block_hash: 'c989a213a861c2a1',
+    expiration: 1714088400000,
+    timestamp: 1714031128253,
+  },
+  raw_data_hex:
+    '0a025b4c2208c989a213a861c2a140c0c1dee8f30d5a66080112620a32747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5769746864726177457870697265556e667265657a65436f6e747261637412280a1541e5e00fc1cdb3921b8340c20b2b65b543c84aa1dd70fde8f3e8f30d',
+};

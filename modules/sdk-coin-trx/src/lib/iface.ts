@@ -1,5 +1,6 @@
 import { Entry } from '@bitgo/sdk-core';
 import { ContractType, PermissionType } from './enum';
+import { TronResource } from './resourceTypes';
 
 export interface Account {
   publicKey: string;
@@ -42,7 +43,12 @@ export interface RawData {
   ref_block_hash: string;
   fee_limit?: number;
   contractType?: ContractType;
-  contract: TransferContract[] | AccountPermissionUpdateContract[] | TriggerSmartContract[];
+  contract:
+    | TransferContract[]
+    | AccountPermissionUpdateContract[]
+    | TriggerSmartContract[]
+    | UnfreezeBalanceV2Contract[]
+    | WithdrawExpireUnfreezeContract[];
 }
 
 export interface Value {
@@ -116,4 +122,70 @@ export interface AccountInfo {
   };
   active_permission: [{ keys: [PermissionKey] }];
   trc20: [Record<string, string>];
+}
+
+/**
+ * Unfreeze transaction value fields
+ */
+export interface UnfreezeBalanceValueFields {
+  resource: string;
+  unfreeze_balance: number;
+  owner_address: string;
+}
+
+/**
+ * Unfreeze balance contract value interface
+ */
+export interface UnfreezeBalanceValue {
+  type_url?: string;
+  value: UnfreezeBalanceValueFields;
+}
+
+/**
+ * Unfreeze balance v2 contract interface
+ */
+export interface UnfreezeBalanceV2Contract {
+  parameter: UnfreezeBalanceValue;
+  type?: string;
+}
+
+/**
+ * Withdraw transaction value fields
+ */
+export interface WithdrawExpireUnfreezeValueFields {
+  owner_address: string;
+}
+
+/**
+ * Withdraw balance contract value interface
+ */
+export interface WithdrawExpireUnfreezeValue {
+  type_url?: string;
+  value: WithdrawExpireUnfreezeValueFields;
+}
+
+/**
+ * Withdraw expire unfreeze contract interface
+ */
+export interface WithdrawExpireUnfreezeContract {
+  parameter: WithdrawExpireUnfreezeValue;
+  type?: string;
+}
+
+export interface UnfreezeBalanceContractParameter {
+  parameter: {
+    value: {
+      resource: TronResource;
+      unfreeze_balance: number;
+      owner_address: string;
+    };
+  };
+}
+
+export interface WithdrawExpireUnfreezeContractParameter {
+  parameter: {
+    value: {
+      owner_address: string;
+    };
+  };
 }

@@ -10,6 +10,8 @@ import { ContractType } from './enum';
 import { ContractCallBuilder } from './contractCallBuilder';
 import { TransactionReceipt } from './iface';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { UnfreezeBalanceTxBuilder } from './unfreezeBalanceTxBuilder';
+import { WithdrawExpireUnfreezeTxBuilder } from './withdrawExpireUnfreezeTxBuilder';
 
 /**
  * Wrapped Builder class
@@ -41,6 +43,26 @@ export class WrappedBuilder extends TransactionBuilder {
 
   getTokenTransferBuilder(tx?: TransactionReceipt | string): TokenTransferBuilder {
     return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create an unfreeze balance transaction
+   *
+   * @param {Transaction} [tx] The transaction to initialize builder
+   * @returns {UnfreezeBalanceTxBuilder} The specific unfreeze builder
+   */
+  getUnfreezeBalanceTxBuilder(tx?: TransactionReceipt | string): UnfreezeBalanceTxBuilder {
+    return this.initializeBuilder(tx, new UnfreezeBalanceTxBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create a withdraw expire unfreeze transaction
+   *
+   * @param {Transaction} [tx] The transaction to initialize builder
+   * @returns {WithdrawExpireUnfreezeTxBuilder} The specific withdraw builder
+   */
+  getWithdrawExpireUnfreezeTxBuilder(tx?: TransactionReceipt | string): WithdrawExpireUnfreezeTxBuilder {
+    return this.initializeBuilder(tx, new WithdrawExpireUnfreezeTxBuilder(this._coinConfig));
   }
 
   private initializeBuilder<T extends TransactionBuilder>(tx: TransactionReceipt | string | undefined, builder: T): T {
@@ -78,6 +100,10 @@ export class WrappedBuilder extends TransactionBuilder {
         return this._builder;
       case ContractType.TriggerSmartContract:
         return this.getContractCallBuilder(raw);
+      case ContractType.UnfreezeBalanceV2:
+        return this.getUnfreezeBalanceTxBuilder(raw);
+      case ContractType.WithdrawExpireUnfreeze:
+        return this.getWithdrawExpireUnfreezeTxBuilder(raw);
       default:
         throw new InvalidTransactionError('Invalid transaction type: ' + contractType);
     }
