@@ -1030,14 +1030,24 @@ export class Wallets implements IWallets {
     );
 
     // Extract successful updates
-    const successfulUpdates = settledUpdates
-      .filter(
-        (result): result is PromiseFulfilledResult<BulkUpdateWalletShareOptionsRequest[]> =>
-          result.status === 'fulfilled'
-      )
-      .flatMap((result) => result.value);
+    const successfulUpdates = settledUpdates.flatMap((result) => (result.status === 'fulfilled' ? result.value : []));
 
-    // Send updates to the server
+    // Extract failed updates - only from rejected promises
+    const failedUpdates = settledUpdates.reduce<Array<{ walletShareId: string; reason: string }>>(
+      (acc, result, index) => {
+        if (result.status === 'rejected') {
+          const rejectedResult = result;
+          acc.push({
+            walletShareId: resolvedShares[index].walletShareId,
+            reason: rejectedResult.reason?.message || String(rejectedResult.reason),
+          });
+        }
+        return acc;
+      },
+      []
+    );
+
+    // Send successful updates to the server
     const response = await this.bulkUpdateWalletShareRequest(successfulUpdates);
 
     // Process accepted special override cases - reshare with spenders
@@ -1054,6 +1064,11 @@ export class Wallets implements IWallets {
           }
         }
       }
+    }
+
+    // Add information about failed updates to the response
+    if (failedUpdates.length > 0) {
+      response.walletShareUpdateErrors.push(...failedUpdates);
     }
 
     return response;
