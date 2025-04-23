@@ -73,6 +73,8 @@ interface EnvironmentTemplate {
   wemixExplorerApiToken?: string;
   monExplorerBaseUrl?: string;
   monExplorerApiToken?: string;
+  worldExplorerBaseUrl?: string;
+  worldExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -243,6 +245,7 @@ const testnetBase: EnvironmentTemplate = {
   icpRosettaNodeUrl: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
   icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
   monExplorerBaseUrl: 'https://testnet.monadexplorer.com/',
+  worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

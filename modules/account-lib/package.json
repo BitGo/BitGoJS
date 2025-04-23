@@ -68,6 +68,7 @@
     "@bitgo/sdk-coin-ton": "^3.4.33",
     "@bitgo/sdk-coin-trx": "^2.0.76",
     "@bitgo/sdk-coin-wemix": "^1.2.0",
+    "@bitgo/sdk-coin-world": "^1.0.0",
     "@bitgo/sdk-coin-xdc": "^1.2.0",
     "@bitgo/sdk-coin-xrp": "^3.7.18",
     "@bitgo/sdk-coin-xtz": "^2.2.7",

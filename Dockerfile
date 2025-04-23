@@ -101,6 +101,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-tia /var/modules/sdk-coin-tia/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ton /var/modules/sdk-coin-ton/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-trx /var/modules/sdk-coin-trx/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-wemix /var/modules/sdk-coin-wemix/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-world /var/modules/sdk-coin-world/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xdc /var/modules/sdk-coin-xdc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xrp /var/modules/sdk-coin-xrp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xtz /var/modules/sdk-coin-xtz/
@@ -187,6 +188,7 @@ cd /var/modules/sdk-coin-tia && yarn link && \
 cd /var/modules/sdk-coin-ton && yarn link && \
 cd /var/modules/sdk-coin-trx && yarn link && \
 cd /var/modules/sdk-coin-wemix && yarn link && \
+cd /var/modules/sdk-coin-world && yarn link && \
 cd /var/modules/sdk-coin-xdc && yarn link && \
 cd /var/modules/sdk-coin-xrp && yarn link && \
 cd /var/modules/sdk-coin-xtz && yarn link && \
@@ -276,6 +278,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-ton && \
     yarn link @bitgo/sdk-coin-trx && \
     yarn link @bitgo/sdk-coin-wemix && \
+    yarn link @bitgo/sdk-coin-world && \
     yarn link @bitgo/sdk-coin-xdc && \
     yarn link @bitgo/sdk-coin-xrp && \
     yarn link @bitgo/sdk-coin-xtz && \

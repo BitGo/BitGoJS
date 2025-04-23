@@ -167,6 +167,9 @@ export { Xdc };
 import * as Wemix from '@bitgo/sdk-coin-wemix';
 export { Wemix };
 
+import * as World from '@bitgo/sdk-coin-world';
+export { World };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -261,6 +264,8 @@ const coinBuilderMap = {
   tmantra: Mantra.TransactionBuilder,
   mon: Mon.TransactionBuilder,
   tmon: Mon.TransactionBuilder,
+  world: World.TransactionBuilder,
+  tworld: World.TransactionBuilder,
 };
 
 /**
