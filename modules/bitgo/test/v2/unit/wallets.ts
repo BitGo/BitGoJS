@@ -2273,6 +2273,92 @@ describe('V2 Wallets:', function () {
         encryptStub.firstCall.args[0].should.have.property('password', 'newPassphrase');
         encryptStub.firstCall.args[0].should.have.property('input', originalPrivKey);
       });
+
+      it('should handle rejected promises and add them to walletShareUpdateErrors', async () => {
+        const walletPassphrase = 'bitgo1234';
+
+        // Mock listSharesV2 to return two shares
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: 'share1',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet1',
+              permissions: ['spend'],
+              state: 'active',
+            },
+            {
+              id: 'share2',
+              coin: 'tsol',
+              walletLabel: 'testing2',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet2',
+              permissions: ['spend'],
+              state: 'active',
+            },
+            {
+              id: 'share3',
+              coin: 'tsol',
+              walletLabel: 'testing3',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet3',
+              permissions: ['spend'],
+              state: 'active',
+            },
+          ],
+          outgoing: [],
+        });
+
+        // Stub processAcceptShare to throw an error for share2
+        // Using 'as any' to bypass TypeScript's private method restriction
+        const processAcceptShareStub = sinon.stub(Wallets.prototype as any, 'processAcceptShare');
+        processAcceptShareStub
+          .withArgs('share1', sinon.match.any, sinon.match.any, sinon.match.any, sinon.match.any)
+          .resolves([{ walletShareId: 'share1', status: 'accept' }]);
+        processAcceptShareStub
+          .withArgs('share2', sinon.match.any, sinon.match.any, sinon.match.any, sinon.match.any)
+          .rejects(new Error('Failed to process share2'));
+        processAcceptShareStub
+          .withArgs('share3', sinon.match.any, sinon.match.any, sinon.match.any, sinon.match.any)
+          .resolves([{ walletShareId: 'share3', status: 'accept' }]);
+
+        // Mock bulkUpdateWalletShareRequest to return a response
+        const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+          acceptedWalletShares: ['share1', 'share3'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [], // Empty array that should be populated
+        });
+
+        const result = await wallets.bulkUpdateWalletShare({
+          shares: [
+            { walletShareId: 'share1', status: 'accept' },
+            { walletShareId: 'share2', status: 'accept' },
+            { walletShareId: 'share3', status: 'accept' },
+          ],
+          userLoginPassword: walletPassphrase,
+        });
+
+        // Verify bulkUpdateWalletShareRequest was called with only the successful share
+        bulkUpdateStub.calledOnce.should.be.true();
+        const updateParams = bulkUpdateStub.firstCall.args[0];
+        updateParams.should.have.lengthOf(2);
+        updateParams[0].walletShareId.should.equal('share1');
+        updateParams[0].status.should.equal('accept');
+        updateParams[1].walletShareId.should.equal('share3');
+        updateParams[1].status.should.equal('accept');
+
+        // Verify the result contains the error information
+        result.should.have.property('walletShareUpdateErrors');
+        result.walletShareUpdateErrors.should.be.an.Array();
+        result.walletShareUpdateErrors.should.have.lengthOf(1);
+        result.walletShareUpdateErrors[0].should.have.property('walletShareId', 'share2');
+        result.walletShareUpdateErrors[0].should.have.property('reason', 'Failed to process share2');
+      });
     });
   });
 
