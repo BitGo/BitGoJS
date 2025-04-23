@@ -31,9 +31,8 @@ export class StakingActivateBuilder extends TransactionBuilder {
         this.sender(activateInstruction.params.fromAddress);
         this.stakingAddress(activateInstruction.params.stakingAddress);
         this.amount(activateInstruction.params.amount);
-        if (activateInstruction.params.validator && activateInstruction.params.validator !== '') {
-          this.validator(activateInstruction.params.validator);
-        }
+        this.validator(activateInstruction.params.validator);
+        this.isMarinade(activateInstruction.params.isMarinade ?? false);
       }
     }
   }

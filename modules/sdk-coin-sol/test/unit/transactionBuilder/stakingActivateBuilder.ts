@@ -75,7 +75,8 @@ describe('Sol Staking Activate Builder', () => {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
             amount: amount,
-            validator: '',
+            validator: validator.pub,
+            isMarinade: true,
           },
         },
       ]);
@@ -151,7 +152,8 @@ describe('Sol Staking Activate Builder', () => {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
             amount: amount,
-            validator: '',
+            validator: validator.pub,
+            isMarinade: true,
           },
         },
       ]);
@@ -211,7 +213,8 @@ describe('Sol Staking Activate Builder', () => {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
             amount: amount,
-            validator: '',
+            validator: validator.pub,
+            isMarinade: true,
           },
         },
       ]);
@@ -274,7 +277,8 @@ describe('Sol Staking Activate Builder', () => {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
             amount: amount,
-            validator: '',
+            validator: validator.pub,
+            isMarinade: true,
           },
         },
       ]);
@@ -411,6 +415,24 @@ describe('Sol Staking Activate Builder', () => {
         const rawTx = tx.toBroadcastFormat();
         should.equal(Utils.isValidRawTransaction(rawTx), true);
         should.equal(rawTx, testData.STAKING_ACTIVATE_SIGNED_TX);
+      });
+
+      it('Marinade: build from an unsigned staking activate and sign it', async () => {
+        const txBuilder = factory.from(testData.MARINADE_STAKING_ACTIVATE_UNSIGNED_TX);
+
+        txBuilder.sign({ key: wallet.prv });
+        txBuilder.sign({ key: stakeAccount.prv });
+        const tx = await txBuilder.build();
+        tx.inputs.length.should.equal(1);
+        tx.inputs[0].should.deepEqual({
+          address: wallet.pub,
+          value: amount,
+          coin: 'tsol',
+        });
+        tx.outputs.length.should.equal(1);
+        const rawTx = tx.toBroadcastFormat();
+        should.equal(Utils.isValidRawTransaction(rawTx), true);
+        should.equal(rawTx, testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX);
       });
 
       it('build from an unsigned staking activate with memo and sign it', async () => {
