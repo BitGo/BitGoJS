@@ -48,7 +48,7 @@ export const sip10Tokens = [
     'baaf7ebe-b931-4a5e-a173-ab514688df73',
     'stx:susdh',
     'sUSDH',
-    6,
+    8,
     'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.susdh-token-v1::susdh',
     UnderlyingAsset['stx:susdh'],
     STX_TOKEN_FEATURES

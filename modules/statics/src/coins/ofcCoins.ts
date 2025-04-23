@@ -1678,7 +1678,7 @@ export const ofcCoins = [
     APT_OFC_TOKEN_FEATURES
   ),
   ofcStxToken('2d2f9c7f-7d10-480e-a0ef-6893cf4d3493', 'ofcstx:sbtc', 'sBTC', 8, UnderlyingAsset['stx:sbtc']),
-  ofcStxToken('cc76810a-e19c-4123-ad0c-be39ce08550a', 'ofcstx:susdh', 'sUSDH', 6, UnderlyingAsset['stx:susdh']),
+  ofcStxToken('cc76810a-e19c-4123-ad0c-be39ce08550a', 'ofcstx:susdh', 'sUSDH', 8, UnderlyingAsset['stx:susdh']),
   ofcStxToken('df131c24-8458-49ea-8f7d-7dcce6b13ad9', 'ofcstx:ststx', 'stSTX', 6, UnderlyingAsset['stx:ststx']),
   tofcStxToken('a7f63434-b424-4f8f-94d8-476f827e4d1b', 'ofctstx:tsbtc', 'Test sBTC', 8, UnderlyingAsset['tstx:tsbtc']),
   ofcStxToken('10210906-6701-4c25-a204-0fe7399bae83', 'ofcstx:alex', 'Alex Labs', 8, UnderlyingAsset['stx:alex']),
