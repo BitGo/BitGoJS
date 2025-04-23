@@ -7,8 +7,14 @@ import { IBaseCoin, KeychainsTriplet } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { AddKeychainOptions, Keychain, KeyType } from '../keychain';
 import { encryptText, getBitgoGpgPubKey } from './opengpgUtils';
-import { IntentRecipient, PopulatedIntent, PrebuildTransactionWithIntentOptions } from './tss/baseTypes';
+import {
+  IntentRecipient,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
+  TokenTransferRecipientParams,
+} from './tss/baseTypes';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../tss/bitgoPubKeys';
+import { coins, NetworkType } from '@bitgo/statics';
 
 export interface MpcKeyShare {
   publicShare: string;
@@ -132,6 +138,10 @@ export abstract class MpcUtils {
             'token type and quantity is required to request a transaction with intent to transfer a token'
           );
         }
+        tokenData.tokenName = this.getTokenName(baseCoin, tokenData);
+        if (tokenData.tokenName) {
+          formattedRecipient.amount.symbol = tokenData.tokenName;
+        }
         formattedRecipient.tokenData = tokenData;
       }
       return formattedRecipient;
@@ -190,5 +200,18 @@ export abstract class MpcUtils {
       token: params.tokenName,
       enableTokens: params.enableTokens,
     };
+  }
+
+  getTokenName(baseCoin: IBaseCoin, tokenData: TokenTransferRecipientParams): string | undefined {
+    if (tokenData.tokenName) {
+      return tokenData.tokenName;
+    }
+    const networkPrefix = baseCoin.getConfig().network.type === NetworkType.TESTNET ? 't' : '';
+    const tokenStaticsKey = `${networkPrefix}${baseCoin.getFamily()}:${tokenData.tokenContractAddress}`;
+    if (coins.has(tokenStaticsKey)) {
+      const tokenStatics = coins.get(tokenStaticsKey);
+      tokenData.tokenName = tokenStatics.name;
+    }
+    return tokenData.tokenName;
   }
 }

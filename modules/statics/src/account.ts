@@ -2646,7 +2646,7 @@ export function taptNFTCollection(
   nftCollectionId: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
-  prefix = '',
+  prefix = 't',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.apt,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
