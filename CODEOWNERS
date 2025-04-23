@@ -80,6 +80,7 @@
 /modules/sdk-coin-ton/ @BitGo/ethalt-team
 /modules/sdk-coin-trx/ @BitGo/ethalt-team
 /modules/sdk-coin-wemix/ @BitGo/ethalt-team
+/modules/sdk-coin-world/ @BitGo/ethalt-team
 /modules/sdk-coin-xdc/ @BitGo/ethalt-team
 /modules/sdk-coin-xlm/ @BitGo/ethalt-team
 /modules/sdk-coin-xrp/ @BitGo/ethalt-team

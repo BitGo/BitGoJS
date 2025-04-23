@@ -206,6 +206,9 @@
       "path": "./modules/sdk-coin-wemix"
     },
     {
+      "path": "./modules/sdk-coin-world"
+    },
+    {
       "path": "./modules/sdk-coin-xdc"
     },
     {

@@ -113,6 +113,9 @@
       "path": "../sdk-coin-wemix"
     },
     {
+      "path": "../sdk-coin-world"
+    },
+    {
       "path": "../sdk-coin-xdc"
     },
     {
