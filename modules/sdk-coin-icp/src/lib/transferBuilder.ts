@@ -6,12 +6,12 @@ import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
 import {
   CurveType,
-  IcpTransactionBuildMetadata,
   IcpOperation,
   IcpPublicKey,
   IcpTransaction,
   IcpTransactionData,
   OperationType,
+  DEFAULT_MEMO,
 } from './iface';
 import assert from 'assert';
 
@@ -34,6 +34,11 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    // The ICP chain sets a memo field with a default value of 0. This ensures compatibility
+    // by setting the memo to 0 if it's not explicitly provided.
+    if (!this._memo || this._memo === undefined || this._memo === null) {
+      this._memo = DEFAULT_MEMO;
+    }
     this.validateTransaction(this._transaction);
     this.buildIcpTransactionData();
     const unsignedTransactionBuilder = new UnsignedTransactionBuilder(this._transaction.icpTransaction);
@@ -90,8 +95,7 @@ export class TransferBuilder extends TransactionBuilder {
     };
 
     const createdTimestamp = this._transaction.createdTimestamp;
-    const { metaData, ingressEndTime }: { metaData: IcpTransactionBuildMetadata; ingressEndTime: number | BigInt } =
-      this._utils.getMetaData(this._memo, createdTimestamp);
+    const { metaData, ingressEndTime } = this._utils.getMetaData(this._memo, createdTimestamp);
 
     const icpTransaction: IcpTransaction = {
       public_keys: [publicKey],
@@ -106,10 +110,9 @@ export class TransferBuilder extends TransactionBuilder {
       senderPublicKeyHex: this._publicKey,
       transactionType: OperationType.TRANSACTION,
       expiryTime: ingressEndTime,
+      memo: this._memo,
     };
-    if (this._memo !== undefined) {
-      icpTransactionData.memo = this._memo;
-    }
+
     this._transaction.icpTransactionData = icpTransactionData;
     this._transaction.icpTransaction = icpTransaction;
   }

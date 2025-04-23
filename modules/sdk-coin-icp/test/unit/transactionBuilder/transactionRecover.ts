@@ -28,7 +28,7 @@ describe('ICP transaction recovery', async () => {
       userKey: testData.WRWRecovery.userKey,
       backupKey: testData.WRWRecovery.backupKey,
       walletPassphrase: testData.WRWRecovery.walletPassphrase,
-      recoveryDestination: testData.accounts.account2.address,
+      recoveryDestination: testData.Accounts.account2.address,
     };
 
     icp = bitgo.coin('icp');
@@ -45,27 +45,27 @@ describe('ICP transaction recovery', async () => {
       userKey: testData.WRWRecovery.userKey,
       backupKey: testData.WRWRecovery.backupKey,
       walletPassphrase: testData.WRWRecovery.walletPassphrase,
-      recoveryDestination: testData.accounts.account2.address,
+      recoveryDestination: testData.Accounts.account2.address,
     };
     nock.cleanAll();
     sinon.restore();
   });
 
-  it('should recover a transaction without memo successfully', async () => {
+  it('should recover a transaction with default memo successfully', async () => {
     txBuilder = factory.getTransferBuilder();
 
     // Stub the getTransferBuilder to return our txBuilder
-    //TODO need to have a better way for test cases without mocking these functions. TIcket: https://bitgoinc.atlassian.net/browse/WIN-5158
+    //TODO need to have a better way for test cases WithDefault mocking these functions. TIcket: https://bitgoinc.atlassian.net/browse/WIN-5158
     sinon.stub(icp, 'getBuilderFactory').returns(factory);
     sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
-    sinon.stub(icp, 'signatures').returns(testData.RecoverTransactionSignatureWithoutMemo);
+    sinon.stub(icp, 'signatures').returns(testData.RecoverTransactionSignatureWithDefaultMemo);
 
     sinon.stub(txBuilder._utils, 'getMetaData').returns({
-      metaData: testData.transactionMetaData,
-      ingressEndTime: testData.transactionMetaData.ingress_end,
+      metaData: testData.MetaDataWithDefaultMemo,
+      ingressEndTime: testData.MetaDataWithDefaultMemo.ingress_end,
     });
 
-    const body = testData.RecoverySignedTransactionWithoutMemo;
+    const body = testData.RecoverySignedTransactionWithDefaultMemo;
     nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
     nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
     const txnId = await icp.recover(recoveryParams);
@@ -82,14 +82,14 @@ describe('ICP transaction recovery', async () => {
     sinon.stub(icp, 'signatures').returns(testData.RecoverTransactionSignatureWithMemo);
 
     sinon.stub(txBuilder._utils, 'getMetaData').returns({
-      metaData: testData.metaData,
-      ingressEndTime: testData.metaData.ingress_end,
+      metaData: testData.MetaDataWithMemo,
+      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
     });
 
     const body = testData.RecoverySignedTransactionWithMemo;
     nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
     nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
-    recoveryParams.memo = testData.metaData.memo;
+    recoveryParams.memo = testData.MetaDataWithMemo.memo;
     const txnId = await icp.recover(recoveryParams);
     txnId.should.be.a.String();
     should.equal(txnId, testData.TxnId);
