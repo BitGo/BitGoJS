@@ -1257,6 +1257,24 @@ class WorldTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '4801';
 }
 
+class Soneium extends Mainnet implements EthereumNetwork {
+  name = 'Soneium';
+  family = CoinFamily.SONEIUM;
+  explorerUrl = 'https://soneium.blockscout.com/tx/';
+  accountExplorerUrl = 'https://soneium.blockscout.com/address/';
+  chainId = 1868;
+  nativeCoinOperationHashPrefix = '1868';
+}
+
+class SoneiumTestnet extends Testnet implements EthereumNetwork {
+  name = 'SoneiumTestnet';
+  family = CoinFamily.SONEIUM;
+  explorerUrl = 'https://soneium-minato.blockscout.com/tx/';
+  accountExplorerUrl = 'https://soneium-minato.blockscout.com/address/';
+  chainId = 1946;
+  nativeCoinOperationHashPrefix = '1946';
+}
+
 class Somnia extends Mainnet implements EthereumNetwork {
   name = 'Somnia';
   family = CoinFamily.STT;
@@ -1417,6 +1435,7 @@ export const Networks = {
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
     stt: Object.freeze(new Somnia()),
+    soneium: Object.freeze(new Soneium()),
     susd: Object.freeze(new SUSD()),
     tao: Object.freeze(new Bittensor()),
     tia: Object.freeze(new Tia()),
@@ -1492,6 +1511,7 @@ export const Networks = {
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
     stt: Object.freeze(new SomniaTestnet()),
+    soneium: Object.freeze(new SoneiumTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     coreum: Object.freeze(new CoreumTestnet()),
     tao: Object.freeze(new BittensorTestnet()),
