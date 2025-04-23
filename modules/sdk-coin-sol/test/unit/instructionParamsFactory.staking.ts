@@ -66,6 +66,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           validator: validator.toString(),
           amount,
+          isMarinade: false,
         },
       };
 
@@ -135,6 +136,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           validator: validator.toString(),
           amount,
+          isMarinade: false,
         },
       };
 
@@ -186,6 +188,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           validator: validator.toString(),
           amount,
+          isMarinade: false,
         },
       };
 
@@ -232,6 +235,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           validator: validator.toString(),
           amount,
+          isMarinade: false,
         },
       };
 

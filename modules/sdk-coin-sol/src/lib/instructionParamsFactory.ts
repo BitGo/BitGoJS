@@ -267,7 +267,11 @@ function parseStakingActivateInstructions(
       fromAddress: stakingInstructions.create?.fromPubkey.toString() || '',
       stakingAddress: stakingInstructions.initialize?.stakePubkey.toString() || '',
       amount: stakingInstructions.create?.lamports.toString() || '',
-      validator: stakingInstructions.delegate?.votePubkey.toString() || '',
+      validator:
+        stakingInstructions.delegate?.votePubkey.toString() ||
+        stakingInstructions.initialize?.authorized.staker.toString() ||
+        '',
+      isMarinade: stakingInstructions.delegate === undefined,
     },
   };
   instructionData.push(stakingActivate);
