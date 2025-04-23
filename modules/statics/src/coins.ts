@@ -1165,6 +1165,26 @@ export const coins = CoinMap.fromCoins([
     EVM_FEATURES
   ),
   account(
+    '87c104ca-6b49-479e-87fb-9253b095158c',
+    'stt',
+    'Somnia',
+    Networks.main.stt,
+    18,
+    UnderlyingAsset.STT,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
+    '1bf486a9-47ed-4bea-8e9a-a23a074cdc9a',
+    'tstt',
+    'Somnia Testnet',
+    Networks.test.stt,
+    18,
+    UnderlyingAsset.STT,
+    BaseUnit.ETH,
+    EVM_FEATURES
+  ),
+  account(
     '202caf8f-4d43-4208-b206-8231f555c518',
     'flr',
     'Flare',
