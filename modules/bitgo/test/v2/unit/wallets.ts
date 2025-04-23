@@ -1865,6 +1865,415 @@ describe('V2 Wallets:', function () {
         });
       });
     });
+
+    describe('bulkUpdateWalletShare', function () {
+      afterEach(function () {
+        nock.cleanAll();
+        nock.pendingMocks().length.should.equal(0);
+        sinon.restore();
+      });
+
+      it('should throw validation error for missing shares parameter', async () => {
+        await wallets.bulkUpdateWalletShare({}).should.be.rejectedWith('Missing parameter: shares');
+      });
+
+      it('should throw validation error for non-array shares parameter', async () => {
+        await wallets
+          .bulkUpdateWalletShare({ shares: 'not-an-array' })
+          .should.be.rejectedWith('Expecting parameter array: shares but found string');
+      });
+
+      it('should throw validation error for missing walletShareId in share', async () => {
+        await wallets
+          .bulkUpdateWalletShare({ shares: [{ status: 'accept' }] })
+          .should.be.rejectedWith('Missing walletShareId in share');
+      });
+
+      it('should throw validation error for missing status in share', async () => {
+        await wallets
+          .bulkUpdateWalletShare({ shares: [{ walletShareId: '123' }] })
+          .should.be.rejectedWith('Missing status in share');
+      });
+
+      it('should throw validation error for invalid status in share', async () => {
+        await wallets
+          .bulkUpdateWalletShare({ shares: [{ walletShareId: '123', status: 'invalid' }] })
+          .should.be.rejectedWith('Invalid status in share: invalid. Must be either "accept" or "reject"');
+      });
+
+      it('should throw validation error for non-string walletShareId', async () => {
+        await wallets
+          .bulkUpdateWalletShare({ shares: [{ walletShareId: 123, status: 'accept' }] })
+          .should.be.rejectedWith('Expecting walletShareId to be a string but found number');
+      });
+
+      it('should throw validation error for non-string userLoginPassword', async () => {
+        await wallets
+          .bulkUpdateWalletShare({ shares: [{ walletShareId: '123', status: 'accept' }], userLoginPassword: 123 })
+          .should.be.rejectedWith('Expecting parameter string: userLoginPassword but found number');
+      });
+
+      it('should throw validation error for non-string newWalletPassphrase', async () => {
+        await wallets
+          .bulkUpdateWalletShare({
+            shares: [{ walletShareId: '123', status: 'accept' }],
+            userLoginPassword: 'password',
+            newWalletPassphrase: 123,
+          })
+          .should.be.rejectedWith('Expecting parameter string: newWalletPassphrase but found number');
+      });
+
+      it('should throw assertion error for empty shares array', async () => {
+        await wallets.bulkUpdateWalletShare({ shares: [] }).should.be.rejectedWith('no shares are passed');
+      });
+
+      it('should throw error for no valid wallet shares', async () => {
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: '66a229dbdccdcfb95b44fc2745a60bd4',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'dummyWalletId',
+              permissions: ['spend'],
+              state: 'active',
+            },
+          ],
+          outgoing: [],
+        });
+        await wallets
+          .bulkUpdateWalletShare({
+            shares: [{ walletShareId: '66a229dbdccdcfb95b44fc2745a60bd1', status: 'accept' }],
+            userLoginPassword: 'dummy@123',
+          })
+          .should.be.rejectedWith('invalid wallet share provided: 66a229dbdccdcfb95b44fc2745a60bd1');
+      });
+
+      it('should throw error for ecdh keychain undefined when accepting share requiring decryption', async () => {
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: '66a229dbdccdcfb95b44fc2745a60bd4',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'dummyWalletId',
+              permissions: ['spend'],
+              state: 'active',
+              keychain: {
+                pub: 'pub',
+                toPubKey: 'toPubKey',
+                fromPubKey: 'fromPubKey',
+                encryptedPrv: 'encryptedPrv',
+                path: 'path',
+              },
+            },
+          ],
+          outgoing: [],
+        });
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          prv: 'private key',
+        });
+
+        await wallets
+          .bulkUpdateWalletShare({
+            shares: [{ walletShareId: '66a229dbdccdcfb95b44fc2745a60bd4', status: 'accept' }],
+            userLoginPassword: 'dummy@123',
+          })
+          .should.be.rejectedWith('encryptedXprv was not found on sharing keychain');
+      });
+
+      it('should successfully update shares with both accept and reject statuses', async () => {
+        const walletPassphrase = 'bitgo1234';
+
+        // Mock listSharesV2 to return two shares
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: 'share1',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet1',
+              permissions: ['spend'],
+              state: 'active',
+            },
+            {
+              id: 'share2',
+              coin: 'tsol',
+              walletLabel: 'testing2',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet2',
+              permissions: ['spend'],
+              state: 'active',
+            },
+          ],
+          outgoing: [],
+        });
+
+        // Mock bulkUpdateWalletShareRequest
+        const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: ['share2'],
+          walletShareUpdateErrors: [],
+        });
+
+        const result = await wallets.bulkUpdateWalletShare({
+          shares: [
+            { walletShareId: 'share1', status: 'accept' },
+            { walletShareId: 'share2', status: 'reject' },
+          ],
+          userLoginPassword: walletPassphrase,
+        });
+
+        // Verify the result
+        assert.deepEqual(result, {
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: ['share2'],
+          walletShareUpdateErrors: [],
+        });
+
+        // Verify bulkUpdateWalletShareRequest was called with correct parameters
+        bulkUpdateStub.calledOnce.should.be.true();
+        const updateParams = bulkUpdateStub.firstCall.args[0];
+        updateParams.should.have.lengthOf(2);
+
+        // Second param should be for share2 with reject status
+        updateParams.should.containDeep([
+          {
+            walletShareId: 'share2',
+            status: 'reject',
+          },
+        ]);
+      });
+
+      it('should handle special override cases and reshare with spenders', async () => {
+        const walletPassphrase = 'bitgo1234';
+
+        // Mock listSharesV2 to return a share with keychainOverrideRequired
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: 'share1',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet1',
+              permissions: ['admin', 'spend'],
+              state: 'active',
+              keychainOverrideRequired: true,
+            },
+          ],
+          outgoing: [],
+        });
+
+        // Setup for the baseCoin.keychains().createUserKeychain
+        const userKeychain = {
+          id: 'key1',
+          pub: 'pubKey',
+          encryptedPrv: 'encryptedPrivateKey',
+        };
+        sinon.stub(wallets.baseCoin.keychains(), 'createUserKeychain').resolves(userKeychain);
+
+        // Mock decrypt and signMessage
+        sinon.stub(bitgo, 'decrypt').returns('decryptedPrivateKey');
+        sinon.stub(wallets.baseCoin, 'signMessage').resolves(Buffer.from('signature'));
+
+        // Mock getECDHKeychain
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: 'encryptedXprv',
+        });
+
+        // Mock bulkUpdateWalletShareRequest
+        const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        // Mock reshareWalletWithSpenders
+        const reshareStub = sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+
+        const result = await wallets.bulkUpdateWalletShare({
+          shares: [{ walletShareId: 'share1', status: 'accept' }],
+          userLoginPassword: walletPassphrase,
+        });
+
+        // Verify the result
+        assert.deepEqual(result, {
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        // Verify bulkUpdateWalletShareRequest was called
+        bulkUpdateStub.calledOnce.should.be.true();
+
+        // Verify reshareWalletWithSpenders was called with correct parameters
+        reshareStub.calledOnce.should.be.true();
+        reshareStub.firstCall.args[0].should.equal('wallet1');
+        reshareStub.firstCall.args[1].should.equal(walletPassphrase);
+      });
+
+      it('should handle shares with no keychain to decrypt', async () => {
+        const walletPassphrase = 'bitgo1234';
+
+        // Mock listSharesV2 to return a share with no keychain
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: 'share1',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet1',
+              permissions: ['view'],
+              state: 'active',
+            },
+          ],
+          outgoing: [],
+        });
+
+        // Mock bulkUpdateWalletShareRequest
+        const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        const result = await wallets.bulkUpdateWalletShare({
+          shares: [{ walletShareId: 'share1', status: 'accept' }],
+          userLoginPassword: walletPassphrase,
+        });
+
+        // Verify the result
+        assert.deepEqual(result, {
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        // Verify bulkUpdateWalletShareRequest was called with correct parameters
+        bulkUpdateStub.calledOnce.should.be.true();
+        const updateParams = bulkUpdateStub.firstCall.args[0];
+        updateParams.should.have.lengthOf(1);
+
+        // Param should be for share1 with accept status and no additional fields
+        updateParams.should.containDeep([
+          {
+            walletShareId: 'share1',
+            status: 'accept',
+          },
+        ]);
+      });
+
+      it('should handle shares with keychain requiring decryption', async () => {
+        const walletPassphrase = 'bitgo1234';
+        const path = 'm/999999/1/1';
+
+        // Create test keychains
+        const fromKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef01deadbeef01deadbeef01deadbeef01', 'hex'));
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+
+        const fromPubKey = fromKeychain.publicKey.toString('hex');
+        const toPubKey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        // Create encrypted private key
+        const originalPrivKey = 'originalPrivateKey';
+        const sharedSecret = getSharedSecret(fromKeychain, Buffer.from(toPubKey, 'hex')).toString('hex');
+
+        const encryptedPrv = bitgo.encrypt({
+          password: sharedSecret,
+          input: originalPrivKey,
+        });
+
+        // Mock listSharesV2 to return a share with keychain
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: 'share1',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet1',
+              permissions: ['spend'],
+              state: 'active',
+              keychain: {
+                pub: toPubKey,
+                toPubKey: toPubKey,
+                fromPubKey: fromPubKey,
+                encryptedPrv: encryptedPrv,
+                path: path,
+              },
+            },
+          ],
+          outgoing: [],
+        });
+
+        // Mock getECDHKeychain
+        const myEcdhKeychain = await bitgo.keychains().create();
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+
+        // Setup decrypt and encrypt stubs
+        const decryptStub = sinon.stub(bitgo, 'decrypt');
+        decryptStub.onFirstCall().returns(myEcdhKeychain.xprv); // For sharing keychain
+        decryptStub.onSecondCall().returns(originalPrivKey); // For wallet keychain
+
+        const encryptStub = sinon.stub(bitgo, 'encrypt').returns('newEncryptedPrv');
+
+        // Mock getSharedSecret
+        sinon.stub(moduleBitgo, 'getSharedSecret').returns(Buffer.from(sharedSecret));
+
+        // Mock bulkUpdateWalletShareRequest
+        const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        const result = await wallets.bulkUpdateWalletShare({
+          shares: [{ walletShareId: 'share1', status: 'accept' }],
+          userLoginPassword: walletPassphrase,
+          newWalletPassphrase: 'newPassphrase',
+        });
+
+        // Verify the result
+        assert.deepEqual(result, {
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        // Verify bulkUpdateWalletShareRequest was called with correct parameters
+        bulkUpdateStub.calledOnce.should.be.true();
+        const updateParams = bulkUpdateStub.firstCall.args[0];
+        updateParams.should.have.lengthOf(1);
+
+        // Param should be for share1 with accept status and encryptedPrv
+        updateParams.should.containDeep([
+          {
+            walletShareId: 'share1',
+            status: 'accept',
+            encryptedPrv: 'newEncryptedPrv',
+          },
+        ]);
+
+        // Verify encrypt was called with correct parameters
+        encryptStub.calledOnce.should.be.true();
+        encryptStub.firstCall.args[0].should.have.property('password', 'newPassphrase');
+        encryptStub.firstCall.args[0].should.have.property('input', originalPrivKey);
+      });
+    });
   });
 
   describe('createBulkKeyShares tests', () => {

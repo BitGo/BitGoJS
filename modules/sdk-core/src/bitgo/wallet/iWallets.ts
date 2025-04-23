@@ -117,6 +117,33 @@ export interface AcceptShareOptionsRequest {
   encryptedPrv: string;
 }
 
+export interface BulkUpdateWalletShareOptions {
+  shares: {
+    walletShareId: string;
+    status: 'accept' | 'reject';
+  }[];
+  userLoginPassword?: string;
+  newWalletPassphrase?: string;
+}
+
+export interface BulkUpdateWalletShareOptionsRequest {
+  walletShareId: string;
+  encryptedPrv?: string;
+  status: 'accept' | 'reject';
+  keyId?: string;
+  signature?: string;
+  payload?: string;
+}
+
+export interface BulkUpdateWalletShareResponse {
+  acceptedWalletShares: string[];
+  rejectedWalletShares: string[];
+  walletShareUpdateErrors: {
+    walletShareId: string;
+    reason: string;
+  }[];
+}
+
 export interface AddWalletOptions {
   coinSpecific?: any;
   enterprise?: string;
