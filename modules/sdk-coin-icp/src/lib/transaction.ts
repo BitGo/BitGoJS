@@ -109,10 +109,9 @@ export class Transaction extends BaseTransaction {
             senderPublicKeyHex: senderPublicKeyHex,
             transactionType: transactionType,
             expiryTime: Number(parsedTx.metadata.created_at_time + (MAX_INGRESS_TTL - PERMITTED_DRIFT)),
+            memo: parsedTx.metadata.memo,
           };
-          if (parsedTx.metadata.memo !== undefined) {
-            this._icpTransactionData.memo = parsedTx.metadata.memo;
-          }
+
           this._utils.validateRawTransaction(this._icpTransactionData);
           this._id = this.generateTransactionId();
           break;
@@ -284,12 +283,10 @@ export class Transaction extends BaseTransaction {
       operations: [senderOperation, receiverOperation, feeOperation],
       metadata: {
         created_at_time: args.createdAtTime.timestampNanos,
+        memo: Number(args.memo.memo),
       },
       account_identifier_signers: accountIdentifierSigners,
     };
-    if (args.memo !== undefined) {
-      parsedTxn.metadata.memo = Number(args.memo.memo);
-    }
     this.createdTimestamp = args.createdAtTime.timestampNanos;
     return parsedTxn;
   }

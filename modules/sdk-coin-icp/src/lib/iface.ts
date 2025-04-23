@@ -9,6 +9,7 @@ export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1])
 export const ROOT_PATH = 'm/0';
 export const ACCOUNT_BALANCE_ENDPOINT = '/account/balance';
 export const PUBLIC_NODE_REQUEST_ENDPOINT = '/api/v3/canister/';
+export const DEFAULT_MEMO = 0; // default memo value is 0
 
 export enum RequestType {
   CALL = 'call',
@@ -41,7 +42,7 @@ export interface IcpTransactionData {
   amount: string;
   fee: string;
   senderPublicKeyHex: string;
-  memo?: number | BigInt; // memo in string is not accepted by ICP chain.
+  memo: number | BigInt; // memo in string is not accepted by ICP chain.
   transactionType: OperationType;
   expiryTime: number | BigInt;
 }
@@ -71,30 +72,23 @@ export interface IcpOperation {
   amount: IcpAmount;
 }
 
-export interface IcpTransactionParseMetadata {
+export interface MetaData {
   created_at_time: number;
-  memo?: number | BigInt; // memo in string is not accepted by ICP chain.
+  memo: number | BigInt; // memo in string is not accepted by ICP chain.
   ingress_start?: number | BigInt; // it should be nano seconds
   ingress_end?: number | BigInt; // it should be nano seconds
-}
-
-export interface IcpTransactionBuildMetadata {
-  created_at_time: number;
-  memo?: number | BigInt; // memo in string is not accepted by ICP chain.
-  ingress_start: number | BigInt; // it should be nano seconds
-  ingress_end: number | BigInt; // it should be nano seconds
 }
 
 export interface IcpTransaction {
   public_keys: IcpPublicKey[];
   operations: IcpOperation[];
-  metadata: IcpTransactionBuildMetadata;
+  metadata: MetaData;
 }
 
 export interface ParsedTransaction {
   operations: IcpOperation[];
   account_identifier_signers: IcpAccount[];
-  metadata: IcpTransactionParseMetadata;
+  metadata: MetaData;
 }
 
 export interface IcpAccountIdentifier {
@@ -102,7 +96,7 @@ export interface IcpAccountIdentifier {
 }
 
 export interface SendArgs {
-  memo?: { memo: number | BigInt };
+  memo: { memo: number | BigInt };
   payment: { receiverGets: { e8s: number } };
   maxFee: { e8s: number };
   to: { hash: Buffer };
