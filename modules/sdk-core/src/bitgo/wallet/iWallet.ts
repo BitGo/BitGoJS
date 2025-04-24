@@ -305,6 +305,7 @@ export interface TransfersOptions extends PaginationOptions {
   includeHex?: boolean;
   state?: string[] | string;
   type?: string;
+  decorateUtxoSpecificFields?: boolean;
 }
 
 export interface GetTransferOptions {
