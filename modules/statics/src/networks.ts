@@ -1377,6 +1377,18 @@ class PolymeshTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://polymesh-testnet.subscan.io/extrinsic/';
 }
 
+class Vet extends Mainnet implements AccountNetwork {
+  name = 'VeChain';
+  family = CoinFamily.VET;
+  explorerUrl = 'https://explore.vechain.org/';
+}
+
+class VetTestnet extends Testnet implements AccountNetwork {
+  name = 'VeChainTestnet';
+  family = CoinFamily.VET;
+  explorerUrl = 'https://explore-testnet.vechain.org/';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -1442,6 +1454,7 @@ export const Networks = {
     tia: Object.freeze(new Tia()),
     ton: Object.freeze(new Ton()),
     trx: Object.freeze(new Trx()),
+    vet: Object.freeze(new Vet()),
     wemix: Object.freeze(new Wemix()),
     world: Object.freeze(new World()),
     xdc: Object.freeze(new Xdc()),
@@ -1519,6 +1532,7 @@ export const Networks = {
     tia: Object.freeze(new TiaTestnet()),
     ton: Object.freeze(new TonTestnet()),
     trx: Object.freeze(new TrxTestnet()),
+    vet: Object.freeze(new VetTestnet()),
     wemix: Object.freeze(new WemixTestnet()),
     world: Object.freeze(new WorldTestnet()),
     xdc: Object.freeze(new XdcTestnet()),

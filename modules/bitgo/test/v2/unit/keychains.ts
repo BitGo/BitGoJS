@@ -80,6 +80,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.WORLD &&
         n.asset !== UnderlyingAsset.STT &&
         n.asset !== UnderlyingAsset.SONEIUM &&
+        n.asset !== UnderlyingAsset.VET &&
         coinFamilyValues.includes(n.name)
     );
 
