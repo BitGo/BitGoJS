@@ -81,6 +81,7 @@ import {
   Sol,
   StellarToken,
   Stx,
+  Stt,
   Sui,
   SuiToken,
   Susd,
@@ -141,6 +142,7 @@ import {
   Tsei,
   Tsol,
   Tstx,
+  Tstt,
   Tsui,
   Tsusd,
   Twemix,
@@ -229,6 +231,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('sgb', Sgb.createInstance);
   globalCoinFactory.register('sol', Sol.createInstance);
   globalCoinFactory.register('stx', Stx.createInstance);
+  globalCoinFactory.register('stt', Stt.createInstance);
   globalCoinFactory.register('sui', Sui.createInstance);
   globalCoinFactory.register('susd', Susd.createInstance);
   globalCoinFactory.register('tao', Tao.createInstance);
@@ -290,6 +293,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tsei', Tsei.createInstance);
   globalCoinFactory.register('tsol', Tsol.createInstance);
   globalCoinFactory.register('tstx', Tstx.createInstance);
+  globalCoinFactory.register('tstt', Tstt.createInstance);
   globalCoinFactory.register('tsui', Tsui.createInstance);
   globalCoinFactory.register('tsusd', Tsusd.createInstance);
   globalCoinFactory.register('ttao', Ttao.createInstance);

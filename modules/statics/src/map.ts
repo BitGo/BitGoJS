@@ -83,6 +83,7 @@ export class CoinMap {
       10143: 'tmon',
       480: 'world',
       4801: 'tworld',
+      50312: 'tstt',
     };
     return ethLikeCoinFromChainId[chainId];
   }

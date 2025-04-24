@@ -188,6 +188,9 @@
       "path": "./modules/sdk-coin-stx"
     },
     {
+      "path": "./modules/sdk-coin-stt"
+    },
+    {
       "path": "./modules/sdk-coin-sui"
     },
     {

@@ -1279,7 +1279,7 @@ class Somnia extends Mainnet implements EthereumNetwork {
   name = 'Somnia';
   family = CoinFamily.STT;
   explorerUrl = 'https://shannon-explorer.somnia.network/tx/'; //TODO: WIN-5278: change it with mainnet explorer, when its available
-  chainId = 50311; //TODO: WIN-5278: change it with mainnet explorer, when its available
+  chainId = 50312; //TODO: WIN-5278: change it with mainnet explorer, when its available
   nativeCoinOperationHashPrefix = '50312'; //TODO: WIN-5278: change it with mainnet explorer, when its available
 }
 
