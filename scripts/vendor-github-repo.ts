@@ -44,12 +44,18 @@ function getArchivePath(lib: GithubSource): string {
 
 async function fetchArchive(lib: GithubSource, outfile: string): Promise<void> {
   try {
-    await fs.stat(outfile);
-    console.log(`Archive already exists: ${outfile}`);
-    return;
+    const result = await fs.stat(outfile);
+    if (result.size > 0) {
+      console.log(`Archive already exists: ${outfile}`);
+      return;
+    }
   } catch (e) {}
-  const buffer = await fetch(getUrl(lib)).then((res) => res.arrayBuffer());
-  await fs.writeFile(outfile, Buffer.from(buffer));
+  const url = getUrl(lib);
+  const result = await fetch(url);
+  if (!result.ok) {
+    throw new Error(`Failed to fetch ${url}: ${result.status} ${result.statusText}`);
+  }
+  await fs.writeFile(outfile, Buffer.from(await result.arrayBuffer()));
 }
 
 async function extractArchive(archivePath: string, targetDir: string): Promise<void> {
@@ -79,7 +85,7 @@ const vendorConfigs: VendorConfig[] = [
   {
     org: 'babylonlabs-io',
     repo: 'btc-staking-ts',
-    tag: 'v0.4.0-rc.2',
+    tag: 'v1.0.3',
     targetDir: 'modules/babylonlabs-io-btc-staking-ts',
   },
 ];
@@ -90,7 +96,7 @@ yargs
     builder(a) {
       return a.options({ name: { type: 'string' } });
     },
-    handler(a) {
+    async handler(a) {
       const matches = vendorConfigs.filter((cfg) => a.name === cfg.repo);
       if (matches.length === 0) {
         throw new Error(`no such vendor config ${a.name}`);
@@ -98,7 +104,7 @@ yargs
       if (matches.length > 1) {
         throw new Error(`ambiguous vendor config ${a.name}`);
       }
-      main(matches);
+      await main(matches);
     },
   })
   .help()

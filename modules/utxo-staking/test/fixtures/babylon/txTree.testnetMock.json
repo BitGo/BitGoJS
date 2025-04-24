@@ -190,11 +190,11 @@
               ],
               "outs": [
                 {
-                  "value": "2677",
+                  "value": "2678",
                   "script": "00145be12624d08a2b424095d7c07221c33450d14bf1"
                 },
                 {
-                  "value": "45878",
+                  "value": "45877",
                   "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46"
                 }
               ]
@@ -215,7 +215,7 @@
           {
             "witnessUtxo": {
               "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46",
-              "value": "45878"
+              "value": "45877"
             },
             "tapLeafScript": [
               {
@@ -237,7 +237,7 @@
               "locktime": 0,
               "ins": [
                 {
-                  "hash": "264b3381598865054722ba6679f12405e06305dc4dd5ad1a6f7c330c28670163",
+                  "hash": "e10ba472c29484735ceeda94f238a9a4bdbd7c9d2a228579a9c09075dc9fa8e0",
                   "index": 1,
                   "script": "",
                   "sequence": 1008,
@@ -246,7 +246,7 @@
               ],
               "outs": [
                 {
-                  "value": "45590",
+                  "value": "45589",
                   "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
                 }
               ]
@@ -299,11 +299,11 @@
               ],
               "outs": [
                 {
-                  "value": "2777",
+                  "value": "2778",
                   "script": "00145be12624d08a2b424095d7c07221c33450d14bf1"
                 },
                 {
-                  "value": "47778",
+                  "value": "47777",
                   "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46"
                 }
               ]
@@ -324,7 +324,7 @@
           {
             "witnessUtxo": {
               "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46",
-              "value": "47778"
+              "value": "47777"
             },
             "tapLeafScript": [
               {
@@ -346,7 +346,7 @@
               "locktime": 0,
               "ins": [
                 {
-                  "hash": "afdab314f4798317b427a227da4767e0a1c46a37cc14e33e34979aa1eff10ccd",
+                  "hash": "88934f7a4e1b28b6edf69f593ae6c03e94685083f49ce9c0357f515dfc53f8ca",
                   "index": 1,
                   "script": "",
                   "sequence": 1008,
@@ -355,7 +355,7 @@
               ],
               "outs": [
                 {
-                  "value": "47490",
+                  "value": "47489",
                   "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48"
                 }
               ]

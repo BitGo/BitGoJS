@@ -104,19 +104,19 @@ export class StakingScriptData {
     // check that the threshold is above 0 and less than or equal to
     // the size of the covenant emulators set
     if (
-      this.covenantThreshold == 0 ||
+      this.covenantThreshold <= 0 ||
       this.covenantThreshold > this.covenantKeys.length
     ) {
       return false;
     }
 
     // check that maximum value for staking time is not greater than uint16 and above 0
-    if (this.stakingTimeLock == 0 || this.stakingTimeLock > 65535) {
+    if (this.stakingTimeLock <= 0 || this.stakingTimeLock > 65535) {
       return false;
     }
 
     // check that maximum value for unbonding time is not greater than uint16 and above 0
-    if (this.unbondingTimeLock == 0 || this.unbondingTimeLock > 65535) {
+    if (this.unbondingTimeLock <= 0 || this.unbondingTimeLock > 65535) {
       return false;
     }
 
