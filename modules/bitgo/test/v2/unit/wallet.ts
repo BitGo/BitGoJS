@@ -12,6 +12,7 @@ import {
   common,
   CustomSigningFunction,
   ECDSAUtils,
+  EDDSAUtils,
   RequestTracer,
   TokenType,
   TssUtils,
@@ -34,6 +35,7 @@ import {
   TxRequestVersion,
   WalletSignMessageOptions,
   WalletSignTypedDataOptions,
+  PrebuildTransactionWithIntentOptions,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -4224,6 +4226,51 @@ describe('V2 Wallet:', function () {
             'token type and quantity is required to request a transaction with intent to transfer a token'
           );
         }
+      });
+    });
+
+    describe('Transfer NFTs', function () {
+      it('should populate intent with NFT token details', async function () {
+        const params: PrebuildTransactionWithIntentOptions = {
+          reqId,
+          intentType: 'payment',
+          recipients: [
+            {
+              address: '0x9fef749050644625012a2c866973775e7123753b3eef0a1a4037453ac26d79bf',
+              amount: '1',
+              tokenData: {
+                tokenType: TokenType.DIGITAL_ASSET,
+                tokenQuantity: '1',
+                tokenContractAddress: '0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5',
+                tokenId: '0x675b053d72c24dcc6bc7f38cdd45b4843cfb7af69a25ad21d002c376357e9d69',
+              },
+            },
+          ],
+        };
+
+        const baseCoin = bitgo.coin('tapt');
+        const mpcUtils = new EDDSAUtils.default(bitgo, baseCoin);
+        const intent = mpcUtils.populateIntent(baseCoin, params);
+
+        intent.should.have.property('intentType', 'payment');
+        intent.recipients!.should.deepEqual([
+          {
+            address: {
+              address: '0x9fef749050644625012a2c866973775e7123753b3eef0a1a4037453ac26d79bf',
+            },
+            amount: {
+              value: '1',
+              symbol: 'tapt:nftcollection1',
+            },
+            tokenData: {
+              tokenType: 'Digital Asset',
+              tokenQuantity: '1',
+              tokenContractAddress: '0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5',
+              tokenId: '0x675b053d72c24dcc6bc7f38cdd45b4843cfb7af69a25ad21d002c376357e9d69',
+              tokenName: 'tapt:nftcollection1',
+            },
+          },
+        ]);
       });
     });
 

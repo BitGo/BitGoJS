@@ -637,6 +637,11 @@ describe('CoinMap', function () {
   it('should find coin by id', () => {
     coins.has(btc.id).should.be.true();
   });
+
+  it('should find coin by NFT collection ID', () => {
+    const nftCollectionStatics = coins.get('tapt:0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5');
+    nftCollectionStatics.name.should.eql('tapt:nftcollection1');
+  });
 });
 
 coins.forEach((coin, coinName) => {
