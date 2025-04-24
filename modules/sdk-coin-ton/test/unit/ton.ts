@@ -10,6 +10,7 @@ import utils from '../../src/lib/utils';
 import Tonweb from 'tonweb';
 
 describe('TON:', function () {
+  let basecoin;
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
   bitgo.safeRegister('ton', Ton.createInstance);
   bitgo.safeRegister('tton', Tton.createInstance);
@@ -69,7 +70,7 @@ describe('TON:', function () {
   });
 
   describe('Verify transaction: ', () => {
-    const basecoin = bitgo.coin('tton');
+    basecoin = bitgo.coin('tton');
     txParamsList.forEach((_, index) => {
       const txParams = txParamsList[index];
       const txPrebuild = txPrebuildList[index];
@@ -567,6 +568,164 @@ describe('TON:', function () {
       const data2 = 'te6cckEBAQEAJAAAQ5/75w034qP9T0ZXY3muM5ouvFlNoNPky2YUs+Hcxd8otjDkIOPq';
       const rawAddress2 = '-1:df3869bf151fea7a32bb1bcd719cd175e2ca6d069f265b30a59f0ee62ef945b1';
       should.equal(utils.getRawWalletAddressFromCell(data2), rawAddress2);
+    });
+  });
+
+  describe('Ton recover - Non-BitGo and Unsigned Sweep Transactions', function () {
+    let sandbox: sinon.SinonSandbox;
+    beforeEach(() => {
+      sandbox = sinon.createSandbox(); // Create a new sandbox for each test
+    });
+
+    afterEach(() => {
+      sandbox.restore(); // Restore all stubs after each test
+    });
+
+    it('should successfully recover funds for non-BitGo recovery', async function () {
+      // Define recovery parameters
+      const recoveryParams = {
+        bitgoKey:
+          '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9dae1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857',
+        recoveryDestination: 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ',
+        apiKey: 'db2554641c61e60a979cc6c0053f2ec91da9b13e71d287768c93c2fb556be53b',
+        userKey:
+          '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9dae1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857',
+        walletPassphrase: 'dummyPassphrase',
+      };
+
+      // Mock the expected result for non-BitGo recovery
+      const mockResult = {
+        serializedTx:
+          'te6cckEBAgEAqgAB4YgAl7ROhLo8AJuoWtGtcK00PuUpY3YkQDj9/2SnMvunLpIFbl896wlMv7fsUOc+sMHzEl8q3vX5bm6noHginPJKBRznOrO7veIpHIEpiRLbH7/eNdpSsRhvL260JP/fD0vAIU1NGLtABDqAAAAACAAcAQBoQgB/OeiNdLeaL7+O04XuujuChSGrRd7ZnFl2fCd9FXdzAyDOJYCwAAAAAAAAAAAAAAAAAFwXGt8=',
+        scanIndex: 0,
+        coin: 'tton',
+      };
+
+      // Stub the recover function to return the mocked result
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(basecoin, 'recover').resolves(mockResult);
+
+      // Call the recover function
+      const result = await basecoin.recover(recoveryParams);
+
+      // Validate the result
+      result.serializedTx.should.equal(
+        'te6cckEBAgEAqgAB4YgAl7ROhLo8AJuoWtGtcK00PuUpY3YkQDj9/2SnMvunLpIFbl896wlMv7fsUOc+sMHzEl8q3vX5bm6noHginPJKBRznOrO7veIpHIEpiRLbH7/eNdpSsRhvL260JP/fD0vAIU1NGLtABDqAAAAACAAcAQBoQgB/OeiNdLeaL7+O04XuujuChSGrRd7ZnFl2fCd9FXdzAyDOJYCwAAAAAAAAAAAAAAAAAFwXGt8='
+      );
+      result.scanIndex.should.equal(0);
+      result.coin.should.equal('tton');
+      sandbox.restore(); // Restore the stubbed method
+    });
+
+    it('should return an unsigned sweep transaction if userKey and backupKey are missing', async function () {
+      // Define recovery parameters
+      const recoveryParams = {
+        bitgoKey:
+          '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9dae1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857',
+        recoveryDestination: 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ',
+        apiKey: 'db2554641c61e60a979cc6c0053f2ec91da9b13e71d287768c93c2fb556be53b',
+      };
+
+      // Mock the expected result for unsigned sweep transaction
+      const mockUnsignedTx = {
+        serializedTx:
+          'te6cckEBAgEAqgAB4YgAl7ROhLo8AJuoWtGtcK00PuUpY3YkQDj9/2SnMvunLpIFbl896wlMv7fsUOc+sMHzEl8q3vX5bm6noHginPJKBRznOrO7veIpHIEpiRLbH7/eNdpSsRhvL260JP/fD0vAIU1NGLtABDqAAAAACAAcAQBoQgB/OeiNdLeaL7+O04XuujuChSGrRd7ZnFl2fCd9FXdzAyDOJYCwAAAAAAAAAAAAAAAAAFwXGt8=',
+        scanIndex: 0,
+        coin: 'tton',
+        signableHex: 'dd98eb5a3700c0203237095ca1c0d5288bc0d650a9b59f7b81bac552f76137df',
+        derivationPath: 'm/0',
+        parsedTx: {
+          inputs: [
+            {
+              address: 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ',
+              valueString: '1000000000',
+              value: 1000000000,
+            },
+          ],
+          outputs: [
+            {
+              address: 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ',
+              valueString: '999000000',
+              coinName: 'tton',
+            },
+          ],
+          spendAmount: 999000000,
+          type: '',
+        },
+        feeInfo: {
+          fee: 1000000,
+          feeString: '1000000',
+        },
+        coinSpecific: {
+          commonKeychain:
+            '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9dae1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857',
+        },
+      };
+
+      const mockTxRequest = {
+        transactions: [
+          {
+            unsignedTx: mockUnsignedTx,
+            signatureShares: [],
+          },
+        ],
+        walletCoin: 'ton',
+      };
+
+      const mockTxRequests = {
+        txRequests: [mockTxRequest],
+      };
+
+      // Stub the recover function to return the mocked unsigned sweep transaction
+      const sandbox = sinon.createSandbox();
+
+      sandbox.stub(basecoin, 'recover').resolves(mockTxRequests);
+
+      // Call the recover function
+      const result = await basecoin.recover(recoveryParams);
+
+      // Validate the result
+      result.should.have.property('txRequests');
+      result.txRequests[0].should.have.property('transactions');
+      result.txRequests[0].transactions[0].should.have.property('unsignedTx');
+      result.txRequests[0].transactions[0].unsignedTx.should.equal(mockUnsignedTx);
+    });
+
+    it('should take OVC output and generate a signed sweep transaction', async function () {
+      // Define the parameters (mock OVC response)
+      const params = {
+        ovcResponse: {
+          serializedTx:
+            'te6cckEBAgEAqgAB4YgAl7ROhLo8AJuoWtGtcK00PuUpY3YkQDj9/2SnMvunLpIFbl896wlMv7fsUOc+sMHzEl8q3vX5bm6noHginPJKBRznOrO7veIpHIEpiRLbH7/eNdpSsRhvL260JP/fD0vAIU1NGLtABDqAAAAACAAcAQBoQgB/OeiNdLeaL7+O04XuujuChSGrRd7ZnFl2fCd9FXdzAyDOJYCwAAAAAAAAAAAAAAAAAFwXGt8=',
+          scanIndex: 0,
+          lastScanIndex: 0,
+        },
+      };
+
+      // Mock the expected result for the signed sweep transaction
+      const mockSignedSweepTxn = {
+        transactions: [
+          {
+            serializedTx:
+              'te6cckEBAgEAqgAB4YgAl7ROhLo8AJuoWtGtcK00PuUpY3YkQDj9/2SnMvunLpIFbl896wlMv7fsUOc+sMHzEl8q3vX5bm6noHginPJKBRznOrO7veIpHIEpiRLbH7/eNdpSsRhvL260JP/fD0vAIU1NGLtABDqAAAAACAAcAQBoQgB/OeiNdLeaL7+O04XuujuChSGrRd7ZnFl2fCd9FXdzAyDOJYCwAAAAAAAAAAAAAAAAAFwXGt8=',
+            scanIndex: 0,
+          },
+        ],
+        lastScanIndex: 0,
+      };
+
+      // Stub the createBroadcastableSweepTransaction function to return the mocked result
+      sandbox.stub(basecoin, 'createBroadcastableSweepTransaction').resolves(mockSignedSweepTxn);
+
+      // Call the createBroadcastableSweepTransaction function
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+
+      // Validate the result
+      recoveryTxn.transactions[0].serializedTx.should.equal(
+        'te6cckEBAgEAqgAB4YgAl7ROhLo8AJuoWtGtcK00PuUpY3YkQDj9/2SnMvunLpIFbl896wlMv7fsUOc+sMHzEl8q3vX5bm6noHginPJKBRznOrO7veIpHIEpiRLbH7/eNdpSsRhvL260JP/fD0vAIU1NGLtABDqAAAAACAAcAQBoQgB/OeiNdLeaL7+O04XuujuChSGrRd7ZnFl2fCd9FXdzAyDOJYCwAAAAAAAAAAAAAAAAAFwXGt8='
+      );
+      recoveryTxn.transactions[0].scanIndex.should.equal(0);
+      recoveryTxn.lastScanIndex.should.equal(0);
     });
   });
 });

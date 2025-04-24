@@ -494,6 +494,7 @@ export interface MPCRecoveryOptions {
   scan?: number;
   // token contract address of the token to recover
   tokenContractAddress?: string;
+  apiKey?: string;
 }
 
 export interface MPCConsolidationRecoveryOptions {

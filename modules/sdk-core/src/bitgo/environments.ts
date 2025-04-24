@@ -57,6 +57,7 @@ interface EnvironmentTemplate {
     solidity: string;
   };
   hmacVerificationEnforced: boolean;
+  tonNodeUrl: string;
   suiNodeUrl: string;
   etcNodeUrl: string;
   coredaoExplorerBaseUrl?: string;
@@ -173,6 +174,7 @@ const mainnetBase: EnvironmentTemplate = {
     solidity: 'https://api.trongrid.io',
   },
   hmacVerificationEnforced: true,
+  tonNodeUrl: 'https://toncenter.com/api/v2/jsonRPC',
   suiNodeUrl: 'https://fullnode.mainnet.sui.io',
   etcNodeUrl: 'https://etc.blockscout.com',
   coredaoExplorerBaseUrl: 'https://openapi.coredao.org',
@@ -236,6 +238,7 @@ const testnetBase: EnvironmentTemplate = {
     solidity: 'https://api.shasta.trongrid.io',
   },
   hmacVerificationEnforced: false,
+  tonNodeUrl: 'https://testnet.toncenter.com/api/v2/jsonRPC',
   suiNodeUrl: 'https://fullnode.testnet.sui.io',
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
   coredaoExplorerBaseUrl: 'https://api.test2.btcs.network',
