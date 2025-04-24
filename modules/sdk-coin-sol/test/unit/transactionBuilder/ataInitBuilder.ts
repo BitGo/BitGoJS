@@ -251,10 +251,12 @@ describe('Sol Associated Token Account Builder', () => {
       {
         ownerAddress: sender.pubkey,
         tokenName: mint,
+        ataAddress: sender.ataPubkey,
       },
       {
         ownerAddress: ownerPubkeys.pubkey,
         tokenName: 'sol:ray',
+        ataAddress: 'ACEuzYtR4gBFt6HLQTYisg2T7k8Vh4ss1SpnqmbVQSNy',
       },
     ];
     const multiAtaInitBuilder = (recipients) => {
@@ -325,6 +327,7 @@ describe('Sol Associated Token Account Builder', () => {
         const duplicateRecipient = {
           ownerAddress: sender.pubkey,
           tokenName: mint,
+          ataAddress: sender.ataPubkey,
         };
         const txBuilder = multiAtaInitBuilder(recipients);
         should(() => txBuilder.enableToken(duplicateRecipient)).throwError(
@@ -336,6 +339,7 @@ describe('Sol Associated Token Account Builder', () => {
         const errorMintRecipient = {
           ownerAddress: ownerPubkeys.pubkey,
           tokenName: 'invalidToken',
+          ataAddress: ownerPubkeys.ataPubkey,
         };
         const txBuilder = multiAtaInitBuilder(recipients);
         should(() => txBuilder.enableToken(errorMintRecipient)).throwError(
@@ -356,6 +360,7 @@ describe('Sol Associated Token Account Builder', () => {
         txBuilder.enableToken({
           ownerAddress: account.pub,
           tokenName: mint,
+          ataAddress: sender.ataPubkey,
         });
         txBuilder.sign({ key: account.prv });
         await txBuilder.build().should.rejectedWith('Invalid transaction: missing nonce blockhash');
@@ -367,6 +372,7 @@ describe('Sol Associated Token Account Builder', () => {
         txBuilder.enableToken({
           ownerAddress: account.pub,
           tokenName: mint,
+          ataAddress: sender.ataPubkey,
         });
         txBuilder.sign({ key: account.prv });
         await txBuilder.build().should.rejectedWith('Invalid transaction: missing sender');
@@ -394,6 +400,7 @@ describe('Sol Associated Token Account Builder', () => {
         const invalidOwner = {
           ownerAddress: 'invalid owner',
           tokenName: mint,
+          ataAddress: sender.ataPubkey,
         };
         const txBuilder = multiAtaInitBuilder(recipients);
         should(() => txBuilder.enableToken(invalidOwner)).throwError(

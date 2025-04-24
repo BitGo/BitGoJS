@@ -175,4 +175,5 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
 export class TokenAssociateRecipient {
   ownerAddress: string;
   tokenName: string;
+  ataAddress?: string;
 }

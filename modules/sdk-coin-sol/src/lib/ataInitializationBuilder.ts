@@ -130,6 +130,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     if (this._tokenAssociateRecipients.length === 0) {
       assert(this._mint && this._tokenName, 'Mint must be set before building the transaction');
       this._owner = this._owner || this._sender;
+
       this._tokenAssociateRecipients.push({
         ownerAddress: this._owner,
         tokenName: this._tokenName,
@@ -143,7 +144,13 @@ export class AtaInitializationBuilder extends TransactionBuilder {
         if (!token) {
           throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
         }
-        const ataPk = await getAssociatedTokenAccountAddress(token.tokenAddress, recipient.ownerAddress);
+
+        // Use the provided ataAddress if it exists, otherwise calculate it
+        let ataPk = recipient.ataAddress;
+        if (!ataPk) {
+          ataPk = await getAssociatedTokenAccountAddress(token.tokenAddress, recipient.ownerAddress);
+        }
+
         this._instructionsData.push({
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {

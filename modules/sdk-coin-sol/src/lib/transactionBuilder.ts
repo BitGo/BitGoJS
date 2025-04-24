@@ -25,7 +25,7 @@ import { KeyPair } from '.';
 import { InstructionBuilderTypes } from './constants';
 import { solInstructionFactory } from './solInstructionFactory';
 import assert from 'assert';
-import { DurableNonceParams, InstructionParams, Memo, Nonce, Transfer } from './iface';
+import { DurableNonceParams, InstructionParams, Memo, Nonce, SetPriorityFee, Transfer } from './iface';
 import { instructionParamsFactory } from './instructionParamsFactory';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -94,7 +94,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
       // If prio fee instruction exists, set the priority fee variable
       if (instruction.type === InstructionBuilderTypes.SetPriorityFee) {
-        const priorityFeeInstructionsData = filteredPriorityFeeInstructionsData[0];
+        const priorityFeeInstructionsData = filteredPriorityFeeInstructionsData[0] as SetPriorityFee;
         this.setPriorityFee({ amount: Number(priorityFeeInstructionsData.params.fee) });
       }
     }
