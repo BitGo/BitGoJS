@@ -64,15 +64,15 @@ export class Transaction extends BaseTransaction {
    *
    * @param {TxData} txData The transaction data to set
    */
-  setTransactionData(txData: TxData): void {
+  setTransactionData(txData: TxData, isFirstSigner?: boolean): void {
     this._transactionData = EthTransactionData.fromJson(txData, this._common);
-    this.updateFields();
+    this.updateFields(isFirstSigner);
   }
 
   /**
    * Update the internal fields based on the currently set transaction data, if there is any
    */
-  protected updateFields(): void {
+  protected updateFields(isFirstSigner?: boolean): void {
     if (!this._transactionData) {
       return;
     }
@@ -98,7 +98,7 @@ export class Transaction extends BaseTransaction {
       this._type === TransactionType.SendERC721 ||
       this._type === TransactionType.SendERC1155
     ) {
-      const { to, amount, tokenContractAddress, signature } = decodeTransferData(txData.data);
+      const { to, amount, tokenContractAddress, signature } = decodeTransferData(txData.data, isFirstSigner);
       let coinName: string;
       if (tokenContractAddress) {
         const token = getToken(tokenContractAddress, this._coinConfig.network, this._coinConfig.family);
@@ -118,8 +118,9 @@ export class Transaction extends BaseTransaction {
         value: amount,
         coin: coinName,
       });
-
-      this._signatures.push(signature);
+      if (signature !== '0x') {
+        this._signatures.push(signature);
+      }
     }
   }
 

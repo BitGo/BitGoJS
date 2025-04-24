@@ -43,6 +43,10 @@ export class ERC721TransferBuilder extends BaseNFTTransferBuilder {
     return this;
   }
 
+  getIsFirstSigner(): boolean {
+    return false;
+  }
+
   build(): string {
     const types = ERC721SafeTransferTypes;
     const values = [this._fromAddress, this._toAddress, this._tokenId, this._bytes];

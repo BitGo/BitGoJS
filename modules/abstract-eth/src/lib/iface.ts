@@ -113,6 +113,7 @@ export interface TransferData {
   signature: string;
   tokenContractAddress?: string;
   data?: string;
+  operationHashPrefix?: string;
 }
 
 export interface TokenTransferData extends TransferData {

@@ -24,8 +24,10 @@ export const flushTokensTypesv4 = ['address'];
 export const flushCoinsTypes = [];
 
 export const sendMultiSigTypes = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
+export const sendMultiSigTypesFirstSigner = ['string', 'address', 'uint', 'bytes', 'uint', 'uint'];
 
 export const sendMultiSigTokenTypes = ['address', 'uint', 'address', 'uint', 'uint', 'bytes'];
+export const sendMultiSigTokenTypesFirstSigner = ['string', 'address', 'uint', 'address', 'uint', 'uint'];
 
 export const ERC721SafeTransferTypes = ['address', 'address', 'uint256', 'bytes'];
 

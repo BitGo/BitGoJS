@@ -5,7 +5,15 @@ import assert from 'assert';
 import should from 'should';
 import * as ethUtil from 'ethereumjs-util';
 
-import { decodeTransferData, getCommon, Transaction, TransactionBuilder, TransferBuilder, KeyPair } from '../../../src';
+import {
+  decodeTransferData,
+  getCommon,
+  Transaction,
+  TransactionBuilder,
+  TransferBuilder,
+  KeyPair,
+  sendMultiSigTypes,
+} from '../../../src';
 import * as testData from '../../resources/eth';
 import { getBuilder } from '../getBuilder';
 
@@ -98,6 +106,93 @@ describe('Eth transaction builder send', () => {
       should.equal(parsedAmount, amount);
       should.equal(parsedExpireTime, expireTime);
       should.equal(parsedSequenceId, sequenceId);
+    });
+
+    it('a send funds transaction built for a first signer', async () => {
+      const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+      const amount = '1000000000';
+      const expireTime = 1590066728;
+      const sequenceId = 5;
+      txBuilder.fee({
+        eip1559: {
+          maxFeePerGas: '100',
+          maxPriorityFeePerGas: '10',
+        },
+        fee: '10',
+        gasLimit: '1000',
+      });
+      const transfer: TransferBuilder = txBuilder.transfer();
+      transfer
+        .amount(amount)
+        .to(recipient)
+        .expirationTime(expireTime)
+        .contractSequenceId(sequenceId)
+        .isFirstSigner(true);
+      const tx: Transaction = await txBuilder.build();
+
+      const methodId = EthereumAbi.methodID('sendMultiSig', sendMultiSigTypes);
+      const decodedData = EthereumAbi.rawDecode(
+        ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
+        Buffer.from(ethUtil.stripHexPrefix(tx.toJson().data).slice(methodId.toString('hex').length, -2), 'hex')
+      );
+
+      should.equal(decodedData[0], 'ETHER');
+      should.equal(decodedData[1], ethUtil.stripHexPrefix(recipient));
+      should.equal(decodedData[2].toString(), amount);
+      should.equal(decodedData[3].toString('hex'), '');
+      should.equal(decodedData[4].toString(), expireTime);
+      should.equal(decodedData[5].toString(), sequenceId);
+      should.equal(tx.toJson().chainId, 17000);
+      should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST_RECOVERY);
+      should.equal(tx.signature.length, 0);
+      should.equal(tx.inputs.length, 1);
+      should.equal(tx.inputs[0].address, contractAddress);
+      should.equal(tx.inputs[0].value, amount);
+
+      should.equal(tx.outputs.length, 1);
+      should.equal(tx.outputs[0].address, recipient);
+      should.equal(tx.outputs[0].value, amount);
+
+      const data = tx.toJson().data;
+      const {
+        to,
+        amount: parsedAmount,
+        expireTime: parsedExpireTime,
+        sequenceId: parsedSequenceId,
+      } = decodeTransferData(data, true);
+      should.equal(to, recipient);
+      should.equal(parsedAmount, amount);
+      should.equal(parsedExpireTime, expireTime);
+      should.equal(parsedSequenceId, sequenceId);
+      // Add signature from first signer
+      transfer.setSignature('0x1234567890abcdef').isFirstSigner(false);
+      const signedTx = await txBuilder.build();
+      const {
+        to: toSigned,
+        amount: parsedAmountSigned,
+        expireTime: parsedExpireTimeSigned,
+        sequenceId: parsedSequenceIdSigned,
+        signature,
+      } = decodeTransferData(signedTx.toJson().data);
+      should.equal(toSigned, recipient);
+      should.equal(parsedAmountSigned, amount);
+      should.equal(parsedExpireTimeSigned, expireTime);
+      should.equal(parsedSequenceIdSigned, sequenceId);
+      should.equal(signature, '0x1234567890abcdef');
+
+      const fromSerializedTxBuilder = getBuilder('hteth') as TransactionBuilder;
+      fromSerializedTxBuilder.from(testData.SEND_TX_BROADCAST_RECOVERY, true);
+      const fromSerializedTx = await fromSerializedTxBuilder.build();
+      const {
+        to: toFromSerialized,
+        amount: amountFromSerialized,
+        expireTime: expireTimeFromSerialized,
+        sequenceId: sequenceIdFromSerialized,
+      } = decodeTransferData(fromSerializedTx.toJson().data, true);
+      should.equal(toFromSerialized, recipient);
+      should.equal(amountFromSerialized, amount);
+      should.equal(expireTimeFromSerialized, expireTime);
+      should.equal(sequenceIdFromSerialized, sequenceId);
     });
 
     it('should send funds for wallet version 4', async () => {

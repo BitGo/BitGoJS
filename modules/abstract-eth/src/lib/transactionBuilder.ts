@@ -117,8 +117,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
     this.transaction.setTransactionType(this._type);
     transactionData.from = this._sourceKeyPair ? this._sourceKeyPair.getAddress() : undefined;
-
-    this.transaction.setTransactionData(transactionData);
+    this.transaction.setTransactionData(
+      transactionData,
+      this._transfer ? this._transfer.getIsFirstSigner() : undefined
+    );
     // Build and sign a new transaction based on the latest changes
     if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
       await this.transaction.sign(this._sourceKeyPair);
@@ -152,11 +154,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
+  protected fromImplementation(rawTransaction: string, isFirstSigner?: boolean): Transaction {
     let tx: Transaction;
     if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
       tx = Transaction.fromSerialized(this._coinConfig, this._common, rawTransaction);
-      this.loadBuilderInput(tx.toJson());
+      this.loadBuilderInput(tx.toJson(), isFirstSigner);
     } else {
       const txData = JSON.parse(rawTransaction);
       tx = new Transaction(this._coinConfig, txData);
@@ -168,8 +170,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * Load the builder data using the deserialized transaction
    *
    * @param {TxData} transactionJson the deserialized transaction json
+   * @param {boolean} isFirstSigner if the transaction is being signed by the first signer
    */
-  protected loadBuilderInput(transactionJson: TxData): void {
+  protected loadBuilderInput(transactionJson: TxData, isFirstSigner?: boolean): void {
     const decodedType = classifyTransaction(transactionJson.data);
     this.type(decodedType);
     this.counter(transactionJson.nonce);
@@ -195,10 +198,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (hasSignature(transactionJson)) {
       this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
     }
-    this.setTransactionTypeFields(decodedType, transactionJson);
+    this.setTransactionTypeFields(decodedType, transactionJson, isFirstSigner);
   }
 
-  protected setTransactionTypeFields(decodedType: TransactionType, transactionJson: TxData): void {
+  protected setTransactionTypeFields(
+    decodedType: TransactionType,
+    transactionJson: TxData,
+    isFirstSigner?: boolean
+  ): void {
     switch (decodedType) {
       case TransactionType.WalletInitialization:
         const { owners, salt } = decodeWalletCreationData(transactionJson.data);
@@ -233,7 +240,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.SendERC1155:
       case TransactionType.SendERC721:
         this.setContract(transactionJson.to);
-        this._transfer = this.transfer(transactionJson.data);
+        this._transfer = this.transfer(transactionJson.data, isFirstSigner);
         break;
       case TransactionType.AddressInitialization:
         this.setContract(transactionJson.to);
@@ -614,7 +621,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param [data] transfer data to initialize the transfer builder with, empty if none given
    * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder} the transfer builder
    */
-  abstract transfer(data?: string): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
+  abstract transfer(
+    data?: string,
+    isFirstSigner?: boolean
+  ): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
 
   /**
    * Returns the serialized sendMultiSig contract method data
