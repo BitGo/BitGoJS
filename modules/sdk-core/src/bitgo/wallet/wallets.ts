@@ -650,7 +650,12 @@ export class Wallets implements IWallets {
   async bulkUpdateWalletShareRequest(
     params: BulkUpdateWalletShareOptionsRequest[]
   ): Promise<BulkUpdateWalletShareResponse> {
-    return await this.bitgo.put(this.bitgo.url('/walletshares/update', 2)).send(params).result();
+    return await this.bitgo
+      .put(this.bitgo.url('/walletshares/update', 2))
+      .send({
+        shares: params,
+      })
+      .result();
   }
 
   /**
