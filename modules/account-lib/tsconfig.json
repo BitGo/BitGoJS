@@ -104,6 +104,9 @@
       "path": "../sdk-coin-stx"
     },
     {
+      "path": "../sdk-coin-stt"
+    },
+    {
       "path": "../sdk-coin-tia"
     },
     {

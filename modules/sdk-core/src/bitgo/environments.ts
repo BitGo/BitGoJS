@@ -75,6 +75,8 @@ interface EnvironmentTemplate {
   monExplorerApiToken?: string;
   worldExplorerBaseUrl?: string;
   worldExplorerApiToken?: string;
+  somniaExplorerBaseUrl?: string;
+  somniaExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -246,6 +248,7 @@ const testnetBase: EnvironmentTemplate = {
   icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
   monExplorerBaseUrl: 'https://testnet.monadexplorer.com/',
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
+  somniaExplorerBaseUrl: 'https://codex.somnia.network/',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
