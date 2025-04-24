@@ -131,23 +131,39 @@ function handleCreateWalletWithKeychains(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleSendCoins(req: express.Request) {
-  return req.bitgo
-    .wallets()
-    .get({ id: req.params.id })
-    .then(function (wallet) {
-      return wallet.sendCoins(req.body);
-    })
-    .catch(function (err) {
-      err.status = 400;
-      throw err;
-    })
-    .then(function (result) {
-      if (result.status === 'pendingApproval') {
-        throw apiResponse(202, result);
-      }
-      return result;
+async function handleSendCoins(req: express.Request) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const wallet = await coin.wallets().get({ id: req.params.id });
+
+  // Handle unsigned tx build
+  if (!req.body.txHex) {
+    const [unsignedTx, signingKeychain] = await Promise.all([
+      wallet.prebuildTransaction({
+        recipients: req.body.recipients,
+        walletPassphrase: req.body.walletPassphrase,
+        fee: req.body.fee,
+        ...req.body,
+      }),
+      wallet.getEncryptedUserKeychain(),
+    ]);
+
+    return {
+      unsignedTx, // Unsigned transaction data
+      signingKeychain, // Encrypted user keychain for signing
+    };
+  } else {
+    // Handle signed tx submission
+    const result = await wallet.submitTransaction({
+      txHex: req.body.txHex,
+      ...req.body,
     });
+
+    if (result.status === 'pendingApproval') {
+      throw apiResponse(202, result);
+    }
+    return result;
+  }
 }
 
 /**
