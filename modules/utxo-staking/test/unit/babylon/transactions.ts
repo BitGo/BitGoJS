@@ -178,9 +178,16 @@ function parseScripts(scripts: unknown) {
   return Object.fromEntries(Object.entries(scripts).map(([key, value]) => [key, parseScript(key, value)]));
 }
 
-async function assertEqualsFixture(fixtureName: string, value: unknown): Promise<void> {
-  value = normalize(value);
-  assert.deepStrictEqual(await getFixture(fixtureName, value), value);
+type EqualsAssertion = typeof assert.deepStrictEqual;
+
+async function assertEqualsFixture(
+  fixtureName: string,
+  value: unknown,
+  n = normalize,
+  eq: EqualsAssertion = assert.deepStrictEqual
+): Promise<void> {
+  value = n(value);
+  eq(await getFixture(fixtureName, value), value);
 }
 
 async function assertScriptsEqualFixture(
@@ -379,7 +386,20 @@ function describeWithKeys(
               utxo,
               feeRateSatB,
               800_000
-            )
+            ),
+            normalize,
+            (a, b) => {
+              // The vendor library serializes the signature as BIP322, while
+              // our implementation serializes it as ECDSA.
+              // Strip the pop field from the MsgCreateBTCDelegation.
+              function stripPop(v: unknown) {
+                const vAny = v as any;
+                delete vAny['unsignedDelegationMsg']['value']['pop'];
+              }
+              stripPop(a);
+              stripPop(b);
+              assert.deepStrictEqual(a, b);
+            }
           );
         }
       });

@@ -19,6 +19,38 @@ import { BabylonNetworkLike, toBitcoinJsNetwork } from './network';
 
 export type ValueWithTypeUrl<T> = { typeUrl: string; value: T };
 
+/**
+ * Decode a hex or base64 encoded string and check if the length is valid.
+ * @param v
+ * @param encoding
+ */
+function decodeCheck(v: string, encoding: 'hex' | 'base64') {
+  const result = Buffer.from(v, encoding);
+  if (result.toString(encoding).length !== v.length) {
+    throw new Error(`Invalid ${encoding} encoding`);
+  }
+  return result;
+}
+
+/**
+ * Convert a Buffer or string to a base64 encoded string.
+ * @param v
+ */
+function toBase64(v: Buffer | string) {
+  if (typeof v === 'string') {
+    for (const encoding of ['base64', 'hex'] as const) {
+      try {
+        return toBase64(decodeCheck(v, encoding));
+      } catch (e) {
+        // try next
+      }
+    }
+    throw new Error(`Invalid base64 or hex encoding: ${v}`);
+  }
+
+  return v.toString('base64');
+}
+
 export function getSignedPsbt(
   psbt: bitcoinjslib.Psbt,
   descriptor: Descriptor,
@@ -106,6 +138,12 @@ export function getBtcProviderForECKey(
   }
 
   return {
+    /**
+     * @param signingStep
+     * @param message
+     * @param type
+     * @returns Base64 encoded string
+     */
     async signMessage(
       signingStep: vendor.SigningStep,
       message: string,
@@ -114,9 +152,9 @@ export function getBtcProviderForECKey(
       assert(signingStep === 'proof-of-possession');
       switch (type) {
         case 'ecdsa':
-          return stakerKey.sign(Buffer.from(message, 'hex')).toString('hex');
+          return toBase64(stakerKey.sign(Buffer.from(message, 'hex')));
         case 'bip322-simple':
-          return signBip322Simple(message);
+          return toBase64(signBip322Simple(message));
         default:
           throw new Error(`unexpected signing step: ${signingStep}`);
       }
