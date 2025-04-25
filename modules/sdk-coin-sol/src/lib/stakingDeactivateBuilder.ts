@@ -1,13 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
 import { InstructionBuilderTypes, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from './constants';
 import { StakingDeactivate, Transfer } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidStakingAmount, validateAddress } from './utils';
-import { RecipientEntry } from '@bitgo/public-types';
 
 export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
@@ -15,7 +14,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _amount?: string;
   protected _unstakingAddress: string;
   protected _isMarinade = false;
-  protected _recipients: RecipientEntry[];
+  protected _recipients: Recipient[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -108,7 +107,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
    * @param recipients RecipientEntry[] - The recipients object
    * @returns {StakingDeactivateBuilder} This staking builder.
    */
-  recipients(recipients: RecipientEntry[]): this {
+  recipients(recipients: Recipient[]): this {
     this._recipients = recipients;
     return this;
   }

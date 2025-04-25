@@ -1,8 +1,7 @@
-import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
+import { TransactionExplanation as BaseTransactionExplanation, Recipient } from '@bitgo/sdk-core';
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
-import { RecipientEntry } from '@bitgo/public-types';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
 export interface SolanaKeys {
@@ -100,7 +99,7 @@ export interface StakingDeactivate {
     amount?: string;
     unstakingAddress?: string;
     isMarinade?: boolean;
-    recipients?: RecipientEntry[];
+    recipients?: Recipient[];
   };
 }
 
