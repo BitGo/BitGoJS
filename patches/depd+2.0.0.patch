@@ -1,0 +1,14 @@
+diff --git a/node_modules/depd/index.js b/node_modules/depd/index.js
+index 1bf2fcf..874d414 100644
+--- a/node_modules/depd/index.js
++++ b/node_modules/depd/index.js
+@@ -265,6 +265,9 @@ function log (message, site) {
+  */
+ 
+ function callSiteLocation (callSite) {
++  if (!callSite) {
++    return ['<unknown>', 0, 0]
++  }
+   var file = callSite.getFileName() || '<anonymous>'
+   var line = callSite.getLineNumber()
+   var colm = callSite.getColumnNumber()

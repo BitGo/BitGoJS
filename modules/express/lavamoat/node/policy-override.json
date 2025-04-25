@@ -1,0 +1,184 @@
+{
+  "resources": {
+    "create-hash": {
+      "builtin": {
+        "crypto": true
+      }
+    },
+    "ripemd160": {
+      "builtin": {
+        "buffer": true
+      }
+    },
+    "hash-base": {
+      "packages": {
+        "safe-buffer": true,
+        "inherits": true
+      }
+    },
+    "bs58check": {
+      "packages": {
+        "safe-buffer": true
+      }
+    },
+    "axios": {
+      "globals": {
+        "FormData": true,
+        "Uint8Array": true,
+        "URL": true
+      },
+      "builtin": {
+        "fs": true,
+        "path": true,
+        "http": true,
+        "https": true,
+        "url": true,
+        "stream": true,
+        "zlib": true
+      }
+    },
+    "js-sha256": {
+      "builtin": {
+        "crypto": true,
+        "buffer": true
+      },
+      "globals": {
+        "Buffer": true
+      }
+    },
+    "bitgo>@bitgo/sdk-coin-trx>tronweb": {
+      "globals": {
+        "self": true,
+        "window": true
+      }
+    },
+    "bitgo>@bitgo/sdk-coin-trx>tronweb>@tronweb3/google-protobuf": {
+      "globals": {
+        "globalThis": true,
+        "proto": "write",
+        "Uint8Array": true,
+        "Buffer": true,
+        "window": true,
+        "self": true
+      }
+    },
+    "@tronweb3/google-protobuf": {
+      "globals": {
+        "globalThis": true,
+        "proto": "write",
+        "Uint8Array": true,
+        "Buffer": true,
+        "window": true
+      },
+      "builtin": {
+        "fs": true,
+        "path": true,
+        "buffer": true
+      }
+    },
+    "tronweb": {
+      "globals": {
+        "window": true,
+        "process": true,
+        "XMLHttpRequest": true,
+        "FormData": true,
+        "Uint8Array": true,
+        "Buffer": true,
+        "fetch": true,
+        "proto": "write"
+      },
+      "packages": {
+        "axios": true,
+        "@tronweb3/google-protobuf": true
+      },
+      "builtin": {
+        "stream": true,
+        "crypto": true,
+        "buffer": true,
+        "fs": true,
+        "path": true,
+        "url": true,
+        "http": true,
+        "https": true
+      }
+    },
+    "bitgo>@bitgo/sdk-coin-icp>js-sha256": {
+      "builtin": {
+        "crypto": true,
+        "buffer": true
+      },
+      "globals": {
+        "Buffer": true
+      }
+    },
+    "bitgo>@bitgo/abstract-utxo>@bitgo/wasm-miniscript": {
+      "builtin": {
+        "util": true
+      }
+    },
+    "@babylonlabs-io/babylon-proto-ts": {
+      "packages": {
+        "@bufbuild/protobuf": true
+      }
+    },
+    "@bufbuild/protobuf": {
+      "globals": {
+        "Uint8Array": true,
+        "Buffer": true
+      },
+      "builtin": {
+        "buffer": true
+      },
+      "modules": {
+        "wire": true
+      }
+    },
+    "bitgo>@bitgo/sdk-coin-baby>@babylonlabs-io/babylon-proto-ts": {
+      "packages": {
+        "@bufbuild/protobuf": true,
+        "@bufbuild/protobuf/wire": true,
+        "bitgo>@bitgo/sdk-coin-baby>@babylonlabs-io/babylon-proto-ts>@bufbuild/protobuf": true
+      }
+    },
+    "bitgo>@bitgo/sdk-coin-cspr>casper-js-sdk>ts-results": {
+      "packages": {
+        "tslib": true,
+        "bitgo>@bitgo/sdk-coin-dot>@polkadot/api>tslib": true
+      }
+    },
+    "bitgo>@bitgo/sdk-coin-ada>@emurgo/cardano-serialization-lib-nodejs": {
+      "builtin": {
+        "util": true
+      }
+    },
+    "bitgo>stellar-sdk>axios": {
+      "builtin": {
+        "crypto": true
+      },
+      "packages": {
+        "superagent>form-data": true,
+        "form-data": true
+      }
+    },
+    "bitgo>@bitgo/abstract-utxo>@bitgo/utxo-core": {
+      "builtin": {
+        "assert": true
+      },
+      "packages": {
+        "bitgo>@bitgo/abstract-utxo>@bitgo/wasm-miniscript": true,
+        "@bitgo/utxo-lib": true,
+        "bitgo>@bitgo/unspents": true
+      }
+    },
+    "bitgo>@bitgo/sdk-coin-sol>@solana/spl-token>@solana/web3.js": {
+      "builtin": {
+        "buffer": true
+      }
+    },
+    "bitgo>@bitgo/abstract-utxo": {
+      "packages": {
+        "bitgo>@bitgo/abstract-utxo>@bitgo/utxo-core": true
+      }
+    }
+  }
+}

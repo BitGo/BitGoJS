@@ -1,0 +1,22 @@
+diff --git a/node_modules/@hashgraph/sdk/lib/EntityIdHelper.cjs b/node_modules/@hashgraph/sdk/lib/EntityIdHelper.cjs
+index 545c6a4..807575d 100644
+--- a/node_modules/@hashgraph/sdk/lib/EntityIdHelper.cjs
++++ b/node_modules/@hashgraph/sdk/lib/EntityIdHelper.cjs
+@@ -6,7 +6,16 @@ Object.defineProperty(exports, "__esModule", {
+ exports._checksum = _checksum;
+ exports._parseAddress = _parseAddress;
+ exports.compare = compare;
+-exports.constructor = constructor;
++// Violates SES Rules:
++// exports.constructor = constructor;
++// Workaround: 
++Object.defineProperty(exports, 'constructor', {
++  value: constructor,
++  writable: false,
++  enumerable: true,
++  configurable: false
++});
++
+ exports.fromSolidityAddress = fromSolidityAddress;
+ exports.fromString = fromString;
+ exports.fromStringSplitter = fromStringSplitter;

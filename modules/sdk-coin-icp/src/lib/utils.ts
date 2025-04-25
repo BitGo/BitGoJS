@@ -24,7 +24,7 @@ import {
 } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 const messageCompiled = require('../../resources/messageCompiled');
-const { encode, decode, Encoder } = require('cbor-x/index-no-eval'); // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
+const { encode, decode, Encoder } = require('cbor-x'); // The "cbor-x" library is used here because it supports modern features like BigInt. do not replace it with "cbor as "cbor" is not compatible with Rust's serde_cbor when handling big numbers.
 import js_sha256 from 'js-sha256';
 import BigNumber from 'bignumber.js';
 import { secp256k1 } from '@noble/curves/secp256k1';

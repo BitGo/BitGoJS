@@ -1,0 +1,13 @@
+diff --git a/node_modules/sanitize-html/node_modules/htmlparser2/lib/Tokenizer.js b/node_modules/sanitize-html/node_modules/htmlparser2/lib/Tokenizer.js
+index 43863cc..8539955 100644
+--- a/node_modules/sanitize-html/node_modules/htmlparser2/lib/Tokenizer.js
++++ b/node_modules/sanitize-html/node_modules/htmlparser2/lib/Tokenizer.js
+@@ -541,7 +541,7 @@ var Tokenizer = /** @class */ (function () {
+         if (c === CharCodes.Dash) {
+             this.state = State.InCommentLike;
+             this.currentSequence = Sequences.CommentEnd;
+-            // Allow short comments (eg. <!-->)
++            // Allow short comments 
+             this.sequenceIndex = 2;
+             this.sectionStart = this.index + 1;
+         }

@@ -1,0 +1,28 @@
+diff --git a/node_modules/should-util/cjs/should-util.js b/node_modules/should-util/cjs/should-util.js
+index abb5473..117b706 100755
+--- a/node_modules/should-util/cjs/should-util.js
++++ b/node_modules/should-util/cjs/should-util.js
+@@ -43,8 +43,20 @@ function isGeneratorFunction(f) {
+   return typeof f === 'function' && /^function\s*\*\s*/.test(f.toString());
+ }
+ 
+-exports.hasOwnProperty = hasOwnProperty;
+-exports.propertyIsEnumerable = propertyIsEnumerable;
++// exports.hasOwnProperty = hasOwnProperty;
++Object.defineProperty(exports, 'hasOwnProperty', {
++  value: constructor,
++  writable: false,
++  enumerable: true,
++  configurable: false
++});
++// exports.propertyIsEnumerable = propertyIsEnumerable;
++Object.defineProperty(exports, 'propertyIsEnumerable', {
++  value: propertyIsEnumerable,
++  writable: false,
++  enumerable: true,
++  configurable: false
++});
+ exports.merge = merge;
+ exports.isIterator = isIterator;
+ exports.isGeneratorFunction = isGeneratorFunction;
+\ No newline at end of file

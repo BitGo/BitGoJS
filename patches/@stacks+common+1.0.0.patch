@@ -1,0 +1,40 @@
+diff --git a/node_modules/@stacks/transactions/node_modules/@stacks/network/node_modules/@stacks/common/dist/common.cjs.development.js b/node_modules/@stacks/transactions/node_modules/@stacks/network/node_modules/@stacks/common/dist/common.cjs.development.js
+index 96dfa71..6d8d3f6 100644
+--- a/node_modules/@stacks/transactions/node_modules/@stacks/network/node_modules/@stacks/common/dist/common.cjs.development.js
++++ b/node_modules/@stacks/transactions/node_modules/@stacks/network/node_modules/@stacks/common/dist/common.cjs.development.js
+@@ -658,7 +658,13 @@
+     }
+ 
+     var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype);
+-    GeneratorFunction.prototype = Gp.constructor = GeneratorFunctionPrototype;
++    // GeneratorFunction.prototype = Gp.constructor = GeneratorFunctionPrototype;
++    Object.defineProperty(Gp, 'constructor', {
++         value: GeneratorFunction,
++         writable: true,
++         enumerable: false,
++         configurable: true
++    });  
+     GeneratorFunctionPrototype.constructor = GeneratorFunction;
+     GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"); // Helper for defining the .next, .throw, and .return methods of the
+     // Iterator interface in terms of a single ._invoke method.
+@@ -945,9 +955,17 @@
+     // object to not be returned from this call. This ensures that doesn't happen.
+     // See https://github.com/facebook/regenerator/issues/274 for more details.
+ 
+-    Gp[iteratorSymbol] = function () {
+-      return this;
+-    };
++    // Gp[iteratorSymbol] = function () {
++    //   return this;
++    // };
++    Object.defineProperty(Gp, iteratorSymbol, {
++         value: function () {
++             return this;
++         },
++         writable: false,
++         enumerable: false,
++         configurable: true
++    });
+ 
+     Gp.toString = function () {
+       return "[object Generator]";

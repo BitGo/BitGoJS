@@ -129,6 +129,7 @@
   },
   "dependencies": {
     "axios": "^1.8.2",
+    "patch-package": "^8.0.0",
     "terser": "^5.14.2",
     "tmp": "^0.2.3"
   },

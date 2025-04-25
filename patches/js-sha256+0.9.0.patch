@@ -1,0 +1,15 @@
+diff --git a/node_modules/js-sha256/src/sha256.js b/node_modules/js-sha256/src/sha256.js
+index 14bcf45..80363ca 100644
+--- a/node_modules/js-sha256/src/sha256.js
++++ b/node_modules/js-sha256/src/sha256.js
+@@ -80,8 +80,8 @@
+   };
+ 
+   var nodeWrap = function (method, is224) {
+-    var crypto = eval("require('crypto')");
+-    var Buffer = eval("require('buffer').Buffer");
++    var crypto = require('crypto');
++    var Buffer = require('buffer').Buffer;
+     var algorithm = is224 ? 'sha224' : 'sha256';
+     var nodeMethod = function (message) {
+       if (typeof message === 'string') {
