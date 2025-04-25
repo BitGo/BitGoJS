@@ -20,10 +20,17 @@ import {
   tokens,
   getFormattedTokens,
   createTokenMapUsingConfigDetails,
+  createTokenMapUsingTrimmedConfigDetails,
 } from '../../src';
 import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
-import { amsTokenConfig, amsTokenConfigWithCustomToken, incorrectAmsTokenConfig } from './resources/amsTokenConfig';
+import {
+  amsTokenConfig,
+  amsTokenConfigWithCustomToken,
+  incorrectAmsTokenConfig,
+  reducedAmsTokenConfig,
+  amsTokenWithUnsupportedNetwork,
+} from './resources/amsTokenConfig';
 
 interface DuplicateCoinObject {
   name: string;
@@ -957,5 +964,19 @@ describe('create token map using config details', () => {
     formattedTokens.bitcoin.should.deepEqual(tokens.bitcoin);
     formattedTokens.testnet.eth.should.not.deepEqual(tokens.testnet.eth);
     formattedTokens.testnet.eth.tokens.some((token) => token.type === 'hteth:faketoken').should.eql(true);
+  });
+  it('should not create an base coin object in coin map for token with unsupported network', () => {
+    const tokenMap = createTokenMapUsingTrimmedConfigDetails(amsTokenWithUnsupportedNetwork);
+    tokenMap.has('hteth:faketoken').should.eql(false);
+  });
+  it('should create a coin map using reduced token config details', () => {
+    const coinMap1 = createTokenMapUsingTrimmedConfigDetails(reducedAmsTokenConfig);
+    const amsToken1 = coinMap1.get('hteth:faketoken');
+    const coinMap2 = createTokenMapUsingConfigDetails(amsTokenConfigWithCustomToken);
+    const amsToken2 = coinMap2.get('hteth:faketoken');
+    const { network: tokenNetwork1, ...tokenRest1 } = amsToken1;
+    const { network: tokenNetwork2, ...tokenRest2 } = amsToken2;
+    tokenRest1.should.deepEqual(tokenRest2);
+    JSON.stringify(tokenNetwork1).should.eql(JSON.stringify(tokenNetwork2));
   });
 });

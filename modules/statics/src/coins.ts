@@ -47,7 +47,7 @@ import {
 import { ada } from './ada';
 import { avaxp } from './avaxp';
 import { BaseCoin, BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
-import { AmsTokenConfig } from './tokenConfig';
+import { AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { erc20Coins } from './coins/erc20Coins';
 import { avaxTokens } from './coins/avaxTokens';
 import { bscTokens } from './coins/bscTokens';
@@ -55,6 +55,7 @@ import { polygonTokens } from './coins/polygonTokens';
 import { solTokens } from './coins/solTokens';
 import { CoinMap } from './map';
 import { Networks } from './networks';
+import { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
 import { utxoCoins } from './utxo';
 import { lightningCoins } from './lightning';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
@@ -3266,6 +3267,25 @@ function getAptTokenInitializer(token: AmsTokenConfig) {
   };
 }
 
+export function isCoinPresentInCoinMap({
+  name,
+  id,
+  contractAddress,
+  alias,
+}: {
+  name: string;
+  id?: string;
+  contractAddress?: string;
+  alias?: string;
+}): boolean {
+  return Boolean(
+    coins.has(name) ||
+      (id && coins.has(id)) ||
+      (contractAddress && coins.has(contractAddress)) ||
+      (alias && coins.has(alias))
+  );
+}
+
 export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, AmsTokenConfig[]>): CoinMap {
   const BaseCoins: Map<string, Readonly<BaseCoin>> = new Map();
   const initializerMap: Record<string, unknown> = {
@@ -3318,9 +3338,12 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
   for (const tokenConfigs of Object.values(tokenConfigMap)) {
     const tokenConfig = tokenConfigs[0];
     const family = tokenConfig.family;
-    const name = tokenConfig.name;
 
-    if (!coins.has(name) && tokenConfig.isToken && !nftAndOtherTokens.has(tokenConfig.name)) {
+    if (
+      !isCoinPresentInCoinMap({ ...tokenConfig }) &&
+      tokenConfig.isToken &&
+      !nftAndOtherTokens.has(tokenConfig.name)
+    ) {
       const token = createToken(family, tokenConfig, initializerMap);
       if (token) {
         BaseCoins.set(token.name, token);
@@ -3329,4 +3352,35 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
   }
 
   return CoinMap.fromCoins(Array.from(BaseCoins.values()));
+}
+
+export function createTokenMapUsingTrimmedConfigDetails(
+  reducedTokenConfigMap: Record<string, TrimmedAmsTokenConfig[]>
+): CoinMap {
+  const amsTokenConfigMap: Record<string, AmsTokenConfig[]> = {};
+  const networkNameMap = new Map(
+    Object.values(Networks).flatMap((networkType) =>
+      Object.values(networkType).map((network) => [network.name, network])
+    )
+  );
+
+  for (const tokenConfigs of Object.values(reducedTokenConfigMap)) {
+    const tokenConfig = tokenConfigs[0];
+    const network = networkNameMap.get(tokenConfig.network.name);
+    if (
+      !isCoinPresentInCoinMap({ ...tokenConfig }) &&
+      network &&
+      tokenConfig.isToken &&
+      networkFeatureMapForTokens[network.family]
+    ) {
+      const features = new Set([
+        ...(networkFeatureMapForTokens[network.family] || []),
+        ...(tokenConfig.additionalFeatures || []),
+      ]);
+      tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
+      amsTokenConfigMap[tokenConfig.name] = [{ ...tokenConfig, features: Array.from(features), network }];
+    }
+  }
+
+  return createTokenMapUsingConfigDetails(amsTokenConfigMap);
 }
