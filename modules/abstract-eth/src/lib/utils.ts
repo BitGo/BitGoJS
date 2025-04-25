@@ -292,6 +292,7 @@ export function decodeWalletCreationData(data: string): WalletInitializationData
  * Decode the given ABI-encoded transfer data and return parsed fields
  *
  * @param data The data to decode
+ * @param isFirstSigner whether transaction is being built for a first signer
  * @returns parsed transfer data
  */
 export function decodeTransferData(data: string, isFirstSigner?: boolean): TransferData {

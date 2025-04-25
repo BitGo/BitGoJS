@@ -24,6 +24,7 @@ export abstract class BaseTransactionBuilder {
    * extending this class. Some examples are hex, base64, or JSON.
    *
    * @param rawTransaction A raw transaction to be parsed
+   * @param isFirstSigner Whether the transaction is being signed by the first signer
    */
   from(rawTransaction: any, isFirstSigner?: boolean): void {
     this.validateRawTransaction(rawTransaction);

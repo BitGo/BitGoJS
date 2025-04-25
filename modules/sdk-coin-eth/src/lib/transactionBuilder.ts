@@ -26,7 +26,8 @@ export class TransactionBuilder extends EthLikeTransactionBuilder {
   /**
    * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
    *
-   * @param [data] transfer data to initialize the transfer builder with, empty if none given
+   * @param {string} data transfer data to initialize the transfer builder with, empty if none given
+   * @param {boolean} isFirstSigner whether the transaction is being signed by the first signer
    * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder} the transfer builder
    */
   transfer(data?: string, isFirstSigner?: boolean): TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder {
