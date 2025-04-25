@@ -37,6 +37,7 @@ import {
 } from '../utils';
 import {
   AccelerateTransactionOptions,
+  AddressesByBalanceOptions,
   AddressesOptions,
   BuildConsolidationTransactionOptions,
   BuildTokenEnablementOptions,
@@ -1128,6 +1129,38 @@ export class Wallet implements IWallet {
 
     return this.bitgo
       .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
+      .query(query)
+      .result();
+  }
+
+  /**
+   * List the addresses sorted by balance for a given wallet
+   * @param params
+   * @returns {*}
+   */
+  async addressesByBalance(params: AddressesByBalanceOptions): Promise<any> {
+    const query: AddressesByBalanceOptions = {
+      token: params.token,
+    };
+    query.sort = params.sort ?? -1;
+    query.page = params.page ?? 1;
+    query.limit = params.limit ?? 500;
+
+    if (!_.isNumber(query.sort)) {
+      throw new Error('invalid sort argument, expecting number');
+    }
+    if (!_.isNumber(query.page)) {
+      throw new Error('invalid page argument, expecting number');
+    }
+    if (!_.isNumber(params.limit)) {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    if (params.limit < 1 || params.limit > 500) {
+      throw new Error('limit argument must be between 1 and 500');
+    }
+
+    return this.bitgo
+      .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses/balances'))
       .query(query)
       .result();
   }
