@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@0.5.0...@bitgo/babylonlabs-io-btc-staking-ts@1.1.0) (2025-04-25)
+
+### Features
+
+- **babylonlabs-io-btc-staking-ts:** backport changes from v1.0.3 ([c8f312b](https://github.com/BitGo/BitGoJS/commit/c8f312b782766b539fb89d49d677dcd9369e0110))
+- **babylonlabs-io-btc-staking-ts:** change instance fields to protected ([8772ff5](https://github.com/BitGo/BitGoJS/commit/8772ff5957df50369926853be1b94c84ed81ac16))
+
 # [0.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@0.4.0...@bitgo/babylonlabs-io-btc-staking-ts@0.5.0) (2025-03-18)
 
 ### Features

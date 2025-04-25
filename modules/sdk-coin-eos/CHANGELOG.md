@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@2.1.69...@bitgo/sdk-coin-eos@3.0.0) (2025-04-25)
+
+### Code Refactoring
+
+- remove unused bls and eth2 codebase ([4ffd5bd](https://github.com/BitGo/BitGoJS/commit/4ffd5bd13bc2e8d43b57bef4aae0b5880bbf9e2b))
+
+### BREAKING CHANGES
+
+- remove bls and eth2 sdk
+
+TICKET: WP-3961
+
 ## [2.1.69](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eos@2.1.68...@bitgo/sdk-coin-eos@2.1.69) (2025-04-15)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eos

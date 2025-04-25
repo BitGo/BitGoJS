@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.2.0...@bitgo/sdk-coin-opeth@18.3.0) (2025-04-25)
+
+### Features
+
+- add isTssSupportGated method and gate arb and op ([c2a38cd](https://github.com/BitGo/BitGoJS/commit/c2a38cd1e23bcb5f3919c3de6235aae55c27b8be))
+- add tss support for arb and op tokens ([3450a59](https://github.com/BitGo/BitGoJS/commit/3450a59818741222f0bb143c478a8cdb1bf89429))
+- **statics:** add coin feature TSS_SUPPORT_GATED and gate arb and op ([bb217aa](https://github.com/BitGo/BitGoJS/commit/bb217aa49b169187189f5cb8119feab204fcd931))
+
 # [18.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.1.60...@bitgo/sdk-coin-opeth@18.2.0) (2025-04-15)
 
 ### Features

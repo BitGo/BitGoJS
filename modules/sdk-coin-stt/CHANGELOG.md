@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 1.1.0 (2025-04-25)
+
+### Features
+
+- **sdk-coin-stt:** add transaction builder ([1e77306](https://github.com/BitGo/BitGoJS/commit/1e7730665a74235085d4dfe0c48ddecceb400624))
+
 ### Bug Fixes
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stt

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.23.62...@bitgo/key-card@0.24.0) (2025-04-25)
+
+### Code Refactoring
+
+- **root:** remove bitgo backup provider "bitgoTrustAsKrs" ([f5f38b1](https://github.com/BitGo/BitGoJS/commit/f5f38b1b20cb04c11ad9321250c88f7e763f42e6))
+
+### BREAKING CHANGES
+
+- **root:** remove bitgo backup provider "bitgoTrustAsKrs"
+
+TICKET: WP-4186
+
 ## [0.23.62](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.23.61...@bitgo/key-card@0.23.62) (2025-04-15)
 
 **Note:** Version bump only for package @bitgo/key-card

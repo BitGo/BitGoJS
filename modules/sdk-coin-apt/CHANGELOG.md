@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.0.3...@bitgo/sdk-coin-apt@2.1.0) (2025-04-25)
+
+### Features
+
+- **sdk-coin-apt:** use entryFunctionAbi for all type of assets ([b98a353](https://github.com/BitGo/BitGoJS/commit/b98a353ab630e685696a291d98d9ca15e05b8245))
+
 ## [2.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.0.2...@bitgo/sdk-coin-apt@2.0.3) (2025-04-15)
 
 ### Bug Fixes

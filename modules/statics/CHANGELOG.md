@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.8.0...@bitgo/statics@52.0.0) (2025-04-25)
+
+### Bug Fixes
+
+- fix currency code for txrp:xsgd ([14d0934](https://github.com/BitGo/BitGoJS/commit/14d09346af120505ed27777837a0a35c495e07c2))
+- fix the currency code for the xrp tokens if more than 3 characters ([d522b6a](https://github.com/BitGo/BitGoJS/commit/d522b6ae36cd4718b4fbeef79d94e40857403a03))
+- fix the xrp:xsgd currency for txn hash ([fb7da56](https://github.com/BitGo/BitGoJS/commit/fb7da569cef31edd686209d48eec1ef892886f56))
+- update stx:susdh decimal value ([8878814](https://github.com/BitGo/BitGoJS/commit/8878814a38c4371938fe332d9249d0609ece3bdf))
+
+### Code Refactoring
+
+- remove unused bls and eth2 codebase ([4ffd5bd](https://github.com/BitGo/BitGoJS/commit/4ffd5bd13bc2e8d43b57bef4aae0b5880bbf9e2b))
+
+### Features
+
+- added new constants to map network family to features for token ([f742fce](https://github.com/BitGo/BitGoJS/commit/f742fcec2ed1196d21cdfc57eb918a15e7ae46a0))
+- fiat sgd and aed ofc config ([bb0352d](https://github.com/BitGo/BitGoJS/commit/bb0352d8288e3dedeb8d3239d3073ec9c55695d2))
+- **sdk-coin-mon:** add transaction builder ([cff759f](https://github.com/BitGo/BitGoJS/commit/cff759f5c91711ec81af7effc7fe3d32320930fb))
+- **sdk-coin-stt:** add transaction builder ([1e77306](https://github.com/BitGo/BitGoJS/commit/1e7730665a74235085d4dfe0c48ddecceb400624))
+- **sdk-coin-world:** add transaction builder ([30e888e](https://github.com/BitGo/BitGoJS/commit/30e888ed7bb4a9325f873ad3ce30bbdd39a77893))
+- **statics:** add coin feature for erc20 batching ([c756ecd](https://github.com/BitGo/BitGoJS/commit/c756ecda6ee8504d76eabf94858a1294cf98634a))
+- **statics:** add coin feature TSS_SUPPORT_GATED and gate arb and op ([bb217aa](https://github.com/BitGo/BitGoJS/commit/bb217aa49b169187189f5cb8119feab204fcd931))
+- **statics:** add go account support for baby ([da3fdb1](https://github.com/BitGo/BitGoJS/commit/da3fdb13233781802b97dc2758a040793076329d))
+- **statics:** add tokens hteth:usd1 and tbsc:usd1 ([2411bb0](https://github.com/BitGo/BitGoJS/commit/2411bb0b7a81a22aea5c3a1a777e16381ae4b021))
+- **statics:** added monad config ([5b44c19](https://github.com/BitGo/BitGoJS/commit/5b44c191bf457348a0c180001327fdb968991127))
+- **statics:** added somnia config ([2f8bed7](https://github.com/BitGo/BitGoJS/commit/2f8bed7994a39a9121dd2bf75e51cbf47c0d74c4))
+- **statics:** added soneium config ([4737b45](https://github.com/BitGo/BitGoJS/commit/4737b4529e48a8af6dcf43d7d1194b5541097210))
+- **statics:** added world config ([5baccb8](https://github.com/BitGo/BitGoJS/commit/5baccb81d45579528e617ca1f51b731c9391b83a))
+- **statics:** introduce SHARED_EVM_SIGNING coin feature ([93d28af](https://github.com/BitGo/BitGoJS/commit/93d28af23832e2a1a10b5bdfb281b7bdd6a8b32a))
+- **statics:** map NFT collection ID to BaseCoin ([827a1ac](https://github.com/BitGo/BitGoJS/commit/827a1ac69f64839dfccd6be11c526dc1f1ae85d3))
+- **statics:** update ICP explorer URLs for mainnet and testnet ([980ffd5](https://github.com/BitGo/BitGoJS/commit/980ffd5191a699e6f2bfd49f8f5985cbcceaa10a))
+
+### BREAKING CHANGES
+
+- remove bls and eth2 sdk
+
+TICKET: WP-3961
+
 # [51.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.7.0...@bitgo/statics@51.8.0) (2025-04-15)
 
 ### Bug Fixes

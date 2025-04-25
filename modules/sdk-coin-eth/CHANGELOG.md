@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.3.1...@bitgo/sdk-coin-eth@24.4.0) (2025-04-25)
+
+### Bug Fixes
+
+- **abstract-eth:** fix building using from for first signer ([c8ec337](https://github.com/BitGo/BitGoJS/commit/c8ec3377d5502a580801fabdcece528b4c3ac03a))
+
+### Features
+
+- **abstract-eth:** support building eth tx for a first signer ([cbd4d4c](https://github.com/BitGo/BitGoJS/commit/cbd4d4cdee97a6ff51df2c854e945791ac0df4b4))
+
 ## [24.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.3.0...@bitgo/sdk-coin-eth@24.3.1) (2025-04-15)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

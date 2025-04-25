@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.3.3...@bitgo/express@13.4.0) (2025-04-25)
+
+### Features
+
+- **express:** add support to change keychain password ([8cef8e1](https://github.com/BitGo/BitGoJS/commit/8cef8e1c0d4cf5f4980f10e49b2eadf39fd82821))
+
 ## [13.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.3.2...@bitgo/express@13.3.3) (2025-04-15)
 
 **Note:** Version bump only for package @bitgo/express

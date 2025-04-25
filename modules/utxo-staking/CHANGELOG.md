@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.13.0...@bitgo/utxo-staking@1.14.0) (2025-04-25)
+
+### Bug Fixes
+
+- **utxo-staking:** add support for bip322-simple signature type ([f5babca](https://github.com/BitGo/BitGoJS/commit/f5babca078c0a701c8da1576b3aaec4f3dcead2d))
+- **utxo-staking:** support BIP-322 for delegation signatures ([0950a20](https://github.com/BitGo/BitGoJS/commit/0950a2079df70f97dc8a877d2cd2c20aff1117f6))
+
+### Features
+
+- **utxo-staking:** add support for Babylon mainnet ([76f765e](https://github.com/BitGo/BitGoJS/commit/76f765ee4403f4e08ab21bea3b3ae5a38de82645))
+- **utxo-staking:** base64 encoding for Babylon protocol signatures ([5de2096](https://github.com/BitGo/BitGoJS/commit/5de209629fc26d7f5b0666dd1eefb4cc24581a2c))
+- **utxo-staking:** force ECDSA signature for Babylon BTC staking ([c40cd02](https://github.com/BitGo/BitGoJS/commit/c40cd02b87ee942e12bc604a8c44e390d7656ec7))
+
 # [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.12.1...@bitgo/utxo-staking@1.13.0) (2025-04-15)
 
 ### Features

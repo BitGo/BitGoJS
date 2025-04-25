@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.3.20...@bitgo/sdk-coin-bera@2.3.21) (2025-04-25)
+
+### Bug Fixes
+
+- **sdk-coin-bera:** mpc algo for the token ([23adf24](https://github.com/BitGo/BitGoJS/commit/23adf24a17a3ab84283eafcedd3d92075084280c))
+
 ## [2.3.20](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.3.19...@bitgo/sdk-coin-bera@2.3.20) (2025-04-15)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bera
