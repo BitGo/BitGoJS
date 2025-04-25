@@ -16,8 +16,6 @@ import {
   ComputeBudgetInstruction,
 } from '@solana/web3.js';
 
-import { RecipientEntry } from '@bitgo/public-types';
-
 import { NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
@@ -474,17 +472,12 @@ function parseStakingDeactivateInstructions(
         isMarinade: unstakingInstruction.deactivate === undefined,
         recipients:
           unstakingInstruction.deactivate === undefined
-            ? ([
+            ? [
                 {
-                  address: {
-                    address: unstakingInstruction.transfer?.toPubkey.toString(),
-                  },
-                  amount: {
-                    value: unstakingInstruction.transfer?.lamports.toString(),
-                    symbol: coinName,
-                  },
+                  address: unstakingInstruction.transfer?.toPubkey.toString() || '',
+                  amount: unstakingInstruction.transfer?.lamports.toString() || '',
                 },
-              ] as RecipientEntry[])
+              ]
             : undefined,
       },
     };

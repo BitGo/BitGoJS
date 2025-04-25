@@ -253,11 +253,11 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
   if (isMarinade) {
     const tx = new Transaction();
     assert(recipients, 'Missing recipients param');
-    const toPubkeyAddress = new PublicKey(recipients[0].address.address || '');
+    const toPubkeyAddress = new PublicKey(recipients[0].address || '');
     const transferInstruction = SystemProgram.transfer({
       fromPubkey: new PublicKey(fromAddress),
       toPubkey: toPubkeyAddress,
-      lamports: parseInt(recipients[0].amount.value, 10),
+      lamports: parseInt(recipients[0].amount, 10),
     });
 
     tx.add(transferInstruction);

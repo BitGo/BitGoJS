@@ -3,9 +3,8 @@ import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
-import { TransactionType } from '@bitgo/sdk-core';
+import { Recipient, TransactionType } from '@bitgo/sdk-core';
 import * as bs58 from 'bs58';
-import { RecipientEntry } from '@bitgo/public-types';
 
 describe('Sol Staking Deactivate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -18,15 +17,10 @@ describe('Sol Staking Deactivate Builder', () => {
   const invalidPubKey = testData.pubKeys.invalidPubKeys[0];
 
   describe('Should succeed', () => {
-    const marinadeRecipientsObject: RecipientEntry[] = [];
+    const marinadeRecipientsObject: Recipient[] = [];
     marinadeRecipientsObject.push({
-      address: {
-        address: 'opNS8ENpEMWdXcJUgJCsJTDp7arTXayoBEeBUg6UezP',
-      },
-      amount: {
-        value: '2300000',
-        symbol: 'tsol',
-      },
+      address: 'opNS8ENpEMWdXcJUgJCsJTDp7arTXayoBEeBUg6UezP',
+      amount: '2300000',
     });
     const marinadeMemo = `{\\"PrepareForRevoke\\":{\\"user\\":\\"${wallet.pub}}\\",\\"amount\\":\\"500000000000\\"}`;
 
