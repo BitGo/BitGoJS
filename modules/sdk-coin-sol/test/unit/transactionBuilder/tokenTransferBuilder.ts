@@ -355,7 +355,11 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.sender(walletPK);
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
-      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameUSDC,
+        ataAddress: ataAddress,
+      });
       const prioFeeMicroLamports = '0';
       const priorityFee: FeeOptions = {
         amount: prioFeeMicroLamports,
@@ -414,9 +418,21 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.send({ address: account1.pub, amount, tokenName: nameUSDC });
       txBuilder.send({ address: account2.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
-      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
-      txBuilder.createAssociatedTokenAccount({ ownerAddress: account1.pub, tokenName: nameUSDC });
-      txBuilder.createAssociatedTokenAccount({ ownerAddress: account2.pub, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameUSDC,
+        ataAddress: ataAddress,
+      });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: account1.pub,
+        tokenName: nameUSDC,
+        ataAddress: ataAddress1,
+      });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: account2.pub,
+        tokenName: nameUSDC,
+        ataAddress: ataAddress2,
+      });
       txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(3);
@@ -519,9 +535,21 @@ describe('Sol Token Transfer Builder', () => {
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
       txBuilder.memo(memo);
-      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
-      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
-      txBuilder.createAssociatedTokenAccount({ ownerAddress: otherAccount.pub, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameUSDC,
+        ataAddress: ataAddress,
+      });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameUSDC,
+        ataAddress: ataAddress,
+      });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameUSDC,
+        ataAddress: ataAddress,
+      });
       txBuilder.setPriorityFee(priorityFee);
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(3);
@@ -649,7 +677,11 @@ describe('Sol Token Transfer Builder', () => {
     it('for invalid ownerAddress', () => {
       const txBuilder = tokenTransferBuilder();
       should(() =>
-        txBuilder.createAssociatedTokenAccount({ ownerAddress: invalidPubKey, tokenName: nameUSDC })
+        txBuilder.createAssociatedTokenAccount({
+          ownerAddress: invalidPubKey,
+          tokenName: nameUSDC,
+          ataAddress: ataAddress,
+        })
       ).throwError('Invalid or missing ownerAddress, got: ' + invalidPubKey);
     });
 
@@ -657,7 +689,11 @@ describe('Sol Token Transfer Builder', () => {
       const invalidTokenName = 'tsol:random';
       const txBuilder = tokenTransferBuilder();
       should(() =>
-        txBuilder.createAssociatedTokenAccount({ ownerAddress: nonceAccount.pub, tokenName: invalidTokenName })
+        txBuilder.createAssociatedTokenAccount({
+          ownerAddress: nonceAccount.pub,
+          tokenName: invalidTokenName,
+          ataAddress: ataAddress,
+        })
       ).throwError('Invalid token name, got: ' + invalidTokenName);
     });
   });

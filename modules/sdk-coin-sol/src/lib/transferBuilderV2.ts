@@ -59,6 +59,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
         this._createAtaParams.push({
           ownerAddress: ataInitInstruction.params.ownerAddress,
           tokenName: ataInitInstruction.params.tokenName,
+          ataAddress: ataInitInstruction.params.ataAddress,
         });
       }
     }
