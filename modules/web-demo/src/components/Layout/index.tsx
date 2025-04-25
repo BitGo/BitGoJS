@@ -1,8 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import type { ReactNode } from 'react';
 import Navbar from '../Navbar/index';
 import { AppContainer, RouteContainer } from './styles';
 
-const Layout: FunctionComponent = ({ children }) => {
+const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <AppContainer>
       <Navbar />

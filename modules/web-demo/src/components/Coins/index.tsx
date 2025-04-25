@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BaseCoin } from '@bitgo/sdk-core';
 import coinFactory from './coinFactory';
 import { BitGoAPI } from '@bitgo/sdk-api';

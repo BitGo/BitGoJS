@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import Layout from './components/Layout/index';
 
 const Home = lazy(() => import('@components/Home'));
@@ -16,30 +16,55 @@ const EcdsaChallengeComponent = lazy(
 
 const Loading = () => <div>Loading route...</div>;
 
-const App = () => {
+const AppLayout = () => {
   return (
-    <BrowserRouter>
-      <Layout>
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/bitgo-js" element={<BGComponent />} />
-            <Route path="/bitgo-api" element={<BGApiComponent />} />
-            <Route path="/coins" element={<CoinsComponent />} />
-            <Route path="/keycard" element={<KeyCardComponent />} />
-            <Route
-              path="/wasm-miniscript"
-              element={<WasmMiniscriptComponent />}
-            />
-            <Route
-              path="/ecdsachallenge"
-              element={<EcdsaChallengeComponent />}
-            />
-          </Routes>
-        </Suspense>
-      </Layout>
-    </BrowserRouter>
+    <Layout>
+      <Suspense fallback={<Loading />}>
+        <Outlet />
+      </Suspense>
+    </Layout>
   );
+};
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: 'bitgo-js',
+        element: <BGComponent />,
+      },
+      {
+        path: 'bitgo-api',
+        element: <BGApiComponent />,
+      },
+      {
+        path: 'coins',
+        element: <CoinsComponent />,
+      },
+      {
+        path: 'keycard',
+        element: <KeyCardComponent />,
+      },
+      {
+        path: 'wasm-miniscript',
+        element: <WasmMiniscriptComponent />,
+      },
+      {
+        path: 'ecdsachallenge',
+        element: <EcdsaChallengeComponent />,
+      },
+    ],
+  },
+]);
+
+const App = () => {
+  return <RouterProvider router={router} />;
 };
 
 export default App;

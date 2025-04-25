@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import * as AbstractUtxo from '@bitgo/abstract-utxo';
 

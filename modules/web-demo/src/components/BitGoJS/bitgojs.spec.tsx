@@ -1,4 +1,3 @@
-import React from 'react';
 import { mount } from '@cypress/react';
 import BitGoJSComponent from './index';
 import type { Buffer as WebBuffer } from 'buffer/index';
