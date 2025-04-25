@@ -4,7 +4,7 @@ export const MEMO_PROGRAM_PK = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
 
 export const SEED_LENGTH = 32;
 
-export const MAX_MEMO_LENGTH = 100;
+export const MAX_MEMO_LENGTH = 130;
 export const STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT = 2282880;
 
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';

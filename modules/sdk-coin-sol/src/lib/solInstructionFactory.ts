@@ -243,10 +243,26 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
  */
 function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress },
+    params: { fromAddress, stakingAddress, isMarinade, recipients },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
-  assert(stakingAddress, 'Missing stakingAddress param');
+  if (!isMarinade) {
+    assert(stakingAddress, 'Missing stakingAddress param');
+  }
+
+  if (isMarinade) {
+    const tx = new Transaction();
+    assert(recipients, 'Missing recipients param');
+    const toPubkeyAddress = new PublicKey(recipients[0].address.address || '');
+    const transferInstruction = SystemProgram.transfer({
+      fromPubkey: new PublicKey(fromAddress),
+      toPubkey: toPubkeyAddress,
+      lamports: parseInt(recipients[0].amount.value, 10),
+    });
+
+    tx.add(transferInstruction);
+    return tx.instructions;
+  }
 
   if (data.params.amount && data.params.unstakingAddress) {
     const tx = new Transaction();

@@ -325,7 +325,7 @@ describe('Sol Transaction Builder', async () => {
   it('validateMemo', () => {
     const validMemo = 'test memo';
     const invalidMemo =
-      'ooawindaonmawñdamwdoianwdonalskdnaiouwbdoinowadn90awndoawndaowdnaioiuwbdioauwndaoudnbawodnba9owudbnaowdna';
+      'ooawindaonmawñdamwdoianwdonalskdnaiouwbdoinowadn90awndoawndaowdnaioiuwbdioauwndaoudnbawodnba9owudbnaowdnaasdijhaksdkjasdkjhaskdjhkasdasdasdasdasd';
     for (const builder of builders) {
       builder._instructionsData.push({
         type: 'Transfer',

@@ -276,11 +276,14 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   }
   validateIntructionTypes(instructions);
   // check if deactivate instruction does not exist because deactivate can be include a transfer instruction
+  const memoInstruction = instructions.find((instruction) => getInstructionType(instruction) === 'Memo');
+  const memoData = memoInstruction?.data.toString('utf-8');
   if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length == 0) {
     for (const instruction of instructions) {
       const instructionType = getInstructionType(instruction);
+      // Check if memo instruction is there and if it contains 'PrepareForRevoke' because Marinade staking deactivate transaction will have this
       if (
-        instructionType === ValidInstructionTypesEnum.Transfer ||
+        (instructionType === ValidInstructionTypesEnum.Transfer && !memoData?.includes('PrepareForRevoke')) ||
         instructionType === ValidInstructionTypesEnum.TokenTransfer
       ) {
         return TransactionType.Send;
