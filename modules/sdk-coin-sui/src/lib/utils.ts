@@ -367,12 +367,6 @@ export class Utils implements BaseUtils {
     });
   }
 
-  isWalrusRequestWithdrawStakeTx(tx: WalrusWithdrawStakeProgrammableTransaction): boolean {
-    return tx.transactions
-      .filter((transaction) => 'kind' in transaction && transaction.kind === 'MoveCall')
-      .some(({ target }) => target.endsWith('::staking::request_withdraw_stake'));
-  }
-
   getWalrusWithdrawStakeRequests(tx: WalrusWithdrawStakeProgrammableTransaction): RequestWalrusWithdrawStake {
     let amount: number | undefined = undefined;
     let stakedWal: SuiObjectRef;
