@@ -1,9 +1,13 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import utils from '../../src/lib/utils';
+import { getBuilderFactory } from './getBuilderFactory';
 
 import { Icp, Ticp } from '../../src/index';
 import nock from 'nock';
+import * as testData from '../resources/icp';
+import assert from 'assert';
+import should from 'should';
 nock.enableNetConnect();
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -12,13 +16,23 @@ bitgo.safeRegister('ticp', Ticp.createInstance);
 describe('Internet computer', function () {
   let bitgo;
   let basecoin;
+  const factory = getBuilderFactory('ticp');
+  let txBuilder: any;
 
-  before(function () {
+  before(async function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
     bitgo.safeRegister('icp', Icp.createInstance);
     bitgo.safeRegister('ticp', Ticp.createInstance);
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ticp');
+
+    txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.Accounts.account1.address, testData.Accounts.account1.publicKey);
+    txBuilder.receiverId(testData.Accounts.account2.address);
+    txBuilder.amount('10');
+    txBuilder.memo(testData.MetaDataWithMemo.memo);
+
+    await txBuilder.build();
   });
 
   after(function () {
@@ -90,6 +104,7 @@ describe('Internet computer', function () {
         .should.be.rejectedWith(`Invalid hex-encoded public key format.`);
     });
   });
+
   describe('Generate wallet key pair: ', () => {
     it('should generate key pair', () => {
       const kp = basecoin.generateKeyPair();
@@ -102,6 +117,60 @@ describe('Internet computer', function () {
       const kp = basecoin.generateKeyPair(seed);
       basecoin.isValidPub(kp.pub).should.equal(true);
       basecoin.isValidPrv(kp.prv).should.equal(true);
+    });
+  });
+
+  describe('Sign a raw txn with a private key', () => {
+    it('should sign a raw txn with a private key', async () => {
+      const unsignedTxn = txBuilder.transaction.unsignedTransaction;
+      unsignedTxn.should.be.a.String();
+      const payloadsData = txBuilder.transaction.payloadsData;
+      const serializedTxFormat = {
+        serializedTxHex: payloadsData,
+        publicKey: testData.Accounts.account1.publicKey,
+      };
+      const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+      const signedTxn = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: serializedTxHex,
+        },
+        prv: testData.Accounts.account1.secretKey,
+      });
+      signedTxn.should.be.a.string;
+      const parsedTransaction = await factory.parseTransaction(signedTxn.txHex, true);
+      should.equal(parsedTransaction.operations[0].account.address, testData.Accounts.account1.address);
+      should.equal(parsedTransaction.operations[1].account.address, testData.Accounts.account2.address);
+      should.equal(parsedTransaction.operations[2].account.address, testData.Accounts.account1.address);
+      should.equal(parsedTransaction.operations[0].amount.value, '-10');
+      should.equal(parsedTransaction.account_identifier_signers[0].address, testData.Accounts.account1.address);
+    });
+  });
+
+  describe('Verify a transaction', () => {
+    it('should successfully verify a transaction', async () => {
+      const unsignedTxn = txBuilder.transaction.unsignedTransaction;
+      unsignedTxn.should.be.a.String();
+      const payloadsData = txBuilder.transaction.payloadsData;
+      const serializedTxFormat = {
+        serializedTxHex: payloadsData,
+        publicKey: testData.Accounts.account1.publicKey,
+      };
+      const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+      const txParams = {
+        recipients: [
+          {
+            address: testData.Accounts.account2.address,
+            amount: '10',
+          },
+        ],
+      };
+      const response = await basecoin.verifyTransaction({
+        txPrebuild: {
+          txHex: serializedTxHex,
+        },
+        txParams: txParams,
+      });
+      assert(response);
     });
   });
 });

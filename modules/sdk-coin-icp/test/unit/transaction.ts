@@ -1,22 +1,27 @@
 import { Transaction } from '../../src';
 import { coins } from '@bitgo/statics';
 import assert from 'assert';
-// import should from 'should';
+import should from 'should';
 import { Utils } from '../../src/lib/utils';
 import { InvalidTransactionError } from '@bitgo/sdk-core';
-// import { rawTransaction, accounts, parsedRawTransaction } from '../resources/icp';
+import * as testData from '../resources/icp';
+import { getBuilderFactory } from './getBuilderFactory';
 import sinon from 'sinon';
 
 describe('ICP Transaction', () => {
   let tx: Transaction;
   let utils: Utils;
-  // let localRawTransaction: any;
+  let serializedTxHex: any;
   const config = coins.get('ticp');
 
   beforeEach(() => {
     utils = new Utils();
     tx = new Transaction(config, utils);
-    // localRawTransaction = JSON.stringify(rawTransaction);
+    const serializedTxFormat = {
+      serializedTxHex: testData.PayloadsData,
+      publicKey: testData.Accounts.account1.publicKey,
+    };
+    serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
     sinon.stub(utils, 'validateExpireTime').returns(true);
   });
 
@@ -35,42 +40,61 @@ describe('ICP Transaction', () => {
     });
   });
 
-  // describe('from raw transaction', () => {
-  //   it('build a json transaction from raw hex', async () => {
-  //     await tx.fromRawTransaction(localRawTransaction);
-  //     const json = tx.toJson();
-  //     should.equal(json.memo, parsedRawTransaction.metadata.memo);
-  //     should.equal(json.feeAmount, parsedRawTransaction.operations[2].amount.value);
-  //     should.equal(json.sender, parsedRawTransaction.operations[0].account.address);
-  //     should.equal(json.recipient, parsedRawTransaction.operations[1].account.address);
-  //     should.equal(json.type, BitGoTransactionType.Send);
-  //     should.equal(json.senderPublicKey, accounts.account1.publicKey);
-  //   });
-  // });
+  describe('build a txn from init() method', () => {
+    it('start and build a txn with builder init method', async () => {
+      const txn = new Transaction(config, utils);
+      txn.icpTransactionData = testData.IcpTransactionData;
+      const factory = getBuilderFactory('ticp');
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.initBuilder(txn);
+      await txBuilder.build();
 
-  // describe('Explain', () => {
-  //   it('explain transaction', async () => {
-  //     await tx.fromRawTransaction(localRawTransaction);
-  //     const explain = tx.explainTransaction();
+      const icpTransaction = txBuilder.transaction.icpTransaction;
+      const payloadsData = txBuilder.transaction.payloadsData;
+      should.equal(icpTransaction.metadata.memo, testData.IcpTransactionData.memo);
+      should.equal(icpTransaction.operations[0].account.address, testData.IcpTransactionData.senderAddress);
+      should.equal(icpTransaction.operations[1].account.address, testData.IcpTransactionData.receiverAddress);
+      should.equal(icpTransaction.operations[1].amount.value, testData.IcpTransactionData.amount);
+      should.equal(icpTransaction.operations[2].amount.value, testData.IcpTransactionData.fee);
+      should.equal(icpTransaction.public_keys[0].hex_bytes, testData.IcpTransactionData.senderPublicKeyHex);
+      payloadsData.payloads.should.be.an.Array();
+      payloadsData.payloads.length.should.equal(1);
+    });
+  });
 
-  //     explain.outputAmount.should.equal('1000000');
-  //     explain.outputs[0].amount.should.equal('1000000');
-  //     explain.outputs[0].address.should.equal(accounts.account2.address);
-  //     explain.fee.fee.should.equal('-10000');
-  //     explain.changeAmount.should.equal('0');
-  //     if (explain.displayOrder !== undefined) {
-  //       explain.displayOrder.should.deepEqual([
-  //         'id',
-  //         'outputAmount',
-  //         'changeAmount',
-  //         'outputs',
-  //         'changeOutputs',
-  //         'fee',
-  //       ]);
-  //     }
-  //     if (explain.type !== undefined) {
-  //       explain.type.should.equal(BitGoTransactionType.Send);
-  //     }
-  // });
-  // });
+  describe('from raw transaction', () => {
+    it('build a json transaction from raw hex', async () => {
+      await tx.fromRawTransaction(serializedTxHex);
+      const json = tx.toJson();
+      should.equal(json.memo, testData.ParsedRawTransaction.metadata.memo);
+      should.equal(json.feeAmount, testData.ParsedRawTransaction.operations[2].amount.value);
+      should.equal(json.sender, testData.ParsedRawTransaction.operations[0].account.address);
+      should.equal(json.recipient, testData.ParsedRawTransaction.operations[1].account.address);
+      should.equal(json.senderPublicKey, testData.Accounts.account1.publicKey);
+      should.equal(json.id, testData.OnChainTransactionHash);
+    });
+  });
+
+  describe('Explain', () => {
+    it('explain transaction', async () => {
+      await tx.fromRawTransaction(serializedTxHex);
+      const explain = tx.explainTransaction();
+
+      explain.outputAmount.should.equal('10');
+      explain.outputs[0].amount.should.equal('10');
+      explain.outputs[0].address.should.equal(testData.Accounts.account2.address);
+      explain.fee.fee.should.equal('-10000');
+      explain.changeAmount.should.equal('0');
+      if (explain.displayOrder !== undefined) {
+        explain.displayOrder.should.deepEqual([
+          'id',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+        ]);
+      }
+    });
+  });
 });
