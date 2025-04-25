@@ -89,7 +89,7 @@
     "**/stellar-sdk/**/bignumber.js": "4.1.0",
     "**/stellar-base/**/bignumber.js": "4.1.0",
     "bignumber.js": "9.1.2",
-    "react-router-dom": "6.14.1",
+    "react-router-dom": "^6.14.0",
     "react-router": "6.14.1"
   },
   "workspaces": [
