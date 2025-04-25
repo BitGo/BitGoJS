@@ -164,7 +164,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
       }
 
-      if (this._amount) {
+      if (this._amount && !this._isMarinade) {
         assert(
           this._unstakingAddress,
           'When partially unstaking the unstaking address must be set before building the transaction'
