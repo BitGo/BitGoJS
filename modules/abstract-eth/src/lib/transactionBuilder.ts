@@ -157,7 +157,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected fromImplementation(rawTransaction: string, isFirstSigner?: boolean): Transaction {
     let tx: Transaction;
     if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
-      tx = Transaction.fromSerialized(this._coinConfig, this._common, rawTransaction);
+      tx = Transaction.fromSerialized(this._coinConfig, this._common, rawTransaction, isFirstSigner);
       this.loadBuilderInput(tx.toJson(), isFirstSigner);
     } else {
       const txData = JSON.parse(rawTransaction);
@@ -618,7 +618,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
    *
-   * @param [data] transfer data to initialize the transfer builder with, empty if none given
+   * @param {string} data transfer data to initialize the transfer builder with, empty if none given
+   * @param {boolean} isFirstSigner whether the transaction is being signed by the first signer
    * @returns {TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder} the transfer builder
    */
   abstract transfer(

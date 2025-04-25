@@ -34,14 +34,21 @@ export class Transaction extends BaseTransaction {
    * @param coinConfig The coin configuration object
    * @param common network commons
    * @param serializedTx The serialized tx string with which to initialize the transaction
+   * @param isFirstSigner whether the transaction is being signed by the first signer
    * @returns a new transaction object
    */
   public static fromSerialized(
     coinConfig: Readonly<CoinConfig>,
     common: EthereumCommon,
-    serializedTx: string
+    serializedTx: string,
+    isFirstSigner?: boolean
   ): Transaction {
-    return new Transaction(coinConfig, common, EthTransactionData.fromSerialized(serializedTx, common).toJson());
+    return new Transaction(
+      coinConfig,
+      common,
+      EthTransactionData.fromSerialized(serializedTx, common).toJson(),
+      isFirstSigner
+    );
   }
 
   /**
@@ -50,12 +57,13 @@ export class Transaction extends BaseTransaction {
    * @param {Readonly<CoinConfig>} coinConfig
    * @param common the network commons
    * @param {TxData} txData The object transaction data or encoded transaction data
+   * @param {boolean} isFirstSigner whether the transaction is being signed by the first signer
    */
-  constructor(coinConfig: Readonly<CoinConfig>, common: EthereumCommon, txData?: TxData) {
+  constructor(coinConfig: Readonly<CoinConfig>, common: EthereumCommon, txData?: TxData, isFirstSigner?: boolean) {
     super(coinConfig);
     this._common = common;
     if (txData) {
-      this.setTransactionData(txData);
+      this.setTransactionData(txData, isFirstSigner);
     }
   }
 
@@ -63,6 +71,7 @@ export class Transaction extends BaseTransaction {
    * Set the transaction data
    *
    * @param {TxData} txData The transaction data to set
+   * @param {boolean} isFirstSigner Whether the transaction is being signed by the first signer
    */
   setTransactionData(txData: TxData, isFirstSigner?: boolean): void {
     this._transactionData = EthTransactionData.fromJson(txData, this._common);
