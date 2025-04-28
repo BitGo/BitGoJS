@@ -2496,7 +2496,7 @@ export const coins = CoinMap.fromCoins([
     '1a5481b2-67c1-4872-9b81-478773cc10c6',
     'arbeth:tbill',
     'OpenEden T-Bills',
-    18,
+    6,
     '0xf84d28a8d28292842dd73d1c5f99476a80b6666a',
     UnderlyingAsset['arbeth:tbill'],
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
