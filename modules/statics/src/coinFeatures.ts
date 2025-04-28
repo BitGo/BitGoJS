@@ -468,3 +468,12 @@ export const BERA_BGT_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_GERMANY,
 ];
+
+export const VET_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.ENTERPRISE_PAYS_FEES,
+  CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
+];

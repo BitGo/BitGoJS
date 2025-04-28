@@ -104,6 +104,7 @@ import {
   TON_FEATURES,
   TRX_FEATURES,
   TSOL_FEATURES,
+  VET_FEATURES,
   WCT_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
@@ -1335,6 +1336,28 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.POLYX,
     POLYX_FEATURES,
     KeyCurve.Ed25519
+  ),
+  account(
+    '98071460-1488-4edd-857f-0899bc5eee4f',
+    'vet',
+    'Mainnet VET',
+    Networks.main.vet,
+    18, // 1 VET = 10^18 wei
+    UnderlyingAsset.VET,
+    BaseUnit.ETH, // The smallest unit of VET, similar to Ethereum, is called 'wei'.
+    VET_FEATURES,
+    KeyCurve.Secp256k1
+  ),
+  account(
+    'b3158e80-f6ea-4922-98ab-d773a680ce76',
+    'tvet',
+    'Testnet VET',
+    Networks.test.vet,
+    18,
+    UnderlyingAsset.VET,
+    BaseUnit.ETH,
+    VET_FEATURES,
+    KeyCurve.Secp256k1
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
