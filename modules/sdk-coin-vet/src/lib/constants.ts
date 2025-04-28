@@ -1,0 +1,1 @@
+export const DEFAULT_GAS_UNIT_PRICE = 100;
