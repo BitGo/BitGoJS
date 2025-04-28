@@ -80,6 +80,7 @@ interface EnvironmentTemplate {
   somniaExplorerApiToken?: string;
   soneiumExplorerBaseUrl?: string;
   soneiumExplorerApiToken?: string;
+  stxNodeUrl: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -190,6 +191,7 @@ const mainnetBase: EnvironmentTemplate = {
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/', //TODO: WIN-5278: change it with mainnet explorer, when its available
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
+  stxNodeUrl: 'https://api.hiro.so',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -258,6 +260,7 @@ const testnetBase: EnvironmentTemplate = {
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
+  stxNodeUrl: 'https://api.testnet.hiro.so',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

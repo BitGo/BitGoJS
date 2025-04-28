@@ -1,10 +1,13 @@
 import _ from 'lodash';
+import nock from 'nock';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { ITransactionRecipient, Wallet, Memo } from '@bitgo/sdk-core';
 
 import { Sip10Token } from '../../src';
 import * as testData from '../fixtures';
+import { RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
+import assert from 'assert';
 
 describe('Sip10Token:', function () {
   const sip10TokenName = 'tstx:tsip6dp';
@@ -237,6 +240,124 @@ describe('Sip10Token:', function () {
           wallet,
         })
         .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+  });
+
+  describe('Recover Transaction SIP10', () => {
+    before(function () {
+      nock.enableNetConnect();
+    });
+    beforeEach(function () {
+      nock.cleanAll();
+    });
+    after(function () {
+      nock.disableNetConnect();
+    });
+
+    it('should build a signed token recover transaction when private key data is passed', async () => {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, testData.ACCOUNT_BALANCE_RESPONSE);
+      nock('https://api.testnet.hiro.so')
+        .get(`/extended/v2/addresses/${rootAddress}/balances/ft/${testData.STX_TOKEN_ASSET_ID}`)
+        .reply(200, testData.TOKEN_BALANCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`, { allowUnmocked: true })
+        .post(`/v2/fees/transaction`, testData.FEE_ESTIMATION_TOKEN_REQUEST)
+        .reply(200, testData.FEE_ESTIMATION_TOKEN_RESPONSE);
+
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+        contractId: 'STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH.tsip6dp-token',
+      };
+      const response: RecoveryTransaction = await basecoin.recover(recoveryOptions);
+      response.should.have.property('txHex');
+      assert.deepEqual(response.txHex, testData.HOT_WALLET_TOKEN_RECOVERY_TX_HEX, 'tx hex not matching!');
+    });
+
+    it('should build an unsigned token transaction when public keys are passed', async () => {
+      const rootAddress = testData.COLD_WALLET_ROOT_ADDRESS;
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, testData.ACCOUNT_BALANCE_RESPONSE);
+      nock('https://api.testnet.hiro.so')
+        .get(`/extended/v2/addresses/${rootAddress}/balances/ft/${testData.STX_TOKEN_ASSET_ID}`)
+        .reply(200, testData.TOKEN_BALANCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`, { allowUnmocked: true })
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      const feeEstimateRequest = testData.FEE_ESTIMATION_TOKEN_REQUEST;
+      feeEstimateRequest.transaction_payload =
+        '021a1500a1c42f0c11bfe3893f479af18904677685be0d747369703664702d746f6b656e087472616e73666572000000040100000000000000000000000005f5e10005159f2f1aff6fa0062e1f7fa6096133e75f47a7e8f7051a1500a1c42f0c11bfe3893f479af18904677685be09';
+      nock(`https://api.testnet.hiro.so`)
+        .post(`/v2/fees/transaction`, feeEstimateRequest)
+        .reply(200, testData.FEE_ESTIMATION_TOKEN_RESPONSE);
+
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BACKUP_KEY,
+        userKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BITGO_PUB_KEY,
+        contractId: 'STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH.tsip6dp-token',
+      };
+      const response: RecoveryTransaction = await basecoin.recover(recoveryOptions);
+      response.should.have.property('txHex');
+      assert.deepEqual(response.txHex, testData.COLD_WALLET_TOKEN_UNSIGNED_SWEEP_TX_HEX, 'tx hex not matching!');
+    });
+
+    it('should fail with insufficient balance when native stx balance is lower than fee for sip10', async () => {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      const accountBalance = JSON.parse(JSON.stringify(testData.ACCOUNT_BALANCE_RESPONSE));
+      accountBalance.balance = '100'; // set balance lower than fee
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, accountBalance);
+      nock('https://api.testnet.hiro.so')
+        .get(`/extended/v2/addresses/${rootAddress}/balances/ft/${testData.STX_TOKEN_ASSET_ID}`)
+        .reply(200, testData.TOKEN_BALANCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      const feeRequestBody = testData.FEE_ESTIMATION_TOKEN_REQUEST;
+      feeRequestBody.transaction_payload =
+        '021a1500a1c42f0c11bfe3893f479af18904677685be0d747369703664702d746f6b656e087472616e73666572000000040100000000000000000000000005f5e100051549857eb4b6dd4fee08c3ec04e3d0ed04ef67d324051a1500a1c42f0c11bfe3893f479af18904677685be09';
+      nock(`https://api.testnet.hiro.so`, { allowUnmocked: true })
+        .post(`/v2/fees/transaction`, feeRequestBody)
+        .reply(200, testData.FEE_ESTIMATION_TOKEN_RESPONSE);
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+        contractId: 'STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH.tsip6dp-token',
+      };
+      await basecoin.recover(recoveryOptions).should.rejectedWith('insufficient balance to build the transaction');
+    });
+
+    it('should fail when only contract address is passed', async () => {
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: testData.HOT_WALLET_ROOT_ADDRESS,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+        contractId: 'STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH',
+      };
+      await basecoin
+        .recover(recoveryOptions)
+        .should.rejectedWith('invalid contract id, please provide it in the form (contractAddress.contractName)');
     });
   });
 });
