@@ -261,6 +261,15 @@ export interface AmsTokenConfig {
   isToken: boolean;
 }
 
+export interface TrimmedAmsNetworkConfig {
+  name: string;
+}
+export interface TrimmedAmsTokenConfig extends Omit<AmsTokenConfig, 'features' | 'network'> {
+  network: TrimmedAmsNetworkConfig;
+  excludedFeatures?: string[];
+  additionalFeatures?: string[];
+}
+
 // Get the list of ERC-20 tokens from statics and format it properly
 const getFormattedErc20Tokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: Erc20TokenConfig[], coin) => {

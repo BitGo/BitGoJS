@@ -24,6 +24,8 @@ import {
   TransactionQuery,
   PaymentInfo,
   PaymentQuery,
+  LightningOnchainWithdrawParams,
+  LightningOnchainWithdrawResponse,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -156,6 +158,15 @@ export interface ILightningWallet {
    * @returns {Promise<PayInvoiceResponse>} Payment result containing transaction request details and payment status
    */
   payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse>;
+
+  /**
+   * On chain withdrawal
+   * @param {LightningOnchainWithdrawParams} params - Withdraw parameters
+   * @param {LightningOnchainRecipient[]} params.recipients - The recipients to pay
+   * @param {bigint} [params.satsPerVbyte] - Optional value for sats per virtual byte
+   * @returns {Promise<LightningOnchainWithdrawResponse>} Withdraw result containing transaction request details and status
+   */
+  withdrawOnchain(params: LightningOnchainWithdrawParams): Promise<LightningOnchainWithdrawResponse>;
   /**
    * Get payment details by payment hash
    * @param {string} paymentHash - Payment hash to lookup
@@ -298,6 +309,49 @@ export class LightningWallet implements ILightningWallet {
         ? t.exact(LndCreatePaymentResponse).encode(coinSpecific as LndCreatePaymentResponse)
         : undefined,
       transfer,
+    };
+  }
+
+  async withdrawOnchain(params: LightningOnchainWithdrawParams): Promise<LightningOnchainWithdrawResponse> {
+    const reqId = new RequestTracer();
+    this.wallet.bitgo.setRequestTracer(reqId);
+
+    const paymentIntent: { intent: LightningPaymentIntent } = {
+      intent: {
+        onchainRequest: {
+          recipients: params.recipients,
+          satsPerVbyte: params.satsPerVbyte,
+        },
+        intentType: 'payment',
+      },
+    };
+
+    const transactionRequestCreate = (await this.wallet.bitgo
+      .post(this.wallet.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
+      .send(t.type({ intent: LightningPaymentIntent }).encode(paymentIntent))
+      .result()) as TxRequest;
+
+    if (transactionRequestCreate.state === 'pendingApproval') {
+      const pendingApprovals = new PendingApprovals(this.wallet.bitgo, this.wallet.baseCoin);
+      const pendingApproval = await pendingApprovals.get({ id: transactionRequestCreate.pendingApprovalId });
+      return {
+        pendingApproval: pendingApproval.toJSON(),
+        txRequestId: transactionRequestCreate.txRequestId,
+        txRequestState: transactionRequestCreate.state,
+      };
+    }
+
+    const transactionRequestSend = await commonTssMethods.sendTxRequest(
+      this.wallet.bitgo,
+      this.wallet.id(),
+      transactionRequestCreate.txRequestId,
+      RequestType.tx,
+      reqId
+    );
+
+    return {
+      txRequestId: transactionRequestCreate.txRequestId,
+      txRequestState: transactionRequestSend.state,
     };
   }
 

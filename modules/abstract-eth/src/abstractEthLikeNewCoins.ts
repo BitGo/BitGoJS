@@ -66,8 +66,10 @@ import {
   calculateForwarderV1Address,
   ERC1155TransferBuilder,
   ERC721TransferBuilder,
+  getBufferedByteCode,
   getCommon,
   getProxyInitcode,
+  getRawDecoded,
   getToken,
   KeyPair as KeyPairLib,
   TransactionBuilder,
@@ -2523,7 +2525,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {Wallet} params.wallet - Wallet object to obtain keys to verify against
    * @returns {boolean}
    */
-  verifyTssTransaction(params: VerifyEthTransactionOptions): boolean {
+  async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
     if (
       !txParams?.recipients &&
@@ -2540,6 +2542,39 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
       throw new Error(`tx cannot be both a batch and hop transaction`);
     }
+
+    if (txParams.type && ['transfer'].includes(txParams.type)) {
+      if (txParams.recipients && txParams.recipients.length === 1) {
+        const recipients = txParams.recipients;
+        const expectedAmount = recipients[0].amount.toString();
+        const expectedDestination = recipients[0].address;
+
+        const txBuilder = this.getTransactionBuilder();
+        txBuilder.from(txPrebuild.txHex);
+        const tx = await txBuilder.build();
+        const txJson = tx.toJson();
+        if (txJson.data === '0x') {
+          if (expectedAmount !== txJson.value) {
+            throw new Error('the transaction amount in txPrebuild does not match the value given by client');
+          }
+          if (expectedDestination !== txJson.to) {
+            throw new Error('destination address does not match with the recipient address');
+          }
+        } else if (txJson.data.startsWith('0xa9059cbb')) {
+          const [recipientAddress, amount] = getRawDecoded(
+            ['address', 'uint256'],
+            getBufferedByteCode('0xa9059cbb', txJson.data)
+          );
+          if (expectedAmount !== amount.toString()) {
+            throw new Error('the transaction amount in txPrebuild does not match the value given by client');
+          }
+          if (expectedDestination !== addHexPrefix(recipientAddress.toString())) {
+            throw new Error('destination address does not match with the recipient address');
+          }
+        }
+      }
+    }
+
     return true;
   }
 

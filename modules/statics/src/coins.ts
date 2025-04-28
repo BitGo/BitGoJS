@@ -47,7 +47,7 @@ import {
 import { ada } from './ada';
 import { avaxp } from './avaxp';
 import { BaseCoin, BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
-import { AmsTokenConfig } from './tokenConfig';
+import { AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { erc20Coins } from './coins/erc20Coins';
 import { avaxTokens } from './coins/avaxTokens';
 import { bscTokens } from './coins/bscTokens';
@@ -55,6 +55,7 @@ import { polygonTokens } from './coins/polygonTokens';
 import { solTokens } from './coins/solTokens';
 import { CoinMap } from './map';
 import { Networks } from './networks';
+import { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
 import { utxoCoins } from './utxo';
 import { lightningCoins } from './lightning';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
@@ -104,6 +105,7 @@ import {
   TON_FEATURES,
   TRX_FEATURES,
   TSOL_FEATURES,
+  VET_FEATURES,
   WCT_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
@@ -1336,6 +1338,28 @@ export const coins = CoinMap.fromCoins([
     POLYX_FEATURES,
     KeyCurve.Ed25519
   ),
+  account(
+    '98071460-1488-4edd-857f-0899bc5eee4f',
+    'vet',
+    'Mainnet VET',
+    Networks.main.vet,
+    18, // 1 VET = 10^18 wei
+    UnderlyingAsset.VET,
+    BaseUnit.ETH, // The smallest unit of VET, similar to Ethereum, is called 'wei'.
+    VET_FEATURES,
+    KeyCurve.Secp256k1
+  ),
+  account(
+    'b3158e80-f6ea-4922-98ab-d773a680ce76',
+    'tvet',
+    'Testnet VET',
+    Networks.test.vet,
+    18,
+    UnderlyingAsset.VET,
+    BaseUnit.ETH,
+    VET_FEATURES,
+    KeyCurve.Secp256k1
+  ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
     'celo',
@@ -2036,7 +2060,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',
     'talgo:USDC-10458941',
-    undefined,
+    'talgo:10458941',
     'USDC',
     6,
     UnderlyingAsset['talgo:USDC-10458941'],
@@ -2047,7 +2071,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     'dd48a295-4f59-4a36-bc40-801998b9ff90',
     'talgo:USDt-180447',
-    undefined,
+    'talgo:180447',
     'Testnet Algorand USDT',
     6,
     UnderlyingAsset['talgo:USDt-180447'],
@@ -2058,7 +2082,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '3cfccea1-9946-4de1-abe2-f9ab6411a14b',
     'talgo:USON-16026728',
-    undefined,
+    'talgo:16026728',
     'Unison',
     2,
     UnderlyingAsset['talgo:USON-16026728'],
@@ -2069,7 +2093,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '02f2ed81-83ba-4c6c-931e-2ce1aacfd57f',
     'talgo:SPRW-16026732',
-    undefined,
+    'talgo:16026732',
     'Sparrow',
     4,
     UnderlyingAsset['talgo:SPRW-16026732'],
@@ -2080,7 +2104,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '0c642b43-157a-475b-b6dc-d20ae76c71fc',
     'talgo:KAL-16026733',
-    undefined,
+    'talgo:16026733',
     'Kalki',
     8,
     UnderlyingAsset['talgo:KAL-16026733'],
@@ -2091,7 +2115,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '857994b1-3198-4649-a7a0-724a8620eb67',
     'talgo:JPT-162085446',
-    undefined,
+    'talgo:162085446',
     'JPT',
     6,
     UnderlyingAsset['talgo:JPT-162085446'],
@@ -2496,7 +2520,7 @@ export const coins = CoinMap.fromCoins([
     '1a5481b2-67c1-4872-9b81-478773cc10c6',
     'arbeth:tbill',
     'OpenEden T-Bills',
-    18,
+    6,
     '0xf84d28a8d28292842dd73d1c5f99476a80b6666a',
     UnderlyingAsset['arbeth:tbill'],
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
@@ -3266,6 +3290,25 @@ function getAptTokenInitializer(token: AmsTokenConfig) {
   };
 }
 
+export function isCoinPresentInCoinMap({
+  name,
+  id,
+  contractAddress,
+  alias,
+}: {
+  name: string;
+  id?: string;
+  contractAddress?: string;
+  alias?: string;
+}): boolean {
+  return Boolean(
+    coins.has(name) ||
+      (id && coins.has(id)) ||
+      (contractAddress && coins.has(contractAddress)) ||
+      (alias && coins.has(alias))
+  );
+}
+
 export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, AmsTokenConfig[]>): CoinMap {
   const BaseCoins: Map<string, Readonly<BaseCoin>> = new Map();
   const initializerMap: Record<string, unknown> = {
@@ -3318,9 +3361,12 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
   for (const tokenConfigs of Object.values(tokenConfigMap)) {
     const tokenConfig = tokenConfigs[0];
     const family = tokenConfig.family;
-    const name = tokenConfig.name;
 
-    if (!coins.has(name) && tokenConfig.isToken && !nftAndOtherTokens.has(tokenConfig.name)) {
+    if (
+      !isCoinPresentInCoinMap({ ...tokenConfig }) &&
+      tokenConfig.isToken &&
+      !nftAndOtherTokens.has(tokenConfig.name)
+    ) {
       const token = createToken(family, tokenConfig, initializerMap);
       if (token) {
         BaseCoins.set(token.name, token);
@@ -3329,4 +3375,35 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
   }
 
   return CoinMap.fromCoins(Array.from(BaseCoins.values()));
+}
+
+export function createTokenMapUsingTrimmedConfigDetails(
+  reducedTokenConfigMap: Record<string, TrimmedAmsTokenConfig[]>
+): CoinMap {
+  const amsTokenConfigMap: Record<string, AmsTokenConfig[]> = {};
+  const networkNameMap = new Map(
+    Object.values(Networks).flatMap((networkType) =>
+      Object.values(networkType).map((network) => [network.name, network])
+    )
+  );
+
+  for (const tokenConfigs of Object.values(reducedTokenConfigMap)) {
+    const tokenConfig = tokenConfigs[0];
+    const network = networkNameMap.get(tokenConfig.network.name);
+    if (
+      !isCoinPresentInCoinMap({ ...tokenConfig }) &&
+      network &&
+      tokenConfig.isToken &&
+      networkFeatureMapForTokens[network.family]
+    ) {
+      const features = new Set([
+        ...(networkFeatureMapForTokens[network.family] || []),
+        ...(tokenConfig.additionalFeatures || []),
+      ]);
+      tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
+      amsTokenConfigMap[tokenConfig.name] = [{ ...tokenConfig, features: Array.from(features), network }];
+    }
+  }
+
+  return createTokenMapUsingConfigDetails(amsTokenConfigMap);
 }

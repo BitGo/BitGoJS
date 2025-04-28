@@ -82,6 +82,7 @@ export enum CoinFamily {
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
+  VET = 'vet',
   WORLD = 'world',
   WEMIX = 'wemix',
   XDC = 'xdc',
@@ -432,10 +433,11 @@ export enum UnderlyingAsset {
   TIA = 'tia', // Celestia
   TON = 'ton',
   TRX = 'trx',
-  WEMIX = 'wemix',
-  WORLD = 'world',
   SONEIUM = 'soneium',
   STT = 'stt',
+  VET = 'vet',
+  WEMIX = 'wemix',
+  WORLD = 'world',
   XLM = 'xlm',
   XDC = 'xdc',
   XRP = 'xrp',

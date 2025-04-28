@@ -422,6 +422,7 @@ export const ICP_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.MPCV2,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.SHA256_WITH_ECDSA_TSS,
 ];
 
 export const TAO_FEATURES = [
@@ -466,4 +467,13 @@ export const BERA_BGT_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_GERMANY,
+];
+
+export const VET_FEATURES = [
+  ...AccountCoin.DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.ENTERPRISE_PAYS_FEES,
+  CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
 ];
