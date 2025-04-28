@@ -57,6 +57,7 @@ import { handlePayLightningInvoice } from './lightning/lightningInvoiceRoutes';
 import { handleUpdateLightningWalletCoinSpecific } from './lightning/lightningWalletRoutes';
 import { ProxyAgent } from 'proxy-agent';
 import { isLightningCoinName } from '@bitgo/abstract-lightning';
+import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -1719,6 +1720,14 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     parseBody,
     prepareBitGo(config),
     promiseWrapper(handlePayLightningInvoice)
+  );
+
+  // lightning - onchain withdrawal
+  app.post(
+    '/api/v2/:coin/wallet/:id/lightning/withdraw',
+    parseBody,
+    prepareBitGo(config),
+    promiseWrapper(handleLightningWithdraw)
   );
 
   // any other API v2 call
