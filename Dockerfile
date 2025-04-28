@@ -129,6 +129,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-polyx /var/modules/sdk-coin-polyx/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-vet /var/modules/sdk-coin-vet/
 
 RUN cd /var/modules/abstract-lightning && yarn link && \
 cd /var/modules/sdk-core && yarn link && \
@@ -220,7 +221,8 @@ cd /var/modules/sdk-coin-lnbtc && yarn link && \
 cd /var/modules/sdk-coin-ltc && yarn link && \
 cd /var/modules/sdk-coin-polyx && yarn link && \
 cd /var/modules/sdk-coin-xlm && yarn link && \
-cd /var/modules/sdk-coin-zec && yarn link
+cd /var/modules/sdk-coin-zec && yarn link && \
+cd /var/modules/sdk-coin-vet && yarn link
 #COPY_END
 
 #LINK_START
@@ -315,7 +317,8 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-ltc && \
     yarn link @bitgo/sdk-coin-polyx && \
     yarn link @bitgo/sdk-coin-xlm && \
-    yarn link @bitgo/sdk-coin-zec
+    yarn link @bitgo/sdk-coin-zec && \
+    yarn link @bitgo/sdk-coin-vet
 #LINK_END
 
 #LABEL_START

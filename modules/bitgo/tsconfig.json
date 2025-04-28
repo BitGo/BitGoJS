@@ -231,6 +231,9 @@
       "path": "../sdk-coin-trx"
     },
     {
+      "path": "../sdk-coin-vet"
+    },
+    {
       "path": "../sdk-coin-wemix"
     },
     {

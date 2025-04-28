@@ -109,6 +109,7 @@
     "@bitgo/sdk-coin-tia": "^3.0.48",
     "@bitgo/sdk-coin-ton": "^3.5.2",
     "@bitgo/sdk-coin-trx": "^3.0.1",
+    "@bitgo/sdk-coin-vet": "^1.0.0",
     "@bitgo/sdk-coin-wemix": "^1.2.3",
     "@bitgo/sdk-coin-world": "^1.1.2",
     "@bitgo/sdk-coin-xdc": "^1.2.3",
