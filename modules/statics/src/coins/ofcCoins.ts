@@ -793,7 +793,7 @@ export const ofcCoins = [
     '1ba44303-cdf1-4322-bb82-54adbbbbd7f0',
     'ofcarbeth:tbill',
     'OpenEden T-Bills',
-    18,
+    6,
     UnderlyingAsset['arbeth:tbill']
   ),
   ofcArbethErc20('5be753ec-179f-4bad-8552-b3190b723779', 'ofcarbeth:xai', 'Xai', 18, UnderlyingAsset['arbeth:xai']),
