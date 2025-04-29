@@ -284,6 +284,7 @@ export interface WalletCoinSpecific {
 }
 
 export interface PaginationOptions {
+  page?: number;
   prevId?: string;
   limit?: number;
 }
@@ -416,6 +417,11 @@ export interface AddressesOptions extends PaginationOptions {
   includeTotalAddressCount?: boolean;
   returnBalancesForToken?: string;
   pendingDeployment?: boolean;
+}
+
+export interface AddressesByBalanceOptions extends PaginationOptions {
+  token: string;
+  sort?: number;
 }
 
 export interface GetAddressOptions {
