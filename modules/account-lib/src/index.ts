@@ -173,6 +173,9 @@ export { World };
 import * as Stt from '@bitgo/sdk-coin-stt';
 export { Stt };
 
+import * as Soneium from '@bitgo/sdk-coin-soneium';
+export { Soneium };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -271,6 +274,8 @@ const coinBuilderMap = {
   tworld: World.TransactionBuilder,
   stt: Stt.TransactionBuilder,
   tstt: Stt.TransactionBuilder,
+  soneium: Soneium.TransactionBuilder,
+  tsoneium: Soneium.TransactionBuilder,
 };
 
 /**
