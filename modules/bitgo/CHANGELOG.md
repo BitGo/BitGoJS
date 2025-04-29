@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [44.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@43.2.0...bitgo@44.0.0) (2025-04-25)
+
+### Code Refactoring
+
+- remove unused bls and eth2 codebase ([4ffd5bd](https://github.com/BitGo/BitGoJS/commit/4ffd5bd13bc2e8d43b57bef4aae0b5880bbf9e2b))
+- **root:** remove bitgo backup provider "bitgoTrustAsKrs" ([f5f38b1](https://github.com/BitGo/BitGoJS/commit/f5f38b1b20cb04c11ad9321250c88f7e763f42e6))
+
+### Features
+
+- add bulk update functionality for wallet shares ([ef5a1b1](https://github.com/BitGo/BitGoJS/commit/ef5a1b1d6241b65c7d30cf13806ef4b89ee1d909))
+- handle rejected promises in bulk wallet share updates ([cb79082](https://github.com/BitGo/BitGoJS/commit/cb7908210a91f8811fd987182655f5b33c6930aa))
+- **sdk-coin-mon:** add transaction builder ([cff759f](https://github.com/BitGo/BitGoJS/commit/cff759f5c91711ec81af7effc7fe3d32320930fb))
+- **sdk-coin-stt:** add transaction builder ([1e77306](https://github.com/BitGo/BitGoJS/commit/1e7730665a74235085d4dfe0c48ddecceb400624))
+- **sdk-coin-world:** add transaction builder ([30e888e](https://github.com/BitGo/BitGoJS/commit/30e888ed7bb4a9325f873ad3ce30bbdd39a77893))
+- **statics:** added somnia config ([2f8bed7](https://github.com/BitGo/BitGoJS/commit/2f8bed7994a39a9121dd2bf75e51cbf47c0d74c4))
+- **statics:** added soneium config ([4737b45](https://github.com/BitGo/BitGoJS/commit/4737b4529e48a8af6dcf43d7d1194b5541097210))
+- **statics:** added world config ([5baccb8](https://github.com/BitGo/BitGoJS/commit/5baccb81d45579528e617ca1f51b731c9391b83a))
+- **statics:** map NFT collection ID to BaseCoin ([827a1ac](https://github.com/BitGo/BitGoJS/commit/827a1ac69f64839dfccd6be11c526dc1f1ae85d3))
+
+### BREAKING CHANGES
+
+- remove bls and eth2 sdk
+
+TICKET: WP-3961
+
+- **root:** remove bitgo backup provider "bitgoTrustAsKrs"
+
+TICKET: WP-4186
+
 # [43.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@43.1.0...bitgo@43.2.0) (2025-04-15)
 
 ### Features

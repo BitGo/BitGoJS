@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [33.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@32.2.0...@bitgo/sdk-core@33.0.0) (2025-04-25)
+
+### Bug Fixes
+
+- **abstract-eth:** fix building using from for first signer ([c8ec337](https://github.com/BitGo/BitGoJS/commit/c8ec3377d5502a580801fabdcece528b4c3ac03a))
+
+### chore
+
+- fix bls coderemoval build issue ([2cd5d6e](https://github.com/BitGo/BitGoJS/commit/2cd5d6e6871b22b0c125ddc372c5cfe1db45cb43))
+
+### Code Refactoring
+
+- remove unused bls and eth2 codebase ([4ffd5bd](https://github.com/BitGo/BitGoJS/commit/4ffd5bd13bc2e8d43b57bef4aae0b5880bbf9e2b))
+- **root:** remove bitgo backup provider "bitgoTrustAsKrs" ([f5f38b1](https://github.com/BitGo/BitGoJS/commit/f5f38b1b20cb04c11ad9321250c88f7e763f42e6))
+
+### Features
+
+- **abstract-eth:** support building eth tx for a first signer ([cbd4d4c](https://github.com/BitGo/BitGoJS/commit/cbd4d4cdee97a6ff51df2c854e945791ac0df4b4))
+- add bulk update functionality for wallet shares ([ef5a1b1](https://github.com/BitGo/BitGoJS/commit/ef5a1b1d6241b65c7d30cf13806ef4b89ee1d909))
+- add isTssSupportGated method and gate arb and op ([c2a38cd](https://github.com/BitGo/BitGoJS/commit/c2a38cd1e23bcb5f3919c3de6235aae55c27b8be))
+- get max spendable given unspent ids ([1720ac3](https://github.com/BitGo/BitGoJS/commit/1720ac377fe5ad10b65ba911717f2eb83cd8aa08))
+- handle rejected promises in bulk wallet share updates ([cb79082](https://github.com/BitGo/BitGoJS/commit/cb7908210a91f8811fd987182655f5b33c6930aa))
+- **sdk-coin-mon:** add transaction builder ([cff759f](https://github.com/BitGo/BitGoJS/commit/cff759f5c91711ec81af7effc7fe3d32320930fb))
+- **sdk-coin-stt:** add transaction builder ([1e77306](https://github.com/BitGo/BitGoJS/commit/1e7730665a74235085d4dfe0c48ddecceb400624))
+- **sdk-coin-ton:** add support for recovery for ton ([bdeb737](https://github.com/BitGo/BitGoJS/commit/bdeb7373785b99cdbebf2aa228a3d861cae942c1))
+- **sdk-coin-world:** add transaction builder ([30e888e](https://github.com/BitGo/BitGoJS/commit/30e888ed7bb4a9325f873ad3ce30bbdd39a77893))
+- **sdk-core:** add RBF as a transaction acceleration option ([d14ab4b](https://github.com/BitGo/BitGoJS/commit/d14ab4b1513643928fae7e58ab1ba416ebcab359))
+- send digital asset ([e4f9135](https://github.com/BitGo/BitGoJS/commit/e4f913543a39fc1eb062cebcc5c62984a3bdde1a))
+- **statics:** add coin feature TSS_SUPPORT_GATED and gate arb and op ([bb217aa](https://github.com/BitGo/BitGoJS/commit/bb217aa49b169187189f5cb8119feab204fcd931))
+- **statics:** map NFT collection ID to BaseCoin ([827a1ac](https://github.com/BitGo/BitGoJS/commit/827a1ac69f64839dfccd6be11c526dc1f1ae85d3))
+- update bulkUpdateWalletShareRequest to wrap params in shares object ([7d85925](https://github.com/BitGo/BitGoJS/commit/7d8592509a40630ad0aef77958b4b9d2df2c28af))
+
+### BREAKING CHANGES
+
+- remove bls and eth2 sdk
+
+TICKET: WP-3961
+
+- remove bls and eth2 sdk
+
+TICKET: WP-3961
+
+- **root:** remove bitgo backup provider "bitgoTrustAsKrs"
+
+TICKET: WP-4186
+
 # [32.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@32.1.0...@bitgo/sdk-core@32.2.0) (2025-04-15)
 
 ### Bug Fixes

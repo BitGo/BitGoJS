@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.12.0...@bitgo/sdk-coin-icp@1.13.0) (2025-04-25)
+
+### Bug Fixes
+
+- **sdk-coin-icp:** enhance hash functions to support Uint8Array in Utils class ([dbe8eea](https://github.com/BitGo/BitGoJS/commit/dbe8eeab6ce84d397ef606e20851259b3f207914))
+- **sdk-coin-icp:** update cbor-x import to use index-no-eval ([6c3f6af](https://github.com/BitGo/BitGoJS/commit/6c3f6af3cadb23270db7feb00d6235058422862f))
+- **sdk-coin-icp:** update from() method to use PayloadsData ([ea7b7e2](https://github.com/BitGo/BitGoJS/commit/ea7b7e2e3c8722f46db1b89e898ad9a1dea3450d))
+- **sdk-coin-icp:** update protobufjs dependency to version 7.5.0 ([663b5ee](https://github.com/BitGo/BitGoJS/commit/663b5ee200fd9550d55005e68d2fc616b4ff219d))
+
+### Features
+
+- **sdk-coin-icp:** add protobuf definitions for message SendRequest ([b1b62c3](https://github.com/BitGo/BitGoJS/commit/b1b62c3875bada1a8f3d23c86685781163a63ff9))
+- **sdk-coin-icp:** add transaction ID handling and related utilities ([59d20a8](https://github.com/BitGo/BitGoJS/commit/59d20a8f8033de6856b68f2382f431fa08afcfa2))
+- **sdk-coin-icp:** implemented default memo as 0 and related changes ([cab3bcc](https://github.com/BitGo/BitGoJS/commit/cab3bcc609f0e23a73cb6cb7c24071dfa7742adf))
+- **sdk-coin-icp:** replace protoDefinition with staticProtoDefinition for protobuf parsing ([34b8de0](https://github.com/BitGo/BitGoJS/commit/34b8de08e0e2b9151ad1e4b03b988ca982db9c68))
+
 # [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.11.0...@bitgo/sdk-coin-icp@1.12.0) (2025-04-15)
 
 ### Bug Fixes

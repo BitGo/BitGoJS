@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@2.1.18...@bitgo/web-demo@3.0.0) (2025-04-25)
+
+### Code Refactoring
+
+- remove unused bls and eth2 codebase ([4ffd5bd](https://github.com/BitGo/BitGoJS/commit/4ffd5bd13bc2e8d43b57bef4aae0b5880bbf9e2b))
+- **root:** remove bitgo backup provider "bitgoTrustAsKrs" ([f5f38b1](https://github.com/BitGo/BitGoJS/commit/f5f38b1b20cb04c11ad9321250c88f7e763f42e6))
+
+### BREAKING CHANGES
+
+- remove bls and eth2 sdk
+
+TICKET: WP-3961
+
+- **root:** remove bitgo backup provider "bitgoTrustAsKrs"
+
+TICKET: WP-4186
+
 ## [2.1.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@2.1.17...@bitgo/web-demo@2.1.18) (2025-04-15)
 
 **Note:** Version bump only for package @bitgo/web-demo

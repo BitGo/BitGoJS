@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.2.0...@bitgo/abstract-eth@24.3.0) (2025-04-25)
+
+### Bug Fixes
+
+- **abstract-eth:** fix building using from for first signer ([c8ec337](https://github.com/BitGo/BitGoJS/commit/c8ec3377d5502a580801fabdcece528b4c3ac03a))
+
+### Features
+
+- **abstract-eth:** support building eth tx for a first signer ([cbd4d4c](https://github.com/BitGo/BitGoJS/commit/cbd4d4cdee97a6ff51df2c854e945791ac0df4b4))
+- send digital asset ([e4f9135](https://github.com/BitGo/BitGoJS/commit/e4f913543a39fc1eb062cebcc5c62984a3bdde1a))
+
 # [24.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.1.0...@bitgo/abstract-eth@24.2.0) (2025-04-15)
 
 ### Features

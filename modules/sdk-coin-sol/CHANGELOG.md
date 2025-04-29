@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.9.1...@bitgo/sdk-coin-sol@4.10.0) (2025-04-25)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** amend recipients type to match what WP is sending ([9d47c29](https://github.com/BitGo/BitGoJS/commit/9d47c29bdbe5991af39d79167b0d7fd0f0af8fc7))
+- **sdk-coin-sol:** set isMarinade flag during from raw build ([7a0f381](https://github.com/BitGo/BitGoJS/commit/7a0f3818cee20bbfec42970ae5c87f572a37f319))
+
+### Features
+
+- **sdk-coin-sol:** add decode order for marinade stake/unstake ([e1b1e32](https://github.com/BitGo/BitGoJS/commit/e1b1e32cd6e97eb5100b3a753ff059f47df46d99))
+- **sdk-coin-sol:** add support for marinade staking ([9def25e](https://github.com/BitGo/BitGoJS/commit/9def25eb07acfe79d16d330e3078951ed6ccbaa1))
+- **sdk-coin-sol:** add unstake flow for marinade ([6933bd9](https://github.com/BitGo/BitGoJS/commit/6933bd9b875dbd19866210ded74c79e6a644cc7a))
+
 ## [4.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.9.0...@bitgo/sdk-coin-sol@4.9.1) (2025-04-15)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.3.0...@bitgo/sdk-coin-baby@1.4.0) (2025-04-25)
+
+### Features
+
+- **sdk-coin-baby:** add WithdrawReward transaction ([daf91ba](https://github.com/BitGo/BitGoJS/commit/daf91babcd5156f820b2f11545cc55ed24d8b5d0))
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.2.4...@bitgo/sdk-coin-baby@1.3.0) (2025-04-15)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@21.4.0...@bitgo/sdk-coin-arbeth@21.5.0) (2025-04-25)
+
+### Features
+
+- add tss support for arb and op tokens ([3450a59](https://github.com/BitGo/BitGoJS/commit/3450a59818741222f0bb143c478a8cdb1bf89429))
+
 # [21.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@21.3.6...@bitgo/sdk-coin-arbeth@21.4.0) (2025-04-15)
 
 ### Features
