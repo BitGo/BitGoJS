@@ -2578,6 +2578,16 @@ export const solTokens = [
     UnderlyingAsset['sol:eurcv'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '9a89cbd8-f097-4ab8-a5ea-f594c44cb33e',
+    'sol:layer',
+    'Solayer',
+    9,
+    'LAYER4xPpTCb3QL8S9u41EAhAX7mhBn8Q6xMTwY2Yzc',
+    'LAYER4xPpTCb3QL8S9u41EAhAX7mhBn8Q6xMTwY2Yzc',
+    UnderlyingAsset['sol:layer'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
