@@ -1224,7 +1224,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.FLR,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '321a3168-4669-4ed0-a767-8f35111bb576',
@@ -1244,7 +1244,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SGB,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   gasTankAccount(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',
