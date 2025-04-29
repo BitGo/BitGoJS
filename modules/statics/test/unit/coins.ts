@@ -396,6 +396,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   ftm: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   gala: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   imx: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  imxv2: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   inj: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   knc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   lrc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
