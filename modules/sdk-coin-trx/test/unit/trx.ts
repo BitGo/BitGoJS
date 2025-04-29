@@ -62,10 +62,6 @@ describe('TRON:', function () {
       'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ',
       '0x96be113992bdc3be24c11f6017085b605d253649',
       '0x341qg3922b1',
-    ];
-    const goodAddresses = [
-      'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLp',
-      'TPcf5jtYUhCN1X14tN577zF4NepbDZbxT7',
       '41E0C0F581D7D02D40826C1C6CBEE71F625D6344D0',
       '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80577',
       '418840E6C55B9ADA326D211D818C34A994AECED808',
@@ -73,6 +69,7 @@ describe('TRON:', function () {
       '41A614F803B6FD780986A42C78EC9C7F77E6DED13C',
       '418840E6C55B9ADA326D211D818C34A994AECED808',
     ];
+    const goodAddresses = ['TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLp', 'TPcf5jtYUhCN1X14tN577zF4NepbDZbxT7'];
 
     badAddresses.map((addr) => {
       assert.equal(basecoin.isValidAddress(addr), false);

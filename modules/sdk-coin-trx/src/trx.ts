@@ -190,7 +190,7 @@ export class Trx extends BaseCoin {
   }
 
   /**
-   * Checks if this is a valid base58 or hex address
+   * Checks if this is a valid base58
    * @param address
    */
   isValidAddress(address: string): boolean {
@@ -198,7 +198,7 @@ export class Trx extends BaseCoin {
       return false;
     }
 
-    return this.isValidHexAddress(address) || Utils.isBase58Address(address);
+    return Utils.isBase58Address(address);
   }
 
   /**
