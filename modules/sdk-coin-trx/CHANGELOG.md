@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@2.0.77...@bitgo/sdk-coin-trx@3.0.0) (2025-04-29)
+
+### Bug Fixes
+
+- **sdk-coin-trx:** isValidAddress allows only base58 address format ([3b4f53c](https://github.com/BitGo/BitGoJS/commit/3b4f53cb3f17194b757d163709a402b2b056b331))
+
+### BREAKING CHANGES
+
+- **sdk-coin-trx:** isValidAddress for Tron used to allow hex addresses and base58 format addresses.
+  But Tron build API expect addresses to be passed in Base58check format. Hence removing the support of hex addresses
+  TICKET: COIN-3940
+
 ## [2.0.77](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@2.0.76...@bitgo/sdk-coin-trx@2.0.77) (2025-04-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

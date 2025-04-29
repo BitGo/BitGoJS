@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.3.0...@bitgo/abstract-eth@24.3.1) (2025-04-29)
+
+### Bug Fixes
+
+- **sdk-core:** add validation for unsigned txHex ([eff30e3](https://github.com/BitGo/BitGoJS/commit/eff30e3febbfc3c5f987ba5a0e54d4716983c4b5))
+
 # [24.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.2.0...@bitgo/abstract-eth@24.3.0) (2025-04-25)
 
 ### Bug Fixes

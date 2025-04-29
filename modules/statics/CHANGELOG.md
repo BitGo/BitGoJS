@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@52.0.0...@bitgo/statics@52.1.0) (2025-04-29)
+
+### Bug Fixes
+
+- add alias for algo testnet tokens ([3c9b55a](https://github.com/BitGo/BitGoJS/commit/3c9b55ab58fa4d7c6e89091d52a522758d0edd9e))
+- decimal of arbeth:tbill ([342cb14](https://github.com/BitGo/BitGoJS/commit/342cb14ec7fde8411533eecc93070f77aa579997))
+- **statics:** add ICP feature to use sha256 ([3fc8984](https://github.com/BitGo/BitGoJS/commit/3fc89848ca680e7a90ac592241567527a509f67d))
+
+### Features
+
+- **sdk-coin-soneium:** add transaction builder ([921cdbd](https://github.com/BitGo/BitGoJS/commit/921cdbd641574faf06880bfbb0a37db03fac55b6))
+- **statics:** add method to create coin map from trimmed ams response ([7475788](https://github.com/BitGo/BitGoJS/commit/747578877b08daa2b094804d003c1306e17a35f7))
+- **statics:** adding SHARED_EVM_SIGNING feature to tflr & tsgb ([cbab9fb](https://github.com/BitGo/BitGoJS/commit/cbab9fb64d243e90a5275a7f7438b15a799ba4d0))
+- **statics:** onboard new tokens WIN-5323 ([3a27cc4](https://github.com/BitGo/BitGoJS/commit/3a27cc42e7a2ceddda5ba73d2dbae6244e191455))
+
 # [52.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@51.8.0...@bitgo/statics@52.0.0) (2025-04-25)
 
 ### Bug Fixes
