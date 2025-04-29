@@ -573,6 +573,13 @@ export class Wallet implements IWallet {
       query.type = params.type;
     }
 
+    if (!_.isNil(params.decorateUtxoSpecificFields)) {
+      if (!_.isBoolean(params.decorateUtxoSpecificFields)) {
+        throw new Error('invalid includeHex argument, expecting boolean');
+      }
+      query.decorateUtxoSpecificFields = params.decorateUtxoSpecificFields;
+    }
+
     return await this.bitgo.get(this.url('/transfer')).query(query).result();
   }
 
