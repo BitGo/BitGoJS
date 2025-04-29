@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@25.0.0...@bitgo/account-lib@25.1.0) (2025-04-29)
+
+### Features
+
+- **sdk-coin-soneium:** add transaction builder ([921cdbd](https://github.com/BitGo/BitGoJS/commit/921cdbd641574faf06880bfbb0a37db03fac55b6))
+
 # [25.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@24.5.12...@bitgo/account-lib@25.0.0) (2025-04-25)
 
 ### Code Refactoring

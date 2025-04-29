@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.4.0...@bitgo/express@13.5.0) (2025-04-29)
+
+### Features
+
+- added withdraw route ([3206726](https://github.com/BitGo/BitGoJS/commit/32067263f63afdc2d1eb46a118643eb1dd066e6d))
+
 # [13.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.3.3...@bitgo/express@13.4.0) (2025-04-25)
 
 ### Features

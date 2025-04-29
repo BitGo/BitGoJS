@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.2.4...@bitgo/abstract-lightning@4.3.0) (2025-04-29)
+
+### Features
+
+- added withdraw route ([3206726](https://github.com/BitGo/BitGoJS/commit/32067263f63afdc2d1eb46a118643eb1dd066e6d))
+
 ## [4.2.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.2.3...@bitgo/abstract-lightning@4.2.4) (2025-04-25)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

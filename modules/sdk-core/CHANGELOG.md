@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [33.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@33.0.0...@bitgo/sdk-core@33.1.0) (2025-04-29)
+
+### Bug Fixes
+
+- **sdk-core:** add validation for unsigned txHex ([eff30e3](https://github.com/BitGo/BitGoJS/commit/eff30e3febbfc3c5f987ba5a0e54d4716983c4b5))
+
+### Features
+
+- add option to not decorate utxo transfers ([1d17680](https://github.com/BitGo/BitGoJS/commit/1d17680fe34f897c52ab992b249672c70e66c63d))
+- list wallet addresses sorted by balance ([6835c5d](https://github.com/BitGo/BitGoJS/commit/6835c5d629be21be17a364d46968106e84be18bb))
+- **sdk-coin-soneium:** add transaction builder ([921cdbd](https://github.com/BitGo/BitGoJS/commit/921cdbd641574faf06880bfbb0a37db03fac55b6))
+
 # [33.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@32.2.0...@bitgo/sdk-core@33.0.0) (2025-04-25)
 
 ### Bug Fixes
