@@ -78,6 +78,8 @@ interface EnvironmentTemplate {
   worldExplorerApiToken?: string;
   somniaExplorerBaseUrl?: string;
   somniaExplorerApiToken?: string;
+  soneiumExplorerBaseUrl?: string;
+  soneiumExplorerApiToken?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -185,6 +187,9 @@ const mainnetBase: EnvironmentTemplate = {
   sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
   icpRosettaNodeUrl: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
   icpNodeUrl: 'https://ic0.app',
+  worldExplorerBaseUrl: 'https://worldscan.org/',
+  somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/', //TODO: WIN-5278: change it with mainnet explorer, when its available
+  soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -251,7 +256,8 @@ const testnetBase: EnvironmentTemplate = {
   icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
   monExplorerBaseUrl: 'https://testnet.monadexplorer.com/',
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
-  somniaExplorerBaseUrl: 'https://codex.somnia.network/',
+  somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
+  soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

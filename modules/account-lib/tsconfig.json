@@ -101,6 +101,9 @@
       "path": "../sdk-coin-sol"
     },
     {
+      "path": "../sdk-coin-soneium"
+    },
+    {
       "path": "../sdk-coin-stx"
     },
     {

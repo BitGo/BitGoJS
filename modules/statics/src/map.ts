@@ -90,6 +90,8 @@ export class CoinMap {
       480: 'world',
       4801: 'tworld',
       50312: 'tstt',
+      1868: 'soneium',
+      1946: 'tsoneium',
     };
     return ethLikeCoinFromChainId[chainId];
   }
