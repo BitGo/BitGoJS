@@ -80,11 +80,20 @@ export function getSignedPsbt(
 /**
  * Utility method to work around a bug in btc-staking-ts
  * https://github.com/babylonlabs-io/btc-staking-ts/issues/71
- * @param buffer
+ * @param v
  * @param network
  */
-export function forceFinalizePsbt(buffer: Buffer, network: BabylonNetworkLike): bitcoinjslib.Psbt {
-  const psbt = bitcoinjslib.Psbt.fromBuffer(buffer, { network: toBitcoinJsNetwork(network) });
+export function forceFinalizePsbt(
+  v: Buffer | utxolib.Psbt | bitcoinjslib.Psbt,
+  network: BabylonNetworkLike
+): bitcoinjslib.Psbt {
+  if (v instanceof utxolib.Psbt) {
+    v = v.toBuffer();
+  }
+  if (v instanceof bitcoinjslib.Psbt) {
+    v = v.toBuffer();
+  }
+  const psbt = bitcoinjslib.Psbt.fromBuffer(v, { network: toBitcoinJsNetwork(network) });
   // this only works with certain bitcoinjslib versions
   psbt.finalizeAllInputs();
   return psbt;
