@@ -3154,11 +3154,29 @@ export const coins = CoinMap.fromCoins([
   ),
 ]);
 
-function createToken(
-  family: string,
-  token: AmsTokenConfig,
-  initializerMap: Record<string, unknown>
-): Readonly<BaseCoin> | undefined {
+export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
+  const initializerMap: Record<string, unknown> = {
+    algo: algoToken,
+    apt: aptToken,
+    arbeth: arbethErc20,
+    avaxc: avaxErc20,
+    bera: beraErc20,
+    bsc: bscToken,
+    celo: celoToken,
+    eth: erc20,
+    eos: eosToken,
+    hbar: hederaToken,
+    opeth: opethErc20,
+    polygon: polygonErc20,
+    sol: solToken,
+    stx: sip10Token,
+    sui: suiToken,
+    trx: tronToken,
+    xlm: stellarToken,
+    xrp: xrpToken,
+  };
+
+  const family = token.family;
   const initializer = initializerMap[family] as (...args: unknown[]) => Readonly<BaseCoin>;
   if (!initializer) {
     return undefined;
@@ -3290,47 +3308,12 @@ function getAptTokenInitializer(token: AmsTokenConfig) {
   };
 }
 
-export function isCoinPresentInCoinMap({
-  name,
-  id,
-  contractAddress,
-  alias,
-}: {
-  name: string;
-  id?: string;
-  contractAddress?: string;
-  alias?: string;
-}): boolean {
-  return Boolean(
-    coins.has(name) ||
-      (id && coins.has(id)) ||
-      (contractAddress && coins.has(contractAddress)) ||
-      (alias && coins.has(alias))
-  );
+export function isCoinPresentInCoinMap({ name, id, alias }: { name: string; id?: string; alias?: string }): boolean {
+  return Boolean(coins.has(name) || (id && coins.has(id)) || (alias && coins.has(alias)));
 }
 
 export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, AmsTokenConfig[]>): CoinMap {
   const BaseCoins: Map<string, Readonly<BaseCoin>> = new Map();
-  const initializerMap: Record<string, unknown> = {
-    algo: algoToken,
-    apt: aptToken,
-    arbeth: arbethErc20,
-    avaxc: avaxErc20,
-    bera: beraErc20,
-    bsc: bscToken,
-    celo: celoToken,
-    eth: erc20,
-    eos: eosToken,
-    hbar: hederaToken,
-    opeth: opethErc20,
-    polygon: polygonErc20,
-    sol: solToken,
-    stx: sip10Token,
-    sui: suiToken,
-    trx: tronToken,
-    xlm: stellarToken,
-    xrp: xrpToken,
-  };
 
   const nftAndOtherTokens = new Set([
     'erc721:bsctoken',
@@ -3360,14 +3343,13 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
   // add the tokens not present in the static coin map
   for (const tokenConfigs of Object.values(tokenConfigMap)) {
     const tokenConfig = tokenConfigs[0];
-    const family = tokenConfig.family;
 
     if (
       !isCoinPresentInCoinMap({ ...tokenConfig }) &&
       tokenConfig.isToken &&
       !nftAndOtherTokens.has(tokenConfig.name)
     ) {
-      const token = createToken(family, tokenConfig, initializerMap);
+      const token = createToken(tokenConfig);
       if (token) {
         BaseCoins.set(token.name, token);
       }
