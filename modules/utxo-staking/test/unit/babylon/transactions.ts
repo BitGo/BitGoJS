@@ -22,6 +22,7 @@ import {
   getSignedPsbt,
   getStakingParams,
   toStakerInfo,
+  forceFinalizePsbt,
 } from '../../../src/babylon';
 import { normalize } from '../fixtures.utils';
 
@@ -43,6 +44,8 @@ type TransactionTree = {
 
   slashing: PsbtWithFee;
   slashingWithdraw: PsbtWithFee | undefined;
+  slashingSigned: bitcoinjslib.Psbt | undefined;
+  slashingSignedBase64: string | undefined;
 };
 
 function getStakingTransactionTreeVendor(
@@ -57,7 +60,7 @@ function getStakingTransactionTreeVendor(
         covenant: ECPairInterface[];
         covenantThreshold: number;
       }
-    | undefined,
+    | { staker: ECPairInterface },
   descriptorBuilder: BabylonDescriptorBuilder
 ): TransactionTree {
   const staking = builder.createStakingTransaction(amount, utxos, feeRateSatB);
@@ -65,21 +68,30 @@ function getStakingTransactionTreeVendor(
   const unbonding = builder.createUnbondingTransaction(staking.transaction);
   const unbondingWithdraw = builder.createWithdrawEarlyUnbondedTransaction(unbonding.transaction, feeRateSatB);
   const unbondingSlashing = builder.createUnbondingOutputSlashingPsbt(unbonding.transaction);
-  const signSequence = signers ? [signers.staker, signers.finalityProvider, ...signers.covenant] : undefined;
+  const signSequence = [signers.staker];
+  if ('finalityProvider' in signers) {
+    signSequence.push(signers.finalityProvider, ...signers.covenant);
+  }
   const unbondingSlashingWithdraw = signSequence
     ? builder.createWithdrawSlashingPsbt(
-        getSignedPsbt(unbondingSlashing.psbt, descriptorBuilder.getUnbondingDescriptor(), signSequence, {
-          finalize: true,
-        }).extractTransaction(),
+        forceFinalizePsbt(
+          getSignedPsbt(unbondingSlashing.psbt, descriptorBuilder.getUnbondingDescriptor(), signSequence, {
+            finalize: false,
+          }),
+          builder.network
+        ).extractTransaction(),
         feeRateSatB
       )
     : undefined;
   const slashing = builder.createStakingOutputSlashingPsbt(staking.transaction);
-  const slashingWithdraw = signSequence
+  const slashingSigned = signSequence
+    ? getSignedPsbt(slashing.psbt, descriptorBuilder.getStakingDescriptor(), signSequence, {
+        finalize: false,
+      })
+    : undefined;
+  const slashingWithdraw = slashingSigned
     ? builder.createWithdrawSlashingPsbt(
-        getSignedPsbt(slashing.psbt, descriptorBuilder.getStakingDescriptor(), signSequence, {
-          finalize: true,
-        }).extractTransaction(),
+        forceFinalizePsbt(slashingSigned.toBuffer(), builder.network).extractTransaction(),
         feeRateSatB
       )
     : undefined;
@@ -92,6 +104,8 @@ function getStakingTransactionTreeVendor(
     unbondingSlashing,
     unbondingSlashingWithdraw,
     slashing,
+    slashingSigned,
+    slashingSignedBase64: slashingSigned?.toBuffer().toString('base64'),
     slashingWithdraw,
   };
 }
@@ -361,7 +375,7 @@ function describeWithKeys(
                 covenant: covenantKeys,
                 covenantThreshold: covenantThreshold,
               }
-            : undefined,
+            : { staker: stakerKey },
           descriptorBuilder
         );
         await assertTransactionEqualsFixture(`test/fixtures/babylon/txTree.${tag}.json`, txTree);
