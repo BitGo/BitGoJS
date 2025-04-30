@@ -1,4 +1,5 @@
 import assert from 'assert';
+import nock from 'nock';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Wallet } from '@bitgo/sdk-core';
@@ -7,7 +8,8 @@ import { coins } from '@bitgo/statics';
 import { cvToString } from '@stacks/transactions';
 
 import * as testData from '../fixtures';
-import { Stx, Tstx, StxLib } from '../../src';
+import { Stx, StxLib, Tstx } from '../../src';
+import { RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
 
 const { KeyPair } = StxLib;
 
@@ -339,6 +341,140 @@ describe('STX:', function () {
         .should.be.rejectedWith(
           `tstx doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
         );
+    });
+  });
+
+  describe('Recover Transaction STX', function () {
+    before(function () {
+      nock.enableNetConnect();
+    });
+    beforeEach(function () {
+      nock.cleanAll();
+    });
+    after(function () {
+      nock.disableNetConnect();
+    });
+
+    it('should build a signed recover transaction when private key data is passed', async function () {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, testData.ACCOUNT_BALANCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`, { allowUnmocked: true })
+        .post(`/v2/fees/transaction`, testData.FEE_ESTIMATION_REQUEST)
+        .reply(200, testData.FEE_ESTIMATION_RESPONSE);
+
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+      };
+      const response: RecoveryTransaction = await basecoin.recover(recoveryOptions);
+      response.should.have.property('txHex');
+      assert.deepEqual(response.txHex, testData.HOT_WALLET_RECOVERY_TX_HEX, 'tx hex not matching!');
+    });
+
+    it('should build an unsigned transaction when public keys are passed', async function () {
+      const rootAddress = testData.COLD_WALLET_ROOT_ADDRESS;
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, testData.ACCOUNT_BALANCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`, { allowUnmocked: true })
+        .post(`/v2/fees/transaction`, testData.FEE_ESTIMATION_REQUEST)
+        .reply(200, testData.FEE_ESTIMATION_RESPONSE);
+
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BACKUP_KEY,
+        userKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BITGO_PUB_KEY,
+      };
+      const response: RecoveryTransaction = await basecoin.recover(recoveryOptions);
+      response.should.have.property('txHex');
+      assert.deepEqual(response.txHex, testData.COLD_WALLET_UNSIGNED_SWEEP_TX_HEX, 'tx hex not matching!');
+    });
+
+    it('should throw invalid root address when root address is missing or invalid', async function () {
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BACKUP_KEY,
+        userKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.USER_KEY,
+        rootAddress: '',
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BITGO_PUB_KEY,
+      };
+      await basecoin.recover(recoveryOptions).should.rejectedWith('invalid root address!');
+    });
+
+    it('should throw invalid destination address when destination address is missing or invalid', async function () {
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BACKUP_KEY,
+        userKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.USER_KEY,
+        rootAddress: testData.COLD_WALLET_ROOT_ADDRESS,
+        recoveryDestination: '',
+        bitgoKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BITGO_PUB_KEY,
+      };
+      await basecoin.recover(recoveryOptions).should.rejectedWith('invalid destination address!');
+    });
+
+    it("should fail with no balance when root address doesn't have balance", async function () {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      const stxBalance = JSON.parse(JSON.stringify(testData.ACCOUNT_BALANCE_RESPONSE));
+      stxBalance.balance = '0';
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, stxBalance);
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+      };
+      await basecoin
+        .recover(recoveryOptions)
+        .should.rejectedWith(`could not find any balance to recover for ${rootAddress}`);
+    });
+
+    it('should fail with insufficient balance when stx balance is lower than fee', async function () {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      // deep clone to stop mutation
+      const accountBalance = JSON.parse(JSON.stringify(testData.ACCOUNT_BALANCE_RESPONSE));
+      accountBalance.balance = '100'; // set balance lower than fee
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, accountBalance);
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      const feeRequestBody = testData.FEE_ESTIMATION_REQUEST;
+      feeRequestBody.transaction_payload =
+        '00051a1500a1c42f0c11bfe3893f479af18904677685be000000000000006400000000000000000000000000000000000000000000000000000000000000000000';
+      nock(`https://api.testnet.hiro.so`, { allowUnmocked: true })
+        .post(`/v2/fees/transaction`, feeRequestBody)
+        .reply(200, testData.FEE_ESTIMATION_RESPONSE);
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+      };
+      await basecoin.recover(recoveryOptions).should.rejectedWith('insufficient balance to build the transaction');
     });
   });
 });
