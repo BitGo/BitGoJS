@@ -2557,7 +2557,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
           if (expectedAmount !== txJson.value) {
             throw new Error('the transaction amount in txPrebuild does not match the value given by client');
           }
-          if (expectedDestination !== txJson.to) {
+          if (expectedDestination.toLowerCase() !== txJson.to.toLowerCase()) {
             throw new Error('destination address does not match with the recipient address');
           }
         } else if (txJson.data.startsWith('0xa9059cbb')) {
@@ -2568,7 +2568,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
           if (expectedAmount !== amount.toString()) {
             throw new Error('the transaction amount in txPrebuild does not match the value given by client');
           }
-          if (expectedDestination !== addHexPrefix(recipientAddress.toString())) {
+          if (expectedDestination.toLowerCase() !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
             throw new Error('destination address does not match with the recipient address');
           }
         }
