@@ -279,11 +279,13 @@ export class Sol extends BaseCoin {
             // Return false and throw an error if that is the case.
             try {
               const tokenMintAddress = getSolTokenFromTokenName(recipientFromUser.tokenName);
-              return getAssociatedTokenAccountAddress(tokenMintAddress!.tokenAddress, recipientFromUser.address).then(
-                (ata: string) => {
-                  return ata === recipientFromTx.address;
-                }
-              );
+              return getAssociatedTokenAccountAddress(
+                tokenMintAddress!.tokenAddress,
+                recipientFromUser.address,
+                true
+              ).then((ata: string) => {
+                return ata === recipientFromTx.address;
+              });
             } catch {
               // Unable to derive ATA
               return false;

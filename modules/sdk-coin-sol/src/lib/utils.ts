@@ -502,15 +502,20 @@ export function getSolTokenFromTokenName(tokenName: string): Readonly<SolCoin> |
  * */
 export async function getAssociatedTokenAccountAddress(
   tokenMintAddress: string,
-  ownerAddress: string
+  ownerAddress: string,
+  allowOwnerOffCurve = false
 ): Promise<string> {
   const ownerPublicKey = new PublicKey(ownerAddress);
 
   // tokenAddress are not on ed25519 curve, so they can't be used as ownerAddress
-  if (!PublicKey.isOnCurve(ownerPublicKey.toBuffer())) {
+  if (!allowOwnerOffCurve && !PublicKey.isOnCurve(ownerPublicKey.toBuffer())) {
     throw new UtilsError('Invalid ownerAddress - address off ed25519 curve, got: ' + ownerAddress);
   }
-  const ataAddress = await getAssociatedTokenAddress(new PublicKey(tokenMintAddress), ownerPublicKey);
+  const ataAddress = await getAssociatedTokenAddress(
+    new PublicKey(tokenMintAddress),
+    ownerPublicKey,
+    allowOwnerOffCurve
+  );
   return ataAddress.toString();
 }
 
