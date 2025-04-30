@@ -31,13 +31,15 @@ import {
   PrebuildTransactionWithIntentOptions,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
+  AuditKeyResponse,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import adaUtils from './lib/utils';
 import * as request from 'superagent';
 import BigNumber from 'bignumber.js';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
@@ -627,5 +629,25 @@ export class Ada extends BaseCoin {
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
     intent.unspents = params.unspents;
     intent.senderAddress = params.senderAddress;
+  }
+
+  /** inherited doc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+
+    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
+
+    if (result.isValid) {
+      return { isValid: true };
+    } else {
+      if (!result.isCommonKeychainValid) {
+        return { isValid: false, message: 'Invalid common keychain' };
+      } else if (!result.isPrivateKeyValid) {
+        return { isValid: false, message: 'Invalid private key' };
+      }
+      return { isValid: false };
+    }
   }
 }

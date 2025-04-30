@@ -34,12 +34,15 @@ import {
   MPCTxs,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
+  AuditKeyResponse,
 } from '@bitgo/sdk-core';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
 
 import { KeyPair as NearKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import nearUtils from './lib/utils';
+import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -771,5 +774,23 @@ export class Near extends BaseCoin {
 
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getBaseChain()));
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ prv, publicKey, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
+    if (result.isValid) {
+      return { isValid: true };
+    } else {
+      if (!result.isCommonKeychainValid) {
+        return { isValid: false, message: 'Invalid common keychain' };
+      } else if (!result.isPrivateKeyValid) {
+        return { isValid: false, message: 'Invalid private key' };
+      }
+      return { isValid: false };
+    }
   }
 }

@@ -26,6 +26,8 @@ import {
   PublicKey,
   MPCTxs,
   MPCSweepRecoveryOptions,
+  AuditKeyResponse,
+  AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
@@ -33,7 +35,7 @@ import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import { Transaction, TransactionBuilderFactory, Utils, TransferBuilder } from './lib';
 import TonWeb from 'tonweb';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { getFeeEstimate } from './lib/utils';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
@@ -505,5 +507,23 @@ export class Ton extends BaseCoin {
     }
 
     return { transactions: broadcastableTransactions, lastScanIndex };
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
+    if (result.isValid) {
+      return { isValid: true };
+    } else {
+      if (!result.isCommonKeychainValid) {
+        return { isValid: false, message: 'Invalid common keychain' };
+      } else if (!result.isPrivateKeyValid) {
+        return { isValid: false, message: 'Invalid private key' };
+      }
+      return { isValid: false };
+    }
   }
 }

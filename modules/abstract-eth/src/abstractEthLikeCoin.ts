@@ -6,10 +6,15 @@ import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes } from 'crypto';
 import {
+  AuditDecryptedKeyParams,
+  AuditKeyResponse,
   BaseCoin,
+  bitcoin,
   BitGoBase,
   FullySignedTransaction,
   HalfSignedAccountTransaction,
+  isValidPrv,
+  isValidXprv,
   KeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
@@ -25,6 +30,7 @@ import BigNumber from 'bignumber.js';
 
 import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from './lib';
 import { VerifyEthAddressOptions } from './abstractEthLikeNewCoins';
+import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -226,4 +232,32 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * @return a new transaction builder
    */
   protected abstract getTransactionBuilder(common?: EthLikeCommon.default): TransactionBuilder;
+
+  auditDecryptedKey({ multiSigType, publicKey, prv }: AuditDecryptedKeyParams): AuditKeyResponse {
+    if (multiSigType === 'tss') {
+      const result = auditEcdsaPrivateKey(prv as string, publicKey as string);
+      if (result.isValid) {
+        return { isValid: true };
+      } else {
+        if (!result.isCommonKeychainValid) {
+          return { isValid: false, message: 'Invalid common keychain' };
+        } else if (!result.isPrivateKeyValid) {
+          return { isValid: false, message: 'Invalid private key' };
+        }
+        return { isValid: false };
+      }
+    } else {
+      if (!isValidPrv(prv) && !isValidXprv(prv)) {
+        return { isValid: false, message: 'Invalid private key' };
+      }
+      if (publicKey) {
+        const genPubKey = bitcoin.HDNode.fromBase58(prv).neutered().toBase58();
+        if (genPubKey !== publicKey) {
+          return { isValid: false, message: 'Incorrect xpub' };
+        }
+      }
+
+      return { isValid: true };
+    }
+  }
 }

@@ -6,6 +6,7 @@ import { bip32 } from '@bitgo/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import {
   common,
+  generateRandomPassword,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   TransactionType,
@@ -28,6 +29,8 @@ import { getBuilder } from './getBuilder';
 import * as testData from '../resources/eth';
 import * as mockData from '../fixtures/eth';
 import should from 'should';
+import { ethMultiSigBackupKey } from './fixtures/ethMultiSigBackupKey';
+import { ethTssBackupKey } from './fixtures/ethTssBackupKey';
 
 nock.enableNetConnect();
 
@@ -1047,6 +1050,95 @@ describe('ETH:', function () {
           Error,
           'Error: invalid address'
         );
+      });
+    });
+  });
+
+  describe('Audit Key', () => {
+    let coin: Hteth;
+    before(() => {
+      coin = bitgo.coin('hteth') as Hteth;
+    });
+
+    describe('MultiSig', () => {
+      const { key } = ethMultiSigBackupKey;
+
+      it('should return { isValid: true } for valid inputs', async () => {
+        const result = await coin.auditKey({
+          encryptedPrv: key,
+          walletPassphrase: 'ZQ8MhxT84m4P',
+        });
+        result.should.deepEqual({ isValid: true });
+      });
+
+      it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
+        const result = await coin.auditKey({
+          encryptedPrv: key,
+          walletPassphrase: 'foo',
+        });
+        result.should.deepEqual({
+          isValid: false,
+          message: "failed to decrypt prv: ccm: tag doesn't match",
+        });
+      });
+
+      it('should return { isValid: false } if the key is altered', async () => {
+        const alteredKey = key.replace(/[0-9]/g, '0');
+        const result = await coin.auditKey({
+          encryptedPrv: alteredKey,
+          walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+        });
+        result.isValid.should.equal(false);
+      });
+    });
+
+    describe('TSS', () => {
+      const { key: keyString, commonKeychain } = ethTssBackupKey;
+      const key = keyString.replace(/\s/g, '');
+      const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
+      const multiSigType = 'tss';
+
+      it('should return { isValid: true } for valid inputs', async () => {
+        const result = await coin.auditKey({
+          encryptedPrv: key,
+          publicKey: commonKeychain,
+          walletPassphrase,
+          multiSigType,
+        });
+        result.should.deepEqual({ isValid: true });
+      });
+
+      it('should return { isValid: false } if the commonKeychain is altered', async () => {
+        const alteredCommonKeychain = generateRandomPassword(10);
+        const result = await coin.auditKey({
+          encryptedPrv: key,
+          publicKey: alteredCommonKeychain,
+          walletPassphrase,
+          multiSigType,
+        });
+        result.should.deepEqual({ isValid: false, message: 'Invalid common keychain' });
+      });
+
+      it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
+        const incorrectPassphrase = 'foo';
+        const result = await coin.auditKey({
+          encryptedPrv: key,
+          publicKey: commonKeychain,
+          walletPassphrase: incorrectPassphrase,
+          multiSigType,
+        });
+        result.should.deepEqual({ isValid: false, message: "failed to decrypt prv: ccm: tag doesn't match" });
+      });
+
+      it('should return { isValid: false } if the key is altered', async () => {
+        const alteredKey = key.replace(/[0-9]/g, '0');
+        const result = await coin.auditKey({
+          encryptedPrv: alteredKey,
+          publicKey: commonKeychain,
+          walletPassphrase,
+          multiSigType,
+        });
+        result.isValid.should.equal(false);
       });
     });
   });

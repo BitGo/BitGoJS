@@ -5,13 +5,14 @@ import Sinon, { SinonStub } from 'sinon';
 import { randomBytes } from 'crypto';
 import { BigNumber } from 'bignumber.js';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { TxData, Transfer } from '../../src/lib/iface';
 import { Wallet } from '@bitgo/sdk-core';
 
 import * as TestData from '../fixtures/hbar';
 import { Hbar, Thbar, KeyPair, HbarToken } from '../../src';
 import { getBuilderFactory } from './getBuilderFactory';
+import { hbarBackupKey } from './fixtures/hbarBackupKey';
 
 describe('Hedera Hashgraph:', function () {
   let bitgo: TestBitGoAPI;
@@ -1320,6 +1321,52 @@ describe('Hedera Hashgraph:', function () {
       keypair.should.have.property('prv');
       keypair.prv?.should.equal(kp.prv.slice(0, 64));
       keypair.pub.should.equal(kp.pub);
+    });
+  });
+
+  describe('AuditKey', () => {
+    const { key } = hbarBackupKey;
+    const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
+
+    it('should return { isValid: true) } for valid inputs', async () => {
+      const result = await basecoin.auditKey({
+        coinName: 'hbar',
+        encryptedPrv: key,
+        walletPassphrase,
+      });
+
+      result.should.deepEqual({ isValid: true });
+    });
+
+    it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
+      const result = await basecoin.auditKey({
+        coinName: 'hbar',
+        encryptedPrv: key,
+        walletPassphrase: 'foo',
+      });
+      result.should.deepEqual({ isValid: false, message: "failed to decrypt prv: ccm: tag doesn't match" });
+    });
+
+    it('should return { isValid: false } if the key is altered', async () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      const result = await basecoin.auditKey({
+        coinName: 'hbar',
+        encryptedPrv: alteredKey,
+        walletPassphrase,
+      });
+
+      result.isValid.should.equal(false);
+    });
+
+    it('should return { isValid: false } if the key is not a valid key', async () => {
+      const invalidKey = '#@)$#($*@)#($*';
+      const encryptedPrv = encrypt(walletPassphrase, invalidKey);
+      const result = await basecoin.auditKey({
+        coinName: 'hbar',
+        encryptedPrv,
+        walletPassphrase,
+      });
+      result.should.deepEqual({ isValid: false, message: 'Invalid private key' });
     });
   });
 });

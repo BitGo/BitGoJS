@@ -28,6 +28,8 @@ import {
   MPCTxs,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
+  AuditKeyResponse,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
@@ -35,7 +37,7 @@ import '@polkadot/api-augment';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Material } from './lib/iface';
 import BigNumber from 'bignumber.js';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
@@ -661,5 +663,23 @@ export class Dot extends BaseCoin {
 
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
+    if (result.isValid) {
+      return { isValid: true };
+    } else {
+      if (!result.isCommonKeychainValid) {
+        return { isValid: false, message: 'Invalid common keychain' };
+      } else if (!result.isPrivateKeyValid) {
+        return { isValid: false, message: 'Invalid private key' };
+      }
+      return { isValid: false };
+    }
   }
 }

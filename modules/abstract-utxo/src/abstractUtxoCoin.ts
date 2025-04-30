@@ -13,6 +13,7 @@ import {
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
   IBaseCoin,
+  AuditKeyResponse,
   InvalidAddressDerivationPropertyError,
   InvalidAddressError,
   IRequestTracer,
@@ -44,6 +45,9 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
+  isValidPrv,
+  isValidXprv,
+  bitcoin,
 } from '@bitgo/sdk-core';
 
 import {
@@ -1135,5 +1139,22 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   getRecoveryProvider(apiToken?: string): RecoveryProvider {
     return forCoin(this.getChain(), apiToken);
+  }
+
+  auditDecryptedKey({ multiSigType, publicKey, prv }): AuditKeyResponse {
+    if (multiSigType === 'tss') {
+      throw new Error('tss auditing is not supported for this coin');
+    }
+    if (!isValidPrv(prv) && !isValidXprv(prv)) {
+      return { isValid: false, message: 'Invalid private key' };
+    }
+    if (publicKey) {
+      const genPubKey = bitcoin.HDNode.fromBase58(prv).neutered().toBase58();
+      if (genPubKey !== publicKey) {
+        return { isValid: false, message: 'Incorrect xpub' };
+      }
+    }
+
+    return { isValid: true };
   }
 }

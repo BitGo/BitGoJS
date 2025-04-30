@@ -5,6 +5,7 @@ import * as crypto from 'crypto';
 import { Hash } from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/utxo-lib';
+import * as sjcl from '@bitgo/sjcl';
 import { BigNumber } from 'bignumber.js';
 import { BaseCoin as StaticsBaseCoin, CoinFeature } from '@bitgo/statics';
 
@@ -44,6 +45,9 @@ import {
   TransactionPrebuild,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  AuditKeyParams,
+  AuditKeyResponse,
+  AuditDecryptedKeyParams,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { MPCSweepRecoveryOptions, MPCTxs, PopulatedIntent, PrebuildTransactionWithIntentOptions } from '../utils';
@@ -619,5 +623,32 @@ export abstract class BaseCoin implements IBaseCoin {
    */
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
     return;
+  }
+
+  /** @inheritDoc */
+  auditKey(params: AuditKeyParams): AuditKeyResponse {
+    let decryptedKey: string;
+
+    try {
+      decryptedKey = sjcl.decrypt(params.walletPassphrase, params.encryptedPrv);
+    } catch (e) {
+      return {
+        isValid: false,
+        message: `failed to decrypt prv: ${e.message}`,
+      };
+    }
+    return this.auditDecryptedKey({ ...params, prv: decryptedKey });
+  }
+
+  /**
+   * Audit if a decrypted key is valid.
+   * @param {AuditDecryptedKeyParams} params - parameters for auditing the decrypted key
+   * @param {string} params.prv - the decrypted private key
+   * @param {string} params.publicKey - the public key, or common keychain
+   * @param {string} params.multiSigType - the multi-sig type, if applicable
+   * @returns {AuditKeyResponse} - result of the audit
+   */
+  protected auditDecryptedKey(params: AuditDecryptedKeyParams): AuditKeyResponse {
+    throw new NotImplementedError('auditDecryptedKey is not implemented for this coin');
   }
 }

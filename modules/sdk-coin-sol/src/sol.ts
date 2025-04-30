@@ -42,8 +42,10 @@ import {
   VerifyTransactionOptions,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
+  AuditKeyResponse,
 } from '@bitgo/sdk-core';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as _ from 'lodash';
 import * as request from 'superagent';
@@ -1382,5 +1384,23 @@ export class Sol extends BaseCoin {
     }
 
     return { txId: response.body.result };
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ prv, publicKey, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
+    if (result.isValid) {
+      return { isValid: true };
+    } else {
+      if (!result.isCommonKeychainValid) {
+        return { isValid: false, message: 'Invalid common keychain' };
+      } else if (!result.isPrivateKeyValid) {
+        return { isValid: false, message: 'Invalid private key' };
+      }
+      return { isValid: false };
+    }
   }
 }
