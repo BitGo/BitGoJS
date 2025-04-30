@@ -60,6 +60,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.BITGO_TECHNOLOGIES_LLC,
     ],
   },
   bch: {
@@ -433,6 +434,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
       CoinFeature.STAKING,
+      CoinFeature.BITGO_TECHNOLOGIES_LLC,
     ],
   },
   tbtcsig: {
@@ -445,6 +447,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.BITGO_TECHNOLOGIES_LLC,
     ],
   },
   tbtc4: {
@@ -455,6 +458,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.BITGO_TECHNOLOGIES_LLC,
       CoinFeature.STAKING,
     ],
   },
@@ -468,6 +472,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.BITGO_TECHNOLOGIES_LLC,
     ],
   },
   tbch: {
