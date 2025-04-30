@@ -29,6 +29,8 @@ import {
   PrebuildTransactionWithIntentOptions,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
+  AuditKeyResponse,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
@@ -51,7 +53,7 @@ import {
   MAX_OBJECT_LIMIT,
   TOKEN_OBJECT_LIMIT,
 } from './lib/constants';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export interface ExplainTransactionOptions {
   txHex: string;
@@ -804,5 +806,24 @@ export class Sui extends BaseCoin {
   /** inherited doc */
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
     intent.unspents = params.unspents;
+  }
+
+  /** inherited doc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+
+    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
+    if (result.isValid) {
+      return { isValid: true };
+    } else {
+      if (!result.isCommonKeychainValid) {
+        return { isValid: false, message: 'Invalid common keychain' };
+      } else if (!result.isPrivateKeyValid) {
+        return { isValid: false, message: 'Invalid private key' };
+      }
+      return { isValid: false };
+    }
   }
 }

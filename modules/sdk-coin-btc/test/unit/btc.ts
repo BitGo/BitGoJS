@@ -1,4 +1,5 @@
 import 'should';
+import { btcBackupKey } from './fixtures';
 
 import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 
@@ -64,6 +65,42 @@ describe('BTC:', function () {
       for (const input of inputs) {
         input.sequence.should.equal(0xffffffff);
       }
+    });
+  });
+
+  describe('Audit Key', () => {
+    const { key } = btcBackupKey;
+    let coin: Tbtc;
+    before(() => {
+      coin = bitgo.coin('tbtc') as Tbtc;
+    });
+
+    it('should return { isValid: true } for valid inputs', async () => {
+      const result = await coin.auditKey({
+        encryptedPrv: key,
+        walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+      });
+      result.should.deepEqual({ isValid: true });
+    });
+
+    it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
+      const result = await coin.auditKey({
+        encryptedPrv: key,
+        walletPassphrase: 'foo',
+      });
+      result.should.deepEqual({
+        isValid: false,
+        message: "failed to decrypt prv: ccm: tag doesn't match",
+      });
+    });
+
+    it('should return { isValid: false } if the key is altered', async () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      const result = await coin.auditKey({
+        encryptedPrv: alteredKey,
+        walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+      });
+      result.isValid.should.equal(false);
     });
   });
 });

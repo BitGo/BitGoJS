@@ -4,12 +4,13 @@ import * as stellar from 'stellar-sdk';
 
 import { Environments, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { Txlm } from '../../src';
 import { KeyPair } from '../../src/lib/keyPair';
 
 import nock from 'nock';
 import * as assert from 'assert';
+import { xlmBackupKey } from './fixtures/xlmBackupKey';
 nock.enableNetConnect();
 
 describe('XLM:', function () {
@@ -1109,6 +1110,46 @@ describe('XLM:', function () {
       keyPair.should.have.property('prv');
       keyPair.prv?.should.equal(kp.prv.slice(0, 64));
       keyPair.pub.should.equal(kp.pub);
+    });
+  });
+
+  describe('AuditKey', () => {
+    const { key } = xlmBackupKey;
+    const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
+
+    it('should return { isValid: true) } for valid inputs', async () => {
+      const result = await basecoin.auditKey({
+        encryptedPrv: key,
+        walletPassphrase,
+      });
+      result.should.deepEqual({ isValid: true });
+    });
+
+    it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
+      const result = await basecoin.auditKey({
+        encryptedPrv: key,
+        walletPassphrase: 'foo',
+      });
+      result.should.deepEqual({ isValid: false, message: "failed to decrypt prv: ccm: tag doesn't match" });
+    });
+
+    it('should return { isValid: false } if the key is altered', async () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      const result = await basecoin.auditKey({
+        encryptedPrv: alteredKey,
+        walletPassphrase,
+      });
+      result.isValid.should.equal(false);
+    });
+
+    it('should return { isValid: false } if the key is not a valid key', async () => {
+      const invalidKey = '#@)$#($*@)#($*';
+      const encryptedPrv = encrypt(walletPassphrase, invalidKey);
+      const result = await basecoin.auditKey({
+        encryptedPrv,
+        walletPassphrase,
+      });
+      result.should.deepEqual({ isValid: false, message: 'Invalid private key' });
     });
   });
 });
