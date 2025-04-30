@@ -21,6 +21,7 @@ import {
   getFormattedTokens,
   createTokenMapUsingConfigDetails,
   createTokenMapUsingTrimmedConfigDetails,
+  createToken,
 } from '../../src';
 import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
@@ -649,6 +650,16 @@ describe('CoinMap', function () {
     const nftCollectionStatics = coins.get('tapt:0xbbc561fbfa5d105efd8dfb06ae3e7e5be46331165b99d518f094c701e40603b5');
     nftCollectionStatics.name.should.eql('tapt:nftcollection1');
   });
+
+  it('should add single coin/token into the coin map', () => {
+    const coinMap = CoinMap.fromCoins([]);
+    const coin = coins.get('btc');
+    const token = coins.get('usdc');
+    coinMap.addCoin(coin);
+    coinMap.has(coin.name).should.be.true();
+    coinMap.addCoin(token);
+    coinMap.has(token.name).should.be.true();
+  });
 });
 
 coins.forEach((coin, coinName) => {
@@ -978,5 +989,13 @@ describe('create token map using config details', () => {
     const { network: tokenNetwork2, ...tokenRest2 } = amsToken2;
     tokenRest1.should.deepEqual(tokenRest2);
     JSON.stringify(tokenNetwork1).should.eql(JSON.stringify(tokenNetwork2));
+  });
+  it('should be able to add single ams token into coin map', () => {
+    const coinMap = CoinMap.fromCoins([]);
+    const staticsCoin = createToken(amsTokenConfigWithCustomToken['hteth:faketoken'][0]);
+    if (staticsCoin) {
+      coinMap.addCoin(staticsCoin);
+    }
+    coinMap.has('hteth:faketoken').should.be.true();
   });
 });

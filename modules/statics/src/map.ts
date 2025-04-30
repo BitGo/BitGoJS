@@ -18,33 +18,37 @@ export class CoinMap {
   }
 
   static fromCoins(coins: Readonly<BaseCoin>[]): CoinMap {
-    return coins.reduce((coinMap, coin) => {
-      if (coinMap.has(coin.name)) {
-        throw new DuplicateCoinDefinitionError(coin.name);
-      }
-      coinMap._map.set(coin.name, coin);
+    const coinMap = new CoinMap();
+    coins.forEach((coin) => {
+      coinMap.addCoin(coin);
+    });
+    return coinMap;
+  }
 
-      if (coinMap._coinByIds.has(coin.id)) {
-        throw new DuplicateCoinIdDefinitionError(coin.id);
-      }
-      coinMap._coinByIds.set(coin.id, coin);
+  public addCoin(coin: Readonly<BaseCoin>): void {
+    if (this._map.has(coin.name)) {
+      throw new DuplicateCoinDefinitionError(coin.name);
+    }
+    if (this._coinByIds.has(coin.id)) {
+      throw new DuplicateCoinIdDefinitionError(coin.id);
+    }
+    const alias = coin.alias;
+    if (alias && this._coinByAliases.has(alias)) {
+      throw new DuplicateCoinDefinitionError(alias);
+    }
+    this._map.set(coin.name, coin);
+    this._coinByIds.set(coin.id, coin);
+    if (alias) {
+      this._coinByAliases.set(coin.alias, coin);
+    }
 
-      const alias = coin.alias;
-      if (alias) {
-        if (coinMap.has(alias)) {
-          throw new DuplicateCoinDefinitionError(alias);
-        }
-        coinMap._coinByAliases.set(alias, coin);
+    if (coin.isToken) {
+      if (coin instanceof ContractAddressDefinedToken) {
+        this._coinByContractAddress.set(`${coin.family}:${coin.contractAddress}`, coin);
+      } else if (coin instanceof NFTCollectionIdDefinedToken) {
+        this._coinByNftCollectionID.set(`${coin.prefix}${coin.family}:${coin.nftCollectionId}`, coin);
       }
-      if (coin.isToken) {
-        if (coin instanceof ContractAddressDefinedToken) {
-          coinMap._coinByContractAddress.set(`${coin.family}:${coin.contractAddress}`, coin);
-        } else if (coin instanceof NFTCollectionIdDefinedToken) {
-          coinMap._coinByNftCollectionID.set(`${coin.prefix}${coin.family}:${coin.nftCollectionId}`, coin);
-        }
-      }
-      return coinMap;
-    }, new CoinMap());
+    }
   }
 
   static coinNameFromChainId(chainId: number): string {
