@@ -15,11 +15,13 @@
    ```bash
    cd packages/lavamoat-node
 
+   npm install
    npm link
    ```
 
 3. **In BitGoJS, link to the custom LavaMoat:**
    ```bash
+   yarn install
    npm link lavamoat
    ```
 
