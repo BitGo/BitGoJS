@@ -6,7 +6,7 @@ import { ITransactionRecipient, Wallet, Memo } from '@bitgo/sdk-core';
 
 import { Sip10Token } from '../../src';
 import * as testData from '../fixtures';
-import { RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
+import { RecoveryInfo, RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
 import assert from 'assert';
 
 describe('Sip10Token:', function () {
@@ -309,9 +309,12 @@ describe('Sip10Token:', function () {
         bitgoKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BITGO_PUB_KEY,
         contractId: 'STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH.tsip6dp-token',
       };
-      const response: RecoveryTransaction = await basecoin.recover(recoveryOptions);
+      const response: RecoveryInfo = (await basecoin.recover(recoveryOptions)) as RecoveryInfo;
       response.should.have.property('txHex');
+      response.should.have.property('coin');
+      response.should.have.property('feeInfo');
       assert.deepEqual(response.txHex, testData.COLD_WALLET_TOKEN_UNSIGNED_SWEEP_TX_HEX, 'tx hex not matching!');
+      assert.deepEqual(response.coin, 'tstx:tsip6dp', 'coin not matching!');
     });
 
     it('should fail with insufficient balance when native stx balance is lower than fee for sip10', async () => {

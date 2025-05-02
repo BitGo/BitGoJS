@@ -42,11 +42,13 @@ import { findContractTokenNameUsingContract, findTokenNameByContract, getAddress
 import {
   AddressDetails,
   NativeStxBalance,
+  RecoveryInfo,
   RecoveryOptions,
   RecoveryTransaction,
   SingleFungibleTokenBalance,
   StxNonceResponse,
   StxTxnFeeEstimationResponse,
+  TxData,
 } from './lib/iface';
 import { TransferBuilder } from './lib/transferBuilder';
 import { FungibleTokenTransferBuilder } from './lib/fungibleTokenTransferBuilder';
@@ -411,6 +413,23 @@ export class Stx extends BaseCoin {
   }
 
   /**
+   * Format for offline vault signing
+   * @param {BaseTransaction} tx - base transaction
+   * @returns {Promise<RecoveryInfo>}
+   */
+  protected async formatForOfflineVault(tx: BaseTransaction): Promise<RecoveryInfo> {
+    const txJson: TxData = tx.toJson();
+    const transactionExplanation: RecoveryInfo = (await this.explainTransaction({
+      txHex: tx.toBroadcastFormat(),
+      feeInfo: { fee: txJson.fee },
+    })) as RecoveryInfo;
+    transactionExplanation.coin = this.getChain();
+    transactionExplanation.feeInfo = { fee: txJson.fee };
+    transactionExplanation.txHex = tx.toBroadcastFormat();
+    return transactionExplanation;
+  }
+
+  /**
    * Get the recoverable amount & fee after subtracting the txn fee
    * @param {String} serializedHex - serialized txn hex
    * @param {Number} txHexLength - deserialized txn length
@@ -667,9 +686,9 @@ export class Stx extends BaseCoin {
    * @param {String} params.bitgoKey - encrypted bitgo public key
    * @param {String} params.walletPassphrase - wallet password
    * @param {String} params.contractId - contract id of the token (mandatory for token recovery)
-   * @returns {Promise<RecoveryTransaction>} RecoveryTransaction.txHex - hex of serialized transaction (signed or unsigned)
+   * @returns {Promise<RecoveryInfo|RecoveryTransaction>} RecoveryTransaction.txHex - hex of serialized transaction (signed or unsigned)
    */
-  async recover(params: RecoveryOptions): Promise<RecoveryTransaction> {
+  async recover(params: RecoveryOptions): Promise<RecoveryInfo | RecoveryTransaction> {
     if (!this.isValidAddress(params.rootAddress)) {
       throw new Error('invalid root address!');
     }
@@ -713,12 +732,9 @@ export class Stx extends BaseCoin {
       contractAddressInput: contractAddress,
       contractName: contractName,
     });
-    const serializedTx: string = tx.toBroadcastFormat();
 
     if (isUnsignedSweep) {
-      return {
-        txHex: serializedTx,
-      };
+      return await this.formatForOfflineVault(tx);
     }
     // check the private key & sign
     if (!keys[0].privateKey) {

@@ -9,7 +9,7 @@ import { cvToString } from '@stacks/transactions';
 
 import * as testData from '../fixtures';
 import { Stx, StxLib, Tstx } from '../../src';
-import { RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
+import { RecoveryInfo, RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
 
 const { KeyPair } = StxLib;
 
@@ -399,9 +399,12 @@ describe('STX:', function () {
         recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
         bitgoKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BITGO_PUB_KEY,
       };
-      const response: RecoveryTransaction = await basecoin.recover(recoveryOptions);
+      const response: RecoveryInfo = await basecoin.recover(recoveryOptions);
       response.should.have.property('txHex');
+      response.should.have.property('coin');
+      response.should.have.property('feeInfo');
       assert.deepEqual(response.txHex, testData.COLD_WALLET_UNSIGNED_SWEEP_TX_HEX, 'tx hex not matching!');
+      assert.deepEqual(response.coin, 'tstx', 'coin not matching!');
     });
 
     it('should throw invalid root address when root address is missing or invalid', async function () {
