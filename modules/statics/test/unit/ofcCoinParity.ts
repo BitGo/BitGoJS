@@ -8,7 +8,6 @@ const EXCLUDED_ASSETS = new Set<string>([
   'erc721', // not erc20
   'erc1155', // not erc20
   'nonstandard', // not erc20
-  'imx', // replaced by a v2
   'inj', // replaced by a v2
   'knc', // replaced by a v2
   'tgbp', // confusion with the fiat version
