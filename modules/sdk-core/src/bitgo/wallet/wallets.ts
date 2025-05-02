@@ -17,9 +17,9 @@ import { decodeOrElse, promiseProps, RequestTracer } from '../utils';
 import {
   AcceptShareOptions,
   AcceptShareOptionsRequest,
-  AcceptShareResponse,
   AddWalletOptions,
   BulkAcceptShareOptions,
+  BulkAcceptShareResponse,
   BulkUpdateWalletShareOptions,
   BulkUpdateWalletShareOptionsRequest,
   BulkUpdateWalletShareResponse,
@@ -636,9 +636,9 @@ export class Wallets implements IWallets {
   /**
    * Bulk accept wallet shares
    * @param params AcceptShareOptionsRequest[]
-   * @returns {Promise<AcceptShareResponse[]>}
+   * @returns {Promise<BulkAcceptShareResponse>}
    */
-  async bulkAcceptShareRequest(params: AcceptShareOptionsRequest[]): Promise<AcceptShareResponse[]> {
+  async bulkAcceptShareRequest(params: AcceptShareOptionsRequest[]): Promise<BulkAcceptShareResponse> {
     return await this.bitgo
       .put(this.bitgo.url('/walletshares/accept', 2))
       .send({
@@ -846,9 +846,9 @@ export class Wallets implements IWallets {
    * @param params.newWalletPassphrase - new wallet passphrase for saving the shared wallet prv.
    *                                     If left blank then the user's login password is used.
    *
-   *@returns {Promise<AcceptShareResponse[]>}
+   *@returns {Promise<BulkAcceptShareResponse>}
    */
-  async bulkAcceptShare(params: BulkAcceptShareOptions): Promise<AcceptShareResponse[]> {
+  async bulkAcceptShare(params: BulkAcceptShareOptions): Promise<BulkAcceptShareResponse> {
     common.validateParams(params, ['userLoginPassword'], ['newWalletPassphrase']);
     assert(params.walletShareIds.length > 0, 'no walletShareIds are passed');
 

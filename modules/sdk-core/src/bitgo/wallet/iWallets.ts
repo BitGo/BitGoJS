@@ -204,6 +204,10 @@ export interface AcceptShareResponse {
   walletShareId: string;
 }
 
+export interface BulkAcceptShareResponse {
+  acceptedWalletShares: AcceptShareResponse[];
+}
+
 export interface IWallets {
   get(params?: GetWalletOptions): Promise<Wallet>;
   list(params?: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
@@ -218,6 +222,6 @@ export interface IWallets {
   getWallet(params?: GetWalletOptions): Promise<IWallet>;
   getWalletByAddress(params?: GetWalletByAddressOptions): Promise<IWallet>;
   getTotalBalances(params?: Record<string, never>): Promise<any>;
-  bulkAcceptShare(params: BulkAcceptShareOptions): Promise<AcceptShareResponse[]>;
+  bulkAcceptShare(params: BulkAcceptShareOptions): Promise<BulkAcceptShareResponse>;
   listSharesV2(): Promise<WalletShares>;
 }
