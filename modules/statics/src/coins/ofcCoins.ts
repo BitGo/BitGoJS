@@ -638,14 +638,6 @@ export const ofcCoins = [
     2,
     UnderlyingAsset['sol:eurcv']
   ),
-  ofcsolToken(
-    '95fdc89e-e094-44d6-a6ee-3e71b067fa17',
-    'ofcsol:layer',
-    'Solayer',
-    9,
-    UnderlyingAsset['sol:layer'],
-    SOL_OFC_TOKEN_FEATURES
-  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -867,7 +859,6 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['avaxc:shrap']
   ),
-  ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcBscToken('c6f5df09-5a21-468b-89cc-f626d02d74d0', 'ofcbsc:oort', 'OORT', 18, UnderlyingAsset['bsc:oort']),

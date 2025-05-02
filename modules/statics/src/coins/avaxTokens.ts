@@ -636,14 +636,6 @@ export const avaxTokens = [
     '0xedf647326007e64d94b0ee69743350f3736e392c',
     UnderlyingAsset['avaxc:ticov2']
   ),
-  avaxErc20(
-    'eea5a74a-5f1c-4701-9bac-aa91e093f1b4',
-    'avaxc:nxpc',
-    'NEXPACE',
-    18,
-    '0x5e0e90e268bc247cc850c789a0db0d5c7621fb59',
-    UnderlyingAsset['avaxc:nxpc']
-  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',

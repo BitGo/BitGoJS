@@ -3108,35 +3108,6 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:eqtyx')
   ),
-  ofcerc20(
-    'd3f1c5b2-8a6e-4c9b-9f3e-7d2a4e5b6c8d',
-    'ofceth:deuro',
-    'DecentralizedEURO',
-    18,
-    underlyingAssetForSymbol('eth:deuro')
-  ),
-  ofcerc20(
-    'e7b1c5d2-9e6e-4c9b-9f3e-2d2a4e5b6c8d',
-    'ofceth:usdf',
-    'Falcon USD',
-    18,
-    underlyingAssetForSymbol('eth:usdf')
-  ),
-  ofcerc20(
-    'f9d2c5d2-8a6e-4c9b-9f3e-3d2a4e5b6c8d',
-    'ofceth:ausd',
-    'Agora Dollar',
-    6,
-    underlyingAssetForSymbol('eth:ausd')
-  ),
-  ofcerc20(
-    'a1e3c5d2-7b6e-4c9b-9f3e-4d2a4e5b6c8d',
-    'ofceth:gaia',
-    'Gaia Token',
-    18,
-    underlyingAssetForSymbol('eth:gaia')
-  ),
-  ofcerc20('c3a5c5d2-5d6e-4c9b-9f3e-6d2a4e5b6c8d', 'ofceth:usds', 'USDS', 18, underlyingAssetForSymbol('eth:usds')),
 ];
 
 export const tOfcErc20Coins = [

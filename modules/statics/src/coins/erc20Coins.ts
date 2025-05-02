@@ -10387,46 +10387,6 @@ export const erc20Coins = [
     '0xa14669a76b12f94d6ad09304ad15905e900a6e25',
     UnderlyingAsset['eth:eqtyx']
   ),
-  erc20(
-    '23e6a094-16ee-4604-88c2-42b73b765fd6',
-    'eth:deuro',
-    'DecentralizedEURO',
-    18,
-    '0xba3f535bbcccca2a154b573ca6c5a49baae0a3ea',
-    UnderlyingAsset['eth:deuro']
-  ),
-  erc20(
-    'ad73ed49-cbce-4809-a2e1-9d66c7f7a8d8',
-    'eth:usdf',
-    'Falcon USD',
-    18,
-    '0xfa2b947eec368f42195f24f36d2af29f7c24cec2',
-    UnderlyingAsset['eth:usdf']
-  ),
-  erc20(
-    'f3ae12cd-6181-46af-9444-6acd605f123e',
-    'eth:ausd',
-    'Agora Dollar',
-    6,
-    '0x00000000efe302beaa2b3e6e1b18d08d69a9012a',
-    UnderlyingAsset['eth:ausd']
-  ),
-  erc20(
-    'cc2e9fd4-f2a7-4501-837d-9d0912001ed1',
-    'eth:gaia',
-    'Gaia Token',
-    18,
-    '0x2ee7097bfdd98fce2ac08a1896038a7cd9aaed81',
-    UnderlyingAsset['eth:gaia']
-  ),
-  erc20(
-    '5d3311f4-2f92-450a-9b7f-ac9a8fc62765',
-    'eth:usds',
-    'USDS Stablecoin',
-    18,
-    '0xdc035d45d973e3ec169d2276ddab16f1e407384f',
-    UnderlyingAsset['eth:usds']
-  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
