@@ -454,7 +454,9 @@ export abstract class BaseCoin implements IBaseCoin {
       parseInt(derivationPathInput.slice(0, 7), 16),
       parseInt(derivationPathInput.slice(7, 14), 16),
     ];
-    const derivationPath = 'm/999999/' + derivationPathParts.join('/');
+    const isPublicKey = key.isNeutered();
+
+    const derivationPath = isPublicKey ? derivationPathParts.join('/') : `m/999999/${derivationPathParts.join('/')}`;
     return {
       key: key.derivePath(derivationPath),
       derivationPath,
