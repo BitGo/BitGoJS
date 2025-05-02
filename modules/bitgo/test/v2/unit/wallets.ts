@@ -25,6 +25,7 @@ import {
   KeychainWithEncryptedPrv,
   WalletWithKeychains,
   multisigTypes,
+  IncorrectPasswordError,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
 import { afterEach } from 'mocha';
@@ -2604,6 +2605,52 @@ describe('V2 Wallets:', function () {
           },
         ],
       });
+    });
+
+    it('should throw error in processing share options when wallet password is incorrect', async () => {
+      const userId = 'user@example.com';
+      const permissions = ['view', 'spend'];
+      const path = 'm/999999/1/1';
+      const walletPassphrase = 'bitgo1234';
+      const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
+      nock(bgUrl)
+        .get(`/api/v2/tbtc/key/${wallet.keyIds()[0]}`)
+        .reply(200, {
+          id: wallet.keyIds()[0],
+          pub,
+          source: 'user',
+          encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+          coinSpecific: {},
+        });
+      const params: BulkWalletShareOptions = {
+        walletPassphrase: 'wrong password',
+        keyShareOptions: [
+          {
+            userId: userId,
+            permissions: permissions,
+            pubKey: '02705a6d33a2459feb537e7abe36aaad8c11532cdbffa3a2e4e58868467d51f532',
+            path: path,
+          },
+        ],
+      };
+
+      const prv1 = Math.random().toString();
+      const keychainTest: OptionalKeychainEncryptedKey = {
+        encryptedPrv: bitgo.encrypt({ input: prv1, password: walletPassphrase }),
+      };
+
+      sinon.stub(wallet, 'getEncryptedUserKeychain').resolves({
+        encryptedPrv: keychainTest.encryptedPrv,
+        pub,
+      } as KeychainWithEncryptedPrv);
+
+      try {
+        await wallet.createBulkWalletShare(params);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert(error instanceof IncorrectPasswordError);
+        assert.equal(error.message, 'Password shared is incorrect for this wallet');
+      }
     });
   });
 

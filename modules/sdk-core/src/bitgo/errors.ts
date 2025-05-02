@@ -163,6 +163,12 @@ export class MissingEncryptedKeychainError extends Error {
   }
 }
 
+export class IncorrectPasswordError extends Error {
+  public constructor(message?: string) {
+    super(message || 'Incorrect password');
+  }
+}
+
 export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
   message: string;
   status: number;

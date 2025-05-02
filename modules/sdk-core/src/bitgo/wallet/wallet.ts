@@ -18,7 +18,12 @@ import {
 import { makeRandomKey } from '../bitcoin';
 import { BitGoBase } from '../bitgoBase';
 import { getSharedSecret } from '../ecdh';
-import { AddressGenerationError, MethodNotImplementedError, MissingEncryptedKeychainError } from '../errors';
+import {
+  AddressGenerationError,
+  IncorrectPasswordError,
+  MethodNotImplementedError,
+  MissingEncryptedKeychainError,
+} from '../errors';
 import * as internal from '../internal/internal';
 import { drawKeycard } from '../internal';
 import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv } from '../keychain';
@@ -1685,7 +1690,7 @@ export class Wallet implements IWallet {
 
         const userPrv = decryptKeychainPrivateKey(this.bitgo, keychain, walletPassphrase);
         if (!userPrv) {
-          throw new Error('Unable to decrypt user keychain');
+          throw new IncorrectPasswordError('Password shared is incorrect for this wallet');
         }
 
         keychain.prv = userPrv;
