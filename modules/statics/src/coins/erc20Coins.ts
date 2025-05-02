@@ -835,7 +835,8 @@ export const erc20Coins = [
     'DragonX',
     18,
     '0x96a5399d07896f757bd4c6ef56461f58db951862',
-    UnderlyingAsset['eth:dragonx']
+    UnderlyingAsset['eth:dragonx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'bcb2af13-b64d-403a-bb61-1990e6286fcd',
