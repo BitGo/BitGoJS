@@ -2549,6 +2549,102 @@ export const coins = CoinMap.fromCoins([
     '0x4cb9a7ae498cedcbb5eae9f25736ae7d428c9d66',
     UnderlyingAsset['arbeth:xai']
   ),
+  arbethErc20(
+    'f7ea881b-bc17-4948-a315-3f00f680f650',
+    'arbeth:flttx',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    18,
+    '0x3b9c11cb16b4c9eeb1408dad409afbe800abde3f',
+    UnderlyingAsset['arbeth:flttx']
+  ),
+  arbethErc20(
+    '5f1c54f1-3cc5-48b4-9aa4-668d84cca4fb',
+    'arbeth:wtsix',
+    'WisdomTree Short-Duration Income Digital Fund',
+    18,
+    '0xf414bfbe375941b1ba91b1a5683fe2c59d2c7b9b',
+    UnderlyingAsset['arbeth:wtsix']
+  ),
+  arbethErc20(
+    '84d61096-de69-4bc6-857c-a7f9c850c4bd',
+    'arbeth:modrx',
+    'WisdomTree Siegel Moderate Digital Fund',
+    18,
+    '0x496d35292d68c988ba37668ca92aafdaf5c35415',
+    UnderlyingAsset['arbeth:modrx']
+  ),
+  arbethErc20(
+    '59c4e660-9d23-458f-81fc-69456aefb811',
+    'arbeth:techx',
+    'WisdomTree Technology & Innovation 100 Digital Fund',
+    18,
+    '0x5ef799dce2e8272b4a72a62c0d34250ef7e42ac0',
+    UnderlyingAsset['arbeth:techx']
+  ),
+  arbethErc20(
+    '99cdac69-d7d9-46ec-adc3-374643983f40',
+    'arbeth:wtsyx',
+    'WisdomTree Short-Term Treasury Digital Fund',
+    18,
+    '0xeac8180e6c03bb5e8ed11b1c09e06d4a7a6fecc4',
+    UnderlyingAsset['arbeth:wtsyx']
+  ),
+  arbethErc20(
+    '10fda1b7-4d07-47ba-996b-f8c9bca4c128',
+    'arbeth:wtlgx',
+    'WisdomTree Long Term Treasury Digital Fund',
+    18,
+    '0xf9cbf82f5a609a59fb53864fe1b01e010daf6c27',
+    UnderlyingAsset['arbeth:wtlgx']
+  ),
+  arbethErc20(
+    '36548ee4-dacb-49ac-9319-779679ed5c47',
+    'arbeth:wttsx',
+    'WisdomTree 3-7 Year Treasury Digital Fund',
+    18,
+    '0xc66bb5e302e6948a5a902cc17f1894250ca82500',
+    UnderlyingAsset['arbeth:wttsx']
+  ),
+  arbethErc20(
+    '7de0b5db-c86b-4330-b3d4-6e5106dd496c',
+    'arbeth:tipsx',
+    'WisdomTree TIPS Digital Fund',
+    18,
+    '0x4e933c45e1cfdd309eeef439bf0ec481c38849da',
+    UnderlyingAsset['arbeth:tipsx']
+  ),
+  arbethErc20(
+    '6dc4cf2d-2c69-4334-a66d-95be36633f09',
+    'arbeth:wtstx',
+    'WisdomTree 7-10 Year Treasury Digital Fund',
+    18,
+    '0x19842916b4f346d48526d5bc3ebbc540b408a647',
+    UnderlyingAsset['arbeth:wtstx']
+  ),
+  arbethErc20(
+    'aae6325b-573f-47bc-9e5b-98d5223aaf80',
+    'arbeth:wtgxx',
+    'WisdomTree Government Money Market Digital Fund',
+    18,
+    '0xfeb26f0943c3885b2cb85a9f933975356c81c33d',
+    UnderlyingAsset['arbeth:wtgxx']
+  ),
+  arbethErc20(
+    '54f5fdda-954e-4296-994b-a89247ad311f',
+    'arbeth:lngvx',
+    'WisdomTree Siegel Longevity Digital Fund',
+    18,
+    '0x777a4d310cf66c1d272c7cd17bd054a456a26d34',
+    UnderlyingAsset['arbeth:lngvx']
+  ),
+  arbethErc20(
+    '4d3dce6a-3829-44bd-90a1-0c172dadbb1f',
+    'arbeth:eqtyx',
+    'WisdomTree Siegel Global Equity Digital Fund',
+    18,
+    '0x6bb04085922d08d1c7de0cfe95f7626a6f54be95',
+    UnderlyingAsset['arbeth:eqtyx']
+  ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',
