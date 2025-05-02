@@ -343,7 +343,7 @@ interface EthTransactionParams extends TransactionParams {
   tokenName?: string;
 }
 
-interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
+export interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
   txParams: EthTransactionParams;
 }
