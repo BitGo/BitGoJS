@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ClarityValue, PayloadType } from '@stacks/transactions';
+import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 
 export interface TxData {
   id: string;
@@ -105,6 +106,14 @@ export interface RecoveryOptions {
   bitgoKey?: string;
   walletPassphrase?: string;
   contractId?: string;
+}
+
+export interface RecoveryInfo extends BaseTransactionExplanation {
+  txHex: string;
+  feeInfo?: {
+    fee: string;
+  };
+  coin?: string;
 }
 
 export interface RecoveryTransaction {
