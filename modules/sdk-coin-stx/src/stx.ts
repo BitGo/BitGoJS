@@ -415,12 +415,14 @@ export class Stx extends BaseCoin {
    * @param {String} serializedHex - serialized txn hex
    * @param {Number} txHexLength - deserialized txn length
    * @param {String} balance - total account balance
+   * @param {String} tokenBalance - total token balance
    * @returns {Promise<Record<string, string>>}
    */
   protected async getRecoverableAmountAndFee(
     serializedHex: string,
     txHexLength: number,
-    balance: string
+    balance: string,
+    tokenBalance?: string
   ): Promise<Record<string, string>> {
     const estimatedFee = await this.getTransactionFeeEstimation({
       txHex: serializedHex,
@@ -432,7 +434,7 @@ export class Stx extends BaseCoin {
       throw new Error('insufficient balance to build the transaction');
     }
     return {
-      recoverableAmount: balanceBN.minus(feeBN).toString(),
+      recoverableAmount: tokenBalance ?? balanceBN.minus(feeBN).toString(),
       fee: feeBN.toString(),
     };
   }
@@ -543,7 +545,8 @@ export class Stx extends BaseCoin {
     const { recoverableAmount, fee } = await this.getRecoverableAmountAndFee(
       serializedHex,
       txBroadcastFormat.length,
-      stxBalance
+      stxBalance,
+      tokenBalance
     );
     functionArgs[0] = uintCV(recoverableAmount);
     txBuilder.functionArgs(functionArgs);
