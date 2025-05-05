@@ -81,6 +81,9 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.STT &&
         n.asset !== UnderlyingAsset.SONEIUM &&
         n.asset !== UnderlyingAsset.VET &&
+        n.asset !== UnderlyingAsset.CRONOS &&
+        n.asset !== UnderlyingAsset.FETCH &&
+        n.asset !== UnderlyingAsset.INIT &&
         coinFamilyValues.includes(n.name)
     );
 

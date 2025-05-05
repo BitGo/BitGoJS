@@ -878,6 +878,42 @@ class MantraTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.mantrachain.io/MANTRA-Dukong/tx/';
 }
 
+class Cronos extends Mainnet implements AccountNetwork {
+  name = 'Cronos';
+  family = CoinFamily.CRONOS;
+  explorerUrl = 'https://cronos-pos.org/explorer/';
+}
+
+class CronosTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Cronos';
+  family = CoinFamily.CRONOS;
+  explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/';
+}
+
+class Fetch extends Mainnet implements AccountNetwork {
+  name = 'Fetch';
+  family = CoinFamily.FETCH;
+  explorerUrl = 'https://www.mintscan.io/fetchai';
+}
+
+class FetchTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Fetch';
+  family = CoinFamily.FETCH;
+  explorerUrl = 'https://explore-eridanus-1.fetch.ai/';
+}
+
+class Init extends Mainnet implements AccountNetwork {
+  name = 'Initia';
+  family = CoinFamily.INIT;
+  explorerUrl = 'https://scan.initia.xyz/'; //TODO: COIN-3992 : Post launch need to update this if changed
+}
+
+class InitTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Initia';
+  family = CoinFamily.INIT;
+  explorerUrl = 'https://scan.testnet.initia.xyz/initiation-2/';
+}
+
 class Islm extends Mainnet implements AccountNetwork {
   name = 'Haqq';
   family = CoinFamily.ISLM;
@@ -1411,6 +1447,7 @@ export const Networks = {
     celo: Object.freeze(new Celo()),
     coredao: Object.freeze(new Coredao()),
     coreum: Object.freeze(new Coreum()),
+    cronos: Object.freeze(new Cronos()),
     dash: Object.freeze(new Dash()),
     dogecoin: Object.freeze(new Dogecoin()),
     dot: Object.freeze(new Polkadot()),
@@ -1421,10 +1458,12 @@ export const Networks = {
     ethereumClassic: Object.freeze(new EthereumClassic()),
     ethereumW: Object.freeze(new EthereumW()),
     fiat: Object.freeze(new Fiat()),
+    fetch: Object.freeze(new Fetch()),
     flr: Object.freeze(new Flare()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     icp: Object.freeze(new Icp()),
+    init: Object.freeze(new Init()),
     injective: Object.freeze(new Injective()),
     islm: Object.freeze(new Islm()),
     kava: Object.freeze(new Kava()),
@@ -1487,12 +1526,14 @@ export const Networks = {
     casper: Object.freeze(new CasperTestnet()),
     coredao: Object.freeze(new CoredaoTestnet()),
     celo: Object.freeze(new CeloTestnet()),
+    cronos: Object.freeze(new CronosTestnet()),
     dash: Object.freeze(new DashTestnet()),
     dogecoin: Object.freeze(new DogecoinTestnet()),
     dot: Object.freeze(new PolkadotTestnet()),
     eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
+    fetch: Object.freeze(new FetchTestnet()),
     flr: Object.freeze(new FlareTestnet()),
     mon: Object.freeze(new MonadTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
@@ -1500,6 +1541,7 @@ export const Networks = {
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     icp: Object.freeze(new IcpTestnet()),
+    init: Object.freeze(new InitTestnet()),
     injective: Object.freeze(new InjectiveTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     kava: Object.freeze(new KavaTestnet()),

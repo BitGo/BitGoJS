@@ -843,6 +843,66 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
+    '507492ba-d127-4fd8-b07d-9461f5887a26',
+    'cronos',
+    'Cronos',
+    Networks.main.cronos,
+    8,
+    UnderlyingAsset.CRONOS,
+    BaseUnit.CRONOS,
+    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+  ),
+  account(
+    '49d56512-bddb-41aa-ac7f-f4a4c494b412',
+    'tcronos',
+    'Testnet Cronos',
+    Networks.test.cronos,
+    8,
+    UnderlyingAsset.CRONOS,
+    BaseUnit.CRONOS,
+    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+  ),
+  account(
+    '854513b2-cf1a-44b4-879b-e3aae0b5f227',
+    'fetch',
+    'Fetch',
+    Networks.main.fetch,
+    18,
+    UnderlyingAsset.FETCH,
+    BaseUnit.FETCH,
+    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+  ),
+  account(
+    'e285caf3-e9b8-407a-aa72-ee4094d1cf9f',
+    'tfetch',
+    'Testnet Fetch',
+    Networks.test.fetch,
+    18,
+    UnderlyingAsset.FETCH,
+    BaseUnit.FETCH,
+    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+  ),
+  account(
+    '2ec91758-fd84-44d5-92d3-7158903de278',
+    'init',
+    'Initia',
+    Networks.main.init,
+    6,
+    UnderlyingAsset.INIT,
+    BaseUnit.INIT,
+    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+  ),
+  account(
+    '2d10a918-01f4-40a5-b1db-a5e5247d21d7',
+    'tinit',
+    'Testnet Initia',
+    Networks.test.init,
+    6,
+    UnderlyingAsset.INIT,
+    BaseUnit.INIT,
+    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+  ),
+  account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
     'islm',
     'Islamic Coin',

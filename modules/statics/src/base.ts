@@ -40,6 +40,7 @@ export enum CoinFamily {
   CELO = 'celo',
   COREDAO = 'coredao',
   COREUM = 'coreum',
+  CRONOS = 'cronos',
   CSPR = 'cspr',
   DASH = 'dash',
   DOGE = 'doge',
@@ -49,11 +50,13 @@ export enum CoinFamily {
   ETHW = 'ethw',
   ETC = 'etc',
   EOS = 'eos',
+  FETCH = 'fetch',
   FIAT = 'fiat',
   FLR = 'flr',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   ICP = 'icp',
+  INIT = 'init',
   INJECTIVE = 'injective',
   ISLM = 'islm',
   KAVA = 'kava',
@@ -396,6 +399,7 @@ export enum UnderlyingAsset {
   CELO = 'celo', // Celo main coin
   COREDAO = 'coredao',
   COREUM = 'coreum',
+  CRONOS = 'cronos',
   CSPR = 'cspr',
   ETH = 'eth',
   ETH2 = 'eth2',
@@ -407,11 +411,13 @@ export enum UnderlyingAsset {
   EURCV = 'eurcv',
   EUROC = 'euroc',
   EURR = 'eurr',
+  FETCH = 'fetch',
   FLR = 'flr',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   ICP = 'icp',
+  INIT = 'init',
   INJECTIVE = 'injective',
   ISLM = 'islm',
   KAVA = 'kava',
@@ -2677,6 +2683,9 @@ export enum BaseUnit {
   ICP = 'e8s',
   MANTRA = 'uom',
   POLYX = 'micropolyx',
+  CRONOS = 'basecro',
+  FETCH = 'afet',
+  INIT = 'uinit',
 }
 
 export interface BaseCoinConstructorOptions {
