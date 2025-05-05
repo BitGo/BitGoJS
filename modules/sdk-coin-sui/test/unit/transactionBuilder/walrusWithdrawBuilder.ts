@@ -38,12 +38,7 @@ describe('Walrus Withdraw Builder', () => {
         value: testData.STAKING_AMOUNT.toString(),
         coin: 'tsui:wal',
       });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: testData.sender.address,
-        value: testData.STAKING_AMOUNT.toString(),
-        coin: 'tsui:wal',
-      });
+      tx.outputs.length.should.equal(0);
 
       const rawTx = tx.toBroadcastFormat();
       await assertRebuild(rawTx);
@@ -80,12 +75,7 @@ describe('Walrus Withdraw Builder', () => {
         value: AMOUNT_UNKNOWN_TEXT,
         coin: 'tsui:wal',
       });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: testData.sender.address,
-        value: AMOUNT_UNKNOWN_TEXT,
-        coin: 'tsui:wal',
-      });
+      tx.outputs.length.should.equal(0);
 
       const rawTx = tx.toBroadcastFormat();
       await assertRebuild(rawTx);

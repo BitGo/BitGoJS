@@ -207,6 +207,12 @@ export class WalrusWithdrawStakeTransaction extends Transaction<WalrusWithdrawSt
         coin: this._coinConfig.name,
       },
     ];
+
+    if (utils.isWalrusRequestWithdrawStakeTx(this._suiTransaction.tx)) {
+      // request withdraw stake should have no outputs
+      return;
+    }
+
     this._outputs = [
       {
         address: this.suiTransaction.sender,
