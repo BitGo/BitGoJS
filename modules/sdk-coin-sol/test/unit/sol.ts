@@ -265,8 +265,63 @@ describe('SOL:', function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       await basecoin
-        .verifyTransaction({ txParams, txPrebuild, memo: errorMemo, errorFeePayer, wallet: walletObj } as any)
+        .verifyTransaction({ txParams, txPrebuild, memo: errorMemo, wallet: walletObj } as any)
         .should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
+    });
+
+    it('should pass if we pass PDA address', async function () {
+      const walletData = {
+        id: '67f8ddff4c9b8b57a2e16acffac9a3b5',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: '8zbsJA5c8HPR7BPjZkrSVrus2uMuXqCfzksGwB3Uscjb',
+        },
+        multisigType: 'tss',
+      };
+      const walletObj = new Wallet(bitgo, basecoin, walletData);
+      const txPrebuild = {
+        recipients: [
+          {
+            address: '11111111111111111111111111111112',
+            amount: '1000000000',
+            tokenName: 'tsol:usdc',
+          },
+        ],
+        txBase64:
+          '02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006ec1adcc89bb564f1f8225821140a9723efa80e8d506765770b7e201d66d8200d4f690e9a8163291b69f8c3827aad96cfd2105eee3aae76cbca38fcad2bf7f0a0201070c76c356cb069b66c2b35a8638b4d4afca75b303f29f0deeb4bff8528299a9c9d21c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f60129e6ecb20309c27dcba5fc6c441438d33a1568004a1860e22c16f071976a7d2e2008bd34b53a08aa9c8ec04eb2196745fc6029224447417e2fb0fced601240cabba4ce534c02fc154ba559ed2a02ac971e3385acb426ff63bb1040e2c2435000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f859d10389fbcee528f208611dccc734b31092540cb2b8d58d100f2eaa2cedb4da5e06a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9e680634533882f880a3e7dfa999dfb864b88968d242a0c9a90b5df149e42da050305030209010404000000070700030608050b0a000b04040803000a0c00ca9a3b0000000009',
+        txInfo: {
+          feePayer: '8zbsJA5c8HPR7BPjZkrSVrus2uMuXqCfzksGwB3Uscjb',
+          nonce: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
+        },
+        txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
+        isVotingTransaction: false,
+        coin: 'tsol',
+      };
+      const txParams = {
+        txPrebuild,
+        recipients: [
+          {
+            address: '11111111111111111111111111111112',
+            amount: '1000000000',
+            tokenName: 'tsol:usdc',
+          },
+        ],
+      };
+      const memo = {
+        value: undefined,
+      };
+      const verifyTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo: memo,
+        wallet: walletObj,
+      } as any);
+      verifyTransaction.should.equal(true);
     });
 
     it('should fail verify transactions when have different durableNonce', async function () {
