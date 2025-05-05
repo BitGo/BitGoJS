@@ -82,7 +82,28 @@ describe('Lightning Withdraw Routes', () => {
       should(firstArg).have.property('satsPerVbyte', BigInt(inputParams.satsPerVbyte));
     });
 
-    it('should throw an error if the passphrase is missing in the request params', async () => {
+    it('should throw an error if the satsPerVbyte is missing in the request params', async () => {
+      const inputParams = {
+        recipients: [
+          {
+            amountSat: '500000',
+            address: 'bcrt1qjq48cqk2u80hewdcndf539m8nnnvt845nl68x7',
+          },
+        ],
+      };
+
+      const req = mockRequestObject({
+        params: { id: 'testWalletId', coin },
+        body: inputParams,
+      });
+      req.bitgo = bitgo;
+
+      await should(handleLightningWithdraw(req)).be.rejectedWith(
+        'Invalid request body for withdrawing on chain lightning balance'
+      );
+    });
+
+    it('should throw an error if the recipients is missing in the request params', async () => {
       const inputParams = {
         satsPerVbyte: '15',
       };
