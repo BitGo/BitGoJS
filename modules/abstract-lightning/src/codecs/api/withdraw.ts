@@ -1,15 +1,15 @@
 import * as t from 'io-ts';
-import { LightningOnchainRequest } from '@bitgo/public-types';
+import { LightningOnchainRecipient } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
+import { BigIntFromString } from 'io-ts-types';
 
 // todo:(current) which to keep here which to take to common types
-export const LightningOnchainWithdrawParams = t.intersection([
-  LightningOnchainRequest,
-  t.type({
-    // todo:(current) add passphrase
-    // passphrase: t.string,
-  }),
-]);
+export const LightningOnchainWithdrawParams = t.type({
+  recipients: t.array(LightningOnchainRecipient),
+  satsPerVbyte: BigIntFromString,
+  // todo:(current) add passphrase
+  // passphrase: t.string,
+});
 
 export type LightningOnchainWithdrawParams = t.TypeOf<typeof LightningOnchainWithdrawParams>;
 

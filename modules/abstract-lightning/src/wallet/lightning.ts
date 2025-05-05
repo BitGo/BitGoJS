@@ -163,7 +163,7 @@ export interface ILightningWallet {
    * On chain withdrawal
    * @param {LightningOnchainWithdrawParams} params - Withdraw parameters
    * @param {LightningOnchainRecipient[]} params.recipients - The recipients to pay
-   * @param {bigint} [params.satsPerVbyte] - Optional value for sats per virtual byte
+   * @param {bigint} params.satsPerVbyte - Value for sats per virtual byte
    * @returns {Promise<LightningOnchainWithdrawResponse>} Withdraw result containing transaction request details and status
    */
   withdrawOnchain(params: LightningOnchainWithdrawParams): Promise<LightningOnchainWithdrawResponse>;
