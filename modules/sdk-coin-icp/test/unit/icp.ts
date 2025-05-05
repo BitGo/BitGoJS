@@ -147,7 +147,35 @@ describe('Internet computer', function () {
   });
 
   describe('Verify a transaction', () => {
-    it('should successfully verify a transaction', async () => {
+    it('should successfully verify a transaction with signable Hex', async () => {
+      const unsignedTxn = txBuilder.transaction.unsignedTransaction;
+      unsignedTxn.should.be.a.String();
+      const payloadsData = txBuilder.transaction.payloadsData;
+      const serializedTxFormat = {
+        serializedTxHex: payloadsData,
+        publicKey: testData.Accounts.account1.publicKey,
+      };
+      const signableHex = payloadsData.payloads[0].hex_bytes;
+      const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+      const txParams = {
+        recipients: [
+          {
+            address: testData.Accounts.account2.address,
+            amount: '10',
+          },
+        ],
+      };
+      const response = await basecoin.verifyTransaction({
+        txPrebuild: {
+          txHex: serializedTxHex,
+          txInfo: signableHex,
+        },
+        txParams: txParams,
+      });
+      assert(response);
+    });
+
+    it('should successfully verify a transaction without signable Hex', async () => {
       const unsignedTxn = txBuilder.transaction.unsignedTransaction;
       unsignedTxn.should.be.a.String();
       const payloadsData = txBuilder.transaction.payloadsData;
@@ -171,6 +199,38 @@ describe('Internet computer', function () {
         txParams: txParams,
       });
       assert(response);
+    });
+
+    it('should fail to verify a transaction with wrong signable Hex', async () => {
+      const unsignedTxn = txBuilder.transaction.unsignedTransaction;
+      unsignedTxn.should.be.a.String();
+      const payloadsData = txBuilder.transaction.payloadsData;
+      const serializedTxFormat = {
+        serializedTxHex: payloadsData,
+        publicKey: testData.Accounts.account1.publicKey,
+      };
+      const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+      const txParams = {
+        recipients: [
+          {
+            address: testData.Accounts.account2.address,
+            amount: '10',
+          },
+        ],
+      };
+
+      const wrongSignableHexValues =
+        '0a69632d72657175657374523de3c7c5b4613155b74ede2e54493f6acbe8bf6d910154fbbb3a98ba3e0098';
+
+      await basecoin
+        .verifyTransaction({
+          txPrebuild: {
+            txHex: serializedTxHex,
+            txInfo: wrongSignableHexValues,
+          },
+          txParams: txParams,
+        })
+        .should.rejectedWith('generated signableHex is not equal to params.signableHex');
     });
   });
 });

@@ -192,3 +192,8 @@ export interface PublicNodeSubmitResponse {
 export interface AccountIdentifierHash {
   hash: Buffer<ArrayBuffer>;
 }
+
+export interface TransactionHexParams {
+  transactionHex: string;
+  signableHex?: string;
+}

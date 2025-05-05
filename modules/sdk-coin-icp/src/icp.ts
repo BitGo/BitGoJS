@@ -38,6 +38,7 @@ import {
   Signatures,
   SigningPayload,
   IcpTransactionExplanation,
+  TransactionHexParams,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
@@ -85,10 +86,16 @@ export class Icp extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  async explainTransaction(params: { txHex: string }): Promise<IcpTransactionExplanation> {
+  async explainTransaction(params: TransactionHexParams): Promise<IcpTransactionExplanation> {
     const factory = this.getBuilderFactory();
-    const txBuilder = await factory.from(params.txHex);
+    const txBuilder = await factory.from(params.transactionHex);
     const transaction = await txBuilder.build();
+    if (params.signableHex !== undefined) {
+      const generatedSignableHex = txBuilder.transaction.payloadsData.payloads[0].hex_bytes;
+      if (generatedSignableHex !== params.signableHex) {
+        throw new Error('generated signableHex is not equal to params.signableHex');
+      }
+    }
     return transaction.explainTransaction();
   }
 
@@ -98,7 +105,15 @@ export class Icp extends BaseCoin {
     if (!txHex) {
       throw new Error('txHex is required');
     }
-    const explainedTx = await this.explainTransaction({ txHex });
+    const txHexParams: TransactionHexParams = {
+      transactionHex: txHex,
+    };
+
+    if (txPrebuild.txInfo && txPrebuild.txInfo !== undefined && typeof txPrebuild.txInfo === 'string') {
+      txHexParams.signableHex = txPrebuild.txInfo;
+    }
+
+    const explainedTx = await this.explainTransaction(txHexParams);
 
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 0) {
       if (txParams.recipients.length > 1) {
