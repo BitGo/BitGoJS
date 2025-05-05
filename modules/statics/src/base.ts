@@ -2359,6 +2359,18 @@ export enum UnderlyingAsset {
   'arbeth:vchf' = 'arbeth:vchf',
   'arbeth:tbill' = 'arbeth:tbill',
   'arbeth:xai' = 'arbeth:xai',
+  'arbeth:flttx' = 'arbeth:flttx',
+  'arbeth:wtsix' = 'arbeth:wtsix',
+  'arbeth:modrx' = 'arbeth:modrx',
+  'arbeth:techx' = 'arbeth:techx',
+  'arbeth:wtsyx' = 'arbeth:wtsyx',
+  'arbeth:wtlgx' = 'arbeth:wtlgx',
+  'arbeth:wttsx' = 'arbeth:wttsx',
+  'arbeth:tipsx' = 'arbeth:tipsx',
+  'arbeth:wtstx' = 'arbeth:wtstx',
+  'arbeth:wtgxx' = 'arbeth:wtgxx',
+  'arbeth:lngvx' = 'arbeth:lngvx',
+  'arbeth:eqtyx' = 'arbeth:eqtyx',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
