@@ -47,6 +47,7 @@ import {
   Eth,
   Ethw,
   EthLikeCoin,
+  Fetch,
   Flr,
   TethLikeCoin,
   FiatAED,
@@ -117,6 +118,7 @@ import {
   Teos,
   Tetc,
   Teth,
+  Tfetch,
   Tflr,
   Tmon,
   TfiatAED,
@@ -211,6 +213,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('fiatgbp', FiatGBP.createInstance);
   globalCoinFactory.register('fiatsgd', FiatSGD.createInstance);
   globalCoinFactory.register('fiatusd', FiatUsd.createInstance);
+  globalCoinFactory.register('fetch', Fetch.createInstance);
   globalCoinFactory.register('flr', Flr.createInstance);
   globalCoinFactory.register('gteth', Gteth.createInstance);
   globalCoinFactory.register('hash', Hash.createInstance);
@@ -277,6 +280,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tfiatgbp', TfiatGBP.createInstance);
   globalCoinFactory.register('tfiatsgd', TfiatSGD.createInstance);
   globalCoinFactory.register('tfiatusd', TfiatUsd.createInstance);
+  globalCoinFactory.register('tfetch', Tfetch.createInstance);
   globalCoinFactory.register('tflr', Tflr.createInstance);
   globalCoinFactory.register('tmon', Tmon.createInstance);
   globalCoinFactory.register('thash', Thash.createInstance);

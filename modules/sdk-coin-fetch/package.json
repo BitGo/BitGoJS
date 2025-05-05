@@ -1,0 +1,52 @@
+{
+  "name": "@bitgo/sdk-coin-fetch",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Fetch",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18 <21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-fetch"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/abstract-cosmos": "^11.7.2",
+    "@bitgo/sdk-core": "^33.1.0",
+    "@bitgo/statics": "^52.1.0",
+    "@cosmjs/stargate": "^0.29.5"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.62.2",
+    "@bitgo/sdk-test": "^8.0.83"
+  }
+}
