@@ -2,6 +2,7 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { IssuedCurrencyAmount, TrustSet } from 'xrpl';
+import { NO_RIPPLE_FLAG } from './constants';
 import { XrpTransactionType } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -70,6 +71,7 @@ export class TrustSetBuilder extends TransactionBuilder {
       TransactionType: this.xrpTransactionType,
       Account: this._sender,
       LimitAmount: this._amount,
+      Flags: NO_RIPPLE_FLAG,
     };
 
     this._specificFields = trustSetFields;
