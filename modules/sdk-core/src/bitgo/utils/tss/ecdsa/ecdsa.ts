@@ -744,12 +744,26 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
-      await this.baseCoin.verifyTransaction({
-        txPrebuild: { txHex: unsignedTx.signableHex },
-        txParams: params.txParams || { recipients: [] },
-        wallet: this.wallet,
-        walletType: this.wallet.multisigType(),
-      });
+
+      // For ICP transactions, the HSM signs the serializedTxHex, while the user signs the signableHex separately.
+      // Verification cannot be performed directly on the signableHex alone. However, we can parse the serializedTxHex
+      // to regenerate the signableHex and compare it against the provided value for verification.
+      // In contrast, for other coin families, verification is typically done using just the signableHex.
+      if (this.baseCoin.getConfig().family === 'icp') {
+        await this.baseCoin.verifyTransaction({
+          txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
+          txParams: params.txParams || { recipients: [] },
+          wallet: this.wallet,
+          walletType: this.wallet.multisigType(),
+        });
+      } else {
+        await this.baseCoin.verifyTransaction({
+          txPrebuild: { txHex: unsignedTx.signableHex },
+          txParams: params.txParams || { recipients: [] },
+          wallet: this.wallet,
+          walletType: this.wallet.multisigType(),
+        });
+      }
       signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
       derivationPath = unsignedTx.derivationPath;
     } else if (requestType === RequestType.message) {
