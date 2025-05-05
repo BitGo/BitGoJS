@@ -125,6 +125,9 @@
       "path": "./modules/sdk-coin-ethw"
     },
     {
+      "path": "./modules/sdk-coin-fetch"
+    },
+    {
       "path": "./modules/sdk-coin-flr"
     },
     {

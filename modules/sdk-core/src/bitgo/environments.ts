@@ -50,6 +50,7 @@ interface EnvironmentTemplate {
   babyNodeUrl: string;
   mantraNodeUrl: string;
   cronosNodeUrl: string;
+  fetchNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
   substrateNodeUrls: string[];
@@ -172,6 +173,7 @@ const mainnetBase: EnvironmentTemplate = {
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   cronosNodeUrl: 'https://rpc.mainnet.cronos-pos.org/',
+  fetchNodeUrl: 'https://rpc-fetchhub.fetch.ai/',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
   tronNodes: {
@@ -242,6 +244,7 @@ const testnetBase: EnvironmentTemplate = {
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   mantraNodeUrl: 'https://mantra-testnet-rest.publicnode.com/',
   cronosNodeUrl: 'https://rpc.testnet-croeseid-4.cronos-pos.org/',
+  fetchNodeUrl: 'https://rpc-eridanus-1.fetch.ai/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
   tronNodes: {
