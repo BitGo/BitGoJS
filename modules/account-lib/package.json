@@ -40,6 +40,7 @@
     "@bitgo/sdk-coin-celo": "^5.0.5",
     "@bitgo/sdk-coin-coredao": "^2.1.2",
     "@bitgo/sdk-coin-coreum": "^21.0.47",
+    "@bitgo/sdk-coin-cronos": "^1.0.0",
     "@bitgo/sdk-coin-cspr": "^2.0.78",
     "@bitgo/sdk-coin-dot": "^4.1.56",
     "@bitgo/sdk-coin-etc": "^2.2.45",

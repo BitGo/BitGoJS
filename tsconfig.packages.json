@@ -95,6 +95,9 @@
       "path": "./modules/sdk-coin-coreum"
     },
     {
+      "path": "./modules/sdk-coin-cronos"
+    },
+    {
       "path": "./modules/sdk-coin-cspr"
     },
     {

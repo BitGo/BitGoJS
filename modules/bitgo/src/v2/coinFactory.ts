@@ -35,6 +35,7 @@ import {
   CeloToken,
   Coredao,
   Coreum,
+  Cronos,
   Cspr,
   Dash,
   Doge,
@@ -108,6 +109,7 @@ import {
   Tcelo,
   Tcoredao,
   Tcoreum,
+  Tcronos,
   Tcspr,
   Tdash,
   Tdoge,
@@ -193,6 +195,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('celo', Celo.createInstance);
   globalCoinFactory.register('coredao', Coredao.createInstance);
   globalCoinFactory.register('coreum', Coreum.createInstance);
+  globalCoinFactory.register('cronos', Cronos.createInstance);
   globalCoinFactory.register('cspr', Cspr.createInstance);
   globalCoinFactory.register('dash', Dash.createInstance);
   globalCoinFactory.register('doge', Doge.createInstance);
@@ -261,6 +264,7 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tcelo', Tcelo.createInstance);
   globalCoinFactory.register('tcoredao', Tcoredao.createInstance);
   globalCoinFactory.register('tcoreum', Tcoreum.createInstance);
+  globalCoinFactory.register('tcronos', Tcronos.createInstance);
   globalCoinFactory.register('tcspr', Tcspr.createInstance);
   globalCoinFactory.register('tdash', Tdash.createInstance);
   globalCoinFactory.register('tdoge', Tdoge.createInstance);
