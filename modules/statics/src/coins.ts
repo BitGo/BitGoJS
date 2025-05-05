@@ -1917,7 +1917,7 @@ export const coins = CoinMap.fromCoins([
   algoToken(
     'bf444e89-e762-48a9-a27d-8efa2aed7867',
     'algo:USDC-31566704',
-    undefined,
+    'algo:31566704',
     'USDC',
     6,
     UnderlyingAsset['algo:USDC-31566704'],
@@ -1928,7 +1928,7 @@ export const coins = CoinMap.fromCoins([
   algoToken(
     '4d9eee7f-68ac-4ce4-8c83-e673f996215d',
     'algo:USDt-312769',
-    undefined,
+    'algo:312769',
     'Algorand USDT',
     6,
     UnderlyingAsset['algo:USDt-312769'],
@@ -1939,7 +1939,7 @@ export const coins = CoinMap.fromCoins([
   algoToken(
     '4d3ec83f-a3ad-4b76-89de-a1b7134a39d4',
     'algo:MCAU-6547014',
-    undefined,
+    'algo:6547014',
     'MCAU',
     5,
     UnderlyingAsset['algo:MCAU-6547014'],
@@ -1950,7 +1950,7 @@ export const coins = CoinMap.fromCoins([
   algoToken(
     '4a4cdf2b-e01e-4ee8-b3d6-5ac471309ae1',
     'algo:VCAD-438505559',
-    undefined,
+    'algo:438505559',
     'VCAD',
     2,
     UnderlyingAsset['algo:VCAD-438505559'],
@@ -1961,7 +1961,7 @@ export const coins = CoinMap.fromCoins([
   algoToken(
     'abe2e04e-d53b-4a23-9a68-08eaeb8b028e',
     'algo:QCAD-84507107',
-    undefined,
+    'algo:84507107',
     'QCAD',
     2,
     UnderlyingAsset['algo:QCAD-84507107'],
