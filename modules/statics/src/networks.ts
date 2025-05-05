@@ -1236,8 +1236,8 @@ class Monad extends Mainnet implements EthereumNetwork {
   name = 'Monad';
   family = CoinFamily.MON;
   explorerUrl = 'https://testnet.monadexplorer.com/tx/'; //TODO: WIN-5225: change it with mainnet explorer, when its available
-  chainId = 480; //TODO: WIN-5225: change it with mainnet explorer, when its available
-  nativeCoinOperationHashPrefix = '480'; //TODO: WIN-5225: change it with mainnet explorer, when its available
+  chainId = 10143; //TODO: WIN-5225: change it with mainnet explorer, when its available
+  nativeCoinOperationHashPrefix = '10143'; //TODO: WIN-5225: change it with mainnet explorer, when its available
 }
 
 class World extends Mainnet implements EthereumNetwork {
