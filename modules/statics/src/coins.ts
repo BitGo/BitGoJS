@@ -2120,7 +2120,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',
     'talgo:USDC-10458941',
-    'talgo:10458941',
+    undefined,
     'USDC',
     6,
     UnderlyingAsset['talgo:USDC-10458941'],
@@ -2131,7 +2131,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     'dd48a295-4f59-4a36-bc40-801998b9ff90',
     'talgo:USDt-180447',
-    'talgo:180447',
+    undefined,
     'Testnet Algorand USDT',
     6,
     UnderlyingAsset['talgo:USDt-180447'],
@@ -2142,7 +2142,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '3cfccea1-9946-4de1-abe2-f9ab6411a14b',
     'talgo:USON-16026728',
-    'talgo:16026728',
+    undefined,
     'Unison',
     2,
     UnderlyingAsset['talgo:USON-16026728'],
@@ -2153,7 +2153,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '02f2ed81-83ba-4c6c-931e-2ce1aacfd57f',
     'talgo:SPRW-16026732',
-    'talgo:16026732',
+    undefined,
     'Sparrow',
     4,
     UnderlyingAsset['talgo:SPRW-16026732'],
@@ -2164,7 +2164,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '0c642b43-157a-475b-b6dc-d20ae76c71fc',
     'talgo:KAL-16026733',
-    'talgo:16026733',
+    undefined,
     'Kalki',
     8,
     UnderlyingAsset['talgo:KAL-16026733'],
@@ -2175,7 +2175,7 @@ export const coins = CoinMap.fromCoins([
   talgoToken(
     '857994b1-3198-4649-a7a0-724a8620eb67',
     'talgo:JPT-162085446',
-    'talgo:162085446',
+    undefined,
     'JPT',
     6,
     UnderlyingAsset['talgo:JPT-162085446'],
