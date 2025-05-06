@@ -173,9 +173,9 @@ const mainnetBase: EnvironmentTemplate = {
   babyNodeUrl: 'https://babylon.nodes.guru/api/',
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
-  cronosNodeUrl: 'https://rpc.mainnet.cronos-pos.org/',
-  fetchNodeUrl: 'https://rpc-fetchhub.fetch.ai/',
-  initNodeUrl: 'https://rpc.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
+  cronosNodeUrl: 'https://cronos-rest.publicnode.com/',
+  fetchNodeUrl: 'https://rest-fetchhub.fetch.ai/',
+  initNodeUrl: 'https://rest.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
   tronNodes: {
@@ -245,9 +245,9 @@ const testnetBase: EnvironmentTemplate = {
   babyNodeUrl: 'https://babylon-testnet-api.nodes.guru/',
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   mantraNodeUrl: 'https://mantra-testnet-rest.publicnode.com/',
-  cronosNodeUrl: 'https://rpc.testnet-croeseid-4.cronos-pos.org/',
-  fetchNodeUrl: 'https://rpc-eridanus-1.fetch.ai/',
-  initNodeUrl: 'https://rpc.testnet.initia.xyz/',
+  cronosNodeUrl: 'https://testnet-croeseid-4.crypto.org:1317/',
+  fetchNodeUrl: 'https://rest-dorado.fetch.ai/',
+  initNodeUrl: 'https://rest.testnet.initia.xyz/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
   tronNodes: {
