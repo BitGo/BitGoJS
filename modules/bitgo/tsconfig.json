@@ -162,6 +162,9 @@
       "path": "../sdk-coin-icp"
     },
     {
+      "path": "../sdk-coin-init"
+    },
+    {
       "path": "../sdk-coin-injective"
     },
     {
