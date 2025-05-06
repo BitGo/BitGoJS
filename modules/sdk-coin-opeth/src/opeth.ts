@@ -61,11 +61,6 @@ export class Opeth extends AbstractEthLikeNewCoins {
     return userGasLimit;
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.tss;

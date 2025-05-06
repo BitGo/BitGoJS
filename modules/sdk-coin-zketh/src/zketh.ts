@@ -33,11 +33,6 @@ export class Zketh extends AbstractEthLikeNewCoins {
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string);
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

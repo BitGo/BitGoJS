@@ -232,11 +232,6 @@ export class Eos extends BaseCoin {
     return 4;
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig() {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

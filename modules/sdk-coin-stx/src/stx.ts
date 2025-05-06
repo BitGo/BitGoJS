@@ -90,11 +90,6 @@ export class Stx extends BaseCoin {
     return new TransactionBuilderFactory(coinConfig).getTransferBuilder();
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

@@ -135,11 +135,6 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     return false;
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

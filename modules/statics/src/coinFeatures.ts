@@ -17,6 +17,7 @@ export const ETC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
 ];
 export const EVM_FEATURES = [
   ...ETH_FEATURES,
@@ -35,6 +36,7 @@ export const AVAXC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SWITZERLAND,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.EIP1559,
 ];
 export const CELO_FEATURES = [
@@ -43,11 +45,13 @@ export const CELO_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.EIP1559,
 ];
 export const RBTC_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
@@ -60,10 +64,12 @@ export const XLM_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
 ];
 export const XTZ_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.ENTERPRISE_PAYS_FEES,
 ].filter(
   (feature) =>
@@ -81,6 +87,7 @@ export const XRP_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
 ];
 export const POLYGON_TOKEN_FEATURES_WITH_FRANKFURT = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -95,6 +102,7 @@ export const CSPR_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.STAKING,
 ];
 export const ALGO_FEATURES = [
@@ -105,6 +113,7 @@ export const ALGO_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.BULK_TRANSACTION,
 ];
 export const HTETH_TOKEN_FEATURES = [
@@ -131,6 +140,7 @@ export const EOS_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
 ];
 export const HBAR_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -139,6 +149,7 @@ export const HBAR_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
 ];
@@ -197,6 +208,7 @@ export const STX_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.STAKING,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
@@ -279,6 +291,7 @@ export const TRX_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
 ];
 export const COSMOS_SIDECHAIN_FEATURES = [
   ...AccountCoin.DEFAULT_FEATURES,
@@ -342,6 +355,7 @@ export const ARBETH_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.EIP1559,
   CoinFeature.WALLET_CONNECT_DEFI,
+  CoinFeature.MULTISIG,
 ];
 export const OPETH_FEATURES = [
   ...ETH_FEATURES,
@@ -349,6 +363,7 @@ export const OPETH_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.MPCV2,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
@@ -361,6 +376,7 @@ export const OPETH_FEATURES = [
 export const ZKETH_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,

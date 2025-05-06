@@ -2,11 +2,11 @@
  * @prettier
  */
 import * as crypto from 'crypto';
+import { Hash } from 'crypto';
+import * as utxolib from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/utxo-lib';
 import { BigNumber } from 'bignumber.js';
-
-import * as utxolib from '@bitgo/utxo-lib';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFeature } from '@bitgo/statics';
 
 import { InitiateRecoveryOptions } from '../recovery';
 import { signMessage } from '../bip32util';
@@ -16,17 +16,22 @@ import { Enterprises } from '../enterprise';
 import { Keychains, KeyIndices } from '../keychain';
 import { Markets } from '../market';
 import { PendingApprovals } from '../pendingApproval';
-import { Wallets, IWallet, Wallet } from '../wallet';
+import { IWallet, Wallet, Wallets } from '../wallet';
 import { Webhooks } from '../webhook';
 import {
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
+  BuildNftTransferDataOptions,
+  DeriveKeyWithSeedOptions,
   ExtraPrebuildParamsOptions,
   FeeEstimateOptions,
   IBaseCoin,
-  ParsedTransaction,
   ITransactionExplanation,
   KeychainsTriplet,
   KeyPair,
   MPCAlgorithm,
+  MultisigType,
+  ParsedTransaction,
   ParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
@@ -39,14 +44,8 @@ import {
   TransactionPrebuild,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  BuildNftTransferDataOptions,
-  BaseBroadcastTransactionOptions,
-  BaseBroadcastTransactionResult,
-  DeriveKeyWithSeedOptions,
-  MultisigType,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
-import { Hash } from 'crypto';
 import { MPCSweepRecoveryOptions, MPCTxs, PopulatedIntent, PrebuildTransactionWithIntentOptions } from '../utils';
 
 export abstract class BaseCoin implements IBaseCoin {
@@ -186,11 +185,13 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * @deprecated use CoinFeature.MULTISIG from statics instead
    * Flag indicating if this coin supports MultiSig wallets.
    * @return {boolean} True if MultiSig wallets can be created for this coin
    */
   supportsMultisig(): boolean {
-    return false;
+    // Use the static coin configuration to check if MULTISIG is supported
+    return this._staticsCoin.features.includes(CoinFeature.MULTISIG);
   }
 
   /**

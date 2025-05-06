@@ -363,6 +363,11 @@ export enum CoinFeature {
    * This coins is an EVM compatible coin and should use common EVM functionality
    */
   SHARED_EVM_SIGNING = 'shared-evm-signing',
+
+  /**
+   * This coin supports multisig wallets
+   */
+  MULTISIG = 'multisig',
 }
 
 /**
