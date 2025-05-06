@@ -1,9 +1,19 @@
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
+import { BaseUnit, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
-import { TransactionBuilderFactory } from './lib';
+import { KeyPair, TransactionBuilderFactory } from './lib';
+import { GAS_AMOUNT, GAS_LIMIT } from './lib/constants';
+import { Utils } from './lib/utils';
 
+/**
+ *
+ * Full Name: Cronos
+ * Website: https://cronos-pos.org/
+ * Docs: https://docs.cronos-pos.org/
+ * GitHub : https://github.com/crypto-org-chain/chain-main
+ */
 export class Cronos extends CosmosCoin {
+  protected readonly _utils: Utils;
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -14,6 +24,7 @@ export class Cronos extends CosmosCoin {
     }
 
     this._staticsCoin = staticsCoin;
+    this._utils = new Utils();
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
@@ -27,36 +38,39 @@ export class Cronos extends CosmosCoin {
 
   /** @inheritDoc **/
   getBuilder(): TransactionBuilderFactory {
-    throw new Error('Method not implemented.');
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
   }
 
   /** @inheritDoc **/
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    return this._utils.isValidAddress(address) || this._utils.isValidValidatorAddress(address);
   }
 
   /** @inheritDoc **/
   getDenomination(): string {
-    throw new Error('Method not implemented');
+    return BaseUnit.CRONOS;
   }
 
   /** @inheritDoc **/
   getGasAmountDetails(): GasAmountDetails {
-    throw new Error('Method not implemented');
+    return {
+      gasAmount: GAS_AMOUNT,
+      gasLimit: GAS_LIMIT,
+    };
   }
 
   /** @inheritDoc **/
   getKeyPair(publicKey: string): CosmosKeyPair {
-    throw new Error('Method not implemented');
+    return new KeyPair({ pub: publicKey });
   }
 
   /** @inheritDoc **/
   protected getPublicNodeUrl(): string {
-    throw new Error('Method not implemented');
+    return Environments[this.bitgo.getEnv()].cronosNodeUrl;
   }
 
   /** @inheritDoc **/
   getAddressFromPublicKey(pubKey: string): string {
-    throw new Error('Method not implemented');
+    return new KeyPair({ pub: pubKey }).getAddress();
   }
 }

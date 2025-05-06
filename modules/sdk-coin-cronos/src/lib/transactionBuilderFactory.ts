@@ -10,7 +10,7 @@ import {
 } from '@bitgo/abstract-cosmos';
 import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import utils from './utils';
+import { Utils } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -19,7 +19,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   from(raw: string): CosmosTransactionBuilder {
-    const tx = new CosmosTransaction(this._coinConfig, utils);
+    const tx = new CosmosTransaction(this._coinConfig, new Utils(this._coinConfig.network.type));
     tx.enrichTransactionDetailsFromRawTransaction(raw);
     try {
       switch (tx.type) {
@@ -45,27 +45,45 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   getTransferBuilder(tx?: CosmosTransaction): CosmosTransferBuilder {
-    return this.initializeBuilder(tx, new CosmosTransferBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(
+      tx,
+      new CosmosTransferBuilder(this._coinConfig, new Utils(this._coinConfig.network.type))
+    );
   }
   /** @inheritdoc */
   getStakingActivateBuilder(tx?: CosmosTransaction): StakingActivateBuilder {
-    return this.initializeBuilder(tx, new StakingActivateBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(
+      tx,
+      new StakingActivateBuilder(this._coinConfig, new Utils(this._coinConfig.network.type))
+    );
   }
   /** @inheritdoc */
   getStakingDeactivateBuilder(tx?: CosmosTransaction): StakingDeactivateBuilder {
-    return this.initializeBuilder(tx, new StakingDeactivateBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(
+      tx,
+      new StakingDeactivateBuilder(this._coinConfig, new Utils(this._coinConfig.network.type))
+    );
   }
   /** @inheritdoc */
   getStakingWithdrawRewardsBuilder(tx?: CosmosTransaction): StakingWithdrawRewardsBuilder {
-    return this.initializeBuilder(tx, new StakingWithdrawRewardsBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(
+      tx,
+      new StakingWithdrawRewardsBuilder(this._coinConfig, new Utils(this._coinConfig.network.type))
+    );
   }
 
   getContractCallBuilder(tx?: CosmosTransaction): ContractCallBuilder {
-    return this.initializeBuilder(tx, new ContractCallBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(
+      tx,
+      new ContractCallBuilder(this._coinConfig, new Utils(this._coinConfig.network.type))
+    );
   }
 
   getStakingRedelegateBuilder(tx?: CosmosTransaction): StakingRedelegateBuilder {
-    return this.initializeBuilder(tx, new StakingRedelegateBuilder(this._coinConfig, utils));
+    return this.initializeBuilder(
+      tx,
+      new StakingRedelegateBuilder(this._coinConfig, new Utils(this._coinConfig.network.type))
+    );
   }
 
   /** @inheritdoc */
