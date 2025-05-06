@@ -1194,7 +1194,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
@@ -1204,7 +1204,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     'd4f8e4f5-7060-44e3-aca1-e3ac11597ecb',
@@ -1214,7 +1214,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.WORLD,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '1cd29730-f70b-4c7d-a19c-eb3345f01acb',
@@ -1224,7 +1224,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.WORLD,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
@@ -1234,7 +1234,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SONEIUM,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     'a4587ed1-a4a6-4bbe-b965-3119b52e76cf',
@@ -1244,7 +1244,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SONEIUM,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '87c104ca-6b49-479e-87fb-9253b095158c',
@@ -1254,7 +1254,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.STT,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '1bf486a9-47ed-4bea-8e9a-a23a074cdc9a',
@@ -1264,7 +1264,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.STT,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '202caf8f-4d43-4208-b206-8231f555c518',
