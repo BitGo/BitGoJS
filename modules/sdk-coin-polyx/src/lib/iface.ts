@@ -1,6 +1,7 @@
-/**
- * The transaction data returned from the toJson() function of a transaction
- */
-export interface TxData {
-  id: string;
+import { Args } from '@substrate/txwrapper-core';
+
+export interface RegisterDidWithCDDArgs extends Args {
+  targetAccount: string;
+  secondaryKeys: [];
+  expiry: null;
 }

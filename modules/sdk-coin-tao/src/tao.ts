@@ -4,7 +4,7 @@ import {
   Environments,
   SignTransactionOptions as BaseSignTransactionOptions,
 } from '@bitgo/sdk-core';
-import { coins, BaseCoin as StaticsBaseCoin, BittensorSpecNameType } from '@bitgo/statics';
+import { coins, BaseCoin as StaticsBaseCoin, SubstrateSpecNameType } from '@bitgo/statics';
 import { Interface, SubstrateCoin } from '@bitgo/abstract-substrate';
 import { TransactionBuilderFactory } from './lib';
 import { ApiPromise, WsProvider } from '@polkadot/api';
@@ -95,7 +95,7 @@ export class Tao extends SubstrateCoin {
     return {
       genesisHash: api.genesisHash.toString(),
       chainName: api.runtimeChain.toString(),
-      specName: api.runtimeVersion.specName.toString() as BittensorSpecNameType,
+      specName: api.runtimeVersion.specName.toString() as SubstrateSpecNameType,
       specVersion: api.runtimeVersion.specVersion.toNumber(),
       txVersion: api.runtimeVersion.transactionVersion.toNumber(),
       metadata: api.runtimeMetadata.toHex(),

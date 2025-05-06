@@ -31,8 +31,22 @@ export enum MethodNames {
    * @see https://polkadot.js.org/docs/substrate/extrinsics/#transferkeepalivedest-multiaddress-value-compactu128
    */
   TransferKeepAlive = 'transferKeepAlive',
+  /**
+   * Transfer funds with an optional memo attached.
+   * The memo allows adding context or metadata to the transaction, commonly used for recordkeeping or identification.
+   *
+   * @see https://developers.polymesh.network/sdk-docs/enums/Generated/Types/BalancesTx/#transferwithmemo
+   */
+  TransferWithMemo = 'transferWithMemo',
   AddStake = 'addStake',
   RemoveStake = 'removeStake',
+
+  /**
+   * Registers a Decentralized Identifier (DID) along with Customer Due Diligence (CDD) information.
+   *
+   * @see https://developers.polymesh.network/sdk-docs/enums/Generated/Types/IdentityTx/#cddregisterdidwithcdd
+   */
+  RegisterDidWithCDD = 'cddRegisterDidWithCdd',
 }
 
 /**
@@ -73,6 +87,12 @@ export interface TransferArgs {
 export interface TransferAllArgs {
   dest: { id: string };
   keepAlive: boolean;
+}
+
+export interface TransferWithMemoArgs extends Args {
+  dest: { id: string };
+  value: string;
+  memo: string;
 }
 
 export interface AddStakeArgs extends Args {

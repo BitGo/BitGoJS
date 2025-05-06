@@ -73,7 +73,14 @@ export interface AccountNetwork extends BaseNetwork {
  */
 export type PolkadotSpecNameType = 'kusama' | 'polkadot' | 'westend' | 'statemint' | 'statemine';
 
-export type BittensorSpecNameType = 'kusama' | 'polkadot' | 'westend' | 'statemint' | 'statemine' | 'node-subtensor';
+export type SubstrateSpecNameType =
+  | 'kusama'
+  | 'polkadot'
+  | 'westend'
+  | 'statemint'
+  | 'statemine'
+  | 'node-subtensor'
+  | 'polymesh_testnet';
 
 export interface DotNetwork extends AccountNetwork {
   // some chains pay fees via an enterprise gas task. The account explorer url
@@ -940,7 +947,7 @@ class BittensorTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Tao';
   family = CoinFamily.TAO;
   explorerUrl = 'https://explorer.finney.opentensor.ai/#/';
-  specName = 'node-subtensor' as BittensorSpecNameType;
+  specName = 'node-subtensor' as SubstrateSpecNameType;
   genesisHash = '0x8f9cf856bf558a14440e75569c9e58594757048d7b3a84b5d25f6bd978263105';
   specVersion = 224;
   chainName = 'bittensor';
@@ -1375,6 +1382,11 @@ class PolymeshTestnet extends Testnet implements AccountNetwork {
   name = 'PolymeshTestnet';
   family = CoinFamily.POLYX;
   explorerUrl = 'https://polymesh-testnet.subscan.io/extrinsic/';
+  specName = 'polymesh_testnet' as SubstrateSpecNameType;
+  genesisHash = '0x2ace05e703aa50b48c0ccccfc8b424f7aab9a1e2c424ed12e45d20b1e8ffd0d6';
+  specVersion = 7002000;
+  chainName = 'Polymesh Testnet';
+  txVersion = 7;
 }
 
 class Vet extends Mainnet implements AccountNetwork {
