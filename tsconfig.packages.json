@@ -140,6 +140,9 @@
       "path": "./modules/sdk-coin-icp"
     },
     {
+      "path": "./modules/sdk-coin-init"
+    },
+    {
       "path": "./modules/sdk-coin-injective"
     },
     {

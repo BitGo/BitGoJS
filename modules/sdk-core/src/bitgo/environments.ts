@@ -51,6 +51,7 @@ interface EnvironmentTemplate {
   mantraNodeUrl: string;
   cronosNodeUrl: string;
   fetchNodeUrl: string;
+  initNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
   substrateNodeUrls: string[];
@@ -174,6 +175,7 @@ const mainnetBase: EnvironmentTemplate = {
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   cronosNodeUrl: 'https://rpc.mainnet.cronos-pos.org/',
   fetchNodeUrl: 'https://rpc-fetchhub.fetch.ai/',
+  initNodeUrl: 'https://rpc.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
   tronNodes: {
@@ -245,6 +247,7 @@ const testnetBase: EnvironmentTemplate = {
   mantraNodeUrl: 'https://mantra-testnet-rest.publicnode.com/',
   cronosNodeUrl: 'https://rpc.testnet-croeseid-4.cronos-pos.org/',
   fetchNodeUrl: 'https://rpc-eridanus-1.fetch.ai/',
+  initNodeUrl: 'https://rpc.testnet.initia.xyz/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
   tronNodes: {
