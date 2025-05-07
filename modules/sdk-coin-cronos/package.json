@@ -43,7 +43,11 @@
     "@bitgo/abstract-cosmos": "^11.7.2",
     "@bitgo/sdk-core": "^33.1.0",
     "@bitgo/statics": "^52.1.0",
-    "@cosmjs/stargate": "^0.29.5"
+    "@cosmjs/stargate": "^0.29.5",
+    "@cosmjs/amino": "^0.29.5",
+    "@cosmjs/encoding": "^0.29.5",
+    "@cosmjs/stargate": "^0.29.5",
+    "bignumber.js": "^9.1.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.62.2",
