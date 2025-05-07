@@ -145,6 +145,8 @@ export interface PrebuildTransactionOptions {
   comment?: string;
   [index: string]: unknown;
   tokenName?: string;
+  nftCollectionId?: string;
+  nftId?: string;
   enableTokens?: TokenEnablement[];
   nonce?: string;
   preview?: boolean;
