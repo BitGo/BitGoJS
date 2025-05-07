@@ -586,6 +586,63 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   tbsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
 };
 
+const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
+  'eth:deuro': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
+  'eth:usdf': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
+  'eth:gaia': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
+  'avaxc:nxpc': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
+};
+
 describe('CoinMap', function () {
   const btc = utxo(
     '5c1691c5-c9cc-49ed-abe0-c433dab2edaa',
@@ -687,7 +744,14 @@ coins.forEach((coin, coinName) => {
       coin.baseUnit.should.be.not.empty();
     });
 
-    if (featureList) {
+    if (coinsWithExcludedFeatures.hasOwnProperty(coin.name)) {
+      const features = coinsWithExcludedFeatures[coin.name].features;
+      features.forEach((feature: CoinFeature) => {
+        it(`should return true for ${feature} ${coin.family} coin feature`, () => {
+          coin.features.includes(feature).should.eql(true);
+        });
+      });
+    } else if (featureList) {
       featureList.features.forEach((feature: CoinFeature) => {
         it(`should return true for ${feature} ${coin.family} coin feature`, () => {
           coin.features.includes(feature).should.eql(true);
