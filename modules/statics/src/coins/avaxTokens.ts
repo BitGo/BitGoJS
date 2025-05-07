@@ -1,5 +1,5 @@
-import { avaxErc20, tavaxErc20, AccountCoin } from '../account';
-import { UnderlyingAsset } from '../base';
+import { AccountCoin, avaxErc20, tavaxErc20 } from '../account';
+import { CoinFeature, UnderlyingAsset } from '../base';
 
 export const avaxTokens = [
   avaxErc20(
@@ -642,7 +642,8 @@ export const avaxTokens = [
     'NEXPACE',
     18,
     '0x5e0e90e268bc247cc850c789a0db0d5c7621fb59',
-    UnderlyingAsset['avaxc:nxpc']
+    UnderlyingAsset['avaxc:nxpc'],
+    AccountCoin.getFeaturesExcluding([CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE, CoinFeature.CUSTODY_BITGO_MENA_FZE])
   ),
   // End FTX missing AVAXC tokens
   tavaxErc20(

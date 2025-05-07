@@ -65,6 +65,10 @@ export class AccountCoin extends BaseCoin {
   protected disallowedFeatures(): Set<CoinFeature> {
     return new Set<CoinFeature>([CoinFeature.UNSPENT_MODEL]);
   }
+
+  public static getFeaturesExcluding(excludedFeatures: CoinFeature[]): CoinFeature[] {
+    return AccountCoin.DEFAULT_FEATURES.filter((feature) => !excludedFeatures.includes(feature));
+  }
 }
 
 export interface GasTankAccountConstructorOptions extends AccountConstructorOptions {

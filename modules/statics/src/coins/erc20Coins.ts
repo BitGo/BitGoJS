@@ -10394,7 +10394,12 @@ export const erc20Coins = [
     'DecentralizedEURO',
     18,
     '0xba3f535bbcccca2a154b573ca6c5a49baae0a3ea',
-    UnderlyingAsset['eth:deuro']
+    UnderlyingAsset['eth:deuro'],
+    AccountCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ])
   ),
   erc20(
     'ad73ed49-cbce-4809-a2e1-9d66c7f7a8d8',
@@ -10402,7 +10407,12 @@ export const erc20Coins = [
     'Falcon USD',
     18,
     '0xfa2b947eec368f42195f24f36d2af29f7c24cec2',
-    UnderlyingAsset['eth:usdf']
+    UnderlyingAsset['eth:usdf'],
+    AccountCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ])
   ),
   erc20(
     'f3ae12cd-6181-46af-9444-6acd605f123e',
@@ -10418,7 +10428,8 @@ export const erc20Coins = [
     'Gaia Token',
     18,
     '0x2ee7097bfdd98fce2ac08a1896038a7cd9aaed81',
-    UnderlyingAsset['eth:gaia']
+    UnderlyingAsset['eth:gaia'],
+    AccountCoin.getFeaturesExcluding([CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE, CoinFeature.CUSTODY_BITGO_MENA_FZE])
   ),
   erc20(
     '5d3311f4-2f92-450a-9b7f-ac9a8fc62765',
