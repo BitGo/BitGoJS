@@ -2588,47 +2588,6 @@ export const solTokens = [
     UnderlyingAsset['sol:layer'],
     SOL_TOKEN_FEATURES
   ),
-
-  tsolToken(
-    'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
-    'tsol:srm',
-    'Serum',
-    9,
-    'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
-    'D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K',
-    UnderlyingAsset['tsol:srm'],
-    SOL_TOKEN_FEATURES
-  ),
-  tsolToken(
-    'ea7eb0ea-161c-4ce3-a448-e651d358b7a0',
-    'tsol:usdc',
-    'USD Coin',
-    9,
-    'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
-    'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
-    UnderlyingAsset['tsol:usdc'],
-    SOL_TOKEN_FEATURES
-  ),
-  tsolToken(
-    '6dcb8ff8-be59-471f-9e57-c3b68735d71e',
-    'tsol:usdcv2',
-    'USD Coin V2',
-    6,
-    '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-    '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-    UnderlyingAsset['tsol:usdc'],
-    SOL_TOKEN_FEATURES
-  ),
-  tsolToken(
-    '476582b6-1b18-471d-bdfd-ff29b8cdfd39',
-    'tsol:ray',
-    'Raydium',
-    9,
-    '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
-    '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
-    UnderlyingAsset['tsol:ray'],
-    SOL_TOKEN_FEATURES
-  ),
   tsolToken(
     '30367323-8c04-475b-a6a4-df231032af4b',
     'tsol:gmt',

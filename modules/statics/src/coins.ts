@@ -2101,22 +2101,6 @@ export const coins = CoinMap.fromCoins([
     'TCA8tecECSMwjg5jFz1J1V64k9ULZRSx7g',
     UnderlyingAsset.WETH
   ),
-  ttronToken(
-    'd21a5b8b-c8c2-4635-a2ce-7d37c59da76e',
-    'ttrx:usdc',
-    'USD Coin',
-    6,
-    'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
-    UnderlyingAsset.USDC
-  ),
-  ttronToken(
-    '85a60a5a-88e3-45df-9e2c-dc6161b4c6b1',
-    'ttrx:usdt',
-    'Tether USD',
-    6,
-    'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
-    UnderlyingAsset['ttrx:usdt']
-  ),
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',
     'talgo:USDC-10458941',

@@ -2,7 +2,6 @@ import { UnderlyingAsset, CoinFeature } from '../base';
 import { erc20, terc20, AccountCoin } from '../account';
 import { Networks } from '../networks';
 import {
-  HTETH_TOKEN_FEATURES,
   POL_FEATURES,
   MATIC_FEATURES,
   MATIC_FEATURES_WITH_FRANKFURT,
@@ -10959,18 +10958,6 @@ export const erc20Coins = [
     '0x7ca1945d697ac04965774700db8d0b64d81b288d',
     UnderlyingAsset.TERC18DP,
     undefined,
-    undefined,
-    undefined,
-    Networks.test.holesky
-  ),
-  terc20(
-    '9d5730cf-a1c2-4d0e-9ee9-922add38a11e',
-    'hteth:bgerchv2',
-    'BG Test Token',
-    18,
-    '0xee4d03adfca9a902d09f6e3e09dbd5a8a5122fb6',
-    UnderlyingAsset['hteth:bgerchv2'],
-    HTETH_TOKEN_FEATURES,
     undefined,
     undefined,
     Networks.test.holesky
