@@ -108,7 +108,7 @@ export class Transaction extends BaseTransaction {
             fee: parsedTx.operations[2].amount.value,
             senderPublicKeyHex: senderPublicKeyHex,
             transactionType: transactionType,
-            expiryTime: Number(parsedTx.metadata.created_at_time + (MAX_INGRESS_TTL - PERMITTED_DRIFT)),
+            expiryTime: Number(parsedTx.metadata.ingress_end ?? parsedTx.metadata.created_at_time + MAX_INGRESS_TTL),
             memo: parsedTx.metadata.memo,
           };
 
@@ -225,6 +225,7 @@ export class Transaction extends BaseTransaction {
     ) as CborUnsignedTransaction;
     const update = unsignedTransaction.updates[0];
     const httpCanisterUpdate = (update as unknown as [string, HttpCanisterUpdate])[1];
+    httpCanisterUpdate.ingress_expiry = BigInt(unsignedTransaction.ingress_expiries[0]);
     return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, false);
   }
 
@@ -284,6 +285,7 @@ export class Transaction extends BaseTransaction {
       metadata: {
         created_at_time: args.createdAtTime.timestampNanos,
         memo: Number(args.memo.memo),
+        ingress_end: Number(httpCanisterUpdate.ingress_expiry) + PERMITTED_DRIFT,
       },
       account_identifier_signers: accountIdentifierSigners,
     };
@@ -294,6 +296,7 @@ export class Transaction extends BaseTransaction {
   async parseSignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
     const signedTransaction = this._utils.cborDecode(this._utils.blobFromHex(rawTransaction));
     const httpCanisterUpdate = (signedTransaction as UpdateEnvelope).content as HttpCanisterUpdate;
+    httpCanisterUpdate.ingress_expiry = BigInt((signedTransaction as UpdateEnvelope).content.ingress_expiry);
     return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, true);
   }
 
