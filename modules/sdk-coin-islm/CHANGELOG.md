@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.29](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-islm@2.1.28...@bitgo/sdk-coin-islm@2.1.29) (2025-05-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-islm
+
 ## [2.1.28](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-islm@2.1.27...@bitgo/sdk-coin-islm@2.1.28) (2025-04-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-islm

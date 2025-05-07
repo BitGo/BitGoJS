@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [33.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@33.1.0...@bitgo/sdk-core@33.2.0) (2025-05-07)
+
+### Bug Fixes
+
+- cosmos batch rpc to rest urls and dorado testnet for fetch ([3175a5c](https://github.com/BitGo/BitGoJS/commit/3175a5c5f81d758f241ffb120dc6046369216a54))
+- fix accept wallet share return type ([a9069cf](https://github.com/BitGo/BitGoJS/commit/a9069cf5093841a1e6ca6a2f142988ce5dadac81))
+- **sdk-coin-icp:** update verifyTransaction to include signableHex parameter ([9153969](https://github.com/BitGo/BitGoJS/commit/91539695e0aab177196a9b527f7ec33e63c487fa))
+
+### Features
+
+- change error type for password error in bulkshareoption ([ee00443](https://github.com/BitGo/BitGoJS/commit/ee004439f3fe8fec5cc45d5c998d08747f4fb699))
+- **sdk-coin-cronos:** add SDK Skeleton for Cronos ([7209807](https://github.com/BitGo/BitGoJS/commit/72098072ef9278ee7843cfeb6fcd0c95d5cae420))
+- **sdk-coin-fetch:** add SDK Skeleton for Fetch ([2990b21](https://github.com/BitGo/BitGoJS/commit/2990b21ca37641ba4573828bc550362cb1b0ab3f))
+- **sdk-coin-init:** add SDK Skeleton for Initia ([d93936f](https://github.com/BitGo/BitGoJS/commit/d93936f3cf011acba2ded8ffb4dc40315ed44cd1))
+- **sdk-coin-stx:** added recover method for wrw to support stx & sip10 token ([1ff6572](https://github.com/BitGo/BitGoJS/commit/1ff6572f8aa93b6c487efe17018fc730aaffef44))
+
 # [33.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@33.0.0...@bitgo/sdk-core@33.1.0) (2025-04-29)
 
 ### Bug Fixes

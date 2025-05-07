@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.13.1...@bitgo/sdk-coin-icp@1.14.0) (2025-05-07)
+
+### Bug Fixes
+
+- **sdk-coin-icp:** update verifyTransaction to include signableHex parameter ([9153969](https://github.com/BitGo/BitGoJS/commit/91539695e0aab177196a9b527f7ec33e63c487fa))
+
+### Features
+
+- **sdk-coin-icp:** support setting ingressEnd ([a27e67d](https://github.com/BitGo/BitGoJS/commit/a27e67dc69793cbab6442f9cc9e0e57ecbf63ab6))
+
 ## [1.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.13.0...@bitgo/sdk-coin-icp@1.13.1) (2025-04-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp

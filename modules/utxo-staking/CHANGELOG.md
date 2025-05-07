@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.14.0...@bitgo/utxo-staking@1.15.0) (2025-05-07)
+
+### Features
+
+- **utxo-staking:** add test case demonstrating bug [#71](https://github.com/BitGo/BitGoJS/issues/71) ([c9c38f0](https://github.com/BitGo/BitGoJS/commit/c9c38f04bdd6c100fba88b950cae32a7a1657c99))
+- **utxo-staking:** extend test fixtures ([cebc992](https://github.com/BitGo/BitGoJS/commit/cebc992751c4b0228c44f875af0c0ae2f5ab72f0))
+
 # [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.13.0...@bitgo/utxo-staking@1.14.0) (2025-04-25)
 
 ### Bug Fixes

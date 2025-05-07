@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.3.1...@bitgo/abstract-eth@24.3.2) (2025-05-07)
+
+### Bug Fixes
+
+- **sdk-coin-bsc:** override verifytsstxn method for bsc ([3d29436](https://github.com/BitGo/BitGoJS/commit/3d294365bdda568f9517683067e9b6fd7347e237))
+
 ## [24.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.3.0...@bitgo/abstract-eth@24.3.1) (2025-04-29)
 
 ### Bug Fixes
