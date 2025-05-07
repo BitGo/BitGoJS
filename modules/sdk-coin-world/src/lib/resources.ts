@@ -3,9 +3,9 @@ import { coins, EthereumNetwork } from '@bitgo/statics';
 
 export const testnetCommon = EthereumCommon.custom(
   {
-    name: 'world testnet',
-    networkId: (coins.get('tworld').network as EthereumNetwork).chainId,
-    chainId: (coins.get('tworld').network as EthereumNetwork).chainId,
+    name: 'wld testnet',
+    networkId: (coins.get('twld').network as EthereumNetwork).chainId,
+    chainId: (coins.get('twld').network as EthereumNetwork).chainId,
   },
   {
     baseChain: 'sepolia',
@@ -15,9 +15,9 @@ export const testnetCommon = EthereumCommon.custom(
 );
 export const mainnetCommon = EthereumCommon.custom(
   {
-    name: 'World mainnet',
-    networkId: (coins.get('world').network as EthereumNetwork).chainId,
-    chainId: (coins.get('world').network as EthereumNetwork).chainId,
+    name: 'Wld mainnet',
+    networkId: (coins.get('wld').network as EthereumNetwork).chainId,
+    chainId: (coins.get('wld').network as EthereumNetwork).chainId,
   },
   {
     baseChain: 'mainnet',

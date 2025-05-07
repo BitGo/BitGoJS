@@ -1208,21 +1208,21 @@ export const coins = CoinMap.fromCoins([
   ),
   account(
     'd4f8e4f5-7060-44e3-aca1-e3ac11597ecb',
-    'world',
+    'wld',
     'Worldchain',
     Networks.main.world,
     18,
-    UnderlyingAsset.WORLD,
+    UnderlyingAsset.WLD,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '1cd29730-f70b-4c7d-a19c-eb3345f01acb',
-    'tworld',
+    'twld',
     'Worldchain Testnet',
     Networks.test.world,
     18,
-    UnderlyingAsset.WORLD,
+    UnderlyingAsset.WLD,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),

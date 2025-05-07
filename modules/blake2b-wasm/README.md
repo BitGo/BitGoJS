@@ -23,7 +23,7 @@ blake2b.ready(function (err) {
   var hash = blake2b()
     .update(Buffer.from('hello')) // pass in a buffer or uint8array
     .update(Buffer.from(' '))
-    .update(Buffer.from('world'))
+    .update(Buffer.from('wld'))
     .digest('hex');
 
   console.log('Blake2b hash of "hello world" is %s', hash);

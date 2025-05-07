@@ -3,8 +3,8 @@
  * - Developer Hub: https://docs.world.org/world-chain/quick-start/info
  * - Doc: https://docs.world.org/
  *
- * @coinFullName World
- * @coinWebsite https://docs.world.org/world-chain/quick-start/info
+ * @coinFullName WorldChain
+ * @coinWebsite https://docs.wld.org/world-chain/quick-start/info
  */
 
 import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
@@ -18,13 +18,13 @@ import {
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 
-export class World extends AbstractEthLikeNewCoins {
+export class Wld extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new World(bitgo, staticsCoin);
+    return new Wld(bitgo, staticsCoin);
   }
 
   protected getTransactionBuilder(): TransactionBuilder {

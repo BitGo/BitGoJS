@@ -1,4 +1,4 @@
-# BitGo sdk-coin-world
+# BitGo sdk-coin-wld
 
 SDK coins provide a modular approach to a monolithic architecture. This and all BitGoJS SDK coins allow developers to use only the coins needed for a given project.
 
@@ -6,20 +6,20 @@ SDK coins provide a modular approach to a monolithic architecture. This and all 
 
 All coins are loaded traditionally through the `bitgo` package. If you are using coins individually, you will be accessing the coin via the `@bitgo/sdk-api` package.
 
-In your project install both `@bitgo/sdk-api` and `@bitgo/sdk-coin-world`.
+In your project install both `@bitgo/sdk-api` and `@bitgo/sdk-coin-wld`.
 
 ````shell
-npm i @bitgo/sdk-api @bitgo/sdk-coin-world```
+npm i @bitgo/sdk-api @bitgo/sdk-coin-wld```
 
 Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-api` instead of `bitgo`.
 
 ```javascript
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { world } from '@bitgo/sdk-coin-world';
+import { wld } from '@bitgo/sdk-coin-wld';
 
 const sdk = new BitGoAPI();
 
-sdk.register('world', World.createInstance);
+sdk.register('wld', Wld.createInstance);
 ````
 
 ## Development

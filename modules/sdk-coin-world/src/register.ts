@@ -1,8 +1,8 @@
 import { BitGoBase } from '@bitgo/sdk-core';
-import { World } from './world';
-import { Tworld } from './tworld';
+import { Wld } from './wld';
+import { Twld } from './twld';
 
 export const register = (sdk: BitGoBase): void => {
-  sdk.register('world', World.createInstance);
-  sdk.register('tworld', Tworld.createInstance);
+  sdk.register('wld', Wld.createInstance);
+  sdk.register('twld', Twld.createInstance);
 };

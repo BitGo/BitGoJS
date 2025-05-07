@@ -286,7 +286,7 @@ const coinBuilderMap = {
   mon: Mon.TransactionBuilder,
   tmon: Mon.TransactionBuilder,
   world: World.TransactionBuilder,
-  tworld: World.TransactionBuilder,
+  twld: World.TransactionBuilder,
   stt: Stt.TransactionBuilder,
   tstt: Stt.TransactionBuilder,
   soneium: Soneium.TransactionBuilder,

@@ -1,4 +1,4 @@
 export * from './lib';
-export * from './world';
-export * from './tworld';
+export * from './wld';
+export * from './twld';
 export * from './register';

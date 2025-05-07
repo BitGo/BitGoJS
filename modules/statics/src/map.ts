@@ -91,7 +91,7 @@ export class CoinMap {
       324: 'zketh',
       8453: 'baseeth',
       10143: 'tmon',
-      480: 'world',
+      480: 'wld',
       4801: 'tworld',
       50312: 'tstt',
       1868: 'soneium',

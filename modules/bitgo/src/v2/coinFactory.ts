@@ -324,13 +324,13 @@ function registerCoinConstructors(globalCoinFactory: CoinFactory): void {
   globalCoinFactory.register('tzeta', Tzeta.createInstance);
   globalCoinFactory.register('tzketh', Tzketh.createInstance);
   globalCoinFactory.register('twemix', Twemix.createInstance);
-  globalCoinFactory.register('tworld', Tworld.createInstance);
+  globalCoinFactory.register('twld', Tworld.createInstance);
   globalCoinFactory.register('xdc', Xdc.createInstance);
   globalCoinFactory.register('xlm', Xlm.createInstance);
   globalCoinFactory.register('xrp', Xrp.createInstance);
   globalCoinFactory.register('xtz', Xtz.createInstance);
   globalCoinFactory.register('wemix', Wemix.createInstance);
-  globalCoinFactory.register('world', World.createInstance);
+  globalCoinFactory.register('wld', World.createInstance);
   globalCoinFactory.register('zec', Zec.createInstance);
   globalCoinFactory.register('zeta', Zeta.createInstance);
   globalCoinFactory.register('zketh', Zketh.createInstance);

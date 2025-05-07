@@ -1,7 +1,7 @@
 {
-  "name": "@bitgo/sdk-coin-world",
+  "name": "@bitgo/sdk-coin-wld",
   "version": "1.1.1",
-  "description": "BitGo SDK coin library for World",
+  "description": "BitGo SDK coin library for Wld",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
@@ -23,7 +23,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/sdk-coin-world"
+    "directory": "modules/sdk-coin-wld"
   },
   "lint-staged": {
     "*.{js,ts}": [

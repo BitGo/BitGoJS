@@ -1278,7 +1278,7 @@ class Monad extends Mainnet implements EthereumNetwork {
 
 class World extends Mainnet implements EthereumNetwork {
   name = 'Worldchain';
-  family = CoinFamily.WORLD;
+  family = CoinFamily.WLD;
   explorerUrl = 'https://worldscan.org/tx/';
   accountExplorerUrl = 'https://worldscan.org/address/';
   chainId = 480;
@@ -1287,7 +1287,7 @@ class World extends Mainnet implements EthereumNetwork {
 
 class WorldTestnet extends Testnet implements EthereumNetwork {
   name = 'WorldchainTestnet';
-  family = CoinFamily.WORLD;
+  family = CoinFamily.WLD;
   explorerUrl = 'https://sepolia.worldscan.org/tx/';
   accountExplorerUrl = 'https://sepolia.worldscan.org/address/';
   chainId = 4801;
