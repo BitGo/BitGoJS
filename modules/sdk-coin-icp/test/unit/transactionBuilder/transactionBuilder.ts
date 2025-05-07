@@ -3,7 +3,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import { BaseKey } from '@bitgo/sdk-core';
 import * as testData from '../../resources/icp';
 import sinon from 'sinon';
-import { DEFAULT_MEMO } from '../../../src/lib/iface';
+import { DEFAULT_MEMO, MAX_INGRESS_TTL } from '../../../src/lib/iface';
 
 describe('ICP Transaction Builder', async () => {
   const factory = getBuilderFactory('ticp');
@@ -122,7 +122,7 @@ describe('ICP Transaction Builder', async () => {
     txBuilder.receiverId(testData.Accounts.account2.address);
     txBuilder.amount('10');
     txBuilder.memo(testData.MetaDataWithMemo.memo);
-
+    txBuilder.ingressEnd(1904384564000000000n);
     await txBuilder.build();
     txn = txBuilder.transaction;
     const unsignedTxn = txBuilder.transaction.unsignedTransaction;
@@ -139,6 +139,9 @@ describe('ICP Transaction Builder', async () => {
     txBuilder.combine();
     const signedTxn = txBuilder.transaction.signedTransaction;
     signedTxn.should.be.a.String();
+    txBuilder.transaction.icpTransaction.metadata.ingress_start.should.equal(
+      Number(1904384564000000000n) - MAX_INGRESS_TTL
+    );
   });
 });
 

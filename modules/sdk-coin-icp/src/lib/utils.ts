@@ -21,6 +21,7 @@ import {
   CurveType,
   AccountIdentifierHash,
   CborUnsignedTransaction,
+  MAX_INGRESS_TTL,
 } from './iface';
 import { KeyPair as IcpKeyPair } from './keyPair';
 const messageCompiled = require('../../resources/messageCompiled');
@@ -581,14 +582,21 @@ export class Utils implements BaseUtils {
 
   getMetaData(
     memo: number | BigInt,
-    timestamp: number | bigint | undefined
+    timestamp: number | bigint | undefined,
+    ingressEnd: number | BigInt | undefined
   ): { metaData: MetaData; ingressEndTime: number | BigInt } {
     let currentTime = Date.now() * 1000000;
     if (timestamp) {
       currentTime = Number(timestamp);
     }
-    const ingressStartTime = currentTime;
-    const ingressEndTime = ingressStartTime + 5 * 60 * 1000000000; // 5 mins in nanoseconds
+    let ingressStartTime: number, ingressEndTime: number;
+    if (ingressEnd) {
+      ingressEndTime = Number(ingressEnd);
+      ingressStartTime = ingressEndTime - MAX_INGRESS_TTL; // 5 mins in nanoseconds
+    } else {
+      ingressStartTime = currentTime;
+      ingressEndTime = ingressStartTime + MAX_INGRESS_TTL; // 5 mins in nanoseconds
+    }
     const metaData: MetaData = {
       created_at_time: currentTime,
       ingress_start: ingressStartTime,

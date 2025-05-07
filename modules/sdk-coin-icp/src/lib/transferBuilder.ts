@@ -95,7 +95,7 @@ export class TransferBuilder extends TransactionBuilder {
     };
 
     const createdTimestamp = this._transaction.createdTimestamp;
-    const { metaData, ingressEndTime } = this._utils.getMetaData(this._memo, createdTimestamp);
+    const { metaData, ingressEndTime } = this._utils.getMetaData(this._memo, createdTimestamp, this._ingressEnd);
 
     const icpTransaction: IcpTransaction = {
       public_keys: [publicKey],

@@ -306,6 +306,7 @@ export const ParsedUnsignedTransaction = {
   metadata: {
     created_at_time: 1743689749455000000,
     memo: 1234,
+    ingress_end: 1743690049455000000,
   },
 };
 
@@ -355,6 +356,7 @@ export const ParsedSignedTransaction = {
   metadata: {
     created_at_time: 1743689749455000000,
     memo: 1234,
+    ingress_end: 1743690049455000000,
   },
 };
 

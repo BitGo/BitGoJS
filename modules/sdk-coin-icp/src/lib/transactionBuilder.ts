@@ -11,6 +11,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _sender: string;
   protected _publicKey: string;
   protected _memo: number | BigInt;
+  protected _ingressEnd: number | BigInt;
   protected _receiverId: string;
   protected _amount: string;
 
@@ -61,6 +62,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError(`Invalid memo: ${memo}`);
     }
     this._memo = memo;
+    return this;
+  }
+
+  /**
+   * Set the ingressEnd timestamp
+   * @param {number} ingressEnd - timestamp in nanoseconds
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public ingressEnd(ingressEnd: number | BigInt): this {
+    if (BigInt(ingressEnd.toString()) < 0n) {
+      throw new BuildTransactionError(`Invalid timestamp: ${ingressEnd}`);
+    }
+    this._ingressEnd = ingressEnd;
     return this;
   }
 
@@ -138,6 +152,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._publicKey = icpTransactionData.senderPublicKeyHex;
     this._amount = icpTransactionData.amount;
     this._memo = icpTransactionData.memo ?? DEFAULT_MEMO;
+    this._ingressEnd = Number(icpTransactionData.expiryTime);
   }
 
   validateAddress(address: BaseAddress): void {
