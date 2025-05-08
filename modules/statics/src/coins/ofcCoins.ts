@@ -156,6 +156,28 @@ export const ofcCoins = [
   tofc('312ff039-2473-4a11-837f-4ec896a0483d', 'ofctflr', 'Testnet flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
   ofc('dd3f3d9a-8eae-4a7a-8178-88611687674d', 'ofcsgb', 'Songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
   tofc('30e8f8d8-17e7-4af0-91cf-069724e05e65', 'ofctsgb', 'Testnet songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
+  ofc('4bc9d629-cff8-4f1b-bb43-5424f7ed9a19', 'ofcmon', 'Monad', 18, UnderlyingAsset.MON, CoinKind.CRYPTO),
+  tofc('24f7dd79-7d03-4ce5-ac90-0572153f28f2', 'ofctmon', 'Testnet Monad', 18, UnderlyingAsset.MON, CoinKind.CRYPTO),
+  ofc('bf513cc9-7b75-42d2-a585-1a7c91801605', 'ofcworld', 'World', 18, UnderlyingAsset.WORLD, CoinKind.CRYPTO),
+  tofc(
+    'ca1f3c70-8f80-4feb-9be7-f2b716409027',
+    'ofctworld',
+    'Testnet world',
+    18,
+    UnderlyingAsset.WORLD,
+    CoinKind.CRYPTO
+  ),
+  ofc('0ea1175d-63a2-4dd3-b963-24020a02eab3', 'ofcstt', 'Somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
+  tofc('06eee147-1299-435d-843f-9eea958e2b2f', 'ofctstt', 'Testnet somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
+  ofc('cdc62abc-4748-48f4-8926-6ed42f6c86c9', 'ofcsoneium', 'Soneium', 18, UnderlyingAsset.SONEIUM, CoinKind.CRYPTO),
+  tofc(
+    '3df259c9-3b18-4611-a359-cf977c535a5f',
+    'ofctsoneium',
+    'Testnet soneium',
+    18,
+    UnderlyingAsset.SONEIUM,
+    CoinKind.CRYPTO
+  ),
   ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('ecc046f9-eb9c-479d-943f-9fe0633ea212', 'ofcoas', 'oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   ofc('24c3b525-b5d3-45c0-9280-599db27c0fab', 'ofctao', 'Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
