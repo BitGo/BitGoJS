@@ -26,8 +26,11 @@ import {
   PaymentQuery,
   LightningOnchainWithdrawParams,
   LightningOnchainWithdrawResponse,
+  InvoicePaymentParams,
+  LnurlPaymentParams,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
+import * as lnurlProcessor from '../lightning/lnurl';
 
 export type PayInvoiceResponse = {
   /**
@@ -148,16 +151,19 @@ export interface ILightningWallet {
   listInvoices(params: InvoiceQuery): Promise<InvoiceInfo[]>;
 
   /**
-   * Pay a lightning invoice
+   * Pay a Lightning invoice or LNURL
    * @param {SubmitPaymentParams} params - Payment parameters
-   * @param {string} params.invoice - The invoice to pay
-   * @param {string} params.amountMsat - The amount to pay in millisatoshis
+   * @param {string} params.invoice - BOLT11 invoice (if paying invoice)
+   * @param {string} params.lnurl - LNURL string (if paying LNURL)
+   * @param {bigint} params.amountMsat - The amount to pay in millisatoshis
    * @param {string} params.passphrase - The wallet passphrase
-   * @param {string} [params.sequenceId] - Optional sequence ID for the respective payment transfer
-   * @param {string} [params.comment] - Optional comment for the respective payment transfer
-   * @returns {Promise<PayInvoiceResponse>} Payment result containing transaction request details and payment status
+   * @param {string} [params.sequenceId] - Optional sequence ID for the payment
+   * @param {string} [params.comment] - Optional comment for the payment
+   * @param {bigint} [params.feeLimitMsat] - Optional fee limit in millisatoshis
+   * @param {number} [params.feeLimitRatio] - Optional fee limit as a ratio
+   * @returns {Promise<PayInvoiceResponse>} Payment result
    */
-  payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse>;
+  pay(params: SubmitPaymentParams): Promise<PayInvoiceResponse>;
 
   /**
    * On chain withdrawal
@@ -167,6 +173,7 @@ export interface ILightningWallet {
    * @returns {Promise<LightningOnchainWithdrawResponse>} Withdraw result containing transaction request details and status
    */
   withdrawOnchain(params: LightningOnchainWithdrawParams): Promise<LightningOnchainWithdrawResponse>;
+
   /**
    * Get payment details by payment hash
    * @param {string} paymentHash - Payment hash to lookup
@@ -244,8 +251,13 @@ export class LightningWallet implements ILightningWallet {
       throw new Error(`Invalid list invoices response ${error}`);
     });
   }
-
-  async payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse> {
+  /**
+   * Private method to handle direct invoice payments
+   * @param {SubmitPaymentParams} params - Invoice payment parameters
+   * @returns {Promise<PayInvoiceResponse>} Payment result
+   * @private
+   */
+  private async payInvoice(params: InvoicePaymentParams): Promise<PayInvoiceResponse> {
     const reqId = new RequestTracer();
     this.wallet.bitgo.setRequestTracer(reqId);
 
@@ -254,8 +266,14 @@ export class LightningWallet implements ILightningWallet {
     if (!userAuthKeyEncryptedPrv) {
       throw new Error(`user auth key is missing encrypted private key`);
     }
+
     const signature = createMessageSignature(
-      t.exact(LightningPaymentRequest).encode(params),
+      t.exact(LightningPaymentRequest).encode({
+        invoice: params.invoice,
+        amountMsat: params.amountMsat,
+        feeLimitMsat: params.feeLimitMsat,
+        feeLimitRatio: params.feeLimitRatio,
+      }),
       this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
 
@@ -302,6 +320,7 @@ export class LightningWallet implements ILightningWallet {
     if (coinSpecific && coinSpecific.paymentHash && typeof coinSpecific.paymentHash === 'string') {
       transfer = await this.wallet.getTransfer({ id: coinSpecific.paymentHash });
     }
+
     return {
       txRequestId: transactionRequestCreate.txRequestId,
       txRequestState: transactionRequestSend.state,
@@ -310,6 +329,42 @@ export class LightningWallet implements ILightningWallet {
         : undefined,
       transfer,
     };
+  }
+
+  /**
+   * Private method to handle LNURL payments
+   * @param {SubmitPaymentParams} params - LNURL payment parameters
+   * @returns {Promise<PayInvoiceResponse>} Payment result
+   * @private
+   */
+  private async payLnurl(params: LnurlPaymentParams): Promise<PayInvoiceResponse> {
+    if (!lnurlProcessor.isValidLnurl(params.lnurl)) {
+      throw new Error('Invalid LNURL format');
+    }
+    const amountSats = params.amountMsat / BigInt(1000);
+    const lnurlPaymentResult = await lnurlProcessor.processLnurlPayment(params.lnurl, amountSats, params.comment);
+    const comment = params.comment;
+
+    return this.payInvoice({
+      ...params,
+      invoice: lnurlPaymentResult.invoice,
+      comment,
+    });
+  }
+
+  /**
+   * Pay a Lightning invoice or LNURL
+   * @param {SubmitPaymentParams} params - Payment parameters
+   * @returns {Promise<PayInvoiceResponse>} Payment result
+   */
+  async pay(params: SubmitPaymentParams): Promise<PayInvoiceResponse> {
+    if ('lnurl' in params) {
+      return this.payLnurl(params);
+    } else if ('invoice' in params) {
+      return this.payInvoice(params);
+    } else {
+      throw new Error('Either invoice or lnurl must be provided');
+    }
   }
 
   async withdrawOnchain(params: LightningOnchainWithdrawParams): Promise<LightningOnchainWithdrawResponse> {
@@ -379,7 +434,7 @@ export class LightningWallet implements ILightningWallet {
       .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/transaction/${txId}`, 2))
       .result();
     return decodeOrElse(Transaction.name, Transaction, response, (error) => {
-      throw new Error(`Invalid transaction response: ${error}`);
+      throw new Error(`Invalid transaction response ${error}`);
     });
   }
 
@@ -389,7 +444,7 @@ export class LightningWallet implements ILightningWallet {
       .query(TransactionQuery.encode(params))
       .result();
     return decodeOrElse(t.array(Transaction).name, t.array(Transaction), response, (error) => {
-      throw new Error(`Invalid transaction list response: ${error}`);
+      throw new Error(`Invalid transaction list response ${error}`);
     });
   }
 }

@@ -73,7 +73,7 @@ describe('Lightning Invoice Routes', () => {
       const decodedResult = Invoice.decode(result);
       assert('right' in decodedResult);
       should(decodedResult.right).deepEqual(expectedResponse);
-      should(createInvoiceSpy).be.calledOnce();
+      sinon.assert.calledOnce(createInvoiceSpy);
       const [firstArg] = createInvoiceSpy.getCall(0).args;
 
       should(firstArg).have.property('valueMsat', BigInt(10000));
@@ -103,7 +103,7 @@ describe('Lightning Invoice Routes', () => {
     it('should successfully pay a lightning invoice', async () => {
       const inputParams = {
         invoice: 'lntb100u1p3h2jk3pp5yndyvx4zmv...',
-        amountMsat: '10000',
+        amountMsat: 10000n,
         passphrase: 'wallet-password-12345',
         randomParamThatWontBreakDecoding: 'randomValue',
       };
@@ -117,9 +117,9 @@ describe('Lightning Invoice Routes', () => {
         txRequestId: '123',
       };
 
-      const payInvoiceStub = sinon.stub().resolves(expectedResponse);
+      const payStub = sinon.stub().resolves(expectedResponse);
       const mockLightningWallet = {
-        payInvoice: payInvoiceStub,
+        pay: payStub,
       };
 
       // Mock the module import
@@ -145,8 +145,8 @@ describe('Lightning Invoice Routes', () => {
       const result = await lightningRoutes.handlePayLightningInvoice(req);
 
       should(result).deepEqual(expectedResponse);
-      should(payInvoiceStub).be.calledOnce();
-      const [firstArg] = payInvoiceStub.getCall(0).args;
+      sinon.assert.calledOnce(payStub);
+      const [firstArg] = payStub.getCall(0).args;
 
       // we decode the amountMsat string to bigint, it should be in bigint format when passed to payInvoice
       should(firstArg).have.property('amountMsat', BigInt(10000));
@@ -157,7 +157,7 @@ describe('Lightning Invoice Routes', () => {
     it('should throw an error if the passphrase is missing in the request params', async () => {
       const inputParams = {
         invoice: 'lntb100u1p3h2jk3pp5yndyvx4zmv...',
-        amountMsat: '10000',
+        amountMsat: 10000n,
       };
 
       const req = mockRequestObject({
@@ -171,7 +171,7 @@ describe('Lightning Invoice Routes', () => {
 
     it('should throw an error if the invoice is missing in the request params', async () => {
       const inputParams = {
-        amountMsat: '10000',
+        amountMsat: 10000n,
         passphrase: 'wallet-password-12345',
       };
 
