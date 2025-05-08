@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.0.3...@bitgo/sdk-coin-polyx@1.0.4) (2025-05-07)
+
+### Bug Fixes
+
+- send statics coin to substrate class ([9ed860e](https://github.com/BitGo/BitGoJS/commit/9ed860ed288516959d5723e6119c7701588a41e7))
+
 ## [1.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.0.2...@bitgo/sdk-coin-polyx@1.0.3) (2025-04-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

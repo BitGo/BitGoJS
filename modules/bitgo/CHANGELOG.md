@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [44.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@44.1.0...bitgo@44.2.0) (2025-05-07)
+
+### Features
+
+- change error type for password error in bulkshareoption ([ee00443](https://github.com/BitGo/BitGoJS/commit/ee004439f3fe8fec5cc45d5c998d08747f4fb699))
+- **sdk-coin-cronos:** add SDK Skeleton for Cronos ([7209807](https://github.com/BitGo/BitGoJS/commit/72098072ef9278ee7843cfeb6fcd0c95d5cae420))
+- **sdk-coin-fetch:** add SDK Skeleton for Fetch ([2990b21](https://github.com/BitGo/BitGoJS/commit/2990b21ca37641ba4573828bc550362cb1b0ab3f))
+- **sdk-coin-init:** add SDK Skeleton for Initia ([d93936f](https://github.com/BitGo/BitGoJS/commit/d93936f3cf011acba2ded8ffb4dc40315ed44cd1))
+- **statics:** add cosmos batch to statics ([a5fc3e1](https://github.com/BitGo/BitGoJS/commit/a5fc3e178f0e6f02783b03773995b984f7ae2c04))
+
 # [44.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@44.0.0...bitgo@44.1.0) (2025-04-29)
 
 ### Bug Fixes

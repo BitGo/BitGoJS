@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.5.7...@bitgo/sdk-coin-stx@3.6.0) (2025-05-07)
+
+### Bug Fixes
+
+- **sdk-coin-stx:** bug fix in recoverable amount calculation for sip10 ([8b72846](https://github.com/BitGo/BitGoJS/commit/8b72846d84f46ce4306dbb47cc87f2c6bd6fa371))
+- **sdk-coin-stx:** return required fields for unsigned sweep ([8a50ff8](https://github.com/BitGo/BitGoJS/commit/8a50ff884931a806357e29b3e1b2053048781398))
+
+### Features
+
+- **sdk-coin-stx:** added recover method for wrw to support stx & sip10 token ([1ff6572](https://github.com/BitGo/BitGoJS/commit/1ff6572f8aa93b6c487efe17018fc730aaffef44))
+
 ## [3.5.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@3.5.6...@bitgo/sdk-coin-stx@3.5.7) (2025-04-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

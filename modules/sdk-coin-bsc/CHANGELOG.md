@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.2.32](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.2.31...@bitgo/sdk-coin-bsc@22.2.32) (2025-05-07)
+
+### Bug Fixes
+
+- **sdk-coin-bsc:** override verifytsstxn method for bsc ([3d29436](https://github.com/BitGo/BitGoJS/commit/3d294365bdda568f9517683067e9b6fd7347e237))
+
 ## [22.2.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.2.30...@bitgo/sdk-coin-bsc@22.2.31) (2025-04-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

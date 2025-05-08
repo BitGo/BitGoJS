@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@52.1.0...@bitgo/statics@52.2.0) (2025-05-07)
+
+### Bug Fixes
+
+- add alias for algo prod tokens ([4487a53](https://github.com/BitGo/BitGoJS/commit/4487a53ccb12fc41eae02894252114a646f9a5f9))
+
+### Features
+
+- add hsm feature flag for mon,stt,soneium,world ([833c4be](https://github.com/BitGo/BitGoJS/commit/833c4be10f3e9302f83c25015b1cccf9de3c6e95))
+- gating some tokens for singapore and dubai - win-5323 ([a63441e](https://github.com/BitGo/BitGoJS/commit/a63441e86a171d895a5af2a116e110ec737372df))
+- **statics:** add arbeth tokens batch ([27f3c0b](https://github.com/BitGo/BitGoJS/commit/27f3c0bd2753c9ee9a31cd68bf54c700f91c6cef))
+- **statics:** add cosmos batch to statics ([a5fc3e1](https://github.com/BitGo/BitGoJS/commit/a5fc3e178f0e6f02783b03773995b984f7ae2c04))
+- **statics:** add method to insert single token in coin map ([7e3b3f8](https://github.com/BitGo/BitGoJS/commit/7e3b3f82088d5b2f9248425d7ff84548dcbee018))
+- support imx and imxv2 both ([7231f7c](https://github.com/BitGo/BitGoJS/commit/7231f7cfc039a805d1e7c06ed504feb503949496))
+
 # [52.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@52.0.0...@bitgo/statics@52.1.0) (2025-04-29)
 
 ### Bug Fixes

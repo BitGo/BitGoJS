@@ -1,0 +1,11 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# 1.1.0 (2025-05-07)
+
+### Features
+
+- **sdk-coin-cronos:** add SDK Skeleton for Cronos ([7209807](https://github.com/BitGo/BitGoJS/commit/72098072ef9278ee7843cfeb6fcd0c95d5cae420))
+- **sdk-coin-cronos:** add SDK support for Cronos ([27a6550](https://github.com/BitGo/BitGoJS/commit/27a6550f50359423abc1dc2c5b05b52f2a567899))

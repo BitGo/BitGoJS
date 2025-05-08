@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@25.1.0...@bitgo/account-lib@25.2.0) (2025-05-07)
+
+### Features
+
+- **sdk-coin-cronos:** add SDK Skeleton for Cronos ([7209807](https://github.com/BitGo/BitGoJS/commit/72098072ef9278ee7843cfeb6fcd0c95d5cae420))
+- **sdk-coin-fetch:** add SDK Skeleton for Fetch ([2990b21](https://github.com/BitGo/BitGoJS/commit/2990b21ca37641ba4573828bc550362cb1b0ab3f))
+- **sdk-coin-init:** add SDK Skeleton for Initia ([d93936f](https://github.com/BitGo/BitGoJS/commit/d93936f3cf011acba2ded8ffb4dc40315ed44cd1))
+
 # [25.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@25.0.0...@bitgo/account-lib@25.1.0) (2025-04-29)
 
 ### Features

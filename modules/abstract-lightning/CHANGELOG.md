@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.3.0...@bitgo/abstract-lightning@4.3.1) (2025-05-07)
+
+### Bug Fixes
+
+- making satsPerVbyte compulsory ([db457bb](https://github.com/BitGo/BitGoJS/commit/db457bb07ffbc90aab4d1f67bf525a3e438e7069))
+
 # [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.2.4...@bitgo/abstract-lightning@4.3.0) (2025-04-29)
 
 ### Features
