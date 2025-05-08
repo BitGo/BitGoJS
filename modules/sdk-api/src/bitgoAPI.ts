@@ -728,6 +728,8 @@ export class BitGoAPI implements BitGoBase {
     extensible,
     trust,
     forReset2FA,
+    initialHash,
+    fingerprintHash,
   }: AuthenticateOptions): ProcessedAuthenticationOptions {
     if (!_.isString(username)) {
       throw new Error('expected string username');
@@ -762,6 +764,14 @@ export class BitGoAPI implements BitGoBase {
 
     if (forReset2FA) {
       authParams.forReset2FA = true;
+    }
+
+    if (initialHash) {
+      authParams.initialHash = initialHash;
+    }
+
+    if (fingerprintHash) {
+      authParams.fingerprintHash = fingerprintHash;
     }
 
     return authParams;
@@ -939,7 +949,11 @@ export class BitGoAPI implements BitGoBase {
   /**
    * Login to the bitgo platform with passkey.
    */
-  async authenticateWithPasskey(passkey: string): Promise<LoginResponse | any> {
+  async authenticateWithPasskey(
+    passkey: string,
+    initialHash?: string,
+    fingerprintHash?: string
+  ): Promise<LoginResponse | any> {
     try {
       if (this._token) {
         return new Error('already logged in');
@@ -954,6 +968,8 @@ export class BitGoAPI implements BitGoBase {
       const response: superagent.Response = await request.send({
         passkey: passkey,
         userId: userId,
+        initialHash,
+        fingerprintHash,
       });
       // extract body and user information
       const body = response.body;

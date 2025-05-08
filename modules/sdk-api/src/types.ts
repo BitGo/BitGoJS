@@ -75,6 +75,20 @@ export interface AuthenticateOptions {
    */
   ensureEcdhKeychain?: boolean;
   forReset2FA?: boolean;
+  /**
+   * The initial stage fingerprint hash used for device identification and verification.
+   * @type {string}
+   * @default undefined
+   * @description An SHA-256 hash string generated from device-specific attributes
+   */
+  initialHash?: string;
+  /**
+   * The final stage fingerprint hash used for trusted device verification.
+   * @type {string}
+   * @default undefined
+   * @description An SHA-256 hash string derived from the initialHash and verification code
+   */
+  fingerprintHash?: string;
 }
 
 export interface ProcessedAuthenticationOptions {
@@ -87,6 +101,8 @@ export interface ProcessedAuthenticationOptions {
   extensionAddress?: string;
   forceV1Auth?: boolean;
   forReset2FA?: boolean;
+  initialHash?: string;
+  fingerprintHash?: string;
 }
 
 export interface User {
