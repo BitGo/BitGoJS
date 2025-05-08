@@ -627,6 +627,19 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
+  'eth:dragonx': {
+    features: [
+      CoinFeature.ACCOUNT_MODEL,
+      CoinFeature.REQUIRES_BIG_NUMBER,
+      CoinFeature.VALUELESS_TRANSFER,
+      CoinFeature.TRANSACTION_DATA,
+      CoinFeature.CUSTODY,
+      CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ],
+  },
   'avaxc:nxpc': {
     features: [
       CoinFeature.ACCOUNT_MODEL,

@@ -836,7 +836,11 @@ export const erc20Coins = [
     18,
     '0x96a5399d07896f757bd4c6ef56461f58db951862',
     UnderlyingAsset['eth:dragonx'],
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ])
   ),
   erc20(
     'bcb2af13-b64d-403a-bb61-1990e6286fcd',
