@@ -248,6 +248,7 @@ export class Hbar extends BaseCoin {
     const recipients = txParams.recipients.map((recipient) => ({
       ...recipient,
       amount: txParams.type === 'enabletoken' ? '0' : recipient.amount,
+      address: Utils.getAddressDetails(recipient.address).address,
     }));
     if (coinConfig.isToken) {
       recipients.forEach((recipient) => {

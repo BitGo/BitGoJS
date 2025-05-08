@@ -154,6 +154,24 @@ describe('Rune', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should succeed to verify transaction having recipient address has memo', async function () {
+      const txPrebuild = {
+        txHex: TEST_SEND_TX.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: TEST_SEND_TX.recipient + '?memoId=2',
+            amount: TEST_SEND_TX.sendAmount,
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await trune.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
     it('should fail to verify transaction with invalid param', async function () {
       const txPrebuild = {};
       const txParams = { recipients: undefined };
