@@ -216,6 +216,8 @@ export class Wallet implements IWallet {
   prebuildConsolidateAccountParams(): string[] {
     return [
       'consolidateAddresses',
+      'nftCollectionId',
+      'nftId',
       'feeRate',
       'maxFeeRate',
       'memo',
