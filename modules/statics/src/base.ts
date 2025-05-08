@@ -2590,6 +2590,9 @@ export enum UnderlyingAsset {
   'apt:usdc' = 'apt:usdc',
   'apt:pact' = 'apt:pact',
 
+  // Apt mainnet NFT collections
+  'apt:h00ts' = 'apt:h00ts',
+
   // Apt testnet tokens
   'tapt:usdt' = 'tapt:usdt',
 

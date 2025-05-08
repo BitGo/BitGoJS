@@ -3218,7 +3218,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['tapt:usdt'],
     APT_FEATURES
   ),
-  // TODO: remove after APT NFTs are live on prod
+  aptNFTCollection(
+    '3672e359-d96d-46fc-9a37-9c87c1d52a86',
+    'apt:h00ts',
+    'H00ts',
+    '0x1093cde390746ccb86d1d8440b9fe8e812322714226b11618ea42e572d23128c',
+    UnderlyingAsset['apt:h00ts'],
+    APT_FEATURES
+  ),
   taptNFTCollection(
     '8f222afb-99b5-4811-b7d0-3a0753b8be74',
     'tapt:nftcollection1',
