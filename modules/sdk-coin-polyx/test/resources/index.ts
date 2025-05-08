@@ -1,0 +1,43 @@
+import { Networks } from '@bitgo/statics';
+export { testnetMetadataRpc } from './testnet';
+
+export const mockTssSignature =
+  'aadae7fa1f53e7a5c900b330ff71bee6782cf3c29a2c6f9599162381cd021ad581c74ded89f49ec79adefed64af8ff16649553523dda9cb4f017cbf15681e50e';
+
+export const accounts = {
+  account1: {
+    secretKey:
+      'acfa9a91ed11ecc72dc015562fcb28a4b4bbca4b74f7915119578ed4579844c8cd1293d5b2ea6d7c70689079cde9ccc3dd3f4366dff4fa2f3e46ba9ee380df57',
+    publicKey: 'cd1293d5b2ea6d7c70689079cde9ccc3dd3f4366dff4fa2f3e46ba9ee380df57',
+    address: '5GhbC6n2pUFrX98DwyPit67fB5AwQvVCwZ4j2HKA7a4dUK4y',
+  },
+  account2: {
+    secretKey:
+      '3762e05724988ea65f279ab6fad86afd167c55e3ffc95581ba57e94cde25edd88b05a1abbdb30bc3526ab0827c039867f916cdc197825d75d8b9638f9f35dd79',
+    publicKey: '8b05a1abbdb30bc3526ab0827c039867f916cdc197825d75d8b9638f9f35dd79',
+    address: '5FCzBk7hghZh5pKCEx5Hxu6KQ5jSz5142gioGYUFmKGYmxGF',
+  },
+  account3: {
+    secretKey:
+      'eb4beb67a7ed6b5c6816164bcca8065e1723fa0953fe68c389b59c1e48dc4cadd3553b195708ccec89f2dd825a6646407b679772551a144fecb487c108df2e4d',
+    publicKey: 'd3553b195708ccec89f2dd825a6646407b679772551a144fecb487c108df2e4d',
+    address: '5GqoHB7gdVTw1q7D9aqi5MWfvfGj5J7MYmtgEnbAmH6cwaE6',
+  },
+  account4: {
+    secretKey:
+      '30eed3883d41d15a2b8a8beabfefa4b48e4fdae6fd6ebc3b99365c6a1dafccc48493ec2c20033def7f310c5670813ba09406100ad583d501ec299032a8352b32',
+    publicKey: '8493ec2c20033def7f310c5670813ba09406100ad583d501ec299032a8352b32',
+    address: '5F4Y7vKt46p6i2ZBeWTUgebJ4WHm2tLFmLzdicHebWzQ1U25',
+  },
+};
+
+export const rawTx = {
+  transfer: {
+    signed:
+      '0xc10284000c15e10fc196d9597977f8bfccda53149c4f47f4e9f37a5564c3c6abefb8d52a00924a00f8cf3e73b4e4a66f088f98dfacb0aae9a9814c7bdeb36e7d95181730ae7b9ba648ed0f4e330f44a666e336745d9fb0b2a6bddc2c09d32795c2157a680cb503880005010087c8be067be02a321ad8e946a4a50d71c25b9a640d064ec577d4ef9424b90b460300943577013030303030303030303030303030303030303030303030303030303132333435',
+    unsigned:
+      '0x250105010087c8be067be02a321ad8e946a4a50d71c25b9a640d064ec577d4ef9424b90b460300943577013030303030303030303030303030303030303030303030303030303132333435a503900090d76a00070000002ace05e703aa50b48c0ccccfc8b424f7aab9a1e2c424ed12e45d20b1e8ffd0d6e5c5396f3291d2575d138b98d34eac2fc156e5280276f57a30a8e3b8fbc49bfc',
+  },
+};
+
+export const { txVersion, specVersion, genesisHash, chainName, specName } = Networks.test.polyx;

@@ -41,9 +41,12 @@
   },
   "dependencies": {
     "@bitgo/abstract-substrate": "^1.4.9",
+    "@substrate/txwrapper-core": "7.5.2",
+    "@substrate/txwrapper-polkadot": "7.5.2",
     "@bitgo/sdk-core": "^33.2.0",
     "@bitgo/statics": "^52.2.0",
-    "bignumber.js": "^9.1.2"
+    "bignumber.js": "^9.1.2",
+    "joi": "^17.4.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.62.3",
