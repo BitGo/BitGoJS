@@ -421,6 +421,7 @@ export const ICP_FEATURES = [
   CoinFeature.MPCV2,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.SHA256_WITH_ECDSA_TSS,
+  CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
 ];
 
 export const TAO_FEATURES = [
