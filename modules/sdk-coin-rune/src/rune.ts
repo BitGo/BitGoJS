@@ -98,7 +98,10 @@ export class Rune extends CosmosCoin {
     const explainedTx = transaction.explainTransaction();
 
     if (txParams.recipients && txParams.recipients.length > 0) {
-      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
+      const filteredRecipients = txParams.recipients.map((recipient) => ({
+        address: this.getAddressDetails(recipient.address).address,
+        amount: recipient.amount,
+      }));
       let filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
 
       filteredOutputs = filteredOutputs.map((output) => {

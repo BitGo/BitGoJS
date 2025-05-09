@@ -699,6 +699,29 @@ describe('XLM:', function () {
       validTransaction.should.equal(true);
     });
 
+    it('should verify a transaction has recipient having memo', async function () {
+      const txParams = {
+        recipients: [
+          {
+            address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY?memoId=1234567890',
+            amount: '128000000',
+          },
+        ],
+      };
+      const txPrebuild = {
+        txBase64: halfSignedTransaction.halfSigned.txBase64,
+      };
+      const verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: userKeychain.pub },
+          backup: { pub: backupKeychain.pub },
+        },
+      };
+      const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      validTransaction.should.equal(true);
+    });
+
     it('should verify a transaction with root key', async function () {
       const txParams = {
         recipients: [

@@ -95,6 +95,21 @@ export class Ton extends BaseCoin {
     return true;
   }
 
+  getAddressDetails(address: string): { address: string; memoId?: string } {
+    const addressComponents = address.split('?memoId=');
+
+    if (addressComponents.length > 1) {
+      return {
+        address: addressComponents[0],
+        memoId: addressComponents[1],
+      };
+    } else {
+      return {
+        address: addressComponents[0],
+      };
+    }
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const coinConfig = coins.get(this.getChain());
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
@@ -108,8 +123,9 @@ export class Ton extends BaseCoin {
     const explainedTx = transaction.explainTransaction();
     if (txParams.recipients !== undefined) {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
+        const destination = this.getAddressDetails(recipient.address);
         return {
-          address: new TonWeb.Address(recipient.address).toString(true, true, true),
+          address: new TonWeb.Address(destination.address).toString(true, true, true),
           amount: BigInt(recipient.amount),
         };
       });

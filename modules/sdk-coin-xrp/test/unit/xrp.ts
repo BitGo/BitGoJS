@@ -489,6 +489,41 @@ describe('XRP:', function () {
       };
       await token.verifyTransaction({ txParams, txPrebuild }).should.be.rejectedWith('txrp:usd is not supported');
     });
+
+    it('should verify token transfers with recipoent has dt', async function () {
+      const txPrebuild = {
+        txHex:
+          '{"Account":"rsgg4mwHTGPRP7A4eGUmrpTxTeDZHQrHkQ","Fee":"45","Sequence":1760661,"Flags":2147483648,"TransactionType":"Payment","Destination":"raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a","Amount":{"value":"0.01","currency":"524C555344000000000000000000000000000000","issuer":"rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV"},"DestinationTag":1}',
+        txInfo: {
+          Account: 'rsgg4mwHTGPRP7A4eGUmrpTxTeDZHQrHkQ',
+          TransactionType: 'Payment',
+          Destination: 'raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a',
+          Amount: {
+            value: '0.01',
+            currency: '524C555344000000000000000000000000000000',
+            issuer: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+          },
+          DestinationTag: 1,
+        },
+        coin: 'txrp',
+        token: 'txrp:rlusd',
+      };
+      const txParams = {
+        coin: 'txrp:rlusd',
+        recipients: [
+          {
+            address: 'raJ4NmhHr2j2SGkmVFeMqKR5MUSWXjNF9a?dt=1',
+            amount: '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+          },
+        ],
+      };
+
+      const validTransaction = await token.verifyTransaction({
+        txParams,
+        txPrebuild,
+      });
+      validTransaction.should.equal(true);
+    });
   });
 
   describe('Unit Tests for isWalletAddress function', function () {

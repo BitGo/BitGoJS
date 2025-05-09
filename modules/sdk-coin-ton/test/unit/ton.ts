@@ -166,6 +166,23 @@ describe('TON:', function () {
           .should.rejectedWith('missing required tx prebuild property txHex');
       });
     });
+
+    it('should succeed to verify transaction with recipient having memo', async function () {
+      const txParams = {
+        recipients: [testData.signedSendTransactionForMemoId.recipient],
+      };
+      const txPrebuild = {
+        txHex: Buffer.from(testData.signedSendTransactionForMemoId.tx, 'base64').toString('hex'),
+        txInfo: {},
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        verification,
+      } as any);
+      isTransactionVerified.should.equal(true);
+    });
   });
 
   describe('Explain Transaction: ', () => {

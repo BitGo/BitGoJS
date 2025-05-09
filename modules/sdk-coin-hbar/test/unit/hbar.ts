@@ -478,6 +478,26 @@ describe('Hedera Hashgraph:', function () {
         .verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj } as any)
         .should.be.rejectedWith('Incorrect token name specified in recipients');
     });
+
+    it('should success to verify transfer having address with memo id', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      txParams.recipients = [
+        {
+          address: '0.0.81320?memoId=1',
+          amount: '0',
+          tokenName: 'thbar:usdc',
+        },
+      ];
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
   });
 
   describe('Sign Message', () => {
