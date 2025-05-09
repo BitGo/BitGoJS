@@ -232,6 +232,78 @@ describe('TRON:', function () {
       assert.equal(Utils.getBase58AddressFromHex(value.to_address), TestRecoverData.recoveryDestination);
     });
 
+    it('should recover trx from base address to recovery address with scan passed as valid integer string', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.baseAddress) {
+          return Promise.resolve(baseAddressBalance(3000000));
+        }
+
+        return undefined;
+      });
+
+      const baseAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.baseAddress);
+      const destinationHex = Utils.getHexAddressFromBase58Address(TestRecoverData.recoveryDestination);
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args.length > 0 && args[0] === destinationHex && args[1] === baseAddrHex && args[2] === 900000) {
+          return Promise.resolve(creationTransaction(baseAddrHex, destinationHex, 900000));
+        }
+
+        return undefined;
+      });
+
+      const res = await basecoin.recover({
+        userKey: TestRecoverData.userKey,
+        backupKey: TestRecoverData.backupKey,
+        bitgoKey: TestRecoverData.bitgoKey,
+        recoveryDestination: TestRecoverData.recoveryDestination,
+        scan: '10',
+      });
+      assert.notEqual(res.length, 0);
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'txHex'));
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'feeInfo'));
+      const rawData = JSON.parse(res.txHex).raw_data;
+      assert.ok(Object.prototype.hasOwnProperty.call(rawData, 'contract'));
+      const value = rawData.contract[0].parameter.value;
+      assert.equal(value.amount, 900000);
+      assert.equal(Utils.getBase58AddressFromHex(value.owner_address), TestRecoverData.baseAddress);
+      assert.equal(Utils.getBase58AddressFromHex(value.to_address), TestRecoverData.recoveryDestination);
+    });
+
+    it('should fail recover trx from base address to recovery address with scan passed as valid integer string', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.baseAddress) {
+          return Promise.resolve(baseAddressBalance(3000000));
+        }
+
+        return undefined;
+      });
+
+      const baseAddrHex = Utils.getHexAddressFromBase58Address(TestRecoverData.baseAddress);
+      const destinationHex = Utils.getHexAddressFromBase58Address(TestRecoverData.recoveryDestination);
+
+      mock.method(Trx.prototype as any, 'getBuildTransaction', (...args) => {
+        if (args.length > 0 && args[0] === destinationHex && args[1] === baseAddrHex && args[2] === 900000) {
+          return Promise.resolve(creationTransaction(baseAddrHex, destinationHex, 900000));
+        }
+
+        return undefined;
+      });
+
+      await assert.rejects(
+        basecoin.recover({
+          userKey: TestRecoverData.userKey,
+          backupKey: TestRecoverData.backupKey,
+          bitgoKey: TestRecoverData.bitgoKey,
+          recoveryDestination: TestRecoverData.recoveryDestination,
+          scan: 'abc',
+        }),
+        {
+          message: 'Invalid scanning factor',
+        }
+      );
+    });
+
     it('should recover trx from receive address to base address', async function () {
       mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
         if (args.length > 0 && args[0] === TestRecoverData.baseAddress) {
