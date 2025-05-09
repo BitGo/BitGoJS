@@ -10,6 +10,8 @@ import { ContractType } from './enum';
 import { ContractCallBuilder } from './contractCallBuilder';
 import { TransactionReceipt } from './iface';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { UnfreezeBuilder } from './unfreezeBuilder';
+import { WithdrawBuilder } from './withdrawBalanceBuilder';
 
 /**
  * Wrapped Builder class
@@ -41,6 +43,26 @@ export class WrappedBuilder extends TransactionBuilder {
 
   getTokenTransferBuilder(tx?: TransactionReceipt | string): TokenTransferBuilder {
     return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create an unfreeze balance transaction
+   *
+   * @param {Transaction} [tx] The transaction to initialize builder
+   * @returns {UnfreezeBuilder} The specific unfreeze builder
+   */
+  getUnfreezeBuilder(tx?: TransactionReceipt | string): UnfreezeBuilder {
+    return this.initializeBuilder(tx, new UnfreezeBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create a withdraw expire unfreeze transaction
+   *
+   * @param {Transaction} [tx] The transaction to initialize builder
+   * @returns {WithdrawBuilder} The specific withdraw builder
+   */
+  getWithdrawBuilder(tx?: TransactionReceipt | string): WithdrawBuilder {
+    return this.initializeBuilder(tx, new WithdrawBuilder(this._coinConfig));
   }
 
   private initializeBuilder<T extends TransactionBuilder>(tx: TransactionReceipt | string | undefined, builder: T): T {
@@ -78,6 +100,10 @@ export class WrappedBuilder extends TransactionBuilder {
         return this._builder;
       case ContractType.TriggerSmartContract:
         return this.getContractCallBuilder(raw);
+      case ContractType.UnfreezeBalanceV2:
+        return this.getUnfreezeBuilder(raw);
+      case ContractType.WithdrawExpireUnfreeze:
+        return this.getWithdrawBuilder(raw);
       default:
         throw new InvalidTransactionError('Invalid transaction type: ' + contractType);
     }
