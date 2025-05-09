@@ -51,11 +51,6 @@ export class Xtz extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

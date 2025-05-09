@@ -695,11 +695,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return utxolib.bitgo.outputScripts.isSupportedScriptType(this.network, addressType);
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

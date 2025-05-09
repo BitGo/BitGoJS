@@ -58,11 +58,6 @@ export class Etc extends AbstractEthLikeCoin {
     return valid;
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig() {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

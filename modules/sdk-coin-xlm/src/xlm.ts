@@ -299,11 +299,6 @@ export class Xlm extends BaseCoin {
     return false;
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

@@ -25,11 +25,6 @@ export class Celo extends AbstractEthLikeCoin {
     return valid;
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;

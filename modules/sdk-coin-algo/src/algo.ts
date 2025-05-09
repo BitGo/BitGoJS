@@ -594,11 +594,6 @@ export class Algo extends BaseCoin {
     return false;
   }
 
-  /** {@inheritDoc } **/
-  supportsMultisig(): boolean {
-    return true;
-  }
-
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.onchain;
