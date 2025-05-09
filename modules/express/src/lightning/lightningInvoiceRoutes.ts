@@ -27,5 +27,5 @@ export async function handlePayLightningInvoice(req: express.Request): Promise<a
   const wallet = await coin.wallets().get({ id: req.params.id });
   const lightningWallet = getLightningWallet(wallet);
 
-  return await lightningWallet.payInvoice(params);
+  return await lightningWallet.pay(params);
 }

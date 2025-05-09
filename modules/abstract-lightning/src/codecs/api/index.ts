@@ -5,3 +5,4 @@ export * from './payment';
 export * from './withdraw';
 export * from './transaction';
 export * from './wallet';
+export * from './lnurl';

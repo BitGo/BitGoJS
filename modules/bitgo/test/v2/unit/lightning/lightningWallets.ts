@@ -378,7 +378,7 @@ describe('Lightning wallets', function () {
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
 
-      const response = await wallet.payInvoice(params);
+      const response = await wallet.pay(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
       assert(response.paymentStatus);
@@ -451,7 +451,7 @@ describe('Lightning wallets', function () {
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
 
-      const response = await wallet.payInvoice(params);
+      const response = await wallet.pay(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'pendingApproval');
       assert(response.pendingApproval);
