@@ -114,8 +114,9 @@ export type EnvironmentName =
   | 'mock'
   | 'adminProd'
   | 'adminTest'
+  | 'adminStaging'
   | 'adminDev'
-  | 'adminLatest'
+  | 'adminStaging'
   | 'custom'
   | 'branch';
 
@@ -328,9 +329,9 @@ export const Environments: Environments = {
     uri: 'https://admin.bitgo-dev.com',
     stellarFederationServerUrl: 'https://admin.bitgo-dev.com/api/v2/txlm/federation',
   }),
-  adminLatest: Object.assign({}, devBase, {
-    uri: 'https://admin.bitgo-latest.com',
-    stellarFederationServerUrl: 'https://admin.bitgo-latest.com/api/v2/xlm/federation',
+  adminStaging: Object.assign({}, devBase, {
+    uri: 'https://admin.bitgo-staging.com',
+    stellarFederationServerUrl: 'https://admin.bitgo-staging.com/api/v2/xlm/federation',
   }),
   custom: Object.assign({}, mainnetBase, {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
