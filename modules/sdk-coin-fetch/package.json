@@ -46,7 +46,6 @@
     "@cosmjs/stargate": "^0.29.5",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
-    "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1"
   },
   "devDependencies": {

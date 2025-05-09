@@ -1,5 +1,7 @@
 import { KeyPairOptions } from '@bitgo/sdk-core';
+import { pubkeyToAddress } from '@cosmjs/amino';
 import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
+import { ADDRESS_PREFIX } from './constants';
 
 /**
  * Initia keys and address management.
@@ -11,6 +13,13 @@ export class KeyPair extends CosmosKeyPair {
 
   /** @inheritdoc */
   getAddress(): string {
-    throw new Error('Method not implemented.');
+    const base64String = Buffer.from(this.getKeys().pub.slice(0, 66), 'hex').toString('base64');
+    return pubkeyToAddress(
+      {
+        type: 'tendermint/PubKeySecp256k1',
+        value: base64String,
+      },
+      ADDRESS_PREFIX
+    );
   }
 }
