@@ -586,10 +586,15 @@ export class Trx extends BaseCoin {
     } else if (!isInteger(startIdx) || startIdx < 0) {
       throw new Error('Invalid starting index to scan for addresses');
     }
+
     let numIteration = params.scan;
     if (isUndefined(numIteration)) {
       numIteration = 20;
-    } else if (!isInteger(numIteration) || numIteration <= 0) {
+    } else if (typeof numIteration === 'string') {
+      numIteration = parseInt(numIteration, 10);
+    }
+
+    if (!isInteger(numIteration) || numIteration <= 0) {
       throw new Error('Invalid scanning factor');
     }
 
