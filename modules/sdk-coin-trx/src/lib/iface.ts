@@ -42,7 +42,12 @@ export interface RawData {
   ref_block_hash: string;
   fee_limit?: number;
   contractType?: ContractType;
-  contract: TransferContract[] | AccountPermissionUpdateContract[] | TriggerSmartContract[];
+  contract:
+    | TransferContract[]
+    | AccountPermissionUpdateContract[]
+    | TriggerSmartContract[]
+    | FreezeBalanceV2Contract[]
+    | VoteWitnessContract[];
 }
 
 export interface Value {
@@ -116,4 +121,61 @@ export interface AccountInfo {
   };
   active_permission: [{ keys: [PermissionKey] }];
   trc20: [Record<string, string>];
+}
+
+/**
+ * Freeze balance contract value fields
+ */
+export interface FreezeBalanceValueFields {
+  resource: string;
+  frozen_balance: number;
+  owner_address: string;
+}
+
+/**
+ * Freeze balance contract value interface
+ */
+export interface FreezeBalanceValue {
+  type_url?: string;
+  value: FreezeBalanceValueFields;
+}
+
+/**
+ * Freeze balance v2 contract interface
+ */
+export interface FreezeBalanceV2Contract {
+  parameter: FreezeBalanceValue;
+  type?: string;
+}
+
+/**
+ * Vote data in a vote transaction
+ */
+export interface VoteData {
+  vote_address: string;
+  vote_count: number;
+}
+
+/**
+ * Vote transaction value fields
+ */
+export interface VoteValueFields {
+  owner_address: string;
+  votes: VoteData[];
+}
+
+/**
+ * Vote contract value interface
+ */
+export interface VoteValue {
+  type_url?: string;
+  value: VoteValueFields;
+}
+
+/**
+ * Vote witness contract interface
+ */
+export interface VoteWitnessContract {
+  parameter: VoteValue;
+  type?: string;
 }

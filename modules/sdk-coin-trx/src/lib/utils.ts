@@ -175,6 +175,14 @@ export function decodeTransaction(hexString: string): RawData {
       contractType = ContractType.TriggerSmartContract;
       contract = exports.decodeTriggerSmartContract(rawTransaction.contracts[0].parameter.value);
       break;
+    case 'type.googleapis.com/protocol.FreezeBalanceV2Contract':
+      contractType = ContractType.FreezeBalanceV2;
+      contract = decodeFreezeBalanceV2Contract(rawTransaction.contracts[0].parameter.value);
+      break;
+    case 'type.googleapis.com/protocol.VoteWitnessContract':
+      contractType = ContractType.VoteWitness;
+      contract = decodeVoteWitnessContract(rawTransaction.contracts[0].parameter.value);
+      break;
     default:
       throw new UtilsError('Unsupported contract type');
   }
@@ -358,6 +366,97 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
     witness,
     actives: activeList,
   };
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with freeze balance contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {Array} - Array containing the decoded freeze contract
+ */
+export function decodeFreezeBalanceV2Contract(base64: string): any[] {
+  let freezeContract;
+  try {
+    freezeContract = protocol.FreezeBalanceContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the freeze contract in the transaction.');
+  }
+
+  if (!freezeContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this freeze contract.');
+  }
+
+  if (!freezeContract.resource) {
+    throw new UtilsError('Resource type does not exist in this freeze contract.');
+  }
+
+  if (!freezeContract.hasOwnProperty('frozenBalance')) {
+    throw new UtilsError('Frozen balance does not exist in this freeze contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(freezeContract.ownerAddress, 'base64').toString('hex'))
+  );
+  const resource = freezeContract.resource;
+  const frozen_balance = freezeContract.frozenBalance;
+
+  return [
+    {
+      parameter: {
+        value: {
+          resource,
+          frozen_balance: Number(frozen_balance),
+          owner_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with vote witness contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {Array} - Array containing the decoded vote witness contract
+ */
+export function decodeVoteWitnessContract(base64: string): any[] {
+  let voteContract;
+  try {
+    voteContract = protocol.VoteWitnessContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the vote contract in the transaction.');
+  }
+
+  if (!voteContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this vote contract.');
+  }
+
+  if (!Array.isArray(voteContract.votes) || voteContract.votes.length === 0) {
+    throw new UtilsError('Votes do not exist or are empty in this vote contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(voteContract.ownerAddress, 'base64').toString('hex'))
+  );
+  const votes = voteContract.votes.map((vote: any) => ({
+    vote_address: getBase58AddressFromByteArray(
+      getByteArrayFromHexAddress(Buffer.from(vote.voteAddress, 'base64').toString('hex'))
+    ),
+    vote_count: Number(vote.voteCount),
+  }));
+
+  return [
+    {
+      parameter: {
+        value: {
+          owner_address,
+          votes,
+        },
+      },
+    },
+  ];
 }
 
 /**
