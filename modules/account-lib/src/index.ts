@@ -134,6 +134,9 @@ export { Bsc };
 import * as Polygon from '@bitgo/sdk-coin-polygon';
 export { Polygon };
 
+import * as Polyx from '@bitgo/sdk-coin-polyx';
+export { Polyx };
+
 import * as Opeth from '@bitgo/sdk-coin-opeth';
 export { Opeth };
 
@@ -291,6 +294,8 @@ const coinBuilderMap = {
   tstt: Stt.TransactionBuilder,
   soneium: Soneium.TransactionBuilder,
   tsoneium: Soneium.TransactionBuilder,
+  polyx: Polyx.TransactionBuilderFactory,
+  tpolyx: Polyx.TransactionBuilderFactory,
 };
 
 /**
