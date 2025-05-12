@@ -3242,6 +3242,20 @@ export const tOfcErc20Coins = [
     'hteth'
   ),
   tofcerc20(
+    'c1d2c09d-ac71-4cf6-9683-90d93b6afa09',
+    'ofchteth:stgusd1',
+    'Holesky Testnet USD1',
+    18,
+    UnderlyingAsset['hteth:stgusd1'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
     'f0fdaaaa-7587-4cc4-a2b3-875085d81ac8',
     'ofchteth:gousd',
     'Holesky Testnet GoUSD',
