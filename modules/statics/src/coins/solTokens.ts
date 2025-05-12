@@ -668,16 +668,6 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
-    '324cb250-bcc0-4178-9455-657f9bd4eb9f',
-    'sol:aave-wormhole',
-    'Aave Token (Wormhole)',
-    8,
-    '3vAs4D1WE6Na4tCgt4BApgFfENbm8WY7q4cSPD1yM4Cg',
-    '3vAs4D1WE6Na4tCgt4BApgFfENbm8WY7q4cSPD1yM4Cg',
-    UnderlyingAsset.AAVE,
-    SOL_TOKEN_FEATURES
-  ),
-  solToken(
     'bd41c638-8184-470d-85d2-c39d653f6969',
     'sol:alm',
     'Almond',
@@ -1545,16 +1535,6 @@ export const solTokens = [
     '5Wc4U1ZoQRzF4tPdqKQzBwRSjYe8vEf3EvZMuXgtKUW6',
     '5Wc4U1ZoQRzF4tPdqKQzBwRSjYe8vEf3EvZMuXgtKUW6',
     UnderlyingAsset.LUA,
-    SOL_TOKEN_FEATURES
-  ),
-  solToken(
-    '6d542d82-4af1-4d42-b584-bfafc023388f',
-    'sol:ldo-wormhole',
-    'Lido DAO Token (Wormhole)',
-    8,
-    'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
-    'HZRCwxP2Vq9PCpPXooayhJ2bxTpo5xfpQrwB1svh332p',
-    UnderlyingAsset.LDO,
     SOL_TOKEN_FEATURES
   ),
   solToken(
