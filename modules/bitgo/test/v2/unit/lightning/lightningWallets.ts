@@ -16,6 +16,8 @@ import {
   getLightningAuthKeychains,
   updateWalletCoinSpecific,
   LightningOnchainWithdrawParams,
+  PaymentInfo,
+  PaymentQuery,
 } from '@bitgo/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
@@ -313,7 +315,7 @@ describe('Lightning wallets', function () {
     it('listInvoices should throw error if wp response is invalid', async function () {
       const listInvoicesNock = nock(bgUrl)
         .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`)
-        .reply(200, [{ valueMsat: '1000' }]);
+        .reply(200, { invoices: [{ valueMsat: '1000' }] });
       await assert.rejects(async () => await wallet.listInvoices({}), /Invalid list invoices response/);
       listInvoicesNock.done();
     });
@@ -500,6 +502,99 @@ describe('Lightning wallets', function () {
       getPendingApprovalNock.done();
       userAuthKeyNock.done();
       nodeAuthKeyNock.done();
+    });
+  });
+
+  describe('payments', function () {
+    let wallet: LightningWallet;
+    beforeEach(function () {
+      wallet = getLightningWallet(
+        new Wallet(bitgo, basecoin, {
+          id: 'walletId',
+          coin: 'tlnbtc',
+          subType: 'lightningCustody',
+          coinSpecific: { keys: ['def', 'ghi'] },
+        })
+      ) as LightningWallet;
+    });
+
+    it('should get payments', async function () {
+      const payment: PaymentInfo = {
+        paymentHash: 'foo',
+        walletId: wallet.wallet.id(),
+        txRequestId: 'txReqId',
+        status: 'settled',
+        invoice: 'tlnfoobar',
+        destination: 'destination',
+        feeLimitMsat: 100n,
+        amountMsat: 1000n,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const query = {
+        status: 'settled',
+        startDate: new Date(),
+        limit: 100n,
+      } as PaymentQuery;
+      const listPaymentsNock = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/payment`)
+        .query(PaymentQuery.encode(query))
+        .reply(200, { payments: [PaymentInfo.encode(payment)] });
+      const listPaymentsResponse = await wallet.listPayments(query);
+      assert.strictEqual(listPaymentsResponse.payments.length, 1);
+      assert.deepStrictEqual(listPaymentsResponse.payments[0], payment);
+      listPaymentsNock.done();
+    });
+
+    it('should work properly with pagination while listing payments', async function () {
+      const payment1: PaymentInfo = {
+        paymentHash: 'foo1',
+        walletId: wallet.wallet.id(),
+        txRequestId: 'txReqId1',
+        status: 'settled',
+        invoice: 'tlnfoobar1',
+        destination: 'destination',
+        feeLimitMsat: 100n,
+        amountMsat: 1000n,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const payment2: PaymentInfo = {
+        ...payment1,
+        paymentHash: 'foo2',
+        txRequestId: 'txReqId2',
+        invoice: 'tlnfoobar2',
+      };
+      const payment3: PaymentInfo = {
+        ...payment1,
+        paymentHash: 'foo3',
+        txRequestId: 'txReqId3',
+        invoice: 'tlnfoobar3',
+      };
+      const allPayments = [PaymentInfo.encode(payment1), PaymentInfo.encode(payment2), PaymentInfo.encode(payment3)];
+      const query = {
+        status: 'settled',
+        startDate: new Date(),
+        limit: 2n,
+      } as PaymentQuery;
+      const listPaymentsNock = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/payment`)
+        .query(PaymentQuery.encode(query))
+        .reply(200, { payments: allPayments.slice(0, 2), nextBatchPrevId: payment2.paymentHash });
+      const listPaymentsResponse = await wallet.listPayments(query);
+      assert.strictEqual(listPaymentsResponse.payments.length, 2);
+      assert.deepStrictEqual(listPaymentsResponse.payments[0], payment1);
+      assert.deepStrictEqual(listPaymentsResponse.payments[1], payment2);
+      assert.strictEqual(listPaymentsResponse.nextBatchPrevId, payment2.paymentHash);
+      listPaymentsNock.done();
+    });
+
+    it('listPayments should throw error if wp response is invalid', async function () {
+      const listPaymentsNock = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/payment`)
+        .reply(200, { payments: [{ amountMsat: '1000' }] });
+      await assert.rejects(async () => await wallet.listPayments({}), /Invalid payment list response/);
+      listPaymentsNock.done();
     });
   });
 
