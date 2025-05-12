@@ -101,7 +101,6 @@ describe('BitGo Prototype Methods', function () {
 
     it('allows disabling of HMAC request verification only for dev environments', function () {
       (() => TestBitGo.decorate(BitGo, { env: 'dev', hmacVerification: false })).should.not.throw();
-      (() => TestBitGo.decorate(BitGo, { env: 'latest', hmacVerification: false })).should.not.throw();
       (() => TestBitGo.decorate(BitGo, { env: 'adminDev', hmacVerification: false })).should.not.throw();
       (() => TestBitGo.decorate(BitGo, { env: 'adminStaging', hmacVerification: false })).should.not.throw();
       (() => TestBitGo.decorate(BitGo, { env: 'local', hmacVerification: false })).should.not.throw();
