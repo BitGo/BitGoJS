@@ -264,10 +264,49 @@ describe('Lightning wallets', function () {
       const listInvoicesNock = nock(bgUrl)
         .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`)
         .query(InvoiceQuery.encode(query))
-        .reply(200, [InvoiceInfo.encode(invoice)]);
+        .reply(200, { invoices: [InvoiceInfo.encode(invoice)] });
       const invoiceResponse = await wallet.listInvoices(query);
-      assert.strictEqual(invoiceResponse.length, 1);
-      assert.deepStrictEqual(invoiceResponse[0], invoice);
+      assert.strictEqual(invoiceResponse.invoices.length, 1);
+      assert.deepStrictEqual(invoiceResponse.invoices[0], invoice);
+      listInvoicesNock.done();
+    });
+
+    it('should work properly with pagination while listing invoices', async function () {
+      const invoice1: InvoiceInfo = {
+        valueMsat: 1000n,
+        paymentHash: 'foo1',
+        invoice: 'tlnfoobar1',
+        walletId: wallet.wallet.id(),
+        status: 'open',
+        expiresAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const invoice2: InvoiceInfo = {
+        ...invoice1,
+        paymentHash: 'foo2',
+        invoice: 'tlnfoobar2',
+      };
+      const invoice3: InvoiceInfo = {
+        ...invoice1,
+        paymentHash: 'foo3',
+        invoice: 'tlnfoobar3',
+      };
+      const allInvoices = [InvoiceInfo.encode(invoice1), InvoiceInfo.encode(invoice2), InvoiceInfo.encode(invoice3)];
+      const query = {
+        status: 'open',
+        startDate: new Date(),
+        limit: 2n,
+      } as InvoiceQuery;
+      const listInvoicesNock = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`)
+        .query(InvoiceQuery.encode(query))
+        .reply(200, { invoices: allInvoices.slice(0, 2), nextBatchPrevId: invoice2.paymentHash });
+      const invoiceResponse = await wallet.listInvoices(query);
+      assert.strictEqual(invoiceResponse.invoices.length, 2);
+      assert.deepStrictEqual(invoiceResponse.invoices[0], invoice1);
+      assert.deepStrictEqual(invoiceResponse.invoices[1], invoice2);
+      assert.strictEqual(invoiceResponse.nextBatchPrevId, invoice2.paymentHash);
       listInvoicesNock.done();
     });
 
