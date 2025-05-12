@@ -115,7 +115,6 @@ export type EnvironmentName =
   | 'adminTest'
   | 'adminStaging'
   | 'adminDev'
-  | 'adminStaging'
   | 'custom'
   | 'branch';
 
