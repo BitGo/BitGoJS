@@ -1163,4 +1163,13 @@ export const bscTokens = [
     UnderlyingAsset['tbsc:usd1'],
     BSC_TOKEN_FEATURES
   ),
+  tbscToken(
+    'ab09153f-088e-413a-af9f-ea53dc99f747',
+    'tbsc:stgusd1',
+    'Test USD1 Token',
+    18,
+    '0xcad6876355c024b388de9a8c3b8172e7f86748ba',
+    UnderlyingAsset['tbsc:stgusd1'],
+    BSC_TOKEN_FEATURES
+  ),
 ];

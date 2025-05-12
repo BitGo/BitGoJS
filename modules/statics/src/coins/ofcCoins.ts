@@ -1372,6 +1372,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['tbsc:usd1']
   ),
+  tofcBscToken(
+    'e9174338-0d26-4f49-b111-3487b60c9912',
+    'ofctbsc:stgusd1',
+    'Test USD1 Token',
+    18,
+    UnderlyingAsset['tbsc:stgusd1']
+  ),
   ofcPolygonErc20(
     '547ce68f-cb4c-4618-bef3-9a0ebe9facd2',
     'ofcpolygon:sbc',

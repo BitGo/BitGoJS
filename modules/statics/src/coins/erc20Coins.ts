@@ -10884,6 +10884,18 @@ export const erc20Coins = [
     Networks.test.holesky
   ),
   terc20(
+    '3502002c-0f27-46d0-9967-d34cd9290476',
+    'hteth:stgusd1',
+    'Holesky Testnet USD1',
+    18,
+    '0x78f81399cd3bc0937ea9049cc6604fb6e67ebe83',
+    UnderlyingAsset['hteth:stgusd1'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
     '49ff49ea-3355-4717-bbb0-5e8f5cae2202',
     'hteth:gousd',
     'Holesky Testnet GoUSD',
