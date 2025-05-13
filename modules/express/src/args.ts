@@ -96,6 +96,14 @@ parser.addArgument(['--externalSignerUrl'], {
   help: 'URL which specifies the external signing API.',
 });
 
+parser.addArgument(['--enclavedExpressUrl'], {
+  help: 'URL to an Express instance in a secure environment.',
+});
+
+parser.addArgument(['--enclavedExpressSSLCert'], {
+  help: 'Path to the SSL certificate file for communicating with enclavedExpressUrl.',
+});
+
 parser.addArgument(['--signerMode'], {
   action: 'storeConst',
   constant: true,
