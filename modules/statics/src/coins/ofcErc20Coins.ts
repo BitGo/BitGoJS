@@ -2976,6 +2976,22 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:usdg')
   ),
   ofcerc20(
+    '2af4bdb7-18eb-46d5-a31a-22e297f12de9',
+    'ofceth:spxux',
+    'WisdomTree 500 Digital Fund',
+    18,
+    underlyingAssetForSymbol('eth:spxux')
+  ),
+  ofcerc20('830c6c0f-b601-406b-a853-3a88ff85533d', 'ofceth:aleo', 'Aleo', 3, underlyingAssetForSymbol('eth:aleo')),
+  ofcerc20(
+    'c35c457f-2741-41aa-9c33-3a41f5ce6b1b',
+    'ofceth:dbusd',
+    'Deep Blue USD',
+    6,
+    underlyingAssetForSymbol('eth:dbusd')
+  ),
+  ofcerc20('08b990d0-1f4b-4bb4-a509-456f2324c6de', 'ofceth:aut', 'All Unity', 6, underlyingAssetForSymbol('eth:aut')),
+  ofcerc20(
     'fe2f5c57-90e4-49e0-a635-b6f1cec0c750',
     'ofceth:edu',
     'Open Campus',

@@ -1471,6 +1471,7 @@ export const coins = CoinMap.fromCoins([
     '0.0.456858',
     AccountCoin.DEFAULT_FEATURES
   ),
+
   hederaToken(
     '221fb1c9-0fb0-4b06-8dd1-ed857a804d58',
     'hbar:xsgd',
@@ -1579,6 +1580,17 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.USDC,
     '0.0.13078',
     '0.0.13078',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
+    '77bc438b-7206-4cb1-bee8-dc900e5915be',
+    'thbar:txsgd',
+    'Testnet Fungible Token',
+    Networks.test.hedera,
+    6,
+    UnderlyingAsset.USDC,
+    '0.0.5894751',
+    '0.0.5894751',
     AccountCoin.DEFAULT_FEATURES
   ),
   // End FTX missing ERC20 tokens
@@ -2343,6 +2355,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['arbeth:link']
   ),
   arbethErc20(
+    '67c9fa5c-e9e0-4586-abe2-f2921d7a83cd',
+    'arbeth:spxux',
+    'WisdomTree 500 Digital Fund (SPXUX)',
+    18,
+    '0x4122047076a1106618e984a8776a3f7bbcb1d429',
+    UnderlyingAsset['arbeth:spxux']
+  ),
+  arbethErc20(
     '42ae1f1a-95df-40b7-a584-fe52b2cf08c6',
     'arbeth:xsgdv2',
     'XSGD (Bridged)',
@@ -2770,6 +2790,14 @@ export const coins = CoinMap.fromCoins([
     '0xef4461891dfb3ac8572ccf7c794664a8dd927945',
     UnderlyingAsset['opeth:wct'],
     WCT_FEATURES
+  ),
+  opethErc20(
+    '19dc7cc3-614a-43e7-97f6-986aefbc958f',
+    'opeth:spxux',
+    'WisdomTree 500 Digital Fund (SPXUX)',
+    18,
+    '0x1a149e21bd3e74b7018db79c988b4ba3bbc1873d',
+    UnderlyingAsset['opeth:spxux']
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',

@@ -10177,6 +10177,38 @@ export const erc20Coins = [
     UnderlyingAsset['eth:usdg']
   ),
   erc20(
+    '36ec9ba1-359b-4a05-addb-ada12ced8371',
+    'eth:spxux',
+    'WisdomTree 500 Digital Fund',
+    18,
+    '0x873d589f38abbcdd1fca27261aba2f1aa0661d44',
+    UnderlyingAsset['eth:spxux']
+  ),
+  erc20(
+    'cd21be23-a0f4-4706-8b00-cee136e1188a',
+    'eth:aleo',
+    'Aleo',
+    3,
+    '0xa8162a07efa81602c3803772d18d1789a44fd87a',
+    UnderlyingAsset['eth:aleo']
+  ),
+  erc20(
+    '4ce3341b-4811-47fd-a2d0-127e30a60d66',
+    'eth:dbusd',
+    'Deep Blue USD',
+    6,
+    '0x32bdd8b97868acf7014cfe6eb49bf4f2936c8f02',
+    UnderlyingAsset['eth:dbusd']
+  ),
+  erc20(
+    '29c9cb44-00a9-4740-8de0-abf0a321b830',
+    'eth:aut',
+    'AllUnity',
+    6,
+    '0x63d0b467059a10b365aa18f441684ed154628f4e',
+    UnderlyingAsset['eth:aut']
+  ),
+  erc20(
     '6418f63b-3c9b-4880-9034-e286d3abd1ac',
     'eth:edu',
     'Open Campus',

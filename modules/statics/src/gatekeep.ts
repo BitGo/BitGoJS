@@ -1797,4 +1797,13 @@ export const gatekeep = [
   'arbeth:wtgxx',
   'arbeth:lngvx',
   'arbeth:eqtyx',
+  'eth:spxux',
+  'eth:aleo',
+  'eth:dbusd',
+  'avaxc:spxux',
+  'polygon:buidl',
+  'arbeth:spxux',
+  'opeth:spxux',
+  'sol:rock',
+  'sol:doodles',
 ];

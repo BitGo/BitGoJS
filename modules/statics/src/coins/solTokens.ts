@@ -2588,7 +2588,26 @@ export const solTokens = [
     UnderlyingAsset['sol:layer'],
     SOL_TOKEN_FEATURES
   ),
-
+  solToken(
+    '7ac9fc4f-6e4d-4fdd-90b1-99a4d1c4f8ee',
+    'sol:rock',
+    'Zenrock',
+    6,
+    '5VsPJ2EG7jjo3k2LPzQVriENKKQkNUTzujEzuaj4Aisf',
+    '5VsPJ2EG7jjo3k2LPzQVriENKKQkNUTzujEzuaj4Aisf',
+    UnderlyingAsset['sol:rock'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '269e778e-f9fd-455d-a066-5eb38c32c845',
+    'sol:doodles',
+    'Doodles',
+    9,
+    'DvjbEsdca43oQcw2h3HW1CT7N3x5vRcr3QrvTUHnXvgV',
+    'DvjbEsdca43oQcw2h3HW1CT7N3x5vRcr3QrvTUHnXvgV',
+    UnderlyingAsset['sol:doodles'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

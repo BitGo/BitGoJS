@@ -645,6 +645,14 @@ export const avaxTokens = [
     UnderlyingAsset['avaxc:nxpc'],
     AccountCoin.getFeaturesExcluding([CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE, CoinFeature.CUSTODY_BITGO_MENA_FZE])
   ),
+  avaxErc20(
+    '45e27c49-3064-41b4-ae5f-d0620cfbdd9d',
+    'avaxc:spxux',
+    'WisdomTree 500 Digital Fund',
+    18,
+    '0x1a149e21bd3e74b7018db79c988b4ba3bbc1873d',
+    UnderlyingAsset['avaxc:spxux']
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',

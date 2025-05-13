@@ -668,6 +668,22 @@ export const ofcCoins = [
     UnderlyingAsset['sol:layer'],
     SOL_OFC_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'da103839-dd2c-44db-bc26-40df2847304f',
+    'ofcsol:rock',
+    'Zenrock',
+    6,
+    UnderlyingAsset['sol:rock'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '78a9e2b8-40a5-4424-ae67-808248dc99cc',
+    'ofcsol:doodles',
+    'Doodles',
+    9,
+    UnderlyingAsset['sol:doodles'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -769,6 +785,13 @@ export const ofcCoins = [
     'Chainlink Token',
     18,
     UnderlyingAsset['arbeth:link']
+  ),
+  ofcArbethErc20(
+    '7c49e631-1fbc-4e9e-aef5-fe04c5ebeb79',
+    'ofcarbeth:spxux',
+    'WisdomTree 500 Digital Fund (SPXUX)',
+    18,
+    UnderlyingAsset['arbeth:spxux']
   ),
   ofcArbethErc20(
     '0cf9baf8-eca6-47b2-82e1-6ca0ee09f760',
@@ -973,8 +996,22 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['avaxc:shrap']
   ),
+  ofcAvaxErc20(
+    'e348a290-b22b-40aa-b23f-91f2ffbdea24',
+    'ofcavaxc:spxux',
+    'WisdomTree 500 Digital Fund',
+    18,
+    UnderlyingAsset['avaxc:spxux']
+  ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
+  ofcOpethErc20(
+    'a6087e85-6c4a-40c5-83f0-3ebeabd8e39b',
+    'ofcopeth:spxux',
+    'Optimism',
+    6,
+    UnderlyingAsset['opeth:spxux']
+  ),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcBscToken('c6f5df09-5a21-468b-89cc-f626d02d74d0', 'ofcbsc:oort', 'OORT', 18, UnderlyingAsset['bsc:oort']),
   ofcBscToken(
@@ -1483,6 +1520,13 @@ export const ofcCoins = [
     'TCS Token',
     18,
     UnderlyingAsset['polygon:tcs']
+  ),
+  ofcPolygonErc20(
+    'bde9aea4-027d-48c3-95c7-e1a74bc5aa06',
+    'ofcpolygon:buidl',
+    'BlackRock USD Institutional Digital Liquidity Fund',
+    6,
+    UnderlyingAsset['polygon:buidl']
   ),
   ofcPolygonErc20(
     '82855675-ecfa-4acb-a489-8d7b826d2783',
