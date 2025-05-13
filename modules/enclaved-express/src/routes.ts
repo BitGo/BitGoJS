@@ -3,6 +3,7 @@
  */
 import * as express from 'express';
 import debug from 'debug';
+import { handleV2Sign } from './signing/multisig';
 
 const debugLogger = debug('enclaved:routes');
 
@@ -36,6 +37,15 @@ function setupPingRoutes(app: express.Application) {
   app.get('/api/v2/version', promiseWrapper(handleVersionInfo));
 }
 
+function setupSigningRoutes(app: express.Application) {
+  app.post('/api/v2/:coin/sign', promiseWrapper(handleV2Sign));
+}
+
+function setupKeyGenRoutes(app: express.Application) {
+  // Register additional routes here as needed
+  debugLogger('KeyGen routes configured');
+}
+
 /**
  * Setup all routes for the Enclaved Express application
  * @param app Express application
@@ -43,6 +53,12 @@ function setupPingRoutes(app: express.Application) {
 export function setupRoutes(app: express.Application): void {
   // Register health check routes
   setupPingRoutes(app);
+
+  // Register signing routes
+  setupSigningRoutes(app);
+
+  // Register keygen routes
+  setupKeyGenRoutes(app);
 
   // Add a catch-all for unsupported routes
   app.use('*', (_req, res) => {
@@ -53,7 +69,6 @@ export function setupRoutes(app: express.Application): void {
 
   debugLogger('All routes configured');
 }
-
 
 // promiseWrapper implementation
 export function promiseWrapper(promiseRequestHandler: any) {
