@@ -1,22 +1,22 @@
-import { UnderlyingAsset, CoinFeature } from '../base';
-import { erc20, terc20, AccountCoin } from '../account';
+import { CoinFeature, UnderlyingAsset } from '../base';
+import { AccountCoin, erc20, terc20 } from '../account';
 import { Networks } from '../networks';
 import {
+  EIGEN_FEATURES,
+  ETH_FEATURES_WITH_FRANKFURT,
+  ETH_FEATURES_WITH_FRANKFURT_EXCLUDE_SINGAPORE,
+  ETH_FEATURES_WITH_FRANKFURT_GERMANY,
+  ETH_FEATURES_WITH_GERMANY,
   HTETH_TOKEN_FEATURES,
-  POL_FEATURES,
   MATIC_FEATURES,
   MATIC_FEATURES_WITH_FRANKFURT,
-  WETH_FEATURES,
-  TWETH_FEATURES,
-  EIGEN_FEATURES,
+  POL_FEATURES,
   RETH_ROCKET_FEATURES,
-  TOKEN_FEATURES_WITH_SWISS,
   TOKEN_FEATURES_WITH_NY_GERMANY_FRANKFURT,
-  ETH_FEATURES_WITH_FRANKFURT,
-  ETH_FEATURES_WITH_GERMANY,
-  ETH_FEATURES_WITH_FRANKFURT_GERMANY,
+  TOKEN_FEATURES_WITH_SWISS,
+  TWETH_FEATURES,
+  WETH_FEATURES,
   ZETA_EVM_FEATURES,
-  ETH_FEATURES_WITH_FRANKFURT_EXCLUDE_SINGAPORE,
 } from '../coinFeatures';
 
 export const erc20Coins = [
@@ -1264,7 +1264,8 @@ export const erc20Coins = [
     'Conflux',
     18,
     '0x969faf8ca66b0d53a5196b5d3a0952cd3a88e074',
-    UnderlyingAsset.CFX
+    UnderlyingAsset.CFX,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.DEPRECATED]
   ),
   erc20(
     '843616fb-63cf-42d6-9dae-f3362864bd8f',
