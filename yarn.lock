@@ -1519,6 +1519,18 @@
     debug "^3.1.0"
     lodash.once "^4.1.1"
 
+"@dfinity/agent@^2.1.3":
+  version "2.4.1"
+  resolved "https://registry.npmjs.org/@dfinity/agent/-/agent-2.4.1.tgz#72c8a074f51faa28b217d2e603fdf6f6a8dca615"
+  integrity sha512-IczFFOUDGfMTdQ83yiCvGtvHr1IIB80lWBP0ZYRLogs6NVt8t6HYcMlu1sgT+9VivhT7iwX4pktPFxxOkO3COw==
+  dependencies:
+    "@noble/curves" "^1.4.0"
+    "@noble/hashes" "^1.3.1"
+    base64-arraybuffer "^0.2.0"
+    borc "^2.1.1"
+    buffer "^6.0.3"
+    simple-cbor "^0.4.1"
+
 "@dfinity/agent@^2.2.0":
   version "2.4.0"
   resolved "https://registry.npmjs.org/@dfinity/agent/-/agent-2.4.0.tgz#cbc15332e1809c7f7b96d7acfd0b37a2acd476c7"
@@ -1531,10 +1543,31 @@
     buffer "^6.0.3"
     simple-cbor "^0.4.1"
 
+"@dfinity/candid@^2.1.3":
+  version "2.4.1"
+  resolved "https://registry.npmjs.org/@dfinity/candid/-/candid-2.4.1.tgz#c85e1d734227624dcc9829a1b679b418d9b5a081"
+  integrity sha512-kOaIKfhR2PYN8vD4M0Pc4s/7wb1nKjlTJUw+5E9jh26T03fITIZmaafIuwlX+wmdxwIT9Xoy7PlsxOEpzv203A==
+
 "@dfinity/candid@^2.2.0":
   version "2.4.0"
   resolved "https://registry.npmjs.org/@dfinity/candid/-/candid-2.4.0.tgz#0f4bc07e989a15fe3d55018296dc99de46758604"
   integrity sha512-ZVuBIFlWOZOvEZaLtBKE2666rab32XSdHo1BtzdDy36NMvQbRXkZRbIEd7xoZXRud2wK7pk5cNsZULnXghAORg==
+
+"@dfinity/identity@^2.1.3":
+  version "2.4.1"
+  resolved "https://registry.npmjs.org/@dfinity/identity/-/identity-2.4.1.tgz#ef473a96f2ace1708f484227a6217fdafd8d0aa2"
+  integrity sha512-CXhTmdtqkA0vE6ue2GaF9ZwD0OQ5OinrGj77Eg0dX0zPZpxJQ+NCjyYNWkaIvsKxmnCaW+5yrCcchN8Sqk8uIA==
+  dependencies:
+    "@noble/curves" "^1.2.0"
+    "@noble/hashes" "^1.3.1"
+    borc "^2.1.1"
+
+"@dfinity/principal@^2.1.3":
+  version "2.4.1"
+  resolved "https://registry.npmjs.org/@dfinity/principal/-/principal-2.4.1.tgz#d3221ab68eb6e602b561fb067c8cefd08a0c9d4d"
+  integrity sha512-Cz6XQVOwq0TXDBClPbcidDd4SqK1lfr1/Kn34ruDD13xVQ4iaP1iCntzS9O97+vGpY/6jwDtKd32Gn5YJ9BQNw==
+  dependencies:
+    "@noble/hashes" "^1.3.1"
 
 "@dfinity/principal@^2.2.0":
   version "2.4.0"
@@ -3455,7 +3488,7 @@
   dependencies:
     "@noble/hashes" "1.7.1"
 
-"@noble/curves@^1.7.0":
+"@noble/curves@^1.2.0", "@noble/curves@^1.7.0":
   version "1.9.0"
   resolved "https://registry.npmjs.org/@noble/curves/-/curves-1.9.0.tgz#13e0ca8be4a0ce66c113693a94514e5599f40cfc"
   integrity sha512-7YDlXiNMdO1YZeH6t/kvopHHbIZzlxrCV9WLqCY6QhcXOoXiNCMDqJIglZ9Yjx5+w7Dz30TITFrlTjnRg7sKEg==
@@ -11373,7 +11406,7 @@ formidable@^1.1.1, formidable@^1.2.0:
   resolved "https://registry.npmjs.org/formidable/-/formidable-1.2.6.tgz#d2a51d60162bbc9b4a055d8457a7c75315d1a168"
   integrity sha512-KcpbcpuLNOwrEjnbpMC0gS+X8ciDoZE1kkqzat4a8vrprf+s9pKNQ/QIwWfbfs4ltgmFl3MD177SNTkve3BwGQ==
 
-formidable@^3.5.1, formidable@^3.5.2:
+formidable@^3.5.1:
   version "3.5.2"
   resolved "https://registry.npmjs.org/formidable/-/formidable-3.5.2.tgz#207c33fecdecb22044c82ba59d0c63a12fb81d77"
   integrity sha512-Jqc1btCy3QzRbJaICGwKcBfGWuLADRerLzDqi2NwSt/UkXLsHJw2TVResiaoBufHVHy9aSgClOHCeJsSsFLTbg==
@@ -12442,6 +12475,17 @@ husky@^8.0.1:
   version "8.0.3"
   resolved "https://registry.npmjs.org/husky/-/husky-8.0.3.tgz#4936d7212e46d1dea28fef29bb3a108872cd9184"
   integrity sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==
+
+ic0@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.npmjs.org/ic0/-/ic0-0.3.2.tgz#b32760a216797334e1481e51601ca2ffe2201ff6"
+  integrity sha512-A+XczHylZzyYtE27/ED66XpQohsUikFrpCSue/wEdAenIx/ZoIkY0tOKaf1mrLGcdHAmAyaN+Q0WW+XEc/b/1g==
+  dependencies:
+    "@dfinity/agent" "^2.1.3"
+    "@dfinity/candid" "^2.1.3"
+    "@dfinity/identity" "^2.1.3"
+    "@dfinity/principal" "^2.1.3"
+    cross-fetch "^3.1.5"
 
 iconv-lite@0.4.24, iconv-lite@^0.4.24:
   version "0.4.24"
@@ -19077,21 +19121,6 @@ superagent@3.8.2:
     mime "^1.4.1"
     qs "^6.5.1"
     readable-stream "^2.0.5"
-
-superagent@^10.1.1:
-  version "10.2.0"
-  resolved "https://registry.npmjs.org/superagent/-/superagent-10.2.0.tgz#28f262a0a56433e0df53db978ceaa51f23e762ab"
-  integrity sha512-IKeoGox6oG9zyDeizaezkJ2/aK0wc5la9st7WsAKyrAkfJ56W3whVbVtF68k6wuc87/y9T85NyON5FLz7Mrzzw==
-  dependencies:
-    component-emitter "^1.3.0"
-    cookiejar "^2.1.4"
-    debug "^4.3.4"
-    fast-safe-stringify "^2.1.1"
-    form-data "^4.0.0"
-    formidable "^3.5.2"
-    methods "^1.1.2"
-    mime "2.6.0"
-    qs "^6.11.0"
 
 superagent@^3.8.3:
   version "3.8.3"

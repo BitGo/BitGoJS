@@ -24,21 +24,24 @@ import { Principal } from '@dfinity/principal';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { createHash, Hash } from 'crypto';
-import * as request from 'superagent';
+import { HttpAgent, replica } from 'ic0';
+import * as mpc from '@bitgo/sdk-lib-mpc';
+
 import {
-  ACCOUNT_BALANCE_ENDPOINT,
   CurveType,
   LEDGER_CANISTER_ID,
-  Network,
   PayloadsData,
   PUBLIC_NODE_REQUEST_ENDPOINT,
   PublicNodeSubmitResponse,
   RecoveryOptions,
+  RecoveryTransaction,
   ROOT_PATH,
   Signatures,
   SigningPayload,
   IcpTransactionExplanation,
   TransactionHexParams,
+  ACCOUNT_BALANCE_CALL,
+  UnsignedSweepRecoveryTransaction,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
@@ -214,51 +217,16 @@ export class Icp extends BaseCoin {
     return Environments[this.bitgo.getEnv()].icpNodeUrl;
   }
 
-  protected getRosettaNodeUrl(): string {
-    return Environments[this.bitgo.getEnv()].icpRosettaNodeUrl;
-  }
-
-  /**
-   * Sends a POST request to the Rosetta node with the specified payload and endpoint.
-   *
-   * @param payload - A JSON string representing the request payload to be sent to the Rosetta node.
-   * @param endpoint - The endpoint path to append to the Rosetta node URL.
-   * @returns A promise that resolves to the HTTP response from the Rosetta node.
-   * @throws An error if the HTTP request fails or if the response status is not 200.
-   */
-  protected async getRosettaNodeResponse(payload: string, endpoint: string): Promise<request.Response> {
-    const nodeUrl = this.getRosettaNodeUrl();
-    const fullEndpoint = `${nodeUrl}${endpoint}`;
-    const body = {
-      network_identifier: {
-        blockchain: this.getFullName(),
-        network: Network.ID,
-      },
-      ...JSON.parse(payload),
-    };
-
-    try {
-      const response = await request.post(fullEndpoint).set('Content-Type', 'application/json').send(body);
-      if (response.status !== 200) {
-        throw new Error(`Call to Rosetta node failed, got HTTP Status: ${response.status} with body: ${response.body}`);
-      }
-      return response;
-    } catch (error) {
-      throw new Error(`Unable to call rosetta node: ${error.message || error}`);
-    }
-  }
-
-  /* inheritDoc */
+  /** @inheritDoc **/
   // this method calls the public node to broadcast the transaction and not the rosetta node
   public async broadcastTransaction(payload: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
     const endpoint = this.getPublicNodeBroadcastEndpoint();
 
     try {
-      const response = await axios.post(endpoint, payload.serializedSignedTransaction, {
+      const bodyBytes = utils.blobFromHex(payload.serializedSignedTransaction);
+      const response = await axios.post(endpoint, bodyBytes, {
+        headers: { 'Content-Type': 'application/cbor' },
         responseType: 'arraybuffer', // This ensures you get a Buffer, not a string
-        headers: {
-          'Content-Type': 'application/cbor',
-        },
       });
 
       if (response.status !== 200) {
@@ -268,8 +236,8 @@ export class Icp extends BaseCoin {
       const decodedResponse = utils.cborDecode(response.data) as PublicNodeSubmitResponse;
 
       if (decodedResponse.status === 'replied') {
-        const txnId = this.extractTransactionId(decodedResponse);
-        return { txId: txnId };
+        // it is considered a success because ICP returns response in a CBOR map with a status of 'replied'
+        return {}; // returned empty object as ICP does not return a txid
       } else {
         throw new Error(`Unexpected response status from node: ${decodedResponse.status}`);
       }
@@ -286,35 +254,58 @@ export class Icp extends BaseCoin {
     return endpoint;
   }
 
-  // TODO: Implement the real logic to extract the transaction ID, Ticket: https://bitgoinc.atlassian.net/browse/WIN-5075
-  private extractTransactionId(decodedResponse: PublicNodeSubmitResponse): string {
-    return '4c10cf22a768a20e7eebc86e49c031d0e22895a39c6355b5f7455b2acad59c1e';
+  /**
+   * Fetches the account balance for a given public key.
+   * @param publicKeyHex - Hex-encoded public key of the account.
+   * @returns Promise resolving to the account balance as a string.
+   * @throws Error if the balance could not be fetched.
+   */
+  protected async getAccountBalance(publicKeyHex: string): Promise<string> {
+    try {
+      const principalId = utils.getPrincipalIdFromPublicKey(publicKeyHex).toText();
+      return await this.getBalanceFromPrincipal(principalId);
+    } catch (error: any) {
+      throw new Error(`Unable to fetch account balance: ${error.message || error}`);
+    }
   }
 
   /**
-   * Helper to fetch account balance
-   * @param senderAddress - The address of the account to fetch the balance for
-   * @returns The balance of the account as a string
-   * @throws If the account is not found or there is an error fetching the balance
+   * Fetches the account balance for a given principal ID.
+   * @param principalId - The principal ID of the account.
+   * @returns Promise resolving to the account balance as a string.
+   * @throws Error if the balance could not be fetched.
    */
-  protected async getAccountBalance(address: string): Promise<string> {
+  protected async getBalanceFromPrincipal(principalId: string): Promise<string> {
     try {
-      const payload = {
-        account_identifier: {
-          address: address,
-        },
+      const agent = this.createAgent(); // TODO: WIN-5512: move to a ICP agent file WIN-5512
+      const ic = replica(agent, { local: true });
+
+      const ledger = ic(Principal.fromUint8Array(LEDGER_CANISTER_ID).toText());
+      const subaccountHex = '0000000000000000000000000000000000000000000000000000000000000000';
+
+      const account = {
+        owner: Principal.fromText(principalId),
+        subaccount: [utils.hexToBytes(subaccountHex)],
       };
-      const response = await this.getRosettaNodeResponse(JSON.stringify(payload), ACCOUNT_BALANCE_ENDPOINT);
-      const coinName = this._staticsCoin.name.toUpperCase();
-      const balanceEntry = response.body.balances.find((b) => b.currency?.symbol === coinName);
-      if (!balanceEntry) {
-        throw new Error(`No balance found for ICP account ${address}.`);
-      }
-      const balance = balanceEntry.value;
-      return balance;
-    } catch (error) {
-      throw new Error(`Unable to fetch account balance: ${error.message || error}`);
+
+      const balance = await ledger.call(ACCOUNT_BALANCE_CALL, account);
+      return balance.toString();
+    } catch (error: any) {
+      throw new Error(`Error fetching balance for principal ${principalId}: ${error.message || error}`);
     }
+  }
+
+  /**
+   * Creates a new HTTP agent for communicating with the Internet Computer.
+   * @param host - The host URL to connect to (defaults to the public node URL).
+   * @returns An instance of HttpAgent.
+   */
+  protected createAgent(host: string = this.getPublicNodeUrl()): HttpAgent {
+    return new HttpAgent({
+      host,
+      fetch,
+      verifyQuerySignatures: false,
+    });
   }
 
   private getBuilderFactory(): TransactionBuilderFactory {
@@ -364,76 +355,113 @@ export class Icp extends BaseCoin {
    * Builds a funds recovery transaction without BitGo
    * @param params
    */
-  async recover(params: RecoveryOptions): Promise<string> {
-    if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
-      throw new Error('invalid recoveryDestination');
-    }
+  async recover(params: RecoveryOptions): Promise<RecoveryTransaction | UnsignedSweepRecoveryTransaction> {
+    try {
+      if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+        throw new Error('invalid recoveryDestination');
+      }
 
-    if (!params.userKey) {
-      throw new Error('missing userKey');
-    }
+      const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
 
-    if (!params.backupKey) {
-      throw new Error('missing backupKey');
-    }
+      let publicKey: string | undefined;
+      let userKeyShare, backupKeyShare, commonKeyChain;
+      const MPC = new Ecdsa();
 
-    if (!params.walletPassphrase) {
-      throw new Error('missing wallet passphrase');
-    }
+      if (!isUnsignedSweep) {
+        if (!params.userKey) {
+          throw new Error('missing userKey');
+        }
 
-    const userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
+        if (!params.backupKey) {
+          throw new Error('missing backupKey');
+        }
 
-    const { userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
-      userKey,
-      backupKey,
-      params.walletPassphrase
-    );
-    const MPC = new Ecdsa();
-    const publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
+        if (!params.walletPassphrase) {
+          throw new Error('missing wallet passphrase');
+        }
 
-    if (!publicKey || !backupKeyShare) {
-      throw new Error('Missing publicKey or backupKeyShare');
-    }
+        const userKey = params.userKey.replace(/\s/g, '');
+        const backupKey = params.backupKey.replace(/\s/g, '');
 
-    const senderAddress = await this.getAddressFromPublicKey(publicKey);
+        ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+          userKey,
+          backupKey,
+          params.walletPassphrase
+        ));
+        publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
+      } else {
+        const bitgoKey = params.bitgoKey;
+        if (!bitgoKey) {
+          throw new Error('missing bitgoKey');
+        }
 
-    const balance = new BigNumber(await this.getAccountBalance(senderAddress));
-    const feeData = new BigNumber(utils.feeData());
-    const actualBalance = balance.plus(feeData); // gas amount returned from gasData is negative so we add it
-    if (actualBalance.isLessThanOrEqualTo(0)) {
-      throw new Error('Did not have enough funds to recover');
-    }
+        const hdTree = new mpc.Secp256k1Bip32HdTree();
+        const derivationPath = 'm/0';
+        const derivedPub = hdTree.publicDerive(
+          {
+            pk: mpc.bigIntFromBufferBE(Buffer.from(bitgoKey.slice(0, 66), 'hex')),
+            chaincode: mpc.bigIntFromBufferBE(Buffer.from(bitgoKey.slice(66), 'hex')),
+          },
+          derivationPath
+        );
 
-    const factory = this.getBuilderFactory();
-    const txBuilder = factory.getTransferBuilder();
-    txBuilder.sender(senderAddress, publicKey as string);
-    txBuilder.receiverId(params.recoveryDestination);
-    txBuilder.amount(actualBalance.toString());
-    if (params.memo !== undefined && utils.validateMemo(params.memo)) {
-      txBuilder.memo(Number(params.memo));
+        publicKey = mpc.bigIntToBufferBE(derivedPub.pk).toString('hex');
+      }
+
+      if (!publicKey) {
+        throw new Error('failed to derive public key');
+      }
+
+      const senderAddress = await this.getAddressFromPublicKey(publicKey);
+      const balance = new BigNumber(await this.getAccountBalance(publicKey));
+      const feeData = new BigNumber(utils.feeData());
+      const actualBalance = balance.plus(feeData); // gas amount returned from gasData is negative so we add it
+      if (actualBalance.isLessThanOrEqualTo(0)) {
+        throw new Error('Did not have enough funds to recover');
+      }
+
+      const factory = this.getBuilderFactory();
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(senderAddress, publicKey as string);
+      txBuilder.receiverId(params.recoveryDestination);
+      txBuilder.amount(actualBalance.toString());
+      if (params.memo !== undefined && utils.validateMemo(params.memo)) {
+        txBuilder.memo(Number(params.memo));
+      }
+      await txBuilder.build();
+      if (txBuilder.transaction.payloadsData.payloads.length === 0) {
+        throw new Error('Missing payloads to generate signatures');
+      }
+
+      if (isUnsignedSweep) {
+        return {
+          txHex: txBuilder.transaction.unsignedTransaction,
+          coin: this.getChain(),
+        };
+      }
+
+      const signatures = await this.signatures(
+        txBuilder.transaction.payloadsData,
+        publicKey,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain
+      );
+      if (!signatures || signatures.length === 0) {
+        throw new Error('Failed to generate signatures');
+      }
+      txBuilder.transaction.addSignature(signatures);
+      txBuilder.combine();
+      const broadcastableTxn = txBuilder.transaction.toBroadcastFormat();
+      await this.broadcastTransaction({ serializedSignedTransaction: broadcastableTxn });
+      const txId = txBuilder.transaction.id;
+      const recoveredTransaction: RecoveryTransaction = {
+        id: txId,
+        tx: broadcastableTxn,
+      };
+      return recoveredTransaction;
+    } catch (error) {
+      throw new Error(`Error during ICP recovery: ${error.message || error}`);
     }
-    await txBuilder.build();
-    if (txBuilder.transaction.payloadsData.payloads.length === 0) {
-      throw new Error('Missing payloads to generate signatures');
-    }
-    const signatures = await this.signatures(
-      txBuilder.transaction.payloadsData,
-      publicKey,
-      userKeyShare,
-      backupKeyShare,
-      commonKeyChain
-    );
-    if (!signatures || signatures.length === 0) {
-      throw new Error('Failed to generate signatures');
-    }
-    txBuilder.transaction.addSignature(signatures);
-    txBuilder.combine();
-    const broadcastableTxn = txBuilder.transaction.toBroadcastFormat();
-    const result = await this.broadcastTransaction({ serializedSignedTransaction: broadcastableTxn });
-    if (!result.txId) {
-      throw new Error('Transaction failed to broadcast');
-    }
-    return result.txId;
   }
 }
