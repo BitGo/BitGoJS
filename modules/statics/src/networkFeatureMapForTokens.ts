@@ -8,6 +8,7 @@ import {
   STX_TOKEN_FEATURES,
   SUI_TOKEN_FEATURES,
 } from './coinFeatures';
+import { OfcCoin } from './ofc';
 
 export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[]>> = {
   algo: AccountCoin.DEFAULT_FEATURES,
@@ -28,4 +29,5 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   trx: AccountCoin.DEFAULT_FEATURES,
   xlm: AccountCoin.DEFAULT_FEATURES,
   xrp: AccountCoin.DEFAULT_FEATURES,
+  ofc: OfcCoin.DEFAULT_FEATURES,
 };

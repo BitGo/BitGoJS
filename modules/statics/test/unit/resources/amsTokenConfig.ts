@@ -653,6 +653,37 @@ export const amsTokenConfigWithCustomToken = {
       contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983a',
     },
   ],
+  ofcterc2: [
+    {
+      id: '055ebe86-72cc-4f0e-b46f-c517d8e36871',
+      fullName: 'Test ERC Token2',
+      name: 'ofcterc2',
+      prefix: '',
+      suffix: 'TERC',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'ofc',
+      isToken: true,
+      features: [
+        'account-model',
+        'requires-big-number',
+        'custody',
+        'custody-bitgo-trust',
+        'custody-bitgo-mena-fze',
+        'custody-bitgo-custody-mena-fze',
+      ],
+      decimalPlaces: 18,
+      asset: 'terc',
+      network: {
+        type: 'testnet',
+        name: 'OfcTestnet',
+        family: 'ofc',
+      },
+      primaryKeyCurve: 'secp256k1',
+      addressCoin: 'teth',
+      minimumDenomination: 1000000000000000000,
+    },
+  ],
 };
 
 export const incorrectAmsTokenConfig = {
@@ -719,6 +750,29 @@ export const reducedAmsTokenConfig = {
       },
       primaryKeyCurve: 'secp256k1',
       contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983a',
+    },
+  ],
+  ofcterc2: [
+    {
+      id: '055ebe86-72cc-4f0e-b46f-c517d8e36871',
+      fullName: 'Test ERC Token2',
+      name: 'ofcterc2',
+      prefix: '',
+      suffix: 'TERC',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'ofc',
+      isToken: true,
+      decimalPlaces: 18,
+      asset: 'terc',
+      additionalFeatures: [],
+      excludedFeatures: [],
+      network: {
+        name: 'OfcTestnet',
+      },
+      primaryKeyCurve: 'secp256k1',
+      addressCoin: 'teth',
+      minimumDenomination: 1000000000000000000,
     },
   ],
 };

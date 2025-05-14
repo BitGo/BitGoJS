@@ -259,6 +259,8 @@ export interface AmsTokenConfig {
   domain?: string;
   assetId?: string;
   isToken: boolean;
+  baseUnit?: string;
+  kind?: string;
 }
 
 export interface TrimmedAmsNetworkConfig {
