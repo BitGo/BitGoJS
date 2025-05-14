@@ -646,12 +646,51 @@ export class Dot extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams } = params;
+    const coinConfig = coins.get(this.getChain());
+    const { txPrebuild, txParams } = params;
+
+    // Ensure only one recipient is allowed
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
       );
     }
+
+    // Validate the presence of txHex
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('Missing required tx prebuild property: txHex');
+    }
+
+    // Parse the transaction
+    const transaction = new Transaction(coinConfig);
+    transaction.fromRawTransaction(Buffer.from(rawTx, 'hex').toString('base64'));
+    const explainedTx = transaction.explainTransaction();
+
+    // Validate recipients
+    if (txParams.recipients) {
+      const filteredRecipients = txParams.recipients.map((recipient) => ({
+        address: recipient.address,
+        amount: BigInt(recipient.amount),
+      }));
+
+      const filteredOutputs = explainedTx.outputs.map((output) => ({
+        address: output.address,
+        amount: BigInt(output.amount),
+      }));
+
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Transaction outputs do not match the expected recipients in txParams.');
+      }
+
+      // Validate total amount
+      const totalAmount = txParams.recipients.reduce((sum, recipient) => sum.plus(recipient.amount), new BigNumber(0));
+
+      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+        throw new Error('Transaction total amount does not match the expected total amount.');
+      }
+    }
+
     return true;
   }
 
