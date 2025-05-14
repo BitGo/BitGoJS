@@ -17,7 +17,15 @@ import {
   tokenMainnetContractAddresses,
   tokenTestnetContractAddresses,
 } from './utils';
-import { ContractEntry, RawData, TransactionReceipt, TransferContract, TriggerSmartContract } from './iface';
+import {
+  ContractEntry,
+  RawData,
+  TransactionReceipt,
+  TransferContract,
+  TriggerSmartContract,
+  UnfreezeBalanceV2Contract,
+  WithdrawExpireUnfreezeContract,
+} from './iface';
 
 /**
  * Tron transaction model.
@@ -123,6 +131,30 @@ export class Transaction extends BaseTransaction {
           address: contractCallValues.owner_address,
           contractAddress,
           data: contractCallValues.data,
+          value: '0',
+        };
+        break;
+      case ContractType.UnfreezeBalanceV2:
+        this._type = TransactionType.StakingUnlock;
+        const unfreezeValues = (rawData.contract[0] as UnfreezeBalanceV2Contract).parameter.value;
+        output = {
+          address: unfreezeValues.owner_address,
+          value: unfreezeValues.unfreeze_balance.toString(),
+        };
+        input = {
+          address: unfreezeValues.owner_address,
+          value: unfreezeValues.unfreeze_balance.toString(),
+        };
+        break;
+      case ContractType.WithdrawExpireUnfreeze:
+        this._type = TransactionType.StakingWithdraw;
+        const withdrawValues = (rawData.contract[0] as WithdrawExpireUnfreezeContract).parameter.value;
+        output = {
+          address: withdrawValues.owner_address,
+          value: '0', // no value field
+        };
+        input = {
+          address: withdrawValues.owner_address,
           value: '0',
         };
         break;
