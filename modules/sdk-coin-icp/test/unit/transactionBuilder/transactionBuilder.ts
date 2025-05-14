@@ -1,9 +1,10 @@
+import { BaseKey, BuildTransactionError } from '@bitgo/sdk-core';
+import assert from 'assert';
 import should from 'should';
-import { getBuilderFactory } from '../getBuilderFactory';
-import { BaseKey } from '@bitgo/sdk-core';
-import * as testData from '../../resources/icp';
 import sinon from 'sinon';
 import { DEFAULT_MEMO, MAX_INGRESS_TTL } from '../../../src/lib/iface';
+import * as testData from '../../resources/icp';
+import { getBuilderFactory } from '../getBuilderFactory';
 
 describe('ICP Transaction Builder', async () => {
   const factory = getBuilderFactory('ticp');
@@ -64,6 +65,17 @@ describe('ICP Transaction Builder', async () => {
     txBuilder.amount('10');
     txBuilder.memo(123456);
     await txBuilder.build().should.rejectedWith('sender is required before building');
+  });
+
+  it('should fail to build a txn with incorrect memo', async () => {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.Accounts.account1.address, testData.Accounts.account1.publicKey);
+    txBuilder.receiverId(testData.Accounts.account2.address);
+    txBuilder.amount('10');
+    const incorrectMemos = ['abcd', undefined];
+    for (const memo of incorrectMemos) {
+      assert.throws(() => txBuilder.memo(Number(memo)), BuildTransactionError, `Invalid memo: ${Number(memo)}`);
+    }
   });
 
   it('should fail to build a txn without amount', async () => {

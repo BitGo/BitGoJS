@@ -1,10 +1,10 @@
+import { BaseAddress, BaseKey, BaseTransactionBuilder, BuildTransactionError, SigningError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { BaseTransactionBuilder, BuildTransactionError, BaseAddress, SigningError, BaseKey } from '@bitgo/sdk-core';
-import { Transaction } from './transaction';
-import utils from './utils';
 import { DEFAULT_MEMO, IcpTransaction, IcpTransactionData, PayloadsData, Signatures } from './iface';
 import { SignedTransactionBuilder } from './signedTransactionBuilder';
+import { Transaction } from './transaction';
+import utils from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -58,7 +58,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   public memo(memo: number): this {
-    if (memo < 0) {
+    if (typeof memo !== 'number' || Number.isNaN(memo) || memo < 0) {
       throw new BuildTransactionError(`Invalid memo: ${memo}`);
     }
     this._memo = memo;
