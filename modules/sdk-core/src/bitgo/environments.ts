@@ -173,7 +173,7 @@ const mainnetBase: EnvironmentTemplate = {
   babyNodeUrl: 'https://babylon.nodes.guru/api/',
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
-  cronosNodeUrl: 'https://cronos-rest.publicnode.com/',
+  cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
   fetchNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   initNodeUrl: 'https://rest.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
   dotNodeUrls: ['wss://rpc.polkadot.io'],
