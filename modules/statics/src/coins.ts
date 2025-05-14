@@ -1395,7 +1395,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.POLYX,
     BaseUnit.POLYX,
-    POLYX_FEATURES,
+    [...POLYX_FEATURES, CoinFeature.STAKING],
     KeyCurve.Ed25519
   ),
   account(

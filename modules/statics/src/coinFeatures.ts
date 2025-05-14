@@ -447,12 +447,7 @@ export const TAO_FEATURES = [
   CoinFeature.STAKING,
 ];
 
-export const POLYX_FEATURES = [
-  ...AccountCoin.DEFAULT_FEATURES,
-  CoinFeature.TSS,
-  CoinFeature.TSS_COLD,
-  CoinFeature.STAKING,
-];
+export const POLYX_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 
 export const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 export const ETH_FEATURES_WITH_GERMANY = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
