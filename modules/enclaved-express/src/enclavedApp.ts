@@ -13,7 +13,7 @@ import * as bodyParser from 'body-parser';
 import * as _ from 'lodash';
 import { SSL_OP_NO_TLSv1 } from 'constants';
 
-import { Config, config } from './config';
+import { Config, config, TlsMode } from './config';
 import * as routes from './routes';
 
 const debugLogger = debug('enclaved:express');
@@ -63,26 +63,57 @@ export function startup(config: Config, baseUri: string): () => void {
 }
 
 function isTLS(config: Config): boolean {
-  const { keyPath, crtPath, sslKey, sslCert, disableSSL } = config;
-  if (disableSSL) return false;
-  return Boolean((keyPath && crtPath) || (sslKey && sslCert));
+  const { keyPath, crtPath, tlsKey, tlsCert, tlsMode } = config;
+  if (tlsMode === TlsMode.DISABLED) return false;
+  return Boolean((keyPath && crtPath) || (tlsKey && tlsCert));
 }
 
 async function createHttpsServer(app: express.Application, config: Config): Promise<https.Server> {
-  const { keyPath, crtPath, sslKey, sslCert } = config;
+  const { keyPath, crtPath, tlsKey, tlsCert, tlsMode, mtlsRequestCert, mtlsRejectUnauthorized } = config;
   let key: string;
   let cert: string;
-  if (sslKey && sslCert) {
-    key = sslKey;
-    cert = sslCert;
+  if (tlsKey && tlsCert) {
+    key = tlsKey;
+    cert = tlsCert;
   } else if (keyPath && crtPath) {
     const privateKeyPromise = require('fs').promises.readFile(keyPath, 'utf8');
     const certificatePromise = require('fs').promises.readFile(crtPath, 'utf8');
     [key, cert] = await Promise.all([privateKeyPromise, certificatePromise]);
   } else {
-    throw new Error('Failed to get ssl key and certificate');
+    throw new Error('Failed to get TLS key and certificate');
   }
-  return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
+
+  const httpsOptions: https.ServerOptions = {
+    secureOptions: SSL_OP_NO_TLSv1,
+    key,
+    cert,
+    // Add mTLS options if in mTLS mode
+    requestCert: tlsMode === TlsMode.MTLS && mtlsRequestCert,
+    rejectUnauthorized: tlsMode === TlsMode.MTLS && mtlsRejectUnauthorized,
+  };
+
+  const server = https.createServer(httpsOptions, app);
+
+  // Add middleware to validate client certificate fingerprints if in mTLS mode
+  if (tlsMode === TlsMode.MTLS && config.mtlsAllowedClientFingerprints?.length) {
+    app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+      const clientCert = (req as any).socket?.getPeerCertificate();
+      if (!clientCert) {
+        return res.status(403).json({ error: 'Client certificate required' });
+      }
+
+      const fingerprint = clientCert.fingerprint256?.replace(/:/g, '').toUpperCase();
+      if (!fingerprint || !config.mtlsAllowedClientFingerprints?.includes(fingerprint)) {
+        return res.status(403).json({ error: 'Invalid client certificate fingerprint' });
+      }
+
+      // Store client certificate info for logging
+      (req as any).clientCert = clientCert;
+      next();
+    });
+  }
+
+  return server;
 }
 
 function createHttpServer(app: express.Application): http.Server {
