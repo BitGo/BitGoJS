@@ -23,6 +23,7 @@ export {
   SuiCoin,
   XrpCoin,
   AptCoin,
+  AptNFTCollection,
   Sip10Token,
 } from './account';
 export { CoinMap } from './map';
