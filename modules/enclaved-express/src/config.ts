@@ -42,19 +42,26 @@ function readEnvVar(name: string, ...deprecatedAliases: string[]): string | unde
 
 export function config(): Config {
   const envConfig: Partial<Config> = {
-    port: Number(readEnvVar('BITGO_PORT')) || defaultConfig.port,
-    bind: readEnvVar('BITGO_BIND') || defaultConfig.bind,
-    ipc: readEnvVar('BITGO_IPC'),
-    debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(',').filter(Boolean),
-    keyPath: readEnvVar('BITGO_KEYPATH'),
-    crtPath: readEnvVar('BITGO_CRTPATH'),
-    sslKey: readEnvVar('BITGO_SSL_KEY'),
-    sslCert: readEnvVar('BITGO_SSL_CERT'),
-    logFile: readEnvVar('BITGO_LOGFILE'),
-    disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ? true : undefined,
-    timeout: Number(readEnvVar('BITGO_TIMEOUT')) || defaultConfig.timeout,
-    keepAliveTimeout: Number(readEnvVar('BITGO_KEEP_ALIVE_TIMEOUT')),
-    headersTimeout: Number(readEnvVar('BITGO_HEADERS_TIMEOUT')),
+    port: Number(readEnvVar('MASTER_BITGO_EXPRESS_PORT')) || defaultConfig.port,
+    bind: readEnvVar('MASTER_BITGO_EXPRESS_BIND') || defaultConfig.bind,
+    ipc: readEnvVar('MASTER_BITGO_EXPRESS_IPC'),
+    debugNamespace: (readEnvVar('MASTER_BITGO_EXPRESS_DEBUG_NAMESPACE') || '').split(',').filter(Boolean),
+    keyPath: readEnvVar('MASTER_BITGO_EXPRESS_KEYPATH'),
+    crtPath: readEnvVar('MASTER_BITGO_EXPRESS_CRTPATH'),
+    sslKey: readEnvVar('MASTER_BITGO_EXPRESS_SSL_KEY'),
+    sslCert: readEnvVar('MASTER_BITGO_EXPRESS_SSL_CERT'),
+    logFile: readEnvVar('MASTER_BITGO_EXPRESS_LOGFILE'),
+    disableSSL: readEnvVar(
+      'MASTER_BITGO_EXPRESS_DISABLE_SSL',
+      'MASTER_BITGO_EXPRESS_DISABLESSL',
+      'DISABLESSL',
+      'DISABLE_SSL'
+    )
+      ? true
+      : undefined,
+    timeout: Number(readEnvVar('MASTER_BITGO_EXPRESS_TIMEOUT')) || defaultConfig.timeout,
+    keepAliveTimeout: Number(readEnvVar('MASTER_BITGO_EXPRESS_KEEP_ALIVE_TIMEOUT')),
+    headersTimeout: Number(readEnvVar('MASTER_BITGO_EXPRESS_HEADERS_TIMEOUT')),
   };
 
   // Support loading key/cert from file if keyPath/crtPath are set and sslKey/sslCert are not

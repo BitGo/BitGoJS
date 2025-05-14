@@ -11,7 +11,8 @@
     "start": "node bin/enclaved-express",
     "build": "yarn tsc --build --incremental --verbose .",
     "test": "jest",
-    "lint": "eslint --quiet ."
+    "lint": "eslint --quiet .",
+    "generate-test-ssl": "openssl req -x509 -newkey rsa:2048 -keyout test-ssl-key.pem -out test-ssl-cert.pem -days 365 -nodes -subj '/CN=localhost'"
   },
   "dependencies": {
     "@bitgo/abstract-lightning": "^4.2.3",
