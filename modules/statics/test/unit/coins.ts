@@ -1053,6 +1053,7 @@ describe('create token map using config details', () => {
     formattedTokens.bitcoin.should.deepEqual(tokens.bitcoin);
     formattedTokens.testnet.eth.should.not.deepEqual(tokens.testnet.eth);
     formattedTokens.testnet.eth.tokens.some((token) => token.type === 'hteth:faketoken').should.eql(true);
+    formattedTokens.testnet.ofc.tokens.some((token) => token.type === 'ofcterc2').should.eql(true);
   });
   it('should not create an base coin object in coin map for token with unsupported network', () => {
     const tokenMap = createTokenMapUsingTrimmedConfigDetails(amsTokenWithUnsupportedNetwork);
@@ -1061,12 +1062,18 @@ describe('create token map using config details', () => {
   it('should create a coin map using reduced token config details', () => {
     const coinMap1 = createTokenMapUsingTrimmedConfigDetails(reducedAmsTokenConfig);
     const amsToken1 = coinMap1.get('hteth:faketoken');
+    const amsOfcToken1 = coinMap1.get('ofcterc2');
     const coinMap2 = createTokenMapUsingConfigDetails(amsTokenConfigWithCustomToken);
     const amsToken2 = coinMap2.get('hteth:faketoken');
+    const amsOfcToken2 = coinMap2.get('ofcterc2');
     const { network: tokenNetwork1, ...tokenRest1 } = amsToken1;
     const { network: tokenNetwork2, ...tokenRest2 } = amsToken2;
+    const { network: tokenNetwork3, ...tokenRest3 } = amsOfcToken1;
+    const { network: tokenNetwork4, ...tokenRest4 } = amsOfcToken2;
     tokenRest1.should.deepEqual(tokenRest2);
+    tokenRest3.should.deepEqual(tokenRest4);
     JSON.stringify(tokenNetwork1).should.eql(JSON.stringify(tokenNetwork2));
+    JSON.stringify(tokenNetwork3).should.eql(JSON.stringify(tokenNetwork4));
   });
   it('should be able to add single ams token into coin map', () => {
     const coinMap = CoinMap.fromCoins([]);

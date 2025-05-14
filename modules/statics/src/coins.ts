@@ -44,6 +44,7 @@ import {
   xrpToken,
   zkethErc20,
 } from './account';
+import { ofcToken } from './ofc';
 import { ada } from './ada';
 import { avaxp } from './avaxp';
 import { BaseCoin, BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
@@ -3337,6 +3338,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     trx: tronToken,
     xlm: stellarToken,
     xrp: xrpToken,
+    ofc: ofcToken,
   };
 
   const family = token.family;
@@ -3450,7 +3452,13 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         token.domain, // domain
         ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
-
+    case 'ofc':
+      return initializer(
+        ...commonArgs, // id, name, fullName, decimalPlaces, asset, prefix, suffix, network, primaryKeyCurve
+        token.baseUnit, // baseUnit
+        token.isToken, // isToken
+        token.kind // kind
+      );
     default:
       return undefined;
   }

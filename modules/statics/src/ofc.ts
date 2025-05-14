@@ -57,6 +57,58 @@ export class OfcCoin extends BaseCoin {
 }
 
 /**
+ * Function to convert AMS inputs into OFC coin instance.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the coin
+ * @param fullName complete human-readable name of the coin
+ * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param prefix Optional coin prefix. Defaults to empty string
+ * @param suffix Optional coin suffix. Defaults to coin name.
+ * @param network Network object for this coin
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param baseUnit base unit of the token
+ * @param isToken Whether or not this account coin is a token of another coin
+ * @param kind Differentiates coins which represent fiat assets from those which represent crypto assets
+ * @returns {Readonly<OfcCoin>} OFC coin instance
+ */
+export function ofcToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
+  network: OfcNetwork = Networks.main.ofc,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  baseUnit: BaseUnit = BaseUnit.OFC,
+  isToken = true,
+  kind: CoinKind = CoinKind.CRYPTO
+): Readonly<OfcCoin> {
+  return Object.freeze(
+    new OfcCoin({
+      id,
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+      asset,
+      kind,
+      primaryKeyCurve,
+      baseUnit,
+    })
+  );
+}
+
+/**
  * Factory function for ofc coin instances.
  *
  * @param id uuid v4
