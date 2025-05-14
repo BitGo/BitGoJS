@@ -1020,6 +1020,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:uhu'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    '16e58623-b4bf-4e53-bfe8-d4bed3d3d338',
+    'polygon:buidl',
+    'BlackRock USD Institutional Digital Liquidity Fund',
+    6,
+    '0x2893ef551b6dd69f661ac00f11d93e5dc5dc0e99',
+    UnderlyingAsset['polygon:buidl'],
+    POLYGON_TOKEN_FEATURES
+  ),
   // testnet polygon tokens
   tpolygonErc20(
     '09ba76d0-331e-4b75-bb75-739285c3e03a',

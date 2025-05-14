@@ -1868,6 +1868,10 @@ export enum UnderlyingAsset {
   ZRX = 'zrx',
   ZUSD = 'zusd',
   'eth:usdg' = 'eth:usdg',
+  'eth:spxux' = 'eth:spxux',
+  'eth:aleo' = 'eth:aleo',
+  'eth:dbusd' = 'eth:dbusd',
+  'eth:aut' = 'eth:aut',
   'eth:edu' = 'eth:edu',
   'eth:telos' = 'eth:telos',
   'eth:cusdo' = 'eth:cusdo',
@@ -1999,6 +2003,7 @@ export enum UnderlyingAsset {
   'avaxc:xsgd' = 'avaxc:xsgd',
   'avaxc:ticov2' = 'avaxc:ticov2',
   'avaxc:nxpc' = 'avaxc:nxpc',
+  'avaxc:spxux' = 'avaxc:spxux',
   'tavaxc:opm' = 'tavaxc:opm',
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   'tavaxc:xsgd' = 'tavaxc:xsgd',
@@ -2175,6 +2180,7 @@ export enum UnderlyingAsset {
   'polygon:mv' = 'polygon:mv',
   'polygon:bid' = 'polygon:bid',
   'polygon:tcs' = 'polygon:tcs',
+  'polygon:buidl' = 'polygon:buidl',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2341,6 +2347,7 @@ export enum UnderlyingAsset {
 
   // Arbitrum mainnet tokens
   'arbeth:link' = 'arbeth:link',
+  'arbeth:spxux' = 'arbeth:spxux',
   'arbeth:usdc' = 'arbeth:usdc',
   'arbeth:xsgdv2' = 'arbeth:xsgdv2',
   'arbeth:usdcv2' = 'arbeth:usdcv2',
@@ -2398,6 +2405,7 @@ export enum UnderlyingAsset {
   'opeth:exa' = 'opeth:exa',
   'opeth:wld' = 'opeth:wld',
   'opeth:wct' = 'opeth:wct',
+  'opeth:spxux' = 'opeth:spxux',
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
@@ -2545,6 +2553,8 @@ export enum UnderlyingAsset {
   'sol:matrix' = 'sol:matrix',
   'sol:eurcv' = 'sol:eurcv',
   'sol:layer' = 'sol:layer',
+  'sol:rock' = 'sol:rock',
+  'sol:doodles' = 'sol:doodles',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
