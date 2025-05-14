@@ -7,8 +7,21 @@
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as xrpl from 'xrpl';
 import { ECPair } from '@bitgo/secp256k1';
+import BigNumber from 'bignumber.js';
 
 import * as binary from 'ripple-binary-codec';
+
+/**
+ * Convert an XRP address to a BigNumber for numeric comparison.
+ * This is needed for proper sorting of signers as required by the XRP protocol.
+ *
+ * @param address - The XRP address to convert
+ * @returns BigNumber representation of the address
+ */
+function addressToBigNumber(address: string): BigNumber {
+  const hex = Buffer.from(xrpl.decodeAccountID(address)).toString('hex');
+  return new BigNumber(hex, 16);
+}
 
 function computeSignature(tx, privateKey, signAs) {
   const signingData = signAs ? binary.encodeForMultisigning(tx, signAs) : binary.encodeForSigning(tx);
@@ -53,9 +66,17 @@ const signWithPrivateKey = function (txHex, privateKey, options) {
       TxnSignature: computeSignature(tx, privateKey, options.signAs),
     };
     // Ordering of private key signing matters, or the Ripple fullnode will throw an 'Unsorted Signers array' error.
-    // Additional signers must be added to the front of the signers array list.
-    if (tx.TxnSignature || tx.Signers) {
-      tx.Signers.unshift({ Signer: signer });
+    // XRP requires Signers array to be sorted based on numeric value of signer addresses (lowest first)
+    if (tx.Signers) {
+      // Add the current signer
+      tx.Signers.push({ Signer: signer });
+
+      // Sort the Signers array by numeric value of Account (address) to ensure proper ordering
+      tx.Signers.sort((a, b) => {
+        const addressBN1 = addressToBigNumber(a.Signer.Account);
+        const addressBN2 = addressToBigNumber(b.Signer.Account);
+        return addressBN1.comparedTo(addressBN2);
+      });
     } else {
       tx.Signers = [{ Signer: signer }];
     }
