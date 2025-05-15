@@ -39,6 +39,7 @@ describe('Coins', () => {
       Icp: 1,
       Ticp: 1,
       Sip10Token: 1,
+      SoneiumToken: 1,
       Polyx: 1,
       Tpolyx: 1,
     };

@@ -126,6 +126,9 @@ export interface Tokens {
     polygon: {
       tokens: EthLikeTokenConfig[];
     };
+    soneium: {
+      tokens: EthLikeTokenConfig[];
+    };
     bsc: {
       tokens: EthLikeTokenConfig[];
     };
@@ -192,6 +195,9 @@ export interface Tokens {
       tokens: AvaxcTokenConfig[];
     };
     polygon: {
+      tokens: EthLikeTokenConfig[];
+    };
+    soneium: {
       tokens: EthLikeTokenConfig[];
     };
     arbeth: {
@@ -419,6 +425,21 @@ const getFormattedPolygonTokens = (customCoinMap = coins) =>
       acc.push({
         type: coin.name,
         coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
+
+const getFormattedSoneiumTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.SONEIUM) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'soneium' : 'tsoneium',
         network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
         name: coin.fullName,
         tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
@@ -665,6 +686,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       polygon: {
         tokens: getFormattedPolygonTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      soneium: {
+        tokens: getFormattedSoneiumTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       arbeth: {
         tokens: getFormattedArbethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
@@ -731,6 +755,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       polygon: {
         tokens: getFormattedPolygonTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      soneium: {
+        tokens: getFormattedSoneiumTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       arbeth: {
         tokens: getFormattedArbethTokens(coinMap).filter((token) => token.network === 'Testnet'),

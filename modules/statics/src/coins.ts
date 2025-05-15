@@ -2347,6 +2347,50 @@ export const coins = CoinMap.fromCoins([
     Networks.test.polygon,
     KeyCurve.Secp256k1
   ),
+  erc721(
+    '7c8a60a0-8ced-4429-b868-02106b3a478d',
+    'erc721:soneiumtoken',
+    'Generic Soneium ERC721',
+    '0xerc721:soneiumtoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.main.soneium,
+    KeyCurve.Secp256k1
+  ),
+  erc1155(
+    '64b57b9f-3aaf-4518-95fb-4458abc828fd',
+    'erc1155:soneiumtoken',
+    'Generic Soneium ERC1155',
+    '0xerc1155:soneiumtoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.main.polygon,
+    KeyCurve.Secp256k1
+  ),
+  terc721(
+    'c3fd9b27-b7df-4287-8991-58c15d004e83',
+    'terc721:soneiumtoken',
+    'Generic Soneium ERC721',
+    '0xterc721:soneiumtoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
+  terc1155(
+    '8c27076a-c84b-4735-a263-8c47f604df69',
+    'terc1155:soneiumtoken',
+    'Generic Soneium ERC1155',
+    '0xterc1155:soneiumtoken',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
   arbethErc20(
     '14a21e93-b123-4437-b99f-0489947d0379',
     'arbeth:link',
@@ -3532,6 +3576,10 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
     'erc1155:polygontoken',
     'terc721:polygontoken',
     'terc1155:polygontoken',
+    'erc721:soneiumtoken',
+    'erc1155:soneiumtoken',
+    'terc721:soneiumtoken',
+    'terc1155:soneiumtoken',
   ]);
 
   // Add all the coins from statics coin map first
