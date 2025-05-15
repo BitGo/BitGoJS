@@ -2600,12 +2600,12 @@ export const solTokens = [
   ),
   solToken(
     '269e778e-f9fd-455d-a066-5eb38c32c845',
-    'sol:doodles',
+    'sol:dood',
     'Doodles',
     9,
     'DvjbEsdca43oQcw2h3HW1CT7N3x5vRcr3QrvTUHnXvgV',
     'DvjbEsdca43oQcw2h3HW1CT7N3x5vRcr3QrvTUHnXvgV',
-    UnderlyingAsset['sol:doodles'],
+    UnderlyingAsset['sol:dood'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
