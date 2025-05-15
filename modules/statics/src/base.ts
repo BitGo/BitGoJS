@@ -2425,6 +2425,11 @@ export enum UnderlyingAsset {
   'tbera:usdc' = 'tbera:usdc',
   'tbera:ibera' = 'tbera:ibera',
 
+  // Soneium NFTs
+  // generic NFTs
+  'erc721:soneiumtoken' = 'erc721:soneiumtoken',
+  'erc1155:soneiumtoken' = 'erc1155:soneiumtoken',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',

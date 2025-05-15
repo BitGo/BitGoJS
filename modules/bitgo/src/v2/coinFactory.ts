@@ -83,6 +83,7 @@ import {
   Sip10Token,
   Sol,
   Soneium,
+  SoneiumToken,
   StellarToken,
   Stx,
   Stt,
@@ -381,6 +382,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   });
 
   PolygonToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    coinFactory.register(name, coinConstructor);
+  });
+
+  SoneiumToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     coinFactory.register(name, coinConstructor);
   });
 
