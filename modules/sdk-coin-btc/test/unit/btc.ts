@@ -75,32 +75,34 @@ describe('BTC:', function () {
       coin = bitgo.coin('tbtc') as Tbtc;
     });
 
-    it('should return { isValid: true } for valid inputs', async () => {
-      const result = await coin.auditKey({
+    it('should return for valid inputs', async () => {
+      coin.assertIsValidKey({
         encryptedPrv: key,
         walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
       });
-      result.should.deepEqual({ isValid: true });
     });
 
-    it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
-      const result = await coin.auditKey({
-        encryptedPrv: key,
-        walletPassphrase: 'foo',
-      });
-      result.should.deepEqual({
-        isValid: false,
-        message: "failed to decrypt prv: ccm: tag doesn't match",
-      });
+    it('should throw error if the walletPassphrase is incorrect', async () => {
+      try {
+        coin.assertIsValidKey({
+          encryptedPrv: key,
+          walletPassphrase: 'foo',
+        });
+      } catch (e) {
+        e.message.should.equal("failed to decrypt prv: ccm: tag doesn't match");
+      }
     });
 
     it('should return { isValid: false } if the key is altered', async () => {
       const alteredKey = key.replace(/[0-9]/g, '0');
-      const result = await coin.auditKey({
-        encryptedPrv: alteredKey,
-        walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
-      });
-      result.isValid.should.equal(false);
+      try {
+        coin.assertIsValidKey({
+          encryptedPrv: alteredKey,
+          walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+        });
+      } catch (e) {
+        e.message.should.equal('failed to decrypt prv: json decrypt: invalid parameters');
+      }
     });
   });
 });

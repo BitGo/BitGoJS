@@ -1,6 +1,5 @@
 import {
   AuditDecryptedKeyParams,
-  AuditKeyResponse,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -670,21 +669,11 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
   }
 
   /** @inheritDoc **/
-  auditDecryptedKey({ multiSigType, publicKey, prv }: AuditDecryptedKeyParams): AuditKeyResponse {
+  auditDecryptedKey({ multiSigType, publicKey, prv }: AuditDecryptedKeyParams) {
     if (multiSigType !== 'tss') {
       throw new Error('Unsupported multiSigType');
     } else {
-      const result = auditEcdsaPrivateKey(prv as string, publicKey as string);
-      if (result.isValid) {
-        return { isValid: true };
-      } else {
-        if (!result.isCommonKeychainValid) {
-          return { isValid: false, message: 'Invalid common keychain' };
-        } else if (!result.isPrivateKeyValid) {
-          return { isValid: false, message: 'Invalid private key' };
-        }
-        return { isValid: false };
-      }
+      auditEcdsaPrivateKey(prv as string, publicKey as string);
     }
   }
 }

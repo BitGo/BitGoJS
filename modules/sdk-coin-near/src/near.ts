@@ -35,7 +35,6 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-  AuditKeyResponse,
 } from '@bitgo/sdk-core';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
@@ -777,20 +776,10 @@ export class Near extends BaseCoin {
   }
 
   /** @inheritDoc */
-  auditDecryptedKey({ prv, publicKey, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+  auditDecryptedKey({ prv, publicKey, multiSigType }: AuditDecryptedKeyParams) {
     if (multiSigType !== 'tss') {
       throw new Error('Unsupported multiSigType');
     }
-    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
-    if (result.isValid) {
-      return { isValid: true };
-    } else {
-      if (!result.isCommonKeychainValid) {
-        return { isValid: false, message: 'Invalid common keychain' };
-      } else if (!result.isPrivateKeyValid) {
-        return { isValid: false, message: 'Invalid private key' };
-      }
-      return { isValid: false };
-    }
+    auditEddsaPrivateKey(prv, publicKey ?? '');
   }
 }
