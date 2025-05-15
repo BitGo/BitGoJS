@@ -2438,6 +2438,12 @@ export enum UnderlyingAsset {
   'erc721:soneiumtoken' = 'erc721:soneiumtoken',
   'erc1155:soneiumtoken' = 'erc1155:soneiumtoken',
 
+  // coredao mainnet tokens
+  'coredao:stcore' = 'coredao:stcore',
+
+  // coredao testnet tokens
+  'tcoredao:stcore' = 'tcoredao:stcore',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',

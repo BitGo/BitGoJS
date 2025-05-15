@@ -34,6 +34,7 @@ import {
   Celo,
   CeloToken,
   Coredao,
+  CoredaoToken,
   Coreum,
   Cronos,
   Cspr,
@@ -402,6 +403,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   });
 
   BeraToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    coinFactory.register(name, coinConstructor);
+  });
+
+  CoredaoToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     coinFactory.register(name, coinConstructor);
   });
 

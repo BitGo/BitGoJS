@@ -8,6 +8,7 @@ import {
   BeraERC20Token,
   BscCoin,
   CeloCoin,
+  CoredaoERC20Token,
   EosCoin,
   Erc1155Coin,
   Erc20Coin,
@@ -143,6 +144,9 @@ export interface Tokens {
     opeth: {
       tokens: EthLikeTokenConfig[];
     };
+    coredao: {
+      tokens: EthLikeTokenConfig[];
+    };
     sol: {
       tokens: SolTokenConfig[];
     };
@@ -234,6 +238,9 @@ export interface Tokens {
       tokens: SuiTokenConfig[];
     };
     bera: {
+      tokens: EthLikeTokenConfig[];
+    };
+    coredao: {
       tokens: EthLikeTokenConfig[];
     };
     apt: {
@@ -516,6 +523,21 @@ const getFormattedBeraTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+const getFormattedCoredaoTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof CoredaoERC20Token) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'coredao' : 'tcoredao',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
+
 const getFormattedSolTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: SolTokenConfig[], coin) => {
     if (coin instanceof SolCoin) {
@@ -742,6 +764,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       bera: {
         tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      coredao: {
+        tokens: getFormattedCoredaoTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       apt: {
         tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Mainnet'),
         nftCollections: formattedAptNFTCollections.filter(
@@ -823,6 +848,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       stx: {
         tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      coredao: {
+        tokens: getFormattedCoredaoTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
     },
   };
