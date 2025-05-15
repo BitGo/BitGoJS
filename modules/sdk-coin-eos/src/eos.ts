@@ -14,6 +14,7 @@ import * as url from 'url';
 import { OfflineAbiProvider } from './eosutil/eosabiprovider';
 import { StringTextDecoder } from './lib/utils';
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   checkKrsProvider,
@@ -24,6 +25,7 @@ import {
   HalfSignedAccountTransaction as BaseHalfSignedTransaction,
   InvalidAddressError,
   KeyPair,
+  MethodNotImplementedError,
   MultisigType,
   multisigTypes,
   ParsedTransaction,
@@ -1156,5 +1158,10 @@ export class Eos extends BaseCoin {
       address.push(char);
     }
     return address.join('');
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    throw new MethodNotImplementedError();
   }
 }

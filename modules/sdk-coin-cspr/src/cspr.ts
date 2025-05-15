@@ -7,6 +7,7 @@ import BigNumber from 'bignumber.js';
 
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   InvalidAddressError,
@@ -24,6 +25,7 @@ import {
   UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  MethodNotImplementedError,
 } from '@bitgo/sdk-core';
 
 interface SignTransactionOptions extends BaseSignTransactionOptions {
@@ -354,5 +356,10 @@ export class Cspr extends BaseCoin {
 
   private getBuilder(): CsprLib.TransactionBuilderFactory {
     return new CsprLib.TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    throw new MethodNotImplementedError();
   }
 }

@@ -1117,39 +1117,53 @@ describe('XLM:', function () {
     const { key } = xlmBackupKey;
     const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
 
-    it('should return { isValid: true) } for valid inputs', async () => {
-      const result = await basecoin.auditKey({
+    it('should return for valid inputs', () => {
+      basecoin.assertIsValidKey({
         encryptedPrv: key,
         walletPassphrase,
       });
-      result.should.deepEqual({ isValid: true });
     });
 
-    it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
-      const result = await basecoin.auditKey({
-        encryptedPrv: key,
-        walletPassphrase: 'foo',
-      });
-      result.should.deepEqual({ isValid: false, message: "failed to decrypt prv: ccm: tag doesn't match" });
+    it('should throw error if the walletPassphrase is incorrect', () => {
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv: key,
+            walletPassphrase: 'foo',
+          }),
+        {
+          message: "failed to decrypt prv: ccm: tag doesn't match",
+        }
+      );
     });
 
-    it('should return { isValid: false } if the key is altered', async () => {
+    it('should throw error if the key is altered', () => {
       const alteredKey = key.replace(/[0-9]/g, '0');
-      const result = await basecoin.auditKey({
-        encryptedPrv: alteredKey,
-        walletPassphrase,
-      });
-      result.isValid.should.equal(false);
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv: alteredKey,
+            walletPassphrase,
+          }),
+        {
+          message: 'failed to decrypt prv: json decrypt: invalid parameters',
+        }
+      );
     });
 
-    it('should return { isValid: false } if the key is not a valid key', async () => {
+    it('should return { isValid: false } if the key is not a valid key', () => {
       const invalidKey = '#@)$#($*@)#($*';
       const encryptedPrv = encrypt(walletPassphrase, invalidKey);
-      const result = await basecoin.auditKey({
-        encryptedPrv,
-        walletPassphrase,
-      });
-      result.should.deepEqual({ isValid: false, message: 'Invalid private key' });
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv,
+            walletPassphrase,
+          }),
+        {
+          message: 'Invalid private key',
+        }
+      );
     });
   });
 });

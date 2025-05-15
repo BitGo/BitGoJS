@@ -26,7 +26,6 @@ import {
   PublicKey,
   MPCTxs,
   MPCSweepRecoveryOptions,
-  AuditKeyResponse,
   AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -510,20 +509,10 @@ export class Ton extends BaseCoin {
   }
 
   /** @inheritDoc */
-  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
     if (multiSigType !== 'tss') {
       throw new Error('Unsupported multiSigType');
     }
-    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
-    if (result.isValid) {
-      return { isValid: true };
-    } else {
-      if (!result.isCommonKeychainValid) {
-        return { isValid: false, message: 'Invalid common keychain' };
-      } else if (!result.isPrivateKeyValid) {
-        return { isValid: false, message: 'Invalid private key' };
-      }
-      return { isValid: false };
-    }
+    auditEddsaPrivateKey(prv, publicKey ?? '');
   }
 }

@@ -2,6 +2,7 @@
  * @prettier
  */
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   KeyPair,
@@ -71,6 +72,11 @@ export class Susd extends BaseCoin {
   }
 
   async signTransaction(params: SignTransactionOptions = {}): Promise<SignedTransaction> {
+    throw new MethodNotImplementedError();
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
     throw new MethodNotImplementedError();
   }
 }

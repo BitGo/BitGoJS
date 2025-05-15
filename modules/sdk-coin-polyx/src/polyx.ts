@@ -1,4 +1,5 @@
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   KeyPair,
@@ -69,5 +70,10 @@ export class Polyx extends SubstrateCoin {
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     throw new Error('Method not implemented.');
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
+    super.auditDecryptedKey({ publicKey, prv, multiSigType });
   }
 }

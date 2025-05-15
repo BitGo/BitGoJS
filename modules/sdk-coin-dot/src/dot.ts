@@ -29,7 +29,6 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-  AuditKeyResponse,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
@@ -666,20 +665,10 @@ export class Dot extends BaseCoin {
   }
 
   /** @inheritDoc */
-  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams): AuditKeyResponse {
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
     if (multiSigType !== 'tss') {
       throw new Error('Unsupported multiSigType');
     }
-    const result = auditEddsaPrivateKey(prv, publicKey ?? '');
-    if (result.isValid) {
-      return { isValid: true };
-    } else {
-      if (!result.isCommonKeychainValid) {
-        return { isValid: false, message: 'Invalid common keychain' };
-      } else if (!result.isPrivateKeyValid) {
-        return { isValid: false, message: 'Invalid private key' };
-      }
-      return { isValid: false };
-    }
+    auditEddsaPrivateKey(prv, publicKey ?? '');
   }
 }

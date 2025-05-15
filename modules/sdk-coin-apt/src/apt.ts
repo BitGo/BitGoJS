@@ -1,4 +1,5 @@
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -21,6 +22,7 @@ import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { ExplainTransactionOptions } from './lib/types';
 import { AptTransactionExplanation } from './lib/iface';
+import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
 export interface AptParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
@@ -196,5 +198,13 @@ export class Apt extends BaseCoin {
     } catch {
       throw new Error('Failed to rebuild transaction');
     }
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ multiSigType, prv, publicKey }: AuditDecryptedKeyParams): void {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+    auditEddsaPrivateKey(prv, publicKey ?? '');
   }
 }

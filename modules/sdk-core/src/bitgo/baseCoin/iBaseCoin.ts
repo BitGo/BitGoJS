@@ -105,13 +105,6 @@ export type AuditKeyParams = { prv?: string; encryptedPrv?: string; walletPassph
 
 export type AuditDecryptedKeyParams = Omit<AuditKeyParams, 'encryptedPrv' | 'walletPassphrase'> & { prv: string };
 
-export type AuditKeyResponse = {
-  // determines if the key is valid
-  isValid: boolean;
-  // Optional message providing additional information about the audit result
-  message?: string;
-};
-
 export interface ITransactionExplanation<TFee = any, TAmount = any> {
   /** @deprecated */
   displayOrder?: string[];
@@ -583,10 +576,11 @@ export interface IBaseCoin {
 
   /**
    * Audit a key to determine if it is valid for the coin.
-   * @param {string} publicKey  - The public portion of the key
-   * @param {string} encryptedPrv - The encrypted private key
-   * @param {string} walletPassphrase - The passphrase to decrypt the private key
-   * @param {string} multiSigType - The type of multisig (e.g. 'onchain' or 'tss')
+   * @param {Object} params - The parameters for the audit
+   * @param {string} params.publicKey  - The public portion of the key
+   * @param {string} params.encryptedPrv - The encrypted private key
+   * @param {string} params.walletPassphrase - The passphrase to decrypt the private key
+   * @param {string} params.multiSigType - The type of multisig (e.g. 'onchain' or 'tss')
    */
-  auditKey({ publicKey, encryptedPrv, walletPassphrase, multiSigType }: AuditKeyParams): AuditKeyResponse;
+  assertIsValidKey({ publicKey, encryptedPrv, walletPassphrase, multiSigType }: AuditKeyParams): void;
 }

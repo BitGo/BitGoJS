@@ -46,7 +46,6 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   AuditKeyParams,
-  AuditKeyResponse,
   AuditDecryptedKeyParams,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
@@ -626,18 +625,15 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /** @inheritDoc */
-  auditKey(params: AuditKeyParams): AuditKeyResponse {
+  assertIsValidKey(params: AuditKeyParams): void {
     let decryptedKey: string;
 
     try {
       decryptedKey = sjcl.decrypt(params.walletPassphrase, params.encryptedPrv);
     } catch (e) {
-      return {
-        isValid: false,
-        message: `failed to decrypt prv: ${e.message}`,
-      };
+      throw new Error(`failed to decrypt prv: ${e.message}`);
     }
-    return this.auditDecryptedKey({ ...params, prv: decryptedKey });
+    this.auditDecryptedKey({ ...params, prv: decryptedKey });
   }
 
   /**
@@ -648,7 +644,5 @@ export abstract class BaseCoin implements IBaseCoin {
    * @param {string} params.multiSigType - the multi-sig type, if applicable
    * @returns {AuditKeyResponse} - result of the audit
    */
-  protected auditDecryptedKey(params: AuditDecryptedKeyParams): AuditKeyResponse {
-    throw new NotImplementedError('auditDecryptedKey is not implemented for this coin');
-  }
+  abstract auditDecryptedKey(params: AuditDecryptedKeyParams): void;
 }

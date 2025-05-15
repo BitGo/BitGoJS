@@ -1063,32 +1063,34 @@ describe('ETH:', function () {
     describe('MultiSig', () => {
       const { key } = ethMultiSigBackupKey;
 
-      it('should return { isValid: true } for valid inputs', async () => {
-        const result = await coin.auditKey({
+      it('should return { isValid: true } for valid inputs', () => {
+        coin.assertIsValidKey({
           encryptedPrv: key,
           walletPassphrase: 'ZQ8MhxT84m4P',
         });
-        result.should.deepEqual({ isValid: true });
       });
 
-      it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
-        const result = await coin.auditKey({
-          encryptedPrv: key,
-          walletPassphrase: 'foo',
-        });
-        result.should.deepEqual({
-          isValid: false,
-          message: "failed to decrypt prv: ccm: tag doesn't match",
-        });
+      it('should throw error if the walletPassphrase is incorrect', () => {
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: key,
+              walletPassphrase: 'foo',
+            }),
+          { message: "failed to decrypt prv: ccm: tag doesn't match" }
+        );
       });
 
-      it('should return { isValid: false } if the key is altered', async () => {
+      it('should throw error if the key is altered', () => {
         const alteredKey = key.replace(/[0-9]/g, '0');
-        const result = await coin.auditKey({
-          encryptedPrv: alteredKey,
-          walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
-        });
-        result.isValid.should.equal(false);
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: alteredKey,
+              walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+            }),
+          { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+        );
       });
     });
 
@@ -1098,47 +1100,55 @@ describe('ETH:', function () {
       const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
       const multiSigType = 'tss';
 
-      it('should return { isValid: true } for valid inputs', async () => {
-        const result = await coin.auditKey({
+      it('should not throw for valid inputs', () => {
+        coin.assertIsValidKey({
           encryptedPrv: key,
           publicKey: commonKeychain,
           walletPassphrase,
           multiSigType,
         });
-        result.should.deepEqual({ isValid: true });
       });
 
-      it('should return { isValid: false } if the commonKeychain is altered', async () => {
+      it('should throw if the commonKeychain is altered', () => {
         const alteredCommonKeychain = generateRandomPassword(10);
-        const result = await coin.auditKey({
-          encryptedPrv: key,
-          publicKey: alteredCommonKeychain,
-          walletPassphrase,
-          multiSigType,
-        });
-        result.should.deepEqual({ isValid: false, message: 'Invalid common keychain' });
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: key,
+              publicKey: alteredCommonKeychain,
+              walletPassphrase,
+              multiSigType,
+            }),
+          { message: 'Invalid common keychain' }
+        );
       });
 
-      it('should return { isValid: false } if the walletPassphrase is incorrect', async () => {
+      it('should throw error if the walletPassphrase is incorrect', () => {
         const incorrectPassphrase = 'foo';
-        const result = await coin.auditKey({
-          encryptedPrv: key,
-          publicKey: commonKeychain,
-          walletPassphrase: incorrectPassphrase,
-          multiSigType,
-        });
-        result.should.deepEqual({ isValid: false, message: "failed to decrypt prv: ccm: tag doesn't match" });
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: key,
+              publicKey: commonKeychain,
+              walletPassphrase: incorrectPassphrase,
+              multiSigType,
+            }),
+          { message: "failed to decrypt prv: ccm: tag doesn't match" }
+        );
       });
 
-      it('should return { isValid: false } if the key is altered', async () => {
+      it('should throw error if the key is altered', () => {
         const alteredKey = key.replace(/[0-9]/g, '0');
-        const result = await coin.auditKey({
-          encryptedPrv: alteredKey,
-          publicKey: commonKeychain,
-          walletPassphrase,
-          multiSigType,
-        });
-        result.isValid.should.equal(false);
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: alteredKey,
+              publicKey: commonKeychain,
+              walletPassphrase,
+              multiSigType,
+            }),
+          { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+        );
       });
     });
   });
