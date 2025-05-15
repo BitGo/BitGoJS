@@ -9,6 +9,7 @@ import {
   beraErc20,
   bscToken,
   celoToken,
+  coredaoErc20,
   eosToken,
   erc1155,
   erc20,
@@ -31,6 +32,7 @@ import {
   tarbethErc20,
   tberaErc20,
   tceloToken,
+  tcoredaoErc20,
   teosToken,
   terc1155,
   terc721,
@@ -2951,6 +2953,22 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x5bdc3cae6fb270ef07579c428bb630e73c8d623b',
     UnderlyingAsset['tbera:ibera']
+  ),
+  coredaoErc20(
+    '7dfd048f-7718-46e7-8cdb-864a3fc27b1b',
+    'coredao:stcore',
+    'stCore Token',
+    18,
+    '0xb3a8f0f0da9ffc65318aa39e55079796093029ad',
+    UnderlyingAsset['coredao:stcore']
+  ),
+  tcoredaoErc20(
+    'b4448868-8beb-4dd8-b607-3b36e11f1df4',
+    'tcoredao:stcore',
+    'Testnet stCore token',
+    18,
+    '0x6401f24ef7c54032f4f54e67492928973ab87650',
+    UnderlyingAsset['tcoredao:stcore']
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
