@@ -1,6 +1,6 @@
 import { EnvironmentName, V1Network } from 'bitgo';
 import { isNil, isNumber } from 'lodash';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import 'dotenv/config';
 
 import { args } from './args';
@@ -170,13 +170,18 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
       enclavedExpressUrl = forceSecureUrl(enclavedExpressUrl);
       console.log('Using secure enclaved express URL:', enclavedExpressUrl);
     }
-    const enclavedExpressSSLCertPath = get('enclavedExpressSSLCert');
-    if (enclavedExpressSSLCertPath) {
+    const enclavedExpressSSLCertValue = get('enclavedExpressSSLCert');
+    if (enclavedExpressSSLCertValue) {
       try {
-        enclavedExpressSSLCert = readFileSync(enclavedExpressSSLCertPath, { encoding: 'utf8' });
-        console.log('Successfully loaded SSL cert from:', enclavedExpressSSLCertPath);
+        // First try to read it as a file path
+        enclavedExpressSSLCert = existsSync(enclavedExpressSSLCertValue)
+          ? readFileSync(enclavedExpressSSLCertValue, { encoding: 'utf8' })
+          : enclavedExpressSSLCertValue; // If not a file, use the value directly
+        if (existsSync(enclavedExpressSSLCertValue)) {
+          console.log('Successfully loaded SSL cert from:', enclavedExpressSSLCertValue);
+        }
       } catch (e) {
-        console.error(`Failed to load enclaved express SSL cert from path: ${enclavedExpressSSLCertPath}`, e);
+        console.error(`Failed to process enclaved express SSL cert: ${enclavedExpressSSLCertValue}`, e);
       }
     }
   }

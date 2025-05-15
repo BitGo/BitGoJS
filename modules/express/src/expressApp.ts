@@ -287,7 +287,7 @@ export function setupRoutes(app: express.Application, config: Config): void {
   if (config.signerMode) {
     clientRoutes.setupSigningRoutes(app, config);
   } else if (config.enclavedExpressUrl && config.enclavedExpressSSLCert) {
-    clientRoutes.setupEnclavedSigningRoutes(app, config);
+    clientRoutes.setupEnclavedExpressRoutes(app, config);
   } else {
     if (config.lightningSignerFileSystemPath) {
       clientRoutes.setupLightningSignerNodeRoutes(app, config);

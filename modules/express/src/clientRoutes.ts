@@ -1771,8 +1771,9 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
   );
 }
 
-export function setupEnclavedSigningRoutes(app: express.Application, config: Config): void {
-  app.post('/ping/enclavedExpress', parseBody, prepareBitGo(config), promiseWrapper(handlePingEnclavedExpress));
+export function setupEnclavedExpressRoutes(app: express.Application, config: Config): void {
+  // Keep the ping endpoint for health checks
+  app.get('/ping/enclavedExpress', parseBody, prepareBitGo(config), promiseWrapper(handlePingEnclavedExpress));
 }
 
 export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {
