@@ -1805,5 +1805,5 @@ export const gatekeep = [
   'arbeth:spxux',
   'opeth:spxux',
   'sol:rock',
-  'sol:doodles',
+  'sol:dood',
 ];

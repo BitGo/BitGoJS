@@ -678,10 +678,10 @@ export const ofcCoins = [
   ),
   ofcsolToken(
     '78a9e2b8-40a5-4424-ae67-808248dc99cc',
-    'ofcsol:doodles',
+    'ofcsol:dood',
     'Doodles',
     9,
-    UnderlyingAsset['sol:doodles'],
+    UnderlyingAsset['sol:dood'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(

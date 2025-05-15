@@ -2565,7 +2565,7 @@ export enum UnderlyingAsset {
   'sol:eurcv' = 'sol:eurcv',
   'sol:layer' = 'sol:layer',
   'sol:rock' = 'sol:rock',
-  'sol:doodles' = 'sol:doodles',
+  'sol:dood' = 'sol:dood',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
