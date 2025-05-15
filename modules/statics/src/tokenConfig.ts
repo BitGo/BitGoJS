@@ -2,6 +2,7 @@ import {
   AdaCoin,
   AlgoCoin,
   AptCoin,
+  AptNFTCollection,
   ArbethERC20Token,
   AvaxERC20Token,
   BeraERC20Token,
@@ -96,6 +97,10 @@ export type AptTokenConfig = BaseNetworkConfig & {
   assetId: string;
 };
 
+export type AptNFTCollectionConfig = BaseNetworkConfig & {
+  nftCollectionId: string;
+};
+
 export type Sip10TokenConfig = BaseNetworkConfig & {
   assetId: string;
 };
@@ -164,6 +169,7 @@ export interface Tokens {
     };
     apt: {
       tokens: AptTokenConfig[];
+      nftCollections: AptNFTCollectionConfig[];
     };
     stx: {
       tokens: Sip10TokenConfig[];
@@ -232,6 +238,7 @@ export interface Tokens {
     };
     apt: {
       tokens: AptTokenConfig[];
+      nftCollections: AptNFTCollectionConfig[];
     };
     stx: {
       tokens: Sip10TokenConfig[];
@@ -639,6 +646,21 @@ const getFormattedAptTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+const getFormattedAptNFTCollections = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: AptNFTCollectionConfig[], coin) => {
+    if (coin instanceof AptNFTCollection) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        nftCollectionId: coin.nftCollectionId,
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
+
 const getFormattedSip10Tokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: Sip10TokenConfig[], coin) => {
     if (coin instanceof Sip10Token) {
@@ -655,6 +677,7 @@ const getFormattedSip10Tokens = (customCoinMap = coins) =>
   }, []);
 
 export const getFormattedTokens = (coinMap = coins): Tokens => {
+  const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   return {
     bitcoin: {
       eth: {
@@ -721,6 +744,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       apt: {
         tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+        nftCollections: formattedAptNFTCollections.filter(
+          (nftCollection: AptNFTCollectionConfig) => nftCollection.network === 'Mainnet'
+        ),
       },
       stx: {
         tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
@@ -791,6 +817,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       apt: {
         tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Testnet'),
+        nftCollections: formattedAptNFTCollections.filter(
+          (nftCollection: AptNFTCollectionConfig) => nftCollection.network === 'Testnet'
+        ),
       },
       stx: {
         tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === 'Testnet'),
