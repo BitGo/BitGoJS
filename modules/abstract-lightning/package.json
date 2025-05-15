@@ -43,11 +43,14 @@
     "@bitgo/sdk-core": "^33.2.0",
     "@bitgo/statics": "^52.2.0",
     "@bitgo/utxo-lib": "^11.3.0",
+    "bech32": "^2.0.0",
+    "bolt11": "^1.4.1",
     "bs58check": "^2.1.2",
     "fp-ts": "^2.12.2",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "io-ts-types": "^0.5.16",
-    "macaroon": "^3.0.4"
+    "macaroon": "^3.0.4",
+    "superagent": "^10.2.1"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }
