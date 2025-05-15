@@ -11,9 +11,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-kms": "^3.808.0",
     "body-parser": "^2.2.0",
     "express": "^5.1.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.1",

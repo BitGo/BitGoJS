@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import db from '../../db';
-import { ZodPostKeySchema } from './schemas';
+import { ZodPostKeySchema } from '../schemas/postKeySchema';
 
 export function POST(req: Request, res: Response, next: NextFunction) {
   try {
@@ -12,16 +12,11 @@ export function POST(req: Request, res: Response, next: NextFunction) {
 
   const { prv, pub, coin, source, type } = req.body;
 
-  // TODO:
-  // check duplicated using the prv/pub key?
-  // exploitable if we show an error?
-  const keyObject = db.query('SELECT * from PRIVATE_KEYS WHERE prv = ? AND pub = ?', [prv, pub]);
-
-  // priv + pub should be unique so we raise an error
+  // check for duplicates
+  const keyObject = db.query('SELECT * from PRIVATE_KEYS WHERE pub = ? AND source = ?', [prv, pub]);
   if (keyObject) {
-    res.status(409); // It could be also 403 but 409 is specific for dupplicates.
-    // TODO: I could return the prv and pub in the error but seems exploitable as hell
-    res.send({ message: `Error: Duplicated Key` });
+    res.status(409);
+    res.send({ message: `Error: Duplicated Key for source: ${source} and pub: ${pub}` });
     return;
   }
 
