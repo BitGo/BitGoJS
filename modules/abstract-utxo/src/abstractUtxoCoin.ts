@@ -13,7 +13,6 @@ import {
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
   IBaseCoin,
-  AuditKeyResponse,
   InvalidAddressDerivationPropertyError,
   InvalidAddressError,
   IRequestTracer,
@@ -1141,20 +1140,19 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return forCoin(this.getChain(), apiToken);
   }
 
-  auditDecryptedKey({ multiSigType, publicKey, prv }): AuditKeyResponse {
+  /** @inheritDoc */
+  auditDecryptedKey({ multiSigType, publicKey, prv }) {
     if (multiSigType === 'tss') {
       throw new Error('tss auditing is not supported for this coin');
     }
     if (!isValidPrv(prv) && !isValidXprv(prv)) {
-      return { isValid: false, message: 'Invalid private key' };
+      throw new Error('invalid private key');
     }
     if (publicKey) {
       const genPubKey = bitcoin.HDNode.fromBase58(prv).neutered().toBase58();
       if (genPubKey !== publicKey) {
-        return { isValid: false, message: 'Incorrect xpub' };
+        throw new Error('public key does not match private key');
       }
     }
-
-    return { isValid: true };
   }
 }
