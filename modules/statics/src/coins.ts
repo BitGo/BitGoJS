@@ -2846,6 +2846,102 @@ export const coins = CoinMap.fromCoins([
     '0x1a149e21bd3e74b7018db79c988b4ba3bbc1873d',
     UnderlyingAsset['opeth:spxux']
   ),
+  opethErc20(
+    '7427c1fe-ad4c-41a6-84c5-2666e7baa20f',
+    'opeth:flttx',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    18,
+    '0xdc8e5a4954b1b4245e910fc17c9b4e4aa407595d',
+    UnderlyingAsset['opeth:flttx']
+  ),
+  opethErc20(
+    '1066c0f3-4aab-4e5c-8ca2-a52da00d7b36',
+    'opeth:wtsix',
+    'WisdomTree Short-Duration Income Digital Fund',
+    18,
+    '0x69690e156ab458901a4b71c3fc5f5b8a598b931d',
+    UnderlyingAsset['opeth:wtsix']
+  ),
+  opethErc20(
+    '616f0a07-84c8-411f-9fa0-301e2ec2fa40',
+    'opeth:modrx',
+    'WisdomTree Siegel Moderate Digital Fund',
+    18,
+    '0x06ee92531ff2c8fdb5348b31b41df0f9a3a1ca97',
+    UnderlyingAsset['opeth:modrx']
+  ),
+  opethErc20(
+    '31caf4ac-34e3-4da4-afef-16461632821d',
+    'opeth:techx',
+    'WisdomTree Technology & Innovation 100 Digital Fund',
+    18,
+    '0x7f259541089253a037e1367ac09beed98f1a7974',
+    UnderlyingAsset['opeth:techx']
+  ),
+  opethErc20(
+    'c5ad389e-ce78-4e31-befc-3f380ba36987',
+    'opeth:wtsyx',
+    'WisdomTree Short-Term Treasury Digital Fund',
+    18,
+    '0xbe310315ef22d0eb8a91c211a7286b10d21be7fc',
+    UnderlyingAsset['opeth:wtsyx']
+  ),
+  opethErc20(
+    'd668023a-aee7-4415-9aec-235c4864368b',
+    'opeth:wtlgx',
+    'WisdomTree Long Term Treasury Digital Fund',
+    18,
+    '0x449331e1f93b0dbe0d54a7ce8bb3a5585f27848a',
+    UnderlyingAsset['opeth:wtlgx']
+  ),
+  opethErc20(
+    '52fcc1be-29cd-4244-b8a2-0b0a4e4be160',
+    'opeth:wttsx',
+    'WisdomTree 3-7 Year Treasury Digital Fund',
+    18,
+    '0x401e7e6558507764805a545f61c049361aa7a7cb',
+    UnderlyingAsset['opeth:wttsx']
+  ),
+  opethErc20(
+    'a93b6916-2d6e-4034-9b2e-59f9da648447',
+    'opeth:tipsx',
+    'WisdomTree TIPS Digital Fund',
+    18,
+    '0xbe0917f9d9d8a97e5ee0796831e0b05a1edc8437',
+    UnderlyingAsset['opeth:tipsx']
+  ),
+  opethErc20(
+    'ceb36c00-87b1-4617-8380-a744bbf21dea',
+    'opeth:wtstx',
+    'WisdomTree 7-10 Year Treasury Digital Fund',
+    18,
+    '0x15f0fb408097ce442482a127edc23371b0201964',
+    UnderlyingAsset['opeth:wtstx']
+  ),
+  opethErc20(
+    '669694f3-94ed-43da-a35a-cb03a721e9da',
+    'opeth:wtgxx',
+    'WisdomTree Government Money Market Digital Fund',
+    18,
+    '0x870fd36b3bf7f5abeeea2c8d4abdf1dc4e33109d',
+    UnderlyingAsset['opeth:wtgxx']
+  ),
+  opethErc20(
+    '42729d3e-e010-43a9-91ea-378565b0aa51',
+    'opeth:lngvx',
+    'WisdomTree Siegel Longevity Digital Fund',
+    18,
+    '0xf5fe77f469e598ecd2c08e5f874c206f8cfee807',
+    UnderlyingAsset['opeth:lngvx']
+  ),
+  opethErc20(
+    '3b200233-f137-4b3c-80fe-16e7beb637b6',
+    'opeth:eqtyx',
+    'WisdomTree Siegel Global Equity Digital Fund',
+    18,
+    '0x8ac0d6b94ae23ad40407bc4dc16d74f09131eb48',
+    UnderlyingAsset['opeth:eqtyx']
+  ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
     'topeth:terc18dp',
