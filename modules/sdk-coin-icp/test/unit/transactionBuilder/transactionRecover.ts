@@ -6,7 +6,7 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import nock from 'nock';
 import { Icp } from '../../../src/index';
-import { RecoveryOptions, ACCOUNT_BALANCE_ENDPOINT, LEDGER_CANISTER_ID } from '../../../src/lib/iface';
+import { RecoveryOptions, LEDGER_CANISTER_ID } from '../../../src/lib/iface';
 import { Principal } from '@dfinity/principal';
 
 describe('ICP transaction recovery', async () => {
@@ -16,7 +16,6 @@ describe('ICP transaction recovery', async () => {
   let broadcastEndpoint: string;
   let broadcastResponse: Buffer;
   let nodeUrl: string;
-  let rosettaNodeUrl: string;
   let txBuilder: any;
   const factory = getBuilderFactory('ticp');
 
@@ -32,7 +31,6 @@ describe('ICP transaction recovery', async () => {
     };
 
     icp = bitgo.coin('icp');
-    rosettaNodeUrl = icp.getRosettaNodeUrl();
     nodeUrl = icp.getPublicNodeUrl();
     const principal = Principal.fromUint8Array(LEDGER_CANISTER_ID);
     const canisterIdHex = principal.toText();
@@ -66,11 +64,11 @@ describe('ICP transaction recovery', async () => {
     });
 
     const body = testData.RecoverySignedTransactionWithDefaultMemo;
-    nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
+    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
     nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
-    const txnId = await icp.recover(recoveryParams);
-    txnId.should.be.a.String();
-    should.equal(txnId, testData.TxnId);
+    const recoverTxn = await icp.recover(recoveryParams);
+    recoverTxn.id.should.be.a.String();
+    should.equal(recoverTxn.id, testData.TxnIdWithDefaultMemo);
   });
 
   it('should recover a transaction with memo successfully', async () => {
@@ -87,48 +85,112 @@ describe('ICP transaction recovery', async () => {
     });
 
     const body = testData.RecoverySignedTransactionWithMemo;
-    nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
+    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
     nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
     recoveryParams.memo = testData.MetaDataWithMemo.memo;
-    const txnId = await icp.recover(recoveryParams);
-    txnId.should.be.a.String();
-    should.equal(txnId, testData.TxnId);
+    const recoverTxn = await icp.recover(recoveryParams);
+    recoverTxn.id.should.be.a.String();
+    should.equal(recoverTxn.id, testData.TxnIdWithMemo);
+  });
+
+  it('should recover a unsigned sweep transaction successfully', async () => {
+    txBuilder = factory.getTransferBuilder();
+
+    // Stub the getTransferBuilder to return our txBuilder
+    sinon.stub(icp, 'getBuilderFactory').returns(factory);
+    sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
+
+    sinon.stub(txBuilder._utils, 'getMetaData').returns({
+      metaData: testData.MetaDataWithMemo,
+      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
+    });
+
+    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
+
+    const unsignedSweepRecoveryParams = {
+      bitgoKey:
+        '0310768736a005ea5364e1b5b5288cf553224dd28b2df8ced63b72a8020478967f05ec5bce1f26cd7eb009a4bea445bb55c2f54a30f2706c1a3747e8df2d288829',
+      recoveryDestination: testData.Accounts.account2.address,
+    };
+    const recoverTxn = await icp.recover(unsignedSweepRecoveryParams);
+    recoverTxn.txHex.should.be.a.String();
+    should.equal(recoverTxn.txHex, testData.UnsignedSweepTransaction);
+  });
+
+  it('should failed to recover a unsigned sweep transaction with wrong bitgo key', async () => {
+    txBuilder = factory.getTransferBuilder();
+
+    // Stub the getTransferBuilder to return our txBuilder
+    sinon.stub(icp, 'getBuilderFactory').returns(factory);
+    sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
+
+    sinon.stub(txBuilder._utils, 'getMetaData').returns({
+      metaData: testData.MetaDataWithMemo,
+      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
+    });
+
+    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
+
+    const unsignedSweepRecoveryParams = {
+      bitgoKey: 'testKey',
+      recoveryDestination: testData.Accounts.account2.address,
+    };
+    await icp
+      .recover(unsignedSweepRecoveryParams)
+      .should.rejectedWith('Error during ICP recovery: Cannot convert 0x to a BigInt');
+  });
+
+  it('should failed to recover recover a unsigned sweep transaction without bitgo key', async () => {
+    txBuilder = factory.getTransferBuilder();
+
+    // Stub the getTransferBuilder to return our txBuilder
+    sinon.stub(icp, 'getBuilderFactory').returns(factory);
+    sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
+
+    sinon.stub(txBuilder._utils, 'getMetaData').returns({
+      metaData: testData.MetaDataWithMemo,
+      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
+    });
+
+    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
+
+    const unsignedSweepRecoveryParams = {
+      recoveryDestination: testData.Accounts.account2.address,
+    };
+    await icp.recover(unsignedSweepRecoveryParams).should.rejectedWith('Error during ICP recovery: missing bitgoKey');
   });
 
   it('should fail to recover if broadcast API fails', async () => {
-    nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
+    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
     nock(nodeUrl).post(broadcastEndpoint).reply(500, 'Internal Server Error');
     recoveryParams.memo = 0;
     await icp
       .recover(recoveryParams)
-      .should.rejectedWith('Transaction broadcast error: Request failed with status code 500');
+      .should.rejectedWith(
+        'Error during ICP recovery: Transaction broadcast error: Request failed with status code 500'
+      );
   });
 
   it('should fail to recover txn if balance is low', async () => {
-    testData.GetAccountBalanceResponse.balances[0].value = '0';
-    nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
+    sinon.stub(icp, 'getBalanceFromPrincipal').returns('10');
     nock(nodeUrl).post(broadcastEndpoint).reply(200, broadcastResponse);
-    await icp.recover(recoveryParams).should.rejectedWith('Did not have enough funds to recover');
+    await icp
+      .recover(recoveryParams)
+      .should.rejectedWith('Error during ICP recovery: Did not have enough funds to recover');
   });
 
   it('should fail to recover txn if userKey is not provided', async () => {
-    nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
-
     recoveryParams.userKey = '';
-    await icp.recover(recoveryParams).should.rejectedWith('missing userKey');
+    await icp.recover(recoveryParams).should.rejectedWith('Error during ICP recovery: missing userKey');
   });
 
   it('should fail to recover txn if backupKey is not provided', async () => {
-    nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
-
     recoveryParams.backupKey = '';
-    await icp.recover(recoveryParams).should.rejectedWith('missing backupKey');
+    await icp.recover(recoveryParams).should.rejectedWith('Error during ICP recovery: missing backupKey');
   });
 
   it('should fail to recover txn if wallet passphrase is not provided', async () => {
-    nock(rosettaNodeUrl).post(`${ACCOUNT_BALANCE_ENDPOINT}`).reply(200, testData.GetAccountBalanceResponse);
-
     recoveryParams.walletPassphrase = '';
-    await icp.recover(recoveryParams).should.rejectedWith('missing wallet passphrase');
+    await icp.recover(recoveryParams).should.rejectedWith('Error during ICP recovery: missing wallet passphrase');
   });
 });

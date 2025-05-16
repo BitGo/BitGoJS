@@ -71,7 +71,6 @@ interface EnvironmentTemplate {
   flrExplorerApiToken?: string;
   sgbExplorerBaseUrl?: string;
   sgbExplorerApiToken?: string;
-  icpRosettaNodeUrl: string;
   icpNodeUrl: string;
   wemixExplorerBaseUrl?: string;
   wemixExplorerApiToken?: string;
@@ -192,7 +191,6 @@ const mainnetBase: EnvironmentTemplate = {
   xdcExplorerBaseUrl: 'https://api-xdc.blocksscan.io',
   wemixExplorerBaseUrl: 'https://api.wemixscan.com',
   sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
-  icpRosettaNodeUrl: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/', //TODO: WIN-5278: change it with mainnet explorer, when its available
@@ -264,7 +262,6 @@ const testnetBase: EnvironmentTemplate = {
   flrExplorerBaseUrl: 'https://coston2-explorer.flare.network',
   xdcExplorerBaseUrl: 'https://api-apothem.xdcscan.io',
   sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
-  icpRosettaNodeUrl: 'http://localhost:8081', //TODO(WIN-4242): update when rosetta node is available
   icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
   monExplorerBaseUrl: 'https://testnet.monadexplorer.com/',
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',

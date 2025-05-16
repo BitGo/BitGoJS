@@ -7,7 +7,7 @@ export const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanosecond
 export const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
 export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // Uint8Array value for "00000000000000020101" and the string value is "ryjl3-tyaaa-aaaaa-aaaba-cai"
 export const ROOT_PATH = 'm/0';
-export const ACCOUNT_BALANCE_ENDPOINT = '/account/balance';
+export const ACCOUNT_BALANCE_CALL = 'icrc1_balance_of';
 export const PUBLIC_NODE_REQUEST_ENDPOINT = '/api/v3/canister/';
 export const DEFAULT_MEMO = 0; // default memo value is 0
 
@@ -180,9 +180,20 @@ export interface RecoveryOptions {
   userKey: string; // Box A
   backupKey: string; // Box B
   bitgoKey?: string;
+  rootAddress?: string;
   recoveryDestination: string;
   walletPassphrase: string;
   memo?: number | BigInt;
+}
+
+export interface RecoveryTransaction {
+  id: string;
+  tx: string;
+}
+
+export interface UnsignedSweepRecoveryTransaction {
+  txHex: string;
+  coin: string;
 }
 
 export interface PublicNodeSubmitResponse {
