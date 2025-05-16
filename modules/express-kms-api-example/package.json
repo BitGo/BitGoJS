@@ -11,7 +11,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@aws-sdk/client-kms": "^3.808.0",
+    "@aws-sdk/client-kms": "^3.810.0",
+    "@azure/identity": "^4.10.0",
+    "@azure/keyvault-keys": "^4.9.0",
     "body-parser": "^2.2.0",
     "express": "^5.1.0",
     "sqlite3": "^5.1.7",
