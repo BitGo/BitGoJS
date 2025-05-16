@@ -38,6 +38,7 @@ import type { ParamsDictionary } from 'express-serve-static-core';
 import * as _ from 'lodash';
 import * as url from 'url';
 import * as superagent from 'superagent';
+import { handlePingEnclavedExpress } from './enclavedExpressRoutes';
 
 // RequestTracer should be extracted into a separate npm package (along with
 // the rest of the BitGoJS HTTP request machinery)
@@ -1768,6 +1769,11 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
     prepareBitGo(config),
     promiseWrapper(handleV2OFCSignPayloadInExtSigningMode)
   );
+}
+
+export function setupEnclavedExpressRoutes(app: express.Application, config: Config): void {
+  // Keep the ping endpoint for health checks
+  app.get('/ping/enclavedExpress', parseBody, prepareBitGo(config), promiseWrapper(handlePingEnclavedExpress));
 }
 
 export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {

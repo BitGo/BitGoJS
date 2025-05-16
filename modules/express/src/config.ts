@@ -1,5 +1,6 @@
 import { EnvironmentName, V1Network } from 'bitgo';
 import { isNil, isNumber } from 'lodash';
+import { readFileSync, existsSync } from 'fs';
 import 'dotenv/config';
 
 import { args } from './args';
@@ -38,6 +39,8 @@ export interface Config {
   customBitcoinNetwork?: V1Network;
   authVersion: number;
   externalSignerUrl?: string;
+  enclavedExpressUrl?: string;
+  enclavedExpressSSLCert?: string;
   signerMode?: boolean;
   signerFileSystemPath?: string;
   lightningSignerFileSystemPath?: string;
@@ -64,6 +67,8 @@ export const ArgConfig = (args): Partial<Config> => ({
   customBitcoinNetwork: args.custombitcoinnetwork,
   authVersion: args.authVersion,
   externalSignerUrl: args.externalSignerUrl,
+  enclavedExpressUrl: args.enclavedExpressUrl,
+  enclavedExpressSSLCert: args.enclavedExpressSSLCert,
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
   lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
@@ -90,6 +95,8 @@ export const EnvConfig = (): Partial<Config> => ({
   customBitcoinNetwork: readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network,
   authVersion: Number(readEnvVar('BITGO_AUTH_VERSION')),
   externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
+  enclavedExpressUrl: readEnvVar('BITGO_ENCLAVED_EXPRESS_URL'),
+  enclavedExpressSSLCert: readEnvVar('BITGO_ENCLAVED_EXPRESS_SSL_CERT'),
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
   lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
@@ -110,6 +117,8 @@ export const DefaultConfig: Config = {
   disableEnvCheck: true,
   timeout: 305 * 1000,
   authVersion: 2,
+  enclavedExpressUrl: undefined,
+  enclavedExpressSSLCert: undefined,
 };
 
 /**
@@ -147,6 +156,8 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
   const disableSSL = get('disableSSL') || false;
   let customRootUri = get('customRootUri');
   let externalSignerUrl = get('externalSignerUrl');
+  let enclavedExpressUrl = get('enclavedExpressUrl');
+  let enclavedExpressSSLCert: string | undefined;
 
   if (disableSSL !== true) {
     if (customRootUri) {
@@ -154,6 +165,24 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     }
     if (externalSignerUrl) {
       externalSignerUrl = forceSecureUrl(externalSignerUrl);
+    }
+    if (enclavedExpressUrl) {
+      enclavedExpressUrl = forceSecureUrl(enclavedExpressUrl);
+      console.log('Using secure enclaved express URL:', enclavedExpressUrl);
+    }
+    const enclavedExpressSSLCertValue = get('enclavedExpressSSLCert');
+    if (enclavedExpressSSLCertValue) {
+      try {
+        // First try to read it as a file path
+        enclavedExpressSSLCert = existsSync(enclavedExpressSSLCertValue)
+          ? readFileSync(enclavedExpressSSLCertValue, { encoding: 'utf8' })
+          : enclavedExpressSSLCertValue; // If not a file, use the value directly
+        if (existsSync(enclavedExpressSSLCertValue)) {
+          console.log('Successfully loaded SSL cert from:', enclavedExpressSSLCertValue);
+        }
+      } catch (e) {
+        console.error(`Failed to process enclaved express SSL cert: ${enclavedExpressSSLCertValue}`, e);
+      }
     }
   }
 
@@ -176,6 +205,8 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     customBitcoinNetwork: get('customBitcoinNetwork'),
     authVersion: get('authVersion'),
     externalSignerUrl,
+    enclavedExpressUrl,
+    enclavedExpressSSLCert,
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
     lightningSignerFileSystemPath: get('lightningSignerFileSystemPath'),
@@ -184,8 +215,8 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
   };
 }
 
-export const config = () => {
+export function config(): Config {
   const arg = ArgConfig(args());
   const env = EnvConfig();
   return mergeConfigs(env, arg);
-};
+}

@@ -116,7 +116,16 @@ function createHttpServer(app: express.Application): http.Server {
  */
 export function startup(config: Config, baseUri: string): () => void {
   return function () {
-    const { env, ipc, customRootUri, customBitcoinNetwork, signerMode, lightningSignerFileSystemPath } = config;
+    const {
+      env,
+      ipc,
+      customRootUri,
+      customBitcoinNetwork,
+      signerMode,
+      lightningSignerFileSystemPath,
+      enclavedExpressUrl,
+      enclavedExpressSSLCert,
+    } = config;
     /* eslint-disable no-console */
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
@@ -136,6 +145,12 @@ export function startup(config: Config, baseUri: string): () => void {
     }
     if (lightningSignerFileSystemPath) {
       console.log(`Lightning signer file system path: ${lightningSignerFileSystemPath}`);
+    }
+    if (enclavedExpressUrl) {
+      console.log(`Enclaved Express URL: ${enclavedExpressUrl}`);
+      if (enclavedExpressSSLCert) {
+        console.log('Enclaved Express SSL certificate configured');
+      }
     }
     /* eslint-enable no-console */
   };
@@ -271,6 +286,8 @@ function checkPreconditions(config: Config) {
 export function setupRoutes(app: express.Application, config: Config): void {
   if (config.signerMode) {
     clientRoutes.setupSigningRoutes(app, config);
+  } else if (config.enclavedExpressUrl && config.enclavedExpressSSLCert) {
+    clientRoutes.setupEnclavedExpressRoutes(app, config);
   } else {
     if (config.lightningSignerFileSystemPath) {
       clientRoutes.setupLightningSignerNodeRoutes(app, config);
