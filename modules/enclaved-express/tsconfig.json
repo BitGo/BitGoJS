@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "typeRoots": ["./types", "../../types", "./node_modules/@types", "../../node_modules/@types"]
+  },
+  "include": ["src/**/*", "test/**/*", "package.json"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../bitgo"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../statics"
+    },
+    {
+      "path": "../abstract-lightning"
+    }
+  ]
+}

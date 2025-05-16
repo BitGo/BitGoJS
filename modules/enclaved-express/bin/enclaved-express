@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+// TODO: Remove this unhandledRejection hook once BG-49996 is implemented.
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('----- Unhandled Rejection at -----');
+  console.error(promise);
+  console.error('----- Reason -----');
+  console.error(reason);
+});
+
+const { init } = require('../dist/src/enclavedApp');
+
+if (require.main === module) {
+  init().catch((err) => {
+    console.log(`Fatal error: ${err.message}`);
+    console.log(err.stack);
+  });
+}
