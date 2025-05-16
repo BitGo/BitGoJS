@@ -1012,6 +1012,90 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['opeth:spxux']
   ),
+  ofcOpethErc20(
+    'f5e5e260-d97b-462a-90b3-537b26f765dd',
+    'ofcopeth:flttx',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    18,
+    UnderlyingAsset['opeth:flttx']
+  ),
+  ofcOpethErc20(
+    '4560eaf9-c40f-41ec-8903-092392e5cd74',
+    'ofcopeth:wtsix',
+    'WisdomTree Short-Duration Income Digital Fund',
+    18,
+    UnderlyingAsset['opeth:wtsix']
+  ),
+  ofcOpethErc20(
+    '2a533174-f66a-455c-8d0f-952d69efc37b',
+    'ofcopeth:modrx',
+    'WisdomTree Siegel Moderate Digital Fund',
+    18,
+    UnderlyingAsset['opeth:modrx']
+  ),
+  ofcOpethErc20(
+    '059ad416-681d-41c0-86b3-24e6d7025f8a',
+    'ofcopeth:techx',
+    'WisdomTree Technology & Innovation 100 Digital Fund',
+    18,
+    UnderlyingAsset['opeth:techx']
+  ),
+  ofcOpethErc20(
+    '71121dfa-43cf-416d-ac41-6e3237445028',
+    'ofcopeth:wtsyx',
+    'WisdomTree Short-Term Treasury Digital Fund',
+    18,
+    UnderlyingAsset['opeth:wtsyx']
+  ),
+  ofcOpethErc20(
+    'ea0cb88d-37d7-45e5-82dd-715b8b964b55',
+    'ofcopeth:wtlgx',
+    'WisdomTree Long Term Treasury Digital Fund',
+    18,
+    UnderlyingAsset['opeth:wtlgx']
+  ),
+  ofcOpethErc20(
+    '3c303aea-c912-494e-93cc-23e25e99abc8',
+    'ofcopeth:wttsx',
+    'WisdomTree 3-7 Year Treasury Digital Fund',
+    18,
+    UnderlyingAsset['opeth:wttsx']
+  ),
+  ofcOpethErc20(
+    'cf048832-0311-4341-bb78-80724fa1f222',
+    'ofcopeth:tipsx',
+    'WisdomTree TIPS Digital Fund',
+    18,
+    UnderlyingAsset['opeth:tipsx']
+  ),
+  ofcOpethErc20(
+    '324af1d2-238e-493c-9a26-eae8297d55a1',
+    'ofcopeth:wtstx',
+    'WisdomTree 7-10 Year Treasury Digital Fund',
+    18,
+    UnderlyingAsset['opeth:wtstx']
+  ),
+  ofcOpethErc20(
+    '578c50aa-5f5c-4d81-b141-6f11ab3d9a70',
+    'ofcopeth:wtgxx',
+    'WisdomTree Government Money Market Digital Fund',
+    18,
+    UnderlyingAsset['opeth:wtgxx']
+  ),
+  ofcOpethErc20(
+    '7a1779b4-1811-4128-a470-d7cb43eb68e3',
+    'ofcopeth:lngvx',
+    'WisdomTree Siegel Longevity Digital Fund',
+    18,
+    UnderlyingAsset['opeth:lngvx']
+  ),
+  ofcOpethErc20(
+    '46b0e5c9-b7ea-492a-a1f7-325993dee5a4',
+    'ofcopeth:eqtyx',
+    'WisdomTree Siegel Global Equity Digital Fund',
+    18,
+    UnderlyingAsset['opeth:eqtyx']
+  ),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcBscToken('c6f5df09-5a21-468b-89cc-f626d02d74d0', 'ofcbsc:oort', 'OORT', 18, UnderlyingAsset['bsc:oort']),
   ofcBscToken(

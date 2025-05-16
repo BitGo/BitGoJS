@@ -2406,6 +2406,18 @@ export enum UnderlyingAsset {
   'opeth:wld' = 'opeth:wld',
   'opeth:wct' = 'opeth:wct',
   'opeth:spxux' = 'opeth:spxux',
+  'opeth:flttx' = 'opeth:flttx',
+  'opeth:wtsix' = 'opeth:wtsix',
+  'opeth:modrx' = 'opeth:modrx',
+  'opeth:techx' = 'opeth:techx',
+  'opeth:wtsyx' = 'opeth:wtsyx',
+  'opeth:wtlgx' = 'opeth:wtlgx',
+  'opeth:wttsx' = 'opeth:wttsx',
+  'opeth:tipsx' = 'opeth:tipsx',
+  'opeth:wtstx' = 'opeth:wtstx',
+  'opeth:wtgxx' = 'opeth:wtgxx',
+  'opeth:lngvx' = 'opeth:lngvx',
+  'opeth:eqtyx' = 'opeth:eqtyx',
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
