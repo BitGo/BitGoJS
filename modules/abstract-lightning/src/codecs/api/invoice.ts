@@ -82,10 +82,29 @@ export const InvoiceInfo = t.intersection(
 );
 export type InvoiceInfo = t.TypeOf<typeof InvoiceInfo>;
 
+export const ListInvoicesResponse = t.intersection(
+  [
+    t.type({
+      invoices: t.array(InvoiceInfo),
+    }),
+    t.partial({
+      /**
+       * This is the paymentHash of the last Invoice in the last iteration.
+       * Providing this value as the prevId in the next request will return the next batch of invoices.
+       * */
+      nextBatchPrevId: t.string,
+    }),
+  ],
+  'ListInvoicesResponse'
+);
+export type ListInvoicesResponse = t.TypeOf<typeof ListInvoicesResponse>;
+
 export const InvoiceQuery = t.partial(
   {
     status: InvoiceStatus,
     limit: BigIntFromString,
+    /** paymentHash provided by nextBatchPrevId in the previous list */
+    prevId: t.string,
     startDate: DateFromISOString,
     endDate: DateFromISOString,
   },

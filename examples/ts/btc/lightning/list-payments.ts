@@ -54,7 +54,7 @@ async function main(): Promise<void> {
     }
 
     // List payments with the provided filters
-    const payments = await lightning.listPayments(queryParams);
+    const { payments } = await lightning.listPayments(queryParams);
 
     // Display payment summary
     console.log(`\nFound ${payments.length} payments:`);

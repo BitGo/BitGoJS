@@ -26,6 +26,8 @@ import {
   PaymentQuery,
   LightningOnchainWithdrawParams,
   LightningOnchainWithdrawResponse,
+  ListInvoicesResponse,
+  ListPaymentsResponse,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -143,9 +145,10 @@ export interface ILightningWallet {
    * @param {bigint} [params.limit] The maximum number of invoices to return
    * @param {Date} [params.startDate] The start date for the query
    * @param {Date} [params.endDate] The end date for the query
-   * @returns {Promise<InvoiceInfo[]>} List of invoices
+   * @param {string} [params.prevId] Continue iterating (provided by nextBatchPrevId in the previous list)
+   * @returns {Promise<ListInvoicesResponse>} List of invoices and nextBatchPrevId
    */
-  listInvoices(params: InvoiceQuery): Promise<InvoiceInfo[]>;
+  listInvoices(params: InvoiceQuery): Promise<ListInvoicesResponse>;
 
   /**
    * Pay a lightning invoice
@@ -181,9 +184,10 @@ export interface ILightningWallet {
    * @param {bigint} [params.limit] The maximum number of payments to return
    * @param {Date} [params.startDate] The start date for the query
    * @param {Date} [params.endDate] The end date for the query
-   * @returns {Promise<PaymentInfo[]>} List of payments
+   * @param {string} [params.prevId] Continue iterating (provided by nextBatchPrevId in the previous list)
+   * @returns {Promise<ListPaymentsResponse>} List of payments and nextBatchPrevId
    */
-  listPayments(params: PaymentQuery): Promise<PaymentInfo[]>;
+  listPayments(params: PaymentQuery): Promise<ListPaymentsResponse>;
   /**
    * Get transaction details by ID
    * @param {string} txId - Transaction ID to lookup
@@ -234,8 +238,8 @@ export class LightningWallet implements ILightningWallet {
     });
   }
 
-  async listInvoices(params: InvoiceQuery): Promise<InvoiceInfo[]> {
-    const returnCodec = t.array(InvoiceInfo);
+  async listInvoices(params: InvoiceQuery): Promise<ListInvoicesResponse> {
+    const returnCodec = ListInvoicesResponse;
     const createInvoiceResponse = await this.wallet.bitgo
       .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/invoice`, 2))
       .query(InvoiceQuery.encode(params))
@@ -364,12 +368,12 @@ export class LightningWallet implements ILightningWallet {
     });
   }
 
-  async listPayments(params: PaymentQuery): Promise<PaymentInfo[]> {
+  async listPayments(params: PaymentQuery): Promise<ListPaymentsResponse> {
     const response = await this.wallet.bitgo
       .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/payment`, 2))
       .query(PaymentQuery.encode(params))
       .result();
-    return decodeOrElse(t.array(PaymentInfo).name, t.array(PaymentInfo), response, (error) => {
+    return decodeOrElse(ListPaymentsResponse.name, ListPaymentsResponse, response, (error) => {
       throw new Error(`Invalid payment list response: ${error}`);
     });
   }
