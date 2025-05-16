@@ -1,4 +1,3 @@
-import * as awskms from '@aws-sdk/client-kms';
 import { ChainedTokenCredential, DefaultAzureCredential } from '@azure/identity';
 import azureKMS, { EncryptParameters } from '@azure/keyvault-keys';
 import { GetKeyKmsRes, KmsErrorRes, KmsInterface, PostKeyKmsRes } from '../kms-interface/kmsInterface';
@@ -10,7 +9,7 @@ type AzureKmsProviderConstructorProps = {
 };
 
 export class AzureKmsProvider implements KmsInterface {
-  providerName: string = 'azure';
+  providerName = 'azure';
   vaultUrl = '';
   credentials: ChainedTokenCredential = new DefaultAzureCredential();
   encryptionAlgorithm: EncryptParameters['algorithm'] | undefined; // RSA1_5 | A256GCM | etc
@@ -23,15 +22,11 @@ export class AzureKmsProvider implements KmsInterface {
   }
 
   async postKey(kmsKey: string, prv: string, options: any): Promise<PostKeyKmsRes | KmsErrorRes> {
-    if (this.providerName !== 'azure') {
-      throw new Error('On postKey-Azure: Provider name is not azure');
-    }
-
     const keyVaultKey = await this.keyClient.getKey(kmsKey);
     const clientSDK = new azureKMS.CryptographyClient(keyVaultKey, this.credentials);
 
     if (this.encryptionAlgorithm === undefined) {
-      throw new Error('On postKey-Azure: Encryption algorithm is not defined');
+      return this.errorHandler(Error('On postKey-Azure: Encryption algorithm is not defined'));
     }
 
     const input = {
@@ -51,19 +46,19 @@ export class AzureKmsProvider implements KmsInterface {
     }
   }
 
-  getKey(kmsKey:string, keyId: string, options: any): Promise<GetKeyKmsRes | KmsErrorRes> {
+  async getKey(kmsKey: string, keyId: string, options: any): Promise<GetKeyKmsRes | KmsErrorRes> {
     // TODO: Azure implementation
-    const input: awskms.DecryptRequest = {
-      CiphertextBlob: Buffer.from(keyId),
-      KeyId: kmsKey,
-    };
-    const command = new awskms.DecryptCommand(input);
+    const keyVaultKey = await this.keyClient.getKey(kmsKey);
+    const clientSDK = new azureKMS.CryptographyClient(keyVaultKey, this.credentials);
 
     try {
-      const res = await this.keyClient.send(command);
-      if (res.Plaintext === undefined) throw 1;
+      const res = await clientSDK.decrypt({
+        ciphertext: Buffer.from(keyId),
+        algorithm: 'RSA1_5', // TODO: algorithm hardcoded for now as other variants requires an iv parameter that i need to investigate
+      });
+      if (res.result === undefined) throw 1;
       return {
-        prv: res.Plaintext?.toString(),
+        prv: res.result.toString(),
       };
     } catch (err) {
       return this.errorHandler(err);
