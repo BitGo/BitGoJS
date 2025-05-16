@@ -1,6 +1,6 @@
 import { AlgoLib, Talgo } from '../../src';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import * as AlgoResources from '../fixtures/algo';
 import { randomBytes } from 'crypto';
 import { coins } from '@bitgo/statics';
@@ -10,6 +10,7 @@ import { Algo } from '../../src/algo';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory } from '../../src/lib';
 import { KeyPair } from '@bitgo/sdk-core';
+import { algoBackupKey } from './fixtures/algoBackupKey';
 
 describe('ALGO:', function () {
   let bitgo: TestBitGoAPI;
@@ -1126,6 +1127,53 @@ describe('ALGO:', function () {
         txJson.from.should.equal(rootAddress);
         txJson.fee.should.equal(fee);
       });
+    });
+  });
+
+  describe('AuditKey', () => {
+    const { key } = algoBackupKey;
+    const walletPassphrase = 'ZQ8MhxT84m4P';
+
+    it('should return for valid inputs', async () => {
+      await basecoin.assertIsValidKey({
+        encryptedPrv: key,
+        walletPassphrase,
+      });
+    });
+
+    it('should throw error if the walletPassphrase is incorrect', async () => {
+      try {
+        await basecoin.assertIsValidKey({
+          encryptedPrv: key,
+          walletPassphrase: 'foo',
+        });
+      } catch (e) {
+        e.message.should.equal("failed to decrypt prv: ccm: tag doesn't match");
+      }
+    });
+    it('should throw error if the key is altered', async () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      try {
+        await basecoin.assertIsValidKey({
+          encryptedPrv: alteredKey,
+          walletPassphrase,
+        });
+      } catch (e) {
+        e.message.should.equal('failed to decrypt prv: json decrypt: invalid parameters');
+      }
+    });
+
+    it('should throw error if the key is not a valid key', async () => {
+      const invalidKey = '#@)$#($*@)#($*';
+      const encryptedPrv = encrypt(walletPassphrase, invalidKey);
+      try {
+        await basecoin.assertIsValidKey({
+          encryptedPrv,
+          walletPassphrase,
+        });
+      } catch (e) {
+        e.message.should.equal('Invalid private key');
+      }
     });
   });
 });

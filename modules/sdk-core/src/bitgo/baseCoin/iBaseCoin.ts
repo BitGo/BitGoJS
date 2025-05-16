@@ -88,6 +88,23 @@ export interface ITransactionFee<TAmount = string> {
   size?: number;
 }
 
+export type AuditKeyParams = { prv?: string; encryptedPrv?: string; walletPassphrase?: string } & (
+  | { prv: string }
+  | { encryptedPrv: string; walletPassphrase: string }
+) &
+  (
+    | {
+        multiSigType: 'tss';
+        publicKey: string;
+      }
+    | {
+        multiSigType?: 'onchain';
+        publicKey?: string;
+      }
+  );
+
+export type AuditDecryptedKeyParams = Omit<AuditKeyParams, 'encryptedPrv' | 'walletPassphrase'> & { prv: string };
+
 export interface ITransactionExplanation<TFee = any, TAmount = any> {
   /** @deprecated */
   displayOrder?: string[];
@@ -556,4 +573,14 @@ export interface IBaseCoin {
   getHashFunction(): Hash;
   broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult>;
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void;
+
+  /**
+   * Audit a key to determine if it is valid for the coin.
+   * @param {Object} params - The parameters for the audit
+   * @param {string} params.publicKey  - The public portion of the key
+   * @param {string} params.encryptedPrv - The encrypted private key
+   * @param {string} params.walletPassphrase - The passphrase to decrypt the private key
+   * @param {string} params.multiSigType - The type of multisig (e.g. 'onchain' or 'tss')
+   */
+  assertIsValidKey({ publicKey, encryptedPrv, walletPassphrase, multiSigType }: AuditKeyParams): void;
 }

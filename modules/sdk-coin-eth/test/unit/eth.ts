@@ -6,6 +6,7 @@ import { bip32 } from '@bitgo/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import {
   common,
+  generateRandomPassword,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   TransactionType,
@@ -28,6 +29,8 @@ import { getBuilder } from './getBuilder';
 import * as testData from '../resources/eth';
 import * as mockData from '../fixtures/eth';
 import should from 'should';
+import { ethMultiSigBackupKey } from './fixtures/ethMultiSigBackupKey';
+import { ethTssBackupKey } from './fixtures/ethTssBackupKey';
 
 nock.enableNetConnect();
 
@@ -1047,6 +1050,105 @@ describe('ETH:', function () {
           Error,
           'Error: invalid address'
         );
+      });
+    });
+  });
+
+  describe('Audit Key', () => {
+    let coin: Hteth;
+    before(() => {
+      coin = bitgo.coin('hteth') as Hteth;
+    });
+
+    describe('MultiSig', () => {
+      const { key } = ethMultiSigBackupKey;
+
+      it('should return { isValid: true } for valid inputs', () => {
+        coin.assertIsValidKey({
+          encryptedPrv: key,
+          walletPassphrase: 'ZQ8MhxT84m4P',
+        });
+      });
+
+      it('should throw error if the walletPassphrase is incorrect', () => {
+        try {
+          coin.assertIsValidKey({
+            encryptedPrv: key,
+            walletPassphrase: 'foo',
+          });
+        } catch (e) {
+          e.message.should.equal("failed to decrypt prv: ccm: tag doesn't match");
+        }
+      });
+
+      it('should throw error if the key is altered', () => {
+        const alteredKey = key.replace(/[0-9]/g, '0');
+        try {
+          coin.assertIsValidKey({
+            encryptedPrv: alteredKey,
+            walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+          });
+        } catch (e) {
+          e.message.should.equal('failed to decrypt prv: json decrypt: invalid parameters');
+        }
+      });
+    });
+
+    describe('TSS', () => {
+      const { key: keyString, commonKeychain } = ethTssBackupKey;
+      const key = keyString.replace(/\s/g, '');
+      const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
+      const multiSigType = 'tss';
+
+      it('should not throw for valid inputs', () => {
+        coin.assertIsValidKey({
+          encryptedPrv: key,
+          publicKey: commonKeychain,
+          walletPassphrase,
+          multiSigType,
+        });
+      });
+
+      it('should throw if the commonKeychain is altered', () => {
+        const alteredCommonKeychain = generateRandomPassword(10);
+        try {
+          coin.assertIsValidKey({
+            encryptedPrv: key,
+            publicKey: alteredCommonKeychain,
+            walletPassphrase,
+            multiSigType,
+          });
+        } catch (e) {
+          e.message.should.equal('Invalid common keychain');
+        }
+      });
+
+      it('should throw error if the walletPassphrase is incorrect', async () => {
+        const incorrectPassphrase = 'foo';
+        try {
+          coin.assertIsValidKey({
+            encryptedPrv: key,
+            publicKey: commonKeychain,
+            walletPassphrase: incorrectPassphrase,
+            multiSigType,
+          });
+        } catch (e) {
+          e.message.should.equal("failed to decrypt prv: ccm: tag doesn't match");
+        }
+      });
+
+      it('should throw error if the key is altered', async () => {
+        const alteredKey = key.replace(/[0-9]/g, '0');
+        try {
+          coin.assertIsValidKey({
+            encryptedPrv: alteredKey,
+            publicKey: commonKeychain,
+            walletPassphrase,
+            multiSigType,
+          });
+        } catch (e) {
+          e.message.should.equal('failed to decrypt prv: json decrypt: invalid parameters');
+        }
       });
     });
   });
