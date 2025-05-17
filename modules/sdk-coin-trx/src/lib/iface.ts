@@ -1,5 +1,6 @@
 import { Entry } from '@bitgo/sdk-core';
 import { ContractType, PermissionType } from './enum';
+import { TronResource } from './resourcesTypes';
 
 export interface Account {
   publicKey: string;
@@ -42,7 +43,12 @@ export interface RawData {
   ref_block_hash: string;
   fee_limit?: number;
   contractType?: ContractType;
-  contract: TransferContract[] | AccountPermissionUpdateContract[] | TriggerSmartContract[];
+  contract:
+    | TransferContract[]
+    | AccountPermissionUpdateContract[]
+    | TriggerSmartContract[]
+    | FreezeBalanceV2Contract[]
+    | VoteWitnessContract[];
 }
 
 export interface Value {
@@ -64,6 +70,17 @@ export interface TransferContract {
 export interface TriggerSmartContract {
   parameter: ContractCallValue;
   type?: string;
+}
+
+export interface RawFreezeContract {
+  parameter: {
+    value: {
+      resource?: string;
+      frozen_balance?: number;
+      owner_address?: string;
+    };
+  };
+  type: string;
 }
 
 export interface ContractCallValue {
@@ -116,4 +133,82 @@ export interface AccountInfo {
   };
   active_permission: [{ keys: [PermissionKey] }];
   trc20: [Record<string, string>];
+}
+
+/**
+ * Freeze balance contract value fields
+ */
+export interface FreezeBalanceValueFields {
+  resource: string;
+  frozen_balance: number;
+  owner_address: string;
+}
+
+/**
+ * Freeze balance contract value interface
+ */
+export interface FreezeBalanceValue {
+  type_url?: string;
+  value: FreezeBalanceValueFields;
+}
+
+/**
+ * Freeze balance v2 contract interface
+ */
+export interface FreezeBalanceV2Contract {
+  parameter: FreezeBalanceValue;
+  type?: string;
+}
+
+export interface FreezeBalanceContractParameter {
+  parameter: {
+    value: {
+      resource: TronResource;
+      frozen_balance: number;
+      owner_address: string;
+    };
+  };
+}
+
+/**
+ * Vote data in a vote transaction
+ */
+export interface VoteWitnessData {
+  vote_address: string;
+  vote_count: number;
+}
+
+/**
+ * Vote transaction value fields
+ */
+export interface VoteWitnessValueFields {
+  owner_address: string;
+  votes: VoteWitnessData[];
+}
+
+/**
+ * Vote contract value interface
+ */
+export interface VoteWitnessValue {
+  type_url?: string;
+  value: VoteWitnessValueFields;
+}
+
+/**
+ * Vote witness contract interface
+ */
+export interface VoteWitnessContract {
+  parameter: VoteWitnessValue;
+  type?: string;
+}
+export interface VoteWitnessContractParameter {
+  parameter: {
+    value: {
+      owner_address: string;
+      votes: Array<{
+        vote_address: string;
+        vote_count: number;
+      }>;
+    };
+  };
 }

@@ -10,6 +10,8 @@ import { ContractType } from './enum';
 import { ContractCallBuilder } from './contractCallBuilder';
 import { TransactionReceipt } from './iface';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { FreezeBalanceTxBuilder } from './freezeBalanceTxBuilder';
+import { VoteWitnessTxBuilder } from './voteWitnessTxBuilder';
 
 /**
  * Wrapped Builder class
@@ -41,6 +43,26 @@ export class WrappedBuilder extends TransactionBuilder {
 
   getTokenTransferBuilder(tx?: TransactionReceipt | string): TokenTransferBuilder {
     return this.initializeBuilder(tx, new TokenTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create a freeze balance transaction
+   *
+   * @param {TransactionReceipt} transaction - The transaction to initialize builder
+   * @returns {FreezeBalanceTxBuilder} The specific freeze balance builder
+   */
+  getFreezeBalanceV2TxBuilder(tx?: TransactionReceipt | string): FreezeBalanceTxBuilder {
+    return this.initializeBuilder(tx, new FreezeBalanceTxBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns a specific builder to create a vote witness transaction
+   *
+   * @param {TransactionReceipt} transaction - The transaction to initialize builder
+   * @returns {VoteWitnessTxBuilder} The specific vote witness builder
+   */
+  getVoteWitnessTxBuilder(tx?: TransactionReceipt | string): VoteWitnessTxBuilder {
+    return this.initializeBuilder(tx, new VoteWitnessTxBuilder(this._coinConfig));
   }
 
   private initializeBuilder<T extends TransactionBuilder>(tx: TransactionReceipt | string | undefined, builder: T): T {
@@ -78,6 +100,10 @@ export class WrappedBuilder extends TransactionBuilder {
         return this._builder;
       case ContractType.TriggerSmartContract:
         return this.getContractCallBuilder(raw);
+      case ContractType.FreezeBalanceV2:
+        return this.getFreezeBalanceV2TxBuilder(raw);
+      case ContractType.VoteWitness:
+        return this.getVoteWitnessTxBuilder(raw);
       default:
         throw new InvalidTransactionError('Invalid transaction type: ' + contractType);
     }
