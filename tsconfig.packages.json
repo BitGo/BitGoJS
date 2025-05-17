@@ -218,6 +218,9 @@
       "path": "./modules/sdk-coin-trx"
     },
     {
+      "path": "./modules/sdk-coin-vet"
+    },
+    {
       "path": "./modules/sdk-coin-wemix"
     },
     {

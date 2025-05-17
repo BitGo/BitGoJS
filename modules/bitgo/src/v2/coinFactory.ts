@@ -161,6 +161,7 @@ import {
   Ttia,
   Tton,
   Ttrx,
+  Tvet,
   Txlm,
   Txdc,
   Txrp,
@@ -168,6 +169,7 @@ import {
   Tzec,
   Tzeta,
   Tzketh,
+  Vet,
   Wemix,
   World,
   Xdc,
@@ -318,6 +320,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('ttia', Ttia.createInstance);
   coinFactory.register('tton', Tton.createInstance);
   coinFactory.register('ttrx', Ttrx.createInstance);
+  coinFactory.register('tvet', Tvet.createInstance);
   coinFactory.register('txdc', Txdc.createInstance);
   coinFactory.register('txlm', Txlm.createInstance);
   coinFactory.register('txrp', Txrp.createInstance);
@@ -327,6 +330,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tzketh', Tzketh.createInstance);
   coinFactory.register('twemix', Twemix.createInstance);
   coinFactory.register('tworld', Tworld.createInstance);
+  coinFactory.register('vet', Vet.createInstance);
   coinFactory.register('xdc', Xdc.createInstance);
   coinFactory.register('xlm', Xlm.createInstance);
   coinFactory.register('xrp', Xrp.createInstance);
