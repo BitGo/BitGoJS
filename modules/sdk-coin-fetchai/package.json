@@ -1,7 +1,7 @@
 {
-  "name": "@bitgo/sdk-coin-fetch",
+  "name": "@bitgo/sdk-coin-fetchai",
   "version": "1.1.0",
-  "description": "BitGo SDK coin library for Fetch",
+  "description": "BitGo SDK coin library for Fetch.ai",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
@@ -23,7 +23,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
-    "directory": "modules/sdk-coin-fetch"
+    "directory": "modules/sdk-coin-fetchai"
   },
   "lint-staged": {
     "*.{js,ts}": [

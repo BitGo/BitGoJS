@@ -50,7 +50,7 @@ interface EnvironmentTemplate {
   babyNodeUrl: string;
   mantraNodeUrl: string;
   cronosNodeUrl: string;
-  fetchNodeUrl: string;
+  fetchAiNodeUrl: string;
   initiaNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
@@ -174,7 +174,7 @@ const mainnetBase: EnvironmentTemplate = {
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
-  fetchNodeUrl: 'https://rest-fetchhub.fetch.ai/',
+  fetchAiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   initiaNodeUrl: 'https://rest.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
@@ -246,7 +246,7 @@ const testnetBase: EnvironmentTemplate = {
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   mantraNodeUrl: 'https://mantra-testnet-rest.publicnode.com/',
   cronosNodeUrl: 'https://testnet-croeseid-4.crypto.org:1317/',
-  fetchNodeUrl: 'https://rest-dorado.fetch.ai/',
+  fetchAiNodeUrl: 'https://rest-dorado.fetch.ai/',
   initiaNodeUrl: 'https://rest.testnet.initia.xyz/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
