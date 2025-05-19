@@ -5,6 +5,11 @@ import { TransferBuilder } from './transferBuilder';
 import { RegisterDidWithCDDBuilder } from './registerDidWithCDDBuilder';
 import utils from './utils';
 import { Interface, SingletonRegistry, TransactionBuilder } from './';
+import { TxMethod } from './iface';
+import { Transaction as BaseTransaction } from '@bitgo/abstract-substrate';
+import { Transaction as PolyxTransaction } from './transaction';
+
+export type SupportedTransaction = BaseTransaction | PolyxTransaction;
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected _material: Interface.Material;
@@ -26,7 +31,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     throw new NotImplementedError(`walletInitialization for ${this._coinConfig.name} not implemented`);
   }
 
-  from(rawTxn: string): TransactionBuilder {
+  from(rawTxn: string): TransactionBuilder<TxMethod, SupportedTransaction> {
     const builder = this.getBuilder(rawTxn);
     builder.from(rawTxn);
     return builder;
@@ -37,7 +42,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return this;
   }
 
-  private getBuilder(rawTxn: string): TransactionBuilder {
+  private getBuilder(rawTxn: string): TransactionBuilder<TxMethod, SupportedTransaction> {
     const registry = SingletonRegistry.getInstance(this._material);
     const decodedTxn = decode(rawTxn, {
       metadataRpc: this._material.metadata,

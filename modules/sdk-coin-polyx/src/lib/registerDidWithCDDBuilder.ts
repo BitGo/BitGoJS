@@ -1,13 +1,14 @@
-import { TransactionBuilder, Interface } from '@bitgo/abstract-substrate';
+import { TransactionBuilder, Interface, utils } from '@bitgo/abstract-substrate';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType, BaseAddress, InvalidTransactionError } from '@bitgo/sdk-core';
-import { RegisterDidWithCDDArgs } from './iface';
+import { RegisterDidWithCDDArgs, TxMethod } from './iface';
 import { RegisterDidWithCDDTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';
 
-export class RegisterDidWithCDDBuilder extends TransactionBuilder {
+export class RegisterDidWithCDDBuilder extends TransactionBuilder<TxMethod, Transaction> {
   protected _to: string;
+  protected _method: TxMethod;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -44,15 +45,16 @@ export class RegisterDidWithCDDBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  // protected fromImplementation(rawTransaction: string): Transaction {
-  //   if (this._method?.name === Interface.MethodNames.RegisterDidWithCDD) {
-  //     const txMethod = this._method.args as RegisterDidWithCDDArgs;
-  //     this.to({ address: utils.decodeSubstrateAddress(txMethod.targetAccount, this.getAddressFormat()) });
-  //   } else {
-  //     throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected transferWithMemo`);
-  //   }
-  //   return this._transaction;
-  // }
+  protected fromImplementation(rawTransaction: string): Transaction {
+    const tx = super.fromImplementation(rawTransaction);
+    if (this._method?.name === Interface.MethodNames.RegisterDidWithCDD) {
+      const txMethod = this._method.args as RegisterDidWithCDDArgs;
+      this.to({ address: utils.decodeSubstrateAddress(txMethod.targetAccount, this.getAddressFormat()) });
+    } else {
+      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected transferWithMemo`);
+    }
+    return tx;
+  }
 
   /** @inheritdoc */
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx, rawTransaction?: string): void {

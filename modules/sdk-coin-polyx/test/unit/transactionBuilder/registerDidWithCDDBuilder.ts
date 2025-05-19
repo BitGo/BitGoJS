@@ -126,13 +126,13 @@ describe('Polyx Register DID with CDD builder Builder', () => {
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.to, '5F8jxKE81GhFrphyfMFr5UjeAz5wS4AaZFmeFPnf8wTetD72');
-      should.deepEqual(txJson.sender, '5CLYvxwx4PUS678MNuhNJ9EfpUU9utrYCz9WVxovac4u9AYD');
+      should.deepEqual(txJson.to, '5EFWg5wKTgkFE9XCxigBYPYKQg173djwSmRbkALCdL1jFVUU');
+      should.deepEqual(txJson.sender, '5E7XWJRysj27EzibT4duRxrBQT9Qfa7Z5nAAvJmvd32nhkjH');
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, genesisHash);
       should.deepEqual(txJson.specVersion, Number(testnetMaterial.specVersion));
-      should.deepEqual(txJson.nonce, 34);
+      should.deepEqual(txJson.nonce, 1);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, Number(testnetMaterial.txVersion));
       should.deepEqual(txJson.chainName, chainName);
@@ -140,7 +140,7 @@ describe('Polyx Register DID with CDD builder Builder', () => {
     });
 
     it('should build from raw unsigned tx', async () => {
-      builder.from(rawTx.transfer.unsigned);
+      builder.from(rawTx.cddTransaction.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -149,14 +149,13 @@ describe('Polyx Register DID with CDD builder Builder', () => {
 
       const tx = await builder.build();
       const txJson = tx.toJson();
-      should.deepEqual(txJson.amount, '2000000000');
-      should.deepEqual(txJson.to, '5F8jxKE81GhFrphyfMFr5UjeAz5wS4AaZFmeFPnf8wTetD72');
+      should.deepEqual(txJson.to, '5EFWg5wKTgkFE9XCxigBYPYKQg173djwSmRbkALCdL1jFVUU');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, genesisHash);
       should.deepEqual(txJson.specVersion, Number(testnetMaterial.specVersion));
-      should.deepEqual(txJson.nonce, 36);
+      should.deepEqual(txJson.nonce, 1);
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, Number(testnetMaterial.txVersion));
