@@ -21,10 +21,10 @@ import { DEFAULT_SUBSTRATE_PREFIX } from './constants';
 
 export class Transaction extends BaseTransaction {
   protected _substrateTransaction: UnsignedTransaction;
-  private _signedTransaction?: string;
-  private _registry: TypeRegistry;
-  private _chainName: string;
-  private _sender: string;
+  protected _signedTransaction?: string;
+  protected _registry: TypeRegistry;
+  protected _chainName: string;
+  protected _sender: string;
 
   private static FAKE_SIGNATURE = `0x${Buffer.from(new Uint8Array(256).fill(1)).toString('hex')}`;
 
@@ -128,6 +128,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toJson(): TxData {
+    console.log('Transaction toJson called in substrate Transaction class');
     if (!this._substrateTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }

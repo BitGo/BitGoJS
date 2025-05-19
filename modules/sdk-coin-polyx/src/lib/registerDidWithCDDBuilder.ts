@@ -4,12 +4,14 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType, BaseAddress, InvalidTransactionError } from '@bitgo/sdk-core';
 import { RegisterDidWithCDDArgs } from './iface';
 import { RegisterDidWithCDDTransactionSchema } from './txnSchema';
+import { Transaction } from './transaction';
 
 export class RegisterDidWithCDDBuilder extends TransactionBuilder {
   protected _to: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._transaction = new Transaction(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {
@@ -40,6 +42,17 @@ export class RegisterDidWithCDDBuilder extends TransactionBuilder {
     this._to = address;
     return this;
   }
+
+  /** @inheritdoc */
+  // protected fromImplementation(rawTransaction: string): Transaction {
+  //   if (this._method?.name === Interface.MethodNames.RegisterDidWithCDD) {
+  //     const txMethod = this._method.args as RegisterDidWithCDDArgs;
+  //     this.to({ address: utils.decodeSubstrateAddress(txMethod.targetAccount, this.getAddressFormat()) });
+  //   } else {
+  //     throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected transferWithMemo`);
+  //   }
+  //   return this._transaction;
+  // }
 
   /** @inheritdoc */
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx, rawTransaction?: string): void {
