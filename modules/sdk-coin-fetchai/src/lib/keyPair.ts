@@ -4,7 +4,7 @@ import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
 import { ADDRESS_PREFIX } from './constants';
 
 /**
- * Fetch keys and address management.
+ * Fetch.ai keys and address management.
  */
 export class KeyPair extends CosmosKeyPair {
   constructor(source?: KeyPairOptions) {

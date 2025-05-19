@@ -76,7 +76,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-cronos /var/modules/sdk-coin-cro
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dot /var/modules/sdk-coin-dot/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-etc /var/modules/sdk-coin-etc/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-fetch /var/modules/sdk-coin-fetch/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-fetchai /var/modules/sdk-coin-fetchai/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-flr /var/modules/sdk-coin-flr/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hash /var/modules/sdk-coin-hash/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
@@ -168,7 +168,7 @@ cd /var/modules/sdk-coin-cronos && yarn link && \
 cd /var/modules/sdk-coin-cspr && yarn link && \
 cd /var/modules/sdk-coin-dot && yarn link && \
 cd /var/modules/sdk-coin-etc && yarn link && \
-cd /var/modules/sdk-coin-fetch && yarn link && \
+cd /var/modules/sdk-coin-fetchai && yarn link && \
 cd /var/modules/sdk-coin-flr && yarn link && \
 cd /var/modules/sdk-coin-hash && yarn link && \
 cd /var/modules/sdk-coin-hbar && yarn link && \
@@ -263,7 +263,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \
     yarn link @bitgo/sdk-coin-etc && \
-    yarn link @bitgo/sdk-coin-fetch && \
+    yarn link @bitgo/sdk-coin-fetchai && \
     yarn link @bitgo/sdk-coin-flr && \
     yarn link @bitgo/sdk-coin-hash && \
     yarn link @bitgo/sdk-coin-hbar && \

@@ -1,4 +1,4 @@
-# BitGo sdk-coin-fetch
+# BitGo sdk-coin-fetchai
 
 SDK coins provide a modular approach to a monolithic architecture. This and all BitGoJS SDK coins allow developers to use only the coins needed for a given project.
 
@@ -6,21 +6,21 @@ SDK coins provide a modular approach to a monolithic architecture. This and all 
 
 All coins are loaded traditionally through the `bitgo` package. If you are using coins individually, you will be accessing the coin via the `@bitgo/sdk-api` package.
 
-In your project install both `@bitgo/sdk-api` and `@bitgo/sdk-coin-fetch`.
+In your project install both `@bitgo/sdk-api` and `@bitgo/sdk-coin-fetchai`.
 
 ```shell
-npm i @bitgo/sdk-api @bitgo/sdk-coin-fetch
+npm i @bitgo/sdk-api @bitgo/sdk-coin-fetchai
 ```
 
 Next, you will be able to initialize an instance of "bitgo" through `@bitgo/sdk-api` instead of `bitgo`.
 
 ```javascript
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Fetch } from '@bitgo/sdk-coin-fetch';
+import { FetchAi } from '@bitgo/sdk-coin-fetchai';
 
 const sdk = new BitGoAPI();
 
-sdk.register('fetch', Fetch.createInstance);
+sdk.register('fetchai', FetchAi.createInstance);
 ```
 
 ## Development
