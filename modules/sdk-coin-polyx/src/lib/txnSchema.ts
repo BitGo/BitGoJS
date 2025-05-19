@@ -99,3 +99,21 @@ export const bondSchema = joi.object({
     )
     .required(),
 });
+
+export const BatchUnstakingTransactionSchema = {
+  validate: (value: { value: string }): joi.ValidationResult =>
+    joi
+      .object({
+        value: joi.string().required(),
+      })
+      .validate(value),
+};
+
+export const WithdrawUnbondedTransactionSchema = {
+  validate: (value: { slashingSpans: number }): joi.ValidationResult =>
+    joi
+      .object({
+        slashingSpans: joi.number().min(0).required(),
+      })
+      .validate(value),
+};

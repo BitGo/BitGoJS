@@ -55,3 +55,14 @@ export interface BatchParams {
   [key: string]: ExtendedJson;
   calls: BatchCallObject[];
 }
+
+export interface WithdrawUnbondedArgs extends Args {
+  numSlashingSpans: number;
+}
+
+export interface BatchArgs {
+  calls: {
+    method: string;
+    args: Record<string, unknown>;
+  }[];
+}
