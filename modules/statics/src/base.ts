@@ -56,7 +56,7 @@ export enum CoinFamily {
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   ICP = 'icp',
-  INIT = 'init',
+  INITIA = 'initia',
   INJECTIVE = 'injective',
   ISLM = 'islm',
   KAVA = 'kava',
@@ -422,7 +422,7 @@ export enum UnderlyingAsset {
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   ICP = 'icp',
-  INIT = 'init',
+  INITIA = 'initia',
   INJECTIVE = 'injective',
   ISLM = 'islm',
   KAVA = 'kava',
@@ -2728,7 +2728,7 @@ export enum BaseUnit {
   POLYX = 'micropolyx',
   CRONOS = 'basecro',
   FETCH = 'afet',
-  INIT = 'uinit',
+  INITIA = 'uinit',
 }
 
 export interface BaseCoinConstructorOptions {

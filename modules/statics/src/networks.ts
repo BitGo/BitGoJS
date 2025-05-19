@@ -909,15 +909,15 @@ class FetchTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explore-eridanus-1.fetch.ai/';
 }
 
-class Init extends Mainnet implements AccountNetwork {
+class Initia extends Mainnet implements AccountNetwork {
   name = 'Initia';
-  family = CoinFamily.INIT;
+  family = CoinFamily.INITIA;
   explorerUrl = 'https://scan.initia.xyz/'; //TODO: COIN-3992 : Post launch need to update this if changed
 }
 
-class InitTestnet extends Testnet implements AccountNetwork {
+class InitiaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Initia';
-  family = CoinFamily.INIT;
+  family = CoinFamily.INITIA;
   explorerUrl = 'https://scan.testnet.initia.xyz/initiation-2/';
 }
 
@@ -1475,7 +1475,7 @@ export const Networks = {
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     icp: Object.freeze(new Icp()),
-    init: Object.freeze(new Init()),
+    initia: Object.freeze(new Initia()),
     injective: Object.freeze(new Injective()),
     islm: Object.freeze(new Islm()),
     kava: Object.freeze(new Kava()),
@@ -1553,7 +1553,7 @@ export const Networks = {
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     icp: Object.freeze(new IcpTestnet()),
-    init: Object.freeze(new InitTestnet()),
+    initia: Object.freeze(new InitiaTestnet()),
     injective: Object.freeze(new InjectiveTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     kava: Object.freeze(new KavaTestnet()),

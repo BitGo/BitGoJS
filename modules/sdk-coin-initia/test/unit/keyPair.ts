@@ -3,7 +3,7 @@ import assert from 'assert';
 import should from 'should';
 
 import { KeyPair } from '../../src';
-import { TEST_ACCOUNT, TEST_SEND_TX } from '../resources/init';
+import { TEST_ACCOUNT, TEST_SEND_TX } from '../resources/initia';
 
 describe('Initia Key Pair', () => {
   describe('should create a valid KeyPair', () => {

@@ -12,7 +12,7 @@ import utils from './lib/utils';
  * Docs: https://docs.initia.xyz/
  * GitHub : https://github.com/initia-labs
  */
-export class Init extends CosmosCoin {
+export class Initia extends CosmosCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -26,7 +26,7 @@ export class Init extends CosmosCoin {
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Init(bitgo, staticsCoin);
+    return new Initia(bitgo, staticsCoin);
   }
 
   /** @inheritDoc **/
@@ -46,7 +46,7 @@ export class Init extends CosmosCoin {
 
   /** @inheritDoc **/
   getDenomination(): string {
-    return BaseUnit.INIT;
+    return BaseUnit.INITIA;
   }
 
   /** @inheritDoc **/
@@ -64,7 +64,7 @@ export class Init extends CosmosCoin {
 
   /** @inheritDoc **/
   protected getPublicNodeUrl(): string {
-    return Environments[this.bitgo.getEnv()].initNodeUrl;
+    return Environments[this.bitgo.getEnv()].initiaNodeUrl;
   }
 
   /** @inheritDoc **/

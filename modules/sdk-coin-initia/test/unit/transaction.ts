@@ -5,11 +5,11 @@ import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 import { Transaction } from '../../src';
 import utils from '../../src/lib/utils';
-import * as testData from '../resources/init';
+import * as testData from '../resources/initia';
 
 describe('Initia Transaction', () => {
   let tx: Transaction;
-  const testCoinString = 'tinit';
+  const testCoinString = 'tinitia';
   const config = coins.get(testCoinString);
 
   beforeEach(() => {
