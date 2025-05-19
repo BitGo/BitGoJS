@@ -12,7 +12,7 @@ import utils from './lib/utils';
  * Docs: https://website.prod.fetch-ai.com/docs/
  * GitHub : https://github.com/fetchai
  */
-export class Fetch extends CosmosCoin {
+export class FetchAi extends CosmosCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -26,7 +26,7 @@ export class Fetch extends CosmosCoin {
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Fetch(bitgo, staticsCoin);
+    return new FetchAi(bitgo, staticsCoin);
   }
 
   /** @inheritDoc **/
@@ -46,7 +46,7 @@ export class Fetch extends CosmosCoin {
 
   /** @inheritDoc **/
   getDenomination(): string {
-    return BaseUnit.FETCH;
+    return BaseUnit.FETCHAI;
   }
 
   /** @inheritDoc **/
@@ -64,7 +64,7 @@ export class Fetch extends CosmosCoin {
 
   /** @inheritDoc **/
   protected getPublicNodeUrl(): string {
-    return Environments[this.bitgo.getEnv()].fetchNodeUrl;
+    return Environments[this.bitgo.getEnv()].fetchAiNodeUrl;
   }
 
   /** @inheritDoc **/

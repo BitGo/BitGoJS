@@ -1,11 +1,11 @@
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
 
-import * as testData from '../../resources/fetch';
+import * as testData from '../../resources/fetchai';
 import { getBuilderFactory } from '../getBuilderFactory';
 
-describe('Fetch Transaction Builder', async () => {
-  const testCoinString = 'tfetch';
+describe('Fetch.ai Transaction Builder', async () => {
+  const testCoinString = 'tfetchai';
   const factory = getBuilderFactory(testCoinString);
   const testTxData = testData.TEST_SEND_TX;
   let data;
