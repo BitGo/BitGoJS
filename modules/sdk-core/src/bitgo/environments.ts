@@ -51,7 +51,7 @@ interface EnvironmentTemplate {
   mantraNodeUrl: string;
   cronosNodeUrl: string;
   fetchNodeUrl: string;
-  initNodeUrl: string;
+  initiaNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
   substrateNodeUrls: string[];
@@ -175,7 +175,7 @@ const mainnetBase: EnvironmentTemplate = {
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
   fetchNodeUrl: 'https://rest-fetchhub.fetch.ai/',
-  initNodeUrl: 'https://rest.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
+  initiaNodeUrl: 'https://rest.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
   tronNodes: {
@@ -247,7 +247,7 @@ const testnetBase: EnvironmentTemplate = {
   mantraNodeUrl: 'https://mantra-testnet-rest.publicnode.com/',
   cronosNodeUrl: 'https://testnet-croeseid-4.crypto.org:1317/',
   fetchNodeUrl: 'https://rest-dorado.fetch.ai/',
-  initNodeUrl: 'https://rest.testnet.initia.xyz/',
+  initiaNodeUrl: 'https://rest.testnet.initia.xyz/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
   tronNodes: {

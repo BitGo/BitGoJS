@@ -1,7 +1,7 @@
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { address, blockHash, txIds } from '../resources/init';
-import * as testData from '../resources/init';
+import { address, blockHash, txIds } from '../resources/initia';
+import * as testData from '../resources/initia';
 
 describe('utils', () => {
   it('should validate addresses correctly', () => {

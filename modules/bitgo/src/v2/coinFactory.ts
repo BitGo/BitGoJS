@@ -61,7 +61,7 @@ import {
   Hbar,
   Hteth,
   Icp,
-  Init,
+  Initia,
   Injective,
   Islm,
   Lnbtc,
@@ -133,7 +133,7 @@ import {
   Thbar,
   Tia,
   Ticp,
-  Tinit,
+  Tinitia,
   Tinjective,
   Tislm,
   Tlnbtc,
@@ -228,7 +228,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('mon', Mon.createInstance);
   coinFactory.register('mantra', Mantra.createInstance);
   coinFactory.register('icp', Icp.createInstance);
-  coinFactory.register('init', Init.createInstance);
+  coinFactory.register('initia', Initia.createInstance);
   coinFactory.register('injective', Injective.createInstance);
   coinFactory.register('islm', Islm.createInstance);
   coinFactory.register('near', Near.createInstance);
@@ -291,7 +291,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('thash', Thash.createInstance);
   coinFactory.register('thbar', Thbar.createInstance);
   coinFactory.register('ticp', Ticp.createInstance);
-  coinFactory.register('tinit', Tinit.createInstance);
+  coinFactory.register('tinitia', Tinitia.createInstance);
   coinFactory.register('tinjective', Tinjective.createInstance);
   coinFactory.register('tislm', Tislm.createInstance);
   coinFactory.register('tlnbtc', Tlnbtc.createInstance);

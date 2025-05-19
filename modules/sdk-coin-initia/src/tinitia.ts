@@ -1,8 +1,8 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Init } from './init';
+import { Initia } from './initia';
 
-export class Tinit extends Init {
+export class Tinitia extends Initia {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -15,6 +15,6 @@ export class Tinit extends Init {
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tinit(bitgo, staticsCoin);
+    return new Tinitia(bitgo, staticsCoin);
   }
 }

@@ -887,22 +887,22 @@ export const coins = CoinMap.fromCoins([
   ),
   account(
     '2ec91758-fd84-44d5-92d3-7158903de278',
-    'init',
+    'initia',
     'Initia',
-    Networks.main.init,
+    Networks.main.initia,
     6,
-    UnderlyingAsset.INIT,
-    BaseUnit.INIT,
+    UnderlyingAsset.INITIA,
+    BaseUnit.INITIA,
     COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
   ),
   account(
     '2d10a918-01f4-40a5-b1db-a5e5247d21d7',
-    'tinit',
+    'tinitia',
     'Testnet Initia',
-    Networks.test.init,
+    Networks.test.initia,
     6,
-    UnderlyingAsset.INIT,
-    BaseUnit.INIT,
+    UnderlyingAsset.INITIA,
+    BaseUnit.INITIA,
     COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
   ),
   account(

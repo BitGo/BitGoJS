@@ -1,11 +1,11 @@
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
 
-import * as testData from '../../resources/init';
+import * as testData from '../../resources/initia';
 import { getBuilderFactory } from '../getBuilderFactory';
 
 describe('Initia Transaction Builder', async () => {
-  const testCoinString = 'tinit';
+  const testCoinString = 'tinitia';
   const factory = getBuilderFactory(testCoinString);
   const testTxData = testData.TEST_SEND_TX;
   let data;

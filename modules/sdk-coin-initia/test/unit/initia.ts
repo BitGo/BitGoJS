@@ -3,18 +3,18 @@ import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Init, Tinit } from '../../src/index';
+import { Initia, Tinitia } from '../../src/index';
 import utils from '../../src/lib/utils';
-import { TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO, address, TEST_ACCOUNT } from '../resources/init';
+import { TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO, address, TEST_ACCOUNT } from '../resources/initia';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
-const coinString = 'init';
-const testCoinString = 'tinit';
+const coinString = 'initia';
+const testCoinString = 'tinitia';
 const coinFullName = 'Initia';
 const testCoinFullName = 'Testnet Initia';
 const baseFactor = 1e6;
-const coinInstance = Init.createInstance;
-const testCoinInstance = Tinit.createInstance;
+const coinInstance = Initia.createInstance;
+const testCoinInstance = Tinitia.createInstance;
 bitgo.safeRegister(testCoinString, testCoinInstance);
 
 describe('Initia', function () {
@@ -30,18 +30,18 @@ describe('Initia', function () {
   });
 
   it('should return the right info', function () {
-    const init = bitgo.coin(coinString);
-    const tinit = bitgo.coin(testCoinString);
+    const initia = bitgo.coin(coinString);
+    const tinitia = bitgo.coin(testCoinString);
 
-    init.getChain().should.equal(coinString);
-    init.getFamily().should.equal(coinString);
-    init.getFullName().should.equal(coinFullName);
-    init.getBaseFactor().should.equal(baseFactor);
+    initia.getChain().should.equal(coinString);
+    initia.getFamily().should.equal(coinString);
+    initia.getFullName().should.equal(coinFullName);
+    initia.getBaseFactor().should.equal(baseFactor);
 
-    tinit.getChain().should.equal(testCoinString);
-    tinit.getFamily().should.equal(coinString);
-    tinit.getFullName().should.equal(testCoinFullName);
-    tinit.getBaseFactor().should.equal(baseFactor);
+    tinitia.getChain().should.equal(testCoinString);
+    tinitia.getFamily().should.equal(coinString);
+    tinitia.getFullName().should.equal(testCoinFullName);
+    tinitia.getBaseFactor().should.equal(baseFactor);
   });
   describe('Address Validation', () => {
     it('should get address details without memoId', function () {
@@ -264,7 +264,7 @@ describe('Initia', function () {
     });
 
     it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
-      const stub = sinon.stub(Init.prototype, 'explainTransaction');
+      const stub = sinon.stub(Initia.prototype, 'explainTransaction');
       stub.resolves(undefined);
       await basecoin
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
