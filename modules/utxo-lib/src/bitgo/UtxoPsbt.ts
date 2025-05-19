@@ -696,6 +696,27 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return results.every((res) => res);
   }
 
+  getOrderedRootKeys({ rootNodes }: { rootNodes: Triple<BIP32Interface> | undefined }): Triple<BIP32Interface> {
+    if (!rootNodes && (!this.data.globalMap.globalXpub?.length || !isTriple(this.data.globalMap.globalXpub))) {
+      throw new Error('Cannot get signature validation array without 3 global xpubs');
+    }
+
+    const bip32s = rootNodes
+      ? rootNodes
+      : this.data.globalMap.globalXpub?.map((xpub) =>
+          BIP32Factory(eccLib).fromBase58(bs58check.encode(xpub.extendedPubkey))
+        );
+
+    if (!bip32s) {
+      throw new Error('either globalMap or rootNodes is required');
+    }
+
+    const input = checkForInput(this.data.inputs, inputIndex);
+    if (!getPsbtInputSignatureCount(input)) {
+      throw Error();
+    }
+  }
+
   /**
    * @param inputIndex
    * @param rootNodes optional input root bip32 nodes to verify with. If it is not provided, globalXpub will be used.

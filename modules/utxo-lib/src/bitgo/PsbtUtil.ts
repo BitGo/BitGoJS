@@ -1,5 +1,5 @@
 import { decodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
-import { PsbtInput } from 'bip174/src/lib/interfaces';
+import { KeyValue, PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
 import { Psbt } from 'bitcoinjs-lib/src/psbt';
 
 /**
@@ -15,6 +15,7 @@ export enum ProprietaryKeySubtype {
   MUSIG2_PARTICIPANT_PUB_KEYS = 0x01,
   MUSIG2_PUB_NONCE = 0x02,
   MUSIG2_PARTIAL_SIG = 0x03,
+  PAYGO_ADDRESS_PROOF = 0x04,
 }
 
 /**
@@ -38,6 +39,29 @@ export interface ProprietaryKeySearch {
   identifierEncoding?: BufferEncoding;
 }
 
+function getProprietaryKeyValuesFromUnknownKeyValues(
+  unknownKeyVals: KeyValue[],
+  keySearch?: ProprietaryKeySearch
+): ProprietaryKeyValue[] {
+  if (keySearch && keySearch.subtype === undefined && Buffer.isBuffer(keySearch.keydata)) {
+    throw new Error('invalid proprietary key search filter combination. subtype is required');
+  }
+
+  const keyVals = unknownKeyVals.map(({ key, value }, i) => {
+    return { key: decodeProprietaryKey(key), value };
+  });
+
+  return keyVals.filter((keyVal) => {
+    return (
+      keySearch === undefined ||
+      (keySearch.identifier === keyVal.key.identifier &&
+        (keySearch.subtype === undefined ||
+          (keySearch.subtype === keyVal.key.subtype &&
+            (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))))
+    );
+  });
+}
+
 /**
  * Search any data from psbt proprietary key value against keydata.
  * Default identifierEncoding is utf-8 for identifier.
@@ -49,21 +73,19 @@ export function getPsbtInputProprietaryKeyVals(
   if (!input.unknownKeyVals?.length) {
     return [];
   }
-  if (keySearch && keySearch.subtype === undefined && Buffer.isBuffer(keySearch.keydata)) {
-    throw new Error('invalid proprietary key search filter combination. subtype is required');
+
+  return getProprietaryKeyValuesFromUnknownKeyValues(input.unknownKeyVals, keySearch);
+}
+
+export function getPsbtOutputProprietaryKeyVals(
+  output: PsbtOutput,
+  keySearch?: ProprietaryKeySearch
+): ProprietaryKeyValue[] {
+  if (!output.unknownKeyVals?.length) {
+    return [];
   }
-  const keyVals = input.unknownKeyVals.map(({ key, value }, i) => {
-    return { key: decodeProprietaryKey(key), value };
-  });
-  return keyVals.filter((keyVal) => {
-    return (
-      keySearch === undefined ||
-      (keySearch.identifier === keyVal.key.identifier &&
-        (keySearch.subtype === undefined ||
-          (keySearch.subtype === keyVal.key.subtype &&
-            (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))))
-    );
-  });
+
+  return getProprietaryKeyValuesFromUnknownKeyValues(output.unknownKeyVals, keySearch);
 }
 
 /**
