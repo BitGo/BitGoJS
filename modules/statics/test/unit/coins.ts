@@ -87,7 +87,6 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
-  celo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   coreum: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   ada: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
   doge: {
@@ -496,7 +495,6 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
     ],
   },
-  tcelo: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tcoreum: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tada: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
   tdoge: {
@@ -793,7 +791,7 @@ coins.forEach((coin, coinName) => {
       });
     } else {
       it('should return true for CUSTODY and CUSTODY_BITGO_TRUST coin feature', () => {
-        const coinSupportsCustody = coin.family !== CoinFamily.LNBTC;
+        const coinSupportsCustody = coin.family !== CoinFamily.LNBTC && coin.family !== CoinFamily.CELO;
         coin.features.includes(CoinFeature.CUSTODY).should.eql(coinSupportsCustody);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(coinSupportsCustody);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(coinSupportsCustody);
