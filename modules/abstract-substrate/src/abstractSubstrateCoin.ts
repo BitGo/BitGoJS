@@ -1,4 +1,5 @@
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   EDDSAMethods,
@@ -27,7 +28,7 @@ import { KeyPair as SubstrateKeyPair, Transaction } from './lib';
 import { DEFAULT_SUBSTRATE_PREFIX } from './lib/constants';
 import { SignTransactionOptions, VerifiedTransactionParameters, Material } from './lib/iface';
 import utils from './lib/utils';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 
@@ -518,5 +519,13 @@ export class SubstrateCoin extends BaseCoin {
       }
     }
     return { transactions: broadcastableTransactions, lastScanIndex };
+  }
+
+  /** inherited doc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+    auditEddsaPrivateKey(prv, publicKey ?? '');
   }
 }

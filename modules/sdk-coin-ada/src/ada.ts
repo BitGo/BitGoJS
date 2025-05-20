@@ -31,13 +31,14 @@ import {
   PrebuildTransactionWithIntentOptions,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import adaUtils from './lib/utils';
 import * as request from 'superagent';
 import BigNumber from 'bignumber.js';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
@@ -627,5 +628,14 @@ export class Ada extends BaseCoin {
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
     intent.unspents = params.unspents;
     intent.senderAddress = params.senderAddress;
+  }
+
+  /** inherited doc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+
+    auditEddsaPrivateKey(prv, publicKey ?? '');
   }
 }

@@ -36,6 +36,7 @@ import {
   NotSupported,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { toBitgoRequest } from '@bitgo/sdk-api';
 import { getStellarKeys } from './getStellarKeys';
@@ -1186,5 +1187,23 @@ export class Xlm extends BaseCoin {
       requiresTokenEnablement: true,
       supportsMultipleTokenEnablements: false,
     };
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
+    if (multiSigType === 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+
+    let xlmKeyPair;
+    try {
+      xlmKeyPair = new StellarKeyPair({ prv });
+    } catch (e) {
+      throw new Error('Invalid private key');
+    }
+
+    if (publicKey && publicKey !== xlmKeyPair.getKeys().pub) {
+      throw new Error('Invalid public key');
+    }
   }
 }
