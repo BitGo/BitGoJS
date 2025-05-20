@@ -24,7 +24,10 @@ type GetParamsType = {
  *         required: true
  *         schema:
  *           type: string
- *         description: TODO - what is the source?
+ *           enum:
+ *             - user
+ *             - backup
+ *         description: The kind of key to retrieve
  *     responses:
  *       200:
  *         description: Private key retrieved
@@ -45,16 +48,19 @@ type GetParamsType = {
  *                   type: string
  *                 source:
  *                   type: string
- *                 coin:
- *                   type: string
+ *                   enum:
+ *                    - user
+ *                    - backup
  *                 type:
  *                   type: string
+ *                   enum:
+ *                    - user
+ *                    - backup
  *             example:
  *               prv: "MIICXAIBAAKBgH3D4WKfdvhhj9TSGrI0FxAmdfiyfOphuM/kmLMIMKdahZLE5b8YoPL5oIE5NT+157iyQptb7q7qY9nA1jw86Br79FIsi6hLOuAne+1u4jVyJi4PLFAK5gM0c9klGjiunJ+OSH7fX+HQDwykZm20bdEa2fRU4dqT/sRm4Ta1iwAfAgMBAAEC"
  *               pub: "MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgH3D4WKfdvhhj9TSGrI0FxAmdfiyfOphuM/kmLMIMKdahZLE5b8YoPL5oIE5NT+157iyQptb7q7qY9nA1jw86Br79FIsi6hLOuAne+1u4jVyJi4PLFAU4dqT/sRm4Ta1iwAfAgMBAAE="
- *               source: "TODO replace SOURCE MOCK"
- *               coin: "sol"
- *               type: "EdDSA"
+ *               source: "user"
+ *               type: "independent"
  *       404:
  *         description: Private key not found
  *       500:

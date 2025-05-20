@@ -3,6 +3,85 @@ import db from '../../db';
 import { KmsErrorRes, KmsInterface, PostKeyKmsRes } from '../../providers/kms-interface/kmsInterface';
 import { ZodPostKeySchema } from '../schemas/postKeySchema';
 
+/**
+ * @openapi
+ * /key:
+ *   post:
+ *     summary: Store a new private key
+ *     tags:
+ *       - key management service
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - prv
+ *               - pub
+ *               - coin
+ *               - source
+ *               - type
+ *             properties:
+ *               prv:
+ *                 type: string
+ *               pub:
+ *                 type: string
+ *               coin:
+ *                 type: string
+ *               source:
+ *                 type: string
+ *                 enum:
+ *                   - user
+ *                   - backup
+ *               type:
+ *                 type: string
+ *                 enum:
+ *                  - independent
+ *                  - mpc
+ *     responses:
+ *       200:
+ *         description: Successfully stored key
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - prv
+ *                 - pub
+ *                 - coin
+ *                 - source
+ *                 - type
+ *               properties:
+ *                 keyId:
+ *                   type: string
+ *                 coin:
+ *                   type: string
+ *                 source:
+ *                   type: string
+ *                   enum:
+ *                     - user
+ *                     - backup
+ *                 type:
+ *                   type: string
+ *                   enum:
+ *                     - independent
+ *                     - mpc
+ *                 pub:
+ *                   type: string
+ *             example:
+ *               keyId: "MIICXAIBAAKBgH3D4WKfdvhhj9TSGrI0FxAmdfiyfOphuM/kmLMIMKdahZLE5b8YoPL5oIE5NT+157iyQptb7q7qY9nA1jw86Br79FIsi6hLOuAne+1u4jVyJi4PLFAK5gM0c9klGjiunJ+OSH7fX+HQDwykZm20bdEa2fRU4dqT/sRm4Ta1iwAfAgMBAAEC"
+ *               coin: "sol"
+ *               source: "user"
+ *               type: "tss"
+ *               pub: "MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgH3D4WKfdvhhj9TSGrI0FxAmdfiyfOphuM/kmLMIMKdahZLE5b8YoPL5oIE5NT+157iyQptb7q7qY9nA1jw86Br79FIsi6hLOuAne+1u4jVyJi4PLFAU4dqT/sRm4Ta1iwAfAgMBAAE="
+ *       400:
+ *         description: Invalid data
+ *       409:
+ *         description: Duplicate key
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(req: Request, res: Response, next: NextFunction, kms: KmsInterface) {
   // parse request
   try {
