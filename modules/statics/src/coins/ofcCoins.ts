@@ -178,6 +178,8 @@ export const ofcCoins = [
     UnderlyingAsset.SONEIUM,
     CoinKind.CRYPTO
   ),
+  ofc('092cb24a-238d-4faa-bfc9-328ebb9cbcba', 'ofcicp', 'ICP', 8, UnderlyingAsset.ICP, CoinKind.CRYPTO),
+  tofc('f6877057-8ac9-4325-bfa9-b6a4fab7c3ee', 'ofcticp', 'Testnet ICP', 8, UnderlyingAsset.ICP, CoinKind.CRYPTO),
   ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('ecc046f9-eb9c-479d-943f-9fe0633ea212', 'ofcoas', 'oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   ofc('24c3b525-b5d3-45c0-9280-599db27c0fab', 'ofctao', 'Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
