@@ -83,6 +83,7 @@ interface EnvironmentTemplate {
   soneiumExplorerBaseUrl?: string;
   soneiumExplorerApiToken?: string;
   stxNodeUrl: string;
+  vetNodeUrl: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -197,6 +198,7 @@ const mainnetBase: EnvironmentTemplate = {
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
   monExplorerBaseUrl: 'https://testnet.monadexplorer.com/', //TODO:  WIN-5225: Adding it so its not missed when Monad mainet is avaiable.Change it with mainnet explorer, when its available
   stxNodeUrl: 'https://api.hiro.so',
+  vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -268,6 +270,7 @@ const testnetBase: EnvironmentTemplate = {
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
   stxNodeUrl: 'https://api.testnet.hiro.so',
+  vetNodeUrl: 'https://rpc-testnet.vechain.energy',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
