@@ -1,8 +1,8 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Fetch } from './fetch';
+import { FetchAi } from './fetchai';
 
-export class Tfetch extends Fetch {
+export class TfetchAi extends FetchAi {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -15,6 +15,6 @@ export class Tfetch extends Fetch {
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Tfetch(bitgo, staticsCoin);
+    return new TfetchAi(bitgo, staticsCoin);
   }
 }

@@ -897,15 +897,15 @@ class CronosTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/';
 }
 
-class Fetch extends Mainnet implements AccountNetwork {
+class FetchAi extends Mainnet implements AccountNetwork {
   name = 'Fetch';
-  family = CoinFamily.FETCH;
+  family = CoinFamily.FETCHAI;
   explorerUrl = 'https://www.mintscan.io/fetchai';
 }
 
-class FetchTestnet extends Testnet implements AccountNetwork {
+class FetchAiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Fetch';
-  family = CoinFamily.FETCH;
+  family = CoinFamily.FETCHAI;
   explorerUrl = 'https://explore-eridanus-1.fetch.ai/';
 }
 
@@ -1470,7 +1470,7 @@ export const Networks = {
     ethereumClassic: Object.freeze(new EthereumClassic()),
     ethereumW: Object.freeze(new EthereumW()),
     fiat: Object.freeze(new Fiat()),
-    fetch: Object.freeze(new Fetch()),
+    fetchai: Object.freeze(new FetchAi()),
     flr: Object.freeze(new Flare()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
@@ -1545,7 +1545,7 @@ export const Networks = {
     eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
-    fetch: Object.freeze(new FetchTestnet()),
+    fetchai: Object.freeze(new FetchAiTestnet()),
     flr: Object.freeze(new FlareTestnet()),
     mon: Object.freeze(new MonadTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
