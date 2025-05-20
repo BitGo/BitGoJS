@@ -47,7 +47,7 @@
     "fp-ts": "2.16.2",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "libsodium-wrappers-sumo": "^0.7.9",
-    "openpgp": "5.10.1",
+    "openpgp": "5.11.3",
     "paillier-bigint": "3.3.0",
     "secp256k1": "5.0.1"
   },
