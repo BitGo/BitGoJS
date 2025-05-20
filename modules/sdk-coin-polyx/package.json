@@ -43,6 +43,7 @@
     "@bitgo/abstract-substrate": "^1.4.9",
     "@substrate/txwrapper-core": "7.5.2",
     "@substrate/txwrapper-polkadot": "7.5.2",
+    "@polkadot/keyring": "13.3.1",
     "@bitgo/sdk-core": "^33.2.0",
     "@bitgo/statics": "^52.2.0",
     "bignumber.js": "^9.1.2",
