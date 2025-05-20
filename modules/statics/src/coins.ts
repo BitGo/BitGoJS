@@ -1933,7 +1933,7 @@ export const coins = CoinMap.fromCoins([
     '6d37a333-c09b-44b8-bd2b-f07f12b838cd',
     'trx:usd1',
     'USD1',
-    6,
+    18,
     'TPFqcBAaaUMCSVRCqPaQ9QnzKhmuoLR6Rc',
     UnderlyingAsset['trx:usd1']
   ),
