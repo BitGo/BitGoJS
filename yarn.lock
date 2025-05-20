@@ -15695,10 +15695,10 @@ open@^8.0.9, open@^8.4.0:
     is-docker "^2.1.1"
     is-wsl "^2.2.0"
 
-openpgp@5.10.1:
-  version "5.10.1"
-  resolved "https://registry.npmjs.org/openpgp/-/openpgp-5.10.1.tgz#3b137470187b79281719ced16fb9e60b822cfd24"
-  integrity sha512-SR5Ft+ej51d0+p53ld5Ney0Yiz0y8Mh1YYLJrvpRMbTaNhvS1QcDX0Oq1rW9sjBnQXtgrpWw2Zve3rm7K5C/pw==
+openpgp@5.11.3:
+  version "5.11.3"
+  resolved "https://registry.npmjs.org/openpgp/-/openpgp-5.11.3.tgz#a2532aa973f1f6413556eaf328b97a6955b1d8a3"
+  integrity sha512-jXOPfIteBUQ2zSmRG4+Y6PNntIIDEAvoM/lOYCnvpXAByJEruzrHQZWE/0CGOKHbubwUuty2HoPHsqBzyKHOpA==
   dependencies:
     asn1.js "^5.0.0"
 
@@ -21258,6 +21258,6 @@ yocto-queue@^1.0.0:
   integrity sha512-AyeEbWOu/TAXdxlV9wmGcR0+yh2j3vYPGOECcIj2S7MkrLyC7ne+oye2BKTItt0ii2PHk4cDy+95+LshzbXnGg==
 
 zod@^3.21.4:
-  version "3.24.2"
-  resolved "https://registry.npmjs.org/zod/-/zod-3.24.2.tgz#8efa74126287c675e92f46871cfc8d15c34372b3"
-  integrity sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==
+  version "3.25.6"
+  resolved "https://registry.npmjs.org/zod/-/zod-3.25.6.tgz#465b7b736141dca444527dd0cc42f57cee6a408b"
+  integrity sha512-kA1wikWvfsP+z3L6mzUJJRQz1Y28BR0Bu/MTWeYbfaFJ8c+OLOt1Bb8d4V3Mk1480H+poPYG6BjS/I4kJ1U8WA==
