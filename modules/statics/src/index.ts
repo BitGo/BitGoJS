@@ -25,6 +25,7 @@ export {
   AptCoin,
   AptNFTCollection,
   Sip10Token,
+  Nep141Token,
 } from './account';
 export { CoinMap } from './map';
 export { gatekeep } from './gatekeep';

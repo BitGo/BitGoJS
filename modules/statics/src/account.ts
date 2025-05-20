@@ -142,6 +142,10 @@ export interface Sip10TokenConstructorOptions extends AccountConstructorOptions 
   assetId: string;
 }
 
+export interface Nep141TokenConstructorOptions extends AccountConstructorOptions {
+  contractAddress: string;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -575,6 +579,21 @@ export class Sip10Token extends AccountCoinToken {
     });
 
     this.assetId = options.assetId;
+  }
+}
+
+/**
+ * The Near network supports tokens
+ * Near tokens work similar to native near coin
+ */
+export class Nep141Token extends AccountCoinToken {
+  public contractAddress: string;
+  constructor(options: Nep141TokenConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -2889,4 +2908,80 @@ export function tsip10Token(
   network: AccountNetwork = Networks.test.stx
 ) {
   return sip10Token(id, name, fullName, decimalPlaces, assetId, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for nep141 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to Near main network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function nep141Token(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.near,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new Nep141Token({
+      id,
+      name,
+      fullName,
+      network,
+      decimalPlaces,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.NEAR,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet nep141 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the testnet Near network.
+ */
+export function tnep141Token(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.near
+) {
+  return nep141Token(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }

@@ -14,6 +14,7 @@ import {
   Erc20Coin,
   Erc721Coin,
   HederaToken,
+  Nep141Token,
   OpethERC20Token,
   PolygonERC20Token,
   Sip10Token,
@@ -106,6 +107,10 @@ export type Sip10TokenConfig = BaseNetworkConfig & {
   assetId: string;
 };
 
+export type Nep141TokenConfig = BaseNetworkConfig & {
+  contractAddress: string;
+};
+
 export interface Tokens {
   bitcoin: {
     eth: {
@@ -178,6 +183,9 @@ export interface Tokens {
     stx: {
       tokens: Sip10TokenConfig[];
     };
+    near: {
+      tokens: Nep141TokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -249,6 +257,9 @@ export interface Tokens {
     };
     stx: {
       tokens: Sip10TokenConfig[];
+    };
+    near: {
+      tokens: Nep141TokenConfig[];
     };
   };
 }
@@ -698,6 +709,21 @@ const getFormattedSip10Tokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+const getFormattedNep141Tokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: Nep141TokenConfig[], coin) => {
+    if (coin instanceof Nep141Token) {
+      acc.push({
+        type: coin.name,
+        coin: coin.network.type === NetworkType.MAINNET ? 'near' : 'tnear',
+        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        contractAddress: coin.contractAddress,
+        decimalPlaces: coin.decimalPlaces,
+      });
+    }
+    return acc;
+  }, []);
+
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   return {
@@ -776,6 +802,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       stx: {
         tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      near: {
+        tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
     },
     testnet: {
       eth: {
@@ -851,6 +880,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       coredao: {
         tokens: getFormattedCoredaoTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      near: {
+        tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
     },
   };
