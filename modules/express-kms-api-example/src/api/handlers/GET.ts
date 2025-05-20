@@ -5,6 +5,61 @@ type GetParamsType = {
   pub: string;
 };
 
+/**
+ * @openapi
+ * /key/{pub}:
+ *   get:
+ *     summary: Retrieve a private key stored
+ *     tags:
+ *       - key management service
+ *     parameters:
+ *       - in: path
+ *         name: pub
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Public key related to the priv key to retrieve
+ *       - in: query
+ *         name: source
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: TODO - what is the source?
+ *     responses:
+ *       200:
+ *         description: Private key retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - prv
+ *                 - pub
+ *                 - coin
+ *                 - source
+ *                 - type
+ *               properties:
+ *                 prv:
+ *                   type: string
+ *                 pub:
+ *                   type: string
+ *                 source:
+ *                   type: string
+ *                 coin:
+ *                   type: string
+ *                 type:
+ *                   type: string
+ *             example:
+ *               prv: "MIICXAIBAAKBgH3D4WKfdvhhj9TSGrI0FxAmdfiyfOphuM/kmLMIMKdahZLE5b8YoPL5oIE5NT+157iyQptb7q7qY9nA1jw86Br79FIsi6hLOuAne+1u4jVyJi4PLFAK5gM0c9klGjiunJ+OSH7fX+HQDwykZm20bdEa2fRU4dqT/sRm4Ta1iwAfAgMBAAEC"
+ *               pub: "MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgH3D4WKfdvhhj9TSGrI0FxAmdfiyfOphuM/kmLMIMKdahZLE5b8YoPL5oIE5NT+157iyQptb7q7qY9nA1jw86Br79FIsi6hLOuAne+1u4jVyJi4PLFAU4dqT/sRm4Ta1iwAfAgMBAAE="
+ *               source: "TODO replace SOURCE MOCK"
+ *               coin: "sol"
+ *               type: "EdDSA"
+ *       404:
+ *         description: Private key not found
+ *       500:
+ *         description: Internal server error
+ */
 export function GET(req: Request<GetParamsType>, res: Response) {
   const { pub } = req.params;
   //TODO: what happens if source comes empty? should we return an error? an empty result?

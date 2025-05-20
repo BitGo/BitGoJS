@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import db from '../../db';
-import { ZodPostKeySchema } from '../schemas/postKeySchema';
 import { KmsErrorRes, KmsInterface, PostKeyKmsRes } from '../../providers/kms-interface/kmsInterface';
+import { ZodPostKeySchema } from '../schemas/postKeySchema';
 
 export async function POST(req: Request, res: Response, next: NextFunction, kms: KmsInterface) {
-
   // parse request
   try {
     ZodPostKeySchema.parse(req.body);
@@ -24,11 +23,12 @@ export async function POST(req: Request, res: Response, next: NextFunction, kms:
   }
 
   // db script to fetch master key from DB if necessary
-  const kmsKey = "";
+  const kmsKey = '';
 
   // send to kms
   const kmsRes: PostKeyKmsRes | KmsErrorRes = await kms.postKey(kmsKey, prv, {});
-  if ('code' in kmsRes) { // TODO: type guard
+  if ('code' in kmsRes) {
+    // TODO: type guard
     res.status(kmsRes.code);
     res.send({ message: 'Internal server error. Failed to encrypt prvaite key in KMS' });
     return;

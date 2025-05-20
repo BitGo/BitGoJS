@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx tsx --watch src/app.ts"
+    "dev": "npx tsx --watch src/app.ts",
+    "dev-test": "npx tsx --watch src/index-test.ts"
   },
   "keywords": [],
   "author": "",
@@ -17,12 +18,16 @@
     "body-parser": "^2.2.0",
     "express": "^5.1.0",
     "sqlite3": "^5.1.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "zod": "^3.24.4"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.1",
     "@types/express": "^5.0.1",
     "@types/node": "^22.15.17",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
