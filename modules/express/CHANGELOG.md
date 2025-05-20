@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.5.1...@bitgo/express@13.6.0) (2025-05-20)
+
+### Features
+
+- **express:** add enclaved express configurations ([8ca192c](https://github.com/BitGo/BitGoJS/commit/8ca192c2cdb6adce108c57431c60306d508e7812))
+
 ## [13.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.5.0...@bitgo/express@13.5.1) (2025-05-07)
 
 ### Bug Fixes

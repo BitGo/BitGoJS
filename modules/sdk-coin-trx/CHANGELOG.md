@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.0.1...@bitgo/sdk-coin-trx@3.0.2) (2025-05-20)
+
+### Bug Fixes
+
+- **sdk-coin-trx:** handling string type for scanning factor ([e465870](https://github.com/BitGo/BitGoJS/commit/e4658700c57ba5906aabb896ba2e9a26f244df60))
+
 ## [3.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.0.0...@bitgo/sdk-coin-trx@3.0.1) (2025-05-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

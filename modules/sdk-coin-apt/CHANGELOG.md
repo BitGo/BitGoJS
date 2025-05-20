@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.1.2...@bitgo/sdk-coin-apt@2.2.0) (2025-05-20)
+
+### Features
+
+- add Apt NFT collection skeleton ([6c55b23](https://github.com/BitGo/BitGoJS/commit/6c55b23461616410378c08662d697d755b2d2dfc))
+
 ## [2.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.1.1...@bitgo/sdk-coin-apt@2.1.2) (2025-05-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apt

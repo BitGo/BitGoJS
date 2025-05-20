@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [45.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@44.2.0...bitgo@45.0.0) (2025-05-20)
+
+### Bug Fixes
+
+- **sdk-coin-initia:** change asset name from init to initia ([87c65dd](https://github.com/BitGo/BitGoJS/commit/87c65dd98c132fa22ba145e7acafaa703b60f484))
+
+### Features
+
+- create coin factory using ams response ([6fa3eaf](https://github.com/BitGo/BitGoJS/commit/6fa3eafcb46fcce01bc95b690cd22f95534b3628))
+- **sdk-coin-soneium:** add soneium token support ([66378e5](https://github.com/BitGo/BitGoJS/commit/66378e5e79d7e599e062683d99e8509ed6471438))
+- **sdk-coin-soneium:** add soneium token support ([5aca714](https://github.com/BitGo/BitGoJS/commit/5aca714929c34b463fd3c939afcf0792570ed8e8))
+
+### BREAKING CHANGES
+
+- **sdk-coin-initia:** Changing module/asset name from init to initia
+
 # [44.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@44.1.0...bitgo@44.2.0) (2025-05-07)
 
 ### Features

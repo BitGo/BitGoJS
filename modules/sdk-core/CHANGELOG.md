@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [34.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@33.2.0...@bitgo/sdk-core@34.0.0) (2025-05-20)
+
+### Bug Fixes
+
+- **sdk-coin-initia:** change asset name from init to initia ([87c65dd](https://github.com/BitGo/BitGoJS/commit/87c65dd98c132fa22ba145e7acafaa703b60f484))
+- update rest endpoint for cronos ([37b4107](https://github.com/BitGo/BitGoJS/commit/37b41071a0095359c5aadd56aa961f11e7b8aa05))
+
+### Features
+
+- add NFT consolidation script ([9a37718](https://github.com/BitGo/BitGoJS/commit/9a3771832456f142496634138b6267224cf6f526))
+- **sdk-coin-icp:** integrate ic0 library for account balance retrieval ([63df09e](https://github.com/BitGo/BitGoJS/commit/63df09e1e1f4c77a67322d5f4155cfdc20e1146b))
+
+### BREAKING CHANGES
+
+- **sdk-coin-initia:** Changing module/asset name from init to initia
+
 # [33.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@33.1.0...@bitgo/sdk-core@33.2.0) (2025-05-07)
 
 ### Bug Fixes
