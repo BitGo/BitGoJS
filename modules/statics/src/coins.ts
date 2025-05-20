@@ -1929,6 +1929,14 @@ export const coins = CoinMap.fromCoins([
     'TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn',
     UnderlyingAsset['trx:usdd']
   ),
+  tronToken(
+    '6d37a333-c09b-44b8-bd2b-f07f12b838cd',
+    'trx:usd1',
+    'USD1',
+    6,
+    'TPFqcBAaaUMCSVRCqPaQ9QnzKhmuoLR6Rc',
+    UnderlyingAsset['trx:usd1']
+  ),
   algoToken(
     'bf444e89-e762-48a9-a27d-8efa2aed7867',
     'algo:USDC-31566704',
