@@ -78,7 +78,7 @@
     "@bitgo/sdk-coin-eth": "^24.4.2",
     "@bitgo/sdk-coin-ethlike": "^1.2.14",
     "@bitgo/sdk-coin-ethw": "^20.0.79",
-    "@bitgo/sdk-coin-fetchai": "^1.1.0",
+    "@bitgo/sdk-coin-fetch": "^1.1.0",
     "@bitgo/sdk-coin-flr": "^1.2.3",
     "@bitgo/sdk-coin-hash": "^3.0.48",
     "@bitgo/sdk-coin-hbar": "^2.0.79",

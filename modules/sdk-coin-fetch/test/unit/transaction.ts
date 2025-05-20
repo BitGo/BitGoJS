@@ -5,11 +5,11 @@ import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 import { Transaction } from '../../src';
 import utils from '../../src/lib/utils';
-import * as testData from '../resources/fetchai';
+import * as testData from '../resources/fetch';
 
-describe('Fetch.ai Transaction', () => {
+describe('Fetch Transaction', () => {
   let tx: Transaction;
-  const testCoinString = 'tfetchai';
+  const testCoinString = 'tfetch';
   const config = coins.get(testCoinString);
 
   beforeEach(() => {

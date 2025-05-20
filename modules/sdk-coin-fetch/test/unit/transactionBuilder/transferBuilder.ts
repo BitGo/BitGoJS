@@ -1,11 +1,11 @@
 import { TransactionType } from '@bitgo/sdk-core';
 import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
-import * as testData from '../../resources/fetchai';
+import * as testData from '../../resources/fetch';
 import { getBuilderFactory } from '../getBuilderFactory';
 
-describe('Fetch.ai Transfer Builder', () => {
-  const testCoinString = 'tfetchai';
+describe('Fetch Transfer Builder', () => {
+  const testCoinString = 'tfetch';
   const factory = getBuilderFactory(testCoinString);
   const testTx = testData.TEST_SEND_TX;
   const testTx2 = testData.TEST_SEND_TX2;

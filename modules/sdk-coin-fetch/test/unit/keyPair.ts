@@ -3,9 +3,9 @@ import assert from 'assert';
 import should from 'should';
 
 import { KeyPair } from '../../src';
-import { TEST_ACCOUNT, TEST_SEND_TX } from '../resources/fetchai';
+import { TEST_ACCOUNT, TEST_SEND_TX } from '../resources/fetch';
 
-describe('Fetch.ai Key Pair', () => {
+describe('Fetch Key Pair', () => {
   describe('should create a valid KeyPair', () => {
     it('from an empty value', () => {
       const keyPairObj = new KeyPair();

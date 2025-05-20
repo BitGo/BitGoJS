@@ -50,7 +50,7 @@ export enum CoinFamily {
   ETHW = 'ethw',
   ETC = 'etc',
   EOS = 'eos',
-  FETCHAI = 'fetchai',
+  FETCH = 'fetch',
   FIAT = 'fiat',
   FLR = 'flr',
   HASH = 'hash', // Provenance
@@ -416,7 +416,7 @@ export enum UnderlyingAsset {
   EURCV = 'eurcv',
   EUROC = 'euroc',
   EURR = 'eurr',
-  FETCHAI = 'fetchai',
+  FETCH = 'fetch',
   FLR = 'flr',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
@@ -2727,7 +2727,7 @@ export enum BaseUnit {
   MANTRA = 'uom',
   POLYX = 'micropolyx',
   CRONOS = 'basecro',
-  FETCHAI = 'afet',
+  FETCH = 'afet',
   INITIA = 'uinit',
 }
 

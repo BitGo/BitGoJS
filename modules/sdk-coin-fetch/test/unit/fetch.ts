@@ -3,21 +3,21 @@ import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { FetchAi, TfetchAi } from '../../src/index';
+import { Fetch, Tfetch } from '../../src/index';
 import utils from '../../src/lib/utils';
-import { TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO, address, TEST_ACCOUNT } from '../resources/fetchai';
+import { TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO, address, TEST_ACCOUNT } from '../resources/fetch';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
-const coinString = 'fetchai';
-const testCoinString = 'tfetchai';
+const coinString = 'fetch';
+const testCoinString = 'tfetch';
 const coinFullName = 'Fetch';
 const testCoinFullName = 'Testnet Fetch';
 const baseFactor = 1e18;
-const coinInstance = FetchAi.createInstance;
-const testCoinInstance = TfetchAi.createInstance;
+const coinInstance = Fetch.createInstance;
+const testCoinInstance = Tfetch.createInstance;
 bitgo.safeRegister(testCoinString, testCoinInstance);
 
-describe('Fetch.ai', function () {
+describe('Fetch', function () {
   let bitgo: TestBitGoAPI;
   let basecoin;
 
@@ -30,18 +30,18 @@ describe('Fetch.ai', function () {
   });
 
   it('should return the right info', function () {
-    const fetchai = bitgo.coin(coinString);
-    const tfetchai = bitgo.coin(testCoinString);
+    const fetch = bitgo.coin(coinString);
+    const tfetch = bitgo.coin(testCoinString);
 
-    fetchai.getChain().should.equal(coinString);
-    fetchai.getFamily().should.equal(coinString);
-    fetchai.getFullName().should.equal(coinFullName);
-    fetchai.getBaseFactor().should.equal(baseFactor);
+    fetch.getChain().should.equal(coinString);
+    fetch.getFamily().should.equal(coinString);
+    fetch.getFullName().should.equal(coinFullName);
+    fetch.getBaseFactor().should.equal(baseFactor);
 
-    tfetchai.getChain().should.equal(testCoinString);
-    tfetchai.getFamily().should.equal(coinString);
-    tfetchai.getFullName().should.equal(testCoinFullName);
-    tfetchai.getBaseFactor().should.equal(baseFactor);
+    tfetch.getChain().should.equal(testCoinString);
+    tfetch.getFamily().should.equal(coinString);
+    tfetch.getFullName().should.equal(testCoinFullName);
+    tfetch.getBaseFactor().should.equal(baseFactor);
   });
 
   describe('Address Validation', () => {
@@ -265,7 +265,7 @@ describe('Fetch.ai', function () {
     });
 
     it('should fail to parse a transfer transaction when explainTransaction response is undefined', async function () {
-      const stub = sinon.stub(FetchAi.prototype, 'explainTransaction');
+      const stub = sinon.stub(Fetch.prototype, 'explainTransaction');
       stub.resolves(undefined);
       await basecoin
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
