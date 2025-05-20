@@ -853,7 +853,7 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '49d56512-bddb-41aa-ac7f-f4a4c494b412',
@@ -863,7 +863,7 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '854513b2-cf1a-44b4-879b-e3aae0b5f227',
@@ -873,7 +873,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.FETCHAI,
     BaseUnit.FETCHAI,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     'e285caf3-e9b8-407a-aa72-ee4094d1cf9f',
@@ -883,7 +883,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.FETCHAI,
     BaseUnit.FETCHAI,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '2ec91758-fd84-44d5-92d3-7158903de278',
@@ -893,7 +893,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '2d10a918-01f4-40a5-b1db-a5e5247d21d7',
@@ -903,7 +903,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
