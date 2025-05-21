@@ -156,7 +156,7 @@ const mainnetBase: EnvironmentTemplate = {
   baseethExplorerUrl: 'https://api.basescan.org',
   baseethApiToken: process.env.BASESCAN_API_TOKEN,
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
-  nearNodeUrls: ['https://rpc.mainnet.near.org'],
+  nearNodeUrls: ['https://api.fastnear.com'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
   adaNodeUrl: 'https://api.koios.rest/api/v0',
   hashNodeUrl: 'https://api.provenance.io',
@@ -228,7 +228,7 @@ const testnetBase: EnvironmentTemplate = {
   // https://github.com/cryptokylin/CryptoKylin-Testnet#http-api-list
   // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
-  nearNodeUrls: ['https://rpc.testnet.near.org'],
+  nearNodeUrls: ['https://test.api.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v0',
   hashNodeUrl: 'https://api.test.provenance.io',
