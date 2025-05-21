@@ -1471,7 +1471,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.USDC,
     '0.0.456858',
-    '0.0.456858',
     AccountCoin.DEFAULT_FEATURES
   ),
 
@@ -1483,7 +1482,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.XSGD,
     '0.0.1985922',
-    '0.0.1985922',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1493,7 +1491,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     2,
     UnderlyingAsset.BCT,
-    '0.0.1958126',
     '0.0.1958126',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1505,7 +1502,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.CLXY,
     '0.0.859814',
-    '0.0.859814',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1515,7 +1511,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     8,
     UnderlyingAsset['hbar:karate'],
-    '0.0.2283230',
     '0.0.2283230',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1527,7 +1522,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset['hbar:sauce'],
     '0.0.731861',
-    '0.0.731861',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1537,7 +1531,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     8,
     UnderlyingAsset['hbar:dovu'],
-    '0.0.3716059',
     '0.0.3716059',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1549,7 +1542,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset['hbar:pack'],
     '0.0.4794920',
-    '0.0.4794920',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1559,7 +1551,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     8,
     UnderlyingAsset['hbar:jam'],
-    '0.0.127877',
     '0.0.127877',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1571,7 +1562,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset['hbar:berry'],
     '0.0.7496578',
-    '0.0.7496578',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1582,7 +1572,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.USDC,
     '0.0.13078',
-    '0.0.13078',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1592,7 +1581,6 @@ export const coins = CoinMap.fromCoins([
     Networks.test.hedera,
     6,
     UnderlyingAsset.USDC,
-    '0.0.5894751',
     '0.0.5894751',
     AccountCoin.DEFAULT_FEATURES
   ),

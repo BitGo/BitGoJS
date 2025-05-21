@@ -86,7 +86,6 @@ export interface HederaCoinConstructorOptions extends AccountConstructorOptions 
 
 export interface HederaTokenConstructorOptions extends AccountConstructorOptions {
   nodeAccountId: string;
-  tokenId: string;
   contractAddress: string;
 }
 
@@ -1369,7 +1368,6 @@ export function hederaToken(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  tokenId: string,
   contractAddress: string,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -1384,7 +1382,6 @@ export function hederaToken(
       decimalPlaces,
       asset,
       nodeAccountId: HEDERA_NODE_ACCCOUNT_ID,
-      tokenId,
       contractAddress,
       features,
       prefix,
