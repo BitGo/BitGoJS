@@ -2388,7 +2388,7 @@ export const coins = CoinMap.fromCoins([
     GENERIC_TOKEN_FEATURES,
     '',
     '',
-    Networks.main.polygon,
+    Networks.main.soneium,
     KeyCurve.Secp256k1
   ),
   terc721(
