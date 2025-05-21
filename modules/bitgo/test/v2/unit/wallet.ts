@@ -3180,6 +3180,69 @@ describe('V2 Wallet:', function () {
         intent.intentType.should.equal('fillNonce');
       });
 
+      it('populate intent should return valid eth tokenApproval intent', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const tokenName = 'usdc';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
+          reqId,
+          intentType: 'tokenApproval',
+          tokenName,
+          feeOptions,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.tokenName!.should.equal(tokenName);
+        intent.intentType.should.equal('tokenApproval');
+      });
+
+      it('populate intent should return valid polygon tokenApproval intent', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('tpolygon'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const tokenName = 'usdt';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('tpolygon'), {
+          reqId,
+          intentType: 'tokenApproval',
+          tokenName,
+          feeOptions,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.tokenName!.should.equal(tokenName);
+        intent.intentType.should.equal('tokenApproval');
+      });
+
+      it('populate intent should return valid bsc tokenApproval intent', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('tbsc'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const tokenName = 'busd';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('tbsc'), {
+          reqId,
+          intentType: 'tokenApproval',
+          tokenName,
+          feeOptions,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.tokenName!.should.equal(tokenName);
+        intent.intentType.should.equal('tokenApproval');
+      });
+
       it('should populate intent with custodianTransactionId', async function () {
         const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
         const feeOptions = {
@@ -4940,6 +5003,101 @@ describe('V2 Wallet:', function () {
       await wallet
         .send(params)
         .should.be.rejectedWith('invalid argument for amount - Integer greater than zero or numeric string expected');
+    });
+  });
+
+  describe('Token Approval', function () {
+    let ethWallet;
+    const tokenName = 'usdc';
+    const walletPassphrase = 'test_passphrase';
+
+    before(async function () {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+      };
+      ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
+    });
+
+    it('should successfully approve ERC20 token', async function () {
+      const mockTokenApprovalBuild = {
+        txPrebuild: {
+          txHex: '0x1234567890abcdef',
+          txInfo: {
+            gasPrice: 20000000000,
+            gasLimit: 60000,
+            nonce: 1,
+          },
+        },
+        coin: 'teth',
+        tokenName: tokenName,
+      };
+
+      const mockSignedTransaction = {
+        txHex: '0xabcdef1234567890',
+        halfSigned: {
+          txHex: '0xabcdef1234567890',
+        },
+      };
+
+      const mockSentTransaction = {
+        hash: '0x9876543210fedcba',
+        status: 'signed',
+      };
+
+      // Mock the token approval build endpoint
+      const buildScope = nock(bgUrl)
+        .post(`/api/v2/teth/wallet/${ethWallet.id()}/token/approval/build`)
+        .reply(200, mockTokenApprovalBuild);
+
+      // Mock getKeychainsAndValidatePassphrase
+      sinon.stub(ethWallet, 'getKeychainsAndValidatePassphrase').resolves([
+        {
+          id: '598f606cd8fc24710d2ebad89dce86c2',
+          prv: 'test_private_key',
+        },
+      ]);
+
+      // Mock signTransaction
+      sinon.stub(ethWallet, 'signTransaction').resolves(mockSignedTransaction);
+
+      // Mock sendTransaction
+      sinon.stub(ethWallet, 'sendTransaction').resolves(mockSentTransaction);
+
+      const result = await ethWallet.approveErc20Token(walletPassphrase, tokenName);
+
+      result.should.equal(mockSentTransaction);
+      buildScope.isDone().should.be.true();
+    });
+
+    it('should handle token approval build failure', async function () {
+      const buildScope = nock(bgUrl)
+        .post(`/api/v2/teth/wallet/${ethWallet.id()}/token/approval/build`)
+        .reply(400, { error: 'Invalid token name' });
+
+      sinon.stub(ethWallet, 'getKeychainsAndValidatePassphrase').resolves([
+        {
+          id: '598f606cd8fc24710d2ebad89dce86c2',
+          prv: 'test_private_key',
+        },
+      ]);
+
+      await ethWallet.approveErc20Token(walletPassphrase, 'invalid_token').should.be.rejectedWith('Invalid token name');
+
+      buildScope.isDone().should.be.true();
+    });
+
+    it('should validate required parameters for approveErc20Token', async function () {
+      await ethWallet.approveErc20Token('', tokenName).should.be.rejectedWith();
+    });
+
+    afterEach(function () {
+      sinon.restore();
     });
   });
 });
