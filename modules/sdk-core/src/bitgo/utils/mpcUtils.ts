@@ -117,7 +117,7 @@ export abstract class MpcUtils {
   populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
     const chain = this.baseCoin.getChain();
 
-    if (!['acceleration', 'fillNonce', 'transferToken'].includes(params.intentType)) {
+    if (!['acceleration', 'fillNonce', 'transferToken', 'tokenApproval'].includes(params.intentType)) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
     }
     const intentRecipients = params.recipients?.map((recipient) => {
@@ -175,6 +175,12 @@ export abstract class MpcUtils {
             ...baseIntent,
             txid: params.lowFeeTxid,
             receiveAddress: params.receiveAddress,
+            feeOptions: params.feeOptions,
+          };
+        case 'tokenApproval':
+          return {
+            ...baseIntent,
+            tokenName: params.tokenName,
             feeOptions: params.feeOptions,
           };
         default:
