@@ -10,6 +10,8 @@ export const MINT_CONFIRM_DATA = '2bf90baa1273140c3e1b5756b242cc88cd7c4dd8a61bf8
 export const EXPIRATION = 60000;
 export const TOKEN_TRANSFER_DATA =
   'a9059cbb0000000000000000000000004887974f42a789ef6d4dfc7ba28b1583219434b3000000000000000000000000000000000000000000000000000000003b9aca00';
+export const RESOURCE_ENERGY = 'ENERGY';
+export const FROZEN_BALANCE = '1000000';
 export const USDT_CONTRACT_ADDRESS = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs';
 export const TOKEN_TRANSFER_RECIPIENT = 'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8K';
 export const TOKEN_TRANSFER_DATA_2 =
@@ -55,6 +57,42 @@ export const TX_CONTRACT = [
       type_url: 'type.googleapis.com/protocol.TriggerSmartContract',
     },
     type: 'TriggerSmartContract',
+  },
+];
+
+export const FREEZE_BALANCE_V2_CONTRACT = [
+  {
+    parameter: {
+      value: {
+        resource: 'ENERGY',
+        frozen_balance: 1000000,
+        owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+      },
+      type_url: 'type.googleapis.com/protocol.FreezeBalanceV2Contract',
+    },
+    type: 'FreezeBalanceV2Contract',
+  },
+];
+
+export const VOTE_WITNESS_CONTRACT = [
+  {
+    parameter: {
+      value: {
+        owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+        votes: [
+          {
+            vote_address: '41F16412B9A17EE9408646E2A21E16478F72ED1E95',
+            vote_count: 1000,
+          },
+          {
+            vote_address: '41CF9E12E0F48573C84BC88D8FF7C50567485AAA24',
+            vote_count: 2000,
+          },
+        ],
+      },
+      type_url: 'type.googleapis.com/protocol.VoteWitnessContract',
+    },
+    type: 'VoteWitnessContract',
   },
 ];
 
