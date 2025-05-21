@@ -1571,7 +1571,7 @@ export const coins = CoinMap.fromCoins([
     Networks.test.hedera,
     6,
     UnderlyingAsset.USDC,
-    '0.0.13078',
+    '0.0.429274',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
