@@ -82,7 +82,7 @@ import { ZodPostKeySchema } from '../schemas/postKeySchema';
  *       500:
  *         description: Internal server error
  */
-export async function POST(req: Request, res: Response, next: NextFunction, kms: KmsInterface) {
+export async function POST(req: Request, res: Response, next: NextFunction, kms: KmsInterface): Promise<void> {
   // parse request
   try {
     ZodPostKeySchema.parse(req.body);
@@ -94,45 +94,51 @@ export async function POST(req: Request, res: Response, next: NextFunction, kms:
   const { prv, pub, coin, source, type } = req.body;
 
   // check for duplicates
-  const keyObject = db.query('SELECT * from PRIVATE_KEYS WHERE pub = ? AND source = ?', [prv, pub]);
-  if (keyObject) {
+  const keyObject = await db.fetchAll('SELECT * from PRIVATE_KEYS WHERE pub = ? AND source = ?', [pub, source]);
+  if (keyObject.length != 0) {
     res.status(409);
     res.send({ message: `Error: Duplicated Key for source: ${source} and pub: ${pub}` });
     return;
   }
 
-  // db script to fetch master key from DB if necessary
-  const kmsKey = '';
-
+  // db script to fetch kms key from the database, if any exist
+  let kmsKey = await db.fetchOne('SELECT kmsKey from PRIVATE_KEYS WHERE provider = ? LIMIT 1', ['mock'])
+  if (!kmsKey) {
+    kmsKey = await kms.createKmsKey({}).then((kmsRes) => {
+      if ('code' in kmsRes) {
+        res.status(kmsRes.code);
+        res.send({ message: 'Internal server error. Failed to create top-level kms key in KMS' });
+        return;
+      }
+      return kmsRes.kmsKey;
+    })
+  }
+  
   // send to kms
-  const kmsRes: PostKeyKmsRes | KmsErrorRes = await kms.postKey(kmsKey, prv, {});
-  if ('code' in kmsRes) {
-    // TODO: type guard
+  const kmsRes: PostKeyKmsRes | KmsErrorRes = await kms.postKey("", prv, {});
+  if ('code' in kmsRes) { // TODO: type guard
     res.status(kmsRes.code);
     res.send({ message: 'Internal server error. Failed to encrypt prvaite key in KMS' });
     return;
   }
 
-  // From what i got on the TDD, as store you mean create a new entry right?
-  // not sure about the note that says "for MPC pub would be the commonKeyChain
-  // does "pub" comes empty at some point?
-
-  // store into database
-  try {
-    // TODO: check how to type the queries???
-    const data = db.query('INSERT INTO PRIVATE_KEYS(prv, pub, coin, source, type) values (?, ?, ?, ?, ?)', [
-      prv,
-      pub,
-      coin,
-      source,
-      type,
-    ]);
-    const { id: keyId } = data;
-    res.status(200);
-    return res.json({ keyId, coin, source, type, pub });
-  } catch (e) {
+  // insert into database
+  // TODO: better catching
+  await db.run('INSERT INTO PRIVATE_KEYS values (?, ?, ?, ?, ?, ?, ?)', [
+    pub,
+    source,
+    kmsRes.encryptedPrv,
+    kms.providerName,
+    kmsRes.topLevelKeyId,
+    coin,
+    type,
+  ]).catch((err) => {
     res.status(500);
-    res.send({ message: 'Internal server error' }); // some unexpected error on DB, needs better login tho
-    return;
-  }
+    res.send({ message: 'Internal server error' });
+    return;     // TODO: test this
+  });
+
+  res.status(200);
+  res.json({ coin, source, type, pub });
+  next();
 }

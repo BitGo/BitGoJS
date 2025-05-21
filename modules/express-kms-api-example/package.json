@@ -5,7 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx --watch src/app.ts",
-    "dev-test": "npx tsx --watch src/index-test.ts"
+    "dev-test": "npx tsx --watch src/index-test.ts",
+    "build": "tsc -p .",
+    "run": "node dist/src/app.js",
+    "build-and-run": "tsc -p .; node dist/src/app.js"
   },
   "keywords": [],
   "author": "",
