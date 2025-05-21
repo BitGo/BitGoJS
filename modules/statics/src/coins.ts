@@ -2254,6 +2254,18 @@ export const coins = CoinMap.fromCoins([
     '',
     'USDT'
   ),
+  eosToken(
+    'a6420670-287b-4ac0-bf54-052149ffe180',
+    'eos:VAULTA',
+    'Vaulta',
+    4,
+    'core.vaulta',
+    'core.vaulta',
+    UnderlyingAsset.VAULTA,
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'VAULTA'
+  ),
   teosToken(
     '1c627bb5-4bee-4ab0-8bb6-3d535e17a769',
     'teos:CHEX',
