@@ -1580,7 +1580,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Fungible Token',
     Networks.test.hedera,
     6,
-    UnderlyingAsset.USDC,
+    UnderlyingAsset['thbar:txsgd'],
     '0.0.5894751',
     AccountCoin.DEFAULT_FEATURES
   ),

@@ -2990,7 +2990,6 @@ export const ofcErc20Coins = [
     6,
     underlyingAssetForSymbol('eth:dbusd')
   ),
-  ofcerc20('08b990d0-1f4b-4bb4-a509-456f2324c6de', 'ofceth:aut', 'All Unity', 6, underlyingAssetForSymbol('eth:aut')),
   ofcerc20(
     'fe2f5c57-90e4-49e0-a635-b6f1cec0c750',
     'ofceth:edu',
@@ -3291,6 +3290,20 @@ export const tOfcErc20Coins = [
     'Holesky Testnet USD1',
     18,
     UnderlyingAsset['hteth:usd1'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    'bf6a1c7b-eed7-46af-85ec-0adc09aa72d6',
+    'ofchteth:aut',
+    'Holesky Testnet AllUnity',
+    6,
+    UnderlyingAsset['hteth:aut'],
     undefined,
     undefined,
     undefined,

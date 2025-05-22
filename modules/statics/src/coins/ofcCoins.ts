@@ -1012,7 +1012,7 @@ export const ofcCoins = [
     'a6087e85-6c4a-40c5-83f0-3ebeabd8e39b',
     'ofcopeth:spxux',
     'Optimism',
-    6,
+    18,
     UnderlyingAsset['opeth:spxux']
   ),
   ofcOpethErc20(
