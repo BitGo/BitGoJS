@@ -368,6 +368,10 @@ export enum CoinFeature {
    * This coin supports multisig wallets
    */
   MULTISIG = 'multisig',
+  /**
+   * This coins is an EVM compatible coin and should use common EVM model registration methods in IMS
+   */
+  EVM_COMPATIBLE_IMS = 'evm_compatible_ims',
 }
 
 /**
