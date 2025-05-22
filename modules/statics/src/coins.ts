@@ -853,7 +853,7 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '49d56512-bddb-41aa-ac7f-f4a4c494b412',
@@ -863,27 +863,27 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '854513b2-cf1a-44b4-879b-e3aae0b5f227',
-    'fetch',
+    'fetchai',
     'Fetch',
-    Networks.main.fetch,
+    Networks.main.fetchai,
     18,
-    UnderlyingAsset.FETCH,
-    BaseUnit.FETCH,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    UnderlyingAsset.FETCHAI,
+    BaseUnit.FETCHAI,
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     'e285caf3-e9b8-407a-aa72-ee4094d1cf9f',
-    'tfetch',
+    'tfetchai',
     'Testnet Fetch',
-    Networks.test.fetch,
+    Networks.test.fetchai,
     18,
-    UnderlyingAsset.FETCH,
-    BaseUnit.FETCH,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    UnderlyingAsset.FETCHAI,
+    BaseUnit.FETCHAI,
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '2ec91758-fd84-44d5-92d3-7158903de278',
@@ -893,7 +893,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '2d10a918-01f4-40a5-b1db-a5e5247d21d7',
@@ -903,7 +903,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    COSMOS_SIDECHAIN_FEATURES.filter((feature) => feature !== CoinFeature.BULK_TRANSACTION)
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
@@ -1471,7 +1471,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.USDC,
     '0.0.456858',
-    '0.0.456858',
     AccountCoin.DEFAULT_FEATURES
   ),
 
@@ -1483,7 +1482,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.XSGD,
     '0.0.1985922',
-    '0.0.1985922',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1493,7 +1491,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     2,
     UnderlyingAsset.BCT,
-    '0.0.1958126',
     '0.0.1958126',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1505,7 +1502,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.CLXY,
     '0.0.859814',
-    '0.0.859814',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1515,7 +1511,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     8,
     UnderlyingAsset['hbar:karate'],
-    '0.0.2283230',
     '0.0.2283230',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1527,7 +1522,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset['hbar:sauce'],
     '0.0.731861',
-    '0.0.731861',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1537,7 +1531,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     8,
     UnderlyingAsset['hbar:dovu'],
-    '0.0.3716059',
     '0.0.3716059',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1549,7 +1542,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset['hbar:pack'],
     '0.0.4794920',
-    '0.0.4794920',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1559,7 +1551,6 @@ export const coins = CoinMap.fromCoins([
     Networks.main.hedera,
     8,
     UnderlyingAsset['hbar:jam'],
-    '0.0.127877',
     '0.0.127877',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1571,7 +1562,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset['hbar:berry'],
     '0.0.7496578',
-    '0.0.7496578',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1582,7 +1572,6 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.USDC,
     '0.0.13078',
-    '0.0.13078',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -1591,8 +1580,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Fungible Token',
     Networks.test.hedera,
     6,
-    UnderlyingAsset.USDC,
-    '0.0.5894751',
+    UnderlyingAsset['thbar:txsgd'],
     '0.0.5894751',
     AccountCoin.DEFAULT_FEATURES
   ),
@@ -1929,6 +1917,14 @@ export const coins = CoinMap.fromCoins([
     'TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn',
     UnderlyingAsset['trx:usdd']
   ),
+  tronToken(
+    '6d37a333-c09b-44b8-bd2b-f07f12b838cd',
+    'trx:usd1',
+    'USD1',
+    18,
+    'TPFqcBAaaUMCSVRCqPaQ9QnzKhmuoLR6Rc',
+    UnderlyingAsset['trx:usd1']
+  ),
   algoToken(
     'bf444e89-e762-48a9-a27d-8efa2aed7867',
     'algo:USDC-31566704',
@@ -2246,6 +2242,18 @@ export const coins = CoinMap.fromCoins([
     '',
     'USDT'
   ),
+  eosToken(
+    'a6420670-287b-4ac0-bf54-052149ffe180',
+    'eos:VAULTA',
+    'Vaulta',
+    4,
+    'core.vaulta',
+    'core.vaulta',
+    UnderlyingAsset.VAULTA,
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'VAULTA'
+  ),
   teosToken(
     '1c627bb5-4bee-4ab0-8bb6-3d535e17a769',
     'teos:CHEX',
@@ -2368,7 +2376,7 @@ export const coins = CoinMap.fromCoins([
     GENERIC_TOKEN_FEATURES,
     '',
     '',
-    Networks.main.polygon,
+    Networks.main.soneium,
     KeyCurve.Secp256k1
   ),
   terc721(

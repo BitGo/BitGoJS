@@ -2408,13 +2408,17 @@ export class Wallet implements IWallet {
     const coin = this.baseCoin;
 
     const amount = new BigNumber(params.amount);
-    if (amount.isNegative()) {
-      throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-    }
 
-    if (!coin.valuelessTransferAllowed() && amount.isZero()) {
-      throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-    }
+    const isAmountNegative = amount.isNegative();
+    const isAmountZero = amount.isZero();
+    const isAmountDecimal = !amount.isInteger();
+
+    _.some([isAmountNegative, !coin.valuelessTransferAllowed() && isAmountZero, isAmountDecimal], (condition) => {
+      if (condition) {
+        throw new Error('invalid argument for amount - Integer greater than zero or numeric string expected');
+      }
+    });
+
     const recipients: SendManyOptions['recipients'] = [
       {
         address: params.address,

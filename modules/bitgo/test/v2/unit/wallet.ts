@@ -4893,4 +4893,46 @@ describe('V2 Wallet:', function () {
       await wallet.approveErc20Token(walletPassphrase, tokenName).should.be.rejectedWith(sendError);
     });
   });
+
+  describe('Amount Validation for sendCoins', function () {
+    let wallet;
+    let params;
+
+    before(function () {
+      const basecoin = bitgo.coin('tbtc');
+      wallet = new Wallet(bitgo, basecoin, {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: ['5b3424f91bf349930e340175'],
+      });
+      params = {
+        address: '2N4Xz4itCdKKUREiytEJ1KGPoEnKHmJUIwq',
+        walletPassphrase: 'test123',
+      };
+    });
+
+    it('should reject decimal amounts in send coins', async function () {
+      params.amount = 150000000.55;
+
+      await wallet
+        .send(params)
+        .should.be.rejectedWith('invalid argument for amount - Integer greater than zero or numeric string expected');
+    });
+
+    it('should reject negative amount in send coins', async function () {
+      params.amount = '-12';
+
+      await wallet
+        .send(params)
+        .should.be.rejectedWith('invalid argument for amount - Integer greater than zero or numeric string expected');
+    });
+
+    it('should reject zero in send coins', async function () {
+      params.amount = '0';
+
+      await wallet
+        .send(params)
+        .should.be.rejectedWith('invalid argument for amount - Integer greater than zero or numeric string expected');
+    });
+  });
 });

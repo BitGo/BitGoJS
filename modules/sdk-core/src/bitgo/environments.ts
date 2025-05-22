@@ -50,7 +50,7 @@ interface EnvironmentTemplate {
   babyNodeUrl: string;
   mantraNodeUrl: string;
   cronosNodeUrl: string;
-  fetchNodeUrl: string;
+  fetchAiNodeUrl: string;
   initiaNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
@@ -83,6 +83,7 @@ interface EnvironmentTemplate {
   soneiumExplorerBaseUrl?: string;
   soneiumExplorerApiToken?: string;
   stxNodeUrl: string;
+  vetNodeUrl: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -155,7 +156,7 @@ const mainnetBase: EnvironmentTemplate = {
   baseethExplorerUrl: 'https://api.basescan.org',
   baseethApiToken: process.env.BASESCAN_API_TOKEN,
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
-  nearNodeUrls: ['https://rpc.mainnet.near.org'],
+  nearNodeUrls: ['https://api.fastnear.com'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
   adaNodeUrl: 'https://api.koios.rest/api/v0',
   hashNodeUrl: 'https://api.provenance.io',
@@ -173,7 +174,7 @@ const mainnetBase: EnvironmentTemplate = {
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
-  fetchNodeUrl: 'https://rest-fetchhub.fetch.ai/',
+  fetchAiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   initiaNodeUrl: 'https://rest.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
@@ -197,6 +198,7 @@ const mainnetBase: EnvironmentTemplate = {
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
   monExplorerBaseUrl: 'https://testnet.monadexplorer.com/', //TODO:  WIN-5225: Adding it so its not missed when Monad mainet is avaiable.Change it with mainnet explorer, when its available
   stxNodeUrl: 'https://api.hiro.so',
+  vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -226,7 +228,7 @@ const testnetBase: EnvironmentTemplate = {
   // https://github.com/cryptokylin/CryptoKylin-Testnet#http-api-list
   // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
-  nearNodeUrls: ['https://rpc.testnet.near.org'],
+  nearNodeUrls: ['https://test.api.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v0',
   hashNodeUrl: 'https://api.test.provenance.io',
@@ -244,7 +246,7 @@ const testnetBase: EnvironmentTemplate = {
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   mantraNodeUrl: 'https://mantra-testnet-rest.publicnode.com/',
   cronosNodeUrl: 'https://testnet-croeseid-4.crypto.org:1317/',
-  fetchNodeUrl: 'https://rest-dorado.fetch.ai/',
+  fetchAiNodeUrl: 'https://rest-dorado.fetch.ai/',
   initiaNodeUrl: 'https://rest.testnet.initia.xyz/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
@@ -268,6 +270,7 @@ const testnetBase: EnvironmentTemplate = {
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
   stxNodeUrl: 'https://api.testnet.hiro.so',
+  vetNodeUrl: 'https://rpc-testnet.vechain.energy',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

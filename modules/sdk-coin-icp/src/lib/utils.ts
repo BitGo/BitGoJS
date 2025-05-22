@@ -706,8 +706,10 @@ export class Utils implements BaseUtils {
     }
 
     if (typeof value === 'number') {
-      const isUnsafe = value > Number.MAX_SAFE_INTEGER || value < Number.MIN_SAFE_INTEGER;
-      return isUnsafe ? BigInt(value) : value;
+      const MAX_32BIT = 4294967295; // 2^32 - 1
+      const MIN_32BIT = -4294967296; // -(2^32)
+      const isOutside32BitRange = value > MAX_32BIT || value < MIN_32BIT;
+      return isOutside32BitRange ? BigInt(value) : value;
     }
 
     throw new Error(`Invalid type: expected a number or bigint, but received ${typeof value}`);
@@ -720,7 +722,7 @@ export class Utils implements BaseUtils {
     const transferFields = new Map<any, any>([
       [0, senderAccount],
       [1, receiverAccount],
-      [2, new Map([[0, this.safeBigInt(Number(sendArgs.payment.receiverGets.e8s))]])],
+      [2, new Map([[0, this.safeBigInt(sendArgs.payment.receiverGets.e8s)]])],
       [3, new Map([[0, sendArgs.maxFee.e8s]])],
     ]);
 

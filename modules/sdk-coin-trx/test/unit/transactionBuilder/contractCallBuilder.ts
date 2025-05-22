@@ -234,7 +234,7 @@ describe('Trx Contract call Builder', () => {
         () => {
           txBuilder.expiration(now + 31536000001);
         },
-        (e: any) => e.message === 'Expiration must not be greater than one year'
+        (e: any) => e.message === 'Expiration must not be greater than one day'
       );
     });
 

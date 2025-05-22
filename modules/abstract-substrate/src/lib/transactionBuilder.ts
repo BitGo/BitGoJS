@@ -27,8 +27,11 @@ import { Transaction } from './transaction';
 import { BaseTransactionSchema, SignedTransactionSchema, SigningPayloadTransactionSchema } from './txnSchema';
 import utils from './utils';
 
-export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  protected _transaction: Transaction;
+export abstract class TransactionBuilder<
+  TMethod = TxMethod,
+  TTransaction extends Transaction = Transaction
+> extends BaseTransactionBuilder {
+  protected _transaction: TTransaction;
   protected _keyPair: KeyPair;
   protected _signature?: string;
   protected _sender: string;
@@ -39,7 +42,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _tip?: number;
   protected _eraPeriod?: number;
   protected _registry: TypeRegistry;
-  protected _method?: TxMethod;
+  protected _method?: TMethod;
   protected _material: Material;
   // signatures that will be used to sign a transaction when building
   // not the same as the _signatures in transaction which is the signature in
@@ -48,7 +51,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new Transaction(_coinConfig);
+    this._transaction = new Transaction(_coinConfig) as TTransaction;
   }
 
   /**
@@ -134,7 +137,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  private method(method: TxMethod): this {
+  private method(method: TMethod): this {
     this._method = method;
     return this;
   }
@@ -154,17 +157,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected get transaction(): Transaction {
+  protected get transaction(): TTransaction {
     return this._transaction;
   }
 
   /** @inheritdoc */
-  protected set transaction(transaction: Transaction) {
+  protected set transaction(transaction: TTransaction) {
     this._transaction = transaction;
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
+  protected fromImplementation(rawTransaction: string): TTransaction {
     const decodedTxn = decode(rawTransaction, {
       metadataRpc: this._material.metadata,
       registry: this._registry,
@@ -186,7 +189,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (decodedTxn.tip) {
       this.fee({ amount: `${decodedTxn.tip}`, type: 'tip' });
     }
-    this.method(decodedTxn.method as unknown as TxMethod);
+    this.method(decodedTxn.method as unknown as TMethod);
     return this._transaction;
   }
 
@@ -197,7 +200,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<TTransaction> {
     this.transaction.setTransaction(this.buildTransaction());
     this.transaction.transactionType(this.transactionType);
     this.transaction.registry(this._registry);
@@ -320,7 +323,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateTransaction(_: Transaction): void {
+  validateTransaction(_: TTransaction): void {
     this.validateBaseFields(
       this._sender,
       this._blockNumber,
@@ -382,7 +385,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected signImplementation({ key }: BaseKey): Transaction {
+  protected signImplementation({ key }: BaseKey): TTransaction {
     this._keyPair = new KeyPair({ prv: key });
     return this._transaction;
   }

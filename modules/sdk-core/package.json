@@ -61,7 +61,7 @@
     "libsodium-wrappers-sumo": "^0.7.9",
     "lodash": "^4.17.15",
     "noble-bls12-381": "0.7.2",
-    "openpgp": "5.10.1",
+    "openpgp": "5.11.3",
     "paillier-bigint": "3.3.0",
     "secp256k1": "5.0.1",
     "strip-hex-prefix": "^1.0.0",

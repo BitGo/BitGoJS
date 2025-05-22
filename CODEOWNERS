@@ -61,7 +61,7 @@
 /modules/sdk-coin-cspr/ @BitGo/ethalt-team
 /modules/sdk-coin-dot/ @BitGo/ethalt-team
 /modules/sdk-coin-eos/ @BitGo/ethalt-team
-/modules/sdk-coin-fetch/ @BitGo/ethalt-team
+/modules/sdk-coin-fetchai/ @BitGo/ethalt-team
 /modules/sdk-coin-flr/ @BitGo/ethalt-team
 /modules/sdk-coin-ethlike/ @BitGo/ethalt-team
 /modules/sdk-coin-hbar/ @BitGo/ethalt-team
@@ -84,6 +84,7 @@
 /modules/sdk-coin-tao/ @BitGo/ethalt-team
 /modules/sdk-coin-ton/ @BitGo/ethalt-team
 /modules/sdk-coin-trx/ @BitGo/ethalt-team
+/modules/sdk-coin-vet/ @Bitgo/ethalt-team
 /modules/sdk-coin-wemix/ @BitGo/ethalt-team
 /modules/sdk-coin-world/ @BitGo/ethalt-team
 /modules/sdk-coin-xdc/ @BitGo/ethalt-team

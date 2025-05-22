@@ -45,6 +45,7 @@
     "@bitgo/statics": "^53.0.0",
     "@substrate/txwrapper-core": "7.5.2",
     "@substrate/txwrapper-polkadot": "7.5.2",
+    "@polkadot/keyring": "13.3.1",
     "bignumber.js": "^9.1.2",
     "joi": "^17.4.0"
   },

@@ -125,7 +125,7 @@
       "path": "./modules/sdk-coin-ethw"
     },
     {
-      "path": "./modules/sdk-coin-fetch"
+      "path": "./modules/sdk-coin-fetchai"
     },
     {
       "path": "./modules/sdk-coin-flr"
@@ -216,6 +216,9 @@
     },
     {
       "path": "./modules/sdk-coin-trx"
+    },
+    {
+      "path": "./modules/sdk-coin-vet"
     },
     {
       "path": "./modules/sdk-coin-wemix"

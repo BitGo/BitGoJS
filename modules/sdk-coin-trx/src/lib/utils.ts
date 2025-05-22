@@ -12,12 +12,20 @@ import {
   TransactionReceipt,
   Permission,
   TriggerSmartContract,
+  FreezeBalanceContractParameter,
+  VoteWitnessContractParameter,
+  FreezeContractDecoded,
+  VoteContractDecoded,
 } from './iface';
-import { ContractType, PermissionType } from './enum';
+import { ContractType, PermissionType, TronResource } from './enum';
 import { AbiCoder, hexConcat } from 'ethers/lib/utils';
 
+export const TRANSACTION_MAX_EXPIRATION = 86400000; // one day
+export const TRANSACTION_DEFAULT_EXPIRATION = 3600000; // one hour
 const ADDRESS_PREFIX_REGEX = /^(41)/;
 const ADDRESS_PREFIX = '41';
+
+export type BytesLike = number[] | Uint8Array;
 
 const getTronTokens = (network = 'mainnet') => {
   return (
@@ -32,8 +40,10 @@ export const tokenTestnetContractAddresses = getTronTokens('testnet');
 /**
  * Tron-specific helper functions
  */
-export type TronBinaryLike = ByteArray | Buffer | Uint8Array | string;
 export type ByteArray = number[];
+export type TronBinaryLike = ByteArray | Buffer | Uint8Array | string;
+
+export const VALID_RESOURCE_TYPES = ['ENERGY', 'BANDWIDTH'];
 
 /**
  * @param address
@@ -90,21 +100,24 @@ export function getHexAddressFromBase58Address(base58: string): string {
   // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
   // but they don't surface this call in index.js
   const bytes = tronweb.utils.crypto.decodeBase58Address(base58);
-  return getHexAddressFromByteArray(bytes);
+  // Ensure bytes is a ByteArray (number[])
+  if (Array.isArray(bytes)) {
+    return getHexAddressFromByteArray(bytes);
+  }
+  throw new UtilsError('Failed to decode base58 address to byte array');
 }
-
 /**
  * @param privateKey
  */
 export function getPubKeyFromPriKey(privateKey: TronBinaryLike): ByteArray {
-  return tronweb.utils.crypto.getPubKeyFromPriKey(privateKey);
+  return tronweb.utils.crypto.getPubKeyFromPriKey(privateKey as BytesLike);
 }
 
 /**
  * @param privateKey
  */
 export function getAddressFromPriKey(privateKey: TronBinaryLike): ByteArray {
-  return tronweb.utils.crypto.getAddressFromPriKey(privateKey);
+  return tronweb.utils.crypto.getAddressFromPriKey(privateKey as BytesLike);
 }
 
 /**
@@ -127,7 +140,7 @@ export function getBase58AddressFromHex(hex: string): string {
  * @param transaction
  */
 export function signTransaction(privateKey: string | ByteArray, transaction: TransactionReceipt): TransactionReceipt {
-  return tronweb.utils.crypto.signTransaction(privateKey, transaction);
+  return tronweb.utils.crypto.signTransaction(privateKey, transaction) as TransactionReceipt;
 }
 
 /**
@@ -136,14 +149,14 @@ export function signTransaction(privateKey: string | ByteArray, transaction: Tra
  * @param useTronHeader
  */
 export function signString(message: string, privateKey: string | ByteArray, useTronHeader = true): string {
-  return tronweb.Trx.signString(message, privateKey, useTronHeader);
+  return tronweb.Trx.signString(message, privateKey as string, useTronHeader);
 }
 
 /**
  * @param pubBytes
  */
 export function getRawAddressFromPubKey(pubBytes: TronBinaryLike): ByteArray {
-  return tronweb.utils.crypto.computeAddress(pubBytes);
+  return tronweb.utils.crypto.computeAddress(pubBytes as BytesLike);
 }
 
 /**
@@ -159,8 +172,15 @@ export function decodeTransaction(hexString: string): RawData {
     throw new UtilsError('Number of contracts is greater than 1.');
   }
 
-  let contract: TransferContract[] | AccountPermissionUpdateContract[] | TriggerSmartContract[];
+  let contract:
+    | TransferContract[]
+    | AccountPermissionUpdateContract[]
+    | TriggerSmartContract[]
+    | FreezeBalanceContractParameter[]
+    | VoteWitnessContractParameter[];
+
   let contractType: ContractType;
+
   // ensure the contract type is supported
   switch (rawTransaction.contracts[0].parameter.type_url) {
     case 'type.googleapis.com/protocol.TransferContract':
@@ -174,6 +194,14 @@ export function decodeTransaction(hexString: string): RawData {
     case 'type.googleapis.com/protocol.TriggerSmartContract':
       contractType = ContractType.TriggerSmartContract;
       contract = exports.decodeTriggerSmartContract(rawTransaction.contracts[0].parameter.value);
+      break;
+    case 'type.googleapis.com/protocol.FreezeBalanceV2Contract':
+      contractType = ContractType.FreezeBalanceV2;
+      contract = decodeFreezeBalanceV2Contract(rawTransaction.contracts[0].parameter.value);
+      break;
+    case 'type.googleapis.com/protocol.VoteWitnessContract':
+      contractType = ContractType.VoteWitness;
+      contract = decodeVoteWitnessContract(rawTransaction.contracts[0].parameter.value);
       break;
     default:
       throw new UtilsError('Unsupported contract type');
@@ -358,6 +386,108 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
     witness,
     actives: activeList,
   };
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with freeze balance contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {FreezeBalanceContractParameter[]} - Array containing the decoded freeze contract
+ */
+export function decodeFreezeBalanceV2Contract(base64: string): FreezeBalanceContractParameter[] {
+  let freezeContract: FreezeContractDecoded;
+  try {
+    freezeContract = protocol.FreezeBalanceV2Contract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the freeze contract in the transaction.');
+  }
+
+  if (!freezeContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this freeze contract.');
+  }
+
+  if (freezeContract.resource === undefined) {
+    throw new UtilsError('Resource type does not exist in this freeze contract.');
+  }
+
+  if (freezeContract.frozenBalance === undefined) {
+    throw new UtilsError('Frozen balance does not exist in this freeze contract.');
+  }
+
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(freezeContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  const resourceValue = freezeContract.resource === 0 ? TronResource.BANDWIDTH : TronResource.ENERGY;
+
+  return [
+    {
+      parameter: {
+        value: {
+          resource: resourceValue,
+          frozen_balance: Number(freezeContract.frozenBalance),
+          owner_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with vote witness contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {VoteWitnessContractParameter[]} - Array containing the decoded vote witness contract
+ */
+export function decodeVoteWitnessContract(base64: string): VoteWitnessContractParameter[] {
+  let voteContract: VoteContractDecoded;
+  try {
+    voteContract = protocol.VoteWitnessContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the vote contract in the transaction.');
+  }
+
+  if (!voteContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this vote contract.');
+  }
+
+  if (!Array.isArray(voteContract.votes) || voteContract.votes.length === 0) {
+    throw new UtilsError('Votes do not exist or are empty in this vote contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(voteContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  interface VoteItem {
+    voteAddress?: string;
+    voteCount?: string | number;
+  }
+
+  const votes = voteContract.votes.map((vote: VoteItem) => {
+    if (!vote.voteAddress) {
+      throw new UtilsError('Vote address is missing in one of the votes.');
+    }
+
+    return {
+      vote_address: getBase58AddressFromByteArray(
+        getByteArrayFromHexAddress(Buffer.from(vote.voteAddress, 'base64').toString('hex'))
+      ),
+      vote_count: Number(vote.voteCount || 0),
+    };
+  });
+
+  return [
+    {
+      parameter: {
+        value: {
+          owner_address,
+          votes,
+        },
+      },
+    },
+  ];
 }
 
 /**

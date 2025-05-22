@@ -202,6 +202,7 @@ class Arbitrum extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class ArbitrumTestnet extends Testnet implements EthereumNetwork {
@@ -216,6 +217,7 @@ class ArbitrumTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class AvalancheC extends Mainnet implements AccountNetwork {
@@ -511,7 +513,7 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   blockExplorerUrl = 'https://etherscan.io/block/';
   // from https://github.com/ethereumjs/ethereumjs-common/blob/a978f630858f6843176bb20b277569785914e899/src/chains/index.ts
   chainId = 1;
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  batcherContractAddress = '0xebe27913fcc7510eadf10643a8f86bf5492a9541';
   forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
   nativeCoinOperationHashPrefix = 'ETHER';
@@ -582,7 +584,7 @@ class Holesky extends Testnet implements EthereumNetwork {
   blockExplorerUrl = 'https://holesky.etherscan.io/block/';
   // https://chainlist.org/chain/17000
   chainId = 17000;
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  batcherContractAddress = '0xebe27913fcc7510eadf10643a8f86bf5492a9541';
   forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
   nativeCoinOperationHashPrefix = 'ETHER';
@@ -897,15 +899,15 @@ class CronosTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/';
 }
 
-class Fetch extends Mainnet implements AccountNetwork {
+class FetchAi extends Mainnet implements AccountNetwork {
   name = 'Fetch';
-  family = CoinFamily.FETCH;
+  family = CoinFamily.FETCHAI;
   explorerUrl = 'https://www.mintscan.io/fetchai';
 }
 
-class FetchTestnet extends Testnet implements AccountNetwork {
+class FetchAiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Fetch';
-  family = CoinFamily.FETCH;
+  family = CoinFamily.FETCHAI;
   explorerUrl = 'https://explore-eridanus-1.fetch.ai/';
 }
 
@@ -1074,7 +1076,7 @@ class Polygon extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0x5397d0869aba0d55e96d5716d383f6e1d8695ed7';
   walletFactoryAddress = '0xa7198f48c58e91f01317e70cd24c5cce475c1555';
   walletImplementationAddress = '0xe5dcdc13b628c2df813db1080367e929c1507ca0';
-  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   nativeCoinOperationHashPrefix = 'POLYGON';
   tokenOperationHashPrefix = 'POLYGON-ERC20';
 }
@@ -1089,7 +1091,7 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd4c24325b5ef514fbb1ecc76a9bb4dcb57a8341e';
   walletFactoryAddress = '0xe9c16033e01bf9f94bf9f99fc0fefcfb8b124992';
   walletImplementationAddress = '0xf8360c213e4f44cce03e48cb9281254de2a7a566';
-  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   nativeCoinOperationHashPrefix = 'POLYGON';
   tokenOperationHashPrefix = 'POLYGON-ERC20';
 }
@@ -1106,7 +1108,7 @@ class Optimism extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  batcherContractAddress = '0xebe27913fcc7510eadf10643a8f86bf5492a9541';
 }
 
 class OptimismTestnet extends Testnet implements EthereumNetwork {
@@ -1121,7 +1123,7 @@ class OptimismTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
-  batcherContractAddress = '0xc84c7eb4c84271ec03ca9e3dbf12cfa42146309e';
+  batcherContractAddress = '0xebe27913fcc7510eadf10643a8f86bf5492a9541';
 }
 
 class ZkSync extends Mainnet implements EthereumNetwork {
@@ -1470,7 +1472,7 @@ export const Networks = {
     ethereumClassic: Object.freeze(new EthereumClassic()),
     ethereumW: Object.freeze(new EthereumW()),
     fiat: Object.freeze(new Fiat()),
-    fetch: Object.freeze(new Fetch()),
+    fetchai: Object.freeze(new FetchAi()),
     flr: Object.freeze(new Flare()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
@@ -1545,7 +1547,7 @@ export const Networks = {
     eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
-    fetch: Object.freeze(new FetchTestnet()),
+    fetchai: Object.freeze(new FetchAiTestnet()),
     flr: Object.freeze(new FlareTestnet()),
     mon: Object.freeze(new MonadTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),

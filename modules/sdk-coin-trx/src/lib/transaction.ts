@@ -17,7 +17,15 @@ import {
   tokenMainnetContractAddresses,
   tokenTestnetContractAddresses,
 } from './utils';
-import { ContractEntry, RawData, TransactionReceipt, TransferContract, TriggerSmartContract } from './iface';
+import {
+  ContractEntry,
+  FreezeBalanceV2Contract,
+  RawData,
+  TransactionReceipt,
+  TransferContract,
+  TriggerSmartContract,
+  VoteWitnessContract,
+} from './iface';
 
 /**
  * Tron transaction model.
@@ -124,6 +132,34 @@ export class Transaction extends BaseTransaction {
           contractAddress,
           data: contractCallValues.data,
           value: '0',
+        };
+        break;
+      case ContractType.FreezeBalanceV2:
+        this._type = TransactionType.StakingActivate;
+        const freezeValue = (rawData.contract[0] as FreezeBalanceV2Contract).parameter.value;
+        output = {
+          address: freezeValue.owner_address,
+          value: freezeValue.frozen_balance.toString(),
+        };
+        input = {
+          address: freezeValue.owner_address,
+          value: freezeValue.frozen_balance.toString(),
+        };
+        break;
+      case ContractType.VoteWitness:
+        this._type = TransactionType.StakingVote;
+        const voteValues = (rawData.contract[0] as VoteWitnessContract).parameter.value;
+
+        // Calculate total vote count
+        const totalVoteCount = voteValues.votes.reduce((sum, vote) => sum + vote.vote_count, 0);
+
+        output = {
+          address: voteValues.owner_address,
+          value: totalVoteCount.toString(),
+        };
+        input = {
+          address: voteValues.owner_address,
+          value: totalVoteCount.toString(),
         };
         break;
       default:

@@ -48,7 +48,7 @@ import {
   Eth,
   Ethw,
   EthLikeCoin,
-  Fetch,
+  FetchAi,
   Flr,
   TethLikeCoin,
   FiatAED,
@@ -121,7 +121,7 @@ import {
   Teos,
   Tetc,
   Teth,
-  Tfetch,
+  TfetchAi,
   Tflr,
   Tmon,
   TfiatAED,
@@ -161,6 +161,7 @@ import {
   Ttia,
   Tton,
   Ttrx,
+  Tvet,
   Txlm,
   Txdc,
   Txrp,
@@ -168,6 +169,7 @@ import {
   Tzec,
   Tzeta,
   Tzketh,
+  Vet,
   Wemix,
   World,
   Xdc,
@@ -217,7 +219,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('fiatgbp', FiatGBP.createInstance);
   coinFactory.register('fiatsgd', FiatSGD.createInstance);
   coinFactory.register('fiatusd', FiatUsd.createInstance);
-  coinFactory.register('fetch', Fetch.createInstance);
+  coinFactory.register('fetchai', FetchAi.createInstance);
   coinFactory.register('flr', Flr.createInstance);
   coinFactory.register('gteth', Gteth.createInstance);
   coinFactory.register('hash', Hash.createInstance);
@@ -285,7 +287,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tfiatgbp', TfiatGBP.createInstance);
   coinFactory.register('tfiatsgd', TfiatSGD.createInstance);
   coinFactory.register('tfiatusd', TfiatUsd.createInstance);
-  coinFactory.register('tfetch', Tfetch.createInstance);
+  coinFactory.register('tfetchai', TfetchAi.createInstance);
   coinFactory.register('tflr', Tflr.createInstance);
   coinFactory.register('tmon', Tmon.createInstance);
   coinFactory.register('thash', Thash.createInstance);
@@ -318,6 +320,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('ttia', Ttia.createInstance);
   coinFactory.register('tton', Tton.createInstance);
   coinFactory.register('ttrx', Ttrx.createInstance);
+  coinFactory.register('tvet', Tvet.createInstance);
   coinFactory.register('txdc', Txdc.createInstance);
   coinFactory.register('txlm', Txlm.createInstance);
   coinFactory.register('txrp', Txrp.createInstance);
@@ -327,6 +330,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tzketh', Tzketh.createInstance);
   coinFactory.register('twemix', Twemix.createInstance);
   coinFactory.register('tworld', Tworld.createInstance);
+  coinFactory.register('vet', Vet.createInstance);
   coinFactory.register('xdc', Xdc.createInstance);
   coinFactory.register('xlm', Xlm.createInstance);
   coinFactory.register('xrp', Xrp.createInstance);

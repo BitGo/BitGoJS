@@ -643,7 +643,7 @@ export const amsTokenConfigWithCustomToken = {
         accountExplorerUrl: 'https://holesky.etherscan.io/address/',
         blockExplorerUrl: 'https://holesky.etherscan.io/block/',
         chainId: 17000,
-        batcherContractAddress: '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e',
+        batcherContractAddress: '0xebe27913fcc7510eadf10643a8f86bf5492a9541',
         forwarderFactoryAddress: '0xffa397285ce46fb78c588a9e993286aac68c37cd',
         forwarderImplementationAddress: '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded',
         nativeCoinOperationHashPrefix: 'ETHER',

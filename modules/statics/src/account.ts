@@ -2,6 +2,11 @@ import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } 
 import { DOMAIN_PATTERN, HEDERA_NODE_ACCCOUNT_ID } from './constants';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } from './networks';
+import {
+  ACCOUNT_COIN_DEFAULT_FEATURES,
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
+  CELO_TOKEN_FEATURES,
+} from './coinFeatures';
 
 export interface AccountConstructorOptions {
   id: string;
@@ -27,25 +32,10 @@ export interface AccountConstructorOptions {
  * "pieces" of coin which belong to an address.
  */
 export class AccountCoin extends BaseCoin {
-  public static readonly DEFAULT_FEATURES = [
-    CoinFeature.ACCOUNT_MODEL,
-    CoinFeature.REQUIRES_BIG_NUMBER,
-    CoinFeature.VALUELESS_TRANSFER,
-    CoinFeature.TRANSACTION_DATA,
-    CoinFeature.CUSTODY,
-    CoinFeature.CUSTODY_BITGO_TRUST,
-    CoinFeature.CUSTODY_BITGO_MENA_FZE,
-    CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-    CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    CoinFeature.CUSTODY_BITGO_KOREA,
-    CoinFeature.CUSTODY_BITGO_EUROPE_APS,
-    CoinFeature.CUSTODY_BITGO_FRANKFURT,
-  ];
+  public static readonly DEFAULT_FEATURES = ACCOUNT_COIN_DEFAULT_FEATURES;
 
   // Need to gate some high risk coin from SINGAPORE trust
-  public static readonly DEFAULT_FEATURES_EXCLUDE_SINGAPORE = AccountCoin.DEFAULT_FEATURES.filter(
-    (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
-  );
+  public static readonly DEFAULT_FEATURES_EXCLUDE_SINGAPORE = ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE;
 
   public readonly network: AccountNetwork;
 
@@ -96,7 +86,6 @@ export interface HederaCoinConstructorOptions extends AccountConstructorOptions 
 
 export interface HederaTokenConstructorOptions extends AccountConstructorOptions {
   nodeAccountId: string;
-  tokenId: string;
   contractAddress: string;
 }
 
@@ -140,6 +129,10 @@ export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
 
 export interface Sip10TokenConstructorOptions extends AccountConstructorOptions {
   assetId: string;
+}
+
+export interface Nep141TokenConstructorOptions extends AccountConstructorOptions {
+  contractAddress: string;
 }
 
 export interface ContractAddress extends String {
@@ -579,6 +572,21 @@ export class Sip10Token extends AccountCoinToken {
 }
 
 /**
+ * The Near network supports tokens
+ * Near tokens work similar to native near coin
+ */
+export class Nep141Token extends AccountCoinToken {
+  public contractAddress: string;
+  constructor(options: Nep141TokenConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.contractAddress = options.contractAddress;
+  }
+}
+
+/**
  * Factory function for account coin instances.
  *
  * @param id uuid v4
@@ -997,11 +1005,11 @@ export function erc20CompatibleAccountCoin(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
- * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to CELO main network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin
+ * @param prefix ? Optional token prefix. Defaults to empty string
+ * @param suffix ? Optional token suffix. Defaults to token name.
+ * @param network ? Optional token network. Defaults to CELO main network.
+ * @param features ? Features of this coin. Defaults to the DEFAULT_FEATURES excluding CUSTODY feature
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function celoToken(
@@ -1011,7 +1019,7 @@ export function celoToken(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  features: CoinFeature[] = CELO_TOKEN_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.main.celo,
@@ -1045,10 +1053,10 @@ export function celoToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
- * @param prefix? Optional token prefix. Defaults to empty string
- * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the testnet CELO network.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param features ? Features of this coin. Defaults to the DEFAULT_FEATURES excluding CUSTODY feature
+ * @param prefix ? Optional token prefix. Defaults to empty string
+ * @param suffix ? Optional token suffix. Defaults to token name.
+ * @param network ? Optional token network. Defaults to the testnet CELO network.
  */
 export function tceloToken(
   id: string,
@@ -1057,7 +1065,7 @@ export function tceloToken(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  features: CoinFeature[] = CELO_TOKEN_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: EthereumNetwork = Networks.test.celo
@@ -1379,7 +1387,6 @@ export function hederaToken(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  tokenId: string,
   contractAddress: string,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -1394,7 +1401,6 @@ export function hederaToken(
       decimalPlaces,
       asset,
       nodeAccountId: HEDERA_NODE_ACCCOUNT_ID,
-      tokenId,
       contractAddress,
       features,
       prefix,
@@ -2889,4 +2895,80 @@ export function tsip10Token(
   network: AccountNetwork = Networks.test.stx
 ) {
   return sip10Token(id, name, fullName, decimalPlaces, assetId, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for nep141 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to Near main network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function nep141Token(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.near,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new Nep141Token({
+      id,
+      name,
+      fullName,
+      network,
+      decimalPlaces,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.NEAR,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet nep141 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the testnet Near network.
+ */
+export function tnep141Token(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.near
+) {
+  return nep141Token(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }

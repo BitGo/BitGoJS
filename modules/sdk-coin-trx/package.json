@@ -56,7 +56,8 @@
     "protobufjs": "7.2.5",
     "secp256k1": "5.0.1",
     "superagent": "^9.0.1",
-    "tronweb": "5.1.0"
+    "tronweb": "5.1.0",
+    "long": "^5.3.2"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.63.0",

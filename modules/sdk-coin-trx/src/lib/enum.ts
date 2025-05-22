@@ -14,10 +14,26 @@ export enum ContractType {
    * This is a smart contract type.
    */
   TriggerSmartContract,
+  /**
+   * This is the contract for freezeBuilder
+   */
+  FreezeBalanceV2,
+  /**
+   * This is the contract for voting for witnesses
+   */
+  VoteWitness,
 }
 
 export enum PermissionType {
   Owner,
   Witness,
   Active,
+}
+
+/**
+ * Tron resource types
+ */
+export enum TronResource {
+  BANDWIDTH = 'BANDWIDTH',
+  ENERGY = 'ENERGY',
 }
