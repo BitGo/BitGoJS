@@ -71,8 +71,8 @@ export async function GET(req: Request<GetParamsType>, res: Response, next: Next
   const { pub } = req.params;
 
   // fetch from DB
-  const source = req.query.source;
-  const data = await db.fetchOne('SELECT (encryptedPrv, kmsKey, type) FROM PRIVATE_KEY WHERE pub = ? AND source = ?', [pub, source]);
+  const source = req.body.source;
+  const data = await db.fetchOne('SELECT encryptedPrv, kmsKey, type FROM PRIVATE_KEYS WHERE pub = ? AND source = ?', [pub, source]);
   if (!data) {
     res.status(404);
     res.send({ message: `Not Found` })
@@ -82,14 +82,16 @@ export async function GET(req: Request<GetParamsType>, res: Response, next: Next
   const { encryptedPrv, kmsKey, type } = data;
 
   // fetch prv from kms
-  const prv = await kms.getKey(kmsKey, encryptedPrv, {});
-  if ('code' in prv) {
+  const kmsRes = await kms.getKey(kmsKey, encryptedPrv, {});
+  if ('code' in kmsRes) {
     res.status(500);
     res.send({ message: 'Internal server error' });
     return;
   }
+  const { prv } = kmsRes;
 
   // TODO: i know that we could chain res.status() with .json but what's the preferred way?
   res.status(200);
   res.json({ prv, pub, source, type });
+  next();
 }

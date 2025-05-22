@@ -114,7 +114,7 @@ export async function POST(req: Request, res: Response, next: NextFunction, kms:
   }
   
   // send to kms
-  const kmsRes: PostKeyKmsRes | KmsErrorRes = await kms.postKey("", prv, {});
+  const kmsRes: PostKeyKmsRes | KmsErrorRes = await kms.postKey(kmsKey, prv, {});
   if ('code' in kmsRes) { 
     res.status(kmsRes.code);
     res.send({ message: 'Internal server error. Failed to encrypt prvaite key in KMS' });

@@ -6,7 +6,7 @@ export class mockKmsProvider implements KmsInterface {
     async postKey(kmsKey: string, prv: string, options: any): Promise<PostKeyKmsRes | KmsErrorRes> {
         const mockOutput = {
             encryptedPrv: "none shall pass",
-            topLevelKeyId: 0
+            topLevelKeyId: kmsKey,
         }
 
         return mockOutput;
