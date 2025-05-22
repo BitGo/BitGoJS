@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.38](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.37...@bitgo/sdk-coin-rune@1.1.38) (2025-05-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-rune
+
+## [1.1.37](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.36...@bitgo/sdk-coin-rune@1.1.37) (2025-05-20)
+
+### Bug Fixes
+
+- support memoid along with address for send transaction ([6b6d25a](https://github.com/BitGo/BitGoJS/commit/6b6d25a5003c49208a75b2c6fa21b54a0afae5ad))
+
 ## [1.1.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-rune@1.1.35...@bitgo/sdk-coin-rune@1.1.36) (2025-05-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-rune

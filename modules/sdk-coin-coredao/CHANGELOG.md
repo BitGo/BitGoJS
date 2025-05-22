@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.2.0...@bitgo/sdk-coin-coredao@2.2.1) (2025-05-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-coredao
+
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.1.3...@bitgo/sdk-coin-coredao@2.2.0) (2025-05-20)
+
+### Features
+
+- **sdk-coin-soneium:** add soneium token support ([66378e5](https://github.com/BitGo/BitGoJS/commit/66378e5e79d7e599e062683d99e8509ed6471438))
+
 ## [2.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.1.2...@bitgo/sdk-coin-coredao@2.1.3) (2025-05-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coredao

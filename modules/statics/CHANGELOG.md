@@ -3,6 +3,62 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@53.0.0...@bitgo/statics@54.0.0) (2025-05-22)
+
+### Bug Fixes
+
+- cosmos batch coin features correction ([80ab6f4](https://github.com/BitGo/BitGoJS/commit/80ab6f43983919d9e73a3e2e5901a07b6c0d4df9))
+- custodial wallets are not supported for celo ([464eef2](https://github.com/BitGo/BitGoJS/commit/464eef291f3522b6bf850d7de35904457c3cb3ae))
+- **sdk-coin-fetchai:** change asset name from fetch to fetchai ([9cc7236](https://github.com/BitGo/BitGoJS/commit/9cc72360dbb7c025000fe5cccc5d05a974cae6f5))
+- **sdk-coin-hbar:** remove tokenid from statics ([2a59dfd](https://github.com/BitGo/BitGoJS/commit/2a59dfd9afcbaf0640a29668a7a45c97ece464a8))
+- **sdk-coin-soneium:** soneium token support ([b299a37](https://github.com/BitGo/BitGoJS/commit/b299a37fd388b76ea644bd8a675fcfb9a3902981))
+- update decimal places for trx:usd1 ([b046b55](https://github.com/BitGo/BitGoJS/commit/b046b55cca7380854f8381d88264ff023a0470fe))
+
+### Features
+
+- bulk erc20 sendmany polygon arbeth ([7457fad](https://github.com/BitGo/BitGoJS/commit/7457fadbdf9b40a281bbac173421a1f6e44a2d57))
+- **sdk-coin-near:** add Nep-141 skeleton ([c32d993](https://github.com/BitGo/BitGoJS/commit/c32d993c40d614726f67c60dde927fc741e9c2e4))
+- **statics:** change ticker for hteth:aut ([e6ac351](https://github.com/BitGo/BitGoJS/commit/e6ac3513eb0096eb7023d9e0d9c853d41bfba8c8))
+- **statics:** add new batch of tokens ([fbc9cff](https://github.com/BitGo/BitGoJS/commit/fbc9cff40f8010514ef9823e03d6ddcf1132fc3c))
+- **statics:** onboard eos vaulta token ([20f99da](https://github.com/BitGo/BitGoJS/commit/20f99da773e79ec95c480b1948a30c984911f64c))
+
+### BREAKING CHANGES
+
+- **sdk-coin-fetchai:** Changing module/asset name from fetch to fetchai
+- batcher address updated for eth, polygon, arbeth and opeth
+
+Ticket: COIN-3920
+
+# [53.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@52.2.0...@bitgo/statics@53.0.0) (2025-05-20)
+
+### Bug Fixes
+
+- **sdk-coin-initia:** change asset name from init to initia ([87c65dd](https://github.com/BitGo/BitGoJS/commit/87c65dd98c132fa22ba145e7acafaa703b60f484))
+- **statics:** changer ticker for sol doodles coin ([d9b22e1](https://github.com/BitGo/BitGoJS/commit/d9b22e1a4068faf8795ca77353914db5978a2d56))
+
+### Features
+
+- add Apt NFT collection skeleton ([6c55b23](https://github.com/BitGo/BitGoJS/commit/6c55b23461616410378c08662d697d755b2d2dfc))
+- add ofc statics for ICP ([a64e7f0](https://github.com/BitGo/BitGoJS/commit/a64e7f07957e4d7e992f21f0cbbf6d32e37b2833))
+- add ofc statics for world,stt,soneium,mon ([b1dff3b](https://github.com/BitGo/BitGoJS/commit/b1dff3be07a7ed3d87f2a6a9a2a72a90779372d5))
+- add ofc tokens from ams to coin map ([adc5701](https://github.com/BitGo/BitGoJS/commit/adc57010a473b9a3b8ca040be85191945f2a1960))
+- deprecate eth cfx ([27ad8b7](https://github.com/BitGo/BitGoJS/commit/27ad8b77c074f548b8d23adf5931fd6b84cfb8c5))
+- **sdk-coin-polyx:** add transaction builders ([31c96bb](https://github.com/BitGo/BitGoJS/commit/31c96bbbce60b93e13208e3eab06bd144cfe57e4))
+- **sdk-coin-soneium:** add soneium token support ([66378e5](https://github.com/BitGo/BitGoJS/commit/66378e5e79d7e599e062683d99e8509ed6471438))
+- **sdk-coin-soneium:** add soneium token support ([5aca714](https://github.com/BitGo/BitGoJS/commit/5aca714929c34b463fd3c939afcf0792570ed8e8))
+- **statics:** add opeth token batch ([66e3325](https://github.com/BitGo/BitGoJS/commit/66e33258d3ff7667338f78e78904feb1a8f610c4))
+- **statics:** add tokens hteth:stgusd1 and tbsc:stgusd1 ([712755e](https://github.com/BitGo/BitGoJS/commit/712755e4df7f962517e18caa30c07ad3d363dc87))
+- **statics:** onboard apt:h00ts mainnet NFT collection ([35ecfaf](https://github.com/BitGo/BitGoJS/commit/35ecfaf319c35645510470d37fc445700fc35f63))
+- **statics:** onboard SPXUX (ETH, ARB, AVAXC, OP), XSGD (Testnet-HBAR) ([0bda439](https://github.com/BitGo/BitGoJS/commit/0bda439c202baf1a19b8654d974165e19ef7d8ff))
+
+### Reverts
+
+- implement staking feature for tpolyx ([31a75c5](https://github.com/BitGo/BitGoJS/commit/31a75c53badc9bd987881169925b786fb50c6f7d))
+
+### BREAKING CHANGES
+
+- **sdk-coin-initia:** Changing module/asset name from init to initia
+
 # [52.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@52.1.0...@bitgo/statics@52.2.0) (2025-05-07)
 
 ### Bug Fixes

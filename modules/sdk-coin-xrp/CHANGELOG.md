@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.7.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.7.22...@bitgo/sdk-coin-xrp@3.7.23) (2025-05-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xrp
+
+## [3.7.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.7.21...@bitgo/sdk-coin-xrp@3.7.22) (2025-05-20)
+
+### Bug Fixes
+
+- support memoid along with address for send transaction ([6b6d25a](https://github.com/BitGo/BitGoJS/commit/6b6d25a5003c49208a75b2c6fa21b54a0afae5ad))
+
 ## [3.7.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.7.20...@bitgo/sdk-coin-xrp@3.7.21) (2025-05-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

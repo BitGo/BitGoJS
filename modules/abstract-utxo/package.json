@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-utxo",
-  "version": "9.19.9",
+  "version": "9.19.11",
   "description": "BitGo SDK coin library for UTXO base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -43,8 +43,8 @@
   },
   "dependencies": {
     "@bitgo/blockapis": "^1.10.14",
-    "@bitgo/sdk-api": "^1.62.3",
-    "@bitgo/sdk-core": "^33.2.0",
+    "@bitgo/sdk-api": "^1.63.1",
+    "@bitgo/sdk-core": "^35.0.0",
     "@bitgo/unspents": "^0.47.21",
     "@bitgo/utxo-core": "^1.8.0",
     "@bitgo/utxo-lib": "^11.3.0",

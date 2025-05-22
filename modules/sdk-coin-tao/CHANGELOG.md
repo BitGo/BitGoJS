@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.7.0...@bitgo/sdk-coin-tao@1.7.1) (2025-05-22)
+
+### Bug Fixes
+
+- remove empty space character at end of file names ([51bd0f5](https://github.com/BitGo/BitGoJS/commit/51bd0f56ca3275dcf980a21a20e7d94c8837ba42))
+
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.6.9...@bitgo/sdk-coin-tao@1.7.0) (2025-05-20)
+
+### Features
+
+- **sdk-coin-polyx:** add transaction builders ([31c96bb](https://github.com/BitGo/BitGoJS/commit/31c96bbbce60b93e13208e3eab06bd144cfe57e4))
+
 ## [1.6.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.6.8...@bitgo/sdk-coin-tao@1.6.9) (2025-05-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tao

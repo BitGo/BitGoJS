@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.63.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.63.0...@bitgo/sdk-api@1.63.1) (2025-05-22)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+# [1.63.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.62.3...@bitgo/sdk-api@1.63.0) (2025-05-20)
+
+### Bug Fixes
+
+- update description details of fingerprintHash and initialHash ([15782b1](https://github.com/BitGo/BitGoJS/commit/15782b18675ce7abc4a50ae64399138d0053d186))
+
+### Features
+
+- add initialHash and fingerprintHash as auth options ([015350b](https://github.com/BitGo/BitGoJS/commit/015350b74610eeaa90ecfa116de610f5d27ba4d7))
+
 ## [1.62.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.62.2...@bitgo/sdk-api@1.62.3) (2025-05-07)
 
 **Note:** Version bump only for package @bitgo/sdk-api
