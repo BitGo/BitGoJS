@@ -208,6 +208,7 @@ export const POLYGON_FEATURES = [
   CoinFeature.MPCV2,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
   CoinFeature.BULK_TRANSACTION,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 
 export const POLYGON_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
@@ -400,6 +401,8 @@ export const ARBETH_FEATURES = [
   CoinFeature.EIP1559,
   CoinFeature.WALLET_CONNECT_DEFI,
   CoinFeature.MULTISIG,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const OPETH_FEATURES = [
   ...ETH_FEATURES,
