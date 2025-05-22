@@ -207,4 +207,24 @@ describe('utils', () => {
       should.throws(() => utils.validateRawTransaction(data), 'amount cannot be less than or equal to zero');
     });
   });
+
+  describe('getTransactionId()', () => {
+    const sender = '47867f2cfb85094275c847435fa10cad54a813eba7e6a9bc3538aa2f537f1d73';
+    const receiver = 'a1c60efca988c411cd7bc5e481364b9c94caebb24c00e01db269e3a0541ee498';
+    it('should return the correct transaction hash for amount less than 2^32 (amount = 1000)', () => {
+      const unsignedTransaction =
+        'b90002677570646174657381826b5452414e53414354494f4eb900056b63616e69737465725f69644a000000000000000201016b6d6574686f645f6e616d656773656e645f70626361726758400a02080012050a0308e8071a0308904e2a220a20a1c60efca988c411cd7bc5e481364b9c94caebb24c00e01db269e3a0541ee4983a0a088084a8a988e4f4a0186673656e646572581da905b86bba9bfed194ac8c12377b5d48847128dbfff10f01adb80f7f026e696e67726573735f6578706972791b000000000000000070696e67726573735f6578706972696573811b1841d35866476200';
+      const transactionHash = utils.getTransactionId(unsignedTransaction, sender, receiver);
+      const expectedTransactionHash = 'bb502d0566f726da02a1925415f68cb6f175cdd6cba1e09823143078715b2ba4';
+      should.equal(transactionHash, expectedTransactionHash);
+    });
+
+    it('should return the correct transaction hash for amount greater than 2^32 (amount = 6948150200)', () => {
+      const unsignedTransaction =
+        'b90002677570646174657381826b5452414e53414354494f4eb900056b63616e69737465725f69644a000000000000000201016b6d6574686f645f6e616d656773656e645f70626361726758430a02080012080a0608b8b791f1191a0308904e2a220a20a1c60efca988c411cd7bc5e481364b9c94caebb24c00e01db269e3a0541ee4983a0a0880b8a789bfebf4a0186673656e646572581da905b86bba9bfed194ac8c12377b5d48847128dbfff10f01adb80f7f026e696e67726573735f6578706972791b000000000000000070696e67726573735f6578706972696573811b1841d393d2473c00';
+      const transactionHash = utils.getTransactionId(unsignedTransaction, sender, receiver);
+      const expectedTransactionHash = '016411110006d4645cbcb553a84efdec6c402847f856caa909111d81bb513565';
+      should.equal(transactionHash, expectedTransactionHash);
+    });
+  });
 });
