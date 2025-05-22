@@ -2792,6 +2792,14 @@ export const coins = CoinMap.fromCoins([
     '0x6bb04085922d08d1c7de0cfe95f7626a6f54be95',
     UnderlyingAsset['arbeth:eqtyx']
   ),
+  arbethErc20(
+    'fb70f72f-72b9-436e-9e6b-9474d3446c47',
+    'arbeth:test1',
+    'Hackathon1',
+    7,
+    '0x1234566',
+    UnderlyingAsset['arbeth:test1']
+  ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',

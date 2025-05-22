@@ -2392,6 +2392,7 @@ export enum UnderlyingAsset {
   'arbeth:wtgxx' = 'arbeth:wtgxx',
   'arbeth:lngvx' = 'arbeth:lngvx',
   'arbeth:eqtyx' = 'arbeth:eqtyx',
+  'arbeth:test1' = 'arbeth:test1',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',

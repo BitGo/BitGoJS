@@ -1797,6 +1797,7 @@ export const gatekeep = [
   'arbeth:wtgxx',
   'arbeth:lngvx',
   'arbeth:eqtyx',
+  'arbeth:test1',
   'opeth:flttx',
   'opeth:wtsix',
   'opeth:modrx',

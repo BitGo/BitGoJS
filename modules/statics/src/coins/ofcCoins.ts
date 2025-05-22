@@ -937,6 +937,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:eqtyx']
   ),
+  ofcArbethErc20(
+    'e79f32ce-abcd-4ef1-abcd-1234567890ab',
+    'ofcarbeth:test1',
+    'Hackathon1',
+    7,
+    UnderlyingAsset['arbeth:test1']
+  ),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),
   ofcAvaxErc20(
