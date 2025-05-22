@@ -268,6 +268,7 @@ export const NEAR_FEATURES = [
   CoinFeature.STAKING,
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.SUPPORTS_TOKENS,
 ];
 export const MATIC_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
