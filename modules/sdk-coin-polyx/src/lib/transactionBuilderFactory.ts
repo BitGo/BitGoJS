@@ -3,6 +3,8 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { decode } from '@substrate/txwrapper-polkadot';
 import { TransferBuilder } from './transferBuilder';
 import { RegisterDidWithCDDBuilder } from './registerDidWithCDDBuilder';
+import { BatchUnstakingBuilder } from './batchUnstakingBuilder';
+import { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 import utils from './utils';
 import { Interface, SingletonRegistry, TransactionBuilder } from './';
 import { TxMethod } from './iface';
@@ -25,6 +27,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getRegisterDidWithCDDBuilder(): RegisterDidWithCDDBuilder {
     return new RegisterDidWithCDDBuilder(this._coinConfig).material(this._material);
+  }
+
+  getBatchUnstakingBuilder(): BatchUnstakingBuilder {
+    return new BatchUnstakingBuilder(this._coinConfig).material(this._material);
+  }
+
+  getWithdrawUnbondedBuilder(): WithdrawUnbondedBuilder {
+    return new WithdrawUnbondedBuilder(this._coinConfig).material(this._material);
   }
 
   getWalletInitializationBuilder(): void {
@@ -54,8 +64,21 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getTransferBuilder();
     } else if (methodName === Interface.MethodNames.RegisterDidWithCDD) {
       return this.getRegisterDidWithCDDBuilder();
-    } else {
-      throw new Error('Transaction cannot be parsed or has an unsupported transaction type');
+    } else if (methodName === 'utility.batchAll') {
+      const args = decodedTxn.method.args as { calls?: { method: string; args: Record<string, unknown> }[] };
+
+      if (
+        args.calls &&
+        args.calls.length === 2 &&
+        args.calls[0].method === 'staking.chill' &&
+        args.calls[1].method === 'staking.unbond'
+      ) {
+        return this.getBatchUnstakingBuilder();
+      }
+    } else if (methodName === 'staking.withdrawUnbonded') {
+      return this.getWithdrawUnbondedBuilder();
     }
+
+    throw new Error('Transaction cannot be parsed or has an unsupported transaction type');
   }
 }

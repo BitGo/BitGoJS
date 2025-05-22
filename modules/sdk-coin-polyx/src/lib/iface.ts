@@ -20,3 +20,14 @@ export interface TxMethod extends Omit<Interface.TxMethod, 'args'> {
 export interface DecodedTx extends Omit<DecodedUnsignedTx, 'method'> {
   method: TxMethod;
 }
+
+export interface WithdrawUnbondedArgs extends Args {
+  numSlashingSpans: number;
+}
+
+export interface BatchArgs {
+  calls: {
+    method: string;
+    args: Record<string, unknown>;
+  }[];
+}
