@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import db from '../../db';
-import { KmsErrorRes, KmsInterface, PostKeyKmsRes } from '../../providers/kms-interface/kmsInterface';
+import { KmsErrorRes, PostKeyKmsRes } from '../../providers/kms-interface/kmsInterface';
 import { ZodPostKeySchema } from '../schemas/postKeySchema';
 
 /**
@@ -82,7 +82,9 @@ import { ZodPostKeySchema } from '../schemas/postKeySchema';
  *       500:
  *         description: Internal server error
  */
-export async function POST(req: Request, res: Response, next: NextFunction, kms: KmsInterface): Promise<void> {
+export async function POST(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const userKeyProvider = req.userKeyProvider;
+
   // parse request
   try {
     ZodPostKeySchema.parse(req.body);
@@ -95,16 +97,16 @@ export async function POST(req: Request, res: Response, next: NextFunction, kms:
 
   // check for duplicates
   const keyObject = await db.fetchAll('SELECT * from PRIVATE_KEYS WHERE pub = ? AND source = ?', [pub, source]);
-  if (keyObject.length != 0) {
+  if (keyObject.length !== 0) {
     res.status(409);
     res.send({ message: `Error: Duplicated Key for source: ${source} and pub: ${pub}` });
     return;
   }
 
   // db script to fetch kms key from the database, if any exist
-  let kmsKey = await db.fetchOne('SELECT kmsKey from PRIVATE_KEYS WHERE provider = ? LIMIT 1', ['mock'])
+  let kmsKey = await db.fetchOne('SELECT kmsKey from PRIVATE_KEYS WHERE provider = ? LIMIT 1', ['mock']);
   if (!kmsKey) {
-    const kmsRes = await kms.createKmsKey({});
+    const kmsRes = await userKeyProvider.createKmsKey({});
     if ('code' in kmsRes) {
       res.status(kmsRes.code);
       res.send({ message: 'Internal server error. Failed to create top-level kms key in KMS' });
@@ -112,30 +114,32 @@ export async function POST(req: Request, res: Response, next: NextFunction, kms:
     }
     kmsKey = kmsRes.kmsKey;
   }
-  
+
   // send to kms
-  const kmsRes: PostKeyKmsRes | KmsErrorRes = await kms.postKey(kmsKey, prv, {});
-  if ('code' in kmsRes) { 
+  const kmsRes: PostKeyKmsRes | KmsErrorRes = await userKeyProvider.postKey(kmsKey, prv, {});
+  if ('code' in kmsRes) {
     res.status(kmsRes.code);
-    res.send({ message: 'Internal server error. Failed to encrypt prvaite key in KMS' });
+    res.send({ message: 'Internal server error. Failed to encrypt private key in KMS' });
     return;
   }
 
   // insert into database
   // TODO: better catching
-  await db.run('INSERT INTO PRIVATE_KEYS values (?, ?, ?, ?, ?, ?, ?)', [
-    pub,
-    source,
-    kmsRes.encryptedPrv,
-    kms.providerName,
-    kmsRes.topLevelKeyId,
-    coin,
-    type,
-  ]).catch((err) => {
-    res.status(500);
-    res.send({ message: 'Internal server error' });
-    return;     // TODO: test this
-  });
+  await db
+    .run('INSERT INTO PRIVATE_KEYS values (?, ?, ?, ?, ?, ?, ?)', [
+      pub,
+      source,
+      kmsRes.encryptedPrv,
+      userKeyProvider.providerName,
+      kmsRes.topLevelKeyId,
+      coin,
+      type,
+    ])
+    .catch((err) => {
+      res.status(500);
+      res.send({ message: 'Internal server error' });
+      return; // TODO: test this
+    });
 
   res.status(200);
   res.json({ coin, source, type, pub });

@@ -1,9 +1,15 @@
 import * as awskms from '@aws-sdk/client-kms';
-import { CreateKmsKeyKmsRes, GetKeyKmsRes, KmsErrorRes, KmsInterface, PostKeyKmsRes } from '../kms-interface/kmsInterface';
+import {
+  CreateKmsKeyKmsRes,
+  GetKeyKmsRes,
+  KmsErrorRes,
+  KmsInterface,
+  PostKeyKmsRes,
+} from '../kms-interface/kmsInterface';
 
-export class awsKmsProvider implements KmsInterface {
-    providerName: string = "aws";
-    kms: awskms.KMSClient = new awskms.KMSClient();
+export class AwsKmsProvider implements KmsInterface {
+  providerName = 'aws';
+  kms: awskms.KMSClient = new awskms.KMSClient();
 
   errorHandler(err: any): KmsErrorRes {
     switch (err.constructor) {
@@ -30,12 +36,12 @@ export class awsKmsProvider implements KmsInterface {
     }
   }
 
-    async postKey(kmsKey: string, prv: string, options: any): Promise<PostKeyKmsRes | KmsErrorRes> {
-        const input: awskms.EncryptRequest = {
-            KeyId: kmsKey,
-            Plaintext: Buffer.from(prv)
-        }
-        const command = new awskms.EncryptCommand(input);
+  async postKey(kmsKey: string, prv: string, options: any): Promise<PostKeyKmsRes | KmsErrorRes> {
+    const input: awskms.EncryptRequest = {
+      KeyId: kmsKey,
+      Plaintext: Buffer.from(prv),
+    };
+    const command = new awskms.EncryptCommand(input);
 
     try {
       const res = await this.kms.send(command);
@@ -79,11 +85,11 @@ export class awsKmsProvider implements KmsInterface {
       res = await this.kms.send(command);
       if (res.KeyMetadata === undefined || res.KeyMetadata.Arn === undefined) throw 1;
     } catch (err) {
-      return this.errorHandler (err);
+      return this.errorHandler(err);
     }
 
     return {
       kmsKey: res.KeyMetadata?.Arn as string,
-    }
+    };
   }
 }

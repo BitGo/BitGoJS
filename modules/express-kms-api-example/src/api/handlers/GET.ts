@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import db from '../../db';
-import { KmsInterface } from '../../providers/kms-interface/kmsInterface';
 
 type GetParamsType = {
   pub: string;
@@ -67,22 +66,29 @@ type GetParamsType = {
  *       500:
  *         description: Internal server error
  */
-export async function GET(req: Request<GetParamsType>, res: Response, next: NextFunction, kms: KmsInterface): Promise<void> {
+export async function GET(req: Request<GetParamsType>, res: Response, next: NextFunction): Promise<void> {
+  //TODO: fix type, it says that the prop doesn't exists
+  //      but in fact it's a incorect type declaration
+  const userKeyProvider = req.userKeyProvider;
+
   const { pub } = req.params;
 
   // fetch from DB
-  const source = req.body.source;
-  const data = await db.fetchOne('SELECT encryptedPrv, kmsKey, type FROM PRIVATE_KEYS WHERE pub = ? AND source = ?', [pub, source]);
+  const source = req.query.source;
+  const data = await db.fetchOne('SELECT encryptedPrv, kmsKey, type FROM PRIVATE_KEY WHERE pub = ? AND source = ?', [
+    pub,
+    source,
+  ]);
+
   if (!data) {
     res.status(404);
-    res.send({ message: `Not Found` })
+    res.send({ message: `Not Found` });
     return;
   }
 
   const { encryptedPrv, kmsKey, type } = data;
 
-  // fetch prv from kms
-  const kmsRes = await kms.getKey(kmsKey, encryptedPrv, {});
+  const kmsRes = await userKeyProvider.getKey(kmsKey, encryptedPrv, {});
   if ('code' in kmsRes) {
     res.status(500);
     res.send({ message: 'Internal server error' });
@@ -90,7 +96,6 @@ export async function GET(req: Request<GetParamsType>, res: Response, next: Next
   }
   const { prv } = kmsRes;
 
-  // TODO: i know that we could chain res.status() with .json but what's the preferred way?
   res.status(200);
   res.json({ prv, pub, source, type });
   next();
