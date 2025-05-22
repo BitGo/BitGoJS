@@ -127,9 +127,9 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethlike /var/modules/sdk-coin-et
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ethw /var/modules/sdk-coin-ethw/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-lnbtc /var/modules/sdk-coin-lnbtc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ltc /var/modules/sdk-coin-ltc/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-vet /var/modules/sdk-coin-vet/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-xlm /var/modules/sdk-coin-xlm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-vet /var/modules/sdk-coin-vet/
 
 RUN cd /var/modules/abstract-lightning && yarn link && \
 cd /var/modules/sdk-core && yarn link && \
@@ -220,9 +220,9 @@ cd /var/modules/sdk-coin-ethlike && yarn link && \
 cd /var/modules/sdk-coin-ethw && yarn link && \
 cd /var/modules/sdk-coin-lnbtc && yarn link && \
 cd /var/modules/sdk-coin-ltc && yarn link && \
+cd /var/modules/sdk-coin-vet && yarn link && \
 cd /var/modules/sdk-coin-xlm && yarn link && \
-cd /var/modules/sdk-coin-zec && yarn link && \
-cd /var/modules/sdk-coin-vet && yarn link
+cd /var/modules/sdk-coin-zec && yarn link
 #COPY_END
 
 #LINK_START
@@ -316,15 +316,15 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-ethw && \
     yarn link @bitgo/sdk-coin-lnbtc && \
     yarn link @bitgo/sdk-coin-ltc && \
+    yarn link @bitgo/sdk-coin-vet && \
     yarn link @bitgo/sdk-coin-xlm && \
-    yarn link @bitgo/sdk-coin-zec && \
-    yarn link @bitgo/sdk-coin-vet
+    yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
 #LABEL_START
-LABEL created="Tue, 20 May 2025 04:30:09 GMT"
-LABEL version=13.6.0
-LABEL git_hash=f53286120d0683a7ced2399a48c032e5f810bbb5
+LABEL created="Thu, 22 May 2025 18:25:09 GMT"
+LABEL version=13.6.1
+LABEL git_hash=7ad3f7025a1d0bc6c5848e4c8e7979a9d26a3741
 #LABEL_END
 
 USER node
