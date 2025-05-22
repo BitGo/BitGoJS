@@ -1028,6 +1028,7 @@ export enum UnderlyingAsset {
   HTBULL = 'htbull',
   HTDOOM = 'htdoom',
   'hteth:bgerchv2' = 'hteth:bgerchv2',
+  'hteth:aut' = 'hteth:aut',
   HTHEDGE = 'hthedge',
   HTMOON = 'htmoon',
   HUM = 'hum',
@@ -1871,7 +1872,6 @@ export enum UnderlyingAsset {
   'eth:spxux' = 'eth:spxux',
   'eth:aleo' = 'eth:aleo',
   'eth:dbusd' = 'eth:dbusd',
-  'eth:aut' = 'eth:aut',
   'eth:edu' = 'eth:edu',
   'eth:telos' = 'eth:telos',
   'eth:cusdo' = 'eth:cusdo',
@@ -2664,6 +2664,8 @@ export enum UnderlyingAsset {
   'hbar:jam' = 'hbar:jam',
   'hbar:berry' = 'hbar:berry',
 
+  // Hbar Testnet tokens
+  'thbar:txsgd' = 'thbar:txsgd',
   // fiats
   AED = 'aed',
   EUR = 'eur',

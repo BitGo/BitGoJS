@@ -10201,14 +10201,6 @@ export const erc20Coins = [
     UnderlyingAsset['eth:dbusd']
   ),
   erc20(
-    '29c9cb44-00a9-4740-8de0-abf0a321b830',
-    'eth:aut',
-    'AllUnity',
-    6,
-    '0x63d0b467059a10b365aa18f441684ed154628f4e',
-    UnderlyingAsset['eth:aut']
-  ),
-  erc20(
     '6418f63b-3c9b-4880-9034-e286d3abd1ac',
     'eth:edu',
     'Open Campus',
@@ -11019,6 +11011,18 @@ export const erc20Coins = [
     18,
     '0xee4d03adfca9a902d09f6e3e09dbd5a8a5122fb6',
     UnderlyingAsset['hteth:bgerchv2'],
+    HTETH_TOKEN_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
+    '29c9cb44-00a9-4740-8de0-abf0a321b830',
+    'hteth:aut',
+    'Holesky Testnet AllUnity',
+    6,
+    '0x63d0b467059a10b365aa18f441684ed154628f4e',
+    UnderlyingAsset['hteth:aut'],
     HTETH_TOKEN_FEATURES,
     undefined,
     undefined,
