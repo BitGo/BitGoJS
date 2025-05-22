@@ -74,6 +74,23 @@ export const PaymentInfo = t.intersection(
 
 export type PaymentInfo = t.TypeOf<typeof PaymentInfo>;
 
+export const ListPaymentsResponse = t.intersection(
+  [
+    t.type({
+      payments: t.array(PaymentInfo),
+    }),
+    t.partial({
+      /**
+       * This is the paymentHash of the last Payment in the last iteration.
+       * Providing this value as the prevId in the next request will return the next batch of payments.
+       * */
+      nextBatchPrevId: t.string,
+    }),
+  ],
+  'ListPaymentsResponse'
+);
+export type ListPaymentsResponse = t.TypeOf<typeof ListPaymentsResponse>;
+
 /**
  * Payment query parameters
  */
@@ -83,6 +100,8 @@ export const PaymentQuery = t.partial(
     limit: BigIntFromString,
     startDate: DateFromISOString,
     endDate: DateFromISOString,
+    /** paymentHash provided by nextBatchPrevId in the previous list */
+    prevId: t.string,
   },
   'PaymentQuery'
 );
