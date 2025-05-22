@@ -9,7 +9,7 @@ Made with ExpressJS, Typescript and sqlite3.
 1 - Clone the BitGoJS repo and navigate in the terminal until you reach this folder (express-kms-api-example)
 2 - Set the current node version with node version manager: $nvm use
 3 - Install all the packages: $npm install
-4 - Create a .env file inside src/ (src/.env)
+4 - Create a .env file in the root of the project (at the side of package.json)
 5 - Edit the .env file and set this couple of variables:
 
    USER_PROVIDER_CLASS="aws"
@@ -40,3 +40,6 @@ Inside custom-kms.ts ==> class CustomKmsProvider (implements the common interfac
 6 - Implement your custom providers if necessary or use the aws/azure implementation included
 7 - Run the project(test): $npm run dev
 
+Extras:
+
+- If you want to use the mock server, instead of "aws" replace with "mock" on step 5

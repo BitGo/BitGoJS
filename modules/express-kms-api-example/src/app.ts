@@ -1,6 +1,7 @@
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import express from 'express';
+import path from 'path';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { GET as keyGET } from './api/handlers/GET';
@@ -9,7 +10,7 @@ import db from './db';
 import { checkApiKeyMiddleware } from './middlewares/authApiKeys';
 import keyProviderMiddleware from './middlewares/keyProvider';
 import { swaggerOptions } from './swagger';
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = '3000';

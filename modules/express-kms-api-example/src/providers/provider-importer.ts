@@ -6,9 +6,7 @@ dotenv.config();
 export async function instantiateProviderForKeySource(
   source: 'user' | 'backup'
 ): Promise<import('./kms-interface/kmsInterface').KmsInterface> {
-  // const provider = process.env[source === 'user' ? 'USER_PROVIDER_CLASS' : 'BACKUP_PROVIDER_CLASS'];
-  //TODO: module resolution error to solve, hardcoded for now
-  const provider = 'mock';
+  const provider = process.env[source === 'user' ? 'USER_PROVIDER_CLASS' : 'BACKUP_PROVIDER_CLASS'];
   if (!provider) throw new Error(`Provider for ${source} is not defined. Only 'user' or 'backup' are allowed.`);
 
   const modulePath = `./${provider}/${provider}-kms`;
