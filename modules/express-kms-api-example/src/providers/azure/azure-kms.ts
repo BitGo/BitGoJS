@@ -1,6 +1,6 @@
 import { ChainedTokenCredential, DefaultAzureCredential } from '@azure/identity';
 import azureKMS, { EncryptParameters } from '@azure/keyvault-keys';
-import { GetKeyKmsRes, KmsErrorRes, KmsInterface, PostKeyKmsRes } from '../kms-interface/kmsInterface';
+import { CreateKmsKeyKmsRes, GetKeyKmsRes, KmsErrorRes, KmsInterface, PostKeyKmsRes } from '../kms-interface/kmsInterface';
 
 type AzureKmsProviderConstructorProps = {
   keyVaultName: string;
@@ -62,6 +62,14 @@ export class AzureKmsProvider implements KmsInterface {
       };
     } catch (err) {
       return this.errorHandler(err);
+    }
+  }
+
+  async createKmsKey(options: any): Promise<CreateKmsKeyKmsRes | KmsErrorRes> {
+    // TODO: Azure implementation
+    return {
+      message: "Not yet implemented",
+      code: 500
     }
   }
 

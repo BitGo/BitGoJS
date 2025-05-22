@@ -82,12 +82,12 @@ export async function GET(req: Request<GetParamsType>, res: Response, next: Next
   const { encryptedPrv, kmsKey, type } = data;
 
   // fetch prv from kms
-  const prv = await kms.getKey(kmsKey, encryptedPrv, {})
-    .catch((err) => {
-      res.status(500);
-      res.send({ message: 'Internal server error' });
-      return;     // TODO: test this
-    });
+  const prv = await kms.getKey(kmsKey, encryptedPrv, {});
+  if ('code' in prv) {
+    res.status(500);
+    res.send({ message: 'Internal server error' });
+    return;
+  }
 
   // TODO: i know that we could chain res.status() with .json but what's the preferred way?
   res.status(200);

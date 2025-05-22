@@ -104,19 +104,18 @@ export async function POST(req: Request, res: Response, next: NextFunction, kms:
   // db script to fetch kms key from the database, if any exist
   let kmsKey = await db.fetchOne('SELECT kmsKey from PRIVATE_KEYS WHERE provider = ? LIMIT 1', ['mock'])
   if (!kmsKey) {
-    kmsKey = await kms.createKmsKey({}).then((kmsRes) => {
-      if ('code' in kmsRes) {
-        res.status(kmsRes.code);
-        res.send({ message: 'Internal server error. Failed to create top-level kms key in KMS' });
-        return;
-      }
-      return kmsRes.kmsKey;
-    })
+    const kmsRes = await kms.createKmsKey({});
+    if ('code' in kmsRes) {
+      res.status(kmsRes.code);
+      res.send({ message: 'Internal server error. Failed to create top-level kms key in KMS' });
+      return;
+    }
+    kmsKey = kmsRes.kmsKey;
   }
   
   // send to kms
   const kmsRes: PostKeyKmsRes | KmsErrorRes = await kms.postKey("", prv, {});
-  if ('code' in kmsRes) { // TODO: type guard
+  if ('code' in kmsRes) { 
     res.status(kmsRes.code);
     res.send({ message: 'Internal server error. Failed to encrypt prvaite key in KMS' });
     return;
