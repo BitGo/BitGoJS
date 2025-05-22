@@ -1,0 +1,23 @@
+{
+  "tickedId": "COIN-1298",
+  "tokens": [
+    {
+      "tokenname": "Wisdom Tree",
+      "tokenSymbol": "USDT",
+      "chain": "ETH",
+      "icon_file_path": "path to jpg",
+      "contractAddress": "0x123456778",
+      "decimal": "8",
+      "gated": true
+    },
+    {
+      "tokenname": "Wisdom Tree2",
+      "tokenSymbol": "USDC",
+      "chain": "ETH",
+      "icon_file_path": "path to jpg",
+      "contractAddress": "0x123456779",
+      "decimal": "8",
+      "gated": false
+    }
+  ]
+}
