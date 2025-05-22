@@ -1,0 +1,25 @@
+{
+  "ticket": "COIN-1234",
+  "tokens": [
+    {
+      "tokenType": "erc20",
+      "tokenName": "newtoken",
+      "displayName": "New Token",
+      "decimals": 18,
+      "contractAddress": "0x1234567890123456789012345678901234567890",
+      "trust": ["CUSTODY_BITGO_FRANKFURT", "CUSTODY_BITGO_GERMANY"],
+      "addToGatekeep": false,
+      "addOfc": true
+    },
+    {
+      "tokenType": "terc20",
+      "tokenName": "testnewtoken",
+      "displayName": "Test New Token",
+      "decimals": 18,
+      "contractAddress": "0x1234567890123456789012345678901234567890",
+      "network": "Networks.test.holesky",
+      "addToGatekeep": true,
+      "addOfc": true
+    }
+  ]
+}
