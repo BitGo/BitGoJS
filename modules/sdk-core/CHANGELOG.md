@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [35.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@34.0.0...@bitgo/sdk-core@35.0.0) (2025-05-22)
+
+### Bug Fixes
+
+- **express:** validate amount as integer type in sendCoins ([c571b13](https://github.com/BitGo/BitGoJS/commit/c571b13a94fa3649f3874c43e981752ceeec5852))
+- fix near public rest endpoint ([934706a](https://github.com/BitGo/BitGoJS/commit/934706ab1b733d2ed5a189d7756c0f0606848832))
+- **sdk-coin-fetchai:** change asset name from fetch to fetchai ([9cc7236](https://github.com/BitGo/BitGoJS/commit/9cc72360dbb7c025000fe5cccc5d05a974cae6f5))
+
+### Features
+
+- **sdk-coin-vet:** add sdk skeleton for vet ([8ccd9a4](https://github.com/BitGo/BitGoJS/commit/8ccd9a4a4919c9fe283932a8593ac858038ac284))
+- update opengpg version ([5304e88](https://github.com/BitGo/BitGoJS/commit/5304e88ff65467b8cd3ff21b1fc98aa00ddcde8f))
+
+### BREAKING CHANGES
+
+- **sdk-coin-fetchai:** Changing module/asset name from fetch to fetchai
+
 # [34.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@33.2.0...@bitgo/sdk-core@34.0.0) (2025-05-20)
 
 ### Bug Fixes

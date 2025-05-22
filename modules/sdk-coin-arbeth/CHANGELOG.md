@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [21.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@21.5.3...@bitgo/sdk-coin-arbeth@21.5.4) (2025-05-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-arbeth
+
 ## [21.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-arbeth@21.5.2...@bitgo/sdk-coin-arbeth@21.5.3) (2025-05-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-arbeth

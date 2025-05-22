@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.15.0...@bitgo/sdk-coin-icp@1.15.1) (2025-05-22)
+
+### Bug Fixes
+
+- **sdk-coin-icp:** enhance transaction ID generation with 32-bit range checks ([e25c65c](https://github.com/BitGo/BitGoJS/commit/e25c65c05f289cccd0c7ffc600eebb79608d7115))
+
 # [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.14.0...@bitgo/sdk-coin-icp@1.15.0) (2025-05-20)
 
 ### Features

@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-islm",
-  "version": "2.1.30",
+  "version": "2.1.31",
   "description": "BitGo SDK coin library for Islm",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,9 +40,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-cosmos": "^11.7.4",
-    "@bitgo/sdk-core": "^34.0.0",
-    "@bitgo/statics": "^53.0.0",
+    "@bitgo/abstract-cosmos": "^11.7.5",
+    "@bitgo/sdk-core": "^35.0.0",
+    "@bitgo/statics": "^54.0.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/proto-signing": "^0.29.5",
@@ -54,8 +54,8 @@
     "protobufjs": "7.2.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.63.0",
-    "@bitgo/sdk-test": "^8.0.85",
+    "@bitgo/sdk-api": "^1.63.1",
+    "@bitgo/sdk-test": "^8.0.86",
     "@types/keccak": "^3.0.5"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

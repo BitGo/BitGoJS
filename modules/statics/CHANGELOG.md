@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@53.0.0...@bitgo/statics@54.0.0) (2025-05-22)
+
+### Bug Fixes
+
+- cosmos batch coin features correction ([80ab6f4](https://github.com/BitGo/BitGoJS/commit/80ab6f43983919d9e73a3e2e5901a07b6c0d4df9))
+- custodial wallets are not supported for celo ([464eef2](https://github.com/BitGo/BitGoJS/commit/464eef291f3522b6bf850d7de35904457c3cb3ae))
+- **sdk-coin-fetchai:** change asset name from fetch to fetchai ([9cc7236](https://github.com/BitGo/BitGoJS/commit/9cc72360dbb7c025000fe5cccc5d05a974cae6f5))
+- **sdk-coin-hbar:** remove tokenid from statics ([2a59dfd](https://github.com/BitGo/BitGoJS/commit/2a59dfd9afcbaf0640a29668a7a45c97ece464a8))
+- **sdk-coin-soneium:** soneium token support ([b299a37](https://github.com/BitGo/BitGoJS/commit/b299a37fd388b76ea644bd8a675fcfb9a3902981))
+- update decimal places for trx:usd1 ([b046b55](https://github.com/BitGo/BitGoJS/commit/b046b55cca7380854f8381d88264ff023a0470fe))
+
+### Features
+
+- bulk erc20 sendmany polygon arbeth ([7457fad](https://github.com/BitGo/BitGoJS/commit/7457fadbdf9b40a281bbac173421a1f6e44a2d57))
+- **sdk-coin-near:** add Nep-141 skeleton ([c32d993](https://github.com/BitGo/BitGoJS/commit/c32d993c40d614726f67c60dde927fc741e9c2e4))
+- **statics:** change ticker for hteth:aut ([e6ac351](https://github.com/BitGo/BitGoJS/commit/e6ac3513eb0096eb7023d9e0d9c853d41bfba8c8))
+- **statics:** add new batch of tokens ([fbc9cff](https://github.com/BitGo/BitGoJS/commit/fbc9cff40f8010514ef9823e03d6ddcf1132fc3c))
+- **statics:** onboard eos vaulta token ([20f99da](https://github.com/BitGo/BitGoJS/commit/20f99da773e79ec95c480b1948a30c984911f64c))
+
+### BREAKING CHANGES
+
+- **sdk-coin-fetchai:** Changing module/asset name from fetch to fetchai
+- batcher address updated for eth, polygon, arbeth and opeth
+
+Ticket: COIN-3920
+
 # [53.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@52.2.0...@bitgo/statics@53.0.0) (2025-05-20)
 
 ### Bug Fixes

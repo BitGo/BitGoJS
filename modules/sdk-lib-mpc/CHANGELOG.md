@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.2.0...@bitgo/sdk-lib-mpc@10.3.0) (2025-05-22)
+
+### Features
+
+- update opengpg version ([5304e88](https://github.com/BitGo/BitGoJS/commit/5304e88ff65467b8cd3ff21b1fc98aa00ddcde8f))
+
 # [10.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.1.2...@bitgo/sdk-lib-mpc@10.2.0) (2025-04-04)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.1.5...@bitgo/sdk-coin-near@2.2.0) (2025-05-22)
+
+### Features
+
+- **sdk-coin-near:** add Nep-141 skeleton ([c32d993](https://github.com/BitGo/BitGoJS/commit/c32d993c40d614726f67c60dde927fc741e9c2e4))
+
 ## [2.1.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.1.4...@bitgo/sdk-coin-near@2.1.5) (2025-05-20)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

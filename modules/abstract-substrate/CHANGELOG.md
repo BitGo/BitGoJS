@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.5.0...@bitgo/abstract-substrate@1.5.1) (2025-05-22)
+
+### Bug Fixes
+
+- **sdk-coin-polyx:** all fixed ([f9c23bc](https://github.com/BitGo/BitGoJS/commit/f9c23bc9a8bc609be5f41a4ffd980138ecb63148))
+- **sdk-coin-polyx:** fix cdd builder ([2461fbf](https://github.com/BitGo/BitGoJS/commit/2461fbfcc76f8f6e7f89302f5e3c4b99097cb97a))
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.4.9...@bitgo/abstract-substrate@1.5.0) (2025-05-20)
 
 ### Features

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@26.0.0...@bitgo/account-lib@27.0.0) (2025-05-22)
+
+### Bug Fixes
+
+- **sdk-coin-fetchai:** change asset name from fetch to fetchai ([9cc7236](https://github.com/BitGo/BitGoJS/commit/9cc72360dbb7c025000fe5cccc5d05a974cae6f5))
+
+### BREAKING CHANGES
+
+- **sdk-coin-fetchai:** Changing module/asset name from fetch to fetchai
+
 # [26.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@25.2.0...@bitgo/account-lib@26.0.0) (2025-05-20)
 
 ### Bug Fixes
