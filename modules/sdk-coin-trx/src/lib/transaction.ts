@@ -25,6 +25,8 @@ import {
   TransferContract,
   TriggerSmartContract,
   VoteWitnessContract,
+  UnfreezeBalanceV2Contract,
+  WithdrawExpireUnfreezeContract,
 } from './iface';
 
 /**
@@ -160,6 +162,30 @@ export class Transaction extends BaseTransaction {
         input = {
           address: voteValues.owner_address,
           value: totalVoteCount.toString(),
+        };
+        break;
+      case ContractType.UnfreezeBalanceV2:
+        this._type = TransactionType.StakingDeactivate;
+        const unfreezeValues = (rawData.contract[0] as UnfreezeBalanceV2Contract).parameter.value;
+        output = {
+          address: unfreezeValues.owner_address,
+          value: unfreezeValues.unfreeze_balance.toString(),
+        };
+        input = {
+          address: unfreezeValues.owner_address,
+          value: unfreezeValues.unfreeze_balance.toString(),
+        };
+        break;
+      case ContractType.WithdrawExpireUnfreeze:
+        this._type = TransactionType.StakingWithdraw;
+        const withdrawValues = (rawData.contract[0] as WithdrawExpireUnfreezeContract).parameter.value;
+        output = {
+          address: withdrawValues.owner_address,
+          value: '0', // no value field
+        };
+        input = {
+          address: withdrawValues.owner_address,
+          value: '0',
         };
         break;
       default:

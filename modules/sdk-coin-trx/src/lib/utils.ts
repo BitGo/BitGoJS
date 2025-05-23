@@ -16,6 +16,10 @@ import {
   VoteWitnessContractParameter,
   FreezeContractDecoded,
   VoteContractDecoded,
+  UnfreezeBalanceContractParameter,
+  WithdrawExpireUnfreezeContractParameter,
+  UnfreezeContractDecoded,
+  WithdrawContractDecoded,
 } from './iface';
 import { ContractType, PermissionType, TronResource } from './enum';
 import { AbiCoder, hexConcat } from 'ethers/lib/utils';
@@ -177,7 +181,9 @@ export function decodeTransaction(hexString: string): RawData {
     | AccountPermissionUpdateContract[]
     | TriggerSmartContract[]
     | FreezeBalanceContractParameter[]
-    | VoteWitnessContractParameter[];
+    | VoteWitnessContractParameter[]
+    | UnfreezeBalanceContractParameter[]
+    | WithdrawExpireUnfreezeContractParameter[];
 
   let contractType: ContractType;
 
@@ -202,6 +208,14 @@ export function decodeTransaction(hexString: string): RawData {
     case 'type.googleapis.com/protocol.VoteWitnessContract':
       contractType = ContractType.VoteWitness;
       contract = decodeVoteWitnessContract(rawTransaction.contracts[0].parameter.value);
+      break;
+    case 'type.googleapis.com/protocol.WithdrawExpireUnfreezeContract':
+      contract = decodeWithdrawExpireUnfreezeContract(rawTransaction.contracts[0].parameter.value);
+      contractType = ContractType.WithdrawExpireUnfreeze;
+      break;
+    case 'type.googleapis.com/protocol.UnfreezeBalanceV2Contract':
+      contract = decodeUnfreezeBalanceV2Contract(rawTransaction.contracts[0].parameter.value);
+      contractType = ContractType.UnfreezeBalanceV2;
       break;
     default:
       throw new UtilsError('Unsupported contract type');
@@ -484,6 +498,88 @@ export function decodeVoteWitnessContract(base64: string): VoteWitnessContractPa
         value: {
           owner_address,
           votes,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with unfreeze balance contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {UnfreezeBalanceContractParameter[]} - Array containing the decoded unfreeze contract
+ */
+export function decodeUnfreezeBalanceV2Contract(base64: string): UnfreezeBalanceContractParameter[] {
+  let unfreezeContract: UnfreezeContractDecoded;
+  try {
+    unfreezeContract = protocol.UnfreezeBalanceV2Contract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the unfreeze contract in the transaction.');
+  }
+
+  if (!unfreezeContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this unfreeze contract.');
+  }
+
+  if (unfreezeContract.resource === undefined) {
+    throw new UtilsError('Resource type does not exist in this unfreeze contract.');
+  }
+
+  if (unfreezeContract.unfreezeBalance === undefined) {
+    throw new UtilsError('Unfreeze balance does not exist in this unfreeze contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(unfreezeContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  // Convert ResourceCode enum value to string resource name
+  const resourceValue = unfreezeContract.resource;
+  const resourceEnum = resourceValue === protocol.ResourceCode.BANDWIDTH ? TronResource.BANDWIDTH : TronResource.ENERGY;
+
+  return [
+    {
+      parameter: {
+        value: {
+          resource: resourceEnum,
+          unfreeze_balance: Number(unfreezeContract.unfreezeBalance),
+          owner_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with withdraw expire unfreeze contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {WithdrawExpireUnfreezeContractParameter[]} - Array containing the decoded withdraw contract
+ */
+export function decodeWithdrawExpireUnfreezeContract(base64: string): WithdrawExpireUnfreezeContractParameter[] {
+  let withdrawContract: WithdrawContractDecoded;
+  try {
+    withdrawContract = protocol.WithdrawBalanceContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the withdraw contract in the transaction.');
+  }
+
+  if (!withdrawContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this withdraw contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(withdrawContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  return [
+    {
+      parameter: {
+        value: {
+          owner_address,
         },
       },
     },
