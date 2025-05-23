@@ -1,28 +1,24 @@
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { crypto } from 'bitcoinjs-lib';
-import { ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 
 import { networks } from '../../networks';
 import { toBase58Check } from '../../address';
 import { getPsbtOutputProprietaryKeyVals, ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil';
 import { UtxoPsbt } from '../UtxoPsbt';
 
-export const PayGoAddressProofKey: ProprietaryKey = {
-  identifier: PSBT_PROPRIETARY_IDENTIFIER,
-  subtype: ProprietaryKeySubtype.PAYGO_ADDRESS_PROOF,
-  // Is there a better way to not provide a pubkey?
-  keydata: Buffer.from([]),
-};
-
 /**
  *
  * @param psbt - PSBT that we need to encode our paygo address into
- * @param inputIndex - the index of the address in our output
+ * @param outputIndex - the index of the address in our output
  * @param sig - the signature that we want to encode
  */
-export function addPaygoAddressProof(psbt: UtxoPsbt, inputIndex: number, sig: Buffer): void {
-  psbt.addProprietaryKeyValToInput(inputIndex, {
-    key: PayGoAddressProofKey,
+export function addPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, sig: Buffer, pub: Buffer): void {
+  psbt.addProprietaryKeyValToOutput(outputIndex, {
+    key: {
+      identifier: PSBT_PROPRIETARY_IDENTIFIER,
+      subtype: ProprietaryKeySubtype.PAYGO_ADDRESS_PROOF,
+      keydata: Buffer.from(pub)
+    },
     value: sig,
   });
 }
@@ -35,7 +31,7 @@ export function addPaygoAddressProof(psbt: UtxoPsbt, inputIndex: number, sig: Bu
  * @returns
  */
 export function verifyPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, pub: Buffer): void {
-  const stored = psbt.getProprietaryKeyVals(outputIndex, {
+  const stored = psbt.getOutputProprietaryKeyVals(outputIndex, {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.PAYGO_ADDRESS_PROOF,
   });
