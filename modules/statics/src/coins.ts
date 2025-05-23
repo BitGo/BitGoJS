@@ -2780,6 +2780,14 @@ export const coins = CoinMap.fromCoins([
     '0x6bb04085922d08d1c7de0cfe95f7626a6f54be95',
     UnderlyingAsset['arbeth:eqtyx']
   ),
+  arbethErc20(
+    'd915f6a3-f37e-4da1-b38e-c8c08cae8365',
+    'arbeth:anime',
+    'Animecoin',
+    18,
+    '0x37a645648df29205c6261289983fb04ecd70b4b3',
+    UnderlyingAsset['arbeth:anime']
+  ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',
@@ -3173,6 +3181,17 @@ export const coins = CoinMap.fromCoins([
     'rLPtwF4FZi8bNVmbQ8JgoDUooozhwMNXr3::5647425000000000000000000000000000000000',
     'vnx.li',
     UnderlyingAsset['xrp:vgbp']
+  ),
+  xrpToken(
+    'a2ae3eef-a5b3-4140-b971-5090798fed3a',
+    'xrp:solo',
+    'Sologenic',
+    15,
+    'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz',
+    '534F4C4F00000000000000000000000000000000',
+    'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz::534F4C4F00000000000000000000000000000000',
+    'sologenic.com',
+    UnderlyingAsset['xrp:solo']
   ),
   txrpToken(
     '80cbaecf-b1ea-4811-97ae-213c1ffc9175',

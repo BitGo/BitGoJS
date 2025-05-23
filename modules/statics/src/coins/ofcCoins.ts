@@ -686,6 +686,22 @@ export const ofcCoins = [
     UnderlyingAsset['sol:dood'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'fb670b5e-1b5f-43d6-abfe-d1a19983f0aa',
+    'ofcsol:sb',
+    'Solbank',
+    9,
+    UnderlyingAsset['sol:sb'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'db1acb26-112e-44b2-a2d5-7df402916f2a',
+    'ofcsol:dfdvsol',
+    'DeFi Development Corp Staked SOL',
+    9,
+    UnderlyingAsset['sol:dfdvsol'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -781,6 +797,7 @@ export const ofcCoins = [
     UnderlyingAsset['xrp:vchf']
   ),
   ofcXrpToken('54c3a5df-ad9f-42a9-82fc-ef8617ec6ebf', 'ofcxrp:vgbp', 'VNX Pound', 15, UnderlyingAsset['xrp:vgbp']),
+  ofcXrpToken('1813238c-8cc5-4b79-9959-793c5c220b1d', 'ofcxrp:solo', 'Sologenic', 15, UnderlyingAsset['xrp:solo']),
   tofcXrpToken('0c22d8ef-4c27-4088-bd3d-eb76484d5edf', 'ofctxrp:xsgd', 'XSGB', 15, UnderlyingAsset['txrp:xsgd']),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
@@ -936,6 +953,13 @@ export const ofcCoins = [
     'WisdomTree Siegel Global Equity Digital Fund',
     18,
     UnderlyingAsset['arbeth:eqtyx']
+  ),
+  ofcArbethErc20(
+    'cc8afc16-5323-41d3-a8d3-6f5f73c53392',
+    'ofcarbeth:anime',
+    'Animecoin',
+    18,
+    UnderlyingAsset['arbeth:anime']
   ),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),

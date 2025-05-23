@@ -2608,6 +2608,26 @@ export const solTokens = [
     UnderlyingAsset['sol:dood'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'ed0c2697-11a4-4c9f-af83-2102790c74bb',
+    'sol:sb',
+    'Solbank',
+    9,
+    '8twuNzMszqWeFbDErwtf4gw13E6MUS4Hsdx5mi3aqXAM',
+    '8twuNzMszqWeFbDErwtf4gw13E6MUS4Hsdx5mi3aqXAM',
+    UnderlyingAsset['sol:sb'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '492962f0-f485-4526-b104-447523be8fef',
+    'sol:dfdvsol',
+    'DeFi Development Corp Staked SOL',
+    9,
+    'sctmB7GPi5L2Q5G9tUSzXvhZ4YiDMEGcRov9KfArQpx',
+    'sctmB7GPi5L2Q5G9tUSzXvhZ4YiDMEGcRov9KfArQpx',
+    UnderlyingAsset['sol:dfdvsol'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
