@@ -1,101 +1,94 @@
 import * as assert from 'assert'
-import { testutil, networks } from 'modules/utxo-lib/src';
-import { addPaygoAddressProof, verifyPaygoAddressProof, getPaygoAddressProofIndex } from "modules/utxo-lib/src/bitgo/psbt/paygoAddressProof";
-import { getDefaultWalletKeys, inputScriptTypes, outputScriptTypes } from 'modules/utxo-lib/src/testutil';
-
-import { SignatureTargetType } from './Psbt';
-import { PSBT_PROPRIETARY_IDENTIFIER, UtxoPsbt } from 'modules/utxo-lib/src/bitgo';
 import { decodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import { KeyValue } from 'bip174/src/lib/interfaces';
+import { checkForOutput } from 'bip174/src/lib/utils';
+
+import { bip32, networks, testutil } from '../../../src'
+import { addPaygoAddressProof, verifyPaygoAddressProof, getPaygoAddressProofIndex, psbtIncludesPaygoAddressProof } from "../../../src/bitgo/psbt/paygoAddressProof";
+import { inputScriptTypes, outputScriptTypes } from '../../../src/testutil';
+import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER, RootWalletKeys } from '../../../src/bitgo';
+
 
 const network = networks.bitcoin;
-const rootWalletKeys = getDefaultWalletKeys();
+const keys = [1,2,3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), network))
+const rootWalletKeys = new RootWalletKeys([keys[0], keys[1], keys[2]])
+const dummyKey1 = rootWalletKeys.deriveForChainAndIndex(50, 200);
+const dummyKey2 = rootWalletKeys.deriveForChainAndIndex(60, 201);
+const dumm1yXPubs = dummyKey1.publicKeys;
+const dummy1PubKey = dummyKey1.user.publicKey;
 
 const psbtInputs = inputScriptTypes.map((scriptType) => ({scriptType, value: BigInt(1000)}))
 const psbtOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900)}))
-const sig = 'paygoaddresssig'
+const sig = dummyKey1.user.privateKey!;
+const sig2 = dummyKey2.user.privateKey!;
 
-function getTestPsbt(inputs: testutil.Input[], outputs: testutil.Output[], signed: SignatureTargetType) {
+function getTestPsbt() {
     return testutil.constructPsbt(
-        inputs, outputs, network, rootWalletKeys, signed
+        psbtInputs, psbtOutputs, network, rootWalletKeys, 'unsigned'
     )
 }
 
-function addPaygoAddressProofToPsbt(index: number, hasInput: boolean, hasOutput: boolean): UtxoPsbt {
-    // will update this function accordingly, just have this for now to help to simple testing
-    const psbt = getTestPsbt(hasInput ? psbtInputs : [], hasOutput ? psbtOutputs : [], hasInput && hasOutput ? 'unsigned' : 'fullsigned');
-    addPaygoAddressProof(psbt, index, Buffer.from(sig));
-    return psbt;
-}
-
-describe('addPaygoAddressProof function', () => {
+describe('addPaygoAddressProof and verifyPaygoAddressProof', () => {
     function getPaygoProprietaryKey(proprietaryKeyVals: KeyValue[]) {
         return proprietaryKeyVals.map(({key, value}) => {
             return { key: decodeProprietaryKey(key), value };
         }).filter((keyValue) => {
-            return keyValue.key.identifier === PSBT_PROPRIETARY_IDENTIFIER && keyValue.value === Buffer.from(sig)
+            return keyValue.key.identifier === PSBT_PROPRIETARY_IDENTIFIER && keyValue.key.subtype === ProprietaryKeySubtype.PAYGO_ADDRESS_PROOF
         });
     }
-    it('should add PayGo Address proof to empty PSBT', () => {
-        const inputIndex = 0;
-        const psbt = getTestPsbt([], [], 'unsigned');
-        // better sig test replacement, i just have random string as test
-        addPaygoAddressProof(psbt, inputIndex, Buffer.from(sig));
-        const proprietaryKeyVals = psbt.data.globalMap.unknownKeyVals;
-        assert(proprietaryKeyVals)
-        // I assume that the proprietaryKeyVal should be properly added
-        // to the unknownKeyVals globalmap
-        const proofInPsbt = getPaygoProprietaryKey(proprietaryKeyVals)
-        assert(proofInPsbt.length === 1);
+
+    it("should fail a proof verification if the proof isn't valid", () => {
+        const outputIndex = 0;
+        const psbt = getTestPsbt();
+        addPaygoAddressProof(psbt, outputIndex, Buffer.from(sig), dummy1PubKey);
+        const output = checkForOutput(psbt.data.outputs, outputIndex);
+        const proofInPsbt = getPaygoProprietaryKey(output.unknownKeyVals!);
+        assert(proofInPsbt.length === 1)
+        assert.throws(() => verifyPaygoAddressProof(psbt, 0, dummyKey2.user.publicKey), (e: any) => e.message === 'Cannot verify the paygo address signature with the provided pubkey.');
     });
 
-    it('should add Paygo Adress Proof to non-empty PSBT', () => {
-        const inputIndex = 0;
-        const psbt = getTestPsbt(psbtInputs, psbtOutputs, 'fullsigned');
-        addPaygoAddressProof(psbt, inputIndex, Buffer.from(sig));
-        const proprietaryKeyVals = psbt.data.globalMap.unknownKeyVals;
-        assert(proprietaryKeyVals);
-        const proofInPsbt = getPaygoProprietaryKey(proprietaryKeyVals);
-        assert(proofInPsbt.length === 1);
+    it("should add and verify a valid paygo address proof on the PSBT", () => {
+        const outputIndex = 0;
+        const psbt = getTestPsbt();
+        addPaygoAddressProof(psbt, outputIndex, Buffer.from(sig), dummy1PubKey);
+        // should verify function return a boolean? that way we can assert
+        // if this is verified, throws an error otherwise or false + error msg as an object
+        verifyPaygoAddressProof(psbt, outputIndex, dummy1PubKey);
     });
 
-    // do we have an error check with the original addProprietaryKeyValToInput
-    // to see if there are duplicates of the same? if not I will add the test case here.
-})
+    it("should throw an error if there are multiple PayGo proprietary keys in the PSBT", () => {
+        const outputIndex = 0;
+        const psbt = getTestPsbt();
+        addPaygoAddressProof(psbt, outputIndex, Buffer.from(sig), dummy1PubKey);
+        addPaygoAddressProof(psbt, outputIndex, Buffer.from(sig2), dummy1PubKey);
+        const output = checkForOutput(psbt.data.outputs, outputIndex);
+        const proofInPsbt = getPaygoProprietaryKey(output.unknownKeyVals!);
+        assert(proofInPsbt.length !== 0)
+        assert(proofInPsbt.length <= 1)
+        assert.throws(() => verifyPaygoAddressProof(psbt, outputIndex, dummy1PubKey), (e: any) => e.message === 'There are multiple paygo address proofs encoded in the PSBT. Something went wrong.');
+    });
+});
 
 
 describe('verifyPaygoAddressProof', () => {
-    const pubkey = 'pubkeytestforpaygopsbt'
-
-    it('should verify a valid PayGo address proof', () => {
-        const indexInput = 0;
-        const psbt = addPaygoAddressProofToPsbt(indexInput, false, false);
-        verifyPaygoAddressProof(psbt, 0, Buffer.from(pubkey))
-        // nothing happens if verification is successful
-    });
-
     it('should throw an error if there is no PayGo address in PSBT', () => {
-        const psbt = getTestPsbt(psbtInputs, psbtOutputs, 'fullsigned');
-        assert.throws(() => verifyPaygoAddressProof(psbt, 0, Buffer.from(pubkey)), (e: any) => e.message === 'here is no paygo address proof encoded in the PSBT.')
-    });
-
-    it('should throw an error if there is multiple PayGo address in PSBT', () => {
-        const psbt = getTestPsbt(psbtInputs, psbtOutputs, 'fullsigned');
-        const sig2 = 'paygoaddresssig2'
-        addPaygoAddressProof(psbt, 0, Buffer.from(sig))
-        addPaygoAddressProof(psbt, 1, Buffer.from(sig2))
-        assert.throws(() => verifyPaygoAddressProof(psbt, 0, Buffer.from(pubkey)), (e: any) => e.message === 'There are multiple paygo address proofs encoded in the PSBT. Something went wrong.')
-    });
-
-    // Once we think of what message should be signing, we can generate a test case
-    // to test this error message properly
-    it('should throw an error if the verification fails', () => {
-        const psbt = addPaygoAddressProofToPsbt(0, false, false);
-        assert.throws(() => verifyPaygoAddressProof(psbt, 0, Buffer.from(pubkey + 's')), (e: any) => e.message === 'Cannot verify the paygo address signature with the provided pubkey.')  
+        const psbt = getTestPsbt();
+        assert.throws(() => verifyPaygoAddressProof(psbt, 0, dummy1PubKey), (e: any) => e.message === 'here is no paygo address proof encoded in the PSBT.');
     });
 });
 
 describe('getPaygoAddressProofIndex', () => {
-    it('should get PayGo address proof index from PSBT', () => {
+    it('should get PayGo address proof index from PSBT if there is one', () => {
+        const psbt = getTestPsbt();
+        const outputIndex = 0;
+        addPaygoAddressProof(psbt, outputIndex, Buffer.from(sig), dummy1PubKey);
+        assert(psbtIncludesPaygoAddressProof(psbt));
+        assert(getPaygoAddressProofIndex(psbt) === 1)
+    });
+
+    it("should return undefined if there is no PayGo address proof in PSBT", () => {
+        const psbt = getTestPsbt();
+        assert(getPaygoAddressProofIndex(psbt) === undefined)
+        assert(!psbtIncludesPaygoAddressProof(psbt))
     });
 });
