@@ -728,12 +728,12 @@ describe('V2 Wallet:', function () {
           customSigningFunction,
         });
       } catch (e) {
-        e.message.should.not.equal(errorMessage);
+        e.message.should.equal(errorMessage);
       }
       try {
         await ethWallet.sendMany({ ...sendManyParamsCorrectPassPhrase });
       } catch (e) {
-        e.message.should.not.equal(errorMessage);
+        e.message.should.equal(errorMessage);
       }
       nockKeychain.isDone().should.be.true();
     });

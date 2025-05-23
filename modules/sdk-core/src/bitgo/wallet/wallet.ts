@@ -2176,7 +2176,7 @@ export class Wallet implements IWallet {
     }
 
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
-    const keychains = await this.getKeychainsAndValidatePassphrase({
+    const keychainPromise = this.getKeychainsAndValidatePassphrase({
       reqId: params.reqId,
       walletPassphrase: params.walletPassphrase,
       customSigningFunction: params.customSigningFunction,
@@ -2192,10 +2192,24 @@ export class Wallet implements IWallet {
     } else {
       txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
     }
-
-    // the prebuild can be overridden by providing an explicit tx
-    const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
-
+    let keychains: Keychain[];
+    let txPrebuild: PrebuildTransactionResult;
+    try {
+      [keychains, txPrebuild] = (await Promise.all([keychainPromise, txPrebuildQuery])) as [
+        Keychain[],
+        PrebuildTransactionResult
+      ];
+    } catch (err) {
+      if (err !== null || (err instanceof Error && err.message.includes('unable to decrypt keychain'))) {
+        const error: Error & { code?: string } = new Error(
+          `unable to decrypt keychain with the given wallet passphrase`
+        );
+        error.code = 'wallet_passphrase_incorrect';
+        throw error;
+      } else {
+        throw new Error(`Failed to process transaction: ${err.message}`);
+      }
+    }
     try {
       await this.baseCoin.verifyTransaction({
         txParams: { ...txPrebuild.buildParams, ...params },
