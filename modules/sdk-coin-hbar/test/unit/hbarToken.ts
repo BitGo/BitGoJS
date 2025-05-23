@@ -27,8 +27,8 @@ describe('Hedera Hashgraph Token', function () {
     token.network.should.equal('Testnet');
     token.decimalPlaces.should.equal(6);
     token.nodeAccountId.should.equal('0.0.3');
-    token.tokenId.should.equal('0.0.13078');
-    token.contractAddress.should.equal('0.0.13078');
+    token.tokenId.should.equal('0.0.429274');
+    token.contractAddress.should.equal('0.0.429274');
     token.tokenId.should.equal(token.contractAddress);
   });
 });

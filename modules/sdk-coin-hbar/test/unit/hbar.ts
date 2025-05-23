@@ -640,7 +640,7 @@ describe('Hedera Hashgraph:', function () {
     const balance = '1000000000';
     const formatBalanceResponse = (balance: string) =>
       new BigNumber(balance).dividedBy(basecoin.getBaseFactor()).toFixed(9) + ' ℏ';
-    const tokenId = '0.0.13078';
+    const tokenId = '0.0.429274';
 
     describe('Non-BitGo', async function () {
       const sandBox = Sinon.createSandbox();
