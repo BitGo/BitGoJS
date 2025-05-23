@@ -1824,4 +1824,5 @@ export const gatekeep = [
   'ofcsol:rock',
   'sol:dood',
   'ofcsol:dood',
+  'ofchteth:testnewtoken',
 ];
