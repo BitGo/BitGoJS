@@ -253,6 +253,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   receiveAddress?: string;
   custodianTransactionId?: string;
   custodianMessageId?: string;
+  tokenName?: string;
 }
 
 export type TxRequestState =
