@@ -10468,6 +10468,19 @@ export const erc20Coins = [
     '0xdc035d45d973e3ec169d2276ddab16f1e407384f',
     UnderlyingAsset['eth:usds']
   ),
+  erc20(
+    '3a173650-5a31-4025-a703-cf9d3f029d15',
+    'eth:newtoken',
+    'New Token',
+    18,
+    '0x1234567890123456789012345678901234567890',
+    UnderlyingAsset['eth:newtoken'],
+    [
+      ...AccountCoin.DEFAULT_FEATURES,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+    ],
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
@@ -11380,6 +11393,18 @@ export const erc20Coins = [
     '0xebe8b46a42f05072b723b00013ff822b2af1b5cb',
     UnderlyingAsset.BGERCH,
     undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
+    '373e1a33-0bed-4b05-bc98-594cf991f5f6',
+    'hteth:testnewtoken',
+    'Test New Token',
+    18,
+    '0x1234567890123456789012345678901234567890',
+    UnderlyingAsset['hteth:testnewtoken'],
+    HTETH_TOKEN_FEATURES,
     undefined,
     undefined,
     Networks.test.holesky
