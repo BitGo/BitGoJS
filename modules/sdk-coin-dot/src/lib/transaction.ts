@@ -448,6 +448,29 @@ export class Transaction extends BaseTransaction {
     ];
   }
 
+  /**
+   * Sets this transaction payload
+   *
+   * @param rawTx - The raw transaction in hex format
+   */
+  fromRawTransaction(rawTransaction: string): void {
+    try {
+      // Decode the raw transaction using the Polkadot txwrapper
+      const decodedTx = decode(rawTransaction, {
+        metadataRpc: this._dotTransaction.metadataRpc,
+        registry: this._registry,
+        isImmortalEra: utils.isZeroHex(this._dotTransaction.era),
+      }) as unknown as DecodedTx;
+
+      // Extract and set transaction details
+      this._sender = decodedTx.address;
+      this._dotTransaction = decodedTx as unknown as UnsignedTransaction;
+      this._signatures = []; // Reset signatures as this is a raw transaction
+    } catch (e) {
+      throw new Error('Invalid raw transaction: ' + e.message);
+    }
+  }
+
   private decodeInputsAndOutputsForBatch(decodedTx: DecodedTx) {
     const sender = decodedTx.address;
     this._inputs = [];

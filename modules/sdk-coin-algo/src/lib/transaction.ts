@@ -253,6 +253,25 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   * Sets this transaction payload
+   *
+   * @param rawTx - The raw transaction in hex format
+   */
+  fromRawTransaction(rawTransaction: string): void {
+    try {
+      // Decode the raw transaction using Algorand SDK
+      const decodedTx = algosdk.decodeUnsignedTransaction(Buffer.from(rawTransaction, 'hex'));
+
+      // Extract and set transaction details
+      this._algoTransaction = decodedTx;
+      this._sender = algosdk.encodeAddress(decodedTx.from.publicKey);
+      this._signatures = []; // Reset signatures as this is a raw transaction
+    } catch (e) {
+      throw new Error('Invalid raw transaction: ' + e.message);
+    }
+  }
+
+  /**
    * Load the input and output data on this transaction.
    */
   loadInputsAndOutputs(): void {

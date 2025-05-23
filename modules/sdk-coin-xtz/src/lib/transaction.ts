@@ -159,6 +159,26 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   * Sets this transaction payload
+   *
+   * @param rawTx - The raw transaction in hex format
+   */
+  async fromRawTransaction(rawTransaction: string): Promise<void> {
+    try {
+      // Decode the raw transaction using Taquito's local-forging library
+      const decodedTx = localForger.parse(rawTransaction);
+
+      // Extract and set transaction details
+      this._encodedTransaction = rawTransaction;
+      this._parsedTransaction = await decodedTx;
+      this._source = (await decodedTx).contents[0]?.source || '';
+      this._signatures = []; // Reset signatures as this is a raw transaction
+    } catch (e) {
+      throw new Error('Invalid raw transaction: ' + e.message);
+    }
+  }
+
+  /**
    * Record the most important fields for a Transaction operation.
    *
    * @param {TransactionOp} operation A transaction object from a Tezos operation
