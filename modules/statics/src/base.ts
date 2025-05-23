@@ -1925,6 +1925,12 @@ export enum UnderlyingAsset {
   'eth:ausd' = 'eth:ausd',
   'eth:gaia' = 'eth:gaia',
   'eth:usds' = 'eth:usds',
+  'eth:perc' = 'eth:perc',
+  'eth:cfg' = 'eth:cfg',
+  'eth:plume' = 'eth:plume',
+  'eth:vbill' = 'eth:vbill',
+  'eth:la' = 'eth:la',
+  'eth:es' = 'eth:es',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2392,6 +2398,7 @@ export enum UnderlyingAsset {
   'arbeth:wtgxx' = 'arbeth:wtgxx',
   'arbeth:lngvx' = 'arbeth:lngvx',
   'arbeth:eqtyx' = 'arbeth:eqtyx',
+  'arbeth:anime' = 'arbeth:anime',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2579,6 +2586,8 @@ export enum UnderlyingAsset {
   'sol:layer' = 'sol:layer',
   'sol:rock' = 'sol:rock',
   'sol:dood' = 'sol:dood',
+  'sol:sb' = 'sol:sb',
+  'sol:dfdvsol' = 'sol:dfdvsol',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
@@ -2603,7 +2612,7 @@ export enum UnderlyingAsset {
   'xrp:veur' = 'xrp:veur',
   'xrp:vchf' = 'xrp:vchf',
   'xrp:vgbp' = 'xrp:vgbp',
-
+  'xrp:solo' = 'xrp:solo',
   // XRP testnet tokens
   'txrp:xsgd' = 'txrp:xsgd',
 
