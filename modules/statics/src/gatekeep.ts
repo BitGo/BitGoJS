@@ -149,7 +149,6 @@ export const gatekeep = [
   'sol:ftt-wormhole',
   'sol:gene',
   'sol:holy',
-  'sol:hxro-wormhole',
   'sol:like',
   'sol:link-wormhole',
   'sol:maps',
@@ -1824,4 +1823,8 @@ export const gatekeep = [
   'ofcsol:rock',
   'sol:dood',
   'ofcsol:dood',
+  'eth:vbill',
+  'eth:la',
+  'eth:es',
+  'sol:dfdvsol',
 ];
