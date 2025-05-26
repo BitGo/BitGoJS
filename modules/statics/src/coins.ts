@@ -19,6 +19,7 @@ import {
   gasTankAccount,
   hederaCoin,
   hederaToken,
+  nep141Token,
   nonstandardToken,
   opethErc20,
   polygonErc20,
@@ -64,6 +65,7 @@ import { lightningCoins } from './lightning';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
 import { sip10Tokens } from './coins/sip10Tokens';
+import { nep141Tokens } from './coins/nep141Tokens';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
@@ -130,6 +132,7 @@ export const coins = CoinMap.fromCoins([
   ...polygonTokens,
   ...solTokens,
   ...sip10Tokens,
+  ...nep141Tokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -3543,6 +3546,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     eth: erc20,
     eos: eosToken,
     hbar: hederaToken,
+    near: nep141Token,
     opeth: opethErc20,
     polygon: polygonErc20,
     sol: solToken,
