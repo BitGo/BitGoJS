@@ -7,4 +7,6 @@ export const ZodPostKeySchema = z.object({
   coin: z.enum(MultiSigCoins),
   source: z.enum(KeySource),
   type: z.enum(KeyType),
+  userKeyProvider: z.any(), // TODO: move this away from schema
+  backupKeyProvider: z.any(),
 });

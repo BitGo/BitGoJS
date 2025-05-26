@@ -16,6 +16,7 @@
   "description": "",
   "dependencies": {
     "@aws-sdk/client-kms": "^3.810.0",
+    "@aws-sdk/credential-providers": "^3.817.0",
     "@azure/identity": "^4.10.0",
     "@azure/keyvault-keys": "^4.9.0",
     "body-parser": "^2.2.0",

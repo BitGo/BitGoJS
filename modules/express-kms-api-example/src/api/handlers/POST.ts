@@ -83,17 +83,18 @@ import { ZodPostKeySchema } from '../schemas/postKeySchema';
  *         description: Internal server error
  */
 export async function POST(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const userKeyProvider = req.userKeyProvider;
 
   // parse request
   try {
+    console.log('POST /key', req.body);
     ZodPostKeySchema.parse(req.body);
   } catch (e) {
     res.status(400);
     res.send({ message: 'Invalid data provided from client' });
+    return;
   }
 
-  const { prv, pub, coin, source, type } = req.body;
+  const { prv, pub, coin, source, type, userKeyProvider, backupKeyProvider } = req.body;
 
   // check for duplicates
   const keyObject = await db.fetchAll('SELECT * from PRIVATE_KEYS WHERE pub = ? AND source = ?', [pub, source]);

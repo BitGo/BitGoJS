@@ -69,7 +69,7 @@ type GetParamsType = {
 export async function GET(req: Request<GetParamsType>, res: Response, next: NextFunction): Promise<void> {
   //TODO: fix type, it says that the prop doesn't exists
   //      but in fact it's a incorect type declaration
-  const userKeyProvider = req.userKeyProvider;
+  const userKeyProvider = req.body.userKeyProvider;
 
   const { pub } = req.params;
 

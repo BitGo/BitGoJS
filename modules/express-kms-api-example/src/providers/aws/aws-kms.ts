@@ -6,12 +6,19 @@ import {
   KmsInterface,
   PostKeyKmsRes,
 } from '../kms-interface/kmsInterface';
+import { fromIni } from '@aws-sdk/credential-providers';
 
 export class AwsKmsProvider implements KmsInterface {
   providerName = 'aws';
-  kms: awskms.KMSClient = new awskms.KMSClient();
-
+  kms: awskms.KMSClient = new awskms.KMSClient({ 
+      region: 'us-east-2',
+      credentials: fromIni({
+        profile: 'saml',
+      })
+    });
+    
   errorHandler(err: any): KmsErrorRes {
+    console.error('AWS KMS encountered an error\n', err);
     switch (err.constructor) {
       case awskms.DependencyTimeoutException: {
         return { message: 'KMS server timesout', code: 500 };
