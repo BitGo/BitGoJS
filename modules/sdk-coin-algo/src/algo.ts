@@ -858,7 +858,7 @@ export class Algo extends BaseCoin {
     try {
       algoKey = new AlgoLib.KeyPair({ prv });
     } catch (e) {
-      throw new Error('Invalid private key');
+      throw new Error(`Invalid private key: ${e.message}`);
     }
     if (publicKey && publicKey !== algoKey.getKeys().pub) {
       throw new Error('Invalid public key');

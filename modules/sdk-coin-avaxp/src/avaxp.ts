@@ -369,6 +369,7 @@ export class AvaxP extends BaseCoin {
 
   /** @inheritDoc */
   auditDecryptedKey(params: AuditDecryptedKeyParams): void {
+    /** https://bitgoinc.atlassian.net/browse/COIN-4213 */
     throw new MethodNotImplementedError();
   }
 }

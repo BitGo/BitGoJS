@@ -1161,7 +1161,7 @@ describe('XLM:', function () {
             walletPassphrase,
           }),
         {
-          message: 'Invalid private key',
+          message: 'Invalid private key: Unable to generate keypair from prv',
         }
       );
     });

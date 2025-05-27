@@ -642,7 +642,7 @@ export class Hbar extends BaseCoin {
     try {
       hbarKeyPair = new HbarKeyPair({ prv });
     } catch (e) {
-      throw new Error('Invalid private key');
+      throw new Error(`Invalid private key: ${e.message}`);
     }
     const genPubKey = hbarKeyPair.getKeys().pub;
     if (publicKey && publicKey !== genPubKey) {
