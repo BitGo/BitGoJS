@@ -1,4 +1,5 @@
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -43,6 +44,7 @@ import {
 } from './lib';
 import { ROOT_PATH } from './lib/constants';
 import utils from './lib/utils';
+import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
 /**
  * Cosmos accounts support memo Id based addresses
@@ -664,5 +666,14 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    */
   getKeyPair(publicKey: string): CosmosKeyPair {
     throw new Error('Method not implemented');
+  }
+
+  /** @inheritDoc **/
+  auditDecryptedKey({ multiSigType, publicKey, prv }: AuditDecryptedKeyParams) {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multiSigType');
+    } else {
+      auditEcdsaPrivateKey(prv as string, publicKey as string);
+    }
   }
 }

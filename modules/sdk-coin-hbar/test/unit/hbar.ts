@@ -5,13 +5,14 @@ import Sinon, { SinonStub } from 'sinon';
 import { randomBytes } from 'crypto';
 import { BigNumber } from 'bignumber.js';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { TxData, Transfer } from '../../src/lib/iface';
 import { Wallet } from '@bitgo/sdk-core';
 
 import * as TestData from '../fixtures/hbar';
 import { Hbar, Thbar, KeyPair, HbarToken } from '../../src';
 import { getBuilderFactory } from './getBuilderFactory';
+import { hbarBackupKey } from './fixtures/hbarBackupKey';
 
 describe('Hedera Hashgraph:', function () {
   let bitgo: TestBitGoAPI;
@@ -1320,6 +1321,62 @@ describe('Hedera Hashgraph:', function () {
       keypair.should.have.property('prv');
       keypair.prv?.should.equal(kp.prv.slice(0, 64));
       keypair.pub.should.equal(kp.pub);
+    });
+  });
+
+  describe('AuditKey', () => {
+    const { key } = hbarBackupKey;
+    const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
+
+    it('should return for valid inputs', () => {
+      basecoin.assertIsValidKey({
+        coinName: 'hbar',
+        encryptedPrv: key,
+        walletPassphrase,
+      });
+    });
+
+    it('should throw error if the walletPassphrase is incorrect', () => {
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            coinName: 'hbar',
+            encryptedPrv: key,
+            walletPassphrase: 'foo',
+          }),
+        { message: "failed to decrypt prv: ccm: tag doesn't match" }
+      );
+    });
+
+    it('should throw error if the key is altered', () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            coinName: 'hbar',
+            encryptedPrv: alteredKey,
+            walletPassphrase,
+          }),
+        {
+          message: 'failed to decrypt prv: json decrypt: invalid parameters',
+        }
+      );
+    });
+
+    it('should throw error if the key is not a valid key', () => {
+      const invalidKey = '#@)$#($*@)#($*';
+      const encryptedPrv = encrypt(walletPassphrase, invalidKey);
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            coinName: 'hbar',
+            encryptedPrv,
+            walletPassphrase,
+          }),
+        {
+          message: 'Invalid private key',
+        }
+      );
     });
   });
 });

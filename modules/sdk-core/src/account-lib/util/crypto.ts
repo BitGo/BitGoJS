@@ -1,4 +1,5 @@
-import { bip32, ECPair, networks } from '@bitgo/utxo-lib';
+import { networks } from '@bitgo/utxo-lib';
+import { bip32, ECPair } from '@bitgo/secp256k1';
 import * as hex from '@stablelib/hex';
 import bs58 from 'bs58';
 import * as bls from 'noble-bls12-381';

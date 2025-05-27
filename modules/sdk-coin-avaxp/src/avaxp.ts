@@ -16,6 +16,8 @@ import {
   ParsedTransaction,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
+  MethodNotImplementedError,
 } from '@bitgo/sdk-core';
 import * as AvaxpLib from './lib';
 import {
@@ -363,5 +365,10 @@ export class AvaxP extends BaseCoin {
 
   private getBuilder(): AvaxpLib.TransactionBuilderFactory {
     return new AvaxpLib.TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams): void {
+    throw new MethodNotImplementedError();
   }
 }

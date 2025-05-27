@@ -1,4 +1,5 @@
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -6,6 +7,7 @@ import {
   getBip32Keys,
   getIsUnsignedSweep,
   KeyPair,
+  MethodNotImplementedError,
   MultisigType,
   multisigTypes,
   SignedTransaction,
@@ -755,5 +757,10 @@ export class Stx extends BaseCoin {
     return {
       txHex: fullySignedTxHex,
     };
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    throw new MethodNotImplementedError();
   }
 }

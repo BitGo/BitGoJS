@@ -4,12 +4,13 @@ import * as stellar from 'stellar-sdk';
 
 import { Environments, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { Txlm } from '../../src';
 import { KeyPair } from '../../src/lib/keyPair';
 
 import nock from 'nock';
 import * as assert from 'assert';
+import { xlmBackupKey } from './fixtures/xlmBackupKey';
 nock.enableNetConnect();
 
 describe('XLM:', function () {
@@ -1109,6 +1110,60 @@ describe('XLM:', function () {
       keyPair.should.have.property('prv');
       keyPair.prv?.should.equal(kp.prv.slice(0, 64));
       keyPair.pub.should.equal(kp.pub);
+    });
+  });
+
+  describe('AuditKey', () => {
+    const { key } = xlmBackupKey;
+    const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
+
+    it('should return for valid inputs', () => {
+      basecoin.assertIsValidKey({
+        encryptedPrv: key,
+        walletPassphrase,
+      });
+    });
+
+    it('should throw error if the walletPassphrase is incorrect', () => {
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv: key,
+            walletPassphrase: 'foo',
+          }),
+        {
+          message: "failed to decrypt prv: ccm: tag doesn't match",
+        }
+      );
+    });
+
+    it('should throw error if the key is altered', () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv: alteredKey,
+            walletPassphrase,
+          }),
+        {
+          message: 'failed to decrypt prv: json decrypt: invalid parameters',
+        }
+      );
+    });
+
+    it('should return { isValid: false } if the key is not a valid key', () => {
+      const invalidKey = '#@)$#($*@)#($*';
+      const encryptedPrv = encrypt(walletPassphrase, invalidKey);
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv,
+            walletPassphrase,
+          }),
+        {
+          message: 'Invalid private key',
+        }
+      );
     });
   });
 });

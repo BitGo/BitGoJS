@@ -1,4 +1,5 @@
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   KeyPair,
@@ -59,6 +60,11 @@ export abstract class AbstractLightningCoin extends BaseCoin {
   }
 
   signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    throw new Error('Method not implemented.');
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
     throw new Error('Method not implemented.');
   }
 }

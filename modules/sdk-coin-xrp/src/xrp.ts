@@ -7,12 +7,14 @@ import * as querystring from 'querystring';
 import * as url from 'url';
 
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   checkKrsProvider,
   getBip32Keys,
   InvalidAddressError,
   KeyPair,
+  MethodNotImplementedError,
   MultisigType,
   multisigTypes,
   ParsedTransaction,
@@ -737,5 +739,10 @@ export class Xrp extends BaseCoin {
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     return {};
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    throw new MethodNotImplementedError();
   }
 }

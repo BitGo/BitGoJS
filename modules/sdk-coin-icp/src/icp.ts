@@ -1,5 +1,6 @@
 import assert from 'assert';
 import {
+  AuditDecryptedKeyParams,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
   BaseCoin,
@@ -45,6 +46,7 @@ import {
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
+import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
 /**
  * Class representing the Internet Computer (ICP) coin.
@@ -463,5 +465,13 @@ export class Icp extends BaseCoin {
     } catch (error) {
       throw new Error(`Error during ICP recovery: ${error.message || error}`);
     }
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ multiSigType, prv, publicKey }: AuditDecryptedKeyParams) {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multisigtype ');
+    }
+    auditEcdsaPrivateKey(prv as string, publicKey as string);
   }
 }

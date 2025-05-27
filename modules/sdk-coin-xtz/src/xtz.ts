@@ -12,6 +12,7 @@ import {
   VerifyTransactionOptions,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { bip32 } from '@bitgo/secp256k1';
 import { CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -229,5 +230,10 @@ export class Xtz extends BaseCoin {
 
   isValidPub(pub: string): boolean {
     return Utils.isValidPublicKey(pub);
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    throw new MethodNotImplementedError();
   }
 }

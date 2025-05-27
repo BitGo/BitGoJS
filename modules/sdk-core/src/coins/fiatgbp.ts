@@ -2,6 +2,7 @@
  * @prettier
  */
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   KeyPair,
@@ -71,6 +72,11 @@ export class FiatGBP extends BaseCoin {
   }
 
   async signTransaction(params: SignTransactionOptions = {}): Promise<SignedTransaction> {
+    throw new MethodNotImplementedError();
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams): void {
     throw new MethodNotImplementedError();
   }
 }

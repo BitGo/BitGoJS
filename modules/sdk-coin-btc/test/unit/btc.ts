@@ -1,15 +1,17 @@
 import 'should';
+import assert from 'assert';
+import { btcBackupKey } from './fixtures';
 
-import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
+import { type TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 
 import { Tbtc } from '../../src';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import * as utxolib from '@bitgo/utxo-lib';
 
-describe('BTC:', function () {
+describe('BTC:', () => {
   let bitgo: TestBitGoAPI;
 
-  before(function () {
+  before(() => {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
     bitgo.safeRegister('tbtc', Tbtc.createInstance);
     bitgo.initializeTestVars();
@@ -64,6 +66,44 @@ describe('BTC:', function () {
       for (const input of inputs) {
         input.sequence.should.equal(0xffffffff);
       }
+    });
+  });
+
+  describe('Audit Key', () => {
+    const { key } = btcBackupKey;
+    let coin: Tbtc;
+    before(() => {
+      coin = bitgo.coin('tbtc') as Tbtc;
+    });
+
+    it('should return for valid inputs', () => {
+      coin.assertIsValidKey({
+        encryptedPrv: key,
+        walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+      });
+    });
+
+    it('should throw error if the walletPassphrase is incorrect', () => {
+      assert.throws(
+        () =>
+          coin.assertIsValidKey({
+            encryptedPrv: key,
+            walletPassphrase: 'foo',
+          }),
+        { message: "failed to decrypt prv: ccm: tag doesn't match" }
+      );
+    });
+
+    it('should return throw if the key is altered', () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      assert.throws(
+        () =>
+          coin.assertIsValidKey({
+            encryptedPrv: alteredKey,
+            walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+          }),
+        { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+      );
     });
   });
 });
