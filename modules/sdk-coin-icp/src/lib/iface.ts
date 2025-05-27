@@ -10,6 +10,9 @@ export const ROOT_PATH = 'm/0';
 export const ACCOUNT_BALANCE_CALL = 'icrc1_balance_of';
 export const PUBLIC_NODE_REQUEST_ENDPOINT = '/api/v3/canister/';
 export const DEFAULT_MEMO = 0; // default memo value is 0
+export const ICRC1_FEE_KEY = 'icrc1:fee';
+export const METADATA_CALL = 'icrc1_metadata';
+export const DEFAULT_SUBACCOUNT = '0000000000000000000000000000000000000000000000000000000000000000'; // default subaccount value is 0x
 
 export enum RequestType {
   CALL = 'call',
