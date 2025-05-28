@@ -6,8 +6,10 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import nock from 'nock';
 import { Icp } from '../../../src/index';
+import { IcpAgent } from '../../../src/lib/icpAgent';
 import { RecoveryOptions, LEDGER_CANISTER_ID } from '../../../src/lib/iface';
 import { Principal } from '@dfinity/principal';
+import BigNumber from 'bignumber.js';
 
 describe('ICP transaction recovery', async () => {
   let bitgo;
@@ -38,6 +40,12 @@ describe('ICP transaction recovery', async () => {
     broadcastResponse = Buffer.from(testData.PublicNodeApiBroadcastResponse, 'hex');
   });
 
+  beforeEach(function () {
+    // Common stubs for IcpAgent
+    sinon.stub(IcpAgent.prototype, 'getBalance').resolves(BigNumber(1000000000));
+    sinon.stub(IcpAgent.prototype, 'getFee').resolves(BigNumber(10000));
+  });
+
   afterEach(function () {
     recoveryParams = {
       userKey: testData.WRWRecovery.userKey,
@@ -64,7 +72,6 @@ describe('ICP transaction recovery', async () => {
     });
 
     const body = testData.RecoverySignedTransactionWithDefaultMemo;
-    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
     nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
     const recoverTxn = await icp.recover(recoveryParams);
     recoverTxn.id.should.be.a.String();
@@ -85,7 +92,6 @@ describe('ICP transaction recovery', async () => {
     });
 
     const body = testData.RecoverySignedTransactionWithMemo;
-    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
     nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
     recoveryParams.memo = testData.MetaDataWithMemo.memo;
     const recoverTxn = await icp.recover(recoveryParams);
@@ -104,8 +110,6 @@ describe('ICP transaction recovery', async () => {
       metaData: testData.MetaDataWithMemo,
       ingressEndTime: testData.MetaDataWithMemo.ingress_end,
     });
-
-    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
 
     const unsignedSweepRecoveryParams = {
       bitgoKey:
@@ -129,8 +133,6 @@ describe('ICP transaction recovery', async () => {
       ingressEndTime: testData.MetaDataWithMemo.ingress_end,
     });
 
-    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
-
     const unsignedSweepRecoveryParams = {
       bitgoKey: 'testKey',
       recoveryDestination: testData.Accounts.account2.address,
@@ -152,8 +154,6 @@ describe('ICP transaction recovery', async () => {
       ingressEndTime: testData.MetaDataWithMemo.ingress_end,
     });
 
-    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
-
     const unsignedSweepRecoveryParams = {
       recoveryDestination: testData.Accounts.account2.address,
     };
@@ -161,7 +161,6 @@ describe('ICP transaction recovery', async () => {
   });
 
   it('should fail to recover if broadcast API fails', async () => {
-    sinon.stub(icp, 'getBalanceFromPrincipal').returns('1000000000');
     nock(nodeUrl).post(broadcastEndpoint).reply(500, 'Internal Server Error');
     recoveryParams.memo = 0;
     await icp
@@ -172,7 +171,10 @@ describe('ICP transaction recovery', async () => {
   });
 
   it('should fail to recover txn if balance is low', async () => {
-    sinon.stub(icp, 'getBalanceFromPrincipal').returns('10');
+    // Override the default balance stub for this specific test
+    sinon.restore();
+    sinon.stub(IcpAgent.prototype, 'getBalance').resolves(BigNumber(10));
+    sinon.stub(IcpAgent.prototype, 'getFee').resolves(BigNumber(10000));
     nock(nodeUrl).post(broadcastEndpoint).reply(200, broadcastResponse);
     await icp
       .recover(recoveryParams)

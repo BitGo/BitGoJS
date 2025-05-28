@@ -45,11 +45,10 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * gets the gas data of this transaction.
+   * gets the fee data of this transaction.
    */
-  //TODO WIN-4242: to moved to a config and eventually to an API for dynamic value
   feeData(): string {
-    return '-10000';
+    return '-10000'; // fee is static for ICP transactions as per ICP documentation
   }
 
   /**
