@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [54.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.0.0...@bitgo/statics@54.0.1) (2025-05-28)
+
+### Bug Fixes
+
+- correct ofctrx:usd1 decimal places ([656233f](https://github.com/BitGo/BitGoJS/commit/656233fa75f95e9dc11a8c5e212189e9e6e0484a))
+
 # [54.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@53.0.0...@bitgo/statics@54.0.0) (2025-05-22)
 
 ### Bug Fixes
