@@ -4,7 +4,7 @@
  * Copyright 2025, BitGo, Inc.  All Rights Reserved.
  */
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Tapt } from "@bitgo/sdk-coin-apt";
+import { Tapt } from '@bitgo/sdk-coin-apt';
 require('dotenv').config({ path: '../../../.env' });
 
 const bitgo = new BitGoAPI({

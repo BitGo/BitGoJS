@@ -1175,6 +1175,13 @@ export class Wallet implements IWallet {
       throw new Error('limit argument must be between 1 and 500');
     }
 
+    // Assert that either both nftCollectionId and nftId are provided or neither are provided
+    const hasNftCollectionId = !_.isUndefined(query.nftCollectionId);
+    const hasNftId = !_.isUndefined(query.nftId);
+    if (hasNftCollectionId !== hasNftId) {
+      throw new Error('nftCollectionId and nftId must both be provided or both be omitted');
+    }
+
     return this.bitgo
       .get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses/balances'))
       .query(query)
