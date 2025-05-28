@@ -8,6 +8,14 @@ import {
   CELO_TOKEN_FEATURES,
 } from './coinFeatures';
 
+/**
+ * This is the program id against sol tokem program.
+ */
+export enum ProgramID {
+  TokenProgramId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  Token2022ProgramId = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+}
+
 export interface AccountConstructorOptions {
   id: string;
   fullName: string;
@@ -97,6 +105,7 @@ export interface EosCoinConstructorOptions extends AccountConstructorOptions {
 export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
   contractAddress: string;
+  programId: string;
 }
 
 export interface AdaCoinConstructorOptions extends AccountConstructorOptions {
@@ -366,6 +375,7 @@ export class EosCoin extends AccountCoinToken {
 export class SolCoin extends AccountCoinToken {
   public tokenAddress: string;
   public contractAddress: string;
+  public programId: string;
   constructor(options: SolCoinConstructorOptions) {
     super({
       ...options,
@@ -373,6 +383,7 @@ export class SolCoin extends AccountCoinToken {
 
     this.tokenAddress = options.contractAddress;
     this.contractAddress = options.contractAddress;
+    this.programId = options.programId;
   }
 }
 
@@ -1610,6 +1621,7 @@ export function solToken(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
+  programId: ProgramID = ProgramID.TokenProgramId,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.sol,
@@ -1626,6 +1638,7 @@ export function solToken(
       prefix,
       suffix,
       features,
+      programId,
       decimalPlaces,
       asset,
       isToken: true,
@@ -1658,6 +1671,7 @@ export function tsolToken(
   contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
+  programId = ProgramID.TokenProgramId,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.sol
@@ -1671,6 +1685,7 @@ export function tsolToken(
     contractAddress,
     asset,
     features,
+    programId,
     prefix,
     suffix,
     network

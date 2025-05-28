@@ -315,6 +315,22 @@ describe('SOL util library', function () {
     });
   });
 
+  describe('getAssociatedTokenAccountAddress for sol 2022 token', function () {
+    const ai16ZMintAddress = testData.tokenTransfers.mintAI16Z;
+    const tokenAddress = 'JC2HAixRNrhBgNjCsV2PBfZEdyitEnWqJPNGokFD8xSA';
+    it('should succeed for native address as owner address', async function () {
+      const ownerAddress = testData.sol2022AuthAccount.pub;
+      const result = await Utils.getAssociatedTokenAccountAddress(ai16ZMintAddress, ownerAddress);
+      result.should.be.equal(tokenAddress);
+    });
+    it('should fail for token address as owner address', async function () {
+      const invalidOwnerAddress = tokenAddress;
+      await Utils.getAssociatedTokenAccountAddress(ai16ZMintAddress, invalidOwnerAddress).should.be.rejectedWith(
+        'Invalid ownerAddress - address off ed25519 curve, got: ' + invalidOwnerAddress
+      );
+    });
+  });
+
   describe('matchTransactionTypeByInstructionsOrder', function () {
     describe('Activate stake instructions', function () {
       it('should match staking activate instructions', function () {
