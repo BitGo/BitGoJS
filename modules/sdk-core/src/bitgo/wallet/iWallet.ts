@@ -423,7 +423,9 @@ export interface AddressesOptions extends PaginationOptions {
 }
 
 export interface AddressesByBalanceOptions extends PaginationOptions {
-  token: string;
+  token?: string;
+  nftCollectionId?: string;
+  nftId?: string;
   sort?: number;
 }
 

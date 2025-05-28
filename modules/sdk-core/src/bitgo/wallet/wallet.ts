@@ -1155,6 +1155,8 @@ export class Wallet implements IWallet {
   async addressesByBalance(params: AddressesByBalanceOptions): Promise<any> {
     const query: AddressesByBalanceOptions = {
       token: params.token,
+      nftCollectionId: params.nftCollectionId,
+      nftId: params.nftId,
     };
     query.sort = params.sort ?? -1;
     query.page = params.page ?? 1;
@@ -1166,10 +1168,10 @@ export class Wallet implements IWallet {
     if (!_.isNumber(query.page)) {
       throw new Error('invalid page argument, expecting number');
     }
-    if (!_.isNumber(params.limit)) {
+    if (!_.isNumber(query.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
-    if (params.limit < 1 || params.limit > 500) {
+    if (query.limit < 1 || query.limit > 500) {
       throw new Error('limit argument must be between 1 and 500');
     }
 
