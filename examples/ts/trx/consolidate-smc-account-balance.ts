@@ -4,9 +4,9 @@ import axios from 'axios';
 const LOCAL_EXTERNAL_SIGNER_URL = 'http://localhost:3080';
 // TODO: set your access token here
 // You can get this from User Settings > Developer Options > Add Access Token
-const accessToken = '';
+const accessToken = 'v2x0d947c90444c311cf81c7692b88ac6767c349e44f47b6e854f7a8d9594487b43';
 // TODO: set your wallet id
-const walletId = '';
+const walletId = '68355ecd7effc38ded68e8e7b4647c23';
 const options = {
   headers: {
     Authorization: `Bearer ${accessToken}`,

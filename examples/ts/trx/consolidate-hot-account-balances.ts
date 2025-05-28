@@ -7,24 +7,24 @@
 import { BitGo, WalletCoinSpecific } from 'bitgo';
 
 // TODO: change to 'production' for mainnet
-const env = 'test';
+const env = 'staging';
 const bitgo = new BitGo({ env });
 
 // TODO: change to 'trx' for mainnet
 const coin = 'ttrx';
 
 // TODO: set your wallet id
-const walletId = '';
+const walletId = '68355ecd7effc38ded68e8e7b4647c23';
 
 // TODO: set your wallet passphrase
-const walletPassphrase = '';
+const walletPassphrase = 'RF!K1suz6h45Rkia(cp0';
 
 // TODO: set OTP code
 const otp = '000000';
 
 // TODO: set your access token here
 // You can get this from User Settings > Developer Options > Add Access Token
-const accessToken = '';
+const accessToken = 'v2x0d947c90444c311cf81c7692b88ac6767c349e44f47b6e854f7a8d9594487b43';
 
 async function main() {
   bitgo.authenticateWithAccessToken({ accessToken });
@@ -39,16 +39,21 @@ async function main() {
   // Spendable balance - balance of the base address
   console.log('Spendable Balance:', wallet.spendableBalanceString());
 
-  const consolidationTxes = await wallet.buildAccountConsolidations();
+  const [consolidationTxes, consolidationTxes2] = await Promise.all([
+    wallet.buildAccountConsolidations(),
+    wallet.buildAccountConsolidations()
+  ]);
   console.dir(consolidationTxes, { depth: 6 });
+  console.dir(consolidationTxes2, { depth: 6 });
 
-  const unlock = await bitgo.unlock({ otp, duration: 3600 });
-  if (!unlock) {
-    throw new Error('error unlocking session');
-  }
+  // const unlock = await bitgo.unlock({ otp, duration: 3600 });
+  // if (!unlock) {
+  //   throw new Error('error unlocking session');
+  // }
   try {
     for (const unsignedConsolidation of consolidationTxes) {
-      const res = await wallet.sendAccountConsolidation({ walletPassphrase, prebuildTx: unsignedConsolidation });
+      const res =  await wallet.sendAccountConsolidation({ walletPassphrase, prebuildTx: unsignedConsolidation });
+      // const res1 =  wallet.sendAccountConsolidation({ walletPassphrase, prebuildTx: unsignedConsolidation });
       console.dir(res, { depth: 6 });
     }
   } catch (e) {
