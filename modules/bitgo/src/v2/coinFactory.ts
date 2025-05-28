@@ -5,7 +5,7 @@ import { AdaToken } from '@bitgo/sdk-coin-ada';
 import { AlgoToken } from '@bitgo/sdk-coin-algo';
 import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
 import { HbarToken } from '@bitgo/sdk-coin-hbar';
-import { Near, TNear } from '@bitgo/sdk-coin-near';
+import { Near, TNear, Nep141Token } from '@bitgo/sdk-coin-near';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { TrxToken } from '@bitgo/sdk-coin-trx';
 import { CoinFactory } from '@bitgo/sdk-core';
@@ -449,6 +449,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   );
 
   Sip10Token.createTokenConstructors([...tokens.bitcoin.stx.tokens, ...tokens.testnet.stx.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
+
+  Nep141Token.createTokenConstructors([...tokens.bitcoin.near.tokens, ...tokens.testnet.near.tokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
 }

@@ -7,13 +7,16 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionExplanation, TxData, Action } from './iface';
-import { HEX_REGEX, StakingContractMethodNames } from './constants';
+import { Action, Signature, TransactionExplanation, TxData } from './iface';
+import { AdditionalAllowedMethods, FT_TRANSFER, HEX_REGEX, StakingContractMethodNames } from './constants';
 import utils from './utils';
 import { KeyPair } from './keyPair';
 import * as nearAPI from 'near-api-js';
-import * as sha256 from 'js-sha256';
 import base58 from 'bs58';
+import { Action as TxAction, SignedTransaction, Transaction as UnsignedTransaction } from '@near-js/transactions';
+import { functionCall, transfer } from 'near-api-js/lib/transaction';
+import { sha256 } from 'js-sha256';
+import { KeyType } from '@near-js/crypto';
 
 export class Transaction extends BaseTransaction {
   private _nearTransaction: nearAPI.transactions.Transaction;
@@ -60,28 +63,43 @@ export class Transaction extends BaseTransaction {
     }
 
     let parsedAction: Action = {};
-    if (this._nearTransaction.actions[0].enum === 'transfer') {
-      parsedAction = { transfer: this._nearTransaction.actions[0].transfer };
-    } else if (this._nearTransaction.actions[0].enum === 'functionCall') {
-      const functionCallObject = this._nearTransaction.actions[0].functionCall;
+    const action = this._nearTransaction.actions[0];
+    if (action.enum === 'transfer' && action.transfer) {
+      parsedAction = { transfer: action.transfer };
+    } else if (action.enum === 'functionCall' && action.functionCall) {
+      const functionCall = action.functionCall;
       parsedAction = {
         functionCall: {
-          methodName: functionCallObject.methodName,
-          args: JSON.parse(Buffer.from(functionCallObject.args).toString()),
-          gas: functionCallObject.gas.toString(),
-          deposit: functionCallObject.deposit.toString(),
+          methodName: functionCall.methodName,
+          args: JSON.parse(Buffer.from(functionCall.args).toString()),
+          gas: functionCall.gas.toString(),
+          deposit: functionCall.deposit.toString(),
         },
       };
+    }
+
+    let signature: Signature | undefined;
+    if (this._nearSignedTransaction?.signature?.ed25519Signature) {
+      signature = {
+        keyType: KeyType.ED25519,
+        data: new Uint8Array(this._nearSignedTransaction.signature.ed25519Signature.data),
+      };
+    }
+    let publicKey: string | undefined;
+    if (this._nearTransaction.publicKey?.ed25519Key) {
+      const rawBytes = new Uint8Array(this._nearTransaction.publicKey.ed25519Key.data);
+      const encoded = nearAPI.utils.serialize.base_encode(rawBytes);
+      publicKey = `ed25519:${encoded}`;
     }
 
     return {
       id: this._id,
       signerId: this._nearTransaction.signerId,
-      publicKey: this._nearTransaction.publicKey.toString(),
+      publicKey: publicKey,
       nonce: this._nearTransaction.nonce,
       receiverId: this._nearTransaction.receiverId,
       actions: [parsedAction],
-      signature: typeof this._nearSignedTransaction === 'undefined' ? undefined : this._nearSignedTransaction.signature,
+      signature: signature ? signature : undefined,
     };
   }
 
@@ -103,22 +121,70 @@ export class Transaction extends BaseTransaction {
     const bufferRawTransaction = HEX_REGEX.test(rawTx) ? Buffer.from(rawTx, 'hex') : Buffer.from(rawTx, 'base64');
     try {
       const signedTx = nearAPI.utils.serialize.deserialize(
-        nearAPI.transactions.SCHEMA,
-        nearAPI.transactions.SignedTransaction,
+        nearAPI.transactions.SCHEMA.SignedTransaction,
         bufferRawTransaction
-      );
-      signedTx.transaction.nonce = parseInt(signedTx.transaction.nonce.toString(), 10);
+      ) as SignedTransaction;
+      signedTx.transaction.actions = signedTx.transaction.actions.map((a) => {
+        const action = new TxAction(a);
+        switch (action.enum) {
+          case 'transfer': {
+            if (action.transfer?.deposit) {
+              return transfer(BigInt(action.transfer.deposit));
+            }
+            break;
+          }
+          case 'functionCall': {
+            if (action.functionCall) {
+              return functionCall(
+                action.functionCall.methodName,
+                new Uint8Array(action.functionCall.args),
+                BigInt(action.functionCall.gas),
+                BigInt(action.functionCall.deposit)
+              );
+            }
+            break;
+          }
+          default: {
+            return action;
+          }
+        }
+        return action;
+      });
       this._nearSignedTransaction = signedTx;
       this._nearTransaction = signedTx.transaction;
       this._id = utils.base58Encode(this.getTransactionHash());
     } catch (e) {
       try {
         const unsignedTx = nearAPI.utils.serialize.deserialize(
-          nearAPI.transactions.SCHEMA,
-          nearAPI.transactions.Transaction,
+          nearAPI.transactions.SCHEMA.Transaction,
           bufferRawTransaction
-        );
-        unsignedTx.nonce = parseInt(unsignedTx.nonce.toString(), 10);
+        ) as UnsignedTransaction;
+        unsignedTx.actions = unsignedTx.actions.map((a) => {
+          const action = new TxAction(a);
+          switch (action.enum) {
+            case 'transfer': {
+              if (action.transfer?.deposit) {
+                return transfer(BigInt(action.transfer.deposit));
+              }
+              break;
+            }
+            case 'functionCall': {
+              if (action.functionCall) {
+                return functionCall(
+                  action.functionCall.methodName,
+                  new Uint8Array(action.functionCall.args),
+                  BigInt(action.functionCall.gas),
+                  BigInt(action.functionCall.deposit)
+                );
+              }
+              break;
+            }
+            default: {
+              return action;
+            }
+          }
+          return action;
+        });
         this._nearTransaction = unsignedTx;
         this._id = utils.base58Encode(this.getTransactionHash());
       } catch (e) {
@@ -166,16 +232,20 @@ export class Transaction extends BaseTransaction {
       case StakingContractMethodNames.Withdraw:
         this.setTransactionType(TransactionType.StakingWithdraw);
         break;
+      case FT_TRANSFER:
+        this.setTransactionType(TransactionType.SendToken);
+        break;
     }
   }
 
   /**
    * Check if method is allowed on Near account-lib implementation.
    * This method should check on all contracts added to Near.
-   * @param methodName contract call method name to check if its allowed.
+   * @param methodName contract call method name to check if it's allowed.
    */
   private validateMethodAllowed(methodName: string): void {
-    if (!Object.values(StakingContractMethodNames).some((item) => item === methodName)) {
+    const allowedMethods = [...Object.values(StakingContractMethodNames), ...AdditionalAllowedMethods];
+    if (!allowedMethods.includes(methodName)) {
       throw new InvalidTransactionError('unsupported function call in raw transaction');
     }
   }
@@ -196,9 +266,11 @@ export class Transaction extends BaseTransaction {
         this.setTransactionType(TransactionType.Send);
         break;
       case 'functionCall':
-        const methodName = action.functionCall.methodName;
-        this.validateMethodAllowed(methodName);
-        this.setTypeByStakingMethod(methodName);
+        if (action.functionCall) {
+          const methodName = action.functionCall.methodName;
+          this.validateMethodAllowed(methodName);
+          this.setTypeByStakingMethod(methodName);
+        }
         break;
       default:
         throw new InvalidTransactionError('unsupported action in raw transaction');
@@ -208,43 +280,65 @@ export class Transaction extends BaseTransaction {
     const inputs: Entry[] = [];
     switch (this.type) {
       case TransactionType.Send:
-        const amount = action.transfer.deposit.toString();
-        inputs.push({
-          address: this._nearTransaction.signerId,
-          value: amount,
-          coin: this._coinConfig.name,
-        });
-        outputs.push({
-          address: this._nearTransaction.receiverId,
-          value: amount,
-          coin: this._coinConfig.name,
-        });
+        if (action.transfer) {
+          const amount = action.transfer.deposit.toString();
+          inputs.push({
+            address: this._nearTransaction.signerId,
+            value: amount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: this._nearTransaction.receiverId,
+            value: amount,
+            coin: this._coinConfig.name,
+          });
+        }
         break;
       case TransactionType.StakingActivate:
-        const stakingAmount = action.functionCall.deposit.toString();
-        inputs.push({
-          address: this._nearTransaction.signerId,
-          value: stakingAmount,
-          coin: this._coinConfig.name,
-        });
-        outputs.push({
-          address: this._nearTransaction.receiverId,
-          value: stakingAmount,
-          coin: this._coinConfig.name,
-        });
+        if (action.functionCall) {
+          const stakingAmount = action.functionCall.deposit.toString();
+          inputs.push({
+            address: this._nearTransaction.signerId,
+            value: stakingAmount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: this._nearTransaction.receiverId,
+            value: stakingAmount,
+            coin: this._coinConfig.name,
+          });
+        }
         break;
       case TransactionType.StakingWithdraw:
-        const stakingWithdrawAmount = JSON.parse(Buffer.from(action.functionCall.args).toString()).amount;
-        inputs.push({
-          address: this._nearTransaction.receiverId,
-          value: stakingWithdrawAmount,
-          coin: this._coinConfig.name,
-        });
-        outputs.push({
-          address: this._nearTransaction.signerId,
-          value: stakingWithdrawAmount,
-          coin: this._coinConfig.name,
-        });
+        if (action.functionCall) {
+          const stakingWithdrawAmount = JSON.parse(Buffer.from(action.functionCall.args).toString()).amount;
+          inputs.push({
+            address: this._nearTransaction.receiverId,
+            value: stakingWithdrawAmount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: this._nearTransaction.signerId,
+            value: stakingWithdrawAmount,
+            coin: this._coinConfig.name,
+          });
+        }
+        break;
+      case TransactionType.SendToken:
+        if (action.functionCall) {
+          const tokenTransferAmount = JSON.parse(Buffer.from(action.functionCall.args).toString()).amount;
+          const receiverId = JSON.parse(Buffer.from(action.functionCall.args).toString()).receiver_id;
+          inputs.push({
+            address: receiverId,
+            value: tokenTransferAmount,
+            coin: this._coinConfig.name,
+          });
+          outputs.push({
+            address: this._nearTransaction.signerId,
+            value: tokenTransferAmount,
+            coin: this._coinConfig.name,
+          });
+        }
         break;
     }
     this._outputs = outputs;
@@ -340,8 +434,11 @@ export class Transaction extends BaseTransaction {
   }
 
   private getTransactionHash(): Uint8Array {
-    const serializedTx = nearAPI.utils.serialize.serialize(nearAPI.transactions.SCHEMA, this._nearTransaction);
-    return new Uint8Array(sha256.sha256.array(serializedTx));
+    const serializedTx = nearAPI.utils.serialize.serialize(
+      nearAPI.transactions.SCHEMA.Transaction,
+      this._nearTransaction
+    );
+    return new Uint8Array(sha256.array(serializedTx));
   }
 
   get signablePayload(): Buffer {
@@ -373,8 +470,8 @@ export class Transaction extends BaseTransaction {
   get signature(): string[] {
     const signatures: string[] = [];
 
-    if (this._nearSignedTransaction) {
-      signatures.push(base58.encode(this._nearSignedTransaction.signature.data));
+    if (this._nearSignedTransaction && this._nearSignedTransaction.signature.ed25519Signature) {
+      signatures.push(base58.encode(this._nearSignedTransaction.signature.ed25519Signature.data));
     }
 
     return signatures;
