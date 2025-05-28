@@ -1,8 +1,8 @@
 import { solToken, tsolToken } from '../account';
-import { UnderlyingAsset, CoinFeature } from '../base';
+import { CoinFeature, UnderlyingAsset } from '../base';
 import {
-  SOL_TOKEN_FEATURES_WITH_FRANKFURT,
   SOL_TOKEN_FEATURES,
+  SOL_TOKEN_FEATURES_WITH_FRANKFURT,
   SOL_TOKEN_FEATURES_WITH_FRANKFURT_GERMANY,
 } from '../coinFeatures';
 
@@ -2626,6 +2626,16 @@ export const solTokens = [
     'sctmB7GPi5L2Q5G9tUSzXvhZ4YiDMEGcRov9KfArQpx',
     'sctmB7GPi5L2Q5G9tUSzXvhZ4YiDMEGcRov9KfArQpx',
     UnderlyingAsset['sol:dfdvsol'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '9779af52-f7fa-4a34-ba06-6a6daf340bd6',
+    'sol:chillguy',
+    'Just a chill guy',
+    6,
+    'Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump',
+    'Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump',
+    UnderlyingAsset['sol:chillguy'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(

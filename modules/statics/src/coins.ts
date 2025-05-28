@@ -1568,6 +1568,16 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '0cb81a9b-248e-4d41-b596-700fe0bf93b8',
+    'hbar:bonzo',
+    'Bonzo Finance',
+    Networks.main.hedera,
+    8,
+    UnderlyingAsset['hbar:bonzo'],
+    '0.0.8279134',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '842c2119-3071-409d-b86f-49f0b46b676e',
     'thbar:usdc',
     'Testnet Hedera USD Coin',
@@ -3195,6 +3205,17 @@ export const coins = CoinMap.fromCoins([
     'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz::534F4C4F00000000000000000000000000000000',
     'sologenic.com',
     UnderlyingAsset['xrp:solo']
+  ),
+  xrpToken(
+    'b8b52e22-257d-4c47-95be-1b2aff2d8b35',
+    'xrp:aau',
+    'Archax',
+    15,
+    'rKCu4CucpepQ6N89c8T5GuX2jkxzCST18Q',
+    'AAU',
+    'rKCu4CucpepQ6N89c8T5GuX2jkxzCST18Q::AAU',
+    'archax.com',
+    UnderlyingAsset['xrp:aau']
   ),
   txrpToken(
     '80cbaecf-b1ea-4811-97ae-213c1ffc9175',

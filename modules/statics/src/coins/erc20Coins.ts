@@ -10516,6 +10516,14 @@ export const erc20Coins = [
     '0x6055dc6ff1077eebe5e6d2ba1a1f53d7ef8430de',
     UnderlyingAsset['eth:es']
   ),
+  erc20(
+    '47029442-483d-415c-bc0f-9a61f6aeaf9e',
+    'eth:ctrl',
+    'Ctrl Wallet',
+    18,
+    '0xe50e009ddb1a4d8ec668eac9d8b2df1f96348707',
+    UnderlyingAsset['eth:ctrl']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

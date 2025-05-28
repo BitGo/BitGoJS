@@ -1824,4 +1824,10 @@ export const gatekeep = [
   'ofcsol:rock',
   'sol:dood',
   'ofcsol:dood',
+  'xrp:aau',
+  'ofcxrp:aau',
+  'hbar:bonzo',
+  'ofchbar:bonzo',
+  'eth:ctrl',
+  'ofceth:ctrl',
 ];

@@ -3165,6 +3165,13 @@ export const ofcErc20Coins = [
   ),
   ofcerc20('cfac6025-2aa2-429a-b144-9ea5c952a93a', 'ofceth:la', 'Lagrange', 18, underlyingAssetForSymbol('eth:la')),
   ofcerc20('395fa727-b5eb-4fd8-ba91-1c257b94624d', 'ofceth:es', 'Eclipse', 6, underlyingAssetForSymbol('eth:es')),
+  ofcerc20(
+    '2270befd-a97d-4e6e-a540-6d19bd0a08e7',
+    'ofceth:ctrl',
+    'Ctrl Wallet',
+    18,
+    underlyingAssetForSymbol('eth:ctrl')
+  ),
 ];
 
 export const tOfcErc20Coins = [
