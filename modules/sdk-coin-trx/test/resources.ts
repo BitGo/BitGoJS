@@ -11,7 +11,9 @@ export const EXPIRATION = 60000;
 export const TOKEN_TRANSFER_DATA =
   'a9059cbb0000000000000000000000004887974f42a789ef6d4dfc7ba28b1583219434b3000000000000000000000000000000000000000000000000000000003b9aca00';
 export const RESOURCE_ENERGY = 'ENERGY';
+export const RESOURCE_BANDWIDTH = 'BANDWIDTH';
 export const FROZEN_BALANCE = '1000000';
+export const DELEGATION_BALANCE = '1000000';
 export const UNFROZEN_BALANCE = '1000000';
 export const USDT_CONTRACT_ADDRESS = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs';
 export const TOKEN_TRANSFER_RECIPIENT = 'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8K';
@@ -37,6 +39,9 @@ export const PARTICIPANTS = {
   multisig: {
     address: 'TFfsxb2oxGwswbmaNwVzFU8v8zecyGqfyj',
     pk: '477a9a5491a3bac32ec5f431ebab90143dbc251bbbb016a625e8c096fd6365d4',
+  },
+  to: {
+    address: 'TLBPLGBuYhQmdzQAEQvBhw7LKzcw1TSSG9',
   },
 };
 
@@ -148,6 +153,21 @@ export const TOKEN_TX_CONTRACT_2 = [
       type_url: 'type.googleapis.com/protocol.TriggerSmartContract',
     },
     type: 'TriggerSmartContract',
+  },
+];
+
+export const DELEGATE_RESOURCE_CONTRACT = [
+  {
+    parameter: {
+      value: {
+        resource: 'ENERGY',
+        balance: 1000000,
+        owner_address: '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882',
+        receiver_address: '416ffedf93921506c3efdb510f7c4f256036c48a6a',
+      },
+      type_url: 'type.googleapis.com/protocol.DelegateResourceContract',
+    },
+    type: 'DelegateResourceContract',
   },
 ];
 

@@ -27,6 +27,7 @@ import {
   VoteWitnessContract,
   UnfreezeBalanceV2Contract,
   WithdrawExpireUnfreezeContract,
+  ResourceManagementContract,
 } from './iface';
 
 /**
@@ -186,6 +187,18 @@ export class Transaction extends BaseTransaction {
         input = {
           address: withdrawValues.owner_address,
           value: '0',
+        };
+        break;
+      case ContractType.DelegateResourceContract:
+        this._type = TransactionType.DelegateResource;
+        const delegateValue = (rawData.contract[0] as ResourceManagementContract).parameter.value;
+        output = {
+          address: delegateValue.receiver_address,
+          value: delegateValue.balance.toString(),
+        };
+        input = {
+          address: delegateValue.owner_address,
+          value: delegateValue.balance.toString(),
         };
         break;
       default:

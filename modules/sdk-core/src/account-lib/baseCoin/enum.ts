@@ -78,6 +78,10 @@ export enum TransactionType {
   TrustLine,
   // Send Non Fungible Token (e.g. APT NFTs)
   SendNFT,
+  // Delegate resource (e.g. TRX)
+  DelegateResource,
+  // Un-delegate resource (e.g. TRX)
+  UnDelegateResource,
 }
 
 /**

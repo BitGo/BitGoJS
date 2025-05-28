@@ -13393,6 +13393,766 @@ $root.protocol = (function () {
     return AccountPermissionUpdateContract;
   })();
 
+  protocol.DelegateResourceContract = (function () {
+    /**
+     * Properties of a DelegateResourceContract.
+     * @memberof protocol
+     * @interface IDelegateResourceContract
+     * @property {Uint8Array|null} [ownerAddress] DelegateResourceContract ownerAddress
+     * @property {protocol.ResourceCode|null} [resource] DelegateResourceContract resource
+     * @property {number|Long|null} [balance] DelegateResourceContract balance
+     * @property {Uint8Array|null} [receiverAddress] DelegateResourceContract receiverAddress
+     * @property {boolean|null} [lock] DelegateResourceContract lock
+     * @property {number|Long|null} [lockPeriod] DelegateResourceContract lockPeriod
+     */
+
+    /**
+     * Constructs a new DelegateResourceContract.
+     * @memberof protocol
+     * @classdesc Represents a DelegateResourceContract.
+     * @implements IDelegateResourceContract
+     * @constructor
+     * @param {protocol.IDelegateResourceContract=} [properties] Properties to set
+     */
+    function DelegateResourceContract(properties) {
+      if (properties)
+        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+          if (properties[keys[i]] != null) this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * DelegateResourceContract ownerAddress.
+     * @member {Uint8Array} ownerAddress
+     * @memberof protocol.DelegateResourceContract
+     * @instance
+     */
+    DelegateResourceContract.prototype.ownerAddress = $util.newBuffer([]);
+
+    /**
+     * DelegateResourceContract resource.
+     * @member {protocol.ResourceCode} resource
+     * @memberof protocol.DelegateResourceContract
+     * @instance
+     */
+    DelegateResourceContract.prototype.resource = 0;
+
+    /**
+     * DelegateResourceContract balance.
+     * @member {number|Long} balance
+     * @memberof protocol.DelegateResourceContract
+     * @instance
+     */
+    DelegateResourceContract.prototype.balance = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
+
+    /**
+     * DelegateResourceContract receiverAddress.
+     * @member {Uint8Array} receiverAddress
+     * @memberof protocol.DelegateResourceContract
+     * @instance
+     */
+    DelegateResourceContract.prototype.receiverAddress = $util.newBuffer([]);
+
+    /**
+     * DelegateResourceContract lock.
+     * @member {boolean} lock
+     * @memberof protocol.DelegateResourceContract
+     * @instance
+     */
+    DelegateResourceContract.prototype.lock = false;
+
+    /**
+     * DelegateResourceContract lockPeriod.
+     * @member {number|Long} lockPeriod
+     * @memberof protocol.DelegateResourceContract
+     * @instance
+     */
+    DelegateResourceContract.prototype.lockPeriod = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
+
+    /**
+     * Creates a new DelegateResourceContract instance using the specified properties.
+     * @function create
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {protocol.IDelegateResourceContract=} [properties] Properties to set
+     * @returns {protocol.DelegateResourceContract} DelegateResourceContract instance
+     */
+    DelegateResourceContract.create = function create(properties) {
+      return new DelegateResourceContract(properties);
+    };
+
+    /**
+     * Encodes the specified DelegateResourceContract message. Does not implicitly {@link protocol.DelegateResourceContract.verify|verify} messages.
+     * @function encode
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {protocol.IDelegateResourceContract} message DelegateResourceContract message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DelegateResourceContract.encode = function encode(message, writer) {
+      if (!writer) writer = $Writer.create();
+      if (message.ownerAddress != null && Object.hasOwnProperty.call(message, 'ownerAddress'))
+        writer.uint32(/* id 1, wireType 2 =*/ 10).bytes(message.ownerAddress);
+      if (message.resource != null && Object.hasOwnProperty.call(message, 'resource'))
+        writer.uint32(/* id 2, wireType 0 =*/ 16).int32(message.resource);
+      if (message.balance != null && Object.hasOwnProperty.call(message, 'balance'))
+        writer.uint32(/* id 3, wireType 0 =*/ 24).int64(message.balance);
+      if (message.receiverAddress != null && Object.hasOwnProperty.call(message, 'receiverAddress'))
+        writer.uint32(/* id 4, wireType 2 =*/ 34).bytes(message.receiverAddress);
+      if (message.lock != null && Object.hasOwnProperty.call(message, 'lock'))
+        writer.uint32(/* id 5, wireType 0 =*/ 40).bool(message.lock);
+      if (message.lockPeriod != null && Object.hasOwnProperty.call(message, 'lockPeriod'))
+        writer.uint32(/* id 6, wireType 0 =*/ 48).int64(message.lockPeriod);
+      return writer;
+    };
+
+    /**
+     * Encodes the specified DelegateResourceContract message, length delimited. Does not implicitly {@link protocol.DelegateResourceContract.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {protocol.IDelegateResourceContract} message DelegateResourceContract message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DelegateResourceContract.encodeDelimited = function encodeDelimited(message, writer) {
+      return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a DelegateResourceContract message from the specified reader or buffer.
+     * @function decode
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {protocol.DelegateResourceContract} DelegateResourceContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DelegateResourceContract.decode = function decode(reader, length) {
+      if (!(reader instanceof $Reader)) reader = $Reader.create(reader);
+      var end = length === undefined ? reader.len : reader.pos + length,
+        message = new $root.protocol.DelegateResourceContract();
+      while (reader.pos < end) {
+        var tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            message.ownerAddress = reader.bytes();
+            break;
+          }
+          case 2: {
+            message.resource = reader.int32();
+            break;
+          }
+          case 3: {
+            message.balance = reader.int64();
+            break;
+          }
+          case 4: {
+            message.receiverAddress = reader.bytes();
+            break;
+          }
+          case 5: {
+            message.lock = reader.bool();
+            break;
+          }
+          case 6: {
+            message.lockPeriod = reader.int64();
+            break;
+          }
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+      return message;
+    };
+
+    /**
+     * Decodes a DelegateResourceContract message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {protocol.DelegateResourceContract} DelegateResourceContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DelegateResourceContract.decodeDelimited = function decodeDelimited(reader) {
+      if (!(reader instanceof $Reader)) reader = new $Reader(reader);
+      return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a DelegateResourceContract message.
+     * @function verify
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    DelegateResourceContract.verify = function verify(message) {
+      if (typeof message !== 'object' || message === null) return 'object expected';
+      if (message.ownerAddress != null && message.hasOwnProperty('ownerAddress'))
+        if (
+          !(
+            (message.ownerAddress && typeof message.ownerAddress.length === 'number') ||
+            $util.isString(message.ownerAddress)
+          )
+        )
+          return 'ownerAddress: buffer expected';
+      if (message.resource != null && message.hasOwnProperty('resource'))
+        switch (message.resource) {
+          default:
+            return 'resource: enum value expected';
+          case 0:
+          case 1:
+            break;
+        }
+      if (message.balance != null && message.hasOwnProperty('balance'))
+        if (
+          !$util.isInteger(message.balance) &&
+          !(message.balance && $util.isInteger(message.balance.low) && $util.isInteger(message.balance.high))
+        )
+          return 'balance: integer|Long expected';
+      if (message.receiverAddress != null && message.hasOwnProperty('receiverAddress'))
+        if (
+          !(
+            (message.receiverAddress && typeof message.receiverAddress.length === 'number') ||
+            $util.isString(message.receiverAddress)
+          )
+        )
+          return 'receiverAddress: buffer expected';
+      if (message.lock != null && message.hasOwnProperty('lock'))
+        if (typeof message.lock !== 'boolean') return 'lock: boolean expected';
+      if (message.lockPeriod != null && message.hasOwnProperty('lockPeriod'))
+        if (
+          !$util.isInteger(message.lockPeriod) &&
+          !(message.lockPeriod && $util.isInteger(message.lockPeriod.low) && $util.isInteger(message.lockPeriod.high))
+        )
+          return 'lockPeriod: integer|Long expected';
+      return null;
+    };
+
+    /**
+     * Creates a DelegateResourceContract message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {protocol.DelegateResourceContract} DelegateResourceContract
+     */
+    DelegateResourceContract.fromObject = function fromObject(object) {
+      if (object instanceof $root.protocol.DelegateResourceContract) return object;
+      var message = new $root.protocol.DelegateResourceContract();
+      if (object.ownerAddress != null)
+        if (typeof object.ownerAddress === 'string')
+          $util.base64.decode(
+            object.ownerAddress,
+            (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
+            0
+          );
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
+      switch (object.resource) {
+        default:
+          if (typeof object.resource === 'number') {
+            message.resource = object.resource;
+            break;
+          }
+          break;
+        case 'BANDWIDTH':
+        case 0:
+          message.resource = 0;
+          break;
+        case 'ENERGY':
+        case 1:
+          message.resource = 1;
+          break;
+      }
+      if (object.balance != null)
+        if ($util.Long) (message.balance = $util.Long.fromValue(object.balance)).unsigned = false;
+        else if (typeof object.balance === 'string') message.balance = parseInt(object.balance, 10);
+        else if (typeof object.balance === 'number') message.balance = object.balance;
+        else if (typeof object.balance === 'object')
+          message.balance = new $util.LongBits(object.balance.low >>> 0, object.balance.high >>> 0).toNumber();
+      if (object.receiverAddress != null)
+        if (typeof object.receiverAddress === 'string')
+          $util.base64.decode(
+            object.receiverAddress,
+            (message.receiverAddress = $util.newBuffer($util.base64.length(object.receiverAddress))),
+            0
+          );
+        else if (object.receiverAddress.length >= 0) message.receiverAddress = object.receiverAddress;
+      if (object.lock != null) message.lock = Boolean(object.lock);
+      if (object.lockPeriod != null)
+        if ($util.Long) (message.lockPeriod = $util.Long.fromValue(object.lockPeriod)).unsigned = false;
+        else if (typeof object.lockPeriod === 'string') message.lockPeriod = parseInt(object.lockPeriod, 10);
+        else if (typeof object.lockPeriod === 'number') message.lockPeriod = object.lockPeriod;
+        else if (typeof object.lockPeriod === 'object')
+          message.lockPeriod = new $util.LongBits(object.lockPeriod.low >>> 0, object.lockPeriod.high >>> 0).toNumber();
+      return message;
+    };
+
+    /**
+     * Creates a plain object from a DelegateResourceContract message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {protocol.DelegateResourceContract} message DelegateResourceContract
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    DelegateResourceContract.toObject = function toObject(message, options) {
+      if (!options) options = {};
+      var object = {};
+      if (options.defaults) {
+        if (options.bytes === String) object.ownerAddress = '';
+        else {
+          object.ownerAddress = [];
+          if (options.bytes !== Array) object.ownerAddress = $util.newBuffer(object.ownerAddress);
+        }
+        object.resource = options.enums === String ? 'BANDWIDTH' : 0;
+        if ($util.Long) {
+          var long = new $util.Long(0, 0, false);
+          object.balance =
+            options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+        } else object.balance = options.longs === String ? '0' : 0;
+        if (options.bytes === String) object.receiverAddress = '';
+        else {
+          object.receiverAddress = [];
+          if (options.bytes !== Array) object.receiverAddress = $util.newBuffer(object.receiverAddress);
+        }
+        object.lock = false;
+        if ($util.Long) {
+          var long = new $util.Long(0, 0, false);
+          object.lockPeriod =
+            options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+        } else object.lockPeriod = options.longs === String ? '0' : 0;
+      }
+      if (message.ownerAddress != null && message.hasOwnProperty('ownerAddress'))
+        object.ownerAddress =
+          options.bytes === String
+            ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
+            : options.bytes === Array
+            ? Array.prototype.slice.call(message.ownerAddress)
+            : message.ownerAddress;
+      if (message.resource != null && message.hasOwnProperty('resource'))
+        object.resource =
+          options.enums === String
+            ? $root.protocol.ResourceCode[message.resource] === undefined
+              ? message.resource
+              : $root.protocol.ResourceCode[message.resource]
+            : message.resource;
+      if (message.balance != null && message.hasOwnProperty('balance'))
+        if (typeof message.balance === 'number')
+          object.balance = options.longs === String ? String(message.balance) : message.balance;
+        else
+          object.balance =
+            options.longs === String
+              ? $util.Long.prototype.toString.call(message.balance)
+              : options.longs === Number
+              ? new $util.LongBits(message.balance.low >>> 0, message.balance.high >>> 0).toNumber()
+              : message.balance;
+      if (message.receiverAddress != null && message.hasOwnProperty('receiverAddress'))
+        object.receiverAddress =
+          options.bytes === String
+            ? $util.base64.encode(message.receiverAddress, 0, message.receiverAddress.length)
+            : options.bytes === Array
+            ? Array.prototype.slice.call(message.receiverAddress)
+            : message.receiverAddress;
+      if (message.lock != null && message.hasOwnProperty('lock')) object.lock = message.lock;
+      if (message.lockPeriod != null && message.hasOwnProperty('lockPeriod'))
+        if (typeof message.lockPeriod === 'number')
+          object.lockPeriod = options.longs === String ? String(message.lockPeriod) : message.lockPeriod;
+        else
+          object.lockPeriod =
+            options.longs === String
+              ? $util.Long.prototype.toString.call(message.lockPeriod)
+              : options.longs === Number
+              ? new $util.LongBits(message.lockPeriod.low >>> 0, message.lockPeriod.high >>> 0).toNumber()
+              : message.lockPeriod;
+      return object;
+    };
+
+    /**
+     * Converts this DelegateResourceContract to JSON.
+     * @function toJSON
+     * @memberof protocol.DelegateResourceContract
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    DelegateResourceContract.prototype.toJSON = function toJSON() {
+      return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DelegateResourceContract
+     * @function getTypeUrl
+     * @memberof protocol.DelegateResourceContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DelegateResourceContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.DelegateResourceContract';
+    };
+
+    return DelegateResourceContract;
+  })();
+
+  protocol.UnDelegateResourceContract = (function () {
+    /**
+     * Properties of an UnDelegateResourceContract.
+     * @memberof protocol
+     * @interface IUnDelegateResourceContract
+     * @property {Uint8Array|null} [ownerAddress] UnDelegateResourceContract ownerAddress
+     * @property {protocol.ResourceCode|null} [resource] UnDelegateResourceContract resource
+     * @property {number|Long|null} [balance] UnDelegateResourceContract balance
+     * @property {Uint8Array|null} [receiverAddress] UnDelegateResourceContract receiverAddress
+     */
+
+    /**
+     * Constructs a new UnDelegateResourceContract.
+     * @memberof protocol
+     * @classdesc Represents an UnDelegateResourceContract.
+     * @implements IUnDelegateResourceContract
+     * @constructor
+     * @param {protocol.IUnDelegateResourceContract=} [properties] Properties to set
+     */
+    function UnDelegateResourceContract(properties) {
+      if (properties)
+        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+          if (properties[keys[i]] != null) this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * UnDelegateResourceContract ownerAddress.
+     * @member {Uint8Array} ownerAddress
+     * @memberof protocol.UnDelegateResourceContract
+     * @instance
+     */
+    UnDelegateResourceContract.prototype.ownerAddress = $util.newBuffer([]);
+
+    /**
+     * UnDelegateResourceContract resource.
+     * @member {protocol.ResourceCode} resource
+     * @memberof protocol.UnDelegateResourceContract
+     * @instance
+     */
+    UnDelegateResourceContract.prototype.resource = 0;
+
+    /**
+     * UnDelegateResourceContract balance.
+     * @member {number|Long} balance
+     * @memberof protocol.UnDelegateResourceContract
+     * @instance
+     */
+    UnDelegateResourceContract.prototype.balance = $util.Long ? $util.Long.fromBits(0, 0, false) : 0;
+
+    /**
+     * UnDelegateResourceContract receiverAddress.
+     * @member {Uint8Array} receiverAddress
+     * @memberof protocol.UnDelegateResourceContract
+     * @instance
+     */
+    UnDelegateResourceContract.prototype.receiverAddress = $util.newBuffer([]);
+
+    /**
+     * Creates a new UnDelegateResourceContract instance using the specified properties.
+     * @function create
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {protocol.IUnDelegateResourceContract=} [properties] Properties to set
+     * @returns {protocol.UnDelegateResourceContract} UnDelegateResourceContract instance
+     */
+    UnDelegateResourceContract.create = function create(properties) {
+      return new UnDelegateResourceContract(properties);
+    };
+
+    /**
+     * Encodes the specified UnDelegateResourceContract message. Does not implicitly {@link protocol.UnDelegateResourceContract.verify|verify} messages.
+     * @function encode
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {protocol.IUnDelegateResourceContract} message UnDelegateResourceContract message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    UnDelegateResourceContract.encode = function encode(message, writer) {
+      if (!writer) writer = $Writer.create();
+      if (message.ownerAddress != null && Object.hasOwnProperty.call(message, 'ownerAddress'))
+        writer.uint32(/* id 1, wireType 2 =*/ 10).bytes(message.ownerAddress);
+      if (message.resource != null && Object.hasOwnProperty.call(message, 'resource'))
+        writer.uint32(/* id 2, wireType 0 =*/ 16).int32(message.resource);
+      if (message.balance != null && Object.hasOwnProperty.call(message, 'balance'))
+        writer.uint32(/* id 3, wireType 0 =*/ 24).int64(message.balance);
+      if (message.receiverAddress != null && Object.hasOwnProperty.call(message, 'receiverAddress'))
+        writer.uint32(/* id 4, wireType 2 =*/ 34).bytes(message.receiverAddress);
+      return writer;
+    };
+
+    /**
+     * Encodes the specified UnDelegateResourceContract message, length delimited. Does not implicitly {@link protocol.UnDelegateResourceContract.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {protocol.IUnDelegateResourceContract} message UnDelegateResourceContract message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    UnDelegateResourceContract.encodeDelimited = function encodeDelimited(message, writer) {
+      return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes an UnDelegateResourceContract message from the specified reader or buffer.
+     * @function decode
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {protocol.UnDelegateResourceContract} UnDelegateResourceContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    UnDelegateResourceContract.decode = function decode(reader, length) {
+      if (!(reader instanceof $Reader)) reader = $Reader.create(reader);
+      var end = length === undefined ? reader.len : reader.pos + length,
+        message = new $root.protocol.UnDelegateResourceContract();
+      while (reader.pos < end) {
+        var tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            message.ownerAddress = reader.bytes();
+            break;
+          }
+          case 2: {
+            message.resource = reader.int32();
+            break;
+          }
+          case 3: {
+            message.balance = reader.int64();
+            break;
+          }
+          case 4: {
+            message.receiverAddress = reader.bytes();
+            break;
+          }
+          default:
+            reader.skipType(tag & 7);
+            break;
+        }
+      }
+      return message;
+    };
+
+    /**
+     * Decodes an UnDelegateResourceContract message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {protocol.UnDelegateResourceContract} UnDelegateResourceContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    UnDelegateResourceContract.decodeDelimited = function decodeDelimited(reader) {
+      if (!(reader instanceof $Reader)) reader = new $Reader(reader);
+      return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies an UnDelegateResourceContract message.
+     * @function verify
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    UnDelegateResourceContract.verify = function verify(message) {
+      if (typeof message !== 'object' || message === null) return 'object expected';
+      if (message.ownerAddress != null && message.hasOwnProperty('ownerAddress'))
+        if (
+          !(
+            (message.ownerAddress && typeof message.ownerAddress.length === 'number') ||
+            $util.isString(message.ownerAddress)
+          )
+        )
+          return 'ownerAddress: buffer expected';
+      if (message.resource != null && message.hasOwnProperty('resource'))
+        switch (message.resource) {
+          default:
+            return 'resource: enum value expected';
+          case 0:
+          case 1:
+            break;
+        }
+      if (message.balance != null && message.hasOwnProperty('balance'))
+        if (
+          !$util.isInteger(message.balance) &&
+          !(message.balance && $util.isInteger(message.balance.low) && $util.isInteger(message.balance.high))
+        )
+          return 'balance: integer|Long expected';
+      if (message.receiverAddress != null && message.hasOwnProperty('receiverAddress'))
+        if (
+          !(
+            (message.receiverAddress && typeof message.receiverAddress.length === 'number') ||
+            $util.isString(message.receiverAddress)
+          )
+        )
+          return 'receiverAddress: buffer expected';
+      return null;
+    };
+
+    /**
+     * Creates an UnDelegateResourceContract message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {protocol.UnDelegateResourceContract} UnDelegateResourceContract
+     */
+    UnDelegateResourceContract.fromObject = function fromObject(object) {
+      if (object instanceof $root.protocol.UnDelegateResourceContract) return object;
+      var message = new $root.protocol.UnDelegateResourceContract();
+      if (object.ownerAddress != null)
+        if (typeof object.ownerAddress === 'string')
+          $util.base64.decode(
+            object.ownerAddress,
+            (message.ownerAddress = $util.newBuffer($util.base64.length(object.ownerAddress))),
+            0
+          );
+        else if (object.ownerAddress.length >= 0) message.ownerAddress = object.ownerAddress;
+      switch (object.resource) {
+        default:
+          if (typeof object.resource === 'number') {
+            message.resource = object.resource;
+            break;
+          }
+          break;
+        case 'BANDWIDTH':
+        case 0:
+          message.resource = 0;
+          break;
+        case 'ENERGY':
+        case 1:
+          message.resource = 1;
+          break;
+      }
+      if (object.balance != null)
+        if ($util.Long) (message.balance = $util.Long.fromValue(object.balance)).unsigned = false;
+        else if (typeof object.balance === 'string') message.balance = parseInt(object.balance, 10);
+        else if (typeof object.balance === 'number') message.balance = object.balance;
+        else if (typeof object.balance === 'object')
+          message.balance = new $util.LongBits(object.balance.low >>> 0, object.balance.high >>> 0).toNumber();
+      if (object.receiverAddress != null)
+        if (typeof object.receiverAddress === 'string')
+          $util.base64.decode(
+            object.receiverAddress,
+            (message.receiverAddress = $util.newBuffer($util.base64.length(object.receiverAddress))),
+            0
+          );
+        else if (object.receiverAddress.length >= 0) message.receiverAddress = object.receiverAddress;
+      return message;
+    };
+
+    /**
+     * Creates a plain object from an UnDelegateResourceContract message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {protocol.UnDelegateResourceContract} message UnDelegateResourceContract
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    UnDelegateResourceContract.toObject = function toObject(message, options) {
+      if (!options) options = {};
+      var object = {};
+      if (options.defaults) {
+        if (options.bytes === String) object.ownerAddress = '';
+        else {
+          object.ownerAddress = [];
+          if (options.bytes !== Array) object.ownerAddress = $util.newBuffer(object.ownerAddress);
+        }
+        object.resource = options.enums === String ? 'BANDWIDTH' : 0;
+        if ($util.Long) {
+          var long = new $util.Long(0, 0, false);
+          object.balance =
+            options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+        } else object.balance = options.longs === String ? '0' : 0;
+        if (options.bytes === String) object.receiverAddress = '';
+        else {
+          object.receiverAddress = [];
+          if (options.bytes !== Array) object.receiverAddress = $util.newBuffer(object.receiverAddress);
+        }
+      }
+      if (message.ownerAddress != null && message.hasOwnProperty('ownerAddress'))
+        object.ownerAddress =
+          options.bytes === String
+            ? $util.base64.encode(message.ownerAddress, 0, message.ownerAddress.length)
+            : options.bytes === Array
+            ? Array.prototype.slice.call(message.ownerAddress)
+            : message.ownerAddress;
+      if (message.resource != null && message.hasOwnProperty('resource'))
+        object.resource =
+          options.enums === String
+            ? $root.protocol.ResourceCode[message.resource] === undefined
+              ? message.resource
+              : $root.protocol.ResourceCode[message.resource]
+            : message.resource;
+      if (message.balance != null && message.hasOwnProperty('balance'))
+        if (typeof message.balance === 'number')
+          object.balance = options.longs === String ? String(message.balance) : message.balance;
+        else
+          object.balance =
+            options.longs === String
+              ? $util.Long.prototype.toString.call(message.balance)
+              : options.longs === Number
+              ? new $util.LongBits(message.balance.low >>> 0, message.balance.high >>> 0).toNumber()
+              : message.balance;
+      if (message.receiverAddress != null && message.hasOwnProperty('receiverAddress'))
+        object.receiverAddress =
+          options.bytes === String
+            ? $util.base64.encode(message.receiverAddress, 0, message.receiverAddress.length)
+            : options.bytes === Array
+            ? Array.prototype.slice.call(message.receiverAddress)
+            : message.receiverAddress;
+      return object;
+    };
+
+    /**
+     * Converts this UnDelegateResourceContract to JSON.
+     * @function toJSON
+     * @memberof protocol.UnDelegateResourceContract
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    UnDelegateResourceContract.prototype.toJSON = function toJSON() {
+      return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for UnDelegateResourceContract
+     * @function getTypeUrl
+     * @memberof protocol.UnDelegateResourceContract
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    UnDelegateResourceContract.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+      if (typeUrlPrefix === undefined) {
+        typeUrlPrefix = 'type.googleapis.com';
+      }
+      return typeUrlPrefix + '/protocol.UnDelegateResourceContract';
+    };
+
+    return UnDelegateResourceContract;
+  })();
+
   /**
    * AccountType enum.
    * @name protocol.AccountType
@@ -22545,6 +23305,8 @@ $root.protocol = (function () {
             case 54:
             case 55:
             case 56:
+            case 57:
+            case 58:
               break;
           }
         if (message.parameter != null && message.hasOwnProperty('parameter')) {
@@ -22725,6 +23487,14 @@ $root.protocol = (function () {
           case 56:
             message.type = 56;
             break;
+          case 'DelegateResourceContract':
+          case 57:
+            message.type = 57;
+            break;
+          case 'UnDelegateResourceContract':
+          case 58:
+            message.type = 58;
+            break;
         }
         if (object.parameter != null) {
           if (typeof object.parameter !== 'object')
@@ -22871,6 +23641,8 @@ $root.protocol = (function () {
        * @property {number} FreezeBalanceV2Contract=54 FreezeBalanceV2Contract value
        * @property {number} UnfreezeBalanceV2Contract=55 UnfreezeBalanceV2Contract value
        * @property {number} WithdrawExpireUnfreezeContract=56 WithdrawExpireUnfreezeContract value
+       * @property {number} DelegateResourceContract=57 DelegateResourceContract value
+       * @property {number} UnDelegateResourceContract=58 UnDelegateResourceContract value
        */
       Contract.ContractType = (function () {
         var valuesById = {},
@@ -22910,6 +23682,8 @@ $root.protocol = (function () {
         values[(valuesById[54] = 'FreezeBalanceV2Contract')] = 54;
         values[(valuesById[55] = 'UnfreezeBalanceV2Contract')] = 55;
         values[(valuesById[56] = 'WithdrawExpireUnfreezeContract')] = 56;
+        values[(valuesById[57] = 'DelegateResourceContract')] = 57;
+        values[(valuesById[58] = 'UnDelegateResourceContract')] = 58;
         return values;
       })();
 
