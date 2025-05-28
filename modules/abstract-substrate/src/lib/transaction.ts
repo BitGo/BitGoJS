@@ -128,7 +128,6 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toJson(): TxData {
-    console.log('Transaction toJson called in substrate Transaction class');
     if (!this._substrateTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }

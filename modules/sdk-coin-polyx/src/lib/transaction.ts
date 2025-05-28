@@ -7,7 +7,6 @@ import { DecodedTx, RegisterDidWithCDDArgs } from './iface';
 export class Transaction extends SubstrateTransaction {
   /** @inheritdoc */
   toJson(): Interface.TxData {
-    console.log('Transaction toJson called in polyx Transaction class');
     if (!this._substrateTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
@@ -39,6 +38,7 @@ export class Transaction extends SubstrateTransaction {
         pub: Buffer.from(decodeAddress(targetAccount)).toString('hex'),
       });
       result.to = keypairDest.getAddress(this.getAddressFormat());
+      result.amount = '0'; // RegisterDidWithCDD does not transfer any value
     } else {
       super.toJson();
     }
