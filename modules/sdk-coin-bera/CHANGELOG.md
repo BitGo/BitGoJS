@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.3.25...@bitgo/sdk-coin-bera@2.3.26) (2025-05-28)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bera
+
 ## [2.3.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bera@2.3.24...@bitgo/sdk-coin-bera@2.3.25) (2025-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bera
