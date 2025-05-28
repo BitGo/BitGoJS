@@ -158,7 +158,7 @@ const mainnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://api.fastnear.com'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
-  adaNodeUrl: 'https://api.koios.rest/api/v0',
+  adaNodeUrl: 'https://api.koios.rest/api/v1',
   hashNodeUrl: 'https://api.provenance.io',
   injNodeUrl: 'https://sentry.lcd.injective.network', // reference https://docs.injective.network/develop/public-endpoints/
   atomNodeUrl: 'https://rest.cosmos.directory/cosmoshub/',
@@ -230,7 +230,7 @@ const testnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
   nearNodeUrls: ['https://test.api.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
-  adaNodeUrl: 'https://preprod.koios.rest/api/v0',
+  adaNodeUrl: 'https://preprod.koios.rest/api/v1',
   hashNodeUrl: 'https://api.test.provenance.io',
   injNodeUrl: 'https://testnet.sentry.lcd.injective.network', // COIN-1219 : reference  https://docs.injective.network/develop/public-endpoints/#testnet
   atomNodeUrl: 'https://rest.provider-sentry-02.ics-testnet.polypore.xyz/',
