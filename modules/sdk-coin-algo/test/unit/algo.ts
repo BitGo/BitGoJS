@@ -1176,7 +1176,7 @@ describe('ALGO:', function () {
             walletPassphrase,
           });
         },
-        { message: 'Invalid private key' }
+        { message: 'Invalid private key: Invalid base32 characters' }
       );
     });
   });

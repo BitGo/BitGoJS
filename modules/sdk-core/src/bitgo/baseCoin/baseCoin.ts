@@ -642,7 +642,6 @@ export abstract class BaseCoin implements IBaseCoin {
    * @param {string} params.prv - the decrypted private key
    * @param {string} params.publicKey - the public key, or common keychain
    * @param {string} params.multiSigType - the multi-sig type, if applicable
-   * @returns {AuditKeyResponse} - result of the audit
    */
   abstract auditDecryptedKey(params: AuditDecryptedKeyParams): void;
 }

@@ -1374,7 +1374,7 @@ describe('Hedera Hashgraph:', function () {
             walletPassphrase,
           }),
         {
-          message: 'Invalid private key',
+          message: 'Invalid private key: Invalid private key length. Must be a hex and multiple of 2',
         }
       );
     });

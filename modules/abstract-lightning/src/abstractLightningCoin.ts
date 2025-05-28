@@ -65,6 +65,7 @@ export abstract class AbstractLightningCoin extends BaseCoin {
 
   /** @inheritDoc */
   auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    /** https://bitgoinc.atlassian.net/browse/BTC-2149 */
     throw new Error('Method not implemented.');
   }
 }

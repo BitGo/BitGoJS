@@ -1199,7 +1199,8 @@ export class Xlm extends BaseCoin {
     try {
       xlmKeyPair = new StellarKeyPair({ prv });
     } catch (e) {
-      throw new Error('Invalid private key');
+      // Avoid adding the error message to the thrown error because it can contain sensitive information
+      throw new Error(`Invalid private key: Unable to generate keypair from prv`);
     }
 
     if (publicKey && publicKey !== xlmKeyPair.getKeys().pub) {

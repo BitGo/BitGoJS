@@ -120,6 +120,7 @@ export class Vet extends BaseCoin {
 
   /** @inheritDoc */
   auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    /** https://bitgoinc.atlassian.net/browse/COIN-4213 */
     throw new Error('Method not implemented.');
   }
 }
