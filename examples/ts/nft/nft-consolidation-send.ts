@@ -32,7 +32,6 @@ async function main() {
 
   const sendConsolidations = await wallet.sendAccountConsolidations({
     walletPassphrase,
-    consolidateAddresses: [''],
     nftCollectionId: '',
     nftId: '',
   });
