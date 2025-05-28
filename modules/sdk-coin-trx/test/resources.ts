@@ -14,6 +14,7 @@ export const RESOURCE_ENERGY = 'ENERGY';
 export const RESOURCE_BANDWIDTH = 'BANDWIDTH';
 export const FROZEN_BALANCE = '1000000';
 export const DELEGATION_BALANCE = '1000000';
+export const UNDELEGATION_BALANCE = '1000000';
 export const UNFROZEN_BALANCE = '1000000';
 export const USDT_CONTRACT_ADDRESS = 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs';
 export const TOKEN_TRANSFER_RECIPIENT = 'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8K';
@@ -168,6 +169,21 @@ export const DELEGATE_RESOURCE_CONTRACT = [
       type_url: 'type.googleapis.com/protocol.DelegateResourceContract',
     },
     type: 'DelegateResourceContract',
+  },
+];
+
+export const UNDELEGATE_RESOURCE_CONTRACT = [
+  {
+    parameter: {
+      value: {
+        resource: 'ENERGY',
+        balance: 1000000,
+        owner_address: '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882',
+        receiver_address: '416ffedf93921506c3efdb510f7c4f256036c48a6a',
+      },
+      type_url: 'type.googleapis.com/protocol.UnDelegateResourceContract',
+    },
+    type: 'UnDelegateResourceContract',
   },
 ];
 

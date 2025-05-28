@@ -201,6 +201,18 @@ export class Transaction extends BaseTransaction {
           value: delegateValue.balance.toString(),
         };
         break;
+      case ContractType.UnDelegateResourceContract:
+        this._type = TransactionType.UnDelegateResource;
+        const undelegateValue = (rawData.contract[0] as ResourceManagementContract).parameter.value;
+        output = {
+          address: undelegateValue.receiver_address,
+          value: undelegateValue.balance.toString(),
+        };
+        input = {
+          address: undelegateValue.owner_address,
+          value: undelegateValue.balance.toString(),
+        };
+        break;
       default:
         throw new ParseTransactionError('Unsupported contract type');
     }
