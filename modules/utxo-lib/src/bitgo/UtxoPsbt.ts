@@ -1148,6 +1148,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
    * Default identifier is utf-8 for identifier
    */
   addProprietaryKeyValToOutput(outputIndex: number, keyValueData: ProprietaryKeyValue): this {
+    const output = checkForOutput(this.data.outputs, outputIndex);
+    assert(output.unknownKeyVals);
     return this.addUnknownKeyValToOutput(outputIndex, {
       key: encodeProprietaryKey(keyValueData.key),
       value: keyValueData.value
