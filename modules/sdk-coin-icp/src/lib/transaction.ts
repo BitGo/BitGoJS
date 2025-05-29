@@ -25,7 +25,7 @@ import {
   PERMITTED_DRIFT,
   RawTransaction,
 } from './iface';
-import { Utils } from './utils';
+import utils from './utils';
 
 export class Transaction extends BaseTransaction {
   protected _icpTransactionData: IcpTransactionData;
@@ -34,11 +34,9 @@ export class Transaction extends BaseTransaction {
   protected _signedTransaction: string;
   protected _signaturePayload: Signatures[];
   protected _createdTimestamp: number | bigint | undefined;
-  protected _utils: Utils;
 
-  constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
+  constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._utils = utils;
   }
 
   get icpTransactionData(): IcpTransactionData {
@@ -112,7 +110,7 @@ export class Transaction extends BaseTransaction {
             memo: parsedTx.metadata.memo,
           };
 
-          this._utils.validateRawTransaction(this._icpTransactionData);
+          utils.validateRawTransaction(this._icpTransactionData);
           this._id = this.generateTransactionId();
           break;
         default:
@@ -195,7 +193,7 @@ export class Transaction extends BaseTransaction {
    */
   explainTransferTransaction(explanationResult: IcpTransactionExplanation): IcpTransactionExplanation {
     explanationResult.fee = { fee: this.icpTransactionData.fee };
-    const recipients = this._utils.getRecipients(this.icpTransactionData);
+    const recipients = utils.getRecipients(this.icpTransactionData);
     const outputs: TransactionRecipient[] = [recipients];
     const outputAmountBN = recipients.amount;
     const outputAmount = outputAmountBN.toString();
@@ -220,9 +218,7 @@ export class Transaction extends BaseTransaction {
   }
 
   async parseUnsignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
-    const unsignedTransaction = this._utils.cborDecode(
-      this._utils.blobFromHex(rawTransaction)
-    ) as CborUnsignedTransaction;
+    const unsignedTransaction = utils.cborDecode(utils.blobFromHex(rawTransaction)) as CborUnsignedTransaction;
     const update = unsignedTransaction.updates[0];
     const httpCanisterUpdate = (update as unknown as [string, HttpCanisterUpdate])[1];
     httpCanisterUpdate.ingress_expiry = BigInt(unsignedTransaction.ingress_expiries[0]);
@@ -233,15 +229,15 @@ export class Transaction extends BaseTransaction {
     httpCanisterUpdate: HttpCanisterUpdate,
     isSigned: boolean
   ): Promise<ParsedTransaction> {
-    const senderPrincipal = this._utils.convertSenderBlobToPrincipal(httpCanisterUpdate.sender);
-    const ACCOUNT_ID_PREFIX = this._utils.getAccountIdPrefix();
+    const senderPrincipal = utils.convertSenderBlobToPrincipal(httpCanisterUpdate.sender);
+    const ACCOUNT_ID_PREFIX = utils.getAccountIdPrefix();
     const subAccount = new Uint8Array(32);
-    const senderAccount = this._utils.getAccountIdFromPrincipalBytes(
+    const senderAccount = utils.getAccountIdFromPrincipalBytes(
       ACCOUNT_ID_PREFIX,
       Buffer.from(senderPrincipal.buffer),
       subAccount
     );
-    const args = await this._utils.fromArgs(httpCanisterUpdate.arg);
+    const args = await utils.fromArgs(httpCanisterUpdate.arg);
     const senderOperation: IcpOperation = {
       type: OperationType.TRANSACTION,
       account: { address: senderAccount },
@@ -294,7 +290,7 @@ export class Transaction extends BaseTransaction {
   }
 
   async parseSignedTransaction(rawTransaction: string): Promise<ParsedTransaction> {
-    const signedTransaction = this._utils.cborDecode(this._utils.blobFromHex(rawTransaction));
+    const signedTransaction = utils.cborDecode(utils.blobFromHex(rawTransaction));
     const httpCanisterUpdate = (signedTransaction as UpdateEnvelope).content as HttpCanisterUpdate;
     httpCanisterUpdate.ingress_expiry = BigInt((signedTransaction as UpdateEnvelope).content.ingress_expiry);
     return await this.getParsedTransactionFromUpdate(httpCanisterUpdate, true);
@@ -313,7 +309,7 @@ export class Transaction extends BaseTransaction {
    * @returns {string} The generated transaction ID.
    */
   private generateTransactionId(): string {
-    const id = this._utils.getTransactionId(
+    const id = utils.getTransactionId(
       this.unsignedTransaction,
       this.icpTransactionData.senderAddress,
       this.icpTransactionData.receiverAddress

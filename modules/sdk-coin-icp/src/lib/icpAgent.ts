@@ -1,16 +1,14 @@
 import { Principal } from '@dfinity/principal';
 import { HttpAgent, replica, AgentCanister } from 'ic0';
-import { Utils } from './utils';
+import utils from './utils';
 import { ACCOUNT_BALANCE_CALL, LEDGER_CANISTER_ID, ICRC1_FEE_KEY, METADATA_CALL, DEFAULT_SUBACCOUNT } from './iface';
 import BigNumber from 'bignumber.js';
 
 export class IcpAgent {
-  private readonly utils: Utils;
   private readonly host: string;
 
   constructor(host: string) {
     this.host = host;
-    this.utils = new Utils();
   }
 
   /**
@@ -54,7 +52,7 @@ export class IcpAgent {
       const ledger = this.getLedger();
       const account = {
         owner: Principal.fromText(principalId),
-        subaccount: [this.utils.hexToBytes(DEFAULT_SUBACCOUNT)],
+        subaccount: [utils.hexToBytes(DEFAULT_SUBACCOUNT)],
       };
 
       const balance = await ledger.call(ACCOUNT_BALANCE_CALL, account);
