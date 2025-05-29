@@ -702,6 +702,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:dfdvsol'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'b6980974-4d8e-403c-95f2-d56d1ea07269',
+    'ofcsol:chillguy',
+    'Just a chill guy',
+    6,
+    UnderlyingAsset['sol:chillguy'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -798,6 +806,7 @@ export const ofcCoins = [
   ),
   ofcXrpToken('54c3a5df-ad9f-42a9-82fc-ef8617ec6ebf', 'ofcxrp:vgbp', 'VNX Pound', 15, UnderlyingAsset['xrp:vgbp']),
   ofcXrpToken('1813238c-8cc5-4b79-9959-793c5c220b1d', 'ofcxrp:solo', 'Sologenic', 15, UnderlyingAsset['xrp:solo']),
+  ofcXrpToken('4c875336-64dc-427b-bde7-eb25e2f20272', 'ofcxrp:aau', 'Archax', 15, UnderlyingAsset['xrp:aau']),
   tofcXrpToken('0c22d8ef-4c27-4088-bd3d-eb76484d5edf', 'ofctxrp:xsgd', 'XSGB', 15, UnderlyingAsset['txrp:xsgd']),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
@@ -1907,6 +1916,13 @@ export const ofcCoins = [
   ofcHederaToken('9db9ba12-13e2-438f-a964-a853de847084', 'ofchbar:pack', 'HashPack', 6, UnderlyingAsset['hbar:pack']),
   ofcHederaToken('4b801f44-ede2-46e9-97df-89d641c0136e', 'ofchbar:jam', 'Tune.Fm', 8, UnderlyingAsset['hbar:jam']),
   ofcHederaToken('368ae3e4-edc1-496e-956d-e346c336c917', 'ofchbar:berry', 'Berry', 6, UnderlyingAsset['hbar:berry']),
+  ofcHederaToken(
+    '7fef72fa-01bf-452e-952d-4d403475ca76',
+    'ofchbar:bonzo',
+    'Bonzo Finance',
+    8,
+    UnderlyingAsset['hbar:bonzo']
+  ),
 
   tofcHederaToken(
     'e12614d8-21de-4303-91fa-f13a44c4902a',
