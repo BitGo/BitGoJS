@@ -30,6 +30,14 @@ export enum ContractType {
    * This is the contract for withdrawing expired unfrozen balances
    */
   WithdrawExpireUnfreeze,
+  /**
+   * This is the contract for delegating resource
+   */
+  DelegateResourceContract,
+  /**
+   * This is the contract for un-delegating resource
+   */
+  UnDelegateResourceContract,
 }
 
 export enum PermissionType {

@@ -49,7 +49,8 @@ export interface RawData {
     | FreezeBalanceV2Contract[]
     | VoteWitnessContract[]
     | UnfreezeBalanceV2Contract[]
-    | WithdrawExpireUnfreezeContract[];
+    | WithdrawExpireUnfreezeContract[]
+    | ResourceManagementContract[];
 }
 
 export interface Value {
@@ -313,4 +314,54 @@ export interface WithdrawExpireUnfreezeContractParameter {
       owner_address: string;
     };
   };
+}
+
+/**
+ * Delegate/Undelegate resource value interface
+ */
+export interface ResourceManagementTxValueFields {
+  balance: number;
+  receiver_address: string;
+  owner_address: string;
+  resource: string;
+}
+
+/**
+ * Delegate/Undelegate resource parameters interface
+ */
+export interface ResourceManagmentTxParams {
+  value: ResourceManagementTxValueFields;
+  type_url?: string;
+}
+
+/**
+ * Delegate/Undelegate resource contract interface
+ */
+export interface ResourceManagementContract {
+  parameter: ResourceManagmentTxParams;
+  type?: string;
+}
+
+/**
+ * Delegate/Undelegate resource contract parameter interface
+ */
+export interface ResourceManagementContractParameter {
+  parameter: {
+    value: {
+      resource: TronResource;
+      balance: string | number;
+      owner_address: string;
+      receiver_address: string;
+    };
+  };
+}
+
+/**
+ * Delegate/Undelegate resource contract decoded interface
+ */
+export interface ResourceManagementContractDecoded {
+  ownerAddress?: string;
+  receiverAddress?: string;
+  balance?: string | number;
+  resource?: TronResource;
 }
