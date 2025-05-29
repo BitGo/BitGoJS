@@ -208,6 +208,7 @@ export class Erc20Token extends Eth {
     let backupKeyNonce = 0;
 
     const result = await this.recoveryBlockchainExplorerQuery({
+      chainid: this.getChainId().toString(),
       module: 'account',
       action: 'txlist',
       address: backupKeyAddress,

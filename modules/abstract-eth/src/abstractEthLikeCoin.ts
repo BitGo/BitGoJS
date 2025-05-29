@@ -2,7 +2,7 @@
  * @prettier
  */
 import type * as EthLikeCommon from '@ethereumjs/common';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { CoinFamily, BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
 import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes } from 'crypto';
 import {
@@ -110,6 +110,10 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
 
   getBaseFactor() {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getChainId(): number {
+    return (this._staticsCoin.network as EthereumNetwork).chainId;
   }
 
   /** @inheritDoc */
