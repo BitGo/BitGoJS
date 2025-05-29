@@ -6,11 +6,12 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 
 import { ArbethToken } from '../../src';
 import * as mockData from '../fixtures/arbeth';
+import { common } from '@bitgo/sdk-core';
 
 describe('Arbeth Token:', function () {
   let bitgo: TestBitGoAPI;
   let arbethTokenCoin;
-  const baseUrl = 'https://api-sepolia.arbiscan.io';
+  const baseUrl = common.Environments.test.arbiscanBaseUrl as string;
   const tokenName = 'tarbeth:link';
   const walletContractAddress = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e';
   const tokenContractAddress = '0xe5b6c29411b3ad31c3613bba0145293fc9957256';

@@ -839,7 +839,7 @@ describe('ETH:', function () {
   });
 
   describe('EVM Cross Chain Recovery', function () {
-    const baseUrl = 'https://api-holesky.etherscan.io';
+    const baseUrl = common.Environments.test.etherscanBaseUrl as string;
     it('should build a recovery transaction for hot wallet', async function () {
       const userKey =
         '{"iv":"VFZ3jvXhxo1Z+Yaf2MtZnA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
@@ -884,7 +884,7 @@ describe('ETH:', function () {
     });
 
     describe('Non-BitGo Recovery for Hot Wallets (MPCv2)', function () {
-      const baseUrl = 'https://api-holesky.etherscan.io';
+      const baseUrl = common.Environments.test.etherscanBaseUrl as string;
       let bitgo: TestBitGoAPI;
       let basecoin: Hteth;
 
@@ -955,7 +955,7 @@ describe('ETH:', function () {
     });
 
     describe('Build Unsigned Sweep for Self-Custody Cold Wallets (MPCv2)', function () {
-      const baseUrl = 'https://api-holesky.etherscan.io';
+      const baseUrl = common.Environments.test.etherscanBaseUrl as string;
       let bitgo: TestBitGoAPI;
       let basecoin: Hteth;
 
