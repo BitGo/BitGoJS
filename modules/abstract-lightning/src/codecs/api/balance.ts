@@ -72,10 +72,10 @@ export const LndGetOffchainBalances = t.strict(
     outboundBalance: BigIntFromString,
     outboundPendingBalance: BigIntFromString,
     outboundUnsettledBalance: BigIntFromString,
+    outboundLockedBalance: BigIntFromString,
     inboundBalance: BigIntFromString,
     inboundPendingBalance: BigIntFromString,
     inboundUnsettledBalance: BigIntFromString,
-    lockedBalance: BigIntFromString,
   },
   'LndGetOffchainBalances'
 );
