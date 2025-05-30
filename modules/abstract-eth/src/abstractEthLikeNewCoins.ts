@@ -2531,7 +2531,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
-        (txParams.type && ['acceleration', 'fillNonce', 'transferToken'].includes(txParams.type))
+        (txParams.type && ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval'].includes(txParams.type))
       )
     ) {
       throw new Error(`missing txParams`);
