@@ -7,6 +7,7 @@ import { Transaction } from './transaction';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
+import { FungibleTokenTransferBuilder } from './fungibleTokenTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -29,6 +30,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingDeactivateBuilder(tx);
         case TransactionType.StakingWithdraw:
           return this.getStakingWithdrawBuilder(tx);
+        case TransactionType.SendToken:
+          return this.getFungibleTokenTransferBuilder(tx);
         default:
           throw new InvalidTransactionError('unsupported transaction');
       }
@@ -57,6 +60,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
+  }
+
+  getFungibleTokenTransferBuilder(tx?: Transaction): FungibleTokenTransferBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new FungibleTokenTransferBuilder(this._coinConfig));
   }
 
   /**

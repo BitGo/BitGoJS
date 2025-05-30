@@ -7,7 +7,7 @@ import { FunctionCall } from './iface';
  */
 export class ContractCallWrapper {
   private _methodName: string;
-  private _args: Record<string, unknown>;
+  private _args: Record<string, unknown> = {};
   private _gas: string;
   private _deposit: string;
 
@@ -21,7 +21,7 @@ export class ContractCallWrapper {
     return this._methodName;
   }
 
-  /** Set gas, expresed on yocto */
+  /** Set gas, expressed on yocto */
   public set gas(gas: string) {
     if (!this.isValidAmount(new BigNumber(gas))) {
       throw new InvalidParameterValueError('Invalid gas value');
@@ -29,12 +29,12 @@ export class ContractCallWrapper {
     this._gas = gas;
   }
 
-  /** Get gas, expresed on yocto*/
+  /** Get gas, expressed on yocto*/
   public get gas(): string {
     return this._gas;
   }
 
-  /** Set deposit, expresed on yocto */
+  /** Set deposit, expressed on yocto */
   public set deposit(deposit: string) {
     if (!this.isValidAmount(new BigNumber(deposit))) {
       throw new InvalidParameterValueError('Invalid deposit value');
@@ -42,14 +42,14 @@ export class ContractCallWrapper {
     this._deposit = deposit;
   }
 
-  /** Get deposit, expresed on yocto */
+  /** Get deposit, expressed on yocto */
   public get deposit(): string {
     return this._deposit;
   }
 
   /** Get args, which are the parameters of a method */
   public set args(args: Record<string, unknown>) {
-    this._args = args;
+    this._args = { ...this._args, ...args };
   }
 
   /** Set args, which are the parameters of a method */

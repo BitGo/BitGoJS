@@ -12,7 +12,7 @@ describe('Near Transfer Builder', () => {
     it('build a transfer tx unsigned', async () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
-      txBuilder.nonce(1);
+      txBuilder.nonce(BigInt(1));
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount(testData.AMOUNT);
@@ -38,7 +38,7 @@ describe('Near Transfer Builder', () => {
     it('build a transfer tx signed', async () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
-      txBuilder.nonce(1);
+      txBuilder.nonce(BigInt(1));
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount(testData.AMOUNT);
@@ -85,7 +85,7 @@ describe('Near Transfer Builder', () => {
 
       let txBuilder = factory.getTransferBuilder();
       txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
-      txBuilder.nonce(1);
+      txBuilder.nonce(BigInt(1));
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount(testData.AMOUNT);
@@ -102,7 +102,7 @@ describe('Near Transfer Builder', () => {
       let rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       txBuilder = factory.getTransferBuilder();
       txBuilder.sender(sender, commonPub);
-      txBuilder.nonce(1);
+      txBuilder.nonce(BigInt(1));
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount(testData.AMOUNT);
@@ -120,7 +120,7 @@ describe('Near Transfer Builder', () => {
       rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       txBuilder = factory.getTransferBuilder();
       txBuilder.sender(sender, commonPub);
-      txBuilder.nonce(1);
+      txBuilder.nonce(BigInt(1));
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount(testData.AMOUNT);
@@ -138,7 +138,7 @@ describe('Near Transfer Builder', () => {
       rawSignature = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       txBuilder = factory.getTransferBuilder();
       txBuilder.sender(sender, commonPub);
-      txBuilder.nonce(1);
+      txBuilder.nonce(BigInt(1));
       txBuilder.receiverId(testData.accounts.account2.address);
       txBuilder.recentBlockHash(testData.blockHash.block1);
       txBuilder.amount(testData.AMOUNT);

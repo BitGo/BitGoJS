@@ -20,8 +20,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   private _sender: string;
   private _publicKey: string;
-  private _receiverId: string;
-  private _nonce: number;
+  protected _receiverId: string;
+  private _nonce: bigint;
   private _recentBlockHash: string;
   private _signer: KeyPair;
   private _signatures: Signature[] = []; // only support single sig for now
@@ -43,8 +43,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._sender = nearTransaction.signerId;
     this._nonce = nearTransaction.nonce;
     this._receiverId = nearTransaction.receiverId;
-    this._publicKey = hex.encode(nearTransaction.publicKey.data);
-    this._recentBlockHash = nearAPI.utils.serialize.base_encode(nearTransaction.blockHash);
+    if (nearTransaction.publicKey.ed25519Key?.data) {
+      this._publicKey = hex.encode(nearTransaction.publicKey.ed25519Key.data);
+    }
+    this._recentBlockHash = nearAPI.utils.serialize.base_encode(new Uint8Array(nearTransaction.blockHash));
     this._actions = nearTransaction.actions;
   }
 
@@ -107,18 +109,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
     try {
-      nearAPI.utils.serialize.deserialize(
-        nearAPI.transactions.SCHEMA,
-        nearAPI.transactions.SignedTransaction,
-        rawTransaction
-      );
+      nearAPI.utils.serialize.deserialize(nearAPI.transactions.SCHEMA.SignedTransaction, rawTransaction);
     } catch {
       try {
-        nearAPI.utils.serialize.deserialize(
-          nearAPI.transactions.SCHEMA,
-          nearAPI.transactions.Transaction,
-          rawTransaction
-        );
+        nearAPI.utils.serialize.deserialize(nearAPI.transactions.SCHEMA.Transaction, rawTransaction);
       } catch {
         throw new BuildTransactionError('invalid raw transaction');
       }
@@ -177,10 +171,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Set the nonce
    *
-   * @param {number} nonce - number that can be only used once
+   * @param {bigint} nonce - number that can be only used once
    * @returns {TransactionBuilder} This transaction builder
    */
-  public nonce(nonce: number): this {
+  public nonce(nonce: bigint): this {
     if (nonce < 0) {
       throw new BuildTransactionError(`Invalid nonce: ${nonce}`);
     }

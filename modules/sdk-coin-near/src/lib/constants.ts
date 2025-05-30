@@ -9,4 +9,8 @@ export const StakingContractMethodNames = {
   Withdraw: 'withdraw',
 } as const;
 
+export const AdditionalAllowedMethods = ['ft_transfer', 'storage_deposit'];
+
+export const FT_TRANSFER = 'ft_transfer';
+
 export const HEX_REGEX = /^[0-9a-fA-F]+$/;

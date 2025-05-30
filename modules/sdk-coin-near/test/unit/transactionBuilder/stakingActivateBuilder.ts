@@ -19,7 +19,7 @@ describe('Near Staking Activate Builder', () => {
         .sender(testData.accounts.account1.address, testData.accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(testData.blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: testData.accounts.account1.secretKey });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
@@ -43,7 +43,7 @@ describe('Near Staking Activate Builder', () => {
       txJson.id.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');
       txJson.signerId.should.equal(testData.accounts.account1.address);
       txJson.publicKey.should.equal(testData.accounts.account1.publicKeyBase58);
-      txJson.nonce.should.equal(1);
+      txJson.nonce.should.equal(BigInt(1));
       txJson.receiverId.should.equal('lavenderfive.pool.f863973.m0');
       txJson.actions.should.deepEqual([
         {
@@ -65,7 +65,7 @@ describe('Near Staking Activate Builder', () => {
         .sender(testData.accounts.account1.address, testData.accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(testData.blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
@@ -92,7 +92,7 @@ describe('Near Staking Activate Builder', () => {
         .sender(testData.accounts.account1.address, testData.accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(testData.blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       await txBuilder.build().should.be.rejectedWith('gas is required before building staking activate');
     });
 
@@ -103,7 +103,7 @@ describe('Near Staking Activate Builder', () => {
         .sender(testData.accounts.account1.address, testData.accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(testData.blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       await txBuilder.build().should.be.rejectedWith('amount is required before building staking activate');
     });
 
@@ -146,7 +146,7 @@ describe('Near Staking Activate Builder', () => {
       txJson.id.should.equal('GpiLLaGs2Fk2bd7SQvhkJaZjj74UnPPdF7cUa9pw15je');
       txJson.signerId.should.equal(testData.accounts.account1.address);
       txJson.publicKey.should.equal(testData.accounts.account1.publicKeyBase58);
-      txJson.nonce.should.equal(1);
+      txJson.nonce.should.equal(BigInt(1));
       txJson.receiverId.should.equal('lavenderfive.pool.f863973.m0');
       txJson.actions.should.deepEqual([
         {

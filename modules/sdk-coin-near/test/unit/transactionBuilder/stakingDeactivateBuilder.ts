@@ -18,7 +18,7 @@ describe('Near Staking Deactivate Builder', () => {
         .sender(testData.accounts.account1.address, testData.accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(testData.blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: testData.accounts.account1.secretKey });
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(0);
@@ -30,7 +30,7 @@ describe('Near Staking Deactivate Builder', () => {
       txJson.id.should.equal('CDxPRP3DgHN8gYmRDagk5TRuX7fsCRYHcuqoNULyQPUW');
       txJson.signerId.should.equal(testData.accounts.account1.address);
       txJson.publicKey.should.equal(testData.accounts.account1.publicKeyBase58);
-      txJson.nonce.should.equal(1);
+      txJson.nonce.should.equal(BigInt(1));
       txJson.receiverId.should.equal('lavenderfive.pool.f863973.m0');
       txJson.actions.should.deepEqual([
         {
@@ -52,7 +52,7 @@ describe('Near Staking Deactivate Builder', () => {
         .sender(testData.accounts.account1.address, testData.accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(testData.blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       const tx = await txBuilder.build();
       tx.inputs.length.should.equal(0);
       should.equal(tx.type, TransactionType.StakingDeactivate);
@@ -67,7 +67,7 @@ describe('Near Staking Deactivate Builder', () => {
         .sender(testData.accounts.account1.address, testData.accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(testData.blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       await txBuilder.build().should.be.rejectedWith('gas is required before building staking deactivate');
     });
 
@@ -78,7 +78,7 @@ describe('Near Staking Deactivate Builder', () => {
         .sender(testData.accounts.account1.address, testData.accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(testData.blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       await txBuilder.build().should.be.rejectedWith('amount is required before building staking deactivate');
     });
 
@@ -90,7 +90,7 @@ describe('Near Staking Deactivate Builder', () => {
       txJson.id.should.equal('CDxPRP3DgHN8gYmRDagk5TRuX7fsCRYHcuqoNULyQPUW');
       txJson.signerId.should.equal(testData.accounts.account1.address);
       txJson.publicKey.should.equal(testData.accounts.account1.publicKeyBase58);
-      txJson.nonce.should.equal(1);
+      txJson.nonce.should.equal(BigInt(1));
       txJson.receiverId.should.equal('lavenderfive.pool.f863973.m0');
       txJson.actions.should.deepEqual([
         {
@@ -112,7 +112,7 @@ describe('Near Staking Deactivate Builder', () => {
       txJson.id.should.equal('CDxPRP3DgHN8gYmRDagk5TRuX7fsCRYHcuqoNULyQPUW');
       txJson.signerId.should.equal(testData.accounts.account1.address);
       txJson.publicKey.should.equal(testData.accounts.account1.publicKeyBase58);
-      txJson.nonce.should.equal(1);
+      txJson.nonce.should.equal(BigInt(1));
       txJson.receiverId.should.equal('lavenderfive.pool.f863973.m0');
       txJson.actions.should.deepEqual([
         {
