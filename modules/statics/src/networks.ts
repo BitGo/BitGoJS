@@ -1301,6 +1301,9 @@ class WorldTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://sepolia.worldscan.org/address/';
   chainId = 4801;
   nativeCoinOperationHashPrefix = '4801';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class Soneium extends Mainnet implements EthereumNetwork {
@@ -1319,6 +1322,9 @@ class SoneiumTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://soneium-minato.blockscout.com/address/';
   chainId = 1946;
   nativeCoinOperationHashPrefix = '1946';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class Somnia extends Mainnet implements EthereumNetwork {
