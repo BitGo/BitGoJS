@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { BaseTransaction, BuildTransactionError, BaseKey } from '@bitgo/sdk-core';
-import { Utils } from './utils';
+import utils from './utils';
 import { Transaction } from './transaction';
 import { UnsignedTransactionBuilder } from './unsignedTransactionBuilder';
 import {
@@ -16,11 +16,8 @@ import {
 import assert from 'assert';
 
 export class TransferBuilder extends TransactionBuilder {
-  protected _utils: Utils;
-
-  constructor(_coinConfig: Readonly<CoinConfig>, utils: Utils) {
+  constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._utils = utils;
   }
 
   /**
@@ -86,7 +83,7 @@ export class TransferBuilder extends TransactionBuilder {
       type: OperationType.FEE,
       account: { address: this._sender },
       amount: {
-        value: this._utils.feeData(),
+        value: utils.feeData(),
         currency: {
           symbol: this._coinConfig.family,
           decimals: this._coinConfig.decimalPlaces,
@@ -95,7 +92,7 @@ export class TransferBuilder extends TransactionBuilder {
     };
 
     const createdTimestamp = this._transaction.createdTimestamp;
-    const { metaData, ingressEndTime } = this._utils.getMetaData(this._memo, createdTimestamp, this._ingressEnd);
+    const { metaData, ingressEndTime } = utils.getMetaData(this._memo, createdTimestamp, this._ingressEnd);
 
     const icpTransaction: IcpTransaction = {
       public_keys: [publicKey],
@@ -106,7 +103,7 @@ export class TransferBuilder extends TransactionBuilder {
       senderAddress: this._sender,
       receiverAddress: this._receiverId,
       amount: this._amount,
-      fee: this._utils.feeData(),
+      fee: utils.feeData(),
       senderPublicKeyHex: this._publicKey,
       transactionType: OperationType.TRANSACTION,
       expiryTime: ingressEndTime,
@@ -119,7 +116,7 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): BaseTransaction {
-    const signatures = this._utils.getSignatures(this._transaction.payloadsData, this._publicKey, key.key);
+    const signatures = utils.getSignatures(this._transaction.payloadsData, this._publicKey, key.key);
     this._transaction.addSignature(signatures);
     return this._transaction;
   }

@@ -3,7 +3,6 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
-import { Utils } from './utils';
 import { OperationType, ParsedTransaction } from './iface';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
@@ -13,7 +12,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   async from(rawTransaction: string): Promise<TransactionBuilder> {
-    const transaction = new Transaction(this._coinConfig, new Utils());
+    const transaction = new Transaction(this._coinConfig);
     await transaction.fromRawTransaction(rawTransaction);
     try {
       switch (transaction.icpTransactionData.transactionType) {
@@ -43,14 +42,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
-    return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig, new Utils()));
+    return TransactionBuilderFactory.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
   }
 
   parseTransaction(rawTransaction: string, isSigned: boolean): Promise<ParsedTransaction> {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Transaction is empty');
     }
-    const transaction = new Transaction(this._coinConfig, new Utils());
+    const transaction = new Transaction(this._coinConfig);
     if (isSigned) {
       return transaction.parseSignedTransaction(rawTransaction);
     }

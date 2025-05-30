@@ -5,6 +5,7 @@ import sinon from 'sinon';
 import { DEFAULT_MEMO, MAX_INGRESS_TTL } from '../../../src/lib/iface';
 import * as testData from '../../resources/icp';
 import { getBuilderFactory } from '../getBuilderFactory';
+import utils from '../../../src/lib/utils';
 
 describe('ICP Transaction Builder', async () => {
   const factory = getBuilderFactory('ticp');
@@ -12,12 +13,13 @@ describe('ICP Transaction Builder', async () => {
   let txn: any;
 
   beforeEach(async function () {
-    txBuilder = factory.getTransferBuilder();
-    sinon.stub(txBuilder._utils, 'getMetaData').returns({
+    sinon.stub(utils, 'getMetaData').returns({
       metaData: testData.MetaDataWithMemo,
-      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
+      ingressEndTime: testData.MetaDataWithMemo.ingress_end ?? 0,
     });
+    sinon.stub(utils, 'validateExpireTime').returns(true);
 
+    txBuilder = factory.getTransferBuilder();
     txBuilder.sender(testData.Accounts.account1.address, testData.Accounts.account1.publicKey);
     txBuilder.receiverId(testData.Accounts.account2.address);
     txBuilder.amount('10');
@@ -113,7 +115,6 @@ describe('ICP Transaction Builder', async () => {
   });
 
   it('should generate a correct txn hash', async () => {
-    sinon.stub(txn._utils, 'validateExpireTime').returns(true);
     const unsignedTxn = txBuilder.transaction.unsignedTransaction;
     unsignedTxn.should.be.a.String();
     const payloadsData = txBuilder.transaction.payloadsData;
@@ -163,13 +164,12 @@ describe('ICP Transaction Builder with default memo as 0', async () => {
   let txn: any;
 
   beforeEach(async function () {
-    txBuilder = factory.getTransferBuilder();
-
-    sinon.stub(txBuilder._utils, 'getMetaData').returns({
+    sinon.stub(utils, 'getMetaData').returns({
       metaData: testData.MetaDataWithDefaultMemo,
-      ingressEndTime: testData.MetaDataWithDefaultMemo.ingress_end,
+      ingressEndTime: testData.MetaDataWithDefaultMemo.ingress_end ?? 0,
     });
 
+    txBuilder = factory.getTransferBuilder();
     testData.ParsedUnsignedTransaction.metadata.memo = DEFAULT_MEMO;
     testData.ParsedSignedTransaction.metadata.memo = DEFAULT_MEMO;
 

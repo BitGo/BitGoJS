@@ -1,6 +1,5 @@
 import should from 'should';
 import * as testData from '../../resources/icp';
-import { getBuilderFactory } from '../getBuilderFactory';
 import sinon from 'sinon';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -10,6 +9,7 @@ import { IcpAgent } from '../../../src/lib/icpAgent';
 import { RecoveryOptions, LEDGER_CANISTER_ID } from '../../../src/lib/iface';
 import { Principal } from '@dfinity/principal';
 import BigNumber from 'bignumber.js';
+import utils from '../../../src/lib/utils';
 
 describe('ICP transaction recovery', async () => {
   let bitgo;
@@ -18,8 +18,36 @@ describe('ICP transaction recovery', async () => {
   let broadcastEndpoint: string;
   let broadcastResponse: Buffer;
   let nodeUrl: string;
-  let txBuilder: any;
-  const factory = getBuilderFactory('ticp');
+
+  // Helper functions for setting up stubs
+  const setupDefaultStubs = () => {
+    sinon.stub(IcpAgent.prototype, 'getBalance').resolves(BigNumber(1000000000));
+    sinon.stub(IcpAgent.prototype, 'getFee').resolves(BigNumber(10000));
+    sinon.stub(utils, 'getMetaData').returns({
+      metaData: testData.MetaDataWithDefaultMemo,
+      ingressEndTime: testData.MetaDataWithDefaultMemo.ingress_end ?? 0,
+    });
+    sinon.stub(icp, 'signatures').returns(testData.RecoverTransactionSignatureWithDefaultMemo);
+  };
+
+  const setupMemoStubs = () => {
+    sinon.stub(IcpAgent.prototype, 'getBalance').resolves(BigNumber(1000000000));
+    sinon.stub(IcpAgent.prototype, 'getFee').resolves(BigNumber(10000));
+    sinon.stub(utils, 'getMetaData').returns({
+      metaData: testData.MetaDataWithMemo,
+      ingressEndTime: testData.MetaDataWithMemo.ingress_end ?? 0,
+    });
+    sinon.stub(icp, 'signatures').returns(testData.RecoverTransactionSignatureWithMemo);
+  };
+
+  const setupLowBalanceStubs = () => {
+    sinon.stub(IcpAgent.prototype, 'getBalance').resolves(BigNumber(10));
+    sinon.stub(IcpAgent.prototype, 'getFee').resolves(BigNumber(10000));
+    sinon.stub(utils, 'getMetaData').returns({
+      metaData: testData.MetaDataWithDefaultMemo,
+      ingressEndTime: testData.MetaDataWithDefaultMemo.ingress_end ?? 0,
+    });
+  };
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -41,9 +69,9 @@ describe('ICP transaction recovery', async () => {
   });
 
   beforeEach(function () {
-    // Common stubs for IcpAgent
-    sinon.stub(IcpAgent.prototype, 'getBalance').resolves(BigNumber(1000000000));
-    sinon.stub(IcpAgent.prototype, 'getFee').resolves(BigNumber(10000));
+    setupDefaultStubs();
+    // Set up default successful nock response
+    nock(nodeUrl).post(broadcastEndpoint).reply(200, broadcastResponse);
   });
 
   afterEach(function () {
@@ -58,41 +86,14 @@ describe('ICP transaction recovery', async () => {
   });
 
   it('should recover a transaction with default memo successfully', async () => {
-    txBuilder = factory.getTransferBuilder();
-
-    // Stub the getTransferBuilder to return our txBuilder
-    //TODO need to have a better way for test cases WithDefault mocking these functions. TIcket: https://bitgoinc.atlassian.net/browse/WIN-5158
-    sinon.stub(icp, 'getBuilderFactory').returns(factory);
-    sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
-    sinon.stub(icp, 'signatures').returns(testData.RecoverTransactionSignatureWithDefaultMemo);
-
-    sinon.stub(txBuilder._utils, 'getMetaData').returns({
-      metaData: testData.MetaDataWithDefaultMemo,
-      ingressEndTime: testData.MetaDataWithDefaultMemo.ingress_end,
-    });
-
-    const body = testData.RecoverySignedTransactionWithDefaultMemo;
-    nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
     const recoverTxn = await icp.recover(recoveryParams);
     recoverTxn.id.should.be.a.String();
     should.equal(recoverTxn.id, testData.TxnIdWithDefaultMemo);
   });
 
   it('should recover a transaction with memo successfully', async () => {
-    txBuilder = factory.getTransferBuilder();
-
-    // Stub the getTransferBuilder to return our txBuilder
-    sinon.stub(icp, 'getBuilderFactory').returns(factory);
-    sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
-    sinon.stub(icp, 'signatures').returns(testData.RecoverTransactionSignatureWithMemo);
-
-    sinon.stub(txBuilder._utils, 'getMetaData').returns({
-      metaData: testData.MetaDataWithMemo,
-      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
-    });
-
-    const body = testData.RecoverySignedTransactionWithMemo;
-    nock(nodeUrl).post(broadcastEndpoint, body).reply(200, broadcastResponse);
+    sinon.restore();
+    setupMemoStubs();
     recoveryParams.memo = testData.MetaDataWithMemo.memo;
     const recoverTxn = await icp.recover(recoveryParams);
     recoverTxn.id.should.be.a.String();
@@ -100,16 +101,8 @@ describe('ICP transaction recovery', async () => {
   });
 
   it('should recover a unsigned sweep transaction successfully', async () => {
-    txBuilder = factory.getTransferBuilder();
-
-    // Stub the getTransferBuilder to return our txBuilder
-    sinon.stub(icp, 'getBuilderFactory').returns(factory);
-    sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
-
-    sinon.stub(txBuilder._utils, 'getMetaData').returns({
-      metaData: testData.MetaDataWithMemo,
-      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
-    });
+    sinon.restore();
+    setupMemoStubs();
 
     const unsignedSweepRecoveryParams = {
       bitgoKey:
@@ -122,16 +115,8 @@ describe('ICP transaction recovery', async () => {
   });
 
   it('should failed to recover a unsigned sweep transaction with wrong bitgo key', async () => {
-    txBuilder = factory.getTransferBuilder();
-
-    // Stub the getTransferBuilder to return our txBuilder
-    sinon.stub(icp, 'getBuilderFactory').returns(factory);
-    sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
-
-    sinon.stub(txBuilder._utils, 'getMetaData').returns({
-      metaData: testData.MetaDataWithMemo,
-      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
-    });
+    sinon.restore();
+    setupMemoStubs();
 
     const unsignedSweepRecoveryParams = {
       bitgoKey: 'testKey',
@@ -143,16 +128,8 @@ describe('ICP transaction recovery', async () => {
   });
 
   it('should failed to recover recover a unsigned sweep transaction without bitgo key', async () => {
-    txBuilder = factory.getTransferBuilder();
-
-    // Stub the getTransferBuilder to return our txBuilder
-    sinon.stub(icp, 'getBuilderFactory').returns(factory);
-    sinon.stub(factory, 'getTransferBuilder').returns(txBuilder);
-
-    sinon.stub(txBuilder._utils, 'getMetaData').returns({
-      metaData: testData.MetaDataWithMemo,
-      ingressEndTime: testData.MetaDataWithMemo.ingress_end,
-    });
+    sinon.restore();
+    setupMemoStubs();
 
     const unsignedSweepRecoveryParams = {
       recoveryDestination: testData.Accounts.account2.address,
@@ -161,6 +138,7 @@ describe('ICP transaction recovery', async () => {
   });
 
   it('should fail to recover if broadcast API fails', async () => {
+    nock.cleanAll();
     nock(nodeUrl).post(broadcastEndpoint).reply(500, 'Internal Server Error');
     recoveryParams.memo = 0;
     await icp
@@ -171,11 +149,8 @@ describe('ICP transaction recovery', async () => {
   });
 
   it('should fail to recover txn if balance is low', async () => {
-    // Override the default balance stub for this specific test
     sinon.restore();
-    sinon.stub(IcpAgent.prototype, 'getBalance').resolves(BigNumber(10));
-    sinon.stub(IcpAgent.prototype, 'getFee').resolves(BigNumber(10000));
-    nock(nodeUrl).post(broadcastEndpoint).reply(200, broadcastResponse);
+    setupLowBalanceStubs();
     await icp
       .recover(recoveryParams)
       .should.rejectedWith('Error during ICP recovery: Did not have enough funds to recover');
