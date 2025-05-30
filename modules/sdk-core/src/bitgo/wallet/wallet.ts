@@ -2185,7 +2185,7 @@ export class Wallet implements IWallet {
     }
 
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
-    const keychains = await this.getKeychainsAndValidatePassphrase({
+    const keychainPromise = this.getKeychainsAndValidatePassphrase({
       reqId: params.reqId,
       walletPassphrase: params.walletPassphrase,
       customSigningFunction: params.customSigningFunction,
@@ -2201,9 +2201,24 @@ export class Wallet implements IWallet {
     } else {
       txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
     }
+    let keychains: Keychain[] = [];
+    let txPrebuild: PrebuildTransactionResult;
 
-    // the prebuild can be overridden by providing an explicit tx
-    const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
+    const results = await Promise.allSettled([keychainPromise, txPrebuildQuery]);
+
+    // Handle keychain promise (index 0)
+    if (results[0].status === 'fulfilled') {
+      keychains = results[0].value as Keychain[];
+    } else {
+      throw results[0].reason;
+    }
+
+    // Handle txPrebuild promise (index 1)
+    if (results[1].status === 'fulfilled') {
+      txPrebuild = results[1].value as PrebuildTransactionResult;
+    } else {
+      throw results[1].reason;
+    }
 
     try {
       await this.baseCoin.verifyTransaction({
