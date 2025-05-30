@@ -17,3 +17,4 @@ modules/**/dist/
 modules/**/pack-scoped/
 coverage
 /.direnv/
+*.db
