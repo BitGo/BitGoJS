@@ -50,6 +50,9 @@
       "path": "./modules/sdk-coin-arbeth"
     },
     {
+      "path": "./modules/sdk-coin-asi"
+    },
+    {
       "path": "./modules/sdk-coin-atom"
     },
     {

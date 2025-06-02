@@ -119,6 +119,9 @@ export { FetchAi };
 import * as Initia from '@bitgo/sdk-coin-initia';
 export { Initia };
 
+import * as Asi from '@bitgo/sdk-coin-asi';
+export { Asi };
+
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
@@ -276,6 +279,8 @@ const coinBuilderMap = {
   tfetchai: FetchAi.TransactionBuilder,
   initia: Initia.TransactionBuilder,
   tinitia: Initia.TransactionBuilder,
+  asi: Asi.TransactionBuilder,
+  tasi: Asi.TransactionBuilder,
   flr: Flr.TransactionBuilder,
   tflr: Flr.TransactionBuilder,
   sgb: Sgb.TransactionBuilder,

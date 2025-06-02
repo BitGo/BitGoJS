@@ -24,6 +24,7 @@ export enum CoinFamily {
   ALGO = 'algo',
   APT = 'apt',
   ARBETH = 'arbeth',
+  ASI = 'asi',
   ATOM = 'atom',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
@@ -385,6 +386,7 @@ export enum UnderlyingAsset {
   API3 = 'api3',
   ARBETH = 'arbeth',
   BASEETH = 'baseeth',
+  ASI = 'asi',
   ATOM = 'atom',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
@@ -2754,6 +2756,7 @@ export enum BaseUnit {
   CRONOS = 'basecro',
   FETCHAI = 'afet',
   INITIA = 'uinit',
+  ASI = 'afet',
 }
 
 export interface BaseCoinConstructorOptions {

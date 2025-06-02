@@ -53,6 +53,7 @@
     "@bitgo/sdk-coin-algo": "^2.2.0",
     "@bitgo/sdk-coin-apt": "^2.3.0",
     "@bitgo/sdk-coin-arbeth": "^21.5.6",
+    "@bitgo/sdk-coin-asi": "^1.0.0",
     "@bitgo/sdk-coin-atom": "^13.4.14",
     "@bitgo/sdk-coin-avaxc": "^6.0.14",
     "@bitgo/sdk-coin-avaxp": "^5.1.0",

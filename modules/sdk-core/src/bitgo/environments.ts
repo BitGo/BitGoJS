@@ -52,6 +52,7 @@ interface EnvironmentTemplate {
   cronosNodeUrl: string;
   fetchAiNodeUrl: string;
   initiaNodeUrl: string;
+  asiNodeUrl: string;
   islmNodeUrl: string;
   dotNodeUrls: string[];
   substrateNodeUrls: string[];
@@ -174,6 +175,7 @@ const mainnetBase: EnvironmentTemplate = {
   cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
   fetchAiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   initiaNodeUrl: 'https://rest.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
+  asiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
   tronNodes: {
@@ -246,6 +248,7 @@ const testnetBase: EnvironmentTemplate = {
   cronosNodeUrl: 'https://testnet-croeseid-4.crypto.org:1317/',
   fetchAiNodeUrl: 'https://rest-dorado.fetch.ai/',
   initiaNodeUrl: 'https://rest.testnet.initia.xyz/',
+  asiNodeUrl: 'https://rest-dorado.fetch.ai/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
   tronNodes: {

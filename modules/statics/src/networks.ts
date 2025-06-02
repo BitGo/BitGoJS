@@ -923,6 +923,18 @@ class InitiaTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://scan.testnet.initia.xyz/initiation-2/';
 }
 
+class Asi extends Mainnet implements AccountNetwork {
+  name = 'Fetch Native';
+  family = CoinFamily.ASI;
+  explorerUrl = 'https://companion.fetch.ai/fetchhub-4/';
+}
+
+class AsiTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Fetch Native';
+  family = CoinFamily.ASI;
+  explorerUrl = 'https://companion.fetch.ai/dorado-1/';
+}
+
 class Islm extends Mainnet implements AccountNetwork {
   name = 'Haqq';
   family = CoinFamily.ISLM;
@@ -1451,6 +1463,7 @@ export const Networks = {
     algorand: Object.freeze(new Algorand()),
     apt: Object.freeze(new Apt()),
     arbitrum: Object.freeze(new Arbitrum()),
+    asi: Object.freeze(new Asi()),
     atom: Object.freeze(new Atom()),
     avalancheC: Object.freeze(new AvalancheC()),
     avalancheP: Object.freeze(new AvalancheP()),
@@ -1528,6 +1541,7 @@ export const Networks = {
     algorand: Object.freeze(new AlgorandTestnet()),
     apt: Object.freeze(new AptTestnet()),
     arbitrum: Object.freeze(new ArbitrumTestnet()),
+    asi: Object.freeze(new AsiTestnet()),
     atom: Object.freeze(new AtomTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
     avalancheP: Object.freeze(new AvalanchePTestnet()),
