@@ -1155,6 +1155,8 @@ export class Wallet implements IWallet {
   async addressesByBalance(params: AddressesByBalanceOptions): Promise<any> {
     const query: AddressesByBalanceOptions = {
       token: params.token,
+      nftCollectionId: params.nftCollectionId,
+      nftId: params.nftId,
     };
     query.sort = params.sort ?? -1;
     query.page = params.page ?? 1;
@@ -1166,11 +1168,18 @@ export class Wallet implements IWallet {
     if (!_.isNumber(query.page)) {
       throw new Error('invalid page argument, expecting number');
     }
-    if (!_.isNumber(params.limit)) {
+    if (!_.isNumber(query.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
-    if (params.limit < 1 || params.limit > 500) {
+    if (query.limit < 1 || query.limit > 500) {
       throw new Error('limit argument must be between 1 and 500');
+    }
+
+    // Assert that either both nftCollectionId and nftId are provided or neither are provided
+    const hasNftCollectionId = !_.isUndefined(query.nftCollectionId);
+    const hasNftId = !_.isUndefined(query.nftId);
+    if (hasNftCollectionId !== hasNftId) {
+      throw new Error('nftCollectionId and nftId must both be provided or both be omitted');
     }
 
     return this.bitgo
@@ -2176,7 +2185,7 @@ export class Wallet implements IWallet {
     }
 
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
-    const keychains = await this.getKeychainsAndValidatePassphrase({
+    const keychainPromise = this.getKeychainsAndValidatePassphrase({
       reqId: params.reqId,
       walletPassphrase: params.walletPassphrase,
       customSigningFunction: params.customSigningFunction,
@@ -2192,9 +2201,24 @@ export class Wallet implements IWallet {
     } else {
       txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
     }
+    let keychains: Keychain[] = [];
+    let txPrebuild: PrebuildTransactionResult;
 
-    // the prebuild can be overridden by providing an explicit tx
-    const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
+    const results = await Promise.allSettled([keychainPromise, txPrebuildQuery]);
+
+    // Handle keychain promise (index 0)
+    if (results[0].status === 'fulfilled') {
+      keychains = results[0].value as Keychain[];
+    } else {
+      throw results[0].reason;
+    }
+
+    // Handle txPrebuild promise (index 1)
+    if (results[1].status === 'fulfilled') {
+      txPrebuild = results[1].value as PrebuildTransactionResult;
+    } else {
+      throw results[1].reason;
+    }
 
     try {
       await this.baseCoin.verifyTransaction({

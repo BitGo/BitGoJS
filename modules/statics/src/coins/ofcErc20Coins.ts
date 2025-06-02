@@ -3153,6 +3153,25 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:gaia')
   ),
   ofcerc20('c3a5c5d2-5d6e-4c9b-9f3e-6d2a4e5b6c8d', 'ofceth:usds', 'USDS', 18, underlyingAssetForSymbol('eth:usds')),
+  ofcerc20('b4aed05b-b667-4b1e-b88e-19219989c1e4', 'ofceth:perc', 'Perion', 18, underlyingAssetForSymbol('eth:perc')),
+  ofcerc20('d6ba9776-1b5b-4364-8afd-594363a01ec1', 'ofceth:cfg', 'Centrifuge', 18, underlyingAssetForSymbol('eth:cfg')),
+  ofcerc20('d3ec2f84-fa4d-42a7-85f2-7d0e932b3bb0', 'ofceth:plume', 'Plume', 18, underlyingAssetForSymbol('eth:plume')),
+  ofcerc20(
+    'c9d7345b-11e7-40df-9795-942149b393bd',
+    'ofceth:vbill',
+    'VanEck Treasury Fund',
+    6,
+    underlyingAssetForSymbol('eth:vbill')
+  ),
+  ofcerc20('cfac6025-2aa2-429a-b144-9ea5c952a93a', 'ofceth:la', 'Lagrange', 18, underlyingAssetForSymbol('eth:la')),
+  ofcerc20('395fa727-b5eb-4fd8-ba91-1c257b94624d', 'ofceth:es', 'Eclipse', 6, underlyingAssetForSymbol('eth:es')),
+  ofcerc20(
+    '2270befd-a97d-4e6e-a540-6d19bd0a08e7',
+    'ofceth:ctrl',
+    'Ctrl Wallet',
+    18,
+    underlyingAssetForSymbol('eth:ctrl')
+  ),
 ];
 
 export const tOfcErc20Coins = [

@@ -17,7 +17,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new Transaction(_coinConfig, utils);
+    this._transaction = new Transaction(_coinConfig);
   }
 
   public signaturePayload(): Signatures[] {

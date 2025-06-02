@@ -25,6 +25,9 @@ import {
   TransferContract,
   TriggerSmartContract,
   VoteWitnessContract,
+  UnfreezeBalanceV2Contract,
+  WithdrawExpireUnfreezeContract,
+  ResourceManagementContract,
 } from './iface';
 
 /**
@@ -160,6 +163,54 @@ export class Transaction extends BaseTransaction {
         input = {
           address: voteValues.owner_address,
           value: totalVoteCount.toString(),
+        };
+        break;
+      case ContractType.UnfreezeBalanceV2:
+        this._type = TransactionType.StakingDeactivate;
+        const unfreezeValues = (rawData.contract[0] as UnfreezeBalanceV2Contract).parameter.value;
+        output = {
+          address: unfreezeValues.owner_address,
+          value: unfreezeValues.unfreeze_balance.toString(),
+        };
+        input = {
+          address: unfreezeValues.owner_address,
+          value: unfreezeValues.unfreeze_balance.toString(),
+        };
+        break;
+      case ContractType.WithdrawExpireUnfreeze:
+        this._type = TransactionType.StakingWithdraw;
+        const withdrawValues = (rawData.contract[0] as WithdrawExpireUnfreezeContract).parameter.value;
+        output = {
+          address: withdrawValues.owner_address,
+          value: '0', // no value field
+        };
+        input = {
+          address: withdrawValues.owner_address,
+          value: '0',
+        };
+        break;
+      case ContractType.DelegateResourceContract:
+        this._type = TransactionType.DelegateResource;
+        const delegateValue = (rawData.contract[0] as ResourceManagementContract).parameter.value;
+        output = {
+          address: delegateValue.receiver_address,
+          value: delegateValue.balance.toString(),
+        };
+        input = {
+          address: delegateValue.owner_address,
+          value: delegateValue.balance.toString(),
+        };
+        break;
+      case ContractType.UnDelegateResourceContract:
+        this._type = TransactionType.UnDelegateResource;
+        const undelegateValue = (rawData.contract[0] as ResourceManagementContract).parameter.value;
+        output = {
+          address: undelegateValue.receiver_address,
+          value: undelegateValue.balance.toString(),
+        };
+        input = {
+          address: undelegateValue.owner_address,
+          value: undelegateValue.balance.toString(),
         };
         break;
       default:

@@ -28,6 +28,7 @@ import {
   BaseTransaction,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
@@ -916,5 +917,10 @@ export class Trx extends BaseCoin {
       timestamp: tx.validFrom,
       expiration: tx.validTo,
     };
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    throw new MethodNotImplementedError();
   }
 }

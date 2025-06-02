@@ -4931,6 +4931,256 @@ export namespace protocol {
     public static getTypeUrl(typeUrlPrefix?: string): string;
   }
 
+  /** Properties of a DelegateResourceContract. */
+  interface IDelegateResourceContract {
+    /** DelegateResourceContract ownerAddress */
+    ownerAddress?: Uint8Array | null;
+
+    /** DelegateResourceContract resource */
+    resource?: protocol.ResourceCode | null;
+
+    /** DelegateResourceContract balance */
+    balance?: number | Long | null;
+
+    /** DelegateResourceContract receiverAddress */
+    receiverAddress?: Uint8Array | null;
+
+    /** DelegateResourceContract lock */
+    lock?: boolean | null;
+
+    /** DelegateResourceContract lockPeriod */
+    lockPeriod?: number | Long | null;
+  }
+
+  /** Represents a DelegateResourceContract. */
+  class DelegateResourceContract implements IDelegateResourceContract {
+    /**
+     * Constructs a new DelegateResourceContract.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: protocol.IDelegateResourceContract);
+
+    /** DelegateResourceContract ownerAddress. */
+    public ownerAddress: Uint8Array;
+
+    /** DelegateResourceContract resource. */
+    public resource: protocol.ResourceCode;
+
+    /** DelegateResourceContract balance. */
+    public balance: number | Long;
+
+    /** DelegateResourceContract receiverAddress. */
+    public receiverAddress: Uint8Array;
+
+    /** DelegateResourceContract lock. */
+    public lock: boolean;
+
+    /** DelegateResourceContract lockPeriod. */
+    public lockPeriod: number | Long;
+
+    /**
+     * Creates a new DelegateResourceContract instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns DelegateResourceContract instance
+     */
+    public static create(properties?: protocol.IDelegateResourceContract): protocol.DelegateResourceContract;
+
+    /**
+     * Encodes the specified DelegateResourceContract message. Does not implicitly {@link protocol.DelegateResourceContract.verify|verify} messages.
+     * @param message DelegateResourceContract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: protocol.IDelegateResourceContract, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified DelegateResourceContract message, length delimited. Does not implicitly {@link protocol.DelegateResourceContract.verify|verify} messages.
+     * @param message DelegateResourceContract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(
+      message: protocol.IDelegateResourceContract,
+      writer?: $protobuf.Writer
+    ): $protobuf.Writer;
+
+    /**
+     * Decodes a DelegateResourceContract message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns DelegateResourceContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: $protobuf.Reader | Uint8Array, length?: number): protocol.DelegateResourceContract;
+
+    /**
+     * Decodes a DelegateResourceContract message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns DelegateResourceContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: $protobuf.Reader | Uint8Array): protocol.DelegateResourceContract;
+
+    /**
+     * Verifies a DelegateResourceContract message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): string | null;
+
+    /**
+     * Creates a DelegateResourceContract message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns DelegateResourceContract
+     */
+    public static fromObject(object: { [k: string]: any }): protocol.DelegateResourceContract;
+
+    /**
+     * Creates a plain object from a DelegateResourceContract message. Also converts values to other types if specified.
+     * @param message DelegateResourceContract
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(
+      message: protocol.DelegateResourceContract,
+      options?: $protobuf.IConversionOptions
+    ): { [k: string]: any };
+
+    /**
+     * Converts this DelegateResourceContract to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DelegateResourceContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+  }
+
+  /** Properties of an UnDelegateResourceContract. */
+  interface IUnDelegateResourceContract {
+    /** UnDelegateResourceContract ownerAddress */
+    ownerAddress?: Uint8Array | null;
+
+    /** UnDelegateResourceContract resource */
+    resource?: protocol.ResourceCode | null;
+
+    /** UnDelegateResourceContract balance */
+    balance?: number | Long | null;
+
+    /** UnDelegateResourceContract receiverAddress */
+    receiverAddress?: Uint8Array | null;
+  }
+
+  /** Represents an UnDelegateResourceContract. */
+  class UnDelegateResourceContract implements IUnDelegateResourceContract {
+    /**
+     * Constructs a new UnDelegateResourceContract.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: protocol.IUnDelegateResourceContract);
+
+    /** UnDelegateResourceContract ownerAddress. */
+    public ownerAddress: Uint8Array;
+
+    /** UnDelegateResourceContract resource. */
+    public resource: protocol.ResourceCode;
+
+    /** UnDelegateResourceContract balance. */
+    public balance: number | Long;
+
+    /** UnDelegateResourceContract receiverAddress. */
+    public receiverAddress: Uint8Array;
+
+    /**
+     * Creates a new UnDelegateResourceContract instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns UnDelegateResourceContract instance
+     */
+    public static create(properties?: protocol.IUnDelegateResourceContract): protocol.UnDelegateResourceContract;
+
+    /**
+     * Encodes the specified UnDelegateResourceContract message. Does not implicitly {@link protocol.UnDelegateResourceContract.verify|verify} messages.
+     * @param message UnDelegateResourceContract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: protocol.IUnDelegateResourceContract, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified UnDelegateResourceContract message, length delimited. Does not implicitly {@link protocol.UnDelegateResourceContract.verify|verify} messages.
+     * @param message UnDelegateResourceContract message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(
+      message: protocol.IUnDelegateResourceContract,
+      writer?: $protobuf.Writer
+    ): $protobuf.Writer;
+
+    /**
+     * Decodes an UnDelegateResourceContract message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns UnDelegateResourceContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: $protobuf.Reader | Uint8Array, length?: number): protocol.UnDelegateResourceContract;
+
+    /**
+     * Decodes an UnDelegateResourceContract message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns UnDelegateResourceContract
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: $protobuf.Reader | Uint8Array): protocol.UnDelegateResourceContract;
+
+    /**
+     * Verifies an UnDelegateResourceContract message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): string | null;
+
+    /**
+     * Creates an UnDelegateResourceContract message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns UnDelegateResourceContract
+     */
+    public static fromObject(object: { [k: string]: any }): protocol.UnDelegateResourceContract;
+
+    /**
+     * Creates a plain object from an UnDelegateResourceContract message. Also converts values to other types if specified.
+     * @param message UnDelegateResourceContract
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(
+      message: protocol.UnDelegateResourceContract,
+      options?: $protobuf.IConversionOptions
+    ): { [k: string]: any };
+
+    /**
+     * Converts this UnDelegateResourceContract to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for UnDelegateResourceContract
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+  }
+
   /** AccountType enum. */
   enum AccountType {
     Normal = 0,
@@ -7703,6 +7953,8 @@ export namespace protocol {
         FreezeBalanceV2Contract = 54,
         UnfreezeBalanceV2Contract = 55,
         WithdrawExpireUnfreezeContract = 56,
+        DelegateResourceContract = 57,
+        UnDelegateResourceContract = 58,
       }
     }
 

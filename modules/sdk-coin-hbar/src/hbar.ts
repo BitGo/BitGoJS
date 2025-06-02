@@ -23,6 +23,7 @@ import {
   NotSupported,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -628,5 +629,24 @@ export class Hbar extends BaseCoin {
     const transactionReceipt = await transactionResponse.getReceipt(client);
 
     return { txId: transactionResponse.transactionId.toString(), status: transactionReceipt.status.toString() };
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ prv, publicKey, multiSigType }: AuditDecryptedKeyParams) {
+    if (multiSigType === 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+
+    let hbarKeyPair;
+
+    try {
+      hbarKeyPair = new HbarKeyPair({ prv });
+    } catch (e) {
+      throw new Error(`Invalid private key: ${e.message}`);
+    }
+    const genPubKey = hbarKeyPair.getKeys().pub;
+    if (publicKey && publicKey !== genPubKey) {
+      throw new Error('Invalid public key');
+    }
   }
 }

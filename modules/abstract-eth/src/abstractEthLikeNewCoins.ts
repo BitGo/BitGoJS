@@ -533,6 +533,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    */
   async queryAddressBalance(address: string): Promise<any> {
     const result = await this.recoveryBlockchainExplorerQuery({
+      chainid: this.getChainId().toString(),
       module: 'account',
       action: 'balance',
       address: address,
@@ -634,6 +635,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
     const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
     const result = await this.recoveryBlockchainExplorerQuery({
+      chainid: this.getChainId().toString(),
       module: 'proxy',
       action: 'eth_call',
       to: address,
@@ -842,6 +844,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     let nonce = 0;
 
     const result = await this.recoveryBlockchainExplorerQuery({
+      chainid: this.getChainId().toString(),
       module: 'account',
       action: 'txlist',
       address,
@@ -1631,6 +1634,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
 
     const result = await this.recoveryBlockchainExplorerQuery({
+      chainid: this.getChainId().toString(),
       module: 'account',
       action: 'tokenbalance',
       contractaddress: tokenContractAddress,
@@ -2775,6 +2779,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   async getGasPriceFromExternalAPI(wrongChainCoin: string): Promise<BN> {
     try {
       const res = await this.recoveryBlockchainExplorerQuery({
+        chainid: this.getChainId().toString(),
         module: 'proxy',
         action: 'eth_gasPrice',
       });
@@ -2796,6 +2801,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   async getGasLimitFromExternalAPI(intendedChain: string, from: string, to: string, data: string): Promise<BN> {
     try {
       const res = await this.recoveryBlockchainExplorerQuery({
+        chainid: this.getChainId().toString(),
         module: 'proxy',
         action: 'eth_estimateGas',
         from,

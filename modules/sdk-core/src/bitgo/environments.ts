@@ -108,18 +108,17 @@ export type EnvironmentName =
   | 'staging'
   | 'test'
   | 'dev'
-  | 'latest'
   | 'local'
   | 'localNonSecure'
   | 'mock'
   | 'adminProd'
   | 'adminTest'
+  | 'adminStaging'
   | 'adminDev'
-  | 'adminLatest'
   | 'custom'
   | 'branch';
 
-export type AliasEnvironmentName = 'production' | 'msProd' | 'msTest' | 'msDev' | 'msLatest';
+export type AliasEnvironmentName = 'production' | 'msProd' | 'msTest' | 'msDev';
 
 export type Environments = { [k in EnvironmentName]: Environment };
 
@@ -129,7 +128,6 @@ export const AliasEnvironments: { [k in AliasEnvironmentName]: EnvironmentName }
   msProd: 'prod',
   msTest: 'test',
   msDev: 'dev',
-  msLatest: 'latest',
 };
 
 const mainnetBase: EnvironmentTemplate = {
@@ -138,18 +136,18 @@ const mainnetBase: EnvironmentTemplate = {
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
   hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
   btcExplorerBaseUrl: 'https://blockstream.info/api',
-  etherscanBaseUrl: 'https://api.etherscan.io',
+  etherscanBaseUrl: 'https://api.etherscan.io/v2',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   avaxcNetworkBaseUrl: 'https://api.avax.network',
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwFullNodeRPCBaseUrl: 'https://mainnet.ethereumpow.org',
-  bscscanBaseUrl: 'https://api.bscscan.com',
+  bscscanBaseUrl: 'https://api.etherscan.io/v2',
   bscscanApiToken: process.env.BSC_API_TOKEN,
-  polygonscanBaseUrl: 'https://api.polygonscan.com',
+  polygonscanBaseUrl: 'https://api.etherscan.io/v2',
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
-  arbiscanBaseUrl: 'https://api.arbiscan.io',
+  arbiscanBaseUrl: 'https://api.etherscan.io/v2',
   arbiscanApiToken: process.env.ARBISCAN_API_TOKEN,
-  optimisticEtherscanBaseUrl: 'https://api-optimistic.etherscan.io',
+  optimisticEtherscanBaseUrl: 'https://api.etherscan.io/v2',
   optimisticEtherscanApiToken: process.env.OPTIMISTIC_ETHERSCAN_API_TOKEN,
   zksyncExplorerBaseUrl: 'https://block-explorer-api.mainnet.zksync.io',
   zksyncExplorerApiToken: process.env.ZKSYNC_EXPLORER_API_TOKEN,
@@ -158,7 +156,7 @@ const mainnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://api.fastnear.com'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
-  adaNodeUrl: 'https://api.koios.rest/api/v0',
+  adaNodeUrl: 'https://api.koios.rest/api/v1',
   hashNodeUrl: 'https://api.provenance.io',
   injNodeUrl: 'https://sentry.lcd.injective.network', // reference https://docs.injective.network/develop/public-endpoints/
   atomNodeUrl: 'https://rest.cosmos.directory/cosmoshub/',
@@ -189,8 +187,8 @@ const mainnetBase: EnvironmentTemplate = {
   coredaoExplorerBaseUrl: 'https://openapi.coredao.org',
   oasExplorerBaseUrl: 'https://explorer.oasys.games',
   flrExplorerBaseUrl: 'https://flare-explorer.flare.network',
-  xdcExplorerBaseUrl: 'https://api-xdc.blocksscan.io',
-  wemixExplorerBaseUrl: 'https://api.wemixscan.com',
+  xdcExplorerBaseUrl: 'https://api.etherscan.io/v2',
+  wemixExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -207,18 +205,18 @@ const testnetBase: EnvironmentTemplate = {
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
-  etherscanBaseUrl: 'https://api-holesky.etherscan.io',
+  etherscanBaseUrl: 'https://api.etherscan.io/v2',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   avaxcNetworkBaseUrl: 'https://api.avax-test.network',
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ethwFullNodeRPCBaseUrl: 'https://mainnet.ethereumpow.org',
-  polygonscanBaseUrl: 'https://api-amoy.polygonscan.com',
+  polygonscanBaseUrl: 'https://api.etherscan.io/v2',
   polygonscanApiToken: process.env.POLYGONSCAN_API_TOKEN,
-  bscscanBaseUrl: 'https://api-testnet.bscscan.com',
+  bscscanBaseUrl: 'https://api.etherscan.io/v2',
   bscscanApiToken: process.env.BSC_API_TOKEN,
-  arbiscanBaseUrl: 'https://api-sepolia.arbiscan.io',
+  arbiscanBaseUrl: 'https://api.etherscan.io/v2',
   arbiscanApiToken: process.env.ARBISCAN_API_TOKEN,
-  optimisticEtherscanBaseUrl: 'https://api-sepolia-optimistic.etherscan.io',
+  optimisticEtherscanBaseUrl: 'https://api.etherscan.io/v2',
   optimisticEtherscanApiToken: process.env.OPTIMISTIC_ETHERSCAN_API_TOKEN,
   zksyncExplorerBaseUrl: 'https://block-explorer-api.sepolia.zksync.dev',
   zksyncExplorerApiToken: process.env.ZKSYNC_EXPLORER_API_TOKEN,
@@ -230,7 +228,7 @@ const testnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
   nearNodeUrls: ['https://test.api.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
-  adaNodeUrl: 'https://preprod.koios.rest/api/v0',
+  adaNodeUrl: 'https://preprod.koios.rest/api/v1',
   hashNodeUrl: 'https://api.test.provenance.io',
   injNodeUrl: 'https://testnet.sentry.lcd.injective.network', // COIN-1219 : reference  https://docs.injective.network/develop/public-endpoints/#testnet
   atomNodeUrl: 'https://rest.provider-sentry-02.ics-testnet.polypore.xyz/',
@@ -260,9 +258,9 @@ const testnetBase: EnvironmentTemplate = {
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
   coredaoExplorerBaseUrl: 'https://api.test2.btcs.network',
   oasExplorerBaseUrl: 'https://explorer.testnet.oasys.games',
-  wemixExplorerBaseUrl: 'https://api-testnet.wemixscan.com',
+  wemixExplorerBaseUrl: 'https://api.etherscan.io/v2',
   flrExplorerBaseUrl: 'https://coston2-explorer.flare.network',
-  xdcExplorerBaseUrl: 'https://api-apothem.xdcscan.io',
+  xdcExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
   icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
   monExplorerBaseUrl: 'https://testnet.monadexplorer.com/',
@@ -291,10 +289,6 @@ export const Environments: Environments = {
   dev: Object.assign({}, devBase, {
     uri: 'https://app.bitgo-dev.com',
     stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
-  }),
-  latest: Object.assign({}, devBase, {
-    uri: 'https://app.bitgo-latest.com',
-    stellarFederationServerUrl: 'https://app.bitgo-latest.com/api/v2/xlm/federation',
   }),
   staging: Object.assign({}, testnetBase, {
     uri: 'https://app.bitgo-staging.com',
@@ -328,9 +322,9 @@ export const Environments: Environments = {
     uri: 'https://admin.bitgo-dev.com',
     stellarFederationServerUrl: 'https://admin.bitgo-dev.com/api/v2/txlm/federation',
   }),
-  adminLatest: Object.assign({}, devBase, {
-    uri: 'https://admin.bitgo-latest.com',
-    stellarFederationServerUrl: 'https://admin.bitgo-latest.com/api/v2/xlm/federation',
+  adminStaging: Object.assign({}, testnetBase, {
+    uri: 'https://admin.bitgo-staging.com',
+    stellarFederationServerUrl: 'https://admin.bitgo-staging.com/api/v2/xlm/federation',
   }),
   custom: Object.assign({}, mainnetBase, {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

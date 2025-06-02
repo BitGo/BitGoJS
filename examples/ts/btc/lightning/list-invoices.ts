@@ -58,7 +58,7 @@ async function main(): Promise<void> {
       status,
       limit: limit ? BigInt(limit) : undefined,
     };
-    const invoices = await lightning.listInvoices(query);
+    const { invoices } = await lightning.listInvoices(query);
 
     // Display invoice summary
     console.log(`\nFound ${invoices.length} invoices:`);

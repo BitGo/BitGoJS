@@ -1,5 +1,6 @@
 import assert from 'assert';
 import {
+  AuditDecryptedKeyParams,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
   BaseCoin,
@@ -24,7 +25,6 @@ import { Principal } from '@dfinity/principal';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { createHash, Hash } from 'crypto';
-import { HttpAgent, replica } from 'ic0';
 import * as mpc from '@bitgo/sdk-lib-mpc';
 
 import {
@@ -40,11 +40,12 @@ import {
   SigningPayload,
   IcpTransactionExplanation,
   TransactionHexParams,
-  ACCOUNT_BALANCE_CALL,
   UnsignedSweepRecoveryTransaction,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
+import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { IcpAgent } from './lib/icpAgent';
 
 /**
  * Class representing the Internet Computer (ICP) coin.
@@ -260,52 +261,24 @@ export class Icp extends BaseCoin {
    * @returns Promise resolving to the account balance as a string.
    * @throws Error if the balance could not be fetched.
    */
-  protected async getAccountBalance(publicKeyHex: string): Promise<string> {
-    try {
-      const principalId = utils.getPrincipalIdFromPublicKey(publicKeyHex).toText();
-      return await this.getBalanceFromPrincipal(principalId);
-    } catch (error: any) {
-      throw new Error(`Unable to fetch account balance: ${error.message || error}`);
-    }
+  protected async getAccountBalance(publicKeyHex: string): Promise<BigNumber> {
+    const principalId = utils.getPrincipalIdFromPublicKey(publicKeyHex).toText();
+    const agent = new IcpAgent(this.getPublicNodeUrl());
+    return agent.getBalance(principalId);
   }
 
   /**
-   * Fetches the account balance for a given principal ID.
-   * @param principalId - The principal ID of the account.
-   * @returns Promise resolving to the account balance as a string.
-   * @throws Error if the balance could not be fetched.
+   * Retrieves the current transaction fee data from the ICP public node.
+   *
+   * This method creates an instance of `IcpAgent` using the public node URL,
+   * then queries the node for the current fee information.
+   *
+   * @returns A promise that resolves to a `BigNumber` representing the current transaction fee.
+   * @throws Will propagate any errors encountered while communicating with the ICP node.
    */
-  protected async getBalanceFromPrincipal(principalId: string): Promise<string> {
-    try {
-      const agent = this.createAgent(); // TODO: WIN-5512: move to a ICP agent file WIN-5512
-      const ic = replica(agent, { local: true });
-
-      const ledger = ic(Principal.fromUint8Array(LEDGER_CANISTER_ID).toText());
-      const subaccountHex = '0000000000000000000000000000000000000000000000000000000000000000';
-
-      const account = {
-        owner: Principal.fromText(principalId),
-        subaccount: [utils.hexToBytes(subaccountHex)],
-      };
-
-      const balance = await ledger.call(ACCOUNT_BALANCE_CALL, account);
-      return balance.toString();
-    } catch (error: any) {
-      throw new Error(`Error fetching balance for principal ${principalId}: ${error.message || error}`);
-    }
-  }
-
-  /**
-   * Creates a new HTTP agent for communicating with the Internet Computer.
-   * @param host - The host URL to connect to (defaults to the public node URL).
-   * @returns An instance of HttpAgent.
-   */
-  protected createAgent(host: string = this.getPublicNodeUrl()): HttpAgent {
-    return new HttpAgent({
-      host,
-      fetch,
-      verifyQuerySignatures: false,
-    });
+  protected async getFeeData(): Promise<BigNumber> {
+    const agent = new IcpAgent(this.getPublicNodeUrl());
+    return await agent.getFee();
   }
 
   private getBuilderFactory(): TransactionBuilderFactory {
@@ -413,9 +386,9 @@ export class Icp extends BaseCoin {
       }
 
       const senderAddress = await this.getAddressFromPublicKey(publicKey);
-      const balance = new BigNumber(await this.getAccountBalance(publicKey));
-      const feeData = new BigNumber(utils.feeData());
-      const actualBalance = balance.plus(feeData); // gas amount returned from gasData is negative so we add it
+      const balance = await this.getAccountBalance(publicKey);
+      const feeData = await this.getFeeData();
+      const actualBalance = balance.minus(feeData);
       if (actualBalance.isLessThanOrEqualTo(0)) {
         throw new Error('Did not have enough funds to recover');
       }
@@ -463,5 +436,13 @@ export class Icp extends BaseCoin {
     } catch (error) {
       throw new Error(`Error during ICP recovery: ${error.message || error}`);
     }
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ multiSigType, prv, publicKey }: AuditDecryptedKeyParams) {
+    if (multiSigType !== 'tss') {
+      throw new Error('Unsupported multisigtype ');
+    }
+    auditEcdsaPrivateKey(prv as string, publicKey as string);
   }
 }

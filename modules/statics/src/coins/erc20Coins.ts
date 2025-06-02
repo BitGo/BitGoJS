@@ -10468,6 +10468,62 @@ export const erc20Coins = [
     '0xdc035d45d973e3ec169d2276ddab16f1e407384f',
     UnderlyingAsset['eth:usds']
   ),
+  erc20(
+    'dfe67820-c659-4dfb-b699-26795d0ec543',
+    'eth:perc',
+    'Perion',
+    18,
+    '0x60be1e1fe41c1370adaf5d8e66f07cf1c2df2268',
+    UnderlyingAsset['eth:perc']
+  ),
+  erc20(
+    'ae39386d-8295-4f11-ac5c-f6fee81cdc48',
+    'eth:cfg',
+    'Centrifuge',
+    18,
+    '0xcccccccccc33d538dbc2ee4feab0a7a1ff4e8a94',
+    UnderlyingAsset['eth:cfg']
+  ),
+  erc20(
+    '693e94a9-c9ae-4910-b64e-397d7bf8151d',
+    'eth:plume',
+    'Plume',
+    18,
+    '0x4c1746a800d224393fe2470c70a35717ed4ea5f1',
+    UnderlyingAsset['eth:plume']
+  ),
+  erc20(
+    '04628406-9ab1-4022-9ebd-a8c01eec9ae6',
+    'eth:vbill',
+    'VanEck Treasury Fund',
+    6,
+    '0x2255718832bc9fd3be1caf75084f4803da14ff01',
+    UnderlyingAsset['eth:vbill']
+  ),
+  erc20(
+    'ce3abc01-0515-4c88-b14b-ce670b68e49d',
+    'eth:la',
+    'Lagrange',
+    18,
+    '0x0fc2a55d5bd13033f1ee0cdd11f60f7efe66f467',
+    UnderlyingAsset['eth:la']
+  ),
+  erc20(
+    '8292e195-0275-4a40-9ca3-4adb7ab04518',
+    'eth:es',
+    'Eclipse',
+    6,
+    '0x6055dc6ff1077eebe5e6d2ba1a1f53d7ef8430de',
+    UnderlyingAsset['eth:es']
+  ),
+  erc20(
+    '47029442-483d-415c-bc0f-9a61f6aeaf9e',
+    'eth:ctrl',
+    'Ctrl Wallet',
+    18,
+    '0xe50e009ddb1a4d8ec668eac9d8b2df1f96348707',
+    UnderlyingAsset['eth:ctrl']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

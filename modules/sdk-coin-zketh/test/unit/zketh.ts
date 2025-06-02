@@ -533,7 +533,7 @@ describe('zkSync', function () {
   });
 
   describe('Recover transaction:', function () {
-    const baseUrl = 'https://block-explorer-api.sepolia.zksync.dev';
+    const baseUrl = common.Environments.test.zksyncExplorerBaseUrl as string;
     const userXpub =
       'xpub661MyMwAqRbcEeTc8789MK5PUGEYiPG4F4V17n2Rd2LoTATA1XoCnJT5FAYAShQxSxtFjpo5NHmcWwTp2LiWGBMwpUcAA3HywhxivgYfq7q';
     const userXprv =

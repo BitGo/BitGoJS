@@ -28,5 +28,4 @@ export {
   Nep141Token,
 } from './account';
 export { CoinMap } from './map';
-export { gatekeep } from './gatekeep';
 export { networkFeatureMapForTokens } from './networkFeatureMapForTokens';

@@ -442,8 +442,8 @@ export const amsTokenConfig = {
       },
       primaryKeyCurve: 'ed25519',
       nodeAccountId: '0.0.3',
-      tokenId: '0.0.13078',
-      contractAddress: '0.0.13078',
+      tokenId: '0.0.429274',
+      contractAddress: '0.0.429274',
     },
   ],
   'tavaxc:bitgo': [
@@ -723,8 +723,8 @@ export const incorrectAmsTokenConfig = {
       },
       primaryKeyCurve: 'ed25519',
       nodeAccountId: '0.0.3',
-      tokenId: '0.0.13078',
-      contractAddress: '0.0.13078',
+      tokenId: '0.0.429274',
+      contractAddress: '0.0.429274',
     },
   ],
 };

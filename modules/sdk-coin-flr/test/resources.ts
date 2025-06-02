@@ -1,4 +1,5 @@
 const getTxListRequestUnsignedSweep: Record<string, string> = {
+  chainid: '114',
   module: 'account',
   action: 'txlist',
   address: '0x1469e6e519ff8bf398b76b4be0b50701b999f14c',
@@ -17,6 +18,7 @@ const getTxListResponseUnsignedSweep: Record<string, unknown> = {
 };
 
 const getBalanceRequestUnsignedSweep: Record<string, string> = {
+  chainid: '114',
   module: 'account',
   action: 'balance',
   address: '0x1469e6e519ff8bf398b76b4be0b50701b999f14c',
@@ -44,6 +46,7 @@ export const mockDataUnsignedSweep = {
 };
 
 const getTxListRequestNonBitGoRecovery: Record<string, string> = {
+  chainid: '114',
   module: 'account',
   action: 'txlist',
   address: '0xfeffc77a7b7e4921484e9af3fd5602b5a2c9018e',
@@ -62,6 +65,7 @@ const getTxListResponseNonBitGoRecovery: Record<string, unknown> = {
 };
 
 const getBalanceRequestNonBitGoRecovery: Record<string, string> = {
+  chainid: '114',
   module: 'account',
   action: 'balance',
   address: '0xfeffc77a7b7e4921484e9af3fd5602b5a2c9018e',

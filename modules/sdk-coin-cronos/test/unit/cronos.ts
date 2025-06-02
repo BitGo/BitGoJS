@@ -31,12 +31,12 @@ describe('Cronos', function () {
 
     cronos.getChain().should.equal('cronos');
     cronos.getFamily().should.equal('cronos');
-    cronos.getFullName().should.equal('Cronos');
+    cronos.getFullName().should.equal('Cronos POS');
     cronos.getBaseFactor().should.equal(1e8);
 
     tcronos.getChain().should.equal('tcronos');
     tcronos.getFamily().should.equal('cronos');
-    tcronos.getFullName().should.equal('Testnet Cronos');
+    tcronos.getFullName().should.equal('Testnet Cronos POS');
     tcronos.getBaseFactor().should.equal(1e8);
   });
 

@@ -1,5 +1,5 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { MPCSweepTxs, MPCTx, MPCTxs, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
+import { generateRandomPassword, MPCSweepTxs, MPCTx, MPCTxs, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import assert from 'assert';
@@ -13,6 +13,7 @@ import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
 import * as testData from '../fixtures/sol';
 import * as resources from '../resources/sol';
 import { getBuilderFactory } from './getBuilderFactory';
+import { solBackupKey } from './fixtures/solBackupKey';
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -2571,6 +2572,70 @@ describe('SOL:', function () {
           await basecoin.broadcastTransaction({ serializedSignedTransaction });
         },
         { message: 'Invalid raw transaction' }
+      );
+    });
+  });
+
+  describe('AuditKey', () => {
+    const { key: keyString, commonKeychain } = solBackupKey;
+    const key = keyString.replace(/\s/g, '');
+    const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
+    const multiSigType = 'tss';
+
+    it('should return for valid inputs', () => {
+      basecoin.assertIsValidKey({
+        encryptedPrv: key,
+        publicKey: commonKeychain,
+        walletPassphrase,
+        multiSigType,
+      });
+    });
+
+    it('should throw error if the commonKeychain is invalid', () => {
+      const alteredCommonKeychain = generateRandomPassword(10);
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv: key,
+            publicKey: alteredCommonKeychain,
+            walletPassphrase,
+            multiSigType,
+          }),
+        {
+          message: 'Invalid common keychain',
+        }
+      );
+    });
+
+    it('should throw error if the walletPassphrase is incorrect', () => {
+      const incorrectPassphrase = 'foo';
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv: key,
+            publicKey: commonKeychain,
+            walletPassphrase: incorrectPassphrase,
+            multiSigType,
+          }),
+        {
+          message: "failed to decrypt prv: ccm: tag doesn't match",
+        }
+      );
+    });
+
+    it('should throw error if the key is altered', () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      assert.throws(
+        () =>
+          basecoin.assertIsValidKey({
+            encryptedPrv: alteredKey,
+            publicKey: commonKeychain,
+            walletPassphrase,
+            multiSigType,
+          }),
+        {
+          message: 'failed to decrypt prv: json decrypt: invalid parameters',
+        }
       );
     });
   });

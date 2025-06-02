@@ -1,4 +1,5 @@
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -115,5 +116,11 @@ export class Vet extends BaseCoin {
 
   protected async rebuildTransaction(txHex: string): Promise<BaseTransaction> {
     throw new Error('Method not implemented');
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
+    /** https://bitgoinc.atlassian.net/browse/COIN-4213 */
+    throw new Error('Method not implemented.');
   }
 }

@@ -1,6 +1,7 @@
-import { Near } from './near';
-import { coins, Nep141TokenConfig, NetworkType, tokens } from '@bitgo/statics';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { coins, Nep141TokenConfig, NetworkType, tokens } from '@bitgo/statics';
+
+import { Near } from './near';
 
 export class Nep141Token extends Near {
   public readonly tokenConfig: Nep141TokenConfig;

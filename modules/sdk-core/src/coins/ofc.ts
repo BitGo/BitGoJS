@@ -4,6 +4,7 @@
 import { randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
   KeyPair,
@@ -100,6 +101,11 @@ export class Ofc extends BaseCoin {
   }
 
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
+    throw new MethodNotImplementedError();
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey(params: AuditDecryptedKeyParams) {
     throw new MethodNotImplementedError();
   }
 }

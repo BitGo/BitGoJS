@@ -258,6 +258,7 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
     let backupKeyNonce = 0;
 
     const result = await this.recoveryBlockchainExplorerQuery({
+      chainid: this.getChainId().toString(),
       module: 'account',
       action: 'txlist',
       address: backupKeyAddress,

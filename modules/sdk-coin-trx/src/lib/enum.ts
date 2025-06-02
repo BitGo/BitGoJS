@@ -22,6 +22,22 @@ export enum ContractType {
    * This is the contract for voting for witnesses
    */
   VoteWitness,
+  /**
+   * This is the contract for unfreezing balances
+   */
+  UnfreezeBalanceV2,
+  /**
+   * This is the contract for withdrawing expired unfrozen balances
+   */
+  WithdrawExpireUnfreeze,
+  /**
+   * This is the contract for delegating resource
+   */
+  DelegateResourceContract,
+  /**
+   * This is the contract for un-delegating resource
+   */
+  UnDelegateResourceContract,
 }
 
 export enum PermissionType {

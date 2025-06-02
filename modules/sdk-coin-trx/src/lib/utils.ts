@@ -16,9 +16,16 @@ import {
   VoteWitnessContractParameter,
   FreezeContractDecoded,
   VoteContractDecoded,
+  UnfreezeBalanceContractParameter,
+  WithdrawExpireUnfreezeContractParameter,
+  UnfreezeContractDecoded,
+  WithdrawContractDecoded,
+  ResourceManagementContractParameter,
+  ResourceManagementContractDecoded,
 } from './iface';
 import { ContractType, PermissionType, TronResource } from './enum';
 import { AbiCoder, hexConcat } from 'ethers/lib/utils';
+import { DELEGATION_TYPE_URL } from './constants';
 
 export const TRANSACTION_MAX_EXPIRATION = 86400000; // one day
 export const TRANSACTION_DEFAULT_EXPIRATION = 3600000; // one hour
@@ -177,7 +184,10 @@ export function decodeTransaction(hexString: string): RawData {
     | AccountPermissionUpdateContract[]
     | TriggerSmartContract[]
     | FreezeBalanceContractParameter[]
-    | VoteWitnessContractParameter[];
+    | VoteWitnessContractParameter[]
+    | UnfreezeBalanceContractParameter[]
+    | WithdrawExpireUnfreezeContractParameter[]
+    | ResourceManagementContractParameter[];
 
   let contractType: ContractType;
 
@@ -202,6 +212,22 @@ export function decodeTransaction(hexString: string): RawData {
     case 'type.googleapis.com/protocol.VoteWitnessContract':
       contractType = ContractType.VoteWitness;
       contract = decodeVoteWitnessContract(rawTransaction.contracts[0].parameter.value);
+      break;
+    case 'type.googleapis.com/protocol.WithdrawExpireUnfreezeContract':
+      contract = decodeWithdrawExpireUnfreezeContract(rawTransaction.contracts[0].parameter.value);
+      contractType = ContractType.WithdrawExpireUnfreeze;
+      break;
+    case 'type.googleapis.com/protocol.UnfreezeBalanceV2Contract':
+      contract = decodeUnfreezeBalanceV2Contract(rawTransaction.contracts[0].parameter.value);
+      contractType = ContractType.UnfreezeBalanceV2;
+      break;
+    case DELEGATION_TYPE_URL:
+      contractType = ContractType.DelegateResourceContract;
+      contract = decodeDelegateResourceContract(rawTransaction.contracts[0].parameter.value);
+      break;
+    case 'type.googleapis.com/protocol.UnDelegateResourceContract':
+      contractType = ContractType.UnDelegateResourceContract;
+      contract = decodeUnDelegateResourceContract(rawTransaction.contracts[0].parameter.value);
       break;
     default:
       throw new UtilsError('Unsupported contract type');
@@ -484,6 +510,196 @@ export function decodeVoteWitnessContract(base64: string): VoteWitnessContractPa
         value: {
           owner_address,
           votes,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with unfreeze balance contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {UnfreezeBalanceContractParameter[]} - Array containing the decoded unfreeze contract
+ */
+export function decodeUnfreezeBalanceV2Contract(base64: string): UnfreezeBalanceContractParameter[] {
+  let unfreezeContract: UnfreezeContractDecoded;
+  try {
+    unfreezeContract = protocol.UnfreezeBalanceV2Contract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the unfreeze contract in the transaction.');
+  }
+
+  if (!unfreezeContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this unfreeze contract.');
+  }
+
+  if (unfreezeContract.resource === undefined) {
+    throw new UtilsError('Resource type does not exist in this unfreeze contract.');
+  }
+
+  if (unfreezeContract.unfreezeBalance === undefined) {
+    throw new UtilsError('Unfreeze balance does not exist in this unfreeze contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(unfreezeContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  // Convert ResourceCode enum value to string resource name
+  const resourceValue = unfreezeContract.resource;
+  const resourceEnum = resourceValue === protocol.ResourceCode.BANDWIDTH ? TronResource.BANDWIDTH : TronResource.ENERGY;
+
+  return [
+    {
+      parameter: {
+        value: {
+          resource: resourceEnum,
+          unfreeze_balance: Number(unfreezeContract.unfreezeBalance),
+          owner_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with withdraw expire unfreeze contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {WithdrawExpireUnfreezeContractParameter[]} - Array containing the decoded withdraw contract
+ */
+export function decodeWithdrawExpireUnfreezeContract(base64: string): WithdrawExpireUnfreezeContractParameter[] {
+  let withdrawContract: WithdrawContractDecoded;
+  try {
+    withdrawContract = protocol.WithdrawBalanceContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the withdraw contract in the transaction.');
+  }
+
+  if (!withdrawContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this withdraw contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(withdrawContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  return [
+    {
+      parameter: {
+        value: {
+          owner_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with delegate resource contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {ResourceManagementContractParameter[]} - Array containing the decoded delegate resource contract
+ */
+export function decodeDelegateResourceContract(base64: string): ResourceManagementContractParameter[] {
+  let delegateResourceContract: ResourceManagementContractDecoded;
+  try {
+    delegateResourceContract = protocol.DelegateResourceContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the delegate resource contract in the transaction.');
+  }
+
+  if (!delegateResourceContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this delegate resource contract.');
+  }
+
+  if (!delegateResourceContract.receiverAddress) {
+    throw new UtilsError('Receiver address does not exist in this delegate resource contract.');
+  }
+
+  if (delegateResourceContract.resource === undefined) {
+    throw new UtilsError('Resource type does not exist in this delegate resource contract.');
+  }
+
+  if (delegateResourceContract.balance === undefined) {
+    throw new UtilsError('Balance does not exist in this delegate resource contract.');
+  }
+
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(delegateResourceContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  const receiver_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(delegateResourceContract.receiverAddress, 'base64').toString('hex'))
+  );
+
+  const resourceValue = !delegateResourceContract.resource ? TronResource.BANDWIDTH : TronResource.ENERGY;
+
+  return [
+    {
+      parameter: {
+        value: {
+          resource: resourceValue,
+          balance: Number(delegateResourceContract.balance),
+          owner_address,
+          receiver_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with undelegate resource contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {ResourceManagementContractParameter[]} - Array containing the decoded undelegate resource contract
+ */
+export function decodeUnDelegateResourceContract(base64: string): ResourceManagementContractParameter[] {
+  let undelegateResourceContract: ResourceManagementContractDecoded;
+  try {
+    undelegateResourceContract = protocol.UnDelegateResourceContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the delegate resource contract in the transaction.');
+  }
+
+  if (!undelegateResourceContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this delegate resource contract.');
+  }
+
+  if (!undelegateResourceContract.receiverAddress) {
+    throw new UtilsError('Receiver address does not exist in this delegate resource contract.');
+  }
+
+  if (undelegateResourceContract.resource === undefined) {
+    throw new UtilsError('Resource type does not exist in this delegate resource contract.');
+  }
+
+  if (undelegateResourceContract.balance === undefined) {
+    throw new UtilsError('Balance does not exist in this delegate resource contract.');
+  }
+
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(undelegateResourceContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  const receiver_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(undelegateResourceContract.receiverAddress, 'base64').toString('hex'))
+  );
+
+  const resourceValue = !undelegateResourceContract.resource ? TronResource.BANDWIDTH : TronResource.ENERGY;
+
+  return [
+    {
+      parameter: {
+        value: {
+          resource: resourceValue,
+          balance: Number(undelegateResourceContract.balance),
+          owner_address,
+          receiver_address,
         },
       },
     },

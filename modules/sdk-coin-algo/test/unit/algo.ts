@@ -1,6 +1,6 @@
 import { AlgoLib, Talgo } from '../../src';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import * as AlgoResources from '../fixtures/algo';
 import { randomBytes } from 'crypto';
 import { coins } from '@bitgo/statics';
@@ -10,6 +10,7 @@ import { Algo } from '../../src/algo';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory } from '../../src/lib';
 import { KeyPair } from '@bitgo/sdk-core';
+import { algoBackupKey } from './fixtures/algoBackupKey';
 
 describe('ALGO:', function () {
   let bitgo: TestBitGoAPI;
@@ -1126,6 +1127,57 @@ describe('ALGO:', function () {
         txJson.from.should.equal(rootAddress);
         txJson.fee.should.equal(fee);
       });
+    });
+  });
+
+  describe('AuditKey', () => {
+    const { key } = algoBackupKey;
+    const walletPassphrase = 'ZQ8MhxT84m4P';
+
+    it('should return for valid inputs', () => {
+      basecoin.assertIsValidKey({
+        encryptedPrv: key,
+        walletPassphrase,
+      });
+    });
+
+    it('should throw error if the walletPassphrase is incorrect', () => {
+      assert.throws(
+        () => {
+          basecoin.assertIsValidKey({
+            encryptedPrv: key,
+            walletPassphrase: 'foo',
+          });
+        },
+        { message: "failed to decrypt prv: ccm: tag doesn't match" }
+      );
+    });
+
+    it('should throw error if the key is altered', () => {
+      const alteredKey = key.replace(/[0-9]/g, '0');
+      assert.throws(
+        () => {
+          basecoin.assertIsValidKey({
+            encryptedPrv: alteredKey,
+            walletPassphrase,
+          });
+        },
+        { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+      );
+    });
+
+    it('should throw error if the key is not a valid key', () => {
+      const invalidKey = '#@)$#($*@)#($*';
+      const encryptedPrv = encrypt(walletPassphrase, invalidKey);
+      assert.throws(
+        () => {
+          basecoin.assertIsValidKey({
+            encryptedPrv,
+            walletPassphrase,
+          });
+        },
+        { message: 'Invalid private key: Invalid base32 characters' }
+      );
     });
   });
 });

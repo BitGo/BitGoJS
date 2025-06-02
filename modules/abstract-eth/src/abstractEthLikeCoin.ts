@@ -2,14 +2,18 @@
  * @prettier
  */
 import type * as EthLikeCommon from '@ethereumjs/common';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { CoinFamily, BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
 import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes } from 'crypto';
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
+  bitcoin,
   BitGoBase,
   FullySignedTransaction,
   HalfSignedAccountTransaction,
+  isValidPrv,
+  isValidXprv,
   KeyPair,
   MethodNotImplementedError,
   ParsedTransaction,
@@ -25,6 +29,7 @@ import BigNumber from 'bignumber.js';
 
 import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from './lib';
 import { VerifyEthAddressOptions } from './abstractEthLikeNewCoins';
+import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -105,6 +110,10 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
 
   getBaseFactor() {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
+  }
+
+  getChainId(): number {
+    return (this._staticsCoin.network as EthereumNetwork).chainId;
   }
 
   /** @inheritDoc */
@@ -226,4 +235,21 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * @return a new transaction builder
    */
   protected abstract getTransactionBuilder(common?: EthLikeCommon.default): TransactionBuilder;
+
+  /** @inheritDoc */
+  auditDecryptedKey({ multiSigType, publicKey, prv }: AuditDecryptedKeyParams): void {
+    if (multiSigType === 'tss') {
+      auditEcdsaPrivateKey(prv as string, publicKey as string);
+    } else {
+      if (!isValidPrv(prv) && !isValidXprv(prv)) {
+        throw new Error('Invalid private key');
+      }
+      if (publicKey) {
+        const genPubKey = bitcoin.HDNode.fromBase58(prv).neutered().toBase58();
+        if (genPubKey !== publicKey) {
+          throw new Error('Incorrect xpub');
+        }
+      }
+    }
+  }
 }

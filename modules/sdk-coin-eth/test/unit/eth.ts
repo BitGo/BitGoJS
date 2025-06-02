@@ -6,6 +6,7 @@ import { bip32 } from '@bitgo/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import {
   common,
+  generateRandomPassword,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   TransactionType,
@@ -28,6 +29,8 @@ import { getBuilder } from './getBuilder';
 import * as testData from '../resources/eth';
 import * as mockData from '../fixtures/eth';
 import should from 'should';
+import { ethMultiSigBackupKey } from './fixtures/ethMultiSigBackupKey';
+import { ethTssBackupKey } from './fixtures/ethTssBackupKey';
 
 nock.enableNetConnect();
 
@@ -836,7 +839,7 @@ describe('ETH:', function () {
   });
 
   describe('EVM Cross Chain Recovery', function () {
-    const baseUrl = 'https://api-holesky.etherscan.io';
+    const baseUrl = common.Environments.test.etherscanBaseUrl as string;
     it('should build a recovery transaction for hot wallet', async function () {
       const userKey =
         '{"iv":"VFZ3jvXhxo1Z+Yaf2MtZnA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
@@ -881,7 +884,7 @@ describe('ETH:', function () {
     });
 
     describe('Non-BitGo Recovery for Hot Wallets (MPCv2)', function () {
-      const baseUrl = 'https://api-holesky.etherscan.io';
+      const baseUrl = common.Environments.test.etherscanBaseUrl as string;
       let bitgo: TestBitGoAPI;
       let basecoin: Hteth;
 
@@ -952,7 +955,7 @@ describe('ETH:', function () {
     });
 
     describe('Build Unsigned Sweep for Self-Custody Cold Wallets (MPCv2)', function () {
-      const baseUrl = 'https://api-holesky.etherscan.io';
+      const baseUrl = common.Environments.test.etherscanBaseUrl as string;
       let bitgo: TestBitGoAPI;
       let basecoin: Hteth;
 
@@ -1046,6 +1049,105 @@ describe('ETH:', function () {
           },
           Error,
           'Error: invalid address'
+        );
+      });
+    });
+  });
+
+  describe('Audit Key', () => {
+    let coin: Hteth;
+    before(() => {
+      coin = bitgo.coin('hteth') as Hteth;
+    });
+
+    describe('MultiSig', () => {
+      const { key } = ethMultiSigBackupKey;
+
+      it('should return { isValid: true } for valid inputs', () => {
+        coin.assertIsValidKey({
+          encryptedPrv: key,
+          walletPassphrase: 'ZQ8MhxT84m4P',
+        });
+      });
+
+      it('should throw error if the walletPassphrase is incorrect', () => {
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: key,
+              walletPassphrase: 'foo',
+            }),
+          { message: "failed to decrypt prv: ccm: tag doesn't match" }
+        );
+      });
+
+      it('should throw error if the key is altered', () => {
+        const alteredKey = key.replace(/[0-9]/g, '0');
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: alteredKey,
+              walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
+            }),
+          { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+        );
+      });
+    });
+
+    describe('TSS', () => {
+      const { key: keyString, commonKeychain } = ethTssBackupKey;
+      const key = keyString.replace(/\s/g, '');
+      const walletPassphrase = 'kAm[EFQ6o=SxlcLFDw%,';
+      const multiSigType = 'tss';
+
+      it('should not throw for valid inputs', () => {
+        coin.assertIsValidKey({
+          encryptedPrv: key,
+          publicKey: commonKeychain,
+          walletPassphrase,
+          multiSigType,
+        });
+      });
+
+      it('should throw if the commonKeychain is altered', () => {
+        const alteredCommonKeychain = generateRandomPassword(10);
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: key,
+              publicKey: alteredCommonKeychain,
+              walletPassphrase,
+              multiSigType,
+            }),
+          { message: 'Invalid common keychain' }
+        );
+      });
+
+      it('should throw error if the walletPassphrase is incorrect', () => {
+        const incorrectPassphrase = 'foo';
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: key,
+              publicKey: commonKeychain,
+              walletPassphrase: incorrectPassphrase,
+              multiSigType,
+            }),
+          { message: "failed to decrypt prv: ccm: tag doesn't match" }
+        );
+      });
+
+      it('should throw error if the key is altered', () => {
+        const alteredKey = key.replace(/[0-9]/g, '0');
+        assert.throws(
+          () =>
+            coin.assertIsValidKey({
+              encryptedPrv: alteredKey,
+              publicKey: commonKeychain,
+              walletPassphrase,
+              multiSigType,
+            }),
+          { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
         );
       });
     });

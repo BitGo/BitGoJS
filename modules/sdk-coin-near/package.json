@@ -42,6 +42,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^35.0.1",
     "@bitgo/statics": "^54.0.1",
+    "@bitgo/sdk-lib-mpc": "^10.3.0",
     "@stablelib/hex": "^1.0.0",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.2.1",

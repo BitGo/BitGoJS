@@ -115,6 +115,11 @@ export const authAccount = {
   prv: 'Vd4PFt2YsjZFbyW6ej5bCK46QRptKyBe6Aq2FPxpynBzqXL5RUt3L3Y4FXyKq9igfshKFskv5yGqdrgvRknKbLk',
 };
 
+export const sol2022AuthAccount = {
+  pub: 'GZmjWFJT9dUnpWNqJabnRMq4twyqCr9kXFc3zMGePma9',
+  prv: 'Vd4PFt2YsjZFbyW6ej5bCK46QRptKyBe6Aq2FPxpynBzqXL5RUt3L3Y4FXyKq9igfshKFskv5yGqdrgvRknKbLk',
+};
+
 export const authAccount2 = {
   pub: '7nSM6jwFRGP5BDZQBcgBgpPNfSB2PZKUyLBS6SrJP9kx',
   prv: '5ecNbERFDGwouBRNv8G5P2e4rwQpKK7DeveahDoz168hkiuUNt6MdmzVDLPGtnSX9hugboCzbKLoNsuaWDFEs7UY',
@@ -325,6 +330,7 @@ export const tokenTransfers = {
   owner: 'i34VuFZY1Lz8Tg9ajAqq5MNjE3ES32uVR8oPFFtLd9F',
   nameUSDC: 'tsol:usdc',
   mintUSDC: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+  mintAI16Z: 'HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC',
   sourceUSDC: '2fyhC1YbqaYszkUQw2YGNRVkr2abr69UwFXVCjz4Q5f5',
   sourceRAY: 'EF3VmejtM8sAznwsiYAwF1LA7N2tRAgFUvoVjF3MMwzG',
   sourceSRM: '2P6cevaY3RLoQdW6xiduwePFqZCCqM6mTzNr3rpJbzKX',

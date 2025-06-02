@@ -12,6 +12,7 @@ import {
   decodeCloseAccountInstruction,
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 import {
   Keypair,
@@ -476,6 +477,29 @@ export function getSolTokenFromAddress(tokenAddress: string, network: BaseNetwor
 }
 
 /**
+ * Get the statics coin object matching a given Solana token address if it exists
+ *
+ * @param tokenAddress The token address to match against
+ * @param network Solana Mainnet or Testnet
+ * @returns statics BaseCoin object for the matching token
+ */
+export function getSolTokenFromAddressOnly(tokenAddress: string): Readonly<BaseCoin> | undefined {
+  const tokens = coins.filter((coin) => {
+    if (coin instanceof SolCoin) {
+      return coin.tokenAddress.toLowerCase() === tokenAddress.toLowerCase();
+    }
+    return false;
+  });
+  const tokensArray = tokens.map((token) => token);
+  if (tokensArray.length >= 1) {
+    // there should never be two tokens with the same contract address, so we assert that here
+    assert(tokensArray.length === 1);
+    return tokensArray[0];
+  }
+  return undefined;
+}
+
+/**
  * Get the solana token object from token name
  * @param tokenName The token name to match against
  * */
@@ -505,17 +529,26 @@ export async function getAssociatedTokenAccountAddress(
   ownerAddress: string,
   allowOwnerOffCurve = false
 ): Promise<string> {
+  const mintPublicKey = new PublicKey(tokenMintAddress);
   const ownerPublicKey = new PublicKey(ownerAddress);
 
   // tokenAddress are not on ed25519 curve, so they can't be used as ownerAddress
   if (!allowOwnerOffCurve && !PublicKey.isOnCurve(ownerPublicKey.toBuffer())) {
     throw new UtilsError('Invalid ownerAddress - address off ed25519 curve, got: ' + ownerAddress);
   }
-  const ataAddress = await getAssociatedTokenAddress(
-    new PublicKey(tokenMintAddress),
-    ownerPublicKey,
-    allowOwnerOffCurve
-  );
+
+  const coin = getSolTokenFromAddressOnly(tokenMintAddress);
+  if (!coin || !(coin instanceof SolCoin)) {
+    throw new UtilsError(`Token not found or not a Solana token: ${tokenMintAddress}`);
+  }
+
+  let ataAddress: PublicKey;
+  const programId = coin.programId;
+  if (programId === TOKEN_2022_PROGRAM_ID.toString()) {
+    ataAddress = await getAssociatedTokenAddress(mintPublicKey, ownerPublicKey, false, TOKEN_2022_PROGRAM_ID);
+  } else {
+    ataAddress = await getAssociatedTokenAddress(mintPublicKey, ownerPublicKey, allowOwnerOffCurve);
+  }
   return ataAddress.toString();
 }
 

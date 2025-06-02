@@ -1,8 +1,8 @@
-import { solToken, tsolToken } from '../account';
-import { UnderlyingAsset, CoinFeature } from '../base';
+import { ProgramID, solToken, tsolToken } from '../account';
+import { CoinFeature, UnderlyingAsset } from '../base';
 import {
-  SOL_TOKEN_FEATURES_WITH_FRANKFURT,
   SOL_TOKEN_FEATURES,
+  SOL_TOKEN_FEATURES_WITH_FRANKFURT,
   SOL_TOKEN_FEATURES_WITH_FRANKFURT_GERMANY,
 } from '../coinFeatures';
 
@@ -75,7 +75,8 @@ export const solTokens = [
     'HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC', // https://solscan.io/token/HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC
     'HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC',
     UnderlyingAsset['sol:ai16z'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     'd6bee044-de5b-4ce2-8ed2-dbae6f23e728',
@@ -2471,7 +2472,8 @@ export const solTokens = [
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ]
+    ],
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     'b4e9b281-952e-4b75-8d57-8666e0b4a33e',
@@ -2486,7 +2488,8 @@ export const solTokens = [
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ]
+    ],
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     'cf7d8a35-11ea-46dc-80a5-e0bed443a18c',
@@ -2501,7 +2504,8 @@ export const solTokens = [
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ]
+    ],
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     '694e2cc5-cc12-4fa9-9447-3904ac7a2c57',
@@ -2516,7 +2520,8 @@ export const solTokens = [
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ]
+    ],
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     '6dd706b0-4764-48b1-b45d-e78a98e609b3',
@@ -2531,7 +2536,8 @@ export const solTokens = [
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ]
+    ],
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     '679055e6-e8cc-4b91-906c-0689de806a59',
@@ -2566,7 +2572,8 @@ export const solTokens = [
     '4MmJVdwYN8LwvbGeCowYjSx7KoEi6BJWg8XXnW4fDDp6',
     '4MmJVdwYN8LwvbGeCowYjSx7KoEi6BJWg8XXnW4fDDp6',
     UnderlyingAsset['sol:tbill'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     '88814831-9cae-4174-8d1c-380aeb3fe55a',
@@ -2576,7 +2583,8 @@ export const solTokens = [
     'DghpMkatCiUsofbTmid3M3kAbDTPqDwKiYHnudXeGG52',
     'DghpMkatCiUsofbTmid3M3kAbDTPqDwKiYHnudXeGG52',
     UnderlyingAsset['sol:eurcv'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     '9a89cbd8-f097-4ab8-a5ea-f594c44cb33e',
@@ -2606,6 +2614,36 @@ export const solTokens = [
     'DvjbEsdca43oQcw2h3HW1CT7N3x5vRcr3QrvTUHnXvgV',
     'DvjbEsdca43oQcw2h3HW1CT7N3x5vRcr3QrvTUHnXvgV',
     UnderlyingAsset['sol:dood'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'ed0c2697-11a4-4c9f-af83-2102790c74bb',
+    'sol:sb',
+    'Solbank',
+    9,
+    '8twuNzMszqWeFbDErwtf4gw13E6MUS4Hsdx5mi3aqXAM',
+    '8twuNzMszqWeFbDErwtf4gw13E6MUS4Hsdx5mi3aqXAM',
+    UnderlyingAsset['sol:sb'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '492962f0-f485-4526-b104-447523be8fef',
+    'sol:dfdvsol',
+    'DeFi Development Corp Staked SOL',
+    9,
+    'sctmB7GPi5L2Q5G9tUSzXvhZ4YiDMEGcRov9KfArQpx',
+    'sctmB7GPi5L2Q5G9tUSzXvhZ4YiDMEGcRov9KfArQpx',
+    UnderlyingAsset['sol:dfdvsol'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '9779af52-f7fa-4a34-ba06-6a6daf340bd6',
+    'sol:chillguy',
+    'Just a chill guy',
+    6,
+    'Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump',
+    'Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump',
+    UnderlyingAsset['sol:chillguy'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
@@ -2697,5 +2735,16 @@ export const solTokens = [
     'Ex6rHLLmvZoP9mpunMFvew424seSjPp5PQb5hDy8KJu6',
     UnderlyingAsset['tsol:slnd'],
     SOL_TOKEN_FEATURES
+  ),
+  tsolToken(
+    '45a5b308-988c-4993-be35-aa8065f3309c',
+    'tsol:t22mint',
+    'T22MINT',
+    9,
+    '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
+    '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
+    UnderlyingAsset['tsol:slnd'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
 ];

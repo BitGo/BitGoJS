@@ -681,7 +681,7 @@ describe('Optimism', function () {
   });
 
   describe('Recover transaction:', function () {
-    const baseUrl = 'https://api-sepolia-optimistic.etherscan.io';
+    const baseUrl = common.Environments.test.optimisticEtherscanBaseUrl as string;
     const userXpub =
       'xpub661MyMwAqRbcEeTc8789MK5PUGEYiPG4F4V17n2Rd2LoTATA1XoCnJT5FAYAShQxSxtFjpo5NHmcWwTp2LiWGBMwpUcAA3HywhxivgYfq7q';
     const userXprv =
@@ -868,7 +868,7 @@ describe('Optimism', function () {
   });
 
   describe('Evm Based Cross Chain Recovery transaction:', function () {
-    const baseUrl = 'https://api-sepolia-optimistic.etherscan.io';
+    const baseUrl = common.Environments.test.optimisticEtherscanBaseUrl as string;
     const bitgoFeeAddress = '0x33a42faea3c6e87021347e51700b48aaf49aa1e7';
     const destinationAddress = '0xd5adde17fed8baed3f32b84af05b8f2816f7b560';
     const bitgoDestinationAddress = '0xe5986ce4490deb67d2950562ceb930ddf9be7a14';

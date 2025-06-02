@@ -85,8 +85,6 @@ export class TransferBuilder extends TransactionBuilder {
       const to = txMethod.dest.id;
       const memo = txMethod.memo;
 
-      console.log(`Validating TransferWithMemo transaction: amount=${amount}, to=${to}, memo=${memo}`);
-
       const validationResult = Schema.TransferWithMemoTransactionSchema.validate({ amount, to, memo });
       if (validationResult.error) {
         throw new InvalidTransactionError(`Invalid transaction: ${validationResult.error.message}`);

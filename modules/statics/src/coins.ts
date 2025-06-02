@@ -19,6 +19,7 @@ import {
   gasTankAccount,
   hederaCoin,
   hederaToken,
+  nep141Token,
   nonstandardToken,
   opethErc20,
   polygonErc20,
@@ -64,6 +65,7 @@ import { lightningCoins } from './lightning';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
 import { sip10Tokens } from './coins/sip10Tokens';
+import { nep141Tokens } from './coins/nep141Tokens';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
@@ -130,6 +132,7 @@ export const coins = CoinMap.fromCoins([
   ...polygonTokens,
   ...solTokens,
   ...sip10Tokens,
+  ...nep141Tokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -848,7 +851,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '507492ba-d127-4fd8-b07d-9461f5887a26',
     'cronos',
-    'Cronos',
+    'Cronos POS',
     Networks.main.cronos,
     8,
     UnderlyingAsset.CRONOS,
@@ -858,7 +861,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '49d56512-bddb-41aa-ac7f-f4a4c494b412',
     'tcronos',
-    'Testnet Cronos',
+    'Testnet Cronos POS',
     Networks.test.cronos,
     8,
     UnderlyingAsset.CRONOS,
@@ -1565,13 +1568,23 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '0cb81a9b-248e-4d41-b596-700fe0bf93b8',
+    'hbar:bonzo',
+    'Bonzo Finance',
+    Networks.main.hedera,
+    8,
+    UnderlyingAsset['hbar:bonzo'],
+    '0.0.8279134',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '842c2119-3071-409d-b86f-49f0b46b676e',
     'thbar:usdc',
     'Testnet Hedera USD Coin',
     Networks.test.hedera,
     6,
     UnderlyingAsset.USDC,
-    '0.0.13078',
+    '0.0.429274',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
@@ -2780,6 +2793,14 @@ export const coins = CoinMap.fromCoins([
     '0x6bb04085922d08d1c7de0cfe95f7626a6f54be95',
     UnderlyingAsset['arbeth:eqtyx']
   ),
+  arbethErc20(
+    'd915f6a3-f37e-4da1-b38e-c8c08cae8365',
+    'arbeth:anime',
+    'Animecoin',
+    18,
+    '0x37a645648df29205c6261289983fb04ecd70b4b3',
+    UnderlyingAsset['arbeth:anime']
+  ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',
@@ -3174,6 +3195,28 @@ export const coins = CoinMap.fromCoins([
     'vnx.li',
     UnderlyingAsset['xrp:vgbp']
   ),
+  xrpToken(
+    'a2ae3eef-a5b3-4140-b971-5090798fed3a',
+    'xrp:solo',
+    'Sologenic',
+    15,
+    'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz',
+    '534F4C4F00000000000000000000000000000000',
+    'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz::534F4C4F00000000000000000000000000000000',
+    'sologenic.com',
+    UnderlyingAsset['xrp:solo']
+  ),
+  xrpToken(
+    'b8b52e22-257d-4c47-95be-1b2aff2d8b35',
+    'xrp:aau',
+    'Archax',
+    15,
+    'rKCu4CucpepQ6N89c8T5GuX2jkxzCST18Q',
+    'AAU',
+    'rKCu4CucpepQ6N89c8T5GuX2jkxzCST18Q::AAU',
+    'archax.com',
+    UnderlyingAsset['xrp:aau']
+  ),
   txrpToken(
     '80cbaecf-b1ea-4811-97ae-213c1ffc9175',
     'txrp:xsgd',
@@ -3524,6 +3567,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     eth: erc20,
     eos: eosToken,
     hbar: hederaToken,
+    near: nep141Token,
     opeth: opethErc20,
     polygon: polygonErc20,
     sol: solToken,

@@ -29,6 +29,7 @@ import {
   NotSupported,
   MultisigType,
   multisigTypes,
+  AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import stellar from 'stellar-sdk';
 import BigNumber from 'bignumber.js';
@@ -845,5 +846,24 @@ export class Algo extends BaseCoin {
 
   private getBuilder(): AlgoLib.TransactionBuilderFactory {
     return new AlgoLib.TransactionBuilderFactory(coins.get(this.getBaseChain()));
+  }
+
+  /** @inheritDoc */
+  auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
+    if (multiSigType === 'tss') {
+      throw new Error('Unsupported multiSigType');
+    }
+
+    let algoKey;
+    try {
+      algoKey = new AlgoLib.KeyPair({ prv });
+    } catch (e) {
+      throw new Error(`Invalid private key: ${e.message}`);
+    }
+    if (publicKey && publicKey !== algoKey.getKeys().pub) {
+      throw new Error('Invalid public key');
+    }
+
+    return;
   }
 }

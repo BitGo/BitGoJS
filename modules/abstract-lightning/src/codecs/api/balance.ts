@@ -67,19 +67,36 @@ export const LndBalance = t.strict(
 
 export type LndBalance = t.TypeOf<typeof LndBalance>;
 
-export const LndGetBalancesResponse = t.strict(
+export const LndGetOffchainBalances = t.strict(
   {
-    inboundBalance: BigIntFromString,
-    inboundPendingBalance: BigIntFromString,
-    inboundUnsettledBalance: BigIntFromString,
     outboundBalance: BigIntFromString,
     outboundPendingBalance: BigIntFromString,
     outboundUnsettledBalance: BigIntFromString,
-    // wallet balances, names forced by type in AbstractCoin
+    outboundLockedBalance: BigIntFromString,
+    inboundBalance: BigIntFromString,
+    inboundPendingBalance: BigIntFromString,
+    inboundUnsettledBalance: BigIntFromString,
+  },
+  'LndGetOffchainBalances'
+);
+
+// wallet onchain balances, names forced by type in AbstractCoin
+export const LndGetOnchainBalances = t.strict(
+  {
     spendableBalanceString: BigIntFromString,
     balanceString: BigIntFromString,
     confirmedBalanceString: BigIntFromString,
   },
+  'LndGetOnchainBalances'
+);
+
+export const LndGetBalancesResponse = t.intersection(
+  [
+    t.strict({
+      offchain: LndGetOffchainBalances,
+    }),
+    LndGetOnchainBalances,
+  ],
   'LndGetBalancesResponse'
 );
 

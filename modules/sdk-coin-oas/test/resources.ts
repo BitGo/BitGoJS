@@ -1,4 +1,5 @@
 const getTxListRequestUnsignedSweep: Record<string, string> = {
+  chainid: '9372',
   module: 'account',
   action: 'txlist',
   address: '0x7f3f0386b3e17d24e7d7b6bcfffa3d92b8bf8a68',
@@ -17,6 +18,7 @@ const getTxListResponseUnsignedSweep: Record<string, unknown> = {
 };
 
 const getBalanceRequestUnsignedSweep: Record<string, string> = {
+  chainid: '9372',
   module: 'account',
   action: 'balance',
   address: '0x7f3f0386b3e17d24e7d7b6bcfffa3d92b8bf8a68',
