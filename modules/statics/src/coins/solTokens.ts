@@ -2741,8 +2741,8 @@ export const solTokens = [
     'tsol:t22mint',
     'T22MINT',
     9,
-    '3WhwBR8BYoCF957CvVKEX1aHdVYYNZeC7oCq3wfwxm5Y',
-    '3WhwBR8BYoCF957CvVKEX1aHdVYYNZeC7oCq3wfwxm5Y',
+    '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
+    '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
     UnderlyingAsset['tsol:slnd'],
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
