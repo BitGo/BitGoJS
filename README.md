@@ -51,7 +51,7 @@ BitGoJS currently provides support for the following Node versions per package.j
 
 ```
 "engines": {
-  "node": ">=18 <21",
+  "node": ">=18 <23",
   "npm": ">=3.10.10"
 }
 ```

@@ -23,7 +23,7 @@
   "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=18 <21"
+    "node": ">=18 <23"
   },
   "repository": {
     "type": "git",

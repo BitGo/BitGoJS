@@ -1,7 +1,7 @@
 # Requirements
 
 - yarn version 1 (classic)
-- node version >=18 and <21
+- node version >=18 and <23
 
 # Installing
 
@@ -180,7 +180,7 @@ Engines should be set to the following:
 ```json
 {
   "engines": {
-    "node": ">=18 <21",
+    "node": ">=18 <23",
     "npm": ">=3.10.10"
   }
 }

@@ -64,7 +64,7 @@
     "@types/express": "4.17.13",
     "@types/lodash": "^4.14.121",
     "@types/morgan": "^1.7.35",
-    "@types/node": "^16.18.46",
+    "@types/node": "^22.15.29",
     "@types/sinon": "^10.0.11",
     "@types/supertest": "^2.0.11",
     "keccak": "^3.0.3",

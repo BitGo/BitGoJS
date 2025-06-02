@@ -31,7 +31,7 @@
   "homepage": "https://github.com/BitGo/BitGoJS/tree/master/modules/unspents#bitgounspents",
   "devDependencies": {
     "@types/lodash": "~4.14.123",
-    "@types/node": "^16.18.46",
+    "@types/node": "^22.15.29",
     "lodash.combinations": "~18.9.19",
     "should": "~13.2.3"
   },
