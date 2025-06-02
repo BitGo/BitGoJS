@@ -888,13 +888,13 @@ class MantraTestnet extends Testnet implements AccountNetwork {
 }
 
 class Cronos extends Mainnet implements AccountNetwork {
-  name = 'Cronos';
+  name = 'Cronos POS';
   family = CoinFamily.CRONOS;
   explorerUrl = 'https://cronos-pos.org/explorer/';
 }
 
 class CronosTestnet extends Testnet implements AccountNetwork {
-  name = 'Testnet Cronos';
+  name = 'Testnet Cronos POS';
   family = CoinFamily.CRONOS;
   explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/';
 }
