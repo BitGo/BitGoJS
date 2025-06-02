@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.2.56...@bitgo/sdk-coin-xlm@3.3.0) (2025-06-02)
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **root:** add new audit key baseCoin method ([57c1778](https://github.com/BitGo/BitGoJS/commit/57c17784a72ea364f18e3af9dbd83da877827e69))
+
+## [3.2.56](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.2.55...@bitgo/sdk-coin-xlm@3.2.56) (2025-05-28)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xlm
+
 ## [3.2.55](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.2.54...@bitgo/sdk-coin-xlm@3.2.55) (2025-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

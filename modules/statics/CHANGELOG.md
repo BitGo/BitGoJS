@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.0.1...@bitgo/statics@54.1.0) (2025-06-02)
+
+### Bug Fixes
+
+- correct ofctrx:usd1 decimal places ([8350851](https://github.com/BitGo/BitGoJS/commit/83508518f3cbd7043d3654814130b30ae059d98f))
+- **sdk-coin-hbar:** fix thbar usdc token id ([3234f57](https://github.com/BitGo/BitGoJS/commit/3234f57768ed8fe563f58955b4d23c6b4cdd4cb9))
+- **sdk-coin-sol:** fix ata creation for sol 2022 token ([4acffc6](https://github.com/BitGo/BitGoJS/commit/4acffc6fed498b0d4d226148830bbdd710c4b6c5))
+- **statics:** update correct token address ([9fb2fad](https://github.com/BitGo/BitGoJS/commit/9fb2fadeab277a178b588de0a000e7a60c09de2b))
+
+### Features
+
+- onboard new tokens win-5588 ([e5db14b](https://github.com/BitGo/BitGoJS/commit/e5db14bf999b7e8b810be5d99ba6a152d61323ed))
+- **sdk-coin-near:** added testnet and mainnet nep141 tokens ([0801189](https://github.com/BitGo/BitGoJS/commit/08011891a378498cc50492c783df80047b04247e))
+- **statics:** add new test sol 2022 token ([833a67b](https://github.com/BitGo/BitGoJS/commit/833a67bb24b8a1a948a1c7606c7b472f5650ce7b))
+- **statics:** onboard new batch of tokens ([d52c927](https://github.com/BitGo/BitGoJS/commit/d52c927e04f68ac86ff5cc754e101e4b286db510))
+
+## [54.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.0.0...@bitgo/statics@54.0.1) (2025-05-28)
+
+### Bug Fixes
+
+- correct ofctrx:usd1 decimal places ([656233f](https://github.com/BitGo/BitGoJS/commit/656233fa75f95e9dc11a8c5e212189e9e6e0484a))
+
 # [54.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@53.0.0...@bitgo/statics@54.0.0) (2025-05-22)
 
 ### Bug Fixes

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.13.11...@bitgo/sdk-coin-sui@5.14.0) (2025-06-02)
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **root:** add new audit key baseCoin method ([57c1778](https://github.com/BitGo/BitGoJS/commit/57c17784a72ea364f18e3af9dbd83da877827e69))
+
+## [5.13.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.13.10...@bitgo/sdk-coin-sui@5.13.11) (2025-05-28)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
 ## [5.13.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.13.9...@bitgo/sdk-coin-sui@5.13.10) (2025-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

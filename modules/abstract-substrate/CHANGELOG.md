@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.5.2...@bitgo/abstract-substrate@1.6.0) (2025-06-02)
+
+### Bug Fixes
+
+- **sdk-coin-polyx:** fix to toJson method in polyx transaction ([8f8ef0b](https://github.com/BitGo/BitGoJS/commit/8f8ef0b8fa420dadb41989465b2380af73466ae0))
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **root:** add new audit key baseCoin method ([57c1778](https://github.com/BitGo/BitGoJS/commit/57c17784a72ea364f18e3af9dbd83da877827e69))
+
+## [1.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.5.1...@bitgo/abstract-substrate@1.5.2) (2025-05-28)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
 ## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.5.0...@bitgo/abstract-substrate@1.5.1) (2025-05-22)
 
 ### Bug Fixes

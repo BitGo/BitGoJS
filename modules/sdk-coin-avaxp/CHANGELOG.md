@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.81...@bitgo/sdk-coin-avaxp@5.1.0) (2025-06-02)
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+
+## [5.0.81](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.80...@bitgo/sdk-coin-avaxp@5.0.81) (2025-05-28)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxp
+
 ## [5.0.80](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxp@5.0.79...@bitgo/sdk-coin-avaxp@5.0.80) (2025-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxp

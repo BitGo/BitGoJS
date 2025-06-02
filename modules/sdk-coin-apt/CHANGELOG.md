@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.2.2...@bitgo/sdk-coin-apt@2.3.0) (2025-06-02)
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+
+## [2.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.2.1...@bitgo/sdk-coin-apt@2.2.2) (2025-05-28)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-apt
+
 ## [2.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.2.0...@bitgo/sdk-coin-apt@2.2.1) (2025-05-22)
 
 ### Bug Fixes

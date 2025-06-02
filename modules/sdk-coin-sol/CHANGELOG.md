@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.10.5...@bitgo/sdk-coin-sol@4.11.0) (2025-06-02)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** fix ata creation for sol 2022 token ([4acffc6](https://github.com/BitGo/BitGoJS/commit/4acffc6fed498b0d4d226148830bbdd710c4b6c5))
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **root:** add new audit key baseCoin method ([57c1778](https://github.com/BitGo/BitGoJS/commit/57c17784a72ea364f18e3af9dbd83da877827e69))
+
+## [4.10.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.10.4...@bitgo/sdk-coin-sol@4.10.5) (2025-05-28)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
 ## [4.10.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.10.3...@bitgo/sdk-coin-sol@4.10.4) (2025-05-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
