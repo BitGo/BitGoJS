@@ -273,7 +273,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
@@ -300,7 +300,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
@@ -322,7 +322,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
@@ -404,7 +404,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
@@ -440,7 +440,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
@@ -471,7 +471,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
@@ -600,7 +600,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
@@ -624,7 +624,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();
@@ -648,7 +648,7 @@ describe('NEAR:', function () {
         .sender(accounts.account1.address, accounts.account1.publicKey)
         .receiverId(validatorContractAddress)
         .recentBlockHash(blockHash.block1)
-        .nonce(1);
+        .nonce(BigInt(1));
       txBuilder.sign({ key: accounts.account1.secretKey });
       const tx = await txBuilder.build();
       const txToBroadcastFormat = tx.toBroadcastFormat();

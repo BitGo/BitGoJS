@@ -94,7 +94,7 @@ interface RecoveryOptions {
 }
 
 interface NearTxBuilderParamsFromNode {
-  nonce: number;
+  nonce: bigint;
   blockHash: string;
 }
 
