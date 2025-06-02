@@ -4,7 +4,7 @@
   "description": "Low-level cryptographic methods used in BitGo packages for the secp256k1 curve",
   "main": "./dist/src/index.js",
   "engines": {
-    "node": ">=10.22.0 <21",
+    "node": ">=10.22.0 <23",
     "npm": ">=3.10.10"
   },
   "keywords": [
@@ -39,7 +39,7 @@
     "ecpair": "npm:@bitgo/ecpair@2.1.0-rc.0"
   },
   "devDependencies": {
-    "@types/node": "^16.18.46"
+    "@types/node": "^22.15.29"
   },
   "lint-staged": {
     "*.{js,ts}": [

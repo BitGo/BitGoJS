@@ -55,7 +55,7 @@
     "@bitgo/sdk-opensslbytes": "^2.0.0",
     "@silencelaboratories/dkls-wasm-ll-bundler": "1.2.0-pre.4",
     "@types/lodash": "^4.14.151",
-    "@types/node": "^20.11.19",
+    "@types/node": "^22.15.29",
     "@types/sjcl": "1.0.34",
     "nyc": "^15.0.0",
     "sjcl": "1.0.8"

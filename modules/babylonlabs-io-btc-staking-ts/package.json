@@ -27,7 +27,7 @@
     "btc-staking"
   ],
   "engines": {
-    "node": ">=18 <=20"
+    "node": ">=18 < 23"
   },
   "author": "Babylon Labs Ltd.",
   "license": "SEE LICENSE IN LICENSE",
