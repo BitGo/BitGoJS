@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf a
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
 # (skip postinstall) https://github.com/yarnpkg/yarn/issues/4100#issuecomment-388944260
-RUN NOYARNPOSTINSTALL=1 yarn install --pure-lockfile
+RUN NOYARNPOSTINSTALL=1 yarn install --pure-lockfile --network-timeout 120000
 
 COPY . .
 RUN \
@@ -322,9 +322,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 28 May 2025 21:15:10 GMT"
-LABEL version=13.6.2
-LABEL git_hash=5d889bad711b926e827b13b604b31759ac54284d
+LABEL created="Mon, 02 Jun 2025 18:52:09 GMT"
+LABEL version=13.6.3
+LABEL git_hash=4e039513da4046ca74a1b6ada7925da8f8564d04
 #LABEL_END
 
 USER node
