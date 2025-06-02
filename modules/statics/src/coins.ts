@@ -851,7 +851,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '507492ba-d127-4fd8-b07d-9461f5887a26',
     'cronos',
-    'Cronos',
+    'Cronos POS',
     Networks.main.cronos,
     8,
     UnderlyingAsset.CRONOS,
@@ -861,7 +861,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '49d56512-bddb-41aa-ac7f-f4a4c494b412',
     'tcronos',
-    'Testnet Cronos',
+    'Testnet Cronos POS',
     Networks.test.cronos,
     8,
     UnderlyingAsset.CRONOS,
