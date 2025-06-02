@@ -108,18 +108,17 @@ export type EnvironmentName =
   | 'staging'
   | 'test'
   | 'dev'
-  | 'latest'
   | 'local'
   | 'localNonSecure'
   | 'mock'
   | 'adminProd'
   | 'adminTest'
+  | 'adminStaging'
   | 'adminDev'
-  | 'adminLatest'
   | 'custom'
   | 'branch';
 
-export type AliasEnvironmentName = 'production' | 'msProd' | 'msTest' | 'msDev' | 'msLatest';
+export type AliasEnvironmentName = 'production' | 'msProd' | 'msTest' | 'msDev';
 
 export type Environments = { [k in EnvironmentName]: Environment };
 
@@ -129,7 +128,6 @@ export const AliasEnvironments: { [k in AliasEnvironmentName]: EnvironmentName }
   msProd: 'prod',
   msTest: 'test',
   msDev: 'dev',
-  msLatest: 'latest',
 };
 
 const mainnetBase: EnvironmentTemplate = {
@@ -292,10 +290,6 @@ export const Environments: Environments = {
     uri: 'https://app.bitgo-dev.com',
     stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
   }),
-  latest: Object.assign({}, devBase, {
-    uri: 'https://app.bitgo-latest.com',
-    stellarFederationServerUrl: 'https://app.bitgo-latest.com/api/v2/xlm/federation',
-  }),
   staging: Object.assign({}, testnetBase, {
     uri: 'https://app.bitgo-staging.com',
     stellarFederationServerUrl: 'https://app.bitgo-staging.com/api/v2/txlm/federation',
@@ -328,9 +322,9 @@ export const Environments: Environments = {
     uri: 'https://admin.bitgo-dev.com',
     stellarFederationServerUrl: 'https://admin.bitgo-dev.com/api/v2/txlm/federation',
   }),
-  adminLatest: Object.assign({}, devBase, {
-    uri: 'https://admin.bitgo-latest.com',
-    stellarFederationServerUrl: 'https://admin.bitgo-latest.com/api/v2/xlm/federation',
+  adminStaging: Object.assign({}, testnetBase, {
+    uri: 'https://admin.bitgo-staging.com',
+    stellarFederationServerUrl: 'https://admin.bitgo-staging.com/api/v2/xlm/federation',
   }),
   custom: Object.assign({}, mainnetBase, {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
