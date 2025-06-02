@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.3.4...@bitgo/abstract-lightning@5.0.0) (2025-06-02)
+
+### Features
+
+- **abstract-lightning:** locked to outbound locked balance name ([f0dcff0](https://github.com/BitGo/BitGoJS/commit/f0dcff01597fc6b30e7a10ec6a1c87b2a5f18207))
+- **abstract-lightning:** make offchain lightning balance composed ([2a0ebfa](https://github.com/BitGo/BitGoJS/commit/2a0ebfa4a63533811bb4fa76cdcc72fe5325853b))
+- added pagination in invoice ([3ce776b](https://github.com/BitGo/BitGoJS/commit/3ce776b40f4ad98b19e88568479cb7586bded5d7))
+- added pagination in payments ([2389a6d](https://github.com/BitGo/BitGoJS/commit/2389a6dd952989d67143f078ad8dbd01348e8c6c))
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+
+### BREAKING CHANGES
+
+- response structure changed
+- response structure changed
+
 ## [4.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.3.3...@bitgo/abstract-lightning@4.3.4) (2025-05-28)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

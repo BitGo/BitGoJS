@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.0.82...@bitgo/sdk-coin-hbar@2.1.0) (2025-06-02)
+
+### Bug Fixes
+
+- **sdk-coin-hbar:** fix thbar usdc token id ([3234f57](https://github.com/BitGo/BitGoJS/commit/3234f57768ed8fe563f58955b4d23c6b4cdd4cb9))
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **root:** add new audit key baseCoin method ([57c1778](https://github.com/BitGo/BitGoJS/commit/57c17784a72ea364f18e3af9dbd83da877827e69))
+
 ## [2.0.82](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hbar@2.0.81...@bitgo/sdk-coin-hbar@2.0.82) (2025-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar

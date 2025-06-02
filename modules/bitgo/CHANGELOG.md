@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [47.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@46.0.1...bitgo@47.0.0) (2025-06-02)
+
+### Bug Fixes
+
+- remove latest Env type ([a556391](https://github.com/BitGo/BitGoJS/commit/a55639173702514b2abe028777549da2c653055d))
+- rename admin latest ([e73202d](https://github.com/BitGo/BitGoJS/commit/e73202d8b207793e4fc22f47d1dcd43b9dfb5b84))
+
+### Features
+
+- added pagination in invoice ([3ce776b](https://github.com/BitGo/BitGoJS/commit/3ce776b40f4ad98b19e88568479cb7586bded5d7))
+- added pagination in payments ([2389a6d](https://github.com/BitGo/BitGoJS/commit/2389a6dd952989d67143f078ad8dbd01348e8c6c))
+
+### BREAKING CHANGES
+
+- response structure changed
+- response structure changed
+
 ## [46.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@46.0.0...bitgo@46.0.1) (2025-05-28)
 
 **Note:** Version bump only for package bitgo

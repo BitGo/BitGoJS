@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.1.2...@bitgo/sdk-coin-polyx@1.2.0) (2025-06-02)
+
+### Bug Fixes
+
+- **sdk-coin-polyx:** fix to toJson method in polyx transaction ([8f8ef0b](https://github.com/BitGo/BitGoJS/commit/8f8ef0b8fa420dadb41989465b2380af73466ae0))
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+
 ## [1.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.1.1...@bitgo/sdk-coin-polyx@1.1.2) (2025-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

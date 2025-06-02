@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.2.13...@bitgo/sdk-coin-xtz@2.3.0) (2025-06-02)
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+
 ## [2.2.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.2.12...@bitgo/sdk-coin-xtz@2.2.13) (2025-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

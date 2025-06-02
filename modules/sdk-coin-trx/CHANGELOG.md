@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.1.1...@bitgo/sdk-coin-trx@3.2.0) (2025-06-02)
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **sdk-coin-trx:** add delegate txbuilder ([2e270bd](https://github.com/BitGo/BitGoJS/commit/2e270bd44b6333795f9bc08e17d31c588f179e3a))
+- **sdk-coin-trx:** add delegate txbuilder ([efecbf3](https://github.com/BitGo/BitGoJS/commit/efecbf3b001148f5edf3a1729958f5f3e77ea3ec))
+- **sdk-coin-trx:** add unfreeze and withdraw for tron unstaking ([bf49450](https://github.com/BitGo/BitGoJS/commit/bf4945079989120e10e3498dd633c39d84942494))
+
 ## [3.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.1.0...@bitgo/sdk-coin-trx@3.1.1) (2025-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

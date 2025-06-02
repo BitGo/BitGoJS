@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.15.2...@bitgo/sdk-coin-icp@1.16.0) (2025-06-02)
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **sdk-coin-icp:** refactor account balance and fee retrieval to use IcpAgent class ([5b1c928](https://github.com/BitGo/BitGoJS/commit/5b1c92867ed9086d817d1676b1352fee5df0a4b2))
+
 ## [1.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.15.1...@bitgo/sdk-coin-icp@1.15.2) (2025-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp

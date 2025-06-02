@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [35.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.0.1...@bitgo/sdk-core@35.1.0) (2025-06-02)
+
+### Bug Fixes
+
+- fix ada public rest endpoint ([81ff959](https://github.com/BitGo/BitGoJS/commit/81ff959ce0d5e3e514361ea075a5b582dc4a248d))
+- remove duplicate literal ([2d4a6c3](https://github.com/BitGo/BitGoJS/commit/2d4a6c3ba320d0e3cc02d1bff0cc04590b7f9ba0))
+- remove latest Env type ([a556391](https://github.com/BitGo/BitGoJS/commit/a55639173702514b2abe028777549da2c653055d))
+- rename admin latest ([e73202d](https://github.com/BitGo/BitGoJS/commit/e73202d8b207793e4fc22f47d1dcd43b9dfb5b84))
+
+### Features
+
+- consolidate NFTs without address input ([015bd4f](https://github.com/BitGo/BitGoJS/commit/015bd4ffc7963eb114c4137ad75f0d22a3f25983))
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **root:** add new audit key baseCoin method ([57c1778](https://github.com/BitGo/BitGoJS/commit/57c17784a72ea364f18e3af9dbd83da877827e69))
+- **sdk-coin-trx:** add delegate txbuilder ([efecbf3](https://github.com/BitGo/BitGoJS/commit/efecbf3b001148f5edf3a1729958f5f3e77ea3ec))
+- use bitgo/secp256k1 for bip32/xprv/xpub operations ([e78a1d9](https://github.com/BitGo/BitGoJS/commit/e78a1d9f72fc94eed604e96d107e5634112eae4a))
+
 ## [35.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.0.0...@bitgo/sdk-core@35.0.1) (2025-05-28)
 
 **Note:** Version bump only for package @bitgo/sdk-core

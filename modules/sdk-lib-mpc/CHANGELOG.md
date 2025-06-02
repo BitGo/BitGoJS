@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.3.0...@bitgo/sdk-lib-mpc@10.4.0) (2025-06-02)
+
+### Features
+
+- rename audit function naming and signature ([1a885ab](https://github.com/BitGo/BitGoJS/commit/1a885ab60d30ca8595e284a728f2ab9d3c09994e))
+- **root:** add new audit key baseCoin method ([57c1778](https://github.com/BitGo/BitGoJS/commit/57c17784a72ea364f18e3af9dbd83da877827e69))
+
 # [10.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.2.0...@bitgo/sdk-lib-mpc@10.3.0) (2025-05-22)
 
 ### Features
