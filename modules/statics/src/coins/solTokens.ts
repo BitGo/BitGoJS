@@ -2736,4 +2736,15 @@ export const solTokens = [
     UnderlyingAsset['tsol:slnd'],
     SOL_TOKEN_FEATURES
   ),
+  tsolToken(
+    '45a5b308-988c-4993-be35-aa8065f3309c',
+    'tsol:t22mint',
+    'T22MINT',
+    9,
+    '3WhwBR8BYoCF957CvVKEX1aHdVYYNZeC7oCq3wfwxm5Y',
+    '3WhwBR8BYoCF957CvVKEX1aHdVYYNZeC7oCq3wfwxm5Y',
+    UnderlyingAsset['tsol:slnd'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
 ];
