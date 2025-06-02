@@ -407,9 +407,12 @@ module.exports.nockEthLikeRecovery = function (bitgo, nockData = nockEthData) {
     if (apiKey) {
       data.params.apiKey = apiKey;
     }
-    nock('https://api-holesky.etherscan.io/').get('/api').query(data.params).reply(200, data.response);
-    nock('https://api-amoy.polygonscan.com').get('/api').query(data.params).reply(200, data.response);
-    nock('https://api-testnet.bscscan.com').get('/api').query(data.params).reply(200, data.response);
+    data.params[`chainid`] = '17000';
+    nock('https://api.etherscan.io/v2').get('/api').query(data.params).reply(200, data.response);
+    data.params[`chainid`] = '80002';
+    nock('https://api.etherscan.io/v2').get('/api').query(data.params).reply(200, data.response);
+    data.params[`chainid`] = '97';
+    nock('https://api.etherscan.io/v2').get('/api').query(data.params).reply(200, data.response);
   });
 };
 
@@ -421,12 +424,13 @@ module.exports.nockEtherscanRateLimitError = function () {
   };
 
   const params = {
+    chainid: '17000',
     module: 'account',
     action: 'txlist',
     address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
   };
 
-  nock('https://api-holesky.etherscan.io').get('/api').query(params).reply(200, response);
+  nock('https://api.etherscan.io/v2').get('/api').query(params).reply(200, response);
 };
 
 module.exports.nockXlmRecovery = function () {

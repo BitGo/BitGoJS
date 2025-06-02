@@ -1,5 +1,6 @@
 export function getTxListRequest(address: string) {
   return {
+    chainid: '84532',
     module: 'account',
     action: 'txlist',
     address: address,
@@ -14,6 +15,7 @@ export const getTxListResponse = {
 
 export function getBalanceRequest(address: string) {
   return {
+    chainid: '84532',
     module: 'account',
     action: 'balance',
     address: address,
@@ -22,6 +24,7 @@ export function getBalanceRequest(address: string) {
 
 export function getTokenBalanceRequest(tokenContractAddress: string, address: string) {
   return {
+    chainid: '84532',
     module: 'account',
     action: 'tokenbalance',
     contractaddress: tokenContractAddress,
@@ -37,6 +40,7 @@ export const getBalanceResponse = {
 };
 
 export const getContractCallRequest = {
+  chainid: '84532',
   module: 'proxy',
   action: 'eth_call',
   to: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',

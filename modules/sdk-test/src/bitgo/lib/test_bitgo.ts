@@ -553,6 +553,7 @@ export class TestBitGo {
         });
 
       const params: any = {
+        chainid: '17000',
         module: 'account',
         action: 'tokenbalance',
         contractaddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
@@ -564,7 +565,7 @@ export class TestBitGo {
       }
 
       // Nock tokens stuck on the wallet
-      nock('https://api-holesky.etherscan.io')
+      nock('https://api.etherscan.io/v2')
         .get('/api')
         .query(params)
         .reply(200, { status: '1', message: 'OK', result: '2400' });

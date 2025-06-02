@@ -181,6 +181,7 @@ module.exports.WRWUnsignedSweepERC20Tx = {
 
 export function getTxListRequest(address: string) {
   return {
+    chainid: '17000',
     module: 'account',
     action: 'txlist',
     address: address,
@@ -195,6 +196,7 @@ export const getTxListResponse = {
 
 export function getBalanceRequest(address: string) {
   return {
+    chainid: '17000',
     module: 'account',
     action: 'balance',
     address: address,
@@ -208,6 +210,7 @@ export const getBalanceResponse = {
 };
 
 export const getContractCallRequest = {
+  chainid: '17000',
   module: 'proxy',
   action: 'eth_call',
   to: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
