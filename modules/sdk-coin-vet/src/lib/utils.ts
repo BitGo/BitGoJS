@@ -2,7 +2,7 @@ import { BaseUtils } from '@bitgo/sdk-core';
 
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented');
+    return /^0x[0-9a-fA-F]{40}$/.test(address);
   }
 
   isValidBlockId(hash: string): boolean {
