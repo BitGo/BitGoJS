@@ -1,4 +1,6 @@
 import { BaseUtils } from '@bitgo/sdk-core';
+import { VET_TRANSACTION_ID_LENGTH } from './constants';
+import { KeyPair } from './keyPair';
 
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
@@ -10,11 +12,21 @@ export class Utils implements BaseUtils {
   }
 
   isValidPrivateKey(key: string): boolean {
-    throw new Error('Method not implemented');
+    try {
+      new KeyPair({ prv: key });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   isValidPublicKey(key: string): boolean {
-    throw new Error('Method not implemented');
+    try {
+      new KeyPair({ pub: key });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   isValidSignature(signature: string): boolean {
@@ -22,7 +34,12 @@ export class Utils implements BaseUtils {
   }
 
   isValidTransactionId(txId: string): boolean {
-    throw new Error('Method not implemented');
+    return this.isValidHex(txId, VET_TRANSACTION_ID_LENGTH);
+  }
+
+  isValidHex(value: string, length: number): boolean {
+    const regex = new RegExp(`^(0x|0X)[a-fA-F0-9]{${length}}$`);
+    return regex.test(value);
   }
 }
 
