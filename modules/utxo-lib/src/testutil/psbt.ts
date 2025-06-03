@@ -261,26 +261,3 @@ export function verifyFullySignedSignatures(
     }
   });
 }
-
-/** We generate the PayGo attestation proof based on the private key, UUID, and address of our PayGo.
- * We create a random entropy of 64 bytes encoded to base58 and used to create the attestation proof
- * in the format 0x18Bitcoin Signed Message:\n<varint_length><ENTROPY><ADDRESS><UUID>
- * 
- * @param attestationPrvKey 
- * @param uuid 
- * @param address 
- */
-export function generatePayGoAttestationProof(attestationPrvKey: Buffer, uuid: string, address: Buffer): Buffer {
-  // This is our prefix to our bitcoin signed message
-  const prefixByte = Buffer.from([0x18]);
-  const signedMessagePrefix = Buffer.from('Bitcoin Signed Message:\n', 'utf8');
-  // We always create a 32 byte buffer array but we can implement a random
-  // function to generate between two ranges of our length of entropy
-  const entropy = Buffer.allocUnsafe(32);
-  crypto.getRandomValues(entropy);
-  const uuidToBuffer = Buffer.from(uuid, 'hex');
-  const signedMessageBufferRaw = Buffer.concat([prefixByte, signedMessagePrefix, entropy, address, uuidToBuffer]);
-  const varInt = Buffer.from([signedMessageBufferRaw.length]);
-  const fullResMessageBuffer = Buffer.concat([prefixByte, signedMessagePrefix, varInt, entropy, address, uuidToBuffer])l
-
-}
