@@ -14,7 +14,6 @@ import { createMessageSignature, unwrapLightningCoinSpecific } from '../lightnin
 import {
   CreateInvoiceBody,
   Invoice,
-  InvoiceInfo,
   InvoiceQuery,
   LightningAuthKeychain,
   LightningKeychain,
@@ -134,10 +133,10 @@ export interface ILightningWallet {
   /**
    * Get invoice details by payment hash
    * @param {string} paymentHash - Payment hash to lookup
-   * @returns {Promise<InvoiceInfo>} Invoice details
+   * @returns {Promise<Invoice>} Invoice details
    * @throws {InvalidPaymentHash} When payment hash is not valid
    */
-  getInvoice(paymentHash: string): Promise<InvoiceInfo>;
+  getInvoice(paymentHash: string): Promise<Invoice>;
   /**
    * Lists current lightning invoices
    * @param {InvoiceQuery} params Query parameters for filtering invoices
@@ -229,11 +228,11 @@ export class LightningWallet implements ILightningWallet {
     });
   }
 
-  async getInvoice(paymentHash: string): Promise<InvoiceInfo> {
+  async getInvoice(paymentHash: string): Promise<Invoice> {
     const response = await this.wallet.bitgo
       .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/invoice/${paymentHash}`, 2))
       .result();
-    return decodeOrElse(InvoiceInfo.name, InvoiceInfo, response, (error) => {
+    return decodeOrElse(Invoice.name, Invoice, response, (error) => {
       throw new Error(`Invalid get invoice response ${error}`);
     });
   }

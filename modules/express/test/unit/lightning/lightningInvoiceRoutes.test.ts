@@ -39,6 +39,8 @@ describe('Lightning Invoice Routes', () => {
         walletId: 'testWalletId',
         status: 'open' as const,
         expiresAt: new Date('2025-02-21T10:00:00.000Z'),
+        createdAt: new Date('2025-02-21T09:00:00.000Z'),
+        updatedAt: new Date('2025-02-21T09:00:00.000Z'),
       };
 
       const createInvoiceSpy = sinon.stub().resolves(expectedResponse);

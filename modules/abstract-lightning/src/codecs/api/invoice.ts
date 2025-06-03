@@ -48,44 +48,22 @@ export const Invoice = t.intersection(
       status: InvoiceStatus,
       /** A date in ISO format representing when this invoice expires. */
       expiresAt: DateFromISOString,
+      createdAt: DateFromISOString,
+      updatedAt: DateFromISOString,
     }),
     t.partial({
       memo: t.string,
+      amtPaidMsat: BigIntFromString,
     }),
   ],
   'Invoice'
 );
 export type Invoice = t.TypeOf<typeof Invoice>;
 
-export const InvoiceInfo = t.intersection(
-  [
-    t.type({
-      valueMsat: BigIntFromString,
-      paymentHash: t.string,
-      invoice: t.string,
-      walletId: t.string,
-      status: InvoiceStatus,
-      expiresAt: DateFromISOString,
-      createdAt: DateFromISOString,
-      updatedAt: DateFromISOString,
-    }),
-    t.partial({
-      /**
-       * The number of millisats actually paid to this invoice, this may be greater
-       * than the amount requested by the invoice, since lightning allows overpaying
-       * (but not underpaying) invoices.
-       */
-      amtPaidMsat: BigIntFromString,
-    }),
-  ],
-  'InvoiceInfo'
-);
-export type InvoiceInfo = t.TypeOf<typeof InvoiceInfo>;
-
 export const ListInvoicesResponse = t.intersection(
   [
     t.type({
-      invoices: t.array(InvoiceInfo),
+      invoices: t.array(Invoice),
     }),
     t.partial({
       /**

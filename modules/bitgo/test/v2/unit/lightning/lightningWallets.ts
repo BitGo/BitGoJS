@@ -6,7 +6,6 @@ import {
   CreateInvoiceBody,
   getLightningWallet,
   Invoice,
-  InvoiceInfo,
   InvoiceQuery,
   LndCreatePaymentResponse,
   LightningWallet,
@@ -248,7 +247,7 @@ describe('Lightning wallets', function () {
     });
 
     it('should list invoices', async function () {
-      const invoice: InvoiceInfo = {
+      const invoice: Invoice = {
         valueMsat: 1000n,
         paymentHash: 'foo',
         invoice: 'tlnfoobar',
@@ -266,7 +265,7 @@ describe('Lightning wallets', function () {
       const listInvoicesNock = nock(bgUrl)
         .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`)
         .query(InvoiceQuery.encode(query))
-        .reply(200, { invoices: [InvoiceInfo.encode(invoice)] });
+        .reply(200, { invoices: [Invoice.encode(invoice)] });
       const invoiceResponse = await wallet.listInvoices(query);
       assert.strictEqual(invoiceResponse.invoices.length, 1);
       assert.deepStrictEqual(invoiceResponse.invoices[0], invoice);
@@ -274,7 +273,7 @@ describe('Lightning wallets', function () {
     });
 
     it('should work properly with pagination while listing invoices', async function () {
-      const invoice1: InvoiceInfo = {
+      const invoice1: Invoice = {
         valueMsat: 1000n,
         paymentHash: 'foo1',
         invoice: 'tlnfoobar1',
@@ -284,17 +283,17 @@ describe('Lightning wallets', function () {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const invoice2: InvoiceInfo = {
+      const invoice2: Invoice = {
         ...invoice1,
         paymentHash: 'foo2',
         invoice: 'tlnfoobar2',
       };
-      const invoice3: InvoiceInfo = {
+      const invoice3: Invoice = {
         ...invoice1,
         paymentHash: 'foo3',
         invoice: 'tlnfoobar3',
       };
-      const allInvoices = [InvoiceInfo.encode(invoice1), InvoiceInfo.encode(invoice2), InvoiceInfo.encode(invoice3)];
+      const allInvoices = [Invoice.encode(invoice1), Invoice.encode(invoice2), Invoice.encode(invoice3)];
       const query = {
         status: 'open',
         startDate: new Date(),
@@ -333,6 +332,9 @@ describe('Lightning wallets', function () {
         status: 'open',
         walletId: wallet.wallet.id(),
         valueMsat: 1000n,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        memo: 'test invoice',
       };
       const createInvoiceNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/lightning/invoice`, CreateInvoiceBody.encode(createInvoice))
