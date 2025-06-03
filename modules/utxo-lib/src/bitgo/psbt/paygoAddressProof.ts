@@ -8,7 +8,7 @@ import { toBase58Check } from '../../address';
 import { getPsbtOutputProprietaryKeyVals, ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil';
 import { UtxoPsbt } from '../UtxoPsbt';
 
-/** The function consumes the signature as a parameter and adds the PayGo address to the 
+/** The function consumes the signature as a parameter and adds the PayGo address to the
  * PSBT output at the output index where the signature is of the format:
  * 0x18Bitcoin Signed Message:\n<varint_length><ENTROPY><ADDRESS><UUID> signed by
  * the HSM beforehand.
@@ -22,7 +22,7 @@ export function addPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, sig: B
     key: {
       identifier: PSBT_PROPRIETARY_IDENTIFIER,
       subtype: ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
-      keydata: Buffer.from(pub)
+      keydata: Buffer.from(pub),
     },
     value: sig,
   });
@@ -66,9 +66,11 @@ export function verifyPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, pub
   assert(out);
   const addressFromOutput = address.fromOutputScript(out.script, psbt.network);
   const addressFromProof = extractAddressFromPayGoAttestationProof(message, addressFromOutput.length);
-  
+
   if (addressFromProof !== addressFromOutput) {
-    throw new Error(`The address from the output (${addressFromOutput}) does not match the address that is in the proof (${addressFromProof}).`)
+    throw new Error(
+      `The address from the output (${addressFromOutput}) does not match the address that is in the proof (${addressFromProof}).`
+    );
   }
 }
 
@@ -85,6 +87,10 @@ export function getPaygoAddressProofOutputIndex(psbt: UtxoPsbt): number | undefi
       identifier: PSBT_PROPRIETARY_IDENTIFIER,
       subtype: ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
     });
+
+    if (proprietaryKeyVals.length > 1) {
+      throw new Error(`There are multiple PayGo addresses in the PSBT output ${outputIndex}.`);
+    }
 
     return proprietaryKeyVals.length === 0 ? [] : [outputIndex];
   });
