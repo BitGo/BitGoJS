@@ -3,6 +3,7 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
+  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
@@ -15,6 +16,9 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import utils from './lib/utils';
+import { bip32 } from '@bitgo/secp256k1';
+import { randomBytes } from 'crypto';
+import { KeyPair as EthKeyPair } from '@bitgo/abstract-eth';
 
 /**
  * Full Name: Vechain
@@ -79,7 +83,12 @@ export class Vet extends BaseCoin {
   }
 
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented');
+    const { address: newAddress } = params;
+
+    if (!this.isValidAddress(newAddress)) {
+      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    }
+    return true;
   }
 
   async parseTransaction(): Promise<ParsedTransaction> {
@@ -95,11 +104,28 @@ export class Vet extends BaseCoin {
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
-    throw new Error('Method not implemented');
+    if (!seed) {
+      // An extended private key has both a normal 256 bit private key and a 256
+      // bit chain code, both of which must be random. 512 bits is therefore the
+      // maximum entropy and gives us maximum security against cracking.
+      seed = randomBytes(512 / 8);
+    }
+    const extendedKey = bip32.fromSeed(seed);
+    const xpub = extendedKey.neutered().toBase58();
+    return {
+      pub: xpub,
+      prv: extendedKey.toBase58(),
+    };
   }
 
   isValidPub(pub: string): boolean {
-    throw new Error('Method not implemented.');
+    let valid = true;
+    try {
+      new EthKeyPair({ pub });
+    } catch (e) {
+      valid = false;
+    }
+    return valid;
   }
 
   isValidAddress(address: string): boolean {
