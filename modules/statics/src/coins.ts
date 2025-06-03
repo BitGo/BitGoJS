@@ -2335,6 +2335,18 @@ export const coins = CoinMap.fromCoins([
     '',
     'USDT'
   ),
+  teosToken(
+    '9c830ef9-2f1d-4fea-8f38-8f4bb9170b68',
+    'teos:VAULTA',
+    'Testnet Vaulta',
+    4,
+    'core.vaulta',
+    'core.vaulta',
+    UnderlyingAsset.VAULTA,
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'VAULTA'
+  ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
     'erc721:polygontoken',
