@@ -1,1 +1,2 @@
 export const DEFAULT_GAS_UNIT_PRICE = 100;
+export const VET_TRANSACTION_ID_LENGTH = 64;
