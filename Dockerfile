@@ -60,6 +60,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-apt /var/modules/sdk-coin-apt/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-arbeth /var/modules/sdk-coin-arbeth/
 COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-asi /var/modules/sdk-coin-asi/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/

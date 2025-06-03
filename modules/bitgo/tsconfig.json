@@ -72,6 +72,9 @@
       "path": "../sdk-coin-arbeth"
     },
     {
+      "path": "../sdk-coin-asi"
+    },
+    {
       "path": "../sdk-coin-atom"
     },
     {

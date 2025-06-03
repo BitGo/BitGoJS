@@ -50,6 +50,7 @@
 /modules/sdk-coin-algo/ @BitGo/ethalt-team
 /modules/sdk-coin-apt/ @Bitgo/ethalt-team
 /modules/sdk-coin-arbeth/ @BitGo/ethalt-team
+/modules/sdk-coin-asi/ @BitGo/ethalt-team
 /modules/sdk-coin-atom/ @BitGo/ethalt-team
 /modules/sdk-coin-avaxc/ @BitGo/ethalt-team
 /modules/sdk-coin-avaxp/ @BitGo/ethalt-team

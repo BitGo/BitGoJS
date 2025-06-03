@@ -17,6 +17,7 @@ import {
   AptToken,
   Arbeth,
   ArbethToken,
+  Asi,
   Atom,
   AvaxC,
   AvaxCToken,
@@ -97,6 +98,7 @@ import {
   Talgo,
   Tapt,
   Tarbeth,
+  Tasi,
   Tatom,
   TavaxC,
   TavaxP,
@@ -188,6 +190,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('algo', Algo.createInstance);
   coinFactory.register('apt', Apt.createInstance);
   coinFactory.register('arbeth', Arbeth.createInstance);
+  coinFactory.register('asi', Asi.createInstance);
   coinFactory.register('atom', Atom.createInstance);
   coinFactory.register('avaxc', AvaxC.createInstance);
   coinFactory.register('avaxp', AvaxP.createInstance);
@@ -257,6 +260,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tapt', Tapt.createInstance);
   coinFactory.register('tarbeth', Tarbeth.createInstance);
   coinFactory.register('tada', Tada.createInstance);
+  coinFactory.register('tasi', Tasi.createInstance);
   coinFactory.register('tatom', Tatom.createInstance);
   coinFactory.register('tavaxc', TavaxC.createInstance);
   coinFactory.register('tavaxp', TavaxP.createInstance);

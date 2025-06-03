@@ -909,6 +909,26 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES
   ),
   account(
+    '2999b6e6-c30e-4089-a67a-2012df2adfa0',
+    'asi',
+    'Fetch Native',
+    Networks.main.asi,
+    18,
+    UnderlyingAsset.ASI,
+    BaseUnit.ASI,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
+    '1b7dfc3e-3431-48ca-883a-e9e8e32b17f2',
+    'tasi',
+    'Testnet Fetch Native',
+    Networks.test.asi,
+    18,
+    UnderlyingAsset.ASI,
+    BaseUnit.ASI,
+    COSMOS_SIDECHAIN_FEATURES
+  ),
+  account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
     'islm',
     'Islamic Coin',
