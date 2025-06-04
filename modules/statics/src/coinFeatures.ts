@@ -485,7 +485,6 @@ export const APT_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
-  CoinFeature.STAKING,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.BULK_STAKING_TRANSACTION,
   CoinFeature.SUPPORTS_TOKENS,
