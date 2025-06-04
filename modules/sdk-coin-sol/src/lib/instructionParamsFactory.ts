@@ -1,4 +1,8 @@
-import { decodeTransferCheckedInstruction } from '@solana/spl-token';
+import {
+  DecodedTransferCheckedInstruction,
+  decodeTransferCheckedInstruction,
+  TOKEN_2022_PROGRAM_ID,
+} from '@solana/spl-token';
 import {
   AllocateParams,
   AssignParams,
@@ -150,7 +154,12 @@ function parseSendInstructions(
         instructionData.push(transfer);
         break;
       case ValidInstructionTypesEnum.TokenTransfer:
-        const tokenTransferInstruction = decodeTransferCheckedInstruction(instruction);
+        let tokenTransferInstruction: DecodedTransferCheckedInstruction;
+        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
+          tokenTransferInstruction = decodeTransferCheckedInstruction(instruction);
+        } else {
+          tokenTransferInstruction = decodeTransferCheckedInstruction(instruction, TOKEN_2022_PROGRAM_ID);
+        }
         const tokenName = findTokenName(tokenTransferInstruction.keys.mint.pubkey.toString());
         const tokenTransfer: TokenTransfer = {
           type: InstructionBuilderTypes.TokenTransfer,

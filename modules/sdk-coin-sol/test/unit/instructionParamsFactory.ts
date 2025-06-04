@@ -6,7 +6,11 @@ import { InstructionParams } from '../../src/lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
-import { createAssociatedTokenAccountInstruction, createTransferCheckedInstruction } from '@solana/spl-token';
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+  TOKEN_2022_PROGRAM_ID,
+} from '@solana/spl-token';
 
 describe('Instruction Parser Tests: ', function () {
   describe('Succeed ', function () {
@@ -135,6 +139,67 @@ describe('Instruction Parser Tests: ', function () {
       should.deepEqual(result, instructionsData);
     });
 
+    it('Send sol 2022 token tx instructions', () => {
+      const authAccount = testData.authAccount.pub;
+      const nonceAccount = testData.nonceAccount.pub;
+      const amount = testData.sol2022TokenTransfers.amount;
+      const memo = testData.sol2022TokenTransfers.memo;
+      const decimals = testData.sol2022TokenTransfers.decimals;
+      const name = testData.sol2022TokenTransfers.name;
+      const mint = testData.sol2022TokenTransfers.mint;
+      const owner = testData.sol2022TokenTransfers.owner;
+      const source = testData.sol2022TokenTransfers.source;
+
+      // nonce
+      const nonceAdvanceParams: InstructionParams = {
+        type: InstructionBuilderTypes.NonceAdvance,
+        params: { walletNonceAddress: nonceAccount, authWalletAddress: authAccount },
+      };
+      const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+        noncePubkey: new PublicKey(nonceAccount),
+        authorizedPubkey: new PublicKey(authAccount),
+      });
+
+      // token transfer
+      const transferParams = {
+        type: InstructionBuilderTypes.TokenTransfer,
+        params: {
+          fromAddress: owner,
+          toAddress: nonceAccount,
+          amount: amount.toString(),
+          tokenName: name,
+          sourceAddress: source,
+        },
+      };
+      const transferInstruction = createTransferCheckedInstruction(
+        new PublicKey(source),
+        new PublicKey(mint),
+        new PublicKey(nonceAccount),
+        new PublicKey(owner),
+        amount,
+        decimals,
+        [],
+        TOKEN_2022_PROGRAM_ID
+      );
+
+      // memo
+      const memoParams: InstructionParams = {
+        type: InstructionBuilderTypes.Memo,
+        params: { memo },
+      };
+
+      const memoInstruction = new TransactionInstruction({
+        keys: [],
+        programId: new PublicKey(MEMO_PROGRAM_PK),
+        data: Buffer.from(memo),
+      });
+
+      const instructions = [nonceAdvanceInstruction, transferInstruction, memoInstruction];
+      const instructionsData = [nonceAdvanceParams, transferParams, memoParams];
+      const result = instructionParamsFactory(TransactionType.Send, instructions);
+      should.deepEqual(result, instructionsData);
+    });
+
     it('multi ATA init tx instructions', () => {
       const ataParams = [
         {
@@ -167,6 +232,38 @@ describe('Instruction Parser Tests: ', function () {
         createATAParams.push({
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: { ...param, tokenName: 'sol:usdc' },
+        });
+      });
+      const result = instructionParamsFactory(TransactionType.AssociatedTokenAccountInitialization, ataInstructions);
+      should.deepEqual(result, createATAParams);
+    });
+    it('sol 2022 ATA init tx instructions', () => {
+      const ataParams = [
+        {
+          mintAddress: testData.associatedTokenAccountsForSol2022.mintId,
+          ownerAddress: testData.associatedTokenAccountsForSol2022.accounts[0].pub,
+          payerAddress: testData.associatedTokenAccountsForSol2022.accounts[0].pub,
+          ataAddress: testData.associatedTokenAccountsForSol2022.accounts[0].ata,
+        },
+      ];
+
+      const ataInstructions: TransactionInstruction[] = [];
+      const createATAParams: InstructionParams[] = [];
+
+      ataParams.forEach((param) => {
+        ataInstructions.push(
+          createAssociatedTokenAccountInstruction(
+            new PublicKey(param.payerAddress),
+            new PublicKey(param.ataAddress),
+            new PublicKey(param.ownerAddress),
+            new PublicKey(param.mintAddress),
+            TOKEN_2022_PROGRAM_ID
+          )
+        );
+
+        createATAParams.push({
+          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          params: { ...param, tokenName: 'tsol:t22mint' },
         });
       });
       const result = instructionParamsFactory(TransactionType.AssociatedTokenAccountInitialization, ataInstructions);

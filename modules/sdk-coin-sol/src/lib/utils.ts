@@ -333,8 +333,14 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
     case SystemProgram.programId.toString():
       return SystemInstruction.decodeInstructionType(instruction);
     case TOKEN_PROGRAM_ID.toString():
+    case TOKEN_2022_PROGRAM_ID.toString():
       try {
-        const decodedInstruction = decodeCloseAccountInstruction(instruction);
+        let decodedInstruction;
+        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
+          decodedInstruction = decodeCloseAccountInstruction(instruction);
+        } else {
+          decodedInstruction = decodeCloseAccountInstruction(instruction, TOKEN_2022_PROGRAM_ID);
+        }
         if (decodedInstruction && decodedInstruction.data.instruction === 9) {
           return 'CloseAssociatedTokenAccount';
         }

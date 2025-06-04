@@ -3,6 +3,7 @@ import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
   createTransferCheckedInstruction,
+  TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 import {
   Authorized,
@@ -158,14 +159,28 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
   assert(sourceAddress, 'Missing ata address');
   const token = coins.get(data.params.tokenName);
   assert(token instanceof SolCoin);
-  const transferInstruction = createTransferCheckedInstruction(
-    new PublicKey(sourceAddress),
-    new PublicKey(token.tokenAddress),
-    new PublicKey(toAddress),
-    new PublicKey(fromAddress),
-    BigInt(amount),
-    token.decimalPlaces
-  );
+  let transferInstruction: TransactionInstruction;
+  if (token.programId === TOKEN_2022_PROGRAM_ID.toString()) {
+    transferInstruction = createTransferCheckedInstruction(
+      new PublicKey(sourceAddress),
+      new PublicKey(token.tokenAddress),
+      new PublicKey(toAddress),
+      new PublicKey(fromAddress),
+      BigInt(amount),
+      token.decimalPlaces,
+      [],
+      TOKEN_2022_PROGRAM_ID
+    );
+  } else {
+    transferInstruction = createTransferCheckedInstruction(
+      new PublicKey(sourceAddress),
+      new PublicKey(token.tokenAddress),
+      new PublicKey(toAddress),
+      new PublicKey(fromAddress),
+      BigInt(amount),
+      token.decimalPlaces
+    );
+  }
   return [transferInstruction];
 }
 
@@ -340,19 +355,30 @@ function stakingWithdrawInstruction(data: StakingWithdraw): TransactionInstructi
  */
 function createATAInstruction(data: AtaInit): TransactionInstruction[] {
   const {
-    params: { mintAddress, ataAddress, ownerAddress, payerAddress },
+    params: { mintAddress, ataAddress, ownerAddress, payerAddress, programId },
   } = data;
   assert(mintAddress, 'Missing mintAddress param');
   assert(ataAddress, 'Missing ataAddress param');
   assert(ownerAddress, 'Missing ownerAddress param');
   assert(payerAddress, 'Missing payerAddress param');
 
-  const associatedTokenAccountInstruction = createAssociatedTokenAccountInstruction(
-    new PublicKey(payerAddress),
-    new PublicKey(ataAddress),
-    new PublicKey(ownerAddress),
-    new PublicKey(mintAddress)
-  );
+  let associatedTokenAccountInstruction: TransactionInstruction;
+  if (programId && programId === TOKEN_2022_PROGRAM_ID.toString()) {
+    associatedTokenAccountInstruction = createAssociatedTokenAccountInstruction(
+      new PublicKey(payerAddress),
+      new PublicKey(ataAddress),
+      new PublicKey(ownerAddress),
+      new PublicKey(mintAddress),
+      TOKEN_2022_PROGRAM_ID
+    );
+  } else {
+    associatedTokenAccountInstruction = createAssociatedTokenAccountInstruction(
+      new PublicKey(payerAddress),
+      new PublicKey(ataAddress),
+      new PublicKey(ownerAddress),
+      new PublicKey(mintAddress)
+    );
+  }
   return [associatedTokenAccountInstruction];
 }
 
