@@ -43,6 +43,7 @@ describe('Coins', () => {
       Polyx: 1,
       Tpolyx: 1,
       CoredaoToken: 1,
+      EvmCoin: 1,
     };
     Object.keys(BitGoJS.Coin)
       .filter((coinName) => !excludedKeys[coinName])

@@ -12,7 +12,7 @@ describe('Key Pair Factory', () => {
   describe('coinToKey map initialization', function () {
     const supportedCoinsExceptTestnet = Object.keys(coinModules)
       // TODO(BG-40990): temporarily disable eth2 from the test for bls not initialized error
-      .filter((k) => coinModules[k].KeyPair && k.trim().toLowerCase() !== 'eth2');
+      .filter((k) => coinModules[k].KeyPair && !['eth2', 'evmcoin'].includes(k.trim().toLowerCase()));
 
     supportedCoinsExceptTestnet.forEach((coinName) => {
       it(`should initialize a ${coinName} keyPair map`, () => {
