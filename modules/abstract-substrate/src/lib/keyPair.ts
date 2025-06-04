@@ -1,10 +1,11 @@
-import { DefaultKeys, Ed25519KeyPair, isBase58, KeyPairOptions, toHex } from '@bitgo/sdk-core';
+import { DefaultKeys, Ed25519KeyPair, isBase58, KeyPairOptions, toHex, toUint8Array } from '@bitgo/sdk-core';
 import { KeyCurve } from '@bitgo/statics';
 import { Keyring } from '@polkadot/keyring';
 import { createPair } from '@polkadot/keyring/pair';
 import { KeyringPair } from '@polkadot/keyring/types';
 import bs58 from 'bs58';
 import utils from './utils';
+import * as nacl from 'tweetnacl';
 
 const keyring = new Keyring({ type: KeyCurve.Ed25519 });
 
@@ -60,5 +61,19 @@ export class KeyPair extends Ed25519KeyPair {
       secretKey: new Uint8Array(),
     }).publicKey;
     return { pub: toHex(publicKey) };
+  }
+
+  /**
+   *  Sign the message in Uint8Array
+   *
+   * @param {Uint8Array} message to be signed
+   * @returns {Uint8Array} signed message
+   */
+  signMessageinUint8Array(message: Uint8Array): Uint8Array {
+    const { prv } = this.keyPair;
+    if (!prv) {
+      throw new Error('Missing private key');
+    }
+    return nacl.sign.detached(message, nacl.sign.keyPair.fromSeed(toUint8Array(prv)).secretKey);
   }
 }
