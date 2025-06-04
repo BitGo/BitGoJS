@@ -15,6 +15,7 @@ export abstract class BaseNetwork {
 export interface UtxoNetwork extends BaseNetwork {
   // Network name as defined in @bitgo/utxo-lib networks.ts
   utxolibName: string;
+  pubkey?: string;
 }
 
 export interface LightningNetwork extends UtxoNetwork {
@@ -342,6 +343,9 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
   family = CoinFamily.BTC;
   utxolibName = 'testnet';
   explorerUrl = 'https://mempool.space/testnet/tx/';
+  // Add our pubkey for our paygo wallet
+  pubkey =
+    'xpub661MyMwAqRbcFU2Qx7pvGmmiQpVj8NcR7dSVpgqNChMkQyobpVWWERcrTb47WicmXwkhAY2VrC3hb29s18FDQWJf5pLm3saN6uLXAXpw1GV';
 }
 
 class BitcoinPublicSignet extends Testnet implements UtxoNetwork {
