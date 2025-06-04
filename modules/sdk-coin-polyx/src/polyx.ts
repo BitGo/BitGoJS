@@ -12,6 +12,8 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { SubstrateCoin } from '@bitgo/abstract-substrate';
+import { BatchStakingBuilder } from './lib/batchStakingBuilder';
+import { BondExtraBuilder } from './lib/bondExtraBuilder';
 
 export class Polyx extends SubstrateCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -75,5 +77,13 @@ export class Polyx extends SubstrateCoin {
   /** @inheritDoc */
   auditDecryptedKey({ publicKey, prv, multiSigType }: AuditDecryptedKeyParams) {
     super.auditDecryptedKey({ publicKey, prv, multiSigType });
+  }
+
+  stakingBatch(): BatchStakingBuilder {
+    return this.getBuilder().getBatchBuilder();
+  }
+
+  bondExtra(): BondExtraBuilder {
+    return this.getBuilder().getBondExtraBuilder();
   }
 }
