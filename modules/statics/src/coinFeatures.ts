@@ -471,6 +471,16 @@ export const COREDAO_FEATURES = [
   CoinFeature.STAKING,
   CoinFeature.EIP1559,
 ];
+export const APECHAIN_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.EIP1559,
+];
 export const APT_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,
