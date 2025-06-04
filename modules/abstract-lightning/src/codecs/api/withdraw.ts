@@ -40,3 +40,47 @@ export type LightningOnchainWithdrawResponse = {
    */
   transfer?: any;
 };
+
+export const FundPsbtResponse = t.type(
+  {
+    fundedPsbt: t.string,
+    changeOutputIndex: t.number,
+  },
+  'FundPsbtResponse'
+);
+export type FundPsbtResponse = t.TypeOf<typeof FundPsbtResponse>;
+
+export const SignPsbtRequest = t.type(
+  {
+    fundedPsbt: t.string,
+    txRequestId: t.string,
+  },
+  'SendPsbtRequest'
+);
+export type SignPsbtRequest = t.TypeOf<typeof SignPsbtRequest>;
+
+export const SignPsbtResponse = t.type(
+  {
+    signedPsbt: t.string,
+    signedTxHex: t.string,
+  },
+  'SendPsbtResponse'
+);
+export type SignPsbtResponse = t.TypeOf<typeof SignPsbtResponse>;
+
+export const SendPsbtRequest = t.type(
+  {
+    signedTxHex: t.string,
+    txRequestId: t.string,
+  },
+  'SendPsbtRequest'
+);
+export type SendPsbtRequest = t.TypeOf<typeof SendPsbtRequest>;
+
+export const SendPsbtResponse = t.type(
+  {
+    label: t.string,
+  },
+  'SendPsbtResponse'
+);
+export type SendPsbtResponse = t.TypeOf<typeof SendPsbtResponse>;
