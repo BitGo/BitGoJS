@@ -57,7 +57,7 @@ export function verifyPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, pub
   const messageToVerify = toBase58Check(crypto.hash160(pub), networks.bitcoin.pubKeyHash, networks.bitcoin);
 
   // TODO: need to figure out what the message is in this context
-  // Are we verifying the address of the PayGo? we can call getAddressFromScript given output index.
+  // Answer: message is our <varint_length><Entropy><Address><UUID>
   if (!bitcoinMessage.verify(message, messageToVerify, signature)) {
     throw new Error('Cannot verify the paygo address signature with the provided pubkey.');
   }
