@@ -21,6 +21,7 @@ export enum CoinKind {
  */
 export enum CoinFamily {
   ADA = 'ada',
+  APECHAIN = 'apechain',
   ALGO = 'algo',
   APT = 'apt',
   ARBETH = 'arbeth',
@@ -383,6 +384,7 @@ export enum UnderlyingAsset {
   ADA = 'ada',
   ALGO = 'algo',
   APE = 'ape',
+  APECHAIN = 'apechain',
   API3 = 'api3',
   ARBETH = 'arbeth',
   BASEETH = 'baseeth',

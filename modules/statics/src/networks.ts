@@ -1237,6 +1237,25 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
+
+class ApeChain extends Mainnet implements EthereumNetwork {
+  name = 'Ape Chain';
+  family = CoinFamily.APECHAIN;
+  explorerUrl = 'https://apescan.io/tx/';
+  accountExplorerUrl = 'https://apescan.io/address/';
+  chainId = 33139;
+  nativeCoinOperationHashPrefix = '33139';
+}
+
+class ApeChainTestnet extends Testnet implements EthereumNetwork {
+  name = 'Ape Chain Testnet';
+  family = CoinFamily.APECHAIN;
+  explorerUrl = 'https://curtis.apescan.io/tx/';
+  accountExplorerUrl = 'https://curtis.apescan.io/address/';
+  chainId = 33111;
+  nativeCoinOperationHashPrefix = '33111';
+}
+
 class Xdc extends Mainnet implements EthereumNetwork {
   name = 'XdcChain';
   family = CoinFamily.XDC;
@@ -1461,6 +1480,7 @@ export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
     algorand: Object.freeze(new Algorand()),
+    apechain: Object.freeze(new ApeChain()),
     apt: Object.freeze(new Apt()),
     arbitrum: Object.freeze(new Arbitrum()),
     asi: Object.freeze(new Asi()),
@@ -1539,6 +1559,7 @@ export const Networks = {
   test: {
     ada: Object.freeze(new AdaTestnet()),
     algorand: Object.freeze(new AlgorandTestnet()),
+    apechain: Object.freeze(new ApeChainTestnet()),
     apt: Object.freeze(new AptTestnet()),
     arbitrum: Object.freeze(new ArbitrumTestnet()),
     asi: Object.freeze(new AsiTestnet()),

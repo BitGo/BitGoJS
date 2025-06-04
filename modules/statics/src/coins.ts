@@ -69,6 +69,7 @@ import { nep141Tokens } from './coins/nep141Tokens';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
+  APECHAIN_FEATURES,
   APT_FEATURES,
   ARBETH_FEATURES,
   ATOM_FEATURES,
@@ -1171,6 +1172,26 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.COREDAO,
     BaseUnit.ETH,
     COREDAO_FEATURES
+  ),
+  account(
+    'd308ba34-557a-43f2-84f3-5775f1f1a779',
+    'apechain',
+    'Ape Chain',
+    Networks.main.apechain,
+    18,
+    UnderlyingAsset.APECHAIN,
+    BaseUnit.ETH,
+    APECHAIN_FEATURES
+  ),
+  account(
+    'b3610694-f960-4ef4-a714-c3cb9e02f4b6',
+    'tapechain',
+    'Testnet Ape Chain',
+    Networks.test.apechain,
+    18,
+    UnderlyingAsset.APECHAIN,
+    BaseUnit.ETH,
+    APECHAIN_FEATURES
   ),
   account(
     '0cdd9089-9ca6-41ea-ab2b-20211da4ac06',

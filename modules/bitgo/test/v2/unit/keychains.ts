@@ -57,6 +57,7 @@ describe('V2 Keychains', function () {
         n.kind === CoinKind.CRYPTO &&
         n.asset !== UnderlyingAsset.USD &&
         n.asset !== UnderlyingAsset.AVAXP &&
+        n.asset !== UnderlyingAsset.APECHAIN &&
         n.asset !== UnderlyingAsset.DOGE &&
         n.asset !== UnderlyingAsset.ETHW &&
         n.asset !== UnderlyingAsset.KAVA &&
